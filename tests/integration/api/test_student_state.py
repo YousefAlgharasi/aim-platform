@@ -92,11 +92,15 @@ def create_skill_state(
             "confidence": 0.0,
             "attempts": 0,
             "avg_speed": 0.0,
+            "retry_rate": 0.0,
+            "consistency": 100.0,
+            "current_difficulty": 1,
             "retention": 100.0,
             "weakness_score": 0.0,
             "frustration_score": 0.0,
             "learning_style": None,
             "session_performance": [],
+            "context_memory": {},
         },
     )
     assert resp.status_code == 201, resp.text
@@ -203,6 +207,10 @@ class TestCreateSkillState:
         assert data["confidence"] == 0.0
         assert data["retention"] == 100.0
         assert data["frustration_score"] == 0.0
+        assert data["retry_rate"] == 0.0
+        assert data["consistency"] == 100.0
+        assert data["current_difficulty"] == 1
+        assert data["context_memory"] == {}
         assert data["session_performance"] == []
         assert data["learning_style"] is None
 
@@ -218,17 +226,25 @@ class TestCreateSkillState:
                 "confidence": 60.0,
                 "attempts": 12,
                 "avg_speed": 8.3,
+                "retry_rate": 0.25,
+                "consistency": 82.0,
+                "current_difficulty": 3,
                 "retention": 88.0,
                 "weakness_score": 20.0,
                 "frustration_score": 15.0,
                 "learning_style": "example-first",
                 "session_performance": [70.0, 72.5, 75.5],
+                "context_memory": {"last_skill_studied": "grammar_a"},
                 "last_reviewed_at": None,
             },
         )
         assert resp.status_code == 201
         data = resp.json()
         assert data["mastery"] == 75.5
+        assert data["retry_rate"] == 0.25
+        assert data["consistency"] == 82.0
+        assert data["current_difficulty"] == 3
+        assert data["context_memory"] == {"last_skill_studied": "grammar_a"}
         assert data["learning_style"] == "example-first"
         assert data["frustration_score"] == 15.0
         assert data["session_performance"] == [70.0, 72.5, 75.5]
@@ -323,6 +339,32 @@ class TestUpdateSkillState:
         )
         assert resp.status_code == 200
         assert resp.json()["session_performance"] == [65.0, 70.0, 78.0]
+
+    def test_update_adaptive_state_fields(self, client: TestClient) -> None:
+        student = create_student(client)
+        sid = student["id"]
+        create_skill_state(client, sid)
+        resp = client.put(
+            f"/students/{sid}/skills/present_simple/state",
+            json={
+                "current_difficulty": 4,
+                "consistency": 76.5,
+                "retry_rate": 0.4,
+                "hesitation_index": 0.2,
+                "context_memory": {
+                    "last_session_summary": "Needed extra time on verb forms."
+                },
+            },
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["current_difficulty"] == 4
+        assert data["consistency"] == 76.5
+        assert data["retry_rate"] == 0.4
+        assert data["hesitation_index"] == 0.2
+        assert data["context_memory"] == {
+            "last_session_summary": "Needed extra time on verb forms."
+        }
 
     def test_update_multiple_fields_at_once(self, client: TestClient) -> None:
         student = create_student(client)

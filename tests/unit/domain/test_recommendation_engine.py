@@ -34,6 +34,8 @@ def state(
     difficulty: int = 3,
     retention: float = 100.0,
     review_due: bool = False,
+    weakness_score: float = 0.0,
+    frustration_score: float = 0.0,
 ) -> RecommendationSkillState:
     return RecommendationSkillState(
         skill_id=skill_id,
@@ -43,6 +45,8 @@ def state(
         current_difficulty=difficulty,
         retention=retention,
         review_due=review_due,
+        weakness_score=weakness_score,
+        frustration_score=frustration_score,
     )
 
 
@@ -85,7 +89,7 @@ class TestRecommendationEngine:
                 state("GRAMMAR_TO_BE", mastery=92.0, confidence=80.0),
             ],
             recent_attempts=[],
-            last_session_frustration_score=0.9,
+            last_session_frustration_score=90.0,
         )
 
         result = engine_for(context).get_next_action(1)
@@ -93,14 +97,16 @@ class TestRecommendationEngine:
         assert result.action_type == RecommendationActionType.EASY_WIN
         assert result.skill_id == "GRAMMAR_TO_BE"
         assert result.difficulty == 1
+        assert "encourage" in result.reason.lower()
+        assert result.inputs_snapshot["frustration_score"] == 90.0
 
-    def test_priority_2_due_review(self) -> None:
+    def test_low_mastery_low_retention_recommends_review(self) -> None:
         context = RecommendationContext(
             student_id=1,
             current_skill_id="GRAMMAR_VERB_FORMS",
             skill_states=[
-                state("GRAMMAR_VERB_FORMS", retention=65.0),
-                state("VOCAB_BASIC", retention=50.0),
+                state("GRAMMAR_VERB_FORMS", mastery=35.0, retention=65.0),
+                state("VOCAB_BASIC", mastery=80.0, retention=100.0),
             ],
             recent_attempts=[],
         )
@@ -108,7 +114,9 @@ class TestRecommendationEngine:
         result = engine_for(context).get_next_action(1)
 
         assert result.action_type == RecommendationActionType.REVIEW
-        assert result.skill_id == "VOCAB_BASIC"
+        assert result.skill_id == "GRAMMAR_VERB_FORMS"
+        assert result.inputs_snapshot["retention"] == 65.0
+        assert result.inputs_snapshot["due_review_skill_ids"] == ["GRAMMAR_VERB_FORMS"]
 
     def test_priority_3_random_errors_reteach(self) -> None:
         attempts = [
@@ -165,6 +173,22 @@ class TestRecommendationEngine:
 
         assert result.action_type == RecommendationActionType.TIMED_PRACTICE
 
+    def test_saved_rushing_error_recommends_timed_practice(self) -> None:
+        context = RecommendationContext(
+            student_id=1,
+            current_skill_id="GRAMMAR_VERB_FORMS",
+            skill_states=[state("GRAMMAR_VERB_FORMS", mastery=60.0, confidence=60.0)],
+            recent_attempts=[],
+            error_pattern_type="rushing",
+            error_pattern_treatment_recommendation="Use timed practice with pacing.",
+        )
+
+        result = engine_for(context).get_next_action(1)
+
+        assert result.action_type == RecommendationActionType.TIMED_PRACTICE
+        assert result.reason == "Use timed practice with pacing."
+        assert result.inputs_snapshot["error_pattern_type"] == "rushing"
+
     def test_priority_6_overconfident_confidence_builder(self) -> None:
         context = RecommendationContext(
             student_id=1,
@@ -195,8 +219,31 @@ class TestRecommendationEngine:
 
         assert result.action_type == RecommendationActionType.FILL_PREREQUISITE_GAP
         assert result.skill_id == "GRAMMAR_TO_BE"
+        assert "fill gaps first" in result.reason.lower()
+        assert result.inputs_snapshot["missing_prerequisites"] == ["GRAMMAR_TO_BE"]
 
-    def test_priority_8_challenge(self) -> None:
+    def test_open_prerequisite_gap_from_context_takes_priority(self) -> None:
+        context = RecommendationContext(
+            student_id=1,
+            current_skill_id="GRAMMAR_PASSIVE_VOICE",
+            skill_states=[
+                state("GRAMMAR_PASSIVE_VOICE", mastery=75.0, confidence=75.0),
+                state("GRAMMAR_TO_BE", mastery=80.0),
+            ],
+            recent_attempts=[
+                attempt(i, skill_id="GRAMMAR_PASSIVE_VOICE")
+                for i in range(1, 6)
+            ],
+            prerequisite_gaps=["GRAMMAR_TO_BE"],
+        )
+
+        result = engine_for(context).get_next_action(1)
+
+        assert result.action_type == RecommendationActionType.FILL_PREREQUISITE_GAP
+        assert result.skill_id == "GRAMMAR_TO_BE"
+        assert result.inputs_snapshot["missing_prerequisites"] == ["GRAMMAR_TO_BE"]
+
+    def test_high_mastery_high_consistency_recommends_challenge(self) -> None:
         context = RecommendationContext(
             student_id=1,
             current_skill_id="GRAMMAR_VERB_FORMS",
@@ -216,6 +263,8 @@ class TestRecommendationEngine:
 
         assert result.action_type == RecommendationActionType.CHALLENGE
         assert result.difficulty == 4
+        assert result.inputs_snapshot["mastery"] == 90.0
+        assert result.inputs_snapshot["consistency"] == 90.0
 
     def test_high_transfer_turns_challenge_into_accelerated(self) -> None:
         context = RecommendationContext(

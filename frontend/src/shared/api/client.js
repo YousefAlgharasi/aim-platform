@@ -10,5 +10,21 @@ export async function getHealthStatus() {
   return response.json();
 }
 
+export async function runAimDemoSession(scenario) {
+  const response = await fetch(`${API_BASE_URL}/dev/aim/demo-session`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ scenario }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`AIM demo failed with ${response.status}`);
+  }
+
+  return response.json();
+}
+
 export { API_BASE_URL };
 

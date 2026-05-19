@@ -58,6 +58,9 @@ class StudentUseCases:
             confidence=values.get("confidence", 0.0),
             attempts=values.get("attempts", 0),
             avg_speed=values.get("avg_speed", 0.0),
+            retry_rate=values.get("retry_rate", 0.0),
+            consistency=values.get("consistency", 100.0),
+            current_difficulty=values.get("current_difficulty", 1),
             retention=values.get("retention", 100.0),
             hesitation_index=values.get("hesitation_index", 0.0),
             retention_lambda=values.get("retention_lambda", 0.15),
@@ -67,6 +70,7 @@ class StudentUseCases:
             frustration_score=values.get("frustration_score", 0.0),
             learning_style=values.get("learning_style"),
             session_performance=values.get("session_performance", []),
+            context_memory=values.get("context_memory", {}),
             last_reviewed_at=values.get("last_reviewed_at"),
         )
         self._uow.students.add_skill_state(state)

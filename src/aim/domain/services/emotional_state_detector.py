@@ -2,7 +2,7 @@
 T-09: Emotional State Detection Engine
 
 Detects frustration from student behavior without asking the student directly.
-All flags are binary and the final score is in the 0.0-1.0 range.
+All flags are binary and the final score is in the 0-100 range.
 """
 
 from __future__ import annotations
@@ -40,16 +40,16 @@ class EmotionalStateResult:
 
 class EmotionalStateDetector:
     """
-    FrustrationScore = repeated_errors_flag * 0.4
-                     + sudden_slowdown_flag * 0.3
-                     + early_exit_flag * 0.3
+    FrustrationScore = repeated_errors_flag * 40
+                     + sudden_slowdown_flag * 30
+                     + early_exit_flag * 30
 
-    HIGH frustration is score > 0.70.
+    HIGH frustration is score > 70.
     """
 
     MIN_SESSION_QUESTIONS = 10
     SLOWDOWN_MULTIPLIER = 1.5
-    HIGH_FRUSTRATION_THRESHOLD = 0.70
+    HIGH_FRUSTRATION_THRESHOLD = 70.0
     REPEATED_ERROR_STREAK = 4
 
     def detect(
@@ -68,9 +68,9 @@ class EmotionalStateDetector:
         early_exit = len(non_skipped) < self.MIN_SESSION_QUESTIONS
 
         score = round(
-            (0.4 if repeated_errors else 0.0)
-            + (0.3 if sudden_slowdown else 0.0)
-            + (0.3 if early_exit else 0.0),
+            (40.0 if repeated_errors else 0.0)
+            + (30.0 if sudden_slowdown else 0.0)
+            + (30.0 if early_exit else 0.0),
             2,
         )
 

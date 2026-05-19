@@ -29,6 +29,9 @@ class StudentSkillStateCreate(BaseModel):
     confidence: float = Field(0.0, ge=0.0, le=100.0)
     attempts: int = Field(0, ge=0)
     avg_speed: float = Field(0.0, ge=0.0)
+    retry_rate: float = Field(0.0, ge=0.0)
+    consistency: float = Field(100.0, ge=0.0, le=100.0)
+    current_difficulty: int = Field(1, ge=1, le=5)
     retention: float = Field(100.0, ge=0.0, le=100.0)
     hesitation_index: float = Field(0.0, ge=0.0, le=1.0)
     retention_lambda: float = Field(0.15, ge=0.0)
@@ -40,6 +43,7 @@ class StudentSkillStateCreate(BaseModel):
 
     learning_style: Optional[str] = None
     session_performance: list[float] = Field(default_factory=list)
+    context_memory: dict = Field(default_factory=dict)
 
     last_reviewed_at: Optional[datetime] = None
 
@@ -49,6 +53,9 @@ class StudentSkillStateUpdate(BaseModel):
     confidence: Optional[float] = Field(None, ge=0.0, le=100.0)
     attempts: Optional[int] = Field(None, ge=0)
     avg_speed: Optional[float] = Field(None, ge=0.0)
+    retry_rate: Optional[float] = Field(None, ge=0.0)
+    consistency: Optional[float] = Field(None, ge=0.0, le=100.0)
+    current_difficulty: Optional[int] = Field(None, ge=1, le=5)
     retention: Optional[float] = Field(None, ge=0.0, le=100.0)
     hesitation_index: Optional[float] = Field(None, ge=0.0, le=1.0)
     retention_lambda: Optional[float] = Field(None, ge=0.0)
@@ -60,6 +67,7 @@ class StudentSkillStateUpdate(BaseModel):
 
     learning_style: Optional[str] = None
     session_performance: Optional[list[float]] = None
+    context_memory: Optional[dict] = None
 
     last_reviewed_at: Optional[datetime] = None
 

@@ -40,7 +40,7 @@ class TestEmotionalStateDetector:
 
         result = self.detector.detect(attempts, historical_avg_speed=10.0)
 
-        assert result.frustration_score == 1.0
+        assert result.frustration_score == 100.0
         assert result.state == EmotionalState.FRUSTRATED
         assert result.easy_win_mode is True
         assert result.repeated_errors is True
@@ -69,7 +69,7 @@ class TestEmotionalStateDetector:
         result = self.detector.detect(attempts, historical_avg_speed=10.0)
 
         assert result.repeated_errors is True
-        assert result.frustration_score == 0.4
+        assert result.frustration_score == 40.0
         assert result.state == EmotionalState.NEUTRAL
 
     def test_sudden_slowdown_detects_current_average_above_1_5x_history(self) -> None:
@@ -78,7 +78,7 @@ class TestEmotionalStateDetector:
         result = self.detector.detect(attempts, historical_avg_speed=10.0)
 
         assert result.sudden_slowdown is True
-        assert result.frustration_score == 0.3
+        assert result.frustration_score == 30.0
 
     def test_sudden_slowdown_boundary_at_1_5x_is_not_flagged(self) -> None:
         attempts = [make_attempt(i, response_time=15.0) for i in range(1, 11)]
@@ -101,7 +101,7 @@ class TestEmotionalStateDetector:
         result = self.detector.detect(attempts, historical_avg_speed=10.0)
 
         assert result.early_exit is True
-        assert result.frustration_score == 0.3
+        assert result.frustration_score == 30.0
 
     def test_exactly_10_questions_is_not_early_exit(self) -> None:
         attempts = [make_attempt(i) for i in range(1, 11)]
@@ -123,7 +123,7 @@ class TestEmotionalStateDetector:
         assert result.frustration_score == 0.0
         assert result.state == EmotionalState.CONFIDENT
 
-    def test_score_equal_0_70_is_not_high_frustration(self) -> None:
+    def test_score_equal_70_is_not_high_frustration(self) -> None:
         attempts = [
             make_attempt(i, is_correct=False, previously_correct=True)
             for i in range(1, 5)
@@ -131,6 +131,6 @@ class TestEmotionalStateDetector:
 
         result = self.detector.detect(attempts, historical_avg_speed=10.0)
 
-        assert result.frustration_score == 0.7
+        assert result.frustration_score == 70.0
         assert result.state == EmotionalState.NEUTRAL
         assert result.easy_win_mode is False

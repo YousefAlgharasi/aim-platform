@@ -36,6 +36,9 @@ class StudentSkillStateORM(Base):
     confidence = Column(Float, nullable=False, default=0.0)
     attempts = Column(Integer, nullable=False, default=0)
     avg_speed = Column(Float, nullable=False, default=0.0)
+    retry_rate = Column(Float, nullable=False, default=0.0)
+    consistency = Column(Float, nullable=False, default=100.0)
+    current_difficulty = Column(Integer, nullable=False, default=1)
     retention = Column(Float, nullable=False, default=100.0)
     hesitation_index = Column(Float, nullable=False, default=0.0)
     retention_lambda = Column(Float, nullable=False, default=0.15)
@@ -47,6 +50,7 @@ class StudentSkillStateORM(Base):
 
     learning_style = Column(String, nullable=True)
     session_performance = Column(JSON, nullable=False, default=list)
+    context_memory = Column(JSON, nullable=False, default=dict)
 
     last_reviewed_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)

@@ -6,6 +6,7 @@ from typing import Sequence
 
 from sqlalchemy.orm import Session
 
+from aim.domain.services.mastery_calculator import SkillState
 from aim.domain.services.performance_analyzer import AttemptRecord
 from aim.infrastructure.database.models.question_attempt import QuestionAttemptORM
 from aim.infrastructure.database.models.student import StudentSkillStateORM
@@ -96,8 +97,46 @@ class SQLAttemptRepository:
             state = StudentSkillStateORM(student_id=student_id, skill_id=skill_id)
             self._db.add(state)
 
-        state.mastery = accuracy
         state.avg_speed = avg_speed
+        state.retry_rate = retry_rate
         state.hesitation_index = hesitation_index
+        self._db.flush()
+
+    def get_skill_state(
+        self,
+        student_id: int,
+        skill_id: str,
+    ) -> SkillState | None:
+        state = (
+            self._db.query(StudentSkillStateORM)
+            .filter(
+                StudentSkillStateORM.student_id == student_id,
+                StudentSkillStateORM.skill_id == skill_id,
+            )
+            .first()
+        )
+        if state is None:
+            return None
+        return SkillState(retention=state.retention, confidence=state.confidence)
+
+    def update_mastery(
+        self,
+        student_id: int,
+        skill_id: str,
+        mastery: float,
+    ) -> None:
+        state = (
+            self._db.query(StudentSkillStateORM)
+            .filter(
+                StudentSkillStateORM.student_id == student_id,
+                StudentSkillStateORM.skill_id == skill_id,
+            )
+            .first()
+        )
+        if state is None:
+            state = StudentSkillStateORM(student_id=student_id, skill_id=skill_id)
+            self._db.add(state)
+
+        state.mastery = mastery
         self._db.flush()
 
