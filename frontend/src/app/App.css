@@ -1,0 +1,68 @@
+.app-shell {
+  align-items: center;
+  display: grid;
+  gap: 48px;
+  grid-template-columns: minmax(0, 0.9fr) minmax(360px, 1fr);
+  min-height: 100vh;
+  padding: 56px;
+  position: relative;
+}
+
+.app-shell::before {
+  background:
+    linear-gradient(120deg, rgba(52, 96, 87, 0.18), transparent 36%),
+    linear-gradient(320deg, rgba(204, 92, 54, 0.18), transparent 34%),
+    radial-gradient(circle at 72% 18%, rgba(244, 196, 77, 0.2), transparent 28%);
+  content: '';
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: -1;
+}
+
+.app-shell__intro {
+  max-width: 620px;
+}
+
+.app-shell__mark {
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 800;
+  margin: 0 0 18px;
+}
+
+.app-shell__intro h1 {
+  color: var(--ink);
+  font-size: clamp(3rem, 7vw, 6.8rem);
+  line-height: 0.9;
+  margin: 0;
+  max-width: 11ch;
+}
+
+.app-shell__intro p:last-child {
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  margin: 28px 0 0;
+  max-width: 36rem;
+}
+
+@media (max-width: 920px) {
+  .app-shell {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+    padding: 34px;
+  }
+
+  .app-shell__intro h1 {
+    max-width: 12ch;
+  }
+}
+
+@media (max-width: 560px) {
+  .app-shell {
+    gap: 30px;
+    padding: 22px;
+  }
+}
+

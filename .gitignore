@@ -2,13 +2,19 @@
 __pycache__/
 *.pyc
 venv/
+.venv/
+.pytest_cache/
+.coverage
+htmlcov/
 
 # Node
 node_modules/
 dist/
+build/
 
 # Env
 .env
+.env.local
 
 # OS
 .DS_Store
@@ -17,3 +23,7 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Runtime artifacts
+*.log
+aim_dev.db

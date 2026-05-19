@@ -1,13 +1,28 @@
+:root {
+  --accent: #c94f2d;
+  --background: #f5f1e8;
+  --ink: #172328;
+  --muted: #64717a;
+  --surface: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.62), rgba(245, 241, 232, 0.88)),
+    var(--background);
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Aptos', 'Trebuchet MS', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+button,
+input,
+textarea,
+select {
+  font: inherit;
 }
