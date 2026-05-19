@@ -25,6 +25,7 @@ const scenarioOptions = [
 ];
 
 const staticDemoResult = {
+  data_source: 'mock_demo_data',
   student_profile: {
     student_id: 'AIM-DEMO-001',
     student_name: 'Maha Strong',
@@ -290,6 +291,7 @@ function AimDemo() {
     () => scenarioOptions.find((scenario) => scenario.id === selectedScenario)?.label || 'AIM scenario',
     [selectedScenario],
   );
+  const isRealPipeline = result.data_source === 'real_aim_pipeline';
 
   async function runDemo() {
     setIsLoading(true);
@@ -301,7 +303,7 @@ function AimDemo() {
       setResult(data);
       setStatus(`Rendered ${selectedScenarioLabel}`);
     } catch (requestError) {
-      setError(requestError.message);
+      setError(`Could not run AIM demo: ${requestError.message}`);
       setStatus('Backend demo endpoint unavailable');
     } finally {
       setIsLoading(false);
@@ -343,7 +345,12 @@ function AimDemo() {
           <p>AIM Visual Test</p>
           <h1>AIM adaptive pipeline dashboard</h1>
         </div>
-        <Badge tone={error ? 'red' : 'blue'}>{status}</Badge>
+        <div className="aim-demo-header__badges">
+          <Badge tone={isRealPipeline ? 'green' : 'amber'}>
+            {isRealPipeline ? 'Real AIM Pipeline' : 'Mock Demo Data'}
+          </Badge>
+          <Badge tone={error ? 'red' : isLoading ? 'amber' : 'blue'}>{status}</Badge>
+        </div>
       </header>
 
       <section className="aim-demo-runner" aria-label="Scenario selector">
@@ -379,7 +386,8 @@ function AimDemo() {
         <button className="aim-demo-run-button" type="button" onClick={runDemo} disabled={isLoading}>
           {isLoading ? 'Running...' : 'Run AIM Demo'}
         </button>
-        {error && <p className="aim-demo-error">{error}</p>}
+        {isLoading && <p className="aim-demo-notice">Running the real AIM pipeline for {selectedScenarioLabel}.</p>}
+        {error && <p className="aim-demo-error" role="alert">{error}</p>}
       </section>
 
       <section className="aim-demo-compare" aria-label="Before and after AIM">
@@ -570,6 +578,14 @@ const styles = `
   margin-bottom: 22px;
 }
 
+.aim-demo-header__badges {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
 .aim-demo-header p {
   color: #3f6f78;
   font-size: 0.78rem;
@@ -665,6 +681,13 @@ const styles = `
 
 .aim-demo-error {
   color: #b91c1c;
+  font-weight: 800;
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.aim-demo-notice {
+  color: #9a3412;
   font-weight: 800;
   grid-column: 1 / -1;
   margin: 0;
@@ -896,6 +919,11 @@ const styles = `
   .aim-demo-header {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .aim-demo-header__badges {
+    align-items: flex-start;
+    justify-content: flex-start;
   }
 
   .aim-demo-compare,
