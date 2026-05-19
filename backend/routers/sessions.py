@@ -15,6 +15,7 @@ from backend.models.question_attempt import (
 )
 from ai_core.performance_analyzer import AttemptRecord, PerformanceAnalyzer
 from backend.repositories.attempt_repository import SQLAttemptRepository   # concrete impl
+from backend.routers.goals import refresh_student_goals
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
@@ -101,6 +102,7 @@ def record_session_attempts(
             "retry_rate":        m.retry_rate,
             "hesitation_index":  m.hesitation_index,
         })
+        refresh_student_goals(db, student_id, current_skill_id=skill_id)
 
     return {
         "session_id":      session_id,

@@ -17,6 +17,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 from sqlalchemy import (
+    Boolean,
     JSON,
     Column,
     DateTime,
@@ -69,6 +70,10 @@ class StudentSkillStateORM(Base):
     attempts       = Column(Integer, nullable=False, default=0)
     avg_speed      = Column(Float,   nullable=False, default=0.0)   # seconds
     retention      = Column(Float,   nullable=False, default=100.0) # 0–100
+    hesitation_index = Column(Float, nullable=False, default=0.0)    # 0–1
+    retention_lambda = Column(Float, nullable=False, default=0.15)
+    review_due = Column(Boolean, nullable=False, default=False)
+    retention_history = Column(JSON, nullable=False, default=list)
 
     # ── Weakness & frustration ─────────────────
     weakness_score    = Column(Float,  nullable=False, default=0.0)  # 0–100
@@ -125,6 +130,10 @@ class StudentSkillStateCreate(BaseModel):
     attempts:       int   = Field(0,     ge=0)
     avg_speed:      float = Field(0.0,   ge=0.0)
     retention:      float = Field(100.0, ge=0.0, le=100.0)
+    hesitation_index: float = Field(0.0, ge=0.0, le=1.0)
+    retention_lambda: float = Field(0.15, ge=0.0)
+    review_due: bool = False
+    retention_history: list[dict] = Field(default_factory=list)
 
     weakness_score:    float = Field(0.0, ge=0.0, le=100.0)
     frustration_score: float = Field(0.0, ge=0.0, le=100.0)   # ⭐
@@ -145,6 +154,10 @@ class StudentSkillStateUpdate(BaseModel):
     attempts:       Optional[int]   = Field(None, ge=0)
     avg_speed:      Optional[float] = Field(None, ge=0.0)
     retention:      Optional[float] = Field(None, ge=0.0, le=100.0)
+    hesitation_index: Optional[float] = Field(None, ge=0.0, le=1.0)
+    retention_lambda: Optional[float] = Field(None, ge=0.0)
+    review_due: Optional[bool] = None
+    retention_history: Optional[list[dict]] = None
 
     weakness_score:    Optional[float] = Field(None, ge=0.0, le=100.0)
     frustration_score: Optional[float] = Field(None, ge=0.0, le=100.0)  # ⭐
