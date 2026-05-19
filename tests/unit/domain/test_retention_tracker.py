@@ -24,6 +24,8 @@ class FakeRetentionRepo:
         self.states = {(s.student_id, s.skill_id): s for s in states}
         self.saved_retention: dict[tuple[int, str], tuple[float, bool]] = {}
         self.saved_lambda: dict[tuple[int, str], tuple[float, Sequence[dict]]] = {}
+        self.saved_progress: dict[tuple[int, str], dict] = {}
+        self.saved_schedules: dict[tuple[int, str], dict] = {}
 
     def get_skill_state(
         self,
@@ -58,6 +60,42 @@ class FakeRetentionRepo:
             retention_lambda,
             retention_history,
         )
+
+    def update_review_progress(
+        self,
+        student_id: int,
+        skill_id: str,
+        *,
+        retention: float,
+        retention_lambda: float,
+        retention_history: Sequence[dict],
+        last_reviewed_at: datetime,
+        is_due: bool,
+    ) -> None:
+        self.saved_progress[(student_id, skill_id)] = {
+            "retention": retention,
+            "retention_lambda": retention_lambda,
+            "retention_history": retention_history,
+            "last_reviewed_at": last_reviewed_at,
+            "is_due": is_due,
+        }
+
+    def upsert_schedule(
+        self,
+        student_id: int,
+        skill_id: str,
+        *,
+        due_at: datetime,
+        retention: float,
+        retention_lambda: float,
+        review_priority: float,
+    ) -> None:
+        self.saved_schedules[(student_id, skill_id)] = {
+            "due_at": due_at,
+            "retention": retention,
+            "retention_lambda": retention_lambda,
+            "review_priority": review_priority,
+        }
 
 
 def make_state(
@@ -172,6 +210,28 @@ class TestRetentionTracker:
 
         assert fitted == pytest.approx(0.2, abs=0.01)
         assert len(repo.saved_lambda[(1, state.skill_id)][1]) == 3
+
+    def test_update_after_session_updates_retention_and_schedules_review(self) -> None:
+        now = datetime(2026, 5, 19)
+        state = make_state(retention_lambda=0.1)
+        repo = FakeRetentionRepo([state])
+        tracker = RetentionTracker(repo, now=now)
+
+        result = tracker.update_after_session(1, state.skill_id, 90.0)
+
+        assert result.retention == 90.0
+        assert result.retention_lambda == 0.1
+        assert result.is_due is False
+        assert result.review_priority == 10.0
+        assert result.due_at > now
+        progress = repo.saved_progress[(1, state.skill_id)]
+        assert progress["retention"] == 90.0
+        assert progress["last_reviewed_at"] == now
+        assert progress["is_due"] is False
+        assert len(progress["retention_history"]) == 1
+        schedule = repo.saved_schedules[(1, state.skill_id)]
+        assert schedule["due_at"] == result.due_at
+        assert schedule["retention"] == 90.0
 
     def test_missing_skill_raises_key_error(self) -> None:
         repo = FakeRetentionRepo([])

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Protocol, Sequence
+from typing import Any, Protocol, Sequence
 
 from aim.domain.services.confidence_matrix import ConfidenceMatrix, ConfidenceState
 from aim.domain.services.contextual_memory import (
@@ -70,6 +70,7 @@ class RecommendationSkillState:
     retention: float = 100.0
     review_due: bool = False
     weakness_score: float = 0.0
+    frustration_score: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -80,6 +81,10 @@ class RecommendationContext:
     recent_attempts: Sequence[RecommendationAttempt]
     historical_avg_speed: float | None = None
     last_session_frustration_score: float | None = None
+    error_pattern_type: str | None = None
+    error_pattern_evidence: dict[str, Any] | None = None
+    error_pattern_treatment_recommendation: str | None = None
+    prerequisite_gaps: Sequence[str] = ()
     transfer_result: TransferScoreResult | None = None
 
 
@@ -90,6 +95,7 @@ class RecommendationResult:
     skill_id: str | None
     difficulty: int
     reason: str
+    inputs_snapshot: dict[str, Any]
 
 
 class RecommendationContextProvider(Protocol):
@@ -129,20 +135,49 @@ class RecommendationEngine:
         frustration_score = emotional.frustration_score
         if context.last_session_frustration_score is not None:
             frustration_score = max(frustration_score, context.last_session_frustration_score)
+        if current_state is not None:
+            frustration_score = max(frustration_score, current_state.frustration_score)
 
-        # 1. frustration_score > 0.70 -> EASY_WIN
-        if frustration_score > 0.70:
+        due = self._due_review_states(context)
+        error_pattern_type, error_treatment = self._error_pattern_decision(context)
+        prereq_gap = self._first_prerequisite_gap(context, current_skill_id)
+        difficulty_decision = None
+        if current_state is not None:
+            difficulty_decision = self._difficulty_adapter.decide(
+                mastery=current_state.mastery,
+                confidence=current_state.confidence,
+                consistency=current_state.consistency,
+                current_difficulty=current_state.current_difficulty,
+            )
+
+        # 1. frustration_score > 70 -> EASY_WIN
+        if frustration_score > 70.0:
             easy_skill = self._easy_win_skill(context)
+            target_skill_id = easy_skill.skill_id if easy_skill else current_skill_id
             return RecommendationResult(
                 student_id=student_id,
                 action_type=RecommendationActionType.EASY_WIN,
-                skill_id=easy_skill.skill_id if easy_skill else current_skill_id,
+                skill_id=target_skill_id,
                 difficulty=1,
-                reason="Frustration score is above 0.70. Start with an Easy Win.",
+                reason=(
+                    "Frustration score is above 70. Start with an Easy Win and "
+                    "encourage the student before returning to harder work."
+                ),
+                inputs_snapshot=self._inputs_snapshot(
+                    context,
+                    current_state=current_state,
+                    target_skill_id=target_skill_id,
+                    frustration_score=frustration_score,
+                    error_pattern_type=error_pattern_type,
+                    prerequisite_gap=prereq_gap,
+                    difficulty_score=difficulty_decision.score
+                    if difficulty_decision is not None
+                    else None,
+                    due_review_skill_ids=[state.skill_id for state in due],
+                ),
             )
 
         # 2. skills_due_for_review exists -> REVIEW
-        due = self._due_review_states(context)
         if due:
             target = due[0]
             return RecommendationResult(
@@ -151,38 +186,84 @@ class RecommendationEngine:
                 skill_id=target.skill_id,
                 difficulty=max(1, min(5, target.current_difficulty)),
                 reason="Retention is below 70%, so this skill is due for review.",
+                inputs_snapshot=self._inputs_snapshot(
+                    context,
+                    current_state=current_state,
+                    target_skill_id=target.skill_id,
+                    frustration_score=frustration_score,
+                    error_pattern_type=error_pattern_type,
+                    prerequisite_gap=prereq_gap,
+                    difficulty_score=difficulty_decision.score
+                    if difficulty_decision is not None
+                    else None,
+                    due_review_skill_ids=[state.skill_id for state in due],
+                ),
             )
 
-        error_pattern = self._error_pattern(context)
-
-        # 3. error_type == TYPE_1_RANDOM -> RETEACH_CONCEPT
-        if error_pattern.pattern_type == ErrorPatternType.TYPE_1_RANDOM:
+        # 3. error_type == guessing/misunderstood_concept -> RETEACH_CONCEPT
+        if error_pattern_type in {"guessing", "misunderstood_concept"}:
             return RecommendationResult(
                 student_id=student_id,
                 action_type=RecommendationActionType.RETEACH_CONCEPT,
                 skill_id=current_skill_id,
                 difficulty=1,
-                reason=error_pattern.treatment_recommendation,
+                reason=error_treatment,
+                inputs_snapshot=self._inputs_snapshot(
+                    context,
+                    current_state=current_state,
+                    target_skill_id=current_skill_id,
+                    frustration_score=frustration_score,
+                    error_pattern_type=error_pattern_type,
+                    prerequisite_gap=prereq_gap,
+                    difficulty_score=difficulty_decision.score
+                    if difficulty_decision is not None
+                    else None,
+                    due_review_skill_ids=[],
+                ),
             )
 
-        # 4. error_type == TYPE_4_WARMUP -> WARM_UP
-        if error_pattern.pattern_type == ErrorPatternType.TYPE_4_WARMUP:
+        # 4. error_type == needs_warmup -> WARM_UP
+        if error_pattern_type == "needs_warmup":
             return RecommendationResult(
                 student_id=student_id,
                 action_type=RecommendationActionType.WARM_UP,
                 skill_id=current_skill_id,
                 difficulty=1,
-                reason=error_pattern.treatment_recommendation,
+                reason=error_treatment,
+                inputs_snapshot=self._inputs_snapshot(
+                    context,
+                    current_state=current_state,
+                    target_skill_id=current_skill_id,
+                    frustration_score=frustration_score,
+                    error_pattern_type=error_pattern_type,
+                    prerequisite_gap=prereq_gap,
+                    difficulty_score=difficulty_decision.score
+                    if difficulty_decision is not None
+                    else None,
+                    due_review_skill_ids=[],
+                ),
             )
 
-        # 5. error_type == TYPE_3_PRESSURE -> TIMED_PRACTICE
-        if error_pattern.pattern_type == ErrorPatternType.TYPE_3_PRESSURE:
+        # 5. error_type == rushing -> TIMED_PRACTICE
+        if error_pattern_type == "rushing":
             return RecommendationResult(
                 student_id=student_id,
                 action_type=RecommendationActionType.TIMED_PRACTICE,
                 skill_id=current_skill_id,
                 difficulty=current_difficulty,
-                reason=error_pattern.treatment_recommendation,
+                reason=error_treatment,
+                inputs_snapshot=self._inputs_snapshot(
+                    context,
+                    current_state=current_state,
+                    target_skill_id=current_skill_id,
+                    frustration_score=frustration_score,
+                    error_pattern_type=error_pattern_type,
+                    prerequisite_gap=prereq_gap,
+                    difficulty_score=difficulty_decision.score
+                    if difficulty_decision is not None
+                    else None,
+                    due_review_skill_ids=[],
+                ),
             )
 
         # 6. confidence_state == OVERCONFIDENT -> CONFIDENCE_BUILDER
@@ -198,28 +279,48 @@ class RecommendationEngine:
                     skill_id=current_state.skill_id,
                     difficulty=max(1, current_state.current_difficulty - 1),
                     reason="Student is overconfident: high confidence with low mastery.",
+                    inputs_snapshot=self._inputs_snapshot(
+                        context,
+                        current_state=current_state,
+                        target_skill_id=current_state.skill_id,
+                        frustration_score=frustration_score,
+                        error_pattern_type=error_pattern_type,
+                        prerequisite_gap=prereq_gap,
+                        difficulty_score=difficulty_decision.score
+                        if difficulty_decision is not None
+                        else None,
+                        due_review_skill_ids=[],
+                    ),
                 )
 
         # 7. prerequisite_gaps exist -> FILL_PREREQUISITE_GAP
-        prereq_gap = self._first_prerequisite_gap(context, current_skill_id)
         if prereq_gap is not None:
             return RecommendationResult(
                 student_id=student_id,
                 action_type=RecommendationActionType.FILL_PREREQUISITE_GAP,
                 skill_id=prereq_gap,
                 difficulty=1,
-                reason=f"Prerequisite gap detected before continuing {current_skill_id}.",
+                reason=(
+                    f"Fill gaps first: prerequisite gap detected before continuing "
+                    f"{current_skill_id}."
+                ),
+                inputs_snapshot=self._inputs_snapshot(
+                    context,
+                    current_state=current_state,
+                    target_skill_id=prereq_gap,
+                    frustration_score=frustration_score,
+                    error_pattern_type=error_pattern_type,
+                    prerequisite_gap=prereq_gap,
+                    difficulty_score=difficulty_decision.score
+                    if difficulty_decision is not None
+                    else None,
+                    due_review_skill_ids=[],
+                ),
             )
 
         # 8. difficulty_score > 80 -> CHALLENGE
-        if current_state is not None:
-            decision = self._difficulty_adapter.decide(
-                mastery=current_state.mastery,
-                confidence=current_state.confidence,
-                consistency=current_state.consistency,
-                current_difficulty=current_state.current_difficulty,
-            )
-            if decision.score > 80.0:
+        if current_state is not None and difficulty_decision is not None:
+            if difficulty_decision.score > 80.0:
                 if (
                     context.transfer_result is not None
                     and context.transfer_result.category == TransferCategory.HIGH
@@ -228,18 +329,38 @@ class RecommendationEngine:
                         student_id=student_id,
                         action_type=RecommendationActionType.ACCELERATED,
                         skill_id=context.transfer_result.to_skill_id,
-                        difficulty=decision.target_difficulty,
+                        difficulty=difficulty_decision.target_difficulty,
                         reason=(
                             "High transfer learning detected. Accelerate the next "
                             "related skill and skip redundant exercises."
+                        ),
+                        inputs_snapshot=self._inputs_snapshot(
+                            context,
+                            current_state=current_state,
+                            target_skill_id=context.transfer_result.to_skill_id,
+                            frustration_score=frustration_score,
+                            error_pattern_type=error_pattern_type,
+                            prerequisite_gap=prereq_gap,
+                            difficulty_score=difficulty_decision.score,
+                            due_review_skill_ids=[],
                         ),
                     )
                 return RecommendationResult(
                     student_id=student_id,
                     action_type=RecommendationActionType.CHALLENGE,
                     skill_id=current_state.skill_id,
-                    difficulty=decision.target_difficulty,
+                    difficulty=difficulty_decision.target_difficulty,
                     reason="Difficulty score is above 80. Student is ready for a challenge.",
+                    inputs_snapshot=self._inputs_snapshot(
+                        context,
+                        current_state=current_state,
+                        target_skill_id=current_state.skill_id,
+                        frustration_score=frustration_score,
+                        error_pattern_type=error_pattern_type,
+                        prerequisite_gap=prereq_gap,
+                        difficulty_score=difficulty_decision.score,
+                        due_review_skill_ids=[],
+                    ),
                 )
 
         # 9. default -> continue current skill
@@ -250,6 +371,18 @@ class RecommendationEngine:
             skill_id=fallback_skill,
             difficulty=current_difficulty,
             reason="No higher-priority intervention is needed. Continue current skill.",
+            inputs_snapshot=self._inputs_snapshot(
+                context,
+                current_state=current_state,
+                target_skill_id=fallback_skill,
+                frustration_score=frustration_score,
+                error_pattern_type=error_pattern_type,
+                prerequisite_gap=prereq_gap,
+                difficulty_score=difficulty_decision.score
+                if difficulty_decision is not None
+                else None,
+                due_review_skill_ids=[],
+            ),
         )
 
     def _current_state(
@@ -296,6 +429,27 @@ class RecommendationEngine:
         ]
         return self._error_classifier.classify(attempts)
 
+    def _error_pattern_decision(
+        self,
+        context: RecommendationContext,
+    ) -> tuple[str, str]:
+        if context.error_pattern_type is not None:
+            return (
+                context.error_pattern_type,
+                context.error_pattern_treatment_recommendation
+                or "Use the saved error pattern to adapt the next practice.",
+            )
+
+        error_pattern = self._error_pattern(context)
+        architecture_type = {
+            ErrorPatternType.TYPE_1_RANDOM: "guessing",
+            ErrorPatternType.TYPE_2_CONSISTENT: "misunderstood_concept",
+            ErrorPatternType.TYPE_3_PRESSURE: "rushing",
+            ErrorPatternType.TYPE_4_WARMUP: "needs_warmup",
+            ErrorPatternType.NO_DOMINANT_PATTERN: "unknown",
+        }[error_pattern.pattern_type]
+        return architecture_type, error_pattern.treatment_recommendation
+
     def _due_review_states(
         self,
         context: RecommendationContext,
@@ -311,6 +465,8 @@ class RecommendationEngine:
         context: RecommendationContext,
         current_skill_id: str | None,
     ) -> str | None:
+        if context.prerequisite_gaps:
+            return context.prerequisite_gaps[0]
         if current_skill_id is None or current_skill_id not in self._skill_graph:
             return None
 
@@ -334,7 +490,7 @@ class RecommendationEngine:
         ]
         self._contextual_memory.store_session_end(
             student_id=context.student_id,
-            last_session_frustration_score=1.0,
+            last_session_frustration_score=100.0,
             last_session_ending_mastery=0.0,
             last_skill_studied=context.current_skill_id or "",
         )
@@ -381,3 +537,34 @@ class RecommendationEngine:
             ],
             current_skill_id=context.current_skill_id,
         )
+
+    def _inputs_snapshot(
+        self,
+        context: RecommendationContext,
+        *,
+        current_state: RecommendationSkillState | None,
+        target_skill_id: str | None,
+        frustration_score: float,
+        error_pattern_type: str,
+        prerequisite_gap: str | None,
+        difficulty_score: float | None,
+        due_review_skill_ids: Sequence[str],
+    ) -> dict[str, Any]:
+        return {
+            "student_id": context.student_id,
+            "current_skill_id": context.current_skill_id,
+            "target_skill_id": target_skill_id,
+            "mastery": current_state.mastery if current_state else None,
+            "weakness_score": current_state.weakness_score if current_state else None,
+            "retention": current_state.retention if current_state else None,
+            "frustration_score": round(frustration_score, 2),
+            "error_pattern_type": error_pattern_type,
+            "current_difficulty": (
+                current_state.current_difficulty if current_state else None
+            ),
+            "consistency": current_state.consistency if current_state else None,
+            "difficulty_score": difficulty_score,
+            "missing_prerequisites": [prerequisite_gap] if prerequisite_gap else [],
+            "due_review_skill_ids": list(due_review_skill_ids),
+            "recent_attempt_count": len(context.recent_attempts),
+        }

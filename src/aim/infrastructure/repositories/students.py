@@ -50,3 +50,33 @@ class SQLStudentRepository:
     def refresh_skill_state(self, state: StudentSkillStateORM) -> None:
         self._db.refresh(state)
 
+    def update_frustration_score(
+        self,
+        student_id: int,
+        skill_id: str,
+        frustration_score: float,
+    ) -> None:
+        state = self.get_skill_state(student_id, skill_id)
+        if state is None:
+            state = StudentSkillStateORM(student_id=student_id, skill_id=skill_id)
+            self._db.add(state)
+
+        state.frustration_score = frustration_score
+        self._db.flush()
+
+    def update_difficulty_state(
+        self,
+        student_id: int,
+        skill_id: str,
+        *,
+        consistency: float,
+        current_difficulty: int,
+    ) -> None:
+        state = self.get_skill_state(student_id, skill_id)
+        if state is None:
+            state = StudentSkillStateORM(student_id=student_id, skill_id=skill_id)
+            self._db.add(state)
+
+        state.consistency = consistency
+        state.current_difficulty = current_difficulty
+        self._db.flush()

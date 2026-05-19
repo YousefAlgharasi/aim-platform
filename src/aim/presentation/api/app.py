@@ -5,10 +5,18 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from aim.infrastructure.config import get_settings
 from aim.infrastructure.database.session import create_database_schema, engine
-from aim.presentation.api.routers import goals, recommendations, reviews, sessions, student_state
+from aim.presentation.api.routers import (
+    dev_aim_demo,
+    goals,
+    recommendations,
+    reviews,
+    sessions,
+    student_state,
+)
 
 
 @asynccontextmanager
@@ -26,12 +34,23 @@ def create_app() -> FastAPI:
         version=settings.api_version,
         lifespan=lifespan,
     )
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+        ],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     app.include_router(student_state.router)
     app.include_router(sessions.router)
     app.include_router(goals.router)
     app.include_router(reviews.router)
     app.include_router(recommendations.router)
+    app.include_router(dev_aim_demo.router)
 
     @app.get("/health", tags=["health"])
     def health_check() -> dict[str, str]:

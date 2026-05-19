@@ -60,7 +60,7 @@ class InMemoryContextualMemoryStore:
 
 
 class ContextualMemory:
-    HIGH_FRUSTRATION_THRESHOLD = 0.70
+    HIGH_FRUSTRATION_THRESHOLD = 70.0
     HIGH_MASTERY_THRESHOLD = 70.0
 
     def __init__(self, store: ContextualMemoryStore | None = None) -> None:

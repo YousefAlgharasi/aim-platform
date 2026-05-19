@@ -19,7 +19,7 @@ class TestContextualMemory:
     def test_store_session_end_frustrated(self) -> None:
         stored = self.memory.store_session_end(
             student_id=1,
-            last_session_frustration_score=1.0,
+            last_session_frustration_score=100.0,
             last_session_ending_mastery=40.0,
             last_skill_studied="GRAMMAR_PASSIVE_VOICE",
         )
@@ -50,7 +50,7 @@ class TestContextualMemory:
     def test_frustrated_student_gets_easy_win_on_highest_mastery_skill(self) -> None:
         self.memory.store_session_end(
             student_id=1,
-            last_session_frustration_score=0.9,
+            last_session_frustration_score=90.0,
             last_session_ending_mastery=30.0,
             last_skill_studied="GRAMMAR_PASSIVE_VOICE",
         )
@@ -69,10 +69,10 @@ class TestContextualMemory:
         assert rec.skill_id == "GRAMMAR_TO_BE"
         assert rec.last_skill_studied == "GRAMMAR_PASSIVE_VOICE"
 
-    def test_frustration_boundary_at_0_70_does_not_trigger_easy_win(self) -> None:
+    def test_frustration_boundary_at_70_does_not_trigger_easy_win(self) -> None:
         self.memory.store_session_end(
             student_id=1,
-            last_session_frustration_score=0.70,
+            last_session_frustration_score=70.0,
             last_session_ending_mastery=50.0,
             last_skill_studied="GRAMMAR_CONDITIONALS",
         )
@@ -88,7 +88,7 @@ class TestContextualMemory:
     def test_frustrated_student_without_high_mastery_skill_gets_standard_start(self) -> None:
         self.memory.store_session_end(
             student_id=1,
-            last_session_frustration_score=0.95,
+            last_session_frustration_score=95.0,
             last_session_ending_mastery=25.0,
             last_skill_studied="GRAMMAR_CONDITIONALS",
         )

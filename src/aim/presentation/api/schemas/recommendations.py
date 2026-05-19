@@ -25,6 +25,7 @@ class RecommendationRead(BaseModel):
     skill_id: str | None
     difficulty: int
     reason: str
+    inputs_snapshot: dict
     was_followed: bool | None
     mastery_before: float | None
     mastery_after: float | None

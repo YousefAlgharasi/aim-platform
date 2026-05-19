@@ -32,6 +32,16 @@ This system contains:
 See:
 /docs/AIM_Complete_Architecture_EN.docx
 
+## AIM Visual Demo
+
+Open the development AIM visual dashboard at:
+
+```txt
+http://localhost:3000/aim-demo
+```
+
+See `docs/AIM_VISUAL_DEMO.md` for backend/frontend run commands and expected scenario results.
+
 ## Development Workflow
 
 - Every task starts as a GitHub Issue
