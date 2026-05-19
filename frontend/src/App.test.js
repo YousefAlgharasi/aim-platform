@@ -18,6 +18,7 @@ test('renders the AIM visual demo dashboard', () => {
     }),
   ).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /run aim demo/i })).toBeInTheDocument();
+  expect(screen.getByText(/mock demo data/i)).toBeInTheDocument();
   expect(screen.getByRole('heading', { name: 'Student Profile' })).toBeInTheDocument();
   expect(screen.getByRole('heading', { name: 'Submitted Attempts' })).toBeInTheDocument();
   expect(screen.getByRole('heading', { name: 'Prompt Adaptation Instruction' })).toBeInTheDocument();
