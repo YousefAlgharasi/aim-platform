@@ -152,7 +152,7 @@ class ContextualMemory:
         ending_mastery: float,
     ) -> EmotionalState:
         if frustration_score > self.HIGH_FRUSTRATION_THRESHOLD:
-            return EmotionalState.FRUSTRATED
+            return EmotionalState.POSSIBLE_LEARNING_OVERLOAD
         if frustration_score == 0.0 and ending_mastery >= self.HIGH_MASTERY_THRESHOLD:
-            return EmotionalState.CONFIDENT
-        return EmotionalState.NEUTRAL
+            return EmotionalState.HESITATION_SIGNAL
+        return EmotionalState.LOW_CONFIDENCE_SIGNAL

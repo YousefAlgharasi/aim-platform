@@ -47,9 +47,9 @@ def test_strong_student_uses_real_mastery_and_difficulty_outputs() -> None:
     assert data["mastery_update"]["mastery_after"] >= 80.0
     assert data["difficulty_adaptation"]["decision"] in {"increase", "maintain"}
     assert data["recommendation"]["raw_action_type"] in {
-        "CHALLENGE",
-        "CONTINUE_CURRENT_SKILL",
-        "ACCELERATED",
+        "increase_difficulty",
+        "continue_current_skill",
+        "mixed_practice",
     }
 
 
@@ -67,7 +67,7 @@ def test_frustrated_student_returns_real_high_frustration_and_support() -> None:
 
     assert data["emotional_state"]["frustration_score"] > 70.0
     assert data["difficulty_adaptation"]["decision"] == "decrease"
-    assert data["recommendation"]["raw_action_type"] == "EASY_WIN"
+    assert data["recommendation"]["raw_action_type"] == "easy_win"
     assert data["prompt_adaptation_instruction"]["tone"] == "warm and encouraging"
 
 

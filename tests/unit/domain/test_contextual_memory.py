@@ -16,7 +16,7 @@ class TestContextualMemory:
     def setup_method(self) -> None:
         self.memory = ContextualMemory()
 
-    def test_store_session_end_frustrated(self) -> None:
+    def test_store_session_end_overload_signal(self) -> None:
         stored = self.memory.store_session_end(
             student_id=1,
             last_session_frustration_score=100.0,
@@ -24,10 +24,10 @@ class TestContextualMemory:
             last_skill_studied="GRAMMAR_PASSIVE_VOICE",
         )
 
-        assert stored.ending_state == EmotionalState.FRUSTRATED
+        assert stored.ending_state == EmotionalState.POSSIBLE_LEARNING_OVERLOAD
         assert self.memory.get_last_session(1) == stored
 
-    def test_store_session_end_confident(self) -> None:
+    def test_store_session_end_high_mastery_uses_safe_signal(self) -> None:
         stored = self.memory.store_session_end(
             student_id=1,
             last_session_frustration_score=0.0,
@@ -35,7 +35,7 @@ class TestContextualMemory:
             last_skill_studied="VOCAB_DAILY",
         )
 
-        assert stored.ending_state == EmotionalState.CONFIDENT
+        assert stored.ending_state == EmotionalState.HESITATION_SIGNAL
 
     def test_new_student_gets_standard_start(self) -> None:
         rec = self.memory.get_session_start_recommendation(

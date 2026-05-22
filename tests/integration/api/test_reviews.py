@@ -4,7 +4,7 @@ T-08 tests for due review endpoint and retention job.
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from fastapi import FastAPI
@@ -34,7 +34,7 @@ TestingSessionLocal = sessionmaker(
 
 
 def utc_now_naive() -> datetime:
-    return datetime.now(UTC).replace(tzinfo=None)
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 def override_get_db():

@@ -80,3 +80,24 @@ class SQLStudentRepository:
         state.consistency = consistency
         state.current_difficulty = current_difficulty
         self._db.flush()
+
+    def update_learning_state(
+        self,
+        student_id: int,
+        skill_id: str,
+        *,
+        reliability: float,
+        hint_usage_rate: float,
+        skip_rate: float,
+        learning_response_pattern: str | None,
+    ) -> None:
+        state = self.get_skill_state(student_id, skill_id)
+        if state is None:
+            state = StudentSkillStateORM(student_id=student_id, skill_id=skill_id)
+            self._db.add(state)
+
+        state.reliability = reliability
+        state.hint_usage_rate = hint_usage_rate
+        state.skip_rate = skip_rate
+        state.learning_response_pattern = learning_response_pattern
+        self._db.flush()

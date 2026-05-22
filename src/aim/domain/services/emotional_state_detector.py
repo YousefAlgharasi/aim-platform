@@ -1,55 +1,66 @@
-"""
-T-09: Emotional State Detection Engine
-
-Detects frustration from student behavior without asking the student directly.
-All flags are binary and the final score is in the 0-100 range.
-"""
+"""Safe educational behavior signal detection for AIM."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
-from typing import Sequence
+from typing import Literal, Sequence
+
+ConfidenceLevel = Literal["low", "medium", "high"]
 
 
+# Safe behavior signal labels.
 class EmotionalState(str, Enum):
-    CONFIDENT = "CONFIDENT"
-    NEUTRAL = "NEUTRAL"
-    FRUSTRATED = "FRUSTRATED"
+    """Backward-compatible enum name with safe educational labels."""
+
+    POSSIBLE_LEARNING_OVERLOAD = "possible_learning_overload"
+    HESITATION_SIGNAL = "hesitation_signal"
+    RUSHING_SIGNAL = "rushing_signal"
+    FATIGUE_OR_DISTRACTION_SIGNAL = "fatigue_or_distraction_signal"
+    LOW_CONFIDENCE_SIGNAL = "low_confidence_signal"
+    DISENGAGEMENT_SIGNAL = "disengagement_signal"
 
 
+# Attempt facts used for safe signal detection.
 @dataclass(frozen=True)
 class EmotionalAttempt:
+    """Attempt behavior snapshot used without medical or clinical diagnosis."""
+
     question_id: str
     is_correct: bool
     response_time: float
     previously_correct: bool = False
     skip: bool = False
+    hint_used: bool = False
+    attempts: int = 1
 
 
+# Safe behavior detection result.
 @dataclass(frozen=True)
 class EmotionalStateResult:
+    """Safe educational behavior signal result."""
+
     frustration_score: float
     state: EmotionalState
-    repeated_errors: bool
-    sudden_slowdown: bool
-    early_exit: bool
-    easy_win_mode: bool
-    attempts_analyzed: int
+    emotional_signal: str
+    confidence_level: ConfidenceLevel
+    evidence: dict[str, float | int | bool | str] = field(default_factory=dict)
+    repeated_errors: bool = False
+    sudden_slowdown: bool = False
+    early_exit: bool = False
+    rushing: bool = False
+    fatigue_or_distraction: bool = False
+    easy_win_mode: bool = False
+    attempts_analyzed: int = 0
 
 
+# Safe educational detector.
 class EmotionalStateDetector:
-    """
-    FrustrationScore = repeated_errors_flag * 40
-                     + sudden_slowdown_flag * 30
-                     + early_exit_flag * 30
-
-    HIGH frustration is score > 70.
-    """
+    """Detects behavior signals safely without clinical labels or diagnoses."""
 
     MIN_SESSION_QUESTIONS = 10
     SLOWDOWN_MULTIPLIER = 1.5
-    HIGH_FRUSTRATION_THRESHOLD = 70.0
+    HIGH_FRUSTRATION_THRESHOLD = 75.0
     REPEATED_ERROR_STREAK = 4
 
     def detect(
@@ -59,35 +70,54 @@ class EmotionalStateDetector:
         historical_avg_speed: float | None = None,
     ) -> EmotionalStateResult:
         non_skipped = [attempt for attempt in attempts if not attempt.skip]
-
         repeated_errors = self.has_repeated_errors(non_skipped)
         sudden_slowdown = self.has_sudden_slowdown(
             non_skipped,
             historical_avg_speed=historical_avg_speed,
         )
         early_exit = len(non_skipped) < self.MIN_SESSION_QUESTIONS
+        rushing = self.has_rushing_signal(
+            non_skipped,
+            historical_avg_speed=historical_avg_speed,
+        )
+        fatigue_or_distraction = sudden_slowdown and self._accuracy(non_skipped) < 70.0
 
-        score = round(
+        # Response time contributes only to safe behavior signals, never mastery.
+        score = round(min(100.0,
             (40.0 if repeated_errors else 0.0)
             + (30.0 if sudden_slowdown else 0.0)
-            + (30.0 if early_exit else 0.0),
-            2,
+            + (30.0 if early_exit else 0.0)
+            + (15.0 if fatigue_or_distraction else 0.0),
+        ), 2)
+        signal = self._signal(
+            score=score,
+            repeated_errors=repeated_errors,
+            rushing=rushing,
+            fatigue_or_distraction=fatigue_or_distraction,
+            early_exit=early_exit,
         )
-
-        if score > self.HIGH_FRUSTRATION_THRESHOLD:
-            state = EmotionalState.FRUSTRATED
-        elif score == 0.0 and self._accuracy(non_skipped) >= 80.0:
-            state = EmotionalState.CONFIDENT
-        else:
-            state = EmotionalState.NEUTRAL
+        confidence_level = self._confidence_level(non_skipped, score)
 
         return EmotionalStateResult(
             frustration_score=score,
-            state=state,
+            state=EmotionalState(signal),
+            emotional_signal=signal,
+            confidence_level=confidence_level,
+            evidence={
+                "repeated_errors": repeated_errors,
+                "sudden_slowdown": sudden_slowdown,
+                "early_exit": early_exit,
+                "rushing": rushing,
+                "fatigue_or_distraction": fatigue_or_distraction,
+                "accuracy": round(self._accuracy(non_skipped), 2),
+                "attempts_analyzed": len(non_skipped),
+            },
             repeated_errors=repeated_errors,
             sudden_slowdown=sudden_slowdown,
             early_exit=early_exit,
-            easy_win_mode=state == EmotionalState.FRUSTRATED,
+            rushing=rushing,
+            fatigue_or_distraction=fatigue_or_distraction,
+            easy_win_mode=score >= self.HIGH_FRUSTRATION_THRESHOLD,
             attempts_analyzed=len(non_skipped),
         )
 
@@ -111,8 +141,23 @@ class EmotionalStateDetector:
         if not attempts or historical_avg_speed is None or historical_avg_speed <= 0:
             return False
 
-        current_avg = sum(a.response_time for a in attempts) / len(attempts)
+        current_avg = sum(attempt.response_time for attempt in attempts) / len(attempts)
         return current_avg > (historical_avg_speed * self.SLOWDOWN_MULTIPLIER)
+
+    def has_rushing_signal(
+        self,
+        attempts: Sequence[EmotionalAttempt],
+        *,
+        historical_avg_speed: float | None,
+    ) -> bool:
+        if not attempts:
+            return False
+
+        accuracy = self._accuracy(attempts)
+        current_avg = sum(attempt.response_time for attempt in attempts) / len(attempts)
+        if historical_avg_speed is None or historical_avg_speed <= 0:
+            return accuracy < 60.0 and current_avg <= 5.0
+        return accuracy < 70.0 and current_avg < historical_avg_speed * 0.50
 
     @staticmethod
     def _accuracy(attempts: Sequence[EmotionalAttempt]) -> float:
@@ -120,3 +165,37 @@ class EmotionalStateDetector:
             return 0.0
         correct = sum(1 for attempt in attempts if attempt.is_correct)
         return (correct / len(attempts)) * 100.0
+
+    @staticmethod
+    def _signal(
+        *,
+        score: float,
+        repeated_errors: bool,
+        rushing: bool,
+        fatigue_or_distraction: bool,
+        early_exit: bool,
+    ) -> str:
+        if score >= EmotionalStateDetector.HIGH_FRUSTRATION_THRESHOLD:
+            return EmotionalState.POSSIBLE_LEARNING_OVERLOAD.value
+        if rushing:
+            return EmotionalState.RUSHING_SIGNAL.value
+        if fatigue_or_distraction:
+            return EmotionalState.FATIGUE_OR_DISTRACTION_SIGNAL.value
+        if repeated_errors:
+            return EmotionalState.LOW_CONFIDENCE_SIGNAL.value
+        if early_exit:
+            return EmotionalState.DISENGAGEMENT_SIGNAL.value
+        return EmotionalState.HESITATION_SIGNAL.value
+
+    @staticmethod
+    def _confidence_level(
+        attempts: Sequence[EmotionalAttempt],
+        score: float,
+    ) -> ConfidenceLevel:
+        if len(attempts) < 4:
+            return "low"
+        if score >= EmotionalStateDetector.HIGH_FRUSTRATION_THRESHOLD:
+            return "high"
+        if len(attempts) >= 10:
+            return "medium"
+        return "low"

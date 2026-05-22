@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from aim.application.errors import NotFoundError
 from aim.domain.services.retention_tracker import RetentionTracker
@@ -17,7 +17,7 @@ class ReviewUseCases:
         if self._uow.students.get_student(student_id) is None:
             raise NotFoundError(f"Student {student_id} not found.")
 
-        now = datetime.now(UTC).replace(tzinfo=None)
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         tracker = RetentionTracker(self._uow.retention, now=now)
         due = tracker.get_skills_due_for_review(student_id)
         self._uow.commit()

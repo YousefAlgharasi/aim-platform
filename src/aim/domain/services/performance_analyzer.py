@@ -1,57 +1,34 @@
-"""
-T-04: Performance Analysis Engine
-────────────────────────────────────────────────────────────────────────────────
-Pure algorithm logic — no web framework imports.
-Reads from the DB via injected session; never hard-codes student data.
-
-Metrics produced:
-  1. Accuracy          = correct / total × 100
-  2. Average Speed     = sum(response_times) / count
-  3. Retry Rate        = total_retries / total_questions
-  4. Hesitation Index  = questions where time > 2× avg_time / total  ⭐ new metric
-────────────────────────────────────────────────────────────────────────────────
-"""
+"""Performance and behavior analysis for AIM question attempts."""
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import Protocol, Sequence
 
 
-# ──────────────────────────────────────────────
-# Lightweight data transfer object
-# (mirrors QuestionAttemptORM without the ORM dependency)
-# ──────────────────────────────────────────────
-
 @dataclass(frozen=True)
 class AttemptRecord:
-    """
-    Immutable snapshot of one question attempt.
-    The FastAPI layer converts ORM rows → AttemptRecord before calling this module.
-    """
-    student_id:       int
-    skill_id:         str
-    question_id:      str
-    session_id:       str
+    """Immutable snapshot of one question attempt without ORM dependencies."""
 
-    is_correct:       bool
-    response_time:    float   # seconds
-    attempts:         int     # total tries before final answer
-    difficulty:       int     # 1–5
+    student_id: int
+    skill_id: str
+    question_id: str
+    session_id: str
+    is_correct: bool
+    response_time: float
+    attempts: int
+    difficulty: int
+    hint_used: bool
+    skip: bool
+    answer_changed: bool
+    time_of_day: str
+    session_position: int
 
-    hint_used:        bool
-    skip:             bool
-    answer_changed:   bool    # ⭐
-    time_of_day:      str     # morning / afternoon / evening / night
-    session_position: int     # 1-based position in session
-
-
-# ──────────────────────────────────────────────
-# Repository protocol (Dependency Inversion)
-# The real impl lives in /backend; tests inject a fake.
-# ──────────────────────────────────────────────
 
 class AttemptRepository(Protocol):
+    """Persistence contract required by the pure performance analyzer."""
+
     def get_attempts(
         self,
         student_id: int,
@@ -69,139 +46,177 @@ class AttemptRepository(Protocol):
         accuracy: float,
         avg_speed: float,
         retry_rate: float,
+        hint_usage_rate: float,
+        skip_rate: float,
         hesitation_index: float,
+        difficulty_performance: float,
+        consistency: float,
     ) -> None: ...
 
 
-# ──────────────────────────────────────────────
-# Result dataclass
-# ──────────────────────────────────────────────
-
-@dataclass
+@dataclass(frozen=True)
 class PerformanceMetrics:
-    student_id:       int
-    skill_id:         str
-    accuracy:         float   # 0–100
-    avg_speed:        float   # seconds
-    retry_rate:       float   # 0–1
-    hesitation_index: float   # 0–1  ⭐
+    """Session and historical behavior metrics for a student-skill pair."""
 
+    student_id: int
+    skill_id: str
+    accuracy: float
+    avg_speed: float
+    retry_rate: float
+    hint_usage_rate: float
+    skip_rate: float
+    hesitation_index: float
+    difficulty_performance: float
+    consistency: float
 
-# ──────────────────────────────────────────────
-# Core Engine
-# ──────────────────────────────────────────────
 
 class PerformanceAnalyzer:
-    """
-    Records and analyses every question attempt for a student+skill pair.
+    """Records and analyzes attempts while keeping speed behavioral only."""
 
-    Usage:
-        analyzer = PerformanceAnalyzer(repo)
-        analyzer.record_attempt(attempt_record)
-        metrics  = analyzer.calculate_all_metrics(student_id, skill_id)
-    """
+    CONSISTENCY_WINDOW = 10
 
     def __init__(self, repo: AttemptRepository) -> None:
         self._repo = repo
-
-    # ── Write ──────────────────────────────────
 
     def record_attempt(self, attempt: AttemptRecord) -> None:
         """Persist a single attempt."""
         self._repo.save_attempts([attempt])
 
     def record_session_attempts(self, attempts: Sequence[AttemptRecord]) -> None:
-        """Persist all attempts from a session in one batch, then refresh state."""
+        """Persist a session and refresh stored behavior metrics per skill."""
         if not attempts:
             return
 
         self._repo.save_attempts(attempts)
 
-        # Refresh metrics in student_skill_states for every unique skill touched
-        skills_touched = {(a.student_id, a.skill_id) for a in attempts}
+        # Refresh metrics in student_skill_states for every unique skill touched.
+        skills_touched = {(attempt.student_id, attempt.skill_id) for attempt in attempts}
         for student_id, skill_id in skills_touched:
             metrics = self.calculate_all_metrics(student_id, skill_id)
-            self._repo.update_skill_state(
-                student_id,
-                skill_id,
-                accuracy=metrics.accuracy,
-                avg_speed=metrics.avg_speed,
-                retry_rate=metrics.retry_rate,
-                hesitation_index=metrics.hesitation_index,
-            )
-
-    # ── Read / Calculate ───────────────────────
+            update_values = {
+                "accuracy": metrics.accuracy,
+                "avg_speed": metrics.avg_speed,
+                "retry_rate": metrics.retry_rate,
+                "hint_usage_rate": metrics.hint_usage_rate,
+                "skip_rate": metrics.skip_rate,
+                "hesitation_index": metrics.hesitation_index,
+                "difficulty_performance": metrics.difficulty_performance,
+                "consistency": metrics.consistency,
+            }
+            try:
+                self._repo.update_skill_state(student_id, skill_id, **update_values)
+            except TypeError:
+                legacy_values = {
+                    key: update_values[key]
+                    for key in ("accuracy", "avg_speed", "retry_rate", "hesitation_index")
+                }
+                self._repo.update_skill_state(student_id, skill_id, **legacy_values)
 
     def calculate_accuracy(self, student_id: int, skill_id: str) -> float:
-        """
-        Accuracy = (Correct Answers / Total Answers) × 100
-        Returns 0.0 when there are no attempts.
-        """
-        attempts = self._repo.get_attempts(student_id, skill_id)
-        if not attempts:
-            return 0.0
-
-        non_skipped = [a for a in attempts if not a.skip]
+        """Calculate non-skipped correctness as a 0-100 percentage."""
+        non_skipped = self._non_skipped(student_id, skill_id)
         if not non_skipped:
             return 0.0
 
-        correct = sum(1 for a in non_skipped if a.is_correct)
-        return round((correct / len(non_skipped)) * 100, 2)
+        correct = sum(1 for attempt in non_skipped if attempt.is_correct)
+        return round((correct / len(non_skipped)) * 100.0, 2)
 
     def calculate_avg_speed(self, student_id: int, skill_id: str) -> float:
-        """
-        Average Response Time = Sum of response times / Total questions
-        Returns 0.0 when there are no attempts.
-        Skipped questions are excluded (no meaningful response time).
-        """
-        attempts = self._repo.get_attempts(student_id, skill_id)
-        non_skipped = [a for a in attempts if not a.skip]
+        """Calculate average response time as a behavior/session metric only."""
+        non_skipped = self._non_skipped(student_id, skill_id)
         if not non_skipped:
             return 0.0
 
-        total_time = sum(a.response_time for a in non_skipped)
+        total_time = sum(attempt.response_time for attempt in non_skipped)
         return round(total_time / len(non_skipped), 2)
 
     def calculate_retry_rate(self, student_id: int, skill_id: str) -> float:
-        """
-        Retry Rate = Total Retries / Total Questions
-        Retries = attempts - 1 per question (first try is not a retry).
-        Returns 0.0 when there are no attempts.
-        """
-        attempts = self._repo.get_attempts(student_id, skill_id)
-        non_skipped = [a for a in attempts if not a.skip]
+        """Calculate average retries per non-skipped attempt."""
+        non_skipped = self._non_skipped(student_id, skill_id)
         if not non_skipped:
             return 0.0
 
-        total_retries = sum(max(0, a.attempts - 1) for a in non_skipped)
-        return round(total_retries / len(non_skipped), 4)
+        retries = sum(max(0, attempt.attempts - 1) for attempt in non_skipped)
+        return round(retries / len(non_skipped), 4)
+
+    def calculate_hint_usage_rate(self, student_id: int, skill_id: str) -> float:
+        """Calculate hinted non-skipped attempts divided by non-skipped attempts."""
+        non_skipped = self._non_skipped(student_id, skill_id)
+        if not non_skipped:
+            return 0.0
+
+        hinted = sum(1 for attempt in non_skipped if attempt.hint_used)
+        return round(hinted / len(non_skipped), 4)
+
+    def calculate_skip_rate(self, student_id: int, skill_id: str) -> float:
+        """Calculate skipped attempts divided by all attempts."""
+        attempts = list(self._repo.get_attempts(student_id, skill_id))
+        if not attempts:
+            return 0.0
+
+        skipped = sum(1 for attempt in attempts if attempt.skip)
+        return round(skipped / len(attempts), 4)
 
     def calculate_hesitation_index(self, student_id: int, skill_id: str) -> float:
-        """
-        ⭐ Hesitation Index = Questions exceeding 2× avg response time / Total
-
-        A high index means the student frequently pauses much longer than
-        their own average — a signal of uncertainty or confusion.
-
-        Returns 0.0 when there are fewer than 2 non-skipped attempts.
-        """
-        attempts = self._repo.get_attempts(student_id, skill_id)
-        non_skipped = [a for a in attempts if not a.skip]
+        """Calculate unusually long answers as a behavior signal only."""
+        non_skipped = self._non_skipped(student_id, skill_id)
         if len(non_skipped) < 2:
             return 0.0
 
-        avg_time = sum(a.response_time for a in non_skipped) / len(non_skipped)
+        avg_time = sum(attempt.response_time for attempt in non_skipped) / len(non_skipped)
         threshold = avg_time * 2.0
-        hesitant_count = sum(1 for a in non_skipped if a.response_time > threshold)
-        return round(hesitant_count / len(non_skipped), 4)
+        hesitant = sum(1 for attempt in non_skipped if attempt.response_time > threshold)
+        return round(hesitant / len(non_skipped), 4)
+
+    def calculate_difficulty_performance(self, student_id: int, skill_id: str) -> float:
+        """Calculate difficulty-weighted correctness without using speed."""
+        non_skipped = self._non_skipped(student_id, skill_id)
+        if not non_skipped:
+            return 0.0
+
+        weighted_correct = sum(
+            attempt.difficulty for attempt in non_skipped if attempt.is_correct
+        )
+        max_possible = sum(attempt.difficulty for attempt in non_skipped)
+        if max_possible <= 0:
+            return 0.0
+
+        return round((weighted_correct / max_possible) * 100.0, 2)
+
+    def calculate_consistency(self, student_id: int, skill_id: str) -> float:
+        """Calculate correctness stability over the latest attempts."""
+        window = self._non_skipped(student_id, skill_id)[-self.CONSISTENCY_WINDOW :]
+        if len(window) < 2:
+            return 100.0
+
+        values = [1.0 if attempt.is_correct else 0.0 for attempt in window]
+        mean = sum(values) / len(values)
+        variance = sum((value - mean) ** 2 for value in values) / len(values)
+        normalized_std = math.sqrt(variance) * 200.0
+        return round(max(0.0, 100.0 - normalized_std), 2)
 
     def calculate_all_metrics(self, student_id: int, skill_id: str) -> PerformanceMetrics:
-        """Compute and return all four metrics in one call."""
+        """Compute all performance and behavior metrics in one call."""
         return PerformanceMetrics(
             student_id=student_id,
             skill_id=skill_id,
             accuracy=self.calculate_accuracy(student_id, skill_id),
             avg_speed=self.calculate_avg_speed(student_id, skill_id),
             retry_rate=self.calculate_retry_rate(student_id, skill_id),
+            hint_usage_rate=self.calculate_hint_usage_rate(student_id, skill_id),
+            skip_rate=self.calculate_skip_rate(student_id, skill_id),
             hesitation_index=self.calculate_hesitation_index(student_id, skill_id),
+            difficulty_performance=self.calculate_difficulty_performance(
+                student_id,
+                skill_id,
+            ),
+            consistency=self.calculate_consistency(student_id, skill_id),
         )
+
+    def _non_skipped(self, student_id: int, skill_id: str) -> list[AttemptRecord]:
+        """Return valid answer attempts for performance and mastery evidence."""
+        return [
+            attempt
+            for attempt in self._repo.get_attempts(student_id, skill_id)
+            if not attempt.skip
+        ]

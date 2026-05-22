@@ -38,6 +38,8 @@ class SQLRecommendationContextProvider:
                 review_due=state.review_due,
                 weakness_score=state.weakness_score,
                 frustration_score=state.frustration_score,
+                reliability=state.reliability,
+                learning_response_pattern=state.learning_response_pattern,
             )
             for state in states
         ]
@@ -64,6 +66,8 @@ class SQLRecommendationContextProvider:
                 session_position=row.session_position,
                 previously_correct=False,
                 skip=row.skip,
+                hint_used=row.hint_used,
+                attempts=row.attempts,
             )
             for row in reversed(rows)
         ]
@@ -179,6 +183,10 @@ class SQLRecommendationLogger:
             skill_id=result.skill_id,
             difficulty=result.difficulty,
             reason=result.reason,
+            evidence=dict(result.evidence),
+            confidence=result.confidence,
+            decision_priority=result.decision_priority,
+            fairness_risk_level=result.inputs_snapshot.get("fairness_risk_level", "low"),
             inputs_snapshot=dict(result.inputs_snapshot),
             mastery_before=mastery_before,
         )

@@ -74,6 +74,7 @@ def seed_student_for_challenge() -> int:
                 consistency=91.0,
                 current_difficulty=3,
                 retention=100.0,
+                reliability=0.9,
             )
         )
         db.commit()
@@ -93,7 +94,7 @@ class TestNextActionEndpoint:
 
         assert resp.status_code == 200, resp.text
         data = resp.json()
-        assert data["action_type"] == "CHALLENGE"
+        assert data["action_type"] == "increase_difficulty"
         assert data["skill_id"] == "GRAMMAR_VERB_FORMS"
         assert data["recommendation_id"] >= 1
 
@@ -102,7 +103,8 @@ class TestNextActionEndpoint:
             log = db.query(RecommendationLogORM).first()
             assert log is not None
             assert log.student_id == student_id
-            assert log.action_type == "CHALLENGE"
+            assert log.action_type == "increase_difficulty"
+            assert log.confidence == "high"
             assert log.mastery_before == 90.0
             assert log.inputs_snapshot["mastery"] == 90.0
             assert log.inputs_snapshot["current_difficulty"] == 3
@@ -149,7 +151,7 @@ class TestNextActionEndpoint:
 
         assert resp.status_code == 200, resp.text
         data = resp.json()
-        assert data["action_type"] == "TIMED_PRACTICE"
+        assert data["action_type"] == "reflection_practice"
         assert data["skill_id"] == "GRAMMAR_VERB_FORMS"
 
         db = TestingSessionLocal()
