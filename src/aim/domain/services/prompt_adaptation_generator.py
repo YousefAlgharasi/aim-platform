@@ -23,6 +23,8 @@ class PromptLearnerState:
 
 @dataclass(frozen=True)
 class PromptAdaptationResult:
+    """Tutor prompt adaptation generated from AIM V2 recommendations."""
+
     student_id: int
     lesson_id: str
     skill_id: str
@@ -33,6 +35,11 @@ class PromptAdaptationResult:
     avoid_patterns: list[str]
     micro_goal: str
     instruction_text: str
+
+    @property
+    def difficulty_instruction(self) -> str:
+        """V2 alias for the difficulty guidance text."""
+        return self.difficulty
 
 
 class PromptAdaptationGenerator:
@@ -61,42 +68,48 @@ class PromptAdaptationGenerator:
             difficulty = "easier"
             teaching_strategy = "short confidence-building practice"
             micro_goal = f"Help the student regain confidence on {target_skill}."
-        elif action == RecommendationActionType.REVIEW:
+        elif action == RecommendationActionType.SPACED_REVIEW:
             tone = "supportive"
             difficulty = "review"
             teaching_strategy = "spaced review with guided recall"
             micro_goal = f"Refresh retention for {target_skill}."
         elif action in {
-            RecommendationActionType.CHALLENGE,
-            RecommendationActionType.ACCELERATED,
+            RecommendationActionType.INCREASE_DIFFICULTY,
+            RecommendationActionType.MIXED_PRACTICE,
         }:
             tone = "confident and motivating"
             difficulty = "higher"
             teaching_strategy = "extension tasks with productive struggle"
             micro_goal = f"Stretch mastery of {target_skill} with harder practice."
-        elif action == RecommendationActionType.TIMED_PRACTICE:
+        elif action == RecommendationActionType.REFLECTION_PRACTICE:
             tone = "calm and coaching"
-            difficulty = "same difficulty with pacing support"
-            teaching_strategy = "paced timed practice"
-            micro_goal = f"Improve pacing on {target_skill} without rushing."
+            difficulty = "same difficulty with reflection support"
+            teaching_strategy = "paced timed practice with reflection"
+            micro_goal = f"Improve careful reasoning on {target_skill}."
         elif action in {
             RecommendationActionType.RETEACH_CONCEPT,
-            RecommendationActionType.FILL_PREREQUISITE_GAP,
+            RecommendationActionType.REVIEW_PREREQUISITE,
+            RecommendationActionType.TARGETED_PRACTICE,
         }:
             tone = "patient and step-by-step"
             difficulty = "foundational"
             teaching_strategy = "explicit explanation followed by guided examples"
             micro_goal = f"Repair the blocking concept for {target_skill}."
-        elif action == RecommendationActionType.WARM_UP:
+        elif action == RecommendationActionType.COLLECT_MORE_EVIDENCE:
             tone = "gentle and supportive"
-            difficulty = "easy warm-up"
-            teaching_strategy = "start with easy retrieval before assessment"
-            micro_goal = f"Warm up the student before continuing {target_skill}."
+            difficulty = "current"
+            teaching_strategy = "short diagnostic practice"
+            micro_goal = f"Collect reliable evidence for {target_skill}."
         elif action == RecommendationActionType.CONFIDENCE_BUILDER:
             tone = "steady and reflective"
             difficulty = "slightly easier"
             teaching_strategy = "confidence calibration with feedback"
             micro_goal = f"Align confidence with actual mastery on {target_skill}."
+        elif action == RecommendationActionType.TRIGGER_TUTOR_INTERVENTION:
+            tone = "calm and supportive"
+            difficulty = "easier"
+            teaching_strategy = "pause, reassure, and offer human support"
+            micro_goal = f"Reduce overload before continuing {target_skill}."
         else:
             tone = "neutral and supportive"
             difficulty = "current"
@@ -139,7 +152,7 @@ class PromptAdaptationGenerator:
             focus.append("high weakness score")
         if learner_state.error_pattern_type in {"guessing", "misunderstood_concept"}:
             focus.append(learner_state.error_pattern_type)
-        if action == RecommendationActionType.FILL_PREREQUISITE_GAP:
+        if action == RecommendationActionType.REVIEW_PREREQUISITE:
             focus.extend(learner_state.missing_prerequisites or [])
         return self._unique(focus)
 
@@ -151,7 +164,7 @@ class PromptAdaptationGenerator:
         avoid = []
         if action == RecommendationActionType.EASY_WIN:
             avoid.extend(["pressure", "long tasks"])
-        if action == RecommendationActionType.TIMED_PRACTICE:
+        if action == RecommendationActionType.REFLECTION_PRACTICE:
             avoid.extend(["speed-first wording", "punitive timing"])
         if learner_state.frustration_score is not None and learner_state.frustration_score > 70.0:
             avoid.append("discouraging feedback")

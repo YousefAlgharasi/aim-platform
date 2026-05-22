@@ -25,6 +25,15 @@ class SQLWeaknessRepository:
             weakness_score=weakness.weakness_score,
             error_frequency=weakness.error_frequency,
             difficulty_weight=weakness.difficulty_weight,
+            hint_usage_rate=weakness.hint_usage_rate,
+            retry_rate=weakness.retry_rate,
+            skip_rate=weakness.skip_rate,
+            hesitation_index=weakness.hesitation_index,
+            retention_drop=weakness.retention_drop,
+            prerequisite_gap_score=weakness.prerequisite_gap_score,
+            main_weaknesses=list(weakness.main_weaknesses),
+            weakness_evidence=dict(weakness.weakness_evidence),
+            severity=weakness.severity,
             repeated_mistakes=weakness.repeated_mistakes,
         )
         self._db.add(row)

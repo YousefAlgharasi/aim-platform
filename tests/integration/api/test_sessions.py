@@ -157,13 +157,21 @@ class TestRecordSessionAttempts:
         assert data["attempts_saved"] == 2
         assert data["metrics_updated"][0]["accuracy"] == 50.0
         assert data["performance_metrics"]["accuracy"] == 50.0
-        assert data["mastery_result"]["mastery"] == pytest.approx(47.0, abs=0.1)
-        assert data["weakness_result"]["weakness_score"] == pytest.approx(20.0)
+        assert data["mastery_result"]["mastery"] == pytest.approx(9.61, abs=0.1)
+        assert data["mastery_result"]["reliability"] == pytest.approx(0.2)
+        assert "speed_score" not in data["mastery_result"]
+        assert data["weakness_result"]["weakness_score"] == pytest.approx(12.5)
         assert data["error_pattern"]["pattern_type"] == "unknown"
         assert data["frustration_score"] == pytest.approx(30.0)
-        assert data["retention_result"]["retention"] == pytest.approx(47.0, abs=0.1)
+        assert data["retention_result"]["retention"] == pytest.approx(
+            data["mastery_result"]["mastery"],
+            abs=0.1,
+        )
         assert data["difficulty_decision"]["target_difficulty"] == 1
-        assert data["recommendation"]["action_type"] == "REVIEW"
+        assert data["recommendation"]["action_type"] in {
+            "spaced_review",
+            "collect_more_evidence",
+        }
         assert data["prompt_adaptation_instruction"]["lesson_id"] == "session-1"
         assert len(data["adaptive_results"]) == 1
         assert len(data["lesson_attempts"]) == 1
@@ -177,9 +185,9 @@ class TestRecordSessionAttempts:
             assert state is not None
             assert state.skill_id == "GRAMMAR_VERB_FORMS"
             assert state.mastery != data["metrics_updated"][0]["accuracy"]
-            assert state.mastery == pytest.approx(47.0, abs=0.1)
+            assert state.mastery == pytest.approx(9.61, abs=0.1)
             assert state.retry_rate == pytest.approx(0.0)
-            assert state.weakness_score == pytest.approx(20.0)
+            assert state.weakness_score == pytest.approx(12.5)
             assert state.frustration_score == pytest.approx(30.0)
             assert state.consistency == pytest.approx(0.0)
             assert state.current_difficulty == 1
@@ -192,14 +200,16 @@ class TestRecordSessionAttempts:
             assert history.skill_id == "GRAMMAR_VERB_FORMS"
             assert history.mastery == pytest.approx(state.mastery, abs=0.1)
             assert history.accuracy == 50.0
-            assert history.speed_score == pytest.approx(46.67, abs=0.1)
+            assert history.speed_score == 0.0
+            assert history.reliability == pytest.approx(0.2)
+            assert history.evidence_quality_score > 0.0
             assert history.consistency == 0.0
             assert history.retention == 100.0
             assert history.difficulty_performance == 50.0
             weakness = db.query(WeaknessRecordORM).one()
             assert weakness.student_id == student_id
             assert weakness.skill_id == "GRAMMAR_VERB_FORMS"
-            assert weakness.weakness_score == pytest.approx(20.0)
+            assert weakness.weakness_score == pytest.approx(12.5)
             assert weakness.error_frequency == pytest.approx(0.5)
             assert weakness.difficulty_weight == pytest.approx(40.0)
             assert weakness.repeated_mistakes == 1
@@ -218,7 +228,10 @@ class TestRecordSessionAttempts:
             assert schedule.due_at is not None
             recommendation = db.query(RecommendationLogORM).one()
             assert recommendation.student_id == student_id
-            assert recommendation.action_type == "REVIEW"
+            assert recommendation.action_type in {
+                "spaced_review",
+                "collect_more_evidence",
+            }
             assert recommendation.inputs_snapshot["retention"] == pytest.approx(
                 state.retention,
                 abs=0.1,
@@ -308,7 +321,7 @@ class TestRecordSessionAttempts:
 
         assert resp.status_code == 201, resp.text
         data = resp.json()
-        assert data["recommendation"]["action_type"] == "FILL_PREREQUISITE_GAP"
+        assert data["recommendation"]["action_type"] == "review_prerequisite"
         assert data["recommendation"]["skill_id"] == "GRAMMAR_TO_BE"
         assert data["prerequisite_gaps"][0]["missing_prerequisite_skill_id"] == "GRAMMAR_TO_BE"
 
@@ -321,7 +334,7 @@ class TestRecordSessionAttempts:
             assert gap.severity == pytest.approx(30.0)
             assert gap.status == "open"
             recommendation = db.query(RecommendationLogORM).one()
-            assert recommendation.action_type == "FILL_PREREQUISITE_GAP"
+            assert recommendation.action_type == "review_prerequisite"
             assert recommendation.inputs_snapshot["missing_prerequisites"] == [
                 "GRAMMAR_TO_BE"
             ]
@@ -359,7 +372,7 @@ class TestRecordSessionAttempts:
         finally:
             db.close()
 
-    def test_increases_difficulty_after_strong_session(self, client: TestClient) -> None:
+    def test_maintains_difficulty_until_mastery_gate_is_met(self, client: TestClient) -> None:
         student_id = seed_student_with_skill_state(
             mastery=70.0,
             avg_speed=8.0,
@@ -393,7 +406,7 @@ class TestRecordSessionAttempts:
                 .one()
             )
             assert state.consistency == pytest.approx(100.0)
-            assert state.current_difficulty == 3
+            assert state.current_difficulty == 2
         finally:
             db.close()
 

@@ -384,14 +384,18 @@ def _map_pipeline_result(
             "mastery_before": scenario.previous_mastery,
             "mastery_after": mastery_after,
             "formula_inputs": _formula_inputs(mastery),
-            "accuracy_contribution": _weighted(mastery["accuracy"], 0.35),
-            "speed_contribution": _weighted(mastery["speed_score"], 0.15),
+            "accuracy_contribution": _weighted(mastery["accuracy"], 0.40),
             "consistency_contribution": _weighted(mastery["consistency"], 0.20),
             "retention_contribution": _weighted(mastery["retention"], 0.15),
             "difficulty_performance_contribution": _weighted(
                 mastery["difficulty_performance"],
-                0.15,
+                0.20,
             ),
+            "evidence_quality_contribution": _weighted(
+                mastery["evidence_quality_score"],
+                0.05,
+            ),
+            "reliability": mastery["reliability"],
             "attempt_count": mastery["attempt_count"],
         },
         "weakness_detection": {
@@ -465,11 +469,11 @@ def _map_pipeline_result(
 
 def _formula_inputs(mastery: dict[str, Any]) -> str:
     return (
-        f"Accuracy {mastery['accuracy']} x 0.35 + "
-        f"Speed {mastery['speed_score']} x 0.15 + "
+        f"Accuracy {mastery['accuracy']} x 0.40 + "
         f"Consistency {mastery['consistency']} x 0.20 + "
         f"Retention {mastery['retention']} x 0.15 + "
-        f"Difficulty {mastery['difficulty_performance']} x 0.15"
+        f"Difficulty {mastery['difficulty_performance']} x 0.20 + "
+        f"Evidence {mastery['evidence_quality_score']} x 0.05"
     )
 
 

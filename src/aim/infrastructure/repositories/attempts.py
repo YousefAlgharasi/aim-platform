@@ -83,7 +83,11 @@ class SQLAttemptRepository:
         accuracy: float,
         avg_speed: float,
         retry_rate: float,
+        hint_usage_rate: float,
+        skip_rate: float,
         hesitation_index: float,
+        difficulty_performance: float,
+        consistency: float,
     ) -> None:
         state = (
             self._db.query(StudentSkillStateORM)
@@ -99,7 +103,10 @@ class SQLAttemptRepository:
 
         state.avg_speed = avg_speed
         state.retry_rate = retry_rate
+        state.hint_usage_rate = hint_usage_rate
+        state.skip_rate = skip_rate
         state.hesitation_index = hesitation_index
+        state.consistency = consistency
         self._db.flush()
 
     def get_skill_state(
@@ -117,7 +124,11 @@ class SQLAttemptRepository:
         )
         if state is None:
             return None
-        return SkillState(retention=state.retention, confidence=state.confidence)
+        return SkillState(
+            retention=state.retention,
+            confidence=state.confidence,
+            mastery=state.mastery,
+        )
 
     def update_mastery(
         self,

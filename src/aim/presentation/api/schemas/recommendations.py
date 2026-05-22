@@ -10,10 +10,15 @@ from pydantic import BaseModel, ConfigDict
 class NextActionRead(BaseModel):
     recommendation_id: int
     student_id: int
+    action: str
     action_type: str
+    target_skill_id: str | None
     skill_id: str | None
     difficulty: int
     reason: str
+    evidence: dict
+    confidence: str
+    inputs_snapshot: dict
 
 
 class RecommendationRead(BaseModel):
@@ -25,6 +30,10 @@ class RecommendationRead(BaseModel):
     skill_id: str | None
     difficulty: int
     reason: str
+    evidence: dict
+    confidence: str
+    decision_priority: str
+    fairness_risk_level: str
     inputs_snapshot: dict
     was_followed: bool | None
     mastery_before: float | None

@@ -5,6 +5,13 @@ from __future__ import annotations
 from sqlalchemy.orm import Session
 
 from aim.infrastructure.database.session import SessionLocal
+from aim.infrastructure.repositories.adaptive_logs import (
+    SQLExplanationLogRepository,
+    SQLFairnessAuditRepository,
+    SQLLearningResponsePatternRepository,
+    SQLOutcomeRecordRepository,
+    SQLQuestionQualityRepository,
+)
 from aim.infrastructure.repositories.attempts import SQLAttemptRepository
 from aim.infrastructure.repositories.error_patterns import SQLErrorPatternRepository
 from aim.infrastructure.repositories.goals import SQLGoalRepository
@@ -30,12 +37,19 @@ class SqlAlchemyUnitOfWork:
 
         self.students = SQLStudentRepository(self.session)
         self.attempts = SQLAttemptRepository(self.session)
+        self.explanation_logs = SQLExplanationLogRepository(self.session)
+        self.fairness_audits = SQLFairnessAuditRepository(self.session)
         self.error_patterns = SQLErrorPatternRepository(self.session)
         self.goals = SQLGoalRepository(self.session)
         self.learning_history = SQLLearningHistoryRepository(self.session)
         self.mastery_history = SQLMasteryHistoryRepository(self.session)
+        self.learning_response_patterns = SQLLearningResponsePatternRepository(
+            self.session
+        )
+        self.outcome_records = SQLOutcomeRecordRepository(self.session)
         self.prerequisite_gaps = SQLPrerequisiteGapRepository(self.session)
         self.prompt_adaptations = SQLPromptAdaptationRepository(self.session)
+        self.question_quality = SQLQuestionQualityRepository(self.session)
         self.retention = SQLRetentionRepository(self.session)
         self.recommendation_context = SQLRecommendationContextProvider(self.session)
         self.recommendation_logger = SQLRecommendationLogger(self.session)

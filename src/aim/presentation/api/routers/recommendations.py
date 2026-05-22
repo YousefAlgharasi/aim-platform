@@ -32,10 +32,15 @@ def get_next_action(student_id: int, db: Session = Depends(get_db)) -> NextActio
         return NextActionRead(
             recommendation_id=recommendation_id,
             student_id=result.student_id,
+            action=result.action,
             action_type=result.action_type.value,
+            target_skill_id=result.target_skill_id,
             skill_id=result.skill_id,
             difficulty=result.difficulty,
             reason=result.reason,
+            evidence=dict(result.evidence),
+            confidence=result.confidence,
+            inputs_snapshot=dict(result.inputs_snapshot),
         )
     except ApplicationError as exc:
         raise_http_error(exc)

@@ -16,6 +16,10 @@ class RecommendationLogORM(Base):
     skill_id = Column(String, nullable=True, index=True)
     difficulty = Column(Integer, nullable=False)
     reason = Column(String, nullable=False)
+    evidence = Column(JSON, nullable=False, default=dict)
+    confidence = Column(String, nullable=False, default="medium")
+    decision_priority = Column(String, nullable=False, default="continue_current_skill")
+    fairness_risk_level = Column(String, nullable=False, default="low")
     inputs_snapshot = Column(JSON, nullable=False, default=dict)
 
     was_followed = Column(Boolean, nullable=True)
