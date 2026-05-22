@@ -16,6 +16,7 @@ This system contains:
 /backend   -> API and server
 /frontend  -> React frontend
 /ai-core   -> AI algorithms and services
+/supabase  -> database migrations, seed data, and RLS policies
 ```
 
 ---

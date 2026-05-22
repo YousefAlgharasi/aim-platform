@@ -1,0 +1,3 @@
+-- AIM Platform Seed File
+-- This file is intentionally minimal for now.
+-- Add development/demo seed data after the database schema is finalized.
