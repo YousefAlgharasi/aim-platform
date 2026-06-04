@@ -40,7 +40,6 @@ class FakeStateRepo:
 def attempt(
     *,
     correct: bool = True,
-    response_time: float = 10.0,
     tries: int = 1,
     difficulty: int = 3,
     hint: bool = False,
@@ -48,7 +47,6 @@ def attempt(
 ) -> AttemptSnapshot:
     return AttemptSnapshot(
         is_correct=correct,
-        response_time=response_time,
         attempts=tries,
         difficulty=difficulty,
         skip=skip,
@@ -92,18 +90,14 @@ def test_invalid_weights_raise() -> None:
 
 
 def test_speed_is_not_used_in_mastery_calculation() -> None:
-    fast = [attempt(correct=True, response_time=1.0, difficulty=5) for _ in range(10)]
-    slow = [attempt(correct=True, response_time=120.0, difficulty=5) for _ in range(10)]
+    result, _ = calculate([attempt(correct=True, difficulty=5) for _ in range(10)])
 
-    fast_result, _ = calculate(fast)
-    slow_result, _ = calculate(slow)
-
-    assert fast_result.final_mastery == slow_result.final_mastery
-    assert "Response time was not used" in slow_result.explanation
+    assert not hasattr(AttemptSnapshot, "response_time")
+    assert "Response time was not used" in result.explanation
 
 
 def test_slow_correct_student_is_not_punished() -> None:
-    attempts = [attempt(correct=True, response_time=90.0, difficulty=4) for _ in range(10)]
+    attempts = [attempt(correct=True, difficulty=4) for _ in range(10)]
 
     result, state = calculate(attempts, mastery=70.0)
 
@@ -113,7 +107,7 @@ def test_slow_correct_student_is_not_punished() -> None:
 
 
 def test_fast_wrong_student_is_not_rewarded() -> None:
-    attempts = [attempt(correct=False, response_time=1.0, difficulty=3) for _ in range(10)]
+    attempts = [attempt(correct=False, difficulty=3) for _ in range(10)]
 
     result, _ = calculate(attempts, mastery=70.0)
 

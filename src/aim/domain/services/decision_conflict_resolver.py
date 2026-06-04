@@ -20,6 +20,7 @@ class DecisionConflictInput:
     difficulty_action: str
     transfer_category: str | None
     current_skill_id: str | None
+    reliability: float = 1.0
     prerequisite_skill_id: str | None = None
     transfer_skill_id: str | None = None
 
@@ -50,11 +51,17 @@ class DecisionConflictResolver:
             "confidence_mismatch": item.confidence_mismatch,
             "difficulty_action": item.difficulty_action,
             "transfer_category": item.transfer_category,
+            "reliability": item.reliability,
+            "current_skill_id": item.current_skill_id,
+            "prerequisite_skill_id": item.prerequisite_skill_id,
+            "transfer_skill_id": item.transfer_skill_id,
         }
 
+        if item.reliability < 0.40:
+            return self._result("low_reliability", "collect_more_evidence", evidence)
         if item.frustration_score >= 75.0 or item.emotional_signal == "possible_learning_overload":
             return self._result("high_frustration_or_overload", "easy_win", evidence)
-        if item.prerequisite_gap_score >= 75.0 and item.prerequisite_skill_id:
+        if item.prerequisite_gap_score > 0.0 and item.prerequisite_skill_id:
             return self._result("severe_prerequisite_gap", "review_prerequisite", evidence)
         if item.weakness_score >= 75.0:
             return self._result("severe_weakness", "reteach_concept", evidence)

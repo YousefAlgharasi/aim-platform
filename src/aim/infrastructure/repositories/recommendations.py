@@ -10,16 +10,24 @@ from aim.domain.services.recommendation_engine import (
     RecommendationResult,
     RecommendationSkillState,
 )
+from aim.domain.services.transfer_learning_detector import (
+    TransferLearningDetector,
+    TransferLearningRecord,
+    TransferScoreResult,
+)
 from aim.infrastructure.database.models.error_pattern import ErrorPatternRecordORM
 from aim.infrastructure.database.models.question_attempt import QuestionAttemptORM
 from aim.infrastructure.database.models.recommendation import RecommendationLogORM
 from aim.infrastructure.database.models.prerequisite_gap import PrerequisiteGapRecordORM
 from aim.infrastructure.database.models.student import StudentSkillStateORM
+from aim.infrastructure.skill_graph import SkillGraph
 
 
 class SQLRecommendationContextProvider:
     def __init__(self, db: Session) -> None:
         self._db = db
+        self._skill_graph = SkillGraph()
+        self._transfer_detector = TransferLearningDetector(self._skill_graph)
 
     def get_context(self, student_id: int) -> RecommendationContext:
         states = (
@@ -32,6 +40,7 @@ class SQLRecommendationContextProvider:
                 skill_id=state.skill_id,
                 mastery=state.mastery,
                 confidence=state.confidence,
+                attempts=state.attempts,
                 consistency=state.consistency,
                 current_difficulty=state.current_difficulty,
                 retention=state.retention,
@@ -95,6 +104,11 @@ class SQLRecommendationContextProvider:
             student_id,
             current_skill_id,
         )
+        transfer_result = self._transfer_result(
+            student_id,
+            current_skill_id,
+            states,
+        )
 
         return RecommendationContext(
             student_id=student_id,
@@ -115,6 +129,7 @@ class SQLRecommendationContextProvider:
                 else None
             ),
             prerequisite_gaps=prerequisite_gaps,
+            transfer_result=transfer_result,
         )
 
     @staticmethod
@@ -158,6 +173,63 @@ class SQLRecommendationContextProvider:
         rows = query.order_by(PrerequisiteGapRecordORM.severity.desc()).all()
         return [row.missing_prerequisite_skill_id for row in rows]
 
+    def _transfer_result(
+        self,
+        student_id: int,
+        current_skill_id: str | None,
+        states: list[StudentSkillStateORM],
+    ) -> TransferScoreResult | None:
+        if current_skill_id is None or current_skill_id not in self._skill_graph:
+            return None
+
+        state_by_skill = {state.skill_id: state for state in states}
+        current_state = state_by_skill.get(current_skill_id)
+        if current_state is None:
+            return None
+
+        learning_days = self._learning_days_for_skill(student_id, current_skill_id)
+        records = []
+        for prereq in self._skill_graph.get_prerequisites(current_skill_id):
+            from_skill_id = prereq["skill_id"]
+            prereq_state = state_by_skill.get(from_skill_id)
+            if prereq_state is None:
+                continue
+            if prereq_state.mastery < self._skill_graph.MASTERY_THRESHOLD:
+                continue
+            records.append(
+                TransferLearningRecord(
+                    student_id=student_id,
+                    from_skill_id=from_skill_id,
+                    to_skill_id=current_skill_id,
+                    previous_skill_mastery=prereq_state.mastery,
+                    time_to_mastery_days=learning_days,
+                    had_prerequisite_mastered=True,
+                )
+            )
+
+        if not records:
+            return None
+
+        return self._transfer_detector.detect_for_student(student_id, records)
+
+    def _learning_days_for_skill(self, student_id: int, skill_id: str) -> float:
+        rows = (
+            self._db.query(QuestionAttemptORM)
+            .filter(
+                QuestionAttemptORM.student_id == student_id,
+                QuestionAttemptORM.skill_id == skill_id,
+            )
+            .order_by(QuestionAttemptORM.created_at.asc())
+            .all()
+        )
+        if len(rows) < 2:
+            return 1.0
+
+        duration_days = (
+            rows[-1].created_at - rows[0].created_at
+        ).total_seconds() / 86400
+        return max(1.0, round(duration_days, 4))
+
 
 class SQLRecommendationLogger:
     def __init__(self, db: Session) -> None:
@@ -193,5 +265,36 @@ class SQLRecommendationLogger:
         self._db.add(row)
         self._db.flush()
         self._db.refresh(row)
+        return row
+
+    def latest_unevaluated(
+        self,
+        *,
+        student_id: int,
+        skill_id: str,
+    ) -> RecommendationLogORM | None:
+        return (
+            self._db.query(RecommendationLogORM)
+            .filter(
+                RecommendationLogORM.student_id == student_id,
+                RecommendationLogORM.skill_id == skill_id,
+                RecommendationLogORM.mastery_after.is_(None),
+            )
+            .order_by(RecommendationLogORM.created_at.desc(), RecommendationLogORM.id.desc())
+            .first()
+        )
+
+    def mark_evaluated(
+        self,
+        row: RecommendationLogORM,
+        *,
+        mastery_after: float,
+        mastery_improved_after: bool,
+        was_followed: bool = True,
+    ) -> RecommendationLogORM:
+        row.mastery_after = mastery_after
+        row.mastery_improved_after = mastery_improved_after
+        row.was_followed = was_followed
+        self._db.flush()
         return row
 

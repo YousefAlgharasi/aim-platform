@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+from aim.domain.services.decision_conflict_resolver import DecisionConflictResult
 from aim.domain.services.recommendation_engine import (
     RecommendationActionType,
     RecommendationAttempt,
     RecommendationContext,
     RecommendationEngine,
     RecommendationSkillState,
+)
+from aim.domain.services.transfer_learning_detector import (
+    TransferCategory,
+    TransferScoreResult,
 )
 
 
@@ -139,3 +144,81 @@ def test_recommendation_includes_reason_evidence_and_confidence() -> None:
     assert result.evidence
     assert result.confidence in {"low", "medium", "high"}
     assert result.inputs_snapshot["current_skill_id"] == "GRAMMAR_VERB_FORMS"
+
+
+def test_high_transfer_recommends_mixed_practice_when_no_higher_priority_risk() -> None:
+    transfer_result = TransferScoreResult(
+        student_id=1,
+        from_skill_id="GRAMMAR_VERB_FORMS",
+        to_skill_id="GRAMMAR_TENSES_PRESENT_SIMPLE",
+        relationship_coefficient=0.9,
+        previous_skill_mastery=90.0,
+        avg_time_to_learn_new_skill=1.0,
+        transfer_score=0.81,
+        category=TransferCategory.HIGH,
+        recommendation_flag="ACCELERATED",
+    )
+    context = RecommendationContext(
+        student_id=1,
+        current_skill_id="GRAMMAR_TENSES_PRESENT_SIMPLE",
+        skill_states=[
+            state(
+                skill_id="GRAMMAR_VERB_FORMS",
+                mastery=90.0,
+                confidence=80.0,
+                retention=100.0,
+                reliability=1.0,
+            ),
+            state(
+                skill_id="GRAMMAR_TO_BE",
+                mastery=88.0,
+                confidence=80.0,
+                retention=100.0,
+                reliability=1.0,
+            ),
+            state(
+                skill_id="GRAMMAR_TENSES_PRESENT_SIMPLE",
+                mastery=75.0,
+                confidence=75.0,
+                consistency=80.0,
+                retention=100.0,
+                reliability=1.0,
+                weakness_score=0.0,
+            ),
+        ],
+        recent_attempts=[attempt(i) for i in range(1, 10)],
+        transfer_result=transfer_result,
+    )
+
+    result = engine(context).get_next_action(1)
+
+    assert result.action_type == RecommendationActionType.MIXED_PRACTICE
+    assert result.skill_id == "GRAMMAR_TENSES_PRESENT_SIMPLE"
+    assert result.decision_priority == "transfer_acceleration"
+    assert result.inputs_snapshot["transfer_result"]["category"] == "HIGH"
+
+
+def test_resolved_decision_controls_final_recommendation_action() -> None:
+    context = RecommendationContext(
+        student_id=1,
+        current_skill_id="GRAMMAR_VERB_FORMS",
+        skill_states=[
+            state(
+                frustration_score=90.0,
+                reliability=0.30,
+            )
+        ],
+        recent_attempts=[attempt(1, correct=False)],
+    )
+    resolved = DecisionConflictResult(
+        final_priority="low_reliability",
+        selected_action="collect_more_evidence",
+        reason="Collect more evidence before changing path.",
+        evidence={"reliability": 0.30},
+    )
+
+    result = engine(context).get_next_action(1, resolved_decision=resolved)
+
+    assert result.action == resolved.selected_action
+    assert result.decision_priority == resolved.final_priority
+    assert result.inputs_snapshot["decision_priority"] == "low_reliability"

@@ -162,6 +162,74 @@ class TestNextActionEndpoint:
         finally:
             db.close()
 
+    def test_high_transfer_context_can_recommend_mixed_practice(
+        self,
+        client: TestClient,
+    ) -> None:
+        db = TestingSessionLocal()
+        try:
+            student = StudentORM(name="Transfer", email="transfer-recommend@test.com")
+            db.add(student)
+            db.commit()
+            db.refresh(student)
+            db.add_all(
+                [
+                    StudentSkillStateORM(
+                        student_id=student.id,
+                        skill_id="GRAMMAR_VERB_FORMS",
+                        mastery=90.0,
+                        confidence=85.0,
+                        consistency=90.0,
+                        current_difficulty=2,
+                        retention=100.0,
+                        reliability=1.0,
+                    ),
+                    StudentSkillStateORM(
+                        student_id=student.id,
+                        skill_id="GRAMMAR_TO_BE",
+                        mastery=88.0,
+                        confidence=85.0,
+                        consistency=90.0,
+                        current_difficulty=2,
+                        retention=100.0,
+                        reliability=1.0,
+                    ),
+                    StudentSkillStateORM(
+                        student_id=student.id,
+                        skill_id="GRAMMAR_TENSES_PRESENT_SIMPLE",
+                        mastery=75.0,
+                        confidence=75.0,
+                        consistency=82.0,
+                        current_difficulty=2,
+                        retention=100.0,
+                        reliability=1.0,
+                    ),
+                ]
+            )
+            db.commit()
+            student_id = student.id
+        finally:
+            db.close()
+
+        resp = client.get(f"/students/{student_id}/next-action")
+
+        assert resp.status_code == 200, resp.text
+        data = resp.json()
+        assert data["action_type"] == "mixed_practice"
+        assert data["skill_id"] == "GRAMMAR_TENSES_PRESENT_SIMPLE"
+        assert data["inputs_snapshot"]["transfer_result"]["category"] == "HIGH"
+        assert data["inputs_snapshot"]["transfer_result"]["from_skill_id"] == (
+            "GRAMMAR_VERB_FORMS"
+        )
+
+        db = TestingSessionLocal()
+        try:
+            log = db.query(RecommendationLogORM).one()
+            assert log.decision_priority == "transfer_acceleration"
+            assert log.inputs_snapshot["transfer_result"]["transfer_score"] == 0.81
+        finally:
+            db.close()
+
     def test_unknown_student_returns_404(self, client: TestClient) -> None:
         resp = client.get("/students/9999/next-action")
 
