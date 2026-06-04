@@ -11,6 +11,7 @@ from aim.domain.services.contextual_memory import (
     ContextualMemory,
     SkillMasterySnapshot,
 )
+from aim.domain.services.decision_conflict_resolver import DecisionConflictResult
 from aim.domain.services.difficulty_adapter import DifficultyAdapter
 from aim.domain.services.emotional_state_detector import (
     EmotionalAttempt,
@@ -19,7 +20,6 @@ from aim.domain.services.emotional_state_detector import (
 from aim.domain.services.error_pattern_classifier import (
     ErrorAttempt,
     ErrorPatternClassifier,
-    ErrorPatternType,
 )
 from aim.domain.services.micro_goal_generator import MicroGoalGenerator
 from aim.domain.services.retention_tracker import REVIEW_THRESHOLD
@@ -82,6 +82,7 @@ class RecommendationSkillState:
     skill_id: str
     mastery: float
     confidence: float
+    attempts: int = 0
     consistency: float = 100.0
     current_difficulty: int = 3
     retention: float = 100.0
@@ -163,7 +164,12 @@ class RecommendationEngine:
         self._micro_goal_generator = MicroGoalGenerator(self._skill_graph)
         self._contextual_memory = ContextualMemory()
 
-    def get_next_action(self, student_id: int) -> RecommendationResult:
+    def get_next_action(
+        self,
+        student_id: int,
+        *,
+        resolved_decision: DecisionConflictResult | None = None,
+    ) -> RecommendationResult:
         """Choose the highest-priority adaptive recommendation."""
         context = self._provider.get_context(student_id)
         current_state = self._current_state(context)
@@ -205,6 +211,18 @@ class RecommendationEngine:
             due_review_skill_ids=[state.skill_id for state in due],
             reliability=reliability,
         )
+
+        if resolved_decision is not None:
+            return self._result_from_resolved_decision(
+                context=context,
+                resolved_decision=resolved_decision,
+                base_evidence=base_evidence,
+                current_skill_id=current_skill_id,
+                current_difficulty=current_difficulty,
+                difficulty_decision=difficulty_decision,
+                due=due,
+                prereq_gap=prereq_gap,
+            )
 
         if frustration_score >= 90.0 and current_state and current_state.weakness_score >= 75.0:
             return self._result(
@@ -384,6 +402,88 @@ class RecommendationEngine:
             inputs_snapshot=dict(evidence),
         )
 
+    def _result_from_resolved_decision(
+        self,
+        *,
+        context: RecommendationContext,
+        resolved_decision: DecisionConflictResult,
+        base_evidence: dict[str, Any],
+        current_skill_id: str | None,
+        current_difficulty: int,
+        difficulty_decision,
+        due: Sequence[RecommendationSkillState],
+        prereq_gap: str | None,
+    ) -> RecommendationResult:
+        action = RecommendationActionType(resolved_decision.selected_action)
+        evidence = {
+            **base_evidence,
+            "conflict_resolution": dict(resolved_decision.evidence),
+            "decision_priority": resolved_decision.final_priority,
+        }
+
+        target_skill_id = current_skill_id
+        difficulty = current_difficulty
+        confidence = "medium"
+        reason = resolved_decision.reason
+
+        if action == RecommendationActionType.COLLECT_MORE_EVIDENCE:
+            confidence = "low"
+        elif action == RecommendationActionType.EASY_WIN:
+            easy_skill = self._easy_win_skill(context)
+            target_skill_id = easy_skill.skill_id if easy_skill else current_skill_id
+            difficulty = 1
+            confidence = "high"
+        elif action == RecommendationActionType.REVIEW_PREREQUISITE:
+            target_skill_id = (
+                resolved_decision.evidence.get("prerequisite_skill_id")
+                or prereq_gap
+                or current_skill_id
+            )
+            difficulty = 1
+            confidence = "high"
+        elif action == RecommendationActionType.RETEACH_CONCEPT:
+            difficulty = 1
+            confidence = "high"
+        elif action == RecommendationActionType.TARGETED_PRACTICE:
+            difficulty = max(1, current_difficulty - 1)
+        elif action == RecommendationActionType.SPACED_REVIEW:
+            if due:
+                target_skill_id = due[0].skill_id
+                difficulty = max(1, min(5, due[0].current_difficulty))
+        elif action == RecommendationActionType.CONFIDENCE_BUILDER:
+            difficulty = max(1, current_difficulty - 1)
+        elif action == RecommendationActionType.INCREASE_DIFFICULTY:
+            if difficulty_decision is not None:
+                difficulty = difficulty_decision.target_difficulty
+                evidence["difficulty_evidence"] = difficulty_decision.evidence
+            confidence = "high"
+        elif action == RecommendationActionType.MIXED_PRACTICE:
+            target_skill_id = (
+                resolved_decision.evidence.get("transfer_skill_id")
+                or (
+                    context.transfer_result.to_skill_id
+                    if context.transfer_result is not None
+                    else current_skill_id
+                )
+            )
+        elif action == RecommendationActionType.CONTINUE_CURRENT_SKILL:
+            target_skill_id = current_skill_id or self._weakest_skill_id(context)
+            evidence["target_skill_id"] = target_skill_id
+
+        if target_skill_id is not None:
+            evidence["target_skill_id"] = target_skill_id
+
+        return self._result(
+            context,
+            action,
+            target_skill_id,
+            difficulty,
+            reason,
+            resolved_decision.final_priority,
+            confidence,
+            evidence,
+        )
+
     def _current_state(
         self,
         context: RecommendationContext,
@@ -438,6 +538,9 @@ class RecommendationEngine:
                 is_timed=attempt.is_timed,
                 session_position=attempt.session_position,
                 skip=attempt.skip,
+                hint_used=attempt.hint_used,
+                attempts=attempt.attempts,
+                previously_correct=attempt.previously_correct,
             )
             for attempt in context.recent_attempts
         ]
@@ -455,14 +558,7 @@ class RecommendationEngine:
             )
 
         error_pattern = self._error_pattern(context)
-        architecture_type = {
-            ErrorPatternType.TYPE_1_RANDOM: "guessing",
-            ErrorPatternType.TYPE_2_CONSISTENT: "misunderstood_concept",
-            ErrorPatternType.TYPE_3_PRESSURE: "rushing",
-            ErrorPatternType.TYPE_4_WARMUP: "needs_warmup",
-            ErrorPatternType.NO_DOMINANT_PATTERN: "unknown",
-        }[error_pattern.pattern_type]
-        return architecture_type, error_pattern.treatment_recommendation
+        return error_pattern.pattern_type.value, error_pattern.treatment_recommendation
 
     def _due_review_states(
         self,
@@ -602,4 +698,24 @@ class RecommendationEngine:
             "missing_prerequisites": [prerequisite_gap] if prerequisite_gap else [],
             "due_review_skill_ids": list(due_review_skill_ids),
             "recent_attempt_count": len(context.recent_attempts),
+            "transfer_result": self._serialize_transfer_result(
+                context.transfer_result
+            ),
+        }
+
+    @staticmethod
+    def _serialize_transfer_result(
+        result: TransferScoreResult | None,
+    ) -> dict[str, Any] | None:
+        if result is None:
+            return None
+        return {
+            "from_skill_id": result.from_skill_id,
+            "to_skill_id": result.to_skill_id,
+            "relationship_coefficient": result.relationship_coefficient,
+            "previous_skill_mastery": result.previous_skill_mastery,
+            "avg_time_to_learn_new_skill": result.avg_time_to_learn_new_skill,
+            "transfer_score": result.transfer_score,
+            "category": result.category.value,
+            "recommendation_flag": result.recommendation_flag,
         }

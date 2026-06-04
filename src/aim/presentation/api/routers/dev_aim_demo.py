@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Literal
 from uuid import uuid4
@@ -15,6 +14,10 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from aim.application.errors import ApplicationError
+from aim.application.demo.aim_demo_scenarios import (
+    SCENARIOS,
+    DemoScenario,
+)
 from aim.application.use_cases.sessions import SessionUseCases
 from aim.domain.services.performance_analyzer import AttemptRecord
 from aim.infrastructure.database.base import Base
@@ -30,159 +33,18 @@ ScenarioName = Literal[
     "weak_reading_student",
     "rushing_student",
     "frustrated_student",
+    "low_confidence_student",
+    "hint_dependent_student",
+    "prerequisite_gap_student",
+    "retention_review_student",
+    "slow_but_accurate_student",
+    "low_reliability_student",
+    "questionable_question_quality_student",
 ]
 
 
 class AimDemoSessionRequest(BaseModel):
     scenario: ScenarioName
-
-
-@dataclass(frozen=True)
-class DemoAttemptInput:
-    question_id: str
-    is_correct: bool
-    response_time: float
-    attempts: int
-    difficulty: int
-    hint_used: bool = False
-    skip: bool = False
-    answer_changed: bool = False
-    time_of_day: str = "morning"
-
-
-@dataclass(frozen=True)
-class DemoScenario:
-    key: str
-    student_name: str
-    course: str
-    level: str
-    lesson: str
-    skill_id: str
-    skill_label: str
-    previous_mastery: float
-    previous_confidence: float
-    previous_retention: float
-    previous_difficulty: int
-    previous_avg_speed: float
-    previous_weakness: str
-    attempts: tuple[DemoAttemptInput, ...]
-
-
-def _attempt(
-    question_id: str,
-    *,
-    is_correct: bool,
-    response_time: float,
-    attempts: int,
-    difficulty: int,
-    hint_used: bool = False,
-    skip: bool = False,
-    answer_changed: bool = False,
-) -> DemoAttemptInput:
-    return DemoAttemptInput(
-        question_id=question_id,
-        is_correct=is_correct,
-        response_time=response_time,
-        attempts=attempts,
-        difficulty=difficulty,
-        hint_used=hint_used,
-        skip=skip,
-        answer_changed=answer_changed,
-    )
-
-
-SCENARIOS: dict[str, DemoScenario] = {
-    "strong_student": DemoScenario(
-        key="strong_student",
-        student_name="Maha Strong",
-        course="English Foundations",
-        level="B1",
-        lesson="Reading Inference",
-        skill_id="READING_INFERENCE",
-        skill_label="Reading Comprehension",
-        previous_mastery=82.0,
-        previous_confidence=96.0,
-        previous_retention=88.0,
-        previous_difficulty=3,
-        previous_avg_speed=8.0,
-        previous_weakness="None detected",
-        attempts=(
-            _attempt("inference:q1", is_correct=True, response_time=4.0, attempts=1, difficulty=4),
-            _attempt("inference:q2", is_correct=True, response_time=4.5, attempts=1, difficulty=4),
-            _attempt("inference:q3", is_correct=True, response_time=5.0, attempts=1, difficulty=5),
-            _attempt("inference:q4", is_correct=True, response_time=4.2, attempts=1, difficulty=5),
-            _attempt("inference:q5", is_correct=True, response_time=4.8, attempts=1, difficulty=5),
-            _attempt("inference:q6", is_correct=True, response_time=5.1, attempts=1, difficulty=5),
-        ),
-    ),
-    "weak_reading_student": DemoScenario(
-        key="weak_reading_student",
-        student_name="Yara Reading",
-        course="English Foundations",
-        level="A2",
-        lesson="Short Passage Comprehension",
-        skill_id="READING_COMPREHENSION",
-        skill_label="Reading Comprehension",
-        previous_mastery=42.0,
-        previous_confidence=45.0,
-        previous_retention=58.0,
-        previous_difficulty=3,
-        previous_avg_speed=12.0,
-        previous_weakness="Reading Comprehension",
-        attempts=(
-            _attempt("main_idea:q1", is_correct=False, response_time=18.4, attempts=2, difficulty=3, hint_used=True, answer_changed=True),
-            _attempt("vocabulary:q2", is_correct=False, response_time=21.0, attempts=2, difficulty=3, hint_used=True),
-            _attempt("main_idea:q3", is_correct=True, response_time=20.2, attempts=2, difficulty=2, hint_used=True, answer_changed=True),
-            _attempt("detail:q4", is_correct=False, response_time=24.5, attempts=3, difficulty=3, hint_used=True),
-            _attempt("vocabulary:q5", is_correct=False, response_time=19.8, attempts=2, difficulty=2, hint_used=True),
-        ),
-    ),
-    "rushing_student": DemoScenario(
-        key="rushing_student",
-        student_name="Samir Fast",
-        course="English Foundations",
-        level="A2",
-        lesson="Grammar Accuracy",
-        skill_id="GRAMMAR_VERB_FORMS",
-        skill_label="Verb Tenses",
-        previous_mastery=61.0,
-        previous_confidence=92.0,
-        previous_retention=76.0,
-        previous_difficulty=3,
-        previous_avg_speed=8.0,
-        previous_weakness="Verb Tenses",
-        attempts=(
-            _attempt("tense:q1", is_correct=False, response_time=2.1, attempts=1, difficulty=3),
-            _attempt("tense:q2", is_correct=False, response_time=2.4, attempts=1, difficulty=3),
-            _attempt("tense:q3", is_correct=True, response_time=2.8, attempts=1, difficulty=3, answer_changed=True),
-            _attempt("tense:q4", is_correct=False, response_time=2.0, attempts=1, difficulty=4),
-            _attempt("tense:q5", is_correct=False, response_time=1.9, attempts=1, difficulty=4),
-            _attempt("tense:q6", is_correct=True, response_time=2.6, attempts=1, difficulty=3),
-        ),
-    ),
-    "frustrated_student": DemoScenario(
-        key="frustrated_student",
-        student_name="Nour Support",
-        course="English Foundations",
-        level="A1",
-        lesson="Sentence Basics",
-        skill_id="SENTENCE_STRUCTURE",
-        skill_label="Sentence Structure",
-        previous_mastery=78.0,
-        previous_confidence=10.0,
-        previous_retention=72.0,
-        previous_difficulty=3,
-        previous_avg_speed=8.0,
-        previous_weakness="Sentence Structure",
-        attempts=(
-            _attempt("sentence_order:q1", is_correct=False, response_time=19.2, attempts=2, difficulty=3, hint_used=True),
-            _attempt("sentence_order:q2", is_correct=False, response_time=24.4, attempts=2, difficulty=3, hint_used=True, answer_changed=True),
-            _attempt("sentence_order:q3", is_correct=False, response_time=30.8, attempts=3, difficulty=3, hint_used=True),
-            _attempt("sentence_order:q4", is_correct=False, response_time=34.5, attempts=1, difficulty=3),
-            _attempt("sentence_order:q5", is_correct=False, response_time=7.0, attempts=1, difficulty=2, skip=True),
-        ),
-    ),
-}
 
 
 @router.post(
@@ -283,6 +145,27 @@ def _create_demo_student(db: Session, scenario: DemoScenario) -> StudentORM:
             last_reviewed_at=datetime.now(timezone.utc).replace(tzinfo=None),
         )
     )
+    for state in scenario.related_skill_states:
+        db.add(
+            StudentSkillStateORM(
+                student_id=student.id,
+                skill_id=state.skill_id,
+                mastery=state.mastery,
+                confidence=state.confidence,
+                attempts=0,
+                avg_speed=state.avg_speed,
+                retry_rate=0.0,
+                hesitation_index=0.0,
+                consistency=state.consistency,
+                current_difficulty=state.current_difficulty,
+                retention=state.retention,
+                retention_lambda=0.15,
+                review_due=state.retention < 70.0,
+                weakness_score=0.0,
+                frustration_score=0.0,
+                last_reviewed_at=datetime.now(timezone.utc).replace(tzinfo=None),
+            )
+        )
     db.flush()
     return student
 

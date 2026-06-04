@@ -12,6 +12,7 @@ from aim.infrastructure.database.models.error_pattern import ErrorPatternRecordO
 from aim.infrastructure.database.models.goal import MicroGoalORM
 from aim.infrastructure.database.models.learning_history import LessonAttemptORM
 from aim.infrastructure.database.models.mastery_history import SkillMasteryHistoryORM
+from aim.infrastructure.database.models.outcome_record import OutcomeRecordORM
 from aim.infrastructure.database.models.prerequisite_gap import PrerequisiteGapRecordORM
 from aim.infrastructure.database.models.prompt_adaptation import (
     PromptAdaptationInstructionORM,
@@ -168,6 +169,7 @@ class TestRecordSessionAttempts:
             abs=0.1,
         )
         assert data["difficulty_decision"]["target_difficulty"] == 1
+        assert data["recommendation"]["action"] == data["decision_conflict"]["selected_action"]
         assert data["recommendation"]["action_type"] in {
             "spaced_review",
             "collect_more_evidence",
@@ -240,9 +242,8 @@ class TestRecordSessionAttempts:
             assert prompt.student_id == student_id
             assert prompt.lesson_id == "session-1"
             assert prompt.skill_id == "GRAMMAR_VERB_FORMS"
-            assert prompt.difficulty == "review"
-            assert "low retention" in prompt.focus_weaknesses
-            assert "Refresh retention" in prompt.micro_goal
+            assert prompt.difficulty == "current"
+            assert "Collect reliable evidence" in prompt.micro_goal
             lesson = db.query(LessonAttemptORM).one()
             assert lesson.student_id == student_id
             assert lesson.lesson_id == "session-1"
@@ -306,7 +307,7 @@ class TestRecordSessionAttempts:
             db.close()
 
         attempts = []
-        for index in range(1, 4):
+        for index in range(1, 11):
             payload = attempt_payload(student_id, session_id="session-gap")
             payload["skill_id"] = "GRAMMAR_PASSIVE_VOICE"
             payload["question_id"] = f"passive:q{index}"
@@ -513,4 +514,285 @@ class TestRecordSessionAttempts:
             assert "targeted explanation" in error_pattern.treatment_recommendation
         finally:
             db.close()
+
+    def test_question_quality_uses_historical_attempts(self, client: TestClient) -> None:
+        db = TestingSessionLocal()
+        try:
+            for index in range(1, 5):
+                student = StudentORM(
+                    name=f"High Mastery {index}",
+                    email=f"high-mastery-{index}@test.com",
+                )
+                db.add(student)
+                db.flush()
+                db.add(
+                    StudentSkillStateORM(
+                        student_id=student.id,
+                        skill_id="GRAMMAR_VERB_FORMS",
+                        mastery=90.0,
+                    )
+                )
+                db.add(
+                    QuestionAttemptORM(
+                        student_id=student.id,
+                        skill_id="GRAMMAR_VERB_FORMS",
+                        question_id="historical:q1",
+                        session_id=f"history-high-{index}",
+                        is_correct=True,
+                        response_time=8.0,
+                        attempts=1,
+                        difficulty=3,
+                        hint_used=False,
+                        skip=False,
+                        answer_changed=False,
+                        time_of_day="morning",
+                        session_position=1,
+                    )
+                )
+            for index in range(1, 5):
+                student = StudentORM(
+                    name=f"Low Mastery {index}",
+                    email=f"low-mastery-{index}@test.com",
+                )
+                db.add(student)
+                db.flush()
+                db.add(
+                    StudentSkillStateORM(
+                        student_id=student.id,
+                        skill_id="GRAMMAR_VERB_FORMS",
+                        mastery=30.0,
+                    )
+                )
+                db.add(
+                    QuestionAttemptORM(
+                        student_id=student.id,
+                        skill_id="GRAMMAR_VERB_FORMS",
+                        question_id="historical:q1",
+                        session_id=f"history-low-{index}",
+                        is_correct=False,
+                        response_time=12.0,
+                        attempts=1,
+                        difficulty=3,
+                        hint_used=False,
+                        skip=False,
+                        answer_changed=False,
+                        time_of_day="morning",
+                        session_position=1,
+                    )
+                )
+            db.commit()
+        finally:
+            db.close()
+
+        student_id = seed_student()
+        historical = attempt_payload(student_id)
+        historical["question_id"] = "historical:q1"
+        historical["session_position"] = 1
+        new_question = attempt_payload(student_id)
+        new_question["question_id"] = "new-low-sample:q1"
+        new_question["session_position"] = 2
+
+        resp = client.post(
+            "/sessions/session-1/attempts",
+            json={"attempts": [historical, new_question]},
+        )
+
+        assert resp.status_code == 201, resp.text
+        quality_by_id = {
+            item["question_id"]: item
+            for item in resp.json()["question_quality"]
+        }
+        historical_quality = quality_by_id["historical:q1"]
+        assert historical_quality["evidence"]["sample_size"] == 9
+        assert historical_quality["evidence"]["discrimination_index"] > 0.0
+        assert historical_quality["evidence"]["discrimination_index"] != 0.5
+        assert historical_quality["quality_label"] in {"acceptable", "strong"}
+
+        low_sample_quality = quality_by_id["new-low-sample:q1"]
+        assert low_sample_quality["quality_label"] == "insufficient_data"
+        assert low_sample_quality["impact_weight"] == 0.85
+        assert low_sample_quality["flag_for_review"] is False
+
+    def test_tracks_previous_recommendation_outcome_once(
+        self,
+        client: TestClient,
+    ) -> None:
+        student_id = seed_student_with_skill_state(
+            mastery=10.0,
+            avg_speed=8.0,
+            confidence=50.0,
+            skill_id="GRAMMAR_VERB_FORMS",
+        )
+        db = TestingSessionLocal()
+        try:
+            prior = RecommendationLogORM(
+                student_id=student_id,
+                action_type="collect_more_evidence",
+                skill_id="GRAMMAR_VERB_FORMS",
+                difficulty=1,
+                reason="Collect reliable evidence.",
+                evidence={},
+                confidence="low",
+                decision_priority="low_reliability",
+                inputs_snapshot={
+                    "retention": 10.0,
+                    "weakness_score": 40.0,
+                },
+                mastery_before=10.0,
+            )
+            db.add(prior)
+            db.commit()
+            prior_id = prior.id
+        finally:
+            db.close()
+
+        attempts = []
+        for index in range(1, 11):
+            payload = attempt_payload(student_id, session_id="session-outcome")
+            payload["question_id"] = f"outcome:q{index}"
+            payload["is_correct"] = True
+            payload["session_position"] = index
+            attempts.append(payload)
+
+        resp = client.post(
+            "/sessions/session-outcome/attempts",
+            json={"attempts": attempts},
+        )
+
+        assert resp.status_code == 201, resp.text
+        outcome = resp.json()["outcome_tracking"]
+        assert outcome["evaluated"] is True
+        assert outcome["recommendation_id"] == prior_id
+        assert outcome["outcome"] in {"successful", "neutral"}
+
+        db = TestingSessionLocal()
+        try:
+            record = db.query(OutcomeRecordORM).one()
+            assert record.recommendation_id == prior_id
+            prior = db.query(RecommendationLogORM).filter_by(id=prior_id).one()
+            assert prior.mastery_after is not None
+            assert prior.mastery_improved_after is True
+            assert prior.was_followed is True
+        finally:
+            db.close()
+
+    def test_does_not_track_same_recommendation_twice(
+        self,
+        client: TestClient,
+    ) -> None:
+        student_id = seed_student_with_skill_state(
+            mastery=20.0,
+            avg_speed=8.0,
+            confidence=50.0,
+            skill_id="GRAMMAR_VERB_FORMS",
+        )
+        db = TestingSessionLocal()
+        try:
+            prior = RecommendationLogORM(
+                student_id=student_id,
+                action_type="collect_more_evidence",
+                skill_id="GRAMMAR_VERB_FORMS",
+                difficulty=1,
+                reason="Already evaluated.",
+                evidence={},
+                confidence="low",
+                decision_priority="low_reliability",
+                inputs_snapshot={
+                    "retention": 20.0,
+                    "weakness_score": 30.0,
+                },
+                mastery_before=20.0,
+                mastery_after=25.0,
+                mastery_improved_after=True,
+                was_followed=True,
+            )
+            db.add(prior)
+            db.flush()
+            db.add(
+                OutcomeRecordORM(
+                    recommendation_id=prior.id,
+                    mastery_before=20.0,
+                    mastery_after=25.0,
+                    retention_before=20.0,
+                    retention_after=25.0,
+                    weakness_before=30.0,
+                    weakness_after=20.0,
+                    outcome="successful",
+                )
+            )
+            db.commit()
+            prior_id = prior.id
+        finally:
+            db.close()
+
+        resp = client.post(
+            "/sessions/session-outcome-skip/attempts",
+            json={"attempts": [attempt_payload(student_id, session_id="session-outcome-skip")]},
+        )
+
+        assert resp.status_code == 201, resp.text
+        assert resp.json()["outcome_tracking"]["evaluated"] is False
+        assert resp.json()["outcome_tracking"]["reason"] == "no_unevaluated_recommendation"
+
+        db = TestingSessionLocal()
+        try:
+            assert db.query(OutcomeRecordORM).count() == 1
+            record = db.query(OutcomeRecordORM).one()
+            assert record.recommendation_id == prior_id
+        finally:
+            db.close()
+
+    def test_outcome_tracking_failure_does_not_break_session(
+        self,
+        client: TestClient,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        from aim.infrastructure.repositories.adaptive_logs import (
+            SQLOutcomeRecordRepository,
+        )
+
+        student_id = seed_student_with_skill_state(
+            mastery=20.0,
+            avg_speed=8.0,
+            confidence=50.0,
+            skill_id="GRAMMAR_VERB_FORMS",
+        )
+        db = TestingSessionLocal()
+        try:
+            db.add(
+                RecommendationLogORM(
+                    student_id=student_id,
+                    action_type="collect_more_evidence",
+                    skill_id="GRAMMAR_VERB_FORMS",
+                    difficulty=1,
+                    reason="Collect reliable evidence.",
+                    evidence={},
+                    confidence="low",
+                    decision_priority="low_reliability",
+                    inputs_snapshot={
+                        "retention": 20.0,
+                        "weakness_score": 30.0,
+                    },
+                    mastery_before=20.0,
+                )
+            )
+            db.commit()
+        finally:
+            db.close()
+
+        def fail_add_result(self, result):
+            raise RuntimeError("forced outcome failure")
+
+        monkeypatch.setattr(SQLOutcomeRecordRepository, "add_result", fail_add_result)
+
+        resp = client.post(
+            "/sessions/session-outcome-failure/attempts",
+            json={"attempts": [attempt_payload(student_id, session_id="session-outcome-failure")]},
+        )
+
+        assert resp.status_code == 201, resp.text
+        outcome = resp.json()["outcome_tracking"]
+        assert outcome["evaluated"] is False
+        assert outcome["reason"] == "tracking_failed"
+        assert outcome["error"] == "RuntimeError"
 
