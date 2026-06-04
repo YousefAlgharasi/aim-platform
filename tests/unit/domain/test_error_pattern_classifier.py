@@ -18,6 +18,15 @@ def make_attempt(
     question_subtype: str | None = "mixed",
     is_timed: bool = False,
     session_position: int | None = None,
+    skip: bool = False,
+    hint_used: bool = False,
+    attempts: int = 1,
+    answer_changed: bool = False,
+    previously_correct: bool = False,
+    prerequisite_gap: bool = False,
+    missing_prerequisite_skill_id: str | None = None,
+    retention_drop: float = 0.0,
+    confidence: float | None = None,
 ) -> ErrorAttempt:
     return ErrorAttempt(
         student_id=1,
@@ -27,6 +36,15 @@ def make_attempt(
         question_subtype=question_subtype,
         is_timed=is_timed,
         session_position=session_position or index,
+        skip=skip,
+        hint_used=hint_used,
+        attempts=attempts,
+        answer_changed=answer_changed,
+        previously_correct=previously_correct,
+        prerequisite_gap=prerequisite_gap,
+        missing_prerequisite_skill_id=missing_prerequisite_skill_id,
+        retention_drop=retention_drop,
+        confidence=confidence,
     )
 
 
@@ -71,6 +89,9 @@ class TestErrorPatternClassifier:
         assert result.pattern_type == ErrorPatternType.TYPE_2_CONSISTENT
         assert result.evidence["question_subtype"] == "past_participle"
         assert "targeted explanation" in result.treatment_recommendation
+        assert result.recommended_intervention == result.treatment_recommendation
+        assert result.severity in {"medium", "high"}
+        assert 0.0 <= result.confidence <= 1.0
 
     def test_type_2_requires_more_than_60_percent_error_rate(self) -> None:
         attempts = [
@@ -203,3 +224,88 @@ class TestErrorPatternClassifier:
         result = self.classifier.classify(attempts)
 
         assert result.pattern_type == ErrorPatternType.TYPE_4_WARMUP
+
+    def test_hint_dependency_pattern(self) -> None:
+        attempts = [
+            make_attempt(1, is_correct=True, hint_used=True),
+            make_attempt(2, is_correct=True, hint_used=True),
+            make_attempt(3, is_correct=True, hint_used=True),
+            make_attempt(4, is_correct=False, hint_used=False),
+            make_attempt(5, is_correct=False, hint_used=False),
+        ]
+
+        result = self.classifier.classify(attempts)
+
+        assert result.pattern_type == ErrorPatternType.HINT_DEPENDENCY
+        assert result.evidence["hint_rate"] == 0.6
+        assert "Fade hints" in result.recommended_intervention
+
+    def test_memory_retention_issue_pattern(self) -> None:
+        attempts = [
+            make_attempt(i, is_correct=False, previously_correct=True)
+            for i in range(1, 4)
+        ] + [
+            make_attempt(i, is_correct=True, previously_correct=False)
+            for i in range(4, 7)
+        ]
+
+        result = self.classifier.classify(attempts)
+
+        assert result.pattern_type == ErrorPatternType.MEMORY_RETENTION_ISSUE
+        assert result.evidence["errors_after_previous_success"] == 3
+        assert "spaced review" in result.recommended_intervention
+
+    def test_prerequisite_gap_pattern(self) -> None:
+        attempts = [
+            make_attempt(
+                1,
+                is_correct=False,
+                question_subtype="prerequisite:GRAMMAR_TO_BE",
+                prerequisite_gap=True,
+                missing_prerequisite_skill_id="GRAMMAR_TO_BE",
+            ),
+            make_attempt(
+                2,
+                is_correct=False,
+                question_subtype="prerequisite:GRAMMAR_TO_BE",
+                prerequisite_gap=True,
+                missing_prerequisite_skill_id="GRAMMAR_TO_BE",
+            ),
+            make_attempt(3, is_correct=True, question_subtype="main_skill"),
+        ]
+
+        result = self.classifier.classify(attempts)
+
+        assert result.pattern_type == ErrorPatternType.PREREQUISITE_GAP
+        assert result.evidence["missing_prerequisite_skill_id"] == "GRAMMAR_TO_BE"
+        assert result.severity == "high"
+
+    def test_low_confidence_pattern(self) -> None:
+        attempts = [
+            make_attempt(i, is_correct=(i <= 4), confidence=30.0, answer_changed=True)
+            for i in range(1, 7)
+        ]
+
+        result = self.classifier.classify(attempts)
+
+        assert result.pattern_type == ErrorPatternType.LOW_CONFIDENCE_PATTERN
+        assert result.evidence["avg_confidence"] == 30.0
+        assert "confidence-building" in result.recommended_intervention
+
+    def test_skip_avoidance_pattern(self) -> None:
+        attempts = [
+            make_attempt(1, is_correct=False, skip=True),
+            make_attempt(2, is_correct=False, skip=True),
+            make_attempt(3, is_correct=True),
+            make_attempt(4, is_correct=True),
+        ]
+
+        result = self.classifier.classify(attempts)
+
+        assert result.pattern_type == ErrorPatternType.SKIP_AVOIDANCE
+        assert result.evidence["skip_rate"] == 0.5
+
+    def test_expanded_pattern_values_are_architecture_labels(self) -> None:
+        assert ErrorPatternType.TYPE_1_RANDOM.value == "guessing"
+        assert ErrorPatternType.TYPE_2_CONSISTENT.value == "misunderstood_concept"
+        assert ErrorPatternType.TYPE_3_PRESSURE.value == "rushing"

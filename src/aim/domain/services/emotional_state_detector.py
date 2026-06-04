@@ -121,6 +121,56 @@ class EmotionalStateDetector:
             attempts_analyzed=len(non_skipped),
         )
 
+    def detect_without_speed(
+        self,
+        attempts: Sequence[EmotionalAttempt],
+    ) -> EmotionalStateResult:
+        """Detect level/difficulty risk signals without reading response time."""
+        non_skipped = [attempt for attempt in attempts if not attempt.skip]
+        repeated_errors = self.has_repeated_errors(non_skipped)
+        early_exit = len(non_skipped) < self.MIN_SESSION_QUESTIONS
+
+        score = round(
+            min(
+                100.0,
+                (40.0 if repeated_errors else 0.0)
+                + (30.0 if early_exit else 0.0),
+            ),
+            2,
+        )
+        signal = self._signal(
+            score=score,
+            repeated_errors=repeated_errors,
+            rushing=False,
+            fatigue_or_distraction=False,
+            early_exit=early_exit,
+        )
+        confidence_level = self._confidence_level(non_skipped, score)
+
+        return EmotionalStateResult(
+            frustration_score=score,
+            state=EmotionalState(signal),
+            emotional_signal=signal,
+            confidence_level=confidence_level,
+            evidence={
+                "repeated_errors": repeated_errors,
+                "sudden_slowdown": False,
+                "early_exit": early_exit,
+                "rushing": False,
+                "fatigue_or_distraction": False,
+                "accuracy": round(self._accuracy(non_skipped), 2),
+                "attempts_analyzed": len(non_skipped),
+                "speed_excluded_for_level": True,
+            },
+            repeated_errors=repeated_errors,
+            sudden_slowdown=False,
+            early_exit=early_exit,
+            rushing=False,
+            fatigue_or_distraction=False,
+            easy_win_mode=score >= self.HIGH_FRUSTRATION_THRESHOLD,
+            attempts_analyzed=len(non_skipped),
+        )
+
     def has_repeated_errors(self, attempts: Sequence[EmotionalAttempt]) -> bool:
         streak = 0
         for attempt in attempts:

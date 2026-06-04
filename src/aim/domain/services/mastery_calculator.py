@@ -1,7 +1,7 @@
 """Mastery calculation V2 for the AIM algorithm.
 
-Response time is intentionally excluded from mastery. It may still appear in
-attempt snapshots for behavioral analysis, but this module never reads it.
+Response time is intentionally excluded from mastery and from this module's
+attempt snapshot contract.
 """
 
 from __future__ import annotations
@@ -23,7 +23,6 @@ class AttemptSnapshot:
     """Attempt facts used by mastery, excluding speed from all score math."""
 
     is_correct: bool
-    response_time: float
     attempts: int
     difficulty: int
     skip: bool
@@ -145,7 +144,7 @@ class MasteryCalculator:
         previous_mastery = self._clamp(state.mastery if state else 0.0)
         retention = self._clamp(state.retention if state else 100.0)
 
-        # Calculate mastery components without reading response_time.
+        # Calculate mastery components from learning evidence only.
         accuracy = self._accuracy_score(valid_attempts)
         consistency = self._consistency_score(valid_attempts)
         difficulty = self._difficulty_score(valid_attempts)
