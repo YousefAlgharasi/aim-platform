@@ -18,6 +18,7 @@ from aim.domain.services.learning_response_pattern_detector import (
 )
 from aim.domain.services.outcome_tracker import OutcomeTracker, OutcomeTrackingInput
 from aim.domain.services.question_quality_analyzer import (
+    HistoricalQuestionAttempt,
     QuestionQualityAnalyzer,
     QuestionQualityInput,
 )
@@ -76,6 +77,45 @@ def test_low_question_quality_reduces_impact() -> None:
     assert result.impact_weight < 0.60
 
 
+def test_historical_question_quality_returns_insufficient_data() -> None:
+    result = QuestionQualityAnalyzer().analyze_historical(
+        "q-low-sample",
+        [
+            HistoricalQuestionAttempt(
+                student_id=1,
+                is_correct=False,
+                response_time=10.0,
+                hint_used=False,
+                skip=False,
+                learner_mastery=70.0,
+            )
+        ],
+    )
+
+    assert result.quality_label == "insufficient_data"
+    assert result.quality_score == 85.0
+    assert result.impact_weight == 0.85
+    assert result.flag_for_review is False
+
+
+def test_historical_question_quality_computes_discrimination() -> None:
+    attempts = [
+        HistoricalQuestionAttempt(i, True, 8.0, False, False, learner_mastery=90.0)
+        for i in range(1, 5)
+    ] + [
+        HistoricalQuestionAttempt(i, False, 12.0, True, False, learner_mastery=35.0)
+        for i in range(5, 9)
+    ]
+
+    result = QuestionQualityAnalyzer().analyze_historical("q-history", attempts)
+
+    assert result.evidence["sample_size"] == 8
+    assert result.evidence["correct_rate"] == 0.5
+    assert result.evidence["difficulty_index"] == 0.5
+    assert result.evidence["discrimination_index"] > 0.0
+    assert result.quality_label in {"acceptable", "strong"}
+
+
 def test_fairness_audit_returns_warnings_when_needed() -> None:
     result = FairnessAuditEngine().audit(
         FairnessAuditInput(
@@ -125,6 +165,27 @@ def test_conflict_resolver_prioritizes_overload() -> None:
 
     assert result.selected_action == "easy_win"
     assert result.final_priority == "high_frustration_or_overload"
+
+
+def test_conflict_resolver_prioritizes_low_reliability_first() -> None:
+    result = DecisionConflictResolver().resolve(
+        DecisionConflictInput(
+            frustration_score=90.0,
+            emotional_signal="possible_learning_overload",
+            prerequisite_gap_score=90.0,
+            weakness_score=90.0,
+            error_pattern_type="misunderstood_concept",
+            retention=50.0,
+            confidence_mismatch=True,
+            difficulty_action="increase",
+            transfer_category="HIGH",
+            current_skill_id="skill",
+            reliability=0.30,
+        )
+    )
+
+    assert result.selected_action == "collect_more_evidence"
+    assert result.final_priority == "low_reliability"
 
 
 def test_outcome_tracker_classifies_success() -> None:

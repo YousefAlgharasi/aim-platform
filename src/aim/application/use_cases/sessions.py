@@ -35,6 +35,7 @@ from aim.domain.services.learning_response_pattern_detector import (
     LearningResponsePatternDetector,
 )
 from aim.domain.services.mastery_calculator import MasteryCalculator
+from aim.domain.services.outcome_tracker import OutcomeTracker, OutcomeTrackingInput
 from aim.domain.services.performance_analyzer import AttemptRecord, PerformanceAnalyzer
 from aim.domain.services.prompt_adaptation_generator import (
     PromptAdaptationGenerator,
@@ -43,7 +44,6 @@ from aim.domain.services.prompt_adaptation_generator import (
 from aim.domain.services.recommendation_engine import RecommendationEngine
 from aim.domain.services.question_quality_analyzer import (
     QuestionQualityAnalyzer,
-    QuestionQualityInput,
 )
 from aim.domain.services.reliability_engine import ReliabilityEngine
 from aim.domain.services.retention_tracker import RetentionTracker
@@ -103,6 +103,7 @@ class SessionUseCases:
         evidence_quality_engine = EvidenceQualityEngine()
         fairness_audit_engine = FairnessAuditEngine()
         learning_pattern_detector = LearningResponsePatternDetector()
+        outcome_tracker = OutcomeTracker()
         question_quality_analyzer = QuestionQualityAnalyzer()
         reliability_engine = ReliabilityEngine()
         conflict_resolver = DecisionConflictResolver()
@@ -122,54 +123,50 @@ class SessionUseCases:
             prior_confidence = float(prior_state["confidence"])
             prior_difficulty = int(prior_state["current_difficulty"])
             prior_avg_speed = prior_state["avg_speed"]
+            prior_recommendation = self._uow.recommendation_logger.latest_unevaluated(
+                student_id=student_id,
+                skill_id=skill_id,
+            )
             metrics = analyzer.calculate_all_metrics(student_id, skill_id)
             skill_attempts = self._uow.attempts.get_attempts(student_id, skill_id)
             session_attempts = [
                 attempt for attempt in attempts
                 if attempt.student_id == student_id and attempt.skill_id == skill_id
             ]
+            weakness_attempts = [
+                WeaknessAttempt(
+                    student_id=attempt.student_id,
+                    skill_id=attempt.skill_id,
+                    is_correct=attempt.is_correct,
+                    difficulty=attempt.difficulty,
+                    skip=attempt.skip,
+                    hint_used=attempt.hint_used,
+                    attempts=attempt.attempts,
+                )
+                for attempt in skill_attempts
+            ]
+            emotional_attempts = [
+                EmotionalAttempt(
+                    question_id=attempt.question_id,
+                    is_correct=attempt.is_correct,
+                    response_time=attempt.response_time,
+                    previously_correct=prior_mastery >= 70.0,
+                    skip=attempt.skip,
+                    hint_used=attempt.hint_used,
+                    attempts=attempt.attempts,
+                )
+                for attempt in session_attempts
+            ]
             question_quality_results = []
             question_quality_by_id = {}
-            for question_id in sorted({attempt.question_id for attempt in session_attempts}):
-                question_attempts = [
-                    attempt for attempt in session_attempts
-                    if attempt.question_id == question_id
-                ]
-                valid_question_attempts = [
-                    attempt for attempt in question_attempts
-                    if not attempt.skip
-                ]
-                total = len(question_attempts)
-                valid_total = len(valid_question_attempts)
-                question_error_rate = (
-                    sum(1 for attempt in valid_question_attempts if not attempt.is_correct)
-                    / valid_total
-                    if valid_total
-                    else 1.0
-                )
-                question_quality = question_quality_analyzer.analyze(
-                    QuestionQualityInput(
-                        question_id=question_id,
-                        question_error_rate=question_error_rate,
-                        avg_response_time=(
-                            sum(attempt.response_time for attempt in valid_question_attempts)
-                            / valid_total
-                            if valid_total
-                            else 0.0
-                        ),
-                        hint_usage_rate=(
-                            sum(1 for attempt in valid_question_attempts if attempt.hint_used)
-                            / valid_total
-                            if valid_total
-                            else 0.0
-                        ),
-                        skip_rate=(
-                            sum(1 for attempt in question_attempts if attempt.skip) / total
-                            if total
-                            else 0.0
-                        ),
-                        discrimination_index=0.5,
-                    )
+            question_ids = sorted({attempt.question_id for attempt in session_attempts})
+            historical_attempts_by_question = (
+                self._uow.question_quality.get_question_quality_stats(question_ids)
+            )
+            for question_id in question_ids:
+                question_quality = question_quality_analyzer.analyze_historical(
+                    question_id,
+                    historical_attempts_by_question.get(question_id, []),
                 )
                 question_quality_results.append(question_quality)
                 question_quality_by_id[question_id] = question_quality.quality_score
@@ -199,20 +196,17 @@ class SessionUseCases:
             )
             self._uow.mastery_history.add_from_result(mastery_result)
             weakness = weakness_detector.calculate_skill_weakness(
-                [
-                    WeaknessAttempt(
-                        student_id=attempt.student_id,
-                        skill_id=attempt.skill_id,
-                        is_correct=attempt.is_correct,
-                        difficulty=attempt.difficulty,
-                        skip=attempt.skip,
-                        hint_used=attempt.hint_used,
-                        attempts=attempt.attempts,
-                    )
-                    for attempt in skill_attempts
-                ],
+                weakness_attempts,
                 skill_id,
                 hesitation_index=metrics.hesitation_index,
+                retention_drop=max(0.0, prior_state.get("retention", 100.0) - mastery_result.retention_score)
+                if "retention" in prior_state
+                else 0.0,
+            )
+            weakness_for_difficulty = weakness_detector.calculate_skill_weakness(
+                weakness_attempts,
+                skill_id,
+                hesitation_index=0.0,
                 retention_drop=max(0.0, prior_state.get("retention", 100.0) - mastery_result.retention_score)
                 if "retention" in prior_state
                 else 0.0,
@@ -234,6 +228,11 @@ class SessionUseCases:
                         is_timed=False,
                         session_position=attempt.session_position,
                         skip=attempt.skip,
+                        hint_used=attempt.hint_used,
+                        attempts=attempt.attempts,
+                        answer_changed=attempt.answer_changed,
+                        previously_correct=prior_mastery >= 70.0,
+                        confidence=prior_confidence,
                     )
                     for attempt in skill_attempts
                 ]
@@ -245,19 +244,11 @@ class SessionUseCases:
             )
             error_pattern_type = error_pattern_record.pattern_type
             emotional_result = emotional_detector.detect(
-                [
-                    EmotionalAttempt(
-                        question_id=attempt.question_id,
-                        is_correct=attempt.is_correct,
-                        response_time=attempt.response_time,
-                        previously_correct=prior_mastery >= 70.0,
-                        skip=attempt.skip,
-                        hint_used=attempt.hint_used,
-                        attempts=attempt.attempts,
-                    )
-                    for attempt in session_attempts
-                ],
+                emotional_attempts,
                 historical_avg_speed=prior_avg_speed,
+            )
+            emotional_result_for_difficulty = emotional_detector.detect_without_speed(
+                emotional_attempts,
             )
             self._uow.students.update_frustration_score(
                 student_id,
@@ -305,8 +296,8 @@ class SessionUseCases:
                 confidence=prior_confidence,
                 consistency=mastery_result.consistency_score,
                 reliability=reliability_result.reliability,
-                weakness_score=weakness.weakness_score,
-                frustration_score=emotional_result.frustration_score,
+                weakness_score=weakness_for_difficulty.weakness_score,
+                frustration_score=emotional_result_for_difficulty.frustration_score,
                 retention=retention_result.retention,
                 repeated_failure_count=self._recent_failure_count(session_attempts),
                 current_difficulty=prior_difficulty,
@@ -344,6 +335,10 @@ class SessionUseCases:
                 skill_id=skill_id,
                 result=fairness_result,
             )
+            recommendation_context = self._uow.recommendation_context.get_context(
+                student_id
+            )
+            transfer_result = recommendation_context.transfer_result
             conflict_result = conflict_resolver.resolve(
                 DecisionConflictInput(
                     frustration_score=emotional_result.frustration_score,
@@ -359,16 +354,36 @@ class SessionUseCases:
                         prior_confidence >= 80.0 and mastery_result.mastery < 60.0
                     ),
                     difficulty_action=difficulty_decision.action.value,
-                    transfer_category=None,
+                    transfer_category=(
+                        transfer_result.category.value
+                        if transfer_result is not None
+                        else None
+                    ),
                     current_skill_id=skill_id,
+                    reliability=reliability_result.reliability,
                     prerequisite_skill_id=(
                         prerequisite_gaps[0].missing_prerequisite_skill_id
                         if prerequisite_gaps
                         else None
                     ),
+                    transfer_skill_id=(
+                        transfer_result.to_skill_id
+                        if transfer_result is not None
+                        else None
+                    ),
                 )
             )
-            recommendation = recommendation_engine.get_next_action(student_id)
+            outcome_tracking = self._track_previous_recommendation_outcome(
+                tracker=outcome_tracker,
+                recommendation=prior_recommendation,
+                mastery_after=mastery_result.mastery,
+                retention_after=retention_result.retention,
+                weakness_after=weakness.weakness_score,
+            )
+            recommendation = recommendation_engine.get_next_action(
+                student_id,
+                resolved_decision=conflict_result,
+            )
             recommendation = replace(
                 recommendation,
                 evidence={
@@ -384,7 +399,7 @@ class SessionUseCases:
                 decision_priority=conflict_result.final_priority,
             )
             recommendation_log = self._uow.recommendation_logger.log(recommendation)
-            self._uow.explanation_logs.add_log(
+            explanation_log = self._uow.explanation_logs.add_log(
                 student_id=student_id,
                 skill_id=skill_id,
                 decision_type="mastery_and_recommendation",
@@ -394,6 +409,10 @@ class SessionUseCases:
                     "recommendation": recommendation.reason,
                     "fairness": fairness_result.evidence,
                     "conflict": conflict_result.evidence,
+                    "transfer_learning": self._serialize_transfer_learning(
+                        transfer_result
+                    ),
+                    "outcome_tracking": outcome_tracking,
                 },
             )
             prompt_instruction = prompt_generator.generate(
@@ -458,8 +477,12 @@ class SessionUseCases:
                 "learning_response_pattern": self._serialize_learning_pattern(
                     learning_pattern
                 ),
+                "transfer_learning": self._serialize_transfer_learning(
+                    transfer_result
+                ),
                 "fairness_audit": self._serialize_fairness_audit(fairness_result),
                 "decision_conflict": self._serialize_conflict_result(conflict_result),
+                "outcome_tracking": outcome_tracking,
                 "difficulty_decision": self._serialize_difficulty_decision(
                     difficulty_decision
                 ),
@@ -474,6 +497,7 @@ class SessionUseCases:
                     self._serialize_prerequisite_gap(gap)
                     for gap in prerequisite_gaps
                 ],
+                "explanation_log_id": explanation_log.id,
             }
             adaptive_results.append(adaptive_result)
             metrics_summary.append(
@@ -543,6 +567,56 @@ class SessionUseCases:
             else:
                 break
         return streak
+
+    def _track_previous_recommendation_outcome(
+        self,
+        *,
+        tracker: OutcomeTracker,
+        recommendation,
+        mastery_after: float,
+        retention_after: float,
+        weakness_after: float,
+    ) -> dict:
+        if recommendation is None:
+            return {
+                "evaluated": False,
+                "reason": "no_unevaluated_recommendation",
+            }
+
+        if recommendation.mastery_before is None:
+            return {
+                "evaluated": False,
+                "recommendation_id": recommendation.id,
+                "reason": "missing_baseline",
+            }
+
+        try:
+            snapshot = recommendation.inputs_snapshot or {}
+            result = tracker.track(
+                OutcomeTrackingInput(
+                    recommendation_id=recommendation.id,
+                    mastery_before=float(recommendation.mastery_before),
+                    mastery_after=mastery_after,
+                    retention_before=float(snapshot.get("retention", 0.0) or 0.0),
+                    retention_after=retention_after,
+                    weakness_before=float(snapshot.get("weakness_score", 0.0) or 0.0),
+                    weakness_after=weakness_after,
+                )
+            )
+            self._uow.outcome_records.add_result(result)
+            self._uow.recommendation_logger.mark_evaluated(
+                recommendation,
+                mastery_after=mastery_after,
+                mastery_improved_after=mastery_after > float(recommendation.mastery_before),
+            )
+            return self._serialize_outcome_tracking(result)
+        except Exception as exc:
+            return {
+                "evaluated": False,
+                "recommendation_id": recommendation.id,
+                "reason": "tracking_failed",
+                "error": exc.__class__.__name__,
+            }
 
     def _sync_prerequisite_gaps(
         self,
@@ -643,6 +717,9 @@ class SessionUseCases:
         return {
             "pattern_type": pattern_type,
             "treatment_recommendation": error_pattern.treatment_recommendation,
+            "recommended_intervention": error_pattern.recommended_intervention,
+            "severity": error_pattern.severity,
+            "confidence": error_pattern.confidence,
             "accuracy": error_pattern.accuracy,
             "attempts_analyzed": error_pattern.attempts_analyzed,
             "evidence": dict(error_pattern.evidence),
@@ -696,6 +773,8 @@ class SessionUseCases:
             "quality_score": result.quality_score,
             "flag_for_review": result.flag_for_review,
             "impact_weight": result.impact_weight,
+            "quality_label": result.quality_label,
+            "confidence": result.confidence,
             "warnings": list(result.warnings),
             "evidence": dict(result.evidence),
         }
@@ -706,6 +785,22 @@ class SessionUseCases:
             "learning_response_pattern": result.learning_response_pattern,
             "confidence": result.confidence,
             "evidence": dict(result.evidence),
+        }
+
+    @staticmethod
+    def _serialize_transfer_learning(result) -> dict | None:
+        if result is None:
+            return None
+        return {
+            "student_id": result.student_id,
+            "from_skill_id": result.from_skill_id,
+            "to_skill_id": result.to_skill_id,
+            "relationship_coefficient": result.relationship_coefficient,
+            "previous_skill_mastery": result.previous_skill_mastery,
+            "avg_time_to_learn_new_skill": result.avg_time_to_learn_new_skill,
+            "transfer_score": result.transfer_score,
+            "category": result.category.value,
+            "recommendation_flag": result.recommendation_flag,
         }
 
     @staticmethod
@@ -724,6 +819,20 @@ class SessionUseCases:
             "selected_action": result.selected_action,
             "reason": result.reason,
             "evidence": dict(result.evidence),
+        }
+
+    @staticmethod
+    def _serialize_outcome_tracking(result) -> dict:
+        return {
+            "evaluated": True,
+            "recommendation_id": result.recommendation_id,
+            "outcome": result.outcome,
+            "mastery_before": result.mastery_before,
+            "mastery_after": result.mastery_after,
+            "retention_before": result.retention_before,
+            "retention_after": result.retention_after,
+            "weakness_before": result.weakness_before,
+            "weakness_after": result.weakness_after,
         }
 
     @staticmethod

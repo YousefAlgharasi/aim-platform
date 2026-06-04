@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from typing import Sequence
+
 from sqlalchemy.orm import Session
 
 from aim.domain.services.fairness_audit_engine import FairnessAuditResult
 from aim.domain.services.learning_response_pattern_detector import LearningPatternResult
 from aim.domain.services.outcome_tracker import OutcomeTrackingResult
 from aim.domain.services.question_quality_analyzer import QuestionQualityResult
+from aim.domain.services.question_quality_analyzer import HistoricalQuestionAttempt
 from aim.infrastructure.database.models.explanation_log import ExplanationLogORM
 from aim.infrastructure.database.models.fairness_audit import FairnessAuditLogORM
 from aim.infrastructure.database.models.learning_response_pattern import (
@@ -15,6 +18,8 @@ from aim.infrastructure.database.models.learning_response_pattern import (
 )
 from aim.infrastructure.database.models.outcome_record import OutcomeRecordORM
 from aim.infrastructure.database.models.question_quality import QuestionQualityStatsORM
+from aim.infrastructure.database.models.question_attempt import QuestionAttemptORM
+from aim.infrastructure.database.models.student import StudentSkillStateORM
 
 
 # Persists question quality analysis output.
@@ -44,6 +49,49 @@ class SQLQuestionQualityRepository:
         row.discrimination_index = float(result.evidence.get("discrimination_index", 0.0))
         self._db.flush()
         return row
+
+    def get_historical_attempts(
+        self,
+        question_id: str,
+    ) -> list[HistoricalQuestionAttempt]:
+        return self.get_question_quality_stats([question_id]).get(question_id, [])
+
+    def get_question_quality_stats(
+        self,
+        question_ids: Sequence[str],
+    ) -> dict[str, list[HistoricalQuestionAttempt]]:
+        attempts_by_question = {question_id: [] for question_id in question_ids}
+        if not attempts_by_question:
+            return attempts_by_question
+
+        rows = (
+            self._db.query(QuestionAttemptORM, StudentSkillStateORM.mastery)
+            .outerjoin(
+                StudentSkillStateORM,
+                (StudentSkillStateORM.student_id == QuestionAttemptORM.student_id)
+                & (StudentSkillStateORM.skill_id == QuestionAttemptORM.skill_id),
+            )
+            .filter(QuestionAttemptORM.question_id.in_(list(attempts_by_question)))
+            .order_by(
+                QuestionAttemptORM.question_id.asc(),
+                QuestionAttemptORM.created_at.asc(),
+                QuestionAttemptORM.id.asc(),
+            )
+            .all()
+        )
+
+        for attempt, mastery in rows:
+            attempts_by_question[attempt.question_id].append(
+                HistoricalQuestionAttempt(
+                    student_id=attempt.student_id,
+                    is_correct=attempt.is_correct,
+                    response_time=attempt.response_time,
+                    hint_used=attempt.hint_used,
+                    skip=attempt.skip,
+                    learner_mastery=mastery,
+                )
+            )
+        return attempts_by_question
 
 
 # Persists fairness audit results.
