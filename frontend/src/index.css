@@ -1,8 +1,9 @@
 :root {
-  --accent: #c94f2d;
-  --background: #f5f1e8;
-  --ink: #172328;
-  --muted: #64717a;
+  --accent: #0f766e;
+  --background: #eef2f6;
+  --ink: #17242f;
+  --line: #d7dee7;
+  --muted: #657386;
   --surface: #ffffff;
 }
 
@@ -11,9 +12,7 @@
 }
 
 body {
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.62), rgba(245, 241, 232, 0.88)),
-    var(--background);
+  background: var(--background);
   margin: 0;
   font-family: 'Aptos', 'Trebuchet MS', sans-serif;
   -webkit-font-smoothing: antialiased;
