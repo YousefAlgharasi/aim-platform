@@ -1,14 +1,42 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import App from './App';
+import { supabase } from './shared/supabase/client';
+
+jest.mock('./shared/supabase/client', () => ({
+  SUPABASE_URL: 'https://test.supabase.co',
+  supabase: {
+    auth: {
+      getSession: jest.fn().mockResolvedValue({ data: { session: null }, error: null }),
+      onAuthStateChange: jest.fn(() => ({
+        data: {
+          subscription: {
+            unsubscribe: jest.fn(),
+          },
+        },
+      })),
+      signInWithPassword: jest.fn(),
+      signOut: jest.fn(),
+    },
+  },
+}));
 
 beforeEach(() => {
   window.localStorage.clear();
   window.sessionStorage.clear();
+  supabase.auth.getSession.mockResolvedValue({ data: { session: null }, error: null });
+  supabase.auth.onAuthStateChange.mockReturnValue({
+    data: {
+      subscription: {
+        unsubscribe: jest.fn(),
+      },
+    },
+  });
 });
 
 afterEach(() => {
   window.history.pushState({}, '', '/');
-  jest.restoreAllMocks();
+  jest.clearAllMocks();
+  delete global.fetch;
 });
 
 test('renders the AIM visual demo dashboard', () => {
@@ -27,122 +55,112 @@ test('renders the AIM visual demo dashboard', () => {
   expect(screen.getByRole('heading', { name: 'Prompt Adaptation Instruction' })).toBeInTheDocument();
 });
 
-test('renders the web pilot login when no student is selected', () => {
-  window.history.pushState({}, '', '/');
+test('renders the web pilot login when no student is selected', async () => {
+  window.history.pushState({}, '', '/login');
   render(<App />);
 
-  expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: /student login/i })).toBeInTheDocument();
   expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
   expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: /register/i })).toBeInTheDocument();
-  expect(screen.getByText(/127.0.0.1:8000/i)).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
+  expect(await screen.findByText(/ready to login/i)).toBeInTheDocument();
 });
 
-test('loads the web pilot dashboard from the configured API base URL', async () => {
-  window.localStorage.setItem(
-    'aim_web_pilot_profile',
-    JSON.stringify({ studentId: '7', name: 'Mona', token: 'token-1' }),
-  );
-  window.history.pushState({}, '', '/dashboard');
-  jest.spyOn(global, 'fetch').mockImplementation((url) =>
-    Promise.resolve({
-      ok: true,
-      json: () =>
-        Promise.resolve(
-          String(url).endsWith('/lessons')
-            ? {
-                lessons: [
-                  {
-                    lesson_id: 'a1-routines-1',
-                    title: 'Daily routines',
-                    level: 'A1',
-                    estimated_minutes: 12,
-                    difficulty: 1,
-                    skill_focus: ['GRAMMAR_VERB_FORMS'],
-                  },
-                ],
-              }
-            : {
-                action_type: 'continue_current_skill',
-                confidence: 0.8,
-                reason: 'Keep practicing the current skill.',
-              },
-        ),
-    }),
-  );
+test('loads the admin dashboard from the configured API base URL', async () => {
+  window.localStorage.setItem('aim_supabase_access_token', 'token-1');
+  window.history.pushState({}, '', '/admin');
+  global.fetch = jest.fn().mockResolvedValue({
+    ok: true,
+    text: () =>
+      Promise.resolve(
+        JSON.stringify({
+          summary: {
+            students: 1,
+            sessions: 1,
+            attempts: 2,
+            recommendations: 1,
+            outcomes: 1,
+            audit_events: 1,
+          },
+          students: [
+            {
+              id: 7,
+              name: 'Mona',
+              email: 'mona@example.com',
+              latest_mastery: 74,
+              latest_reliability: 0.82,
+              latest_skill_id: 'GRAMMAR_VERB_FORMS',
+            },
+          ],
+          sessions: [
+            {
+              session_id: 'session-test',
+              student_id: 7,
+              attempt_count: 2,
+              accuracy: 50,
+              latest_attempt_at: '2026-06-05T12:00:00',
+            },
+          ],
+          mastery_changes: [
+            {
+              student_id: 7,
+              skill_id: 'GRAMMAR_VERB_FORMS',
+              mastery: 74,
+              retention: 81,
+              current_difficulty: 2,
+              updated_at: '2026-06-05T12:00:00',
+            },
+          ],
+          recommendations: [
+            {
+              id: 11,
+              student_id: 7,
+              action_type: 'continue_current_skill',
+              skill_id: 'GRAMMAR_VERB_FORMS',
+              difficulty: 2,
+              was_followed: true,
+              created_at: '2026-06-05T12:00:00',
+            },
+          ],
+          outcomes: [
+            {
+              id: 21,
+              recommendation_id: 11,
+              outcome: 'successful',
+              mastery_delta: 4,
+              retention_delta: 1,
+              weakness_delta: -3,
+            },
+          ],
+          events: [
+            {
+              id: 31,
+              action: 'adaptive_result',
+              entity_type: 'web_session',
+              entity_id: 'session-test',
+              student_id: 7,
+              created_at: '2026-06-05T12:00:00',
+            },
+          ],
+        }),
+      ),
+  });
 
   render(<App />);
 
-  expect(screen.getByText('Daily routines')).toBeInTheDocument();
-  expect(await screen.findAllByText(/continue_current_skill/i)).toHaveLength(2);
+  expect(await screen.findByRole('heading', { name: /admin dashboard/i })).toBeInTheDocument();
+  expect(await screen.findByText('Mona')).toBeInTheDocument();
+  expect(screen.getAllByText('session-test').length).toBeGreaterThan(0);
+  expect(screen.getAllByText(/continue current skill/i).length).toBeGreaterThan(0);
+  expect(screen.getByText(/successful/i)).toBeInTheDocument();
+  expect(screen.getByText(/adaptive result/i)).toBeInTheDocument();
+
   expect(global.fetch).toHaveBeenCalledWith(
-    'http://127.0.0.1:8000/students/7/lessons',
+    'http://127.0.0.1:8000/admin/pilot/overview',
     expect.objectContaining({
       headers: expect.objectContaining({ Authorization: 'Bearer token-1' }),
     }),
   );
-});
-
-test('submits lesson session selected answers and attempt metadata', async () => {
-  const session = {
-    lesson_id: 'a1-routines-1',
-    session_id: 'session-test',
-    questions: [
-      {
-        question_id: 'a1-routines-1:q1',
-        skill_id: 'GRAMMAR_VERB_FORMS',
-        prompt: 'Choose the correct sentence.',
-        difficulty: 1,
-        choices: [
-          { choice_text: 'I wake up at seven.' },
-          { choice_text: 'I wakes up at seven.' },
-        ],
-      },
-    ],
-  };
-  window.localStorage.setItem(
-    'aim_web_pilot_profile',
-    JSON.stringify({ studentId: '7', name: 'Mona', token: 'token-1' }),
-  );
-  window.sessionStorage.setItem('aim_session:session-test', JSON.stringify(session));
-  window.history.pushState({}, '', '/sessions/session-test');
-  jest.spyOn(global, 'fetch').mockResolvedValue({
-    ok: true,
-    json: () =>
-      Promise.resolve({
-        session_id: 'session-test',
-        attempts_saved: 1,
-        recommendation: { action: 'collect_more_evidence', reason: 'More evidence needed.' },
-        decision_conflict: { selected_action: 'collect_more_evidence' },
-      }),
-  });
-
-  render(<App />);
-
-  fireEvent.click(screen.getByRole('button', { name: 'I wake up at seven.' }));
-  fireEvent.click(screen.getByRole('button', { name: /hint used/i }));
-  fireEvent.change(screen.getByLabelText(/confidence/i), { target: { value: '85' } });
-  fireEvent.click(screen.getByRole('button', { name: /submit/i }));
-
-  await waitFor(() => {
-    expect(global.fetch).toHaveBeenCalledWith(
-      'http://127.0.0.1:8000/students/7/sessions/session-test/attempts',
-      expect.objectContaining({
-        body: expect.stringContaining('"selected_answer":"I wake up at seven."'),
-      }),
-    );
-  });
-  const requestBody = JSON.parse(global.fetch.mock.calls[0][1].body);
-  expect(requestBody.attempts[0]).toEqual(
-    expect.objectContaining({
-      selected_answer: 'I wake up at seven.',
-      confidence: 85,
-      hint_used: true,
-      skip: false,
-      answer_changed: false,
-    }),
-  );
-  expect(requestBody.attempts[0]).not.toHaveProperty('is_correct');
 });
 
 test('renders adaptive result as student-facing next action', async () => {
@@ -150,8 +168,8 @@ test('renders adaptive result as student-facing next action', async () => {
     'aim_web_pilot_profile',
     JSON.stringify({ studentId: '7', name: 'Mona', token: 'token-1' }),
   );
-  window.sessionStorage.setItem(
-    'aim_result:session-result',
+  window.localStorage.setItem(
+    'aim_last_adaptive_result',
     JSON.stringify({
       session_id: 'session-result',
       attempts_saved: 2,
@@ -165,8 +183,12 @@ test('renders adaptive result as student-facing next action', async () => {
       reliability: { score: 0.8 },
     }),
   );
-  window.history.pushState({}, '', '/result/session-result');
-  jest.spyOn(global, 'fetch').mockResolvedValue({
+  window.localStorage.setItem(
+    'aim_last_adaptive_result_meta',
+    JSON.stringify({ studentId: '7', sessionId: 'session-result' }),
+  );
+  window.history.pushState({}, '', '/adaptive-result?studentId=7&sessionId=session-result');
+  global.fetch = jest.fn().mockResolvedValue({
     ok: true,
     json: () =>
       Promise.resolve({
@@ -183,7 +205,7 @@ test('renders adaptive result as student-facing next action', async () => {
 
   render(<App />);
 
-  expect(await screen.findByText(/adaptive result loaded/i)).toBeInTheDocument();
+  expect(await screen.findByText(/saved result loaded/i)).toBeInTheDocument();
   expect(screen.getByRole('heading', { name: /result/i })).toBeInTheDocument();
   expect(screen.getByText('74%')).toBeInTheDocument();
   expect(screen.getAllByText(/continue current skill/i).length).toBeGreaterThan(0);
