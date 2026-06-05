@@ -1,0 +1,159 @@
+{
+  "skill_map_version": "1.0",
+  "task_id": "AIM-021",
+  "target_level": "CEFR A1",
+  "target_learners": "Arabic-speaking English beginners",
+  "skills": [
+    {
+      "skill_id": "SK-V01",
+      "name": "greetings_vocabulary",
+      "name_ar": "مفردات التحيات",
+      "category": "Vocabulary",
+      "difficulty": 1,
+      "prerequisites": [],
+      "taught_in": ["L01"],
+      "reviewed_in": ["L10"],
+      "description": "Hello, Hi, Good morning/afternoon/evening, Goodbye, How are you, Fine thank you."
+    },
+    {
+      "skill_id": "SK-V02",
+      "name": "numbers_1_to_20",
+      "name_ar": "الأرقام من 1 إلى 20",
+      "category": "Vocabulary",
+      "difficulty": 1,
+      "prerequisites": [],
+      "taught_in": ["L03"],
+      "reviewed_in": ["L10"],
+      "description": "One through twenty in English, written form."
+    },
+    {
+      "skill_id": "SK-V03",
+      "name": "colors_basic",
+      "name_ar": "الألوان الأساسية",
+      "category": "Vocabulary",
+      "difficulty": 1,
+      "prerequisites": [],
+      "taught_in": ["L03"],
+      "reviewed_in": [],
+      "description": "Red, blue, green, yellow, white, black, orange, purple."
+    },
+    {
+      "skill_id": "SK-V04",
+      "name": "family_vocabulary",
+      "name_ar": "مفردات العائلة",
+      "category": "Vocabulary",
+      "difficulty": 1,
+      "prerequisites": [],
+      "taught_in": ["L04"],
+      "reviewed_in": ["L10"],
+      "description": "Mother, father, brother, sister, grandmother, grandfather, uncle, aunt, cousin."
+    },
+    {
+      "skill_id": "SK-V05",
+      "name": "daily_routine_verbs",
+      "name_ar": "أفعال الروتين اليومي",
+      "category": "Vocabulary",
+      "difficulty": 2,
+      "prerequisites": ["SK-G01"],
+      "taught_in": ["L05", "L06"],
+      "reviewed_in": ["L10"],
+      "description": "Wake up, eat, drink, go, come, work, sleep, brush, wash, read."
+    },
+    {
+      "skill_id": "SK-V06",
+      "name": "home_and_city_vocabulary",
+      "name_ar": "مفردات المنزل والمدينة",
+      "category": "Vocabulary",
+      "difficulty": 2,
+      "prerequisites": [],
+      "taught_in": ["L08"],
+      "reviewed_in": [],
+      "description": "Rooms: bedroom, kitchen, bathroom, living room. Places: school, hospital, market, park, mosque."
+    },
+    {
+      "skill_id": "SK-G01",
+      "name": "verb_to_be_present",
+      "name_ar": "فعل to be في المضارع",
+      "category": "Grammar",
+      "difficulty": 1,
+      "prerequisites": [],
+      "taught_in": ["L01", "L02"],
+      "reviewed_in": ["L04", "L08", "L10"],
+      "description": "I am, you are, he/she/it is, we are, they are. Positive and negative forms."
+    },
+    {
+      "skill_id": "SK-G02",
+      "name": "present_simple_positive",
+      "name_ar": "المضارع البسيط - الإيجاب",
+      "category": "Grammar",
+      "difficulty": 2,
+      "prerequisites": ["SK-G01"],
+      "taught_in": ["L05", "L06"],
+      "reviewed_in": ["L08", "L10"],
+      "description": "I eat, he eats, she goes. Third-person -s and -es rules. have/has exception."
+    },
+    {
+      "skill_id": "SK-G03",
+      "name": "present_simple_negative",
+      "name_ar": "المضارع البسيط - النفي",
+      "category": "Grammar",
+      "difficulty": 2,
+      "prerequisites": ["SK-G02"],
+      "taught_in": ["L07"],
+      "reviewed_in": [],
+      "description": "I don't, she doesn't. Don't vs doesn't."
+    },
+    {
+      "skill_id": "SK-G04",
+      "name": "present_simple_question",
+      "name_ar": "المضارع البسيط - الأسئلة",
+      "category": "Grammar",
+      "difficulty": 3,
+      "prerequisites": ["SK-G02"],
+      "taught_in": ["L07"],
+      "reviewed_in": ["L10"],
+      "description": "Do you? Does she? Short answers. Wh- questions: What, Where, When, Who, How."
+    },
+    {
+      "skill_id": "SK-R01",
+      "name": "basic_reading_comprehension",
+      "name_ar": "فهم القراءة الأساسي",
+      "category": "Reading",
+      "difficulty": 3,
+      "prerequisites": ["SK-G02", "SK-V05"],
+      "taught_in": ["L09"],
+      "reviewed_in": ["L10"],
+      "description": "Read 5–6 sentence texts. Answer who/what/where/when questions. Identify words in context."
+    }
+  ],
+  "prerequisite_graph": {
+    "SK-G02": ["SK-G01"],
+    "SK-G03": ["SK-G02"],
+    "SK-G04": ["SK-G02"],
+    "SK-V05": ["SK-G01"],
+    "SK-R01": ["SK-G02", "SK-V05"]
+  },
+  "common_error_tags_glossary": {
+    "confusion_am_is_are": "Student uses wrong form of 'to be' (e.g., I is, She am).",
+    "subject_verb_agreement_error": "Verb form does not agree with subject number or person.",
+    "wrong_verb_form": "Using -ing, past, or base where another form is needed.",
+    "third_person_s_confusion": "Forgetting to add -s/-es with he/she/it in present simple.",
+    "missing_auxiliary": "Omitting do/does in questions or don't/doesn't in negatives.",
+    "do_does_confusion": "Using 'do' with he/she/it or 'does' with I/you/we/they.",
+    "wrong_negative_form": "Incorrect negative construction (e.g., 'she don't' instead of 'she doesn't').",
+    "preposition_error": "Wrong preposition used (in/on/at/next to).",
+    "there_is_are_confusion": "Using 'there is' with plural or 'there are' with singular.",
+    "his_her_confusion": "Using 'his' for female or 'her' for male referent.",
+    "wh_word_confusion": "Choosing wrong wh- word for the type of question.",
+    "family_term_confusion": "Confusing family member terms (uncle/aunt, cousin, etc.).",
+    "greeting_time_confusion": "Using the wrong time-of-day greeting.",
+    "spelling_error": "Incorrect spelling of a known vocabulary word.",
+    "reading_comprehension_error": "Incorrect answer based on misreading the text.",
+    "number_confusion": "Confusing similar number words (fifteen vs fifty).",
+    "irregular_verb_error": "Applying regular rules to irregular verbs (e.g., 'haves' instead of 'has').",
+    "false_cognate_arabic": "Interference from Arabic that leads to wrong English form.",
+    "word_order_error": "Subject-verb-object order violated.",
+    "omitted_article": "Missing 'a', 'an', or 'the' where required.",
+    "omitted_subject_pronoun": "Arabic allows dropping subject pronouns; students may do same in English."
+  }
+}

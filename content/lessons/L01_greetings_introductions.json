@@ -1,0 +1,128 @@
+{
+  "lesson_id": "L01",
+  "task_id": "AIM-021",
+  "title_en": "Greetings & Introductions",
+  "title_ar": "التحيات والتعريف بالنفس",
+  "week": 1,
+  "difficulty": 1,
+  "sprint": "Sprint 4 - Content",
+  "prerequisites": [],
+  "skills_covered": ["SK-V01", "SK-G01"],
+  "learning_objectives": [
+    "Use Hello, Hi, Good morning, Good afternoon, Good evening correctly.",
+    "Introduce yourself: My name is ..., I am from ..., I am ... years old.",
+    "Respond to How are you? with simple answers.",
+    "Use I am / You are in short sentences."
+  ],
+  "questions": [
+    {
+      "question_id": "L01-Q01",
+      "skill_id": "SK-V01",
+      "concept": "greeting_selection",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt_en": "Which word do you use to say hello to someone in the morning?",
+      "prompt_ar": "ما الكلمة التي تستخدمها لتحية شخص في الصباح؟",
+      "choices": [
+        "Good morning",
+        "Good night",
+        "Goodbye",
+        "See you"
+      ],
+      "correct_answer": "Good morning",
+      "explanation_en": "'Good morning' is used as a greeting from sunrise until around noon.",
+      "explanation_ar": "نستخدم 'Good morning' كتحية من الفجر حتى الظهر تقريباً.",
+      "common_error_tags": ["greeting_time_confusion"],
+      "prerequisites": [],
+      "hints": [
+        "Think about what time of day morning is.",
+        "Morning = الصباح"
+      ]
+    },
+    {
+      "question_id": "L01-Q02",
+      "skill_id": "SK-G01",
+      "concept": "verb_to_be_first_person",
+      "difficulty": 1,
+      "type": "fill",
+      "prompt_en": "Complete the sentence: My name ___ Sara.",
+      "prompt_ar": "أكمل الجملة: اسمي ___ سارة.",
+      "correct_answer": "is",
+      "explanation_en": "We use 'is' with 'My name' because 'My name' is a third-person singular subject.",
+      "explanation_ar": "نستخدم 'is' مع 'My name' لأنها مفرد غائب (هو/هي).",
+      "common_error_tags": ["confusion_am_is_are", "subject_verb_agreement_error"],
+      "prerequisites": [],
+      "hints": [
+        "My name = هي (مفردة غائبة)",
+        "I am / My name is / She is"
+      ]
+    },
+    {
+      "question_id": "L01-Q03",
+      "skill_id": "SK-G01",
+      "concept": "verb_to_be_first_person",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt_en": "Choose the correct sentence to introduce yourself.",
+      "prompt_ar": "اختر الجملة الصحيحة للتعريف بنفسك.",
+      "choices": [
+        "I am Ahmed.",
+        "I is Ahmed.",
+        "I are Ahmed.",
+        "Me am Ahmed."
+      ],
+      "correct_answer": "I am Ahmed.",
+      "explanation_en": "With the pronoun 'I', we always use 'am'. Never 'is' or 'are'.",
+      "explanation_ar": "مع ضمير 'I' نستخدم دائماً 'am'. لا نقول 'is' أو 'are' مع I.",
+      "common_error_tags": ["confusion_am_is_are", "subject_verb_agreement_error"],
+      "prerequisites": [],
+      "hints": [
+        "I → am",
+        "He/She/It → is",
+        "You/We/They → are"
+      ]
+    },
+    {
+      "question_id": "L01-Q04",
+      "skill_id": "SK-V01",
+      "concept": "farewell_vocabulary",
+      "difficulty": 1,
+      "type": "true_false",
+      "prompt_en": "True or False: 'Goodbye' is used to greet someone when you first meet them.",
+      "prompt_ar": "صح أم خطأ: نستخدم 'Goodbye' لتحية شخص عند مقابلته لأول مرة.",
+      "correct_answer": "False",
+      "explanation_en": "'Goodbye' is used when leaving or parting. To greet someone, we say 'Hello' or 'Hi'.",
+      "explanation_ar": "كلمة 'Goodbye' تُستخدم عند الوداع وليس عند اللقاء. للتحية نقول 'Hello' أو 'Hi'.",
+      "common_error_tags": ["greeting_time_confusion"],
+      "prerequisites": [],
+      "hints": [
+        "Goodbye = وداعاً",
+        "Hello = مرحباً"
+      ]
+    },
+    {
+      "question_id": "L01-Q05",
+      "skill_id": "SK-V01",
+      "concept": "how_are_you_response",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt_en": "Someone asks: 'How are you?' What is a correct reply?",
+      "prompt_ar": "سألك شخص: 'How are you?' ما الرد الصحيح؟",
+      "choices": [
+        "I am fine, thank you.",
+        "I is fine.",
+        "My name is fine.",
+        "Fine, I."
+      ],
+      "correct_answer": "I am fine, thank you.",
+      "explanation_en": "'I am fine, thank you.' is the standard polite response to 'How are you?'",
+      "explanation_ar": "'I am fine, thank you.' هو الرد المهذب المعتاد على 'How are you?'",
+      "common_error_tags": ["confusion_am_is_are", "word_order_error"],
+      "prerequisites": [],
+      "hints": [
+        "I → am",
+        "Fine = بخير"
+      ]
+    }
+  ]
+}
