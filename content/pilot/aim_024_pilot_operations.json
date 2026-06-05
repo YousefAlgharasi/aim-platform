@@ -1,0 +1,181 @@
+{
+  "operations_id": "AIM-024",
+  "linked_pilot_id": "AIM-023",
+  "title": "Web pilot operations runbook",
+  "status": "ready_for_manual_notion_review",
+  "daily_operations": [
+    {
+      "day": 0,
+      "operator_action": "Create pilot accounts, verify Supabase Auth access, and administer the baseline assessment.",
+      "learner_activity": "Sign in, confirm the web pilot opens, and complete the A1 pre-test.",
+      "data_to_check": ["student profile link", "pre-test score", "auth user id"],
+      "completion_signal": "All five learners have a linked profile and baseline score."
+    },
+    {
+      "day": 1,
+      "operator_action": "Confirm L01 is available and monitor the first lesson session for each learner.",
+      "learner_activity": "Complete L01 greetings and introductions through the web pilot.",
+      "data_to_check": ["lesson session", "attempt count", "adaptive result"],
+      "completion_signal": "Each active learner has a completed L01 adaptive result."
+    },
+    {
+      "day": 2,
+      "operator_action": "Check L02 access, monitor submission quality, and review the admin dashboard.",
+      "learner_activity": "Complete L02 verb to be practice and read the adaptive result.",
+      "data_to_check": ["attempt accuracy", "mastery change", "recommendation action"],
+      "completion_signal": "L02 submissions appear in the admin overview."
+    },
+    {
+      "day": 3,
+      "operator_action": "Confirm L03 content loads and compare progress against the first two lessons.",
+      "learner_activity": "Complete L03 numbers and colors practice.",
+      "data_to_check": ["lesson completion", "common error tags", "recommendation outcome"],
+      "completion_signal": "L03 attempts and outcomes are visible to the operator."
+    },
+    {
+      "day": 4,
+      "operator_action": "Monitor L04 and record only educational observations about family vocabulary gaps.",
+      "learner_activity": "Complete L04 family vocabulary and simple sentence practice.",
+      "data_to_check": ["weakness result", "retention signal", "audit event"],
+      "completion_signal": "L04 result is saved for each participating learner."
+    },
+    {
+      "day": 5,
+      "operator_action": "Run the L05 session and check that recommendations remain aligned with AIM decisions.",
+      "learner_activity": "Complete L05 daily routines part 1.",
+      "data_to_check": ["decision conflict", "recommendation action", "prompt adaptation"],
+      "completion_signal": "Recommendation actions match resolved AIM decisions."
+    },
+    {
+      "day": 6,
+      "operator_action": "Use the rest day for admin review and follow-up with learners who missed a session.",
+      "learner_activity": "No new lesson; complete any missed lesson from days 1 through 5.",
+      "data_to_check": ["missed sessions", "student status", "audit events"],
+      "completion_signal": "Missed-session list is reviewed and follow-up is logged."
+    },
+    {
+      "day": 7,
+      "operator_action": "Start week two with L06 and check retention movement from week one skills.",
+      "learner_activity": "Complete L06 daily routines part 2.",
+      "data_to_check": ["retention result", "mastery change", "lesson completion"],
+      "completion_signal": "Week two starts with current retention data visible."
+    },
+    {
+      "day": 8,
+      "operator_action": "Monitor L07 question formation and watch for prerequisite gap signals.",
+      "learner_activity": "Complete L07 present simple questions.",
+      "data_to_check": ["prerequisite gaps", "error pattern", "adaptive result"],
+      "completion_signal": "L07 prerequisite gaps are reviewed without increasing difficulty manually."
+    },
+    {
+      "day": 9,
+      "operator_action": "Run L08 and confirm home and city vocabulary evidence is captured.",
+      "learner_activity": "Complete L08 home and city vocabulary practice.",
+      "data_to_check": ["attempt count", "weakness score", "recommendation outcome"],
+      "completion_signal": "L08 completion is visible in the admin dashboard."
+    },
+    {
+      "day": 10,
+      "operator_action": "Run L09 and check reading comprehension results for safe review recommendations.",
+      "learner_activity": "Complete L09 basic reading comprehension.",
+      "data_to_check": ["reading skill state", "retention review", "prompt adaptation"],
+      "completion_signal": "Reading comprehension results are saved and review guidance is present."
+    },
+    {
+      "day": 11,
+      "operator_action": "Run L10 review and confirm all learners are ready for post-test scheduling.",
+      "learner_activity": "Complete L10 mixed review before final measurement.",
+      "data_to_check": ["lesson completion count", "latest mastery", "latest recommendation"],
+      "completion_signal": "Each active learner has either completed L10 or has a clear missed-session note."
+    },
+    {
+      "day": 12,
+      "operator_action": "Reserve the day for catch-up sessions and final data quality checks.",
+      "learner_activity": "Complete any missed week two lesson or rest before the post-test.",
+      "data_to_check": ["missing attempts", "missing adaptive results", "student notes"],
+      "completion_signal": "No unresolved data quality gap remains before the post-test."
+    },
+    {
+      "day": 13,
+      "operator_action": "Administer the post-test and export the pilot measurement artifacts.",
+      "learner_activity": "Complete the A1 post-test using the same assessment as the baseline.",
+      "data_to_check": ["post-test score", "learning gain", "export status"],
+      "completion_signal": "Post-test scores and required exports are complete."
+    }
+  ],
+  "issue_protocols": [
+    {
+      "issue_type": "login_access",
+      "severity": "medium",
+      "operator_response": "Verify Supabase Auth account status, reset password if needed, and confirm the backend student link.",
+      "escalation_owner": "pilot operator",
+      "must_pause_student": false
+    },
+    {
+      "issue_type": "lesson_submission",
+      "severity": "medium",
+      "operator_response": "Retry once, capture the session id, and check whether attempts or audit events were saved.",
+      "escalation_owner": "backend operator",
+      "must_pause_student": false
+    },
+    {
+      "issue_type": "high_frustration_signal",
+      "severity": "high",
+      "operator_response": "Pause new difficulty exposure, keep language educational, and allow a review or rest session.",
+      "escalation_owner": "pilot educator",
+      "must_pause_student": true
+    },
+    {
+      "issue_type": "data_quality_gap",
+      "severity": "medium",
+      "operator_response": "Compare admin dashboard rows with expected lesson completion and record the missing artifact.",
+      "escalation_owner": "data reviewer",
+      "must_pause_student": false
+    }
+  ],
+  "data_exports": [
+    {
+      "artifact_name": "pre_post_scores",
+      "source": "assessment records",
+      "fields": ["student_id", "assessment_id", "test_phase", "score", "completed_at"],
+      "cadence": "day 0 and day 13"
+    },
+    {
+      "artifact_name": "session_attempts",
+      "source": "question attempts",
+      "fields": ["student_id", "session_id", "question_id", "is_correct", "difficulty", "hint_used", "skip"],
+      "cadence": "daily"
+    },
+    {
+      "artifact_name": "adaptive_recommendations",
+      "source": "recommendation logs and adaptive results",
+      "fields": ["student_id", "session_id", "selected_action", "recommendation_action", "confidence", "created_at"],
+      "cadence": "daily"
+    },
+    {
+      "artifact_name": "admin_daily_snapshot",
+      "source": "admin pilot overview",
+      "fields": ["students", "sessions", "attempts", "recommendations", "outcomes", "audit_events"],
+      "cadence": "daily"
+    }
+  ],
+  "review_cadence": [
+    "Daily operator review after the last learner session.",
+    "Mid-pilot review after day 6 to confirm retention and missing-session status.",
+    "Closeout review after day 13 to compare pre-test and post-test score gain."
+  ],
+  "closeout_checklist": [
+    "Confirm all five learners have a baseline assessment record.",
+    "Confirm all five learners have a post-test record or a documented absence.",
+    "Export session attempts without adding any clinical interpretation.",
+    "Export recommendations and outcomes for effectiveness review.",
+    "Compare recommendation actions with resolved AIM decisions where available.",
+    "Summarize learning gain, completion, recommendation effectiveness, and data gaps.",
+    "Store the pilot summary with educational observations only."
+  ],
+  "forbidden_interpretations": [
+    "medical diagnosis",
+    "clinical psychological labels",
+    "mental health claims"
+  ]
+}
