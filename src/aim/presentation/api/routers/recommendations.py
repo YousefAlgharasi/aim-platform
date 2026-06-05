@@ -8,6 +8,11 @@ from sqlalchemy.orm import Session
 from aim.application.errors import ApplicationError
 from aim.application.use_cases.recommendations import RecommendationUseCases
 from aim.infrastructure.database.unit_of_work import SqlAlchemyUnitOfWork
+from aim.presentation.api.auth import (
+    SupabaseUser,
+    get_current_supabase_user,
+    require_student_access,
+)
 from aim.presentation.api.dependencies import get_db as _get_db
 from aim.presentation.api.errors import raise_http_error
 from aim.presentation.api.schemas.recommendations import NextActionRead
@@ -24,7 +29,12 @@ def get_db():
     response_model=NextActionRead,
     summary="Get AIM's next recommended learning action",
 )
-def get_next_action(student_id: int, db: Session = Depends(get_db)) -> NextActionRead:
+def get_next_action(
+    student_id: int,
+    db: Session = Depends(get_db),
+    current_user: SupabaseUser | None = Depends(get_current_supabase_user),
+) -> NextActionRead:
+    require_student_access(student_id=student_id, db=db, current_user=current_user)
     try:
         recommendation_id, result = RecommendationUseCases(
             SqlAlchemyUnitOfWork(db)

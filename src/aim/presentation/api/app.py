@@ -16,6 +16,7 @@ from aim.presentation.api.routers import (
     reviews,
     sessions,
     student_state,
+    web_pilot,
 )
 
 
@@ -36,10 +37,7 @@ def create_app() -> FastAPI:
     )
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            "http://localhost:3000",
-            "http://127.0.0.1:3000",
-        ],
+        allow_origins=list(settings.cors_origins),
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -50,6 +48,7 @@ def create_app() -> FastAPI:
     app.include_router(goals.router)
     app.include_router(reviews.router)
     app.include_router(recommendations.router)
+    app.include_router(web_pilot.router)
     app.include_router(dev_aim_demo.router)
 
     @app.get("/health", tags=["health"])
