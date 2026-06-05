@@ -196,4 +196,8 @@ export async function getPilotRecommendation(studentId) {
   return requestJson(`/students/${encodePathSegment(studentId)}/recommendation`);
 }
 
+export async function getPilotAdminOverview() {
+  return requestJson('/admin/pilot/overview');
+}
+
 export { API_BASE_URL };
