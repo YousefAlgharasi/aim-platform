@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from aim.infrastructure.config import get_settings
 from aim.infrastructure.database.session import create_database_schema, engine
 from aim.presentation.api.routers import (
+    admin_pilot,
     dev_aim_demo,
     goals,
     recommendations,
@@ -49,6 +50,7 @@ def create_app() -> FastAPI:
     app.include_router(reviews.router)
     app.include_router(recommendations.router)
     app.include_router(web_pilot.router)
+    app.include_router(admin_pilot.router)
     app.include_router(dev_aim_demo.router)
 
     @app.get("/health", tags=["health"])
