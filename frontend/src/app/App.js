@@ -1,5 +1,6 @@
 import AlgorithmTester from '../pages/AlgorithmTester';
 import AimDemo from '../pages/AimDemo';
+import AdaptiveResult from '../pages/AdaptiveResult';
 import LessonSession from '../pages/LessonSession';
 
 function App() {
@@ -15,8 +16,15 @@ function App() {
     return <LessonSession />;
   }
 
+  if (
+    window.location.pathname === '/adaptive-result' ||
+    window.location.pathname === '/aim-result' ||
+    window.location.pathname === '/web-pilot/result'
+  ) {
+    return <AdaptiveResult />;
+  }
+
   return <AlgorithmTester />;
 }
 
 export default App;
-
