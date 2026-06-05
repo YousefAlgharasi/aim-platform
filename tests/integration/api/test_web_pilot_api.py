@@ -14,6 +14,7 @@ from aim.infrastructure.database.models.content import (
     QuestionChoiceORM,
     QuestionORM,
 )
+from aim.infrastructure.database.models.question_attempt import QuestionAttemptORM
 from aim.infrastructure.database.models.student import StudentORM, StudentSkillStateORM
 import aim.presentation.api.routers.web_pilot as web_pilot_router
 from aim.presentation.api.routers.web_pilot import router
@@ -162,6 +163,33 @@ def attempt_payload(
     }
 
 
+def selected_answer_payload(
+    student_id: int,
+    session_id: str,
+    question_id: str,
+    *,
+    selected_answer: str | None,
+    position: int,
+    skip: bool = False,
+) -> dict:
+    return {
+        "student_id": student_id,
+        "skill_id": "GRAMMAR_VERB_FORMS",
+        "question_id": question_id,
+        "session_id": session_id,
+        "selected_answer": selected_answer,
+        "confidence": 80.0,
+        "response_time": 8.0,
+        "attempts": 1,
+        "difficulty": 1,
+        "hint_used": position == 2,
+        "skip": skip,
+        "answer_changed": False,
+        "time_of_day": "morning",
+        "session_position": position,
+    }
+
+
 def test_react_pilot_can_list_and_start_lesson(client: TestClient) -> None:
     student_id = seed_student()
     seed_lesson()
@@ -226,6 +254,50 @@ def test_react_pilot_can_submit_attempts_and_fetch_adaptive_result(
     assert fetched.status_code == 200, fetched.text
     assert fetched.json()["session_id"] == session_id
     assert fetched.json()["recommendation"]["id"] == result["recommendation"]["id"]
+
+
+def test_react_pilot_scores_selected_answers_server_side(client: TestClient) -> None:
+    student_id = seed_student()
+    seed_lesson()
+    session_id = client.post(
+        f"/students/{student_id}/lessons/a1-routines-1/sessions"
+    ).json()["session_id"]
+
+    submitted = client.post(
+        f"/students/{student_id}/sessions/{session_id}/attempts",
+        json={
+            "attempts": [
+                selected_answer_payload(
+                    student_id,
+                    session_id,
+                    "a1-routines-1:q1",
+                    selected_answer="I wake up at seven.",
+                    position=1,
+                ),
+                selected_answer_payload(
+                    student_id,
+                    session_id,
+                    "a1-routines-1:q2",
+                    selected_answer="I not work on Friday.",
+                    position=2,
+                ),
+            ]
+        },
+    )
+
+    assert submitted.status_code == 201, submitted.text
+    db = TestingSessionLocal()
+    try:
+        attempts = (
+            db.query(QuestionAttemptORM)
+            .filter(QuestionAttemptORM.session_id == session_id)
+            .order_by(QuestionAttemptORM.session_position.asc())
+            .all()
+        )
+        assert [attempt.is_correct for attempt in attempts] == [True, False]
+        assert attempts[1].hint_used is True
+    finally:
+        db.close()
 
 
 def test_react_pilot_rejects_attempts_for_another_student(client: TestClient) -> None:

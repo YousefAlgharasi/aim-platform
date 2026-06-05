@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from aim.application.errors import ApplicationError
@@ -26,18 +27,44 @@ from aim.presentation.api.auth import (
 )
 from aim.presentation.api.dependencies import get_db
 from aim.presentation.api.errors import raise_http_error
-from aim.presentation.api.schemas.attempts import BatchAttemptRequest, QuestionAttemptCreate
+from aim.presentation.api.schemas.attempts import TimeOfDay
 
 router = APIRouter(prefix="/students/{student_id}", tags=["web-pilot"])
 
 
-def _to_domain(schema: QuestionAttemptCreate) -> AttemptRecord:
+class WebPilotAttempt(BaseModel):
+    student_id: int
+    skill_id: str
+    question_id: str
+    session_id: str
+
+    selected_answer: str | None = None
+    is_correct: bool | None = None
+    confidence: float | None = Field(None, ge=0.0, le=100.0)
+
+    response_time: float = Field(..., gt=0, description="Time in seconds")
+    attempts: int = Field(1, ge=1)
+    difficulty: int = Field(..., ge=1, le=5)
+
+    hint_used: bool = False
+    skip: bool = False
+    answer_changed: bool = False
+
+    time_of_day: TimeOfDay
+    session_position: int = Field(..., ge=1)
+
+
+class WebPilotBatchAttemptRequest(BaseModel):
+    attempts: list[WebPilotAttempt]
+
+
+def _to_domain(schema: WebPilotAttempt, *, is_correct: bool) -> AttemptRecord:
     return AttemptRecord(
         student_id=schema.student_id,
         skill_id=schema.skill_id,
         question_id=schema.question_id,
         session_id=schema.session_id,
-        is_correct=schema.is_correct,
+        is_correct=is_correct,
         response_time=schema.response_time,
         attempts=schema.attempts,
         difficulty=schema.difficulty,
@@ -46,6 +73,32 @@ def _to_domain(schema: QuestionAttemptCreate) -> AttemptRecord:
         answer_changed=schema.answer_changed,
         time_of_day=schema.time_of_day.value,
         session_position=schema.session_position,
+    )
+
+
+def _normalize_answer(value: str | None) -> str:
+    return (value or "").strip().casefold()
+
+
+def _score_attempt(db: Session, attempt: WebPilotAttempt) -> bool:
+    if attempt.is_correct is not None:
+        return attempt.is_correct
+    if attempt.skip:
+        return False
+
+    question = (
+        db.query(QuestionORM)
+        .filter(QuestionORM.question_id == attempt.question_id)
+        .first()
+    )
+    if question is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Question '{attempt.question_id}' was not found.",
+        )
+
+    return _normalize_answer(attempt.selected_answer) == _normalize_answer(
+        question.correct_answer
     )
 
 
@@ -245,7 +298,7 @@ def start_lesson_session(
 def submit_session_attempts(
     student_id: int,
     session_id: str,
-    body: BatchAttemptRequest,
+    body: WebPilotBatchAttemptRequest,
     db: Session = Depends(get_db),
     current_user: SupabaseUser | None = Depends(get_current_supabase_user),
 ) -> dict:
@@ -255,11 +308,20 @@ def submit_session_attempts(
             status_code=422,
             detail="All attempts must belong to the student in the URL.",
         )
+    if any(attempt.session_id != session_id for attempt in body.attempts):
+        raise HTTPException(
+            status_code=422,
+            detail="All attempts must belong to the session in the URL.",
+        )
 
     try:
+        scored_attempts = [
+            _to_domain(attempt, is_correct=_score_attempt(db, attempt))
+            for attempt in body.attempts
+        ]
         result = SessionUseCases(SqlAlchemyUnitOfWork(db)).record_attempts(
             session_id,
-            [_to_domain(attempt) for attempt in body.attempts],
+            scored_attempts,
         )
     except ApplicationError as exc:
         raise_http_error(exc)
