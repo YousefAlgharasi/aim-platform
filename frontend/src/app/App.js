@@ -2,7 +2,7 @@ import AlgorithmTester from '../pages/AlgorithmTester';
 import AimDemo from '../pages/AimDemo';
 import AdaptiveResult from '../pages/AdaptiveResult';
 import LessonSession from '../pages/LessonSession';
-
+import StudentLogin from '../pages/StudentLogin';
 function App() {
   if (window.location.pathname === '/aim-demo') {
     return <AimDemo />;
@@ -23,7 +23,12 @@ function App() {
   ) {
     return <AdaptiveResult />;
   }
-
+if (
+  window.location.pathname === '/login' ||
+  window.location.pathname === '/student-login'
+) {
+  return <StudentLogin />;
+}
   return <AlgorithmTester />;
 }
 
