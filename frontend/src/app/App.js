@@ -1,34 +1,46 @@
 import AlgorithmTester from '../pages/AlgorithmTester';
 import AimDemo from '../pages/AimDemo';
 import AdaptiveResult from '../pages/AdaptiveResult';
+import AdminDashboard from '../pages/AdminDashboard';
 import LessonSession from '../pages/LessonSession';
 import StudentLogin from '../pages/StudentLogin';
+
 function App() {
-  if (window.location.pathname === '/aim-demo') {
+  const { pathname } = window.location;
+
+  if (pathname === '/aim-demo') {
     return <AimDemo />;
   }
 
   if (
-    window.location.pathname === '/lesson-session' ||
-    window.location.pathname === '/aim-session' ||
-    window.location.pathname === '/web-pilot/session'
+    pathname === '/lesson-session' ||
+    pathname === '/aim-session' ||
+    pathname === '/web-pilot/session'
   ) {
     return <LessonSession />;
   }
 
   if (
-    window.location.pathname === '/adaptive-result' ||
-    window.location.pathname === '/aim-result' ||
-    window.location.pathname === '/web-pilot/result'
+    pathname === '/adaptive-result' ||
+    pathname === '/aim-result' ||
+    pathname === '/web-pilot/result'
   ) {
     return <AdaptiveResult />;
   }
-if (
-  window.location.pathname === '/login' ||
-  window.location.pathname === '/student-login'
-) {
-  return <StudentLogin />;
-}
+
+  if (
+    pathname === '/admin' ||
+    pathname === '/debug' ||
+    pathname === '/admin-dashboard' ||
+    pathname === '/web-pilot/admin'
+  ) {
+    return <AdminDashboard />;
+  }
+
+  if (pathname === '/login' || pathname === '/student-login') {
+    return <StudentLogin />;
+  }
+
   return <AlgorithmTester />;
 }
 
