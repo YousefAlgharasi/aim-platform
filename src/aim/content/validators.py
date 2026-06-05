@@ -120,3 +120,104 @@ class AssessmentModel(BaseModel):
         return self
 
     model_config = {"extra": "forbid"}
+
+
+class PilotCohortModel(BaseModel):
+    target_learners: str = Field(min_length=10)
+    learner_count: int = Field(ge=5, le=5)
+    duration_days: int = Field(ge=14, le=14)
+    cefr_level: str = Field(pattern=r"^A1$")
+    primary_language: str = Field(min_length=3)
+
+    model_config = {"extra": "forbid"}
+
+
+class PilotEndpointModel(BaseModel):
+    name: str = Field(min_length=3)
+    method: str = Field(pattern=r"^(GET|POST|PUT|PATCH|DELETE)$")
+    path: str = Field(min_length=2)
+    purpose: str = Field(min_length=10)
+
+    model_config = {"extra": "forbid"}
+
+
+class PilotScheduleItemModel(BaseModel):
+    day: int = Field(ge=0, le=14)
+    activity_type: str = Field(min_length=3)
+    lesson_id: Optional[str] = Field(default=None, pattern=r"^L[0-9]{2}$")
+    assessment_id: Optional[str] = None
+    objective: str = Field(min_length=10)
+    expected_minutes: int = Field(ge=5, le=45)
+
+    model_config = {"extra": "forbid"}
+
+
+class PilotMeasurementModel(BaseModel):
+    primary_metric: str = Field(min_length=10)
+    secondary_metrics: List[str] = Field(min_length=3)
+    pre_post_assessment_id: str = Field(min_length=3)
+    recommendation_effectiveness_rule: str = Field(min_length=20)
+    mastery_safety_rule: str = Field(min_length=20)
+
+    @model_validator(mode="after")
+    def speed_not_used_for_mastery(self) -> "PilotMeasurementModel":
+        forbidden = ("response_time", "avg_response_time", "speed_score")
+        text = " ".join(
+            [
+                self.primary_metric,
+                *self.secondary_metrics,
+                self.recommendation_effectiveness_rule,
+                self.mastery_safety_rule,
+            ]
+        ).lower()
+        if any(term in text for term in forbidden):
+            raise ValueError("Pilot measurement must not use speed fields for mastery.")
+        return self
+
+    model_config = {"extra": "forbid"}
+
+
+class PilotPlanModel(BaseModel):
+    pilot_id: str = Field(pattern=r"^AIM-023$")
+    title: str = Field(min_length=5)
+    status: str = Field(pattern=r"^ready_for_manual_notion_review$")
+    cohort: PilotCohortModel
+    required_backend_endpoints: List[PilotEndpointModel] = Field(min_length=5)
+    required_frontend_routes: List[str] = Field(min_length=5)
+    schedule: List[PilotScheduleItemModel] = Field(min_length=12)
+    measurement: PilotMeasurementModel
+    safety_terms_allowed: List[str] = Field(min_length=3)
+    safety_terms_forbidden: List[str] = Field(min_length=3)
+    operator_checklist: List[str] = Field(min_length=6)
+
+    @model_validator(mode="after")
+    def pilot_scope_is_complete(self) -> "PilotPlanModel":
+        lesson_ids = {item.lesson_id for item in self.schedule if item.lesson_id}
+        if lesson_ids != {f"L{index:02d}" for index in range(1, 11)}:
+            raise ValueError("Pilot schedule must include lessons L01 through L10.")
+
+        activity_types = {item.activity_type for item in self.schedule}
+        if "pre_test" not in activity_types or "post_test" not in activity_types:
+            raise ValueError("Pilot schedule must include pre_test and post_test.")
+
+        endpoint_paths = {endpoint.path for endpoint in self.required_backend_endpoints}
+        required_paths = {
+            "/students/{student_id}/lessons",
+            "/students/{student_id}/lessons/{lesson_id}",
+            "/students/{student_id}/lessons/{lesson_id}/sessions",
+            "/students/{student_id}/sessions/{session_id}/attempts",
+            "/students/{student_id}/sessions/{session_id}/adaptive-result",
+            "/students/{student_id}/recommendation",
+            "/admin/pilot/overview",
+        }
+        missing_paths = required_paths - endpoint_paths
+        if missing_paths:
+            raise ValueError(f"Pilot plan missing backend endpoints: {sorted(missing_paths)}")
+
+        forbidden_text = " ".join(self.safety_terms_forbidden).lower()
+        if "diagnosis" not in forbidden_text or "clinical" not in forbidden_text:
+            raise ValueError("Pilot plan must forbid clinical or diagnosis language.")
+
+        return self
+
+    model_config = {"extra": "forbid"}
