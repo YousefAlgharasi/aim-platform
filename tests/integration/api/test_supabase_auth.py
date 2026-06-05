@@ -119,6 +119,27 @@ def test_authenticated_user_can_access_linked_student() -> None:
     assert resp.json()["id"] == student_id
 
 
+def test_authenticated_user_can_fetch_linked_student_profile() -> None:
+    student_id = seed_student("auth-user-1")
+
+    resp = build_client(current_user("auth-user-1")).get("/students/me")
+
+    assert resp.status_code == 200
+    assert resp.json()["id"] == student_id
+
+
+def test_current_student_requires_authenticated_user() -> None:
+    resp = build_client().get("/students/me")
+
+    assert resp.status_code == 401
+
+
+def test_current_student_returns_404_when_user_has_no_student() -> None:
+    resp = build_client(current_user("auth-user-1")).get("/students/me")
+
+    assert resp.status_code == 404
+
+
 def test_authenticated_user_cannot_access_another_student() -> None:
     student_id = seed_student("auth-user-1")
 
