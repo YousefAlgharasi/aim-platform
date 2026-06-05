@@ -1,0 +1,57 @@
+{
+  "deployment_id": "AIM-027",
+  "linked_hardening_id": "AIM-026",
+  "title": "Cloud deployment package for FastAPI and React with Supabase",
+  "status": "ready_for_manual_notion_review",
+  "platform_target": "Render-compatible Docker deployment with Supabase managed PostgreSQL and Supabase Auth",
+  "services": [
+    {
+      "name": "aim-fastapi-backend",
+      "kind": "backend",
+      "runtime": "docker",
+      "dockerfile": "deployment/cloud/backend.Dockerfile",
+      "health_check": "/health",
+      "required_env_vars": [
+        "APP_ENV",
+        "SUPABASE_URL",
+        "SUPABASE_DATABASE_URL",
+        "SUPABASE_AUTH_REQUIRED",
+        "SUPABASE_JWT_AUDIENCE",
+        "CORS_ORIGINS"
+      ]
+    },
+    {
+      "name": "aim-react-frontend",
+      "kind": "frontend",
+      "runtime": "docker",
+      "dockerfile": "deployment/cloud/frontend.Dockerfile",
+      "health_check": "/health",
+      "required_env_vars": [
+        "REACT_APP_API_BASE_URL",
+        "REACT_APP_SUPABASE_URL",
+        "REACT_APP_SUPABASE_PUBLISHABLE_KEY"
+      ]
+    }
+  ],
+  "deployment_files": [
+    "deployment/cloud/backend.Dockerfile",
+    "deployment/cloud/frontend.Dockerfile",
+    "deployment/cloud/nginx.conf",
+    "deployment/cloud/render.yaml",
+    "deployment/cloud/README.md",
+    "frontend/.env.example"
+  ],
+  "required_commands": [
+    "PYTHONPATH=src pytest",
+    "npm run build",
+    "alembic upgrade head"
+  ],
+  "release_order": [
+    "Create or verify the Supabase project and database connection string.",
+    "Configure backend environment variables and deploy the FastAPI backend.",
+    "Run the backend health check and migration verification.",
+    "Configure frontend build variables and deploy the React frontend.",
+    "Run one authenticated pilot smoke test from login through adaptive result."
+  ],
+  "rollback_rule": "If backend health, auth, migration, lesson loading, session submission, or adaptive result retrieval fails, roll back the affected service before enrolling pilot learners."
+}
