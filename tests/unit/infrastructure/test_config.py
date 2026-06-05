@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from aim.infrastructure.config import DEFAULT_DATABASE_URL, get_settings
+from aim.infrastructure.config import DEFAULT_CORS_ORIGINS, DEFAULT_DATABASE_URL, get_settings
 
 
 def clear_database_env(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -13,6 +13,11 @@ def clear_database_env(monkeypatch: pytest.MonkeyPatch) -> None:
         "DATABASE_POOL_SIZE",
         "DATABASE_MAX_OVERFLOW",
         "DATABASE_POOL_RECYCLE_SECONDS",
+        "SUPABASE_URL",
+        "SUPABASE_AUTH_REQUIRED",
+        "SUPABASE_JWT_AUDIENCE",
+        "SUPABASE_JWT_SECRET",
+        "CORS_ORIGINS",
     ):
         monkeypatch.delenv(name, raising=False)
 
@@ -83,3 +88,37 @@ def test_database_pool_settings_must_be_integers(
 
     with pytest.raises(ValueError, match="DATABASE_POOL_SIZE"):
         get_settings()
+
+
+def test_supabase_auth_settings(monkeypatch: pytest.MonkeyPatch) -> None:
+    clear_database_env(monkeypatch)
+    monkeypatch.setenv("SUPABASE_URL", "https://project.supabase.co")
+    monkeypatch.setenv("SUPABASE_AUTH_REQUIRED", "true")
+    monkeypatch.setenv("SUPABASE_JWT_AUDIENCE", "authenticated")
+
+    settings = get_settings()
+
+    assert settings.supabase_url == "https://project.supabase.co"
+    assert settings.supabase_auth_required is True
+    assert settings.supabase_jwt_audience == "authenticated"
+
+
+def test_cloud_auth_and_cors_settings(monkeypatch: pytest.MonkeyPatch) -> None:
+    clear_database_env(monkeypatch)
+    monkeypatch.setenv("SUPABASE_URL", "https://project.supabase.co")
+    monkeypatch.setenv("SUPABASE_JWT_SECRET", "backend-only-secret")
+    monkeypatch.setenv("CORS_ORIGINS", "https://app.example.com, http://localhost:3000 ")
+
+    settings = get_settings()
+
+    assert settings.supabase_jwt_secret == "backend-only-secret"
+    assert settings.cors_origins == (
+        "https://app.example.com",
+        "http://localhost:3000",
+    )
+
+
+def test_default_cors_origins(monkeypatch: pytest.MonkeyPatch) -> None:
+    clear_database_env(monkeypatch)
+
+    assert get_settings().cors_origins == DEFAULT_CORS_ORIGINS

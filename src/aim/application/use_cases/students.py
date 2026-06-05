@@ -13,11 +13,19 @@ class StudentUseCases:
     def __init__(self, uow: SqlAlchemyUnitOfWork) -> None:
         self._uow = uow
 
-    def create_student(self, *, name: str, email: str) -> StudentORM:
+    def create_student(
+        self,
+        *,
+        name: str,
+        email: str,
+        auth_user_id: str | None = None,
+    ) -> StudentORM:
         if self._uow.students.get_student_by_email(email):
             raise ConflictError(f"A student with email '{email}' already exists.")
+        if auth_user_id and self._uow.students.get_student_by_auth_user_id(auth_user_id):
+            raise ConflictError("A student is already linked to this auth user.")
 
-        student = StudentORM(name=name, email=email)
+        student = StudentORM(name=name, email=email, auth_user_id=auth_user_id)
         self._uow.students.add_student(student)
         self._uow.commit()
         self._uow.students.refresh_student(student)

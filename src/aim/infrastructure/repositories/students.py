@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from sqlalchemy import String, cast
 from sqlalchemy.orm import Session
 
 from aim.infrastructure.database.models.student import StudentORM, StudentSkillStateORM
@@ -16,6 +17,13 @@ class SQLStudentRepository:
 
     def get_student_by_email(self, email: str) -> StudentORM | None:
         return self._db.query(StudentORM).filter(StudentORM.email == email).first()
+
+    def get_student_by_auth_user_id(self, auth_user_id: str) -> StudentORM | None:
+        return (
+            self._db.query(StudentORM)
+            .filter(cast(StudentORM.auth_user_id, String) == auth_user_id)
+            .first()
+        )
 
     def add_student(self, student: StudentORM) -> None:
         self._db.add(student)
