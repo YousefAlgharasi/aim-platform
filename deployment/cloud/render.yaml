@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: aim-fastapi-backend
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./deployment/cloud/backend.Dockerfile
+    healthCheckPath: /health
+    autoDeploy: false
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_DATABASE_URL
+        sync: false
+      - key: SUPABASE_AUTH_REQUIRED
+        value: "true"
+      - key: SUPABASE_JWT_AUDIENCE
+        value: authenticated
+      - key: CORS_ORIGINS
+        sync: false
+      - key: DATABASE_POOL_SIZE
+        value: "5"
+      - key: DATABASE_MAX_OVERFLOW
+        value: "10"
+      - key: DATABASE_POOL_RECYCLE_SECONDS
+        value: "1800"
+
+  - type: web
+    name: aim-react-frontend
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./deployment/cloud/frontend.Dockerfile
+    healthCheckPath: /health
+    autoDeploy: false
+    envVars:
+      - key: REACT_APP_API_BASE_URL
+        sync: false
+      - key: REACT_APP_SUPABASE_URL
+        sync: false
+      - key: REACT_APP_SUPABASE_PUBLISHABLE_KEY
+        sync: false

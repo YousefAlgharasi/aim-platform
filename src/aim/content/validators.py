@@ -493,3 +493,84 @@ class ProductionHardeningPlanModel(BaseModel):
         return self
 
     model_config = {"extra": "forbid"}
+
+
+class CloudDeploymentServiceModel(BaseModel):
+    name: str = Field(min_length=3)
+    kind: str = Field(pattern=r"^(backend|frontend)$")
+    runtime: str = Field(min_length=3)
+    dockerfile: str = Field(min_length=5)
+    health_check: str = Field(min_length=1)
+    required_env_vars: List[str] = Field(min_length=3)
+
+    model_config = {"extra": "forbid"}
+
+
+class CloudDeploymentPlanModel(BaseModel):
+    deployment_id: str = Field(pattern=r"^AIM-027$")
+    linked_hardening_id: str = Field(pattern=r"^AIM-026$")
+    title: str = Field(min_length=5)
+    status: str = Field(pattern=r"^ready_for_manual_notion_review$")
+    platform_target: str = Field(min_length=5)
+    services: List[CloudDeploymentServiceModel] = Field(min_length=2)
+    deployment_files: List[str] = Field(min_length=4)
+    required_commands: List[str] = Field(min_length=3)
+    release_order: List[str] = Field(min_length=4)
+    rollback_rule: str = Field(min_length=20)
+
+    @model_validator(mode="after")
+    def deployment_scope_is_complete(self) -> "CloudDeploymentPlanModel":
+        kinds = {service.kind for service in self.services}
+        if kinds != {"backend", "frontend"}:
+            raise ValueError("Cloud deployment must define backend and frontend services.")
+
+        env_vars = {
+            env_var
+            for service in self.services
+            for env_var in service.required_env_vars
+        }
+        required_env_vars = {
+            "APP_ENV",
+            "SUPABASE_URL",
+            "SUPABASE_DATABASE_URL",
+            "SUPABASE_AUTH_REQUIRED",
+            "SUPABASE_JWT_AUDIENCE",
+            "CORS_ORIGINS",
+            "REACT_APP_API_BASE_URL",
+            "REACT_APP_SUPABASE_URL",
+            "REACT_APP_SUPABASE_PUBLISHABLE_KEY",
+        }
+        missing_env_vars = required_env_vars - env_vars
+        if missing_env_vars:
+            raise ValueError(f"Cloud deployment missing env vars: {sorted(missing_env_vars)}")
+
+        files = set(self.deployment_files)
+        required_files = {
+            "deployment/cloud/backend.Dockerfile",
+            "deployment/cloud/frontend.Dockerfile",
+            "deployment/cloud/nginx.conf",
+            "deployment/cloud/render.yaml",
+            "frontend/.env.example",
+        }
+        missing_files = required_files - files
+        if missing_files:
+            raise ValueError(f"Cloud deployment missing files: {sorted(missing_files)}")
+
+        joined = " ".join(
+            [
+                self.title,
+                self.platform_target,
+                *self.required_commands,
+                *self.release_order,
+                self.rollback_rule,
+            ]
+        ).lower()
+        forbidden_speed_terms = ("response_time", "avg_response_time", "speed_score")
+        if any(term in joined for term in forbidden_speed_terms):
+            raise ValueError("Cloud deployment must not use speed fields for mastery.")
+        if "clinical" in joined or "diagnosis" in joined or "mental health" in joined:
+            raise ValueError("Cloud deployment must avoid clinical or diagnosis language.")
+
+        return self
+
+    model_config = {"extra": "forbid"}
