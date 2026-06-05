@@ -120,6 +120,58 @@ function initials(name, email) {
     .join('');
 }
 
+function timeOfDay() {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'morning';
+  if (hour < 17) return 'afternoon';
+  if (hour < 21) return 'evening';
+  return 'night';
+}
+
+function toPercent(value, fallback = 0) {
+  const numeric = Number(value ?? fallback);
+  if (!Number.isFinite(numeric)) return fallback;
+  return Math.max(0, Math.min(100, Math.round(numeric)));
+}
+
+function formatAction(action) {
+  const normalized = String(action || '').replace(/_/g, ' ');
+  if (!normalized) return 'Continue practicing';
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
+function resultProgress(result) {
+  return toPercent(
+    result?.updated_skill_state?.mastery ??
+      result?.mastery_result?.final_mastery ??
+      result?.mastery_result?.mastery ??
+      result?.mastery_result?.score,
+    0,
+  );
+}
+
+function resultFocus(result) {
+  const weakness = result?.weakness_result;
+  const firstWeakness =
+    weakness?.weaknesses?.[0]?.skill_id ||
+    weakness?.weaknesses?.[0]?.concept ||
+    weakness?.top_weaknesses?.[0]?.skill_id ||
+    weakness?.primary_weakness ||
+    result?.error_pattern?.dominant_error_tag ||
+    result?.recommendation?.target_skill_id ||
+    result?.recommendation?.skill_id;
+  return firstWeakness ? formatAction(firstWeakness) : 'Current skill';
+}
+
+function resultReviewPrompt(result) {
+  return (
+    result?.prompt_adaptation_instruction?.instruction ||
+    result?.prompt_adaptation_instruction?.message ||
+    result?.recommendation?.reason ||
+    'Review the current skill once, then continue with the next short practice set.'
+  );
+}
+
 function StatusText({ status }) {
   if (!status) return null;
   return <p className={`pilot-status pilot-status--${status.kind}`}>{status.text}</p>;
@@ -440,6 +492,7 @@ function LessonView({ lessonId, profile }) {
 }
 
 function SessionView({ sessionId, profile }) {
+  const [sessionStartedAt] = useState(() => Date.now());
   const storedSession = useMemo(() => {
     try {
       return JSON.parse(sessionStorage.getItem(`aim_session:${sessionId}`));
@@ -448,11 +501,59 @@ function SessionView({ sessionId, profile }) {
     }
   }, [sessionId]);
   const questions = storedSession?.questions?.length ? storedSession.questions : sampleQuestions;
-  const [answers, setAnswers] = useState({});
+  const [responses, setResponses] = useState({});
   const [status, setStatus] = useState(null);
 
   function selectAnswer(questionId, choiceText) {
-    setAnswers((current) => ({ ...current, [questionId]: choiceText }));
+    setResponses((current) => {
+      const previous = current[questionId] || {};
+      const answerChanged = Boolean(previous.selectedAnswer && previous.selectedAnswer !== choiceText);
+      return {
+        ...current,
+        [questionId]: {
+          ...previous,
+          selectedAnswer: choiceText,
+          answerChanged: previous.answerChanged || answerChanged,
+          retries: answerChanged ? (previous.retries || 0) + 1 : previous.retries || 0,
+          skipped: false,
+          startedAt: previous.startedAt || Date.now(),
+        },
+      };
+    });
+  }
+
+  function markHint(questionId) {
+    setResponses((current) => ({
+      ...current,
+      [questionId]: {
+        ...(current[questionId] || {}),
+        hintUsed: true,
+        startedAt: current[questionId]?.startedAt || Date.now(),
+      },
+    }));
+  }
+
+  function skipQuestion(questionId) {
+    setResponses((current) => ({
+      ...current,
+      [questionId]: {
+        ...(current[questionId] || {}),
+        selectedAnswer: null,
+        skipped: true,
+        startedAt: current[questionId]?.startedAt || Date.now(),
+      },
+    }));
+  }
+
+  function setConfidence(questionId, confidence) {
+    setResponses((current) => ({
+      ...current,
+      [questionId]: {
+        ...(current[questionId] || {}),
+        confidence,
+        startedAt: current[questionId]?.startedAt || Date.now(),
+      },
+    }));
   }
 
   async function submit() {
@@ -461,20 +562,27 @@ function SessionView({ sessionId, profile }) {
       return;
     }
 
-    const startedAt = Date.now();
     const attempts = questions.map((question, index) => ({
       student_id: Number(profile.studentId),
       skill_id: question.skill_id,
       question_id: question.question_id,
       session_id: sessionId,
-      is_correct: false,
-      response_time: Math.max(1, Math.round((Date.now() - startedAt) / 1000)),
-      attempts: answers[question.question_id] ? 1 : 0,
+      selected_answer: responses[question.question_id]?.selectedAnswer || null,
+      confidence: responses[question.question_id]?.confidence ?? 60,
+      response_time: Math.max(
+        1,
+        Math.round(
+          (Date.now() -
+            (responses[question.question_id]?.startedAt || sessionStartedAt)) /
+            1000,
+        ),
+      ),
+      attempts: Math.max(1, (responses[question.question_id]?.retries || 0) + 1),
       difficulty: question.difficulty || 1,
-      hint_used: false,
-      skip: !answers[question.question_id],
-      answer_changed: false,
-      time_of_day: 'morning',
+      hint_used: Boolean(responses[question.question_id]?.hintUsed),
+      skip: Boolean(responses[question.question_id]?.skipped || !responses[question.question_id]?.selectedAnswer),
+      answer_changed: Boolean(responses[question.question_id]?.answerChanged),
+      time_of_day: timeOfDay(),
       session_position: index + 1,
     }));
 
@@ -518,7 +626,7 @@ function SessionView({ sessionId, profile }) {
                   const choiceText = choice.choice_text || String(choice);
                   return (
                     <button
-                      className={answers[question.question_id] === choiceText ? 'is-selected' : ''}
+                      className={responses[question.question_id]?.selectedAnswer === choiceText ? 'is-selected' : ''}
                       key={choiceText}
                       type="button"
                       onClick={() => selectAnswer(question.question_id, choiceText)}
@@ -527,6 +635,33 @@ function SessionView({ sessionId, profile }) {
                     </button>
                   );
                 })}
+              </div>
+              <div className="pilot-attempt-tools">
+                <button
+                  className={responses[question.question_id]?.hintUsed ? 'is-selected' : ''}
+                  type="button"
+                  onClick={() => markHint(question.question_id)}
+                >
+                  Hint used
+                </button>
+                <button
+                  className={responses[question.question_id]?.skipped ? 'is-selected' : ''}
+                  type="button"
+                  onClick={() => skipQuestion(question.question_id)}
+                >
+                  Skip
+                </button>
+                <label>
+                  Confidence
+                  <input
+                    max="100"
+                    min="0"
+                    type="range"
+                    value={responses[question.question_id]?.confidence ?? 60}
+                    onChange={(event) => setConfidence(question.question_id, Number(event.target.value))}
+                  />
+                  <strong>{responses[question.question_id]?.confidence ?? 60}%</strong>
+                </label>
               </div>
             </fieldset>
           ))}
@@ -568,45 +703,60 @@ function ResultView({ sessionId, profile }) {
     };
   }, [profile.studentId, profile.token, sessionId]);
 
-  const action = result?.recommendation?.action || result?.recommendation?.action_type || 'collect_more_evidence';
-  const selectedAction = result?.decision_conflict?.selected_action || action;
+  const progress = resultProgress(result);
+  const action = result?.recommendation?.action || result?.recommendation?.action_type || 'continue_current_skill';
+  const nextStep = formatAction(action);
+  const focus = resultFocus(result);
+  const reviewPrompt = resultReviewPrompt(result);
+  const attemptsSaved = result?.attempts_saved || 0;
 
   return (
     <main className="pilot-main">
       <section className="pilot-layout">
         <div className="pilot-panel">
-          <div className="pilot-section-heading">
-            <p>{sessionId}</p>
-            <h1>Result</h1>
+          <div className="pilot-section-heading pilot-section-heading--row">
+            <div>
+              <p>Session complete</p>
+              <h1>Result</h1>
+            </div>
+            <button className="pilot-primary" type="button" onClick={() => navigate('/dashboard')}>
+              Dashboard
+            </button>
           </div>
           <StatusText status={status} />
-          <dl className="pilot-result-grid">
-            <div>
-              <dt>Recommendation</dt>
-              <dd>{action}</dd>
+          <div className="pilot-progress-summary">
+            <div className="pilot-progress-ring" style={{ '--progress': `${progress}%` }}>
+              <strong>{progress}%</strong>
+              <span>Progress</span>
             </div>
             <div>
-              <dt>Resolved action</dt>
-              <dd>{selectedAction}</dd>
+              <h2>{nextStep}</h2>
+              <p>{reviewPrompt}</p>
+            </div>
+          </div>
+          <dl className="pilot-student-result-grid">
+            <div>
+              <dt>Focus area</dt>
+              <dd>{focus}</dd>
             </div>
             <div>
-              <dt>Attempts</dt>
-              <dd>{result?.attempts_saved || 0}</dd>
+              <dt>Practice completed</dt>
+              <dd>{attemptsSaved} answers</dd>
             </div>
             <div>
-              <dt>Reliability</dt>
-              <dd>{result?.reliability?.score ?? result?.reliability ?? 'pending'}</dd>
+              <dt>Next step</dt>
+              <dd>{nextStep}</dd>
             </div>
           </dl>
         </div>
         <aside className="pilot-panel pilot-panel--side">
           <div className="pilot-section-heading">
-            <p>Reason</p>
-            <h2>AIM signal</h2>
+            <p>Review</p>
+            <h2>What to do now</h2>
           </div>
-          <p className="pilot-note">{result?.recommendation?.reason || 'No recommendation detail yet.'}</p>
+          <p className="pilot-note">{reviewPrompt}</p>
           <button className="pilot-primary" type="button" onClick={() => navigate('/dashboard')}>
-            Dashboard
+            Continue
           </button>
         </aside>
       </section>
