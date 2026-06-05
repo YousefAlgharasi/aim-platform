@@ -1,6 +1,6 @@
 {
   "assessment_id": "PRE_POST_TEST_A1_V1",
-  "task_id": "AIM-021",
+  "task_id": "AIM-022",
   "title_en": "A1 Pilot Pre-Test / Post-Test",
   "title_ar": "اختبار A1 التجريبي - قبل/بعد",
   "instructions_en": "Answer all questions. Do not use a dictionary. This test is to understand your current English level.",
@@ -17,7 +17,12 @@
       "prompt_en": "How do you say hello in English?",
       "prompt_ar": "كيف تقول مرحباً بالإنجليزية؟",
       "choices": ["Hello", "Goodbye", "Sorry", "Please"],
-      "correct_answer": "Hello"
+      "correct_answer": "Hello",
+      "explanation_en": "'Hello' is the standard English greeting used when meeting someone.",
+      "explanation_ar": "'Hello' هي التحية الإنجليزية المعيارية عند مقابلة شخص ما.",
+      "common_error_tags": ["greeting_time_confusion"],
+      "prerequisites": [],
+      "hints": ["Think about the word you say when you first meet someone.", "مرحباً = Hello"]
     },
     {
       "question_id": "PT-Q02",
@@ -28,7 +33,12 @@
       "prompt_en": "I ___ a student.",
       "prompt_ar": "أنا ___ طالب.",
       "choices": ["am", "is", "are", "be"],
-      "correct_answer": "am"
+      "correct_answer": "am",
+      "explanation_en": "With the pronoun 'I', we always use 'am'. Never 'is' or 'are'.",
+      "explanation_ar": "مع ضمير 'I' نستخدم دائماً 'am'. لا نستخدم 'is' أو 'are'.",
+      "common_error_tags": ["confusion_am_is_are", "subject_verb_agreement_error"],
+      "prerequisites": [],
+      "hints": ["I → am, He/She → is, You/We/They → are"]
     },
     {
       "question_id": "PT-Q03",
@@ -39,7 +49,12 @@
       "prompt_en": "She ___ a doctor.",
       "prompt_ar": "هي ___ طبيبة.",
       "choices": ["is", "am", "are", "be"],
-      "correct_answer": "is"
+      "correct_answer": "is",
+      "explanation_en": "With third-person singular subjects like 'she', we use 'is'.",
+      "explanation_ar": "مع ضمائر المفرد الغائب مثل 'she' نستخدم 'is'.",
+      "common_error_tags": ["confusion_am_is_are", "subject_verb_agreement_error"],
+      "prerequisites": [],
+      "hints": ["She → is, He → is, I → am"]
     },
     {
       "question_id": "PT-Q04",
@@ -50,7 +65,12 @@
       "prompt_en": "What is the number 12 in English?",
       "prompt_ar": "ما الرقم 12 بالإنجليزية؟",
       "choices": ["Twelve", "Twenty", "Two", "Twelfth"],
-      "correct_answer": "Twelve"
+      "correct_answer": "Twelve",
+      "explanation_en": "12 is written as 'Twelve' in English. 'Twenty' is 20, not 12.",
+      "explanation_ar": "الرقم 12 يُكتب 'Twelve' بالإنجليزية. 'Twenty' هو 20.",
+      "common_error_tags": ["number_confusion"],
+      "prerequisites": [],
+      "hints": ["12 comes after eleven (11).", "12 = اثنا عشر"]
     },
     {
       "question_id": "PT-Q05",
@@ -61,7 +81,12 @@
       "prompt_en": "Grass is ___.",
       "prompt_ar": "لون العشب ___.",
       "choices": ["green", "blue", "red", "yellow"],
-      "correct_answer": "green"
+      "correct_answer": "green",
+      "explanation_en": "Grass has a green color. 'Green' is the English word for the color of grass and leaves.",
+      "explanation_ar": "لون العشب أخضر. 'Green' هي الكلمة الإنجليزية للون الأخضر.",
+      "common_error_tags": ["spelling_error"],
+      "prerequisites": [],
+      "hints": ["Think about the color of plants and trees.", "الأخضر = green"]
     },
     {
       "question_id": "PT-Q06",
@@ -72,7 +97,12 @@
       "prompt_en": "Your father's brother is your ___.",
       "prompt_ar": "أخ أبيك هو ___.",
       "choices": ["uncle", "cousin", "brother", "grandfather"],
-      "correct_answer": "uncle"
+      "correct_answer": "uncle",
+      "explanation_en": "Your father's brother is your uncle. A cousin is the child of your uncle or aunt.",
+      "explanation_ar": "أخ أبيك هو عمك. 'uncle' تعني العم أو الخال.",
+      "common_error_tags": ["family_term_confusion"],
+      "prerequisites": [],
+      "hints": ["Father's brother = عم أو خال", "uncle = عم / خال"]
     },
     {
       "question_id": "PT-Q07",
@@ -83,7 +113,12 @@
       "prompt_en": "I ___ breakfast every morning.",
       "prompt_ar": "أنا ___ الإفطار كل صباح.",
       "choices": ["eat", "eats", "eating", "eaten"],
-      "correct_answer": "eat"
+      "correct_answer": "eat",
+      "explanation_en": "With subject 'I', use the base verb form 'eat'. Never add -s with 'I'.",
+      "explanation_ar": "مع ضمير 'I' نستخدم الفعل بدون إضافة. لا نضيف -s مع 'I'.",
+      "common_error_tags": ["third_person_s_confusion", "wrong_verb_form"],
+      "prerequisites": ["SK-G01"],
+      "hints": ["I → eat (no -s)", "He/She → eats (+s)"]
     },
     {
       "question_id": "PT-Q08",
@@ -94,7 +129,12 @@
       "prompt_en": "My brother ___ to school every day.",
       "prompt_ar": "أخي ___ إلى المدرسة كل يوم.",
       "choices": ["goes", "go", "going", "gone"],
-      "correct_answer": "goes"
+      "correct_answer": "goes",
+      "explanation_en": "'My brother' is third-person singular (he), so we add -es to 'go' → 'goes'.",
+      "explanation_ar": "'My brother' هو ضمير مفرد غائب (he)، لذا نضيف -es للفعل go فيصبح goes.",
+      "common_error_tags": ["third_person_s_confusion", "irregular_verb_error"],
+      "prerequisites": ["SK-G01"],
+      "hints": ["My brother = He", "go + es = goes for He/She/It"]
     },
     {
       "question_id": "PT-Q09",
@@ -105,7 +145,12 @@
       "prompt_en": "___ you speak Arabic?",
       "prompt_ar": "___ تتحدث العربية؟",
       "choices": ["Do", "Does", "Are", "Is"],
-      "correct_answer": "Do"
+      "correct_answer": "Do",
+      "explanation_en": "To form a yes/no question with 'you', use 'Do'. 'Does' is used with he/she/it.",
+      "explanation_ar": "لصياغة سؤال مع 'you' نستخدم 'Do'. نستخدم 'Does' مع he/she/it.",
+      "common_error_tags": ["do_does_confusion", "missing_auxiliary"],
+      "prerequisites": ["SK-G02"],
+      "hints": ["Do = مع I/You/We/They", "Does = مع He/She/It"]
     },
     {
       "question_id": "PT-Q10",
@@ -116,7 +161,12 @@
       "prompt_en": "Read: 'Ali wakes up at 7. He eats bread for breakfast. He goes to school at 8.' — What does Ali eat?",
       "prompt_ar": "اقرأ: 'Ali wakes up at 7. He eats bread for breakfast. He goes to school at 8.' ماذا يأكل علي؟",
       "choices": ["Bread", "Rice", "Eggs", "Fruit"],
-      "correct_answer": "Bread"
+      "correct_answer": "Bread",
+      "explanation_en": "The text clearly states 'He eats bread for breakfast.' The answer is directly in the passage.",
+      "explanation_ar": "النص يقول صراحةً 'He eats bread for breakfast.' الإجابة موجودة في الفقرة.",
+      "common_error_tags": ["reading_comprehension_error"],
+      "prerequisites": ["SK-G02", "SK-V05"],
+      "hints": ["Read the second sentence again.", "breakfast = إفطار"]
     }
   ],
   "scoring": {
