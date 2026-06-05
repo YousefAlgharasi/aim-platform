@@ -1,0 +1,132 @@
+{
+  "assessment_id": "PRE_POST_TEST_A1_V1",
+  "task_id": "AIM-021",
+  "title_en": "A1 Pilot Pre-Test / Post-Test",
+  "title_ar": "اختبار A1 التجريبي - قبل/بعد",
+  "instructions_en": "Answer all questions. Do not use a dictionary. This test is to understand your current English level.",
+  "instructions_ar": "أجب على جميع الأسئلة. لا تستخدم القاموس. هذا الاختبار لمعرفة مستواك الحالي في الإنجليزية.",
+  "duration_minutes": 15,
+  "usage": "Administer as pre-test before L01 and again as post-test after L10. Compare scores to measure learning gain.",
+  "questions": [
+    {
+      "question_id": "PT-Q01",
+      "skill_id": "SK-V01",
+      "concept": "greetings",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt_en": "How do you say hello in English?",
+      "prompt_ar": "كيف تقول مرحباً بالإنجليزية؟",
+      "choices": ["Hello", "Goodbye", "Sorry", "Please"],
+      "correct_answer": "Hello"
+    },
+    {
+      "question_id": "PT-Q02",
+      "skill_id": "SK-G01",
+      "concept": "verb_to_be",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt_en": "I ___ a student.",
+      "prompt_ar": "أنا ___ طالب.",
+      "choices": ["am", "is", "are", "be"],
+      "correct_answer": "am"
+    },
+    {
+      "question_id": "PT-Q03",
+      "skill_id": "SK-G01",
+      "concept": "verb_to_be_third_person",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt_en": "She ___ a doctor.",
+      "prompt_ar": "هي ___ طبيبة.",
+      "choices": ["is", "am", "are", "be"],
+      "correct_answer": "is"
+    },
+    {
+      "question_id": "PT-Q04",
+      "skill_id": "SK-V02",
+      "concept": "numbers",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt_en": "What is the number 12 in English?",
+      "prompt_ar": "ما الرقم 12 بالإنجليزية؟",
+      "choices": ["Twelve", "Twenty", "Two", "Twelfth"],
+      "correct_answer": "Twelve"
+    },
+    {
+      "question_id": "PT-Q05",
+      "skill_id": "SK-V03",
+      "concept": "colors",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt_en": "Grass is ___.",
+      "prompt_ar": "لون العشب ___.",
+      "choices": ["green", "blue", "red", "yellow"],
+      "correct_answer": "green"
+    },
+    {
+      "question_id": "PT-Q06",
+      "skill_id": "SK-V04",
+      "concept": "family",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt_en": "Your father's brother is your ___.",
+      "prompt_ar": "أخ أبيك هو ___.",
+      "choices": ["uncle", "cousin", "brother", "grandfather"],
+      "correct_answer": "uncle"
+    },
+    {
+      "question_id": "PT-Q07",
+      "skill_id": "SK-G02",
+      "concept": "present_simple_i",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt_en": "I ___ breakfast every morning.",
+      "prompt_ar": "أنا ___ الإفطار كل صباح.",
+      "choices": ["eat", "eats", "eating", "eaten"],
+      "correct_answer": "eat"
+    },
+    {
+      "question_id": "PT-Q08",
+      "skill_id": "SK-G02",
+      "concept": "present_simple_third_person",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt_en": "My brother ___ to school every day.",
+      "prompt_ar": "أخي ___ إلى المدرسة كل يوم.",
+      "choices": ["goes", "go", "going", "gone"],
+      "correct_answer": "goes"
+    },
+    {
+      "question_id": "PT-Q09",
+      "skill_id": "SK-G04",
+      "concept": "question_formation",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt_en": "___ you speak Arabic?",
+      "prompt_ar": "___ تتحدث العربية؟",
+      "choices": ["Do", "Does", "Are", "Is"],
+      "correct_answer": "Do"
+    },
+    {
+      "question_id": "PT-Q10",
+      "skill_id": "SK-R01",
+      "concept": "basic_reading",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt_en": "Read: 'Ali wakes up at 7. He eats bread for breakfast. He goes to school at 8.' — What does Ali eat?",
+      "prompt_ar": "اقرأ: 'Ali wakes up at 7. He eats bread for breakfast. He goes to school at 8.' ماذا يأكل علي؟",
+      "choices": ["Bread", "Rice", "Eggs", "Fruit"],
+      "correct_answer": "Bread"
+    }
+  ],
+  "scoring": {
+    "total_questions": 10,
+    "pass_threshold": 6,
+    "score_mapping": {
+      "0-3": "Very low A1 — needs foundational support",
+      "4-6": "Early A1 — ready for pilot curriculum",
+      "7-9": "Strong A1 — may progress faster",
+      "10": "Approaching A2 — consider acceleration"
+    }
+  }
+}

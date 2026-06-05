@@ -1,0 +1,103 @@
+{
+  "lesson_id": "L07",
+  "task_id": "AIM-021",
+  "title_en": "Present Simple – Questions",
+  "title_ar": "الحاضر البسيط – الأسئلة",
+  "week": 2,
+  "difficulty": 3,
+  "sprint": "Sprint 4 - Content",
+  "prerequisites": ["L05", "L06"],
+  "skills_covered": ["SK-G04"],
+  "learning_objectives": [
+    "Form yes/no questions with Do / Does.",
+    "Form wh- questions: What, Where, When, Who, How.",
+    "Give short answers: Yes, I do. / No, he doesn't.",
+    "Know when to use Do vs Does."
+  ],
+  "questions": [
+    {
+      "question_id": "L07-Q01",
+      "skill_id": "SK-G04",
+      "concept": "do_does_question_formation",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt_en": "___ you speak English?",
+      "prompt_ar": "___ تتحدث الإنجليزية؟",
+      "choices": ["Do", "Does", "Are", "Is"],
+      "correct_answer": "Do",
+      "explanation_en": "With 'you', use 'Do' to form a present simple question.",
+      "explanation_ar": "مع 'you' نستخدم 'Do' لتكوين سؤال في المضارع البسيط.",
+      "common_error_tags": ["do_does_confusion", "missing_auxiliary"],
+      "prerequisites": [],
+      "hints": ["I/You/We/They → Do", "He/She/It → Does"]
+    },
+    {
+      "question_id": "L07-Q02",
+      "skill_id": "SK-G04",
+      "concept": "do_does_question_formation",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt_en": "___ your brother work in a hospital?",
+      "prompt_ar": "___ أخوك يعمل في مستشفى؟",
+      "choices": ["Does", "Do", "Is", "Are"],
+      "correct_answer": "Does",
+      "explanation_en": "'Your brother' = he (third person singular). Use 'Does'.",
+      "explanation_ar": "'Your brother' = هو (مفرد غائب). نستخدم 'Does'.",
+      "common_error_tags": ["do_does_confusion"],
+      "prerequisites": [],
+      "hints": ["he/she/it → Does", "brother = he → Does"]
+    },
+    {
+      "question_id": "L07-Q03",
+      "skill_id": "SK-G04",
+      "concept": "short_answer_do_does",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt_en": "Does she eat breakfast? (Answer: No)",
+      "prompt_ar": "هل تتناول هي الإفطار؟ (الجواب: لا)",
+      "choices": [
+        "No, she doesn't.",
+        "No, she don't.",
+        "No, she isn't.",
+        "No, she not."
+      ],
+      "correct_answer": "No, she doesn't.",
+      "explanation_en": "Short negative answer with 'she': No, she doesn't. (does + not = doesn't)",
+      "explanation_ar": "الجواب السلبي القصير مع 'she': No, she doesn't. (does + not = doesn't)",
+      "common_error_tags": ["do_does_confusion", "wrong_negative_form"],
+      "prerequisites": [],
+      "hints": ["doesn't = does not", "don't = do not (مع I/you/we/they)"]
+    },
+    {
+      "question_id": "L07-Q04",
+      "skill_id": "SK-G04",
+      "concept": "wh_question_what",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt_en": "___ do you do every morning?",
+      "prompt_ar": "___ تفعل كل صباح؟",
+      "choices": ["What", "Where", "Who", "How many"],
+      "correct_answer": "What",
+      "explanation_en": "'What' asks about activities or things. 'What do you do?' asks about actions.",
+      "explanation_ar": "'What' نستخدمها للسؤال عن الأنشطة أو الأشياء.",
+      "common_error_tags": ["wh_word_confusion"],
+      "prerequisites": [],
+      "hints": ["What = ماذا / ما", "Where = أين", "Who = من"]
+    },
+    {
+      "question_id": "L07-Q05",
+      "skill_id": "SK-G04",
+      "concept": "wh_question_when",
+      "difficulty": 3,
+      "type": "fill",
+      "prompt_en": "___ does the class start? (السؤال عن الوقت)",
+      "prompt_ar": "___ يبدأ الدرس؟ (السؤال عن الوقت)",
+      "correct_answer": "When",
+      "explanation_en": "'When' is used to ask about time.",
+      "explanation_ar": "'When' نستخدمها للسؤال عن الوقت.",
+      "common_error_tags": ["wh_word_confusion"],
+      "prerequisites": [],
+      "hints": ["When = متى (عن الوقت)", "Where = أين (عن المكان)"]
+    }
+  ]
+}

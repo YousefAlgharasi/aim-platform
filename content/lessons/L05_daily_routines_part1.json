@@ -1,0 +1,103 @@
+{
+  "lesson_id": "L05",
+  "task_id": "AIM-021",
+  "title_en": "Daily Routines – Part 1",
+  "title_ar": "روتيني اليومي – الجزء الأول",
+  "week": 1,
+  "difficulty": 2,
+  "sprint": "Sprint 4 - Content",
+  "prerequisites": ["L02", "L04"],
+  "skills_covered": ["SK-V05", "SK-G02"],
+  "learning_objectives": [
+    "Learn 10 common daily routine verbs (wake up, eat, go, come, work, sleep, brush, wash, drink, read).",
+    "Use present simple positive with I.",
+    "Talk about what you do every day.",
+    "Use time expressions: in the morning, in the afternoon, at night, every day."
+  ],
+  "questions": [
+    {
+      "question_id": "L05-Q01",
+      "skill_id": "SK-V05",
+      "concept": "daily_routine_verbs",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt_en": "Every morning, I ___ up at 6 o'clock.",
+      "prompt_ar": "كل صباح، أنا ___ من النوم الساعة السادسة.",
+      "choices": ["wake", "wakes", "waked", "am wake"],
+      "correct_answer": "wake",
+      "explanation_en": "With 'I' in present simple, we use the base form of the verb: I wake up.",
+      "explanation_ar": "مع 'I' في المضارع البسيط نستخدم الفعل الأساسي: I wake up.",
+      "common_error_tags": ["wrong_verb_form", "third_person_s_confusion"],
+      "prerequisites": [],
+      "hints": ["I + فعل أساسي (بدون s)", "wake up = يستيقظ"]
+    },
+    {
+      "question_id": "L05-Q02",
+      "skill_id": "SK-G02",
+      "concept": "present_simple_i_form",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt_en": "I ___ breakfast every morning.",
+      "prompt_ar": "أنا ___ الإفطار كل صباح.",
+      "choices": ["eat", "eats", "eating", "am eat"],
+      "correct_answer": "eat",
+      "explanation_en": "Present simple with 'I': I eat. No 's' after the verb with I.",
+      "explanation_ar": "المضارع البسيط مع 'I': I eat. لا نضيف 's' مع I.",
+      "common_error_tags": ["wrong_verb_form"],
+      "prerequisites": [],
+      "hints": ["I eat / I drink / I sleep (بدون s)"]
+    },
+    {
+      "question_id": "L05-Q03",
+      "skill_id": "SK-V05",
+      "concept": "time_expressions",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt_en": "I sleep ___ night.",
+      "prompt_ar": "أنا أنام ___ الليل.",
+      "choices": ["at", "in", "on", "by"],
+      "correct_answer": "at",
+      "explanation_en": "We say 'at night' (not 'in night'). But: in the morning, in the afternoon.",
+      "explanation_ar": "نقول 'at night' وليس 'in night'. لكن: in the morning, in the afternoon.",
+      "common_error_tags": ["preposition_error"],
+      "prerequisites": [],
+      "hints": ["at night", "in the morning", "in the afternoon"]
+    },
+    {
+      "question_id": "L05-Q04",
+      "skill_id": "SK-V05",
+      "concept": "daily_routine_vocabulary",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt_en": "Which sentence describes a morning routine correctly?",
+      "prompt_ar": "أي جملة تصف روتين الصباح بشكل صحيح؟",
+      "choices": [
+        "I wake up and brush my teeth.",
+        "I wake up and brushes my teeth.",
+        "I wakes up and brush my teeth.",
+        "I waking up and brush my teeth."
+      ],
+      "correct_answer": "I wake up and brush my teeth.",
+      "explanation_en": "With 'I', all verbs stay in base form: wake, brush (no -s, no -ing).",
+      "explanation_ar": "مع 'I' نستخدم الفعل الأساسي دائماً: wake, brush (بدون s أو ing).",
+      "common_error_tags": ["wrong_verb_form"],
+      "prerequisites": [],
+      "hints": ["I + verb (base form)", "لا تضف s أو ing مع I"]
+    },
+    {
+      "question_id": "L05-Q05",
+      "skill_id": "SK-G02",
+      "concept": "present_simple_frequency",
+      "difficulty": 2,
+      "type": "fill",
+      "prompt_en": "I ___ to school every day. (go)",
+      "prompt_ar": "أنا ___ إلى المدرسة كل يوم. (go)",
+      "correct_answer": "go",
+      "explanation_en": "Present simple with 'I': I go. Use base form with I.",
+      "explanation_ar": "المضارع البسيط مع 'I': I go. نستخدم الفعل الأساسي مع I.",
+      "common_error_tags": ["wrong_verb_form"],
+      "prerequisites": [],
+      "hints": ["I go (وليس I goes أو I going)"]
+    }
+  ]
+}
