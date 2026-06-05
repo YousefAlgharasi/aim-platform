@@ -302,3 +302,113 @@ class PilotOperationsModel(BaseModel):
         return self
 
     model_config = {"extra": "forbid"}
+
+
+class PilotAnalysisMetricModel(BaseModel):
+    metric_id: str = Field(min_length=3)
+    label: str = Field(min_length=5)
+    source_artifact: str = Field(min_length=5)
+    calculation: str = Field(min_length=20)
+    success_direction: str = Field(pattern=r"^(increase|decrease|stable|complete)$")
+    required_for_closeout: bool = True
+
+    model_config = {"extra": "forbid"}
+
+
+class PilotReportSectionModel(BaseModel):
+    section_id: str = Field(min_length=3)
+    title: str = Field(min_length=5)
+    required_evidence: List[str] = Field(min_length=1)
+    interpretation_rule: str = Field(min_length=20)
+
+    model_config = {"extra": "forbid"}
+
+
+class PilotDecisionGateModel(BaseModel):
+    gate_id: str = Field(min_length=3)
+    title: str = Field(min_length=5)
+    condition: str = Field(min_length=20)
+    pass_action: str = Field(min_length=10)
+    fail_action: str = Field(min_length=10)
+
+    model_config = {"extra": "forbid"}
+
+
+class PilotAnalysisPlanModel(BaseModel):
+    analysis_id: str = Field(pattern=r"^AIM-025$")
+    linked_operations_id: str = Field(pattern=r"^AIM-024$")
+    title: str = Field(min_length=5)
+    status: str = Field(pattern=r"^ready_for_manual_notion_review$")
+    metrics: List[PilotAnalysisMetricModel] = Field(min_length=6)
+    report_sections: List[PilotReportSectionModel] = Field(min_length=6)
+    decision_gates: List[PilotDecisionGateModel] = Field(min_length=4)
+    required_artifacts: List[str] = Field(min_length=4)
+    safety_notes: List[str] = Field(min_length=3)
+    next_phase_options: List[str] = Field(min_length=3)
+
+    @model_validator(mode="after")
+    def analysis_scope_is_complete(self) -> "PilotAnalysisPlanModel":
+        metric_ids = {metric.metric_id for metric in self.metrics}
+        required_metrics = {
+            "learning_gain",
+            "completion_rate",
+            "recommendation_effectiveness",
+            "mastery_movement",
+            "retention_movement",
+            "weakness_reduction",
+        }
+        missing_metrics = required_metrics - metric_ids
+        if missing_metrics:
+            raise ValueError(f"Pilot analysis missing metrics: {sorted(missing_metrics)}")
+
+        artifact_names = set(self.required_artifacts)
+        required_artifacts = {
+            "pre_post_scores",
+            "session_attempts",
+            "adaptive_recommendations",
+            "admin_daily_snapshot",
+        }
+        missing_artifacts = required_artifacts - artifact_names
+        if missing_artifacts:
+            raise ValueError(f"Pilot analysis missing artifacts: {sorted(missing_artifacts)}")
+
+        section_ids = {section.section_id for section in self.report_sections}
+        required_sections = {
+            "cohort_summary",
+            "learning_gain",
+            "aim_recommendations",
+            "safety_review",
+            "data_quality",
+            "next_phase_decision",
+        }
+        missing_sections = required_sections - section_ids
+        if missing_sections:
+            raise ValueError(f"Pilot analysis missing sections: {sorted(missing_sections)}")
+
+        gate_ids = {gate.gate_id for gate in self.decision_gates}
+        required_gates = {
+            "learning_signal",
+            "algorithm_safety",
+            "data_completeness",
+            "operator_readiness",
+        }
+        missing_gates = required_gates - gate_ids
+        if missing_gates:
+            raise ValueError(f"Pilot analysis missing decision gates: {sorted(missing_gates)}")
+
+        joined = " ".join(
+            [
+                *(metric.calculation for metric in self.metrics),
+                *(section.interpretation_rule for section in self.report_sections),
+                *self.safety_notes,
+            ]
+        ).lower()
+        forbidden_speed_terms = ("response_time", "avg_response_time", "speed_score")
+        if any(term in joined for term in forbidden_speed_terms):
+            raise ValueError("Pilot analysis must not use speed fields for mastery.")
+        if "diagnosis" not in joined or "clinical" not in joined:
+            raise ValueError("Pilot analysis must explicitly forbid clinical diagnosis language.")
+
+        return self
+
+    model_config = {"extra": "forbid"}
