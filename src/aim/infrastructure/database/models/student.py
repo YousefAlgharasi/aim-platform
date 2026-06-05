@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from sqlalchemy import Boolean, Column, DateTime, Float, Integer, JSON, String, UniqueConstraint, func
+from sqlalchemy.dialects import postgresql
 
 from aim.infrastructure.database.base import Base
 
@@ -11,6 +12,12 @@ class StudentORM(Base):
     __tablename__ = "students"
 
     id = Column(Integer, primary_key=True, index=True)
+    auth_user_id = Column(
+        String().with_variant(postgresql.UUID(as_uuid=False), "postgresql"),
+        unique=True,
+        nullable=True,
+        index=True,
+    )
     name = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False, index=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
