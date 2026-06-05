@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "aim:content:assessment_schema:v1",
+  "title": "AIM Assessment Schema",
+  "description": "Validates a pre-test or post-test assessment file for the AIM A1 pilot.",
+  "type": "object",
+  "required": [
+    "assessment_id",
+    "title_en",
+    "title_ar",
+    "instructions_en",
+    "instructions_ar",
+    "duration_minutes",
+    "usage",
+    "questions",
+    "scoring"
+  ],
+  "properties": {
+    "assessment_id": {
+      "type": "string",
+      "minLength": 3,
+      "description": "Unique assessment identifier."
+    },
+    "task_id": {
+      "type": "string",
+      "description": "Traceability reference to the Notion task."
+    },
+    "title_en": {"type": "string", "minLength": 3},
+    "title_ar": {"type": "string", "minLength": 3},
+    "instructions_en": {"type": "string", "minLength": 10},
+    "instructions_ar": {"type": "string", "minLength": 10},
+    "duration_minutes": {"type": "integer", "minimum": 1},
+    "usage": {"type": "string", "minLength": 10},
+    "questions": {
+      "type": "array",
+      "items": {"$ref": "question_schema.json"},
+      "minItems": 5,
+      "description": "All questions must pass the full AIM question schema including metadata."
+    },
+    "scoring": {
+      "type": "object",
+      "required": ["total_questions", "pass_threshold", "score_mapping"],
+      "properties": {
+        "total_questions": {"type": "integer", "minimum": 1},
+        "pass_threshold": {"type": "integer", "minimum": 1},
+        "score_mapping": {"type": "object"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
