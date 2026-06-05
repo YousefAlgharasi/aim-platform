@@ -1,0 +1,150 @@
+{
+  "analysis_id": "AIM-025",
+  "linked_operations_id": "AIM-024",
+  "title": "Web pilot analysis and closeout plan",
+  "status": "ready_for_manual_notion_review",
+  "metrics": [
+    {
+      "metric_id": "learning_gain",
+      "label": "Pre-test to post-test score gain",
+      "source_artifact": "pre_post_scores",
+      "calculation": "For each learner, subtract the pre-test score from the post-test score, then summarize individual and cohort average gain.",
+      "success_direction": "increase",
+      "required_for_closeout": true
+    },
+    {
+      "metric_id": "completion_rate",
+      "label": "Lesson completion rate",
+      "source_artifact": "session_attempts",
+      "calculation": "Count completed lesson sessions per learner and divide by the ten planned lessons.",
+      "success_direction": "complete",
+      "required_for_closeout": true
+    },
+    {
+      "metric_id": "recommendation_effectiveness",
+      "label": "Recommendation effectiveness",
+      "source_artifact": "adaptive_recommendations",
+      "calculation": "Count recommendations followed by positive mastery, retention, or weakness movement in the next completed session.",
+      "success_direction": "increase",
+      "required_for_closeout": true
+    },
+    {
+      "metric_id": "mastery_movement",
+      "label": "Mastery movement",
+      "source_artifact": "admin_daily_snapshot",
+      "calculation": "Compare first and final available mastery values per learner and skill, respecting AIM reliability and session caps.",
+      "success_direction": "increase",
+      "required_for_closeout": true
+    },
+    {
+      "metric_id": "retention_movement",
+      "label": "Retention movement",
+      "source_artifact": "admin_daily_snapshot",
+      "calculation": "Compare retention values before and after review recommendations for each practiced skill.",
+      "success_direction": "increase",
+      "required_for_closeout": true
+    },
+    {
+      "metric_id": "weakness_reduction",
+      "label": "Weakness reduction",
+      "source_artifact": "admin_daily_snapshot",
+      "calculation": "Compare early and late weakness signals for repeated concepts and summarize reductions or persistent gaps.",
+      "success_direction": "decrease",
+      "required_for_closeout": true
+    },
+    {
+      "metric_id": "data_quality",
+      "label": "Data completeness",
+      "source_artifact": "admin_daily_snapshot",
+      "calculation": "Count missing sessions, missing adaptive results, missing post-test records, and unresolved audit gaps.",
+      "success_direction": "decrease",
+      "required_for_closeout": true
+    }
+  ],
+  "report_sections": [
+    {
+      "section_id": "cohort_summary",
+      "title": "Cohort summary",
+      "required_evidence": ["learner_count", "attendance", "completion_rate"],
+      "interpretation_rule": "Describe participation and completion patterns without making clinical or diagnostic claims."
+    },
+    {
+      "section_id": "learning_gain",
+      "title": "Learning gain",
+      "required_evidence": ["pre_post_scores", "learning_gain"],
+      "interpretation_rule": "Report individual and cohort score movement as educational progress evidence only."
+    },
+    {
+      "section_id": "aim_recommendations",
+      "title": "AIM recommendation effectiveness",
+      "required_evidence": ["adaptive_recommendations", "recommendation_effectiveness", "outcomes"],
+      "interpretation_rule": "Compare resolved AIM actions with follow-up learning signals and note where more evidence is needed."
+    },
+    {
+      "section_id": "safety_review",
+      "title": "Educational safety review",
+      "required_evidence": ["frustration signals", "difficulty actions", "operator notes"],
+      "interpretation_rule": "Confirm difficulty was not increased during high frustration, low reliability, or prerequisite gap conditions."
+    },
+    {
+      "section_id": "data_quality",
+      "title": "Data quality and missing records",
+      "required_evidence": ["missing sessions", "missing adaptive results", "missing assessments"],
+      "interpretation_rule": "Separate missing data from learner performance and avoid overinterpreting incomplete records."
+    },
+    {
+      "section_id": "next_phase_decision",
+      "title": "Next phase decision",
+      "required_evidence": ["decision_gates", "risks", "recommended_next_step"],
+      "interpretation_rule": "Choose the next phase from evidence quality, safety, and operational readiness rather than optimism."
+    }
+  ],
+  "decision_gates": [
+    {
+      "gate_id": "learning_signal",
+      "title": "Learning signal",
+      "condition": "At least three learners show non-negative learning gain and no severe unresolved content blocker is identified.",
+      "pass_action": "Prepare a slightly larger web pilot.",
+      "fail_action": "Revise A1 content and repeat a short validation run."
+    },
+    {
+      "gate_id": "algorithm_safety",
+      "title": "Algorithm safety",
+      "condition": "Recommendation actions align with resolved AIM decisions and difficulty does not increase under unsafe conditions.",
+      "pass_action": "Keep AIM recommendation flow enabled.",
+      "fail_action": "Pause adaptive difficulty increases and fix the decision path."
+    },
+    {
+      "gate_id": "data_completeness",
+      "title": "Data completeness",
+      "condition": "Pre-test, post-test, session attempts, recommendations, and admin snapshots are complete or documented.",
+      "pass_action": "Use pilot data for closeout reporting.",
+      "fail_action": "Collect missing records or mark affected results as inconclusive."
+    },
+    {
+      "gate_id": "operator_readiness",
+      "title": "Operator readiness",
+      "condition": "The operator can run account setup, daily review, issue handling, and exports without developer intervention.",
+      "pass_action": "Document the workflow for the next cohort.",
+      "fail_action": "Improve runbook steps and admin dashboard visibility before expansion."
+    }
+  ],
+  "required_artifacts": [
+    "pre_post_scores",
+    "session_attempts",
+    "adaptive_recommendations",
+    "admin_daily_snapshot",
+    "operator_notes"
+  ],
+  "safety_notes": [
+    "Do not use speed as a mastery or difficulty-increase signal.",
+    "Use educational terms such as prerequisite gap, weak retention, low confidence signal, hesitation, rushing, and concept misunderstanding.",
+    "Do not use medical diagnosis, clinical psychological labels, or mental health claims.",
+    "Separate high frustration signal from learner ability and use it only to adjust educational support."
+  ],
+  "next_phase_options": [
+    "Repeat the five-learner pilot after content fixes.",
+    "Run a larger web pilot with the same architecture and stronger monitoring.",
+    "Move selected backend and React surfaces toward production hardening."
+  ]
+}
