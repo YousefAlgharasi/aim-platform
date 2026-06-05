@@ -66,8 +66,17 @@ precedence when both are set.
 ```txt
 APP_ENV=cloud
 SUPABASE_DATABASE_URL=postgresql://postgres.<project-ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres
+SUPABASE_URL=https://<project-ref>.supabase.co
+SUPABASE_AUTH_REQUIRED=true
+SUPABASE_JWT_AUDIENCE=authenticated
+CORS_ORIGINS=https://your-react-app.example.com,http://localhost:3000
 ```
 
 For persistent FastAPI servers, use Supabase's direct connection when the host
 supports IPv6, or the Session pooler on IPv4-only hosts. Transaction pooler
 connections are better suited to serverless/short-lived runtimes.
+
+Supabase JWT verification uses the project JWKS endpoint by default. If a
+legacy/shared JWT secret is required, configure `SUPABASE_JWT_SECRET` only on
+the backend runtime environment; never expose it through frontend public env
+variables.

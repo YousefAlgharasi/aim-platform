@@ -4,6 +4,13 @@ from aim.infrastructure.database.models.error_pattern import ErrorPatternRecordO
 from aim.infrastructure.database.models.explanation_log import ExplanationLogORM
 from aim.infrastructure.database.models.fairness_audit import FairnessAuditLogORM
 from aim.infrastructure.database.models.goal import MicroGoalORM
+from aim.infrastructure.database.models.content import (
+    AuditLogORM,
+    CourseORM,
+    LessonORM,
+    QuestionChoiceORM,
+    QuestionORM,
+)
 from aim.infrastructure.database.models.learning_history import (
     AssessmentResultORM,
     LessonAttemptORM,
@@ -25,9 +32,12 @@ from aim.infrastructure.database.models.student import StudentORM, StudentSkillS
 from aim.infrastructure.database.models.weakness import WeaknessRecordORM
 
 __all__ = [
+    "AuditLogORM",
+    "CourseORM",
     "ErrorPatternRecordORM",
     "ExplanationLogORM",
     "FairnessAuditLogORM",
+    "LessonORM",
     "AssessmentResultORM",
     "LessonAttemptORM",
     "LearningResponsePatternORM",
@@ -37,6 +47,8 @@ __all__ = [
     "PromptAdaptationInstructionORM",
     "QuestionQualityStatsORM",
     "QuestionAttemptORM",
+    "QuestionChoiceORM",
+    "QuestionORM",
     "RecommendationLogORM",
     "RetentionScheduleORM",
     "SkillMasteryHistoryORM",
