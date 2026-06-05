@@ -1,0 +1,103 @@
+{
+  "lesson_id": "L04",
+  "task_id": "AIM-021",
+  "title_en": "My Family",
+  "title_ar": "عائلتي",
+  "week": 1,
+  "difficulty": 2,
+  "sprint": "Sprint 4 - Content",
+  "prerequisites": ["L02"],
+  "skills_covered": ["SK-V04", "SK-G01"],
+  "learning_objectives": [
+    "Name at least 8 family members in English.",
+    "Use 'to be' to describe family members.",
+    "Use possessive adjectives: my, his, her, their.",
+    "Say simple sentences about the family (My mother is a teacher.)."
+  ],
+  "questions": [
+    {
+      "question_id": "L04-Q01",
+      "skill_id": "SK-V04",
+      "concept": "family_vocabulary",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt_en": "What do we call our father's or mother's mother?",
+      "prompt_ar": "ماذا نسمي أم أبينا أو أمنا؟",
+      "choices": ["Grandmother", "Aunt", "Sister", "Mother"],
+      "correct_answer": "Grandmother",
+      "explanation_en": "The mother of your father or mother is your grandmother. (جدّة)",
+      "explanation_ar": "أم أبيك أو أمك تُسمى 'grandmother' بالإنجليزية (جدّة).",
+      "common_error_tags": ["family_term_confusion"],
+      "prerequisites": [],
+      "hints": ["جدّة = Grandmother", "Grandfather = جدّ"]
+    },
+    {
+      "question_id": "L04-Q02",
+      "skill_id": "SK-V04",
+      "concept": "family_vocabulary",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt_en": "Your father's brother is your ___.",
+      "prompt_ar": "أخ أبيك هو ___.",
+      "choices": ["uncle", "cousin", "brother", "nephew"],
+      "correct_answer": "uncle",
+      "explanation_en": "Your father's or mother's brother is your uncle. (عمّ / خال)",
+      "explanation_ar": "أخ أبيك أو أمك يُسمى 'uncle' بالإنجليزية (عمّ أو خال).",
+      "common_error_tags": ["family_term_confusion"],
+      "prerequisites": [],
+      "hints": ["عمّ / خال = uncle", "عمّة / خالة = aunt"]
+    },
+    {
+      "question_id": "L04-Q03",
+      "skill_id": "SK-G01",
+      "concept": "possessive_adjective_his_her",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt_en": "Sara's brother is tall. ___ brother is tall.",
+      "prompt_ar": "أخو سارة طويل. ___ أخوها طويل.",
+      "choices": ["Her", "His", "Their", "My"],
+      "correct_answer": "Her",
+      "explanation_en": "Sara is female, so we use 'her' to show possession.",
+      "explanation_ar": "سارة أنثى، لذا نستخدم 'her' للملكية.",
+      "common_error_tags": ["his_her_confusion"],
+      "prerequisites": [],
+      "hints": ["أنثى = her", "ذكر = his"]
+    },
+    {
+      "question_id": "L04-Q04",
+      "skill_id": "SK-G01",
+      "concept": "to_be_with_family",
+      "difficulty": 2,
+      "type": "fill",
+      "prompt_en": "My parents ___ very kind.",
+      "prompt_ar": "والديّ ___ لطيفان جداً.",
+      "correct_answer": "are",
+      "explanation_en": "'My parents' is plural, so we use 'are'.",
+      "explanation_ar": "'My parents' جمع، لذا نستخدم 'are'.",
+      "common_error_tags": ["subject_verb_agreement_error", "confusion_am_is_are"],
+      "prerequisites": [],
+      "hints": ["parents = جمع → are"]
+    },
+    {
+      "question_id": "L04-Q05",
+      "skill_id": "SK-V04",
+      "concept": "family_sentence_building",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt_en": "Choose the correct sentence.",
+      "prompt_ar": "اختر الجملة الصحيحة.",
+      "choices": [
+        "My sister is a nurse.",
+        "My sister are a nurse.",
+        "My sister am a nurse.",
+        "My sister be a nurse."
+      ],
+      "correct_answer": "My sister is a nurse.",
+      "explanation_en": "'My sister' = she (singular female), so we use 'is'.",
+      "explanation_ar": "'My sister' = هي (مفرد مؤنث)، فنستخدم 'is'.",
+      "common_error_tags": ["confusion_am_is_are", "subject_verb_agreement_error"],
+      "prerequisites": [],
+      "hints": ["sister = هي → is"]
+    }
+  ]
+}
