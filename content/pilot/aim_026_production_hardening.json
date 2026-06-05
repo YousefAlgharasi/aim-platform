@@ -1,0 +1,116 @@
+{
+  "hardening_id": "AIM-026",
+  "linked_analysis_id": "AIM-025",
+  "title": "Production hardening readiness for selected web pilot surfaces",
+  "status": "ready_for_manual_notion_review",
+  "deployment_targets": [
+    "FastAPI backend with Supabase PostgreSQL",
+    "React web pilot frontend"
+  ],
+  "checks": [
+    {
+      "check_id": "auth-01",
+      "category": "auth",
+      "requirement": "Supabase Auth must be required for pilot student routes in cloud and production environments.",
+      "verification": "Set SUPABASE_AUTH_REQUIRED=true and verify unauthenticated student requests are rejected.",
+      "blocking": true
+    },
+    {
+      "check_id": "database-01",
+      "category": "database",
+      "requirement": "Cloud deployments must use Supabase PostgreSQL through a configured database URL.",
+      "verification": "Set SUPABASE_DATABASE_URL and run the migration smoke test before release.",
+      "blocking": true
+    },
+    {
+      "check_id": "api-01",
+      "category": "api",
+      "requirement": "Pilot APIs must expose lessons, sessions, adaptive results, recommendations, and admin overview without development-only endpoints in the public navigation.",
+      "verification": "Run backend tests and manually verify the public route list before deployment.",
+      "blocking": true
+    },
+    {
+      "check_id": "frontend-01",
+      "category": "frontend",
+      "requirement": "React must point to the deployed backend API and Supabase public project values only.",
+      "verification": "Set REACT_APP_API_BASE_URL, REACT_APP_SUPABASE_URL, and REACT_APP_SUPABASE_PUBLISHABLE_KEY before npm run build.",
+      "blocking": true
+    },
+    {
+      "check_id": "observability-01",
+      "category": "observability",
+      "requirement": "Operators must be able to monitor logins, sessions, adaptive results, recommendations, outcomes, and audit events.",
+      "verification": "Open the admin dashboard after a test session and confirm each count changes as expected.",
+      "blocking": true
+    },
+    {
+      "check_id": "privacy-01",
+      "category": "privacy",
+      "requirement": "Exports and summaries must use student ids and avoid unnecessary personal details.",
+      "verification": "Review pilot exports before sharing and remove names, emails, and auth identifiers unless needed for operations.",
+      "blocking": true
+    },
+    {
+      "check_id": "rollback-01",
+      "category": "rollback",
+      "requirement": "The operator must have a rollback path for frontend release failure, backend release failure, and data quality failure.",
+      "verification": "Confirm rollback steps have named owners and can be executed without schema loss.",
+      "blocking": true
+    },
+    {
+      "check_id": "testing-01",
+      "category": "testing",
+      "requirement": "Backend tests, content validation tests, and React production build must pass before release.",
+      "verification": "Run PYTHONPATH=src pytest and npm run build from frontend.",
+      "blocking": true
+    }
+  ],
+  "rollback_steps": [
+    {
+      "step": 1,
+      "trigger": "Frontend release blocks login or lesson access.",
+      "action": "Revert the frontend deployment to the previous successful build and keep the backend unchanged.",
+      "owner": "frontend operator"
+    },
+    {
+      "step": 2,
+      "trigger": "Backend release blocks session submission or adaptive results.",
+      "action": "Route traffic back to the previous backend deployment and preserve submitted attempt data.",
+      "owner": "backend operator"
+    },
+    {
+      "step": 3,
+      "trigger": "Data quality failure affects pilot interpretation.",
+      "action": "Pause closeout claims, mark affected results as inconclusive, and collect missing records if possible.",
+      "owner": "data reviewer"
+    }
+  ],
+  "required_env_vars": [
+    "APP_ENV",
+    "SUPABASE_URL",
+    "SUPABASE_DATABASE_URL",
+    "SUPABASE_AUTH_REQUIRED",
+    "SUPABASE_JWT_AUDIENCE",
+    "CORS_ORIGINS",
+    "REACT_APP_API_BASE_URL",
+    "REACT_APP_SUPABASE_URL",
+    "REACT_APP_SUPABASE_PUBLISHABLE_KEY"
+  ],
+  "observability_events": [
+    "student_login",
+    "lesson_session_started",
+    "session_attempts_submitted",
+    "adaptive_result_saved",
+    "recommendation_generated",
+    "outcome_recorded",
+    "admin_daily_snapshot_reviewed"
+  ],
+  "privacy_rules": [
+    "Use student ids in analysis exports whenever possible.",
+    "Do not include auth user ids in shared pilot reports.",
+    "Do not share names or emails outside the operator workflow.",
+    "Keep educational observations separate from raw account data.",
+    "Store only pilot-relevant fields in closeout artifacts."
+  ],
+  "release_decision": "Release only when all blocking checks pass, rollback owners are assigned, and the operator can verify a complete test session end to end."
+}

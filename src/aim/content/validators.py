@@ -412,3 +412,84 @@ class PilotAnalysisPlanModel(BaseModel):
         return self
 
     model_config = {"extra": "forbid"}
+
+
+class ProductionHardeningCheckModel(BaseModel):
+    check_id: str = Field(min_length=3)
+    category: str = Field(min_length=3)
+    requirement: str = Field(min_length=20)
+    verification: str = Field(min_length=20)
+    blocking: bool = True
+
+    model_config = {"extra": "forbid"}
+
+
+class ProductionRollbackStepModel(BaseModel):
+    step: int = Field(ge=1)
+    trigger: str = Field(min_length=10)
+    action: str = Field(min_length=20)
+    owner: str = Field(min_length=5)
+
+    model_config = {"extra": "forbid"}
+
+
+class ProductionHardeningPlanModel(BaseModel):
+    hardening_id: str = Field(pattern=r"^AIM-026$")
+    linked_analysis_id: str = Field(pattern=r"^AIM-025$")
+    title: str = Field(min_length=5)
+    status: str = Field(pattern=r"^ready_for_manual_notion_review$")
+    deployment_targets: List[str] = Field(min_length=2)
+    checks: List[ProductionHardeningCheckModel] = Field(min_length=8)
+    rollback_steps: List[ProductionRollbackStepModel] = Field(min_length=3)
+    required_env_vars: List[str] = Field(min_length=6)
+    observability_events: List[str] = Field(min_length=5)
+    privacy_rules: List[str] = Field(min_length=4)
+    release_decision: str = Field(min_length=20)
+
+    @model_validator(mode="after")
+    def hardening_scope_is_complete(self) -> "ProductionHardeningPlanModel":
+        categories = {check.category for check in self.checks}
+        required_categories = {
+            "auth",
+            "database",
+            "api",
+            "frontend",
+            "observability",
+            "privacy",
+            "rollback",
+            "testing",
+        }
+        missing_categories = required_categories - categories
+        if missing_categories:
+            raise ValueError(f"Production hardening missing categories: {sorted(missing_categories)}")
+
+        env_vars = set(self.required_env_vars)
+        required_env_vars = {
+            "APP_ENV",
+            "SUPABASE_URL",
+            "SUPABASE_DATABASE_URL",
+            "SUPABASE_AUTH_REQUIRED",
+            "SUPABASE_JWT_AUDIENCE",
+            "CORS_ORIGINS",
+        }
+        missing_env_vars = required_env_vars - env_vars
+        if missing_env_vars:
+            raise ValueError(f"Production hardening missing env vars: {sorted(missing_env_vars)}")
+
+        joined = " ".join(
+            [
+                *(check.requirement for check in self.checks),
+                *(check.verification for check in self.checks),
+                *self.privacy_rules,
+                self.release_decision,
+            ]
+        ).lower()
+        forbidden_speed_terms = ("response_time", "avg_response_time", "speed_score")
+        if any(term in joined for term in forbidden_speed_terms):
+            raise ValueError("Production hardening must not use speed fields for mastery.")
+        if "clinical" in joined or "diagnosis" in joined or "mental health" in joined:
+            raise ValueError("Production hardening must avoid clinical or diagnosis language.")
+
+        return self
+
+    model_config = {"extra": "forbid"}
