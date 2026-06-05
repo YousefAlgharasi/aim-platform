@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from aim.application.errors import ApplicationError
 from aim.application.use_cases.students import StudentUseCases
 from aim.infrastructure.database.unit_of_work import SqlAlchemyUnitOfWork
+from aim.infrastructure.database.models.student import StudentORM
 from aim.presentation.api.auth import (
     SupabaseUser,
     auth_user_id_for_student_create,
@@ -33,6 +34,34 @@ def get_db():
 
 def _use_cases(db: Session) -> StudentUseCases:
     return StudentUseCases(SqlAlchemyUnitOfWork(db))
+
+
+@router.get(
+    "/students/me",
+    response_model=StudentRead,
+    summary="Get the student linked to the authenticated Supabase user",
+)
+def get_current_student(
+    db: Session = Depends(get_db),
+    current_user: SupabaseUser | None = Depends(get_current_supabase_user),
+):
+    if current_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Supabase authentication is required for /students/me.",
+        )
+
+    student = (
+        db.query(StudentORM)
+        .filter(StudentORM.auth_user_id == current_user.user_id)
+        .first()
+    )
+    if student is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No student is linked to this authenticated user.",
+        )
+    return student
 
 
 @router.post(
