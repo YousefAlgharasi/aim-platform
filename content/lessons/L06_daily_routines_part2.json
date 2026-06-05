@@ -1,0 +1,103 @@
+{
+  "lesson_id": "L06",
+  "task_id": "AIM-021",
+  "title_en": "Daily Routines – Part 2",
+  "title_ar": "روتيني اليومي – الجزء الثاني",
+  "week": 2,
+  "difficulty": 2,
+  "sprint": "Sprint 4 - Content",
+  "prerequisites": ["L05"],
+  "skills_covered": ["SK-G02", "SK-V05"],
+  "learning_objectives": [
+    "Use present simple with he/she (add -s or -es to the verb).",
+    "Know the -es rule for verbs ending in o, x, ch, sh, s.",
+    "Talk about other people's daily routines.",
+    "Compare: I eat / He eats."
+  ],
+  "questions": [
+    {
+      "question_id": "L06-Q01",
+      "skill_id": "SK-G02",
+      "concept": "present_simple_third_person_s",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt_en": "My brother ___ to school every day.",
+      "prompt_ar": "أخي ___ إلى المدرسة كل يوم.",
+      "choices": ["goes", "go", "going", "is go"],
+      "correct_answer": "goes",
+      "explanation_en": "'Go' ends in 'o', so in 3rd person singular we add '-es': goes.",
+      "explanation_ar": "الفعل 'go' ينتهي بـ 'o'، لذا في المفرد الغائب نضيف '-es': goes.",
+      "common_error_tags": ["wrong_verb_form", "third_person_s_confusion"],
+      "prerequisites": [],
+      "hints": ["go → goes (ينتهي بـ o → أضف es)", "He / She / It → فعل + s أو es"]
+    },
+    {
+      "question_id": "L06-Q02",
+      "skill_id": "SK-G02",
+      "concept": "present_simple_third_person_s",
+      "difficulty": 2,
+      "type": "fill",
+      "prompt_en": "My mother ___ breakfast at 7 AM. (eat)",
+      "prompt_ar": "أمي ___ الإفطار الساعة السابعة. (eat)",
+      "correct_answer": "eats",
+      "explanation_en": "With 'my mother' (she), add '-s' to the verb: eats.",
+      "explanation_ar": "مع 'my mother' (هي)، نضيف '-s' للفعل: eats.",
+      "common_error_tags": ["wrong_verb_form", "third_person_s_confusion"],
+      "prerequisites": [],
+      "hints": ["She eats / He eats (أضف s)"]
+    },
+    {
+      "question_id": "L06-Q03",
+      "skill_id": "SK-G02",
+      "concept": "i_vs_he_she_present_simple",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt_en": "Which sentence is correct?",
+      "prompt_ar": "أي جملة صحيحة؟",
+      "choices": [
+        "She reads a book every night.",
+        "She read a book every night.",
+        "She reading a book every night.",
+        "She is reads a book every night."
+      ],
+      "correct_answer": "She reads a book every night.",
+      "explanation_en": "Present simple with she/he: add -s to the verb. She reads.",
+      "explanation_ar": "المضارع البسيط مع she/he: أضف -s للفعل. She reads.",
+      "common_error_tags": ["wrong_verb_form"],
+      "prerequisites": [],
+      "hints": ["She + فعل + s", "read → reads"]
+    },
+    {
+      "question_id": "L06-Q04",
+      "skill_id": "SK-G02",
+      "concept": "present_simple_have_has",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt_en": "My father ___ a car.",
+      "prompt_ar": "أبي ___ سيارة.",
+      "choices": ["has", "have", "haves", "is have"],
+      "correct_answer": "has",
+      "explanation_en": "'Have' is irregular: I/You/We/They have — He/She/It HAS.",
+      "explanation_ar": "فعل 'have' غير منتظم: I/You/We/They have — He/She/It has.",
+      "common_error_tags": ["irregular_verb_error"],
+      "prerequisites": [],
+      "hints": ["have → has مع He/She (استثناء غير منتظم)"]
+    },
+    {
+      "question_id": "L06-Q05",
+      "skill_id": "SK-G02",
+      "concept": "i_vs_he_she_contrast",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt_en": "I sleep at 10 PM. My sister ___ at 11 PM.",
+      "prompt_ar": "أنا أنام الساعة العاشرة. أختي ___ الساعة الحادية عشرة.",
+      "choices": ["sleeps", "sleep", "sleeping", "sleepes"],
+      "correct_answer": "sleeps",
+      "explanation_en": "'My sister' = she. Add -s: sleeps.",
+      "explanation_ar": "'My sister' = هي. نضيف -s: sleeps.",
+      "common_error_tags": ["wrong_verb_form", "third_person_s_confusion"],
+      "prerequisites": [],
+      "hints": ["sister = she → sleeps"]
+    }
+  ]
+}

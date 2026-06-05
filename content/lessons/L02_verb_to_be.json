@@ -1,0 +1,106 @@
+{
+  "lesson_id": "L02",
+  "task_id": "AIM-021",
+  "title_en": "The Verb 'To Be'",
+  "title_ar": "فعل To Be",
+  "week": 1,
+  "difficulty": 1,
+  "sprint": "Sprint 4 - Content",
+  "prerequisites": ["L01"],
+  "skills_covered": ["SK-G01"],
+  "learning_objectives": [
+    "Know all forms of 'to be' in present simple: am, is, are.",
+    "Match each subject pronoun to the correct form.",
+    "Use 'to be' in positive sentences.",
+    "Use 'to be' in negative sentences with 'not'."
+  ],
+  "questions": [
+    {
+      "question_id": "L02-Q01",
+      "skill_id": "SK-G01",
+      "concept": "to_be_pronoun_matching",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt_en": "Which form is correct? She ___ a doctor.",
+      "prompt_ar": "أي شكل صحيح؟ هي ___ طبيبة.",
+      "choices": ["is", "am", "are", "be"],
+      "correct_answer": "is",
+      "explanation_en": "She is a third-person singular pronoun. We use 'is' with he, she, it.",
+      "explanation_ar": "'She' ضمير مفرد غائب، لذا نستخدم 'is'.",
+      "common_error_tags": ["confusion_am_is_are"],
+      "prerequisites": [],
+      "hints": ["She = هي (مفرد غائب)", "مفرد غائب → is"]
+    },
+    {
+      "question_id": "L02-Q02",
+      "skill_id": "SK-G01",
+      "concept": "to_be_plural",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt_en": "They ___ students.",
+      "prompt_ar": "هم ___ طلاب.",
+      "choices": ["are", "is", "am", "be"],
+      "correct_answer": "are",
+      "explanation_en": "'They' is a plural pronoun. We use 'are' with you, we, they.",
+      "explanation_ar": "'They' ضمير جمع، لذا نستخدم 'are'.",
+      "common_error_tags": ["confusion_am_is_are", "subject_verb_agreement_error"],
+      "prerequisites": [],
+      "hints": ["They = هم (جمع)", "جمع → are"]
+    },
+    {
+      "question_id": "L02-Q03",
+      "skill_id": "SK-G01",
+      "concept": "to_be_negative",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt_en": "Make this sentence negative: He is tired.",
+      "prompt_ar": "حوّل الجملة إلى نفي: He is tired.",
+      "choices": [
+        "He is not tired.",
+        "He not tired.",
+        "He are not tired.",
+        "He am not tired."
+      ],
+      "correct_answer": "He is not tired.",
+      "explanation_en": "To make 'to be' negative, add 'not' after the verb: He is not tired. (or He isn't tired.)",
+      "explanation_ar": "لنفي 'to be' نضيف 'not' بعد الفعل: He is not tired.",
+      "common_error_tags": ["missing_auxiliary", "confusion_am_is_are"],
+      "prerequisites": [],
+      "hints": [
+        "النفي: is + not = is not / isn't",
+        "لا نحذف 'is' من الجملة"
+      ]
+    },
+    {
+      "question_id": "L02-Q04",
+      "skill_id": "SK-G01",
+      "concept": "to_be_full_paradigm",
+      "difficulty": 1,
+      "type": "fill",
+      "prompt_en": "I ___ happy today.",
+      "prompt_ar": "أنا ___ سعيد اليوم.",
+      "correct_answer": "am",
+      "explanation_en": "With 'I', we always use 'am'. I am happy.",
+      "explanation_ar": "مع 'I' نستخدم دائماً 'am'.",
+      "common_error_tags": ["confusion_am_is_are"],
+      "prerequisites": [],
+      "hints": ["I → am (دائماً)"]
+    },
+    {
+      "question_id": "L02-Q05",
+      "skill_id": "SK-G01",
+      "concept": "to_be_contraction",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt_en": "Which is the correct short form (contraction) of 'We are not'?",
+      "prompt_ar": "ما الشكل المختصر الصحيح لـ 'We are not'؟",
+      "choices": ["We aren't", "We isn't", "We amn't", "We not are"],
+      "correct_answer": "We aren't",
+      "explanation_en": "'We are not' shortens to 'We aren't'. Are + not = aren't.",
+      "explanation_ar": "'We are not' تختصر إلى 'We aren't'. are + not = aren't.",
+      "common_error_tags": ["confusion_am_is_are", "false_cognate_arabic"],
+      "prerequisites": [],
+      "hints": ["are + not = aren't", "is + not = isn't"]
+    }
+  ]
+}
