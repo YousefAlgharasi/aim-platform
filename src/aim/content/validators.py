@@ -221,3 +221,84 @@ class PilotPlanModel(BaseModel):
         return self
 
     model_config = {"extra": "forbid"}
+
+
+class PilotDailyOperationModel(BaseModel):
+    day: int = Field(ge=0, le=14)
+    operator_action: str = Field(min_length=20)
+    learner_activity: str = Field(min_length=20)
+    data_to_check: List[str] = Field(min_length=2)
+    completion_signal: str = Field(min_length=15)
+
+    model_config = {"extra": "forbid"}
+
+
+class PilotIssueProtocolModel(BaseModel):
+    issue_type: str = Field(min_length=5)
+    severity: str = Field(pattern=r"^(low|medium|high)$")
+    operator_response: str = Field(min_length=20)
+    escalation_owner: str = Field(min_length=5)
+    must_pause_student: bool = False
+
+    model_config = {"extra": "forbid"}
+
+
+class PilotDataExportModel(BaseModel):
+    artifact_name: str = Field(min_length=5)
+    source: str = Field(min_length=5)
+    fields: List[str] = Field(min_length=2)
+    cadence: str = Field(min_length=5)
+
+    model_config = {"extra": "forbid"}
+
+
+class PilotOperationsModel(BaseModel):
+    operations_id: str = Field(pattern=r"^AIM-024$")
+    linked_pilot_id: str = Field(pattern=r"^AIM-023$")
+    title: str = Field(min_length=5)
+    status: str = Field(pattern=r"^ready_for_manual_notion_review$")
+    daily_operations: List[PilotDailyOperationModel] = Field(min_length=12)
+    issue_protocols: List[PilotIssueProtocolModel] = Field(min_length=4)
+    data_exports: List[PilotDataExportModel] = Field(min_length=4)
+    review_cadence: List[str] = Field(min_length=3)
+    closeout_checklist: List[str] = Field(min_length=6)
+    forbidden_interpretations: List[str] = Field(min_length=3)
+
+    @model_validator(mode="after")
+    def operations_are_pilot_ready(self) -> "PilotOperationsModel":
+        days = {item.day for item in self.daily_operations}
+        required_days = {0, 13}
+        required_days.update(range(1, 12))
+        missing_days = required_days - days
+        if missing_days:
+            raise ValueError(f"Pilot operations missing days: {sorted(missing_days)}")
+
+        issue_types = {item.issue_type for item in self.issue_protocols}
+        required_issues = {
+            "login_access",
+            "lesson_submission",
+            "high_frustration_signal",
+            "data_quality_gap",
+        }
+        missing_issues = required_issues - issue_types
+        if missing_issues:
+            raise ValueError(f"Pilot operations missing issue protocols: {sorted(missing_issues)}")
+
+        export_names = {item.artifact_name for item in self.data_exports}
+        required_exports = {
+            "pre_post_scores",
+            "session_attempts",
+            "adaptive_recommendations",
+            "admin_daily_snapshot",
+        }
+        missing_exports = required_exports - export_names
+        if missing_exports:
+            raise ValueError(f"Pilot operations missing exports: {sorted(missing_exports)}")
+
+        forbidden_text = " ".join(self.forbidden_interpretations).lower()
+        if "diagnosis" not in forbidden_text or "clinical" not in forbidden_text:
+            raise ValueError("Pilot operations must forbid clinical or diagnosis language.")
+
+        return self
+
+    model_config = {"extra": "forbid"}
