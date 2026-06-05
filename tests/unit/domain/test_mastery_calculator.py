@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Sequence
 
 import pytest
@@ -35,6 +36,18 @@ class FakeStateRepo:
 
     def update_mastery(self, student_id: int, skill_id: str, mastery: float) -> None:
         self.saved_mastery = mastery
+
+
+@dataclass(frozen=True)
+class SpeedTaggedAttempt:
+    is_correct: bool
+    attempts: int
+    difficulty: int
+    skip: bool
+    hint_used: bool = False
+    response_time: float = 0.0
+    avg_response_time: float = 0.0
+    speed_score: float = 0.0
 
 
 def attempt(
@@ -94,6 +107,38 @@ def test_speed_is_not_used_in_mastery_calculation() -> None:
 
     assert not hasattr(AttemptSnapshot, "response_time")
     assert "Response time was not used" in result.explanation
+
+
+def test_speed_like_attempt_attributes_do_not_change_mastery() -> None:
+    fast_attempts = [
+        SpeedTaggedAttempt(
+            is_correct=True,
+            attempts=1,
+            difficulty=4,
+            skip=False,
+            response_time=1.5,
+            avg_response_time=1.5,
+            speed_score=100.0,
+        )
+        for _ in range(10)
+    ]
+    slow_attempts = [
+        SpeedTaggedAttempt(
+            is_correct=True,
+            attempts=1,
+            difficulty=4,
+            skip=False,
+            response_time=45.0,
+            avg_response_time=45.0,
+            speed_score=0.0,
+        )
+        for _ in range(10)
+    ]
+
+    fast_result, _ = calculate(fast_attempts, mastery=70.0)
+    slow_result, _ = calculate(slow_attempts, mastery=70.0)
+
+    assert fast_result == slow_result
 
 
 def test_slow_correct_student_is_not_punished() -> None:

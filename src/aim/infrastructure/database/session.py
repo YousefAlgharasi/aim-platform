@@ -16,14 +16,25 @@ from aim.infrastructure.database import models as _models  # noqa: F401
 
 settings = get_settings()
 
-engine = create_engine(
-    settings.database_url,
-    connect_args={"check_same_thread": False}
-    if settings.database_url.startswith("sqlite")
-    else {},
-    pool_pre_ping=True,
-    echo=False,
-)
+
+def _engine_kwargs() -> dict:
+    if settings.is_sqlite:
+        return {
+            "connect_args": {"check_same_thread": False},
+            "pool_pre_ping": True,
+            "echo": False,
+        }
+
+    return {
+        "pool_pre_ping": True,
+        "pool_size": settings.database_pool_size,
+        "max_overflow": settings.database_max_overflow,
+        "pool_recycle": settings.database_pool_recycle,
+        "echo": False,
+    }
+
+
+engine = create_engine(settings.database_url, **_engine_kwargs())
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

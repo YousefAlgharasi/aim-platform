@@ -49,3 +49,25 @@ See `docs/AIM_VISUAL_DEMO.md` for backend/frontend run commands and expected sce
 - Every issue gets its own branch
 - All changes go through Pull Requests
 - Main branch is protected
+
+## Database Configuration
+
+Local development uses SQLite by default:
+
+```txt
+APP_ENV=development
+DATABASE_URL=sqlite:///./aim_dev.db
+```
+
+Cloud deployments can point the backend at Supabase PostgreSQL with
+`SUPABASE_DATABASE_URL` or `DATABASE_URL`. `SUPABASE_DATABASE_URL` takes
+precedence when both are set.
+
+```txt
+APP_ENV=cloud
+SUPABASE_DATABASE_URL=postgresql://postgres.<project-ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres
+```
+
+For persistent FastAPI servers, use Supabase's direct connection when the host
+supports IPv6, or the Session pooler on IPv4-only hosts. Transaction pooler
+connections are better suited to serverless/short-lived runtimes.
