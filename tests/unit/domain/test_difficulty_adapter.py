@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from inspect import signature
+
 import pytest
 
 from aim.domain.services.difficulty_adapter import DifficultyAction, DifficultyAdapter
@@ -34,6 +36,28 @@ def test_does_not_increase_without_reliability() -> None:
 
     assert decision.action == DifficultyAction.MAINTAIN
     assert decision.target_difficulty == 3
+
+
+def test_difficulty_decision_contract_excludes_speed_inputs() -> None:
+    parameters = signature(DifficultyAdapter.decide).parameters
+
+    assert "response_time" not in parameters
+    assert "avg_response_time" not in parameters
+    assert "speed_score" not in parameters
+
+    decision = DifficultyAdapter().decide(
+        mastery=90.0,
+        consistency=90.0,
+        reliability=0.80,
+        weakness_score=20.0,
+        frustration_score=10.0,
+        retention=90.0,
+        current_difficulty=3,
+    )
+
+    assert "response_time" not in decision.evidence
+    assert "avg_response_time" not in decision.evidence
+    assert "speed_score" not in decision.evidence
 
 
 def test_decreases_for_high_frustration() -> None:
