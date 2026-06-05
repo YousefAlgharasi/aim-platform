@@ -1,0 +1,190 @@
+{
+  "pilot_id": "AIM-023",
+  "title": "Web cloud pilot readiness plan",
+  "status": "ready_for_manual_notion_review",
+  "cohort": {
+    "target_learners": "Arabic-speaking adult English learners using the A1 pilot curriculum",
+    "learner_count": 5,
+    "duration_days": 14,
+    "cefr_level": "A1",
+    "primary_language": "Arabic"
+  },
+  "required_backend_endpoints": [
+    {
+      "name": "List lessons",
+      "method": "GET",
+      "path": "/students/{student_id}/lessons",
+      "purpose": "Load the active A1 pilot lesson queue for a signed-in student."
+    },
+    {
+      "name": "Get lesson",
+      "method": "GET",
+      "path": "/students/{student_id}/lessons/{lesson_id}",
+      "purpose": "Load one lesson with its quiz questions and content metadata."
+    },
+    {
+      "name": "Start session",
+      "method": "POST",
+      "path": "/students/{student_id}/lessons/{lesson_id}/sessions",
+      "purpose": "Create a web session identifier and return the lesson questions."
+    },
+    {
+      "name": "Submit attempts",
+      "method": "POST",
+      "path": "/students/{student_id}/sessions/{session_id}/attempts",
+      "purpose": "Record answers and return the full AIM adaptive result."
+    },
+    {
+      "name": "Get adaptive result",
+      "method": "GET",
+      "path": "/students/{student_id}/sessions/{session_id}/adaptive-result",
+      "purpose": "Reload the latest stored AIM result for a completed web session."
+    },
+    {
+      "name": "Get recommendation",
+      "method": "GET",
+      "path": "/students/{student_id}/recommendation",
+      "purpose": "Show AIM's next educational action on the student dashboard."
+    },
+    {
+      "name": "Admin overview",
+      "method": "GET",
+      "path": "/admin/pilot/overview",
+      "purpose": "Monitor pilot students, sessions, mastery movement, recommendations, outcomes, and audit events."
+    }
+  ],
+  "required_frontend_routes": [
+    "/login",
+    "/dashboard",
+    "/lessons/:lesson_id",
+    "/sessions/:session_id",
+    "/result/:session_id",
+    "/admin/pilot"
+  ],
+  "schedule": [
+    {
+      "day": 0,
+      "activity_type": "pre_test",
+      "assessment_id": "PRE_POST_TEST_A1_V1",
+      "objective": "Capture the baseline A1 score before lesson practice starts.",
+      "expected_minutes": 15
+    },
+    {
+      "day": 1,
+      "activity_type": "lesson",
+      "lesson_id": "L01",
+      "objective": "Practice greetings and introductions with supported A1 questions.",
+      "expected_minutes": 25
+    },
+    {
+      "day": 2,
+      "activity_type": "lesson",
+      "lesson_id": "L02",
+      "objective": "Practice the verb to be in simple personal sentences.",
+      "expected_minutes": 25
+    },
+    {
+      "day": 3,
+      "activity_type": "lesson",
+      "lesson_id": "L03",
+      "objective": "Practice numbers and colors with direct recognition tasks.",
+      "expected_minutes": 25
+    },
+    {
+      "day": 4,
+      "activity_type": "lesson",
+      "lesson_id": "L04",
+      "objective": "Practice family vocabulary and simple descriptive sentences.",
+      "expected_minutes": 25
+    },
+    {
+      "day": 5,
+      "activity_type": "lesson",
+      "lesson_id": "L05",
+      "objective": "Practice daily routine verbs in short present simple statements.",
+      "expected_minutes": 25
+    },
+    {
+      "day": 7,
+      "activity_type": "lesson",
+      "lesson_id": "L06",
+      "objective": "Continue daily routine practice and collect stable adaptive evidence.",
+      "expected_minutes": 25
+    },
+    {
+      "day": 8,
+      "activity_type": "lesson",
+      "lesson_id": "L07",
+      "objective": "Practice present simple question forms with do and does.",
+      "expected_minutes": 25
+    },
+    {
+      "day": 9,
+      "activity_type": "lesson",
+      "lesson_id": "L08",
+      "objective": "Practice home and city vocabulary in familiar A1 contexts.",
+      "expected_minutes": 25
+    },
+    {
+      "day": 10,
+      "activity_type": "lesson",
+      "lesson_id": "L09",
+      "objective": "Practice basic reading comprehension using short English texts.",
+      "expected_minutes": 30
+    },
+    {
+      "day": 11,
+      "activity_type": "lesson",
+      "lesson_id": "L10",
+      "objective": "Review mixed A1 skills before the final measurement.",
+      "expected_minutes": 30
+    },
+    {
+      "day": 13,
+      "activity_type": "post_test",
+      "assessment_id": "PRE_POST_TEST_A1_V1",
+      "objective": "Measure learning gain after completing the two-week pilot sequence.",
+      "expected_minutes": 15
+    }
+  ],
+  "measurement": {
+    "primary_metric": "Pre-test to post-test score gain using the shared A1 assessment.",
+    "secondary_metrics": [
+      "lesson completion count",
+      "attempt accuracy",
+      "mastery change",
+      "recommendation followed rate",
+      "recommendation outcome success rate",
+      "retention change",
+      "weakness reduction"
+    ],
+    "pre_post_assessment_id": "PRE_POST_TEST_A1_V1",
+    "recommendation_effectiveness_rule": "A recommendation is counted as effective when the next completed session shows a positive mastery or retention movement without a stronger weakness signal.",
+    "mastery_safety_rule": "Mastery must be calculated only from accuracy, consistency, retention, difficulty performance, evidence quality, penalties, reliability, and session caps."
+  },
+  "safety_terms_allowed": [
+    "low confidence signal",
+    "possible guessing",
+    "rushing",
+    "hesitation",
+    "high frustration signal",
+    "prerequisite gap",
+    "weak retention",
+    "concept misunderstanding"
+  ],
+  "safety_terms_forbidden": [
+    "medical diagnosis",
+    "clinical psychological labels",
+    "mental health claims"
+  ],
+  "operator_checklist": [
+    "Create exactly five pilot student accounts in Supabase Auth.",
+    "Link each auth user to one backend student profile.",
+    "Confirm lesson and assessment JSON validation passes before the first session.",
+    "Confirm the React web pilot can load lessons, start sessions, submit attempts, and show adaptive results.",
+    "Confirm the admin dashboard loads students, sessions, recommendations, outcomes, and audit events.",
+    "Run the pre-test before L01 and the post-test after L10.",
+    "Review admin dashboard data after each pilot day and record only educational observations.",
+    "Do not increase difficulty unless AIM's safety gates and decision conflict resolver allow it."
+  ]
+}
