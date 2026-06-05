@@ -1,5 +1,8 @@
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000';
 
+const LAST_ADAPTIVE_RESULT_KEY = 'aim_last_adaptive_result';
+const LAST_ADAPTIVE_RESULT_META_KEY = 'aim_last_adaptive_result_meta';
+
 function getStoredAccessToken() {
   if (typeof window === 'undefined') {
     return process.env.REACT_APP_SUPABASE_ACCESS_TOKEN || '';
@@ -90,6 +93,52 @@ function encodePathSegment(value) {
   return encodeURIComponent(String(value));
 }
 
+function persistLatestAdaptiveResult({ studentId, sessionId, result }) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.setItem(LAST_ADAPTIVE_RESULT_KEY, JSON.stringify(result));
+  window.localStorage.setItem(
+    LAST_ADAPTIVE_RESULT_META_KEY,
+    JSON.stringify({
+      studentId,
+      sessionId,
+      savedAt: new Date().toISOString(),
+    }),
+  );
+}
+
+export function getLastStoredAdaptiveResult() {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const rawResult = window.localStorage.getItem(LAST_ADAPTIVE_RESULT_KEY);
+  if (!rawResult) {
+    return null;
+  }
+
+  try {
+    const rawMeta = window.localStorage.getItem(LAST_ADAPTIVE_RESULT_META_KEY);
+    return {
+      result: JSON.parse(rawResult),
+      meta: rawMeta ? JSON.parse(rawMeta) : {},
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function clearLastStoredAdaptiveResult() {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.removeItem(LAST_ADAPTIVE_RESULT_KEY);
+  window.localStorage.removeItem(LAST_ADAPTIVE_RESULT_META_KEY);
+}
+
 export async function getHealthStatus() {
   return requestJson('/health');
 }
@@ -122,19 +171,25 @@ export async function startPilotLessonSession(studentId, lessonId) {
 }
 
 export async function submitPilotSessionAttempts(studentId, sessionId, attempts) {
-  return requestJson(
+  const result = await requestJson(
     `/students/${encodePathSegment(studentId)}/sessions/${encodePathSegment(sessionId)}/attempts`,
     {
       method: 'POST',
       body: { attempts },
     },
   );
+
+  persistLatestAdaptiveResult({ studentId, sessionId, result });
+  return result;
 }
 
 export async function getPilotAdaptiveResult(studentId, sessionId) {
-  return requestJson(
+  const result = await requestJson(
     `/students/${encodePathSegment(studentId)}/sessions/${encodePathSegment(sessionId)}/adaptive-result`,
   );
+
+  persistLatestAdaptiveResult({ studentId, sessionId, result });
+  return result;
 }
 
 export async function getPilotRecommendation(studentId) {
