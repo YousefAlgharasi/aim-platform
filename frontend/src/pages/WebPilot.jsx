@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import {
-  API_BASE_URL,
   createStudentProfile,
   getAdaptiveResult,
   getCurrentStudentProfile,
@@ -99,6 +98,7 @@ function routeFromPath(pathname) {
   const parts = pathname.split('/').filter(Boolean);
 
   if (parts[0] === 'login') return { name: 'login' };
+  if (parts[0] === 'register') return { name: 'register' };
   if (parts[0] === 'lessons' && parts[1]) return { name: 'lesson', lessonId: parts[1] };
   if (parts[0] === 'sessions' && parts[1]) return { name: 'session', sessionId: parts[1] };
   if (parts[0] === 'result' && parts[1]) return { name: 'result', sessionId: parts[1] };
@@ -178,41 +178,174 @@ function StatusText({ status }) {
 }
 
 function PilotTopbar({ profile, onLogout }) {
+  const isLoggedIn = Boolean(profile.studentId);
+
   return (
     <header className="pilot-topbar">
-      <button className="pilot-brand" type="button" onClick={() => navigate('/dashboard')}>
+      <button
+        className="pilot-brand"
+        type="button"
+        onClick={() => navigate(isLoggedIn ? '/dashboard' : '/')}
+      >
         <span className="pilot-brand__mark">AIM</span>
-        <span>Web Pilot</span>
+        <span>English Learning</span>
       </button>
-      <nav className="pilot-nav" aria-label="Pilot navigation">
-        <button type="button" onClick={() => navigate('/dashboard')}>
-          Dashboard
-        </button>
-        <button type="button" onClick={() => navigate('/login')}>
-          Login
-        </button>
+
+      <nav className="pilot-nav" aria-label="Main navigation">
+        {isLoggedIn && (
+          <button type="button" onClick={() => navigate('/dashboard')}>
+            My Lessons
+          </button>
+        )}
       </nav>
-      <div className="pilot-user">
-        <span className="pilot-user__avatar">{initials(profile.name, profile.email)}</span>
-        <span className="pilot-user__meta">
-          <strong>{profile.name || 'Pilot student'}</strong>
-          <small>{profile.studentId ? `Student ${profile.studentId}` : 'No student selected'}</small>
-        </span>
-        <button className="pilot-icon-button" type="button" onClick={onLogout} aria-label="Clear pilot profile">
-          x
-        </button>
+
+      <div className="pilot-topbar__right">
+        {isLoggedIn ? (
+          <div className="pilot-user">
+            <span className="pilot-user__avatar">{initials(profile.name, profile.email)}</span>
+            <span className="pilot-user__meta">
+              <strong>{profile.name || 'Student'}</strong>
+              <small>{profile.email || ''}</small>
+            </span>
+            <button
+              className="pilot-icon-button"
+              type="button"
+              onClick={onLogout}
+              aria-label="Sign out"
+              title="Sign out"
+            >
+              &#8618;
+            </button>
+          </div>
+        ) : (
+          <div className="pilot-auth-nav">
+            <button
+              type="button"
+              className="pilot-nav-btn"
+              onClick={() => navigate('/login')}
+            >
+              Sign in
+            </button>
+            <button
+              type="button"
+              className="pilot-primary pilot-primary--sm"
+              onClick={() => navigate('/register')}
+            >
+              Register
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );
 }
 
 function LoginView({ profile, onAuthenticated }) {
-  const [mode, setMode] = useState('sign-in');
   const [form, setForm] = useState({
-    name: profile.name || '',
     email: profile.email || '',
     password: '',
   });
+  const [status, setStatus] = useState(null);
+
+  function updateField(event) {
+    setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
+  }
+
+  async function ensureLinkedStudent(session) {
+    const token = session?.access_token;
+    if (!token) return null;
+
+    try {
+      return await getCurrentStudentProfile(token);
+    } catch (error) {
+      if (!String(error.message).includes('404')) throw error;
+      return createStudentProfile(
+        {
+          name: session.user?.user_metadata?.display_name || session.user?.email || 'Student',
+          email: session.user?.email || form.email,
+        },
+        token,
+      );
+    }
+  }
+
+  async function submit(event) {
+    event.preventDefault();
+    setStatus({ kind: 'loading', text: 'Signing in...' });
+
+    try {
+      const authData = await signInStudent(form.email, form.password);
+      if (!authData.session) {
+        setStatus({ kind: 'ready', text: 'Check your email to confirm your account, then sign in.' });
+        return;
+      }
+
+      const student = await ensureLinkedStudent(authData.session);
+      onAuthenticated(authData.session, student);
+      navigate('/dashboard');
+    } catch (error) {
+      setStatus({ kind: 'error', text: error.message });
+    }
+  }
+
+  return (
+    <main className="pilot-main pilot-main--narrow pilot-main--auth">
+      <section className="pilot-panel pilot-panel--auth">
+        <div className="pilot-auth-logo">
+          <span className="pilot-brand__mark pilot-brand__mark--lg">AIM</span>
+        </div>
+        <div className="pilot-section-heading pilot-section-heading--center">
+          <p>Welcome back</p>
+          <h1>Sign in to your account</h1>
+        </div>
+        <StatusText status={status} />
+        <form className="pilot-form" onSubmit={submit}>
+          <label>
+            Email
+            <input
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={updateField}
+              placeholder="student@example.com"
+              autoComplete="email"
+              required
+            />
+          </label>
+          <label>
+            Password
+            <input
+              name="password"
+              type="password"
+              value={form.password}
+              onChange={updateField}
+              placeholder="Your password"
+              autoComplete="current-password"
+              minLength="6"
+              required
+            />
+          </label>
+          <button
+            className="pilot-primary pilot-primary--full"
+            type="submit"
+            disabled={!isSupabaseConfigured || status?.kind === 'loading'}
+          >
+            {status?.kind === 'loading' ? 'Signing in...' : 'Sign in'}
+          </button>
+        </form>
+        <p className="pilot-auth-switch">
+          Don&apos;t have an account?{' '}
+          <button type="button" className="pilot-link-btn" onClick={() => navigate('/register')}>
+            Register for free
+          </button>
+        </p>
+      </section>
+    </main>
+  );
+}
+
+function RegisterView({ onAuthenticated }) {
+  const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [status, setStatus] = useState(null);
 
   function updateField(event) {
@@ -229,7 +362,7 @@ function LoginView({ profile, onAuthenticated }) {
       if (!String(error.message).includes('404')) throw error;
       return createStudentProfile(
         {
-          name: name || session.user?.email || 'Pilot student',
+          name: name || session.user?.email || 'Student',
           email: session.user?.email || form.email,
         },
         token,
@@ -239,21 +372,20 @@ function LoginView({ profile, onAuthenticated }) {
 
   async function submit(event) {
     event.preventDefault();
-    setStatus({ kind: 'loading', text: mode === 'register' ? 'Creating account...' : 'Signing in...' });
+    setStatus({ kind: 'loading', text: 'Creating your account...' });
 
     try {
-      const authData =
-        mode === 'register'
-          ? await registerStudent(form.email, form.password, form.name)
-          : await signInStudent(form.email, form.password);
+      const authData = await registerStudent(form.email, form.password, form.name);
       if (!authData.session) {
-        setStatus({ kind: 'ready', text: 'Check your email to confirm the account.' });
+        setStatus({
+          kind: 'ready',
+          text: 'Account created! Check your email to confirm, then sign in.',
+        });
         return;
       }
 
       const student = await ensureLinkedStudent(authData.session, form.name);
       onAuthenticated(authData.session, student);
-      setStatus({ kind: 'ready', text: 'Signed in.' });
       navigate('/dashboard');
     } catch (error) {
       setStatus({ kind: 'error', text: error.message });
@@ -261,44 +393,67 @@ function LoginView({ profile, onAuthenticated }) {
   }
 
   return (
-    <main className="pilot-main pilot-main--narrow">
-      <section className="pilot-panel">
-        <div className="pilot-section-heading">
-          <p>Student access</p>
-          <h1>Login</h1>
+    <main className="pilot-main pilot-main--narrow pilot-main--auth">
+      <section className="pilot-panel pilot-panel--auth">
+        <div className="pilot-auth-logo">
+          <span className="pilot-brand__mark pilot-brand__mark--lg">AIM</span>
         </div>
-        <p className="pilot-api-line">API {API_BASE_URL}</p>
-        <p className="pilot-api-line">
-          Supabase {isSupabaseConfigured ? 'configured' : 'needs REACT_APP_SUPABASE_URL and REACT_APP_SUPABASE_PUBLISHABLE_KEY'}
-        </p>
-        <div className="pilot-mode-switch" role="tablist" aria-label="Auth mode">
-          <button className={mode === 'sign-in' ? 'is-selected' : ''} type="button" onClick={() => setMode('sign-in')}>
-            Sign in
-          </button>
-          <button className={mode === 'register' ? 'is-selected' : ''} type="button" onClick={() => setMode('register')}>
-            Register
-          </button>
+        <div className="pilot-section-heading pilot-section-heading--center">
+          <p>Start learning English today</p>
+          <h1>Create your account</h1>
         </div>
         <StatusText status={status} />
         <form className="pilot-form" onSubmit={submit}>
-          {mode === 'register' && (
-            <label>
-              Name
-              <input name="name" value={form.name} onChange={updateField} placeholder="Pilot student" required />
-            </label>
-          )}
+          <label>
+            Full name
+            <input
+              name="name"
+              value={form.name}
+              onChange={updateField}
+              placeholder="Your name"
+              autoComplete="name"
+              required
+            />
+          </label>
           <label>
             Email
-            <input name="email" type="email" value={form.email} onChange={updateField} placeholder="student@example.com" required />
+            <input
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={updateField}
+              placeholder="student@example.com"
+              autoComplete="email"
+              required
+            />
           </label>
           <label>
             Password
-            <input name="password" type="password" value={form.password} onChange={updateField} minLength="6" required />
+            <input
+              name="password"
+              type="password"
+              value={form.password}
+              onChange={updateField}
+              placeholder="Choose a password (min 6 characters)"
+              autoComplete="new-password"
+              minLength="6"
+              required
+            />
           </label>
-          <button className="pilot-primary" type="submit" disabled={!isSupabaseConfigured || status?.kind === 'loading'}>
-            {mode === 'register' ? 'Create account' : 'Sign in'}
+          <button
+            className="pilot-primary pilot-primary--full"
+            type="submit"
+            disabled={!isSupabaseConfigured || status?.kind === 'loading'}
+          >
+            {status?.kind === 'loading' ? 'Creating account...' : 'Create account'}
           </button>
         </form>
+        <p className="pilot-auth-switch">
+          Already have an account?{' '}
+          <button type="button" className="pilot-link-btn" onClick={() => navigate('/login')}>
+            Sign in
+          </button>
+        </p>
       </section>
     </main>
   );
@@ -323,10 +478,10 @@ function DashboardView({ profile }) {
         if (cancelled) return;
         setLessons(lessonData.lessons?.length ? lessonData.lessons : fallbackLessons);
         setRecommendation(recommendationData);
-        setStatus({ kind: 'ready', text: `Connected to ${API_BASE_URL}` });
+        setStatus(null);
       } catch (error) {
         if (cancelled) return;
-        setStatus({ kind: 'error', text: `${error.message}. Showing local lesson shell.` });
+        setStatus({ kind: 'error', text: 'Could not reach the server. Showing local lessons.' });
       }
     }
 
@@ -346,15 +501,15 @@ function DashboardView({ profile }) {
         <div className="pilot-metrics" aria-label="Pilot summary">
           <div>
             <strong>{lessons.length}</strong>
-            <span>Lessons</span>
+            <span>Lessons available</span>
           </div>
           <div>
-            <strong>{recommendation?.action_type || 'ready'}</strong>
-            <span>Next action</span>
+            <strong>{recommendation?.action_type ? formatAction(recommendation.action_type) : 'Ready'}</strong>
+            <span>Next step</span>
           </div>
           <div>
-            <strong>{API_BASE_URL.replace(/^https?:\/\//, '')}</strong>
-            <span>API base</span>
+            <strong>{Math.round((recommendation?.confidence || 0) * 100)}%</strong>
+            <span>Confidence</span>
           </div>
         </div>
       </section>
@@ -366,11 +521,8 @@ function DashboardView({ profile }) {
           <div className="pilot-section-heading pilot-section-heading--row">
             <div>
               <p>Lesson queue</p>
-              <h2>Today</h2>
+              <h2>Today&apos;s lessons</h2>
             </div>
-            <button type="button" onClick={() => navigate('/login')}>
-              Student profile
-            </button>
           </div>
           <div className="pilot-lesson-list">
             {lessons.map((lesson, index) => (
@@ -429,7 +581,7 @@ function LessonView({ lessonId, profile }) {
           lesson: fallbackLessons.find((lesson) => lesson.lesson_id === lessonId) || fallbackLessons[0],
           questions: sampleQuestions,
         });
-        setStatus({ kind: 'error', text: `${error.message}. Using local preview questions.` });
+        setStatus({ kind: 'error', text: 'Could not reach the server. Showing a preview.' });
       }
     }
 
@@ -456,7 +608,7 @@ function LessonView({ lessonId, profile }) {
         questions: lessonData?.questions || sampleQuestions,
       };
       sessionStorage.setItem(`aim_session:${localSession.session_id}`, JSON.stringify(localSession));
-      setStatus({ kind: 'error', text: `${error.message}. Opened local session preview.` });
+      setStatus({ kind: 'error', text: 'Could not reach the server. Opened a local preview.' });
       navigate(`/sessions/${encodeURIComponent(localSession.session_id)}`);
     }
   }
@@ -841,7 +993,7 @@ export default function WebPilot() {
     navigate('/login');
   }
 
-  if (route.name !== 'login' && !profile.studentId) {
+  if (route.name !== 'login' && route.name !== 'register' && !profile.studentId) {
     return (
       <div className="pilot-app">
         <PilotTopbar profile={profile} onLogout={clearProfile} />
@@ -854,6 +1006,7 @@ export default function WebPilot() {
     <div className="pilot-app">
       <PilotTopbar profile={profile} onLogout={clearProfile} />
       {route.name === 'login' && <LoginView profile={profile} onAuthenticated={saveAuthenticatedProfile} />}
+      {route.name === 'register' && <RegisterView onAuthenticated={saveAuthenticatedProfile} />}
       {route.name === 'dashboard' && <DashboardView profile={profile} />}
       {route.name === 'lesson' && <LessonView lessonId={route.lessonId} profile={profile} />}
       {route.name === 'session' && <SessionView sessionId={decodeURIComponent(route.sessionId)} profile={profile} />}
