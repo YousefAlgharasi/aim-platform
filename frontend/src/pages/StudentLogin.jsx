@@ -1,56 +1,44 @@
 import { useEffect, useMemo, useState } from 'react';
-import { supabase, SUPABASE_URL } from '../shared/supabase/client';
-
-const ACCESS_TOKEN_KEY = 'aim_supabase_access_token';
-const REFRESH_TOKEN_KEY = 'aim_supabase_refresh_token';
-const USER_KEY = 'aim_supabase_user';
+import { supabase } from '../shared/supabase/client';
 
 function storeSession(session) {
   if (!session) {
-    window.localStorage.removeItem(ACCESS_TOKEN_KEY);
-    window.localStorage.removeItem(REFRESH_TOKEN_KEY);
-    window.localStorage.removeItem(USER_KEY);
+    window.localStorage.removeItem('aim_supabase_access_token');
+    window.localStorage.removeItem('aim_supabase_refresh_token');
+    window.localStorage.removeItem('aim_supabase_user');
     return;
   }
-
-  window.localStorage.setItem(ACCESS_TOKEN_KEY, session.access_token || '');
-  window.localStorage.setItem(REFRESH_TOKEN_KEY, session.refresh_token || '');
-  window.localStorage.setItem(USER_KEY, JSON.stringify(session.user || null));
+  window.localStorage.setItem('aim_supabase_access_token', session.access_token || '');
+  window.localStorage.setItem('aim_supabase_refresh_token', session.refresh_token || '');
+  window.localStorage.setItem('aim_supabase_user', JSON.stringify(session.user || null));
 }
 
 function getFriendlyAuthError(error) {
   if (!error?.message) {
     return 'Login failed. Please check your email and password.';
   }
-
   const message = error.message.toLowerCase();
-
   if (message.includes('invalid login credentials')) {
-    return 'Invalid email or password.';
+    return 'Incorrect email or password. Please try again.';
   }
-
   if (message.includes('email not confirmed')) {
-    return 'Your email is not confirmed yet. Please check your inbox.';
+    return 'Please check your inbox and confirm your email first.';
   }
-
-  return error.message;
+  return 'Something went wrong. Please try again.';
 }
 
 function StudentLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [session, setSession] = useState(null);
-  const [status, setStatus] = useState('Checking session...');
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const user = session?.user || null;
 
   const userLabel = useMemo(() => {
-    if (!user) {
-      return 'No active student session';
-    }
-
+    if (!user) return '';
     return user.email || user.phone || user.id;
   }, [user]);
 
@@ -59,20 +47,14 @@ function StudentLogin() {
 
     async function loadSession() {
       const { data, error: sessionError } = await supabase.auth.getSession();
-
-      if (!isMounted) {
-        return;
-      }
-
+      if (!isMounted) return;
       if (sessionError) {
-        setError(sessionError.message);
-        setStatus('Could not read session');
+        setLoading(false);
         return;
       }
-
       setSession(data.session);
       storeSession(data.session);
-      setStatus(data.session ? 'Student is logged in' : 'Ready to login');
+      setLoading(false);
     }
 
     loadSession();
@@ -82,7 +64,6 @@ function StudentLogin() {
     } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);
       storeSession(nextSession);
-      setStatus(nextSession ? 'Student is logged in' : 'Logged out');
     });
 
     return () => {
@@ -93,27 +74,19 @@ function StudentLogin() {
 
   async function handleLogin(event) {
     event.preventDefault();
-
     setIsSubmitting(true);
     setError('');
-    setStatus('Signing in...');
 
     try {
       const { data, error: loginError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
-
-      if (loginError) {
-        throw loginError;
-      }
-
+      if (loginError) throw loginError;
       setSession(data.session);
       storeSession(data.session);
-      setStatus('Student is logged in');
     } catch (loginError) {
       setError(getFriendlyAuthError(loginError));
-      setStatus('Login failed');
     } finally {
       setIsSubmitting(false);
     }
@@ -122,268 +95,305 @@ function StudentLogin() {
   async function handleLogout() {
     setIsSubmitting(true);
     setError('');
-    setStatus('Signing out...');
-
     try {
       const { error: logoutError } = await supabase.auth.signOut();
-
-      if (logoutError) {
-        throw logoutError;
-      }
-
+      if (logoutError) throw logoutError;
       setSession(null);
       storeSession(null);
-      setStatus('Logged out');
     } catch (logoutError) {
-      setError(logoutError.message || 'Logout failed.');
-      setStatus('Logout failed');
+      setError('Could not sign out. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  function goToLessonSession() {
-    window.location.href = '/lesson-session';
+  if (loading) {
+    return (
+      <main className="sl-page">
+        <style>{styles}</style>
+        <div className="sl-card sl-card--center">
+          <div className="sl-spinner" aria-label="Loading" />
+        </div>
+      </main>
+    );
   }
 
   return (
-    <main className="student-login">
+    <main className="sl-page">
       <style>{styles}</style>
 
-      <section className="student-login__shell">
-        <div className="student-login__intro">
-          <span>AIM Web Pilot</span>
-          <h1>Student Login</h1>
-          <p>
-            Login with Supabase Auth, store the access token locally, then continue to the lesson session flow.
-          </p>
-
-          <div className="student-login__status">
-            <strong>Status</strong>
-            <span>{status}</span>
-          </div>
-
-          <div className="student-login__status">
-            <strong>Supabase</strong>
-            <span>{SUPABASE_URL}</span>
-          </div>
+      <section className="sl-card">
+        <div className="sl-logo">
+          <span className="sl-logo__mark">AIM</span>
+          <h1 className="sl-logo__name">English Learning</h1>
         </div>
 
-        <div className="student-login__card">
-          {user ? (
-            <section className="student-login__session">
-              <span>Active session</span>
-              <h2>{userLabel}</h2>
-              <p>
-                The access token is saved in local storage under <code>{ACCESS_TOKEN_KEY}</code>.
-              </p>
-
-              <div className="student-login__actions">
-                <button type="button" onClick={goToLessonSession}>
-                  Continue to Lesson
-                </button>
-                <button type="button" onClick={handleLogout} disabled={isSubmitting}>
-                  {isSubmitting ? 'Signing out...' : 'Logout'}
-                </button>
-              </div>
-            </section>
-          ) : (
-            <form onSubmit={handleLogin}>
-              <label>
-                <span>Email</span>
-                <input
-                  type="email"
-                  value={email}
-                  autoComplete="email"
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="student@example.com"
-                  required
-                />
-              </label>
-
-              <label>
-                <span>Password</span>
-                <input
-                  type="password"
-                  value={password}
-                  autoComplete="current-password"
-                  onChange={(event) => setPassword(event.target.value)}
-                  placeholder="Student password"
-                  required
-                />
-              </label>
-
-              {error && (
-                <div className="student-login__error" role="alert">
-                  {error}
-                </div>
-              )}
-
-              <button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Signing in...' : 'Login'}
+        {user ? (
+          <div className="sl-session">
+            <p className="sl-session__label">Signed in as</p>
+            <p className="sl-session__email">{userLabel}</p>
+            <div className="sl-actions">
+              <button
+                className="sl-btn sl-btn--primary"
+                type="button"
+                onClick={() => { window.location.href = '/lesson-session'; }}
+              >
+                Go to My Lessons
               </button>
-            </form>
-          )}
-        </div>
+              <button
+                className="sl-btn sl-btn--ghost"
+                type="button"
+                onClick={handleLogout}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Signing out…' : 'Sign out'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <form className="sl-form" onSubmit={handleLogin}>
+            <h2 className="sl-form__title">Sign in to your account</h2>
+
+            <label className="sl-label">
+              <span>Email</span>
+              <input
+                className="sl-input"
+                type="email"
+                value={email}
+                autoComplete="email"
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="student@example.com"
+                required
+              />
+            </label>
+
+            <label className="sl-label">
+              <span>Password</span>
+              <input
+                className="sl-input"
+                type="password"
+                value={password}
+                autoComplete="current-password"
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Your password"
+                required
+              />
+            </label>
+
+            {error && (
+              <div className="sl-error" role="alert">
+                {error}
+              </div>
+            )}
+
+            <button className="sl-btn sl-btn--primary" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Signing in…' : 'Sign in'}
+            </button>
+
+            <p className="sl-switch">
+              Don&apos;t have an account?{' '}
+              <a className="sl-link" href="/register">Register for free</a>
+            </p>
+          </form>
+        )}
       </section>
     </main>
   );
 }
 
 const styles = `
-.student-login {
+.sl-page {
   align-items: center;
-  background: #f5f7fb;
-  color: #172328;
+  background: var(--background, #eef3f7);
   display: flex;
+  justify-content: center;
   min-height: 100vh;
-  padding: 28px;
+  padding: 24px;
 }
 
-.student-login__shell {
-  display: grid;
-  gap: 22px;
-  grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.1fr);
-  margin: 0 auto;
-  max-width: 1120px;
+.sl-card {
+  background: #ffffff;
+  border: 1px solid #dbe4ef;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(31, 57, 87, 0.09);
+  max-width: 420px;
+  padding: clamp(28px, 6vw, 48px);
   width: 100%;
 }
 
-.student-login__intro,
-.student-login__card {
-  background: #ffffff;
-  border: 1px solid #dbe4ef;
-  border-radius: 18px;
-  box-shadow: 0 18px 48px rgba(31, 57, 87, 0.08);
-  padding: 28px;
+.sl-card--center {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 260px;
 }
 
-.student-login__intro > span,
-.student-login__status strong,
-.student-login form label span,
-.student-login__session > span {
-  color: #3f6f78;
-  font-size: 0.78rem;
+.sl-spinner {
+  animation: sl-spin 0.8s linear infinite;
+  border: 3px solid #e2e8f0;
+  border-radius: 50%;
+  border-top-color: #0f766e;
+  height: 36px;
+  width: 36px;
+}
+
+@keyframes sl-spin {
+  to { transform: rotate(360deg); }
+}
+
+.sl-logo {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+.sl-logo__mark {
+  align-items: center;
+  background: #0f766e;
+  border-radius: 10px;
+  color: #ffffff;
+  display: inline-flex;
+  font-size: 0.9rem;
   font-weight: 900;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  height: 48px;
+  justify-content: center;
+  letter-spacing: 0.06em;
+  width: 68px;
 }
 
-.student-login h1 {
-  font-size: clamp(2.2rem, 5vw, 4.2rem);
-  line-height: 1;
-  margin: 12px 0 14px;
-}
-
-.student-login p {
-  color: #64748b;
-  font-weight: 700;
-  line-height: 1.55;
+.sl-logo__name {
+  color: #17242f;
+  font-size: 1.1rem;
+  font-weight: 800;
   margin: 0;
 }
 
-.student-login__status {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  display: grid;
-  gap: 8px;
-  margin-top: 14px;
-  padding: 14px;
-}
-
-.student-login__status span {
-  overflow-wrap: anywhere;
-}
-
-.student-login__card {
-  align-content: center;
-  display: grid;
-}
-
-.student-login form {
+.sl-form {
   display: grid;
   gap: 16px;
 }
 
-.student-login label {
-  display: grid;
-  gap: 8px;
+.sl-form__title {
+  color: #17242f;
+  font-size: 1.35rem;
+  font-weight: 900;
+  margin: 0 0 4px;
 }
 
-.student-login input {
+.sl-label {
+  color: #657386;
+  display: grid;
+  font-size: 0.84rem;
+  font-weight: 800;
+  gap: 7px;
+  letter-spacing: 0.02em;
+}
+
+.sl-input {
   background: #f8fafc;
-  border: 1px solid #cbd5e1;
-  border-radius: 12px;
-  color: #172328;
+  border: 1px solid #d1d9e0;
+  border-radius: 10px;
+  color: #17242f;
   font-size: 1rem;
   min-height: 48px;
   padding: 0 14px;
+  transition: border-color 0.15s;
 }
 
-.student-login button {
-  background: #164da8;
-  border: 0;
-  border-radius: 12px;
-  color: #ffffff;
-  cursor: pointer;
-  font-weight: 900;
-  min-height: 48px;
-  padding: 0 18px;
+.sl-input:focus {
+  border-color: #0f766e;
+  outline: none;
 }
 
-.student-login button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.student-login__error {
+.sl-error {
   background: #fef2f2;
   border: 1px solid #fecaca;
-  border-radius: 12px;
+  border-radius: 10px;
   color: #b91c1c;
-  font-weight: 800;
+  font-size: 0.88rem;
+  font-weight: 700;
   padding: 12px 14px;
 }
 
-.student-login__session {
-  display: grid;
-  gap: 14px;
+.sl-btn {
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 900;
+  min-height: 48px;
+  padding: 0 18px;
+  transition: opacity 0.15s;
+  width: 100%;
 }
 
-.student-login__session h2 {
-  font-size: clamp(1.5rem, 4vw, 2.5rem);
+.sl-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.sl-btn--primary {
+  background: #0f766e;
+  color: #ffffff;
+}
+
+.sl-btn--primary:hover:not(:disabled) {
+  background: #0d6360;
+}
+
+.sl-btn--ghost {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.sl-btn--ghost:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.sl-switch {
+  color: #657386;
+  font-size: 0.88rem;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
+}
+
+.sl-link {
+  color: #0f766e;
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.sl-session {
+  display: grid;
+  gap: 14px;
+  text-align: center;
+}
+
+.sl-session__label {
+  color: #657386;
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.sl-session__email {
+  color: #17242f;
+  font-size: 1.1rem;
+  font-weight: 900;
   margin: 0;
   overflow-wrap: anywhere;
 }
 
-.student-login__session code {
-  background: #eef4ff;
-  border-radius: 6px;
-  color: #164da8;
-  font-weight: 900;
-  padding: 2px 6px;
-}
-
-.student-login__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.student-login__actions button:last-child {
-  background: #e2e8f0;
-  color: #172328;
-}
-
-@media (max-width: 860px) {
-  .student-login {
-    padding: 16px;
-  }
-
-  .student-login__shell {
-    grid-template-columns: 1fr;
-  }
+.sl-actions {
+  display: grid;
+  gap: 10px;
 }
 `;
 
