@@ -1,0 +1,199 @@
+.pilot-main {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top right, rgba(15, 118, 110, 0.14), transparent 34%),
+    linear-gradient(135deg, #eef7f6 0%, #f6f8fb 52%, #edf4fb 100%);
+  color: #17242f;
+  font-family: 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, Arial, sans-serif;
+  padding: 24px;
+  direction: rtl;
+  text-align: right;
+}
+
+.pilot-main--narrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pilot-main--auth {
+  min-height: 100vh;
+}
+
+.pilot-panel {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #dbe4ef;
+  border-radius: 24px;
+  box-shadow: 0 24px 70px rgba(31, 57, 87, 0.12);
+  padding: clamp(28px, 6vw, 48px);
+}
+
+.pilot-panel--auth {
+  max-width: 460px;
+  width: 100%;
+}
+
+.pilot-auth-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.pilot-brand__mark {
+  align-items: center;
+  background: linear-gradient(135deg, #0f766e, #115e59);
+  border-radius: 14px;
+  box-shadow: 0 12px 26px rgba(15, 118, 110, 0.25);
+  color: #fff;
+  display: inline-flex;
+  font-weight: 900;
+  height: 52px;
+  justify-content: center;
+  letter-spacing: 0.08em;
+  width: 74px;
+}
+
+.pilot-brand__mark--lg {
+  height: 56px;
+  width: 82px;
+}
+
+.pilot-section-heading {
+  margin-bottom: 24px;
+}
+
+.pilot-section-heading--center {
+  text-align: center;
+}
+
+.pilot-section-heading p {
+  color: #0f766e;
+  font-size: 0.88rem;
+  font-weight: 900;
+  margin: 0 0 8px;
+}
+
+.pilot-section-heading h1,
+.pilot-section-heading h2 {
+  color: #17242f;
+  font-size: clamp(1.65rem, 5vw, 2.2rem);
+  font-weight: 900;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.pilot-form {
+  display: grid;
+  gap: 16px;
+}
+
+.pilot-form label {
+  color: #475569;
+  display: grid;
+  font-size: 0.9rem;
+  font-weight: 900;
+  gap: 8px;
+}
+
+.pilot-form input {
+  background: #f8fafc;
+  border: 1px solid #d1d9e0;
+  border-radius: 12px;
+  color: #17242f;
+  font-size: 1rem;
+  min-height: 50px;
+  padding: 0 14px;
+}
+
+.pilot-form input[name='email'],
+.pilot-form input[name='password'] {
+  direction: ltr;
+  text-align: left;
+}
+
+.pilot-form input:focus {
+  background: #fff;
+  border-color: #0f766e;
+  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+  outline: none;
+}
+
+.pilot-primary,
+.pilot-link-btn,
+.pilot-nav-btn {
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 900;
+}
+
+.pilot-primary {
+  background: #0f766e;
+  border: 0;
+  box-shadow: 0 14px 28px rgba(15, 118, 110, 0.22);
+  color: #fff;
+  min-height: 50px;
+  padding: 0 18px;
+}
+
+.pilot-primary--full {
+  width: 100%;
+}
+
+.pilot-primary:hover:not(:disabled) {
+  background: #0d6360;
+}
+
+.pilot-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.pilot-auth-switch {
+  color: #657386;
+  font-size: 0.9rem;
+  font-weight: 800;
+  margin: 18px 0 0;
+  text-align: center;
+}
+
+.pilot-link-btn {
+  background: transparent;
+  border: 0;
+  color: #0f766e;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.pilot-status {
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.7;
+  margin: 0 0 16px;
+  padding: 12px 14px;
+}
+
+.pilot-status--loading,
+.pilot-status--ready {
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  color: #047857;
+}
+
+.pilot-status--error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+@media (max-width: 520px) {
+  .pilot-main {
+    padding: 16px;
+  }
+
+  .pilot-panel {
+    border-radius: 20px;
+  }
+}
