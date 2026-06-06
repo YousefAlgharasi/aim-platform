@@ -151,7 +151,7 @@
 }
 
 .pilot-band--summary {
-  border-left: 6px solid #0f766e;
+  border-inline-start: 6px solid #0f766e;
 }
 
 .pilot-panel {
@@ -808,10 +808,34 @@
 /* ── Dashboard improvements ─────────────────────────────────────────── */
 
 .pilot-band--summary {
-  border-left: 6px solid #0f766e;
+  border-inline-start: 6px solid #0f766e;
 }
 
 /* Lesson card difficulty → friendlier label handled in JS, style unchanged */
+
+/* ── RTL input direction ─────────────────────────────────────────────── */
+
+.pilot-form input[type='email'],
+.pilot-form input[name='email'],
+.pilot-form input[name='password'],
+.pilot-form input[type='password'] {
+  direction: ltr;
+  text-align: left;
+}
+
+/* ── Choice grid RTL alignment ───────────────────────────────────────── */
+
+.pilot-choice-grid button {
+  text-align: right;
+}
+
+/* ── Signal bar RTL ──────────────────────────────────────────────────── */
+
+.pilot-signal span {
+  background: linear-gradient(to left, #10b981, #0f766e);
+}
+
+/* ── 620px responsive ────────────────────────────────────────────────── */
 
 @media (max-width: 620px) {
   .pilot-main--auth {
@@ -826,5 +850,132 @@
   .pilot-nav-btn,
   .pilot-primary--sm {
     width: 100%;
+  }
+}
+
+/* ── 480px responsive ────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .pilot-topbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-height: auto;
+    padding: 10px 16px;
+  }
+
+  .pilot-brand {
+    flex: 1 0 auto;
+    min-width: 0;
+  }
+
+  .pilot-nav {
+    display: none;
+  }
+
+  .pilot-topbar__right {
+    flex: 0 0 auto;
+  }
+
+  .pilot-user {
+    grid-template-columns: 32px minmax(0, 1fr) 32px;
+    max-width: 100%;
+    padding: 4px;
+  }
+
+  .pilot-user__meta strong {
+    font-size: 0.82rem;
+  }
+
+  .pilot-user__meta small {
+    display: none;
+  }
+
+  .pilot-section-heading h1 {
+    font-size: 1.65rem;
+  }
+
+  .pilot-section-heading h2 {
+    font-size: 1.1rem;
+  }
+
+  .pilot-panel--auth {
+    padding: 20px 16px;
+  }
+
+  .pilot-lesson-card {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+
+  .pilot-lesson-card .pilot-primary {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .pilot-lesson-card__index {
+    height: 40px;
+    width: 40px;
+  }
+
+  .pilot-main {
+    padding-inline: 12px;
+    gap: 12px;
+  }
+
+  .pilot-band {
+    padding: 16px;
+  }
+
+  .pilot-panel {
+    padding: 16px;
+  }
+}
+
+/* ── 360px responsive ────────────────────────────────────────────────── */
+
+@media (max-width: 380px) {
+  .pilot-topbar {
+    padding: 8px 12px;
+  }
+
+  .pilot-brand span:last-child {
+    display: none;
+  }
+
+  .pilot-auth-nav {
+    gap: 4px;
+  }
+
+  .pilot-nav-btn,
+  .pilot-primary--sm {
+    font-size: 0.82rem;
+    min-height: 34px;
+    padding: 0 10px;
+  }
+
+  .pilot-section-heading h1 {
+    font-size: 1.4rem;
+  }
+
+  .pilot-panel--auth {
+    padding: 16px 12px;
+  }
+
+  .pilot-form input {
+    font-size: 0.95rem;
+    min-height: 46px;
+  }
+
+  .pilot-primary {
+    font-size: 0.95rem;
+    min-height: 46px;
+  }
+
+  .pilot-metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .pilot-metrics div:last-child {
+    grid-column: 1 / -1;
   }
 }
