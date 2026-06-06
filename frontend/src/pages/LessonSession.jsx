@@ -8,18 +8,18 @@ import {
 } from '../shared/api/client';
 
 const MANUAL_CORRECTNESS_OPTIONS = [
-  { value: 'unknown', label: 'Needs review' },
-  { value: 'correct', label: 'Correct' },
-  { value: 'wrong', label: 'Wrong' },
+  { value: 'unknown', label: 'تحتاج مراجعة' },
+  { value: 'correct', label: 'إجابة صحيحة' },
+  { value: 'wrong', label: 'إجابة تحتاج تصحيحا' },
 ];
 
 function formatValue(value) {
   if (value === null || value === undefined || value === '') {
-    return 'None';
+    return 'غير متوفر';
   }
 
   if (typeof value === 'boolean') {
-    return value ? 'Yes' : 'No';
+    return value ? 'نعم' : 'لا';
   }
 
   if (typeof value === 'number') {
@@ -167,7 +167,7 @@ function inferCorrectness(question, answerState) {
     return {
       value: false,
       source: 'skip',
-      label: 'Skipped question',
+      label: 'تم تجاوز السؤال',
     };
   }
 
@@ -175,7 +175,7 @@ function inferCorrectness(question, answerState) {
     return {
       value: null,
       source: 'missing_answer',
-      label: 'No answer selected',
+      label: 'لم يتم اختيار إجابة بعد',
     };
   }
 
@@ -201,7 +201,7 @@ function inferCorrectness(question, answerState) {
         return {
           value: parsed,
           source: `choice.metadata.${key}`,
-          label: parsed ? 'Correct from choice metadata' : 'Wrong from choice metadata',
+          label: parsed ? 'صحيحة حسب بيانات الاختيار' : 'تحتاج تصحيحا حسب بيانات الاختيار',
         };
       }
     }
@@ -213,7 +213,7 @@ function inferCorrectness(question, answerState) {
     return {
       value: isCorrect,
       source: 'question.correct_answer',
-      label: isCorrect ? 'Correct from answer key' : 'Wrong from answer key',
+      label: isCorrect ? 'صحيحة حسب مفتاح الإجابة' : 'تحتاج تصحيحا حسب مفتاح الإجابة',
     };
   }
 
@@ -221,7 +221,7 @@ function inferCorrectness(question, answerState) {
     return {
       value: true,
       source: 'manual_review',
-      label: 'Correct from manual review',
+      label: 'صحيحة حسب المراجعة اليدوية',
     };
   }
 
@@ -229,14 +229,14 @@ function inferCorrectness(question, answerState) {
     return {
       value: false,
       source: 'manual_review',
-      label: 'Wrong from manual review',
+      label: 'تحتاج تصحيحا حسب المراجعة اليدوية',
     };
   }
 
   return {
     value: null,
     source: 'manual_required',
-    label: 'Manual correctness required',
+    label: 'تحتاج مراجعة يدوية قبل الإرسال',
   };
 }
 
@@ -311,7 +311,7 @@ function Meter({ label, value }) {
 
 function renderContentValue(value, keyPrefix = 'content') {
   if (value === null || value === undefined || value === '') {
-    return <p className="lesson-session-muted">No lesson content is available yet.</p>;
+    return <p className="lesson-session-muted">لا يوجد محتوى درس متاح بعد.</p>;
   }
 
   if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
@@ -350,9 +350,9 @@ function LessonOverview({ lesson }) {
   if (!lesson) {
     return (
       <section className="lesson-session-panel">
-        <h2>No lesson selected</h2>
+        <h2>لم يتم اختيار درس</h2>
         <p className="lesson-session-muted">
-          Load pilot lessons and start a session to see the lesson content.
+          حمّل دروس الاختبار ثم ابدأ جلسة لعرض محتوى الدرس والأسئلة.
         </p>
       </section>
     );
@@ -362,22 +362,22 @@ function LessonOverview({ lesson }) {
     <section className="lesson-session-panel">
       <div className="lesson-session-panel__header">
         <div>
-          <p>Lesson</p>
+          <p>الدرس</p>
           <h2>{lesson.title || lesson.lesson_id}</h2>
         </div>
-        <Badge tone="blue">{lesson.level || 'Level'}</Badge>
+        <Badge tone="blue">{lesson.level || 'المستوى'}</Badge>
       </div>
 
       <div className="lesson-session-fields">
-        <Field label="Lesson ID" value={lesson.lesson_id} />
-        <Field label="Course" value={lesson.course_id} />
-        <Field label="Main skill" value={lesson.main_skill_id} />
-        <Field label="Difficulty" value={lesson.difficulty} />
-        <Field label="Estimated minutes" value={lesson.estimated_minutes} />
+        <Field label="رقم الدرس" value={lesson.lesson_id} />
+        <Field label="المسار" value={lesson.course_id} />
+        <Field label="المهارة الرئيسية" value={lesson.main_skill_id} />
+        <Field label="مستوى الصعوبة" value={lesson.difficulty} />
+        <Field label="الدقائق المتوقعة" value={lesson.estimated_minutes} />
       </div>
 
       <div className="lesson-session-content">
-        <h3>Content</h3>
+        <h3>محتوى الدرس</h3>
         {renderContentValue(lesson.content)}
       </div>
     </section>
@@ -406,12 +406,12 @@ function QuestionCard({
     <section className="lesson-session-question">
       <div className="lesson-session-question__top">
         <div>
-          <p>Question {index + 1}</p>
+          <p>السؤال {index + 1}</p>
           <h3>{question.prompt}</h3>
         </div>
         <div className="lesson-session-question__badges">
-          <Badge tone="blue">{question.question_type || 'question'}</Badge>
-          <Badge tone="purple">Difficulty {question.difficulty || 1}</Badge>
+          <Badge tone="blue">{question.question_type || 'سؤال'}</Badge>
+          <Badge tone="purple">الصعوبة {question.difficulty || 1}</Badge>
         </div>
       </div>
 
@@ -434,11 +434,11 @@ function QuestionCard({
           })
         ) : (
           <label className="lesson-session-free-answer">
-            <span>Answer</span>
+            <span>الإجابة</span>
             <textarea
               value={answerState.selectedAnswer}
               onChange={(event) => onSelectChoice(questionId, event.target.value)}
-              placeholder="Type the student's answer here"
+              placeholder="اكتب إجابة الطالب هنا"
               rows={4}
             />
           </label>
@@ -447,26 +447,26 @@ function QuestionCard({
 
       <div className="lesson-session-question-actions">
         <button type="button" onClick={() => onUseHint(questionId)}>
-          {answerState.hintUsed ? 'Hint Used' : 'Use Hint'}
+          {answerState.hintUsed ? 'تم استخدام التلميح' : 'استخدام تلميح'}
         </button>
         <button type="button" onClick={() => onRetry(questionId)}>
-          Add Retry
+          إضافة محاولة
         </button>
         <button type="button" onClick={() => onSkip(questionId)}>
-          {answerState.skip ? 'Skipped' : 'Skip Question'}
+          {answerState.skip ? 'تم التجاوز' : 'تجاوز السؤال'}
         </button>
       </div>
 
       {answerState.hintUsed && (
         <div className="lesson-session-hint">
-          <strong>Hint</strong>
-          <p>{hint || 'No hint is stored for this question.'}</p>
+          <strong>تلميح</strong>
+          <p>{hint || 'لا يوجد تلميح محفوظ لهذا السؤال.'}</p>
         </div>
       )}
 
       <div className="lesson-session-review-grid">
         <label>
-          <span>Correctness</span>
+          <span>مراجعة الإجابة</span>
           <select
             value={answerState.correctness}
             onChange={(event) => onCorrectnessChange(questionId, event.target.value)}
@@ -481,7 +481,7 @@ function QuestionCard({
         </label>
 
         <label>
-          <span>Confidence</span>
+          <span>مستوى الثقة</span>
           <input
             type="range"
             min="1"
@@ -492,8 +492,8 @@ function QuestionCard({
           <strong>{answerState.confidence}/5</strong>
         </label>
 
-        <Field label="Attempts" value={answerState.attempts} />
-        <Field label="Response time" value={`${formatValue(answerState.responseTime || secondsSince(answerState.startedAt))}s`} />
+        <Field label="عدد المحاولات" value={answerState.attempts} />
+        <Field label="زمن الإجابة" value={`${formatValue(answerState.responseTime || secondsSince(answerState.startedAt))}ث`} />
       </div>
 
       <div className="lesson-session-correctness-note">
@@ -502,8 +502,7 @@ function QuestionCard({
         </Badge>
         {shouldAskForManualCorrectness && !answerState.skip && (
           <p>
-            The backend attempt schema requires `is_correct`. If the API does not expose a safe answer key,
-            review this answer before submitting.
+            راجع الإجابة قبل الإرسال لأن الواجهة الخلفية تحتاج قيمة `is_correct` ولا يوجد مفتاح إجابة مؤكد.
           </p>
         )}
       </div>
@@ -515,9 +514,9 @@ function AdaptiveResultSummary({ result }) {
   if (!result) {
     return (
       <section className="lesson-session-panel">
-        <h2>AIM adaptive result</h2>
+        <h2>نتيجة AIM التكيفية</h2>
         <p className="lesson-session-muted">
-          Submit the session attempts to receive the adaptive result from the AIM backend.
+          أرسل محاولات الجلسة لعرض نتيجة AIM من الواجهة الخلفية.
         </p>
       </section>
     );
@@ -533,58 +532,65 @@ function AdaptiveResultSummary({ result }) {
   const difficulty = primaryResult.difficulty_decision || {};
   const emotional = primaryResult.safe_emotional_signal || {};
   const retention = primaryResult.retention_result || {};
+  const reliability = primaryResult.reliability || {};
+  const confidenceScore =
+    recommendation.confidence ??
+    mastery.decision_confidence ??
+    reliability.score ??
+    emotional.confidence_level ??
+    0;
 
   return (
     <section className="lesson-session-panel lesson-session-result">
       <div className="lesson-session-panel__header">
         <div>
-          <p>AIM adaptive result</p>
-          <h2>{recommendation.action || recommendation.action_type || 'Next action ready'}</h2>
+          <p>نتيجة AIM التكيفية</p>
+          <h2>{recommendation.action || recommendation.action_type || 'التوصية جاهزة'}</h2>
         </div>
-        <Badge tone="green">{result.attempts_saved || 0} attempts saved</Badge>
+        <Badge tone="green">{result.attempts_saved || 0} محاولة محفوظة</Badge>
       </div>
 
       <div className="lesson-session-result-grid">
         <div>
-          <Meter label="Mastery" value={mastery.mastery || mastery.final_mastery || 0} />
-          <Field label="Previous mastery" value={mastery.previous_mastery} />
-          <Field label="Decision confidence" value={mastery.decision_confidence} />
+          <Meter label="نسبة الإتقان" value={mastery.mastery || mastery.final_mastery || 0} />
+          <Field label="الإتقان السابق" value={mastery.previous_mastery} />
+          <Field label="مستوى الثقة" value={confidenceScore} />
         </div>
 
         <div>
-          <Meter label="Weakness" value={weakness.weakness_score || 0} />
-          <Field label="Main weaknesses" value={(weakness.main_weaknesses || []).join(', ')} />
-          <Field label="Severity" value={weakness.severity} />
+          <Meter label="مهارة تحتاج تدريب" value={weakness.weakness_score || 0} />
+          <Field label="مهارات تحتاج إلى تدريب" value={(weakness.main_weaknesses || []).join(', ')} />
+          <Field label="درجة الأولوية" value={weakness.severity} />
         </div>
 
         <div>
-          <Field label="Recommendation" value={recommendation.reason} />
-          <Field label="Target skill" value={recommendation.target_skill_id || recommendation.skill_id} />
-          <Field label="Priority" value={recommendation.decision_priority} />
+          <Field label="التوصية التالية" value={recommendation.reason} />
+          <Field label="الدرس المقترح التالي" value={recommendation.target_skill_id || recommendation.skill_id} />
+          <Field label="الأولوية" value={recommendation.decision_priority} />
         </div>
 
         <div>
-          <Field label="Difficulty action" value={difficulty.action} />
-          <Field label="Target difficulty" value={difficulty.target_difficulty} />
-          <Field label="Retention due" value={retention.due_at} />
+          <Field label="مستوى الصعوبة الحالي" value={difficulty.current_difficulty || difficulty.difficulty} />
+          <Field label="مستوى الصعوبة المقترح" value={difficulty.target_difficulty} />
+          <Field label="حان وقت المراجعة" value={retention.due_at} />
         </div>
 
         <div>
-          <Meter label="Frustration" value={emotional.frustration_score || 0} />
-          <Field label="Signal" value={emotional.emotional_signal} />
-          <Field label="Confidence" value={emotional.confidence_level} />
+          <Meter label="يحتاج إلى تبسيط أو إبطاء" value={emotional.frustration_score || 0} />
+          <Field label="إشارة تعليمية" value={emotional.emotional_signal} />
+          <Field label="مستوى الثقة" value={emotional.confidence_level} />
         </div>
 
         <div>
-          <Field label="Explanation log ID" value={primaryResult.explanation_log_id} />
-          <Field label="Session ID" value={result.session_id} />
-          <Field label="Adaptive results" value={(result.adaptive_results || []).length || 1} />
+          <Field label="رقم سجل التفسير" value={primaryResult.explanation_log_id} />
+          <Field label="رقم الجلسة" value={result.session_id} />
+          <Field label="عدد نتائج التكيف" value={(result.adaptive_results || []).length || 1} />
         </div>
       </div>
 
       <details className="lesson-session-debug">
-        <summary>Debug response JSON</summary>
-        <pre>{JSON.stringify(result, null, 2)}</pre>
+        <summary>عرض البيانات الخام للمطور</summary>
+        <pre dir="ltr">{JSON.stringify(result, null, 2)}</pre>
       </details>
     </section>
   );
@@ -598,7 +604,7 @@ function LessonSession() {
   const [sessionPayload, setSessionPayload] = useState(null);
   const [answers, setAnswers] = useState({});
   const [adaptiveResult, setAdaptiveResult] = useState(null);
-  const [status, setStatus] = useState('Ready');
+  const [status, setStatus] = useState('جاهز');
   const [error, setError] = useState('');
   const [isLoadingLessons, setIsLoadingLessons] = useState(false);
   const [isStartingSession, setIsStartingSession] = useState(false);
@@ -664,13 +670,13 @@ function LessonSession() {
   async function handleLoadLessons() {
     const numericStudentId = safeStudentId(studentId);
     if (!numericStudentId) {
-      setError('Student ID must be a positive integer.');
+      setError('رقم الطالب يجب أن يكون رقما صحيحا أكبر من صفر.');
       return;
     }
 
     setIsLoadingLessons(true);
     setError('');
-    setStatus('Loading active lessons');
+    setStatus('جاري تحميل الدروس النشطة');
 
     try {
       const data = await listPilotLessons(numericStudentId);
@@ -679,10 +685,10 @@ function LessonSession() {
       setSelectedLessonId((current) => current || loadedLessons[0]?.lesson_id || '');
       setLessonPayload(null);
       resetSessionState();
-      setStatus(loadedLessons.length > 0 ? 'Lessons loaded' : 'No active lessons found');
+      setStatus(loadedLessons.length > 0 ? 'تم تحميل الدروس' : 'لا توجد دروس نشطة حاليا');
     } catch (requestError) {
-      setError(`Could not load lessons: ${requestError.message}`);
-      setStatus('Lesson loading failed');
+      setError(`تعذر تحميل الدروس: ${requestError.message}`);
+      setStatus('تعذر تحميل الدروس');
     } finally {
       setIsLoadingLessons(false);
     }
@@ -691,17 +697,17 @@ function LessonSession() {
   async function handlePreviewLesson() {
     const numericStudentId = safeStudentId(studentId);
     if (!numericStudentId) {
-      setError('Student ID must be a positive integer.');
+      setError('رقم الطالب يجب أن يكون رقما صحيحا أكبر من صفر.');
       return;
     }
 
     if (!selectedLessonId) {
-      setError('Select a lesson first.');
+      setError('اختر درسا أولا.');
       return;
     }
 
     setError('');
-    setStatus('Loading lesson preview');
+    setStatus('جاري تحميل معاينة الدرس');
 
     try {
       const data = await getPilotLesson(numericStudentId, selectedLessonId);
@@ -709,26 +715,26 @@ function LessonSession() {
       resetSessionState();
       setStatus('Lesson preview loaded');
     } catch (requestError) {
-      setError(`Could not load lesson preview: ${requestError.message}`);
-      setStatus('Lesson preview failed');
+      setError(`تعذر تحميل معاينة الدرس: ${requestError.message}`);
+      setStatus('تعذر تحميل المعاينة');
     }
   }
 
   async function handleStartSession() {
     const numericStudentId = safeStudentId(studentId);
     if (!numericStudentId) {
-      setError('Student ID must be a positive integer.');
+      setError('رقم الطالب يجب أن يكون رقما صحيحا أكبر من صفر.');
       return;
     }
 
     if (!selectedLessonId) {
-      setError('Select a lesson before starting a session.');
+      setError('اختر درسا قبل بدء الجلسة.');
       return;
     }
 
     setIsStartingSession(true);
     setError('');
-    setStatus('Starting lesson session');
+    setStatus('جاري بدء جلسة الدرس');
 
     try {
       const data = await startPilotLessonSession(numericStudentId, selectedLessonId);
@@ -746,10 +752,10 @@ function LessonSession() {
       });
       setAnswers(nextAnswers);
       setAdaptiveResult(null);
-      setStatus('Session started');
+      setStatus('بدأت الجلسة');
     } catch (requestError) {
-      setError(`Could not start session: ${requestError.message}`);
-      setStatus('Session start failed');
+      setError(`تعذر بدء الجلسة: ${requestError.message}`);
+      setStatus('تعذر بدء الجلسة');
     } finally {
       setIsStartingSession(false);
     }
@@ -823,17 +829,17 @@ function LessonSession() {
   async function handleSubmitAttempts() {
     const numericStudentId = safeStudentId(studentId);
     if (!numericStudentId) {
-      setError('Student ID must be a positive integer.');
+      setError('رقم الطالب يجب أن يكون رقما صحيحا أكبر من صفر.');
       return;
     }
 
     if (!sessionPayload || !sessionId) {
-      setError('Start a lesson session before submitting attempts.');
+      setError('ابدأ جلسة الدرس قبل إرسال المحاولات.');
       return;
     }
 
     if (activeQuestions.length === 0) {
-      setError('This session has no active questions to submit.');
+      setError('لا توجد أسئلة نشطة في هذه الجلسة لإرسالها.');
       return;
     }
 
@@ -844,11 +850,11 @@ function LessonSession() {
       const correctness = inferCorrectness(question, answerState);
 
       if (!answerState.skip && !answerState.selectedAnswer) {
-        validationErrors.push(`Question ${index + 1} is missing an answer or skip decision.`);
+        validationErrors.push(`السؤال ${index + 1} يحتاج إجابة أو قرار تجاوز.`);
       }
 
       if (correctness.value === null) {
-        validationErrors.push(`Question ${index + 1} needs correctness review before submission.`);
+        validationErrors.push(`السؤال ${index + 1} يحتاج مراجعة الإجابة قبل الإرسال.`);
       }
 
       return correctness.value === null
@@ -866,13 +872,13 @@ function LessonSession() {
 
     if (validationErrors.length > 0) {
       setError(validationErrors.join(' '));
-      setStatus('Validation failed');
+      setStatus('توجد ملاحظات قبل الإرسال');
       return;
     }
 
     setIsSubmitting(true);
     setError('');
-    setStatus('Submitting attempts to AIM');
+    setStatus('جاري إرسال المحاولات إلى AIM');
 
     try {
       const result = await submitPilotSessionAttempts(
@@ -882,10 +888,10 @@ function LessonSession() {
       );
 
       setAdaptiveResult(result);
-      setStatus('AIM adaptive result received');
+      setStatus('تم استلام نتيجة AIM التكيفية');
     } catch (requestError) {
-      setError(`Could not submit attempts: ${requestError.message}`);
-      setStatus('Attempt submission failed');
+      setError(`تعذر إرسال المحاولات: ${requestError.message}`);
+      setStatus('تعذر إرسال المحاولات');
     } finally {
       setIsSubmitting(false);
     }
@@ -897,13 +903,13 @@ function LessonSession() {
 
       <header className="lesson-session-header">
         <div>
-          <p>AIM Web Pilot</p>
-          <h1>Lesson session</h1>
-          <span>Load a lesson, collect attempts, and submit them to the AIM engine.</span>
+          <p>اختبار AIM التعليمي</p>
+          <h1>جلسة اختبار الدرس</h1>
+          <span>حمّل الدرس، اجمع محاولات الطالب، ثم أرسلها إلى محرك AIM دون تغيير الحسابات الخلفية.</span>
         </div>
         <div className="lesson-session-header__badges">
           <Badge tone="blue">{API_BASE_URL}</Badge>
-          <Badge tone={error ? 'red' : status.includes('received') ? 'green' : 'amber'}>
+          <Badge tone={error ? 'red' : adaptiveResult ? 'green' : 'amber'}>
             {status}
           </Badge>
         </div>
@@ -911,7 +917,7 @@ function LessonSession() {
 
       <section className="lesson-session-toolbar">
         <label>
-          <span>Student ID</span>
+          <span>رقم الطالب</span>
           <input
             type="number"
             min="1"
@@ -924,7 +930,7 @@ function LessonSession() {
         </label>
 
         <label>
-          <span>Lesson</span>
+          <span>الدرس</span>
           <select
             value={selectedLessonId}
             onChange={(event) => {
@@ -933,7 +939,7 @@ function LessonSession() {
               resetSessionState();
             }}
           >
-            <option value="">Select lesson</option>
+            <option value="">اختر درسا</option>
             {lessons.map((lesson) => (
               <option key={lesson.lesson_id} value={lesson.lesson_id}>
                 {lesson.title || lesson.lesson_id}
@@ -943,15 +949,15 @@ function LessonSession() {
         </label>
 
         <button type="button" onClick={handleLoadLessons} disabled={isLoadingLessons}>
-          {isLoadingLessons ? 'Loading...' : 'Load Lessons'}
+          {isLoadingLessons ? 'جاري التحميل...' : 'تحميل الدروس'}
         </button>
 
         <button type="button" onClick={handlePreviewLesson} disabled={!selectedLessonId}>
-          Preview Lesson
+          معاينة الدرس
         </button>
 
         <button type="button" onClick={handleStartSession} disabled={!selectedLessonId || isStartingSession}>
-          {isStartingSession ? 'Starting...' : 'Start Session'}
+          {isStartingSession ? 'جاري البدء...' : 'بدء الجلسة'}
         </button>
       </section>
 
@@ -963,21 +969,21 @@ function LessonSession() {
 
       <section className="lesson-session-progress">
         <div>
-          <span>Session ID</span>
-          <strong>{sessionId || 'No active session'}</strong>
+          <span>رقم الجلسة</span>
+          <strong>{sessionId || 'لا توجد جلسة نشطة'}</strong>
         </div>
         <div>
-          <span>Questions</span>
+          <span>عدد الأسئلة</span>
           <strong>{activeQuestions.length}</strong>
         </div>
         <div>
-          <span>Answered / skipped</span>
+          <span>تمت الإجابة / التجاوز</span>
           <strong>
             {answeredCount} / {activeQuestions.length}
           </strong>
         </div>
         <div>
-          <span>Payload-ready attempts</span>
+          <span>محاولات جاهزة للإرسال</span>
           <strong>{payloadPreview.length}</strong>
         </div>
       </section>
@@ -989,17 +995,17 @@ function LessonSession() {
           <section className="lesson-session-panel">
             <div className="lesson-session-panel__header">
               <div>
-                <p>Attempt collection</p>
-                <h2>Questions</h2>
+                <p>جمع المحاولات</p>
+                <h2>أسئلة الدرس</h2>
               </div>
               <Badge tone={sessionId ? 'green' : 'amber'}>
-                {sessionId ? 'Active session' : 'Start session first'}
+                {sessionId ? 'الجلسة نشطة' : 'ابدأ الجلسة أولا'}
               </Badge>
             </div>
 
             {activeQuestions.length === 0 ? (
               <p className="lesson-session-muted">
-                No questions loaded. Load a lesson preview or start a lesson session.
+                لا توجد أسئلة محملة. اعرض معاينة الدرس أو ابدأ جلسة درس.
               </p>
             ) : (
               <div className="lesson-session-question-list">
@@ -1031,7 +1037,7 @@ function LessonSession() {
                 onClick={handleSubmitAttempts}
                 disabled={!sessionId || isSubmitting || activeQuestions.length === 0}
               >
-                {isSubmitting ? 'Submitting...' : 'Submit Attempts'}
+                {isSubmitting ? 'جاري الإرسال...' : 'إرسال المحاولات'}
               </button>
             </div>
           </section>
@@ -1043,15 +1049,15 @@ function LessonSession() {
           <section className="lesson-session-panel">
             <div className="lesson-session-panel__header">
               <div>
-                <p>Payload preview</p>
-                <h2>Backend attempt shape</h2>
+                <p>معاينة بيانات الإرسال</p>
+                <h2>شكل المحاولات للواجهة الخلفية</h2>
               </div>
               <Badge tone="blue">{payloadPreview.length}</Badge>
             </div>
 
             <details className="lesson-session-debug" open>
-              <summary>Prepared attempts</summary>
-              <pre>{JSON.stringify({ attempts: payloadPreview }, null, 2)}</pre>
+              <summary>عرض البيانات الخام للمطور</summary>
+              <pre dir="ltr">{JSON.stringify({ attempts: payloadPreview }, null, 2)}</pre>
             </details>
           </section>
         </aside>
@@ -1062,10 +1068,12 @@ function LessonSession() {
 
 const styles = `
 .lesson-session {
-  background: #f5f7fb;
+  background: #eef3f7;
   color: #172328;
+  direction: rtl;
   min-height: 100vh;
   padding: 28px;
+  text-align: right;
 }
 
 .lesson-session-header,
@@ -1087,12 +1095,11 @@ const styles = `
 .lesson-session-header p,
 .lesson-session-panel__header p,
 .lesson-session-question__top p {
-  color: #3f6f78;
+  color: #116a63;
   font-size: 0.78rem;
   font-weight: 900;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
   margin: 0 0 8px;
-  text-transform: uppercase;
 }
 
 .lesson-session-header h1 {
@@ -1151,7 +1158,6 @@ const styles = `
   color: #64748b;
   font-size: 0.76rem;
   font-weight: 900;
-  text-transform: uppercase;
 }
 
 .lesson-session-toolbar input,
@@ -1187,8 +1193,8 @@ const styles = `
 
 .lesson-session-toolbar button,
 .lesson-session-question-actions button {
-  background: #eaf2ff;
-  color: #164da8;
+  background: #e8f3f1;
+  color: #116a63;
 }
 
 .lesson-session-toolbar button:disabled,
@@ -1338,7 +1344,7 @@ const styles = `
   font-weight: 800;
   min-height: 52px;
   padding: 12px;
-  text-align: left;
+  text-align: right;
 }
 
 .lesson-session-choice-list button.is-selected {
@@ -1503,11 +1509,13 @@ const styles = `
   background: #101820;
   border-radius: 10px;
   color: #dbeafe;
+  direction: ltr;
   font-size: 0.78rem;
   line-height: 1.45;
   max-height: 520px;
   overflow: auto;
   padding: 14px;
+  text-align: left;
 }
 
 @media (max-width: 1180px) {

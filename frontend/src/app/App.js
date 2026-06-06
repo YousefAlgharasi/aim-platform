@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import AlgorithmTester from '../pages/AlgorithmTester';
 import AimDemo from '../pages/AimDemo';
 import AdaptiveResult from '../pages/AdaptiveResult';
@@ -6,6 +7,11 @@ import LessonSession from '../pages/LessonSession';
 import StudentLogin from '../pages/StudentLogin';
 
 function App() {
+  useEffect(() => {
+    document.documentElement.setAttribute('dir', 'rtl');
+    document.documentElement.setAttribute('lang', 'ar');
+  }, []);
+
   const { pathname } = window.location;
 
   if (pathname === '/aim-demo') {

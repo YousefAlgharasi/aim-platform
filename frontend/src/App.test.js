@@ -205,12 +205,12 @@ test('renders adaptive result as student-facing next action', async () => {
 
   render(<App />);
 
-  expect(await screen.findByText(/saved result loaded/i)).toBeInTheDocument();
-  expect(screen.getByRole('heading', { name: /result/i })).toBeInTheDocument();
+  expect(await screen.findByText(/تم عرض النتيجة المحفوظة/i)).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: /نتيجة التكيف الذكي/i })).toBeInTheDocument();
   expect(screen.getByText('74%')).toBeInTheDocument();
-  expect(screen.getAllByText(/continue current skill/i).length).toBeGreaterThan(0);
+  expect(screen.getAllByText(/متابعة المهارة الحالية/i).length).toBeGreaterThan(0);
   expect(screen.getAllByText(/present simple negative/i).length).toBeGreaterThan(0);
-  expect(screen.queryByText(/decision_conflict/i)).not.toBeInTheDocument();
-  expect(screen.queryByText(/resolved action/i)).not.toBeInTheDocument();
-  expect(screen.queryByText(/reliability/i)).not.toBeInTheDocument();
+  expect(screen.getByText('عرض البيانات الخام للمطور')).toBeInTheDocument();
+  expect(screen.getAllByText(/نسبة الإتقان/i).length).toBeGreaterThan(0);
+  expect(screen.getAllByText(/مهارات تحتاج إلى تدريب/i).length).toBeGreaterThan(0);
 });

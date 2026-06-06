@@ -8,7 +8,7 @@ import {
 
 function formatValue(value) {
   if (value === null || value === undefined || value === '') {
-    return 'None';
+    return 'غير متوفر';
   }
 
   if (typeof value === 'number') {
@@ -16,24 +16,89 @@ function formatValue(value) {
   }
 
   if (typeof value === 'boolean') {
-    return value ? 'Yes' : 'No';
+    return value ? 'نعم' : 'لا';
   }
 
   return String(value);
 }
 
+const ARABIC_VALUE_LABELS = {
+  collect_more_evidence: 'جمع أدلة أكثر',
+  high_frustration_or_overload: 'تبسيط الخطوة التالية',
+  increase_difficulty: 'رفع مستوى الصعوبة تدريجيا',
+  decrease_difficulty: 'تخفيف مستوى الصعوبة',
+  maintain_difficulty: 'الاستمرار على نفس المستوى',
+  continue_current_skill: 'متابعة المهارة الحالية',
+  review: 'مراجعة قصيرة',
+  reteach: 'شرح موجه',
+  reteach_concept: 'إعادة شرح المفهوم',
+  challenge: 'تحد مناسب',
+  easy_win: 'بداية سهلة داعمة',
+  confidence_builder: 'نشاط يعزز الثقة',
+  timed_practice: 'تدريب طلاقة بدون ضغط',
+  mixed_practice: 'تدريب متنوع',
+  prerequisite: 'متطلب سابق',
+  stable: 'مستقر',
+  due_now: 'حان وقت المراجعة',
+  scheduled: 'مجدولة',
+  normal: 'عادية',
+  low: 'منخفض',
+  medium: 'متوسط',
+  high: 'مرتفع',
+  increase: 'زيادة',
+  decrease: 'تخفيف',
+  maintain: 'ثبات',
+};
+
 function formatLabel(value) {
-  return String(value || '')
-    .replaceAll('_', ' ')
-    .replaceAll('-', ' ')
-    .trim()
-    .replace(/\s+/g, ' ')
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const raw = String(value || '').trim();
+  if (!raw) {
+    return 'غير متوفر';
+  }
+
+  const normalized = raw.replaceAll('-', '_').toLowerCase();
+  return ARABIC_VALUE_LABELS[normalized] || raw.replaceAll('_', ' ').replaceAll('-', ' ');
 }
 
 function toNumber(value, fallback = 0) {
   const numeric = Number(value);
   return Number.isFinite(numeric) ? numeric : fallback;
+}
+
+function toPercent(value, fallback = 0) {
+  const numeric = toNumber(value, fallback);
+  if (numeric > 0 && numeric <= 1) {
+    return numeric * 100;
+  }
+
+  return numeric;
+}
+
+function compactList(...values) {
+  return values
+    .flatMap((value) => {
+      if (!value) return [];
+      if (Array.isArray(value)) return value;
+      return [value];
+    })
+    .map((value) => {
+      if (typeof value === 'string' || typeof value === 'number') {
+        return String(value);
+      }
+
+      return (
+        value.skill_id ||
+        value.skill ||
+        value.concept ||
+        value.tag ||
+        value.name ||
+        value.pattern_type ||
+        value.type ||
+        ''
+      );
+    })
+    .map((value) => String(value).trim())
+    .filter(Boolean);
 }
 
 function getQueryValue(name, fallback = '') {
@@ -70,10 +135,10 @@ function formatDate(value) {
   const date = parseDate(value);
 
   if (!date) {
-    return 'No review date yet';
+    return 'لا يوجد موعد مراجعة بعد';
   }
 
-  return date.toLocaleString(undefined, {
+  return date.toLocaleString('ar', {
     dateStyle: 'medium',
     timeStyle: 'short',
   });
@@ -96,50 +161,50 @@ function getRecommendationTitle(recommendation, difficultyDecision, retentionRes
   const weaknessScore = toNumber(weaknessResult.weakness_score, 0);
 
   if (toNumber(retentionResult.review_priority, 0) >= 70 || retentionResult.is_due) {
-    return 'Review this skill now';
+    return 'حان وقت المراجعة';
   }
 
   if (actionText.includes('prerequisite')) {
-    return 'Review the missing prerequisite first';
+    return 'ابدأ بالمتطلب السابق';
   }
 
   if (actionText.includes('reteach') || actionText.includes('review')) {
-    return 'Do a guided review';
+    return 'مراجعة موجهة قصيرة';
   }
 
   if (actionText.includes('challenge') || actionText.includes('increase')) {
-    return 'Move to a stronger challenge';
+    return 'انتقال تدريجي لتحد أعلى';
   }
 
   if (actionText.includes('mixed')) {
-    return 'Practice mixed questions';
+    return 'تدريب متنوع على المهارة';
   }
 
   if (actionText.includes('easy') || actionText.includes('support')) {
-    return 'Start with an easier win';
+    return 'ابدأ بسؤال داعم وسهل';
   }
 
   if (weaknessScore >= 60) {
-    return 'Strengthen the weak point first';
+    return 'قو المهارة التي تحتاج تدريبا أولا';
   }
 
-  return 'Continue with the next practice step';
+  return 'استمر بخطوة تدريب مناسبة';
 }
 
 function getReviewMessage(retentionResult) {
   if (!retentionResult || Object.keys(retentionResult).length === 0) {
-    return 'No spaced review action is available yet.';
+    return 'لا توجد مراجعة متباعدة مقترحة بعد.';
   }
 
   if (retentionResult.is_due) {
-    return 'Review is due now. Start with a short recap before the next lesson.';
+    return 'حان وقت المراجعة. ابدأ بتذكير قصير قبل الدرس التالي.';
   }
 
   if (retentionResult.due_at) {
-    return `Next review is scheduled for ${formatDate(retentionResult.due_at)}.`;
+    return `المراجعة التالية مجدولة في ${formatDate(retentionResult.due_at)}.`;
   }
 
-  return `Review priority is ${formatValue(retentionResult.review_priority)}.`;
+  return `أولوية المراجعة ${formatValue(retentionResult.review_priority)}.`;
 }
 
 function normalizeAdaptiveResult(result) {
@@ -153,6 +218,11 @@ function normalizeAdaptiveResult(result) {
   const emotional = primary.safe_emotional_signal || {};
   const prompt = primary.prompt_adaptation_instruction || {};
   const performance = primary.performance_metrics || {};
+  const reliability = primary.reliability || {};
+  const evidenceQuality = primary.evidence_quality || {};
+  const questionQuality = primary.question_quality || {};
+  const errorPattern = primary.error_pattern || {};
+  const decisionConflict = primary.decision_conflict || {};
 
   const masteryNow = toNumber(
     mastery.mastery ?? mastery.final_mastery ?? state.mastery,
@@ -166,10 +236,47 @@ function normalizeAdaptiveResult(result) {
   const weaknessScore = toNumber(weakness.weakness_score, 0);
   const frustrationScore = toNumber(emotional.frustration_score, 0);
   const accuracy = toNumber(performance.accuracy ?? mastery.accuracy_score, 0);
+  const confidenceScore = toPercent(
+    recommendation.confidence ??
+      mastery.decision_confidence ??
+      reliability.confidence ??
+      reliability.score ??
+      emotional.confidence_level,
+    0,
+  );
+  const reliabilityScore = toPercent(reliability.score ?? reliability.reliability ?? mastery.reliability, 0);
+  const consistencyScore = toPercent(performance.consistency ?? mastery.consistency_score, 0);
+  const retentionScore = toPercent(retention.retention ?? mastery.retention_score, 0);
 
   const mainWeaknesses = Array.isArray(weakness.main_weaknesses)
     ? weakness.main_weaknesses
     : [];
+  const strongSkills = compactList(
+    state.strong_skills,
+    primary.strong_skills,
+    masteryNow >= 85 ? state.skill_id || recommendation.skill_id || recommendation.target_skill_id : '',
+  );
+  const practiceNeeds = compactList(
+    mainWeaknesses,
+    weakness.weaknesses,
+    weakness.top_weaknesses,
+    weakness.primary_weakness,
+    primary.prerequisite_gaps?.gaps,
+    primary.prerequisite_gaps?.missing_prerequisites,
+  );
+  const errorPatterns = compactList(
+    errorPattern.pattern_type,
+    errorPattern.dominant_error_tag,
+    errorPattern.error_patterns,
+    errorPattern.patterns,
+    weakness.error_tags,
+  );
+  const currentDifficulty =
+    difficulty.current_difficulty ??
+    difficulty.difficulty ??
+    state.current_difficulty ??
+    state.difficulty ??
+    difficulty.target_difficulty;
 
   return {
     primary,
@@ -182,13 +289,26 @@ function normalizeAdaptiveResult(result) {
     emotional,
     prompt,
     performance,
+    reliability,
+    evidenceQuality,
+    questionQuality,
+    errorPattern,
+    decisionConflict,
     masteryNow,
     masteryBefore,
     masteryDelta,
     weaknessScore,
     frustrationScore,
     accuracy,
+    confidenceScore,
+    reliabilityScore,
+    consistencyScore,
+    retentionScore,
     mainWeaknesses,
+    strongSkills,
+    practiceNeeds,
+    errorPatterns,
+    currentDifficulty,
     nextActionTitle: getRecommendationTitle(recommendation, difficulty, retention, weakness),
     reviewMessage: getReviewMessage(retention),
   };
@@ -228,14 +348,30 @@ function Meter({ label, value, helper }) {
 function EmptyState({ onLoadSaved }) {
   return (
     <section className="adaptive-result-empty">
-      <h2>No adaptive result loaded</h2>
+      <h2>لا توجد نتيجة معروضة حاليا</h2>
       <p>
-        Enter a student ID and session ID to fetch the saved AIM result, or load the latest result saved by the lesson session page.
+        أدخل رقم الطالب ورقم الجلسة لجلب نتيجة AIM، أو اعرض آخر نتيجة محفوظة من صفحة اختبار الجلسة.
       </p>
       <button type="button" onClick={onLoadSaved}>
-        Load Latest Saved Result
+        عرض آخر نتيجة محفوظة
       </button>
     </section>
+  );
+}
+
+function InfoList({ items, emptyText }) {
+  const safeItems = compactList(items);
+
+  return (
+    <div className="adaptive-result-mini-list">
+      {safeItems.length > 0 ? (
+        safeItems.map((item) => (
+          <span key={item}>{formatLabel(item)}</span>
+        ))
+      ) : (
+        <span>{emptyText}</span>
+      )}
+    </div>
   );
 }
 
@@ -247,7 +383,14 @@ function StudentResultView({ summary }) {
     weaknessScore,
     frustrationScore,
     accuracy,
-    mainWeaknesses,
+    confidenceScore,
+    reliabilityScore,
+    consistencyScore,
+    retentionScore,
+    strongSkills,
+    practiceNeeds,
+    errorPatterns,
+    currentDifficulty,
     nextActionTitle,
     reviewMessage,
     recommendation,
@@ -255,123 +398,194 @@ function StudentResultView({ summary }) {
     difficulty,
     prompt,
     emotional,
+    evidenceQuality,
+    questionQuality,
+    decisionConflict,
+    primary,
   } = summary;
 
   const progressTone = masteryDelta >= 0 ? 'green' : 'amber';
   const weaknessTone = weaknessScore >= 65 ? 'red' : weaknessScore >= 35 ? 'amber' : 'green';
   const frustrationTone = frustrationScore >= 70 ? 'red' : frustrationScore >= 40 ? 'amber' : 'green';
+  const attemptsSaved = primary.attempts_saved ?? primary.session_attempt_count ?? primary.valid_attempt_count;
+  const recommendationText =
+    recommendation.reason ||
+    difficulty.reason ||
+    decisionConflict.reason ||
+    'تم تجهيز خطوة تعلم مناسبة بناء على بيانات الجلسة الأخيرة.';
 
   return (
     <>
       <section className="adaptive-result-hero">
         <div>
-          <p>Your next step</p>
+          <p>التوصية التالية</p>
           <h2>{nextActionTitle}</h2>
-          <span>
-            {recommendation.reason ||
-              difficulty.reason ||
-              'AIM has prepared the next learning step based on your latest session.'}
-          </span>
+          <span>{recommendationText}</span>
         </div>
         <Badge tone="purple">
-          {formatLabel(recommendation.action || recommendation.action_type || difficulty.action || 'Next action')}
+          {formatLabel(recommendation.action || recommendation.action_type || difficulty.action || 'continue_current_skill')}
         </Badge>
       </section>
 
       <section className="adaptive-result-grid">
         <MetricCard
-          label="Current progress"
+          label="نسبة الإتقان"
           value={`${formatValue(masteryNow)}%`}
-          helper={`Before this session: ${formatValue(masteryBefore)}%`}
+          helper={`قبل هذه الجلسة: ${formatValue(masteryBefore)}%`}
           tone={progressTone}
         />
         <MetricCard
-          label="Progress change"
+          label="مستوى الثقة"
+          value={`${formatValue(confidenceScore)}%`}
+          helper={`موثوقية القرار: ${formatValue(reliabilityScore)}%`}
+          tone={confidenceScore >= 70 ? 'green' : confidenceScore >= 40 ? 'amber' : 'blue'}
+        />
+        <MetricCard
+          label="تغير الإتقان"
           value={`${masteryDelta >= 0 ? '+' : ''}${formatValue(masteryDelta)}%`}
-          helper={masteryDelta >= 0 ? 'Your mastery improved or stayed stable.' : 'AIM will slow down and support review.'}
+          helper={masteryDelta >= 0 ? 'الإتقان تحسن أو بقي مستقرا.' : 'AIM سيبطئ الوتيرة ويدعم المراجعة.'}
           tone={progressTone}
         />
+      </section>
+
+      <section className="adaptive-result-grid">
         <MetricCard
-          label="Accuracy"
+          label="دقة الإجابات"
           value={`${formatValue(accuracy)}%`}
-          helper="Based on this skill's recorded attempts."
+          helper="محسوبة من محاولات هذه المهارة."
           tone={accuracy >= 75 ? 'green' : accuracy >= 45 ? 'amber' : 'red'}
         />
+        <MetricCard
+          label="الاتساق"
+          value={`${formatValue(consistencyScore)}%`}
+          helper="يقيس ثبات الأداء عبر المحاولات."
+          tone={consistencyScore >= 75 ? 'green' : consistencyScore >= 45 ? 'amber' : 'blue'}
+        />
+        <MetricCard
+          label="الاحتفاظ"
+          value={`${formatValue(retentionScore)}%`}
+          helper={retention.is_due ? 'حان وقت المراجعة.' : 'تتم متابعة جدول المراجعة.'}
+          tone={retention.is_due ? 'amber' : 'green'}
+        />
       </section>
 
       <section className="adaptive-result-panel">
         <div className="adaptive-result-panel__header">
           <div>
-            <p>Focus area</p>
-            <h2>What to improve next</h2>
+            <p>نظرة عامة على الطالب</p>
+            <h2>ملخص تعليمي سريع</h2>
           </div>
-          <Badge tone={weaknessTone}>Weakness {formatValue(weaknessScore)}%</Badge>
-        </div>
-
-        <div className="adaptive-result-focus">
-          <Meter
-            label="Weakness score"
-            value={weaknessScore}
-            helper={
-              weaknessScore >= 65
-                ? 'This skill needs focused support.'
-                : weaknessScore >= 35
-                  ? 'There are some points to strengthen.'
-                  : 'No major weakness was detected.'
-            }
-          />
-
-          <div className="adaptive-result-list">
-            {mainWeaknesses.length > 0 ? (
-              mainWeaknesses.map((weakness) => (
-                <div key={weakness}>
-                  <strong>{formatLabel(weakness)}</strong>
-                  <span>Practice this point before increasing difficulty.</span>
-                </div>
-              ))
-            ) : (
-              <div>
-                <strong>No major weakness detected</strong>
-                <span>Continue practice and keep building consistency.</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      <section className="adaptive-result-panel">
-        <div className="adaptive-result-panel__header">
-          <div>
-            <p>Recommendation</p>
-            <h2>What the student should do</h2>
-          </div>
-          <Badge tone="purple">
-            {formatLabel(recommendation.action_type || recommendation.action || 'Practice')}
-          </Badge>
+          <Badge tone="blue">جلسة AIM</Badge>
         </div>
 
         <div className="adaptive-result-action-grid">
           <div>
-            <span>Target skill</span>
-            <strong>{formatValue(recommendation.target_skill_id || recommendation.skill_id)}</strong>
+            <span>الطالب</span>
+            <strong>{formatValue(primary.student_id || primary.updated_skill_state?.student_id)}</strong>
           </div>
           <div>
-            <span>Difficulty</span>
-            <strong>{formatValue(recommendation.difficulty || difficulty.target_difficulty)}</strong>
+            <span>المهارة الحالية</span>
+            <strong>{formatLabel(primary.updated_skill_state?.skill_id || recommendation.skill_id || recommendation.target_skill_id)}</strong>
           </div>
           <div>
-            <span>Priority</span>
-            <strong>{formatValue(recommendation.decision_priority || 'Normal')}</strong>
+            <span>المحاولات المحفوظة</span>
+            <strong>{formatValue(attemptsSaved)}</strong>
           </div>
           <div>
-            <span>Confidence</span>
-            <strong>{formatValue(recommendation.confidence)}</strong>
+            <span>جودة الدليل</span>
+            <strong>{formatValue(evidenceQuality.score ?? evidenceQuality.evidence_quality_score)}%</strong>
           </div>
+        </div>
+      </section>
+
+      <section className="adaptive-result-panel">
+        <div className="adaptive-result-panel__header">
+          <div>
+            <p>المهارات القوية</p>
+            <h2>نقاط يمكن البناء عليها</h2>
+          </div>
+          <Badge tone="green">{strongSkills.length || 0}</Badge>
+        </div>
+        <InfoList items={strongSkills} emptyText="لا توجد مهارة قوية مؤكدة بعد، ونحتاج إلى محاولات أكثر." />
+      </section>
+
+      <section className="adaptive-result-panel">
+        <div className="adaptive-result-panel__header">
+          <div>
+            <p>مهارات تحتاج إلى تدريب</p>
+            <h2>نقاط تدريب داعمة</h2>
+          </div>
+          <Badge tone={weaknessTone}>مهارة تحتاج تدريب {formatValue(weaknessScore)}%</Badge>
+        </div>
+
+        <div className="adaptive-result-focus">
+          <Meter
+            label="مؤشر الحاجة إلى التدريب"
+            value={weaknessScore}
+            helper={
+              weaknessScore >= 65
+                ? 'هذه المهارة تحتاج إلى تدريب موجه خطوة بخطوة.'
+                : weaknessScore >= 35
+                  ? 'توجد نقاط يمكن تقويتها بتدريب قصير.'
+                  : 'لا توجد حاجة تدريب كبيرة ظاهرة حاليا.'
+            }
+          />
+          <InfoList items={practiceNeeds} emptyText="لا توجد مهارة محددة تحتاج تدريبا إضافيا حاليا." />
+        </div>
+      </section>
+
+      <section className="adaptive-result-grid adaptive-result-grid--two">
+        <section className="adaptive-result-panel adaptive-result-panel--nested">
+          <div className="adaptive-result-panel__header">
+            <div>
+              <p>أنماط الأخطاء المتكررة</p>
+              <h2>ماذا نلاحظ؟</h2>
+            </div>
+            <Badge tone="amber">{errorPatterns.length || '0'}</Badge>
+          </div>
+          <InfoList items={errorPatterns} emptyText="لا يوجد نمط خطأ متكرر واضح بعد." />
+        </section>
+
+        <section className="adaptive-result-panel adaptive-result-panel--nested">
+          <div className="adaptive-result-panel__header">
+            <div>
+              <p>مستوى الصعوبة</p>
+              <h2>الصعوبة الحالية والمقترحة</h2>
+            </div>
+            <Badge tone="blue">{formatLabel(difficulty.action || 'maintain')}</Badge>
+          </div>
+          <div className="adaptive-result-action-grid adaptive-result-action-grid--compact">
+            <div>
+              <span>مستوى الصعوبة الحالي</span>
+              <strong>{formatValue(currentDifficulty)}</strong>
+            </div>
+            <div>
+              <span>المستوى المقترح</span>
+              <strong>{formatValue(difficulty.target_difficulty || recommendation.difficulty)}</strong>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section className="adaptive-result-panel">
+        <div className="adaptive-result-panel__header">
+          <div>
+            <p>التوصية التالية</p>
+            <h2>{formatLabel(recommendation.action_type || recommendation.action || difficulty.action || 'continue_current_skill')}</h2>
+          </div>
+          <Badge tone="purple">
+            {formatLabel(recommendation.decision_priority || decisionConflict.selected_action || 'normal')}
+          </Badge>
+        </div>
+
+        <div className="adaptive-result-teacher-note">
+          <strong>الدرس المقترح التالي</strong>
+          <p>{recommendationText}</p>
         </div>
 
         {prompt.instruction_text && (
           <div className="adaptive-result-teacher-note">
-            <strong>Teacher guidance</strong>
+            <strong>إرشاد للمعلم</strong>
             <p>{prompt.instruction_text}</p>
           </div>
         )}
@@ -380,28 +594,33 @@ function StudentResultView({ summary }) {
       <section className="adaptive-result-panel">
         <div className="adaptive-result-panel__header">
           <div>
-            <p>Review action</p>
-            <h2>Spaced review plan</h2>
+            <p>ملخص الجلسة</p>
+            <h2>مؤشرات الأداء</h2>
           </div>
-          <Badge tone={retention.is_due ? 'red' : 'blue'}>
-            {retention.is_due ? 'Due now' : 'Scheduled'}
-          </Badge>
+          <Badge tone={frustrationTone}>يحتاج إلى تبسيط أو إبطاء {formatValue(frustrationScore)}%</Badge>
         </div>
 
-        <div className="adaptive-result-review">
-          <p>{reviewMessage}</p>
-          <div className="adaptive-result-action-grid">
+        <div className="adaptive-result-focus">
+          <Meter
+            label="مؤشر الحاجة إلى تبسيط أو إبطاء"
+            value={frustrationScore}
+            helper={
+              frustrationScore >= 70
+                ? 'استخدم خطوات أبسط وتشجيعا واضحا.'
+                : frustrationScore >= 40
+                  ? 'استخدم إرشادا هادئا وتدريبا قصيرا.'
+                  : 'يمكن للطالب المتابعة بوتيرة طبيعية.'
+            }
+          />
+
+          <div className="adaptive-result-action-grid adaptive-result-action-grid--compact">
             <div>
-              <span>Retention</span>
-              <strong>{formatValue(retention.retention)}%</strong>
+              <span>جودة السؤال</span>
+              <strong>{formatValue(questionQuality.score ?? questionQuality.quality_score)}%</strong>
             </div>
             <div>
-              <span>Review priority</span>
-              <strong>{formatValue(retention.review_priority)}</strong>
-            </div>
-            <div>
-              <span>Due at</span>
-              <strong>{formatDate(retention.due_at)}</strong>
+              <span>إشارة التعلم</span>
+              <strong>{formatLabel(emotional.emotional_signal || 'stable')}</strong>
             </div>
           </div>
         </div>
@@ -410,36 +629,29 @@ function StudentResultView({ summary }) {
       <section className="adaptive-result-panel">
         <div className="adaptive-result-panel__header">
           <div>
-            <p>Learning comfort</p>
-            <h2>Support level</h2>
+            <p>جدول المراجعة</p>
+            <h2>{retention.is_due ? 'حان وقت المراجعة' : 'المراجعة القادمة'}</h2>
           </div>
-          <Badge tone={frustrationTone}>
-            {formatLabel(emotional.emotional_signal || 'Stable')}
+          <Badge tone={retention.is_due ? 'amber' : 'blue'}>
+            {retention.is_due ? 'حان وقت المراجعة' : 'مجدولة'}
           </Badge>
         </div>
 
-        <div className="adaptive-result-focus">
-          <Meter
-            label="Frustration signal"
-            value={frustrationScore}
-            helper={
-              frustrationScore >= 70
-                ? 'Use easier steps and encouragement.'
-                : frustrationScore >= 40
-                  ? 'Use calm guidance and short practice.'
-                  : 'The student can continue normally.'
-            }
-          />
-
-          <div className="adaptive-result-teacher-note">
-            <strong>Teaching tone</strong>
-            <p>
-              {frustrationScore >= 70
-                ? 'Encourage the student, reduce pressure, and start with a small success.'
-                : frustrationScore >= 40
-                  ? 'Keep the lesson calm and check understanding after each question.'
-                  : 'Use a confident and motivating tone.'}
-            </p>
+        <div className="adaptive-result-review">
+          <p>{reviewMessage}</p>
+          <div className="adaptive-result-action-grid">
+            <div>
+              <span>الاحتفاظ</span>
+              <strong>{formatValue(retention.retention)}%</strong>
+            </div>
+            <div>
+              <span>أولوية المراجعة</span>
+              <strong>{formatValue(retention.review_priority)}</strong>
+            </div>
+            <div>
+              <span>موعد المراجعة</span>
+              <strong>{formatDate(retention.due_at)}</strong>
+            </div>
           </div>
         </div>
       </section>
@@ -456,8 +668,8 @@ function AdaptiveResult() {
     getQueryValue('sessionId', initialStored?.meta?.sessionId || ''),
   );
   const [result, setResult] = useState(() => initialStored?.result || null);
-  const [source, setSource] = useState(() => (initialStored?.result ? 'Latest saved result' : 'No result loaded'));
-  const [status, setStatus] = useState(() => (initialStored?.result ? 'Saved result loaded' : 'Ready'));
+  const [source, setSource] = useState(() => (initialStored?.result ? 'آخر نتيجة محفوظة' : 'لا توجد نتيجة'));
+  const [status, setStatus] = useState(() => (initialStored?.result ? 'تم عرض النتيجة المحفوظة' : 'جاهز'));
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [debugEnabled, setDebugEnabled] = useState(() => isDebugEnabled());
@@ -466,22 +678,22 @@ function AdaptiveResult() {
 
   async function handleFetchResult() {
     if (!studentId || !sessionId) {
-      setError('Student ID and session ID are required.');
+      setError('رقم الطالب ورقم الجلسة مطلوبان.');
       return;
     }
 
     setIsLoading(true);
     setError('');
-    setStatus('Loading adaptive result');
+    setStatus('جاري تحميل نتيجة AIM');
 
     try {
       const data = await getPilotAdaptiveResult(studentId, sessionId);
       setResult(data);
-      setSource('Backend adaptive result');
-      setStatus('Adaptive result loaded');
+      setSource('نتيجة من واجهة AIM الخلفية');
+      setStatus('تم تحميل النتيجة بنجاح');
     } catch (requestError) {
-      setError(`Could not load adaptive result: ${requestError.message}`);
-      setStatus('Load failed');
+      setError(`تعذر تحميل نتيجة AIM: ${requestError.message}`);
+      setStatus('تعذر التحميل');
     } finally {
       setIsLoading(false);
     }
@@ -491,24 +703,24 @@ function AdaptiveResult() {
     const stored = getLastStoredAdaptiveResult();
 
     if (!stored?.result) {
-      setError('No saved adaptive result was found in this browser.');
-      setStatus('No saved result');
+      setError('لا توجد نتيجة محفوظة في هذا المتصفح.');
+      setStatus('لا توجد نتيجة محفوظة');
       return;
     }
 
     setResult(stored.result);
     setStudentId(stored.meta?.studentId || studentId);
     setSessionId(stored.meta?.sessionId || sessionId);
-    setSource('Latest saved result');
+    setSource('آخر نتيجة محفوظة');
     setError('');
-    setStatus('Saved result loaded');
+    setStatus('تم عرض النتيجة المحفوظة');
   }
 
   function handleClearSavedResult() {
     clearLastStoredAdaptiveResult();
     setResult(null);
-    setSource('No result loaded');
-    setStatus('Saved result cleared');
+    setSource('لا توجد نتيجة');
+    setStatus('تم مسح النتيجة المحفوظة');
     setError('');
   }
 
@@ -527,9 +739,9 @@ function AdaptiveResult() {
 
       <header className="adaptive-result-header">
         <div>
-          <p>AIM Web Pilot</p>
-          <h1>Adaptive result</h1>
-          <span>Student-friendly progress, weakness, recommendation, and review action.</span>
+          <p>لوحة AIM التعليمية</p>
+          <h1>نتيجة التكيف الذكي</h1>
+          <span>عرض عربي مبسط لنسبة الإتقان، مستوى الثقة، المهارات، التوصية، وجدول المراجعة.</span>
         </div>
         <div className="adaptive-result-header__badges">
           <Badge tone="blue">{API_BASE_URL}</Badge>
@@ -539,7 +751,7 @@ function AdaptiveResult() {
 
       <section className="adaptive-result-toolbar">
         <label>
-          <span>Student ID</span>
+          <span>رقم الطالب</span>
           <input
             type="number"
             min="1"
@@ -549,24 +761,24 @@ function AdaptiveResult() {
         </label>
 
         <label>
-          <span>Session ID</span>
+          <span>رقم الجلسة</span>
           <input
             value={sessionId}
             onChange={(event) => setSessionId(event.target.value)}
-            placeholder="lesson-id:session-token"
+            placeholder="مثال: lesson-id:session-token"
           />
         </label>
 
         <button type="button" onClick={handleFetchResult} disabled={isLoading}>
-          {isLoading ? 'Loading...' : 'Fetch Result'}
+          {isLoading ? 'جاري التحميل...' : 'جلب النتيجة'}
         </button>
 
         <button type="button" onClick={handleLoadSavedResult}>
-          Load Saved
+          عرض المحفوظ
         </button>
 
         <button type="button" onClick={handleClearSavedResult}>
-          Clear Saved
+          مسح المحفوظ
         </button>
       </section>
 
@@ -578,19 +790,19 @@ function AdaptiveResult() {
 
       <section className="adaptive-result-source">
         <div>
-          <span>Source</span>
+          <span>المصدر</span>
           <strong>{source}</strong>
         </div>
         <div>
-          <span>Student</span>
-          <strong>{studentId || 'Not selected'}</strong>
+          <span>الطالب</span>
+          <strong>{studentId || 'غير محدد'}</strong>
         </div>
         <div>
-          <span>Session</span>
-          <strong>{sessionId || result?.session_id || 'Not selected'}</strong>
+          <span>الجلسة</span>
+          <strong>{sessionId || result?.session_id || 'غير محددة'}</strong>
         </div>
         <div>
-          <span>Attempts saved</span>
+          <span>المحاولات المحفوظة</span>
           <strong>{formatValue(result?.attempts_saved)}</strong>
         </div>
       </section>
@@ -601,26 +813,11 @@ function AdaptiveResult() {
         <StudentResultView summary={summary} />
       )}
 
-      <section className="adaptive-result-debug-control">
-        <button type="button" onClick={handleDebugToggle}>
-          {debugEnabled ? 'Hide Debug/Admin Data' : 'Show Debug/Admin Data'}
-        </button>
-        <p>
-          Technical AIM fields are hidden from students by default. Enable this only for developer/admin review.
-        </p>
-      </section>
-
-      {debugEnabled && result && (
-        <section className="adaptive-result-panel adaptive-result-debug">
-          <div className="adaptive-result-panel__header">
-            <div>
-              <p>Debug/Admin</p>
-              <h2>Raw AIM response</h2>
-            </div>
-            <Badge tone="red">Technical</Badge>
-          </div>
-          <pre>{JSON.stringify(result, null, 2)}</pre>
-        </section>
+      {result && (
+        <details className="adaptive-result-panel adaptive-result-debug" open={debugEnabled}>
+          <summary onClick={handleDebugToggle}>عرض البيانات الخام للمطور</summary>
+          <pre dir="ltr">{JSON.stringify(result, null, 2)}</pre>
+        </details>
       )}
     </main>
   );
@@ -628,10 +825,12 @@ function AdaptiveResult() {
 
 const styles = `
 .adaptive-result {
-  background: #f5f7fb;
+  background: #eef3f7;
   color: #172328;
+  direction: rtl;
   min-height: 100vh;
   padding: 28px;
+  text-align: right;
 }
 
 .adaptive-result-header,
@@ -659,12 +858,11 @@ const styles = `
 .adaptive-result-header p,
 .adaptive-result-hero p,
 .adaptive-result-panel__header p {
-  color: #3f6f78;
+  color: #116a63;
   font-size: 0.78rem;
   font-weight: 900;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
   margin: 0 0 8px;
-  text-transform: uppercase;
 }
 
 .adaptive-result-header h1 {
@@ -726,7 +924,6 @@ const styles = `
   color: #64748b;
   font-size: 0.76rem;
   font-weight: 900;
-  text-transform: uppercase;
 }
 
 .adaptive-result-toolbar input {
@@ -742,10 +939,10 @@ const styles = `
 .adaptive-result-toolbar button,
 .adaptive-result-empty button,
 .adaptive-result-debug-control button {
-  background: #eaf2ff;
+  background: #e8f3f1;
   border: 0;
   border-radius: 10px;
-  color: #164da8;
+  color: #116a63;
   cursor: pointer;
   font-weight: 900;
   min-height: 44px;
@@ -828,6 +1025,10 @@ const styles = `
   margin-bottom: 16px;
 }
 
+.adaptive-result-grid--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .adaptive-result-card {
   border-top: 6px solid #2563eb;
   display: grid;
@@ -866,6 +1067,10 @@ const styles = `
 .adaptive-result-panel {
   margin-bottom: 16px;
   padding: 22px;
+}
+
+.adaptive-result-panel--nested {
+  margin-bottom: 0;
 }
 
 .adaptive-result-panel__header {
@@ -931,6 +1136,22 @@ const styles = `
   gap: 10px;
 }
 
+.adaptive-result-mini-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.adaptive-result-mini-list span {
+  background: #f8fafc;
+  border: 1px solid #dbe4ef;
+  border-radius: 999px;
+  color: #172328;
+  font-weight: 900;
+  line-height: 1.4;
+  padding: 10px 12px;
+}
+
 .adaptive-result-list > div,
 .adaptive-result-teacher-note,
 .adaptive-result-review {
@@ -960,6 +1181,10 @@ const styles = `
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.adaptive-result-action-grid--compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .adaptive-result-action-grid > div {
@@ -1041,11 +1266,19 @@ const styles = `
   background: #101820;
   border-radius: 12px;
   color: #dbeafe;
+  direction: ltr;
   font-size: 0.78rem;
   line-height: 1.45;
   max-height: 560px;
   overflow: auto;
   padding: 16px;
+  text-align: left;
+}
+
+.adaptive-result-debug summary {
+  cursor: pointer;
+  font-weight: 900;
+  list-style-position: inside;
 }
 
 @media (max-width: 1080px) {
@@ -1054,9 +1287,11 @@ const styles = `
   }
 
   .adaptive-result-grid,
+  .adaptive-result-grid--two,
   .adaptive-result-source,
   .adaptive-result-focus,
-  .adaptive-result-action-grid {
+  .adaptive-result-action-grid,
+  .adaptive-result-action-grid--compact {
     grid-template-columns: 1fr;
   }
 }

@@ -12,12 +12,47 @@ const skills = [
 ];
 
 const tabs = [
-  'Student Setup',
-  'Student Quiz',
-  'Quick Sim',
-  'Algorithm Output',
-  'Retention Curve',
+  'إعداد الطالب',
+  'اختبار الطالب',
+  'محاكاة سريعة',
+  'نتائج الخوارزمية',
+  'منحنى المراجعة',
 ];
+
+const skillLabels = {
+  Vocabulary: 'المفردات',
+  Grammar: 'القواعد',
+  'Reading Comprehension': 'فهم القراءة',
+  'Listening Comprehension': 'فهم الاستماع',
+  'Sentence Structure': 'بناء الجملة',
+  'Verb Tenses': 'أزمنة الأفعال',
+  Pronunciation: 'النطق',
+  'Writing Skills': 'مهارات الكتابة',
+};
+
+const decisionLabels = {
+  INCREASE: 'رفع الصعوبة تدريجيا',
+  DECREASE: 'تخفيف الصعوبة',
+  MAINTAIN: 'الثبات على المستوى الحالي',
+  TYPE_1_RANDOM: 'أخطاء متفرقة',
+  TYPE_2_CONSISTENT: 'نمط خطأ متكرر',
+  TYPE_3_PRESSURE: 'إجابات تحتاج هدوءا أكثر',
+  TYPE_4_WARMUP: 'تحسن بعد بداية بطيئة',
+  CONFIDENCE_BUILDER: 'نشاط يعزز الثقة',
+  RETEACH_CONCEPT: 'شرح موجه للمفهوم',
+  REVIEW: 'مراجعة قصيرة',
+  TIMED_PRACTICE: 'تدريب طلاقة',
+  CHALLENGE: 'تحد أعلى تدريجي',
+  EASY_WIN: 'بداية سهلة داعمة',
+};
+
+function displaySkill(skill) {
+  return skillLabels[skill] || skill;
+}
+
+function displayDecision(value) {
+  return decisionLabels[value] || value;
+}
 
 const questionBank = {
   Vocabulary: [
@@ -384,10 +419,10 @@ const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, value))
 const round = (value, digits = 0) => Number(value.toFixed(digits));
 
 function getCompetenceState(mastery, confidence) {
-  if (mastery >= 70 && confidence >= 70) return 'IDEAL';
-  if (mastery >= 70 && confidence < 70) return 'DOUBTER';
-  if (mastery < 70 && confidence < 70) return 'AWARE';
-  return 'OVERCONFIDENT';
+  if (mastery >= 70 && confidence >= 70) return 'توازن جيد';
+  if (mastery >= 70 && confidence < 70) return 'يحتاج تعزيز الثقة';
+  if (mastery < 70 && confidence < 70) return 'يحتاج تدريبا داعما';
+  return 'يحتاج ضبط الثقة مع الأداء';
 }
 
 function getMetrics(log) {
@@ -488,48 +523,48 @@ function getRecommendation(input) {
   if (frustrationScore >= 65) {
     return {
       label: 'CONFIDENCE_BUILDER',
-      reason: 'Frustration is high, so the next item should reduce pressure and rebuild momentum.',
+      reason: 'الطالب يحتاج إلى تبسيط أو إبطاء، لذلك يفضل البدء بخطوة سهلة وداعمة.',
     };
   }
 
   if (weaknessScore >= 1.25 || errorPatternType === 'TYPE_2_CONSISTENT') {
     return {
       label: 'RETEACH_CONCEPT',
-      reason: 'Wrong answers are clustering enough to suggest a concept gap.',
+      reason: 'توجد مهارة تحتاج تدريبا مخصصا قبل الانتقال إلى صعوبة أعلى.',
     };
   }
 
   if (student.retention < 70) {
     return {
       label: 'REVIEW',
-      reason: 'Retention is below the review threshold.',
+      reason: 'حان وقت المراجعة لتعزيز الاحتفاظ بالمعلومة.',
     };
   }
 
   if (metrics.hesitationIndex >= 0.4 || errorPatternType === 'TYPE_3_PRESSURE') {
     return {
       label: 'TIMED_PRACTICE',
-      reason: 'Slow responses are showing up often enough to practice fluency.',
+      reason: 'يوجد تردد متكرر، لذلك يفضل تدريب طلاقة قصير بدون ضغط.',
     };
   }
 
   if (masteryScore >= 78 && difficultyDecision === 'INCREASE') {
     return {
       label: 'CHALLENGE',
-      reason: 'Mastery, confidence, and consistency can support harder work.',
+      reason: 'نسبة الإتقان والثبات يسمحان بتحد أعلى بشكل تدريجي.',
     };
   }
 
   if (student.confidence < 55 || masteryScore < 45) {
     return {
       label: 'EASY_WIN',
-      reason: 'The learner needs a quick correct answer to stabilize the session.',
+      reason: 'الطالب يحتاج بداية سهلة تعزز الثقة قبل المتابعة.',
     };
   }
 
   return {
     label: 'REVIEW',
-    reason: 'The learner is stable, so keep reinforcing the current skill.',
+    reason: 'الأداء مستقر، لذلك يفضل تعزيز المهارة الحالية بتدريب قصير.',
   };
 }
 
@@ -594,7 +629,7 @@ function RetentionChart({ initialMastery, lambda }) {
   const thresholdY = padding + chartHeight - 0.7 * chartHeight;
 
   return (
-    <svg className="aim-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Retention over 60 days">
+    <svg className="aim-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="منحنى الاحتفاظ خلال 60 يوما">
       <rect x="0" y="0" width={width} height={height} rx="8" />
       {[0, 25, 50, 75, 100].map((tick) => {
         const y = padding + chartHeight - (tick / 100) * chartHeight;
@@ -656,10 +691,10 @@ function AlgorithmTester() {
 
   function applySessionEvent(type, seconds, extra = {}) {
     const labels = {
-      correct: 'Correct Answer',
-      wrong: 'Wrong Answer',
-      hint: 'Used Hint',
-      skip: 'Skipped',
+      correct: 'إجابة صحيحة',
+      wrong: 'إجابة تحتاج تصحيحا',
+      hint: 'استخدم تلميحا',
+      skip: 'تم تجاوز السؤال',
     };
     const entry = {
       id: `${Date.now()}-${Math.random()}`,
@@ -734,7 +769,7 @@ function AlgorithmTester() {
     setHintVisible(true);
     applySessionEvent('hint', seconds, {
       question: currentQuestion.prompt,
-      answer: 'Hint opened',
+      answer: 'تم فتح التلميح',
       correctAnswer: currentQuestion.answer,
       difficulty: currentQuestion.difficulty,
     });
@@ -748,7 +783,7 @@ function AlgorithmTester() {
     const seconds = Math.max(1, Math.round((Date.now() - questionStartedAt) / 1000));
     applySessionEvent('skip', seconds, {
       question: currentQuestion.prompt,
-      answer: 'Skipped',
+      answer: 'تم التجاوز',
       correctAnswer: currentQuestion.answer,
       difficulty: currentQuestion.difficulty,
     });
@@ -771,11 +806,11 @@ function AlgorithmTester() {
 
       <header className="aim-header">
         <div>
-          <p>AIM Algorithm Tester</p>
-          <h1>Visual simulation dashboard</h1>
+          <p>مختبر خوارزمية AIM</p>
+          <h1>لوحة تحليل تعليمية تجريبية</h1>
         </div>
         <button type="button" onClick={resetSession}>
-          Reset
+          إعادة ضبط
         </button>
       </header>
 
@@ -796,31 +831,30 @@ function AlgorithmTester() {
       {activeTab === 0 && (
         <section className="aim-grid">
           <div className="aim-panel">
-            <h2>Student Setup</h2>
+            <h2>إعداد الطالب</h2>
             <label className="aim-field">
-              <span>Skill</span>
+              <span>المهارة</span>
               <select value={student.skill} onChange={(event) => updateStudent('skill', event.target.value)}>
                 {skills.map((skill) => (
-                  <option key={skill}>{skill}</option>
+                  <option key={skill} value={skill}>{displaySkill(skill)}</option>
                 ))}
               </select>
             </label>
-            <Slider label="Mastery" value={student.mastery} onChange={(value) => updateStudent('mastery', value)} />
-            <Slider label="Confidence" value={student.confidence} onChange={(value) => updateStudent('confidence', value)} />
-            <Slider label="Retention" value={student.retention} onChange={(value) => updateStudent('retention', value)} />
-            <Slider label="Avg speed" value={student.avgSpeed} onChange={(value) => updateStudent('avgSpeed', value)} />
-            <Slider label="Attempts" value={student.attempts} max={30} onChange={(value) => updateStudent('attempts', value)} />
+            <Slider label="نسبة الإتقان" value={student.mastery} onChange={(value) => updateStudent('mastery', value)} />
+            <Slider label="مستوى الثقة" value={student.confidence} onChange={(value) => updateStudent('confidence', value)} />
+            <Slider label="الاحتفاظ" value={student.retention} onChange={(value) => updateStudent('retention', value)} />
+            <Slider label="متوسط السرعة" value={student.avgSpeed} onChange={(value) => updateStudent('avgSpeed', value)} />
+            <Slider label="عدد المحاولات" value={student.attempts} max={30} onChange={(value) => updateStudent('attempts', value)} />
           </div>
 
           <div className="aim-panel aim-state">
-            <h2>Confidence vs Competence</h2>
+            <h2>الثقة مقارنة بالأداء</h2>
             <div className="aim-big-label">{competenceState}</div>
             <p>
-              Mastery {student.mastery}% and confidence {student.confidence}% place this learner in the{' '}
-              {competenceState} state.
+              نسبة الإتقان {student.mastery}% ومستوى الثقة {student.confidence}% يضعان الطالب في حالة {competenceState}.
             </p>
-            <Meter label="Mastery" value={student.mastery} tone="green" />
-            <Meter label="Confidence" value={student.confidence} tone="amber" />
+            <Meter label="نسبة الإتقان" value={student.mastery} tone="green" />
+            <Meter label="مستوى الثقة" value={student.confidence} tone="amber" />
           </div>
         </section>
       )}
@@ -829,7 +863,7 @@ function AlgorithmTester() {
         <section className="aim-grid aim-grid--wide">
           <div className="aim-panel">
             <div className="aim-quiz-head">
-              <h2>Student Quiz</h2>
+              <h2>اختبار الطالب</h2>
               <strong>
                 {Math.min(questionIndex + 1, questionSet.length)} / {questionSet.length}
               </strong>
@@ -838,7 +872,7 @@ function AlgorithmTester() {
             {!quizFinished ? (
               <>
                 <div className="aim-question">
-                  <span>Difficulty {currentQuestion.difficulty}</span>
+                  <span>الصعوبة {currentQuestion.difficulty}</span>
                   <h3>{currentQuestion.prompt}</h3>
                 </div>
 
@@ -861,40 +895,40 @@ function AlgorithmTester() {
 
                 <div className="aim-actions aim-actions--quiz">
                   <button type="button" onClick={submitAnswer} disabled={!selectedAnswer}>
-                    Submit Answer
+                    إرسال الإجابة
                   </button>
                   <button type="button" onClick={useHint} disabled={hintVisible}>
-                    Use Hint
+                    استخدام تلميح
                   </button>
                   <button type="button" onClick={skipQuestion}>
-                    Skip
+                    تجاوز
                   </button>
                 </div>
               </>
             ) : (
               <div className="aim-result">
-                <span>Your final score</span>
+                <span>النتيجة النهائية</span>
                 <strong>{round(quizScore)}%</strong>
                 <p>
-                  You answered {output.metrics.correct} correct out of {questionSet.length}. AIM recommends{' '}
-                  {output.recommendation.label}.
+                  أجاب الطالب عن {output.metrics.correct} إجابة صحيحة من أصل {questionSet.length}. توصية AIM:
+                  {' '}{displayDecision(output.recommendation.label)}.
                 </p>
               </div>
             )}
           </div>
 
           <div className="aim-panel">
-            <h2>Live Score</h2>
+            <h2>مؤشرات مباشرة</h2>
             <div className="aim-stats">
-              <Stat label="Correct" value={output.metrics.correct} />
-              <Stat label="Wrong" value={output.metrics.wrong} />
-              <Stat label="Hints" value={output.metrics.hints} />
+              <Stat label="إجابات صحيحة" value={output.metrics.correct} />
+              <Stat label="إجابات تحتاج تصحيحا" value={output.metrics.wrong} />
+              <Stat label="تلميحات" value={output.metrics.hints} />
             </div>
-            <Meter label="Quiz score" value={quizScore} tone="green" />
-            <Meter label="Mastery estimate" value={output.masteryScore} tone="blue" />
-            <Meter label="Frustration" value={output.frustrationScore} tone="red" />
+            <Meter label="نتيجة الاختبار" value={quizScore} tone="green" />
+            <Meter label="تقدير الإتقان" value={output.masteryScore} tone="blue" />
+            <Meter label="يحتاج إلى تبسيط أو إبطاء" value={output.frustrationScore} tone="red" />
             <div className="aim-formula">
-              <strong>{output.recommendation.label}</strong>
+              <strong>{displayDecision(output.recommendation.label)}</strong>
               <span>{output.recommendation.reason}</span>
             </div>
           </div>
@@ -904,25 +938,25 @@ function AlgorithmTester() {
       {activeTab === 2 && (
         <section className="aim-grid">
           <div className="aim-panel">
-            <h2>Quick Simulation</h2>
+            <h2>محاكاة سريعة</h2>
             <div className="aim-actions">
-              <button type="button" onClick={() => simulate('correct')}>Correct Answer</button>
-              <button type="button" onClick={() => simulate('wrong')}>Wrong Answer</button>
-              <button type="button" onClick={() => simulate('hint')}>Used Hint</button>
-              <button type="button" onClick={() => simulate('skip')}>Skipped</button>
+              <button type="button" onClick={() => simulate('correct')}>إجابة صحيحة</button>
+              <button type="button" onClick={() => simulate('wrong')}>إجابة تحتاج تصحيحا</button>
+              <button type="button" onClick={() => simulate('hint')}>استخدام تلميح</button>
+              <button type="button" onClick={() => simulate('skip')}>تجاوز السؤال</button>
             </div>
             <div className="aim-stats">
-              <Stat label="Accuracy" value={`${round(output.metrics.accuracy)}%`} />
-              <Stat label="Retry Rate" value={round(output.metrics.retryRate, 2)} />
-              <Stat label="Hesitation Index" value={round(output.metrics.hesitationIndex, 2)} />
+              <Stat label="الدقة" value={`${round(output.metrics.accuracy)}%`} />
+              <Stat label="معدل الإعادة" value={round(output.metrics.retryRate, 2)} />
+              <Stat label="مؤشر التردد" value={round(output.metrics.hesitationIndex, 2)} />
             </div>
-            <Meter label="Frustration score" value={output.frustrationScore} tone="red" />
+            <Meter label="يحتاج إلى تبسيط أو إبطاء" value={output.frustrationScore} tone="red" />
           </div>
 
           <div className="aim-panel">
-            <h2>Session Log</h2>
+            <h2>سجل الجلسة</h2>
             <div className="aim-log">
-              {sessionLog.length === 0 && <p>No answers simulated yet.</p>}
+              {sessionLog.length === 0 && <p>لا توجد محاولات مسجلة بعد.</p>}
               {sessionLog.map((entry) => (
                 <div className={`aim-log__item aim-log__item--${entry.type}`} key={entry.id}>
                   <span>#{entry.index}</span>
@@ -931,8 +965,8 @@ function AlgorithmTester() {
                     {entry.question && <small>{entry.question}</small>}
                     {entry.answer && (
                       <small>
-                        Your answer: {entry.answer}
-                        {entry.correctAnswer ? ` | Correct: ${entry.correctAnswer}` : ''}
+                        إجابة الطالب: {entry.answer}
+                        {entry.correctAnswer ? ` | الإجابة الصحيحة: ${entry.correctAnswer}` : ''}
                       </small>
                     )}
                   </strong>
@@ -947,33 +981,33 @@ function AlgorithmTester() {
       {activeTab === 3 && (
         <section className="aim-grid aim-grid--wide">
           <div className="aim-panel">
-            <h2>Algorithm Output</h2>
+            <h2>نتائج الخوارزمية</h2>
             <div className="aim-formula">
-              <strong>Mastery Score: {round(output.masteryScore)}%</strong>
+              <strong>نسبة الإتقان: {round(output.masteryScore)}%</strong>
               <span>
-                Accuracy {round(output.metrics.accuracy)} x 0.35 + Speed {round(output.speed)} x 0.15 +
-                Consistency {round(output.consistency)} x 0.20 + Retention {student.retention} x 0.15 +
-                DifficultyPerf {round(output.difficultyPerf)} x 0.15
+                الدقة {round(output.metrics.accuracy)} × 0.35 + السرعة {round(output.speed)} × 0.15 +
+                الاتساق {round(output.consistency)} × 0.20 + الاحتفاظ {student.retention} × 0.15 +
+                أداء الصعوبة {round(output.difficultyPerf)} × 0.15
               </span>
             </div>
-            <Meter label="Mastery score" value={output.masteryScore} tone="green" />
-            <Meter label="Difficulty score" value={output.difficultyScore} tone="blue" />
+            <Meter label="نسبة الإتقان" value={output.masteryScore} tone="green" />
+            <Meter label="درجة الصعوبة" value={output.difficultyScore} tone="blue" />
             <div className="aim-stats">
-              <Stat label="Difficulty Decision" value={output.difficultyDecision} />
-              <Stat label="Weakness Score" value={round(output.weaknessScore, 2)} />
-              <Stat label="Error Pattern" value={output.errorPatternType} />
+              <Stat label="قرار الصعوبة" value={displayDecision(output.difficultyDecision)} />
+              <Stat label="مهارة تحتاج تدريب" value={round(output.weaknessScore, 2)} />
+              <Stat label="أنماط الأخطاء المتكررة" value={displayDecision(output.errorPatternType)} />
             </div>
           </div>
 
           <div className="aim-panel aim-recommendation">
-            <h2>Final Recommendation</h2>
-            <div className="aim-big-label">{output.recommendation.label}</div>
+            <h2>التوصية التالية</h2>
+            <div className="aim-big-label">{displayDecision(output.recommendation.label)}</div>
             <p>{output.recommendation.reason}</p>
             <div className="aim-system-list">
-              <span>Skill: {student.skill}</span>
-              <span>Frustration: {round(output.frustrationScore)}%</span>
-              <span>Consistency: {round(output.consistency)}%</span>
-              <span>Decision priority applied client-side</span>
+              <span>المهارة: {displaySkill(student.skill)}</span>
+              <span>يحتاج إلى تبسيط أو إبطاء: {round(output.frustrationScore)}%</span>
+              <span>الاتساق: {round(output.consistency)}%</span>
+              <span>تم تطبيق أولوية القرار في محاكاة الواجهة</span>
             </div>
           </div>
         </section>
@@ -982,23 +1016,23 @@ function AlgorithmTester() {
       {activeTab === 4 && (
         <section className="aim-grid">
           <div className="aim-panel">
-            <h2>Retention Over Time</h2>
+            <h2>منحنى الاحتفاظ مع الوقت</h2>
             <RetentionChart initialMastery={retentionConfig.initialMastery} lambda={retentionConfig.lambda} />
             <div className="aim-stats">
-              <Stat label="Day selected" value={retentionConfig.daysElapsed} />
-              <Stat label="Retention" value={`${round(elapsedRetention)}%`} />
-              <Stat label="Crosses 70%" value={`Day ${thresholdDay}`} />
+              <Stat label="اليوم المحدد" value={retentionConfig.daysElapsed} />
+              <Stat label="الاحتفاظ" value={`${round(elapsedRetention)}%`} />
+              <Stat label="يصل إلى 70%" value={`اليوم ${thresholdDay}`} />
             </div>
           </div>
           <div className="aim-panel">
-            <h2>Curve Controls</h2>
+            <h2>إعدادات المنحنى</h2>
             <Slider
-              label="Initial mastery"
+              label="الإتقان الأولي"
               value={retentionConfig.initialMastery}
               onChange={(value) => setRetentionConfig((current) => ({ ...current, initialMastery: value }))}
             />
             <Slider
-              label="Lambda"
+              label="معامل النسيان"
               min={0.05}
               max={0.3}
               step={0.01}
@@ -1006,13 +1040,13 @@ function AlgorithmTester() {
               onChange={(value) => setRetentionConfig((current) => ({ ...current, lambda: value }))}
             />
             <Slider
-              label="Days elapsed"
+              label="الأيام المنقضية"
               max={60}
               value={retentionConfig.daysElapsed}
               onChange={(value) => setRetentionConfig((current) => ({ ...current, daysElapsed: value }))}
             />
             <div className="aim-formula">
-              <strong>Retention(t) = InitialMastery x e^(-lambda x t)</strong>
+              <strong>الاحتفاظ = الإتقان الأولي × e^(-معامل النسيان × الوقت)</strong>
               <span>
                 {retentionConfig.initialMastery} x e^(-{retentionConfig.lambda} x {retentionConfig.daysElapsed})
               </span>
@@ -1026,10 +1060,12 @@ function AlgorithmTester() {
 
 const styles = `
 .aim-tester {
-  background: #f4f7fb;
+  background: #eef3f7;
   color: #14213d;
+  direction: rtl;
   min-height: 100vh;
   padding: 28px;
+  text-align: right;
 }
 
 .aim-header {
@@ -1042,11 +1078,10 @@ const styles = `
 }
 
 .aim-header p {
-  color: #4f6f8f;
+  color: #116a63;
   font-size: 0.78rem;
   font-weight: 800;
   margin: 0 0 8px;
-  text-transform: uppercase;
 }
 
 .aim-header h1 {
@@ -1144,7 +1179,6 @@ const styles = `
   color: #65758b;
   font-size: 0.82rem;
   font-weight: 800;
-  text-transform: uppercase;
 }
 
 .aim-field select {
@@ -1328,7 +1362,6 @@ const styles = `
 .aim-result span {
   font-size: 0.82rem;
   font-weight: 900;
-  text-transform: uppercase;
 }
 
 .aim-result strong {
@@ -1374,7 +1407,7 @@ const styles = `
 .aim-log__item {
   align-items: center;
   border: 1px solid #e2e8f0;
-  border-left: 6px solid #94a3b8;
+  border-right: 6px solid #94a3b8;
   border-radius: 8px;
   display: grid;
   gap: 10px;
@@ -1402,10 +1435,10 @@ const styles = `
   line-height: 1.4;
 }
 
-.aim-log__item--correct { border-left-color: #16a34a; }
-.aim-log__item--wrong { border-left-color: #dc2626; }
-.aim-log__item--hint { border-left-color: #d97706; }
-.aim-log__item--skip { border-left-color: #64748b; }
+.aim-log__item--correct { border-right-color: #16a34a; }
+.aim-log__item--wrong { border-right-color: #dc2626; }
+.aim-log__item--hint { border-right-color: #d97706; }
+.aim-log__item--skip { border-right-color: #64748b; }
 
 .aim-formula {
   background: #f8fafc;
