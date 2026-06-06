@@ -1,10 +1,15 @@
 :root {
-  --accent: #0f766e;
-  --background: #eef2f6;
+  --accent: #116a63;
+  --background: #eef3f7;
   --ink: #17242f;
   --line: #d7dee7;
   --muted: #657386;
   --surface: #ffffff;
+}
+
+html {
+  direction: rtl;
+  lang: ar;
 }
 
 * {
@@ -13,10 +18,12 @@
 
 body {
   background: var(--background);
+  direction: rtl;
   margin: 0;
-  font-family: 'Aptos', 'Trebuchet MS', sans-serif;
+  font-family: 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-align: right;
 }
 
 button,
