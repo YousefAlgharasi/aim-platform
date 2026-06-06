@@ -200,4 +200,90 @@ export async function getPilotAdminOverview() {
   return requestJson('/admin/pilot/overview');
 }
 
+// ── Token-aware API helpers (used by WebPilot with explicit JWT) ──────
+
+async function requestJsonWithToken(path, token, options = {}) {
+  const { method = 'GET', body } = options;
+  const hasBody = body !== undefined;
+  const headers = {};
+
+  if (hasBody) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method,
+    headers,
+    body: hasBody ? JSON.stringify(body) : undefined,
+  });
+
+  if (!response.ok) {
+    const message = await readErrorMessage(response);
+    throw new Error(message || `Request failed with ${response.status}`);
+  }
+
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
+}
+
+export async function getCurrentStudentProfile(token) {
+  return requestJsonWithToken('/students/me', token);
+}
+
+export async function createStudentProfile(data, token) {
+  return requestJsonWithToken('/students', token, { method: 'POST', body: data });
+}
+
+export async function listLessons(studentId, token) {
+  return requestJsonWithToken(
+    `/students/${encodePathSegment(studentId)}/lessons`,
+    token,
+  );
+}
+
+export async function getLesson(studentId, lessonId, token) {
+  return requestJsonWithToken(
+    `/students/${encodePathSegment(studentId)}/lessons/${encodePathSegment(lessonId)}`,
+    token,
+  );
+}
+
+export async function startLessonSession(studentId, lessonId, token) {
+  return requestJsonWithToken(
+    `/students/${encodePathSegment(studentId)}/lessons/${encodePathSegment(lessonId)}/sessions`,
+    token,
+    { method: 'POST', body: {} },
+  );
+}
+
+export async function submitSessionAttempts(studentId, sessionId, attempts, token) {
+  const result = await requestJsonWithToken(
+    `/students/${encodePathSegment(studentId)}/sessions/${encodePathSegment(sessionId)}/attempts`,
+    token,
+    { method: 'POST', body: { attempts } },
+  );
+  persistLatestAdaptiveResult({ studentId, sessionId, result });
+  return result;
+}
+
+export async function getAdaptiveResult(studentId, sessionId, token) {
+  const result = await requestJsonWithToken(
+    `/students/${encodePathSegment(studentId)}/sessions/${encodePathSegment(sessionId)}/adaptive-result`,
+    token,
+  );
+  persistLatestAdaptiveResult({ studentId, sessionId, result });
+  return result;
+}
+
+export async function getRecommendation(studentId, token) {
+  return requestJsonWithToken(
+    `/students/${encodePathSegment(studentId)}/recommendation`,
+    token,
+  );
+}
+
 export { API_BASE_URL };

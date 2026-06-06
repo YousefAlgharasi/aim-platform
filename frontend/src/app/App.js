@@ -1,10 +1,8 @@
 import { useEffect } from 'react';
+import WebPilot from '../pages/WebPilot';
 import AlgorithmTester from '../pages/AlgorithmTester';
 import AimDemo from '../pages/AimDemo';
-import AdaptiveResult from '../pages/AdaptiveResult';
 import AdminDashboard from '../pages/AdminDashboard';
-import LessonSession from '../pages/LessonSession';
-import StudentLogin from '../pages/StudentLogin';
 
 function App() {
   useEffect(() => {
@@ -14,40 +12,25 @@ function App() {
 
   const { pathname } = window.location;
 
+  // Developer / internal tools — not linked from the student UI
+  if (pathname === '/dev' || pathname === '/algorithm-tester') {
+    return <AlgorithmTester />;
+  }
+
   if (pathname === '/aim-demo') {
     return <AimDemo />;
   }
 
   if (
-    pathname === '/lesson-session' ||
-    pathname === '/aim-session' ||
-    pathname === '/web-pilot/session'
-  ) {
-    return <LessonSession />;
-  }
-
-  if (
-    pathname === '/adaptive-result' ||
-    pathname === '/aim-result' ||
-    pathname === '/web-pilot/result'
-  ) {
-    return <AdaptiveResult />;
-  }
-
-  if (
     pathname === '/admin' ||
     pathname === '/debug' ||
-    pathname === '/admin-dashboard' ||
-    pathname === '/web-pilot/admin'
+    pathname === '/admin-dashboard'
   ) {
     return <AdminDashboard />;
   }
 
-  if (pathname === '/login' || pathname === '/student-login') {
-    return <StudentLogin />;
-  }
-
-  return <AlgorithmTester />;
+  // All student-facing routes are handled internally by WebPilot
+  return <WebPilot />;
 }
 
 export default App;

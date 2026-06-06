@@ -701,3 +701,130 @@
     width: 100%;
   }
 }
+
+/* ── Auth pages (Login & Register) ─────────────────────────────────── */
+
+.pilot-main--auth {
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 72px);
+  padding-top: 40px;
+  padding-bottom: 60px;
+}
+
+.pilot-panel--auth {
+  display: grid;
+  gap: 20px;
+  max-width: 440px;
+  margin: 0 auto;
+  padding: clamp(28px, 5vw, 44px);
+}
+
+.pilot-auth-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.pilot-brand__mark--lg {
+  font-size: 1.1rem;
+  font-weight: 900;
+  height: 52px;
+  letter-spacing: 0.04em;
+  width: 72px;
+}
+
+.pilot-section-heading--center {
+  text-align: center;
+}
+
+.pilot-section-heading--center p {
+  text-align: center;
+}
+
+.pilot-primary--full {
+  margin-top: 4px;
+  width: 100%;
+}
+
+.pilot-primary--sm {
+  min-height: 36px;
+  padding: 0 14px;
+}
+
+.pilot-auth-switch {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
+}
+
+.pilot-link-btn {
+  background: none;
+  border: none;
+  color: #0f766e;
+  cursor: pointer;
+  font-size: inherit;
+  font-weight: 900;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.pilot-link-btn:hover {
+  color: #134e4a;
+}
+
+/* ── Topbar right slot ──────────────────────────────────────────────── */
+
+.pilot-topbar__right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.pilot-auth-nav {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.pilot-nav-btn {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 900;
+  min-height: 36px;
+  padding: 0 14px;
+}
+
+.pilot-nav-btn:hover {
+  background: #f3f7f8;
+}
+
+/* ── Dashboard improvements ─────────────────────────────────────────── */
+
+.pilot-band--summary {
+  border-left: 6px solid #0f766e;
+}
+
+/* Lesson card difficulty → friendlier label handled in JS, style unchanged */
+
+@media (max-width: 620px) {
+  .pilot-main--auth {
+    padding-top: 20px;
+  }
+
+  .pilot-auth-nav {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .pilot-nav-btn,
+  .pilot-primary--sm {
+    width: 100%;
+  }
+}
