@@ -135,9 +135,23 @@ function toPercent(value, fallback = 0) {
   return Math.max(0, Math.min(100, Math.round(numeric)));
 }
 
+const ACTION_AR = {
+  continue_current_skill: 'متابعة المهارة الحالية',
+  review_skill: 'مراجعة المهارة',
+  advance_to_next_skill: 'الانتقال للمهارة التالية',
+  collect_more_evidence: 'جمع المزيد من الأدلة',
+  reinforce_weak_skill: 'تعزيز المهارة الضعيفة',
+  practice: 'التدريب',
+  review: 'المراجعة',
+  advance: 'التقدم',
+  reinforce: 'التعزيز',
+};
+
 function formatAction(action) {
-  const normalized = String(action || '').replace(/_/g, ' ');
-  if (!normalized) return 'Continue practicing';
+  const key = String(action || '').toLowerCase();
+  if (ACTION_AR[key]) return ACTION_AR[key];
+  const normalized = key.replace(/_/g, ' ');
+  if (!normalized) return 'متابعة التدريب';
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 }
 
@@ -161,7 +175,7 @@ function resultFocus(result) {
     result?.error_pattern?.dominant_error_tag ||
     result?.recommendation?.target_skill_id ||
     result?.recommendation?.skill_id;
-  return firstWeakness ? formatAction(firstWeakness) : 'Current skill';
+  return firstWeakness ? formatAction(firstWeakness) : 'المهارة الحالية';
 }
 
 function resultReviewPrompt(result) {
@@ -169,13 +183,17 @@ function resultReviewPrompt(result) {
     result?.prompt_adaptation_instruction?.instruction ||
     result?.prompt_adaptation_instruction?.message ||
     result?.recommendation?.reason ||
-    'Review the current skill once, then continue with the next short practice set.'
+    'راجع المهارة الحالية مرة واحدة، ثم تابع مع مجموعة التمارين القصيرة التالية.'
   );
 }
 
 function StatusText({ status }) {
   if (!status) return null;
-  return <p className={`pilot-status pilot-status--${status.kind}`}>{status.text}</p>;
+  return (
+    <p className={`pilot-status pilot-status--${status.kind}`} role="alert">
+      {status.text}
+    </p>
+  );
 }
 
 function PilotTopbar({ profile, onLogout }) {
@@ -189,13 +207,13 @@ function PilotTopbar({ profile, onLogout }) {
         onClick={() => navigate(isLoggedIn ? '/dashboard' : '/')}
       >
         <span className="pilot-brand__mark">AIM</span>
-        <span>English Learning</span>
+        <span>تعلّم الإنجليزية</span>
       </button>
 
-      <nav className="pilot-nav" aria-label="Main navigation">
+      <nav className="pilot-nav" aria-label="التنقل الرئيسي">
         {isLoggedIn && (
           <button type="button" onClick={() => navigate('/dashboard')}>
-            My Lessons
+            دروسي
           </button>
         )}
       </nav>
@@ -205,15 +223,15 @@ function PilotTopbar({ profile, onLogout }) {
           <div className="pilot-user">
             <span className="pilot-user__avatar">{initials(profile.name, profile.email)}</span>
             <span className="pilot-user__meta">
-              <strong>{profile.name || 'Student'}</strong>
+              <strong>{profile.name || 'طالب'}</strong>
               <small>{profile.email || ''}</small>
             </span>
             <button
               className="pilot-icon-button"
               type="button"
               onClick={onLogout}
-              aria-label="Sign out"
-              title="Sign out"
+              aria-label="تسجيل الخروج"
+              title="تسجيل الخروج"
             >
               &#8618;
             </button>
@@ -225,14 +243,14 @@ function PilotTopbar({ profile, onLogout }) {
               className="pilot-nav-btn"
               onClick={() => navigate('/login')}
             >
-              Sign in
+              تسجيل الدخول
             </button>
             <button
               type="button"
               className="pilot-primary pilot-primary--sm"
               onClick={() => navigate('/register')}
             >
-              Register
+              إنشاء حساب
             </button>
           </div>
         )}
@@ -272,12 +290,15 @@ function LoginView({ profile, onAuthenticated }) {
 
   async function submit(event) {
     event.preventDefault();
-    setStatus({ kind: 'loading', text: 'Signing in...' });
+    setStatus({ kind: 'loading', text: 'جاري تسجيل الدخول...' });
 
     try {
       const authData = await signInStudent(form.email, form.password);
       if (!authData.session) {
-        setStatus({ kind: 'ready', text: 'Check your email to confirm your account, then sign in.' });
+        setStatus({
+          kind: 'ready',
+          text: 'تحقق من بريدك الإلكتروني لتأكيد حسابك، ثم سجّل الدخول.',
+        });
         return;
       }
 
@@ -296,14 +317,15 @@ function LoginView({ profile, onAuthenticated }) {
           <span className="pilot-brand__mark pilot-brand__mark--lg">AIM</span>
         </div>
         <div className="pilot-section-heading pilot-section-heading--center">
-          <p>Welcome back</p>
-          <h1>Sign in to your account</h1>
+          <p>مرحبًا بعودتك</p>
+          <h1>تسجيل دخول الطالب</h1>
         </div>
         <StatusText status={status} />
         <form className="pilot-form" onSubmit={submit}>
-          <label>
-            Email
+          <label htmlFor="login-email">
+            البريد الإلكتروني
             <input
+              id="login-email"
               name="email"
               type="email"
               value={form.email}
@@ -313,14 +335,15 @@ function LoginView({ profile, onAuthenticated }) {
               required
             />
           </label>
-          <label>
-            Password
+          <label htmlFor="login-password">
+            كلمة المرور
             <input
+              id="login-password"
               name="password"
               type="password"
               value={form.password}
               onChange={updateField}
-              placeholder="Your password"
+              placeholder="أدخل كلمة المرور"
               autoComplete="current-password"
               minLength="6"
               required
@@ -331,13 +354,13 @@ function LoginView({ profile, onAuthenticated }) {
             type="submit"
             disabled={!isSupabaseConfigured || status?.kind === 'loading'}
           >
-            {status?.kind === 'loading' ? 'Signing in...' : 'Sign in'}
+            {status?.kind === 'loading' ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
           </button>
         </form>
         <p className="pilot-auth-switch">
-          Don&apos;t have an account?{' '}
+          لا تملك حسابًا؟{' '}
           <button type="button" className="pilot-link-btn" onClick={() => navigate('/register')}>
-            Register for free
+            إنشاء حساب جديد
           </button>
         </p>
       </section>
@@ -373,14 +396,14 @@ function RegisterView({ onAuthenticated }) {
 
   async function submit(event) {
     event.preventDefault();
-    setStatus({ kind: 'loading', text: 'Creating your account...' });
+    setStatus({ kind: 'loading', text: 'جاري إنشاء حسابك...' });
 
     try {
       const authData = await registerStudent(form.email, form.password, form.name);
       if (!authData.session) {
         setStatus({
           kind: 'ready',
-          text: 'Account created! Check your email to confirm, then sign in.',
+          text: 'تم إنشاء الحساب! تحقق من بريدك الإلكتروني للتأكيد، ثم سجّل الدخول.',
         });
         return;
       }
@@ -400,25 +423,27 @@ function RegisterView({ onAuthenticated }) {
           <span className="pilot-brand__mark pilot-brand__mark--lg">AIM</span>
         </div>
         <div className="pilot-section-heading pilot-section-heading--center">
-          <p>Start learning English today</p>
-          <h1>Create your account</h1>
+          <p>ابدأ رحلتك في تعلم الإنجليزية</p>
+          <h1>إنشاء حساب جديد</h1>
         </div>
         <StatusText status={status} />
         <form className="pilot-form" onSubmit={submit}>
-          <label>
-            Full name
+          <label htmlFor="reg-name">
+            الاسم الكامل
             <input
+              id="reg-name"
               name="name"
               value={form.name}
               onChange={updateField}
-              placeholder="Your name"
+              placeholder="أدخل اسمك الكامل"
               autoComplete="name"
               required
             />
           </label>
-          <label>
-            Email
+          <label htmlFor="reg-email">
+            البريد الإلكتروني
             <input
+              id="reg-email"
               name="email"
               type="email"
               value={form.email}
@@ -428,14 +453,15 @@ function RegisterView({ onAuthenticated }) {
               required
             />
           </label>
-          <label>
-            Password
+          <label htmlFor="reg-password">
+            كلمة المرور
             <input
+              id="reg-password"
               name="password"
               type="password"
               value={form.password}
               onChange={updateField}
-              placeholder="Choose a password (min 6 characters)"
+              placeholder="اختر كلمة مرور (6 أحرف على الأقل)"
               autoComplete="new-password"
               minLength="6"
               required
@@ -446,13 +472,13 @@ function RegisterView({ onAuthenticated }) {
             type="submit"
             disabled={!isSupabaseConfigured || status?.kind === 'loading'}
           >
-            {status?.kind === 'loading' ? 'Creating account...' : 'Create account'}
+            {status?.kind === 'loading' ? 'جاري إنشاء الحساب...' : 'إنشاء الحساب'}
           </button>
         </form>
         <p className="pilot-auth-switch">
-          Already have an account?{' '}
+          لديك حساب بالفعل؟{' '}
           <button type="button" className="pilot-link-btn" onClick={() => navigate('/login')}>
-            Sign in
+            تسجيل الدخول
           </button>
         </p>
       </section>
@@ -470,7 +496,7 @@ function DashboardView({ profile }) {
     let cancelled = false;
 
     async function loadDashboard() {
-      setStatus({ kind: 'loading', text: 'Loading pilot data...' });
+      setStatus({ kind: 'loading', text: 'جاري تحميل البيانات...' });
       try {
         const [lessonData, recommendationData] = await Promise.all([
           listLessons(profile.studentId, profile.token),
@@ -482,7 +508,7 @@ function DashboardView({ profile }) {
         setStatus(null);
       } catch (error) {
         if (cancelled) return;
-        setStatus({ kind: 'error', text: 'Could not reach the server. Showing local lessons.' });
+        setStatus({ kind: 'error', text: 'تعذر الوصول إلى الخادم. عرض الدروس المحلية.' });
       }
     }
 
@@ -496,21 +522,23 @@ function DashboardView({ profile }) {
     <main className="pilot-main">
       <section className="pilot-band pilot-band--summary">
         <div className="pilot-section-heading">
-          <p>A1 English pilot</p>
-          <h1>Dashboard</h1>
+          <p>منصة AIM التجريبية · A1</p>
+          <h1>لوحة الطالب</h1>
         </div>
-        <div className="pilot-metrics" aria-label="Pilot summary">
+        <div className="pilot-metrics" aria-label="ملخص الأداء">
           <div>
             <strong>{lessons.length}</strong>
-            <span>Lessons available</span>
+            <span>الدروس المتاحة</span>
           </div>
           <div>
-            <strong>{recommendation?.action_type ? formatAction(recommendation.action_type) : 'Ready'}</strong>
-            <span>Next step</span>
+            <strong>
+              {recommendation?.action_type ? formatAction(recommendation.action_type) : 'جاهز'}
+            </strong>
+            <span>الخطوة التالية</span>
           </div>
           <div>
             <strong>{Math.round((recommendation?.confidence || 0) * 100)}%</strong>
-            <span>Confidence</span>
+            <span>مستوى الثقة</span>
           </div>
         </div>
       </section>
@@ -521,8 +549,8 @@ function DashboardView({ profile }) {
         <div className="pilot-panel">
           <div className="pilot-section-heading pilot-section-heading--row">
             <div>
-              <p>Lesson queue</p>
-              <h2>Today&apos;s lessons</h2>
+              <p>قائمة الدروس</p>
+              <h2>الدروس المقترحة اليوم</h2>
             </div>
           </div>
           <div className="pilot-lesson-list">
@@ -531,15 +559,22 @@ function DashboardView({ profile }) {
                 <div className="pilot-lesson-card__index">{String(index + 1).padStart(2, '0')}</div>
                 <div>
                   <h3>{lesson.title}</h3>
-                  <p>{lesson.level} · {lesson.estimated_minutes || 10} min · Difficulty {lesson.difficulty}</p>
+                  <p>
+                    {lesson.level} · {lesson.estimated_minutes || 10} دقيقة · الصعوبة{' '}
+                    {lesson.difficulty}
+                  </p>
                   <div className="pilot-tags">
                     {(lesson.skill_focus || [lesson.main_skill_id]).filter(Boolean).map((skill) => (
                       <span key={skill}>{skill}</span>
                     ))}
                   </div>
                 </div>
-                <button className="pilot-primary" type="button" onClick={() => navigate(`/lessons/${lesson.lesson_id}`)}>
-                  Open
+                <button
+                  className="pilot-primary"
+                  type="button"
+                  onClick={() => navigate(`/lessons/${lesson.lesson_id}`)}
+                >
+                  فتح الدرس
                 </button>
               </article>
             ))}
@@ -548,10 +583,12 @@ function DashboardView({ profile }) {
 
         <aside className="pilot-panel pilot-panel--side">
           <div className="pilot-section-heading">
-            <p>AIM recommendation</p>
-            <h2>{recommendation?.action_type || 'Waiting for evidence'}</h2>
+            <p>توصية AIM</p>
+            <h2>{recommendation?.action_type ? formatAction(recommendation.action_type) : 'في انتظار البيانات'}</h2>
           </div>
-          <p className="pilot-note">{recommendation?.reason || 'Run a lesson session to collect the next adaptive signal.'}</p>
+          <p className="pilot-note">
+            {recommendation?.reason || 'قم بجلسة درس لجمع الإشارات التكيفية التالية.'}
+          </p>
           <div className="pilot-signal">
             <span style={{ width: `${Math.round((recommendation?.confidence || 0.42) * 100)}%` }} />
           </div>
@@ -570,19 +607,19 @@ function LessonView({ lessonId, profile }) {
     let cancelled = false;
 
     async function loadLesson() {
-      setStatus({ kind: 'loading', text: 'Loading lesson...' });
+      setStatus({ kind: 'loading', text: 'جاري تحميل الدرس...' });
       try {
         const data = await getLesson(profile.studentId, lessonId, profile.token);
         if (cancelled) return;
         setLessonData(data);
-        setStatus({ kind: 'ready', text: 'Lesson ready.' });
+        setStatus({ kind: 'ready', text: 'الدرس جاهز.' });
       } catch (error) {
         if (cancelled) return;
         setLessonData({
           lesson: fallbackLessons.find((lesson) => lesson.lesson_id === lessonId) || fallbackLessons[0],
           questions: sampleQuestions,
         });
-        setStatus({ kind: 'error', text: 'Could not reach the server. Showing a preview.' });
+        setStatus({ kind: 'error', text: 'تعذر الوصول إلى الخادم. عرض معاينة.' });
       }
     }
 
@@ -597,7 +634,7 @@ function LessonView({ lessonId, profile }) {
       navigate('/login');
       return;
     }
-    setStatus({ kind: 'loading', text: 'Starting session...' });
+    setStatus({ kind: 'loading', text: 'جاري بدء الجلسة...' });
     try {
       const data = await startLessonSession(profile.studentId, lessonId, profile.token);
       sessionStorage.setItem(`aim_session:${data.session_id}`, JSON.stringify(data));
@@ -609,12 +646,15 @@ function LessonView({ lessonId, profile }) {
         questions: lessonData?.questions || sampleQuestions,
       };
       sessionStorage.setItem(`aim_session:${localSession.session_id}`, JSON.stringify(localSession));
-      setStatus({ kind: 'error', text: 'Could not reach the server. Opened a local preview.' });
+      setStatus({ kind: 'error', text: 'تعذر الوصول إلى الخادم. تم فتح معاينة محلية.' });
       navigate(`/sessions/${encodeURIComponent(localSession.session_id)}`);
     }
   }
 
-  const lesson = lessonData?.lesson || fallbackLessons.find((item) => item.lesson_id === lessonId) || fallbackLessons[0];
+  const lesson =
+    lessonData?.lesson ||
+    fallbackLessons.find((item) => item.lesson_id === lessonId) ||
+    fallbackLessons[0];
   const questions = lessonData?.questions || sampleQuestions;
 
   return (
@@ -622,11 +662,13 @@ function LessonView({ lessonId, profile }) {
       <section className="pilot-panel">
         <div className="pilot-section-heading pilot-section-heading--row">
           <div>
-            <p>{lesson.level || 'A1'} · {lesson.main_skill_id}</p>
+            <p>
+              {lesson.level || 'A1'} · {lesson.main_skill_id}
+            </p>
             <h1>{lesson.title}</h1>
           </div>
           <button className="pilot-primary" type="button" onClick={startSession}>
-            Start
+            بدء الدرس
           </button>
         </div>
         <StatusText status={status} />
@@ -635,7 +677,9 @@ function LessonView({ lessonId, profile }) {
             <article key={question.question_id}>
               <span>{index + 1}</span>
               <p>{question.prompt}</p>
-              <small>{question.choices?.length || 0} choices · Difficulty {question.difficulty}</small>
+              <small>
+                {question.choices?.length || 0} خيار · الصعوبة {question.difficulty}
+              </small>
             </article>
           ))}
         </div>
@@ -733,15 +777,22 @@ function SessionView({ sessionId, profile }) {
       attempts: Math.max(1, (responses[question.question_id]?.retries || 0) + 1),
       difficulty: question.difficulty || 1,
       hint_used: Boolean(responses[question.question_id]?.hintUsed),
-      skip: Boolean(responses[question.question_id]?.skipped || !responses[question.question_id]?.selectedAnswer),
+      skip: Boolean(
+        responses[question.question_id]?.skipped || !responses[question.question_id]?.selectedAnswer,
+      ),
       answer_changed: Boolean(responses[question.question_id]?.answerChanged),
       time_of_day: timeOfDay(),
       session_position: index + 1,
     }));
 
-    setStatus({ kind: 'loading', text: 'Submitting attempts...' });
+    setStatus({ kind: 'loading', text: 'جاري إرسال الإجابات...' });
     try {
-      const result = await submitSessionAttempts(profile.studentId, sessionId, attempts, profile.token);
+      const result = await submitSessionAttempts(
+        profile.studentId,
+        sessionId,
+        attempts,
+        profile.token,
+      );
       sessionStorage.setItem(`aim_result:${sessionId}`, JSON.stringify(result));
       navigate(`/result/${encodeURIComponent(sessionId)}`);
     } catch (error) {
@@ -762,24 +813,30 @@ function SessionView({ sessionId, profile }) {
       <section className="pilot-panel">
         <div className="pilot-section-heading pilot-section-heading--row">
           <div>
-            <p>{storedSession?.lesson_id || 'Pilot session'}</p>
-            <h1>Quiz</h1>
+            <p>{storedSession?.lesson_id || 'جلسة تجريبية'}</p>
+            <h1>التقييم</h1>
           </div>
           <button className="pilot-primary" type="button" onClick={submit}>
-            Submit
+            إرسال الإجابات
           </button>
         </div>
         <StatusText status={status} />
         <div className="pilot-quiz">
           {questions.map((question, index) => (
             <fieldset key={question.question_id}>
-              <legend>{index + 1}. {question.prompt}</legend>
+              <legend>
+                {index + 1}. {question.prompt}
+              </legend>
               <div className="pilot-choice-grid">
                 {(question.choices || []).map((choice) => {
                   const choiceText = choice.choice_text || String(choice);
                   return (
                     <button
-                      className={responses[question.question_id]?.selectedAnswer === choiceText ? 'is-selected' : ''}
+                      className={
+                        responses[question.question_id]?.selectedAnswer === choiceText
+                          ? 'is-selected'
+                          : ''
+                      }
                       key={choiceText}
                       type="button"
                       onClick={() => selectAnswer(question.question_id, choiceText)}
@@ -795,23 +852,25 @@ function SessionView({ sessionId, profile }) {
                   type="button"
                   onClick={() => markHint(question.question_id)}
                 >
-                  Hint used
+                  تم استخدام التلميح
                 </button>
                 <button
                   className={responses[question.question_id]?.skipped ? 'is-selected' : ''}
                   type="button"
                   onClick={() => skipQuestion(question.question_id)}
                 >
-                  Skip
+                  تخطي
                 </button>
                 <label>
-                  Confidence
+                  مستوى الثقة
                   <input
                     max="100"
                     min="0"
                     type="range"
                     value={responses[question.question_id]?.confidence ?? 60}
-                    onChange={(event) => setConfidence(question.question_id, Number(event.target.value))}
+                    onChange={(event) =>
+                      setConfidence(question.question_id, Number(event.target.value))
+                    }
                   />
                   <strong>{responses[question.question_id]?.confidence ?? 60}%</strong>
                 </label>
@@ -843,7 +902,7 @@ function ResultView({ sessionId, profile }) {
         const data = await getAdaptiveResult(profile.studentId, sessionId, profile.token);
         if (cancelled) return;
         setResult(data);
-        setStatus({ kind: 'ready', text: 'Adaptive result loaded.' });
+        setStatus({ kind: 'ready', text: 'تم تحميل النتيجة التكيفية.' });
       } catch (error) {
         if (cancelled) return;
         setStatus({ kind: 'error', text: error.message });
@@ -857,7 +916,8 @@ function ResultView({ sessionId, profile }) {
   }, [profile.studentId, profile.token, sessionId]);
 
   const progress = resultProgress(result);
-  const action = result?.recommendation?.action || result?.recommendation?.action_type || 'continue_current_skill';
+  const action =
+    result?.recommendation?.action || result?.recommendation?.action_type || 'continue_current_skill';
   const nextStep = formatAction(action);
   const focus = resultFocus(result);
   const reviewPrompt = resultReviewPrompt(result);
@@ -869,18 +929,18 @@ function ResultView({ sessionId, profile }) {
         <div className="pilot-panel">
           <div className="pilot-section-heading pilot-section-heading--row">
             <div>
-              <p>Session complete</p>
-              <h1>Result</h1>
+              <p>اكتملت الجلسة</p>
+              <h1>النتيجة</h1>
             </div>
             <button className="pilot-primary" type="button" onClick={() => navigate('/dashboard')}>
-              Dashboard
+              لوحة الطالب
             </button>
           </div>
           <StatusText status={status} />
           <div className="pilot-progress-summary">
             <div className="pilot-progress-ring" style={{ '--progress': `${progress}%` }}>
               <strong>{progress}%</strong>
-              <span>Progress</span>
+              <span>التقدم</span>
             </div>
             <div>
               <h2>{nextStep}</h2>
@@ -889,27 +949,27 @@ function ResultView({ sessionId, profile }) {
           </div>
           <dl className="pilot-student-result-grid">
             <div>
-              <dt>Focus area</dt>
+              <dt>منطقة التركيز</dt>
               <dd>{focus}</dd>
             </div>
             <div>
-              <dt>Practice completed</dt>
-              <dd>{attemptsSaved} answers</dd>
+              <dt>التمارين المكتملة</dt>
+              <dd>{attemptsSaved} إجابة</dd>
             </div>
             <div>
-              <dt>Next step</dt>
+              <dt>الخطوة التالية</dt>
               <dd>{nextStep}</dd>
             </div>
           </dl>
         </div>
         <aside className="pilot-panel pilot-panel--side">
           <div className="pilot-section-heading">
-            <p>Review</p>
-            <h2>What to do now</h2>
+            <p>المراجعة</p>
+            <h2>ماذا تفعل الآن</h2>
           </div>
           <p className="pilot-note">{reviewPrompt}</p>
           <button className="pilot-primary" type="button" onClick={() => navigate('/dashboard')}>
-            Continue
+            متابعة
           </button>
         </aside>
       </section>
@@ -971,7 +1031,6 @@ export default function WebPilot() {
       cancelled = true;
       subscription.unsubscribe();
     };
-    // The auth subscription should be registered once for the app shell.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -1006,12 +1065,18 @@ export default function WebPilot() {
   return (
     <div className="pilot-app">
       <PilotTopbar profile={profile} onLogout={clearProfile} />
-      {route.name === 'login' && <LoginView profile={profile} onAuthenticated={saveAuthenticatedProfile} />}
+      {route.name === 'login' && (
+        <LoginView profile={profile} onAuthenticated={saveAuthenticatedProfile} />
+      )}
       {route.name === 'register' && <RegisterView onAuthenticated={saveAuthenticatedProfile} />}
       {route.name === 'dashboard' && <DashboardView profile={profile} />}
       {route.name === 'lesson' && <LessonView lessonId={route.lessonId} profile={profile} />}
-      {route.name === 'session' && <SessionView sessionId={decodeURIComponent(route.sessionId)} profile={profile} />}
-      {route.name === 'result' && <ResultView sessionId={decodeURIComponent(route.sessionId)} profile={profile} />}
+      {route.name === 'session' && (
+        <SessionView sessionId={decodeURIComponent(route.sessionId)} profile={profile} />
+      )}
+      {route.name === 'result' && (
+        <ResultView sessionId={decodeURIComponent(route.sessionId)} profile={profile} />
+      )}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import './App.css';
 import WebPilot from '../pages/WebPilot';
 import AlgorithmTester from '../pages/AlgorithmTester';
 import AimDemo from '../pages/AimDemo';
