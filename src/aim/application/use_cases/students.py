@@ -20,10 +20,18 @@ class StudentUseCases:
         email: str,
         auth_user_id: str | None = None,
     ) -> StudentORM:
-        if self._uow.students.get_student_by_email(email):
-            raise ConflictError(f"A student with email '{email}' already exists.")
-        if auth_user_id and self._uow.students.get_student_by_auth_user_id(auth_user_id):
-            raise ConflictError("A student is already linked to this auth user.")
+        if auth_user_id:
+            existing_by_auth = self._uow.students.get_student_by_auth_user_id(auth_user_id)
+            if existing_by_auth:
+                return existing_by_auth
+
+        existing_by_email = self._uow.students.get_student_by_email(email)
+        if existing_by_email:
+            if auth_user_id and not existing_by_email.auth_user_id:
+                existing_by_email.auth_user_id = auth_user_id
+                self._uow.commit()
+                self._uow.students.refresh_student(existing_by_email)
+            return existing_by_email
 
         student = StudentORM(name=name, email=email, auth_user_id=auth_user_id)
         self._uow.students.add_student(student)

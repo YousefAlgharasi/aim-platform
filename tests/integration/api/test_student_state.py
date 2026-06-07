@@ -120,10 +120,11 @@ class TestStudentCreate:
         assert "id" in data
         assert "created_at" in data
 
-    def test_create_student_duplicate_email_returns_409(self, client: TestClient) -> None:
-        create_student(client)
+    def test_create_student_duplicate_email_returns_existing(self, client: TestClient) -> None:
+        first = create_student(client)
         resp = client.post("/students", json={"name": "Bob", "email": "alice@test.com"})
-        assert resp.status_code == 409
+        assert resp.status_code == 201
+        assert resp.json()["id"] == first["id"]
 
     def test_create_multiple_students(self, client: TestClient) -> None:
         s1 = create_student(client, "Alice", "alice@test.com")
