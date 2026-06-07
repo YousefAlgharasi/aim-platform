@@ -6,7 +6,7 @@ import os
 from dataclasses import dataclass, field
 
 
-DEFAULT_DATABASE_URL = "sqlite:///./aim_dev.db"
+DEFAULT_DATABASE_URL = "sqlite:///./database/aim_dev.db"
 DEFAULT_CORS_ORIGINS = ("http://localhost:3000", "http://127.0.0.1:3000")
 CLOUD_ENVIRONMENTS = {"cloud", "staging", "production"}
 

@@ -22,11 +22,11 @@ This task defines the release-readiness checks for moving selected AIM web pilot
 ## Verification Commands
 
 ```bash
-PYTHONPATH=src pytest
+PYTHONPATH=services/api/src pytest
 npm run build
 ```
 
-Run the React build from the `frontend` directory.
+Run the React build from the `apps/web` directory.
 
 ## Safety Notes
 

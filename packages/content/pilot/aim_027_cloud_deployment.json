@@ -9,7 +9,7 @@
       "name": "aim-fastapi-backend",
       "kind": "backend",
       "runtime": "docker",
-      "dockerfile": "deployment/cloud/backend.Dockerfile",
+      "dockerfile": "infra/deployment/cloud/backend.Dockerfile",
       "health_check": "/health",
       "required_env_vars": [
         "APP_ENV",
@@ -24,7 +24,7 @@
       "name": "aim-react-frontend",
       "kind": "frontend",
       "runtime": "docker",
-      "dockerfile": "deployment/cloud/frontend.Dockerfile",
+      "dockerfile": "infra/deployment/cloud/frontend.Dockerfile",
       "health_check": "/health",
       "required_env_vars": [
         "REACT_APP_API_BASE_URL",
@@ -34,15 +34,15 @@
     }
   ],
   "deployment_files": [
-    "deployment/cloud/backend.Dockerfile",
-    "deployment/cloud/frontend.Dockerfile",
-    "deployment/cloud/nginx.conf",
-    "deployment/cloud/render.yaml",
-    "deployment/cloud/README.md",
-    "frontend/.env.example"
+    "infra/deployment/cloud/backend.Dockerfile",
+    "infra/deployment/cloud/frontend.Dockerfile",
+    "infra/deployment/cloud/nginx.conf",
+    "infra/deployment/cloud/render.yaml",
+    "infra/deployment/cloud/README.md",
+    "apps/web/.env.example"
   ],
   "required_commands": [
-    "PYTHONPATH=src pytest",
+    "PYTHONPATH=services/api/src pytest",
     "npm run build",
     "alembic upgrade head"
   ],

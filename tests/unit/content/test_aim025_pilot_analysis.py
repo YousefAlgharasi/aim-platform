@@ -7,8 +7,9 @@ from aim.content.validators import (
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-OPERATIONS_PATH = REPO_ROOT / "content" / "pilot" / "aim_024_pilot_operations.json"
-ANALYSIS_PATH = REPO_ROOT / "content" / "pilot" / "aim_025_pilot_analysis.json"
+CONTENT_DIR = REPO_ROOT / "packages" / "content"
+OPERATIONS_PATH = CONTENT_DIR / "pilot" / "aim_024_pilot_operations.json"
+ANALYSIS_PATH = CONTENT_DIR / "pilot" / "aim_025_pilot_analysis.json"
 
 
 def load_json(path: Path) -> dict:

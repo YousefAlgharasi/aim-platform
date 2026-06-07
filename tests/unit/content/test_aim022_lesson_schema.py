@@ -7,8 +7,9 @@ import pytest
 from aim.content.validators import AssessmentModel, LessonModel, QuestionModel
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-LESSONS_DIR = REPO_ROOT / "content" / "lessons"
-ASSESSMENTS_DIR = REPO_ROOT / "content" / "assessments"
+CONTENT_DIR = REPO_ROOT / "packages" / "content"
+LESSONS_DIR = CONTENT_DIR / "lessons"
+ASSESSMENTS_DIR = CONTENT_DIR / "assessments"
 
 LESSON_FILES = sorted(LESSONS_DIR.glob("*.json"))
 ASSESSMENT_FILES = sorted(ASSESSMENTS_DIR.glob("*.json"))
@@ -198,25 +199,25 @@ class TestAssessmentFiles:
 
 class TestSchemaFilesExist:
     def test_question_schema_json_exists(self):
-        schema = REPO_ROOT / "content" / "schemas" / "question_schema.json"
-        assert schema.exists(), "content/schemas/question_schema.json not found"
+        schema = CONTENT_DIR / "schemas" / "question_schema.json"
+        assert schema.exists(), "packages/content/schemas/question_schema.json not found"
 
     def test_lesson_schema_json_exists(self):
-        schema = REPO_ROOT / "content" / "schemas" / "lesson_schema.json"
-        assert schema.exists(), "content/schemas/lesson_schema.json not found"
+        schema = CONTENT_DIR / "schemas" / "lesson_schema.json"
+        assert schema.exists(), "packages/content/schemas/lesson_schema.json not found"
 
     def test_assessment_schema_json_exists(self):
-        schema = REPO_ROOT / "content" / "schemas" / "assessment_schema.json"
-        assert schema.exists(), "content/schemas/assessment_schema.json not found"
+        schema = CONTENT_DIR / "schemas" / "assessment_schema.json"
+        assert schema.exists(), "packages/content/schemas/assessment_schema.json not found"
 
     def test_question_schema_json_is_valid_json(self):
-        schema = REPO_ROOT / "content" / "schemas" / "question_schema.json"
+        schema = CONTENT_DIR / "schemas" / "question_schema.json"
         with open(schema) as f:
             data = json.load(f)
         assert data["$id"] == "aim:content:question_schema:v1"
 
     def test_lesson_schema_json_is_valid_json(self):
-        schema = REPO_ROOT / "content" / "schemas" / "lesson_schema.json"
+        schema = CONTENT_DIR / "schemas" / "lesson_schema.json"
         with open(schema) as f:
             data = json.load(f)
         assert data["$id"] == "aim:content:lesson_schema:v1"
@@ -224,7 +225,7 @@ class TestSchemaFilesExist:
 
 class TestAIMMandatoryMetadataIntegration:
     def test_all_lessons_skill_ids_match_skill_map(self):
-        skill_map_path = REPO_ROOT / "content" / "skill_map.json"
+        skill_map_path = CONTENT_DIR / "skill_map.json"
         with open(skill_map_path) as f:
             skill_map = json.load(f)
         valid_skill_ids = {s["skill_id"] for s in skill_map["skills"]}
@@ -239,7 +240,7 @@ class TestAIMMandatoryMetadataIntegration:
                 )
 
     def test_all_assessments_skill_ids_match_skill_map(self):
-        skill_map_path = REPO_ROOT / "content" / "skill_map.json"
+        skill_map_path = CONTENT_DIR / "skill_map.json"
         with open(skill_map_path) as f:
             skill_map = json.load(f)
         valid_skill_ids = {s["skill_id"] for s in skill_map["skills"]}
@@ -254,7 +255,7 @@ class TestAIMMandatoryMetadataIntegration:
                 )
 
     def test_common_error_tags_reference_glossary(self):
-        skill_map_path = REPO_ROOT / "content" / "skill_map.json"
+        skill_map_path = CONTENT_DIR / "skill_map.json"
         with open(skill_map_path) as f:
             skill_map = json.load(f)
         glossary_tags = set(skill_map["common_error_tags_glossary"].keys())

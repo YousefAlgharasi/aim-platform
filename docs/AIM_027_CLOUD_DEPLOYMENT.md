@@ -4,13 +4,13 @@ This task prepares a cloud deployment package for the AIM FastAPI backend and Re
 
 ## Added Assets
 
-- `deployment/cloud/backend.Dockerfile`
-- `deployment/cloud/frontend.Dockerfile`
-- `deployment/cloud/nginx.conf`
-- `deployment/cloud/render.yaml`
-- `deployment/cloud/README.md`
-- `frontend/.env.example`
-- `content/pilot/aim_027_cloud_deployment.json`
+- `infra/deployment/cloud/backend.Dockerfile`
+- `infra/deployment/cloud/frontend.Dockerfile`
+- `infra/deployment/cloud/nginx.conf`
+- `infra/deployment/cloud/render.yaml`
+- `infra/deployment/cloud/README.md`
+- `apps/web/.env.example`
+- `packages/content/pilot/aim_027_cloud_deployment.json`
 
 ## Backend Deployment
 

@@ -13,7 +13,7 @@ This runbook turns the AIM-023 readiness plan into a day-by-day operating proces
 
 ## Issue Handling
 
-Use the structured protocols in `content/pilot/aim_024_pilot_operations.json` for:
+Use the structured protocols in `packages/content/pilot/aim_024_pilot_operations.json` for:
 
 - login access
 - lesson submission

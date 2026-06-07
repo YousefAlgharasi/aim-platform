@@ -17,8 +17,8 @@ This task packages the first web cloud pilot into a concrete run plan that can b
 3. Lesson files validate against the AIM content schema.
 4. The pre/post assessment validates against the AIM assessment schema.
 5. Pilot plan validation passes.
-6. Backend tests pass with `PYTHONPATH=src pytest`.
-7. Frontend build passes with `npm run build` from `frontend`.
+6. Backend tests pass with `PYTHONPATH=services/api/src pytest`.
+7. Frontend build passes with `npm run build` from `apps/web`.
 
 ## Measurement
 

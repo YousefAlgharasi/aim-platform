@@ -4,8 +4,9 @@ from pathlib import Path
 from aim.content.validators import PilotOperationsModel, PilotPlanModel
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-PILOT_PLAN_PATH = REPO_ROOT / "content" / "pilot" / "aim_023_pilot_plan.json"
-OPERATIONS_PATH = REPO_ROOT / "content" / "pilot" / "aim_024_pilot_operations.json"
+CONTENT_DIR = REPO_ROOT / "packages" / "content"
+PILOT_PLAN_PATH = CONTENT_DIR / "pilot" / "aim_023_pilot_plan.json"
+OPERATIONS_PATH = CONTENT_DIR / "pilot" / "aim_024_pilot_operations.json"
 
 
 def load_json(path: Path) -> dict:

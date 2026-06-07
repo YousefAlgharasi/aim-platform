@@ -13,10 +13,18 @@ This system contains:
 ## Project Structure
 
 ```txt
-/backend   -> API and server
-/frontend  -> React frontend
-/ai-core   -> AI algorithms and services
-/supabase  -> database migrations, seed data, and RLS policies
+apps/web             -> React frontend
+services/api/src     -> FastAPI app and AIM Python package
+services/backend     -> legacy backend compatibility wrappers
+database/alembic     -> Alembic migration environment
+database/supabase    -> Supabase seed, policies, and local config
+packages/content     -> A1 pilot lessons, schemas, and plans
+packages/ai_core     -> legacy AI-core compatibility wrappers
+packages/ml          -> legacy ML compatibility wrappers
+docs                 -> project documentation
+infra/deployment     -> cloud deployment assets
+tests                -> unit and integration tests
+tools                -> project scripts and utilities
 ```
 
 ---
@@ -56,7 +64,7 @@ Local development uses SQLite by default:
 
 ```txt
 APP_ENV=development
-DATABASE_URL=sqlite:///./aim_dev.db
+DATABASE_URL=sqlite:///./database/aim_dev.db
 ```
 
 Cloud deployments can point the backend at Supabase PostgreSQL with
