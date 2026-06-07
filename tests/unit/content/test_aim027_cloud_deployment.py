@@ -7,8 +7,9 @@ from aim.content.validators import (
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-HARDENING_PATH = REPO_ROOT / "content" / "pilot" / "aim_026_production_hardening.json"
-DEPLOYMENT_PATH = REPO_ROOT / "content" / "pilot" / "aim_027_cloud_deployment.json"
+CONTENT_DIR = REPO_ROOT / "packages" / "content"
+HARDENING_PATH = CONTENT_DIR / "pilot" / "aim_026_production_hardening.json"
+DEPLOYMENT_PATH = CONTENT_DIR / "pilot" / "aim_027_cloud_deployment.json"
 
 
 def load_json(path: Path) -> dict:
@@ -38,7 +39,7 @@ def test_aim027_deployment_files_exist():
 
 
 def test_aim027_backend_dockerfile_runs_migrations_and_uvicorn():
-    dockerfile = read_text("deployment/cloud/backend.Dockerfile")
+    dockerfile = read_text("infra/deployment/cloud/backend.Dockerfile")
     assert "python:3.11-slim" in dockerfile
     assert "pip install --no-cache-dir ." in dockerfile
     assert "alembic upgrade head" in dockerfile
@@ -46,7 +47,7 @@ def test_aim027_backend_dockerfile_runs_migrations_and_uvicorn():
 
 
 def test_aim027_frontend_dockerfile_builds_react_and_serves_nginx():
-    dockerfile = read_text("deployment/cloud/frontend.Dockerfile")
+    dockerfile = read_text("infra/deployment/cloud/frontend.Dockerfile")
     assert "node:20-alpine" in dockerfile
     assert "npm ci" in dockerfile
     assert "npm run build" in dockerfile
@@ -55,7 +56,7 @@ def test_aim027_frontend_dockerfile_builds_react_and_serves_nginx():
 
 
 def test_aim027_render_blueprint_contains_backend_and_frontend_env():
-    blueprint = read_text("deployment/cloud/render.yaml")
+    blueprint = read_text("infra/deployment/cloud/render.yaml")
     for expected in (
         "aim-fastapi-backend",
         "aim-react-frontend",
@@ -69,7 +70,7 @@ def test_aim027_render_blueprint_contains_backend_and_frontend_env():
 
 
 def test_aim027_frontend_env_example_has_public_supabase_values_only():
-    env_example = read_text("frontend/.env.example")
+    env_example = read_text("apps/web/.env.example")
     assert "REACT_APP_API_BASE_URL=" in env_example
     assert "REACT_APP_SUPABASE_URL=" in env_example
     assert "REACT_APP_SUPABASE_PUBLISHABLE_KEY=" in env_example

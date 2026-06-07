@@ -4,7 +4,7 @@ T-03: Tests — Student State Model + API Routes
 Uses SQLite in-memory with StaticPool so all connections share the same DB.
 No real PostgreSQL needed — fully self-contained.
 
-Run with:  pytest backend/tests/test_student_state.py -v
+Run with:  pytest tests/integration/api/test_student_state.py -v
 ────────────────────────────────────────────────────────────────────────────────
 """
 

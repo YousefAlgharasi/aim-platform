@@ -9,8 +9,8 @@ import sys
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src"
+ROOT = Path(__file__).resolve().parents[2]
+SRC = ROOT / "services" / "api" / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 

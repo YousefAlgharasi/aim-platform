@@ -4,7 +4,8 @@ from pathlib import Path
 from aim.content.validators import PilotPlanModel
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-PILOT_PLAN_PATH = REPO_ROOT / "content" / "pilot" / "aim_023_pilot_plan.json"
+CONTENT_DIR = REPO_ROOT / "packages" / "content"
+PILOT_PLAN_PATH = CONTENT_DIR / "pilot" / "aim_023_pilot_plan.json"
 
 
 def load_plan() -> dict:
@@ -36,11 +37,11 @@ def test_aim023_plan_references_existing_content_files():
     plan = PilotPlanModel.model_validate(load_plan())
     for item in plan.schedule:
         if item.lesson_id:
-            lesson_path = REPO_ROOT / "content" / "lessons" / f"{item.lesson_id}_{lesson_slug(item.lesson_id)}.json"
+            lesson_path = CONTENT_DIR / "lessons" / f"{item.lesson_id}_{lesson_slug(item.lesson_id)}.json"
             assert lesson_path.exists(), f"Missing lesson file for {item.lesson_id}"
 
     assessment_id = plan.measurement.pre_post_assessment_id
-    assessment_path = REPO_ROOT / "content" / "assessments" / "pre_post_test.json"
+    assessment_path = CONTENT_DIR / "assessments" / "pre_post_test.json"
     assert assessment_path.exists()
     assert load_json(assessment_path)["assessment_id"] == assessment_id
 

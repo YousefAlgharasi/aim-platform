@@ -5,7 +5,7 @@ The AIM visual demo is a development dashboard for testing the adaptive pipeline
 The visual demo and automated AIM algorithm harness use the same shared scenario definitions from:
 
 ```txt
-src/aim/application/demo/aim_demo_scenarios.py
+services/api/src/aim/application/demo/aim_demo_scenarios.py
 ```
 
 ## Run the Backend
@@ -13,14 +13,15 @@ src/aim/application/demo/aim_demo_scenarios.py
 From the repository root:
 
 ```powershell
-uvicorn backend.main:app --reload
+$env:PYTHONPATH="services/api/src;services;packages"
+uvicorn aim.presentation.api.app:app --reload
 ```
 
 The backend should be available at `http://127.0.0.1:8000`.
 
 ## Run the Frontend
 
-From `frontend/`:
+From `apps/web/`:
 
 ```powershell
 npm start

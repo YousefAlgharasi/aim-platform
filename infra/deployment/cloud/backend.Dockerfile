@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app/src
+ENV PYTHONPATH=/app/services/api/src
 
 WORKDIR /app
 
@@ -11,9 +11,9 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml alembic.ini ./
-COPY alembic ./alembic
-COPY src ./src
-COPY content ./content
+COPY database/alembic ./database/alembic
+COPY services/api/src ./services/api/src
+COPY packages/content ./packages/content
 
 RUN pip install --no-cache-dir .
 

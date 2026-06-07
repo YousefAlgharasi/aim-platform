@@ -37,14 +37,14 @@ By the end of 2 weeks, students should be able to:
 ## Pre-Test (Before L01)
 
 Administered before the first lesson to establish a baseline mastery score.  
-See: `content/assessments/pre_test.json`
+See: `packages/content/assessments/pre_test.json`
 
 ---
 
 ## Post-Test (After L10)
 
 Administered after the last lesson to measure learning gain.  
-See: `content/assessments/post_test.json`
+See: `packages/content/assessments/post_test.json`
 
 ---
 

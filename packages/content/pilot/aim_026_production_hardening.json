@@ -61,7 +61,7 @@
       "check_id": "testing-01",
       "category": "testing",
       "requirement": "Backend tests, content validation tests, and React production build must pass before release.",
-      "verification": "Run PYTHONPATH=src pytest and npm run build from frontend.",
+      "verification": "Run PYTHONPATH=services/api/src pytest and npm run build from apps/web.",
       "blocking": true
     }
   ],

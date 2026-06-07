@@ -546,11 +546,11 @@ class CloudDeploymentPlanModel(BaseModel):
 
         files = set(self.deployment_files)
         required_files = {
-            "deployment/cloud/backend.Dockerfile",
-            "deployment/cloud/frontend.Dockerfile",
-            "deployment/cloud/nginx.conf",
-            "deployment/cloud/render.yaml",
-            "frontend/.env.example",
+            "infra/deployment/cloud/backend.Dockerfile",
+            "infra/deployment/cloud/frontend.Dockerfile",
+            "infra/deployment/cloud/nginx.conf",
+            "infra/deployment/cloud/render.yaml",
+            "apps/web/.env.example",
         }
         missing_files = required_files - files
         if missing_files:

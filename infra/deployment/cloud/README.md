@@ -4,7 +4,7 @@ This folder contains deployment assets for AIM-027.
 
 ## Backend
 
-Builds the FastAPI app from `src`, applies Alembic migrations, and starts Uvicorn.
+Builds the FastAPI app from `services/api/src`, applies Alembic migrations, and starts Uvicorn.
 
 Required cloud env vars:
 
@@ -30,8 +30,8 @@ Required build env vars:
 Run before deployment:
 
 ```bash
-PYTHONPATH=src pytest
+PYTHONPATH=services/api/src pytest
 npm run build
 ```
 
-Run `npm run build` from `frontend`.
+Run `npm run build` from `apps/web`.

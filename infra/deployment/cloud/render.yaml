@@ -3,7 +3,7 @@ services:
     name: aim-fastapi-backend
     runtime: docker
     plan: starter
-    dockerfilePath: ./deployment/cloud/backend.Dockerfile
+    dockerfilePath: ./infra/deployment/cloud/backend.Dockerfile
     healthCheckPath: /health
     autoDeploy: true
     envVars:
@@ -32,7 +32,7 @@ services:
     name: aim-react-frontend
     runtime: docker
     plan: starter
-    dockerfilePath: ./deployment/cloud/frontend.Dockerfile
+    dockerfilePath: ./infra/deployment/cloud/frontend.Dockerfile
     healthCheckPath: /health
     autoDeploy: true
     envVars:
