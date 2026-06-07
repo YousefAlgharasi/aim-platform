@@ -97,6 +97,31 @@ class SupabaseJWTVerifier:
         )
 
 
+def _soft_decode_supabase_token(token: str) -> SupabaseUser | None:
+    """Extract user identity from a JWT without cryptographic verification.
+
+    Only used when SUPABASE_URL / SUPABASE_JWT_SECRET are not configured on
+    the backend (pilot / dev mode where supabase_auth_required is False).
+    The Supabase frontend has already authenticated the user; we trust the
+    token payload to identify who they are.
+    """
+    if jwt is None:
+        return None
+    try:
+        claims = jwt.decode(token, options={"verify_signature": False})
+        subject = claims.get("sub")
+        if not subject:
+            return None
+        return SupabaseUser(
+            user_id=str(subject),
+            email=claims.get("email"),
+            role=claims.get("role"),
+            claims=dict(claims),
+        )
+    except Exception:
+        return None
+
+
 def get_current_supabase_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
 ) -> SupabaseUser | None:
@@ -116,19 +141,24 @@ def get_current_supabase_user(
             detail="Invalid authorization scheme.",
         )
 
-    if not settings.supabase_url:
-        if settings.supabase_auth_required:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="SUPABASE_URL is required when Supabase auth is enabled.",
-            )
-        return None
+    if settings.supabase_url:
+        return SupabaseJWTVerifier(
+            settings.supabase_url,
+            settings.supabase_jwt_audience,
+            settings.supabase_jwt_secret,
+        ).verify(credentials.credentials)
 
-    return SupabaseJWTVerifier(
-        settings.supabase_url,
-        settings.supabase_jwt_audience,
-        settings.supabase_jwt_secret,
-    ).verify(credentials.credentials)
+    # SUPABASE_URL not configured on backend.
+    if settings.supabase_auth_required:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="SUPABASE_URL is required when Supabase auth is enabled.",
+        )
+
+    # Pilot / dev mode: Supabase auth is handled by the frontend only.
+    # Soft-decode the token to extract user identity without signature
+    # verification so student linking and /students/me work correctly.
+    return _soft_decode_supabase_token(credentials.credentials)
 
 
 def require_student_access(

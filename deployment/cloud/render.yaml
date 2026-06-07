@@ -5,7 +5,7 @@ services:
     plan: starter
     dockerfilePath: ./deployment/cloud/backend.Dockerfile
     healthCheckPath: /health
-    autoDeploy: false
+    autoDeploy: true
     envVars:
       - key: APP_ENV
         value: production
@@ -34,7 +34,7 @@ services:
     plan: starter
     dockerfilePath: ./deployment/cloud/frontend.Dockerfile
     healthCheckPath: /health
-    autoDeploy: false
+    autoDeploy: true
     envVars:
       - key: REACT_APP_API_BASE_URL
         sync: false
