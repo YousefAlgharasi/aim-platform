@@ -2,6 +2,7 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:800
 
 const LAST_ADAPTIVE_RESULT_KEY = 'aim_last_adaptive_result';
 const LAST_ADAPTIVE_RESULT_META_KEY = 'aim_last_adaptive_result_meta';
+const REQUEST_TIMEOUT_MS = 45000;
 
 function getStoredAccessToken() {
   if (typeof window === 'undefined') {
@@ -73,12 +74,26 @@ async function readErrorMessage(response) {
 async function requestJson(path, options = {}) {
   const { method = 'GET', body } = options;
   const hasBody = body !== undefined;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers: buildHeaders(hasBody),
-    body: hasBody ? JSON.stringify(body) : undefined,
-  });
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers: buildHeaders(hasBody),
+      body: hasBody ? JSON.stringify(body) : undefined,
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error('Request timed out while waiting for AIM.');
+    }
+
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!response.ok) {
     const message = await readErrorMessage(response);
@@ -206,6 +221,8 @@ async function requestJsonWithToken(path, token, options = {}) {
   const { method = 'GET', body } = options;
   const hasBody = body !== undefined;
   const headers = {};
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   if (hasBody) {
     headers['Content-Type'] = 'application/json';
@@ -215,11 +232,23 @@ async function requestJsonWithToken(path, token, options = {}) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers,
-    body: hasBody ? JSON.stringify(body) : undefined,
-  });
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers,
+      body: hasBody ? JSON.stringify(body) : undefined,
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error('Request timed out while waiting for AIM.');
+    }
+
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!response.ok) {
     const message = await readErrorMessage(response);
