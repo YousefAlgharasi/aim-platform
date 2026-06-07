@@ -233,6 +233,34 @@ class TestRetentionTracker:
         assert schedule["due_at"] == result.due_at
         assert schedule["retention"] == 90.0
 
+    def test_new_student_first_session_does_not_raise(self) -> None:
+        now = datetime(2026, 5, 19)
+        repo = FakeRetentionRepo([])
+        tracker = RetentionTracker(repo, now=now)
+
+        result = tracker.update_after_session(1, "GRAMMAR_PRESENT_SIMPLE", 85.0, reviewed_at=now)
+
+        assert result.student_id == 1
+        assert result.skill_id == "GRAMMAR_PRESENT_SIMPLE"
+        assert result.retention == 85.0
+        assert result.is_due is False
+        progress = repo.saved_progress[(1, "GRAMMAR_PRESENT_SIMPLE")]
+        assert progress["retention"] == 85.0
+        assert progress["last_reviewed_at"] == now
+        assert len(progress["retention_history"]) == 1
+        assert (1, "GRAMMAR_PRESENT_SIMPLE") in repo.saved_schedules
+
+    def test_new_student_first_session_low_mastery_is_due(self) -> None:
+        now = datetime(2026, 5, 19)
+        repo = FakeRetentionRepo([])
+        tracker = RetentionTracker(repo, now=now)
+
+        result = tracker.update_after_session(1, "VOCAB_BASICS", 50.0, reviewed_at=now)
+
+        assert result.retention == 50.0
+        assert result.is_due is True
+        assert result.due_at == now
+
     def test_missing_skill_raises_key_error(self) -> None:
         repo = FakeRetentionRepo([])
         tracker = RetentionTracker(repo)
