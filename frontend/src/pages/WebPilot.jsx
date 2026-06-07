@@ -135,6 +135,29 @@ function toPercent(value, fallback = 0) {
   return Math.max(0, Math.min(100, Math.round(numeric)));
 }
 
+function confidencePercent(value, fallback = 0) {
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === 'high') return 85;
+    if (normalized === 'medium') return 60;
+    if (normalized === 'low') return 30;
+  }
+
+  const numeric = Number(value ?? fallback);
+  if (!Number.isFinite(numeric)) return fallback;
+  const percent = numeric > 0 && numeric <= 1 ? numeric * 100 : numeric;
+  return Math.max(0, Math.min(100, Math.round(percent)));
+}
+
+function displayLessonId(value) {
+  const text = String(value || '').trim();
+  return text.includes(':') ? text.split(':')[0] : text;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 const ACTION_AR = {
   continue_current_skill: 'متابعة المهارة الحالية',
   review_skill: 'مراجعة المهارة',
@@ -518,6 +541,8 @@ function DashboardView({ profile }) {
     };
   }, [profile.studentId, profile.token]);
 
+  const recommendationConfidence = confidencePercent(recommendation?.confidence, 0);
+
   return (
     <main className="pilot-main">
       <section className="pilot-band pilot-band--summary">
@@ -537,7 +562,7 @@ function DashboardView({ profile }) {
             <span>الخطوة التالية</span>
           </div>
           <div>
-            <strong>{Math.round((recommendation?.confidence || 0) * 100)}%</strong>
+            <strong>{recommendationConfidence}%</strong>
             <span>مستوى الثقة</span>
           </div>
         </div>
@@ -590,7 +615,7 @@ function DashboardView({ profile }) {
             {recommendation?.reason || 'قم بجلسة درس لجمع الإشارات التكيفية التالية.'}
           </p>
           <div className="pilot-signal">
-            <span style={{ width: `${Math.round((recommendation?.confidence || 0.42) * 100)}%` }} />
+            <span style={{ width: `${confidencePercent(recommendation?.confidence, 42)}%` }} />
           </div>
         </aside>
       </section>
@@ -700,6 +725,7 @@ function SessionView({ sessionId, profile }) {
   const questions = storedSession?.questions?.length ? storedSession.questions : sampleQuestions;
   const [responses, setResponses] = useState({});
   const [status, setStatus] = useState(null);
+  const isSubmitting = status?.kind === 'loading';
 
   function selectAnswer(questionId, choiceText) {
     setResponses((current) => {
@@ -796,8 +822,22 @@ function SessionView({ sessionId, profile }) {
       sessionStorage.setItem(`aim_result:${sessionId}`, JSON.stringify(result));
       navigate(`/result/${encodeURIComponent(sessionId)}`);
     } catch (error) {
+      setStatus({ kind: 'loading', text: 'Submitted. Loading the saved AIM result...' });
+      for (let attempt = 0; attempt < 6; attempt += 1) {
+        try {
+          await sleep(attempt === 0 ? 500 : 1500);
+          const recovered = await getAdaptiveResult(profile.studentId, sessionId, profile.token);
+          sessionStorage.setItem(`aim_result:${sessionId}`, JSON.stringify(recovered));
+          navigate(`/result/${encodeURIComponent(sessionId)}`);
+          return;
+        } catch {
+          // The backend may still be committing the adaptive result.
+        }
+      }
+
       const localResult = {
         session_id: sessionId,
+        lesson_id: displayLessonId(sessionId),
         attempts_saved: attempts.length,
         recommendation: { action: 'collect_more_evidence', reason: error.message },
         decision_conflict: { selected_action: 'collect_more_evidence' },
@@ -816,7 +856,7 @@ function SessionView({ sessionId, profile }) {
             <p>{storedSession?.lesson_id || 'جلسة تجريبية'}</p>
             <h1>التقييم</h1>
           </div>
-          <button className="pilot-primary" type="button" onClick={submit}>
+          <button className="pilot-primary" type="button" onClick={submit} disabled={isSubmitting}>
             إرسال الإجابات
           </button>
         </div>

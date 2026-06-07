@@ -66,6 +66,13 @@ function toNumber(value, fallback = 0) {
 }
 
 function toPercent(value, fallback = 0) {
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === 'high') return 85;
+    if (normalized === 'medium') return 60;
+    if (normalized === 'low') return 30;
+  }
+
   const numeric = toNumber(value, fallback);
   if (numeric > 0 && numeric <= 1) {
     return numeric * 100;
