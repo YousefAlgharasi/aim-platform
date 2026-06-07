@@ -205,8 +205,15 @@ class RetentionTracker:
     ) -> RetentionScheduleResult:
         state = self._repo.get_skill_state(student_id, skill_id)
         if state is None:
-            raise KeyError(
-                f"No retention state for student {student_id}, skill '{skill_id}'"
+            state = RetentionSkillState(
+                student_id=student_id,
+                skill_id=skill_id,
+                mastery=self._clamp_percent(new_mastery_reading),
+                retention=self._clamp_percent(new_mastery_reading),
+                retention_lambda=None,
+                last_reviewed_at=None,
+                category=None,
+                retention_history=[],
             )
 
         reviewed_at = reviewed_at or self._current_time()
