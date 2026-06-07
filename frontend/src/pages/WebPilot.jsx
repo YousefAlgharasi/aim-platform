@@ -879,15 +879,15 @@ function SessionView({ sessionId, profile }) {
     <main className="pilot-main quiz-step-main">
       <div className="quiz-step-header">
         <div className="quiz-step-meta">
-          <span className="quiz-step-lesson">{storedSession?.lesson_id || 'جلسة تجريبية'}</span>
+          <span className="quiz-step-lesson">{displayLessonId(storedSession?.lesson_id) || 'درس'}</span>
           <span className="quiz-step-count">
-            {currentIndex + 1} / {questions.length}
+            السؤال {currentIndex + 1} من {questions.length}
           </span>
         </div>
         <div className="quiz-step-bar-wrap">
           <div className="quiz-step-bar" style={{ width: `${progressPercent}%` }} />
         </div>
-        <div className="quiz-step-dots">
+        <div className="quiz-step-dots" role="tablist" aria-label="التنقل بين الأسئلة">
           {questions.map((q, i) => {
             const resp = responses[q.question_id];
             const answered = resp?.selectedAnswer || resp?.skipped;
@@ -895,9 +895,12 @@ function SessionView({ sessionId, profile }) {
               <button
                 key={q.question_id}
                 type="button"
+                role="tab"
+                aria-selected={i === currentIndex}
                 className={`quiz-dot${i === currentIndex ? ' quiz-dot--active' : ''}${answered ? ' quiz-dot--done' : ''}`}
                 onClick={() => setCurrentIndex(i)}
-                aria-label={`السؤال ${i + 1}`}
+                aria-label={`السؤال ${i + 1}${answered ? ' - مجاب' : ''}`}
+                disabled={isSubmitting}
               />
             );
           })}
@@ -905,17 +908,22 @@ function SessionView({ sessionId, profile }) {
       </div>
 
       <section className="pilot-panel quiz-step-card">
-        <p className="quiz-step-label">السؤال {currentIndex + 1}</p>
-        <h2 className="quiz-step-prompt">{question.prompt}</h2>
+        <p className="quiz-step-label">
+          السؤال {currentIndex + 1}
+          {answeredCount > 0 && (
+            <span className="quiz-answered-badge">{answeredCount} / {questions.length} مجاب</span>
+          )}
+        </p>
+        <h2 className="quiz-step-prompt" dir="ltr" lang="en">{question.prompt}</h2>
 
         {currentResponse.hintUsed && hint && (
-          <div className="quiz-hint-box">
-            <span>تلميح</span>
-            <p>{hint}</p>
+          <div className="quiz-hint-box" role="note">
+            <span className="quiz-hint-label">💡 تلميح</span>
+            <p dir="ltr" lang="en">{hint}</p>
           </div>
         )}
 
-        <div className="quiz-choices">
+        <div className="quiz-choices" role="group" aria-label="الخيارات المتاحة">
           {choices.map((choice, ci) => {
             const choiceText = choice.choice_text || String(choice);
             const isSelected = currentResponse.selectedAnswer === choiceText && !currentResponse.skipped;
@@ -925,41 +933,48 @@ function SessionView({ sessionId, profile }) {
                 type="button"
                 className={`quiz-choice${isSelected ? ' quiz-choice--selected' : ''}`}
                 onClick={() => selectAnswer(questionId, choiceText)}
+                disabled={isSubmitting}
+                dir="ltr"
+                lang="en"
+                aria-pressed={isSelected}
               >
-                <span className="quiz-choice-label">{CHOICE_LABELS[ci] || ci + 1}</span>
+                <span className="quiz-choice-label" dir="rtl" lang="ar">{CHOICE_LABELS[ci] || ci + 1}</span>
                 <span className="quiz-choice-text">{choiceText}</span>
               </button>
             );
           })}
         </div>
 
-        <StatusText status={status} />
-
         <div className="quiz-step-footer">
-          <button
-            type="button"
-            className="quiz-btn-secondary"
-            onClick={() => markHint(questionId)}
-            disabled={currentResponse.hintUsed}
-          >
-            {currentResponse.hintUsed ? '✓ تلميح' : 'تلميح'}
-          </button>
-          <button
-            type="button"
-            className="quiz-btn-secondary"
-            onClick={skipCurrent}
-            disabled={Boolean(currentResponse.skipped)}
-          >
-            {currentResponse.skipped ? '✓ تم التخطي' : 'تخطي'}
-          </button>
+          <div className="quiz-step-tools">
+            <button
+              type="button"
+              className={`quiz-btn-secondary${currentResponse.hintUsed ? ' quiz-btn-secondary--done' : ''}`}
+              onClick={() => markHint(questionId)}
+              disabled={currentResponse.hintUsed || isSubmitting}
+              aria-pressed={currentResponse.hintUsed}
+            >
+              {currentResponse.hintUsed ? '✓ تلميح' : 'تلميح'}
+            </button>
+            <button
+              type="button"
+              className={`quiz-btn-secondary${currentResponse.skipped ? ' quiz-btn-secondary--done' : ''}`}
+              onClick={skipCurrent}
+              disabled={Boolean(currentResponse.skipped) || isSubmitting}
+              aria-pressed={Boolean(currentResponse.skipped)}
+            >
+              {currentResponse.skipped ? '✓ تخطي' : 'تخطي'}
+            </button>
+          </div>
           <div className="quiz-step-nav">
             <button
               type="button"
               className="quiz-btn-secondary quiz-btn-prev"
               onClick={goPrev}
-              disabled={isFirst}
+              disabled={isFirst || isSubmitting}
+              aria-label="السؤال السابق"
             >
-              ← السابق
+              السابق
             </button>
             {isLast ? (
               <button
@@ -967,21 +982,28 @@ function SessionView({ sessionId, profile }) {
                 className="pilot-primary quiz-btn-submit"
                 onClick={submit}
                 disabled={isSubmitting}
+                aria-busy={isSubmitting}
               >
-                {isSubmitting ? 'جاري الإرسال...' : `إرسال (${answeredCount}/${questions.length})`}
+                {isSubmitting
+                  ? <span className="quiz-submit-loading"><span className="quiz-spinner" aria-hidden="true" />جاري الإرسال...</span>
+                  : `إرسال (${answeredCount}/${questions.length})`}
               </button>
             ) : (
               <button
                 type="button"
                 className="pilot-primary quiz-btn-next"
                 onClick={goNext}
+                disabled={isSubmitting}
+                aria-label="السؤال التالي"
               >
-                التالي →
+                التالي
               </button>
             )}
           </div>
         </div>
       </section>
+
+      <StatusText status={status} />
     </main>
   );
 }
