@@ -713,6 +713,8 @@ function LessonView({ lessonId, profile }) {
   );
 }
 
+const CHOICE_LABELS = ['أ', 'ب', 'ج', 'د', 'هـ', 'و'];
+
 function SessionView({ sessionId, profile }) {
   const [sessionStartedAt] = useState(() => Date.now());
   const storedSession = useMemo(() => {
@@ -724,16 +726,28 @@ function SessionView({ sessionId, profile }) {
   }, [sessionId]);
   const questions = storedSession?.questions?.length ? storedSession.questions : sampleQuestions;
   const [responses, setResponses] = useState({});
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [status, setStatus] = useState(null);
   const isSubmitting = status?.kind === 'loading';
 
-  function selectAnswer(questionId, choiceText) {
+  const question = questions[currentIndex];
+  const questionId = question?.question_id;
+  const choices = question?.choices || [];
+  const currentResponse = responses[questionId] || {};
+  const isFirst = currentIndex === 0;
+  const isLast = currentIndex === questions.length - 1;
+  const progressPercent = Math.round(((currentIndex + 1) / questions.length) * 100);
+  const answeredCount = questions.filter(
+    (q) => responses[q.question_id]?.selectedAnswer || responses[q.question_id]?.skipped,
+  ).length;
+
+  function selectAnswer(qId, choiceText) {
     setResponses((current) => {
-      const previous = current[questionId] || {};
+      const previous = current[qId] || {};
       const answerChanged = Boolean(previous.selectedAnswer && previous.selectedAnswer !== choiceText);
       return {
         ...current,
-        [questionId]: {
+        [qId]: {
           ...previous,
           selectedAnswer: choiceText,
           answerChanged: previous.answerChanged || answerChanged,
@@ -745,18 +759,18 @@ function SessionView({ sessionId, profile }) {
     });
   }
 
-  function markHint(questionId) {
+  function markHint(qId) {
     setResponses((current) => ({
       ...current,
-      [questionId]: {
-        ...(current[questionId] || {}),
+      [qId]: {
+        ...(current[qId] || {}),
         hintUsed: true,
-        startedAt: current[questionId]?.startedAt || Date.now(),
+        startedAt: current[qId]?.startedAt || Date.now(),
       },
     }));
   }
 
-  function skipQuestion(questionId) {
+  function skipCurrent() {
     setResponses((current) => ({
       ...current,
       [questionId]: {
@@ -766,17 +780,15 @@ function SessionView({ sessionId, profile }) {
         startedAt: current[questionId]?.startedAt || Date.now(),
       },
     }));
+    if (!isLast) setCurrentIndex((i) => i + 1);
   }
 
-  function setConfidence(questionId, confidence) {
-    setResponses((current) => ({
-      ...current,
-      [questionId]: {
-        ...(current[questionId] || {}),
-        confidence,
-        startedAt: current[questionId]?.startedAt || Date.now(),
-      },
-    }));
+  function goNext() {
+    if (!isLast) setCurrentIndex((i) => i + 1);
+  }
+
+  function goPrev() {
+    if (!isFirst) setCurrentIndex((i) => i - 1);
   }
 
   async function submit() {
@@ -785,28 +797,24 @@ function SessionView({ sessionId, profile }) {
       return;
     }
 
-    const attempts = questions.map((question, index) => ({
+    const attempts = questions.map((q, index) => ({
       student_id: Number(profile.studentId),
-      skill_id: question.skill_id,
-      question_id: question.question_id,
+      skill_id: q.skill_id,
+      question_id: q.question_id,
       session_id: sessionId,
-      selected_answer: responses[question.question_id]?.selectedAnswer || null,
-      confidence: responses[question.question_id]?.confidence ?? 60,
+      selected_answer: responses[q.question_id]?.selectedAnswer || null,
+      confidence: responses[q.question_id]?.confidence ?? 60,
       response_time: Math.max(
         1,
         Math.round(
-          (Date.now() -
-            (responses[question.question_id]?.startedAt || sessionStartedAt)) /
-            1000,
+          (Date.now() - (responses[q.question_id]?.startedAt || sessionStartedAt)) / 1000,
         ),
       ),
-      attempts: Math.max(1, (responses[question.question_id]?.retries || 0) + 1),
-      difficulty: question.difficulty || 1,
-      hint_used: Boolean(responses[question.question_id]?.hintUsed),
-      skip: Boolean(
-        responses[question.question_id]?.skipped || !responses[question.question_id]?.selectedAnswer,
-      ),
-      answer_changed: Boolean(responses[question.question_id]?.answerChanged),
+      attempts: Math.max(1, (responses[q.question_id]?.retries || 0) + 1),
+      difficulty: q.difficulty || 1,
+      hint_used: Boolean(responses[q.question_id]?.hintUsed),
+      skip: Boolean(responses[q.question_id]?.skipped || !responses[q.question_id]?.selectedAnswer),
+      answer_changed: Boolean(responses[q.question_id]?.answerChanged),
       time_of_day: timeOfDay(),
       session_position: index + 1,
     }));
@@ -848,75 +856,130 @@ function SessionView({ sessionId, profile }) {
     }
   }
 
-  return (
-    <main className="pilot-main">
-      <section className="pilot-panel">
-        <div className="pilot-section-heading pilot-section-heading--row">
-          <div>
-            <p>{storedSession?.lesson_id || 'جلسة تجريبية'}</p>
-            <h1>التقييم</h1>
-          </div>
-          <button className="pilot-primary" type="button" onClick={submit} disabled={isSubmitting}>
-            إرسال الإجابات
+  if (!question) {
+    return (
+      <main className="pilot-main">
+        <section className="pilot-panel">
+          <p>لا توجد أسئلة في هذه الجلسة.</p>
+          <button className="pilot-primary" type="button" onClick={() => navigate('/dashboard')}>
+            لوحة الطالب
           </button>
+        </section>
+      </main>
+    );
+  }
+
+  const hint =
+    question.metadata?.hint ||
+    question.metadata?.explanation ||
+    question.explanation ||
+    '';
+
+  return (
+    <main className="pilot-main quiz-step-main">
+      <div className="quiz-step-header">
+        <div className="quiz-step-meta">
+          <span className="quiz-step-lesson">{storedSession?.lesson_id || 'جلسة تجريبية'}</span>
+          <span className="quiz-step-count">
+            {currentIndex + 1} / {questions.length}
+          </span>
         </div>
+        <div className="quiz-step-bar-wrap">
+          <div className="quiz-step-bar" style={{ width: `${progressPercent}%` }} />
+        </div>
+        <div className="quiz-step-dots">
+          {questions.map((q, i) => {
+            const resp = responses[q.question_id];
+            const answered = resp?.selectedAnswer || resp?.skipped;
+            return (
+              <button
+                key={q.question_id}
+                type="button"
+                className={`quiz-dot${i === currentIndex ? ' quiz-dot--active' : ''}${answered ? ' quiz-dot--done' : ''}`}
+                onClick={() => setCurrentIndex(i)}
+                aria-label={`السؤال ${i + 1}`}
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      <section className="pilot-panel quiz-step-card">
+        <p className="quiz-step-label">السؤال {currentIndex + 1}</p>
+        <h2 className="quiz-step-prompt">{question.prompt}</h2>
+
+        {currentResponse.hintUsed && hint && (
+          <div className="quiz-hint-box">
+            <span>تلميح</span>
+            <p>{hint}</p>
+          </div>
+        )}
+
+        <div className="quiz-choices">
+          {choices.map((choice, ci) => {
+            const choiceText = choice.choice_text || String(choice);
+            const isSelected = currentResponse.selectedAnswer === choiceText && !currentResponse.skipped;
+            return (
+              <button
+                key={choiceText}
+                type="button"
+                className={`quiz-choice${isSelected ? ' quiz-choice--selected' : ''}`}
+                onClick={() => selectAnswer(questionId, choiceText)}
+              >
+                <span className="quiz-choice-label">{CHOICE_LABELS[ci] || ci + 1}</span>
+                <span className="quiz-choice-text">{choiceText}</span>
+              </button>
+            );
+          })}
+        </div>
+
         <StatusText status={status} />
-        <div className="pilot-quiz">
-          {questions.map((question, index) => (
-            <fieldset key={question.question_id}>
-              <legend>
-                {index + 1}. {question.prompt}
-              </legend>
-              <div className="pilot-choice-grid">
-                {(question.choices || []).map((choice) => {
-                  const choiceText = choice.choice_text || String(choice);
-                  return (
-                    <button
-                      className={
-                        responses[question.question_id]?.selectedAnswer === choiceText
-                          ? 'is-selected'
-                          : ''
-                      }
-                      key={choiceText}
-                      type="button"
-                      onClick={() => selectAnswer(question.question_id, choiceText)}
-                    >
-                      {choiceText}
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="pilot-attempt-tools">
-                <button
-                  className={responses[question.question_id]?.hintUsed ? 'is-selected' : ''}
-                  type="button"
-                  onClick={() => markHint(question.question_id)}
-                >
-                  تم استخدام التلميح
-                </button>
-                <button
-                  className={responses[question.question_id]?.skipped ? 'is-selected' : ''}
-                  type="button"
-                  onClick={() => skipQuestion(question.question_id)}
-                >
-                  تخطي
-                </button>
-                <label>
-                  مستوى الثقة
-                  <input
-                    max="100"
-                    min="0"
-                    type="range"
-                    value={responses[question.question_id]?.confidence ?? 60}
-                    onChange={(event) =>
-                      setConfidence(question.question_id, Number(event.target.value))
-                    }
-                  />
-                  <strong>{responses[question.question_id]?.confidence ?? 60}%</strong>
-                </label>
-              </div>
-            </fieldset>
-          ))}
+
+        <div className="quiz-step-footer">
+          <button
+            type="button"
+            className="quiz-btn-secondary"
+            onClick={() => markHint(questionId)}
+            disabled={currentResponse.hintUsed}
+          >
+            {currentResponse.hintUsed ? '✓ تلميح' : 'تلميح'}
+          </button>
+          <button
+            type="button"
+            className="quiz-btn-secondary"
+            onClick={skipCurrent}
+            disabled={Boolean(currentResponse.skipped)}
+          >
+            {currentResponse.skipped ? '✓ تم التخطي' : 'تخطي'}
+          </button>
+          <div className="quiz-step-nav">
+            <button
+              type="button"
+              className="quiz-btn-secondary quiz-btn-prev"
+              onClick={goPrev}
+              disabled={isFirst}
+            >
+              ← السابق
+            </button>
+            {isLast ? (
+              <button
+                type="button"
+                className="pilot-primary quiz-btn-submit"
+                onClick={submit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'جاري الإرسال...' : `إرسال (${answeredCount}/${questions.length})`}
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="pilot-primary quiz-btn-next"
+                onClick={goNext}
+              >
+                التالي →
+              </button>
+            )}
+          </div>
         </div>
       </section>
     </main>
