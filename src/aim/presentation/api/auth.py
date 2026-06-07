@@ -101,24 +101,28 @@ def get_current_supabase_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
 ) -> SupabaseUser | None:
     settings = get_settings()
-    if not settings.supabase_auth_required:
-        return None
 
     if credentials is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing bearer token.",
-        )
+        if settings.supabase_auth_required:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Missing bearer token.",
+            )
+        return None
+
     if credentials.scheme.lower() != "bearer":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authorization scheme.",
         )
+
     if not settings.supabase_url:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="SUPABASE_URL is required when Supabase auth is enabled.",
-        )
+        if settings.supabase_auth_required:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="SUPABASE_URL is required when Supabase auth is enabled.",
+            )
+        return None
 
     return SupabaseJWTVerifier(
         settings.supabase_url,
