@@ -47,7 +47,7 @@ Captured once per session at start and at end (complete, abandoned, or partial).
 | `device_class` | enum | No | One of: `mobile`, `tablet`, `desktop`, `unknown`. Used for session quality context only. Not used in mastery or adaptive logic. |
 | `time_of_day_bucket` | enum | Yes | One of: `morning` (05:00–11:59), `afternoon` (12:00–16:59), `evening` (17:00–20:59), `night` (21:00–04:59). Derived from `started_at` and student timezone. Used as behavioral context only. |
 | `timezone_offset_minutes` | int | No | Student timezone offset in minutes from UTC. Supports correct `time_of_day_bucket` derivation. |
-| `assigned_difficulty_band` | int (1–5) | Yes | Difficulty band the session was assigned by AIM Engine recommendation. |
+| `assigned_difficulty_band` | int (1–4) | Yes | Difficulty band the session was assigned by AIM Engine recommendation. |
 | `prerequisite_skills_met` | bool | Yes | Whether all prerequisite skills for this lesson's target skill were at mastery ≥ 0.7 at session start. |
 
 ### Session End Record
@@ -81,7 +81,7 @@ One record per question interaction during a session. A student may have multipl
 | `question_id` | UUID | Yes | The question presented. |
 | `skill_id` | UUID | Yes | The primary skill this question assesses. References `english-skill-tree.md`. |
 | `concept_id` | UUID or null | No | Sub-concept within the skill, if content metadata provides it. |
-| `question_difficulty` | int (1–5) | Yes | Difficulty level assigned to this question in the content bank. |
+| `question_difficulty` | int (1–4) | Yes | Difficulty level assigned to this question in the content bank. |
 | `session_position` | int | Yes | 1-indexed position of this question within the session. Supports early-session vs. late-session pattern analysis. |
 | `attempt_number` | int | Yes | 1-indexed attempt number for this question within the session. 1 = first try, 2 = first retry, etc. |
 | `submitted_answer` | string or null | Yes | The raw answer the student submitted. Null if skipped. Stored as text regardless of question type. |
