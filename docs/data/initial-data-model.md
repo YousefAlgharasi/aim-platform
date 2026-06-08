@@ -111,7 +111,7 @@ A unit of English learning from the skill tree. Canonical reference for AIM Engi
 | `id` | UUID (PK) | Matches skill ID in `docs/learning/english-skill-tree.md`. |
 | `name` | string | e.g., "Present Perfect". |
 | `category` | enum | One of: `grammar`, `vocabulary`, `reading`, `listening`, `speaking`, `writing`. |
-| `level` | int (1–5) | Difficulty level within the category. |
+| `level` | int (1–4) | Difficulty level within the category. |
 | `parent_skill_id` | UUID (FK → Skill) or null | Hierarchical parent skill. Null for root-level skills. |
 | `description` | text | Human-readable description for content managers and reviewers. |
 | `is_active` | bool | Whether the skill is currently in use. Inactive skills are hidden from new lesson assignments. |
@@ -141,7 +141,7 @@ A structured content unit targeting one or more skills. Authored by content mana
 | `title` | string | |
 | `skill_id` | UUID (FK → Skill) | Primary skill this lesson targets. |
 | `lesson_type` | enum | One of: `intro`, `skill_practice`, `review`, `remediation`. |
-| `difficulty_level` | int (1–5) | Intended difficulty. |
+| `difficulty_level` | int (1–4) | Intended difficulty. |
 | `estimated_duration_minutes` | int | Expected completion time. Used for session planning. |
 | `prerequisite_band` | int (1–4) | Minimum placement band for this lesson to be assigned. |
 | `is_published` | bool | Content managers draft; publishing requires approval. |
@@ -179,7 +179,7 @@ A practice question in the question bank.
 | `skill_id` | UUID (FK → Skill) | Primary skill assessed. |
 | `concept_id` | UUID or null | Optional sub-concept tag. |
 | `question_type` | enum | One of: `multiple_choice`, `fill_blank`, `true_false`, `reorder`, `match`. |
-| `difficulty_level` | int (1–5) | |
+| `difficulty_level` | int (1–4) | |
 | `question_text` | text | The question prompt. |
 | `correct_answer` | text | The canonical correct answer. For multiple choice, matches the correct `QuestionChoice`. |
 | `explanation_text` | text | Shown to the student after an incorrect attempt or on hint request. |
@@ -247,7 +247,7 @@ A single session a student starts for a lesson.
 | `early_exit_flag` | bool | |
 | `remediation_triggered` | bool | |
 | `ai_teacher_invocations` | int | |
-| `assigned_difficulty_band` | int (1–5) | |
+| `assigned_difficulty_band` | int (1–4) | |
 | `time_of_day_bucket` | enum | |
 | `prerequisite_skills_met` | bool | |
 | `aim_processed_at` | datetime (UTC) or null | When AIM Engine processed this session result. |
