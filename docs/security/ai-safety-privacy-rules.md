@@ -53,7 +53,7 @@ These constraints apply to every AI Teacher response, regardless of student inpu
 | **Frustration triggers support, not punishment** | When `frustration_score > 0.7`, the AIM Engine must reduce difficulty and serve a supportive recommendation. It must never increase difficulty, withhold content, or penalize the student for showing frustration signals. |
 | **Low-reliability data must not produce strong judgments** | When attempt count is low (< 5 for a skill), mastery estimates have high uncertainty. The AIM Engine must treat low-reliability states conservatively — prefer collecting more evidence over making strong adaptive decisions. |
 | **Prerequisite gaps are review queues, not blockers** | A detected prerequisite gap adds to the review queue and future recommendation. It must never block a student from progressing in a way that creates a dead-end experience. |
-| **No speed-as-mastery** | Fast response time combined with correct answers must not disproportionately raise mastery. Mastery is a weighted formula of five components. Speed contributes only the Speed component (15% weight). |
+| **No speed-as-mastery** | Response time and speed signals must not enter mastery calculation, student level, or direct difficulty-increase logic. Speed is behavioral evidence only. |
 | **Admin overrides are audit-logged** | Every admin override of AIM Engine state is recorded in `AuditLog` with the admin's user ID, the action, and a reason field. Override logs are never deleted. |
 
 ---
@@ -132,7 +132,7 @@ AIM captures behavioral signals from learning sessions to improve educational ad
 | `sudden_slowdown_flag` | Detect potential fatigue or distraction within the session | Diagnose ADHD, attention disorders, or behavioral conditions |
 | `repeated_errors_flag` | Trigger guided retry or remediation recommendation | Diagnose learning disability, dyslexia, or processing disorder |
 | `learning_style` | Adapt AI Teacher examples and explanation style | Permanent categorization of the learner as a fixed type |
-| `avg_speed` | One component in mastery formula (Speed, 15% weight) | Direct measure of intelligence or aptitude |
+| `avg_speed` | Stored as behavioral context only. Must not be used as a mastery formula component, level signal, or direct difficulty-increase signal. | Direct measure of intelligence or aptitude |
 | `answer_changed_flag` | Contribute to confidence inference | Framed as deceptive behavior or cheating indicator |
 
 ### 3.2 Behavioral Signal Labelling Rules
