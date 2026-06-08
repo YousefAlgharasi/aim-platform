@@ -210,6 +210,8 @@ The following logic is exclusively owned by the AIM Engine and must not be repli
 | Placement band assignment | Depends on scoring algorithm and band thresholds that may change. |
 | Retention decay calculation | Depends on time-since-last-attempt curves maintained server-side. |
 | AI Teacher LLM calls | AI provider keys must never be in the Flutter client. |
+| Listening (LIS) audio delivery scoring | Audio streaming and response scoring for LIS skill states must be handled server-side only. The client may play audio if infrastructure is confirmed, but scoring of listening comprehension must never be computed client-side. |
+| Speaking (SPE) free-speech scoring | Speech-to-text or pronunciation scoring for SPE skills must never run in the Flutter client. All SPE scoring logic, if implemented post-MVP, must be a backend-only service. |
 
 The Flutter app is a display and interaction layer only. It receives pre-computed recommendations, skill state summaries, and lesson content from the backend. It does not hold adaptive logic.
 
@@ -234,6 +236,7 @@ The Flutter app is a display and interaction layer only. It receives pre-compute
 - The skill state fields (`mastery`, `confidence`, etc.) map directly to the `StudentSkillState` model implemented in T-03.
 - The AIM Engine algorithm details (mastery delta formulas, retention decay curves, frustration thresholds) are implementation concerns for Phase 1 and are not defined in this Phase 0 document.
 - Recommendation confidence scores are informational for admin dashboards; they do not gate lesson delivery in MVP.
+- All seven skill categories (PHO, VOC, GRA, READ, WRITE, LIS, SPE) are valid `skill_id` prefixes in AIM Engine inputs and outputs. LIS and SPE skill states are managed identically to other categories. Gating of LIS/SPE lessons from being served to students is enforced by the content layer (`lesson_eligible`, `placement_eligible` flags), not the AIM Engine itself.
 
 ---
 
