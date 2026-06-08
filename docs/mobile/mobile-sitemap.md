@@ -6,7 +6,7 @@ This document defines the AIM mobile application screen inventory, navigation fl
 
 ## Scope
 
-Phase 0 planning documentation only. No Flutter code, Dart source, widget implementations, or backend runtime code is produced here. The mobile app is a Flutter application that communicates exclusively with the backend API layer. The AIM Engine, AI Teacher gateway, and all AI logic run entirely on the backend. This document does not create a Student Web App. The MVP pilot uses a React web interface; this mobile sitemap describes the future Flutter mobile experience that follows the pilot.
+Phase 0 planning documentation only. No Flutter code, Dart source, widget implementations, or backend runtime code is produced here. The mobile app is a Flutter application that communicates exclusively with the backend API layer. The AIM Engine, AI Teacher gateway, and all AI logic run entirely on the backend. This document does not create a Student Web App. The MVP pilot used a React Web interface and is now completed. This mobile sitemap describes the Flutter Mobile App experience that is part of Phase 1 post-MVP planning.
 
 ## Dependency Check
 
@@ -268,7 +268,7 @@ Micro-goals and review alerts appear as dashboard cards rather than a separate t
 | Content creation or editing | Content manager workflow is web-admin only. |
 | AIM algorithm or adaptive logic | Runs in backend Python AIM Engine only. Never on-device. |
 | AI provider key access | Backend-only. Mobile never holds provider keys. |
-| Student Web App | The MVP pilot uses React web; this document covers future Flutter mobile. |
+| Student Web App | The MVP pilot used a React Web interface (now completed). This document covers the Flutter Mobile App for Phase 1 post-MVP. |
 | Raw mastery scores or AIM weights | Not shown to learners. |
 | Inter-student comparison or leaderboards | Not in MVP. AIM is personalized, not competitive. |
 | Offline session mode | Not in MVP. Session evidence must be backend-persisted. |
@@ -279,7 +279,7 @@ Micro-goals and review alerts appear as dashboard cards rather than a separate t
 
 | # | Question | Status | Impact |
 |---|---|---|---|
-| OQ-01 | Will the MVP pilot use React web only or move directly to Flutter mobile? | Open | Determines whether this sitemap is Phase 1 or post-pilot. |
+| OQ-01 | Will the MVP pilot use React web only or move directly to Flutter mobile? | **Resolved.** The MVP pilot used React Web and is completed. Flutter Mobile is the Phase 1 post-MVP client covered by this sitemap. |
 | OQ-02 | Is parent access included in Phase 1 mobile? | Open | If yes, parent screens become MVP. |
 | OQ-03 | Which question types are in scope for MVP mobile sessions? | Assumed: multiple choice, fill-in-the-blank, matching. | Speaking/audio question types require separate design. |
 | OQ-04 | Is dark mode required for MVP? | Open | Should be decided before design tokens. |

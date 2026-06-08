@@ -2,6 +2,8 @@
 
 ## Purpose
 
+> **Historical Baseline Note:** This document describes the completed MVP pilot scope. The MVP pilot used a React Web interface and has been closed. This document remains as the historical baseline reference for what the pilot covered. Phase 1 post-MVP scope — including the Flutter Mobile App — is documented in the technical baseline files (`docs/api/api-planning-baseline.md`, `docs/mobile/mobile-sitemap.md`). Do not mix the MVP pilot scope defined here with Phase 1 scope.
+
 This document defines what belongs in the AIM MVP so Phase 1 implementation tasks can stay focused and avoid scope creep.
 
 ## Scope
