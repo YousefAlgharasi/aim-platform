@@ -2,6 +2,8 @@
 
 ## Purpose
 
+> **Historical Baseline Note:** This document defines the out-of-scope boundary for the completed MVP pilot. The MVP pilot used a React Web interface and has been closed. This document remains as the historical baseline. Phase 1 post-MVP planning — including the Flutter Mobile App — is in scope for Phase 1 and is documented in the technical baseline files. Do not read this document as prohibiting Flutter in Phase 1; the Flutter exclusion listed below applied only to the completed MVP pilot.
+
 This document defines what is not part of the AIM MVP so implementation planning can protect the first pilot from unnecessary expansion.
 
 ## Scope
@@ -25,8 +27,8 @@ Anything that does not support that validation should be deferred unless the pro
 
 | Area | Out of MVP | Reason |
 |---|---|---|
-| Flutter learner app | Excluded from first pilot | The first pilot is React web so algorithm validation can happen faster. |
-| Native mobile release | Excluded | App store, device, and release work would distract from algorithm validation. |
+| Flutter learner app | Excluded from first pilot (completed) | The first pilot used React Web for faster algorithm validation. Flutter Mobile is now part of Phase 1 post-MVP and is in scope for Phase 1 engineering. |
+| Native mobile release | Excluded from MVP pilot | App store, device, and release work would have distracted from algorithm validation in the pilot. Phase 1 includes native mobile planning. |
 | Full public marketing site | Excluded | Not needed for a five-learner pilot. |
 | Payment or subscriptions | Excluded | Pilot is not a paid commercial launch. |
 | Teacher classroom product | Excluded | MVP is individual pilot learning, not institution management. |
