@@ -107,7 +107,6 @@ Response time may inform:
 - Hesitation Index: proportion of questions where `response_time_seconds > 2× session average`.
 - Sudden Slowdown Signal: current session average vs. student historical average (frustration signal).
 - Rushing Signal: `response_time_seconds < 20% of session average` on incorrect answers (potential overconfidence or guessing signal).
-- Average Speed metric (one of five mastery formula components, weighted 15%).
 
 ---
 
