@@ -22,7 +22,7 @@ EN-A1-{CATEGORY}-{NUMBER}
 
 - `EN` — English language
 - `A1` — CEFR A1 level (absolute beginner)
-- `{CATEGORY}` — PHO, VOC, GRA, READ, WRITE (see below)
+- `{CATEGORY}` — PHO, VOC, GRA, READ, WRITE, LIS, SPE (see below)
 - `{NUMBER}` — Zero-padded three-digit sequence within the category
 
 ## Skill Categories
@@ -34,6 +34,8 @@ EN-A1-{CATEGORY}-{NUMBER}
 | GRA | Grammar | Understanding and applying beginner English grammar structures. |
 | READ | Reading | Recognizing words and reading simple sentences and short texts. |
 | WRITE | Writing | Forming letters and writing simple words and sentences. |
+| LIS | Listening | Comprehending spoken English at A1 level, including letters, words, instructions, and short dialogues. |
+| SPE | Speaking | Producing spoken English at A1 level, from individual sounds to simple guided exchanges. |
 
 ## Difficulty Scale
 
@@ -210,6 +212,40 @@ EN-A1-{CATEGORY}-{NUMBER}
 
 ---
 
+## Category: Listening (LIS)
+
+> **MVP Pilot Note:** Listening skills are defined here as the canonical planning reference. Serving LIS questions in the pilot requires confirmed audio delivery infrastructure. Until audio delivery is confirmed, LIS skills are tagged `lesson_eligible = false` and `placement_eligible = false`. Questions may be authored with audio reference metadata at planning level only.
+
+| Skill ID | Skill Name | Difficulty | Prerequisites | Notes for Arabic Speakers |
+|---|---|---|---|---|
+| EN-A1-LIS-001 | Recognizing spoken English alphabet letters | 2 | EN-A1-PHO-001, EN-A1-PHO-002 | Arabic uses a completely different script and sound system; all 26 letter names must be treated as new auditory items. Confusion between similar-sounding letters (b/d/e/g/p/t/v) is very common. |
+| EN-A1-LIS-002 | Distinguishing short vowel sounds in simple words | 2 | EN-A1-PHO-003 | Arabic has only three vowel phonemes; listening discrimination of all five English short vowels (a/e/i/o/u) requires targeted minimal-pair ear training before production. |
+| EN-A1-LIS-003 | Identifying familiar A1 words when spoken slowly | 2 | EN-A1-LIS-001, EN-A1-VOC-001 | Arabic learners rely heavily on written cues; listening without visual text support is a new processing challenge that requires deliberate scaffolding. |
+| EN-A1-LIS-004 | Understanding basic classroom instructions | 2 | EN-A1-LIS-003, EN-A1-VOC-010, EN-A1-GRA-018 | Imperative verbs (open, sit, write, listen) are the target; focus on action words already established in VOC-017 and the imperative structure from GRA-018. |
+| EN-A1-LIS-005 | Understanding greetings and simple personal questions | 2 | EN-A1-LIS-003, EN-A1-VOC-001, EN-A1-GRA-006 | English rising intonation on yes/no questions is unfamiliar to Arabic speakers; model the intonation pattern explicitly alongside the lexical content. |
+| EN-A1-LIS-006 | Understanding numbers 0–20 when spoken | 2 | EN-A1-LIS-003, EN-A1-VOC-003 | Similar-sounding number pairs (thirteen/thirty, fourteen/forty) are a known error source; scope this skill strictly to 0–20 to avoid confusion at A1. |
+| EN-A1-LIS-007 | Understanding simple "to be" sentences | 3 | EN-A1-LIS-005, EN-A1-GRA-006, EN-A1-GRA-007 | Contracted speech forms (I'm, she's, they're) are harder to parse aurally than written; model both full and contracted forms before expecting comprehension of natural speech. |
+| EN-A1-LIS-008 | Understanding short A1 mini-dialogues | 4 | EN-A1-LIS-007, EN-A1-LIS-004, EN-A1-VOC-001 | Processing connected speech across 2–4 turns is cognitively demanding at A1; deliver at slow native speed with familiar vocabulary only. Comprehension questions should target explicit content, not inference. |
+
+---
+
+## Category: Speaking (SPE)
+
+> **MVP Pilot Note:** Speaking skills are defined here as the canonical planning reference. Automated scoring of free-speech production is **out of scope for MVP**. SPE skills may be used in structured non-automated exercises (e.g., prompted repetition, read-aloud with manual review) where explicitly approved. All SPE questions must be tagged `placement_eligible = false`. Free-speech open scoring must not be implemented in the MVP client or backend.
+
+| Skill ID | Skill Name | Difficulty | Prerequisites | Notes for Arabic Speakers |
+|---|---|---|---|---|
+| EN-A1-SPE-001 | Producing English alphabet letter names | 2 | EN-A1-PHO-001, EN-A1-PHO-002, EN-A1-LIS-001 | Arabic speakers struggle most with p, v, w, g (as in "go"), and short vowel letter names (a, e, i). These must be drilled as individual items before sequencing into the alphabet. |
+| EN-A1-SPE-002 | Producing common consonant sounds, especially p/v/g | 2 | EN-A1-PHO-004, EN-A1-LIS-002 | No Arabic equivalents exist for /p/, /v/, or the English /g/ (as in "go"); learners typically substitute the closest Arabic phoneme. Minimal-pair contrast drills (pen/ben, van/ban) are essential. |
+| EN-A1-SPE-003 | Producing short vowel sounds in CVC words | 2 | EN-A1-PHO-005, EN-A1-LIS-002 | All five short vowels must be distinguished in production; repetitive CVC minimal-pair production (cat/cut/cot) is the core method. Arabic short-vowel habits (a/i/u only) will interfere. |
+| EN-A1-SPE-004 | Saying basic greetings and polite phrases | 1 | EN-A1-VOC-001 | High-frequency social phrases (hello, thank you, goodbye, excuse me) can be learned as holistic chunks at A1. Pronunciation accuracy is secondary to communicative intent at this stage. |
+| EN-A1-SPE-005 | Saying personal identity sentences | 2 | EN-A1-SPE-004, EN-A1-GRA-006, EN-A1-VOC-002 | Producing "I am…", "My name is…", and "I am from…" sentences; Arabic VSO word-order habit may cause learners to reorder the English SVO structure incorrectly. |
+| EN-A1-SPE-006 | Asking and answering simple "to be" questions | 3 | EN-A1-SPE-005, EN-A1-GRA-008, EN-A1-LIS-007 | Rising question intonation ("Are you a student?") is unfamiliar; model the intonation contour explicitly. Short answers (Yes, I am / No, I'm not) must also be drilled. |
+| EN-A1-SPE-007 | Producing simple present-tense sentences | 3 | EN-A1-SPE-005, EN-A1-GRA-012 | Third-person -s inflection (she reads, he eats) is absent in Arabic; this is one of the highest-frequency production errors for Arabic A1 learners and requires intensive repeated practice. |
+| EN-A1-SPE-008 | Participating in a short A1 guided dialogue | 4 | EN-A1-SPE-006, EN-A1-SPE-007, EN-A1-LIS-008 | Combining real-time listening and speaking in a structured exchange is the peak A1 speaking challenge; use scripted dialogue frames with fixed turn patterns to reduce cognitive load. |
+
+---
+
 ## Skill Prerequisite Graph (Summary)
 
 The table below shows each skill's immediate prerequisite(s) only. Full chains are derivable by traversing the table recursively.
@@ -286,6 +322,22 @@ The table below shows each skill's immediate prerequisite(s) only. Full chains a
 | EN-A1-WRITE-008 | EN-A1-WRITE-006, EN-A1-GRA-008 |
 | EN-A1-WRITE-009 | EN-A1-WRITE-008, EN-A1-VOC-009 |
 | EN-A1-WRITE-010 | EN-A1-WRITE-009, EN-A1-GRA-012 |
+| EN-A1-LIS-001 | EN-A1-PHO-001, EN-A1-PHO-002 |
+| EN-A1-LIS-002 | EN-A1-PHO-003 |
+| EN-A1-LIS-003 | EN-A1-LIS-001, EN-A1-VOC-001 |
+| EN-A1-LIS-004 | EN-A1-LIS-003, EN-A1-VOC-010, EN-A1-GRA-018 |
+| EN-A1-LIS-005 | EN-A1-LIS-003, EN-A1-VOC-001, EN-A1-GRA-006 |
+| EN-A1-LIS-006 | EN-A1-LIS-003, EN-A1-VOC-003 |
+| EN-A1-LIS-007 | EN-A1-LIS-005, EN-A1-GRA-006, EN-A1-GRA-007 |
+| EN-A1-LIS-008 | EN-A1-LIS-007, EN-A1-LIS-004, EN-A1-VOC-001 |
+| EN-A1-SPE-001 | EN-A1-PHO-001, EN-A1-PHO-002, EN-A1-LIS-001 |
+| EN-A1-SPE-002 | EN-A1-PHO-004, EN-A1-LIS-002 |
+| EN-A1-SPE-003 | EN-A1-PHO-005, EN-A1-LIS-002 |
+| EN-A1-SPE-004 | EN-A1-VOC-001 |
+| EN-A1-SPE-005 | EN-A1-SPE-004, EN-A1-GRA-006, EN-A1-VOC-002 |
+| EN-A1-SPE-006 | EN-A1-SPE-005, EN-A1-GRA-008, EN-A1-LIS-007 |
+| EN-A1-SPE-007 | EN-A1-SPE-005, EN-A1-GRA-012 |
+| EN-A1-SPE-008 | EN-A1-SPE-006, EN-A1-SPE-007, EN-A1-LIS-008 |
 
 ---
 
@@ -298,18 +350,22 @@ The table below shows each skill's immediate prerequisite(s) only. Full chains a
 | GRA — Grammar | 20 |
 | READ — Reading | 10 |
 | WRITE — Writing | 10 |
-| **Total** | **70** |
+| LIS — Listening | 8 |
+| SPE — Speaking | 8 |
+| **Total** | **86** |
 
 ---
 
 ## MVP Pilot Skill Scope
 
-For the initial two-week A1 pilot (five learners), lessons and questions should cover the following priority skills. The full 70-skill tree is the planning reference; the pilot uses a subset.
+For the initial two-week A1 pilot (five learners), lessons and questions should cover the following priority skills. The full 86-skill tree is the planning reference; the pilot uses a subset.
 
 | Priority | Skills | Rationale |
 |---|---|---|
 | Core pilot skills | EN-A1-PHO-001 through PHO-005, EN-A1-VOC-001 through VOC-017, EN-A1-GRA-001 through GRA-018, EN-A1-READ-001 through READ-008, EN-A1-WRITE-001 through WRITE-008 | Covers foundational phonics, essential vocabulary topics, core grammar, basic reading, and basic writing without requiring full A1 completion. |
 | Deferred for post-pilot | EN-A1-PHO-009, PHO-010, EN-A1-VOC-019, VOC-020, EN-A1-GRA-019, GRA-020, EN-A1-READ-009, READ-010, EN-A1-WRITE-009, WRITE-010 | These integrate multiple skill areas and are better validated after pilot feedback. |
+| Deferred — audio required | EN-A1-LIS-001 through LIS-008 | Listening skills are fully defined but require confirmed audio delivery infrastructure before being served to students. Tagged `lesson_eligible = false` and `placement_eligible = false` until audio is confirmed. |
+| Deferred — scoring required | EN-A1-SPE-001 through SPE-008 | Speaking skills are fully defined but automated free-speech scoring is out of MVP scope. SPE skills must not be added to placement. May be used in structured manual-review exercises only if explicitly approved. |
 
 ---
 
@@ -339,10 +395,10 @@ For the initial two-week A1 pilot (five learners), lessons and questions should 
 
 | Question | Current Handling |
 |---|---|
-| Should Speaking/Oral Production be a separate skill category in the MVP? | Deferred. Phase 0 pilot is text-based (React web). Speaking is a future skill category when audio input is available. |
-| Should Listening be a separate skill category? | Deferred. Audio content delivery is not confirmed for the first pilot. Add as a future category when audio is confirmed. |
+| Should Speaking/Oral Production be a separate skill category in the MVP? | Resolved. SPE is now a defined skill category (EN-A1-SPE-001 through SPE-008). Automated free-speech scoring remains out of MVP scope; SPE skills require manual review or structured non-automated exercises until scoring is confirmed. |
+| Should Listening be a separate skill category? | Resolved. LIS is now a defined skill category (EN-A1-LIS-001 through LIS-008). Serving LIS questions requires confirmed audio delivery infrastructure; all LIS skills are tagged deferred until audio is confirmed. |
 | Which exact skills will each of the 6–10 pilot lessons cover? | To be decided in P0-011 (Define Lesson Content Structure). |
-| Should placement test questions map to specific skill IDs from this tree? | Yes, this is the expected design. Placement test strategy (P0-010) should reference skill IDs from this document. |
+| Should placement test questions map to specific skill IDs from this tree? | Yes, this is the expected design. Placement test strategy (P0-010) should reference skill IDs from this document. LIS and SPE are excluded from placement in MVP. |
 | Are common error tags aligned to skill IDs or defined separately? | To be defined in P0-012 (Define Question Bank Standards). Common error tags should reference skill IDs. |
 | Should pilot lessons group skills by topic (e.g., one lesson covers VOC and GRA together) or by skill type? | Open decision. Topic-grouped lessons are more learner-friendly. Skill-type grouping is more AIM-efficient. Defer to lesson structure planning. |
 

@@ -28,7 +28,7 @@ Every question in the bank must have the following fields. These are stored in t
 | `question_type` | enum | Yes | One of: `mcq`, `true_false`, `matching`, `fill_blank`, `drag_order`. |
 | `skill_id` | string | Yes | The single primary skill this question assesses. Must exist in the English skill tree. |
 | `difficulty` | int (1–4) | Yes | Aligned to the skill tree difficulty scale. Must match or be within one level of the skill's difficulty. |
-| `category` | enum | Yes | One of: `PHO`, `VOC`, `GRA`, `READ`, `WRITE`. Derived from `skill_id`. |
+| `category` | enum | Yes | One of: `PHO`, `VOC`, `GRA`, `READ`, `WRITE`, `LIS`, `SPE`. Derived from `skill_id`. LIS questions require confirmed audio delivery before `lesson_eligible` or `placement_eligible` may be set to `true`. SPE questions must always have `placement_eligible = false`; free-speech open scoring is out of MVP scope. |
 | `question_text` | string | Yes | The question prompt shown to the student. |
 | `options` | array[string] | Conditional | Required for `mcq` and `true_false`. |
 | `correct_answer` | string or array | Yes | Correct answer key(s). Backend-only. Never exposed to client. |
@@ -209,6 +209,8 @@ The following patterns are explicitly rejected during review:
 | Question | Current Handling |
 |---|---|
 | Should writing questions (WRITE skill category) be included in the question bank for MVP? | Tentatively yes for fill_blank and drag_order types only. Free-text writing is excluded. Confirm during Phase 1 lesson authoring. |
+| Should LIS questions be included in the question bank for MVP? | Defined in the skill tree but gated on audio delivery confirmation. All LIS questions must be authored with audio reference metadata only (no live audio serving) until infrastructure is confirmed. Set `lesson_eligible = false` and `placement_eligible = false` until audio is ready. |
+| Should SPE questions be included in the question bank for MVP? | Defined in the skill tree but automated free-speech scoring is explicitly out of MVP scope. SPE questions must have `placement_eligible = false`. Structured prompted-repetition or read-aloud tasks with manual review may be used only if explicitly approved. |
 | Should matching questions support image-based matching in MVP? | Deferred. Image delivery pipeline must be confirmed first. Text-based matching only for launch. |
 | Should the question bank support multi-language UI (Arabic question stems)? | Out of scope for MVP. English-language questions with Arabic notes only. |
 | What is the SLA for content review turnaround? | Open decision. Recommend 48-hour review SLA for draft → active. Define in team workflow documentation. |
