@@ -8,6 +8,12 @@ This document defines the planning-level API baseline for the AIM platform befor
 
 Phase 0 planning documentation only. No backend runtime code, FastAPI routes, database migrations, Flutter code, or API gateway implementation is produced here. All entity references map to `docs/data/initial-data-model.md`. All AIM Engine input/output contracts reference `docs/aim-engine/boundary-and-io-contract.md`.
 
+## Phase Clarification: React Web Pilot vs Flutter Phase 1
+
+The React Web interface was used for the completed MVP pilot. Phase 1 is the post-MVP platform phase, where the Flutter Mobile App becomes a primary client of the shared backend API. Any retained React Web or admin surfaces must use the same backend authorization, AIM Engine boundary, and learner-safe rules.
+
+This API baseline was authored during Phase 0 and applies to Phase 1 implementation. References to "mobile app" throughout this document refer to the Flutter Mobile App unless a specific surface is named. All AIM boundary rules and client-side prohibitions apply equally to Flutter and any retained React Web surface.
+
 ## Dependency Check
 
 | Dependency | Required Output | Status |
@@ -20,7 +26,8 @@ Phase 0 planning documentation only. No backend runtime code, FastAPI routes, da
 ## API Architecture Overview
 
 ```
-Flutter Mobile App
+Flutter Mobile App (Phase 1 — primary learner client)
+Retained React Web Surface (if applicable — admin or pilot surfaces)
         │
         │  HTTPS REST (JSON)
         ▼
@@ -49,8 +56,9 @@ Backend API Layer  (same service, scoped endpoints)
 ```
 
 **Rules:**
-- Flutter never calls the AIM Engine directly.
-- Flutter never calls the AI Teacher gateway directly.
+- External clients, including Flutter Mobile and any retained React Web surface, never call the AIM Engine directly.
+- External clients never call the AI Teacher Gateway directly.
+- External clients never compute mastery, difficulty, recommendations, retention, or behavioral adaptation locally.
 - AI provider keys live only in the backend environment.
 - Admin dashboard endpoints share the same backend service but use a separate auth token scope (`role: pilot_admin`, `project_owner`).
 
@@ -68,7 +76,8 @@ Backend API Layer  (same service, scoped endpoints)
 
 | Consumer | Token Type | Role Claim Checked |
 |---|---|---|
-| Flutter mobile app | Supabase JWT (student) | `student` |
+| Flutter mobile app (Phase 1) | Supabase JWT (student) | `student` |
+| Retained React Web surface (if applicable) | Supabase JWT (student or admin scope) | Per role — same rules as Flutter |
 | Admin dashboard | Supabase JWT (internal) | `pilot_admin`, `project_owner` |
 | Content manager tools | Supabase JWT (internal) | `content_manager` |
 | Human reviewer tools | Supabase JWT (internal) | `human_reviewer` |
@@ -593,16 +602,19 @@ All API endpoints return consistent error shapes:
 
 ---
 
-## What the Mobile App Must Never Do
+## What External Clients Must Never Do
+
+This applies to the Flutter Mobile App, any retained React Web surface, and any other external client consuming the backend API.
 
 | Prohibited | Reason |
 |---|---|
 | Call AIM Engine endpoints directly | AIM Engine is backend-internal only. |
-| Call AI Teacher gateway | AI provider keys must not be in the client. |
-| Compute mastery or difficulty scores locally | Client-side computation is inconsistent and manipulable. |
-| Store AI provider keys | Security non-negotiable. |
+| Call AI Teacher gateway | AI provider keys must not be in any client. |
+| Compute mastery, difficulty, recommendations, or retention locally | Client-side computation is inconsistent and manipulable. |
+| Store AI provider keys | Security non-negotiable. Applies to both Flutter and React Web surfaces. |
 | Decide next lesson without a backend API call | Selection requires full skill state history held server-side. |
 | Read another student's data | Every student endpoint is scoped to the authenticated user. |
+| Apply clinical, medical, or diagnostic labels to learners | AIM outputs are educational only. No learner labels with diagnostic framing. |
 
 ---
 
@@ -621,7 +633,7 @@ All API endpoints return consistent error shapes:
 
 - All external API traffic uses HTTPS. HTTP is not supported.
 - Backend is a single FastAPI service in MVP. Microservice decomposition is post-MVP.
-- The mobile app is React web for the first pilot. The same API contract applies when Flutter is built.
+- Flutter Mobile App is the primary Phase 1 learner client. The React Web interface was used for the completed MVP pilot and may be retained for admin or transition surfaces. Both are external clients and must follow the same AIM boundary rules defined in this document.
 - Supabase Auth JWT is passed on every authenticated request. The backend validates it independently.
 - AIM Engine processing on session complete is synchronous in MVP (inline with the API response). Async processing is a post-MVP resilience improvement for high-load scenarios.
 
