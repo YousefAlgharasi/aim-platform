@@ -2,81 +2,296 @@
 
 ## Purpose
 
-This document audits Phase 0 planning documents for contradictions across MVP scope, roles, journeys, learning data, data model, API planning, AI Teacher rules, AIM Engine contract, notifications, analytics, and safety rules.
+This document audits active Phase 0 planning documents for cross-document contradictions, stale wording, duplicated assumptions, stack confusion, and scope conflicts before Phase 1 implementation planning proceeds.
 
 ## Scope
 
-This is a Phase 0 QA document for task P0-QA-004. It identifies contradictions, affected files, expected resolution, severity, and recommended owner or follow-up task. It does not rewrite source documents, implement app/backend code, create a Student Web App, or move AIM Engine logic into Flutter.
+This is Phase 0 QA documentation only.
+
+This document does not implement:
+
+- Backend runtime code.
+- NestJS API code.
+- FastAPI routes.
+- Flutter Mobile code.
+- React Web code.
+- Database migrations.
+- AIM Engine code.
+- AI Teacher Gateway code.
+- Admin dashboard runtime code.
+- A separate Student Web App.
+
+## Current Product Direction
+
+| Area | Confirmed Direction |
+|---|---|
+| Completed MVP pilot learner interface | React Web |
+| Completed MVP pilot backend API | FastAPI |
+| Completed MVP pilot AIM Engine | Python backend AIM Engine |
+| Completed MVP pilot database | Supabase PostgreSQL |
+| Completed MVP pilot auth | Supabase Auth |
+| Post-MVP Phase 1 learner client | Flutter Mobile |
+| Post-MVP Phase 1 Backend API | NestJS + TypeScript |
+| Post-MVP Phase 1 AIM Engine | Python AIM Engine as a backend service/module |
+| Post-MVP Phase 1 database/auth | Supabase PostgreSQL/Auth unless changed by a later documented decision |
+| Post-MVP Student Web App | No separate Student Web App is planned unless a later documented product decision changes this |
 
 ## Dependency Check
 
 | Dependency | Required Output | Status |
 |---|---|---|
-| P0-QA-001 | `docs/quality/phase-0-required-files-inventory.md` | Present and marked Done in Notion before this audit started. |
-| P0-QA-003 | `docs/quality/phase-0-content-completeness-audit.md` | Present and marked Done in Notion before this audit started. |
+| P0-QA-001 | `docs/quality/phase-0-required-files-inventory.md` | Present. |
+| P0-QA-002 | `docs/quality/phase-0-duplicate-content-audit.md` | Present and cleaned. |
+| P0-QA-003 | `docs/quality/phase-0-content-completeness-audit.md` | Present and cleaned. |
+| P0-001 | `docs/product/vision.md` | Checked and used as source of truth. |
+| P0-001 | `docs/product/non-negotiables.md` | Checked for product and technical rules. |
 
-## Summary
+## Audit Method
 
-| Result | Count |
-|---|---:|
-| Major consistency issues found | 8 |
-| Critical / blocker issues | 1 |
-| High severity issues | 2 |
-| Medium severity issues | 4 |
-| Low severity issues | 1 |
+1. Use `docs/product/vision.md` as the primary source of truth.
+2. Compare active Phase 0 planning documents against the confirmed product direction.
+3. Identify contradictions, stale references, vague wording, and unsafe wording.
+4. Classify each issue by severity.
+5. Recommend exact cleanup action.
+6. Preserve completed MVP pilot context while clarifying post-MVP Phase 1 direction.
 
-Phase 0 is mostly consistent at the product-rule level. The main blocker is the no-speed mastery contradiction. Other issues are cleanup or product-decision gaps: stale paths, mobile versus React web wording, parent feature conditionality, and old root-level pilot/deployment documents that may be mistaken for active Phase 0 outputs.
+## Severity Guide
+
+| Severity | Meaning |
+|---|---|
+| Critical | Could cause unsafe behavior, security exposure, or wrong implementation architecture. |
+| High | Could cause Phase 1 tasks to implement the wrong stack, wrong client, or wrong AIM boundary. |
+| Medium | Could create confusion, duplicated work, or planning drift. |
+| Low | Editorial cleanup or minor wording inconsistency. |
+
+## Executive Summary
+
+Phase 0 documents are broadly aligned after cleanup, but the main consistency requirement is to keep the completed MVP pilot stack separate from the post-MVP Phase 1 target stack.
+
+The canonical direction is:
+
+- React Web and FastAPI are completed MVP pilot context.
+- Flutter Mobile and NestJS + TypeScript are post-MVP Phase 1 direction.
+- Python AIM Engine remains backend-owned.
+- Supabase PostgreSQL/Auth remain the default unless changed by a later documented decision.
+- No separate Student Web App is planned for post-MVP unless a later documented decision changes this.
+- Clients must not calculate mastery, student level, weakness, difficulty, retention, or recommendations locally.
+- Speed must not directly affect mastery, student level, or direct difficulty increase.
+- Learner behavior language must remain educational, non-clinical, non-medical, and non-diagnostic.
 
 ## Consistency Findings
 
-| ID | Severity | Contradiction / Inconsistency | Affected Files | Expected Resolution | Recommended Owner / Task |
-|---|---|---|---|---|---|
-| X-001 | Critical | Speed is both forbidden from mastery and described as a mastery component. Most docs say response time/speed must not affect mastery, student level, or direct difficulty increase. `docs/data/session-data-capture.md` says "Average Speed metric (one of five mastery formula components, weighted 15%)." `docs/security/ai-safety-privacy-rules.md` says "Speed contributes only the Speed component (15% weight)." | `docs/product/non-negotiables.md`; `docs/product/vision.md`; `docs/product/out-of-scope.md`; `docs/journeys/student-journey.md`; `docs/data/session-data-capture.md`; `docs/security/ai-safety-privacy-rules.md`; `docs/product/phase-0-final-review.md` | Canonical rule: response time, average response time, and speed score must not affect mastery, student level, or direct difficulty increase. Rewrite the two contradictory lines to say speed is behavioral evidence only. | Product / AIM Lead; required before AIM mastery/difficulty implementation. |
-| X-002 | High | Readiness checklist uses stale file paths that do not match the actual Phase 0 prompt outputs or local files. Examples include `docs/content/english-skill-tree.md`, `docs/content/placement-diagnostic-rules.md`, `docs/ai/ai-teacher-behavior-rules.md`, and `docs/ai/aim-engine-io-contract.md`, while canonical outputs are under `docs/learning/`, `docs/ai-teacher/`, and `docs/aim-engine/`. | `docs/product/phase-0-readiness-checklist.md`; `docs/tasks/phase_0_task_prompts.md`; `docs/quality/phase-0-required-files-inventory.md` | Update checklist paths to match the prompt file and P0-QA-001 inventory. | Documentation Owner; cleanup task. |
-| X-003 | High | First pilot is repeatedly defined as React web/cloud, but several docs frame mobile/Flutter as the primary client surface without consistently marking it future or conditional. This creates implementation-scope ambiguity even though the product vision excludes Flutter from the first pilot. | `docs/product/vision.md`; `docs/product/out-of-scope.md`; `docs/mobile/mobile-sitemap.md`; `docs/analytics/reports-scope.md`; `docs/aim-engine/boundary-and-io-contract.md`; `docs/api/api-planning-baseline.md`; `docs/product/open-decisions.md`; `docs/product/phase-0-final-review.md` | Standardize wording: first pilot client is React web; Flutter/mobile docs are future planning unless explicitly approved. Use "client" or "future Flutter client" where the surface is not first-pilot-specific. | Product Owner / Documentation Owner; blocks broad frontend task scoping. |
-| X-004 | Medium | Parent/guardian role is documented as conditional, but parent journey, reports, notifications, and analytics include enough detail that a reader could assume parent access is in MVP. | `docs/product/roles-and-permissions.md`; `docs/journeys/parent-journey.md`; `docs/analytics/reports-scope.md`; `docs/product/notification-scope.md`; `docs/product/out-of-scope.md`; `docs/product/open-decisions.md`; `docs/product/phase-0-final-review.md` | Add a clear banner or status note to parent-specific docs: "Conditional MVP; do not implement until parent access, consent, and linking are approved." | Product Owner; required before parent auth/reporting/notification tasks. |
-| X-005 | Medium | Admin dashboard depth is planned in detail, but MVP scope repeatedly warns against broad institute/admin expansion. The sitemap could be interpreted as more than pilot operations without a stricter MVP/future split. | `docs/product/mvp-scope.md`; `docs/product/out-of-scope.md`; `docs/journeys/admin-journey.md`; `docs/admin/admin-dashboard-sitemap.md`; `docs/product/risk-register.md`; `docs/product/open-decisions.md` | Mark admin modules as MVP pilot, conditional, or future. Keep Phase 1 admin scope limited to pilot operations and QA visibility. | Product / Admin Lead; before admin implementation planning. |
-| X-006 | Medium | "Diagnostic" appears in educational placement context, while safety rules also prohibit clinical/diagnostic learner labels. This is not a direct contradiction if "diagnostic" means educational placement, but the vocabulary could confuse contributors. | `docs/journeys/student-journey.md`; `docs/learning/placement-test-strategy.md`; `docs/product/non-negotiables.md`; `docs/security/ai-safety-privacy-rules.md`; `docs/analytics/reports-scope.md` | Prefer "placement" or "learning evidence check" in learner-facing contexts. Reserve "diagnostic" only for internal educational assessment and explicitly distinguish it from clinical diagnosis. | Product / Learning Design; copy cleanup. |
-| X-007 | Medium | Root-level docs `AIM_023` through `AIM_027` look like active implementation/pilot/deployment tasks, but they are not part of the Phase 0 required prompt outputs. Their numbering overlaps conceptually with P0-023/P0-024 and can confuse task status/source of truth. | `docs/AIM_023_PILOT_READINESS.md`; `docs/AIM_024_PILOT_OPERATIONS.md`; `docs/AIM_025_PILOT_ANALYSIS.md`; `docs/AIM_026_PRODUCTION_HARDENING.md`; `docs/AIM_027_CLOUD_DEPLOYMENT.md`; `docs/tasks/phase_0_task_prompts.md`; `docs/quality/phase-0-duplicate-content-audit.md` | Classify these as later-phase docs, archive them, or move them under a clear `docs/pilot/` or `docs/deployment/` path. Do not treat them as Phase 0 required outputs. | Project Lead / Documentation Owner; consolidation plan. |
-| X-008 | Low | Several docs use "mobile app progress screen" or "Flutter client" in reporting/API/AIM contexts where a React web first pilot is the approved direction. The intent is usually "client surface", but wording is inconsistent. | `docs/analytics/reports-scope.md`; `docs/api/api-planning-baseline.md`; `docs/aim-engine/boundary-and-io-contract.md`; `docs/mobile/mobile-sitemap.md` | Use neutral "client app" wording for shared contracts, and mention React web first / Flutter later when platform matters. | Documentation Owner; editorial cleanup. |
+| ID | Severity | Area | Finding | Required Fix |
+|---|---|---|---|---|
+| X-001 | High | Stack direction | Some older docs may describe FastAPI as the active Phase 1 Backend API. | Preserve FastAPI only as completed MVP pilot backend API. Use NestJS + TypeScript for post-MVP Phase 1 Backend API. |
+| X-002 | High | Learner client | Some older docs may describe Flutter as merely future, later, or undecided. | State that Flutter Mobile is the approved post-MVP Phase 1 learner client. |
+| X-003 | High | Student Web App | Some wording may imply a future Student Web App after the React Web pilot. | State that no separate Student Web App is planned for post-MVP unless a later documented product decision changes this. |
+| X-004 | Critical | AIM boundary | Any wording that allows clients to calculate AIM outputs conflicts with non-negotiables. | Keep mastery, level, weakness, difficulty, retention, and recommendations backend-owned. |
+| X-005 | Critical | AI Gateway / credentials | Any wording that allows client-side AI provider calls or client-held keys is unsafe. | Keep AI Teacher Gateway backend-only and secrets server-only. |
+| X-006 | Critical | Speed fairness | Any wording that makes speed a direct mastery, student level, or difficulty factor is unsafe. | Speed may only be educational behavior evidence. |
+| X-007 | Critical | Safety language | Any clinical, medical, diagnostic, or shame-based learner label is unsafe. | Use educational, non-clinical, non-medical, non-diagnostic language only. |
+| X-008 | Medium | Reporting surfaces | Some reports may say "mobile" without specifying Phase 1 Flutter Mobile or historical React Web context. | Use clear client wording: Flutter Mobile for Phase 1; React Web only for completed pilot context. |
+| X-009 | Medium | Admin scope | Admin/internal views may be confused with learner-facing surfaces. | Keep admin/internal support role-scoped and not a Student Web App. |
+| X-010 | Medium | Parent scope | Parent access appears in several docs but remains conditional. | Keep parent access conditional until consent, linking, privacy, and visibility rules are approved. |
 
-## Canonical Rules To Preserve
+## Canonical Wording Rules
 
-| Topic | Canonical Rule | Primary Source |
-|---|---|---|
-| Mastery fairness | Speed and response time must not affect mastery, student level, or direct difficulty increase. | `docs/product/non-negotiables.md` |
-| Pilot platform | First pilot is React web, FastAPI, Supabase PostgreSQL, and Supabase Auth. | `docs/product/vision.md` |
-| AIM Engine location | AIM algorithm logic stays in Python/backend. Clients consume outputs only. | `docs/product/non-negotiables.md` |
-| Safety language | Learner behavior language must remain educational, not clinical or diagnostic. | `docs/security/ai-safety-privacy-rules.md` |
-| Phase 0 boundary | Phase 0 is documentation and planning only. | `docs/tasks/phase_0_task_prompts.md` |
-| Credential safety | AI provider keys and privileged credentials remain backend/server-only. | `docs/product/non-negotiables.md` |
+Use these phrases consistently across active Phase 0 and Phase 1 planning docs.
 
-## Prioritized Resolution Plan
-
-| Priority | Issue IDs | Required Action |
-|---|---|---|
-| P0 | X-001 | Fix speed/mastery contradictions before AIM mastery, difficulty, recommendation, or safety implementation begins. |
-| P0 | X-003 | Confirm frontend vehicle for Phase 1 task creation: React web first, Flutter later unless explicitly changed. |
-| P1 | X-002 | Correct stale file paths in the readiness checklist so it matches canonical output paths. |
-| P1 | X-004 | Decide parent MVP inclusion before parent-specific implementation. |
-| P1 | X-005 | Split admin dashboard modules into MVP pilot versus future. |
-| P1 | X-007 | Classify or move root-level later-phase docs to avoid task/source-of-truth confusion. |
-| P2 | X-006, X-008 | Clean up terminology and client wording for consistency. |
-
-## Done Verification
-
-| Check | Result |
+| Topic | Canonical Wording |
 |---|---|
-| Audit created at `docs/quality/phase-0-cross-document-consistency-audit.md` | Pass |
-| Contradictions and inconsistencies listed | Pass |
-| Affected files identified | Pass |
-| Expected resolution included | Pass |
-| Severity and owner/task included | Pass |
-| Source documents were not rewritten | Pass |
-| No app/backend runtime code implemented | Pass |
-| No Student Web App created | Pass |
-| No AIM Engine logic moved into Flutter | Pass |
+| Completed MVP pilot stack | The completed MVP pilot used React Web as the learner interface, FastAPI as the backend API, Python backend AIM Engine, Supabase PostgreSQL, and Supabase Auth. |
+| Post-MVP learner client | Flutter Mobile is the approved post-MVP Phase 1 learner client. |
+| Post-MVP Backend API | NestJS + TypeScript is the post-MVP Phase 1 Backend API. |
+| AIM Engine | Python AIM Engine remains backend-owned as a backend service/module. |
+| Database/auth | Supabase PostgreSQL/Auth remain the default unless changed by a later documented decision. |
+| Student Web App | No separate Student Web App is planned for post-MVP unless a later documented product decision changes this. |
+| Client boundary | Clients must not calculate mastery, student level, weakness, difficulty, retention, or recommendations locally. |
+| AI Teacher Gateway | AI Teacher Gateway remains backend-only. |
+| Secrets | AI provider keys and privileged backend credentials must never be exposed to clients. |
+| Speed | Speed, response time, average response time, and speed score must not directly affect mastery, student level, or direct difficulty increase. |
+| Speed evidence | Speed may only be used as educational behavior evidence. |
+| Safety language | Learner behavior language must remain educational, non-clinical, non-medical, and non-diagnostic. |
+| Phase 0 | Phase 0 is planning/documentation only and does not implement runtime code. |
 
-## Recommendation
+## Files Requiring Wording Alignment
 
-P0-QA-004 is ready to mark Done in Notion. The next available task is P0-QA-005, because it depends on P0-QA-002, P0-QA-003, and P0-QA-004 and should convert these findings into a Phase 1 readiness verdict.
+| File | Main Risk | Required Direction |
+|---|---|---|
+| `docs/product/non-negotiables.md` | Stack and client wording must stay strict. | Preserve hard rules and current product direction. |
+| `docs/product/mvp-scope.md` | Completed MVP pilot may be confused with Phase 1. | Keep React Web/FastAPI historical and Flutter/NestJS Phase 1. |
+| `docs/product/out-of-scope.md` | Flutter may be wrongly treated as out of scope after MVP. | Clarify Flutter was out of completed MVP pilot but in post-MVP Phase 1. |
+| `docs/product/risk-register.md` | Risks may mention old unresolved mobile decision. | Treat Flutter Mobile Phase 1 as decided. |
+| `docs/product/open-decisions.md` | Old OD items may still show learner client/API stack as open. | Mark Flutter Mobile and NestJS + TypeScript as decided. |
+| `docs/product/phase-0-final-review.md` | Old final review may block frontend due to unresolved stack decision. | Mark stack direction resolved by `vision.md`. |
+| `docs/api/api-planning-baseline.md` | May show FastAPI as active Phase 1 API. | Use NestJS + TypeScript for Phase 1; FastAPI as completed pilot only. |
+| `docs/mobile/mobile-sitemap.md` | May call Flutter future/undecided. | Flutter Mobile is approved Phase 1 learner client. |
+| `docs/aim-engine/boundary-and-io-contract.md` | May speak only about Flutter or only about same-process backend. | Use all-clients boundary and Python backend service/module wording. |
+| `docs/analytics/reports-scope.md` | May say MVP/mobile without clarifying Phase 1 Flutter. | Clarify reporting surfaces and no Student Web App. |
+| `docs/quality/phase-1-readiness-gap-analysis.md` | May carry old readiness blockers. | Update gaps to current product direction. |
+| `docs/quality/phase-0-consolidation-fix-plan.md` | May recommend old React-first/Flutter-future wording. | Update fix plan to current product direction. |
+| `docs/quality/phase-0-final-quality-gate.md` | May preserve old accepted risk about Flutter. | Update final gate to current product direction. |
+
+## Cross-Document Rules by Domain
+
+### Product Documents
+
+Product docs must:
+
+- Preserve completed MVP pilot context.
+- Separate completed pilot from post-MVP Phase 1.
+- Avoid introducing a separate Student Web App.
+- Keep parent access conditional.
+- Keep admin/internal surfaces distinct from learner-facing surfaces.
+
+### API Documents
+
+API docs must:
+
+- Use NestJS + TypeScript for post-MVP Phase 1 Backend API.
+- Preserve FastAPI only as completed MVP pilot context.
+- Keep AIM Engine backend-internal.
+- Keep AI Teacher Gateway backend-only.
+- Keep Supabase JWT validation backend-side.
+- Prevent clients from computing AIM state locally.
+
+### Mobile Documents
+
+Mobile docs must:
+
+- Describe Flutter Mobile as approved post-MVP Phase 1 learner client.
+- Avoid language that makes Flutter undecided.
+- Keep Flutter as a display/interaction client only.
+- Prevent local AIM logic.
+- Use backend-approved progress, recommendations, and feedback only.
+
+### AIM Engine Documents
+
+AIM Engine docs must:
+
+- Keep AIM Engine Python/backend-owned.
+- Define input/output boundaries clearly.
+- Preserve no-speed mastery and difficulty rules.
+- Keep recommendation authority backend-owned.
+- Keep emotional/behavioral signals educational and non-diagnostic.
+
+### Analytics Documents
+
+Analytics docs must:
+
+- Keep learner-facing analytics safe and simple.
+- Avoid raw AIM internals for students/parents.
+- Use speed only as internal educational behavior evidence.
+- Keep admin reports role-restricted and privacy-aware.
+- Avoid clinical, medical, or diagnostic labels.
+
+### Security Documents
+
+Security docs must:
+
+- Keep AI provider keys and privileged credentials server-only.
+- Keep AI Teacher Gateway backend-only.
+- Protect student privacy and ownership boundaries.
+- Avoid exposing raw sensitive learner data in notifications or reports.
+- Preserve audit rules for admin/internal actions.
+
+## Cleanup Priority
+
+| Priority | Work |
+|---|---|
+| P0 | Remove conflict markers from QA documents. |
+| P0 | Align stack wording with `docs/product/vision.md`. |
+| P0 | Clarify completed MVP pilot versus post-MVP Phase 1 across product/API/mobile/AIM docs. |
+| P0 | Preserve no-speed mastery and difficulty rules. |
+| P0 | Preserve backend-only AI Gateway and secrets rules. |
+| P1 | Align reporting/admin/parent conditional wording. |
+| P1 | Convert remaining open implementation choices into Phase 1 tasks. |
+| P2 | Classify root-level legacy or later-phase docs if they still create confusion. |
+
+## Verification Commands
+
+Run these after all wording updates are complete:
+
+```bash
+grep -R "<<<<<<<\|=======\|>>>>>>>" docs --include="*.md"
+
+grep -R "FastAPI" docs --include="*.md"
+
+grep -R "future Flutter\|Flutter remains\|Flutter later\|Flutter/mobile.*future\|React web/cloud first" docs --include="*.md"
+
+grep -R "Student Web App" docs --include="*.md"
+
+grep -R "speed.*mastery\|avg response time.*mastery\|speed score.*mastery" docs --include="*.md"
+
+grep -R "diagnos\|clinical\|medical" docs --include="*.md"
+```
+
+Expected interpretation:
+
+- Conflict marker grep should return no unresolved merge markers.
+- `FastAPI` may appear only as completed MVP pilot context.
+- Old Flutter-future wording should not appear in active planning docs.
+- `Student Web App` references should state no separate post-MVP Student Web App is planned unless later documented.
+- Speed/mastery references should preserve the no-speed mastery rule.
+- Clinical/medical/diagnostic terms should appear only as forbidden-language or safety-boundary wording.
+
+## Non-Goals
+
+This audit does not:
+
+- Rewrite runtime code.
+- Create implementation tasks.
+- Resolve deployment topology.
+- Create Flutter code.
+- Create NestJS code.
+- Create FastAPI code.
+- Create database migrations.
+- Create AIM Engine runtime code.
+- Create a separate Student Web App.
+- Move AIM Engine logic into clients.
+- Remove historical completed MVP pilot context.
+
+## Assumptions
+
+- `docs/product/vision.md` is the active product direction source of truth.
+- Completed MVP pilot history must be preserved, not erased.
+- React Web and FastAPI are valid completed MVP pilot context.
+- Flutter Mobile and NestJS + TypeScript are valid post-MVP Phase 1 direction.
+- Python AIM Engine remains backend-owned.
+- Supabase PostgreSQL/Auth remain the default unless changed by a later documented decision.
+- No separate Student Web App is planned for post-MVP unless a later documented product decision changes this.
+- Phase 0 remains documentation/planning only.
+
+## Related Documents
+
+- `docs/product/vision.md`
+- `docs/product/non-negotiables.md`
+- `docs/product/mvp-scope.md`
+- `docs/product/out-of-scope.md`
+- `docs/product/risk-register.md`
+- `docs/product/open-decisions.md`
+- `docs/product/phase-0-final-review.md`
+- `docs/api/api-planning-baseline.md`
+- `docs/mobile/mobile-sitemap.md`
+- `docs/aim-engine/boundary-and-io-contract.md`
+- `docs/analytics/reports-scope.md`
+- `docs/security/ai-safety-privacy-rules.md`
+- `docs/quality/phase-0-duplicate-content-audit.md`
+- `docs/quality/phase-0-content-completeness-audit.md`
+
+## Acceptance Notes
+
+- This document has a title, purpose, scope, current product direction, audit method, findings, canonical wording, domain rules, cleanup priority, verification commands, assumptions, non-goals, and related documents.
+- Completed MVP pilot stack and post-MVP Phase 1 target stack are separated.
+- React Web is described as the completed MVP pilot learner interface.
+- FastAPI is tied only to the completed MVP pilot backend API.
+- Flutter Mobile is described as the approved post-MVP Phase 1 learner client.
+- NestJS + TypeScript is described as the post-MVP Phase 1 Backend API.
+- AIM Engine remains Python/backend-owned.
+- AI Teacher Gateway remains backend-only.
+- AI provider keys and privileged backend credentials remain backend/server-only.
+- Client boundaries remain strict everywhere.
+- Speed remains educational behavior evidence only and does not directly affect mastery, student level, or direct difficulty increase.
+- Learner behavior language remains educational, non-clinical, non-medical, and non-diagnostic.
+- No separate Student Web App is planned for post-MVP unless a later documented decision changes this.
+- No runtime source code, Student Web App, Flutter AIM logic, database migration, or backend implementation was added.
