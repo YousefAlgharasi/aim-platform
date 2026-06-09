@@ -47,6 +47,19 @@ This document covers:
 | P0-018 | Mobile sitemap | Checked for Flutter Mobile Phase 1 implications. |
 | P0-022 | AI safety and privacy rules | Checked for safety/privacy decision impact. |
 
+## Phase 1 Charter Reference
+
+`docs/phase-1/system-foundation-charter.md` is the authoritative Phase 1 bridge document. When any decision in this file conflicts with a Phase 1 implementation task, the charter document and its conflict-resolution hierarchy take precedence.
+
+The following decisions are confirmed at Phase 1 charter level:
+
+| Decision | Charter Status |
+|---|---|
+| Student Web App (Phase 7 / Optional) | **Deferred and optional. Must not be created in Phase 1.** |
+| Parent access | **Conditional. Must not block Phase 1 foundation unless explicitly approved.** |
+| Notification implementation method | **Open. Backend owns eligibility/timing; Flutter handles permissions/rendering only.** |
+| Deployment provider and topology | **Open. Must be decided before production release.** |
+
 ## Decision Status Legend
 
 | Status | Meaning |
