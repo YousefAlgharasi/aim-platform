@@ -436,6 +436,8 @@ Build the technical foundation:
 - CI/CD
 - Linting and testing setup
 
+> **Phase 1 does not include Student Web App implementation.** The Student Web App is Deferred / Optional / Phase 7 or later. No React or Next.js learner web app work is permitted in Phase 1. See Phase 7 below and `docs/phase-1/system-foundation-charter.md`.
+
 **Suggested repository structure:**
 
 ```
