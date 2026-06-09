@@ -110,7 +110,7 @@ A unit of English learning from the skill tree. Canonical reference for AIM Engi
 |---|---|---|
 | `id` | UUID (PK) | Matches skill ID in `docs/learning/english-skill-tree.md`. |
 | `name` | string | e.g., "Present Perfect". |
-| `category` | enum | One of: `phonics`, `vocabulary`, `grammar`, `reading`, `writing`, `listening`, `speaking`. |
+| `category` | enum | One of: `PHO`, `VOC`, `GRA`, `READ`, `WRITE`, `LIS`, `SPE`. Canonical codes from `docs/learning/english-skill-tree.md`. |
 | `level` | int (1–4) | Difficulty level within the category. |
 | `parent_skill_id` | UUID (FK → Skill) or null | Hierarchical parent skill. Null for root-level skills. |
 | `description` | text | Human-readable description for content managers and reviewers. |
