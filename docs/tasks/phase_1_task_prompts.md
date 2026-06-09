@@ -85,25 +85,244 @@ Detailed prompt file:
 docs/tasks/phase_1_task_prompts.md
 ```
 
-Workflow:
+Required identity input:
 
-1. Open the Notion Phase 1 Tasks database.
-2. Find a task with `Status = Undone`.
-3. Before claiming the task, check its `Dependency` field.
-4. A dependency is complete only if:
-   - the dependency task `Status` is `Done` in Notion,
-   - the dependency has no blocker comment that makes its output unusable,
-   - the dependency expected output file(s) from this prompt file exist in the GitHub repository on the target/default branch.
-5. If dependencies are not complete, choose another task.
-6. If the task is already `In Progress` and has an assigned person, choose another task.
-7. Resolve `TEAM_MEMBER_NOTION_EMAIL` to a Notion user.
-8. Assign the task to that user in `Assigned`.
-9. Set `Status = In Progress`.
-10. Read the exact task section in this file.
-11. Execute only that task.
-12. Do not perform unrelated cleanup, refactors, feature implementation, or architecture changes.
-13. When complete, set `Status = Done` and keep `Assigned` filled.
-14. If blocked, leave `Assigned` filled, keep or set `Status = In Progress`, and add a clear blocker comment in Notion.
+```
+TEAM_MEMBER_NOTION_EMAIL=<member-email>
+```
+
+The agent must use this email to find the matching Notion user and assign the selected task before starting work.
+
+---
+
+### Critical Task Claim Rules
+
+Before taking any task, the agent must verify all of the following:
+
+1. The task `Status` is exactly `Undone`.
+2. The task `Assigned` field is empty.
+3. The task is not already assigned to another person.
+4. The task is not already `In Progress`.
+5. The task has no blocker comment that prevents starting it.
+6. All dependencies are complete.
+7. The expected output files for all dependencies exist in the GitHub repository on the target/default branch.
+8. The local git working tree is clean before starting.
+
+If any of these checks fail, the agent must skip the task and choose another available task.
+
+The agent must never take a task that is already assigned to someone else.
+
+The agent must never take a task whose dependency is missing, incomplete, blocked, or not pushed to GitHub.
+
+---
+
+### Dependency Completion Rules
+
+A dependency is complete only if all of the following are true:
+
+1. The dependency task exists in Notion.
+2. The dependency task `Status` is `Done`.
+3. The dependency task has no unresolved blocker comment.
+4. The dependency expected output file(s), according to this prompt file, exist in the GitHub repository.
+5. The dependency output is available on the target/default branch, not only locally.
+6. The dependency output does not obviously violate Phase 1 non-negotiables.
+
+If a dependency is listed but cannot be found, the current task must not start.
+
+If a dependency is found but is not `Done`, the current task must not start.
+
+If a dependency is marked `Done` in Notion but its expected output file is missing from GitHub, the current task must not start.
+
+If dependency status and repository state disagree, trust the repository state and treat the dependency as incomplete.
+
+---
+
+### Claim Lock Protocol
+
+When the agent finds an available task:
+
+1. Re-check the task immediately before claiming it.
+2. Confirm again:
+   - `Status = Undone`
+   - `Assigned` is empty
+   - dependencies are complete
+3. Assign the task to the Notion user resolved from `TEAM_MEMBER_NOTION_EMAIL`.
+4. Set `Status = In Progress`.
+5. Re-fetch the task from Notion.
+6. Confirm that:
+   - `Assigned` is now the current agent/user
+   - `Status = In Progress`
+
+If the task is no longer available after re-fetching, stop and choose another task.
+
+This prevents two agents from taking the same task.
+
+---
+
+### Git Rules Before Work
+
+Before editing files, the agent must:
+
+1. Pull the latest default branch.
+2. Confirm the working tree is clean.
+3. Confirm no unrelated local changes exist.
+4. Confirm the task dependencies are already pushed to GitHub.
+
+Required commands:
+
+```bash
+git checkout main
+git pull origin main
+git status --short
+```
+
+If `git status --short` shows unrelated changes, stop and report the blocker.
+
+---
+
+### Execution Rules
+
+After claiming the task:
+
+1. Open `docs/tasks/phase_1_task_prompts.md`.
+2. Find the exact section for the task ID, for example `#P1-001`.
+3. Execute only that task.
+4. Do not implement unrelated tasks.
+5. Do not perform unrelated cleanup.
+6. Do not refactor unrelated files.
+7. Do not add extra Phase 1 tasks.
+8. Do not create Student Web App work.
+9. Do not move AIM Engine logic into Flutter or any client.
+10. Do not expose secrets or provider keys.
+11. Do not use speed as a direct mastery, level, or difficulty signal.
+
+---
+
+### Commit and Push Rules
+
+Every completed task must be committed and pushed separately.
+
+The agent must not mark the Notion task as `Done` until the task commit is pushed successfully to GitHub.
+
+Required flow:
+
+```bash
+git status --short
+git add <changed-files>
+git commit -m "P1-XXX: <short task title>"
+git push origin main
+```
+
+Replace `P1-XXX` with the actual task ID.
+
+Examples:
+
+```
+git commit -m "P1-001: create phase 1 system foundation charter"
+git commit -m "P1-016: create backend API skeleton"
+git commit -m "P1-038: create Flutter mobile project shell"
+```
+
+After pushing, the agent must verify the pushed output exists on GitHub.
+
+If `git push` fails, the task must not be marked `Done`.
+
+If tests fail, the task must not be marked `Done` unless the task prompt explicitly allows documenting a blocker instead.
+
+---
+
+### Notion Completion Rules
+
+After a successful push:
+
+1. Re-open the task in Notion.
+2. Confirm the task is still assigned to the current user.
+3. Confirm the task is still `In Progress`.
+4. Add or update a short completion comment with:
+   - files created/updated,
+   - commit hash if available,
+   - tests/checks run,
+   - any limitations.
+5. Set `Status = Done`.
+6. Keep `Assigned` filled with the current user.
+
+Never mark a task as `Done` before pushing to GitHub.
+
+Never remove the assignee after completion.
+
+---
+
+### Blocker Rules
+
+If the task cannot be completed:
+
+1. Keep the task assigned to the current user.
+2. Keep `Status = In Progress`.
+3. Add a blocker comment explaining:
+   - what blocked the task,
+   - what dependency or file is missing,
+   - what command failed,
+   - what must happen next.
+
+Do not silently skip a claimed task.
+
+Do not mark blocked work as `Done`.
+
+---
+
+### Task Selection Summary
+
+The agent **may** take a task only when:
+
+| Check | Required State |
+|---|---|
+| Status | `Undone` |
+| Assigned | empty |
+| Dependencies | `Done` in Notion |
+| Dependency outputs | present on GitHub |
+| Blocker comments | none |
+| Local git working tree | clean |
+
+The agent **must skip** a task when:
+
+| Check | Skip Condition |
+|---|---|
+| Status | `In Progress` or `Done` |
+| Assigned | not empty |
+| Dependency | missing or not `Done` |
+| Dependency output | not pushed to GitHub |
+| Blocker comment | exists |
+| Local git tree | dirty |
+
+---
+
+### Final Response Required from Agent
+
+At the end of every task, the agent must report:
+
+1. Task ID and title.
+2. Whether it was completed or blocked.
+3. Files created or updated.
+4. Commit hash if available.
+5. Whether `git push` succeeded.
+6. Tests or checks run.
+7. Notion status update performed.
+
+Required final format:
+
+```
+Task: P1-XXX — <title>
+Status: Done / Blocked
+Files changed:
+- <file>
+Commit: <hash or unavailable>
+Push: succeeded / failed
+Checks:
+- <check result>
+Notion:
+- Assigned to <user/email>
+- Status set to Done / In Progress
+```
 
 ---
 
@@ -111,8 +330,15 @@ Workflow:
 
 Before editing files, verify:
 
-- You read `docs/phase-1/system-foundation-charter.md` if it exists.
-- You read relevant Phase 0 docs for the component you are touching.
+- The task is `Undone`.
+- The task is not assigned to anyone.
+- The task is not `In Progress`.
+- The current agent has assigned the task to themselves using `TEAM_MEMBER_NOTION_EMAIL`.
+- All dependencies are `Done` in Notion.
+- All dependency output files exist on GitHub.
+- No dependency has an unresolved blocker comment.
+- The local branch is up to date with `origin/main`.
+- The local git working tree is clean.
 - The task does not create Student Web App work.
 - The task does not move AIM Engine logic into Flutter/client.
 - The task does not expose AI provider keys or privileged credentials.
@@ -121,7 +347,7 @@ Before editing files, verify:
 - The task has clear output files.
 - The task has a Done Test.
 
-If a conflict is found, stop and document it instead of silently choosing a direction.
+If any check fails, stop and document the blocker in Notion.
 
 ---
 
