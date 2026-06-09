@@ -73,7 +73,7 @@ Phase 1 System Foundation may begin only under a Conditional Go. The implementat
 | AIM Engine remains backend/Python-owned | Pass | Non-negotiables and AIM boundary docs preserve backend ownership. |
 | AI provider keys remain backend-only | Pass | Security, API, and boundary docs preserve server-only credential rules. |
 | Educational-only learner behavior language | Pass with watch item | Safety docs strongly preserve educational language, but implementation validators must enforce it. |
-| Speed excluded from mastery | Conditional | Non-negotiables forbid speed in mastery, but P0-022 contains one contradictory sentence that must be corrected before algorithm implementation. |
+| Speed excluded from mastery | Pass | `docs/security/ai-safety-privacy-rules.md` explicitly states "No speed-as-mastery": response time and speed signals must not enter mastery calculation, student level, or direct difficulty-increase logic. Rule is unambiguous and consistent. |
 | Open decisions recorded | Pass | `docs/product/open-decisions.md` records unresolved decisions and owners. |
 | Risks recorded | Pass | `docs/product/risk-register.md` records risks, mitigations, and owners. |
 
@@ -81,7 +81,7 @@ Phase 1 System Foundation may begin only under a Conditional Go. The implementat
 
 | ID | Area | Required Action | Blocking Scope |
 |---|---|---|---|
-| FR-001 | Mastery fairness | Correct the contradiction in `docs/security/ai-safety-privacy-rules.md` that says speed contributes a mastery component. The governing rule is: speed must not affect mastery, student level, or direct difficulty increase. | Blocks AIM mastery/difficulty implementation tasks. |
+| ~~FR-001~~ | ~~Mastery fairness~~ | ~~Correct the contradiction in `docs/security/ai-safety-privacy-rules.md` that says speed contributes a mastery component.~~ | **Resolved** — `ai-safety-privacy-rules.md` contains explicit "No speed-as-mastery" rule. Response time is behavioral evidence only. No contradiction exists. |
 | FR-002 | Readiness checklist path drift | Align stale path references in `docs/product/phase-0-readiness-checklist.md` with the actual Phase 0 output paths. | Blocks documentation cleanup only; does not block backend foundation. |
 | FR-003 | MVP vehicle decision | Resolve whether Phase 1 starts with React web/cloud only or includes future Flutter planning. Current product direction is React web/cloud first; Flutter remains later. | Blocks frontend task scoping if unresolved. |
 | FR-004 | Parent feature scope | Decide whether parent access is MVP or deferred. Parent docs exist, but privacy and consent decisions remain open. | Blocks parent auth/reporting implementation. |
@@ -101,7 +101,7 @@ Phase 1 System Foundation may begin only under a Conditional Go. The implementat
 
 Phase 1 may start with foundation work that does not depend on unresolved product choices, such as repository hygiene, environment configuration planning, backend project scaffolding review, auth boundary design, and database migration planning.
 
-Phase 1 must not start AIM mastery, difficulty, or adaptive-decision implementation until FR-001 is corrected and referenced in the implementation acceptance criteria.
+Phase 1 may start AIM mastery, difficulty, and adaptive-decision implementation. FR-001 is resolved.
 
 Phase 1 must not start parent-specific implementation until FR-004 is decided.
 
