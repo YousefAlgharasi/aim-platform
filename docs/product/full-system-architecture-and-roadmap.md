@@ -10,12 +10,13 @@ Based on the current state of the AIM project and the completed AIM Algorithm, t
 
 AIM will be an adaptive English learning platform composed of:
 
-1. **Mobile App** — for students, and optionally for parents.
-2. **Web App** — for students who prefer studying from a browser.
-3. **Admin Dashboard** — for management, content, students, teachers, analytics, assessments, and human review.
-4. **Backend API** — manages users, lessons, sessions, assessments, results, subscriptions, permissions, notifications, and integration with the AIM Engine.
-5. **AIM Engine** — a Python service containing the completed algorithm: performance analysis, mastery calculation, weakness detection, difficulty adaptation, recommendations, spaced repetition, and educational state analysis.
-6. **AI Teacher Gateway** — a layer responsible for communicating with an AI API or external/internal model. The client app must never connect directly to an AI provider.
+1. **Mobile App** — Flutter Mobile, the approved Phase 1 learner client for students, and optionally for parents.
+2. **Admin Dashboard** — for management, content, students, teachers, analytics, assessments, and human review.
+3. **Backend API** — NestJS + TypeScript. Manages users, lessons, sessions, assessments, results, subscriptions, permissions, notifications, and integration with the AIM Engine.
+4. **AIM Engine** — a Python backend service containing the completed algorithm: performance analysis, mastery calculation, weakness detection, difficulty adaptation, recommendations, spaced repetition, and educational state analysis.
+5. **AI Teacher Gateway** — a backend-only layer responsible for communicating with an AI API or external/internal model. The client app must never connect directly to an AI provider.
+
+> **Note:** A Student Web App is deferred and optional. It is not part of Phase 1 System Foundation. See `docs/phase-1/system-foundation-charter.md` Section 3.
 
 ---
 
@@ -24,7 +25,7 @@ AIM will be an adaptive English learning platform composed of:
 The best structure for the AIM project:
 
 ```
-Mobile App / Web App / Admin Dashboard
+Flutter Mobile App / Admin Dashboard
         |
         v
 Backend API Gateway
@@ -114,31 +115,6 @@ lib/
 
 ---
 
-### Web App
-
-Two options are available:
-
-#### Option 1 — Best for commercial use (Recommended)
-
-**Use:**
-
-- Next.js / React
-- TypeScript
-- Tailwind CSS
-- React Query
-- Zustand or Redux Toolkit
-
-**Why?**
-Web and dashboard surfaces typically need tables, controls, SEO for public pages, marketing pages, content management, and analytics dashboards. Next.js is excellent for this.
-
-#### Option 2
-
-- Flutter Web
-
-However, Flutter Web is not recommended for the Admin Dashboard unless you want to unify the team and reduce cost. For a serious dashboard, Next.js is the better choice.
-
----
-
 ### Admin Dashboard
 
 Best as a separate web application:
@@ -176,11 +152,11 @@ apps/admin
 
 **Use:**
 
-- NestJS or Express with TypeScript
+- NestJS + TypeScript
 - PostgreSQL / Supabase
 - Redis
 - BullMQ for queues
-- JWT / Firebase Auth depending on final decision
+- Supabase Auth (locked default — see `docs/product/non-negotiables.md`)
 - Prisma ORM or TypeORM
 
 **Recommended stack:**
@@ -189,21 +165,13 @@ apps/admin
 
 AIM has many relationships: students, lessons, attempts, grades, assessments, sessions, recommendations, parents, subscriptions, and reports. PostgreSQL is far stronger than Firestore for this type of relational data.
 
-If committing to an older Firebase/NoSQL decision is required, the following is also possible:
-
-- Firebase Auth
-- Firestore
-- Cloud Functions
-- BigQuery later for analytics
-
-**Engineering opinion:**
-Firebase Auth is good, but the primary database should be PostgreSQL/Supabase.
-
 ---
 
 ### AIM Engine
 
-The completed algorithm should not just be code buried inside the backend. It should be a standalone service:
+The completed algorithm should not just be code buried inside the backend. It should be a standalone Python backend service, called only by the Backend API — never by clients directly.
+
+> The AIM Engine is a Python backend service/module. Its internal web framework (e.g. FastAPI for its own API routes) is separate from the Phase 1 Backend API, which is NestJS + TypeScript. Clients never call the AIM Engine. Only the NestJS Backend API calls it backend-internally.
 
 ```
 aim-engine/
@@ -458,10 +426,9 @@ Before any code:
 Build the technical foundation:
 
 - Monorepo setup
-- Backend skeleton
-- AIM Engine service skeleton
-- Mobile app skeleton
-- Web app skeleton
+- Backend skeleton (NestJS + TypeScript)
+- AIM Engine service skeleton (Python)
+- Mobile app skeleton (Flutter)
 - Admin dashboard skeleton
 - Shared API contracts
 - Environment configs
@@ -474,14 +441,15 @@ Build the technical foundation:
 ```
 aim-platform/
   apps/
-    mobile/
-    web/
-    admin/
+    mobile/          ← Flutter Mobile (Phase 1 learner client)
+    admin/           ← Admin Dashboard
+    # NOTE: apps/web/ is the existing completed React Web MVP pilot.
+    # A future Student Web App (if approved) must NOT reuse this folder.
 
   services/
-    backend-api/
-    aim-engine/
-    ai-gateway/
+    backend-api/     ← NestJS + TypeScript (Phase 1 Backend API)
+    aim-engine/      ← Python AIM Engine service
+    ai-gateway/      ← AI Teacher Gateway (backend-only)
 
   packages/
     shared-types/
@@ -506,7 +474,7 @@ Build:
 - Parent registration
 - Admin login
 - Role-based access control
-- JWT / Firebase Auth integration
+- Supabase Auth integration (JWT validation on the backend)
 - Profile management
 - Student-parent relationship
 - Account status management
@@ -645,21 +613,11 @@ The first version does not need everything. The essentials are:
 
 ---
 
-### Phase 7 — Student Web App
+### Phase 7 — Student Web App (Deferred / Optional)
 
-Same student experience but for the browser:
-
-- Landing page
-- Login
-- Student dashboard
-- Placement test
-- Learning path
-- Lesson player
-- AI Teacher chat
-- Progress
-- Account settings
-
-The web app is important for students using a laptop and valuable for marketing later.
+> **This phase is deferred and optional.** A Student Web App is not part of Phase 1 System Foundation. It requires an explicit documented product decision before any work begins. See `docs/phase-1/system-foundation-charter.md` Section 3 and `docs/product/open-decisions.md` OD-002.
+>
+> When approved, it should be built as a separate app (e.g. `apps/student-web/`) using Next.js, and must never reuse `apps/web/` which is the completed React MVP pilot directory.
 
 ---
 
@@ -966,10 +924,9 @@ The first commercial release must contain only:
 
 | Included in MVP |
 |---|
-| Student mobile app |
-| Student web app (basic) |
+| Student mobile app (Flutter) |
 | Admin dashboard (basic) |
-| Authentication |
+| Authentication (Supabase Auth) |
 | Placement test |
 | Learning path |
 | Lessons |
@@ -1030,14 +987,15 @@ Adopt this stack:
 
 | Layer | Decision |
 |---|---|
-| Mobile | Flutter, feature-first, Riverpod StateNotifier |
-| Web (Student) | Next.js |
+| Mobile (learner client) | Flutter, feature-first, Riverpod StateNotifier |
+| Student Web App | **Deferred / Optional** — not in Phase 1 |
 | Admin Dashboard | Next.js |
-| Backend | NestJS TypeScript, feature-based |
-| AIM Engine | Python FastAPI service |
+| Backend API | NestJS TypeScript, feature-based |
+| AIM Engine | Python backend service (called by Backend API only, never by clients) |
 | Database | PostgreSQL / Supabase |
+| Auth | Supabase Auth (locked default) |
 | Cache / Queue | Redis + BullMQ |
-| AI | AI Gateway inside the backend; OpenAI / LLM provider switchable; Text first, Voice later |
+| AI | AI Gateway inside the backend; LLM provider switchable; Text first, Voice later |
 | Storage | S3-compatible |
 | Deployment | Docker + staging + production |
 
