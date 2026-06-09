@@ -356,16 +356,16 @@ The table below shows each skill's immediate prerequisite(s) only. Full chains a
 
 ---
 
-## MVP Pilot Skill Scope
+## Completed MVP Pilot Scope — Phase 1 Readiness Note
 
-For the initial two-week A1 pilot (five learners), lessons and questions should cover the following priority skills. The full 86-skill tree is the planning reference; the pilot uses a subset.
+The full 86-skill tree is defined and ready for Phase 1. The table below records the skill subset used in the initial A1 pilot and the Phase 1 delivery status of each group.
 
-| Priority | Skills | Rationale |
+| Group | Skills | Phase 1 Status |
 |---|---|---|
-| Core pilot skills | EN-A1-PHO-001 through PHO-005, EN-A1-VOC-001 through VOC-017, EN-A1-GRA-001 through GRA-018, EN-A1-READ-001 through READ-008, EN-A1-WRITE-001 through WRITE-008 | Covers foundational phonics, essential vocabulary topics, core grammar, basic reading, and basic writing without requiring full A1 completion. |
-| Deferred for post-pilot | EN-A1-PHO-009, PHO-010, EN-A1-VOC-019, VOC-020, EN-A1-GRA-019, GRA-020, EN-A1-READ-009, READ-010, EN-A1-WRITE-009, WRITE-010 | These integrate multiple skill areas and are better validated after pilot feedback. |
-| Deferred — audio required | EN-A1-LIS-001 through LIS-008 | Listening skills are fully defined but require confirmed audio delivery infrastructure before being served to students. Tagged `lesson_eligible = false` and `placement_eligible = false` until audio is confirmed. |
-| Deferred — scoring required | EN-A1-SPE-001 through SPE-008 | Speaking skills are fully defined but automated free-speech scoring is out of MVP scope. SPE skills must not be added to placement. May be used in structured manual-review exercises only if explicitly approved. |
+| Core pilot skills | EN-A1-PHO-001 through PHO-005, EN-A1-VOC-001 through VOC-017, EN-A1-GRA-001 through GRA-018, EN-A1-READ-001 through READ-008, EN-A1-WRITE-001 through WRITE-008 | Ready. Covers foundational phonics, essential vocabulary, core grammar, basic reading, and basic writing. |
+| Advanced integration skills | EN-A1-PHO-009, PHO-010, EN-A1-VOC-019, VOC-020, EN-A1-GRA-019, GRA-020, EN-A1-READ-009, READ-010, EN-A1-WRITE-009, WRITE-010 | Ready for Phase 1. These integrate multiple skill areas; sequence after pilot cohort baseline is established. |
+| LIS — audio delivery dependency | EN-A1-LIS-001 through LIS-008 | Skills are fully defined. Enable once audio delivery infrastructure is confirmed in Phase 1. |
+| SPE — scoring infrastructure dependency | EN-A1-SPE-001 through SPE-008 | Skills are fully defined. Enable once automated or structured scoring pipeline is confirmed in Phase 1. |
 
 ---
 
