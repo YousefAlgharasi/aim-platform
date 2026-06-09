@@ -1,273 +1,532 @@
-# AIM Engine Boundary and Input Output Contract
+# AIM Engine Boundary and IO Contract
 
 ## Purpose
 
-This document defines the boundary of the AIM Engine: what data is sent to it, what it returns, what computations it owns exclusively, and what must not run in the Flutter client or any other layer. It is the authoritative contract between the backend, Flutter app, admin dashboard, and the AIM Engine module.
+This document defines the boundary, ownership, inputs, outputs, and integration contract for the AIM Engine.
+
+It ensures that adaptive intelligence remains backend-owned and that all clients consume backend-approved AIM outputs without calculating or duplicating AIM logic locally.
 
 ## Scope
 
-Phase 0 planning documentation only. No backend code, AIM Engine algorithms, or Flutter code is implemented here. All skill IDs reference `docs/learning/english-skill-tree.md` (P0-009). Student journey context references `docs/journeys/student-journey.md` (P0-005). AI Teacher hooks reference `docs/ai-teacher/behavior-rules.md` (P0-013).
+This is Phase 0 planning documentation only.
+
+This document does not implement:
+
+- Python AIM Engine runtime code.
+- NestJS Backend API code.
+- FastAPI routes.
+- Flutter Mobile code.
+- React Web code.
+- Database migrations.
+- AI Teacher Gateway runtime code.
+- Admin dashboard runtime code.
+- A separate Student Web App.
+
+## Current Product Direction
+
+| Area | Confirmed Direction |
+|---|---|
+| Completed MVP pilot learner interface | React Web |
+| Completed MVP pilot backend API | FastAPI |
+| Completed MVP pilot AIM Engine | Python backend AIM Engine |
+| Completed MVP pilot database | Supabase PostgreSQL |
+| Completed MVP pilot auth | Supabase Auth |
+| Post-MVP Phase 1 learner client | Flutter Mobile |
+| Post-MVP Phase 1 Backend API | NestJS + TypeScript |
+| Post-MVP Phase 1 AIM Engine | Python AIM Engine as a backend service/module |
+| Post-MVP Phase 1 database/auth | Supabase PostgreSQL/Auth unless changed by a later documented decision |
+| Post-MVP Student Web App | No separate Student Web App is planned unless a later documented product decision changes this |
+
+## Phase Clarification
+
+React Web and FastAPI belong to the completed MVP pilot context.
+
+Post-MVP Phase 1 uses Flutter Mobile as the learner client and NestJS + TypeScript as the Backend API.
+
+The AIM Engine remains Python/backend-owned in both contexts. It must not run in Flutter Mobile, React Web, admin UI, or any other client.
 
 ## Dependency Check
 
 | Dependency | Required Output | Status |
 |---|---|---|
-| P0-005 | `docs/journeys/student-journey.md` | Present. Defines the learning session flow that feeds data to AIM Engine. |
-| P0-009 | `docs/learning/english-skill-tree.md` | Present. Canonical skill IDs used in all AIM Engine inputs and outputs. |
-| P0-013 | `docs/ai-teacher/behavior-rules.md` | Present. AI Teacher interaction outputs are consumed by AIM Engine for state updates. |
+| P0-001 | `docs/product/vision.md` | Checked and used as source of truth. |
+| P0-001 | `docs/product/non-negotiables.md` | Checked for AIM/client/safety rules. |
+| P0-015 | `docs/data/session-data-capture.md` | Checked for session and attempt evidence fields. |
+| P0-016 | `docs/data/initial-data-model.md` | Checked for entity references. |
+| P0-017 | `docs/api/api-planning-baseline.md` | Checked for backend integration boundary. |
+| P0-022 | `docs/security/ai-safety-privacy-rules.md` | Checked for safety, privacy, and credential boundaries. |
 
----
+## Boundary Summary
 
-## AIM Engine Definition
+The AIM Engine is responsible for adaptive learning decisions.
 
-The AIM Engine is a Python backend module that owns all adaptive learning intelligence. It is the sole system responsible for:
+The Backend API is responsible for authentication, authorization, request validation, orchestration, persistence, and exposing safe API responses.
 
-- Computing and updating per-student, per-skill learning state (`mastery`, `confidence`, `attempts`, `avg_speed`, `retention`, `weakness_score`, `frustration_score`, `learning_style`)
-- Selecting the next lesson for a student
-- Triggering remediation based on skill weakness
-- Scheduling review lessons based on retention decay
-- Consuming placement test results and initializing student skill states
-- Consuming lesson session results and updating skill states
-- Generating recommendation outputs for the Flutter app and admin dashboard
+Clients are responsible for display and interaction only.
 
-The AIM Engine does not:
-- Serve lesson content directly to the Flutter app (that is the backend content API)
-- Render UI or interact with the student directly
-- Execute AI Teacher LLM calls (those are handled by the AI Teacher gateway, which reports results back to AIM Engine)
-- Store data (it reads from and writes to the backend database through the backend service layer)
-
----
-
-## Architectural Position
-
+```text
+Flutter Mobile Learner Client
+Completed React Web Pilot Surface, if referenced historically
+Admin / Internal UI Surfaces
+        │
+        │ HTTPS API requests
+        ▼
+Post-MVP Backend API
+NestJS + TypeScript
+Auth + authorization + orchestration
+        │
+        │ Backend-internal integration
+        ▼
+Python AIM Engine
+Adaptive intelligence
+        │
+        │ Backend-internal integration when needed
+        ▼
+AI Teacher Gateway
+Backend-only provider proxy
 ```
-Flutter App
-    ↓ (REST API calls)
-Backend API Layer
-    ↓ (internal service calls)
-AIM Engine Module  ←→  Database (StudentSkillState, LessonHistory, PlacementResult)
-    ↓ (async trigger)
-AI Teacher Gateway (LLM calls, returns interaction metadata to AIM Engine)
+
+## Ownership Rules
+
+| Area | Owner | Rule |
+|---|---|---|
+| Mastery calculation | Python AIM Engine | Never calculated locally by clients. |
+| Student level decision | Python AIM Engine | Never calculated locally by clients. |
+| Weakness detection | Python AIM Engine | Never calculated locally by clients. |
+| Difficulty adaptation | Python AIM Engine | Never calculated locally by clients. |
+| Retention scheduling | Python AIM Engine | Never calculated locally by clients. |
+| Recommendation generation | Python AIM Engine + backend resolver | Never generated locally by clients. |
+| Decision conflict resolution | Backend/AIM decision pipeline | Final action authority remains backend-owned. |
+| AI Teacher Gateway | Backend-only | Clients never call provider APIs directly. |
+| Provider credentials | Backend/server environment | Never exposed to clients. |
+| Client display | Flutter Mobile / client surfaces | Render backend-approved outputs only. |
+
+## Client Prohibitions
+
+All clients, including Flutter Mobile, completed React Web pilot surfaces, admin UI surfaces, and future clients, must not:
+
+- Run AIM Engine logic.
+- Duplicate AIM Engine logic.
+- Approximate AIM Engine logic.
+- Calculate mastery.
+- Calculate student level.
+- Calculate weakness.
+- Calculate difficulty.
+- Calculate retention.
+- Generate recommendations locally.
+- Override backend recommendation authority.
+- Call the AIM Engine directly.
+- Call the AI Teacher Gateway directly.
+- Store AI provider keys.
+- Store privileged backend credentials.
+- Apply clinical, medical, or diagnostic learner labels.
+
+## Allowed Client Responsibilities
+
+Clients may:
+
+- Display lessons, questions, feedback, recommendations, progress, and review schedules.
+- Collect learner actions and session evidence.
+- Send attempts, hint usage, skips, answer changes, and AI Teacher interaction events to the backend.
+- Cache backend-approved display data when safe.
+- Retry failed submissions without calculating AIM decisions locally.
+- Render learner-safe messages returned by the backend.
+
+## Core AIM Engine Responsibilities
+
+The AIM Engine may include the following backend-owned modules:
+
+| Module | Responsibility |
+|---|---|
+| SkillGraph | Maintains skill relationships, prerequisites, and learning path structure. |
+| PerformanceAnalyzer | Analyzes accuracy, consistency, retries, hints, skips, and evidence quality. |
+| MasteryCalculator | Calculates mastery using no-speed scoring rules. |
+| WeaknessDetector | Detects skill weaknesses and prerequisite gaps. |
+| ErrorPatternClassifier | Classifies repeated learner error patterns. |
+| DifficultyAdapter | Chooses safe difficulty movement based on evidence thresholds. |
+| RetentionTracker | Updates spaced review and retention needs. |
+| EmotionalStateDetector | Detects educational behavior signals such as frustration or hesitation without clinical diagnosis. |
+| RecommendationEngine | Produces next lesson, review, remediation, or challenge recommendations. |
+| DecisionConflictResolver | Resolves competing signals into one final action. |
+| FairnessAuditor | Checks that adaptation does not rely on unsafe or unfair signals. |
+| PromptAdapter | Produces backend-approved AI Teacher instruction context when needed. |
+
+## Required Input Groups
+
+### Input Group 1 — Placement Result
+
+| Field | Description |
+|---|---|
+| `student_id` | Backend-owned student identifier. |
+| `placement_test_id` | Placement assessment identifier. |
+| `answers` | Placement answers and correctness. |
+| `skill_results` | Skill-level placement evidence. |
+| `initial_band` | Conservative starting band. |
+| `created_at` | Timestamp. |
+
+### Input Group 2 — Learning Session
+
+| Field | Description |
+|---|---|
+| `session_id` | Backend-owned session identifier. |
+| `student_id` | Student identifier. |
+| `lesson_id` | Lesson identifier. |
+| `skill_ids` | Skills practiced in the session. |
+| `session_type` | Placement, practice, review, remediation, or challenge. |
+| `started_at` | Session start timestamp. |
+| `completed_at` | Session completion timestamp, if completed. |
+| `completion_status` | Completed, abandoned, or interrupted. |
+
+### Input Group 3 — Question Attempts
+
+| Field | Description |
+|---|---|
+| `question_id` | Question identifier. |
+| `skill_id` | Skill targeted by the question. |
+| `difficulty` | Backend/content-defined difficulty. |
+| `attempt_number` | Attempt count for the question. |
+| `submitted_answer` | Learner answer. |
+| `is_correct` | Correctness after validation. |
+| `hint_used` | Whether learner used a hint. |
+| `skip_flag` | Whether learner skipped. |
+| `answer_changed_flag` | Whether learner changed answer before submission. |
+| `response_time_seconds` | Time evidence captured by client or backend. |
+| `ai_teacher_invoked_before_attempt` | Whether AI Teacher help was used before answer. |
+
+### Input Group 4 — Session Behavior Evidence
+
+| Field | Description |
+|---|---|
+| `retry_count` | Number of retries. |
+| `hint_count` | Number of hints used. |
+| `skip_count` | Number of skips. |
+| `answer_change_count` | Number of answer changes. |
+| `response_time_distribution` | Time evidence for behavior analysis only. |
+| `ai_teacher_invocation_count` | Number of help requests. |
+
+### Input Group 5 — Historical Student State
+
+| Field | Description |
+|---|---|
+| `student_skill_states` | Existing backend-owned skill states. |
+| `previous_recommendations` | Previous recommendations and outcomes. |
+| `review_schedule` | Existing retention/review schedule. |
+| `known_weaknesses` | Existing weakness records. |
+| `known_error_patterns` | Existing error patterns. |
+
+## Speed and Response Time Rule
+
+The AIM Engine may receive and analyze speed-related evidence, but only as educational behavior evidence.
+
+Allowed speed-related uses:
+
+- hesitation signal
+- rushing signal
+- possible guessing signal
+- fatigue or distraction signal
+- low confidence signal
+- session behavior analysis
+
+Forbidden speed-related uses:
+
+- direct mastery increase
+- direct mastery decrease
+- direct student level change
+- direct difficulty increase
+- direct recommendation upgrade
+- using speed as a replacement for correctness, retention, consistency, or difficulty performance
+
+Speed, response time, average response time, and speed score must not directly affect mastery, student level, or direct difficulty increase.
+
+## Mastery Contract
+
+Mastery must follow a no-speed formula family.
+
+```text
+mastery_raw =
+  accuracy_score * 0.40 +
+  consistency_score * 0.20 +
+  retention_score * 0.15 +
+  difficulty_performance_score * 0.20 +
+  evidence_quality_score * 0.05
+
+mastery_adjusted =
+  mastery_raw - hint_penalty - retry_penalty - skip_penalty
+
+reliability = min(1.0, valid_attempt_count / 10)
+
+final_mastery =
+  previous_mastery * (1 - reliability)
+  + mastery_adjusted * reliability
 ```
 
-The Flutter client never calls the AIM Engine directly. All AIM Engine interactions are mediated by the backend API layer. AI provider keys are held only in the backend environment and are never passed to Flutter.
+Final mastery must:
 
----
+- Not increase by more than 12 points per session.
+- Not decrease by more than 15 points per session.
+- Be clamped between 0 and 100.
+- Exclude `response_time`, `avg_response_time`, and `speed_score`.
 
-## Input Contract
+## Difficulty Adaptation Contract
 
-### Input 1: Placement Test Result
+Difficulty may increase only when all required evidence is strong.
 
-Sent to AIM Engine immediately after a student completes the placement test.
-
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `student_id` | string | Yes | Unique student identifier |
-| `entry_band` | int (1–4) | Yes | Placement band assigned by the placement scorer |
-| `placement_score_pct` | float | Yes | Overall score as a percentage |
-| `screening_score_pct` | float | Yes | Screening set score |
-| `extension_score_pct` | float or null | Yes | Extension score if served, otherwise null |
-| `answered_questions` | array[object] | Yes | Each object: `{question_id, skill_id, correct: bool, response_time_seconds: int, skipped: bool}` |
-| `placement_completed_at` | datetime | Yes | ISO 8601 UTC |
-| `total_time_seconds` | int | Yes | Wall time for the entire placement test |
-
-**AIM Engine action on this input:** Initialize `StudentSkillState` records for all skills in the entry band. Pre-populate mastery signals based on correct answers in `answered_questions`.
-
----
-
-### Input 2: Lesson Session Result
-
-Sent to AIM Engine when a student completes or abandons a lesson.
-
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `student_id` | string | Yes | |
-| `lesson_id` | string | Yes | |
-| `completion_status` | enum | Yes | One of: `completed`, `abandoned`, `partial` |
-| `started_at` | datetime | Yes | ISO 8601 UTC |
-| `completed_at` | datetime | Yes | ISO 8601 UTC |
-| `total_time_seconds` | int | Yes | |
-| `practice_results` | array[object] | Yes | Each: `{question_id, skill_id, correct: bool, attempts: int, time_seconds: int, hint_used: bool, ai_teacher_invoked: bool}` |
-| `remediation_triggered` | bool | Yes | Whether a remediation block was served during this lesson |
-| `ai_teacher_invocations` | int | Yes | Total AI Teacher hook calls during the lesson |
-| `blocks_completed` | int | Yes | Number of blocks the student completed before session end |
-
-**AIM Engine action on this input:** Update `StudentSkillState` for all skills covered in the lesson. Compute mastery delta, update confidence, increment attempts, update avg_speed, update frustration_score. Evaluate whether remediation or review scheduling is needed. Select next lesson.
-
----
-
-### Input 3: AI Teacher Interaction Result
-
-Sent to AIM Engine after each AI Teacher exchange within a lesson.
-
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `student_id` | string | Yes | |
-| `lesson_id` | string | Yes | |
-| `skill_id` | string | Yes | Skill targeted in the exchange |
-| `hook_type` | enum | Yes | One of: `explain_more`, `give_example`, `explain_step`, `explain_why`, `retry_with_help` |
-| `attempt_result_after` | bool or null | Yes | Whether the student answered correctly after the AI Teacher interaction. Null if no follow-up attempt. |
-| `response_time_after_seconds` | int or null | Yes | Student response time after AI Teacher interaction |
-| `invocation_count_this_lesson` | int | Yes | Running count of AI Teacher invocations in this lesson |
-
-**AIM Engine action on this input:** Update `frustration_score` signal. Update `learning_style` inference. If `attempt_result_after = true` after `retry_with_help`, apply a reduced mastery gain (hint-assisted correct). If `invocation_count_this_lesson ≥ 4`, flag student for potential remediation session next lesson.
-
----
-
-### Input 4: Admin Override
-
-Sent by admin dashboard actions that directly affect AIM Engine state.
-
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `student_id` | string | Yes | |
-| `action` | enum | Yes | One of: `reset_placement`, `reset_skill_state`, `force_lesson`, `skip_lesson` |
-| `target_skill_id` | string | Conditional | Required for `reset_skill_state` |
-| `target_lesson_id` | string | Conditional | Required for `force_lesson` and `skip_lesson` |
-| `admin_id` | string | Yes | Admin user identifier for audit log |
-| `reason` | string | No | Optional free-text reason logged to audit trail |
-
-**AIM Engine action on this input:** Execute the override. Log the action with `admin_id` and timestamp.
-
----
-
-## Output Contract
-
-### Output 1: Next Lesson Recommendation
-
-Produced by AIM Engine after processing a lesson session result or on explicit request from the backend.
-
-| Field | Type | Description |
-|---|---|---|
-| `student_id` | string | |
-| `recommended_lesson_id` | string | The next lesson to serve |
-| `lesson_type` | enum | `intro`, `skill`, `review`, or `remediation` |
-| `primary_skill_ids` | array[string] | Skills the recommended lesson targets |
-| `recommendation_reason` | enum | One of: `new_skill`, `skill_practice`, `weakness_remediation`, `retention_review`, `placement_entry` |
-| `confidence_score` | float (0–1) | AIM Engine confidence in this recommendation |
-| `generated_at` | datetime | ISO 8601 UTC |
-
----
-
-### Output 2: Updated Student Skill State
-
-Produced after every lesson session result and placement test result processing.
-
-| Field | Type | Description |
-|---|---|---|
-| `student_id` | string | |
-| `skill_states` | array[object] | Each: `{skill_id, mastery, confidence, attempts, avg_speed, retention, weakness_score, frustration_score, learning_style, last_updated_at}` |
-| `overall_progress_pct` | float | Percentage of band skills with mastery ≥ 0.7 |
-| `current_band` | int (1–4) | Student's current placement band |
-| `band_promotion_eligible` | bool | Whether student meets criteria to advance to the next band |
-
----
-
-### Output 3: Student Progress Summary
-
-Produced on request by the backend for the Flutter app (student progress screen) and admin dashboard.
-
-| Field | Type | Description |
-|---|---|---|
-| `student_id` | string | |
-| `lessons_completed` | int | Total lessons completed |
-| `lessons_abandoned` | int | Total lessons abandoned |
-| `total_study_time_seconds` | int | Cumulative lesson time |
-| `skills_introduced` | int | Skills with at least one lesson attempt |
-| `skills_mastered` | int | Skills with mastery ≥ 0.7 |
-| `top_weaknesses` | array[string] | Up to 3 skill IDs with highest weakness_score |
-| `top_strengths` | array[string] | Up to 3 skill IDs with highest mastery |
-| `current_streak_days` | int | Consecutive days with at least one completed lesson |
-| `summary_generated_at` | datetime | ISO 8601 UTC |
-
----
-
-### Output 4: Remediation Trigger Event
-
-Emitted by AIM Engine when a student's weakness_score for a skill exceeds the remediation threshold (0.7).
-
-| Field | Type | Description |
-|---|---|---|
-| `student_id` | string | |
-| `skill_id` | string | Skill requiring remediation |
-| `weakness_score` | float | Current weakness_score that triggered the event |
-| `recommended_remediation_lesson_id` | string | Lesson ID of the appropriate remediation lesson |
-| `triggered_at` | datetime | ISO 8601 UTC |
-
----
-
-## What Must Not Run in Flutter
-
-The following logic is exclusively owned by the AIM Engine and must not be replicated, approximated, or computed in the Flutter client:
-
-| Prohibited Client-Side Logic | Reason |
+| Metric | Required Condition |
 |---|---|
-| Mastery score calculation | Mastery is a sensitive signal. Client-side computation would allow manipulation and inconsistency. |
-| Next lesson selection | Selection depends on full skill state history. Client does not hold this data. |
-| Remediation threshold evaluation | Client does not have access to weakness_score or the remediation ruleset. |
-| Frustration score inference | Inferred from multi-session behavioral patterns not available client-side. |
-| Learning style classification | Requires cross-session attempt pattern analysis. |
-| Placement band assignment | Depends on scoring algorithm and band thresholds that may change. |
-| Retention decay calculation | Depends on time-since-last-attempt curves maintained server-side. |
-| AI Teacher LLM calls | AI provider keys must never be in the Flutter client. |
-| Listening (LIS) audio delivery scoring | Audio streaming and response scoring for LIS skill states must be handled server-side only. The client may play audio if infrastructure is confirmed, but scoring of listening comprehension must never be computed client-side. |
-| Speaking (SPE) free-speech scoring | Speech-to-text or pronunciation scoring for SPE skills must never run in the Flutter client. All SPE scoring logic, if implemented post-MVP, must be a backend-only service. |
+| Mastery | `>= 85` |
+| Consistency | `>= 75` |
+| Reliability | `>= 0.70` |
+| Weakness score | `< 50` |
+| Frustration score | `< 60` |
+| Retention | `>= 70` |
 
-The Flutter app is a display and interaction layer only. It receives pre-computed recommendations, skill state summaries, and lesson content from the backend. It does not hold adaptive logic.
+Difficulty must not increase when:
 
----
+- Reliability is low.
+- Frustration is high.
+- Prerequisite gaps are severe.
+- Weakness evidence is strong.
+- Retention is weak.
+- The only positive signal is speed.
+- The client attempts to infer or override difficulty.
 
-## Failure and Fallback Rules
+## Required Output Groups
 
-| Failure Scenario | AIM Engine Behavior |
-|---|---|
-| Lesson session result arrives with missing `practice_results` | Log warning. Process what is available. Do not fail silently — emit a data quality alert for admin review. |
-| AIM Engine cannot select a next lesson (no eligible lessons in bank) | Return a `null` `recommended_lesson_id` with `recommendation_reason = content_gap`. Backend surfaces a content-gap alert to admin. Student sees "No new lessons available yet." |
-| AI Teacher gateway is unavailable | AI Teacher interactions are not sent to AIM Engine for that session. Lesson continues without AI Teacher updates. Missing AI Teacher data is flagged in session record. |
-| Placement test result arrives for a student who already has skill states | AIM Engine checks if this is a re-placement (admin-triggered or student-requested). If yes, overwrite. If unexpected, log a conflict alert and do not overwrite without admin confirmation. |
-| Database write fails during skill state update | Retry up to 3 times with exponential backoff. If all retries fail, queue the update for deferred processing. Do not drop skill state updates. |
+### Output Group 1 — Updated Skill State
 
----
+| Field | Description | Client Exposure |
+|---|---|---|
+| `student_id` | Student identifier. | Internal or scoped |
+| `skill_id` | Skill identifier. | Safe |
+| `mastery` | Backend-calculated mastery. | Learner-safe summary only |
+| `confidence` | Backend confidence in current state. | Optional safe summary |
+| `attempts` | Attempt count. | Safe summary |
+| `retention` | Retention estimate. | Learner-safe summary only |
+| `weakness_score` | Internal weakness value. | Admin/internal only or transformed |
+| `frustration_score` | Educational behavior signal. | Admin/internal only |
+| `current_difficulty` | Backend-selected current difficulty. | Safe label only |
+| `last_reviewed_at` | Review timestamp. | Safe |
+
+### Output Group 2 — Recommendation
+
+| Field | Description | Client Exposure |
+|---|---|---|
+| `recommendation_id` | Recommendation identifier. | Internal or safe |
+| `student_id` | Student identifier. | Scoped |
+| `action_type` | Review, continue, remediate, challenge, pause, or retry. | Safe |
+| `recommended_lesson_id` | Next lesson ID. | Safe |
+| `recommendation_reason` | Backend reason code. | Safe if transformed |
+| `learner_message` | Safe message for learner. | Safe |
+| `confidence_score` | Internal confidence in recommendation. | Admin/internal only |
+| `generated_at` | Timestamp. | Safe |
+
+### Output Group 3 — Review Schedule
+
+| Field | Description | Client Exposure |
+|---|---|---|
+| `skill_id` | Skill identifier. | Safe |
+| `scheduled_review_date` | Next review date. | Safe |
+| `is_due` | Whether review is due. | Safe |
+| `retention_estimate` | Backend retention estimate. | Learner-safe summary only |
+
+### Output Group 4 — Weakness and Error Pattern Records
+
+| Field | Description | Client Exposure |
+|---|---|---|
+| `weakness_id` | Weakness record identifier. | Internal |
+| `skill_id` | Skill identifier. | Safe if transformed |
+| `weakness_type` | Educational weakness type. | Safe if learner-friendly |
+| `error_pattern` | Classified error pattern. | Learner-safe wording only |
+| `severity` | Internal severity. | Admin/internal only |
+| `created_at` | Timestamp. | Internal |
+
+### Output Group 5 — AI Teacher Instruction Context
+
+| Field | Description | Client Exposure |
+|---|---|---|
+| `skill_id` | Skill being explained. | Safe |
+| `learner_band` | Learner level band. | Safe if transformed |
+| `misconception_hint` | Educational misconception context. | Backend/internal |
+| `allowed_help_type` | Help action. | Safe |
+| `safety_constraints` | Safety instructions. | Backend/internal |
+| `response_style` | Explanation style. | Backend/internal |
+
+AI Teacher instruction context is backend-owned. Flutter Mobile and other clients must not generate provider prompts locally.
+
+## Learner-Safe Output Rules
+
+Learner-facing outputs must:
+
+- Be simple and encouraging.
+- Explain next steps clearly.
+- Use educational language.
+- Avoid clinical, medical, or diagnostic labels.
+- Avoid raw hidden AIM internals.
+- Avoid shame-based or intelligence-based labels.
+- Avoid exposing provider prompts or raw provider outputs.
+- Avoid implying speed directly controls level or mastery.
+
+Allowed learner-safe messages:
+
+- "Review this skill before moving on."
+- "This lesson will help strengthen your basics."
+- "You are ready for a slightly harder challenge."
+- "Let’s practice this idea with another example."
+- "Refresh this skill today."
+
+Forbidden learner-facing messages:
+
+- "You have a disorder."
+- "You are psychologically frustrated."
+- "You are slow, so your level dropped."
+- "You are fast, so your mastery increased."
+- "The AI diagnosed your learning problem."
+
+## Backend Integration Contract
+
+The post-MVP NestJS + TypeScript Backend API must:
+
+- Validate authentication and authorization before calling AIM Engine.
+- Validate ownership of student/session records.
+- Validate request shape and required evidence.
+- Persist attempts and session evidence before AIM processing.
+- Call the Python AIM Engine through backend-internal integration only.
+- Persist AIM outputs after processing.
+- Return learner-safe response shapes to clients.
+- Restrict internal AIM fields to authorized admin/reviewer roles.
+- Audit sensitive admin actions and overrides.
+
+## Recommended Session Completion Pipeline
+
+```text
+1. Client submits attempts to Backend API.
+2. Backend validates auth, ownership, session state, and payload shape.
+3. Backend persists attempts and session behavior evidence.
+4. Backend calls Python AIM Engine internally.
+5. AIM Engine analyzes performance and evidence quality.
+6. AIM Engine calculates mastery using no-speed scoring rules.
+7. AIM Engine updates skill state.
+8. AIM Engine detects weaknesses and error patterns.
+9. AIM Engine updates retention/review schedule.
+10. AIM Engine evaluates difficulty movement safely.
+11. AIM Engine resolves decision conflicts.
+12. AIM Engine generates recommendation.
+13. Backend persists updated state, recommendation, review schedule, and audit data.
+14. Backend returns learner-safe response to client.
+```
+
+## AI Teacher Gateway Boundary
+
+AI Teacher Gateway is backend-only.
+
+Rules:
+
+- Clients never call AI providers directly.
+- Clients never hold provider API keys.
+- Clients never generate provider prompts.
+- Backend controls prompt construction and safety instructions.
+- Backend stores or audits AI Teacher events according to privacy rules.
+- AI Teacher output must not override AIM Engine recommendation authority.
+- AI Teacher output must use educational, non-clinical, non-medical, non-diagnostic language.
+
+## Admin and Reviewer Boundary
+
+Admin and reviewer surfaces may access more detailed internal AIM outputs only when role-authorized.
+
+Admin/reviewer surfaces must not:
+
+- Expose privileged credentials.
+- Edit AIM logic from the UI.
+- Override backend decisions without audit logs.
+- Apply diagnostic labels to learners.
+- Export sensitive learner data without role permission.
+- Treat speed as direct mastery, student level, or difficulty evidence.
+
+## Data Persistence Expectations
+
+The backend should persist:
+
+- learning sessions
+- question attempts
+- AI Teacher invocation events
+- session behavior evidence
+- student skill states
+- weakness records
+- error pattern records
+- review schedules
+- AIM recommendations
+- recommendation outcomes
+- admin overrides
+- audit logs
+
+Persistence belongs to backend services and database layers, not clients.
+
+## Non-Goals
+
+This document does not:
+
+- Implement the AIM Engine.
+- Implement the Backend API.
+- Implement Flutter Mobile.
+- Implement React Web.
+- Implement admin UI.
+- Create database migrations.
+- Create an AI Teacher Gateway.
+- Create a separate Student Web App.
+- Define final deployment topology.
+- Move AIM logic into clients.
+- Define clinical or diagnostic learner categories.
 
 ## Assumptions
 
-- The AIM Engine is a Python module within the backend service. It is not a separate microservice in MVP.
-- All AIM Engine inputs and outputs are transmitted over internal service calls (function calls or internal message bus), not external HTTP. External HTTP is only for Flutter ↔ Backend API.
-- The skill state fields (`mastery`, `confidence`, etc.) map directly to the `StudentSkillState` model implemented in T-03.
-- The AIM Engine algorithm details (mastery delta formulas, retention decay curves, frustration thresholds) are implementation concerns for Phase 1 and are not defined in this Phase 0 document.
-- Recommendation confidence scores are informational for admin dashboards; they do not gate lesson delivery in MVP.
-- All seven skill categories (PHO, VOC, GRA, READ, WRITE, LIS, SPE) are valid `skill_id` prefixes in AIM Engine inputs and outputs. LIS and SPE skill states are managed identically to other categories. Gating of LIS/SPE lessons from being served to students is enforced by the content layer (`lesson_eligible`, `placement_eligible` flags), not the AIM Engine itself.
-
----
+- React Web was the completed MVP pilot learner interface.
+- FastAPI was the completed MVP pilot backend API.
+- Flutter Mobile is the approved post-MVP Phase 1 learner client.
+- NestJS + TypeScript is the post-MVP Phase 1 Backend API.
+- Python AIM Engine remains backend-owned.
+- Supabase PostgreSQL/Auth remain the default unless a later documented decision changes this.
+- AIM Engine can be integrated as a backend service/module behind the Backend API.
+- No separate Student Web App is planned for post-MVP unless a later documented decision changes this.
+- Clients are online for authoritative AIM processing.
+- Any offline retry behavior must not calculate AIM decisions locally.
 
 ## Open Questions
 
 | Question | Current Handling |
 |---|---|
-| Should the AIM Engine support batch processing of multiple session results (e.g., offline sync)? | Open decision. MVP assumes real-time single-session processing. Batch processing is a post-MVP resilience feature for low-connectivity scenarios. |
-| Should `band_promotion_eligible` trigger an automatic band advancement or require admin approval? | Open decision. Recommend admin-approval in MVP pilot. Automatic promotion after pilot validation. |
-| Should the AIM Engine emit a weekly summary event for the parent report? | Yes. Define in P0-021 (Analytics and Reports Scope). Not defined here to avoid scope overlap. |
-| What is the retention decay model? (Ebbinghaus-based, flat decay, or other?) | Deferred to Phase 1 AIM Engine implementation. Phase 0 does not specify the algorithm. |
-| Should remediation threshold (0.7) be configurable per skill or global? | Open decision. Global in MVP. Per-skill configuration is a post-MVP content management feature. |
-
----
+| Should the Python AIM Engine run as an in-process module, internal service, or job worker behind NestJS? | Open Phase 1 engineering decision. It must remain backend-only in all cases. |
+| Should session completion be synchronous or asynchronous? | Early Phase 1 may use synchronous response; async processing can be added for resilience. |
+| Which AIM debug fields should admin/reviewer roles see? | Define minimum safe admin fields before implementation. |
+| Which recommendation outcome events are required for Phase 1? | Define during analytics/reporting implementation planning. |
+| How much explanation should learners see about mastery changes? | Use learner-safe summaries only. Avoid raw AIM internals. |
 
 ## Related Documents
 
-- `docs/journeys/student-journey.md` — Session flow that generates AIM Engine inputs
-- `docs/learning/english-skill-tree.md` — Canonical skill IDs
-- `docs/learning/placement-test-strategy.md` — Placement test output that feeds Input 1
-- `docs/content/lesson-content-structure.md` — Lesson session metadata that feeds Input 2
-- `docs/ai-teacher/behavior-rules.md` — AI Teacher interactions that feed Input 3
-- `docs/data/session-data-capture.md` (P0-015) — Full event-level data captured alongside AIM Engine inputs
-- `docs/data/initial-data-model.md` (P0-016) — Data entities AIM Engine reads and writes
-- `docs/security/ai-safety-privacy-rules.md` (P0-022) — AI key protection and data minimization rules
-
----
+- `docs/product/vision.md`
+- `docs/product/non-negotiables.md`
+- `docs/product/mvp-scope.md`
+- `docs/product/out-of-scope.md`
+- `docs/api/api-planning-baseline.md`
+- `docs/data/session-data-capture.md`
+- `docs/data/initial-data-model.md`
+- `docs/analytics/reports-scope.md`
+- `docs/security/ai-safety-privacy-rules.md`
+- `docs/ai-teacher/behavior-rules.md`
+- `docs/mobile/mobile-sitemap.md`
 
 ## Acceptance Notes
 
-- All three dependencies checked: P0-005, P0-009, P0-013 — all output files present and meaningful.
-- This document covers the AIM Engine role definition, architectural position, four input contracts, four output contracts, explicit list of what must not run in Flutter, failure and fallback rules, and assumptions.
-- No runtime source code, algorithms, database schemas, Flutter code, or API implementation was added.
-- Task is ready to mark Done in Notion.
+- This document has a title, purpose, scope, current product direction, boundary summary, ownership rules, input groups, output groups, backend integration contract, AI Teacher Gateway boundary, assumptions, open questions, and related documents.
+- Completed MVP pilot stack and post-MVP Phase 1 target stack are separated.
+- React Web is described as the completed MVP pilot learner interface.
+- FastAPI is tied only to the completed MVP pilot backend API.
+- Flutter Mobile is described as the approved post-MVP Phase 1 learner client.
+- NestJS + TypeScript is described as the post-MVP Phase 1 Backend API.
+- AIM Engine remains Python/backend-owned.
+- AI Teacher Gateway remains backend-only.
+- AI provider keys and privileged backend credentials remain backend/server-only.
+- Client boundaries remain strict everywhere.
+- Speed remains educational behavior evidence only and does not directly affect mastery, student level, or direct difficulty increase.
+- Learner behavior language remains educational, non-clinical, non-medical, and non-diagnostic.
+- No separate Student Web App is planned for post-MVP unless a later documented decision changes this.
+- No runtime source code, Student Web App, Flutter AIM logic, database migration, or backend implementation was added.
