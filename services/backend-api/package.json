@@ -2,25 +2,21 @@
   "name": "@aim/backend-api",
   "version": "0.1.0",
   "private": true,
-  "description": "AIM Phase 1 NestJS Backend API skeleton.",
-  "license": "UNLICENSED",
-  "engines": {
-    "node": ">=20"
-  },
+  "description": "AIM Phase 1 Backend API service.",
   "scripts": {
     "build": "nest build",
-    "start": "node dist/main.js",
+    "start": "nest start",
     "start:dev": "nest start --watch",
-    "start:prod": "node dist/main.js",
     "test": "jest --config ./jest.config.js",
     "test:watch": "jest --config ./jest.config.js --watch",
     "test:cov": "jest --config ./jest.config.js --coverage"
   },
   "dependencies": {
-    "@nestjs/common": "^11.1.26",
-    "@nestjs/core": "^11.1.26",
-    "@nestjs/platform-express": "^11.1.26",
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/core": "^11.1.6",
+    "@nestjs/platform-express": "^11.1.6",
     "@nestjs/swagger": "^11.2.0",
+    "pg": "^8.13.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "swagger-ui-express": "^5.0.1"
@@ -28,15 +24,17 @@
   "devDependencies": {
     "@nestjs/cli": "^11.0.10",
     "@nestjs/schematics": "^11.0.7",
-    "@nestjs/testing": "^11.1.26",
+    "@nestjs/testing": "^11.1.6",
+    "@types/express": "^5.0.3",
     "@types/jest": "^29.5.14",
-    "@types/node": "^22.10.2",
+    "@types/node": "^22.10.7",
+    "@types/pg": "^8.11.10",
     "@types/supertest": "^6.0.3",
     "jest": "^29.7.0",
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
+    "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.3"
   }
 }
