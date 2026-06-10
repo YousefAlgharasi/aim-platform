@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:aim_mobile/core/routing/routing.dart';
 
 void main() {
-  testWidgets('can navigate between placeholder routes', (tester) async {
+  testWidgets('can navigate from splash to sign-in and main shell placeholder', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         initialRoute: AppRoutePaths.splash,
@@ -22,12 +22,11 @@ void main() {
     await tester.tap(find.text('Continue to main shell'));
     await tester.pumpAndSettle();
 
-    expect(find.text('AIM Main Shell'), findsOneWidget);
-
-    await tester.tap(find.text('Home'));
-    await tester.pumpAndSettle();
-
     expect(find.text('AIM Home'), findsOneWidget);
-    expect(find.text('Home placeholder'), findsOneWidget);
+    expect(find.text('Home'), findsWidgets);
+    expect(find.text('Learn'), findsWidgets);
+    expect(find.text('Review'), findsWidgets);
+    expect(find.text('Progress'), findsWidgets);
+    expect(find.text('Profile'), findsWidgets);
   });
 }

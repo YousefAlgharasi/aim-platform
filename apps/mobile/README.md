@@ -2,24 +2,32 @@
 
 Flutter Mobile learner client shell for AIM Phase 1.
 
-## Routing Shell
+## Main Shell Placeholder Screens
 
-P1-043 adds the Flutter routing shell.
+P1-044 adds placeholder screens for the main learner shell:
 
-Routes:
+- Home
+- Learn
+- Review
+- Progress
+- Profile
 
-```text
-/
- /auth/sign-in
- /main
- /main/home
- /main/learn
- /main/review
- /main/progress
- /main/profile
-```
+The shell uses a Material 3 `NavigationBar` and an `IndexedStack` to switch between placeholders.
 
-The routes display placeholder screens only.
+## Not Implemented
+
+This task does not implement:
+
+- feature data loading
+- Backend API calls
+- auth behavior
+- local progress calculation
+- local mastery calculation
+- local level calculation
+- weakness detection
+- difficulty adaptation
+- retention scheduling
+- recommendation generation
 
 ## Phase 1 Rules
 
