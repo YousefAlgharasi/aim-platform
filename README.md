@@ -1,90 +1,84 @@
-# AIM Algorithm
+# AIM Platform
 
-## Overview
-
-This system contains:
-
-- Backend API using FastAPI
-- Frontend Web App using React
-- AI Core services and algorithms
+AI-powered English language learning platform. Phase 1 — System Foundation.
 
 ---
 
-## Project Structure
+## Phase 1 Stack
 
-```txt
-apps/web             -> React frontend
-services/api/src     -> FastAPI app and AIM Python package
-services/backend     -> legacy backend compatibility wrappers
-database/alembic     -> Alembic migration environment
-database/supabase    -> Supabase seed, policies, and local config
-packages/content     -> A1 pilot lessons, schemas, and plans
-packages/ai_core     -> legacy AI-core compatibility wrappers
-packages/ml          -> legacy ML compatibility wrappers
-docs                 -> project documentation
-infra/deployment     -> cloud deployment assets
-tests                -> unit and integration tests
-tools                -> project scripts and utilities
-```
+| Layer | Technology |
+|---|---|
+| Learner client | Flutter Mobile (`apps/mobile/`) |
+| Backend API | NestJS + TypeScript (`services/backend-api/`) |
+| AIM Engine | Python service/module (`services/aim-engine/`) |
+| Admin surface | Internal Admin Dashboard (`apps/admin-dashboard/`) |
+| Database | Supabase PostgreSQL |
+| Auth | Supabase Auth |
+| AI Teacher | Backend-only gateway foundation |
+| Student Web App | **Deferred — Optional — Phase 7 or later** |
+
+> The existing `apps/web/` directory is a completed MVP pilot artifact. It is not the Phase 1 learner client and must not be extended.
 
 ---
 
-## Tech Stack
+## Repository Layout
 
-- FastAPI
-- React
-- Python
-- AI/ML Modules
+```
+aim-platform/
+├── apps/
+│   ├── mobile/                    # Flutter Mobile — Phase 1 learner client
+│   └── admin-dashboard/           # Internal Admin Dashboard — foundation only
+├── services/
+│   ├── backend-api/               # NestJS + TypeScript — Phase 1 Backend API
+│   └── aim-engine/                # Python — AIM Engine (backend-owned)
+├── packages/
+│   └── shared-contracts/          # Cross-service API, enums, errors, field contracts
+├── infra/
+│   └── docker/                    # Docker Compose and container configs
+├── scripts/                       # Local dev, CI, and utility scripts
+├── docs/
+│   ├── phase-1/                   # Phase 1 charter, rules, and decisions
+│   └── ...
+├── database/
+│   └── supabase/                  # Supabase migrations and policies
+├── .env.example
+├── README.md
+└── CONTRIBUTING.md
+```
+
+For full folder definitions and constraints, see [`docs/phase-1/repo-structure.md`](docs/phase-1/repo-structure.md).
 
 ---
-## Architecture
-See:
-/docs/AIM_Complete_Architecture_EN.docx
 
-## AIM Visual Demo
+## Local Development
 
-Open the development AIM visual dashboard at:
+See [`docs/phase-1/local-development.md`](docs/phase-1/local-development.md) for:
 
-```txt
-http://localhost:3000/aim-demo
-```
+- Step-by-step setup for each service.
+- Phase 1 vs completed MVP pilot differences.
+- Docker Compose multi-service setup.
+- Environment variable guidance.
 
-See `docs/AIM_VISUAL_DEMO.md` for backend/frontend run commands and expected scenario results.
+---
 
-## Development Workflow
+## Key Documents
 
-- Every task starts as a GitHub Issue
-- Every issue gets its own branch
-- All changes go through Pull Requests
-- Main branch is protected
+| Document | Purpose |
+|---|---|
+| [`docs/phase-1/system-foundation-charter.md`](docs/phase-1/system-foundation-charter.md) | Phase 1 definition, stack lock, forbidden work, and acceptance gates |
+| [`docs/phase-1/repo-structure.md`](docs/phase-1/repo-structure.md) | Authoritative folder structure and per-folder constraints |
+| [`docs/phase-1/workspace-tooling.md`](docs/phase-1/workspace-tooling.md) | Per-service package management and tooling decisions |
+| [`docs/phase-1/task-execution-rules.md`](docs/phase-1/task-execution-rules.md) | Task claiming, execution, and completion rules |
+| [`docs/phase-1/local-development.md`](docs/phase-1/local-development.md) | Local setup guide for all Phase 1 services |
 
-## Database Configuration
+---
 
-Local development uses SQLite by default:
+## Phase 1 Constraints
 
-```txt
-APP_ENV=development
-DATABASE_URL=sqlite:///./database/aim_dev.db
-```
+- Do not create a Student Web App or React/Next.js learner interface.
+- Do not use FastAPI as the Phase 1 Backend API.
+- Do not move AIM Engine logic into Flutter or any client.
+- Do not expose AI provider keys or privileged credentials in any client.
+- Do not use speed as a direct mastery, level, or difficulty signal.
 
-Cloud deployments can point the backend at Supabase PostgreSQL with
-`SUPABASE_DATABASE_URL` or `DATABASE_URL`. `SUPABASE_DATABASE_URL` takes
-precedence when both are set.
-
-```txt
-APP_ENV=cloud
-SUPABASE_DATABASE_URL=postgresql://postgres.<project-ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres
-SUPABASE_URL=https://<project-ref>.supabase.co
-SUPABASE_AUTH_REQUIRED=true
-SUPABASE_JWT_AUDIENCE=authenticated
-CORS_ORIGINS=https://your-react-app.example.com,http://localhost:3000
-```
-
-For persistent FastAPI servers, use Supabase's direct connection when the host
-supports IPv6, or the Session pooler on IPv4-only hosts. Transaction pooler
-connections are better suited to serverless/short-lived runtimes.
-
-Supabase JWT verification uses the project JWKS endpoint by default. If a
-legacy/shared JWT secret is required, configure `SUPABASE_JWT_SECRET` only on
-the backend runtime environment; never expose it through frontend public env
-variables.
+Phase 1 creates skeleton structure and system foundation only. Full feature implementation begins in Phase 2.
