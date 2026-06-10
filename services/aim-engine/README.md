@@ -1,13 +1,42 @@
-# services/aim-engine — Python AIM Engine
+# AIM Engine Service
 
-Phase 1 AIM Engine service. Python backend-owned adaptive intelligence module.
+Python service skeleton for the AIM adaptive-learning engine.
 
-**Phase 1 scope:** Service skeleton, health and version endpoints, contract models, pipeline interface skeleton, and no-speed guard tests.
+## Phase 1 scope
 
-**Constraints:**
-- AIM Engine is backend-owned. It must never run in any client.
-- `response_time_seconds`, average response time, and speed score do not directly affect mastery, level, or difficulty increase.
-- All AIM calculations are owned exclusively by this service.
-- Clients never call the AIM Engine directly.
+This service is the backend-owned AIM Engine boundary. It is responsible for future adaptive-learning orchestration, mastery calculation, recommendation logic, retention scheduling, weakness detection, and related internal learning intelligence.
 
-See `docs/phase-1/repo-structure.md` and `docs/aim-engine/boundary-and-io-contract.md`.
+For P1-026, this folder intentionally contains only the service skeleton and app entry structure.
+
+## Non-negotiable boundaries
+
+- Do not implement full adaptive-learning algorithms in this task.
+- Do not move mastery, weakness, difficulty, retention, or recommendation logic into any client.
+- Do not expose learner-internal model fields directly to clients.
+- Do not commit secrets.
+- Do not add production provider keys or database credentials.
+
+## Local setup
+
+```bash
+cd services/aim-engine
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+cp .env.example .env
+uvicorn app.main:create_app --factory --reload --host 0.0.0.0 --port 8010
+```
+
+## Current app entrypoint
+
+```text
+app/main.py
+```
+
+The app factory is `create_app()`.
+
+## Future tasks
+
+- P1-027 will add health/version endpoints.
+- P1-028 will add contract models.
+- P1-029 will add the pipeline interface skeleton.
