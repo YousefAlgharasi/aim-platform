@@ -14,7 +14,7 @@ It is a shell only. It does not implement full production dashboard modules.
 
 ## Layout and Routing Foundation
 
-P1-048 adds:
+Current admin shell routes:
 
 - `/admin`
 - `/admin/students`
@@ -22,23 +22,38 @@ P1-048 adds:
 - `/admin/reviews`
 - `/admin/reports`
 - `/admin/settings`
-- shared admin navigation
-- shared admin shell layout
-- placeholder admin pages
 
 All pages are placeholders.
+
+## Admin API Client Foundation
+
+P1-049 adds a typed Backend API client foundation under:
+
+```text
+lib/api
+```
+
+It supports:
+
+- Backend API base URL configuration
+- shared response-envelope parsing
+- shared error-envelope parsing
+- typed `GET` and `POST` helpers
+- safe API client error type
+
+It does not add feature-specific admin API workflows.
 
 ## Phase 1 Scope
 
 Allowed in this shell:
 
-- Next.js app foundation.
-- Internal dashboard landing page.
-- Internal admin layout shell.
-- Placeholder navigation.
-- Safe placeholder copy.
-- Local development scripts.
-- Backend API base URL placeholder config.
+- Next.js app foundation
+- internal dashboard landing page
+- internal admin layout shell
+- placeholder navigation
+- safe placeholder copy
+- Backend API client foundation
+- Backend API base URL placeholder config
 
 Not allowed in this shell:
 
@@ -108,6 +123,7 @@ Only `NEXT_PUBLIC_*` values may be exposed to the browser, and they must not con
 - The Admin Dashboard shell exists.
 - It is located under `apps/admin-dashboard/`.
 - It includes a routing/layout foundation.
+- It includes a Backend API client foundation.
 - It does not create a learner Student Web App.
 - It does not implement production admin modules.
 - It does not include secrets.
