@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
-import { adminNavigationItems } from '../lib/admin-navigation';
+import { getAdminRoleLabel } from '../lib/admin-roles';
+import { roleBasedMenuGroups } from '../lib/admin-navigation';
 
 export function AdminNavigation() {
   return (
@@ -13,12 +14,24 @@ export function AdminNavigation() {
         </span>
       </Link>
 
-      <div className="admin-nav-list">
-        {adminNavigationItems.map((item) => (
-          <Link className="admin-nav-link" href={item.href} key={item.href}>
-            <span>{item.label}</span>
-            <small>{item.description}</small>
-          </Link>
+      <p className="admin-menu-note">
+        Role-based menu placeholder only. Backend API authorization remains the
+        final authority.
+      </p>
+
+      <div className="admin-role-menu-list">
+        {roleBasedMenuGroups.map((group) => (
+          <section className="admin-role-menu-group" key={group.role}>
+            <h2>{getAdminRoleLabel(group.role)}</h2>
+            <div className="admin-nav-list">
+              {group.items.map((item) => (
+                <Link className="admin-nav-link" href={item.href} key={item.href}>
+                  <span>{item.label}</span>
+                  <small>{item.description}</small>
+                </Link>
+              ))}
+            </div>
+          </section>
         ))}
       </div>
     </nav>
