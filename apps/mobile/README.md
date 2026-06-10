@@ -4,7 +4,7 @@ Flutter Mobile learner client shell for AIM Phase 1.
 
 ## Scope
 
-This app is the Phase 1 learner client shell. It is intentionally minimal and exists only to establish the approved Flutter Mobile project boundary under `apps/mobile`.
+This app is the Phase 1 learner client shell. It establishes the approved Flutter Mobile project boundary under `apps/mobile`.
 
 ## Phase 1 Rules
 
@@ -35,10 +35,22 @@ The current shell contains:
 ```text
 lib/main.dart
 lib/app/aim_mobile_app.dart
+lib/core/
 test/widget_test.dart
 ```
 
-The home screen is a placeholder that confirms the app shell loads. It does not implement any feature workflow.
+## Core Architecture
+
+```text
+lib/core/config
+lib/core/networking
+lib/core/errors
+lib/core/routing
+lib/core/theme
+lib/core/localization
+```
+
+P1-039 only establishes minimal shared foundations. It does not implement full routing, API calls, auth, localization runtime behavior, Riverpod state, or feature workflows.
 
 ## Local Checks
 

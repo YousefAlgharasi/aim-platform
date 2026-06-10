@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../core/theme/theme.dart';
+
 class AimMobileApp extends StatelessWidget {
   const AimMobileApp({super.key});
 
@@ -10,10 +12,7 @@ class AimMobileApp extends StatelessWidget {
     return MaterialApp(
       title: appTitle,
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.light,
       home: const AimShellHomePage(),
     );
   }
