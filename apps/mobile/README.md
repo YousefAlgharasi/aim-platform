@@ -36,6 +36,7 @@ The current shell contains:
 lib/main.dart
 lib/app/aim_mobile_app.dart
 lib/core/
+lib/features/
 test/widget_test.dart
 ```
 
@@ -50,7 +51,36 @@ lib/core/theme
 lib/core/localization
 ```
 
-P1-039 only establishes minimal shared foundations. It does not implement full routing, API calls, auth, localization runtime behavior, Riverpod state, or feature workflows.
+## Feature-First Architecture
+
+```text
+lib/features/auth
+lib/features/onboarding
+lib/features/placement
+lib/features/home
+lib/features/lessons
+lib/features/practice
+lib/features/ai_teacher
+lib/features/reviews
+lib/features/progress
+lib/features/notifications
+lib/features/profile
+```
+
+Each feature contains:
+
+```text
+data/datasources
+data/models
+data/repository/repo_impl
+logic/entity
+logic/provider
+logic/repository
+ui/pages
+ui/widgets
+```
+
+P1-040 creates folder skeletons only. It does not implement feature workflows, API calls, local calculations, state management, or navigation.
 
 ## Local Checks
 
