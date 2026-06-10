@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 const foundationCards = [
   {
     title: 'Internal foundation',
@@ -12,7 +14,7 @@ const foundationCards = [
   {
     title: 'No production modules',
     description:
-      'Students, content, reports, audit logs, and review queue modules are not implemented in this task.',
+      'Students, content, reports, audit logs, and review queue modules are placeholders only.',
   },
 ];
 
@@ -26,6 +28,11 @@ export default function AdminDashboardHomePage() {
           Internal dashboard project shell for system foundation work. This is
           not a full institute management platform.
         </p>
+        <div className="hero-actions">
+          <Link className="primary-link" href="/admin">
+            Open admin shell
+          </Link>
+        </div>
       </section>
 
       <section className="card-grid" aria-label="Admin dashboard shell scope">
