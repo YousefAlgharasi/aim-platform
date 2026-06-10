@@ -22,24 +22,40 @@ Current admin shell routes:
 - `/admin/reviews`
 - `/admin/reports`
 - `/admin/settings`
+- `/admin/roles`
 
 All pages are placeholders.
 
+## Role-Based Menu Placeholder
+
+P1-050 adds placeholder menu groups for:
+
+- Pilot Admin
+- Content Manager
+- Human Reviewer
+- Project Owner
+
+This is UI scaffolding only.
+
+It does not implement:
+
+- real RBAC
+- authentication
+- authorization
+- permission checks
+- route guards
+- session handling
+- backend role enforcement
+
+Backend API authorization remains final.
+
 ## Admin API Client Foundation
 
-P1-049 adds a typed Backend API client foundation under:
+The Admin Dashboard has a typed Backend API client foundation under:
 
 ```text
 lib/api
 ```
-
-It supports:
-
-- Backend API base URL configuration
-- shared response-envelope parsing
-- shared error-envelope parsing
-- typed `GET` and `POST` helpers
-- safe API client error type
 
 It does not add feature-specific admin API workflows.
 
@@ -51,6 +67,7 @@ Allowed in this shell:
 - internal dashboard landing page
 - internal admin layout shell
 - placeholder navigation
+- role-based menu placeholders
 - safe placeholder copy
 - Backend API client foundation
 - Backend API base URL placeholder config
@@ -64,6 +81,7 @@ Not allowed in this shell:
 - production reporting workflows
 - audit-log implementation
 - review-queue implementation
+- real role enforcement in the browser
 - direct database access
 - Supabase service-role keys
 - AI provider keys
@@ -124,6 +142,8 @@ Only `NEXT_PUBLIC_*` values may be exposed to the browser, and they must not con
 - It is located under `apps/admin-dashboard/`.
 - It includes a routing/layout foundation.
 - It includes a Backend API client foundation.
+- It includes role-based menu placeholders.
 - It does not create a learner Student Web App.
 - It does not implement production admin modules.
+- It does not implement real RBAC.
 - It does not include secrets.

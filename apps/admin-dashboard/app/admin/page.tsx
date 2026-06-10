@@ -9,6 +9,7 @@ export default function AdminOverviewPage() {
         'Use Backend API for future admin workflows.',
         'Keep authorization final on the Backend API.',
         'Do not expose service-role keys or database credentials.',
+        'Use the role-based menu placeholder only as UI scaffolding.',
       ]}
     />
   );
