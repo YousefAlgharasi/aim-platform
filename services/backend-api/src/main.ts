@@ -1,11 +1,16 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { BackendConfigService } from './config/backend-config.service';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
-  const port = process.env.PORT ?? 3000;
+  const config = app.get(BackendConfigService);
 
-  await app.listen(port);
+  app.enableCors({
+    origin: [...config.corsOrigins],
+  });
+
+  await app.listen(config.port);
 }
 
 void bootstrap();
