@@ -6,11 +6,12 @@ Python service skeleton for the AIM adaptive-learning engine.
 
 This service is the backend-owned AIM Engine boundary. It is responsible for future adaptive-learning orchestration, mastery calculation, recommendation logic, retention scheduling, weakness detection, and related internal learning intelligence.
 
-For P1-026 through P1-028, this folder intentionally contains only:
+For P1-026 through P1-029, this folder intentionally contains only:
 
 - service skeleton
 - safe system endpoints
 - backend-to-engine contract models
+- pipeline interface skeleton
 
 ## Non-negotiable boundaries
 
@@ -54,7 +55,14 @@ app/contracts/
 
 The contracts define validated Pydantic models for future backend-to-engine calls. They do not calculate mastery, weakness, difficulty, retention, or recommendations.
 
+## Pipeline boundary
+
+```text
+app/pipeline/
+```
+
+The pipeline package defines the future orchestration interface. The current placeholder returns `accepted` with empty output collections and must not be treated as real adaptive behavior.
+
 ## Future tasks
 
-- P1-029 will add the pipeline interface skeleton.
-- Later tasks will wire algorithms only after contracts and persistence boundaries are explicit.
+Later tasks will wire algorithms only after contracts, persistence, and service boundaries are explicit.

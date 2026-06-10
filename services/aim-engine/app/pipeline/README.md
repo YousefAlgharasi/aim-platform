@@ -1,13 +1,37 @@
 # AIM Engine Pipeline Boundary
 
-This package is reserved for future pipeline orchestration.
+This package defines the pipeline interface for future adaptive session-completion processing.
 
-Do not add adaptive-learning behavior here in P1-026.
+## P1-029 scope
 
-Expected future direction:
+This task is interface-only.
 
-1. Contract models are introduced first.
-2. Pipeline interfaces are introduced after contracts.
-3. Algorithm implementation is integrated only after contracts and persistence boundaries are clear.
+It adds:
+
+- `AdaptiveSessionCompletionPipeline`
+- `PipelineExecutionContext`
+- pipeline-specific error types
+- `PlaceholderAdaptiveSessionCompletionPipeline`
+
+## Placeholder behavior
+
+The placeholder implementation returns an `accepted` response with empty output lists.
+
+It does not calculate:
+
+- mastery
+- confidence
+- weakness
+- difficulty
+- recommendations
+- retention schedules
+- emotional state
+- learner level
+
+## Boundary rule
 
 The AIM Engine remains backend-owned. Clients must not calculate mastery, weakness, difficulty, retention, recommendations, or learner intelligence locally.
+
+## Future direction
+
+Later tasks should replace the placeholder with explicit orchestration that calls internal engine components in the approved order, after persistence and service boundaries are clear.
