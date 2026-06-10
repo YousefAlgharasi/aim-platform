@@ -6,7 +6,7 @@ Python service skeleton for the AIM adaptive-learning engine.
 
 This service is the backend-owned AIM Engine boundary. It is responsible for future adaptive-learning orchestration, mastery calculation, recommendation logic, retention scheduling, weakness detection, and related internal learning intelligence.
 
-For P1-026, this folder intentionally contains only the service skeleton and app entry structure.
+For P1-026 and P1-027, this folder intentionally contains only the service skeleton plus safe system endpoints.
 
 ## Non-negotiable boundaries
 
@@ -35,8 +35,26 @@ app/main.py
 
 The app factory is `create_app()`.
 
+## Safe system endpoints
+
+```text
+GET /health
+GET /version
+```
+
+These endpoints expose safe operational metadata only:
+
+- service identifier
+- status
+- UTC timestamp
+- uptime seconds
+- implementation phase
+- runtime environment
+- service version
+
+They must not expose secrets, database URLs, provider keys, Supabase keys, learner-internal fields, or adaptive-learning internals.
+
 ## Future tasks
 
-- P1-027 will add health/version endpoints.
 - P1-028 will add contract models.
 - P1-029 will add the pipeline interface skeleton.
