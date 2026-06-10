@@ -49,7 +49,35 @@ lib/core/errors
 lib/core/routing
 lib/core/theme
 lib/core/localization
+lib/core/state
 ```
+
+## Riverpod Foundation
+
+P1-041 adds `flutter_riverpod` and wraps the app with `ProviderScope`.
+
+Shared state conventions live in:
+
+```text
+lib/core/state
+```
+
+Feature-specific providers should live in each feature's:
+
+```text
+lib/features/<feature>/logic/provider
+```
+
+The foundation supports:
+
+- async screen state
+- loading state
+- success state
+- error state
+- form state
+- retry state
+
+It does not implement feature workflows, API calls, or AIM calculations.
 
 ## Feature-First Architecture
 
@@ -79,8 +107,6 @@ logic/repository
 ui/pages
 ui/widgets
 ```
-
-P1-040 creates folder skeletons only. It does not implement feature workflows, API calls, local calculations, state management, or navigation.
 
 ## Local Checks
 
