@@ -2,35 +2,22 @@
 
 Flutter Mobile learner client shell for AIM Phase 1.
 
-## Auth Placeholder Flow
+## Guard Documentation
 
-P1-045 adds placeholder auth UI and in-memory auth state.
+P1-046 adds explicit Flutter boundary documentation:
 
-Included:
-
-- splash auth-state placeholder
-- sign-in placeholder page
-- placeholder learner email field
-- placeholder signed-in state
-- placeholder sign-out action from Profile
-- tests for auth state and UI flow
-
-## Not Implemented
-
-This task does not implement:
-
-- Supabase authentication
-- token storage
-- refresh token handling
-- backend auth endpoints
-- real sign-in
-- real sign-out
-- account creation
-- password reset
-- social login
-- OTP login
+```text
+docs/no-aim-logic.md
+```
 
 ## Phase 1 Rules
+
+Flutter Mobile may:
+
+- render learner-facing UI
+- call the Backend API
+- collect learner evidence
+- display backend-approved outputs
 
 Flutter Mobile must not:
 
@@ -41,11 +28,24 @@ Flutter Mobile must not:
 - schedule retention
 - generate recommendations
 - call AIM Engine directly
-- call AI Teacher provider or gateway directly
-- store provider keys, Supabase service-role keys, or privileged backend credentials
+- call AI Teacher provider APIs directly
+- expose secrets or privileged credentials
 - implement Student Web App behavior
 
-Flutter Mobile sends learner evidence to the Backend API and renders backend-approved outputs only.
+## Current Foundation
+
+The current mobile foundation includes:
+
+- Flutter project shell
+- core architecture folders
+- feature-first skeletons
+- Riverpod StateNotifier foundation
+- Backend API client foundation
+- routing shell
+- main shell placeholder screens
+- auth placeholder flow
+
+All feature logic remains placeholder-only until later approved tasks.
 
 ## Local Checks
 
