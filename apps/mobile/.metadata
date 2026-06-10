@@ -1,0 +1,15 @@
+# This file tracks properties of this Flutter project.
+# Used by Flutter tooling to assess capabilities and perform upgrades.
+# This project is intentionally a minimal Phase 1 shell.
+
+version:
+  revision: unknown
+  channel: stable
+
+project_type: app
+
+migration:
+  platforms:
+    - platform: root
+      create_revision: unknown
+      base_revision: unknown
