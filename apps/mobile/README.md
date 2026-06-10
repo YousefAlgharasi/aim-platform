@@ -2,32 +2,33 @@
 
 Flutter Mobile learner client shell for AIM Phase 1.
 
-## Main Shell Placeholder Screens
+## Auth Placeholder Flow
 
-P1-044 adds placeholder screens for the main learner shell:
+P1-045 adds placeholder auth UI and in-memory auth state.
 
-- Home
-- Learn
-- Review
-- Progress
-- Profile
+Included:
 
-The shell uses a Material 3 `NavigationBar` and an `IndexedStack` to switch between placeholders.
+- splash auth-state placeholder
+- sign-in placeholder page
+- placeholder learner email field
+- placeholder signed-in state
+- placeholder sign-out action from Profile
+- tests for auth state and UI flow
 
 ## Not Implemented
 
 This task does not implement:
 
-- feature data loading
-- Backend API calls
-- auth behavior
-- local progress calculation
-- local mastery calculation
-- local level calculation
-- weakness detection
-- difficulty adaptation
-- retention scheduling
-- recommendation generation
+- Supabase authentication
+- token storage
+- refresh token handling
+- backend auth endpoints
+- real sign-in
+- real sign-out
+- account creation
+- password reset
+- social login
+- OTP login
 
 ## Phase 1 Rules
 
