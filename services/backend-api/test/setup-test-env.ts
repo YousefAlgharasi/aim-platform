@@ -1,0 +1,12 @@
+process.env.NODE_ENV = 'test';
+process.env.PORT = '3001';
+process.env.SUPABASE_URL = 'https://test-project.supabase.co';
+process.env.SUPABASE_ANON_KEY = 'test-anon-key';
+process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key';
+process.env.SUPABASE_JWT_SECRET = 'test-jwt-secret';
+process.env.DATABASE_URL = 'postgres://test_user:test_password@localhost:5432/aim_test';
+process.env.AIM_ENGINE_URL = 'http://localhost:8001';
+process.env.AI_PROVIDER_API_KEY = 'test-ai-provider-key';
+process.env.AI_PROVIDER_MODEL = 'test-model';
+process.env.CORS_ORIGINS = 'http://localhost:3000';
+process.env.OPENAPI_ENABLED = 'false';
