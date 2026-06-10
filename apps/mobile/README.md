@@ -28,85 +28,25 @@ Flutter Mobile must not:
 - store provider keys, Supabase service-role keys, or privileged backend credentials
 - implement Student Web App behavior
 
-## Current Shell
+## Backend API Client Foundation
 
-The current shell contains:
-
-```text
-lib/main.dart
-lib/app/aim_mobile_app.dart
-lib/core/
-lib/features/
-test/widget_test.dart
-```
-
-## Core Architecture
+P1-042 adds a Backend API client foundation under:
 
 ```text
-lib/core/config
 lib/core/networking
-lib/core/errors
-lib/core/routing
-lib/core/theme
-lib/core/localization
-lib/core/state
 ```
 
-## Riverpod Foundation
+It supports:
 
-P1-041 adds `flutter_riverpod` and wraps the app with `ProviderScope`.
+- Backend API base URL config through `AppConfig`
+- shared response-envelope parsing
+- shared error-envelope parsing
+- safe `GET` and `POST` helpers
+- typed response decoding
 
-Shared state conventions live in:
+It does not add feature-specific API workflows.
 
-```text
-lib/core/state
-```
-
-Feature-specific providers should live in each feature's:
-
-```text
-lib/features/<feature>/logic/provider
-```
-
-The foundation supports:
-
-- async screen state
-- loading state
-- success state
-- error state
-- form state
-- retry state
-
-It does not implement feature workflows, API calls, or AIM calculations.
-
-## Feature-First Architecture
-
-```text
-lib/features/auth
-lib/features/onboarding
-lib/features/placement
-lib/features/home
-lib/features/lessons
-lib/features/practice
-lib/features/ai_teacher
-lib/features/reviews
-lib/features/progress
-lib/features/notifications
-lib/features/profile
-```
-
-Each feature contains:
-
-```text
-data/datasources
-data/models
-data/repository/repo_impl
-logic/entity
-logic/provider
-logic/repository
-ui/pages
-ui/widgets
-```
+Flutter Mobile must call the Backend API only. It must not call AIM Engine or AI providers directly.
 
 ## Local Checks
 
