@@ -1,0 +1,81 @@
+name: Docs Consistency CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
+
+jobs:
+  docs-consistency:
+    name: Docs Consistency Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for unresolved merge conflict markers
+        run: |
+          if grep -rn "<<<<<<\|=======\|>>>>>>>" docs/ --include="*.md"; then
+            echo "ERROR: Unresolved merge conflict markers found in docs/"
+            exit 1
+          fi
+          echo "OK: No conflict markers found"
+
+      - name: Check FastAPI is not referenced as Phase 1 Backend API
+        run: |
+          if grep -rn "FastAPI" docs/ --include="*.md" \
+            | grep -v "completed MVP pilot\|MVP pilot\|legacy\|historical\|pilot stack\|pilot backend\|pilot used\|pilot context"; then
+            echo "WARNING: FastAPI references found outside MVP pilot context - review required"
+          fi
+          echo "OK: FastAPI check passed"
+
+      - name: Check no Student Web App is introduced
+        run: |
+          if grep -rn "Student Web App" docs/ --include="*.md" \
+            | grep -v "Deferred\|deferred\|not planned\|no separate\|Optional\|Phase 7\|out of scope"; then
+            echo "WARNING: Student Web App reference found without deferred/not-planned qualifier"
+          fi
+          echo "OK: Student Web App check passed"
+
+      - name: Check speed is not used as direct mastery signal
+        run: |
+          if grep -rn "speed.*mastery\|speed score.*mastery\|avg response.*mastery\|response_time.*mastery" \
+            docs/ --include="*.md" --ignore-case; then
+            echo "ERROR: Speed used as direct mastery signal found in docs/"
+            exit 1
+          fi
+          echo "OK: No speed-as-mastery violations found"
+
+      - name: Check required Phase 0 quality files exist
+        run: |
+          required_files=(
+            "docs/quality/phase-0-required-files-inventory.md"
+            "docs/quality/phase-0-duplicate-content-audit.md"
+            "docs/quality/phase-0-content-completeness-audit.md"
+            "docs/quality/phase-0-cross-document-consistency-audit.md"
+            "docs/quality/phase-1-readiness-gap-analysis.md"
+            "docs/quality/phase-0-consolidation-fix-plan.md"
+            "docs/quality/phase-0-final-quality-gate.md"
+            "docs/phase-1/system-foundation-charter.md"
+            "docs/phase-1/phase-0-qa-review.md"
+          )
+          failed=0
+          for f in "${required_files[@]}"; do
+            if [ ! -f "$f" ]; then
+              echo "MISSING: $f"
+              failed=1
+            else
+              echo "OK: $f"
+            fi
+          done
+          if [ "$failed" -eq 1 ]; then
+            exit 1
+          fi
