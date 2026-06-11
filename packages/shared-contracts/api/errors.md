@@ -374,3 +374,347 @@ This document does not:
 - `packages/shared-contracts/api/response-envelope.md`
 - `packages/shared-contracts/README.md`
 - `docs/phase-1/system-foundation-charter.md`
+
+---
+
+# Phase 2 — Auth, Users, Roles Error Codes
+
+## Purpose
+
+This section defines Phase 2 error codes for authentication, users, profiles, roles, permissions, ownership checks, and safe field exposure.
+
+The goal is to keep error handling consistent across Backend API, Flutter Mobile, and Admin Dashboard while avoiding leakage of sensitive auth, role, permission, provider, or internal metadata.
+
+This section is documentation-only. It does not implement backend exceptions, Flutter error models, Admin Dashboard handlers, database migrations, or runtime behavior.
+
+---
+
+## Scope
+
+This section is limited to Phase 2 — Auth, Users, Roles.
+
+It covers:
+
+- auth/session error codes;
+- current user and user-sync error codes;
+- profile ownership error codes;
+- role and permission error codes;
+- admin authorization error codes;
+- safe-field exposure error codes;
+- safe client messages;
+- backend logging boundaries.
+
+This section does not cover onboarding, placement, lessons, practice, sessions, AIM integration, dashboard recommendations, progress reports, review/retention, AI Teacher, or Student Web App.
+
+---
+
+## Source of Truth
+
+This section follows:
+
+```text
+packages/shared-contracts/api/errors.md
+docs/phase-2/auth-source-of-truth.md
+docs/phase-2/auth-security-rules.md
+docs/phase-2/safe-auth-fields.md
+packages/shared-contracts/api/auth-contracts.md
+packages/shared-contracts/api/user-profile-contracts.md
+packages/shared-contracts/api/role-permission-contracts.md
+```
+
+Core rule:
+
+```text
+Error responses must be safe for clients and must not expose secrets or privileged internals.
+```
+
+---
+
+## Naming Convention
+
+Phase 2 auth error codes must use uppercase snake case.
+
+Recommended prefixes:
+
+```text
+AUTH_
+USER_
+PROFILE_
+RBAC_
+ADMIN_
+SAFE_FIELDS_
+```
+
+Rules:
+
+- Use stable error codes for client branching.
+- Keep client messages safe and non-revealing.
+- Log detailed internal reasons only in backend-safe logs.
+- Do not expose raw tokens, service-role keys, database credentials, JWT secrets, or raw provider metadata.
+
+---
+
+## Auth and Session Error Codes
+
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `AUTH_UNAUTHORIZED` | 401 | Unauthorized | Missing or invalid authentication |
+| `AUTH_SESSION_INVALID` | 401 | Session is invalid | Session/token validation failed |
+| `AUTH_SESSION_EXPIRED` | 401 | Session has expired | Session/token expired |
+| `AUTH_TOKEN_MISSING` | 401 | Authentication token is required | Authorization token is missing |
+| `AUTH_TOKEN_INVALID` | 401 | Authentication token is invalid | Token could not be verified |
+| `AUTH_LOGOUT_FAILED` | 400 | Logout could not be completed | Logout/session cleanup failed safely |
+
+Rules:
+
+- Backend must validate token/session before protected access.
+- Backend must not echo raw access tokens or refresh tokens.
+- Flutter/Admin may use the code for UX but not for authorization decisions.
+
+---
+
+## Current User and User Sync Error Codes
+
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `AUTH_USER_NOT_FOUND` | 404 | User not found | Valid auth identity has no internal AIM user |
+| `AUTH_USER_DISABLED` | 403 | User is disabled | Internal AIM user is disabled |
+| `AUTH_USER_DELETED` | 403 | User is unavailable | Internal AIM user is deleted/unavailable |
+| `AUTH_USER_SYNC_FAILED` | 500 | User sync failed | Internal AIM user sync failed |
+| `AUTH_USER_SYNC_CONFLICT` | 409 | User sync conflict | Supabase UID/internal user mapping conflict |
+| `USER_STATUS_INVALID` | 400 | User status is invalid | Invalid user status value |
+| `USER_TYPE_INVALID` | 400 | User type is invalid | Invalid user type value |
+
+Rules:
+
+- Supabase Auth UID to internal AIM user resolution must fail closed.
+- Client-submitted user IDs must not be trusted as identity proof.
+- User sync must not expose provider internals.
+
+---
+
+## Profile and Ownership Error Codes
+
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `PROFILE_NOT_FOUND` | 404 | Profile not found or not accessible | Profile does not exist or caller cannot access it |
+| `PROFILE_OWNERSHIP_DENIED` | 403 | Profile is not accessible | Caller does not own the profile |
+| `PROFILE_UPDATE_DENIED` | 403 | Profile update is not allowed | Caller cannot update requested profile |
+| `PROFILE_UPDATE_INVALID` | 400 | Profile update payload is invalid | Payload contains invalid or unsafe fields |
+| `PROFILE_TYPE_INVALID` | 400 | Profile type is invalid | Invalid profile type value |
+| `PROFILE_FIELD_FORBIDDEN` | 400 | Profile field is not allowed | Payload includes forbidden profile field |
+
+Rules:
+
+- Backend must verify ownership before profile reads/updates.
+- Client-submitted profile IDs do not prove ownership.
+- Forbidden fields must be rejected or ignored safely.
+- Responses must avoid leaking whether protected resources exist when unsafe.
+
+---
+
+## RBAC Role and Permission Error Codes
+
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `RBAC_ROLE_NOT_FOUND` | 404 | Role not found | Requested role does not exist |
+| `RBAC_PERMISSION_NOT_FOUND` | 404 | Permission not found | Requested permission does not exist |
+| `RBAC_ROLE_DENIED` | 403 | Role access denied | Required role is missing |
+| `RBAC_PERMISSION_DENIED` | 403 | Permission denied | Required permission is missing |
+| `RBAC_ASSIGNMENT_NOT_FOUND` | 404 | Role assignment not found | Requested assignment does not exist |
+| `RBAC_ASSIGNMENT_FORBIDDEN` | 403 | Role assignment is not allowed | Caller cannot assign/revoke role |
+| `RBAC_SELF_GRANT_FORBIDDEN` | 403 | Self role assignment is not allowed | User attempted unsafe self-grant |
+| `RBAC_SYSTEM_ROLE_PROTECTED` | 403 | System role is protected | Mutation/deletion of protected role blocked |
+| `RBAC_PERMISSION_UPDATE_FORBIDDEN` | 403 | Permission update is not allowed | Caller cannot update permission mapping |
+| `RBAC_VALIDATION_FAILED` | 400 | Role or permission payload is invalid | RBAC request validation failed |
+
+Rules:
+
+- Roles and permissions are backend-owned.
+- Clients must not assign roles or permissions locally.
+- Admin Dashboard RBAC actions must go through backend-protected endpoints.
+- Missing role/permission must deny access.
+
+---
+
+## Admin Authorization Error Codes
+
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `ADMIN_ACCESS_DENIED` | 403 | Admin access denied | Caller is not authorized for admin access |
+| `ADMIN_USERS_READ_DENIED` | 403 | User management access denied | Caller cannot read admin users |
+| `ADMIN_USERS_MANAGE_DENIED` | 403 | User management action denied | Caller cannot manage users |
+| `ADMIN_ROLE_MANAGE_DENIED` | 403 | Role management action denied | Caller cannot manage roles |
+| `ADMIN_PERMISSION_MANAGE_DENIED` | 403 | Permission management action denied | Caller cannot manage permissions |
+
+Rules:
+
+- Admin Dashboard UI checks are UX only.
+- Backend role/permission checks are final.
+- Admin errors must not expose privileged backend configuration or internal policy details.
+
+---
+
+## Safe Field Exposure Error Codes
+
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `SAFE_FIELDS_FORBIDDEN_FIELD` | 400 | Field is not allowed | Client submitted a forbidden field |
+| `SAFE_FIELDS_INTERNAL_FIELD_REQUESTED` | 403 | Field is not accessible | Client requested internal-only field |
+| `SAFE_FIELDS_RESPONSE_BLOCKED` | 500 | Response could not be returned safely | Backend blocked unsafe response serialization |
+| `SAFE_FIELDS_SCOPE_DENIED` | 403 | Requested field scope is not allowed | Caller cannot access requested safe field scope |
+
+Rules:
+
+- Backend must explicitly select safe fields.
+- Backend must not serialize raw database records by default.
+- Internal-only fields must not be returned directly to Flutter/Admin clients.
+
+---
+
+## Safe Client Error Shape
+
+Phase 2 errors must fit the shared error response envelope.
+
+Example:
+
+```json
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "RBAC_PERMISSION_DENIED",
+    "message": "Permission denied"
+  }
+}
+```
+
+Optional safe validation details:
+
+```json
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "PROFILE_UPDATE_INVALID",
+    "message": "Profile update payload is invalid",
+    "details": [
+      {
+        "field": "displayName",
+        "reason": "Must be a string"
+      }
+    ]
+  }
+}
+```
+
+Rules:
+
+- `code` is stable and safe for client branching.
+- `message` is safe and non-revealing.
+- `details` must not include secrets or internal stack traces.
+- Backend logs may include correlation IDs and safe metadata separately.
+
+---
+
+## Forbidden Error Response Data
+
+Error responses must not include:
+
+```text
+raw access tokens
+refresh tokens
+JWT secrets
+service-role keys
+database credentials
+raw provider metadata
+raw authorization headers
+password hashes
+internal audit metadata
+security bypass flags
+stack traces in production
+```
+
+---
+
+## Backend Logging Boundary
+
+Backend may log safe internal diagnostics, but must not expose them to clients.
+
+Safe logging examples:
+
+```text
+eventType
+actorUserId
+targetUserId
+errorCode
+requestId
+createdAt
+safe metadata
+```
+
+Unsafe logging examples:
+
+```text
+raw access token
+refresh token
+JWT secret
+service-role key
+database URL with credentials
+raw provider session
+password hash
+```
+
+---
+
+## Flutter Mobile Handling Rules
+
+Flutter Mobile may:
+
+- use `AUTH_UNAUTHORIZED` to show login-required UX;
+- use `AUTH_SESSION_EXPIRED` to request re-authentication;
+- use `PROFILE_OWNERSHIP_DENIED` or `PROFILE_NOT_FOUND` to show safe access messages;
+- use safe error codes for UI branching.
+
+Flutter Mobile must not:
+
+- infer authorization from local role/permission values;
+- expose raw backend error internals;
+- show sensitive debug details to users;
+- retry privileged actions without backend approval.
+
+---
+
+## Admin Dashboard Handling Rules
+
+Admin Dashboard may:
+
+- use RBAC/admin error codes for safe admin UX;
+- show safe messages for denied role/permission actions;
+- show validation details for allowed fields only.
+
+Admin Dashboard must not:
+
+- reveal backend policy internals;
+- reveal whether hidden resources exist when unsafe;
+- expose raw stack traces or secrets;
+- treat frontend route guards as final authorization.
+
+---
+
+## Done Test Review
+
+This section satisfies P2-012 when:
+
+- `packages/shared-contracts/api/errors.md` is updated;
+- it documents auth error codes;
+- it documents user/profile error codes;
+- it documents role and permission error codes;
+- it documents ownership error codes;
+- it documents admin authorization error codes;
+- it documents safe field exposure error codes;
+- error handling remains consistent across Backend API, Flutter Mobile, and Admin Dashboard;
+- backend authorization remains final authority;
+- no out-of-scope Phase 2 feature is introduced;
+- no secrets or privileged credentials are exposed.
+
