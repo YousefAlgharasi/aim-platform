@@ -52,7 +52,6 @@ export class SupabaseJwtVerifierService {
       ...(payload.email ? { email: payload.email } : {}),
       ...(payload.role ? { role: payload.role } : {}),
       ...(payload.app_metadata ? { appMetadata: payload.app_metadata } : {}),
-      ...(payload.user_metadata ? { userMetadata: payload.user_metadata } : {}),
       ...(payload.iat ? { issuedAt: payload.iat } : {}),
       expiresAt,
     };
