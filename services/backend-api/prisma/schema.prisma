@@ -20,11 +20,33 @@ model User {
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
+  studentProfile  StudentProfile?
+
   @@index([supabaseAuthUid])
   @@index([email])
   @@index([status])
   @@index([userType])
   @@map("users")
+}
+
+model StudentProfile {
+  id                String   @id @default(uuid()) @db.Uuid
+  userId            String   @unique @map("user_id") @db.Uuid
+  profileType       String   @default("student_profile") @map("profile_type")
+
+  displayName       String?  @map("display_name")
+  avatarUrl         String?  @map("avatar_url")
+  preferredLanguage String?  @map("preferred_language")
+  timezone          String?
+
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([profileType])
+  @@map("student_profiles")
 }
 
 model Role {
