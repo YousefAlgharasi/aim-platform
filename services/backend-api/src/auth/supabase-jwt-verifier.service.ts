@@ -31,10 +31,20 @@ export class SupabaseJwtVerifierService {
     const payload = jwt.payload;
     const userId = readRequiredSubject(payload);
     const expiresAt = readRequiredExpiry(payload);
+    const issuer = readRequiredIssuer(payload);
+    const audience = readRequiredAudience(payload);
     const now = Math.floor(Date.now() / 1000);
 
     if (expiresAt <= now) {
       throwUnauthorized('Bearer token has expired');
+    }
+
+    if (issuer !== this.config.supabase.jwtIssuer) {
+      throwUnauthorized('Bearer token issuer is invalid');
+    }
+
+    if (!audience.includes(this.config.supabase.jwtAudience)) {
+      throwUnauthorized('Bearer token audience is invalid');
     }
 
     return {
@@ -129,6 +139,30 @@ function readRequiredExpiry(payload: SupabaseJwtPayload): number {
   }
 
   return payload.exp;
+}
+
+function readRequiredIssuer(payload: SupabaseJwtPayload): string {
+  if (typeof payload.iss !== 'string' || payload.iss.trim() === '') {
+    throwUnauthorized('Bearer token issuer is missing');
+  }
+
+  return payload.iss;
+}
+
+function readRequiredAudience(payload: SupabaseJwtPayload): readonly string[] {
+  if (typeof payload.aud === 'string' && payload.aud.trim() !== '') {
+    return [payload.aud];
+  }
+
+  if (
+    Array.isArray(payload.aud) &&
+    payload.aud.length > 0 &&
+    payload.aud.every((audience) => typeof audience === 'string' && audience.trim() !== '')
+  ) {
+    return payload.aud;
+  }
+
+  throwUnauthorized('Bearer token audience is missing');
 }
 
 function throwUnauthorized(message: string): never {
