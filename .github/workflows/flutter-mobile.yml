@@ -1,0 +1,47 @@
+name: Flutter Mobile CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/mobile/**'
+      - '.github/workflows/flutter-mobile.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/mobile/**'
+      - '.github/workflows/flutter-mobile.yml'
+
+jobs:
+  analyze-and-test:
+    name: Analyze and Test
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: apps/mobile
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze (flutter analyze)
+        run: flutter analyze --fatal-infos
+
+      - name: Test (flutter test)
+        run: flutter test
+
+    # Phase 1 boundary guards
+    # No AIM Engine logic in Flutter client — mastery, level, difficulty are backend-owned
+    # No AI provider keys or Supabase service-role keys in source
+    # No Student Web App routes or adaptive logic
