@@ -43,6 +43,11 @@ export const adminNavigationItems: readonly AdminNavigationItem[] = [
     description: 'Placeholder only',
   },
   {
+    label: 'Audit Logs',
+    href: '/admin/audit-logs',
+    description: 'Placeholder only',
+  },
+  {
     label: 'Role menu',
     href: '/admin/roles',
     description: 'Placeholder only',
@@ -55,7 +60,8 @@ const contentItem = adminNavigationItems[2];
 const reviewsItem = adminNavigationItems[3];
 const reportsItem = adminNavigationItems[4];
 const settingsItem = adminNavigationItems[5];
-const roleMenuItem = adminNavigationItems[6];
+const auditLogsItem = adminNavigationItems[6];
+const roleMenuItem = adminNavigationItems[7];
 
 export const roleBasedMenuGroups: readonly RoleBasedMenuGroup[] = [
   {
@@ -66,6 +72,7 @@ export const roleBasedMenuGroups: readonly RoleBasedMenuGroup[] = [
       contentItem,
       reviewsItem,
       reportsItem,
+      auditLogsItem,
       settingsItem,
       roleMenuItem,
     ],
@@ -80,6 +87,6 @@ export const roleBasedMenuGroups: readonly RoleBasedMenuGroup[] = [
   },
   {
     role: 'project_owner',
-    items: [overviewItem, reportsItem, settingsItem, roleMenuItem],
+    items: [overviewItem, reportsItem, auditLogsItem, settingsItem, roleMenuItem],
   },
 ];
