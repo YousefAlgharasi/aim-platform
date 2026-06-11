@@ -23,7 +23,9 @@ jobs:
 
       - name: Check for unresolved merge conflict markers
         run: |
-          if grep -rn "<<<<<<\|=======\|>>>>>>>" docs/ --include="*.md"; then
+          # Match only lines that START with <<<<<<< or >>>>>>> (true git conflict markers)
+          # Excludes =======  alone as it is ambiguous with markdown heading underlines
+          if grep -rn "^<<<<<<<\|^>>>>>>>" docs/ --include="*.md"; then
             echo "ERROR: Unresolved merge conflict markers found in docs/"
             exit 1
           fi
