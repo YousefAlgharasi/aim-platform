@@ -1,0 +1,50 @@
+services:
+  backend-api:
+    build:
+      context: ../../services/backend-api
+      dockerfile: Dockerfile
+    ports:
+      - "${BACKEND_API_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3000
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      SUPABASE_JWT_SECRET: ${SUPABASE_JWT_SECRET}
+      DATABASE_URL: ${DATABASE_URL}
+      AIM_ENGINE_URL: http://aim-engine:8010
+      AI_PROVIDER_API_KEY: ${AI_PROVIDER_API_KEY}
+      AI_PROVIDER_MODEL: ${AI_PROVIDER_MODEL}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3001,http://localhost:3002}
+    depends_on:
+      aim-engine:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - aim-network
+
+  aim-engine:
+    build:
+      context: ../../services/aim-engine
+      dockerfile: Dockerfile
+    ports:
+      - "${AIM_ENGINE_PORT:-8010}:8010"
+    environment:
+      AIM_ENGINE_ENV: ${AIM_ENGINE_ENV:-development}
+      AIM_ENGINE_HOST: 0.0.0.0
+      AIM_ENGINE_PORT: 8010
+      AIM_ENGINE_LOG_LEVEL: ${AIM_ENGINE_LOG_LEVEL:-info}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8010/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - aim-network
+
+networks:
+  aim-network:
+    driver: bridge
