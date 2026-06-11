@@ -5,9 +5,9 @@ pipeline boundary from introducing direct speed-based mastery, level, difficulty
 retention, or recommendation changes.
 """
 
-from datetime import datetime, timezone
-from uuid import UUID, uuid4
 import asyncio
+from datetime import UTC, datetime
+from uuid import UUID, uuid4
 
 from app.contracts import (
     AdaptiveSessionCompletionRequest,
@@ -16,7 +16,6 @@ from app.contracts import (
     SkillAttemptInput,
 )
 from app.pipeline import PipelineExecutionContext, PlaceholderAdaptiveSessionCompletionPipeline
-
 
 STUDENT_ID = UUID("11111111-1111-4111-8111-111111111111")
 SESSION_ID = UUID("22222222-2222-4222-8222-222222222222")
@@ -29,7 +28,7 @@ def _build_request(time_spent_seconds: float) -> AdaptiveSessionCompletionReques
         student_id=STUDENT_ID,
         session_id=SESSION_ID,
         course_id=COURSE_ID,
-        completed_at=datetime.now(timezone.utc),
+        completed_at=datetime.now(UTC),
         attempts=[
             SkillAttemptInput(
                 attempt_id=uuid4(),
@@ -41,7 +40,7 @@ def _build_request(time_spent_seconds: float) -> AdaptiveSessionCompletionReques
                 time_spent_seconds=time_spent_seconds,
                 retries=0,
                 hints_used=0,
-                submitted_at=datetime.now(timezone.utc),
+                submitted_at=datetime.now(UTC),
             )
         ],
     )
@@ -104,7 +103,7 @@ def test_attempt_contract_keeps_time_as_evidence_not_direct_mastery_signal() -> 
         time_spent_seconds=1.0,
         retries=0,
         hints_used=0,
-        submitted_at=datetime.now(timezone.utc),
+        submitted_at=datetime.now(UTC),
     )
 
     dumped = attempt.model_dump()

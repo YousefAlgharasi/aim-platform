@@ -1,6 +1,6 @@
 """Tests for AIM Engine learning contract models."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
@@ -31,7 +31,7 @@ def _attempt(skill_id: str = "grammar.present-simple") -> SkillAttemptInput:
         time_spent_seconds=12.5,
         retries=0,
         hints_used=0,
-        submitted_at=datetime.now(timezone.utc),
+        submitted_at=datetime.now(UTC),
     )
 
 
@@ -42,7 +42,7 @@ def test_session_completion_request_accepts_valid_payload() -> None:
         session_id=uuid4(),
         course_id=uuid4(),
         lesson_id=uuid4(),
-        completed_at=datetime.now(timezone.utc),
+        completed_at=datetime.now(UTC),
         attempts=[_attempt()],
         existing_skill_states=[
             ExistingSkillStateInput(
@@ -65,7 +65,7 @@ def test_session_completion_request_rejects_empty_attempts() -> None:
             student_id=uuid4(),
             session_id=uuid4(),
             course_id=uuid4(),
-            completed_at=datetime.now(timezone.utc),
+            completed_at=datetime.now(UTC),
             attempts=[],
         )
 
@@ -85,7 +85,7 @@ def test_session_completion_request_rejects_duplicate_skill_state_snapshots() ->
             student_id=uuid4(),
             session_id=uuid4(),
             course_id=uuid4(),
-            completed_at=datetime.now(timezone.utc),
+            completed_at=datetime.now(UTC),
             attempts=[_attempt()],
             existing_skill_states=[skill_state, skill_state],
         )
@@ -103,7 +103,7 @@ def test_skill_attempt_rejects_invalid_score() -> None:
             time_spent_seconds=12.5,
             retries=0,
             hints_used=0,
-            submitted_at=datetime.now(timezone.utc),
+            submitted_at=datetime.now(UTC),
         )
 
 
@@ -145,7 +145,7 @@ def test_session_completion_response_accepts_valid_future_outputs() -> None:
         retention_reviews=[
             RetentionReviewContract(
                 skill_id="grammar.present-simple",
-                review_after=datetime.now(timezone.utc),
+                review_after=datetime.now(UTC),
                 reason_codes=["spaced_review"],
             )
         ],
@@ -168,6 +168,6 @@ def test_contracts_reject_unknown_fields() -> None:
             time_spent_seconds=12.5,
             retries=0,
             hints_used=0,
-            submitted_at=datetime.now(timezone.utc),
+            submitted_at=datetime.now(UTC),
             unexpected_field="not allowed",
         )

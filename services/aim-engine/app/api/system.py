@@ -1,6 +1,6 @@
 """Safe system endpoints for the AIM Engine service."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from time import monotonic
 
 from fastapi import APIRouter, Request
@@ -34,7 +34,7 @@ class AimEngineVersionResponse(BaseModel):
 
 
 def _utc_now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    return datetime.now(UTC).isoformat().replace("+00:00", "Z")
 
 
 @router.get("/health", response_model=AimEngineHealthResponse)
