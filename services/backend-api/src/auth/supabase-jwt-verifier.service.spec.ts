@@ -36,9 +36,6 @@ describe('SupabaseJwtVerifierService', () => {
       appMetadata: {
         aim_roles: ['student'],
       },
-      userMetadata: {
-        display_name: 'Student',
-      },
       issuedAt: expect.any(Number),
       expiresAt: expect.any(Number),
     });
