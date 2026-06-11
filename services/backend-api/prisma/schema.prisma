@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(uuid()) @db.Uuid
+  supabaseAuthUid String   @unique @map("supabase_auth_uid") @db.Uuid
+
+  email           String?
+  phone           String?
+
+  userType        String   @default("student") @map("user_type")
+  status          String   @default("active")
+
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([supabaseAuthUid])
+  @@index([email])
+  @@index([status])
+  @@index([userType])
+  @@map("users")
+}
