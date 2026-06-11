@@ -3,7 +3,6 @@ export interface AuthenticatedUser {
   readonly email?: string;
   readonly role?: string;
   readonly appMetadata?: Record<string, unknown>;
-  readonly userMetadata?: Record<string, unknown>;
   readonly issuedAt?: number;
   readonly expiresAt: number;
 }
