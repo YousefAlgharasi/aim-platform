@@ -1,0 +1,47 @@
+name: Admin Dashboard CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/admin-dashboard/**'
+      - '.github/workflows/admin-dashboard.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/admin-dashboard/**'
+      - '.github/workflows/admin-dashboard.yml'
+
+jobs:
+  lint-build-test:
+    name: Typecheck and Build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: apps/admin-dashboard
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/admin-dashboard/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+    # Phase 1 boundary guards
+    # No AIM Engine logic allowed in admin dashboard (client-side)
+    # No AI provider keys or Supabase service-role keys in source
+    # No Student Web App routes
