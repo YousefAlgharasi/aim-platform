@@ -21,6 +21,8 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
   const supabaseAnonKey = readRequiredString(env, 'SUPABASE_ANON_KEY', issues);
   const supabaseServiceRoleKey = readRequiredString(env, 'SUPABASE_SERVICE_ROLE_KEY', issues);
   const supabaseJwtSecret = readRequiredString(env, 'SUPABASE_JWT_SECRET', issues);
+  const supabaseJwtIssuer = readOptionalUrl(env, 'SUPABASE_JWT_ISSUER', supabaseUrl, issues);
+  const supabaseJwtAudience = readRequiredString(env, 'SUPABASE_JWT_AUDIENCE', issues);
   const databaseUrl = readRequiredUrl(env, 'DATABASE_URL', issues);
   const aimEngineUrl = readRequiredUrl(env, 'AIM_ENGINE_URL', issues);
   const aiProviderApiKey = readRequiredString(env, 'AI_PROVIDER_API_KEY', issues);
@@ -43,6 +45,8 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
       anonKey: supabaseAnonKey,
       serviceRoleKey: supabaseServiceRoleKey,
       jwtSecret: supabaseJwtSecret,
+      jwtIssuer: supabaseJwtIssuer,
+      jwtAudience: supabaseJwtAudience,
     },
     database: {
       url: databaseUrl,
@@ -73,6 +77,21 @@ function readRequiredString(env: RawEnv, key: string, issues: string[]): string 
 
 function readRequiredUrl(env: RawEnv, key: string, issues: string[]): string {
   const value = readRequiredString(env, key, issues);
+
+  if (value !== '' && !isValidUrl(value)) {
+    issues.push(`${key} must be a valid URL`);
+  }
+
+  return value;
+}
+
+function readOptionalUrl(
+  env: RawEnv,
+  key: string,
+  fallback: string,
+  issues: string[],
+): string {
+  const value = env[key]?.trim() ?? fallback;
 
   if (value !== '' && !isValidUrl(value)) {
     issues.push(`${key} must be a valid URL`);

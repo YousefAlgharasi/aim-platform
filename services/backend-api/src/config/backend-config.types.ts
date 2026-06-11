@@ -8,6 +8,8 @@ export interface BackendConfig {
     readonly anonKey: string;
     readonly serviceRoleKey: string;
     readonly jwtSecret: string;
+    readonly jwtIssuer: string;
+    readonly jwtAudience: string;
   };
   readonly database: {
     readonly url: string;
