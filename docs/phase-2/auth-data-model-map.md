@@ -2,419 +2,442 @@
 
 ## Purpose
 
-This document maps the Phase 2 authentication, user, profile, role, permission, and ownership data model for the AIM Platform.
+This document defines the Phase 2 data model for users, student profiles, admin profiles, roles, permissions, user roles, and auth audit logs.
 
-It defines how authenticated identity from Supabase Auth connects to AIM backend/database records and how those records support authorization decisions.
+The goal is to make the relationship between Supabase Auth UID, internal AIM users, profiles, roles, and permissions explicit before implementation.
 
-This is a documentation-only task. It does not create database tables, migrations, backend code, Flutter code, or admin dashboard code.
+This is a documentation-only task. It does not create migrations, database tables, backend code, Flutter code, admin dashboard code, or runtime behavior.
 
 ---
 
 ## Scope
 
-This document covers only Phase 2 identity and authorization foundations:
+This document is limited to Phase 2 — Auth, Users, Roles.
 
-- external auth identity;
-- internal AIM user record;
-- user profile;
+It covers:
+
+- Supabase Auth UID mapping;
+- internal AIM users;
+- student profiles;
+- admin profiles;
 - roles;
 - permissions;
-- user-role assignment;
-- role-permission mapping;
-- ownership rules;
-- audit/security metadata.
+- user-role assignments;
+- role-permission relationships;
+- auth audit logs;
+- ownership and authorization boundaries.
 
-It does not cover onboarding, placement, lessons, practice, sessions, AIM integration, dashboard recommendations, progress reports, AI Teacher, or Student Web App.
+It does not cover onboarding, placement, lessons, practice, sessions, AIM integration, dashboard recommendations, progress reports, review/retention, AI Teacher, or Student Web App.
 
 ---
 
-## Source of Truth Reference
+## Source of Truth
 
-This data model map follows:
+This data model follows:
 
 ```text
 docs/phase-2/auth-source-of-truth.md
 ```
 
-The core rule is:
+Core rule:
 
 ```text
-Supabase Auth user id -> AIM backend/database user record
+Supabase Auth UID -> internal AIM user -> profile/roles/permissions
 ```
 
-Supabase Auth owns external authentication identity.
+Supabase Auth owns the external authenticated identity.
 
-The backend/database owns internal AIM identity, roles, permissions, profiles, and ownership.
+The backend/database owns internal AIM identity, profiles, roles, permissions, ownership, and authorization decisions.
 
----
-
-## Core Entities
-
-### 1. Supabase Auth User
-
-The Supabase Auth user represents the external authenticated identity.
-
-This identity is managed by Supabase Auth and should not be duplicated as the sole application authority.
-
-Representative fields:
-
-| Field | Description | Client-safe? |
-|---|---|---|
-| `auth_user_id` | Supabase Auth user ID | Safe when needed |
-| `email` | Auth email, if enabled | Safe when needed |
-| `phone` | Auth phone, if enabled | Safe when needed |
-| `created_at` | Auth creation timestamp | Usually internal |
-| `last_sign_in_at` | Last sign-in timestamp | Usually internal |
-| provider metadata | OAuth/provider metadata | Internal unless explicitly whitelisted |
-
-The backend must validate the authenticated identity before mapping it to an AIM user.
+Flutter Mobile and Admin Dashboard may render backend-approved data only. They are not the source of truth for identity, roles, permissions, ownership, or admin access.
 
 ---
 
-### 2. AIM User
+## High-Level Relationship
 
-The AIM user is the internal application user record.
+```text
+Supabase Auth User
+  id / uid
+      |
+      v
+AIM User
+  id
+  supabase_auth_uid
+      |
+      +--> Student Profile
+      |
+      +--> Admin Profile
+      |
+      +--> User Role
+              |
+              v
+            Role
+              |
+              v
+       Role Permission
+              |
+              v
+          Permission
 
-It is the primary AIM-side identity used by backend authorization.
+AIM User / Auth Events
+      |
+      v
+ Auth Audit Log
+```
 
-Representative fields:
+---
 
-| Field | Description | Client-safe? |
+## Entity: Supabase Auth User
+
+The Supabase Auth user is the external authenticated identity.
+
+It is not the full AIM application user model.
+
+Representative external fields:
+
+| Field | Meaning | Authority |
 |---|---|---|
-| `id` | Internal AIM user ID | Safe |
-| `auth_user_id` | Supabase Auth user ID mapping | Safe only when needed |
-| `email` | Normalized email when needed | Safe when needed |
-| `phone` | Normalized phone when needed | Safe when needed |
-| `status` | User status such as active/disabled | Safe when needed |
-| `created_at` | Record creation timestamp | Usually safe |
-| `updated_at` | Record update timestamp | Usually safe |
-| `deleted_at` | Soft-delete timestamp if used | Internal |
-| `metadata` | Internal operational metadata | Internal |
+| `id` / `uid` | Supabase Auth user identifier | Supabase Auth |
+| `email` | User email when enabled | Supabase Auth |
+| `phone` | User phone when enabled | Supabase Auth |
+| provider metadata | OAuth/auth metadata | Supabase Auth |
 
 Rules:
 
-- `auth_user_id` must map to the authenticated provider UID.
-- The client must not invent or override the internal user ID.
-- Backend validation must resolve the current user from the authenticated UID.
-- Disabled or deleted users must not receive privileged access.
+- Backend must validate the authenticated Supabase token/session.
+- Backend must use the validated Supabase UID, not a client-supplied UID.
+- Raw provider metadata must not be exposed to clients unless explicitly whitelisted later.
+- Supabase service-role keys must never be exposed to Flutter or Admin UI.
 
 ---
 
-### 3. User Profile
+## Entity: AIM User
 
-The user profile stores user-facing profile information.
+The AIM user is the internal backend/database user record.
 
-Representative fields:
+It is the central application identity used by Phase 2 authorization.
 
-| Field | Description | Client-safe? |
+Suggested fields:
+
+| Field | Type | Purpose |
 |---|---|---|
-| `id` | Profile ID | Safe |
-| `user_id` | Owner AIM user ID | Safe when needed |
-| `display_name` | Display name | Safe |
-| `avatar_url` | Avatar URL | Safe |
-| `preferred_language` | UI/content language preference | Safe |
-| `timezone` | User timezone | Safe when needed |
-| `created_at` | Profile creation timestamp | Usually safe |
-| `updated_at` | Profile update timestamp | Usually safe |
-| internal notes | Admin/internal profile notes | Internal |
+| `id` | UUID/string | Internal AIM user ID |
+| `supabase_auth_uid` | string | Stable mapping to Supabase Auth user |
+| `email` | string/null | Normalized email if available |
+| `phone` | string/null | Normalized phone if available |
+| `status` | enum/string | `active`, `disabled`, `pending`, or equivalent |
+| `created_at` | timestamp | Creation time |
+| `updated_at` | timestamp | Last update time |
+| `deleted_at` | timestamp/null | Optional soft delete marker |
 
 Rules:
 
-- A normal user may access only their own profile.
-- Profile access must be enforced by backend ownership checks.
-- Admin access requires backend-approved role or permission checks.
-- Flutter may render profile data returned by the backend only.
+- `supabase_auth_uid` must be unique.
+- An AIM user must map to one authenticated Supabase Auth identity.
+- Backend resolves current user by validated Supabase UID.
+- Disabled or deleted users must not receive protected access.
+- Clients must not create trusted AIM user identity locally.
 
 ---
 
-### 4. Role
+## Entity: Student Profile
 
-A role groups permissions for authorization.
+The student profile stores student-facing profile data linked to an AIM user.
 
-Representative fields:
+Suggested fields:
 
-| Field | Description | Client-safe? |
+| Field | Type | Purpose |
 |---|---|---|
-| `id` | Role ID | Usually internal |
-| `key` | Stable role key, such as `admin` | Safe when backend-approved |
-| `name` | Display role name | Safe when backend-approved |
-| `description` | Role description | Safe when backend-approved |
-| `is_system` | Whether role is protected/system-defined | Internal |
-| `created_at` | Creation timestamp | Internal |
-| `updated_at` | Update timestamp | Internal |
+| `id` | UUID/string | Student profile ID |
+| `user_id` | UUID/string | Owner AIM user ID |
+| `display_name` | string/null | Student display name |
+| `avatar_url` | string/null | Profile image URL |
+| `preferred_language` | string/null | UI/content language preference |
+| `timezone` | string/null | User timezone |
+| `created_at` | timestamp | Creation time |
+| `updated_at` | timestamp | Last update time |
+
+Rules:
+
+- `user_id` links the profile to its owner.
+- A normal authenticated user may access only their own student profile.
+- Backend ownership checks are required before reading or updating profile data.
+- Student profile data must not include placement, lessons, sessions, progress, AIM recommendations, or AI Teacher state in this Phase 2 task.
+
+---
+
+## Entity: Admin Profile
+
+The admin profile stores admin-facing profile data linked to an AIM user with admin permissions.
+
+Suggested fields:
+
+| Field | Type | Purpose |
+|---|---|---|
+| `id` | UUID/string | Admin profile ID |
+| `user_id` | UUID/string | Linked AIM user ID |
+| `display_name` | string/null | Admin display name |
+| `avatar_url` | string/null | Admin profile image |
+| `department` | string/null | Optional admin grouping |
+| `created_at` | timestamp | Creation time |
+| `updated_at` | timestamp | Last update time |
+
+Rules:
+
+- Admin profile existence does not grant admin authority by itself.
+- Admin access must come from backend-approved role/permission checks.
+- Admin UI must not treat local profile state as proof of authorization.
+- Backend guards remain required for admin actions.
+
+---
+
+## Entity: Role
+
+A role groups permissions for backend authorization.
+
+Suggested fields:
+
+| Field | Type | Purpose |
+|---|---|---|
+| `id` | UUID/string | Role ID |
+| `key` | string | Stable role key, such as `admin` |
+| `name` | string | Human-readable role name |
+| `description` | string/null | Role description |
+| `is_system` | boolean | Protects built-in roles from unsafe changes |
+| `created_at` | timestamp | Creation time |
+| `updated_at` | timestamp | Last update time |
+
+Example role keys:
+
+```text
+student
+admin
+super_admin
+reviewer
+support
+```
 
 Rules:
 
 - Roles are backend-owned.
-- The client must not assign roles.
-- Role assignment requires backend admin authorization.
-- Client role display is UX-only.
+- Clients must not assign or trust roles locally.
+- System roles should be protected from unsafe deletion or mutation.
+- Role checks in Flutter/Admin UI are UX-only.
 
 ---
 
-### 5. Permission
+## Entity: Permission
 
-A permission represents a specific allowed action or capability.
+A permission represents a specific backend-enforced capability.
 
-Representative fields:
+Suggested fields:
 
-| Field | Description | Client-safe? |
+| Field | Type | Purpose |
 |---|---|---|
-| `id` | Permission ID | Internal |
-| `key` | Stable permission key | Safe when backend-approved |
-| `description` | Permission description | Safe when backend-approved |
-| `scope` | Area protected by the permission | Safe when backend-approved |
-| `created_at` | Creation timestamp | Internal |
-| `updated_at` | Update timestamp | Internal |
+| `id` | UUID/string | Permission ID |
+| `key` | string | Stable permission key |
+| `description` | string/null | Permission description |
+| `scope` | string/null | Resource or feature area |
+| `created_at` | timestamp | Creation time |
+| `updated_at` | timestamp | Last update time |
 
 Example permission keys:
 
 ```text
+profiles.read.own
+profiles.update.own
+profiles.read.any
+profiles.update.any
 users.read
 users.manage
 roles.read
 roles.manage
-profiles.read.any
-profiles.update.any
-profiles.read.own
-profiles.update.own
+permissions.read
+permissions.manage
+admin.users.read
+admin.users.manage
 ```
 
 Rules:
 
 - Permissions are backend-owned.
-- Permission checks must be enforced by backend guards or equivalent backend authorization.
-- Flutter/Admin may only render permissions that the backend intentionally exposes for UX.
+- Backend guards must enforce permissions.
+- Flutter/Admin may render permission labels only when backend-approved.
+- Local client permission state must not grant access.
 
 ---
 
-### 6. User Role Assignment
+## Entity: User Role
 
-User-role assignment links AIM users to roles.
+User role records assign roles to AIM users.
 
-Representative fields:
+Suggested fields:
 
-| Field | Description | Client-safe? |
+| Field | Type | Purpose |
 |---|---|---|
-| `id` | Assignment ID | Internal |
-| `user_id` | AIM user receiving the role | Internal or admin-only |
-| `role_id` | Assigned role | Internal or admin-only |
-| `assigned_by` | AIM user/admin who assigned role | Internal |
-| `created_at` | Assignment timestamp | Internal |
+| `id` | UUID/string | Assignment ID |
+| `user_id` | UUID/string | AIM user receiving the role |
+| `role_id` | UUID/string | Assigned role |
+| `assigned_by_user_id` | UUID/string/null | Admin user who assigned the role |
+| `created_at` | timestamp | Assignment time |
 
 Rules:
 
-- Only backend-authorized admin users may assign roles.
-- Users may not assign roles to themselves.
-- Flutter/Admin UI role changes are requests to backend only.
-- Backend must validate the caller’s role/permission before changing assignments.
+- Only backend-authorized admins may assign or remove roles.
+- Users must not assign roles to themselves.
+- Role assignment changes should be auditable.
+- Backend must prevent unsafe privilege escalation.
 
 ---
 
-### 7. Role Permission Mapping
+## Entity: Role Permission
 
-Role-permission mapping links roles to permissions.
+Role permission records connect roles to permissions.
 
-Representative fields:
+Suggested fields:
 
-| Field | Description | Client-safe? |
+| Field | Type | Purpose |
 |---|---|---|
-| `id` | Mapping ID | Internal |
-| `role_id` | Role reference | Internal |
-| `permission_id` | Permission reference | Internal |
-| `created_at` | Mapping timestamp | Internal |
+| `id` | UUID/string | Mapping ID |
+| `role_id` | UUID/string | Role reference |
+| `permission_id` | UUID/string | Permission reference |
+| `created_at` | timestamp | Mapping creation time |
 
 Rules:
 
 - Role-permission mappings are backend-owned.
-- Clients must not mutate permission mappings directly.
-- Any admin UI action must call a backend endpoint protected by admin permission checks.
+- Clients must not mutate mappings directly.
+- Admin changes require backend role/permission checks.
+- System permissions should be protected from unsafe mutation.
 
 ---
 
-### 8. Ownership Record
+## Entity: Auth Audit Log
 
-Ownership may be represented directly by `user_id` fields on owned resources or through dedicated ownership records where needed.
+Auth audit logs record important authentication and authorization events.
 
-For Phase 2, the main ownership case is profile ownership.
+Suggested fields:
 
-Representative ownership fields:
+| Field | Type | Purpose |
+|---|---|---|
+| `id` | UUID/string | Audit log ID |
+| `user_id` | UUID/string/null | AIM user related to the event |
+| `supabase_auth_uid` | string/null | Auth UID involved in the event |
+| `event_type` | string | Event key |
+| `ip_address` | string/null | Optional request IP |
+| `user_agent` | string/null | Optional request user agent |
+| `metadata` | object/json/null | Safe internal event metadata |
+| `created_at` | timestamp | Event time |
 
-| Field | Description |
-|---|---|
-| `resource_type` | Example: `profile` |
-| `resource_id` | Owned resource ID |
-| `owner_user_id` | AIM user who owns the resource |
-| `created_at` | Ownership creation timestamp |
+Example event types:
+
+```text
+auth.user_synced
+auth.login_seen
+auth.logout_seen
+auth.me_requested
+auth.access_denied
+roles.assigned
+roles.removed
+permissions.changed
+profile.read_denied
+profile.update_denied
+```
 
 Rules:
 
-- Ownership must be checked by backend.
-- A client-provided resource ID does not prove ownership.
-- Admin override requires backend role or permission checks.
+- Audit logs are internal.
+- Audit logs must not expose secrets.
+- Audit logs should not store raw tokens.
+- Sensitive metadata should be minimized.
 
 ---
 
-## Relationship Map
+## Ownership Rules
 
-```text
-Supabase Auth User
-  auth_user_id
-        |
-        v
-AIM User
-  id
-  auth_user_id
-        |
-        +--> User Profile
-        |      user_id
-        |
-        +--> User Role Assignment
-               user_id
-               role_id
-                    |
-                    v
-                  Role
-                    |
-                    v
-            Role Permission Mapping
-                    |
-                    v
-                Permission
-```
+Ownership is represented through user-linked records.
+
+Primary Phase 2 ownership examples:
+
+| Resource | Owner field |
+|---|---|
+| Student profile | `student_profiles.user_id` |
+| Admin profile | `admin_profiles.user_id` |
+| User-owned auth context | `users.id` resolved from Supabase UID |
+
+Rules:
+
+- Client-provided IDs do not prove ownership.
+- Backend must validate ownership before returning or mutating protected data.
+- Admin override requires backend-approved role/permission checks.
+- Flutter/Admin must not be the ownership authority.
 
 ---
 
-## Authorization Flow
+## Safe Client Exposure
 
-For a protected request:
+Client-safe data may include:
 
-1. Client sends authenticated request.
-2. Backend validates Supabase Auth token/session.
-3. Backend extracts authenticated `auth_user_id`.
-4. Backend resolves internal AIM user by `auth_user_id`.
-5. Backend checks user status.
-6. Backend checks required ownership, role, or permission.
-7. Backend returns only safe response fields.
-8. Backend denies access when any required check fails.
+- current AIM user ID;
+- safe email or phone when required;
+- profile ID;
+- display name;
+- avatar URL;
+- preferred language;
+- backend-approved role labels;
+- backend-approved permission labels.
 
----
-
-## Current User Data Shape
-
-A safe current-user response may include:
-
-```json
-{
-  "user": {
-    "id": "aim_user_id",
-    "email": "user@example.com",
-    "status": "active"
-  },
-  "profile": {
-    "id": "profile_id",
-    "displayName": "User Name",
-    "avatarUrl": null,
-    "preferredLanguage": "en"
-  },
-  "roles": [
-    "student"
-  ],
-  "permissions": [
-    "profiles.read.own",
-    "profiles.update.own"
-  ]
-}
-```
-
-This response is illustrative only.
-
-Final API shapes must be defined by endpoint implementation tasks.
+Client-safe data must still be treated as display state, not authorization authority.
 
 ---
 
 ## Internal-Only Data
 
-The following data must remain internal unless a later task explicitly permits a safe subset:
+The following must remain internal:
 
-- service-role keys;
+- Supabase service-role keys;
 - database credentials;
 - JWT signing secrets;
-- auth provider raw metadata;
-- refresh tokens;
+- AI provider keys;
 - password hashes;
-- internal role assignment audit data;
-- privileged admin metadata;
-- deleted/disabled internal flags where unsafe;
+- refresh tokens;
+- raw provider metadata unless explicitly whitelisted;
+- privileged role assignment audit details;
+- sensitive audit metadata;
 - backend security implementation details.
 
 ---
 
-## Flutter Boundary
+## Implementation Notes for Later Tasks
 
-Flutter Mobile may store and render:
+Later implementation tasks may translate this map into:
 
-- client-safe session state;
-- current user response from backend;
-- profile summary from backend;
-- backend-approved role or permission labels for UX.
+- database migrations;
+- ORM models;
+- backend repositories/services;
+- guards and decorators;
+- current-user endpoint response models;
+- Flutter auth/profile state models;
+- Admin users/roles UI models.
 
-Flutter Mobile must not:
+Any implementation must preserve:
 
-- become the source of truth for roles;
-- become the source of truth for permissions;
-- assign roles directly;
-- calculate authorization locally;
-- access service-role keys;
-- bypass backend ownership checks.
-
----
-
-## Admin Dashboard Boundary
-
-Admin Dashboard may render backend-approved users, roles, and permissions.
-
-Admin Dashboard must not:
-
-- directly mutate database role mappings without backend checks;
-- store service-role keys;
-- become the final authorization authority;
-- expose internal-only metadata to unauthorized admins;
-- implement broader dashboard recommendation, onboarding, placement, lesson, or AIM integration work.
+- Supabase UID to internal AIM user mapping;
+- backend-owned authorization;
+- backend ownership checks;
+- no client-side authorization authority;
+- no out-of-scope learning-product data.
 
 ---
 
-## Phase 2 Out-of-Scope Data
+## Done Test Review
 
-This map does not define data models for:
+This document satisfies P2-005 when:
 
-- onboarding;
-- placement;
-- lessons;
-- practice;
-- sessions;
-- AIM integration;
-- recommendations;
-- retention;
-- progress reports;
-- AI Teacher;
-- Student Web App.
-
-Those data models must not be introduced by Phase 2 auth tasks.
-
----
-
-## Done Criteria
-
-This data model map is complete when it clearly defines:
-
-- Supabase Auth user as external identity;
-- AIM user as internal application identity;
-- profile ownership relationship;
-- role and permission relationship;
-- user-role assignment;
-- role-permission mapping;
-- backend authorization flow;
-- client-safe versus internal-only field boundaries;
-- Flutter/Admin boundaries;
-- out-of-scope Phase 2 exclusions.
+- `docs/phase-2/auth-data-model-map.md` exists;
+- it defines users, student profiles, admin profiles, roles, permissions, user roles, and auth audit logs;
+- it makes the Supabase UID to internal user/profile/role relationship explicit;
+- it keeps backend authorization and ownership checks as final authority;
+- it treats Flutter/Admin role behavior as UX only;
+- it introduces no out-of-scope Phase 2 feature;
+- it exposes no secrets or privileged credentials.
