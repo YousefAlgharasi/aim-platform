@@ -1,37 +1,36 @@
-# AI Teacher Gateway — Boundary Module
+# services/backend-api/src/features/ai-teacher
+
+AI Teacher gateway boundary module. Backend-owned. Never exposed to any client.
 
 ## Boundary Rules
 
-This module is backend-only. No client (Flutter Mobile, admin dashboard, or any frontend)
-may call this service or any AI provider directly.
+- This module is the only entry point to AI Teacher functionality.
+- No client (Flutter Mobile, Admin Dashboard) calls this module directly.
+- No AI provider API key is passed to, stored in, or read from any client.
+- No general chatbot behavior. AI Teacher is scoped to AIM lesson and skill context only.
+- No full provider integration in Phase 1. This is a gateway boundary skeleton.
+- All AI Teacher requests must carry lesson context, skill context, mode, and student-safe field constraints.
+- All AI Teacher responses must pass safety validation before reaching any consumer.
 
-- Clients call Backend API endpoints only.
-- Backend API calls `AiTeacherService` internally.
-- `AiTeacherService` is the sole gateway to the provider layer.
-- AI provider keys are read from backend environment only and never exposed to clients.
-- Raw provider responses are validated before reaching any client.
+## Phase 1 Scope
 
-## What This Module Does (Phase 1 Scope)
+Phase 1 creates the module boundary, service stub, and contract foundation only. Full provider integration is Phase 2 work.
 
-- Defines the AI Teacher invocation contract (`AiTeacherContext`, `AiTeacherResponse`).
-- Defines hook type constants (`explain_more`, `give_example`, `explain_step`, `explain_why`, `retry_with_help`).
-- Enforces invocation limits per session.
-- Validates responses against word limits and answer-leakage rules.
-- Returns a safe fallback when the provider is unavailable or validation fails.
-- Records invocation metadata for audit and AIM Engine input.
+## Files
 
-## What This Module Does NOT Do (Phase 1)
+- `ai-teacher.module.ts` — NestJS module. Imports ConfigModule. Exports AiTeacherService.
+- `ai-teacher.service.ts` — Gateway service stub. Reads AI_PROVIDER_API_KEY from ConfigService only.
+  Exposes `isAvailable()` for health/readiness checks.
 
-- Does not call a live AI provider (provider integration is a later phase).
-- Does not implement full prompt engineering or conversation history.
-- Does not implement streaming.
-- Does not allow clients to bypass the backend gateway.
+## Forbidden
 
-## Usage
+- Exposing `AI_PROVIDER_API_KEY` to any response, log, or client.
+- Implementing general conversational AI behavior.
+- Calling the AI provider from Flutter Mobile or Admin Dashboard.
+- Bypassing safety validation on AI Teacher responses.
 
-```typescript
-const response = await this.aiTeacherService.explain(context);
-this.aiTeacherService.recordInvocation(record);
-```
+## Related
 
-Import via the features module barrel or directly from this directory.
+- `docs/ai-teacher/behavior-rules.md` — Behavioral rules and constraints.
+- `packages/shared-contracts/api/ai-teacher-contracts.md` — Request/response contracts (P1-054).
+- `services/backend-api/src/features/ai-teacher/` — This module.
