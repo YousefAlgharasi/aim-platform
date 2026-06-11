@@ -6,6 +6,8 @@ This folder contains the Phase 1 Supabase JWT auth guard skeleton plus role and 
 
 - Extracts `Authorization: Bearer <token>` from HTTP requests.
 - Verifies Supabase-compatible HS256 JWT signatures using `SUPABASE_JWT_SECRET`.
+- Requires the token `iss` claim to match `SUPABASE_JWT_ISSUER`.
+- Requires the token `aud` claim to include `SUPABASE_JWT_AUDIENCE`.
 - Rejects missing, malformed, expired, or invalid tokens.
 - Attaches a safe `AuthenticatedUser` object to `request.user`.
 - Provides `@CurrentUser()` for future controllers.
