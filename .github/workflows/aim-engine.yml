@@ -1,0 +1,50 @@
+name: AIM Engine CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'services/aim-engine/**'
+      - '.github/workflows/aim-engine.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'services/aim-engine/**'
+      - '.github/workflows/aim-engine.yml'
+
+jobs:
+  lint-and-test:
+    name: Lint and Test
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: services/aim-engine
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: services/aim-engine/pyproject.toml
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Lint (ruff check)
+        run: ruff check .
+
+      - name: Format check (ruff format)
+        run: ruff format --check .
+
+      - name: Test (pytest)
+        run: pytest
+
+    # Phase 1 boundary guards
+    # AIM Engine logic is Python/backend-owned — must not run in any client
+    # No AI provider keys or Supabase service-role keys in source
+    # No speed-as-mastery logic — enforced by no-speed guard tests (P1-030)
