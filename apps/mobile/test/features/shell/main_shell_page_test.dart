@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/features/shell/ui/pages/main_shell_page.dart';
@@ -39,6 +40,8 @@ class TestShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: child);
+    return ProviderScope(
+      child: MaterialApp(home: child),
+    );
   }
 }
