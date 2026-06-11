@@ -15,7 +15,7 @@ export class AiTeacherSafetyValidator {
   private static readonly MAX_WORD_COUNT = 150;
 
   private static readonly PROHIBITED_PATTERNS: RegExp[] = [
-    /(hate|kill|abuse|racist|sexist|slur)/i,
+    /\b(hate|kill|abuse|racist|sexist|slur)\b/i,
   ];
 
   validate(
