@@ -1,6 +1,6 @@
 """Tests for the AIM Engine pipeline interface skeleton."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
@@ -25,7 +25,7 @@ def _request() -> AdaptiveSessionCompletionRequest:
         student_id=uuid4(),
         session_id=uuid4(),
         course_id=uuid4(),
-        completed_at=datetime.now(timezone.utc),
+        completed_at=datetime.now(UTC),
         attempts=[
             SkillAttemptInput(
                 attempt_id=uuid4(),
@@ -37,7 +37,7 @@ def _request() -> AdaptiveSessionCompletionRequest:
                 time_spent_seconds=8.0,
                 retries=0,
                 hints_used=0,
-                submitted_at=datetime.now(timezone.utc),
+                submitted_at=datetime.now(UTC),
             )
         ],
     )

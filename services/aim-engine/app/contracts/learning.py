@@ -88,10 +88,14 @@ class AdaptiveSessionCompletionRequest(ContractModel):
     lesson_id: UUID | None = None
     completed_at: datetime
     attempts: list[SkillAttemptInput] = Field(min_length=1, max_length=500)
-    existing_skill_states: list[ExistingSkillStateInput] = Field(default_factory=list, max_length=500)
+    existing_skill_states: list[ExistingSkillStateInput] = Field(
+        default_factory=list, max_length=500
+    )
 
     @model_validator(mode="after")
-    def ensure_attempt_skills_have_unique_state_snapshots(self) -> "AdaptiveSessionCompletionRequest":
+    def ensure_attempt_skills_have_unique_state_snapshots(
+        self,
+    ) -> "AdaptiveSessionCompletionRequest":
         state_skill_ids = [state.skill_id for state in self.existing_skill_states]
         if len(state_skill_ids) != len(set(state_skill_ids)):
             raise ValueError("existing_skill_states must not contain duplicate skill_id values")
