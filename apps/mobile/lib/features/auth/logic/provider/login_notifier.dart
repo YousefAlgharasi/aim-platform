@@ -63,7 +63,16 @@ class LoginNotifier extends StateNotifier<AppFormState> {
         password: _password,
       );
 
-      await _ref.read(authContextProvider.notifier).syncAndLoadUser(token);
+      final didLoadContext =
+          await _ref.read(authContextProvider.notifier).syncAndLoadUser(token);
+
+      if (!didLoadContext) {
+        state = state.copyWith(
+          isSubmitting: false,
+          errorMessage: 'Your session has expired. Please sign in again.',
+        );
+        return;
+      }
 
       _ref.read(authFlowProvider.notifier).signIn(_email);
 
