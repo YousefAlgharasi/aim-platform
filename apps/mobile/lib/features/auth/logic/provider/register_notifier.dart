@@ -94,9 +94,17 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
       }
 
       // Auto-confirmed — sync with backend and sign in.
-      await _ref
+      final didLoadContext = await _ref
           .read(authContextProvider.notifier)
           .syncAndLoadUser(result.accessToken!);
+
+      if (!didLoadContext) {
+        state = state.copyWith(
+          isSubmitting: false,
+          errorMessage: 'Your session has expired. Please sign in again.',
+        );
+        return;
+      }
 
       _ref.read(authFlowProvider.notifier).signIn(_email);
       _outcome = RegisterOutcome.signedIn;

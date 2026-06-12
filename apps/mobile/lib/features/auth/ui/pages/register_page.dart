@@ -93,7 +93,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           children: [
             _AimLogo(),
             const SizedBox(height: 32),
-            _SectionLabel('Create your AIM account'),
+            const _SectionLabel('Create your AIM account'),
             const SizedBox(height: 24),
 
             // Email field
@@ -157,8 +157,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       : Icons.visibility_off_outlined),
                   onPressed: () =>
                       setState(() => _obscureConfirm = !_obscureConfirm),
-                  tooltip:
-                      _obscureConfirm ? 'Show password' : 'Hide password',
+                  tooltip: _obscureConfirm ? 'Show password' : 'Hide password',
                 ),
               ),
             ),
@@ -200,8 +199,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 if (Navigator.canPop(context)) {
                   Navigator.pop(context);
                 } else {
-                  Navigator.pushReplacementNamed(
-                      context, AppRoutePaths.signIn);
+                  Navigator.pushReplacementNamed(context, AppRoutePaths.signIn);
                 }
               },
               child: const Text('Already have an account? Sign in'),
@@ -295,8 +293,8 @@ class _ErrorBanner extends StatelessWidget {
           Icon(Icons.error_outline, color: cs.onErrorContainer),
           const SizedBox(width: 8),
           Expanded(
-              child: Text(message,
-                  style: TextStyle(color: cs.onErrorContainer))),
+              child:
+                  Text(message, style: TextStyle(color: cs.onErrorContainer))),
         ],
       ),
     );
@@ -319,8 +317,7 @@ class _ConfirmationSentScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.mark_email_read_outlined,
-                  size: 72,
-                  color: Theme.of(context).colorScheme.primary),
+                  size: 72, color: Theme.of(context).colorScheme.primary),
               const SizedBox(height: 24),
               Text(
                 'Confirmation email sent',
