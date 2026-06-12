@@ -3,6 +3,8 @@ import { Reflector } from '@nestjs/core';
 import { RoleGuard } from './role.guard';
 import { AuthorizedRole } from './authorized-role';
 import { AppError } from '../../common/errors/app-error';
+import { REQUIRED_ROLES_KEY } from './authorization.constants';
+import { RequireRoles } from './required-roles.decorator';
 import { RolesService } from '../../features/roles/roles.service';
 import { UsersService } from '../../features/users/users.service';
 import { UserRecord, UserStatus } from '../../features/users/users.types';
@@ -110,6 +112,20 @@ describe('RoleGuard', () => {
       code: 'UNAUTHORIZED',
       statusCode: HttpStatus.UNAUTHORIZED,
     } satisfies Partial<AppError>);
+  });
+});
+
+describe('RequireRoles', () => {
+  it('stores required role metadata for handlers or classes', () => {
+    class TestController {
+      @RequireRoles(AuthorizedRole.ADMIN, AuthorizedRole.SUPER_ADMIN)
+      handle(): void {}
+    }
+
+    expect(Reflect.getMetadata(REQUIRED_ROLES_KEY, TestController.prototype.handle)).toEqual([
+      AuthorizedRole.ADMIN,
+      AuthorizedRole.SUPER_ADMIN,
+    ]);
   });
 });
 
