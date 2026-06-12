@@ -1,9 +1,13 @@
+// Phase 2 — P2-030
 import { Module } from '@nestjs/common';
 
+import { DatabaseModule } from '../../database/database.module';
+import { StudentProfileService } from './student-profile.service';
 import { StudentsService } from './students.service';
 
 @Module({
-  providers: [StudentsService],
-  exports: [StudentsService],
+  imports: [DatabaseModule],
+  providers: [StudentsService, StudentProfileService],
+  exports: [StudentsService, StudentProfileService],
 })
 export class StudentsModule {}
