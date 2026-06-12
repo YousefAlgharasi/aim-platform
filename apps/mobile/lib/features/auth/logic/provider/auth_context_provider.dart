@@ -25,5 +25,6 @@ final authContextProvider =
     StateNotifierProvider<AuthContextNotifier, AppAsyncState<AuthContextModel>>(
   (ref) => AuthContextNotifier(
     repository: ref.watch(authRepositoryProvider),
+    ref: ref,
   ),
 );
