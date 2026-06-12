@@ -40,14 +40,25 @@ This is UI scaffolding only.
 It does not implement:
 
 - real RBAC
-- authentication
-- authorization
 - permission checks
-- route guards
 - session handling
 - backend role enforcement
+- production sign-in flows
+- production admin modules
 
 Backend API authorization remains final.
+
+## Admin Auth Guard Foundation
+
+Phase 2 adds a server-side route guard for `/admin/*`.
+
+- The guard reads the `aim_admin_access_token` cookie.
+- It calls Backend API `/auth/me`.
+- It renders protected admin routes only for backend roles `admin` or `super_admin`.
+- It redirects missing, denied, or unavailable auth checks to safe non-admin pages.
+- It does not store tokens, service-role keys, database credentials, or privileged backend config.
+
+This guard is dashboard routing protection only. Backend API authorization remains the final authority for every admin operation.
 
 ## Admin API Client Foundation
 
