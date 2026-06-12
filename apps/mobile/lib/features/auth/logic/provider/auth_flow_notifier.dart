@@ -9,11 +9,17 @@ class AuthFlowNotifier extends StateNotifier<AuthFlowState> {
     state = const AuthFlowState.signedOut();
   }
 
-  void signInPlaceholder(String email) {
+  void signIn(String email) {
     state = AuthFlowState.signedIn(email: email);
   }
 
-  void signOutPlaceholder() {
+  void signOut() {
     state = const AuthFlowState.signedOut();
   }
+
+  @Deprecated('Use signIn instead')
+  void signInPlaceholder(String email) => signIn(email);
+
+  @Deprecated('Use signOut instead')
+  void signOutPlaceholder() => signOut();
 }
