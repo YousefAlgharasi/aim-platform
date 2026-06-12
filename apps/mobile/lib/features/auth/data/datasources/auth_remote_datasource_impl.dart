@@ -1,7 +1,7 @@
-import '../../../../core/networking/backend_api_client.dart';
-import '../../../../core/networking/backend_api_paths.dart';
-import '../../models/auth_context_model.dart';
-import '../../models/auth_sync_response_model.dart';
+import 'package:aim_mobile/core/networking/backend_api_client.dart';
+import 'package:aim_mobile/core/networking/backend_api_paths.dart';
+import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
+import 'package:aim_mobile/features/auth/data/models/auth_sync_response_model.dart';
 import 'auth_remote_datasource.dart';
 
 class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {

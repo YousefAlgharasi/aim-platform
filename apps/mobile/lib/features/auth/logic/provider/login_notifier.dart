@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/errors/app_exception.dart';
-import '../../../core/state/app_form_state.dart';
-import '../data/datasources/supabase_auth_datasource.dart';
+import 'package:aim_mobile/core/errors/app_exception.dart';
+import 'package:aim_mobile/core/state/app_form_state.dart';
+import 'package:aim_mobile/features/auth/data/datasources/supabase_auth_datasource.dart';
 import 'auth_context_provider.dart';
 import 'auth_flow_provider.dart';
 
@@ -42,9 +42,8 @@ class LoginNotifier extends StateNotifier<AppFormState> {
   }
 
   void _revalidate() {
-    final isValid = _email.contains('@') &&
-        _email.length > 3 &&
-        _password.length >= 6;
+    final isValid =
+        _email.contains('@') && _email.length > 3 && _password.length >= 6;
     state = state.copyWith(isValid: isValid, clearError: true);
   }
 
@@ -64,9 +63,7 @@ class LoginNotifier extends StateNotifier<AppFormState> {
         password: _password,
       );
 
-      await _ref
-          .read(authContextProvider.notifier)
-          .syncAndLoadUser(token);
+      await _ref.read(authContextProvider.notifier).syncAndLoadUser(token);
 
       _ref.read(authFlowProvider.notifier).signIn(_email);
 

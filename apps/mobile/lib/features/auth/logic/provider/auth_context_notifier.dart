@@ -1,7 +1,8 @@
-import '../../../core/state/app_async_state.dart';
-import '../../../core/state/app_state_notifier.dart';
-import '../data/models/auth_context_model.dart';
-import 'repository/auth_repository.dart';
+import 'package:aim_mobile/core/state/app_state_notifier.dart';
+import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
+import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
+
+
 
 class AuthContextNotifier extends AppStateNotifier<AuthContextModel> {
   AuthContextNotifier({required AuthRepository repository})

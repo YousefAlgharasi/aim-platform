@@ -11,9 +11,12 @@ void main() {
       config: const AppConfig(
         environment: 'test',
         backendApiBaseUrl: 'https://api.example.com/v1',
+        supabaseUrl: 'https://example.supabase.co',
+        supabaseAnonKey: 'test-anon-key',
       ),
       httpClient: MockClient((request) async {
-        return http.Response('{"success":true,"data":{"ok":true},"meta":{}}', 200);
+        return http.Response(
+            '{"success":true,"data":{"ok":true},"meta":{}}', 200);
       }),
     );
 
@@ -29,6 +32,8 @@ void main() {
       config: const AppConfig(
         environment: 'test',
         backendApiBaseUrl: 'https://api.example.com',
+        supabaseUrl: 'https://example.supabase.co',
+        supabaseAnonKey: 'test-anon-key',
       ),
       httpClient: MockClient((request) async {
         expect(request.url.toString(), 'https://api.example.com/health');
@@ -55,6 +60,8 @@ void main() {
       config: const AppConfig(
         environment: 'test',
         backendApiBaseUrl: 'https://api.example.com',
+        supabaseUrl: 'https://example.supabase.co',
+        supabaseAnonKey: 'test-anon-key',
       ),
       httpClient: MockClient((request) async {
         return http.Response(
