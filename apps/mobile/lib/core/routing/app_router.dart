@@ -1,3 +1,4 @@
+import 'package:aim_mobile/features/auth/ui/pages/register_page.dart';
 import 'package:flutter/material.dart';
 
 import '../state/app_async_state.dart';

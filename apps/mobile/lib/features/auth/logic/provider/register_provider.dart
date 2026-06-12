@@ -1,8 +1,9 @@
+import 'package:aim_mobile/core/config/app_config_provider.dart';
+import 'package:aim_mobile/core/state/app_form_state.dart';
+import 'package:aim_mobile/features/auth/data/datasources/supabase_auth_datasource_impl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/config/app_config_provider.dart';
-import '../../../core/state/app_form_state.dart';
-import '../data/datasources/supabase_auth_datasource_impl.dart';
+
 import 'register_notifier.dart';
 
 /// Provides [RegisterNotifier] for the registration screen.
