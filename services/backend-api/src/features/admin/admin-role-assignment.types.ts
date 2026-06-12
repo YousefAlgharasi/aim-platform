@@ -4,6 +4,7 @@ export interface AssignAdminUserRoleInput {
   readonly actorSupabaseAuthUid: string;
   readonly targetUserId: string;
   readonly roleKey: string;
+  readonly reason?: string;
 }
 
 export interface AdminRoleAssignmentResponse {
