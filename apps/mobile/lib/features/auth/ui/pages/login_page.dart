@@ -160,6 +160,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 padding: EdgeInsets.only(top: 12),
                 child: LinearProgressIndicator(),
               ),
+
+            const SizedBox(height: 8),
+
+            // Register link
+            TextButton(
+              onPressed: () => Navigator.pushNamed(
+                context,
+                AppRoutePaths.register,
+              ),
+              child: const Text("Don't have an account? Create one"),
+            ),
           ],
         ),
       ),

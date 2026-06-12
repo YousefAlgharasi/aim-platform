@@ -82,4 +82,63 @@ class SupabaseAuthDatasourceImpl implements SupabaseAuthDatasource {
       code: errorCode ?? 'AUTH_FAILED',
     );
   }
+
+  /// POST /auth/v1/signup
+  @override
+  Future<SignUpResult> signUpWithEmailPassword({
+    required String email,
+    required String password,
+  }) async {
+    final uri = Uri.parse('$_supabaseUrl/auth/v1/signup');
+
+    final http.Response response;
+    try {
+      response = await _client.post(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': _supabaseAnonKey,
+        },
+        body: jsonEncode({'email': email, 'password': password}),
+      );
+    } catch (_) {
+      throw const AppException(
+        message: 'Unable to reach the authentication service.',
+        code: 'AUTH_NETWORK_ERROR',
+      );
+    }
+
+    final Map<String, dynamic> body;
+    try {
+      body = jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (_) {
+      throw const AppException(
+        message: 'Unexpected response from authentication service.',
+        code: 'AUTH_INVALID_RESPONSE',
+      );
+    }
+
+    if (response.statusCode == 200) {
+      final accessToken = body['access_token'] as String?;
+      // Supabase returns access_token when email confirmation is disabled.
+      // When confirmation is required it returns user object without a token.
+      final requiresConfirmation =
+          accessToken == null || accessToken.isEmpty;
+
+      return SignUpResult(
+        email: email,
+        accessToken: requiresConfirmation ? null : accessToken,
+        requiresEmailConfirmation: requiresConfirmation,
+      );
+    }
+
+    final errorDesc = body['error_description'] as String?;
+    final errorCode = body['error'] as String?;
+    final msg = body['msg'] as String?; // some Supabase versions use msg
+
+    throw AppException(
+      message: errorDesc ?? msg ?? 'Registration failed. Please try again.',
+      code: errorCode ?? 'REGISTER_FAILED',
+    );
+  }
 }
