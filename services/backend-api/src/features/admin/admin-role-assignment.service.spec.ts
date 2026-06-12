@@ -94,6 +94,47 @@ describe('AdminRoleAssignmentService', () => {
     expect(authLoggingService.log).not.toHaveBeenCalled();
   });
 
+  it('blocks role changes when the actor or target user is inactive', async () => {
+    usersService.assertUserIsActive.mockImplementationOnce(() => {
+      throw new Error('inactive actor');
+    });
+
+    await expect(
+      service.assignUserRole({
+        actorSupabaseAuthUid: 'auth-admin-001',
+        targetUserId: 'user-target-001',
+        roleKey: 'admin',
+      }),
+    ).rejects.toThrow('inactive actor');
+
+    expect(usersService.assertUserIsActive).toHaveBeenCalledWith(actorUser);
+    expect(usersService.getById).not.toHaveBeenCalled();
+    expect(db.withClient).not.toHaveBeenCalled();
+    expect(authLoggingService.log).not.toHaveBeenCalled();
+
+    jest.clearAllMocks();
+    usersService.getBySupabaseUid.mockResolvedValue(actorUser);
+    usersService.getById.mockResolvedValue(targetUser);
+    usersService.assertUserIsActive.mockImplementation((user) => {
+      if (user.id === targetUser.id) {
+        throw new Error('inactive target');
+      }
+    });
+
+    await expect(
+      service.assignUserRole({
+        actorSupabaseAuthUid: 'auth-admin-001',
+        targetUserId: 'user-target-001',
+        roleKey: 'admin',
+      }),
+    ).rejects.toThrow('inactive target');
+
+    expect(usersService.assertUserIsActive).toHaveBeenCalledWith(actorUser);
+    expect(usersService.assertUserIsActive).toHaveBeenCalledWith(targetUser);
+    expect(db.withClient).not.toHaveBeenCalled();
+    expect(authLoggingService.log).not.toHaveBeenCalled();
+  });
+
   it('blocks non-super admins from assigning the super_admin role', async () => {
     rolesService.getRoleByKey.mockResolvedValue({
       role: superAdminRole,
@@ -159,6 +200,35 @@ describe('AdminRoleAssignmentService', () => {
         }),
       }),
     );
+  });
+
+  it('rolls back and skips audit logging when the role write fails', async () => {
+    const writeError = new Error('user_roles write failed');
+    db.client.query.mockImplementation((sql: string) => {
+      if (sql.includes('INSERT INTO user_roles')) {
+        return Promise.reject(writeError);
+      }
+
+      if (sql.includes('DELETE FROM user_roles')) {
+        return Promise.resolve({ rows: [{ role_id: 'role-student' }] });
+      }
+
+      return Promise.resolve({ rows: [] });
+    });
+
+    await expect(
+      service.assignUserRole({
+        actorSupabaseAuthUid: 'auth-admin-001',
+        targetUserId: 'user-target-001',
+        roleKey: 'admin',
+        reason: 'Approved access change',
+      }),
+    ).rejects.toThrow(writeError);
+
+    expect(db.client.query).toHaveBeenCalledWith('BEGIN');
+    expect(db.client.query).toHaveBeenCalledWith('ROLLBACK');
+    expect(db.client.query).not.toHaveBeenCalledWith('COMMIT');
+    expect(authLoggingService.log).not.toHaveBeenCalled();
   });
 });
 
