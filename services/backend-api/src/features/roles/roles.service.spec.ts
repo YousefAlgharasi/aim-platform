@@ -43,7 +43,7 @@ describe('RolesService', () => {
       expect(result).toHaveLength(1);
       expect(result[0].key).toBe('student');
       expect(result[0].isSystem).toBe(true);
-      expect((result[0] as Record<string, unknown>).is_system).toBeUndefined();
+      expect((result[0] as unknown as Record<string, unknown>).is_system).toBeUndefined();
     });
   });
 
