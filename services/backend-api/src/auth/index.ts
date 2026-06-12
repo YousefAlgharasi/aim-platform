@@ -1,3 +1,5 @@
+export * from './auth-logging.service';
+export * from './auth-logging.types';
 export * from './auth.module';
 export * from './authenticated-user';
 export * from './authorization';
