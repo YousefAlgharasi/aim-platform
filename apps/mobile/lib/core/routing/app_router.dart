@@ -30,6 +30,8 @@ class AppRouter {
             return const SplashPlaceholderPage();
           case AppRoutePaths.signIn:
             return const LoginPage();
+          case AppRoutePaths.register:
+            return const RegisterPage();
           case AppRoutePaths.mainShell:
           case AppRoutePaths.home:
           case AppRoutePaths.learn:
