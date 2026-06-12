@@ -3,11 +3,46 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/routing/routing.dart';
+import 'package:aim_mobile/core/state/app_async_state.dart';
+import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
+import 'package:aim_mobile/features/auth/data/models/client_safe_profile_model.dart';
+import 'package:aim_mobile/features/auth/data/models/current_user_model.dart';
+import 'package:aim_mobile/features/auth/logic/entity/auth_flow_state.dart';
 
 void main() {
-  testWidgets('can navigate from splash to sign-in and main shell placeholder', (tester) async {
+  test('redirects protected routes for unauthenticated users', () {
+    final resolvedRoute = AppRouter.resolveRouteName(
+      AppRoutePaths.mainShell,
+      authState: const AuthFlowState.signedOut(),
+    );
+
+    expect(resolvedRoute, AppRoutePaths.signIn);
+  });
+
+  test('keeps checking users on splash', () {
+    final resolvedRoute = AppRouter.resolveRouteName(
+      AppRoutePaths.profile,
+      authState: const AuthFlowState.checking(),
+    );
+
+    expect(resolvedRoute, AppRoutePaths.splash);
+  });
+
+  test('routes signed-in profile-ready users away from auth pages', () {
+    final resolvedRoute = AppRouter.resolveRouteName(
+      AppRoutePaths.signIn,
+      authState: const AuthFlowState.signedIn(email: 'learner@example.com'),
+      authContextState: const AppAsyncState<AuthContextModel>.success(
+        _authContext,
+      ),
+    );
+
+    expect(resolvedRoute, AppRoutePaths.mainShell);
+  });
+
+  testWidgets('can navigate from splash to sign-in page', (tester) async {
     await tester.pumpWidget(
-      ProviderScope(
+      const ProviderScope(
         child: MaterialApp(
           initialRoute: AppRoutePaths.splash,
           onGenerateRoute: AppRouter.onGenerateRoute,
@@ -20,16 +55,30 @@ void main() {
     await tester.tap(find.text('Start auth placeholder flow'));
     await tester.pumpAndSettle();
 
-    expect(find.text('AIM Sign In'), findsOneWidget);
-
-    await tester.tap(find.text('Continue with placeholder auth'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('AIM Home'), findsOneWidget);
-    expect(find.text('Home'), findsWidgets);
-    expect(find.text('Learn'), findsWidgets);
-    expect(find.text('Review'), findsWidgets);
-    expect(find.text('Progress'), findsWidgets);
-    expect(find.text('Profile'), findsWidgets);
+    expect(find.text('Sign In'), findsWidgets);
+    expect(find.text('Sign in to AIM'), findsOneWidget);
   });
 }
+
+const _timestamp = '2026-06-12T00:00:00.000Z';
+
+const _authContext = AuthContextModel(
+  user: CurrentUserModel(
+    id: 'user-1',
+    email: 'learner@example.com',
+    userType: 'student',
+    status: 'active',
+    createdAt: _timestamp,
+    updatedAt: _timestamp,
+  ),
+  profile: ClientSafeProfileModel(
+    id: 'profile-1',
+    userId: 'user-1',
+    profileType: 'student',
+    displayName: 'Learner',
+    createdAt: _timestamp,
+    updatedAt: _timestamp,
+  ),
+  roles: [],
+  permissions: [],
+);

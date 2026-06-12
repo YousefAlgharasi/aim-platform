@@ -1,42 +1,28 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:aim_mobile/app/aim_mobile_app.dart';
+import 'package:aim_mobile/core/routing/routing.dart';
+import 'package:aim_mobile/features/auth/logic/entity/auth_flow_state.dart';
 
 void main() {
-  testWidgets('can complete placeholder auth UI flow', (tester) async {
+  testWidgets('routes signed-out users away from protected app areas',
+      (tester) async {
     await tester.pumpWidget(
-      const ProviderScope(
-        child: AimMobileApp(),
+      ProviderScope(
+        child: MaterialApp(
+          initialRoute: AppRoutePaths.mainShell,
+          onGenerateRoute: (settings) => AppRouter.onGenerateRoute(
+            settings,
+            authState: const AuthFlowState.signedOut(),
+          ),
+        ),
       ),
     );
 
-    expect(find.text('AIM Splash'), findsOneWidget);
+    await tester.pump();
 
-    await tester.tap(find.text('Start auth placeholder flow'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('AIM Sign In'), findsOneWidget);
-    expect(
-      find.text(
-        'Placeholder auth only. Supabase authentication is not implemented yet.',
-      ),
-      findsOneWidget,
-    );
-
-    await tester.tap(find.text('Continue with placeholder auth'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('AIM Home'), findsOneWidget);
-
-    await tester.tap(find.text('Profile').last);
-    await tester.pumpAndSettle();
-
-    expect(find.textContaining('learner@example.com'), findsOneWidget);
-
-    await tester.tap(find.text('Sign out placeholder'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('AIM Sign In'), findsOneWidget);
+    expect(find.text('Sign In'), findsWidgets);
+    expect(find.text('Sign in to AIM'), findsOneWidget);
   });
 }
