@@ -1,5 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { PoolClient } from 'pg';
+import { AuthLoggingService } from '../../auth';
 import { ApiErrorCode } from '../../common/errors/api-error-code';
 import { AppError } from '../../common/errors/app-error';
 import { DatabaseService } from '../../database/database.service';
@@ -14,12 +15,18 @@ interface AssignmentRow {
   readonly assigned_at: string | Date;
 }
 
+interface RoleAssignmentWriteResult {
+  readonly assignedAt: string;
+  readonly previousRoleIds: readonly string[];
+}
+
 @Injectable()
 export class AdminRoleAssignmentService {
   constructor(
     private readonly db: DatabaseService,
     private readonly usersService: UsersService,
     private readonly rolesService: RolesService,
+    private readonly authLoggingService: AuthLoggingService,
   ) {}
 
   async assignUserRole(
@@ -44,17 +51,31 @@ export class AdminRoleAssignmentService {
     const { role } = await this.rolesService.getRoleByKey(input.roleKey);
     await this.assertActorMayAssignRole(actor.id, role.key);
 
-    const assignedAt = await this.replaceUserRole({
+    const assignment = await this.replaceUserRole({
       targetUserId: targetUser.id,
       roleId: role.id,
       actorUserId: actor.id,
+    });
+    const reason = this.normalizeReason(input.reason);
+
+    await this.authLoggingService.log('role_assigned', {
+      userId: targetUser.id,
+      supabaseAuthUid: targetUser.supabaseAuthUid,
+      actorUserId: actor.id,
+      metadata: {
+        roleId: role.id,
+        roleKey: role.key,
+        assignedAt: assignment.assignedAt,
+        previousRoleIds: assignment.previousRoleIds,
+        ...(reason ? { reason } : {}),
+      },
     });
 
     return {
       userId: targetUser.id,
       role,
       assignedByUserId: actor.id,
-      assignedAt,
+      assignedAt: assignment.assignedAt,
     };
   }
 
@@ -86,13 +107,13 @@ export class AdminRoleAssignmentService {
     targetUserId: string;
     roleId: string;
     actorUserId: string;
-  }>): Promise<string> {
+  }>): Promise<RoleAssignmentWriteResult> {
     return this.db.withClient(async (client) => {
       await client.query('BEGIN');
 
       try {
-        await client.query(
-          'DELETE FROM user_roles WHERE user_id = $1 AND role_id <> $2',
+        const removedRoles = await client.query<{ role_id: string }>(
+          'DELETE FROM user_roles WHERE user_id = $1 AND role_id <> $2 RETURNING role_id',
           [targetUserId, roleId],
         );
 
@@ -119,7 +140,10 @@ export class AdminRoleAssignmentService {
           });
         }
 
-        return assignedAt instanceof Date ? assignedAt.toISOString() : assignedAt;
+        return {
+          assignedAt: assignedAt instanceof Date ? assignedAt.toISOString() : assignedAt,
+          previousRoleIds: removedRoles.rows.map((row) => row.role_id),
+        };
       } catch (error) {
         await this.rollback(client);
         throw error;
@@ -143,5 +167,10 @@ export class AdminRoleAssignmentService {
         statusCode: HttpStatus.BAD_REQUEST,
       });
     }
+  }
+
+  private normalizeReason(reason: string | undefined): string | undefined {
+    const normalized = reason?.trim();
+    return normalized ? normalized : undefined;
   }
 }
