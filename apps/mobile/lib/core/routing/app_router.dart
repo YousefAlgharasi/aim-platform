@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../features/auth/ui/pages/login_page.dart';
 import '../../features/auth/ui/pages/sign_in_placeholder_page.dart';
 import '../../features/onboarding/ui/pages/splash_placeholder_page.dart';
 import '../../features/shell/ui/pages/main_shell_page.dart';
@@ -16,7 +17,7 @@ class AppRouter {
           case AppRoutePaths.splash:
             return const SplashPlaceholderPage();
           case AppRoutePaths.signIn:
-            return const SignInPlaceholderPage();
+            return const LoginPage();
           case AppRoutePaths.mainShell:
           case AppRoutePaths.home:
           case AppRoutePaths.learn:
