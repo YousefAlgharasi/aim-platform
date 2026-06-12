@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/state/app_form_state.dart';
 import '../../logic/provider/auth_flow_provider.dart';
 import '../../logic/provider/login_provider.dart';
@@ -163,6 +164,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 padding: EdgeInsets.only(top: 12),
                 child: LinearProgressIndicator(),
               ),
+
+            const SizedBox(height: 8),
+
+            // Register link
+            TextButton(
+              onPressed: () => Navigator.pushNamed(
+                context,
+                AppRoutePaths.register,
+              ),
+              child: const Text("Don't have an account? Create one"),
+            ),
           ],
         ),
       ),
