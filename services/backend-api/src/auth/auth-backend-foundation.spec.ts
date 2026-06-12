@@ -53,7 +53,7 @@ describe('backend auth foundation suite', () => {
   });
 
   it('returns /auth/me without unsafe JWT metadata or internal auth fields', () => {
-    const response = new AuthController().getMe(verifiedUser);
+    const response = new AuthController(({ bootstrap: jest.fn() } as unknown as import("./auth-profile-bootstrap.service").AuthProfileBootstrapService)).getMe(verifiedUser);
 
     expect(response).toEqual({
       user: {

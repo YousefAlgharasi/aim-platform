@@ -9,3 +9,5 @@ export * from './session-validation.service';
 export * from './session-validation.types';
 export * from './supabase-jwt-auth.guard';
 export * from './supabase-jwt-verifier.service';
+export * from './auth-profile-bootstrap.service';
+export * from './auth-profile-bootstrap.types';
