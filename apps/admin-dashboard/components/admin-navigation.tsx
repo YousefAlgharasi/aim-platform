@@ -2,8 +2,13 @@ import Link from 'next/link';
 
 import { getAdminRoleLabel } from '../lib/admin-roles';
 import { roleBasedMenuGroups } from '../lib/admin-navigation';
+import type { AdminAuthContext } from '../lib/auth';
 
-export function AdminNavigation() {
+export function AdminNavigation({
+  authContext,
+}: Readonly<{
+  authContext: AdminAuthContext;
+}>) {
   return (
     <nav className="admin-navigation" aria-label="Admin navigation">
       <Link className="admin-brand" href="/admin">
@@ -13,6 +18,11 @@ export function AdminNavigation() {
           <small>Phase 1 shell</small>
         </span>
       </Link>
+
+      <div className="admin-auth-summary">
+        <strong>{authContext.user.email ?? authContext.user.id}</strong>
+        <small>{authContext.roles.join(', ')}</small>
+      </div>
 
       <p className="admin-menu-note">
         Role-based menu placeholder only. Backend API authorization remains the
