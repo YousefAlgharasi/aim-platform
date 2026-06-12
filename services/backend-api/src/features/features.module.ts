@@ -6,12 +6,16 @@ import { AiTeacherModule } from './ai-teacher/ai-teacher.module';
 import { AimModule } from './aim/aim.module';
 import { LessonsModule } from './lessons/lessons.module';
 import { ReportsModule } from './reports/reports.module';
+import { RolesModule } from './roles/roles.module';
 import { SessionsModule } from './sessions/sessions.module';
 import { StudentsModule } from './students/students.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
     AuthModule,
+    UsersModule,
+    RolesModule,
     StudentsModule,
     LessonsModule,
     SessionsModule,
@@ -22,6 +26,8 @@ import { StudentsModule } from './students/students.module';
   ],
   exports: [
     AuthModule,
+    UsersModule,
+    RolesModule,
     StudentsModule,
     LessonsModule,
     SessionsModule,
