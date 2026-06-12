@@ -165,8 +165,27 @@ h1 {
 .admin-brand small,
 .admin-nav-link small,
 .admin-menu-note,
+.admin-auth-summary small,
 .role-menu-items span {
   color: var(--muted);
+}
+
+.admin-auth-summary {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #f8fafc;
+  padding: 12px;
+}
+
+.admin-auth-summary strong,
+.admin-auth-summary small {
+  overflow-wrap: anywhere;
+}
+
+.admin-auth-summary small {
+  font-size: 0.8rem;
 }
 
 .admin-menu-note {
