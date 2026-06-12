@@ -1,9 +1,10 @@
-import '../../../../core/errors/app_exception.dart';
-import '../../../../core/networking/api_client_exception.dart';
-import '../../data/datasources/auth_remote_datasource.dart';
-import '../../data/models/auth_context_model.dart';
-import '../../data/models/auth_sync_response_model.dart';
-import '../../logic/repository/auth_repository.dart';
+import 'package:aim_mobile/core/errors/app_exception.dart';
+import 'package:aim_mobile/core/networking/api_client_exception.dart';
+import 'package:aim_mobile/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
+import 'package:aim_mobile/features/auth/data/models/auth_sync_response_model.dart';
+import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
+
 
 class AuthRepositoryImpl implements AuthRepository {
   const AuthRepositoryImpl({required AuthRemoteDatasource datasource})
