@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/routing/app_route_paths.dart';
-import '../../../../core/state/app_form_state.dart';
+import '../../../../core/routing/routing.dart';
 import '../../logic/provider/auth_flow_provider.dart';
 import '../../logic/provider/login_provider.dart';
 
@@ -63,13 +62,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Widget build(BuildContext context) {
     final formState = ref.watch(loginProvider);
     final authFlow = ref.watch(authFlowProvider);
-    final theme = Theme.of(context);
 
     // Navigate away once signedIn.
     ref.listen(authFlowProvider, (_, next) {
       if (next.isSignedIn && mounted) {
         Navigator.of(context).pushNamedAndRemoveUntil(
-          '/main-shell',
+          AppRoutePaths.mainShell,
           (route) => false,
         );
       }
@@ -84,9 +82,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
           children: [
-            _AimLogo(),
+            const _AimLogo(),
             const SizedBox(height: 32),
-            _SectionLabel('Sign in to AIM'),
+            const _SectionLabel('Sign in to AIM'),
             const SizedBox(height: 24),
 
             // Email field
@@ -126,8 +124,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         : Icons.visibility_off_outlined,
                   ),
                   onPressed: _togglePasswordVisibility,
-                  tooltip:
-                      _obscurePassword ? 'Show password' : 'Hide password',
+                  tooltip: _obscurePassword ? 'Show password' : 'Hide password',
                 ),
               ),
             ),
@@ -141,10 +138,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
             // Submit button
             FilledButton(
-              onPressed:
-                  (formState.isValid && !formState.isSubmitting)
-                      ? _submit
-                      : null,
+              onPressed: (formState.isValid && !formState.isSubmitting)
+                  ? _submit
+                  : null,
               child: formState.isSubmitting
                   ? const SizedBox(
                       height: 20,
@@ -183,6 +179,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 }
 
 class _AimLogo extends StatelessWidget {
+  const _AimLogo();
+
   @override
   Widget build(BuildContext context) {
     return Center(
