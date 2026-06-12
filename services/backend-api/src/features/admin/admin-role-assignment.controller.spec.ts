@@ -27,13 +27,14 @@ describe('AdminRoleAssignmentController', () => {
     const result = await controller.assignUserRole(
       actor,
       'user-target-001',
-      { roleKey: 'admin' },
+      { roleKey: 'admin', reason: 'Approved access change' },
     );
 
     expect(service.assignUserRole).toHaveBeenCalledWith({
       actorSupabaseAuthUid: 'auth-admin-001',
       targetUserId: 'user-target-001',
       roleKey: 'admin',
+      reason: 'Approved access change',
     });
     expect(result.userId).toBe('user-target-001');
   });

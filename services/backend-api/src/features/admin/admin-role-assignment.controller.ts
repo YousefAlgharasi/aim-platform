@@ -13,6 +13,7 @@ import { AdminRoleAssignmentResponse } from './admin-role-assignment.types';
 
 interface AssignUserRoleBody {
   readonly roleKey?: string;
+  readonly reason?: string;
 }
 
 @ApiTags(OPENAPI_TAGS.admin)
@@ -37,6 +38,7 @@ export class AdminRoleAssignmentController {
       actorSupabaseAuthUid: actor.id,
       targetUserId: userId,
       roleKey: body.roleKey ?? '',
+      reason: body.reason,
     });
   }
 }
