@@ -3,5 +3,7 @@ export * from './authenticated-user';
 export * from './authorization';
 export * from './current-user.decorator';
 export * from './public-route.decorator';
+export * from './session-validation.service';
+export * from './session-validation.types';
 export * from './supabase-jwt-auth.guard';
 export * from './supabase-jwt-verifier.service';
