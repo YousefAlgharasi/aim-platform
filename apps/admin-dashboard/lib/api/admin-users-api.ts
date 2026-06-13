@@ -1,4 +1,4 @@
-// Phase 2 — P2-060
+// Phase 2 — P2-060 / P2-062
 // Admin users API client.
 //
 // Scope: Auth, Users, Roles only.
@@ -30,6 +30,36 @@ export type AdminUserListData = {
   readonly limit: number;
 };
 
+export type AdminStudentProfile = {
+  readonly id: string;
+  readonly displayName: string | null;
+  readonly nativeLanguage: string | null;
+  readonly targetLanguage: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+};
+
+export type AdminAdminProfile = {
+  readonly id: string;
+  readonly displayName: string | null;
+  readonly department: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+};
+
+export type AdminUserDetail = {
+  readonly id: string;
+  readonly email: string | null;
+  readonly phone: string | null;
+  readonly userType: AdminUserType;
+  readonly status: AdminUserStatus;
+  readonly roles: string[];
+  readonly studentProfile: AdminStudentProfile | null;
+  readonly adminProfile: AdminAdminProfile | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+};
+
 export async function fetchAdminUsers(
   token: string,
   page: number,
@@ -45,6 +75,65 @@ export async function fetchAdminUsers(
   );
 
   return envelope.data;
+}
+
+export async function fetchAdminUserDetail(
+  token: string,
+  userId: string,
+): Promise<AdminUserDetail> {
+  const envelope = await adminApiClient.get<AdminUserDetail>(
+    `/admin/users/${encodeURIComponent(userId)}`,
+    decodeAdminUserDetail,
+    { headers: { authorization: `Bearer ${token}` } },
+  );
+
+  return envelope.data;
+}
+
+function decodeAdminUserDetail(value: unknown): AdminUserDetail {
+  if (!isObject(value) || typeof value.id !== 'string') {
+    throw new Error('Invalid admin user detail response.');
+  }
+
+  return {
+    id: value.id,
+    email: typeof value.email === 'string' ? value.email : null,
+    phone: typeof value.phone === 'string' ? value.phone : null,
+    userType: isAdminUserType(value.userType) ? value.userType : 'student',
+    status: isAdminUserStatus(value.status) ? value.status : 'active',
+    roles: Array.isArray(value.roles)
+      ? value.roles.filter((r): r is string => typeof r === 'string')
+      : [],
+    studentProfile: isObject(value.studentProfile)
+      ? decodeStudentProfile(value.studentProfile)
+      : null,
+    adminProfile: isObject(value.adminProfile)
+      ? decodeAdminProfile(value.adminProfile)
+      : null,
+    createdAt: typeof value.createdAt === 'string' ? value.createdAt : '',
+    updatedAt: typeof value.updatedAt === 'string' ? value.updatedAt : '',
+  };
+}
+
+function decodeStudentProfile(value: Record<string, unknown>): AdminStudentProfile {
+  return {
+    id: typeof value.id === 'string' ? value.id : '',
+    displayName: typeof value.displayName === 'string' ? value.displayName : null,
+    nativeLanguage: typeof value.nativeLanguage === 'string' ? value.nativeLanguage : null,
+    targetLanguage: typeof value.targetLanguage === 'string' ? value.targetLanguage : null,
+    createdAt: typeof value.createdAt === 'string' ? value.createdAt : '',
+    updatedAt: typeof value.updatedAt === 'string' ? value.updatedAt : '',
+  };
+}
+
+function decodeAdminProfile(value: Record<string, unknown>): AdminAdminProfile {
+  return {
+    id: typeof value.id === 'string' ? value.id : '',
+    displayName: typeof value.displayName === 'string' ? value.displayName : null,
+    department: typeof value.department === 'string' ? value.department : null,
+    createdAt: typeof value.createdAt === 'string' ? value.createdAt : '',
+    updatedAt: typeof value.updatedAt === 'string' ? value.updatedAt : '',
+  };
 }
 
 function decodeAdminUserListData(value: unknown): AdminUserListData {
