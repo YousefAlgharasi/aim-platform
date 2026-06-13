@@ -100,8 +100,8 @@ describe('AdminUsersService.getUserDetail', () => {
     expect(result.roles).toEqual(['admin']);
     expect(result.studentProfile).toBeNull();
     expect(result.adminProfile).toBeNull();
-    expect((result as Record<string, unknown>).supabase_auth_uid).toBeUndefined();
-    expect((result as Record<string, unknown>).supabaseAuthUid).toBeUndefined();
+    expect((result as unknown as Record<string, unknown>).supabase_auth_uid).toBeUndefined();
+    expect((result as unknown as Record<string, unknown>).supabaseAuthUid).toBeUndefined();
   });
 
   it('returns student profile when it exists', async () => {

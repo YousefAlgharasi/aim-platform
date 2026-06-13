@@ -1,9 +1,9 @@
-// Phase 2 — P2-059
-// AdminService unit tests.
-
 import { AdminService } from './admin.service';
+import { DatabaseService } from '../../database/database.service';
 import { UsersService } from '../users/users.service';
 import { UserRecord } from '../users/users.types';
+
+const mockDb = {} as jest.Mocked<DatabaseService>;
 
 const makeUserRecord = (overrides: Partial<UserRecord> = {}): UserRecord => ({
   id: 'user-uuid-1',
@@ -24,12 +24,14 @@ const makeMockUsersService = (
   listAll: jest.fn().mockResolvedValue({ users, total }),
 });
 
+const makeService = (usersService: Pick<UsersService, 'listAll'>): AdminService =>
+  new AdminService(mockDb, usersService as unknown as UsersService);
+
 describe('AdminService', () => {
   describe('listUsers', () => {
     it('returns a paginated user list with supabaseAuthUid stripped', async () => {
       const records = [makeUserRecord()];
-      const usersService = makeMockUsersService(records, 1);
-      const service = new AdminService(usersService as unknown as UsersService);
+      const service = makeService(makeMockUsersService(records, 1));
 
       const result = await service.listUsers(1, 20);
 
@@ -48,35 +50,34 @@ describe('AdminService', () => {
     });
 
     it('calculates offset correctly from page and limit', async () => {
-      const usersService = makeMockUsersService([], 0);
-      const service = new AdminService(usersService as unknown as UsersService);
+      const mock = makeMockUsersService([], 0);
+      const service = makeService(mock);
 
       await service.listUsers(3, 10);
 
-      expect(usersService.listAll).toHaveBeenCalledWith(20, 10);
+      expect(mock.listAll).toHaveBeenCalledWith(20, 10);
     });
 
     it('clamps limit to max 100', async () => {
-      const usersService = makeMockUsersService([], 0);
-      const service = new AdminService(usersService as unknown as UsersService);
+      const mock = makeMockUsersService([], 0);
+      const service = makeService(mock);
 
       await service.listUsers(1, 999);
 
-      expect(usersService.listAll).toHaveBeenCalledWith(0, 100);
+      expect(mock.listAll).toHaveBeenCalledWith(0, 100);
     });
 
     it('clamps page to minimum 1', async () => {
-      const usersService = makeMockUsersService([], 0);
-      const service = new AdminService(usersService as unknown as UsersService);
+      const mock = makeMockUsersService([], 0);
+      const service = makeService(mock);
 
       await service.listUsers(-5, 20);
 
-      expect(usersService.listAll).toHaveBeenCalledWith(0, 20);
+      expect(mock.listAll).toHaveBeenCalledWith(0, 20);
     });
 
     it('returns correct pagination metadata', async () => {
-      const usersService = makeMockUsersService([], 50);
-      const service = new AdminService(usersService as unknown as UsersService);
+      const service = makeService(makeMockUsersService([], 50));
 
       const result = await service.listUsers(2, 10);
 
@@ -86,8 +87,7 @@ describe('AdminService', () => {
     });
 
     it('returns empty users array when no records exist', async () => {
-      const usersService = makeMockUsersService([], 0);
-      const service = new AdminService(usersService as unknown as UsersService);
+      const service = makeService(makeMockUsersService([], 0));
 
       const result = await service.listUsers(1, 20);
 
