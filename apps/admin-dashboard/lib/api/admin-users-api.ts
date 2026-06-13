@@ -1,4 +1,4 @@
-// Phase 2 — P2-060 / P2-062
+// Phase 2 — P2-060 / P2-062 / P2-063
 // Admin users API client.
 //
 // Scope: Auth, Users, Roles only.
@@ -185,4 +185,54 @@ function isAdminUserStatus(value: unknown): value is AdminUserStatus {
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+// ---------------------------------------------------------------------------
+// Role assignment (P2-063)
+// ---------------------------------------------------------------------------
+
+export type AdminRoleChangeResult = {
+  readonly userId: string;
+  readonly assignedRoleKey: string;
+  readonly success: boolean;
+  readonly message: string | null;
+};
+
+/**
+ * PUT /admin/users/:userId/roles
+ *
+ * Calls the backend to assign or change a user's role.
+ * Backend enforces admin/super_admin authorization — this client is UX only.
+ * Token must be the caller's bearer token from the HTTP-only cookie.
+ */
+export async function changeAdminUserRole(
+  token: string,
+  userId: string,
+  roleKey: string,
+  reason?: string,
+): Promise<AdminRoleChangeResult> {
+  const envelope = await adminApiClient.put<AdminRoleChangeResult>(
+    `/admin/users/${encodeURIComponent(userId)}/roles`,
+    decodeRoleChangeResult,
+    {
+      headers: { authorization: `Bearer ${token}` },
+      body: { roleKey, ...(reason ? { reason } : {}) },
+    },
+  );
+
+  return envelope.data;
+}
+
+function decodeRoleChangeResult(value: unknown): AdminRoleChangeResult {
+  if (!isObject(value)) {
+    throw new Error('Invalid role change response.');
+  }
+
+  return {
+    userId: typeof value.userId === 'string' ? value.userId : '',
+    assignedRoleKey:
+      typeof value.assignedRoleKey === 'string' ? value.assignedRoleKey : '',
+    success: value.success === true,
+    message: typeof value.message === 'string' ? value.message : null,
+  };
 }
