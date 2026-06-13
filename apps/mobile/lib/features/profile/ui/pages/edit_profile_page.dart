@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/state/app_async_state.dart';
 import '../../../auth/data/models/auth_context_model.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
+import '../../../auth/logic/provider/auth_flow_provider.dart';
 import '../../data/models/profile_update_payload_models.dart';
 import '../../logic/provider/profile_provider.dart';
 
@@ -35,15 +36,15 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   void initState() {
     super.initState();
     final authCtx = ref.read(authContextProvider);
-    final profile =
-        authCtx is AppAsyncSuccess<AuthContextModel> ? authCtx.data.profile : null;
+    final profile = authCtx is AppAsyncSuccess<AuthContextModel>
+        ? authCtx.data.profile
+        : null;
 
     _displayNameController =
         TextEditingController(text: profile?.displayName ?? '');
     _preferredLanguageController =
         TextEditingController(text: profile?.preferredLanguage ?? '');
-    _timezoneController =
-        TextEditingController(text: profile?.timezone ?? '');
+    _timezoneController = TextEditingController(text: profile?.timezone ?? '');
 
     for (final ctrl in [
       _displayNameController,
@@ -79,9 +80,16 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       timezone: tz.isEmpty ? null : tz,
     );
 
-    // Bearer token must come from the active Supabase Auth session.
-    // When supabase_flutter is integrated, replace '' with the session access token.
-    const bearerToken = '';
+    final bearerToken = ref.read(authFlowProvider).accessToken;
+
+    if (bearerToken == null || bearerToken.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Your session has expired. Please sign in again.'),
+        ),
+      );
+      return;
+    }
 
     final success = await ref
         .read(profileProvider.notifier)
@@ -103,8 +111,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     final isSubmitting = profileState is AppAsyncLoading;
 
     String? submitError;
-    if (profileState is AppAsyncFailure) {
-      submitError = profileState.message;
+    if (profileState case AppAsyncFailure(:final message)) {
+      submitError = message;
     }
 
     return Scaffold(

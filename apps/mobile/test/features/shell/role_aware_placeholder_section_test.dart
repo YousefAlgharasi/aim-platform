@@ -10,10 +10,8 @@ void main() {
     final visibleActions = visibleRoleAwarePlaceholderActions(
       _authContextWithRoles(const [
         ClientSafeRoleModel(
-          id: 'role-student',
           key: 'student',
           name: 'Student',
-          isSystem: true,
         ),
       ]),
     );
@@ -32,10 +30,8 @@ void main() {
     final visibleActions = visibleRoleAwarePlaceholderActions(
       _authContextWithRoles(const [
         ClientSafeRoleModel(
-          id: 'role-super-admin',
           key: 'super_admin',
           name: 'Super Admin',
-          isSystem: true,
         ),
       ]),
     );
@@ -62,12 +58,8 @@ AuthContextModel _authContextWithRoles(List<ClientSafeRoleModel> roles) {
       email: 'learner@example.com',
       userType: 'student',
       status: 'active',
-      createdAt: _timestamp,
-      updatedAt: _timestamp,
     ),
     roles: roles,
     permissions: const [],
   );
 }
-
-const _timestamp = '2026-06-12T00:00:00.000Z';

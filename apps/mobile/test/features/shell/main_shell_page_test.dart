@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:aim_mobile/features/shell/ui/pages/main_shell_page.dart';
 
 void main() {
-  testWidgets('main shell shows all placeholder tabs', (tester) async {
+  testWidgets('main shell shows all primary tabs', (tester) async {
     await tester.pumpWidget(const TestShell(child: MainShellPage()));
 
     expect(find.text('AIM Home'), findsOneWidget);
@@ -29,7 +29,7 @@ void main() {
 
     await tester.tap(find.text('Profile').last);
     await tester.pumpAndSettle();
-    expect(find.text('AIM Profile'), findsOneWidget);
+    expect(find.text('No profile loaded.'), findsOneWidget);
   });
 }
 

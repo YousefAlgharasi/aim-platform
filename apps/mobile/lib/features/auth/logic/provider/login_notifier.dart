@@ -74,7 +74,10 @@ class LoginNotifier extends StateNotifier<AppFormState> {
         return;
       }
 
-      _ref.read(authFlowProvider.notifier).signIn(_email);
+      _ref.read(authFlowProvider.notifier).signIn(
+            _email,
+            accessToken: token,
+          );
 
       // State stays isSubmitting=true after success; the UI will navigate
       // away immediately. No need to reset to avoid a flicker.

@@ -19,14 +19,8 @@ class AuthContextModel {
       profile: rawProfile is Map<String, dynamic>
           ? ClientSafeProfileModel.fromJson(rawProfile)
           : null,
-      roles: (json['roles'] as List<dynamic>? ?? [])
-          .whereType<Map<String, dynamic>>()
-          .map(ClientSafeRoleModel.fromJson)
-          .toList(),
-      permissions: (json['permissions'] as List<dynamic>? ?? [])
-          .whereType<Map<String, dynamic>>()
-          .map(ClientSafePermissionModel.fromJson)
-          .toList(),
+      roles: _parseRoles(json['roles']),
+      permissions: const [],
     );
   }
 
@@ -37,6 +31,26 @@ class AuthContextModel {
 
   bool hasRole(String roleKey) => roles.any((r) => r.key == roleKey);
 
-  bool hasPermission(String permissionKey) =>
-      permissions.any((p) => p.key == permissionKey);
+  bool hasPermission(String _) => false;
+}
+
+List<ClientSafeRoleModel> _parseRoles(Object? rawRoles) {
+  if (rawRoles is! List<dynamic>) {
+    return const [];
+  }
+
+  return rawRoles
+      .map((role) {
+        if (role is String) {
+          return ClientSafeRoleModel.fromKey(role);
+        }
+
+        if (role is Map<String, dynamic>) {
+          return ClientSafeRoleModel.fromJson(role);
+        }
+
+        return null;
+      })
+      .whereType<ClientSafeRoleModel>()
+      .toList();
 }
