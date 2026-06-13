@@ -513,6 +513,92 @@ h1 {
   list-style: none;
 }
 
+/* Role change form (P2-063) */
+.admin-role-change-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.admin-role-change-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-role-change-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-role-change-select,
+.admin-role-change-input {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background: #fff;
+  color: #1a1a1a;
+  width: 100%;
+  max-width: 320px;
+}
+
+.admin-role-change-select:focus,
+.admin-role-change-input:focus {
+  outline: 2px solid #0057d8;
+  border-color: #0057d8;
+}
+
+.admin-role-change-select:disabled,
+.admin-role-change-input:disabled {
+  background: #f4f4f4;
+  color: #888;
+  cursor: not-allowed;
+}
+
+.admin-role-change-submit {
+  align-self: flex-start;
+  padding: 8px 18px;
+  background: #0057d8;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-role-change-submit:hover:not(:disabled) {
+  background: #0046b0;
+}
+
+.admin-role-change-submit:disabled {
+  background: #aac4f0;
+  cursor: not-allowed;
+}
+
+.admin-role-change-success {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.admin-role-change-current {
+  margin: 0 0 4px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 @media (max-width: 760px) {
   .admin-detail-grid {
     grid-template-columns: 1fr;
