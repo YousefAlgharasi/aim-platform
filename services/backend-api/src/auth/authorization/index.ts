@@ -2,6 +2,8 @@ export * from './authorization.module';
 export * from './authorized-role';
 export * from './authorized-role.resolver';
 export * from './permission.guard';
+export * from './profile-ownership.guard';
+export * from './require-profile-ownership.decorator';
 export * from './required-permissions.decorator';
 export * from './required-roles.decorator';
 export * from './require-student-ownership.decorator';
