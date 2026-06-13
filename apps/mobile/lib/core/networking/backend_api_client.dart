@@ -37,10 +37,7 @@ class BackendApiClient {
       headers: _jsonHeaders(headers),
     );
 
-    return _parseResponse<T>(
-      response,
-      decodeData: decodeData,
-    );
+    return _parseResponse<T>(response, decodeData: decodeData);
   }
 
   Future<ApiResponseEnvelope<T>> post<T>(
@@ -55,10 +52,22 @@ class BackendApiClient {
       body: body == null ? null : jsonEncode(body),
     );
 
-    return _parseResponse<T>(
-      response,
-      decodeData: decodeData,
+    return _parseResponse<T>(response, decodeData: decodeData);
+  }
+
+  Future<ApiResponseEnvelope<T>> patch<T>(
+    String path, {
+    required ApiJsonDecoder<T> decodeData,
+    Object? body,
+    Map<String, String>? headers,
+  }) async {
+    final response = await _httpClient.patch(
+      buildUri(path),
+      headers: _jsonHeaders(headers),
+      body: body == null ? null : jsonEncode(body),
     );
+
+    return _parseResponse<T>(response, decodeData: decodeData);
   }
 
   Future<ApiResponseEnvelope<T>> _parseResponse<T>(
@@ -110,14 +119,8 @@ class BackendApiClient {
         ? requestPath.substring(1)
         : requestPath;
 
-    if (cleanBase.isEmpty) {
-      return '/$cleanRequest';
-    }
-
-    if (cleanRequest.isEmpty) {
-      return cleanBase;
-    }
-
+    if (cleanBase.isEmpty) return '/$cleanRequest';
+    if (cleanRequest.isEmpty) return cleanBase;
     return '$cleanBase/$cleanRequest';
   }
 }
