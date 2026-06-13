@@ -21,6 +21,7 @@ import {
   UpsertUserInput,
   UserRecord,
   UserRow,
+  UsersPage,
 } from './users.types';
 
 @Injectable()
@@ -191,6 +192,30 @@ export class UsersService {
         statusCode: HttpStatus.FORBIDDEN,
       });
     }
+  }
+
+  /**
+   * List all users with offset-based pagination.
+   * Returns safe UserRecord objects — supabaseAuthUid is present on the
+   * domain record but callers (e.g. AdminService) must strip it before
+   * including it in any client-facing response.
+   */
+  async listAll(offset: number, limit: number): Promise<UsersPage> {
+    const [dataResult, countResult] = await Promise.all([
+      this.db.query<UserRow>(
+        `SELECT id, supabase_auth_uid, email, phone, user_type, status, created_at, updated_at
+         FROM users
+         ORDER BY created_at DESC
+         LIMIT $1 OFFSET $2`,
+        [limit, offset],
+      ),
+      this.db.query<{ count: string }>(`SELECT COUNT(*) AS count FROM users`),
+    ]);
+
+    return {
+      users: dataResult.rows.map((row) => this.toUserRecord(row)),
+      total: parseInt(countResult.rows[0]?.count ?? '0', 10),
+    };
   }
 
   // ---------------------------------------------------------------------------

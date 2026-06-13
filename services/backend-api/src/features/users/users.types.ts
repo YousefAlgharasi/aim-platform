@@ -47,3 +47,9 @@ export interface UpdateUserInput {
   readonly email?: string | null;
   readonly phone?: string | null;
 }
+
+// Paginated user result returned by UsersService.listAll.
+export interface UsersPage {
+  readonly users: UserRecord[];
+  readonly total: number;
+}
