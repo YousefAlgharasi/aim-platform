@@ -1,12 +1,12 @@
-// Phase 2 — P2-059
+// Phase 2 — P2-059 / P2-061
 // Admin service.
 //
 // Scope: Auth, Users, Roles only.
 //
 // Responsibility:
 //   Orchestrate admin-only operations. All data access goes through
-//   domain services (UsersService). The admin service is the orchestration
-//   layer — it does not own raw database access.
+//   domain services (UsersService, RolesService). The admin service is the
+//   orchestration layer — it does not own raw database access.
 //
 // Security rules:
 //   - supabase_auth_uid is stripped from all client-facing responses.
@@ -14,9 +14,15 @@
 //   - Backend is the final authority for authorization.
 
 import { Injectable } from '@nestjs/common';
+import { RolesService } from '../roles/roles.service';
 import { UsersService } from '../users/users.service';
 import { UserRecord } from '../users/users.types';
-import { AdminUserListItem, AdminUserListResponse } from './admin.types';
+import {
+  AdminUserDetailResponse,
+  AdminUserListItem,
+  AdminUserListResponse,
+  AdminUserRoleItem,
+} from './admin.types';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
@@ -24,7 +30,10 @@ const MAX_LIMIT = 100;
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly rolesService: RolesService,
+  ) {}
 
   async listUsers(page: number, limit: number): Promise<AdminUserListResponse> {
     const safePage = Math.max(page, DEFAULT_PAGE);
@@ -40,6 +49,28 @@ export class AdminService {
       limit: safeLimit,
     };
   }
+
+  /**
+   * Return safe detail for a single user by their internal AIM user ID.
+   *
+   * Callers must have already passed RoleGuard (admin/super_admin).
+   * supabase_auth_uid and raw permission codes are not included in the response.
+   */
+  async getUserDetail(internalUserId: string): Promise<AdminUserDetailResponse> {
+    const user = await this.usersService.getById(internalUserId);
+    const roles = await this.rolesService.getUserRoles(internalUserId);
+
+    return {
+      id: user.id,
+      email: user.email,
+      phone: user.phone,
+      userType: user.userType,
+      status: user.status,
+      roles: roles.map(toAdminUserRoleItem),
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+  }
 }
 
 function toAdminUserListItem(user: UserRecord): AdminUserListItem {
@@ -51,5 +82,12 @@ function toAdminUserListItem(user: UserRecord): AdminUserListItem {
     status: user.status,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+  };
+}
+
+function toAdminUserRoleItem(role: { key: string; name: string }): AdminUserRoleItem {
+  return {
+    key: role.key,
+    name: role.name,
   };
 }
