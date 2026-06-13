@@ -45,7 +45,7 @@ Phase 2 established the auth/users/roles foundation across the active system sur
 | Audit logging | Pass | Role changes and auth events are logged without tokens, secrets, or credentials. |
 | Safe field exposure | Pass with findings | No secrets or `supabase_auth_uid` are exposed; some Flutter/admin-safe field minimization items remain. |
 | RLS plan | Pass | Policy plan keeps sensitive auth/profile/role/audit tables controlled. |
-| Permission guard | Resolved | Guard resolves the active internal user before checking database-backed permissions. |
+| Permission guard | Blocker | Current implementation passes Supabase UID to a service that expects internal user ID. |
 
 No service-role key, JWT secret, database credential, AI provider key, raw token, or privileged backend configuration is intentionally exposed to Flutter Mobile or the Admin Dashboard.
 
