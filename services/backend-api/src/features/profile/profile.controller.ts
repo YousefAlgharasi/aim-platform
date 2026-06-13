@@ -1,4 +1,4 @@
-// Phase 2 — P2-032
+// Phase 2 — P2-032 / P2-033
 // Profile controller.
 //
 // Scope: Auth, Users, Roles only.
@@ -9,6 +9,9 @@
 //
 // Security rules:
 //   - All endpoints require a valid Supabase JWT (SupabaseJwtAuthGuard).
+//   - ProfileOwnershipGuard explicitly enforces ownership after JWT verification:
+//       * Resolves internal user from Supabase UID and verifies active status.
+//       * Rejects any body field that attempts to override the JWT-sourced identity.
 //   - internalUserId is resolved from the verified JWT via @CurrentUser(); clients cannot supply it.
 //   - Ownership is enforced by always using the JWT-sourced user ID — no client-supplied user IDs.
 //   - Backend is the final authority for identity, roles, permissions, and ownership.
@@ -34,6 +37,8 @@ import {
 import { AuthenticatedUser } from '../../auth/authenticated-user';
 import { CurrentUser } from '../../auth/current-user.decorator';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
+import { ProfileOwnershipGuard } from '../../auth/authorization/profile-ownership.guard';
+import { RequireProfileOwnership } from '../../auth/authorization/require-profile-ownership.decorator';
 import { OPENAPI_TAGS } from '../../openapi/openapi.tags';
 import { ProfileMeResponse, UpdateProfileMeInput } from './profile.types';
 import { ProfileService } from './profile.service';
@@ -49,10 +54,15 @@ export class ProfileController {
    * Returns the authenticated user's own safe profile data.
    *
    * Identity is always sourced from the verified Supabase JWT.
-   * Clients cannot supply a user ID — ownership is implicit.
+   * ProfileOwnershipGuard explicitly enforces:
+   *   - The requesting user has an active internal AIM account.
+   *   - No body field overrides the JWT-sourced identity.
+   * Clients cannot supply a user ID — ownership is enforced at both the
+   * guard and service layer.
    */
   @Get('me')
-  @UseGuards(SupabaseJwtAuthGuard)
+  @UseGuards(SupabaseJwtAuthGuard, ProfileOwnershipGuard)
+  @RequireProfileOwnership()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Return the authenticated user\'s own safe profile.' })
   @ApiOkResponse({ description: 'Safe profile data for the authenticated user.' })
@@ -69,10 +79,13 @@ export class ProfileController {
    *
    * Only safe fields defined in docs/phase-2/safe-auth-fields.md may be changed.
    * user_id, profile_type, roles, and permissions cannot be set through this endpoint.
-   * Identity is always sourced from the verified JWT — ownership is implicit.
+   * ProfileOwnershipGuard enforces active account status and rejects any body
+   * field attempting to override the JWT-sourced identity.
+   * Identity is always sourced from the verified JWT — ownership is enforced.
    */
   @Patch('me')
-  @UseGuards(SupabaseJwtAuthGuard)
+  @UseGuards(SupabaseJwtAuthGuard, ProfileOwnershipGuard)
+  @RequireProfileOwnership()
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update the authenticated user\'s own safe profile fields.' })
