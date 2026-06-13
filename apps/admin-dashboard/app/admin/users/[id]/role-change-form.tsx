@@ -55,11 +55,11 @@ export function RoleChangeForm({ token, userId, currentRoles, userType }: Props)
 
     startTransition(async () => {
       try {
-        await changeAdminUserRole(token, userId, selectedRole, reason.trim() || undefined);
+        const result = await changeAdminUserRole(token, userId, selectedRole, reason.trim() || undefined);
 
         setFormState({
           type: 'success',
-          message: `Role changed to "${selectedRole}" successfully. Reload the page to see the updated role.`,
+          message: `Role changed to "${result.role.key}" successfully. Reload the page to see the updated role.`,
         });
 
         setSelectedRole('');

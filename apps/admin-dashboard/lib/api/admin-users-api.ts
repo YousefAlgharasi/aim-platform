@@ -188,14 +188,24 @@ function isObject(value: unknown): value is Record<string, unknown> {
 }
 
 // ---------------------------------------------------------------------------
-// Role assignment (P2-063)
+// Role assignment (P2-063 / P2-064)
 // ---------------------------------------------------------------------------
 
+// Safe role summary returned inside the role-assignment response.
+export type AdminRoleAssignedRole = {
+  readonly id: string;
+  readonly key: string;
+  readonly name: string;
+};
+
+// Matches the backend AdminRoleAssignmentResponse envelope data.
+// Backend shape: { userId, role: RoleRecord, assignedByUserId, assignedAt }
+// The outer success/data/meta envelope is handled by adminApiClient.
 export type AdminRoleChangeResult = {
   readonly userId: string;
-  readonly assignedRoleKey: string;
-  readonly success: boolean;
-  readonly message: string | null;
+  readonly role: AdminRoleAssignedRole;
+  readonly assignedByUserId: string;
+  readonly assignedAt: string;
 };
 
 /**
@@ -204,6 +214,8 @@ export type AdminRoleChangeResult = {
  * Calls the backend to assign or change a user's role.
  * Backend enforces admin/super_admin authorization — this client is UX only.
  * Token must be the caller's bearer token from the HTTP-only cookie.
+ *
+ * The backend audit-logs every role change via AuthLoggingService (P2-040).
  */
 export async function changeAdminUserRole(
   token: string,
@@ -224,15 +236,22 @@ export async function changeAdminUserRole(
 }
 
 function decodeRoleChangeResult(value: unknown): AdminRoleChangeResult {
-  if (!isObject(value)) {
+  if (!isObject(value) || typeof value.userId !== 'string') {
     throw new Error('Invalid role change response.');
   }
 
+  const role = isObject(value.role) ? value.role : {};
+
   return {
-    userId: typeof value.userId === 'string' ? value.userId : '',
-    assignedRoleKey:
-      typeof value.assignedRoleKey === 'string' ? value.assignedRoleKey : '',
-    success: value.success === true,
-    message: typeof value.message === 'string' ? value.message : null,
+    userId: value.userId,
+    role: {
+      id: typeof role.id === 'string' ? role.id : '',
+      key: typeof role.key === 'string' ? role.key : '',
+      name: typeof role.name === 'string' ? role.name : '',
+    },
+    assignedByUserId:
+      typeof value.assignedByUserId === 'string' ? value.assignedByUserId : '',
+    assignedAt:
+      typeof value.assignedAt === 'string' ? value.assignedAt : '',
   };
 }
