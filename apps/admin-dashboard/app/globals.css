@@ -290,3 +290,146 @@ h1 {
     padding: 28px;
   }
 }
+
+/* Admin Users List — P2-060 */
+
+.admin-users-page {
+  max-width: 1040px;
+}
+
+.admin-page-header {
+  margin-bottom: 24px;
+}
+
+.admin-page-meta {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.admin-boundary-note {
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  background: var(--accent-soft);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.admin-error-banner {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.875rem;
+}
+
+.admin-empty-state {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.admin-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-table thead tr {
+  background: #f1f5f9;
+}
+
+.admin-table th {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table tbody tr:hover td {
+  background: var(--accent-soft);
+}
+
+.admin-table-id {
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.admin-table-date {
+  white-space: nowrap;
+  color: var(--muted);
+}
+
+.admin-null {
+  color: var(--muted);
+}
+
+.admin-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: lowercase;
+}
+
+.admin-badge--status-active   { background: #dcfce7; color: #166534; }
+.admin-badge--status-pending  { background: #fef9c3; color: #854d0e; }
+.admin-badge--status-disabled { background: #f1f5f9; color: #475569; }
+.admin-badge--status-deleted  { background: #fee2e2; color: #991b1b; }
+
+.admin-badge--type-admin      { background: #ede9fe; color: #5b21b6; }
+.admin-badge--type-super_admin { background: #fce7f3; color: #9d174d; }
+.admin-badge--type-student    { background: #dbeafe; color: #1e40af; }
+.admin-badge--type-reviewer   { background: #d1fae5; color: #065f46; }
+.admin-badge--type-support    { background: #ffedd5; color: #9a3412; }
+.admin-badge--type-system     { background: #f1f5f9; color: #334155; }
+
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+  font-size: 0.9rem;
+}
+
+.admin-pagination-link {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--accent);
+  font-weight: 600;
+  transition: background 0.15s;
+}
+
+.admin-pagination-link:hover {
+  background: var(--accent-soft);
+}
+
+.admin-pagination-info {
+  color: var(--muted);
+}
