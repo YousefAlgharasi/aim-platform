@@ -26,7 +26,9 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    container.read(authFlowProvider.notifier).signIn('learner@example.com');
+    container
+        .read(authFlowProvider.notifier)
+        .signIn('learner@example.com', accessToken: 'token-1');
 
     final didLoadContext = await container
         .read(authContextProvider.notifier)

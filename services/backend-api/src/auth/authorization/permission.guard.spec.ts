@@ -1,6 +1,8 @@
 import { ExecutionContext, HttpStatus } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { RolesService } from '../../features/roles';
+import { UsersService } from '../../features/users';
+import { UserRecord, UserStatus } from '../../features/users/users.types';
 import { ApiErrorCode } from '../../common/errors/api-error-code';
 import { AuthenticatedRequest, AuthenticatedUser } from '../authenticated-user';
 import { REQUIRED_PERMISSIONS_KEY } from './authorization.constants';
@@ -16,6 +18,7 @@ describe('PermissionGuard', () => {
 
   let reflector: jest.Mocked<Reflector>;
   let rolesService: jest.Mocked<Pick<RolesService, 'hasPermission'>>;
+  let usersService: jest.Mocked<Pick<UsersService, 'findBySupabaseUid'>>;
   let guard: PermissionGuard;
 
   beforeEach(() => {
@@ -25,7 +28,14 @@ describe('PermissionGuard', () => {
     rolesService = {
       hasPermission: jest.fn(),
     };
-    guard = new PermissionGuard(reflector, rolesService as unknown as RolesService);
+    usersService = {
+      findBySupabaseUid: jest.fn().mockResolvedValue(createUserRecord()),
+    };
+    guard = new PermissionGuard(
+      reflector,
+      rolesService as unknown as RolesService,
+      usersService as unknown as UsersService,
+    );
   });
 
   it('allows requests when no permission metadata is declared', async () => {
@@ -36,7 +46,7 @@ describe('PermissionGuard', () => {
     expect(rolesService.hasPermission).not.toHaveBeenCalled();
   });
 
-  it('checks each unique required permission against the authenticated user', async () => {
+  it('checks each unique required permission against the internal active user', async () => {
     reflector.getAllAndOverride.mockReturnValue([
       'profiles.read.own',
       'profiles.read.own',
@@ -46,15 +56,37 @@ describe('PermissionGuard', () => {
 
     await expect(guard.canActivate(createHttpContext({ user }))).resolves.toBe(true);
 
+    expect(usersService.findBySupabaseUid).toHaveBeenCalledWith('user-001');
     expect(rolesService.hasPermission).toHaveBeenCalledTimes(2);
-    expect(rolesService.hasPermission).toHaveBeenCalledWith('user-001', 'profiles.read.own');
-    expect(rolesService.hasPermission).toHaveBeenCalledWith('user-001', 'users.read');
+    expect(rolesService.hasPermission).toHaveBeenCalledWith('internal-user-001', 'profiles.read.own');
+    expect(rolesService.hasPermission).toHaveBeenCalledWith('internal-user-001', 'users.read');
   });
 
   it('rejects requests without an authenticated user', async () => {
     reflector.getAllAndOverride.mockReturnValue(['users.read']);
 
     await expect(guard.canActivate(createHttpContext({}))).rejects.toMatchObject({
+      code: ApiErrorCode.UNAUTHORIZED,
+      statusCode: HttpStatus.UNAUTHORIZED,
+    });
+
+    expect(rolesService.hasPermission).not.toHaveBeenCalled();
+  });
+
+  it('rejects requests when the internal user is missing or inactive', async () => {
+    reflector.getAllAndOverride.mockReturnValue(['users.read']);
+    usersService.findBySupabaseUid.mockResolvedValueOnce(null);
+
+    await expect(guard.canActivate(createHttpContext({ user }))).rejects.toMatchObject({
+      code: ApiErrorCode.UNAUTHORIZED,
+      statusCode: HttpStatus.UNAUTHORIZED,
+    });
+
+    usersService.findBySupabaseUid.mockResolvedValueOnce(
+      createUserRecord({ status: 'disabled' }),
+    );
+
+    await expect(guard.canActivate(createHttpContext({ user }))).rejects.toMatchObject({
       code: ApiErrorCode.UNAUTHORIZED,
       statusCode: HttpStatus.UNAUTHORIZED,
     });
@@ -96,4 +128,17 @@ function createHttpContext(request: AuthenticatedRequest): ExecutionContext {
       getRequest: () => request,
     }),
   } as unknown as ExecutionContext;
+}
+
+function createUserRecord(overrides: { status?: UserStatus } = {}): UserRecord {
+  return {
+    id: 'internal-user-001',
+    supabaseAuthUid: 'user-001',
+    email: 'student@example.com',
+    phone: null,
+    userType: 'student',
+    status: overrides.status ?? 'active',
+    createdAt: '2026-06-12T00:00:00.000Z',
+    updatedAt: '2026-06-12T00:00:00.000Z',
+  };
 }

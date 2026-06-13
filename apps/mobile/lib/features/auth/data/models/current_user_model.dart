@@ -5,8 +5,6 @@ class CurrentUserModel {
     this.phone,
     required this.userType,
     required this.status,
-    required this.createdAt,
-    required this.updatedAt,
   });
 
   factory CurrentUserModel.fromJson(Map<String, dynamic> json) {
@@ -16,8 +14,6 @@ class CurrentUserModel {
       phone: json['phone'] as String?,
       userType: json['userType'] as String,
       status: json['status'] as String,
-      createdAt: json['createdAt'] as String,
-      updatedAt: json['updatedAt'] as String,
     );
   }
 
@@ -26,8 +22,6 @@ class CurrentUserModel {
   final String? phone;
   final String userType;
   final String status;
-  final String createdAt;
-  final String updatedAt;
 
   bool get isActive => status == 'active';
 }

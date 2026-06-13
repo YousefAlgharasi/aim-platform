@@ -106,7 +106,10 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
         return;
       }
 
-      _ref.read(authFlowProvider.notifier).signIn(_email);
+      _ref.read(authFlowProvider.notifier).signIn(
+            _email,
+            accessToken: result.accessToken!,
+          );
       _outcome = RegisterOutcome.signedIn;
       // isSubmitting stays true — UI navigates away immediately.
     } on AppException catch (e) {
