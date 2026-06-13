@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/routing/app_route_paths.dart';
+import 'edit_profile_page.dart';
 import '../../../../core/state/app_async_state.dart';
 import '../../../auth/data/models/auth_context_model.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
@@ -34,7 +35,11 @@ class ProfilePage extends ConsumerWidget {
               icon: const Icon(Icons.edit_outlined),
               tooltip: 'Edit profile',
               onPressed: () {
-                // Edit profile — P2-055
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const EditProfilePage(),
+                  ),
+                );
               },
             ),
         ],
