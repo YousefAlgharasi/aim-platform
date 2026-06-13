@@ -9,8 +9,8 @@ class AuthFlowNotifier extends StateNotifier<AuthFlowState> {
     state = const AuthFlowState.signedOut();
   }
 
-  void signIn(String email) {
-    state = AuthFlowState.signedIn(email: email);
+  void signIn(String email, {required String accessToken}) {
+    state = AuthFlowState.signedIn(email: email, accessToken: accessToken);
   }
 
   void signOut() {
@@ -18,7 +18,7 @@ class AuthFlowNotifier extends StateNotifier<AuthFlowState> {
   }
 
   @Deprecated('Use signIn instead')
-  void signInPlaceholder(String email) => signIn(email);
+  void signInPlaceholder(String email) => signIn(email, accessToken: '');
 
   @Deprecated('Use signOut instead')
   void signOutPlaceholder() => signOut();

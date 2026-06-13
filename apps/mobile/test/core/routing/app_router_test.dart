@@ -31,7 +31,10 @@ void main() {
   test('routes signed-in profile-ready users away from auth pages', () {
     final resolvedRoute = AppRouter.resolveRouteName(
       AppRoutePaths.signIn,
-      authState: const AuthFlowState.signedIn(email: 'learner@example.com'),
+      authState: const AuthFlowState.signedIn(
+        email: 'learner@example.com',
+        accessToken: 'token-1',
+      ),
       authContextState: const AppAsyncState<AuthContextModel>.success(
         _authContext,
       ),
@@ -68,8 +71,6 @@ const _authContext = AuthContextModel(
     email: 'learner@example.com',
     userType: 'student',
     status: 'active',
-    createdAt: _timestamp,
-    updatedAt: _timestamp,
   ),
   profile: ClientSafeProfileModel(
     id: 'profile-1',

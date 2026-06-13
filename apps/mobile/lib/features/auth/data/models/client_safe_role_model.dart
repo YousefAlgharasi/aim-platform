@@ -1,25 +1,31 @@
 class ClientSafeRoleModel {
   const ClientSafeRoleModel({
-    required this.id,
     required this.key,
     required this.name,
-    this.description,
-    required this.isSystem,
   });
 
   factory ClientSafeRoleModel.fromJson(Map<String, dynamic> json) {
     return ClientSafeRoleModel(
-      id: json['id'] as String,
       key: json['key'] as String,
       name: json['name'] as String,
-      description: json['description'] as String?,
-      isSystem: json['isSystem'] as bool? ?? false,
     );
   }
 
-  final String id;
   final String key;
   final String name;
-  final String? description;
-  final bool isSystem;
+
+  factory ClientSafeRoleModel.fromKey(String key) {
+    return ClientSafeRoleModel(
+      key: key,
+      name: _labelFromKey(key),
+    );
+  }
+}
+
+String _labelFromKey(String key) {
+  return key
+      .split('_')
+      .where((part) => part.isNotEmpty)
+      .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
+      .join(' ');
 }

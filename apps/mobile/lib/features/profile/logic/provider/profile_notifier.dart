@@ -1,8 +1,7 @@
-import '../../../core/state/app_async_state.dart';
-import '../../../core/state/app_state_notifier.dart';
-import '../data/models/profile_me_response_model.dart';
-import '../data/models/profile_update_payload_models.dart';
-import 'repository/profile_repository.dart';
+import '../../../../core/state/app_state_notifier.dart';
+import '../../data/models/profile_me_response_model.dart';
+import '../../data/models/profile_update_payload_models.dart';
+import '../repository/profile_repository.dart';
 
 class ProfileNotifier extends AppStateNotifier<ProfileMeResponseModel> {
   ProfileNotifier({required ProfileRepository repository})
