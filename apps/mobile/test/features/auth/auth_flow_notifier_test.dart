@@ -15,9 +15,11 @@ void main() {
     notifier.signInPlaceholder('learner@example.com');
     expect(notifier.state.status, AuthFlowStatus.signedIn);
     expect(notifier.state.email, 'learner@example.com');
+    expect(notifier.state.accessToken, '');
 
     notifier.signOutPlaceholder();
     expect(notifier.state.status, AuthFlowStatus.signedOut);
     expect(notifier.state.email, isNull);
+    expect(notifier.state.accessToken, isNull);
   });
 }

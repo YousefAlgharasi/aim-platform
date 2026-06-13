@@ -51,13 +51,13 @@ No service-role key, JWT secret, database credential, AI provider key, raw token
 
 ## Production Blockers
 
-These items must be fixed before affected Phase 2 flows are treated as production-ready.
+These items were identified by the Phase 2 reviews and resolved during closeout follow-up.
 
-| ID | Blocker | Source | Required action |
+| ID | Blocker | Source | Resolution |
 |---|---|---|---|
-| B1 | `PermissionGuard` passes Supabase Auth UID into `RolesService.hasPermission()`, which expects internal AIM `users.id`. Permission-guarded endpoints deny valid users. | P2-066, P2-067, P2-069, P2-070 | Resolve internal user through `UsersService.findBySupabaseUid()`, verify active status, then pass `internalUser.id` to `hasPermission()`. Add tests for internal-ID resolution and inactive user denial. |
-| B2 | Flutter `EditProfilePage` still uses an empty bearer token placeholder for profile updates. | P2-066, P2-069, P2-070 | Replace placeholder with the active Supabase session access token through the Flutter auth/session integration. |
-| B3 | Flutter auth models expose more role/permission/account metadata than the safe-field policy allows. | P2-068 | Minimize Flutter-safe user, role, and permission models. Keep authorization details backend-authoritative and client UX-only. |
+| B1 | `PermissionGuard` passed Supabase Auth UID into `RolesService.hasPermission()`, which expects internal AIM `users.id`. | P2-066, P2-067, P2-069, P2-070 | Fixed: guard now resolves the internal active user through `UsersService.findBySupabaseUid()` and passes `internalUser.id` to `hasPermission()`. Tests cover internal-ID resolution and missing/inactive internal user denial. |
+| B2 | Flutter `EditProfilePage` used an empty bearer token placeholder for profile updates. | P2-066, P2-069, P2-070 | Fixed: auth flow state now carries the Supabase access token from login/register, and edit profile uses the active token or reports an expired session. |
+| B3 | Flutter auth models exposed more role/permission/account metadata than the safe-field policy allows. | P2-068 | Fixed: current-user auth model no longer carries account timestamps; Flutter role model is reduced to `key` and `name`; permission details are not retained for client authorization decisions. |
 
 ## Deferred Non-Blocking Items
 
@@ -88,7 +88,7 @@ The integrated auth/users/roles system is structurally sound:
 | Flutter registration/login to backend auth context | Ready with backend validation; production depends on Supabase session integration details |
 | `/auth/me` current user resolution | Ready with stale-role caveat |
 | `/profile/me` read | Ready |
-| `/profile/me` update | Blocked by Flutter empty-token placeholder until active token wiring is completed |
+| `/profile/me` update | Ready for token-backed app sessions; edit profile now uses the active auth-flow access token |
 | Flutter logout | Ready as local cleanup plus backend logout call |
 | Admin auth guard | Ready |
 | Admin users list/detail | Ready as foundation |
@@ -101,8 +101,8 @@ Phase 2 can be closed as a foundation and review phase, but Phase 3 should begin
 Decision:
 
 ```text
-Conditionally ready for Phase 3 planning.
-Not ready for production use of permission-guarded endpoints or Flutter profile editing until B1 and B2 are fixed.
+Ready for Phase 3 planning.
+Resolved closeout blockers should be verified again in CI before merge.
 ```
 
 Phase 3 work may proceed only if it preserves these rules:
@@ -117,15 +117,15 @@ Phase 3 work may proceed only if it preserves these rules:
 
 | Priority | Action |
 |---|---|
-| P0 | Fix `PermissionGuard` internal-user resolution and rerun backend auth/role/permission tests. |
-| P0 | Wire Flutter profile update to the active Supabase access token and rerun mobile profile tests. |
-| P1 | Reduce Flutter-safe auth/role/permission models to the minimum fields allowed by `safe-auth-fields.md`. |
+| P0 | Keep backend permission guard tests in CI and verify permission-guarded endpoints before production rollout. |
+| P0 | Validate Flutter profile editing against a real Supabase session in device/emulator QA. |
+| P1 | Keep Flutter auth/role/permission models aligned with `safe-auth-fields.md` as APIs evolve. |
 | P1 | Align role enums and admin role types with the permission matrix. |
 | P1 | Re-run the Phase 2 auth security review after P0 fixes. |
 | P2 | Improve admin users navigation and narrow role-change response shape. |
 
 ## Final Handoff Notes
 
-Phase 2 delivered the intended Auth, Users, and Roles foundation and preserved the system boundaries inherited from Phase 1. The remaining issues are concrete and bounded. The most important handoff point is that the permission system must be corrected before any later feature depends on `PermissionGuard` for production authorization.
+Phase 2 delivered the intended Auth, Users, and Roles foundation and preserved the system boundaries inherited from Phase 1. The closeout blockers identified by the review pass have been addressed locally and should be verified in CI before merge.
 
 Phase 3 should treat this document as the closeout source for Phase 2 and should link follow-up work back to the blocker IDs in this handoff.

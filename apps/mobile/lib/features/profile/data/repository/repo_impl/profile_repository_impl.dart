@@ -1,9 +1,9 @@
-import '../../../../core/errors/app_exception.dart';
-import '../../../../core/networking/api_client_exception.dart';
-import '../../data/datasources/profile_remote_datasource.dart';
-import '../../data/models/profile_me_response_model.dart';
-import '../../data/models/profile_update_payload_models.dart';
-import '../../logic/repository/profile_repository.dart';
+import '../../../../../core/errors/app_exception.dart';
+import '../../../../../core/networking/api_client_exception.dart';
+import '../../datasources/profile_remote_datasource.dart';
+import '../../models/profile_me_response_model.dart';
+import '../../models/profile_update_payload_models.dart';
+import '../../../logic/repository/profile_repository.dart';
 
 class ProfileRepositoryImpl implements ProfileRepository {
   const ProfileRepositoryImpl({required ProfileRemoteDatasource datasource})
