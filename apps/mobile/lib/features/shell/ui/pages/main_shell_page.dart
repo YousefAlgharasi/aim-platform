@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../home/ui/pages/home_placeholder_page.dart';
 import '../../../lessons/ui/pages/learn_placeholder_page.dart';
-import '../../../profile/ui/pages/profile_placeholder_page.dart';
+import '../../../profile/ui/pages/profile_page.dart';
 import '../../../progress/ui/pages/progress_placeholder_page.dart';
 import '../../../reviews/ui/pages/review_placeholder_page.dart';
 
@@ -21,7 +21,7 @@ class _MainShellPageState extends State<MainShellPage> {
     LearnPlaceholderPage(),
     ReviewPlaceholderPage(),
     ProgressPlaceholderPage(),
-    ProfilePlaceholderPage(),
+    ProfilePage(),
   ];
 
   void _selectTab(int index) {
