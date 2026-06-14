@@ -67,8 +67,16 @@ export class AdminApiClient {
     return this.request<T>('PUT', path, decodeData, options);
   }
 
+  async patch<T>(
+    path: string,
+    decodeData: ApiJsonDecoder<T>,
+    options: AdminApiBodyRequestOptions = {},
+  ): Promise<ApiSuccessEnvelope<T>> {
+    return this.request<T>('PATCH', path, decodeData, options);
+  }
+
   private async request<T>(
-    method: 'GET' | 'POST' | 'PUT',
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH',
     path: string,
     decodeData: ApiJsonDecoder<T>,
     options: AdminApiBodyRequestOptions,
@@ -77,7 +85,7 @@ export class AdminApiClient {
       method,
       headers: this.buildHeaders(options.headers),
       body:
-        (method === 'POST' || method === 'PUT') && options.body !== undefined
+        (method === 'POST' || method === 'PUT' || method === 'PATCH') && options.body !== undefined
           ? JSON.stringify(options.body)
           : undefined,
       cache: 'no-store',
