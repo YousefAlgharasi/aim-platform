@@ -35,7 +35,7 @@ export class LessonAssetsController {
   constructor(private readonly lessonAssetsService: LessonAssetsService) {}
 
   @Get()
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({ summary: 'List lesson assets. Requires curriculum.read permission.' })
   @ApiQuery({ name: 'lessonId', required: false, type: String })
   @ApiQuery({ name: 'page', required: false, type: Number })
@@ -61,7 +61,7 @@ export class LessonAssetsController {
   }
 
   @Get(':id')
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({ summary: 'Get lesson asset by ID. Requires curriculum.read permission.' })
   @ApiOkResponse({ description: 'Lesson asset detail.' })
   @ApiNotFoundResponse({ description: 'Asset not found.' })
@@ -70,7 +70,7 @@ export class LessonAssetsController {
   }
 
   @Post()
-  @RequirePermissions(CurriculumPermission.WRITE)
+  @RequirePermissions(CurriculumPermission.CONTENT_UPDATE)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create lesson asset. Requires curriculum.write permission.' })
   @ApiCreatedResponse({ description: 'Asset created in draft status.' })
@@ -79,7 +79,7 @@ export class LessonAssetsController {
   }
 
   @Patch(':id')
-  @RequirePermissions(CurriculumPermission.WRITE)
+  @RequirePermissions(CurriculumPermission.CONTENT_UPDATE)
   @ApiOperation({ summary: 'Update lesson asset. Requires curriculum.write permission.' })
   @ApiOkResponse({ description: 'Asset updated.' })
   @ApiNotFoundResponse({ description: 'Asset not found.' })
@@ -91,7 +91,7 @@ export class LessonAssetsController {
   }
 
   @Post(':id/archive')
-  @RequirePermissions(CurriculumPermission.ARCHIVE)
+  @RequirePermissions(CurriculumPermission.CONTENT_ARCHIVE)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Archive lesson asset. Requires curriculum.archive permission.' })
   @ApiOkResponse({ description: 'Asset archived.' })

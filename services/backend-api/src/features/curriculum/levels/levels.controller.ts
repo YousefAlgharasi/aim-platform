@@ -35,7 +35,7 @@ export class LevelsController {
   constructor(private readonly levelsService: LevelsService) {}
 
   @Get()
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({ summary: 'List levels for a course. Requires curriculum.read permission.' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
@@ -60,7 +60,7 @@ export class LevelsController {
   }
 
   @Get(':id')
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({ summary: 'Get level by ID. Requires curriculum.read permission.' })
   @ApiOkResponse({ description: 'Level detail.' })
   @ApiNotFoundResponse({ description: 'Level not found.' })
@@ -69,7 +69,7 @@ export class LevelsController {
   }
 
   @Post()
-  @RequirePermissions(CurriculumPermission.WRITE)
+  @RequirePermissions(CurriculumPermission.CONTENT_UPDATE)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create level under a course. Requires curriculum.write permission.' })
   @ApiCreatedResponse({ description: 'Level created in draft status.' })
@@ -81,7 +81,7 @@ export class LevelsController {
   }
 
   @Patch(':id')
-  @RequirePermissions(CurriculumPermission.WRITE)
+  @RequirePermissions(CurriculumPermission.CONTENT_UPDATE)
   @ApiOperation({ summary: 'Update level. Requires curriculum.write permission.' })
   @ApiOkResponse({ description: 'Level updated.' })
   @ApiNotFoundResponse({ description: 'Level not found.' })

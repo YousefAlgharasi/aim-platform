@@ -34,7 +34,7 @@ export class LessonObjectivesController {
   constructor(private readonly lessonObjectivesService: LessonObjectivesService) {}
 
   @Get()
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({
     summary: 'List objectives linked to a lesson. Requires curriculum.read permission.',
   })
@@ -45,7 +45,7 @@ export class LessonObjectivesController {
   }
 
   @Post()
-  @RequirePermissions(CurriculumPermission.WRITE)
+  @RequirePermissions(CurriculumPermission.CONTENT_UPDATE)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Link an objective to a lesson. Requires curriculum.write permission.',
@@ -60,7 +60,7 @@ export class LessonObjectivesController {
   }
 
   @Delete(':objectiveId')
-  @RequirePermissions(CurriculumPermission.WRITE)
+  @RequirePermissions(CurriculumPermission.CONTENT_UPDATE)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Remove an objective from a lesson. Requires curriculum.write permission.',
