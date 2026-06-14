@@ -25,7 +25,7 @@ export const adminNavigationItems: readonly AdminNavigationItem[] = [
   {
     label: 'Content',
     href: '/admin/content',
-    description: 'Placeholder only',
+    description: 'Curriculum shell',
   },
   {
     label: 'Reviews',
