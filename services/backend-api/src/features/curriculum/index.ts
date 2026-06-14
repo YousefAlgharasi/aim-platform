@@ -3,4 +3,5 @@ export { CurriculumPermission } from './curriculum.permissions';
 export { CoursesService } from './courses/courses.service';
 export { LevelsService } from './levels/levels.service';
 export { ChaptersService } from './chapters/chapters.service';
+export { LessonsService } from './lessons/lessons.service';
 export { SkillsService } from './skills/skills.service';
