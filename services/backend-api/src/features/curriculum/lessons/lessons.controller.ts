@@ -27,12 +27,17 @@ import { CurriculumPermission } from '../curriculum.permissions';
 import { LessonsService } from './lessons.service';
 import { CreateLessonInput, UpdateLessonInput } from './lessons.types';
 
+import { LessonPublishValidationService } from '../lesson-skills/lesson-publish-validation.service';
+
 @ApiTags('curriculum')
 @Controller('curriculum/lessons')
 @UseGuards(SupabaseJwtAuthGuard, PermissionGuard)
 @ApiBearerAuth()
 export class LessonsController {
-  constructor(private readonly lessonsService: LessonsService) {}
+  constructor(
+    private readonly lessonsService: LessonsService,
+    private readonly lessonPublishValidationService: LessonPublishValidationService,
+  ) {}
 
   @Get()
   @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
@@ -76,6 +81,15 @@ export class LessonsController {
   @ApiCreatedResponse({ description: 'Lesson created in draft status.' })
   async createLesson(@Body() body: CreateLessonInput) {
     return this.lessonsService.createLesson(body);
+  }
+
+  @Get(':id/publish-validation')
+  @RequirePermissions(CurriculumPermission.READ)
+  @ApiOperation({ summary: 'Check if a lesson is ready for publishing. Requires curriculum.read permission.' })
+  @ApiOkResponse({ description: 'Publish readiness status.' })
+  @ApiNotFoundResponse({ description: 'Lesson not found.' })
+  async checkPublishValidation(@Param('id', ParseUUIDPipe) id: string) {
+    return this.lessonPublishValidationService.checkLessonPublishReadiness(id);
   }
 
   @Patch(':id')
