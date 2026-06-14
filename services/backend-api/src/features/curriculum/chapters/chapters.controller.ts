@@ -35,7 +35,7 @@ export class ChaptersController {
   constructor(private readonly chaptersService: ChaptersService) {}
 
   @Get()
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({ summary: 'List chapters. Requires curriculum.read permission.' })
   @ApiQuery({ name: 'levelId', required: false, type: String })
   @ApiQuery({ name: 'page', required: false, type: Number })
@@ -61,7 +61,7 @@ export class ChaptersController {
   }
 
   @Get(':id')
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({ summary: 'Get chapter by ID. Requires curriculum.read permission.' })
   @ApiOkResponse({ description: 'Chapter detail.' })
   @ApiNotFoundResponse({ description: 'Chapter not found.' })
@@ -70,7 +70,7 @@ export class ChaptersController {
   }
 
   @Post()
-  @RequirePermissions(CurriculumPermission.WRITE)
+  @RequirePermissions(CurriculumPermission.CONTENT_UPDATE)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create chapter. Requires curriculum.write permission.' })
   @ApiCreatedResponse({ description: 'Chapter created in draft status.' })
@@ -79,7 +79,7 @@ export class ChaptersController {
   }
 
   @Patch(':id')
-  @RequirePermissions(CurriculumPermission.WRITE)
+  @RequirePermissions(CurriculumPermission.CONTENT_UPDATE)
   @ApiOperation({ summary: 'Update chapter. Requires curriculum.write permission.' })
   @ApiOkResponse({ description: 'Chapter updated.' })
   @ApiNotFoundResponse({ description: 'Chapter not found.' })

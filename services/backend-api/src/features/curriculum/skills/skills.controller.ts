@@ -35,7 +35,7 @@ export class SkillsController {
   constructor(private readonly skillsService: SkillsService) {}
 
   @Get()
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({ summary: 'List skills. Requires curriculum.read permission.' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
@@ -61,7 +61,7 @@ export class SkillsController {
   }
 
   @Get('by-key/:key')
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({ summary: 'Get skill by stable key. Requires curriculum.read permission.' })
   @ApiOkResponse({ description: 'Skill detail.' })
   @ApiNotFoundResponse({ description: 'Skill not found.' })
@@ -70,7 +70,7 @@ export class SkillsController {
   }
 
   @Get(':id')
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({ summary: 'Get skill by ID. Requires curriculum.read permission.' })
   @ApiOkResponse({ description: 'Skill detail.' })
   @ApiNotFoundResponse({ description: 'Skill not found.' })
@@ -79,7 +79,7 @@ export class SkillsController {
   }
 
   @Post()
-  @RequirePermissions(CurriculumPermission.WRITE)
+  @RequirePermissions(CurriculumPermission.CONTENT_UPDATE)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create skill. Requires curriculum.write permission.' })
   @ApiCreatedResponse({ description: 'Skill created in draft status.' })
@@ -88,7 +88,7 @@ export class SkillsController {
   }
 
   @Patch(':id')
-  @RequirePermissions(CurriculumPermission.WRITE)
+  @RequirePermissions(CurriculumPermission.CONTENT_UPDATE)
   @ApiOperation({ summary: 'Update skill title/description. Requires curriculum.write permission.' })
   @ApiOkResponse({ description: 'Skill updated.' })
   @ApiNotFoundResponse({ description: 'Skill not found.' })

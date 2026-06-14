@@ -3,6 +3,7 @@ export enum AuthorizedRole {
   PARENT = 'parent',
   TEACHER = 'teacher',
   CONTENT_EDITOR = 'content_editor',
+  REVIEWER = 'reviewer',
   ADMIN = 'admin',
   SUPER_ADMIN = 'super_admin',
 }

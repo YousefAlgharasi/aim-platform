@@ -35,7 +35,7 @@ export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
   @Get()
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({ summary: 'List courses. Requires curriculum.read permission.' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
@@ -58,7 +58,7 @@ export class CoursesController {
   }
 
   @Get(':id')
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({ summary: 'Get course by ID. Requires curriculum.read permission.' })
   @ApiOkResponse({ description: 'Course detail.' })
   @ApiNotFoundResponse({ description: 'Course not found.' })
@@ -67,7 +67,7 @@ export class CoursesController {
   }
 
   @Post()
-  @RequirePermissions(CurriculumPermission.WRITE)
+  @RequirePermissions(CurriculumPermission.CONTENT_UPDATE)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create course. Requires curriculum.write permission.' })
   @ApiCreatedResponse({ description: 'Course created in draft status.' })
@@ -76,7 +76,7 @@ export class CoursesController {
   }
 
   @Patch(':id')
-  @RequirePermissions(CurriculumPermission.WRITE)
+  @RequirePermissions(CurriculumPermission.CONTENT_UPDATE)
   @ApiOperation({ summary: 'Update course. Requires curriculum.write permission.' })
   @ApiOkResponse({ description: 'Course updated.' })
   @ApiNotFoundResponse({ description: 'Course not found.' })
