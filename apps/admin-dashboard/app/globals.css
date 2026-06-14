@@ -241,6 +241,56 @@ h1 {
   max-width: 920px;
 }
 
+.admin-curriculum-page {
+  max-width: 1040px;
+}
+
+.admin-curriculum-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.admin-curriculum-card {
+  display: grid;
+  min-height: 116px;
+  align-content: start;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  padding: 16px;
+}
+
+.admin-curriculum-card:hover,
+.admin-curriculum-card:focus {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.admin-curriculum-card span {
+  font-weight: 800;
+}
+
+.admin-curriculum-card small,
+.admin-breadcrumb {
+  color: var(--muted);
+}
+
+.admin-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+  font-size: 0.9rem;
+}
+
+.admin-breadcrumb a {
+  color: var(--accent);
+  font-weight: 700;
+}
+
 .role-menu-items {
   display: grid;
   gap: 10px;
@@ -263,6 +313,10 @@ h1 {
   .role-card-grid {
     grid-template-columns: 1fr;
   }
+
+  .admin-curriculum-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 900px) {
@@ -283,6 +337,10 @@ h1 {
 
 @media (max-width: 800px) {
   .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-curriculum-grid {
     grid-template-columns: 1fr;
   }
 
