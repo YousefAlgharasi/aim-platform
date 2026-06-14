@@ -34,7 +34,7 @@ export class LessonSkillsController {
   constructor(private readonly lessonSkillsService: LessonSkillsService) {}
 
   @Get()
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({ summary: 'List skills linked to a lesson. Requires curriculum.read permission.' })
   @ApiOkResponse({ description: 'Lesson-skill links.' })
   @ApiNotFoundResponse({ description: 'Lesson not found.' })
@@ -43,7 +43,7 @@ export class LessonSkillsController {
   }
 
   @Post()
-  @RequirePermissions(CurriculumPermission.WRITE)
+  @RequirePermissions(CurriculumPermission.CONTENT_UPDATE)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Link a skill to a lesson. Requires curriculum.write permission.' })
   @ApiCreatedResponse({ description: 'Skill linked to lesson.' })
@@ -56,7 +56,7 @@ export class LessonSkillsController {
   }
 
   @Delete(':skillId')
-  @RequirePermissions(CurriculumPermission.WRITE)
+  @RequirePermissions(CurriculumPermission.CONTENT_UPDATE)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remove a skill from a lesson. Requires curriculum.write permission.' })
   @ApiNoContentResponse({ description: 'Skill unlinked from lesson.' })

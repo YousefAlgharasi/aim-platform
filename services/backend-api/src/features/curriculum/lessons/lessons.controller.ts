@@ -35,7 +35,7 @@ export class LessonsController {
   constructor(private readonly lessonsService: LessonsService) {}
 
   @Get()
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({ summary: 'List lessons. Requires curriculum.read permission.' })
   @ApiQuery({ name: 'chapterId', required: false, type: String })
   @ApiQuery({ name: 'page', required: false, type: Number })
@@ -61,7 +61,7 @@ export class LessonsController {
   }
 
   @Get(':id')
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({ summary: 'Get lesson by ID. Requires curriculum.read permission.' })
   @ApiOkResponse({ description: 'Lesson detail.' })
   @ApiNotFoundResponse({ description: 'Lesson not found.' })
@@ -70,7 +70,7 @@ export class LessonsController {
   }
 
   @Post()
-  @RequirePermissions(CurriculumPermission.WRITE)
+  @RequirePermissions(CurriculumPermission.CONTENT_UPDATE)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create lesson. Requires curriculum.write permission.' })
   @ApiCreatedResponse({ description: 'Lesson created in draft status.' })
@@ -79,7 +79,7 @@ export class LessonsController {
   }
 
   @Patch(':id')
-  @RequirePermissions(CurriculumPermission.WRITE)
+  @RequirePermissions(CurriculumPermission.CONTENT_UPDATE)
   @ApiOperation({ summary: 'Update lesson. Requires curriculum.write permission.' })
   @ApiOkResponse({ description: 'Lesson updated.' })
   @ApiNotFoundResponse({ description: 'Lesson not found.' })
