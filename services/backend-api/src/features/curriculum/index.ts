@@ -3,4 +3,7 @@ export { CurriculumPermission } from './curriculum.permissions';
 export { CoursesService } from './courses/courses.service';
 export { LevelsService } from './levels/levels.service';
 export { ChaptersService } from './chapters/chapters.service';
+export { LessonsService } from './lessons/lessons.service';
+export { LessonSkillsService } from './lesson-skills/lesson-skills.service';
+export { QuestionBankService } from './question-bank/question-bank.service';
 export { SkillsService } from './skills/skills.service';
