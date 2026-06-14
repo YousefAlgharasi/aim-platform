@@ -36,7 +36,7 @@ export class QuestionBankController {
   constructor(private readonly questionBankService: QuestionBankService) {}
 
   @Get()
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({ summary: 'List questions. Requires curriculum.read permission.' })
   @ApiQuery({ name: 'type', required: false })
   @ApiQuery({ name: 'difficulty', required: false })
@@ -61,7 +61,7 @@ export class QuestionBankController {
   }
 
   @Get(':id')
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({ summary: 'Get question by ID. Requires curriculum.read permission.' })
   @ApiOkResponse({ description: 'Question detail.' })
   @ApiNotFoundResponse({ description: 'Question not found.' })
@@ -70,7 +70,7 @@ export class QuestionBankController {
   }
 
   @Post()
-  @RequirePermissions(CurriculumPermission.WRITE)
+  @RequirePermissions(CurriculumPermission.CONTENT_UPDATE)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create question. Requires curriculum.write permission.' })
   @ApiCreatedResponse({ description: 'Question created in draft status.' })
@@ -85,7 +85,7 @@ export class QuestionBankController {
   }
 
   @Patch(':id')
-  @RequirePermissions(CurriculumPermission.WRITE)
+  @RequirePermissions(CurriculumPermission.CONTENT_UPDATE)
   @ApiOperation({ summary: 'Update question. Requires curriculum.write permission.' })
   @ApiOkResponse({ description: 'Question updated.' })
   @ApiNotFoundResponse({ description: 'Question not found.' })
