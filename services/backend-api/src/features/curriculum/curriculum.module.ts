@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ChaptersModule } from './chapters/chapters.module';
+import { ContentStatusWorkflowModule } from './content-status-workflow/content-status-workflow.module';
 import { CurriculumAuditLogModule } from './curriculum-audit-log/curriculum-audit-log.module';
 import { CoursesModule } from './courses/courses.module';
 import { LessonAssetsModule } from './lesson-assets/lesson-assets.module';
@@ -26,6 +27,7 @@ import { SkillsModule } from './skills/skills.module';
     LessonSkillsModule,
     QuestionBankModule,
     QuestionSkillsModule,
+    ContentStatusWorkflowModule,
   ],
   exports: [
     CurriculumAuditLogModule,
@@ -40,6 +42,7 @@ import { SkillsModule } from './skills/skills.module';
     LessonSkillsModule,
     QuestionBankModule,
     QuestionSkillsModule,
+    ContentStatusWorkflowModule,
   ],
 })
 export class CurriculumModule {}

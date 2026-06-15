@@ -13,10 +13,14 @@ import {
   WORKFLOW_ENTITY_TYPES,
   WorkflowEntityType,
 } from './content-status-workflow.types';
+import { PublishValidationService } from '../publish-validation/publish-validation.service';
 
 @Injectable()
 export class ContentStatusWorkflowService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly publishValidationService: PublishValidationService,
+  ) {}
 
   async publish(entityType: WorkflowEntityType, entityId: string): Promise<StatusTransitionResult> {
     return this.transition(entityType, entityId, 'published');
@@ -57,8 +61,8 @@ export class ContentStatusWorkflowService {
       });
     }
 
-    if (entityType === 'lessons' && targetStatus === 'published') {
-      await this.assertLessonHasPublishedSkill(entityId);
+    if (targetStatus === 'published') {
+      await this.publishValidationService.validateReadyForPublish(entityType, entityId);
     }
 
     const updated = await this.db.query<StatusRow>(
@@ -97,26 +101,6 @@ export class ContentStatusWorkflowService {
     }
 
     return result.rows[0];
-  }
-
-  private async assertLessonHasPublishedSkill(lessonId: string): Promise<void> {
-    const result = await this.db.query<{ count: string }>(
-      `SELECT COUNT(*)::text AS count
-         FROM lesson_skills ls
-         JOIN skills s ON s.id = ls.skill_id
-         WHERE ls.lesson_id = $1
-           AND s.status = 'published'`,
-      [lessonId],
-    );
-
-    const count = parseInt(result.rows[0]?.count ?? '0', 10);
-    if (count === 0) {
-      throw new AppError({
-        code: ApiErrorCode.VALIDATION_ERROR,
-        message: 'A lesson must have at least one published skill before it can be published.',
-        statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-      });
-    }
   }
 
   private assertValidEntityType(value: string): asserts value is WorkflowEntityType {
