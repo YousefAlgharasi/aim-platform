@@ -75,8 +75,16 @@ export class AdminApiClient {
     return this.request<T>('PATCH', path, decodeData, options);
   }
 
+  async delete<T>(
+    path: string,
+    decodeData: ApiJsonDecoder<T>,
+    options: AdminApiRequestOptions = {},
+  ): Promise<ApiSuccessEnvelope<T>> {
+    return this.request<T>('DELETE', path, decodeData, options);
+  }
+
   private async request<T>(
-    method: 'GET' | 'POST' | 'PUT' | 'PATCH',
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     path: string,
     decodeData: ApiJsonDecoder<T>,
     options: AdminApiBodyRequestOptions,
