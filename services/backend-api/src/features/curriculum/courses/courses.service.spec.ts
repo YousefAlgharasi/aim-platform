@@ -53,6 +53,18 @@ describe('CoursesService.listCourses', () => {
     const secondCall = (mockDb.query as jest.Mock).mock.calls[1];
     expect(secondCall[1]).toContain(100);
   });
+
+  it('applies text search across course fields', async () => {
+    (mockDb.query as jest.Mock)
+      .mockResolvedValueOnce({ rows: [{ total: '1' }] })
+      .mockResolvedValueOnce({ rows: [] });
+
+    await service.listCourses(1, 20, undefined, 'beginner');
+
+    const countCall = (mockDb.query as jest.Mock).mock.calls[0];
+    expect(countCall[0]).toContain('title ILIKE $1');
+    expect(countCall[1]).toContain('%beginner%');
+  });
 });
 
 describe('CoursesService.getCourse', () => {

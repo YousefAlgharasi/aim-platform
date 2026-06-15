@@ -45,6 +45,7 @@ export class LessonsController {
   @ApiQuery({ name: 'chapterId', required: false, type: String })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'q', required: false, type: String })
   @ApiQuery({
     name: 'status',
     required: false,
@@ -56,12 +57,14 @@ export class LessonsController {
     @Query('page') page = '1',
     @Query('limit') limit = '20',
     @Query('status') status?: string,
+    @Query('q') q?: string,
   ) {
     return this.lessonsService.listLessons(
       parseInt(page, 10) || 1,
       parseInt(limit, 10) || 20,
       chapterId,
       status,
+      q,
     );
   }
 
@@ -84,7 +87,7 @@ export class LessonsController {
   }
 
   @Get(':id/publish-validation')
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({ summary: 'Check if a lesson is ready for publishing. Requires curriculum.read permission.' })
   @ApiOkResponse({ description: 'Publish readiness status.' })
   @ApiNotFoundResponse({ description: 'Lesson not found.' })

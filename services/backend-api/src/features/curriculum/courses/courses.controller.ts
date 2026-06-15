@@ -39,6 +39,7 @@ export class CoursesController {
   @ApiOperation({ summary: 'List courses. Requires curriculum.read permission.' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'q', required: false, type: String })
   @ApiQuery({
     name: 'status',
     required: false,
@@ -49,11 +50,13 @@ export class CoursesController {
     @Query('page') page = '1',
     @Query('limit') limit = '20',
     @Query('status') status?: string,
+    @Query('q') q?: string,
   ) {
     return this.coursesService.listCourses(
       parseInt(page, 10) || 1,
       parseInt(limit, 10) || 20,
       status,
+      q,
     );
   }
 

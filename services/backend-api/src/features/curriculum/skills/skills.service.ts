@@ -71,6 +71,7 @@ export class SkillsService {
     limit: number,
     domain?: string,
     status?: string,
+    q?: string,
   ): Promise<SkillListResponse> {
     const safePage = Math.max(page, DEFAULT_PAGE);
     const safeLimit = Math.min(Math.max(limit, 1), MAX_LIMIT);
@@ -90,6 +91,15 @@ export class SkillsService {
     if (status !== undefined) {
       conditions.push(`status = $${idx++}`);
       values.push(status);
+    }
+
+    const search = q?.trim();
+    if (search) {
+      conditions.push(
+        `(key ILIKE $${idx} OR title ILIKE $${idx} OR COALESCE(description, '') ILIKE $${idx})`,
+      );
+      values.push(`%${search}%`);
+      idx++;
     }
 
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
