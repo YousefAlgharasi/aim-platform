@@ -2,6 +2,7 @@ import { CurriculumModule } from './curriculum.module';
 import { CoursesModule } from './courses/courses.module';
 import { LevelsModule } from './levels/levels.module';
 import { ChaptersModule } from './chapters/chapters.module';
+import { ContentStatusWorkflowModule } from './content-status-workflow/content-status-workflow.module';
 import { SkillsModule } from './skills/skills.module';
 import { LessonsModule } from './lessons/lessons.module';
 import { LessonAssetsModule } from './lesson-assets/lesson-assets.module';
@@ -30,6 +31,7 @@ const EXPECTED_MODULES = [
   LessonSkillsModule,
   QuestionBankModule,
   QuestionSkillsModule,
+  ContentStatusWorkflowModule,
 ];
 
 describe('CurriculumModule registration', () => {

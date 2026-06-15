@@ -3,10 +3,16 @@ import { ContentStatusWorkflowService } from './content-status-workflow.service'
 
 const mockQuery = jest.fn();
 const mockDb = { query: mockQuery } as any;
+const mockPublishValidation = {
+  validateReadyForPublish: jest.fn(),
+} as any;
 
-const service = new ContentStatusWorkflowService(mockDb);
+const service = new ContentStatusWorkflowService(mockDb, mockPublishValidation);
 
-beforeEach(() => mockQuery.mockReset());
+beforeEach(() => {
+  mockQuery.mockReset();
+  mockPublishValidation.validateReadyForPublish.mockReset();
+});
 
 function makeStatusRow(status: string) {
   return { rows: [{ id: 'uuid-1', status, updated_at: '2026-01-01T00:00:00Z' }] };
@@ -18,12 +24,14 @@ describe('ContentStatusWorkflowService', () => {
       mockQuery
         .mockResolvedValueOnce(makeStatusRow('draft'))
         .mockResolvedValueOnce(makeStatusRow('published'));
+      mockPublishValidation.validateReadyForPublish.mockResolvedValueOnce(undefined);
 
       const result = await service.publish('courses', 'uuid-1');
 
       expect(result.previousStatus).toBe('draft');
       expect(result.currentStatus).toBe('published');
       expect(result.entityType).toBe('courses');
+      expect(mockPublishValidation.validateReadyForPublish).toHaveBeenCalledWith('courses', 'uuid-1');
     });
 
     it('rejects published -> published transition', async () => {
@@ -42,24 +50,28 @@ describe('ContentStatusWorkflowService', () => {
       });
     });
 
-    it('rejects lesson publish without published skill', async () => {
+    it('rejects publish when publish validation fails', async () => {
       mockQuery
-        .mockResolvedValueOnce(makeStatusRow('draft'))
-        .mockResolvedValueOnce({ rows: [{ count: '0' }] });
+        .mockResolvedValueOnce(makeStatusRow('draft'));
+      mockPublishValidation.validateReadyForPublish.mockRejectedValueOnce({
+        statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+      });
 
       await expect(service.publish('lessons', 'uuid-1')).rejects.toMatchObject({
         statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
       });
+      expect(mockQuery).toHaveBeenCalledTimes(1);
     });
 
-    it('allows lesson publish when published skill exists', async () => {
+    it('allows lesson publish when publish validation passes', async () => {
       mockQuery
         .mockResolvedValueOnce(makeStatusRow('draft'))
-        .mockResolvedValueOnce({ rows: [{ count: '2' }] })
         .mockResolvedValueOnce(makeStatusRow('published'));
+      mockPublishValidation.validateReadyForPublish.mockResolvedValueOnce(undefined);
 
       const result = await service.publish('lessons', 'uuid-1');
       expect(result.currentStatus).toBe('published');
+      expect(mockPublishValidation.validateReadyForPublish).toHaveBeenCalledWith('lessons', 'uuid-1');
     });
   });
 
