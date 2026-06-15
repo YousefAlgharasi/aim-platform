@@ -47,6 +47,7 @@ export class CoursesService {
     page: number,
     limit: number,
     status?: string,
+    q?: string,
   ): Promise<CourseListResponse> {
     const safePage = Math.max(page, DEFAULT_PAGE);
     const safeLimit = Math.min(Math.max(limit, 1), MAX_LIMIT);
@@ -63,6 +64,15 @@ export class CoursesService {
     if (status !== undefined) {
       conditions.push(`status = $${idx++}`);
       values.push(status);
+    }
+
+    const search = q?.trim();
+    if (search) {
+      conditions.push(
+        `(title ILIKE $${idx} OR COALESCE(slug, '') ILIKE $${idx} OR COALESCE(description, '') ILIKE $${idx})`,
+      );
+      values.push(`%${search}%`);
+      idx++;
     }
 
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
