@@ -67,6 +67,19 @@ describe('QuestionBankService.listQuestions', () => {
     const secondCall = (mockDb.query as jest.Mock).mock.calls[1];
     expect(secondCall[1]).toContain(100);
   });
+
+  it('applies text search across question fields', async () => {
+    (mockDb.query as jest.Mock)
+      .mockResolvedValueOnce({ rows: [{ total: '1' }] })
+      .mockResolvedValueOnce({ rows: [] });
+
+    await service.listQuestions(1, 20, undefined, undefined, undefined, 'past');
+
+    const countCall = (mockDb.query as jest.Mock).mock.calls[0];
+    expect(countCall[0]).toContain('stem ILIKE $1');
+    expect(countCall[0]).toContain('array_to_string(tags');
+    expect(countCall[1]).toContain('%past%');
+  });
 });
 
 describe('QuestionBankService.getQuestion', () => {
