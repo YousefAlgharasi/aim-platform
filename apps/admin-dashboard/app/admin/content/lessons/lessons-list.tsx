@@ -1,6 +1,6 @@
 'use client';
 
-// Phase 3 — P3-055
+// Phase 3 — P3-057
 // Admin lessons list client component.
 //
 // Scope: Curriculum & Content System — lessons only.
@@ -8,6 +8,12 @@
 // Security:
 // - All mutations flow through server actions in page.tsx; token is never in client code.
 // - Status display is read-only; publish/archive are backend-only operations.
+//
+// Lesson-skill rule (P3-006):
+// - Every lesson must be linked to one or more skills before it can be published.
+// - This component surfaces a per-row "Manage Skills" action so admins can
+//   navigate to skill linking for each lesson without leaving the lessons table.
+// - Backend enforces the rule at publish time; this UI makes the requirement visible.
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
@@ -52,6 +58,46 @@ function buildQuery(params: Record<string, string | number>): string {
   return Object.entries(params)
     .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`)
     .join('&');
+}
+
+function skillLinkHref(lessonId: string, courseId: string, levelId: string, chapterId: string): string {
+  return `/admin/content/lessons/skills?lessonId=${encodeURIComponent(lessonId)}&courseId=${encodeURIComponent(courseId)}&levelId=${encodeURIComponent(levelId)}&chapterId=${encodeURIComponent(chapterId)}`;
+}
+
+function SkillLinkCell({
+  lesson,
+  courseId,
+  levelId,
+  chapterId,
+}: {
+  lesson: AdminLessonSummary;
+  courseId: string;
+  levelId: string;
+  chapterId: string;
+}) {
+  if (lesson.status === 'archived') {
+    return <span className="admin-muted">—</span>;
+  }
+
+  const href = skillLinkHref(lesson.id, courseId, levelId, chapterId);
+
+  if (lesson.status === 'published') {
+    return (
+      <a href={href} className="admin-skill-link-badge admin-skill-link-badge--ok">
+        Linked ✓
+      </a>
+    );
+  }
+
+  return (
+    <a
+      href={href}
+      className="admin-skill-link-badge admin-skill-link-badge--required"
+      title="Every lesson must be linked to at least one skill before it can be published."
+    >
+      Link skills ⚠
+    </a>
+  );
 }
 
 export function LessonsList({
@@ -129,6 +175,7 @@ export function LessonsList({
               <th>Title</th>
               <th>Description</th>
               <th>Status</th>
+              <th>Skills</th>
               <th>Order</th>
               <th>Updated</th>
               <th aria-label="Actions" />
@@ -145,6 +192,14 @@ export function LessonsList({
                   <span className={`status-badge ${STATUS_CLASSES[lesson.status] ?? ''}`}>
                     {STATUS_LABELS[lesson.status] ?? lesson.status}
                   </span>
+                </td>
+                <td>
+                  <SkillLinkCell
+                    lesson={lesson}
+                    courseId={courseId}
+                    levelId={levelId}
+                    chapterId={chapterId}
+                  />
                 </td>
                 <td>{lesson.sortOrder}</td>
                 <td className="course-date-cell">
