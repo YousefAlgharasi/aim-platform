@@ -7,8 +7,10 @@ import { UsersModule } from '../../users/users.module';
 import { LessonsController } from './lessons.controller';
 import { LessonsService } from './lessons.service';
 
+import { LessonSkillsModule } from '../lesson-skills/lesson-skills.module';
+
 @Module({
-  imports: [AuthModule, DatabaseModule, RolesModule, UsersModule],
+  imports: [AuthModule, DatabaseModule, RolesModule, UsersModule, LessonSkillsModule],
   controllers: [LessonsController],
   providers: [LessonsService],
   exports: [LessonsService],
