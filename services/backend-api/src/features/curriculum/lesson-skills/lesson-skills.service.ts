@@ -2,6 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../../database/database.service';
 import { AppError } from '../../../common/errors/app-error';
 import { ApiErrorCode } from '../../../common/errors/api-error-code';
+import { CurriculumAuditLogService } from '../curriculum-audit-log/curriculum-audit-log.service';
 import {
   AddSkillToLessonInput,
   LessonSkillLink,
@@ -19,7 +20,10 @@ function toLessonSkillLink(row: LessonSkillRow): LessonSkillLink {
 
 @Injectable()
 export class LessonSkillsService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly auditLog: CurriculumAuditLogService,
+  ) {}
 
   async listSkillsForLesson(lessonId: string): Promise<LessonSkillListResponse> {
     await this.assertLessonExists(lessonId);
@@ -38,13 +42,16 @@ export class LessonSkillsService {
     };
   }
 
-  async addSkillToLesson(lessonId: string, input: AddSkillToLessonInput): Promise<LessonSkillLink> {
+  async addSkillToLesson(
+    lessonId: string,
+    input: AddSkillToLessonInput,
+    actorUserId?: string | null,
+  ): Promise<LessonSkillLink> {
     const { skillId } = input;
 
     await this.assertLessonExists(lessonId);
     await this.assertSkillExists(skillId);
 
-    // Check for duplicate link
     const existing = await this.db.query<{ lesson_id: string }>(
       `SELECT lesson_id FROM lesson_skills WHERE lesson_id = $1 AND skill_id = $2 LIMIT 1`,
       [lessonId, skillId],
@@ -64,10 +71,22 @@ export class LessonSkillsService {
       [lessonId, skillId],
     );
 
+    await this.auditLog.log({
+      entityType: 'lesson_skill_mapping',
+      entityId: lessonId,
+      eventType: 'skill_linked',
+      actorUserId: actorUserId ?? null,
+      metadata: { skillId },
+    });
+
     return toLessonSkillLink(result.rows[0]);
   }
 
-  async removeSkillFromLesson(lessonId: string, skillId: string): Promise<void> {
+  async removeSkillFromLesson(
+    lessonId: string,
+    skillId: string,
+    actorUserId?: string | null,
+  ): Promise<void> {
     await this.assertLessonExists(lessonId);
 
     const result = await this.db.query<{ lesson_id: string }>(
@@ -84,13 +103,16 @@ export class LessonSkillsService {
         statusCode: HttpStatus.NOT_FOUND,
       });
     }
+
+    await this.auditLog.log({
+      entityType: 'lesson_skill_mapping',
+      entityId: lessonId,
+      eventType: 'skill_unlinked',
+      actorUserId: actorUserId ?? null,
+      metadata: { skillId },
+    });
   }
 
-  /**
-   * Returns the count of published skills linked to a lesson.
-   * Used by publish validation (P3-039) to enforce the critical lesson-skill rule.
-   * A lesson cannot be published without at least one published skill link.
-   */
   async countPublishedSkillsForLesson(lessonId: string): Promise<number> {
     const result = await this.db.query<{ count: string }>(
       `SELECT COUNT(*)::text AS count
