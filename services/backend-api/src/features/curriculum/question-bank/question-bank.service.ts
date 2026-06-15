@@ -84,6 +84,7 @@ export class QuestionBankService {
     type?: string,
     difficulty?: string,
     status?: string,
+    q?: string,
   ): Promise<QuestionBankListResponse> {
     const safePage = Math.max(page, DEFAULT_PAGE);
     const safeLimit = Math.min(Math.max(limit, 1), MAX_LIMIT);
@@ -108,6 +109,15 @@ export class QuestionBankService {
     if (status !== undefined) {
       conditions.push(`status = $${idx++}`);
       values.push(status);
+    }
+
+    const search = q?.trim();
+    if (search) {
+      conditions.push(
+        `(stem ILIKE $${idx} OR COALESCE(explanation, '') ILIKE $${idx} OR COALESCE(hint, '') ILIKE $${idx} OR array_to_string(tags, ' ') ILIKE $${idx})`,
+      );
+      values.push(`%${search}%`);
+      idx++;
     }
 
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';

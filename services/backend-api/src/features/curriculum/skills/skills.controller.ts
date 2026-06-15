@@ -40,6 +40,7 @@ export class SkillsController {
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'domain', required: false, enum: SKILL_DOMAINS })
+  @ApiQuery({ name: 'q', required: false, type: String })
   @ApiQuery({
     name: 'status',
     required: false,
@@ -51,12 +52,14 @@ export class SkillsController {
     @Query('limit') limit = '20',
     @Query('domain') domain?: string,
     @Query('status') status?: string,
+    @Query('q') q?: string,
   ) {
     return this.skillsService.listSkills(
       parseInt(page, 10) || 1,
       parseInt(limit, 10) || 20,
       domain,
       status,
+      q,
     );
   }
 

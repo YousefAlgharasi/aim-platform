@@ -1163,3 +1163,108 @@ h1 {
   outline: 2px solid var(--accent);
   border-color: var(--accent);
 }
+
+/* Phase 3 — P3-060: Content Status Workflow UI */
+
+.status-workflow {
+  max-width: 560px;
+}
+
+.status-workflow-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.status-workflow-entity-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.status-workflow-skill-warning {
+  padding: 10px 14px;
+  background: #fef9c3;
+  border: 1px solid #fde68a;
+  border-left: 4px solid #f59e0b;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.88rem;
+  color: #78350f;
+}
+
+.status-workflow-skill-ok {
+  padding: 8px 14px;
+  background: #d1fae5;
+  border: 1px solid #6ee7b7;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.88rem;
+  color: #065f46;
+}
+
+.status-workflow-success {
+  padding: 10px 14px;
+  background: #d1fae5;
+  border: 1px solid #6ee7b7;
+  border-left: 4px solid #10b981;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.88rem;
+  color: #065f46;
+}
+
+.status-workflow-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.btn-workflow {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 0.15s;
+}
+
+.btn-workflow:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-workflow-publish {
+  background: #1d4ed8;
+  color: #fff;
+}
+.btn-workflow-publish:hover:not(:disabled) { opacity: 0.88; }
+
+.btn-workflow-archive {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+.btn-workflow-archive:hover:not(:disabled) { background: #e2e8f0; }
+
+.btn-workflow-restore {
+  background: #fef9c3;
+  color: #854d0e;
+  border: 1px solid #fde68a;
+}
+.btn-workflow-restore:hover:not(:disabled) { background: #fef08a; }
+
+.status-workflow-super-badge {
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  background: #7c3aed;
+  color: #fff;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
