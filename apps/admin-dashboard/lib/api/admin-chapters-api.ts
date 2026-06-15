@@ -1,8 +1,7 @@
-// Phase 3 — P3-055
+// Phase 3 — P3-054 (extended from P3-055 read-only base)
 // Admin chapters API client.
 //
-// Scope: Curriculum & Content System — chapters, read/create access needed
-// only to support the chapter selector on the Admin Lessons page.
+// Scope: Curriculum & Content System — full chapter CRUD for admin UI.
 //
 // Security rules:
 // - Token is read server-side from the HTTP-only cookie; never exposed to the browser.
@@ -65,11 +64,26 @@ function decodeChapterListData(value: unknown): AdminChapterListData {
   };
 }
 
+export type CreateChapterPayload = {
+  readonly levelId: string;
+  readonly title: string;
+  readonly slug?: string | null;
+  readonly description?: string | null;
+  readonly sortOrder?: number | null;
+};
+
+export type UpdateChapterPayload = {
+  readonly title?: string;
+  readonly slug?: string | null;
+  readonly description?: string | null;
+  readonly sortOrder?: number;
+};
+
 export async function fetchAdminChapters(
   token: string,
   levelId: string,
   page = 1,
-  limit = 100,
+  limit = 20,
   status?: ChapterStatus,
 ): Promise<AdminChapterListData> {
   const envelope = await adminApiClient.get<AdminChapterListData>(
@@ -78,6 +92,37 @@ export async function fetchAdminChapters(
     {
       headers: { authorization: `Bearer ${token}` },
       query: { levelId, page, limit, ...(status ? { status } : {}) },
+    },
+  );
+  return envelope.data;
+}
+
+export async function createAdminChapter(
+  token: string,
+  payload: CreateChapterPayload,
+): Promise<AdminChapterSummary> {
+  const envelope = await adminApiClient.post<AdminChapterSummary>(
+    '/curriculum/chapters',
+    decodeChapterSummary,
+    {
+      headers: { authorization: `Bearer ${token}` },
+      body: payload,
+    },
+  );
+  return envelope.data;
+}
+
+export async function updateAdminChapter(
+  token: string,
+  chapterId: string,
+  payload: UpdateChapterPayload,
+): Promise<AdminChapterSummary> {
+  const envelope = await adminApiClient.patch<AdminChapterSummary>(
+    `/curriculum/chapters/${encodeURIComponent(chapterId)}`,
+    decodeChapterSummary,
+    {
+      headers: { authorization: `Bearer ${token}` },
+      body: payload,
     },
   );
   return envelope.data;
