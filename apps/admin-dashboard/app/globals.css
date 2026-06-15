@@ -866,3 +866,62 @@ h1 {
   gap: 10px;
   margin-top: 20px;
 }
+
+/* ── P3-053: Admin Levels — course selector ─────────────────────────── */
+
+.admin-course-selector {
+  margin-bottom: 28px;
+}
+
+.admin-course-selector-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+
+.admin-course-selector-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-course-selector-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 0.875rem;
+  color: var(--foreground);
+  text-decoration: none;
+  background: var(--card);
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.admin-course-selector-item:hover {
+  border-color: var(--accent);
+  background: var(--background);
+}
+
+.admin-course-selector-item.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.admin-course-selector-item.active .status-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.selector-item-title {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
