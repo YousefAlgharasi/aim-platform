@@ -27,12 +27,17 @@ import { CurriculumPermission } from '../curriculum.permissions';
 import { LessonsService } from './lessons.service';
 import { CreateLessonInput, UpdateLessonInput } from './lessons.types';
 
+import { LessonPublishValidationService } from '../lesson-skills/lesson-publish-validation.service';
+
 @ApiTags('curriculum')
 @Controller('curriculum/lessons')
 @UseGuards(SupabaseJwtAuthGuard, PermissionGuard)
 @ApiBearerAuth()
 export class LessonsController {
-  constructor(private readonly lessonsService: LessonsService) {}
+  constructor(
+    private readonly lessonsService: LessonsService,
+    private readonly lessonPublishValidationService: LessonPublishValidationService,
+  ) {}
 
   @Get()
   @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
@@ -40,6 +45,7 @@ export class LessonsController {
   @ApiQuery({ name: 'chapterId', required: false, type: String })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'q', required: false, type: String })
   @ApiQuery({
     name: 'status',
     required: false,
@@ -51,12 +57,14 @@ export class LessonsController {
     @Query('page') page = '1',
     @Query('limit') limit = '20',
     @Query('status') status?: string,
+    @Query('q') q?: string,
   ) {
     return this.lessonsService.listLessons(
       parseInt(page, 10) || 1,
       parseInt(limit, 10) || 20,
       chapterId,
       status,
+      q,
     );
   }
 
@@ -76,6 +84,15 @@ export class LessonsController {
   @ApiCreatedResponse({ description: 'Lesson created in draft status.' })
   async createLesson(@Body() body: CreateLessonInput) {
     return this.lessonsService.createLesson(body);
+  }
+
+  @Get(':id/publish-validation')
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
+  @ApiOperation({ summary: 'Check if a lesson is ready for publishing. Requires curriculum.read permission.' })
+  @ApiOkResponse({ description: 'Publish readiness status.' })
+  @ApiNotFoundResponse({ description: 'Lesson not found.' })
+  async checkPublishValidation(@Param('id', ParseUUIDPipe) id: string) {
+    return this.lessonPublishValidationService.checkLessonPublishReadiness(id);
   }
 
   @Patch(':id')

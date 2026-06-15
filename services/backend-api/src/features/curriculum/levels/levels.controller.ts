@@ -39,6 +39,7 @@ export class LevelsController {
   @ApiOperation({ summary: 'List levels for a course. Requires curriculum.read permission.' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'q', required: false, type: String })
   @ApiQuery({
     name: 'status',
     required: false,
@@ -50,12 +51,14 @@ export class LevelsController {
     @Query('page') page = '1',
     @Query('limit') limit = '20',
     @Query('status') status?: string,
+    @Query('q') q?: string,
   ) {
     return this.levelsService.listLevels(
       courseId,
       parseInt(page, 10) || 1,
       parseInt(limit, 10) || 20,
       status,
+      q,
     );
   }
 

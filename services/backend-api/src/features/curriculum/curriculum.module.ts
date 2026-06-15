@@ -6,6 +6,8 @@ import { LessonObjectivesModule } from './lesson-objectives/lesson-objectives.mo
 import { LessonSkillsModule } from './lesson-skills/lesson-skills.module';
 import { LevelsModule } from './levels/levels.module';
 import { LessonsModule } from './lessons/lessons.module';
+import { LevelsModule } from './levels/levels.module';
+import { ObjectivesModule } from './objectives/objectives.module';
 import { QuestionBankModule } from './question-bank/question-bank.module';
 import { QuestionSkillsModule } from './question-skills/question-skills.module';
 import { SkillsModule } from './skills/skills.module';

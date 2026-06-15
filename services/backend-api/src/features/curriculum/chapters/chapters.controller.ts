@@ -40,6 +40,7 @@ export class ChaptersController {
   @ApiQuery({ name: 'levelId', required: false, type: String })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'q', required: false, type: String })
   @ApiQuery({
     name: 'status',
     required: false,
@@ -51,12 +52,14 @@ export class ChaptersController {
     @Query('page') page = '1',
     @Query('limit') limit = '20',
     @Query('status') status?: string,
+    @Query('q') q?: string,
   ) {
     return this.chaptersService.listChapters(
       parseInt(page, 10) || 1,
       parseInt(limit, 10) || 20,
       levelId,
       status,
+      q,
     );
   }
 
