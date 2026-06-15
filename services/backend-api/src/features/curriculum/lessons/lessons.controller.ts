@@ -84,7 +84,7 @@ export class LessonsController {
   }
 
   @Get(':id/publish-validation')
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({ summary: 'Check if a lesson is ready for publishing. Requires curriculum.read permission.' })
   @ApiOkResponse({ description: 'Publish readiness status.' })
   @ApiNotFoundResponse({ description: 'Lesson not found.' })
