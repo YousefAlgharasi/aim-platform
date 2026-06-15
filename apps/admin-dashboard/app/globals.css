@@ -1083,3 +1083,83 @@ h1 {
 
 .btn-danger:hover:not(:disabled) { opacity: 0.8; }
 .btn-danger:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Phase 3 — P3-059: Admin Question Bank UI */
+
+.qb-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.qb-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.qb-filters select {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  background: var(--card);
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.qb-filters select:focus {
+  outline: 2px solid var(--accent);
+  border-color: var(--accent);
+}
+
+.qb-stem-cell {
+  max-width: 320px;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.qb-type-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: var(--accent-soft);
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.qb-tags-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 160px;
+}
+
+.qb-tag {
+  background: #f1f5f9;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: #475569;
+}
+
+.course-form-field select {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  background: var(--card);
+  color: var(--foreground);
+}
+
+.course-form-field select:focus {
+  outline: 2px solid var(--accent);
+  border-color: var(--accent);
+}
