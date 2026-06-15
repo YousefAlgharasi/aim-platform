@@ -35,7 +35,7 @@ export class ObjectivesController {
   constructor(private readonly objectivesService: ObjectivesService) {}
 
   @Get()
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({ summary: 'List objectives. Requires curriculum.read permission.' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
@@ -58,7 +58,7 @@ export class ObjectivesController {
   }
 
   @Get('by-key/:key')
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({ summary: 'Get objective by stable key. Requires curriculum.read permission.' })
   @ApiOkResponse({ description: 'Objective detail.' })
   @ApiNotFoundResponse({ description: 'Objective not found.' })
@@ -67,7 +67,7 @@ export class ObjectivesController {
   }
 
   @Get(':id')
-  @RequirePermissions(CurriculumPermission.READ)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
   @ApiOperation({ summary: 'Get objective by ID. Requires curriculum.read permission.' })
   @ApiOkResponse({ description: 'Objective detail.' })
   @ApiNotFoundResponse({ description: 'Objective not found.' })
@@ -76,7 +76,7 @@ export class ObjectivesController {
   }
 
   @Post()
-  @RequirePermissions(CurriculumPermission.WRITE)
+  @RequirePermissions(CurriculumPermission.CONTENT_UPDATE)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create objective. Requires curriculum.write permission.' })
   @ApiCreatedResponse({ description: 'Objective created in draft status.' })
@@ -85,7 +85,7 @@ export class ObjectivesController {
   }
 
   @Patch(':id')
-  @RequirePermissions(CurriculumPermission.WRITE)
+  @RequirePermissions(CurriculumPermission.CONTENT_UPDATE)
   @ApiOperation({ summary: 'Update objective. Requires curriculum.write permission.' })
   @ApiOkResponse({ description: 'Objective updated.' })
   @ApiNotFoundResponse({ description: 'Objective not found.' })
