@@ -41,6 +41,7 @@ export class QuestionBankController {
   @ApiQuery({ name: 'type', required: false })
   @ApiQuery({ name: 'difficulty', required: false })
   @ApiQuery({ name: 'status', required: false, enum: ['draft', 'published', 'archived'] })
+  @ApiQuery({ name: 'q', required: false, type: String })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiOkResponse({ description: 'Paginated question list (answer correctness excluded).' })
@@ -48,6 +49,7 @@ export class QuestionBankController {
     @Query('type') type?: string,
     @Query('difficulty') difficulty?: string,
     @Query('status') status?: string,
+    @Query('q') q?: string,
     @Query('page') page = '1',
     @Query('limit') limit = '20',
   ) {
@@ -57,6 +59,7 @@ export class QuestionBankController {
       type,
       difficulty,
       status,
+      q,
     );
   }
 
