@@ -1,29 +1,28 @@
-// Phase 4 — P4-041
+// Phase 4 — P4-040 (initial) / P4-037 (module skeleton)
 // PlacementModule.
 //
 // Scope: Placement Test system only.
 //
-// Registers the placement feature in the NestJS DI container.
-// Additional services and controllers (P4-042 onward) will be added here.
+// This module registers the placement feature in the NestJS DI container.
+// Additional services and controllers (P4-041 through P4-048) will be added
+// to this module as they are implemented.
 //
 // Security rules:
-//   - DatabaseModule provides DatabaseService for raw SQL queries.
-//   - AuthModule provides SupabaseJwtAuthGuard for student endpoints.
-//   - StudentsModule provides StudentsService for student_id resolution from JWT.
 //   - No AIM Engine runtime, lesson delivery, AI Teacher, or progress dashboard.
 //   - No secrets, service-role keys, database credentials, or privileged config here.
+//   - DatabaseModule is imported to provide DatabaseService for SQL queries.
+//   - AuthModule is imported to provide SupabaseJwtAuthGuard for student endpoints.
 
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../../auth/auth.module';
 import { DatabaseModule } from '../../database/database.module';
-import { StudentsModule } from '../students/students.module';
 import { PlacementController } from './placement.controller';
-import { PlacementAttemptService } from './placement-attempt.service';
+import { PlacementQuestionDeliveryService } from './placement-question-delivery.service';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, StudentsModule],
+  imports: [DatabaseModule, AuthModule],
   controllers: [PlacementController],
-  providers: [PlacementAttemptService],
-  exports: [PlacementAttemptService],
+  providers: [PlacementQuestionDeliveryService],
+  exports: [PlacementQuestionDeliveryService],
 })
 export class PlacementModule {}

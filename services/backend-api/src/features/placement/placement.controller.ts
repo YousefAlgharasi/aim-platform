@@ -1,78 +1,78 @@
-// Phase 4 — P4-041
+// Phase 4 — P4-040
 // PlacementController.
 //
-// Scope: Placement Test student endpoints.
+// Scope: Placement Test student endpoints only.
 //
-// Endpoints (this task):
-//   POST /placement/attempts — Start a new placement attempt (student).
+// Endpoints:
+//   GET /placement/questions?sectionId=:id — Deliver questions for a section (student).
 //
 // Security rules:
 //   - All student endpoints require a valid Supabase JWT (SupabaseJwtAuthGuard).
-//   - student_id is resolved from the JWT via StudentsService — never from client input.
-//   - Backend is the sole authority for attempt status transitions.
-//   - Flutter/client cannot set status, student_id, or placement_test_id.
+//   - correct_answer, skill_code, and scoring data are never returned to clients.
+//   - Backend is the sole authority for question content and scoring.
+//   - Flutter/client must never receive correct_answer or any correctness signal.
 //   - No AIM Engine runtime, lesson delivery, AI Teacher, or progress dashboard logic.
 //   - No secrets, service-role keys, database credentials, or privileged config here.
 
 import {
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
-  Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
-  ApiConflictResponse,
-  ApiCreatedResponse,
-  ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
-import { CurrentUser } from '../../auth/current-user.decorator';
-import { AuthenticatedUser } from '../../auth/authenticated-user';
-import { StudentsService } from '../students/students.service';
-import { PlacementAttemptService } from './placement-attempt.service';
-import { PlacementAttemptStartResponse } from './placement.types';
+import { PlacementQuestionDeliveryService } from './placement-question-delivery.service';
+import { PlacementQuestionDeliveryResponse } from './placement.types';
 
 @ApiTags('placement')
 @Controller('placement')
 export class PlacementController {
   constructor(
-    private readonly attemptService: PlacementAttemptService,
-    private readonly students: StudentsService,
+    private readonly questionDelivery: PlacementQuestionDeliveryService,
   ) {}
 
   /**
-   * POST /placement/attempts
+   * GET /placement/questions?sectionId=:id
    *
-   * Starts a new placement attempt for the authenticated student.
+   * Returns the student-safe question list for a given placement section.
    *
-   * - Resolves the currently published placement test.
-   * - Enforces one active attempt per student per test.
-   * - Returns student-safe fields only (P4-013 §3.1).
-   * - student_id is always resolved from the verified JWT — never from client input.
+   * Security:
+   *   - Requires a valid Supabase JWT.
+   *   - correct_answer, skill_code, and scoring data are stripped before response.
+   *   - Backend is the sole authority for question content.
    *
-   * Errors:
-   *   409 ACTIVE_ATTEMPT_EXISTS — student already has an active attempt.
-   *   404 NO_ACTIVE_TEST       — no placement test is currently published.
+   * Defined by P4-006 (API map) endpoint #3.
+   * Response shape defined by P4-011 §4 (student-safe fields).
    */
-  @Post('attempts')
+  @Get('questions')
   @UseGuards(SupabaseJwtAuthGuard)
-  @HttpCode(HttpStatus.CREATED)
+  @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Start a new placement attempt for the authenticated student.' })
-  @ApiCreatedResponse({ description: 'Attempt started. Returns student-safe attempt fields.' })
-  @ApiConflictResponse({ description: 'ACTIVE_ATTEMPT_EXISTS — student already has an active attempt.' })
-  @ApiNotFoundResponse({ description: 'NO_ACTIVE_TEST — no placement test is currently published.' })
-  async startAttempt(
-    @CurrentUser() user: AuthenticatedUser,
-  ): Promise<PlacementAttemptStartResponse> {
-    // Resolve student profile from the verified JWT user ID.
-    // student_id comes from the DB lookup — never from client input.
-    const studentProfile = await this.students.getByUserId(user.id);
-
-    return this.attemptService.startAttempt(studentProfile.id);
+  @ApiTags('placement')
+  @ApiOperation({
+    summary: 'Deliver placement questions for a section (student-safe).',
+  })
+  @ApiQuery({
+    name: 'sectionId',
+    required: true,
+    description: 'UUID of the placement section to fetch questions for.',
+  })
+  @ApiOkResponse({
+    description:
+      'Ordered list of student-safe placement questions. correct_answer and skill_code are never included.',
+  })
+  async getQuestions(
+    @Query('sectionId') sectionId: string,
+  ): Promise<PlacementQuestionDeliveryResponse> {
+    return this.questionDelivery.getQuestionsForSection(sectionId);
   }
 }
