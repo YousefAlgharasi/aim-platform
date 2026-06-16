@@ -1,4 +1,4 @@
-// Phase 4 — P4-038/P4-040/P4-037/P4-041/P4-042/P4-043/P4-044/P4-045/P4-046/P4-047/P4-048/P4-049/P4-050/P4-051
+// Phase 4 — P4-039/P4-040/P4-037/P4-041/P4-042/P4-043/P4-044/P4-045/P4-046/P4-047/P4-048/P4-049/P4-050/P4-051
 // PlacementModule.
 //
 // Scope: Placement Test system only.
@@ -23,13 +23,13 @@ import { PlacementResultReadService } from './placement-result-read.service';
 import { PlacementRetakePolicyService } from './placement-retake-policy.service';
 import { PlacementAuditService } from './placement-audit.service';
 import { PlacementPermissionGuard } from './placement-permission.guard';
-import { PlacementTestReadService } from './placement-test-read.service';
+import { PlacementSectionsService } from './placement-sections.service';
 
 @Module({
   imports: [DatabaseModule, AuthModule],
   controllers: [PlacementController],
   providers: [
-    PlacementTestReadService,
+    PlacementSectionsService,
     PlacementQuestionDeliveryService,
     PlacementAttemptService,
     PlacementRetakePolicyService,
@@ -44,7 +44,7 @@ import { PlacementTestReadService } from './placement-test-read.service';
     PlacementPermissionGuard,
   ],
   exports: [
-    PlacementTestReadService,
+    PlacementSectionsService,
     PlacementQuestionDeliveryService,
     PlacementAttemptService,
     PlacementRetakePolicyService,
