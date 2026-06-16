@@ -68,3 +68,14 @@ final placementQuestionProvider = StateNotifierProvider.autoDispose<
     repository: ref.watch(placementRepositoryProvider),
   ),
 );
+
+import 'placement_submit_notifier.dart';
+
+/// Notifier for the placement submit/complete page.
+/// Manages calling POST /placement/attempts/:id/complete and navigating to result.
+final placementSubmitProvider = StateNotifierProvider.autoDispose<
+    PlacementSubmitNotifier, PlacementSubmitState>(
+  (ref) => PlacementSubmitNotifier(
+    repository: ref.watch(placementRepositoryProvider),
+  ),
+);
