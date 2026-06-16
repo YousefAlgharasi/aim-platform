@@ -79,3 +79,14 @@ final placementSubmitProvider = StateNotifierProvider.autoDispose<
     repository: ref.watch(placementRepositoryProvider),
   ),
 );
+
+import 'placement_result_notifier.dart';
+
+/// Notifier for the placement result page.
+/// Fetches the backend result with polling until attempt is completed.
+final placementResultProvider = StateNotifierProvider.autoDispose<
+    PlacementResultNotifier, PlacementResultState>(
+  (ref) => PlacementResultNotifier(
+    repository: ref.watch(placementRepositoryProvider),
+  ),
+);
