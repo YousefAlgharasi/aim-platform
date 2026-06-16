@@ -1029,3 +1029,274 @@ This section satisfies P3-016 when:
 - all messages are safe for admin-facing clients;
 - no out-of-scope Phase 3 feature is introduced;
 - no secrets or privileged credentials are exposed.
+
+---
+
+# Phase 4 — Placement Test Error Codes
+
+## Purpose
+
+This section defines Phase 4 error codes for placement test operations, including placement test
+and section retrieval, attempt lifecycle, answer submission, result generation, and initial learning
+path delivery.
+
+The goal is to make placement errors consistent across Backend API, Flutter Mobile, and Admin
+Dashboard while keeping messages safe and never exposing scoring logic, internal skill maps, level
+thresholds, or weakness computation to clients.
+
+This section is documentation-only. It does not implement backend exceptions, NestJS filters,
+Flutter error models, Admin Dashboard handlers, database migrations, or runtime behavior.
+
+---
+
+## Scope
+
+This section is limited to Phase 4 — Placement Test.
+
+It covers:
+
+- placement test retrieval error codes;
+- placement section retrieval error codes;
+- placement question delivery error codes;
+- placement attempt lifecycle error codes;
+- placement answer submission error codes;
+- placement result retrieval error codes;
+- initial learning path retrieval error codes;
+- admin placement management error codes.
+
+This section does not cover onboarding, learner lesson delivery, practice attempts, sessions,
+AIM Engine runtime, AI Teacher, dashboard recommendations, progress reports, or Student Web App.
+
+---
+
+## Source of Truth
+
+This section follows:
+
+```text
+packages/shared-contracts/api/errors.md
+packages/shared-contracts/api/placement-test-contracts.md       (P4-009)
+packages/shared-contracts/api/placement-section-contracts.md    (P4-010)
+packages/shared-contracts/api/placement-question-contracts.md   (P4-011)
+packages/shared-contracts/api/placement-answer-contracts.md     (P4-012)
+packages/shared-contracts/api/placement-attempt-contracts.md    (P4-013)
+packages/shared-contracts/api/placement-result-contracts.md     (P4-014)
+packages/shared-contracts/api/initial-learning-path-contracts.md (P4-015)
+docs/phase-4/placement-api-map.md                               (P4-006)
+docs/phase-4/placement-test-charter.md
+docs/phase-4/no-client-side-placement-scoring.md
+docs/phase-4/no-aim-runtime-rule.md
+```
+
+---
+
+## Naming Convention
+
+Phase 4 placement error codes use uppercase snake case with domain prefixes:
+
+```text
+PLACEMENT_
+PLACEMENT_SECTION_
+PLACEMENT_QUESTION_
+PLACEMENT_ATTEMPT_
+PLACEMENT_ANSWER_
+PLACEMENT_RESULT_
+PLACEMENT_PATH_
+PLACEMENT_ADMIN_
+```
+
+Rules:
+
+- Use stable codes for client branching and backend logging.
+- Keep client messages safe and non-revealing — never expose score, threshold, or mastery values.
+- Log detailed internal reasons only in backend-safe logs.
+- Do not expose scoring logic, level thresholds, weakness computation, or skill map internals.
+
+---
+
+## Placement Test Error Codes
+
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `PLACEMENT_TEST_NOT_FOUND` | 404 | No active placement test is available | No published placement test exists |
+| `PLACEMENT_TEST_UNAVAILABLE` | 503 | Placement test is temporarily unavailable | Published test exists but cannot be served |
+| `PLACEMENT_TEST_INVALID_STATUS` | 422 | Placement test status is invalid | `status` is not one of the allowed enum values |
+| `PLACEMENT_TEST_ALREADY_PUBLISHED` | 409 | A placement test is already published | Only one test may be active at a time |
+| `PLACEMENT_TEST_TITLE_REQUIRED` | 422 | Placement test title is required | `title` is missing or empty |
+
+---
+
+## Placement Section Error Codes
+
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `PLACEMENT_SECTION_NOT_FOUND` | 404 | Placement section not found | Section does not exist or is inaccessible |
+| `PLACEMENT_SECTION_TEST_NOT_FOUND` | 404 | Parent placement test not found | Referenced `placement_test_id` does not exist |
+| `PLACEMENT_SECTION_ORDER_CONFLICT` | 409 | Section order conflicts with an existing section | `order` value already taken within the test |
+| `PLACEMENT_SECTION_TITLE_REQUIRED` | 422 | Section title is required | `title` is missing or empty |
+| `PLACEMENT_SECTION_WEIGHT_INVALID` | 422 | Section weight is invalid | `weight` is not a positive number or exceeds allowed range |
+
+---
+
+## Placement Question Error Codes
+
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `PLACEMENT_QUESTION_NOT_FOUND` | 404 | Placement question not found | Question does not exist or is inaccessible |
+| `PLACEMENT_QUESTION_SECTION_NOT_FOUND` | 404 | Parent placement section not found | Referenced `section_id` does not exist |
+| `PLACEMENT_QUESTION_INVALID_TYPE` | 422 | Question type is invalid | `type` is not one of the allowed enum values |
+| `PLACEMENT_QUESTION_NO_OPTIONS` | 422 | Question must have answer options | No options provided for a multiple-choice question |
+| `PLACEMENT_QUESTION_NO_CORRECT_OPTION` | 422 | Question must have a correct option | No option is marked as correct |
+| `PLACEMENT_QUESTION_MULTIPLE_CORRECT` | 422 | Question has multiple correct options | Only one option may be correct |
+| `PLACEMENT_QUESTION_ORDER_CONFLICT` | 409 | Question order conflicts with an existing question | `order` value already taken within the section |
+| `PLACEMENT_QUESTION_PROMPT_REQUIRED` | 422 | Question prompt is required | `prompt` is missing or empty |
+
+Fields never returned to Flutter on question delivery: `correctOptionId`, `skillId`, `weight`, `difficultyScore`.
+
+---
+
+## Placement Attempt Error Codes
+
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `PLACEMENT_ATTEMPT_NOT_FOUND` | 404 | Placement attempt not found | Attempt does not exist or is inaccessible |
+| `PLACEMENT_ATTEMPT_NOT_OWNED` | 403 | You do not have access to this attempt | Caller does not own the attempt |
+| `PLACEMENT_ATTEMPT_ALREADY_COMPLETED` | 409 | Placement attempt is already completed | Attempt status is already `completed` |
+| `PLACEMENT_ATTEMPT_ALREADY_ABANDONED` | 409 | Placement attempt has been abandoned | Attempt status is `abandoned` and cannot be continued |
+| `PLACEMENT_RETAKE_NOT_ALLOWED` | 409 | You have already completed a placement test | Retake policy prevents a new attempt |
+| `PLACEMENT_ATTEMPT_INVALID_STATUS` | 422 | Attempt status is invalid | Attempt is not in a valid state for this action |
+| `PLACEMENT_ATTEMPT_NO_TEST` | 404 | No active placement test found | No published test exists to start an attempt |
+
+---
+
+## Placement Answer Error Codes
+
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `PLACEMENT_ANSWER_ALREADY_SUBMITTED` | 409 | Answer has already been submitted for this question | Duplicate answer for the same question in this attempt |
+| `PLACEMENT_ANSWER_INVALID_ATTEMPT` | 400 | Answer cannot be submitted for this attempt | Attempt is not in `in_progress` status |
+| `PLACEMENT_ANSWER_QUESTION_NOT_IN_ATTEMPT` | 400 | Question does not belong to this attempt | `questionId` is not part of the current attempt's test |
+| `PLACEMENT_ANSWER_OPTION_NOT_FOUND` | 404 | Selected option not found | `selectedOptionId` does not exist for this question |
+| `PLACEMENT_ANSWER_OPTION_NOT_IN_QUESTION` | 400 | Selected option does not belong to this question | `selectedOptionId` is from a different question |
+
+Fields never returned on answer submission: `isCorrect`, `score`.
+
+---
+
+## Placement Result Error Codes
+
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `PLACEMENT_RESULT_NOT_FOUND` | 404 | Placement result not found | Result does not exist for this attempt |
+| `PLACEMENT_RESULT_NOT_READY` | 400 | Placement result is not yet available | Attempt is complete but result generation is still processing |
+| `PLACEMENT_ATTEMPT_NOT_COMPLETED` | 400 | Placement attempt has not been completed | Result cannot be retrieved until attempt is completed |
+| `PLACEMENT_RESULT_INVALID_ATTEMPT` | 400 | Invalid attempt for result retrieval | Attempt ID is malformed or does not exist |
+
+Fields never returned to Flutter in result: raw `placementScore`, `confidence`, section scores, or threshold values.
+
+---
+
+## Initial Learning Path Error Codes
+
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `PLACEMENT_PATH_NOT_FOUND` | 404 | Initial learning path not found | Path has not been generated for this result |
+| `PLACEMENT_PATH_NOT_READY` | 400 | Initial learning path is not yet available | Path generation is still processing |
+| `PLACEMENT_PATH_RESULT_NOT_FOUND` | 404 | Placement result not found for path retrieval | Referenced `placement_result_id` does not exist |
+
+Fields never returned to Flutter in path entries: `skill_id`, `skill_code`, `skill_key`, `source`, `placement_result_id`.
+
+---
+
+## Admin Placement Error Codes
+
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `PLACEMENT_ADMIN_ACCESS_DENIED` | 403 | Admin placement access denied | Caller does not have admin placement permissions |
+| `PLACEMENT_ADMIN_TEST_LOCKED` | 409 | Placement test is locked and cannot be modified | Test has active or completed attempts |
+| `PLACEMENT_ADMIN_SECTION_LOCKED` | 409 | Placement section is locked and cannot be modified | Section belongs to a test with active attempts |
+| `PLACEMENT_ADMIN_QUESTION_LOCKED` | 409 | Placement question is locked and cannot be modified | Question belongs to a test with active attempts |
+| `PLACEMENT_ADMIN_SKILL_LINK_NOT_FOUND` | 404 | Placement question skill link not found | The specified question-skill mapping does not exist |
+| `PLACEMENT_ADMIN_SKILL_LINK_ALREADY_EXISTS` | 409 | Placement question skill link already exists | Duplicate question-skill mapping |
+| `PLACEMENT_ADMIN_RESULTS_ACCESS_DENIED` | 403 | Placement results access denied | Caller cannot view placement results |
+
+---
+
+## Safe Client Error Shape
+
+Phase 4 placement errors must fit the shared error response envelope:
+
+```json
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "PLACEMENT_RETAKE_NOT_ALLOWED",
+    "message": "You have already completed a placement test"
+  }
+}
+```
+
+With optional safe validation details:
+
+```json
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "PLACEMENT_ANSWER_INVALID_ATTEMPT",
+    "message": "Answer cannot be submitted for this attempt",
+    "details": [
+      { "field": "attemptId", "message": "Attempt is not in progress" }
+    ]
+  }
+}
+```
+
+---
+
+## Flutter Mobile Handling Rules
+
+Flutter Mobile may:
+
+- use `PLACEMENT_RETAKE_NOT_ALLOWED` to show a safe "already completed" message;
+- use `PLACEMENT_ATTEMPT_NOT_COMPLETED` to gate result display;
+- use `PLACEMENT_RESULT_NOT_READY` or `PLACEMENT_PATH_NOT_READY` to show a loading state and retry;
+- use `PLACEMENT_ANSWER_ALREADY_SUBMITTED` to prevent duplicate submission UI.
+
+Flutter Mobile must not:
+
+- compute or estimate placement score, level, mastery, weakness map, or initial path from error data;
+- expose `isCorrect` or any score signal to the learner under any condition;
+- override backend attempt or result authority based on local state;
+- expose internal error codes or backend diagnostics to the learner.
+
+---
+
+## Admin Dashboard Handling Rules
+
+Admin Dashboard may:
+
+- use admin placement error codes to show safe management messages;
+- use `PLACEMENT_ADMIN_TEST_LOCKED` to surface a safe "test has active attempts" warning;
+- display `details` items as field-level feedback where present.
+
+Admin Dashboard must not:
+
+- reveal backend scoring internals, threshold values, or skill map logic;
+- bypass backend placement authority;
+- treat frontend validation as a substitute for backend enforcement.
+
+---
+
+## Done Test — P4-016
+
+This section satisfies P4-016 when:
+
+- `packages/shared-contracts/api/errors.md` is updated with Phase 4 placement error codes;
+- placement test, section, question, attempt, answer, result, initial path, and admin error codes are defined;
+- all codes use the approved naming convention;
+- all messages are safe and never expose score, threshold, mastery, or weakness computation;
+- Flutter handling rules confirm no client-side placement scoring is permitted;
+- no out-of-scope Phase 5+ feature is introduced;
+- no secrets or privileged credentials are exposed.
