@@ -1,4 +1,4 @@
-// Phase 4 — P4-040 (initial) / P4-037 (module skeleton) / P4-042 (answer submit) / P4-043 (complete attempt)
+// Phase 4 — P4-040 (initial) / P4-037 (module skeleton) / P4-042 (answer submit)
 // PlacementModule.
 //
 // Scope: Placement Test system only.

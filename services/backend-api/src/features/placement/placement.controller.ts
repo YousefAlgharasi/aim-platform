@@ -1,4 +1,5 @@
 // Phase 4 — P4-040 (questions) / P4-041 (start attempt) / P4-042 (submit answer) / P4-043 (complete attempt)
+// Phase 4 — P4-040 (questions) / P4-041 (start attempt) / P4-042 (submit answer)
 // PlacementController.
 //
 // Scope: Placement Test student endpoints only.
@@ -13,6 +14,7 @@
 //   - correct_answer, is_correct, skill_code, and scoring data are never returned to clients.
 //   - student_id is always sourced from the verified JWT — never from client input.
 //   - Attempt ownership is enforced for all attempt-scoped endpoints.
+//   - Attempt ownership is enforced: a student may only submit answers to their own active attempt.
 //   - Backend is the sole authority for question content, answer correctness, and scoring.
 //   - Flutter/client must never receive correct_answer, is_correct, or any correctness signal.
 //   - No AIM Engine runtime, lesson delivery, AI Teacher, or progress dashboard logic.
@@ -66,12 +68,23 @@ export class PlacementController {
    * Returns the student-safe question list for a given placement section.
    * correct_answer and skill_code are stripped before response.
    * Defined by P4-006 endpoint #3. Response shape: P4-011 §4.
+   *
+   * Security:
+   *   - Requires a valid Supabase JWT.
+   *   - correct_answer and skill_code are stripped before response.
+   *   - Backend is the sole authority for question content.
+   *
+   * Defined by P4-006 (API map) endpoint #3.
+   * Response shape defined by P4-011 §4 (student-safe fields).
    */
   @Get('questions')
   @UseGuards(SupabaseJwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Deliver placement questions for a section (student-safe).' })
+  @ApiOperation({
+    summary: 'Deliver placement questions for a section (student-safe).',
+  })
   @ApiQuery({
     name: 'sectionId',
     required: true,
@@ -93,6 +106,17 @@ export class PlacementController {
    * is_correct is NOT evaluated and NEVER returned during an active attempt.
    * skill_code is inherited from the question — clients cannot set it.
    * Defined by P4-006 endpoint #5. Request/response: P4-012 §3.1.
+   *
+   * Security:
+   *   - Requires a valid Supabase JWT.
+   *   - student_id is sourced from the JWT — clients cannot supply it.
+   *   - Attempt ownership is enforced: the attempt must belong to the requesting student.
+   *   - is_correct is NOT evaluated here and is NEVER returned during an active attempt.
+   *   - skill_code is inherited from the question — clients cannot set it.
+   *   - Backend is the sole authority for answer correctness and scoring.
+   *
+   * Defined by P4-006 (API map) endpoint #5.
+   * Request/response shape defined by P4-012 §3.1 (student-safe fields).
    */
   @Post('attempts/:id/answers')
   @UseGuards(SupabaseJwtAuthGuard)
@@ -102,6 +126,16 @@ export class PlacementController {
   @ApiParam({ name: 'id', description: 'UUID of the active placement attempt.' })
   @ApiCreatedResponse({
     description: 'Answer recorded. is_correct is never returned during an active attempt.',
+  @ApiOperation({
+    summary: 'Submit a placement answer for a question (student).',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'UUID of the active placement attempt.',
+  })
+  @ApiCreatedResponse({
+    description:
+      'Answer recorded. is_correct is never returned during an active attempt.',
   })
   async submitAnswer(
     @Param('id') attemptId: string,
