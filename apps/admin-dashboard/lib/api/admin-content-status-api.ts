@@ -23,6 +23,7 @@ export type ContentEntityType =
   | 'chapters'
   | 'lessons'
   | 'skills'
+  | 'objectives'
   | 'questions';
 
 export type ContentStatus = 'draft' | 'published' | 'archived';
