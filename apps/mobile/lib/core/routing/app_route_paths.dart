@@ -10,4 +10,12 @@ class AppRoutePaths {
   static const String review = '/main/review';
   static const String progress = '/main/progress';
   static const String profile = '/main/profile';
+
+  // Phase 4 — P4-065: Placement Test flow routes
+  static const String placementStart = '/placement/start';
+  static const String placementSection = '/placement/section';
+  static const String placementQuestion = '/placement/question';
+  // P4-066: submit route (navigated from section page after last section)
+  static const String placementSubmit = '/placement/submit';
+  static const String placementResult = '/placement/result';
 }
