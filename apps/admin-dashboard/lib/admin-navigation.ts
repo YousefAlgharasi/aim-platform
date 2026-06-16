@@ -52,6 +52,15 @@ export const adminNavigationItems: readonly AdminNavigationItem[] = [
     href: '/admin/roles',
     description: 'Placeholder only',
   },
+  // Phase 4 — P4-053
+  // Placement management entry point for admin users.
+  // Allows pilot_admin and content_manager roles to manage placement tests.
+  // Full placement management UI implemented in P4-054 and P4-058.
+  {
+    label: 'Placement',
+    href: '/admin/placement',
+    description: 'Manage placement tests',
+  },
 ];
 
 const overviewItem = adminNavigationItems[0];
@@ -62,6 +71,8 @@ const reportsItem = adminNavigationItems[4];
 const settingsItem = adminNavigationItems[5];
 const auditLogsItem = adminNavigationItems[6];
 const roleMenuItem = adminNavigationItems[7];
+// Phase 4 — P4-053
+const placementItem = adminNavigationItems[8];
 
 export const roleBasedMenuGroups: readonly RoleBasedMenuGroup[] = [
   {
@@ -70,6 +81,7 @@ export const roleBasedMenuGroups: readonly RoleBasedMenuGroup[] = [
       overviewItem,
       studentsItem,
       contentItem,
+      placementItem,
       reviewsItem,
       reportsItem,
       auditLogsItem,
@@ -79,7 +91,7 @@ export const roleBasedMenuGroups: readonly RoleBasedMenuGroup[] = [
   },
   {
     role: 'content_manager',
-    items: [overviewItem, contentItem, reportsItem],
+    items: [overviewItem, contentItem, placementItem, reportsItem],
   },
   {
     role: 'human_reviewer',
