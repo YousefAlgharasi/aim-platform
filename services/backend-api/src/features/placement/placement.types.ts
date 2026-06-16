@@ -123,20 +123,6 @@ export interface PlacementAttemptStartResponse {
   readonly startedAt: string;
 }
 
-/**
- * Student-safe response for POST /placement/attempts/:id/complete.
- * Defined by P4-013 §3.2 and the API map endpoint #6.
- * student_id and created_at are intentionally excluded.
- * Scoring, level, skill maps are NEVER included — computed by P4-046.
- */
-export interface PlacementAttemptCompleteResponse {
-  readonly id: string;
-  readonly status: 'submitted';
-  readonly submittedAt: string;
-  readonly totalQuestions: number;
-  readonly totalAnswered: number;
-}
-
 // ---------------------------------------------------------------------------
 // Placement answer DB row and response shapes (P4-012)
 // ---------------------------------------------------------------------------
