@@ -1,4 +1,4 @@
-// Phase 4 — P4-040 (initial) / P4-037 (module skeleton)
+// Phase 4 — P4-040 (initial) / P4-037 (module skeleton) / P4-042 (answer submit)
 // PlacementModule.
 //
 // Scope: Placement Test system only.
@@ -18,11 +18,12 @@ import { AuthModule } from '../../auth/auth.module';
 import { DatabaseModule } from '../../database/database.module';
 import { PlacementController } from './placement.controller';
 import { PlacementQuestionDeliveryService } from './placement-question-delivery.service';
+import { PlacementAnswerSubmitService } from './placement-answer-submit.service';
 
 @Module({
   imports: [DatabaseModule, AuthModule],
   controllers: [PlacementController],
-  providers: [PlacementQuestionDeliveryService],
-  exports: [PlacementQuestionDeliveryService],
+  providers: [PlacementQuestionDeliveryService, PlacementAnswerSubmitService],
+  exports: [PlacementQuestionDeliveryService, PlacementAnswerSubmitService],
 })
 export class PlacementModule {}
