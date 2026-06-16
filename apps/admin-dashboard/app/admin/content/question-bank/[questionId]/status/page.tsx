@@ -48,9 +48,9 @@ export default async function QuestionStatusPage({ params }: Props) {
     const cookieStore = await cookies();
     const t = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
     try {
-      if (action === 'publish') await publishContent(t, 'question_bank', questionId);
-      else if (action === 'archive') await archiveContent(t, 'question_bank', questionId);
-      else await restoreContent(t, 'question_bank', questionId);
+      if (action === 'publish') await publishContent(t, 'questions', questionId);
+      else if (action === 'archive') await archiveContent(t, 'questions', questionId);
+      else await restoreContent(t, 'questions', questionId);
       return {};
     } catch (err) {
       const msg =
@@ -77,7 +77,7 @@ export default async function QuestionStatusPage({ params }: Props) {
       {entity ? (
         <ContentStatusWorkflow
           entityId={questionId}
-          entityType="question_bank"
+          entityType="questions"
           entityTitle={entity.title}
           currentStatus={entity.status as ContentStatus}
           onTransition={handleTransition}
