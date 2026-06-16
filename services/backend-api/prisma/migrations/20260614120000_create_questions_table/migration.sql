@@ -1,4 +1,4 @@
--- P3-023: Create Question Bank Migration
+-- P3-026: Create questions table (supplementary to question_bank)
 -- Creates the questions table for reusable question bank items.
 -- Does NOT implement placement or practice flows (Phase 4+).
 
