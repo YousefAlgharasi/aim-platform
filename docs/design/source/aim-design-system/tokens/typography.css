@@ -1,0 +1,107 @@
+/* ============================================================
+   AIM — Typography System  (mobile-first)
+   English: Inter · Arabic: IBM Plex Sans Arabic
+   Each role exposes -size / -line / -weight / -tracking tokens
+   plus a ready-to-apply --type-<role> shorthand font value.
+   Arabic uses a slightly larger line-height — apply the
+   --type-ar-line-* multipliers (or just set line-height looser).
+   ============================================================ */
+
+:root {
+  /* Weights */
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-semibold:600;
+  --weight-bold:    700;
+  --weight-extrabold:800;
+
+  /* ---- Display ---- */
+  --type-display-size: 34px;
+  --type-display-line: 40px;
+  --type-display-weight: var(--weight-extrabold);
+  --type-display-tracking: -0.02em;
+
+  /* ---- H1 ---- */
+  --type-h1-size: 28px;
+  --type-h1-line: 34px;
+  --type-h1-weight: var(--weight-bold);
+  --type-h1-tracking: -0.01em;
+
+  /* ---- H2 ---- */
+  --type-h2-size: 23px;
+  --type-h2-line: 30px;
+  --type-h2-weight: var(--weight-bold);
+  --type-h2-tracking: -0.01em;
+
+  /* ---- H3 ---- */
+  --type-h3-size: 19px;
+  --type-h3-line: 26px;
+  --type-h3-weight: var(--weight-semibold);
+  --type-h3-tracking: 0;
+
+  /* ---- Title (card / list headers) ---- */
+  --type-title-size: 17px;
+  --type-title-line: 24px;
+  --type-title-weight: var(--weight-semibold);
+  --type-title-tracking: 0;
+
+  /* ---- Body Large ---- */
+  --type-body-lg-size: 17px;
+  --type-body-lg-line: 26px;
+  --type-body-lg-weight: var(--weight-regular);
+  --type-body-lg-tracking: 0;
+
+  /* ---- Body Medium (default) ---- */
+  --type-body-md-size: 16px;
+  --type-body-md-line: 24px;
+  --type-body-md-weight: var(--weight-regular);
+  --type-body-md-tracking: 0;
+
+  /* ---- Body Small ---- */
+  --type-body-sm-size: 14px;
+  --type-body-sm-line: 21px;
+  --type-body-sm-weight: var(--weight-regular);
+  --type-body-sm-tracking: 0;
+
+  /* ---- Caption ---- */
+  --type-caption-size: 12px;
+  --type-caption-line: 16px;
+  --type-caption-weight: var(--weight-medium);
+  --type-caption-tracking: 0.01em;
+
+  /* ---- Button ---- */
+  --type-button-size: 15px;
+  --type-button-line: 20px;
+  --type-button-weight: var(--weight-semibold);
+  --type-button-tracking: 0.01em;
+
+  /* ---- Label (field / overline) ---- */
+  --type-label-size: 13px;
+  --type-label-line: 18px;
+  --type-label-weight: var(--weight-semibold);
+  --type-label-tracking: 0.01em;
+
+  /* ---- Helper text ---- */
+  --type-helper-size: 12px;
+  --type-helper-line: 16px;
+  --type-helper-weight: var(--weight-regular);
+  --type-helper-tracking: 0;
+
+  /* Arabic line-height bump — multiply role line-heights by this
+     for Arabic-set content (looser leading reads cleaner). */
+  --ar-line-scale: 1.18; /* @kind other */
+
+  /* Shorthand font values (weight size/line family) */
+  --type-display: var(--type-display-weight) var(--type-display-size)/var(--type-display-line) var(--font-sans);
+  --type-h1:      var(--type-h1-weight) var(--type-h1-size)/var(--type-h1-line) var(--font-sans);
+  --type-h2:      var(--type-h2-weight) var(--type-h2-size)/var(--type-h2-line) var(--font-sans);
+  --type-h3:      var(--type-h3-weight) var(--type-h3-size)/var(--type-h3-line) var(--font-sans);
+  --type-title:   var(--type-title-weight) var(--type-title-size)/var(--type-title-line) var(--font-sans);
+  --type-body-lg: var(--type-body-lg-weight) var(--type-body-lg-size)/var(--type-body-lg-line) var(--font-sans);
+  --type-body-md: var(--type-body-md-weight) var(--type-body-md-size)/var(--type-body-md-line) var(--font-sans);
+  --type-body-sm: var(--type-body-sm-weight) var(--type-body-sm-size)/var(--type-body-sm-line) var(--font-sans);
+  --type-caption: var(--type-caption-weight) var(--type-caption-size)/var(--type-caption-line) var(--font-sans);
+  --type-button:  var(--type-button-weight) var(--type-button-size)/var(--type-button-line) var(--font-sans);
+  --type-label:   var(--type-label-weight) var(--type-label-size)/var(--type-label-line) var(--font-sans);
+  --type-helper:  var(--type-helper-weight) var(--type-helper-size)/var(--type-helper-line) var(--font-sans);
+}
