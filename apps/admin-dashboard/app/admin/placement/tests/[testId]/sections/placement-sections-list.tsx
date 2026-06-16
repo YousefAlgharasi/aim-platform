@@ -12,7 +12,7 @@
 // - No AIM Engine runtime, AI Teacher, lesson delivery, or progress dashboard.
 // - Section order changes are not implemented here — enforced by backend in a future task.
 
-import type { AdminPlacementSectionSummary } from '../../../../../lib/api/admin-placement-sections-api';
+import type { AdminPlacementSectionSummary } from '../../../../../../lib/api/admin-placement-sections-api';
 
 const SKILL_CODE_LABELS: Record<string, string> = {
   grammar: 'Grammar',
