@@ -1,25 +1,22 @@
 # Phase 3 Output Completeness Review
 
 Review scope: P3-001..P3-070
-Reviewer: Automated strict reviewer (software engineer role)
+Reviewer: Strict repository reviewer (codebase-first verification)
 Date: 2026-06-16
+Source of truth: Current files on `main` branch, NOT branch names or commit messages
 
 ---
 
 ## Summary
 
-Phase 3 — Curriculum & Content System is structurally complete for documentation, backend
-API services, database migrations, shared contracts, admin UI scaffolding, and QA
-documentation. The curriculum hierarchy, lesson-skill linking, question-skill mapping,
-content status lifecycle, permission guards, audit logging, seed data, and review documents
-are all present on the repository.
+Phase 3 — Curriculum & Content System is structurally complete across documentation (17 docs), shared contracts (8 files), database migrations (12 tables), backend API modules (13 feature directories), admin dashboard UI (10 pages), and QA review documents (10 files).
 
-**Four issues require resolution before Phase 3 can be considered production-ready.**
+Two critical defects, four major gaps, and three minor issues remain. Phase 3 cannot be approved until the critical and major items are resolved.
 
 | Severity | Count |
 |---|---|
-| PASS | 60 |
-| MINOR | 4 |
+| PASS | 61 |
+| MINOR | 3 |
 | MAJOR | 4 |
 | CRITICAL | 2 |
 
@@ -35,13 +32,13 @@ Overall result: **NOT APPROVED — FIXES REQUIRED**
 
 ## PASS Count
 
-60
+61
 
 ---
 
 ## MINOR Count
 
-4
+3
 
 ---
 
@@ -57,47 +54,176 @@ Overall result: **NOT APPROVED — FIXES REQUIRED**
 
 ---
 
+## Detailed CRITICAL Issues
+
+### CRITICAL-1 — P3-055: Admin Skills UI is placeholder-only
+
+**Task**: Build Admin Skills UI
+**Expected output**: Real skills management UI at `apps/admin-dashboard/app/admin/content/skills/page.tsx`
+**Actual output**: 6 lines / 341 bytes rendering only `AdminCurriculumPlaceholderPage`
+
+```
+import { AdminCurriculumPlaceholderPage } from '../../../../components/admin-curriculum-placeholder-page';
+import { adminCurriculumNavigationItems } from '../../../../lib/admin-curriculum-navigation';
+
+export default function AdminSkillsContentPage() {
+  return <AdminCurriculumPlaceholderPage item={adminCurriculumNavigationItems[4]} />;
+}
+```
+
+No skill listing, no skill creation, no skill editing, no skill key management. Content managers cannot maintain the skill taxonomy through the admin UI.
+
+**Notion status**: Done (marked as P3-054 in Notion due to ID mismatch — see MAJOR-4)
+**Branch**: `phase3/P3-055-admin-lessons-ui` — named for lessons, not skills. The branch actually built the lessons UI, not the skills UI.
+
+**Impact**: Without a real skills UI, content managers must use raw API calls or direct database access to manage skills. This undermines backend authority and admin UI completeness.
+
+**Fix required**: Build a real admin skills page with list, create, edit, and status capabilities, matching the pattern used by courses, levels, chapters, lessons, objectives, and question bank pages.
+
+---
+
+### CRITICAL-2 — removeSkillFromLesson allows published lessons to lose all skills
+
+**File**: `services/backend-api/src/features/curriculum/lesson-skills/lesson-skills.service.ts` lines 85-116
+
+```typescript
+async removeSkillFromLesson(
+  lessonId: string,
+  skillId: string,
+  actorUserId?: string | null,
+): Promise<void> {
+  await this.assertLessonExists(lessonId);
+  // DEFECT: No check for lesson.status === 'published'
+  // DEFECT: No check if this is the last linked skill
+  const result = await this.db.query<{ lesson_id: string }>(
+    `DELETE FROM lesson_skills WHERE lesson_id = $1 AND skill_id = $2 RETURNING lesson_id`,
+    [lessonId, skillId],
+  );
+  // ... audit log only
+}
+```
+
+The method blindly deletes the lesson-skill link without verifying:
+1. Whether the lesson is currently published
+2. Whether removing the skill would leave a published lesson with zero linked skills
+
+This directly violates the Phase 3 critical requirement: **every published lesson must be linked to one or more skills**. The publish validation correctly blocks publishing without skills, but nothing prevents skill removal after publish.
+
+**Regression test gap**: `lesson-skill-regression.spec.ts` (P3-049) tests publish validation only. No test covers the removal-from-published-lesson scenario.
+
+**Fix required**: Add a guard in `removeSkillFromLesson` that checks the lesson status. If the lesson is published, query `countPublishedSkillsForLesson` and reject the removal if the count would drop to zero. Add a regression test for this scenario.
+
+---
+
+## Detailed MAJOR Issues
+
+### MAJOR-1 — P3-048: No controller-level tests exist
+
+**Task**: Add Curriculum Backend Tests
+**Expected output**: Backend curriculum test suite including controller integration tests
+**Actual output**: 21 spec files exist, but ALL are service-level unit tests (`*.service.spec.ts`, `*.dto.spec.ts`, `content-status.spec.ts`, `curriculum.module.spec.ts`)
+
+No `*.controller.spec.ts` files exist anywhere under `services/backend-api/src/features/curriculum/`.
+
+Controller tests would verify:
+- Route registration and HTTP method mapping
+- Guard/decorator application (permission checks at the HTTP layer)
+- Request DTO validation pipeline
+- Response envelope formatting
+
+**Impact**: Permission guards are declared on controllers but never tested at the controller level. A misconfigured guard or missing decorator would not be caught.
+
+**Fix required**: Add controller spec files for at least: courses, lessons, skills, lesson-skills, question-bank, question-skills, and content-status-workflow controllers.
+
+---
+
+### MAJOR-2 — P3-023: lesson_skills migration misattributed
+
+**File**: `services/backend-api/prisma/migrations/20260614150000_create_lesson_skills_table/migration.sql`
+**Line 1**: `-- Phase 3 — P3-038`
+
+The migration header says P3-038 (which is "Implement Lesson Skill Mapping API") but the file creates the `lesson_skills` table, which is P3-023 ("Create Lesson Skills Mapping Migration").
+
+Additionally, `20260614120000_create_questions_table/migration.sql` has header `-- P3-023: Create Question Bank Migration` — also misattributed. P3-023 should be lesson_skills, not questions. The questions table migration should reference P3-026 or a related task.
+
+**Impact**: Audit trail integrity. When tracing which task created which migration, the attribution is wrong.
+
+**Fix required**: Correct the header comments in both migration files to reference the correct task IDs.
+
+---
+
+### MAJOR-3 — Content status workflow UI limited to courses and lessons only
+
+**Evidence**: `docs/phase-3/content-status-workflow-check.md` line 87 states:
+> Status pages for levels, chapters, skills, objectives, and questions are not implemented.
+
+Status workflow pages exist only for:
+- `courses/[courseId]/status/page.tsx`
+- `lessons/[lessonId]/status/page.tsx`
+
+Missing status workflow pages for: levels, chapters, skills, objectives, question bank items.
+
+**Impact**: Content managers cannot publish/archive/restore levels, chapters, skills, objectives, or questions through the admin UI. They must use raw API calls.
+
+**Fix required**: Add status workflow pages for at least skills and objectives (required for lesson-skill linking flow). Levels, chapters, and questions should follow as well.
+
+---
+
+### MAJOR-4 — Notion task database IDs/titles diverge from prompt file
+
+The Notion Phase 3 Tasks database has systematic misalignment with `docs/tasks/phase_3_task_prompts.md`:
+
+| Prompt File | Notion ID | Prompt Title | Notion Title |
+|---|---|---|---|
+| P3-054 | P3-054 | Build Admin Chapters UI | Build Admin Skills UI |
+| P3-055 | (not found as P3-055) | Build Admin Skills UI | (mapped to P3-054 in Notion) |
+
+The Notion database also contains tasks not in the prompt file:
+- "Implement Published Content Read API"
+- "Build Admin Content Publish Controls"
+- "Implement Curriculum Feature Module Skeleton"
+- "Build Admin Question Skill Linking UI"
+- "Build Admin Courses and Levels UI" (combined)
+- "Implement Question Choice and Answer Validation"
+- "Add MVP Question Bank Seed"
+- "Create Admin Curriculum Flow Check"
+- "Build Admin Lesson Assets UI"
+
+The prompt file `AgentPrompt` field in some Notion tasks also points to wrong task IDs (e.g., Skills UI Notion task points to `#P3-054` instead of `#P3-055`).
+
+**Impact**: Agents picking tasks from Notion may execute the wrong prompt section. Done/Undone status tracking across the two systems is unreliable.
+
+**Fix required**: Reconcile Notion task IDs, titles, branches, and AgentPrompt references with the canonical prompt file. One system must be authoritative; the other must be synchronized.
+
+---
+
+## Detailed MINOR Issues
+
+### MINOR-1 — P3-011: skill-contracts.md is a thin redirect
+
+`packages/shared-contracts/api/skill-contracts.md` is 11 lines / 359 bytes. It only redirects to `skill-objective-contracts.md`. The combined file at `skill-objective-contracts.md` (8176 bytes) is comprehensive, but the expected standalone output is essentially a stub.
+
+### MINOR-2 — Assets admin page is placeholder
+
+`apps/admin-dashboard/app/admin/content/assets/page.tsx` is 6 lines rendering `AdminCurriculumPlaceholderPage`. However, lesson assets have a dedicated service and API. The admin page does not provide asset management UI. Classified as MINOR because asset management may be deferred, but it should be documented.
+
+### MINOR-3 — Extra questions table migration attribution
+
+`20260614120000_create_questions_table/migration.sql` is attributed to P3-023 in its header, but P3-023 in the prompt file is "Create Lesson Skills Mapping Migration". The `questions` table appears to be a secondary output of P3-026 (question bank) or a separate task added during execution but not reflected in the prompt file.
+
+---
+
 ## Missing Outputs
 
-| Task | Missing Output | Severity |
+| Task | Expected Output | Status |
 |---|---|---|
-| P3-048 | Backend curriculum test suite not merged to `main`. Branch `origin/phase3/P3-048-curriculum-backend-tests` exists with commit `9b29b6a` but was never merged. Output is absent from `main`. | CRITICAL |
-| P3-023 | Branch `phase3/P3-023-question-bank-migration` and commit `946ce5a` are labelled "Create Question Bank Migration" but the P3-023 prompt requires `lesson_skills` mapping migration. The `lesson_skills` migration was created inside the P3-038 commit (`dedfdb4`) under a different branch and task, creating a task-to-output identity mismatch. | MAJOR |
-| P3-055 | Task requires Admin Skills UI (`apps/admin-dashboard/app/admin/content/skills/page.tsx`). The file exists but renders only a placeholder component (`AdminCurriculumPlaceholderPage`). The branch `phase3/P3-055-admin-lessons-ui` was named for lessons and built a lessons UI, not the skills UI. Skills page has no real content — placeholder only. | MAJOR |
+| P3-055 | Real Admin Skills UI | MISSING — placeholder only |
 
 ---
 
 ## Missing Files
 
-| File | Status |
-|---|---|
-| `docs/phase-3/curriculum-content-system-charter.md` | EXISTS |
-| `docs/phase-3/task-execution-rules.md` | EXISTS |
-| `docs/phase-3/curriculum-source-of-truth.md` | EXISTS |
-| `docs/phase-3/curriculum-api-map.md` | EXISTS |
-| `docs/phase-3/curriculum-data-model-map.md` | EXISTS |
-| `docs/phase-3/lesson-skill-linking-rules.md` | EXISTS |
-| `docs/phase-3/content-status-lifecycle.md` | EXISTS |
-| `docs/phase-3/content-publishing-permissions.md` | EXISTS |
-| `packages/shared-contracts/api/curriculum-hierarchy-contracts.md` | EXISTS |
-| `packages/shared-contracts/api/lesson-contracts.md` | EXISTS |
-| `packages/shared-contracts/api/skill-contracts.md` | EXISTS |
-| `packages/shared-contracts/api/objective-contracts.md` | EXISTS |
-| `packages/shared-contracts/api/lesson-asset-contracts.md` | EXISTS |
-| `packages/shared-contracts/api/question-bank-contracts.md` | EXISTS |
-| `packages/shared-contracts/api/content-status-contracts.md` | EXISTS |
-| `packages/shared-contracts/api/errors.md` | EXISTS |
-| `docs/phase-3/curriculum-rls-security-plan.md` | EXISTS |
-| `docs/phase-3/curriculum-import-seed-check.md` | EXISTS |
-| `docs/phase-3/content-status-workflow-check.md` | EXISTS |
-| `docs/phase-3/lesson-asset-safety-check.md` | EXISTS |
-| `docs/phase-3/question-bank-skill-coverage-check.md` | EXISTS |
-| `docs/quality/phase-3-lesson-skill-linking-review.md` | EXISTS |
-| `docs/quality/phase-3-curriculum-security-review.md` | EXISTS |
-| `docs/quality/phase-3-architecture-review.md` | EXISTS |
-| `docs/phase-3/content-system-e2e-check.md` | EXISTS |
-| `docs/phase-4/readiness-checklist.md` | EXISTS |
-| `docs/phase-3/final-review.md` | EXISTS |
+None missing entirely. All 70 expected output paths have a file present on disk, but P3-055's file is functionally empty (placeholder).
 
 ---
 
@@ -105,10 +231,9 @@ Overall result: **NOT APPROVED — FIXES REQUIRED**
 
 | Task | Mismatch |
 |---|---|
-| P3-023 | Prompt: "Create Lesson Skills Mapping Migration" / Branch: `phase3/P3-023-lesson-skills-migration`. Actual commit message on merged branch: "Create Question Bank Migration". Branch used: `phase3/P3-023-question-bank-migration`. Task-to-branch-to-output identity is broken. The lesson_skills migration exists in the repo but was deposited by P3-038, not P3-023. |
-| P3-055 | Prompt: "Build Admin Skills UI" / Branch spec: `phase3/P3-055-admin-skills-ui`. Actual remote branch: `origin/phase3/P3-055-admin-lessons-ui`. Commit built lessons UI, not skills UI. Skills page on main is a placeholder. |
-| P3-026 | Prompt: "Create Question Bank Migration" / Branch spec: `phase3/P3-026-question-bank-migration`. A second branch `phase3/P3-026-curriculum-seed-strategy` also exists, suggesting task re-execution collision. Commit `dbe8d77` on the correct branch created the question bank migration, but branch naming diverged. |
-| P3-048 | Prompt: "Add Curriculum Backend Tests" / Branch: `origin/phase3/P3-048-curriculum-backend-tests` exists with commit `9b29b6a`. Status on main: NOT MERGED. If Notion marks this Done, output is absent from main — classified as Done task missing output. |
+| P3-054 | Prompt: "Build Admin Chapters UI". Notion: "Build Admin Skills UI" with ID P3-054. |
+| P3-055 | Prompt: "Build Admin Skills UI" / Branch: `phase3/P3-055-admin-skills-ui`. Actual remote branch: `origin/phase3/P3-055-admin-lessons-ui`. Skills page on main is placeholder. |
+| Multiple | Notion contains tasks not present in prompt file (see MAJOR-4). |
 
 ---
 
@@ -116,94 +241,103 @@ Overall result: **NOT APPROVED — FIXES REQUIRED**
 
 | Task | Issue |
 |---|---|
-| P3-048 | Commit `9b29b6a` exists on `origin/phase3/P3-048-curriculum-backend-tests` but the branch was never merged to `main`. Controller spec files from this commit (`courses.controller.spec.ts`, `levels.controller.spec.ts`, etc.) are absent from `main`. If Notion status is Done, this is a CRITICAL missing output. |
+| P3-055 (Notion P3-054) | Status = Done in Notion. Output is placeholder, not a real Skills UI. |
 
 ---
 
 ## Lesson-Skill Linking Completeness
 
-| Check | Status |
+| Component | Status |
 |---|---|
-| `lesson-skill-linking-rules.md` exists | PASS |
-| `lesson_skills` migration exists | PASS (created in P3-038 commit, file present) |
-| Lesson-skill backend API (`lesson-skills.service.ts`, `lesson-skills.controller.ts`) | PASS |
-| `LessonPublishValidationService` blocks publish without skills | PASS |
-| `lesson-skill-regression.spec.ts` exists and is in repo | PASS (on `main` via P3-049) |
-| `lesson-publish-validation.service.spec.ts` | PASS |
-| Admin lesson-skill linking UI (`/lessons/[lessonId]/skills/page.tsx`, `skill-linker.tsx`) | PASS |
-| Quality review document `phase-3-lesson-skill-linking-review.md` | PASS |
-| **Open finding from P3-065 review**: `removeSkillFromLesson` does not guard minimum published-skill count for already-published lessons | MAJOR — post-publish skill removal can invalidate published lesson state |
+| Linking rules doc | PASS — `docs/phase-3/lesson-skill-linking-rules.md` (9864B) |
+| Database mapping | PASS — `lesson_skills` table migration exists with correct schema |
+| Backend API | PASS — `lesson-skills/` module with controller, service, types |
+| Publish validation | PASS — `lesson-publish-validation.service.ts` blocks publish without published skills |
+| Removal guard | **CRITICAL** — `removeSkillFromLesson` does not prevent removing last skill from published lesson |
+| Regression tests | PARTIAL — Publish gate tested; removal-from-published-lesson NOT tested |
+| Admin lesson-skill linking UI | PASS — `lessons/[lessonId]/skills/` with page.tsx (155 lines) and skill-linker.tsx (173 lines) |
+| Linking review | PASS — `docs/quality/phase-3-lesson-skill-linking-review.md` (7902B) |
+
+**Verdict**: INCOMPLETE — removal guard defect must be fixed
 
 ---
 
 ## Question-Skill Mapping Completeness
 
-| Check | Status |
+| Component | Status |
 |---|---|
-| `question_skills` migration exists | PASS |
-| Question-skill backend API (`question-skills.service.ts`, `question-skills.controller.ts`) | PASS |
-| Regression test covers question-skill linking | PASS (`lesson-skill-regression.spec.ts`) |
-| Admin question bank UI includes skill mapping | PASS (`/question-bank/question-form.tsx`, `question-list.tsx`) |
-| `question-bank-skill-coverage-check.md` | PASS |
+| Database mapping | PASS — `question_skills` table with `is_primary` flag and unique index |
+| Backend API | PASS — `question-skills/` module with controller, service, types |
+| Regression tests | PASS — P3-049 covers add, remove, duplicate rejection, primary flag |
+| Published primary skill check | PASS — `hasPublishedPrimarySkill` method exists |
+
+**Verdict**: PASS
 
 ---
 
 ## Content Status Workflow Completeness
 
-| Check | Status |
+| Component | Status |
 |---|---|
-| `content-status-lifecycle.md` | PASS |
-| `content-status-contracts.md` | PASS |
-| `content-status-workflow.service.ts` | PASS |
-| `content-status-workflow.controller.ts` | PASS |
-| `PublishValidationService` exists | PASS |
-| Admin content status workflow UI (`content-status-workflow.tsx`, `/courses/[courseId]/status/page.tsx`, `/lessons/[lessonId]/status/page.tsx`) | PASS |
-| `content-status-workflow-check.md` | PASS |
-| **Open finding from P3-062**: Status pages for levels, chapters, skills, objectives, and question bank are not implemented. Status workflow is only wired for courses and lessons. | MAJOR |
+| Lifecycle doc | PASS — `docs/phase-3/content-status-lifecycle.md` |
+| Backend API | PASS — `content-status-workflow/` module |
+| Publish validation | PASS — `publish-validation/` module with entity-type-specific checks |
+| Admin UI (courses) | PASS — `courses/[courseId]/status/page.tsx` |
+| Admin UI (lessons) | PASS — `lessons/[lessonId]/status/page.tsx` |
+| Admin UI (levels, chapters, skills, objectives, questions) | **MAJOR** — Missing |
+| Workflow check doc | PASS — `docs/phase-3/content-status-workflow-check.md` |
+
+**Verdict**: INCOMPLETE — status workflow UI missing for most entity types
 
 ---
 
 ## Backend API Completeness
 
-| Module | Service | Controller | Spec | Status |
-|---|---|---|---|---|
-| Courses | `courses.service.ts` | `courses.controller.ts` | `courses.service.spec.ts` | PASS |
-| Levels | `levels.service.ts` | `levels.controller.ts` | `levels.service.spec.ts` | PASS |
-| Chapters | `chapters.service.ts` | `chapters.controller.ts` | `chapters.service.spec.ts` | PASS |
-| Skills | `skills.service.ts` | `skills.controller.ts` | `skills.service.spec.ts` | PASS |
-| Objectives | `objectives.service.ts` | `objectives.controller.ts` | `objectives.service.spec.ts` | PASS |
-| Lessons | `lessons.service.ts` | `lessons.controller.ts` | `lessons.service.spec.ts` | PASS |
-| Lesson Assets | `lesson-assets.service.ts` | `lesson-assets.controller.ts` | `lesson-assets.service.spec.ts` | PASS |
-| Lesson Skills | `lesson-skills.service.ts` | `lesson-skills.controller.ts` | `lesson-skills.service.spec.ts` | PASS |
-| Lesson Objectives | `lesson-objectives.service.ts` | `lesson-objectives.controller.ts` | `lesson-objectives.service.spec.ts` | PASS |
-| Question Bank | `question-bank.service.ts` | `question-bank.controller.ts` | `question-bank.service.spec.ts` | PASS |
-| Question Skills | `question-skills.service.ts` | `question-skills.controller.ts` | `question-skills.service.spec.ts` | PASS |
-| Content Status Workflow | `content-status-workflow.service.ts` | `content-status-workflow.controller.ts` | `content-status-workflow.service.spec.ts` | PASS |
-| Publish Validation | `publish-validation.service.ts` | (internal, no controller) | `publish-validation.service.spec.ts` | PASS |
-| Lesson Publish Validation | `lesson-publish-validation.service.ts` | (internal) | `lesson-publish-validation.service.spec.ts` | PASS |
-| Curriculum Audit Log | `curriculum-audit-log.service.ts` | `curriculum-audit-log.controller.ts` | `curriculum-audit-log.service.spec.ts` | PASS |
-| Permission Guards | `curriculum.permissions.ts` + Phase 2 guards | — | — | PASS |
-| DTO Validation | `dto/*.dto.ts` with `.spec.ts` for course/lesson/question | — | `course.dto.spec.ts`, `lesson.dto.spec.ts`, `question.dto.spec.ts` | PASS |
-| Curriculum Search/Filter | (integrated in service list endpoints per P3-045) | — | — | PASS |
-| **Controller-level test suites** | `P3-048` commit exists but is NOT merged to main | CRITICAL |
+| Module | Controller | Service | Types | Spec | Guards |
+|---|---|---|---|---|---|
+| courses | PASS | PASS | PASS | PASS | PASS |
+| levels | PASS | PASS | PASS | PASS | PASS |
+| chapters | PASS | PASS | PASS | PASS | PASS |
+| skills | PASS | PASS | PASS | PASS | PASS |
+| objectives | PASS | PASS | PASS | PASS | PASS |
+| lesson-assets | PASS | PASS | PASS | PASS | PASS |
+| lessons | PASS | PASS | PASS | PASS | PASS |
+| lesson-skills | PASS | PASS | PASS | PASS | PASS |
+| lesson-objectives | PASS | PASS | PASS | PASS | PASS |
+| question-bank | PASS | PASS | PASS | PASS | PASS |
+| question-skills | PASS | PASS | PASS | PASS | PASS |
+| content-status-workflow | PASS | PASS | PASS | PASS | PASS |
+| publish-validation | N/A | PASS | PASS | PASS | N/A |
+| curriculum-audit-log | PASS | PASS | PASS | PASS | PASS |
+| dto validation | N/A | N/A | PASS (11 files) | PASS (3 spec files) | N/A |
+
+All 13 backend feature modules exist with complete file sets. Permission guards applied to all controllers (verified via grep). 21 test spec files exist but all are service-level — no controller-level tests.
+
+**Verdict**: PASS with MAJOR caveat (no controller tests)
 
 ---
 
 ## Admin UI Completeness
 
-| Page/Component | File | Status |
+| Page | File | Status |
 |---|---|---|
-| Curriculum navigation | `lib/admin-curriculum-navigation.ts`, `/admin/content/page.tsx` | PASS |
-| Courses UI | `/content/courses/page.tsx`, `course-form.tsx`, `courses-list.tsx` | PASS |
-| Levels UI | `/content/levels/page.tsx`, `level-form.tsx`, `levels-list.tsx` | PASS |
-| Chapters UI | `/content/chapters/page.tsx`, `chapter-form.tsx`, `chapters-list.tsx` | PASS |
-| Skills UI | `/content/skills/page.tsx` | MAJOR — placeholder only, no real skills management UI |
-| Objectives UI | `/content/objectives/page.tsx`, `objectives-list.tsx` | PASS (P3-056) |
-| Lessons UI | `/content/lessons/page.tsx`, `lesson-form.tsx`, `lessons-list.tsx` | PASS |
-| Lesson-Skill Linking UI | `/content/lessons/[lessonId]/skills/page.tsx`, `skill-linker.tsx` | PASS |
-| Question Bank UI | `/content/question-bank/page.tsx`, `question-form.tsx`, `question-list.tsx` | PASS |
-| Content Status Workflow UI | `/content/courses/[courseId]/status/page.tsx`, `/lessons/[lessonId]/status/page.tsx`, `components/content-status-workflow.tsx` | MINOR — only courses and lessons have status pages; levels/chapters/skills/objectives/questions do not |
-| Assets UI | `/content/assets/page.tsx` | MINOR — present but scope limited |
+| Curriculum navigation | `lib/admin-curriculum-navigation.ts` (2000B) | PASS |
+| Content landing | `content/page.tsx` (34 lines) | PASS |
+| Courses | `content/courses/page.tsx` (135 lines) | PASS |
+| Levels | `content/levels/page.tsx` (225 lines) | PASS |
+| Chapters | `content/chapters/page.tsx` (253 lines) | PASS |
+| Skills | `content/skills/page.tsx` (6 lines) | **CRITICAL — placeholder only** |
+| Objectives | `content/objectives/page.tsx` (137 lines) | PASS |
+| Lessons | `content/lessons/page.tsx` (369 lines) | PASS |
+| Lesson-skill linking | `content/lessons/[lessonId]/skills/` (328 lines total) | PASS |
+| Question bank | `content/question-bank/page.tsx` (158 lines) | PASS |
+| Content status (courses) | `content/courses/[courseId]/status/page.tsx` | PASS |
+| Content status (lessons) | `content/lessons/[lessonId]/status/page.tsx` | PASS |
+| Assets | `content/assets/page.tsx` (6 lines) | MINOR — placeholder |
+
+API client libraries exist for all modules (9 files in `lib/api/`).
+
+**Verdict**: INCOMPLETE — Skills UI missing
 
 ---
 
@@ -211,90 +345,48 @@ Overall result: **NOT APPROVED — FIXES REQUIRED**
 
 | Document | Status |
 |---|---|
-| `docs/phase-3/curriculum-import-seed-check.md` | PASS |
-| `docs/phase-3/content-status-workflow-check.md` | PASS |
-| `docs/phase-3/lesson-asset-safety-check.md` | PASS |
-| `docs/phase-3/question-bank-skill-coverage-check.md` | PASS |
-| `docs/quality/phase-3-lesson-skill-linking-review.md` | PASS — contains CRITICAL follow-up (post-publish skill removal) |
-| `docs/quality/phase-3-curriculum-security-review.md` | PASS — contains CRITICAL follow-up (authorization integrity and audit gaps) |
-| `docs/quality/phase-3-architecture-review.md` | PASS — CONDITIONAL PASS with release blockers documented |
-| `docs/phase-3/content-system-e2e-check.md` | PASS |
-| `docs/phase-4/readiness-checklist.md` | PASS — explicitly marks Phase 4 as NOT READY for unrestricted dependency |
-| `docs/phase-3/final-review.md` | PASS — status closed with blocking follow-up required |
+| `docs/phase-3/curriculum-import-seed-check.md` | PASS (7616B) |
+| `docs/phase-3/content-status-workflow-check.md` | PASS (9955B) |
+| `docs/phase-3/lesson-asset-safety-check.md` | PASS (6740B) |
+| `docs/phase-3/question-bank-skill-coverage-check.md` | PASS (8783B) |
+| `docs/quality/phase-3-lesson-skill-linking-review.md` | PASS (7902B) |
+| `docs/quality/phase-3-curriculum-security-review.md` | PASS (8687B) |
+| `docs/quality/phase-3-architecture-review.md` | PASS (6910B) |
+| `docs/phase-3/content-system-e2e-check.md` | PASS (7471B) |
+| `docs/phase-4/readiness-checklist.md` | PASS (5461B) |
+| `docs/phase-3/final-review.md` | PASS (5530B) |
+
+**Verdict**: PASS — all 10 QA/review documents exist with substantive content
 
 ---
 
 ## Scope Violations
 
-None detected.
+No out-of-scope implementation detected. No onboarding, placement execution, learner delivery, practice, session, AIM runtime, AI Teacher, or Student Web App code found in Phase 3 outputs. Placement-related migrations exist in the repo but are attributed to Phase 4.
 
-The following are present in the repository but belong to Phase 4, not Phase 3:
-- `services/backend-api/prisma/migrations/20260616*` — placement tables
-- `packages/shared-contracts/api/placement-*.md` — placement contracts
+---
 
-These were added by Phase 4 tasks already in progress on main. They are out of Phase 3 scope
-but are not Phase 3 scope violations because they were not added by Phase 3 tasks.
-Phase 3 tasks did not create onboarding, placement execution, learner delivery, practice,
-sessions, AIM runtime, AI Teacher, dashboard recommendations, progress, or Student Web App
-outputs. The review confirms Phase 3 scope was maintained.
+## Secrets Check
 
-No real secrets, service-role keys, database credentials, JWT secrets, or AI provider keys
-were found in Phase 3 outputs.
+No real secrets detected. Environment variable references are properly abstracted through config validation. Test files use stub values only.
 
 ---
 
 ## Required Fixes
 
-### CRITICAL — P3-048: Backend controller test suite not merged to main
+### Must fix before Phase 3 approval:
 
-**Branch:** `origin/phase3/P3-048-curriculum-backend-tests`
-**Commit:** `9b29b6a`
-**Action:** Merge or rebase the branch onto current main and push. This is P0 for
-Phase 3 completeness. Without it, 10 controller spec files covering all curriculum
-modules are absent from the main branch.
+1. **CRITICAL-1**: Build real Admin Skills UI replacing the placeholder at `apps/admin-dashboard/app/admin/content/skills/page.tsx`. Must include skill listing, create, edit, and status management.
 
-### CRITICAL — Lesson post-publish skill removal invariant (from P3-065 review)
+2. **CRITICAL-2**: Add published-lesson guard to `removeSkillFromLesson` in `services/backend-api/src/features/curriculum/lesson-skills/lesson-skills.service.ts`. Before deleting a lesson-skill link, check if the lesson is published. If published, query remaining skill count and reject if removal would leave zero linked skills. Add regression test.
 
-**Finding:** `removeSkillFromLesson` in `lesson-skills.service.ts` does not check
-the current lesson status. A published lesson can have all its skills unlinked through
-this API, leaving it published without any skills — directly violating the core Phase 3
-requirement.
-**Action:** Add a guard in `removeSkillFromLesson` that rejects the removal if the
-lesson is published and the removal would leave zero published skills linked.
-This is a backend-enforced invariant, not a UI concern.
+3. **MAJOR-1**: Add controller-level test files for at least the critical curriculum controllers (courses, lessons, skills, lesson-skills, question-bank, question-skills, content-status-workflow).
 
-### MAJOR — P3-023: Task-to-branch-to-output identity mismatch
+4. **MAJOR-2**: Correct migration attribution comments in `20260614150000_create_lesson_skills_table/migration.sql` (P3-038 → P3-023) and `20260614120000_create_questions_table/migration.sql` (P3-023 → correct task ID).
 
-**Finding:** P3-023 is titled "Create Lesson Skills Mapping Migration". The branch
-merged under this task ID (`phase3/P3-023-question-bank-migration`, commit `946ce5a`)
-created the question bank migration. The `lesson_skills` table migration was created
-inside P3-038's commit. This means the lesson_skills migration has no clean task-level
-traceability through P3-023.
-**Action:** Document the resolution in Notion. If P3-023 is marked Done in Notion, add
-a clarifying completion note explaining that the `lesson_skills` migration was delivered
-in P3-038 and that P3-023's branch/commit was mislabelled. No migration re-execution
-is required — the file exists.
+5. **MAJOR-3**: Add content status workflow UI pages for levels, chapters, skills, objectives, and question bank items.
 
-### MAJOR — P3-055: Admin Skills UI is a placeholder
-
-**Finding:** `apps/admin-dashboard/app/admin/content/skills/page.tsx` renders
-`AdminCurriculumPlaceholderPage` only. No real skill listing, search, or management UI
-was implemented. Branch `phase3/P3-055-admin-lessons-ui` built a lessons UI instead.
-**Action:** Implement a real Admin Skills UI page with backend API integration
-(`admin-skills-api.ts` exists in `lib/api/`). Minimum: skills list with name and key,
-status display, and ability to navigate to a skill's detail. This is P1 priority per
-the task, but blocking for Phase 3 completeness because skill management is integral to
-lesson-skill linking and the admin curriculum foundation.
-
-### MAJOR — Content status workflow not wired for levels, chapters, skills, objectives, questions
-
-**Finding:** The content status workflow UI and status page pattern are implemented for
-courses (`/courses/[courseId]/status/page.tsx`) and lessons (`/lessons/[lessonId]/status/page.tsx`)
-only. The `content-status-workflow-check.md` document explicitly notes that status pages
-for levels, chapters, skills, objectives, and questions are not implemented.
-**Action:** Either extend the status workflow to cover the remaining entity types, or
-document a Phase 3 deferral decision with explicit scope justification and open items
-recorded for Phase 4.
+6. **MAJOR-4**: Reconcile Notion Phase 3 Tasks database with `docs/tasks/phase_3_task_prompts.md`. Fix task IDs, titles, branch names, and AgentPrompt references.
 
 ---
 
@@ -302,18 +394,12 @@ recorded for Phase 4.
 
 **NOT APPROVED — FIXES REQUIRED**
 
-Two CRITICAL issues and two MAJOR issues must be resolved:
+Phase 3 has excellent structural coverage: all 70 expected file outputs exist on disk, all 13 backend modules are complete with services/controllers/types/specs, all 12 database migrations are present, all 10 QA documents are substantive, and all curriculum APIs have permission guards.
 
-1. CRITICAL: Merge `phase3/P3-048-curriculum-backend-tests` to main.
-2. CRITICAL: Guard `removeSkillFromLesson` against post-publish skill removal that
-   would leave a published lesson with zero skills.
-3. MAJOR: Resolve P3-023 task identity mismatch in Notion (documentation only; no
-   re-migration needed).
-4. MAJOR: Implement real Admin Skills UI or formally defer and document.
+However, two critical defects prevent approval:
+1. The Admin Skills UI is a placeholder — content managers cannot manage skills through the admin interface.
+2. The lesson-skill removal path allows published lessons to lose all skills, violating the core Phase 3 invariant.
 
-The remaining MAJOR item (status workflow gaps for levels/chapters/skills) should be
-either addressed or formally deferred with documented reasoning before Phase 4 takes a
-production dependency on the content lifecycle system.
+Four major gaps add risk: missing controller tests, migration misattribution, incomplete status workflow UI, and Notion/prompt database divergence.
 
-After the two CRITICAL issues are resolved and the MAJOR items are either fixed or
-formally deferred, Phase 3 can be re-reviewed and approved.
+Once the two CRITICAL and four MAJOR items are resolved, Phase 3 should be re-reviewed and can likely be approved.
