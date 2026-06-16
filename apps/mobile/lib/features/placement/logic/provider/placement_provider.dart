@@ -46,3 +46,14 @@ final placementStartProvider =
     repository: ref.watch(placementRepositoryProvider),
   ),
 );
+
+import 'placement_section_notifier.dart';
+
+/// Notifier for the placement section page.
+/// Manages loading sections and tracking the current section index.
+final placementSectionProvider = StateNotifierProvider.autoDispose<
+    PlacementSectionNotifier, PlacementSectionState>(
+  (ref) => PlacementSectionNotifier(
+    repository: ref.watch(placementRepositoryProvider),
+  ),
+);

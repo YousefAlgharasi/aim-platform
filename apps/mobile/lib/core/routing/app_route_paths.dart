@@ -15,5 +15,7 @@ class AppRoutePaths {
   static const String placementStart = '/placement/start';
   static const String placementSection = '/placement/section';
   static const String placementQuestion = '/placement/question';
+  // P4-066: submit route (navigated from section page after last section)
+  static const String placementSubmit = '/placement/submit';
   static const String placementResult = '/placement/result';
 }
