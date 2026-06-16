@@ -1,10 +1,10 @@
-// Phase 4 — P4-040 (initial) / P4-037 (module skeleton) / P4-042 (answer submit)
+// Phase 4 — P4-040 (initial) / P4-037 (module skeleton) / P4-042 (answer submit) / P4-043 (complete) / P4-044 (validation)
 // PlacementModule.
 //
 // Scope: Placement Test system only.
 //
 // This module registers the placement feature in the NestJS DI container.
-// Additional services (P4-046 through P4-048) will be added as they are implemented.
+// Additional services (P4-045 through P4-048) will be added as they are implemented.
 //
 // Security rules:
 //   - No AIM Engine runtime, lesson delivery, AI Teacher, or progress dashboard.
@@ -19,6 +19,7 @@ import { PlacementController } from './placement.controller';
 import { PlacementQuestionDeliveryService } from './placement-question-delivery.service';
 import { PlacementAnswerSubmitService } from './placement-answer-submit.service';
 import { PlacementAttemptCompleteService } from './placement-attempt-complete.service';
+import { PlacementAnswerValidationService } from './placement-answer-validation.service';
 
 @Module({
   imports: [DatabaseModule, AuthModule],
@@ -27,11 +28,13 @@ import { PlacementAttemptCompleteService } from './placement-attempt-complete.se
     PlacementQuestionDeliveryService,
     PlacementAnswerSubmitService,
     PlacementAttemptCompleteService,
+    PlacementAnswerValidationService,
   ],
   exports: [
     PlacementQuestionDeliveryService,
     PlacementAnswerSubmitService,
     PlacementAttemptCompleteService,
+    PlacementAnswerValidationService,
   ],
 })
 export class PlacementModule {}
