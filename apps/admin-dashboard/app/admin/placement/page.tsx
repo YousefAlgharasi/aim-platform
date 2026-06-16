@@ -29,6 +29,13 @@ export default function AdminPlacementPage() {
         ]}
       />
 
+      {/* Phase 4 — P4-054: link to admin placement tests list */}
+      <nav style={{ marginTop: '1.5rem' }}>
+        <Link href="/admin/placement/tests" className="btn-secondary">
+          View Placement Tests →
+        </Link>
+      </nav>
+
       {/* Phase 4 — P4-059: link to admin placement results view */}
       <nav style={{ marginTop: '1.5rem' }}>
         <Link href="/admin/placement/results" className="btn-secondary">
