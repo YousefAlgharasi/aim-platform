@@ -382,3 +382,72 @@ describe('[P3-049 Regression] hasPublishedPrimarySkill — question publish gate
     expect(result).toBe(false);
   });
 });
+
+// ---------------------------------------------------------------------------
+// REGRESSION BLOCK 5:
+//   removeSkillFromLesson MUST prevent published lessons from losing all skills.
+//   A published lesson with exactly one skill linked cannot have that skill removed.
+// ---------------------------------------------------------------------------
+
+describe('[P3-049 Regression] removeSkillFromLesson — published lesson guard', () => {
+  let mockDb: { query: jest.Mock };
+  let lessonSkillsService: LessonSkillsService;
+  const mockAuditLog = { log: jest.fn() };
+
+  beforeEach(() => {
+    mockDb = { query: jest.fn() };
+    lessonSkillsService = new LessonSkillsService(
+      mockDb as unknown as DatabaseService,
+      mockAuditLog as any,
+    );
+    jest.clearAllMocks();
+  });
+
+  it('CRITICAL: blocks removal of last skill from a published lesson', async () => {
+    mockDb.query
+      .mockResolvedValueOnce({ rows: [{ id: LESSON_ID }] })
+      .mockResolvedValueOnce({ rows: [{ status: 'published' }] })
+      .mockResolvedValueOnce({ rows: [{ count: '1' }] });
+
+    await expect(
+      lessonSkillsService.removeSkillFromLesson(LESSON_ID, SKILL_ID),
+    ).rejects.toMatchObject({
+      code: ApiErrorCode.VALIDATION_ERROR,
+      statusCode: HttpStatus.BAD_REQUEST,
+    });
+  });
+
+  it('allows removal of a skill from a published lesson when more than one linked', async () => {
+    mockDb.query
+      .mockResolvedValueOnce({ rows: [{ id: LESSON_ID }] })
+      .mockResolvedValueOnce({ rows: [{ status: 'published' }] })
+      .mockResolvedValueOnce({ rows: [{ count: '3' }] })
+      .mockResolvedValueOnce({ rows: [{ lesson_id: LESSON_ID }] });
+
+    await expect(
+      lessonSkillsService.removeSkillFromLesson(LESSON_ID, SKILL_ID),
+    ).resolves.toBeUndefined();
+  });
+
+  it('allows removal of a skill from a draft lesson even when it is the last', async () => {
+    mockDb.query
+      .mockResolvedValueOnce({ rows: [{ id: LESSON_ID }] })
+      .mockResolvedValueOnce({ rows: [{ status: 'draft' }] })
+      .mockResolvedValueOnce({ rows: [{ lesson_id: LESSON_ID }] });
+
+    await expect(
+      lessonSkillsService.removeSkillFromLesson(LESSON_ID, SKILL_ID),
+    ).resolves.toBeUndefined();
+  });
+
+  it('allows removal of a skill from an archived lesson even when it is the last', async () => {
+    mockDb.query
+      .mockResolvedValueOnce({ rows: [{ id: LESSON_ID }] })
+      .mockResolvedValueOnce({ rows: [{ status: 'archived' }] })
+      .mockResolvedValueOnce({ rows: [{ lesson_id: LESSON_ID }] });
+
+    await expect(
+      lessonSkillsService.removeSkillFromLesson(LESSON_ID, SKILL_ID),
+    ).resolves.toBeUndefined();
+  });
+});
