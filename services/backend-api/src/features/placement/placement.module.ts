@@ -4,8 +4,7 @@
 // Scope: Placement Test system only.
 //
 // This module registers the placement feature in the NestJS DI container.
-// Additional services and controllers (P4-041 through P4-048) will be added
-// to this module as they are implemented.
+// Additional services (P4-046 through P4-048) will be added as they are implemented.
 //
 // Security rules:
 //   - No AIM Engine runtime, lesson delivery, AI Teacher, or progress dashboard.
@@ -19,11 +18,20 @@ import { DatabaseModule } from '../../database/database.module';
 import { PlacementController } from './placement.controller';
 import { PlacementQuestionDeliveryService } from './placement-question-delivery.service';
 import { PlacementAnswerSubmitService } from './placement-answer-submit.service';
+import { PlacementAttemptCompleteService } from './placement-attempt-complete.service';
 
 @Module({
   imports: [DatabaseModule, AuthModule],
   controllers: [PlacementController],
-  providers: [PlacementQuestionDeliveryService, PlacementAnswerSubmitService],
-  exports: [PlacementQuestionDeliveryService, PlacementAnswerSubmitService],
+  providers: [
+    PlacementQuestionDeliveryService,
+    PlacementAnswerSubmitService,
+    PlacementAttemptCompleteService,
+  ],
+  exports: [
+    PlacementQuestionDeliveryService,
+    PlacementAnswerSubmitService,
+    PlacementAttemptCompleteService,
+  ],
 })
 export class PlacementModule {}
