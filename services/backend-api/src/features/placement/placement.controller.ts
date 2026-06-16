@@ -1,22 +1,21 @@
-// Phase 4 — P4-040 (questions) / P4-041 (start attempt) / P4-042 (submit answer) / P4-043 (complete attempt)
+// Phase 4 — P4-040 / P4-041 / P4-042 / P4-043 / P4-048
 // PlacementController.
 //
 // Scope: Placement Test student endpoints only.
 //
 // Endpoints:
-//   GET  /placement/questions?sectionId=:id       — Deliver questions for a section (student).
-//   POST /placement/attempts/:id/answers           — Submit a single answer (student).
-//   POST /placement/attempts/:id/complete          — Complete placement attempt (student).
+//   GET  /placement/questions?sectionId=:id       — Deliver questions for a section.
+//   POST /placement/attempts/:id/answers           — Submit a single answer.
+//   POST /placement/attempts/:id/complete          — Complete placement attempt.
+//   GET  /placement/attempts/:id/result            — Fetch placement result (after completion).
 //
 // Security rules:
-//   - All student endpoints require a valid Supabase JWT (SupabaseJwtAuthGuard).
-//   - correct_answer, is_correct, skill_code, and scoring data are never returned to clients.
-//   - student_id is always sourced from the verified JWT — never from client input.
-//   - Attempt ownership is enforced for all attempt-scoped endpoints.
-//   - Backend is the sole authority for question content, answer correctness, and scoring.
-//   - Flutter/client must never receive correct_answer, is_correct, or any correctness signal.
-//   - No AIM Engine runtime, lesson delivery, AI Teacher, or progress dashboard logic.
-//   - No secrets, service-role keys, database credentials, or privileged config here.
+//   - All endpoints require a valid Supabase JWT.
+//   - student_id always from JWT — never from client input.
+//   - Attempt ownership enforced on all attempt-scoped endpoints.
+//   - correct_answer, is_correct, overallScore, rawMastery never returned.
+//   - No AIM Engine runtime, AI Teacher, lesson delivery, or progress dashboard.
+//   - No secrets, service-role keys, or privileged config here.
 
 import {
   Body,
@@ -44,6 +43,7 @@ import { AuthenticatedUser } from '../../auth/authenticated-user';
 import { PlacementQuestionDeliveryService } from './placement-question-delivery.service';
 import { PlacementAnswerSubmitService } from './placement-answer-submit.service';
 import { PlacementAttemptCompleteService } from './placement-attempt-complete.service';
+import { PlacementResultReadService, PlacementResultResponse } from './placement-result-read.service';
 import {
   PlacementQuestionDeliveryResponse,
   SubmitPlacementAnswerRequest,
@@ -58,28 +58,21 @@ export class PlacementController {
     private readonly questionDelivery: PlacementQuestionDeliveryService,
     private readonly answerSubmit: PlacementAnswerSubmitService,
     private readonly attemptComplete: PlacementAttemptCompleteService,
+    private readonly resultRead: PlacementResultReadService,
   ) {}
 
   /**
    * GET /placement/questions?sectionId=:id
-   *
-   * Returns the student-safe question list for a given placement section.
-   * correct_answer and skill_code are stripped before response.
-   * Defined by P4-006 endpoint #3. Response shape: P4-011 §4.
+   * Deliver student-safe questions for a placement section.
+   * P4-006 endpoint #3. Response: P4-011 §4.
    */
   @Get('questions')
   @UseGuards(SupabaseJwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Deliver placement questions for a section (student-safe).' })
-  @ApiQuery({
-    name: 'sectionId',
-    required: true,
-    description: 'UUID of the placement section to fetch questions for.',
-  })
-  @ApiOkResponse({
-    description: 'Ordered list of student-safe placement questions. correct_answer and skill_code are never included.',
-  })
+  @ApiQuery({ name: 'sectionId', required: true, description: 'UUID of the placement section.' })
+  @ApiOkResponse({ description: 'Ordered student-safe questions. correct_answer never included.' })
   async getQuestions(
     @Query('sectionId') sectionId: string,
   ): Promise<PlacementQuestionDeliveryResponse> {
@@ -88,21 +81,16 @@ export class PlacementController {
 
   /**
    * POST /placement/attempts/:id/answers
-   *
-   * Submits a single student answer for a question within an active placement attempt.
-   * is_correct is NOT evaluated and NEVER returned during an active attempt.
-   * skill_code is inherited from the question — clients cannot set it.
-   * Defined by P4-006 endpoint #5. Request/response: P4-012 §3.1.
+   * Submit a single answer. is_correct not evaluated or returned here.
+   * P4-006 endpoint #5. Request/response: P4-012 §3.1.
    */
   @Post('attempts/:id/answers')
   @UseGuards(SupabaseJwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Submit a placement answer for a question (student).' })
+  @ApiOperation({ summary: 'Submit a placement answer (student).' })
   @ApiParam({ name: 'id', description: 'UUID of the active placement attempt.' })
-  @ApiCreatedResponse({
-    description: 'Answer recorded. is_correct is never returned during an active attempt.',
-  })
+  @ApiCreatedResponse({ description: 'Answer recorded. is_correct never returned during active attempt.' })
   async submitAnswer(
     @Param('id') attemptId: string,
     @CurrentUser() user: AuthenticatedUser,
@@ -113,26 +101,43 @@ export class PlacementController {
 
   /**
    * POST /placement/attempts/:id/complete
-   *
-   * Signals that the student has finished answering and submits the attempt.
-   * Transitions status: active → submitted.
-   * Scoring and result generation (estimated_level, skill maps) is triggered
-   * by the backend scoring service (P4-046) — NOT here and NOT by Flutter.
-   * Defined by P4-006 endpoint #6. Response shape: P4-013 §3.2.
+   * Student signals done answering — transitions active → submitted.
+   * Scoring triggers separately (P4-046). P4-006 endpoint #6.
    */
   @Post('attempts/:id/complete')
   @UseGuards(SupabaseJwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Complete a placement attempt — student signals done answering.' })
-  @ApiParam({ name: 'id', description: 'UUID of the active placement attempt to complete.' })
-  @ApiOkResponse({
-    description: 'Attempt transitioned to submitted. Scoring is handled by backend only.',
-  })
+  @ApiOperation({ summary: 'Complete a placement attempt — student signals done.' })
+  @ApiParam({ name: 'id', description: 'UUID of the active placement attempt.' })
+  @ApiOkResponse({ description: 'Attempt transitioned to submitted. Scoring is backend-only.' })
   async completeAttempt(
     @Param('id') attemptId: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<PlacementAttemptCompleteResponse> {
     return this.attemptComplete.completeAttempt(attemptId, user.id);
+  }
+
+  /**
+   * GET /placement/attempts/:id/result
+   * Fetch the student-safe placement result — only available after status = completed.
+   * Returns estimatedLevel, skillSummary (signal only — no raw scores), initialPathReady.
+   * P4-006 endpoint #7. Response: P4-014 §5–6.
+   */
+  @Get('attempts/:id/result')
+  @UseGuards(SupabaseJwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Fetch placement result — available after attempt completion.' })
+  @ApiParam({ name: 'id', description: 'UUID of the completed placement attempt.' })
+  @ApiOkResponse({
+    description:
+      'Student-safe placement result. No raw scores, no internal skill keys, no overallScore.',
+  })
+  async getResult(
+    @Param('id') attemptId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<PlacementResultResponse> {
+    return this.resultRead.getResult(attemptId, user.id);
   }
 }
