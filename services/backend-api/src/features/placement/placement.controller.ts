@@ -1,9 +1,10 @@
-// Phase 4 — P4-040 / P4-041 / P4-042 / P4-043 / P4-048 / P4-051
+// Phase 4 — P4-038 / P4-040 / P4-041 / P4-042 / P4-043 / P4-048 / P4-051
 // PlacementController.
 //
 // Scope: Placement Test student endpoints only.
 //
 // Endpoints:
+//   GET  /placement/active                         — Fetch active placement test metadata.
 //   GET  /placement/questions?sectionId=:id       — Deliver questions for a section.
 //   POST /placement/attempts                       — Start a placement attempt.
 //   POST /placement/attempts/:id/answers           — Submit a single answer.
@@ -50,6 +51,7 @@ import { PlacementQuestionDeliveryService } from './placement-question-delivery.
 import { PlacementAnswerSubmitService } from './placement-answer-submit.service';
 import { PlacementAttemptCompleteService } from './placement-attempt-complete.service';
 import { PlacementResultReadService, PlacementResultResponse } from './placement-result-read.service';
+import { PlacementTestReadService, PlacementTestActiveResponse } from './placement-test-read.service';
 import {
   PlacementQuestionDeliveryResponse,
   SubmitPlacementAnswerRequest,
@@ -61,11 +63,32 @@ import {
 @Controller('placement')
 export class PlacementController {
   constructor(
+    private readonly testRead: PlacementTestReadService,
     private readonly questionDelivery: PlacementQuestionDeliveryService,
     private readonly answerSubmit: PlacementAnswerSubmitService,
     private readonly attemptComplete: PlacementAttemptCompleteService,
     private readonly resultRead: PlacementResultReadService,
   ) {}
+
+  /**
+   * GET /placement/active
+   * Fetch the currently published placement test metadata.
+   * P4-006 endpoint #1. Response: P4-009 §4.
+   * Returns only student-safe fields — version, published_at, created_at excluded.
+   */
+  @Get('active')
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Fetch the active placement test metadata (student-safe).' })
+  @ApiOkResponse({
+    description:
+      'Published placement test. Fields excluded: version, published_at, created_at, updated_at.',
+  })
+  async getActivePlacementTest(): Promise<PlacementTestActiveResponse> {
+    return this.testRead.getActivePlacementTest();
+  }
 
   /**
    * GET /placement/questions?sectionId=:id
