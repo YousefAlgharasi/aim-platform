@@ -142,8 +142,6 @@ export interface PlacementAnswerRow {
 /**
  * Request body for POST /placement/attempts/:id/answers.
  * Defined by P4-012 §3.1.
- *
- * NEVER includes: placement_attempt_id (from path), is_correct, skill_code.
  */
 export interface SubmitPlacementAnswerRequest {
   readonly placementQuestionId: string;
@@ -153,9 +151,7 @@ export interface SubmitPlacementAnswerRequest {
 /**
  * Student-safe response for POST /placement/attempts/:id/answers.
  * Defined by P4-012 §3.1 (response shape).
- *
  * Fields NEVER included: is_correct, skill_code.
- * is_correct must not be revealed to students during an active attempt.
  */
 export interface SubmitPlacementAnswerResponse {
   readonly id: string;
