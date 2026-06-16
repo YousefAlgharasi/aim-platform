@@ -5,10 +5,10 @@
 // Backend is the sole authority for status transitions — this client
 // does not implement any transition logic itself.
 //
-// Endpoint conventions (per curriculum-api-map.md):
-//   POST /curriculum/:entityType/:entityId/publish
-//   POST /curriculum/:entityType/:entityId/archive
-//   POST /curriculum/:entityType/:entityId/restore
+// Endpoint conventions (per content-status-workflow controller):
+//   PATCH /curriculum/workflow/:entityType/:entityId/publish
+//   PATCH /curriculum/workflow/:entityType/:entityId/archive
+//   PATCH /curriculum/workflow/:entityType/:entityId/restore
 //
 // Permission guards enforced on backend:
 //   publish  → curriculum.content.publish
@@ -23,6 +23,7 @@ export type ContentEntityType =
   | 'chapters'
   | 'lessons'
   | 'skills'
+  | 'objectives'
   | 'questions';
 
 export type ContentStatus = 'draft' | 'published' | 'archived';
@@ -97,11 +98,9 @@ async function postTransition(
   entityId: string,
   action: 'publish' | 'archive' | 'restore',
 ): Promise<StatusTransitionResult> {
-  const path = entityType === 'questions'
-    ? `/curriculum/question-bank/questions/${encodeURIComponent(entityId)}/${action}`
-    : `/curriculum/${entityType}/${encodeURIComponent(entityId)}/${action}`;
+  const path = `/curriculum/workflow/${entityType}/${encodeURIComponent(entityId)}/${action}`;
 
-  const envelope = await adminApiClient.post<StatusTransitionResult>(
+  const envelope = await adminApiClient.patch<StatusTransitionResult>(
     path,
     decodeTransitionResult,
     { headers: { authorization: `Bearer ${token}` }, body: {} },

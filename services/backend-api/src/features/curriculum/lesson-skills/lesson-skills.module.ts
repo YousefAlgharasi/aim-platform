@@ -6,11 +6,12 @@ import { UsersModule } from '../../users';
 import { CurriculumAuditLogModule } from '../curriculum-audit-log/curriculum-audit-log.module';
 import { LessonSkillsController } from './lesson-skills.controller';
 import { LessonSkillsService } from './lesson-skills.service';
+import { LessonPublishValidationService } from './lesson-publish-validation.service';
 
 @Module({
   imports: [AuthModule, DatabaseModule, RolesModule, UsersModule, CurriculumAuditLogModule],
   controllers: [LessonSkillsController],
-  providers: [LessonSkillsService],
-  exports: [LessonSkillsService],
+  providers: [LessonSkillsService, LessonPublishValidationService],
+  exports: [LessonSkillsService, LessonPublishValidationService],
 })
 export class LessonSkillsModule {}
