@@ -1,14 +1,12 @@
-// Phase 4 — P4-064
-// Placement Riverpod providers — datasource + repository.
+// Phase 4 — P4-064 (datasource + repository providers) + P4-065 (start provider)
+// Placement Riverpod providers.
 //
 // Scope: Placement Test phase only.
 //
 // Registers:
-//   placementRemoteDatasourceProvider — injects BackendApiClient → PlacementRemoteDatasourceImpl
-//   placementRepositoryProvider       — injects datasource → PlacementRepositoryImpl
-//
-// UI pages and notifiers watch placementRepositoryProvider only.
-// Datasource is an implementation detail — not imported directly by the UI layer.
+//   placementRemoteDatasourceProvider — datasource
+//   placementRepositoryProvider       — repository (use this in UI layers)
+//   placementStartProvider            — notifier for the placement start page
 //
 // Security rules:
 // - Flutter never calculates placement scores, CEFR levels, mastery, or weakness maps.
@@ -22,6 +20,7 @@ import 'package:aim_mobile/features/placement/data/datasources/placement_remote_
 import 'package:aim_mobile/features/placement/data/datasources/placement_remote_datasource_impl.dart';
 import 'package:aim_mobile/features/placement/data/repository/repo_impl/placement_repository_impl.dart';
 import 'package:aim_mobile/features/placement/logic/repository/placement_repository.dart';
+import 'placement_start_notifier.dart';
 
 /// Provides the concrete [PlacementRemoteDatasource].
 /// Consumers should depend on [placementRepositoryProvider] instead.
@@ -38,3 +37,12 @@ final placementRepositoryProvider = Provider<PlacementRepository>((ref) {
     datasource: ref.watch(placementRemoteDatasourceProvider),
   );
 });
+
+/// Notifier for the placement start page.
+/// Manages loading the active test and starting a new attempt.
+final placementStartProvider =
+    StateNotifierProvider.autoDispose<PlacementStartNotifier, PlacementStartState>(
+  (ref) => PlacementStartNotifier(
+    repository: ref.watch(placementRepositoryProvider),
+  ),
+);
