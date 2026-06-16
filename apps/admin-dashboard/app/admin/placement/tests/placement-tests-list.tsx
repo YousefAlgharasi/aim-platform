@@ -1,6 +1,6 @@
 'use client';
 
-// Phase 4 — P4-054
+// Phase 4 — P4-054 (base) / P4-055 (sections link)
 // AdminPlacementTestsList — client component.
 //
 // Scope: Placement Test phase only — admin view of placement test definitions.
@@ -15,6 +15,7 @@
 //   controlled by the backend and will be implemented in P4-058.
 
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import type {
   AdminPlacementTestSummary,
   PlacementTestStatus,
@@ -119,6 +120,7 @@ export function AdminPlacementTestsList({
               <th scope="col">Est. Minutes</th>
               <th scope="col">Created</th>
               <th scope="col">ID</th>
+              <th scope="col">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -136,6 +138,14 @@ export function AdminPlacementTestsList({
                 <td>{test.estimatedMinutes} min</td>
                 <td>{formatDate(test.createdAt)}</td>
                 <td className="admin-table-mono">{truncateId(test.id)}</td>
+                <td>
+                  <Link
+                    href={`/admin/placement/tests/${test.id}/sections`}
+                    className="admin-table-action"
+                  >
+                    Sections →
+                  </Link>
+                </td>
               </tr>
             ))}
           </tbody>
