@@ -42,7 +42,7 @@ INSERT INTO placement_tests (
 VALUES (
   'f4000000-0000-0000-0000-000000000001',
   'AIM Phase 4 Placement Test',
-  'active',
+  'published',
   now(),
   now()
 )
