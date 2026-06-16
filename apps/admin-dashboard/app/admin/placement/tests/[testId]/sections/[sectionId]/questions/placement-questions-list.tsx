@@ -1,6 +1,6 @@
 'use client';
 
-// Phase 4 — P4-056
+// Phase 4 — P4-056 / P4-057
 // AdminPlacementQuestionsList — client component.
 //
 // Scope: Placement Test phase only — admin view of placement question bank.
@@ -11,7 +11,9 @@
 // - question_type, prompt, mediaUrl, orderIndex, skillCode displayed as-is from backend.
 // - No placement scoring, CEFR thresholds, skill maps, or weakness maps here.
 // - No AIM Engine runtime, AI Teacher, lesson delivery, or progress dashboard.
+// P4-057: Added Skills → link column to navigate to skill linking UI per question.
 
+import Link from 'next/link';
 import type {
   AdminPlacementQuestionSummary,
   PlacementQuestionType,
@@ -33,6 +35,8 @@ const TYPE_BADGE_CLASSES: Record<PlacementQuestionType, string> = {
 
 type AdminPlacementQuestionsListProps = {
   readonly questions: AdminPlacementQuestionSummary[];
+  readonly testId: string;
+  readonly sectionId: string;
 };
 
 function truncatePrompt(prompt: string, max = 80): string {
@@ -44,7 +48,11 @@ function truncateId(id: string): string {
   return id ? `…${id.slice(-8)}` : '—';
 }
 
-export function AdminPlacementQuestionsList({ questions }: AdminPlacementQuestionsListProps) {
+export function AdminPlacementQuestionsList({
+  questions,
+  testId,
+  sectionId,
+}: AdminPlacementQuestionsListProps) {
   if (questions.length === 0) {
     return (
       <p className="admin-empty-state">
@@ -63,6 +71,7 @@ export function AdminPlacementQuestionsList({ questions }: AdminPlacementQuestio
           <th scope="col">Audio</th>
           <th scope="col">Skill</th>
           <th scope="col">ID</th>
+          <th scope="col">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -90,6 +99,14 @@ export function AdminPlacementQuestionsList({ questions }: AdminPlacementQuestio
               <span className="skill-badge">{q.skillCode}</span>
             </td>
             <td className="admin-table-mono">{truncateId(q.id)}</td>
+            <td>
+              <Link
+                href={`/admin/placement/tests/${testId}/sections/${sectionId}/questions/${q.id}/skills`}
+                className="admin-table-link"
+              >
+                Skills →
+              </Link>
+            </td>
           </tr>
         ))}
       </tbody>
