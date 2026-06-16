@@ -57,3 +57,14 @@ final placementSectionProvider = StateNotifierProvider.autoDispose<
     repository: ref.watch(placementRepositoryProvider),
   ),
 );
+
+import 'placement_question_notifier.dart';
+
+/// Notifier for the placement question page.
+/// Manages loading questions, tracking current question, and submitting answers.
+final placementQuestionProvider = StateNotifierProvider.autoDispose<
+    PlacementQuestionNotifier, PlacementQuestionState>(
+  (ref) => PlacementQuestionNotifier(
+    repository: ref.watch(placementRepositoryProvider),
+  ),
+);
