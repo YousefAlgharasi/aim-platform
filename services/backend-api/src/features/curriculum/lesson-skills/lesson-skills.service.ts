@@ -89,6 +89,19 @@ export class LessonSkillsService {
   ): Promise<void> {
     await this.assertLessonExists(lessonId);
 
+    const lessonStatus = await this.getLessonStatus(lessonId);
+
+    if (lessonStatus === 'published') {
+      const currentCount = await this.countSkillLinksForLesson(lessonId);
+      if (currentCount <= 1) {
+        throw new AppError({
+          code: ApiErrorCode.VALIDATION_ERROR,
+          message: `Cannot remove the last skill from published lesson ${lessonId}. A published lesson must have at least one linked skill.`,
+          statusCode: HttpStatus.BAD_REQUEST,
+        });
+      }
+    }
+
     const result = await this.db.query<{ lesson_id: string }>(
       `DELETE FROM lesson_skills
          WHERE lesson_id = $1 AND skill_id = $2
@@ -111,6 +124,22 @@ export class LessonSkillsService {
       actorUserId: actorUserId ?? null,
       metadata: { skillId },
     });
+  }
+
+  private async getLessonStatus(lessonId: string): Promise<string> {
+    const result = await this.db.query<{ status: string }>(
+      `SELECT status FROM lessons WHERE id = $1 LIMIT 1`,
+      [lessonId],
+    );
+    return result.rows[0]?.status ?? 'draft';
+  }
+
+  private async countSkillLinksForLesson(lessonId: string): Promise<number> {
+    const result = await this.db.query<{ count: string }>(
+      `SELECT COUNT(*)::text AS count FROM lesson_skills WHERE lesson_id = $1`,
+      [lessonId],
+    );
+    return parseInt(result.rows[0]?.count ?? '0', 10);
   }
 
   async countPublishedSkillsForLesson(lessonId: string): Promise<number> {
