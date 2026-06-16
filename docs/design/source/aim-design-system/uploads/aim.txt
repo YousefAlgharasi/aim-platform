@@ -1,0 +1,312 @@
+Create a complete Design System for an AI English learning platform called AIM.
+Do NOT design full app pages.
+Do NOT create user flows.
+Do NOT create system architecture diagrams.
+I only need the reusable UI design system: components, tokens, typography, colors, spacing, buttons, bars, cards, status styles, forms, and layout rules.
+Product Context
+AIM is an adaptive AI English learning app for Arabic-speaking learners.
+The design should feel:
+modern
+educational
+AI-powered
+friendly
+trustworthy
+clean
+mobile-first
+professional
+suitable for students, parents, and admins
+The system supports:
+Arabic and English
+RTL and LTR layouts
+mobile app
+web/admin dashboard
+Font Direction
+Use this typography recommendation:
+English font: Inter
+Arabic font: IBM Plex Sans Arabic
+If needed, provide a fallback:
+English fallback: system sans-serif
+Arabic fallback: Noto Sans Arabic
+The Arabic design must be clean and readable, not decorative.
+Required Design System Output
+Create a polished visual design system board including the following:
+1. Color System
+Define colors for:
+Primary
+Secondary
+Accent
+Background
+Surface
+Text primary
+Text secondary
+Muted text
+Border
+Divider
+Success
+Warning
+Error
+Info
+Also define:
+Light mode palette
+Optional dark mode palette
+Gradient style for AI elements
+Disabled state colors
+Hover/pressed/focus states
+The color palette should use a modern AI-learning feel:
+blue, purple, teal, soft white, neutral gray.
+2. Typography System
+Create typography tokens for both English and Arabic.
+Include:
+Display
+H1
+H2
+H3
+Title
+Body large
+Body medium
+Body small
+Caption
+Button text
+Label
+Helper text
+For each style include:
+font family
+font size
+font weight
+line height
+letter spacing if needed
+Use mobile-first sizes.
+Recommended base:
+Body: 16px
+Small text: 12–14px
+H1 mobile: 28–32px
+H2 mobile: 22–24px
+Button text: 15–16px
+Arabic text should have slightly larger line height for readability.
+3. Spacing System
+Create an 8-point spacing system.
+Include spacing tokens:
+4px
+8px
+12px
+16px
+20px
+24px
+32px
+40px
+48px
+64px
+Explain how spacing should be used for:
+screen padding
+card padding
+section spacing
+form spacing
+button spacing
+list item spacing
+Recommended:
+Mobile screen horizontal padding: 16px
+Card padding: 16px or 20px
+Section gap: 24px
+Component gap: 12px
+Small inner gap: 8px
+4. Radius System
+Define border radius tokens:
+Small radius
+Medium radius
+Large radius
+Extra large radius
+Pill radius
+Recommended:
+Small: 8px
+Medium: 12px
+Large: 16px
+Extra large: 24px
+Pill: 999px
+Use rounded cards and soft AI-style components.
+5. Shadow / Elevation System
+Create soft shadows for:
+card default
+card hover
+modal
+bottom sheet
+floating action button
+dropdown
+The style should be clean and not heavy.
+6. Button System
+Design button components with all states.
+Include:
+Primary button
+Secondary button
+Outline button
+Ghost button
+Destructive button
+Icon button
+Floating action button
+Full-width mobile button
+For each button show:
+default
+hover
+pressed
+disabled
+loading
+with icon
+Arabic RTL example
+English LTR example
+Button sizes:
+Small
+Medium
+Large
+Recommended:
+Large button height: 52px
+Medium button height: 44px
+Small button height: 36px
+7. Navigation Components
+Design:
+Mobile top app bar
+Mobile bottom navigation bar
+Admin sidebar
+Web top navigation
+Breadcrumbs
+Tabs
+Segmented control
+Include active, inactive, hover, disabled states.
+Bottom nav should include examples like:
+Home
+Lessons
+AI Tutor
+Progress
+Profile
+8. Cards
+Design reusable card styles:
+Lesson card
+Progress card
+Recommendation card
+Skill card
+Achievement card
+AI feedback card
+Parent summary card
+Admin statistic card
+Empty state card
+Each card should show:
+title
+subtitle
+icon area
+status badge
+action button
+progress indicator if needed
+9. Status Components
+Design status indicators for:
+Completed
+In progress
+Not started
+Needs review
+Weak area
+Strong area
+Locked
+Recommended
+New
+Error
+Warning
+Success
+Include:
+badges
+chips
+pills
+tags
+alert banners
+10. Form Components
+Design:
+Text input
+Password input
+Search input
+Select dropdown
+Checkbox
+Radio button
+Toggle switch
+Textarea
+OTP input
+Validation error
+Helper text
+Disabled field
+Include Arabic and English examples.
+11. Learning Components
+Design special AIM learning components:
+Progress bar
+Circular progress
+Skill mastery indicator
+Difficulty level badge
+Streak badge
+XP / points badge
+Placement level result badge
+Question answer option
+Correct answer state
+Wrong answer state
+AI feedback bubble
+Audio/speaking recording button
+Review reminder chip
+Important:
+Do not make the UI look like a game for kids.
+Make it motivational but professional.
+12. Loading, Empty, and Error States
+Design:
+Skeleton loader
+Button loading
+Card loading
+Empty lesson state
+Empty progress state
+No internet state
+Backend error state
+AI feedback unavailable state
+Retry button style
+13. Layout Rules
+Define layout rules for:
+mobile screens
+tablet screens
+web/admin screens
+dashboard grid
+form layout
+card grid
+RTL layout behavior
+LTR layout behavior
+Recommended:
+Mobile max content padding: 16px
+Dashboard card gap: 16px or 24px
+Admin sidebar width: 260px
+Web content max width: 1200px
+14. Icon Style
+Recommend icon style:
+outline icons
+rounded icons
+consistent stroke width
+simple educational/AI icons
+Avoid overly playful icons.
+15. Design Tokens
+Provide a token table for:
+colors
+typography
+spacing
+radius
+shadows
+z-index
+component sizes
+Use names that developers can implement, like:
+color.primary.500
+color.success.500
+spacing.16
+radius.md
+typography.body.md
+shadow.card.sm
+16. Visual Style Board
+Create the final design as a polished design system board showing:
+color palette
+typography samples
+buttons
+cards
+nav bars
+form fields
+badges
+progress components
+alerts
+loading states
+Arabic and English text samples
+Make it look like a professional Figma design system for a real SaaS mobile/web product.
