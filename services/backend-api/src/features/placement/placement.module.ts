@@ -1,4 +1,4 @@
-// Phase 4 — P4-040/P4-037/P4-042/P4-043/P4-044/P4-045/P4-046
+// Phase 4 — P4-040/P4-037/P4-042/P4-043/P4-044/P4-045/P4-046/P4-047
 // PlacementModule.
 //
 // Scope: Placement Test system only.
@@ -17,6 +17,7 @@ import { PlacementAttemptCompleteService } from './placement-attempt-complete.se
 import { PlacementAnswerValidationService } from './placement-answer-validation.service';
 import { PlacementScoringService } from './placement-scoring.service';
 import { PlacementResultService } from './placement-result.service';
+import { PlacementInitialLearningPathService } from './placement-initial-learning-path.service';
 
 @Module({
   imports: [DatabaseModule, AuthModule],
@@ -28,6 +29,7 @@ import { PlacementResultService } from './placement-result.service';
     PlacementAnswerValidationService,
     PlacementScoringService,
     PlacementResultService,
+    PlacementInitialLearningPathService,
   ],
   exports: [
     PlacementQuestionDeliveryService,
@@ -36,6 +38,7 @@ import { PlacementResultService } from './placement-result.service';
     PlacementAnswerValidationService,
     PlacementScoringService,
     PlacementResultService,
+    PlacementInitialLearningPathService,
   ],
 })
 export class PlacementModule {}
