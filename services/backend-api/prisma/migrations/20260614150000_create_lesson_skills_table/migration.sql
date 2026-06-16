@@ -1,4 +1,4 @@
--- Phase 3 — P3-038
+-- Phase 3 — P3-023
 -- Create lesson_skills mapping table.
 --
 -- Scope:
