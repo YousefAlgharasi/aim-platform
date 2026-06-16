@@ -1,9 +1,3 @@
-// Phase 3 — P3-058
-// Admin skills API client for the lesson-skill linker skill picker.
-//
-// Critical rule: Always use stable skill keys (e.g. grammar.past_simple.forms)
-// as identifiers — never display labels.
-
 import { adminApiClient } from './index';
 
 export type SkillDomain =
@@ -16,12 +10,16 @@ export type SkillDomain =
   | 'pronunciation'
   | 'functional_language';
 
+export type SkillStatus = 'draft' | 'published' | 'archived';
+
 export type AdminSkillSummary = {
   readonly id: string;
   readonly key: string;
   readonly title: string;
   readonly domain: SkillDomain;
-  readonly status: string;
+  readonly status: SkillStatus;
+  readonly createdAt: string;
+  readonly updatedAt: string;
 };
 
 export type AdminSkillListData = {
@@ -29,6 +27,17 @@ export type AdminSkillListData = {
   readonly total: number;
   readonly page: number;
   readonly limit: number;
+};
+
+export type CreateSkillPayload = {
+  readonly key: string;
+  readonly title: string;
+  readonly domain: SkillDomain;
+};
+
+export type UpdateSkillPayload = {
+  readonly title?: string;
+  readonly domain?: SkillDomain;
 };
 
 function isObject(v: unknown): v is Record<string, unknown> {
@@ -44,7 +53,9 @@ function decodeSkillSummary(value: unknown): AdminSkillSummary {
     key: value.key,
     title: typeof value.title === 'string' ? value.title : value.key,
     domain: (value.domain ?? 'grammar') as SkillDomain,
-    status: String(value.status ?? 'draft'),
+    status: (value.status ?? 'draft') as SkillStatus,
+    createdAt: String(value.createdAt ?? ''),
+    updatedAt: String(value.updatedAt ?? ''),
   };
 }
 
@@ -56,8 +67,25 @@ function decodeSkillListData(value: unknown): AdminSkillListData {
     skills: value.skills.map(decodeSkillSummary),
     total: typeof value.total === 'number' ? value.total : 0,
     page: typeof value.page === 'number' ? value.page : 1,
-    limit: typeof value.limit === 'number' ? value.limit : 100,
+    limit: typeof value.limit === 'number' ? value.limit : 20,
   };
+}
+
+export async function fetchAdminSkills(
+  token: string,
+  page = 1,
+  limit = 20,
+  status?: SkillStatus,
+): Promise<AdminSkillListData> {
+  const envelope = await adminApiClient.get<AdminSkillListData>(
+    '/curriculum/skills',
+    decodeSkillListData,
+    {
+      headers: { authorization: `Bearer ${token}` },
+      query: { page, limit, ...(status ? { status } : {}) },
+    },
+  );
+  return envelope.data;
 }
 
 export async function fetchAdminSkillsForPicker(
@@ -65,12 +93,35 @@ export async function fetchAdminSkillsForPicker(
   page = 1,
   limit = 100,
 ): Promise<AdminSkillListData> {
-  const envelope = await adminApiClient.get<AdminSkillListData>(
+  return fetchAdminSkills(token, page, limit, 'published');
+}
+
+export async function createAdminSkill(
+  token: string,
+  payload: CreateSkillPayload,
+): Promise<AdminSkillSummary> {
+  const envelope = await adminApiClient.post<AdminSkillSummary>(
     '/curriculum/skills',
-    decodeSkillListData,
+    decodeSkillSummary,
     {
       headers: { authorization: `Bearer ${token}` },
-      query: { page, limit, status: 'published' },
+      body: payload,
+    },
+  );
+  return envelope.data;
+}
+
+export async function updateAdminSkill(
+  token: string,
+  id: string,
+  payload: UpdateSkillPayload,
+): Promise<AdminSkillSummary> {
+  const envelope = await adminApiClient.patch<AdminSkillSummary>(
+    `/curriculum/skills/${encodeURIComponent(id)}`,
+    decodeSkillSummary,
+    {
+      headers: { authorization: `Bearer ${token}` },
+      body: payload,
     },
   );
   return envelope.data;
