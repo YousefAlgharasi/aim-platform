@@ -13,7 +13,7 @@ Prompt:
 You are a senior Flutter design-system engineer. Before implementing anything, inspect the real AIM design system source files and create a conversion map. Do not write Flutter code in this task.
 
 Source design-system files to inspect:
-
+which you find in doce/design/source/
 - `readme.md`
 - `styles.css`
 - `tokens/colors.css`
