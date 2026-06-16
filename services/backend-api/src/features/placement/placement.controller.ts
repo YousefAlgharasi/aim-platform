@@ -1,9 +1,10 @@
-// Phase 4 — P4-040 / P4-041 / P4-042 / P4-043 / P4-048 / P4-051
+// Phase 4 — P4-039 / P4-040 / P4-041 / P4-042 / P4-043 / P4-048 / P4-051
 // PlacementController.
 //
 // Scope: Placement Test student endpoints only.
 //
 // Endpoints:
+//   GET  /placement/sections                      — List sections of the active test.
 //   GET  /placement/questions?sectionId=:id       — Deliver questions for a section.
 //   POST /placement/attempts                       — Start a placement attempt.
 //   POST /placement/attempts/:id/answers           — Submit a single answer.
@@ -50,6 +51,7 @@ import { PlacementQuestionDeliveryService } from './placement-question-delivery.
 import { PlacementAnswerSubmitService } from './placement-answer-submit.service';
 import { PlacementAttemptCompleteService } from './placement-attempt-complete.service';
 import { PlacementResultReadService, PlacementResultResponse } from './placement-result-read.service';
+import { PlacementSectionsService, PlacementSectionsResponse } from './placement-sections.service';
 import {
   PlacementQuestionDeliveryResponse,
   SubmitPlacementAnswerRequest,
@@ -61,11 +63,31 @@ import {
 @Controller('placement')
 export class PlacementController {
   constructor(
+    private readonly sections: PlacementSectionsService,
     private readonly questionDelivery: PlacementQuestionDeliveryService,
     private readonly answerSubmit: PlacementAnswerSubmitService,
     private readonly attemptComplete: PlacementAttemptCompleteService,
     private readonly resultRead: PlacementResultReadService,
   ) {}
+
+  /**
+   * GET /placement/sections
+   * List sections of the active placement test in order.
+   * P4-006 endpoint #2. Response: P4-010 §4.
+   * Fields excluded: placement_test_id, created_at, updated_at.
+   */
+  @Get('sections')
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List sections of the active placement test (student-safe).' })
+  @ApiOkResponse({
+    description: 'Ordered section list. Fields excluded: placement_test_id, created_at, updated_at.',
+  })
+  async getSections(): Promise<PlacementSectionsResponse> {
+    return this.sections.getSections();
+  }
 
   /**
    * GET /placement/questions?sectionId=:id
