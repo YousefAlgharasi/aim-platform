@@ -8,9 +8,9 @@ class ProgressPlaceholderPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       appBar: AIMTopAppBar(title: 'Progress'),
-      body: const MainShellPlaceholderCard(
+      body: MainShellPlaceholderCard(
         title: 'Progress',
         description:
             'Progress placeholder. Mastery and level are never calculated in Flutter.',

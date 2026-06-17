@@ -71,13 +71,13 @@ class RoleAwarePlaceholderSection extends StatelessWidget {
             'Role-aware UI placeholder',
             style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
           ),
-          SizedBox(height: AimSpacing.innerGap),
+          const SizedBox(height: AimSpacing.innerGap),
           Text(
             'Visible items below come from backend-provided role data. '
             'Backend authorisation remains final.',
             style: AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
           ),
-          SizedBox(height: AimSpacing.componentGap),
+          const SizedBox(height: AimSpacing.componentGap),
           Wrap(
             spacing: AimSpacing.innerGap,
             runSpacing: AimSpacing.innerGap,
@@ -88,13 +88,13 @@ class RoleAwarePlaceholderSection extends StatelessWidget {
                   child: Text(role.name),
                 ),
               if (authContext.roles.isEmpty)
-                AIMBadge(
+                const AIMBadge(
                   tone: AIMBadgeTone.neutral,
-                  child: const Text('No backend roles loaded'),
+                  child: Text('No backend roles loaded'),
                 ),
             ],
           ),
-          SizedBox(height: AimSpacing.formFieldGap),
+          const SizedBox(height: AimSpacing.formFieldGap),
           if (visibleActions.isEmpty)
             Text(
               roleLabels.isEmpty
@@ -122,7 +122,7 @@ class _RoleAwarePlaceholderTile extends StatelessWidget {
     final surfaces = aimSurfacesOf(context);
 
     return Padding(
-      padding: EdgeInsets.only(top: AimSpacing.componentGap),
+      padding: const EdgeInsets.only(top: AimSpacing.componentGap),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -131,7 +131,7 @@ class _RoleAwarePlaceholderTile extends StatelessWidget {
             size: AimSizes.iconMd,
             color: surfaces.textMuted,
           ),
-          SizedBox(width: AimSpacing.componentGap),
+          const SizedBox(width: AimSpacing.componentGap),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,7 +141,7 @@ class _RoleAwarePlaceholderTile extends StatelessWidget {
                   style: AimTextStyles.title
                       .copyWith(color: surfaces.textPrimary),
                 ),
-                SizedBox(height: AimSpacing.space2),
+                const SizedBox(height: AimSpacing.space2),
                 Text(
                   action.description,
                   style: AimTextStyles.bodySm

@@ -8,9 +8,9 @@ class LearnPlaceholderPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       appBar: AIMTopAppBar(title: 'Learn'),
-      body: const MainShellPlaceholderCard(
+      body: MainShellPlaceholderCard(
         title: 'Learn',
         description:
             'Lessons and learning path placeholder. No local AIM logic is implemented.',

@@ -8,9 +8,9 @@ class ReviewPlaceholderPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       appBar: AIMTopAppBar(title: 'Review'),
-      body: const MainShellPlaceholderCard(
+      body: MainShellPlaceholderCard(
         title: 'Review',
         description:
             'Review and retention placeholder. Retention scheduling is backend-owned.',

@@ -8,9 +8,9 @@ class AuthPlaceholderBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AIMAlertBanner(
+    return const AIMAlertBanner(
       tone: AIMAlertTone.info,
-      child: const Text(
+      child: Text(
         'Placeholder auth only. Supabase authentication is not implemented yet.',
       ),
     );

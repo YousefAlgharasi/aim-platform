@@ -37,16 +37,16 @@ class AIMFullScreenLoading extends StatelessWidget {
       label: semanticLabel,
       child: Center(
         child: Padding(
-          padding: EdgeInsets.symmetric(
+          padding: const EdgeInsets.symmetric(
             horizontal: AimSpacing.screenPaddingMobile,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              AIMSkeleton(
+              const AIMSkeleton(
                 shape: AIMSkeletonShape.rect,
               ),
-              SizedBox(height: AimSpacing.componentGap),
+              const SizedBox(height: AimSpacing.componentGap),
               AIMSkeleton(
                 shape: AIMSkeletonShape.text,
                 lines: skeletonLines,

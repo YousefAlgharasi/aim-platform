@@ -24,7 +24,7 @@ class MainShellPlaceholderCard extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(AimSpacing.sectionGap),
+        padding: const EdgeInsets.all(AimSpacing.sectionGap),
         child: AIMCard(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -34,7 +34,7 @@ class MainShellPlaceholderCard extends StatelessWidget {
                 style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: AimSpacing.componentGap),
+              const SizedBox(height: AimSpacing.componentGap),
               Text(
                 description,
                 style:

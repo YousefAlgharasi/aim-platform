@@ -24,16 +24,16 @@ class SplashPlaceholderPage extends ConsumerWidget {
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: EdgeInsets.all(AimSpacing.screenPaddingMobile),
+            padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
+                const Icon(
                   Icons.school_outlined,
                   size: AimSizes.iconLg * 3,
                   color: AimColors.primary500,
                 ),
-                SizedBox(height: AimSpacing.sectionGap),
+                const SizedBox(height: AimSpacing.sectionGap),
                 Text(
                   'AIM',
                   style: AimTextStyles.h1.copyWith(
@@ -41,14 +41,14 @@ class SplashPlaceholderPage extends ConsumerWidget {
                     letterSpacing: 2,
                   ),
                 ),
-                SizedBox(height: AimSpacing.componentGap),
+                const SizedBox(height: AimSpacing.componentGap),
                 Text(
                   'Auth state: ${authState.status.name}',
                   style: AimTextStyles.bodySm.copyWith(
                     color: surfaces.textMuted,
                   ),
                 ),
-                SizedBox(height: AimSpacing.sectionGap),
+                const SizedBox(height: AimSpacing.sectionGap),
                 AIMButton(
                   onPressed: () {
                     ref.read(authFlowProvider.notifier).completeBootstrap();
@@ -57,7 +57,7 @@ class SplashPlaceholderPage extends ConsumerWidget {
                   variant: AIMButtonVariant.outline,
                   child: const Text('Start auth placeholder flow'),
                 ),
-                SizedBox(height: AimSpacing.componentGap),
+                const SizedBox(height: AimSpacing.componentGap),
                 AIMButton(
                   onPressed: authState.status == AuthFlowStatus.signedIn
                       ? () => Navigator.of(context)
