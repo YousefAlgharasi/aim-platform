@@ -34,7 +34,8 @@
  */
 
 import 'reflect-metadata';
-import { UseGuards } from '@nestjs/common';
+import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
+import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants';
 import { AimResultController } from './aim-result.controller';
 import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
 import { StudentOwnershipGuard } from '../../../auth/authorization/student-ownership.guard';
@@ -76,6 +77,32 @@ const handlers: { name: string; method: Function; paramName: string }[] = [
   { name: 'getWeaknessRecords',   method: proto.getWeaknessRecords,   paramName: 'studentId' },
   { name: 'getRecommendations',   method: proto.getRecommendations,   paramName: 'studentId' },
 ];
+
+const paramValidatedHandlers: { name: string; paramIndexes: number[] }[] = [
+  { name: 'getSkillStates', paramIndexes: [0] },
+  { name: 'getReviewSchedules', paramIndexes: [0] },
+  { name: 'getSessionState', paramIndexes: [0, 1] },
+  { name: 'getWeaknessRecords', paramIndexes: [0] },
+  { name: 'getRecommendations', paramIndexes: [0] },
+];
+
+function getRouteArgMetadata(
+  methodName: string,
+): Record<string, { index?: number; pipes?: unknown[] }> {
+  return (
+    Reflect.getMetadata(
+      ROUTE_ARGS_METADATA,
+      AimResultController,
+      methodName,
+    ) ?? {}
+  );
+}
+
+function getParamPipes(methodName: string, index: number): unknown[] {
+  return Object.values(getRouteArgMetadata(methodName))
+    .filter((metadata) => metadata.index === index)
+    .flatMap((metadata) => metadata.pipes ?? []);
+}
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -234,4 +261,16 @@ describe('AimResultController — permission guards (P5-073)', () => {
       expect(ctorParams).not.toContain('AimEngineAdapterService');
     });
   });
+});
+
+describe('AimResultController — DTO boundary validation (P5-074)', () => {
+  it.each(paramValidatedHandlers)(
+    '$name validates all route UUID params before service delegation',
+    ({ name, paramIndexes }) => {
+      for (const index of paramIndexes) {
+        const pipes = getParamPipes(name, index);
+        expect(pipes).toContain(ParseUUIDPipe);
+      }
+    },
+  );
 });
