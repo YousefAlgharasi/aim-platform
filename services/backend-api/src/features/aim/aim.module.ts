@@ -30,6 +30,7 @@ import { AimRequestMapperService } from './adapter/aim-request-mapper.service';
 import { AimAdapterErrorHandlerService } from './adapter/aim-adapter-error-handler.service';
 import { AimAdapterTimeoutPolicyService } from './adapter/aim-adapter-timeout-policy.service';
 import { AimResponseMapperService } from './adapter/aim-response-mapper.service';
+import { AttemptSkillContextService } from './adapter/attempt-skill-context.service';
 import { AimPipelineOrchestratorService } from './pipeline/aim-pipeline-orchestrator.service';
 import { AimStateAssemblyService } from './pipeline/aim-state-assembly.service';
 import { AimAuditService } from './persistence/aim-audit.service';
@@ -50,6 +51,9 @@ import { AimResultService } from './result/aim-result.service';
 
     // Phase 5 — request mapper (Stage 3, P5-047)
     AimRequestMapperService,
+
+    // Phase 5 — attempt skill context resolver (P5-055)
+    AttemptSkillContextService,
 
     // Phase 5 — response mapper (Stage 5, P5-048)
     AimResponseMapperService,
