@@ -24,11 +24,13 @@ import { PlacementRetakePolicyService } from './placement-retake-policy.service'
 import { PlacementAuditService } from './placement-audit.service';
 import { PlacementPermissionGuard } from './placement-permission.guard';
 import { PlacementSectionsService } from './placement-sections.service';
+import { PlacementTestReadService } from './placement-test-read.service';
 
 @Module({
   imports: [DatabaseModule, AuthModule],
   controllers: [PlacementController],
   providers: [
+    PlacementTestReadService,
     PlacementSectionsService,
     PlacementQuestionDeliveryService,
     PlacementAttemptService,
@@ -44,6 +46,7 @@ import { PlacementSectionsService } from './placement-sections.service';
     PlacementPermissionGuard,
   ],
   exports: [
+    PlacementTestReadService,
     PlacementSectionsService,
     PlacementQuestionDeliveryService,
     PlacementAttemptService,
