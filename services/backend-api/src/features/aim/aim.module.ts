@@ -20,6 +20,7 @@
  */
 import { Module } from '@nestjs/common';
 
+import { DatabaseModule } from '../../database/database.module';
 import { AimEngineClientService } from './aim-engine-client.service';
 import { AimService } from './aim.service';
 
@@ -38,6 +39,7 @@ import { AimPersistenceService } from './persistence/aim-persistence.service';
 import { AimResultService } from './result/aim-result.service';
 
 @Module({
+  imports: [DatabaseModule],
   providers: [
     // Existing (pre-Phase 5)
     AimEngineClientService,
