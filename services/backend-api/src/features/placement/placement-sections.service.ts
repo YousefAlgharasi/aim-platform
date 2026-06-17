@@ -78,21 +78,21 @@ export class PlacementSectionsService {
    * @returns Ordered student-safe section list.
    */
   async getSections(): Promise<PlacementSectionsResponse> {
-    const testRows = await this.db.query<PublishedTestIdRow>(
+    const testResult = await this.db.query<PublishedTestIdRow>(
       `SELECT id FROM placement_tests WHERE status = 'published' LIMIT 1`,
     );
 
-    if (testRows.length === 0) {
-      throw new AppError(
-        'No published placement test found.',
-        HttpStatus.NOT_FOUND,
-        ApiErrorCode.NOT_FOUND,
-      );
+    if ((testResult.rowCount ?? 0) === 0) {
+      throw new AppError({
+        code: ApiErrorCode.NOT_FOUND,
+        message: 'No published placement test found.',
+        statusCode: HttpStatus.NOT_FOUND,
+      });
     }
 
-    const testId = testRows[0].id;
+    const testId = testResult.rows[0].id;
 
-    const sectionRows = await this.db.query<PlacementSectionRow>(
+    const sectionResult = await this.db.query<PlacementSectionRow>(
       `SELECT id, title, skill_code, order_index, total_questions
          FROM placement_sections
         WHERE placement_test_id = $1
@@ -101,7 +101,7 @@ export class PlacementSectionsService {
     );
 
     return {
-      sections: sectionRows.map((row) => ({
+      sections: sectionResult.rows.map((row) => ({
         id: row.id,
         title: row.title,
         skillCode: row.skill_code,
