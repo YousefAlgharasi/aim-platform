@@ -12,3 +12,8 @@ __all__ = [
     "PipelineNotImplementedError",
     "PlaceholderAdaptiveSessionCompletionPipeline",
 ]
+
+from app.pipeline.aim_analysis_pipeline import (  # noqa: F401  # P5-023
+    AimAnalysisPipeline,
+    AimAnalysisPipelineEntrypoint,
+)
