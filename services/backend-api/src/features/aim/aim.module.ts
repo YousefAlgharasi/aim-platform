@@ -39,7 +39,9 @@ import { AimPersistenceService } from './persistence/aim-persistence.service';
 import { StudentSkillStateUpdateService } from './persistence/student-skill-state-update.service';
 import { DifficultyDecisionService } from './persistence/difficulty-decision.service';
 import { RecommendationOutputService } from './persistence/recommendation-output.service';
+import { ReviewScheduleOutputService } from './persistence/review-schedule-output.service';
 import { FrustrationSignalService } from './persistence/frustration-signal.service';
+import { SessionSummaryService } from './persistence/session-summary.service';
 import { AimResultService } from './result/aim-result.service';
 
 @Module({
@@ -89,6 +91,12 @@ import { AimResultService } from './result/aim-result.service';
 
     // Phase 5 — frustration/emotional signal persistence (P5-062)
     FrustrationSignalService,
+
+    // Phase 5 — frustration signal persistence (P5-062) carried forward
+    FrustrationSignalService,
+
+    // Phase 5 — session summary persistence (P5-063)
+    SessionSummaryService,
 
     // Phase 5 — result read APIs
     AimResultService,
