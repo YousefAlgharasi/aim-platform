@@ -115,9 +115,8 @@ class BackendApiClient {
     final cleanBase = basePath.endsWith('/')
         ? basePath.substring(0, basePath.length - 1)
         : basePath;
-    final cleanRequest = requestPath.startsWith('/')
-        ? requestPath.substring(1)
-        : requestPath;
+    final cleanRequest =
+        requestPath.startsWith('/') ? requestPath.substring(1) : requestPath;
 
     if (cleanBase.isEmpty) return '/$cleanRequest';
     if (cleanRequest.isEmpty) return cleanBase;

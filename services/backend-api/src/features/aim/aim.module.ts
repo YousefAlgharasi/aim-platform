@@ -115,6 +115,7 @@ import { AimResultController } from './result/aim-result.controller';
 
     // Phase 5 exports
     AimHealthCheckService,
+    AimPipelineOrchestratorService,
     AimResultService,
   ],
 })
