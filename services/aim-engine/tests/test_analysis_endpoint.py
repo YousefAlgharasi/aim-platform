@@ -3,7 +3,9 @@
 Verifies:
 - Service-token auth: 401 on missing/wrong token, 200 on valid token.
 - Request schema acceptance: valid AimAnalysisRequest body parses and responds.
-- Response envelope: backend_request_id, student_id, session_id are echoed.
+- Response envelope: backendRequestId, studentId, sessionId are echoed
+  (wire format is camelCase per the P5-076 contract fix; internal field
+  names remain snake_case backend_request_id/student_id/session_id).
 - Scope guard: response body contains no secrets, no mastery internals.
 - Stub behaviour: empty categories returned before P5-023 pipeline is wired.
 """
@@ -136,9 +138,9 @@ def test_analysis_response_echoes_correlation_ids(client: TestClient) -> None:
         headers={"Authorization": f"Bearer {TOKEN}"},
     )
     payload = response.json()
-    assert payload["backend_request_id"] == VALID_BODY["backend_request_id"]
-    assert payload["student_id"] == VALID_BODY["session"]["student_id"]
-    assert payload["session_id"] == VALID_BODY["session"]["session_id"]
+    assert payload["backendRequestId"] == VALID_BODY["backend_request_id"]
+    assert payload["studentId"] == VALID_BODY["session"]["student_id"]
+    assert payload["sessionId"] == VALID_BODY["session"]["session_id"]
 
 
 def test_analysis_response_has_categories_field(client: TestClient) -> None:

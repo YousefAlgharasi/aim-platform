@@ -191,7 +191,7 @@ async def post_analysis(
     )
 
     return JSONResponse(
-        content=response.model_dump(mode="json"),
+        content=response.model_dump(mode="json", by_alias=True),
         status_code=status.HTTP_200_OK,
         headers={
             "X-Request-Id": x_request_id or "",
