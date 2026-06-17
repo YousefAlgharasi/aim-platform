@@ -38,6 +38,8 @@ import { AimAuditService } from './persistence/aim-audit.service';
 import { AimPersistenceService } from './persistence/aim-persistence.service';
 import { StudentSkillStateUpdateService } from './persistence/student-skill-state-update.service';
 import { DifficultyDecisionService } from './persistence/difficulty-decision.service';
+import { RecommendationOutputService } from './persistence/recommendation-output.service';
+import { ReviewScheduleOutputService } from './persistence/review-schedule-output.service';
 import { AimResultService } from './result/aim-result.service';
 
 @Module({
@@ -81,6 +83,12 @@ import { AimResultService } from './result/aim-result.service';
 
     // Phase 5 — difficulty decision persistence (P5-059)
     DifficultyDecisionService,
+
+    // Phase 5 — recommendation output persistence (P5-060)
+    RecommendationOutputService,
+
+    // Phase 5 — review schedule output persistence (P5-061)
+    ReviewScheduleOutputService,
 
     // Phase 5 — result read APIs
     AimResultService,
