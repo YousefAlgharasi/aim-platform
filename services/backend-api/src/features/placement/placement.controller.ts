@@ -47,6 +47,8 @@ import { AuthenticatedUser } from '../../auth/authenticated-user';
 import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../auth/authorization/required-roles.decorator';
 import { PlacementPermissionGuard } from './placement-permission.guard';
+import { PlacementTestReadService, PlacementTestActiveResponse } from './placement-test-read.service';
+import { PlacementAttemptService } from './placement-attempt.service';
 import { PlacementQuestionDeliveryService } from './placement-question-delivery.service';
 import { PlacementAnswerSubmitService } from './placement-answer-submit.service';
 import { PlacementAttemptCompleteService } from './placement-attempt-complete.service';
@@ -54,6 +56,7 @@ import { PlacementResultReadService, PlacementResultResponse } from './placement
 import { PlacementSectionsService, PlacementSectionsResponse } from './placement-sections.service';
 import {
   PlacementQuestionDeliveryResponse,
+  PlacementAttemptStartResponse,
   SubmitPlacementAnswerRequest,
   SubmitPlacementAnswerResponse,
   PlacementAttemptCompleteResponse,
@@ -63,12 +66,48 @@ import {
 @Controller('placement')
 export class PlacementController {
   constructor(
+    private readonly testRead: PlacementTestReadService,
+    private readonly attemptStart: PlacementAttemptService,
     private readonly sections: PlacementSectionsService,
     private readonly questionDelivery: PlacementQuestionDeliveryService,
     private readonly answerSubmit: PlacementAnswerSubmitService,
     private readonly attemptComplete: PlacementAttemptCompleteService,
     private readonly resultRead: PlacementResultReadService,
   ) {}
+
+  /**
+   * GET /placement/active
+   * Fetch the currently published placement test metadata (student-safe).
+   * P4-006 endpoint #1. Response: P4-009 §4.
+   */
+  @Get('active')
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get the active placement test metadata (student-safe).' })
+  @ApiOkResponse({ description: 'Active placement test summary. Internal fields excluded.' })
+  async getActiveTest(): Promise<PlacementTestActiveResponse> {
+    return this.testRead.getActiveTest();
+  }
+
+  /**
+   * POST /placement/attempts
+   * Start a new placement attempt for the authenticated student.
+   * Enforces retake policy (P4-049). P4-006 endpoint #4. Response: P4-013 §3.
+   */
+  @Post('attempts')
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.CREATED)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Start a placement attempt — retake policy enforced.' })
+  @ApiCreatedResponse({ description: 'New placement attempt created. student_id from JWT.' })
+  async startAttempt(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<PlacementAttemptStartResponse> {
+    return this.attemptStart.startAttempt(user.id);
+  }
 
   /**
    * GET /placement/sections
