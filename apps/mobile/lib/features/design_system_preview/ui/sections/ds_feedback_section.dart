@@ -15,25 +15,25 @@ class DSFeedbackSection extends StatelessWidget {
         DSSection(
           title: 'Alert Banners',
           children: [
-            AIMAlertBanner(
+            const AIMAlertBanner(
               tone: AIMAlertTone.info,
               title: 'Information',
-              child: const Text('This is an informational message.'),
+              child: Text('This is an informational message.'),
             ),
-            AIMAlertBanner(
+            const AIMAlertBanner(
               tone: AIMAlertTone.success,
               title: 'Success',
-              child: const Text('Your answer was correct!'),
+              child: Text('Your answer was correct!'),
             ),
-            AIMAlertBanner(
+            const AIMAlertBanner(
               tone: AIMAlertTone.warning,
               title: 'Warning',
-              child: const Text('Your session expires in 5 minutes.'),
+              child: Text('Your session expires in 5 minutes.'),
             ),
-            AIMAlertBanner(
+            const AIMAlertBanner(
               tone: AIMAlertTone.error,
               title: 'Error',
-              child: const Text('Could not save your progress.'),
+              child: Text('Could not save your progress.'),
             ),
             AIMAlertBanner(
               tone: AIMAlertTone.info,
@@ -59,21 +59,21 @@ class DSFeedbackSection extends StatelessWidget {
                   ),
               ],
             ),
-            Wrap(
+            const Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
-                const AIMBadge(
+                AIMBadge(
                   tone: AIMBadgeTone.primary,
                   variant: AIMBadgeVariant.solid,
                   child: Text('Solid'),
                 ),
-                const AIMBadge(
+                AIMBadge(
                   tone: AIMBadgeTone.primary,
                   variant: AIMBadgeVariant.outline,
                   child: Text('Outline'),
                 ),
-                const AIMBadge(
+                AIMBadge(
                   tone: AIMBadgeTone.success,
                   pill: true,
                   dot: true,
@@ -81,8 +81,8 @@ class DSFeedbackSection extends StatelessWidget {
                 ),
                 AIMBadge(
                   tone: AIMBadgeTone.secondary,
-                  icon: const Icon(Icons.star_rounded, size: 12),
-                  child: const Text('With icon'),
+                  icon: Icon(Icons.star_rounded, size: 12),
+                  child: Text('With icon'),
                 ),
               ],
             ),
@@ -126,13 +126,13 @@ class DSFeedbackSection extends StatelessWidget {
           ],
         ),
         // Skeleton
-        DSSection(
+        const DSSection(
           title: 'Skeleton Loaders',
           children: [
-            const AIMSkeleton(width: double.infinity, height: 20),
-            const AIMSkeleton(width: 200, height: 20),
-            const AIMSkeleton(width: 120, height: 20),
-            const Row(
+            AIMSkeleton(width: double.infinity, height: 20),
+            AIMSkeleton(width: 200, height: 20),
+            AIMSkeleton(width: 120, height: 20),
+            Row(
               children: [
                 AIMSkeleton(
                   width: 48,

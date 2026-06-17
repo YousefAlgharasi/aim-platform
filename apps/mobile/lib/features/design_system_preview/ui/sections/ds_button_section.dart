@@ -19,10 +19,10 @@ class DSButtonSection extends StatelessWidget {
             size: AIMButtonSize.small,
             child: const Text('Small'),
           ),
-          AIMButton(
+          const AIMButton(
             disabled: true,
             variant: AIMButtonVariant.primary,
-            child: const Text('Disabled'),
+            child: Text('Disabled'),
           ),
           AIMButton(
             loading: true,

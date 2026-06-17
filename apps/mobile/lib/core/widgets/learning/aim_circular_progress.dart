@@ -2,7 +2,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../design_tokens/design_tokens.dart';
 import '../../theme/theme.dart';
 
 /// Fill tone for [AIMCircularProgress].

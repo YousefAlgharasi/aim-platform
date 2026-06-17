@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../design_tokens/design_tokens.dart';
 import '../../theme/theme.dart';
 
 /// Bubble tint for [AIMAIFeedbackBubble].
@@ -129,9 +128,9 @@ class AIMAIFeedbackBubble extends StatelessWidget {
                 const SizedBox(height: 4),
                 // Content or typing dots
                 if (typing)
-                  const Semantics(
+                  Semantics(
                     label: 'AI is typing',
-                    child: ExcludeSemantics(child: _TypingIndicator()),
+                    child: const ExcludeSemantics(child: _TypingIndicator()),
                   )
                 else if (child != null)
                   DefaultTextStyle.merge(
@@ -204,15 +203,15 @@ class _TypingIndicatorState extends State<_TypingIndicator>
     // Wrap within 0..1
     return TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween(begin: 0, end: 1).chain(CurveTween(curve: Curves.easeIn)),
+        tween: Tween<double>(begin: 0.0, end: 1.0).chain(CurveTween(curve: Curves.easeIn)),
         weight: 30,
       ),
       TweenSequenceItem(
-        tween: Tween(begin: 1, end: 0).chain(CurveTween(curve: Curves.easeOut)),
+        tween: Tween<double>(begin: 1.0, end: 0.0).chain(CurveTween(curve: Curves.easeOut)),
         weight: 30,
       ),
       TweenSequenceItem(
-        tween: ConstantTween(0),
+        tween: ConstantTween<double>(0.0),
         weight: 40,
       ),
     ]).animate(
