@@ -6,6 +6,7 @@
 //
 // Endpoints:
 //   GET /aim/students/:studentId/skill-states — Read student skill states (P5-069).
+//   GET /aim/students/:studentId/review-schedules — Read review schedules (P5-072).
 //
 // Security rules:
 //   - All endpoints require a valid Supabase JWT (SupabaseJwtAuthGuard).
@@ -37,12 +38,17 @@ import {
   StudentSkillStateReadService,
   StudentSkillStateReadResponse,
 } from './student-skill-state-read.service';
+import {
+  ReviewScheduleReadService,
+  ReviewScheduleReadResponse,
+} from './review-schedule-read.service';
 
 @ApiTags(OPENAPI_TAGS.aim ?? 'aim')
 @Controller('aim')
 export class AimResultController {
   constructor(
     private readonly skillStateReadService: StudentSkillStateReadService,
+    private readonly reviewScheduleReadService: ReviewScheduleReadService,
   ) {}
 
   /**
@@ -77,5 +83,39 @@ export class AimResultController {
     @Param('studentId') studentId: string,
   ): Promise<StudentSkillStateReadResponse> {
     return this.skillStateReadService.getSkillStatesForStudent(studentId);
+  }
+
+  /**
+   * GET /aim/students/:studentId/review-schedules
+   *
+   * Return all persisted, backend-validated review schedules for the student.
+   *
+   * Access is restricted to the owning student (or privileged roles).
+   * studentId in the route is validated against the JWT via StudentOwnershipGuard.
+   *
+   * Returns only last-AIM-validated values from review_schedules. No live
+   * AIM Engine call is made. If no schedules exist, returns an empty array.
+   *
+   * AIM Engine is never called from this endpoint.
+   */
+  @Get('students/:studentId/review-schedules')
+  @UseGuards(SupabaseJwtAuthGuard, StudentOwnershipGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @RequireStudentOwnership({ paramName: 'studentId' })
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Read backend-validated review schedules (student).',
+    description:
+      'Returns AIM-persisted review schedules. No live AIM Engine call. ' +
+      'studentId in route validated against JWT.',
+  })
+  @ApiParam({ name: 'studentId', description: 'UUID of the student.' })
+  @ApiOkResponse({
+    description: 'Backend-validated review schedules. Empty array if none yet persisted.',
+  })
+  async getReviewSchedules(
+    @Param('studentId') studentId: string,
+  ): Promise<ReviewScheduleReadResponse> {
+    return this.reviewScheduleReadService.getReviewSchedulesForStudent(studentId);
   }
 }
