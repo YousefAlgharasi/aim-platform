@@ -36,6 +36,7 @@ import { AimPipelineOrchestratorService } from './pipeline/aim-pipeline-orchestr
 import { AimStateAssemblyService } from './pipeline/aim-state-assembly.service';
 import { AimAuditService } from './persistence/aim-audit.service';
 import { AimPersistenceService } from './persistence/aim-persistence.service';
+import { StudentSkillStateUpdateService } from './persistence/student-skill-state-update.service';
 import { AimResultService } from './result/aim-result.service';
 
 @Module({
@@ -73,6 +74,9 @@ import { AimResultService } from './result/aim-result.service';
     // Phase 5 — persistence and audit
     AimPersistenceService,
     AimAuditService,
+
+    // Phase 5 — skill state persistence (P5-057)
+    StudentSkillStateUpdateService,
 
     // Phase 5 — result read APIs
     AimResultService,
