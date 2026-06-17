@@ -13,6 +13,10 @@
 // - No AIM Engine runtime, AI Teacher, lesson delivery, or progress dashboard logic.
 // - No secrets, service-role keys, or privileged config here.
 
+import 'package:aim_mobile/features/placement/logic/provider/placement_question_notifier.dart';
+import 'package:aim_mobile/features/placement/logic/provider/placement_result_notifier.dart';
+import 'package:aim_mobile/features/placement/logic/provider/placement_section_notifier.dart';
+import 'package:aim_mobile/features/placement/logic/provider/placement_submit_notifier.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/networking/backend_api_client_provider.dart';
@@ -47,7 +51,6 @@ final placementStartProvider =
   ),
 );
 
-import 'placement_section_notifier.dart';
 
 /// Notifier for the placement section page.
 /// Manages loading sections and tracking the current section index.
@@ -58,7 +61,7 @@ final placementSectionProvider = StateNotifierProvider.autoDispose<
   ),
 );
 
-import 'placement_question_notifier.dart';
+
 
 /// Notifier for the placement question page.
 /// Manages loading questions, tracking current question, and submitting answers.
@@ -69,7 +72,7 @@ final placementQuestionProvider = StateNotifierProvider.autoDispose<
   ),
 );
 
-import 'placement_submit_notifier.dart';
+
 
 /// Notifier for the placement submit/complete page.
 /// Manages calling POST /placement/attempts/:id/complete and navigating to result.
@@ -80,7 +83,7 @@ final placementSubmitProvider = StateNotifierProvider.autoDispose<
   ),
 );
 
-import 'placement_result_notifier.dart';
+
 
 /// Notifier for the placement result page.
 /// Fetches the backend result with polling until attempt is completed.
