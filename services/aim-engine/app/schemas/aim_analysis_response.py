@@ -37,7 +37,31 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic.alias_generators import to_camel
+
+# ---------------------------------------------------------------------------
+# Wire-format compatibility base (P5-076 contract fix)
+# ---------------------------------------------------------------------------
+#
+# The Backend's AimResponseMapperService (P5-048) reads camelCase keys
+# (backendRequestId, studentId, sessionId, contractVersion, generatedAt, ...)
+# from the AIM Engine's response, per JavaScript/TypeScript convention.
+# This schema's internal field names remain snake_case (Python convention).
+#
+# AimCamelCaseModel derives a camelCase alias for every field via
+# alias_generator=to_camel. The analysis endpoint (P5-020,
+# services/aim-engine/app/api/analysis.py) must serialize with
+# model_dump(mode="json", by_alias=True) so the wire response actually uses
+# these aliases — by_alias defaults to False in Pydantic, so omitting it
+# would silently emit snake_case again.
+#
+# populate_by_name=True additionally lets internal code / tests construct
+# instances by the literal snake_case field name.
+
+
+class AimCamelCaseModel(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
 # ---------------------------------------------------------------------------
 # Enumerations
@@ -171,7 +195,7 @@ class AimSignalBasis(str, Enum):
 # ---------------------------------------------------------------------------
 
 
-class AimSkillStateOutput(BaseModel):
+class AimSkillStateOutput(AimCamelCaseModel):
     """AIM Engine's mastery estimate for one student/skill pair (P5-012).
 
     ``mastery_score`` is the sole source of mastery truth for this skill.
@@ -220,7 +244,7 @@ class AimSkillStateOutput(BaseModel):
     )
 
 
-class AimWeaknessRecordOutput(BaseModel):
+class AimWeaknessRecordOutput(AimCamelCaseModel):
     """AIM Engine's identification of a skill weakness instance (P5-013).
 
     ``severity`` and ``status`` are exclusively AIM Engine outputs.
@@ -269,7 +293,7 @@ class AimWeaknessRecordOutput(BaseModel):
         return self
 
 
-class AimDifficultyDecisionOutput(BaseModel):
+class AimDifficultyDecisionOutput(AimCamelCaseModel):
     """AIM Engine's decision on the next item difficulty for a skill (P5-014).
 
     ``next_difficulty`` governs the next presented item for the skill.
@@ -330,7 +354,7 @@ class AimDifficultyDecisionOutput(BaseModel):
         return self
 
 
-class AimRecommendationOutput(BaseModel):
+class AimRecommendationOutput(AimCamelCaseModel):
     """AIM Engine's ranked recommendation for what to do next (P5-015).
 
     Always references existing curriculum content; never generates new content.
@@ -410,7 +434,7 @@ class AimRecommendationOutput(BaseModel):
         return self
 
 
-class AimReviewScheduleOutput(BaseModel):
+class AimReviewScheduleOutput(AimCamelCaseModel):
     """AIM Engine's spaced-repetition scheduling decision for a skill (P5-016).
 
     ``due_at``, ``interval_days``, and ``repetition_count`` are exclusively
@@ -460,7 +484,7 @@ class AimReviewScheduleOutput(BaseModel):
     )
 
 
-class AimSessionBehavioralSignal(BaseModel):
+class AimSessionBehavioralSignal(AimCamelCaseModel):
     """Educational behavioral interpretation for a session (P5-017).
 
     ``frustration_level`` and ``engagement_level`` are coarse educational
@@ -490,7 +514,7 @@ class AimSessionBehavioralSignal(BaseModel):
     )
 
 
-class AimSessionSummaryOutput(BaseModel):
+class AimSessionSummaryOutput(AimCamelCaseModel):
     """AIM Engine's closing snapshot for a learning session (P5-017).
 
     At most one summary per session. ``overall_mastery_shift`` is descriptive
@@ -546,7 +570,7 @@ class AimSessionSummaryOutput(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class AimResponseCategories(BaseModel):
+class AimResponseCategories(AimCamelCaseModel):
     """Container for all decision categories in the AIM Engine response (P5-011).
 
     Every field is optional.  An empty categories object (no fields present)
@@ -614,7 +638,7 @@ class AimResponseCategories(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class AimAnalysisResponse(BaseModel):
+class AimAnalysisResponse(AimCamelCaseModel):
     """Top-level response envelope for POST /aim/v1/analysis (P5-022).
 
     The AIM Engine sends this to the Backend.  The Backend validates every

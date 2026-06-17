@@ -38,6 +38,7 @@ import { AimStateAssemblyService } from './pipeline/aim-state-assembly.service';
 import { AimAuditService } from './persistence/aim-audit.service';
 import { AimPersistenceService } from './persistence/aim-persistence.service';
 import { StudentSkillStateUpdateService } from './persistence/student-skill-state-update.service';
+import { WeaknessUpdateService } from './persistence/weakness-update.service';
 import { DifficultyDecisionService } from './persistence/difficulty-decision.service';
 import { RecommendationOutputService } from './persistence/recommendation-output.service';
 import { ReviewScheduleOutputService } from './persistence/review-schedule-output.service';
@@ -87,6 +88,9 @@ import { AimResultController } from './result/aim-result.controller';
 
     // Phase 5 — skill state persistence (P5-057)
     StudentSkillStateUpdateService,
+
+    // Phase 5 — weakness record persistence (P5-058)
+    WeaknessUpdateService,
 
     // Phase 5 — difficulty decision persistence (P5-059)
     DifficultyDecisionService,
