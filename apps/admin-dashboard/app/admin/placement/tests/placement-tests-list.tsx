@@ -1,6 +1,6 @@
 'use client';
 
-// Phase 4 — P4-054
+// Phase 4 — P4-054 / P4-058
 // AdminPlacementTestsList — client component.
 //
 // Scope: Placement Test phase only — admin view of placement test definitions.
@@ -11,9 +11,9 @@
 // - estimatedMinutes and totalSections come from the backend only.
 // - No placement scoring, CEFR thresholds, skill maps, or weakness maps here.
 // - No AIM Engine runtime, AI Teacher, lesson delivery, or progress dashboard.
-// - Status transitions (draft → published → archived) are not performed here —
-//   controlled by the backend and will be implemented in P4-058.
+// P4-058: Added "Status →" link column to navigate to draft/published status control per test.
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type {
   AdminPlacementTestSummary,
@@ -119,6 +119,7 @@ export function AdminPlacementTestsList({
               <th scope="col">Est. Minutes</th>
               <th scope="col">Created</th>
               <th scope="col">ID</th>
+              <th scope="col">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -136,6 +137,19 @@ export function AdminPlacementTestsList({
                 <td>{test.estimatedMinutes} min</td>
                 <td>{formatDate(test.createdAt)}</td>
                 <td className="admin-table-mono">{truncateId(test.id)}</td>
+                <td>
+                  {test.status !== 'archived' && (
+                    <Link
+                      href={`/admin/placement/tests/${test.id}/status`}
+                      className="admin-table-link"
+                    >
+                      Status →
+                    </Link>
+                  )}
+                  {test.status === 'archived' && (
+                    <span className="admin-table-none">Archived</span>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
