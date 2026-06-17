@@ -25,6 +25,33 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
   const supabaseJwtAudience = readRequiredString(env, 'SUPABASE_JWT_AUDIENCE', issues);
   const databaseUrl = readRequiredUrl(env, 'DATABASE_URL', issues);
   const aimEngineUrl = readRequiredUrl(env, 'AIM_ENGINE_URL', issues);
+  // P5-044 — Phase 5 AIM adapter settings (values from P5-008 timeout/retry policy).
+  // AIM_ENGINE_SERVICE_TOKEN is a secret: never logged, never returned to clients.
+  const aimEngineServiceToken = readRequiredString(env, 'AIM_ENGINE_SERVICE_TOKEN', issues);
+  const aimEngineAnalysisTimeoutMs = readOptionalPositiveInt(
+    env,
+    'AIM_ENGINE_ANALYSIS_TIMEOUT_MS',
+    5000,
+    issues,
+  );
+  const aimEngineHealthTimeoutMs = readOptionalPositiveInt(
+    env,
+    'AIM_ENGINE_HEALTH_TIMEOUT_MS',
+    3000,
+    issues,
+  );
+  const aimEngineTotalBudgetMs = readOptionalPositiveInt(
+    env,
+    'AIM_ENGINE_TOTAL_BUDGET_MS',
+    12000,
+    issues,
+  );
+  const aimEngineMaxRetryAttempts = readOptionalPositiveInt(
+    env,
+    'AIM_ENGINE_MAX_RETRY_ATTEMPTS',
+    3,
+    issues,
+  );
   const aiProviderApiKey = readRequiredString(env, 'AI_PROVIDER_API_KEY', issues);
   const aiProviderModel = readRequiredString(env, 'AI_PROVIDER_MODEL', issues);
   const corsOriginsValue = readRequiredString(env, 'CORS_ORIGINS', issues);
@@ -53,6 +80,11 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
     },
     aimEngine: {
       url: aimEngineUrl,
+      serviceToken: aimEngineServiceToken,
+      analysisTimeoutMs: aimEngineAnalysisTimeoutMs,
+      healthTimeoutMs: aimEngineHealthTimeoutMs,
+      totalBudgetMs: aimEngineTotalBudgetMs,
+      maxRetryAttempts: aimEngineMaxRetryAttempts,
     },
     aiProvider: {
       apiKey: aiProviderApiKey,
@@ -138,6 +170,24 @@ function parseCorsOrigins(value: string, issues: string[]): string[] {
   }
 
   return origins;
+}
+
+function readOptionalPositiveInt(
+  env: RawEnv,
+  key: string,
+  defaultValue: number,
+  issues: string[],
+): number {
+  const raw = env[key]?.trim();
+  if (raw === undefined || raw === '') {
+    return defaultValue;
+  }
+  const parsed = Number(raw);
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    issues.push(`${key} must be a positive integer`);
+    return defaultValue;
+  }
+  return parsed;
 }
 
 function isValidUrl(value: string): boolean {
