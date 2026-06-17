@@ -1,5 +1,27 @@
 """API schemas."""
 
+from .aim_analysis_response import (  # noqa: F401
+    AimAnalysisResponse,
+    AimDifficultyDecisionOutput,
+    AimDifficultyLevel,
+    AimDifficultyRationale,
+    AimEngagementLevel,
+    AimFrustrationLevel,
+    AimMasteryShiftDirection,
+    AimMasteryTrend,
+    AimRecommendationKind,
+    AimRecommendationOutput,
+    AimRecommendationReason,
+    AimResponseCategories,
+    AimReviewScheduleOutput,
+    AimSessionBehavioralSignal,
+    AimSessionSummaryOutput,
+    AimSignalBasis,
+    AimSkillStateOutput,
+    AimWeaknessRecordOutput,
+    AimWeaknessSeverity,
+    AimWeaknessStatus,
+)
 from .aim_analysis_request import (  # noqa: F401
     AimAnalysisRequest,
     AimAttemptBehavioralContext,
