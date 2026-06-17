@@ -1029,3 +1029,226 @@ This section satisfies P3-016 when:
 - all messages are safe for admin-facing clients;
 - no out-of-scope Phase 3 feature is introduced;
 - no secrets or privileged credentials are exposed.
+
+---
+
+# Phase 5 — AIM Engine Integration Error Codes
+
+## Purpose
+
+This section defines the stable backend error code identifiers for failures in the Backend-to-AIM Engine integration. These are the concrete codes that the AIM Integration Error Handling Policy (`docs/phase-5/aim-error-handling-policy.md`, `P5-008`) and the AIM Engine Response Contract (`packages/shared-contracts/api/aim-engine-response-contracts.md`, `P5-011`) both defer to this task to define.
+
+This section is documentation-only. It does not implement NestJS exception filters, Python pipeline exception classes, Flutter error models, Admin Dashboard handlers, or runtime retry/circuit-breaker logic. Those behaviors are fixed by `P5-008`; this section only names the codes that behavior emits.
+
+---
+
+## Scope
+
+This section covers:
+
+- error codes for AIM Engine transport and availability failures (timeout, connection failure, transient HTTP, circuit breaker open);
+- error codes for AIM Engine rejection of an outbound request (validation failure, idempotency conflict);
+- error codes for inbound AIM response contract violations;
+- error codes for persistence failures after a validated AIM response;
+- error codes for denied access to a persisted AIM result;
+- two non-error status identifiers used inside success-shaped responses for the two fallback profiles defined in `P5-008`.
+
+This section does not cover:
+
+- field-level validation codes for individual AIM response categories. Skill state, weakness record, difficulty decision, recommendation, review schedule, and session summary each validate independently against their own contract (`P5-012`–`P5-017`) before persistence. A category that fails its own validation is dropped from persistence for that call and recorded as a validation event; it does not raise one of the catalog codes below. Those per-category validation-event identifiers remain owned by each category's own contract task, not by this task.
+- the AIM Engine's own safe failure response body shape (owned by `P5-025`).
+- AI Teacher, Student Web App, voice, payments, parent dashboard, or any client-side AIM computation.
+
+---
+
+## Source of Truth
+
+| Dependency | Required Output | Status |
+|---|---|---|
+| P5-008 | `docs/phase-5/aim-error-handling-policy.md` | Checked and used as the source of truth for the failure taxonomy, retry/circuit-breaker behavior, and the two fallback profiles. |
+| P5-011 | `packages/shared-contracts/api/aim-engine-response-contracts.md` | Checked; defines the envelope-level triggers (correlation mismatch, unsupported `contractVersion`, malformed envelope) that map to `AIM_RESPONSE_CONTRACT_VIOLATION` below. |
+
+Core rule, unchanged from the rest of this document:
+
+```text
+Error responses must be safe for clients and must not expose secrets or privileged internals.
+```
+
+---
+
+## Naming Convention
+
+Phase 5 AIM integration error codes use the `AIM_` prefix and the same `UPPER_SNAKE_CASE` convention as the rest of this document.
+
+Rules:
+
+- Use one stable code per failure-taxonomy category from `P5-008`, not one code per call site.
+- Do not encode the AIM Engine's own HTTP status, error body, or internal model name into the code.
+- Do not introduce a code for a per-category validation event; those stay inside their own contract (`P5-012`–`P5-017`).
+- Keep codes stable across Backend API, Flutter Mobile, and Admin Dashboard.
+
+---
+
+## AIM Engine Transport and Availability Error Codes
+
+| Code | HTTP Status | Outcome (audit log) | Safe Message | When to Use |
+|---|---:|---|---|---|
+| `AIM_ENGINE_UNAVAILABLE` | 503 | `transient` or `breaker_open` | The adaptive learning engine is temporarily unavailable. Please try again shortly. | Outbound call to `POST /aim/v1/analysis` or `GET /health` timed out, failed to connect, received a transient HTTP status (`429`, `500`, `503`, `504`), or was short-circuited by an open circuit breaker. |
+| `AIM_ENGINE_CONFIG_ERROR` | 503 | `non_retryable` | The adaptive learning engine is temporarily unavailable. Please try again shortly. | AIM Engine returned `401` or `403` to an outbound backend call. Treated as a backend configuration or credential issue; never described as such to the client. |
+
+## AIM Engine Request Rejection Error Codes
+
+| Code | HTTP Status | Outcome (audit log) | Safe Message | When to Use |
+|---|---:|---|---|---|
+| `AIM_REQUEST_REJECTED` | 503 | `validation_failed` | The adaptive learning engine could not process this update. Please try again shortly. | AIM Engine returned `400` or `422` for an outbound request. This is a backend-constructed payload defect, not a caller-supplied field error, so it is never surfaced as `VALIDATION_ERROR` with field details. |
+| `AIM_REQUEST_CONFLICT` | 503 | `non_retryable` | The adaptive learning engine could not process this update. Please try again shortly. | AIM Engine returned `409` because `backend_request_id` was reused with a different payload digest. Treated as a code defect; the Backend never mints a new `backend_request_id` to silently retry. |
+
+## AIM Response Contract Violation Error Codes
+
+| Code | HTTP Status | Outcome (audit log) | Safe Message | When to Use |
+|---|---:|---|---|---|
+| `AIM_RESPONSE_CONTRACT_VIOLATION` | 503 | `contract_violation` | The adaptive learning engine returned an unexpected result. Please try again shortly. | AIM Engine returned `200` but the envelope is malformed, `backendRequestId`/`studentId`/`sessionId` does not match the originating request, or `contractVersion` is unsupported. The entire response is rejected; no category is persisted. |
+
+## AIM Persistence Error Codes
+
+| Code | HTTP Status | Outcome (audit log) | Safe Message | When to Use |
+|---|---:|---|---|---|
+| `AIM_PERSISTENCE_FAILED` | 500 | `persistence_failed` | We couldn't save your adaptive learning update. Please try again. | A database write failed after a validated AIM response passed all category checks. The transaction is rolled back; no partial AIM-owned state is persisted. |
+
+## AIM Result Access Error Codes
+
+| Code | HTTP Status | Outcome (audit log) | Safe Message | When to Use |
+|---|---:|---|---|---|
+| `AIM_RESULT_ACCESS_DENIED` | 403 | `authorization_denied` | You do not have access to this adaptive learning result. | Caller lacks permission to read a persisted AIM result (skill state, weakness record, difficulty decision, recommendation, review schedule, or session summary). |
+
+## AIM Fallback State Identifiers (Non-Error)
+
+These two identifiers are not failure codes. They are stable backend-issued state values carried inside a normal success-shaped response, per the two fallback profiles in `P5-008`. They must never appear in the `error.code` field of the standard error envelope.
+
+| Identifier | Used In | Meaning |
+|---|---|---|
+| `AIM_ANALYSIS_PENDING` | Profile A — write-side acknowledgement (attempt submission, session event) | The raw input was saved successfully, but adaptive analysis did not complete for this call. The underlying cause is one of the codes above and is recorded in the audit entry; it is not necessarily re-surfaced to the caller. The client renders the raw save as successful and does not compute any AIM-owned value to compensate. |
+| `AIM_RESULT_PENDING` | Profile B — read-side empty state (AIM result API) | No validated AIM result has been persisted yet for the requested resource. The read API never invents, infers, or partially computes the missing value, and never proxies a live call to the AIM Engine to populate it. |
+
+## Failure Category to Error Code Map
+
+This table cross-references every row of the failure taxonomy in `P5-008` to the codes above, so the two documents cannot drift.
+
+| Failure Taxonomy Category (`P5-008`) | Error Code |
+|---|---|
+| Transport timeout | `AIM_ENGINE_UNAVAILABLE` |
+| Transport connection error | `AIM_ENGINE_UNAVAILABLE` |
+| Transient HTTP (`429`/`500`/`503`/`504`) | `AIM_ENGINE_UNAVAILABLE` |
+| Circuit breaker open (short-circuit) | `AIM_ENGINE_UNAVAILABLE` |
+| Authentication failure (`401`) | `AIM_ENGINE_CONFIG_ERROR` |
+| Authorization failure (`403`, engine call) | `AIM_ENGINE_CONFIG_ERROR` |
+| Validation failure, outbound (`400`/`422`) | `AIM_REQUEST_REJECTED` |
+| Idempotency conflict (`409`) | `AIM_REQUEST_CONFLICT` |
+| Contract violation, inbound | `AIM_RESPONSE_CONTRACT_VIOLATION` |
+| Persistence failure | `AIM_PERSISTENCE_FAILED` |
+| Authorization denial on result read | `AIM_RESULT_ACCESS_DENIED` |
+
+---
+
+## Safe Client Error Shape
+
+AIM integration errors fit the same shared error envelope as the rest of this document:
+
+```json
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "AIM_ENGINE_UNAVAILABLE",
+    "message": "The adaptive learning engine is temporarily unavailable. Please try again shortly."
+  }
+}
+```
+
+A write-side fallback acknowledgement (Profile A) is a success response, not an error envelope:
+
+```json
+{
+  "success": true,
+  "data": {
+    "saved": true,
+    "analysisStatus": "AIM_ANALYSIS_PENDING"
+  },
+  "error": null
+}
+```
+
+---
+
+## Backend Logging Boundary
+
+Backend may log safe internal diagnostics for AIM integration failures, but must not expose them to clients.
+
+Safe logging examples:
+
+```text
+errorCode
+outcome (success, transient, non_retryable, validation_failed, contract_violation, breaker_open, persistence_failed, authorization_denied)
+requestId (X-Request-Id)
+backendRequestId
+endpoint (/aim/v1/analysis or /health)
+attemptNumber
+elapsedTime
+createdAt
+```
+
+Unsafe logging examples:
+
+```text
+raw AIM Engine request body
+raw AIM Engine response body
+service tokens
+AI provider keys
+database connection strings
+payload digests
+full stack traces in client-facing responses
+```
+
+---
+
+## Flutter Mobile Handling Rules
+
+Flutter Mobile may:
+
+- use `AIM_ENGINE_UNAVAILABLE`, `AIM_ENGINE_CONFIG_ERROR`, `AIM_REQUEST_REJECTED`, `AIM_REQUEST_CONFLICT`, or `AIM_RESPONSE_CONTRACT_VIOLATION` to show a safe "adaptive analysis unavailable" message;
+- use `AIM_ANALYSIS_PENDING` to indicate the student's answer was saved while adaptive feedback catches up;
+- use `AIM_RESULT_PENDING` to show an empty/loading state for a skill, weakness, or recommendation view.
+
+Flutter Mobile must not:
+
+- call the AIM Engine directly, with or without these codes;
+- compute or infer mastery, level, weakness, difficulty, recommendation, review schedule, retention, or frustration locally when one of these codes is received;
+- retry the AIM analysis itself; only the Backend adapter retries per `P5-008`.
+
+## Admin Dashboard Handling Rules
+
+Admin Dashboard may:
+
+- surface `AIM_PERSISTENCE_FAILED` or `AIM_RESPONSE_CONTRACT_VIOLATION` in an operator-facing view as a safe, generic message;
+- use `AIM_RESULT_ACCESS_DENIED` to show a safe permission message.
+
+Admin Dashboard must not:
+
+- expose circuit breaker state, payload digests, or AIM Engine internals through these codes;
+- call the AIM Engine directly;
+- treat the presence of an `AIM_` code as license to compute or override an AIM-owned value.
+
+---
+
+## Done Test — P5-018
+
+This section satisfies P5-018 when:
+
+- `packages/shared-contracts/api/errors.md` is updated with a Phase 5 AIM integration error code section;
+- every failure-taxonomy category in `docs/phase-5/aim-error-handling-policy.md` (`P5-008`) maps to exactly one error code;
+- the two fallback-profile state identifiers (`AIM_ANALYSIS_PENDING`, `AIM_RESULT_PENDING`) are defined and distinguished from error codes;
+- all codes use the approved `AIM_` naming convention;
+- all messages are safe for learner, parent, and admin surfaces and never expose AIM Engine internals, payload digests, or secrets;
+- no per-category (skill state, weakness, difficulty, recommendation, review schedule, session summary) field-level validation code is introduced, preserving the boundary with `P5-012`–`P5-017`;
+- no client-side AIM logic, AI Teacher, Student Web App, or unrelated Phase 5 feature is introduced;
+- no secrets or privileged credentials are exposed.
