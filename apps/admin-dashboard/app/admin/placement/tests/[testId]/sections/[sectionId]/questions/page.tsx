@@ -107,7 +107,7 @@ export default async function AdminPlacementQuestionsPage({ params }: Props) {
       )}
 
       {/* Questions list */}
-      {data && <AdminPlacementQuestionsList questions={data.questions} />}
+      {data && <AdminPlacementQuestionsList questions={data.questions} testId={testId} sectionId={sectionId} />}
     </section>
   );
 }
