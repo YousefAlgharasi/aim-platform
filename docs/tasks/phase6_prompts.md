@@ -2,7 +2,7 @@
 
 Phase 6 — Student Mobile App MVP with AIM Mobile Design System adoption.
 
-Notion database: https://app.notion.com/p/17276463d164480fa204dc5b524bb012
+Notion database: https://app.notion.com/p/17276463d164480fa204dc5b524bb012?v=39f426029d994bb3b0372130805d8c31
 
 Path: `docs/tasks/phase6_prompts.md`
 
