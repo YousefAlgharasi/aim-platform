@@ -103,7 +103,7 @@ describe('AimResultController.getSessionState (P5-068)', () => {
     const sessionStateSvc = {
       getSessionState: jest.fn().mockResolvedValue({ studentId: STUDENT_ID, sessionId: SESSION_ID, found: false }),
     } as unknown as SessionStateReadService;
-    const ctrl = new AimResultController(skillStateSvc, reviewScheduleSvc, sessionStateSvc);
+    const ctrl = new AimResultController(skillStateSvc, reviewScheduleSvc, sessionStateSvc, {} as unknown as import('./weakness-records-read.service').WeaknessRecordsReadService, {} as unknown as import('./recommendation-read.service').RecommendationReadService);
 
     await ctrl.getSessionState(STUDENT_ID, SESSION_ID);
 
@@ -116,7 +116,7 @@ describe('AimResultController.getSessionState (P5-068)', () => {
     const sessionStateSvc = {
       getSessionState: jest.fn().mockResolvedValue(response),
     } as unknown as SessionStateReadService;
-    const ctrl = new AimResultController(skillStateSvc, reviewScheduleSvc, sessionStateSvc);
+    const ctrl = new AimResultController(skillStateSvc, reviewScheduleSvc, sessionStateSvc, {} as unknown as import('./weakness-records-read.service').WeaknessRecordsReadService, {} as unknown as import('./recommendation-read.service').RecommendationReadService);
 
     const result = await ctrl.getSessionState(STUDENT_ID, SESSION_ID);
 
@@ -128,7 +128,7 @@ describe('AimResultController.getSessionState (P5-068)', () => {
     const sessionStateSvc = {
       getSessionState: jest.fn().mockRejectedValue(new Error('db error')),
     } as unknown as SessionStateReadService;
-    const ctrl = new AimResultController(skillStateSvc, reviewScheduleSvc, sessionStateSvc);
+    const ctrl = new AimResultController(skillStateSvc, reviewScheduleSvc, sessionStateSvc, {} as unknown as import('./weakness-records-read.service').WeaknessRecordsReadService, {} as unknown as import('./recommendation-read.service').RecommendationReadService);
 
     await expect(ctrl.getSessionState(STUDENT_ID, SESSION_ID)).rejects.toThrow('db error');
   });
