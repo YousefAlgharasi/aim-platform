@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/theme.dart';
+import '../../../../core/widgets/widgets.dart';
 import '../../../auth/data/models/auth_context_model.dart';
 
 class RoleAwarePlaceholderAction {
@@ -13,9 +15,8 @@ class RoleAwarePlaceholderAction {
   final String description;
   final Set<String> requiredRoles;
 
-  bool isVisibleFor(AuthContextModel authContext) {
-    return requiredRoles.any(authContext.hasRole);
-  }
+  bool isVisibleFor(AuthContextModel authContext) =>
+      requiredRoles.any(authContext.hasRole);
 }
 
 const roleAwarePlaceholderActions = <RoleAwarePlaceholderAction>[
@@ -38,12 +39,16 @@ const roleAwarePlaceholderActions = <RoleAwarePlaceholderAction>[
 
 List<RoleAwarePlaceholderAction> visibleRoleAwarePlaceholderActions(
   AuthContextModel authContext,
-) {
-  return roleAwarePlaceholderActions
-      .where((action) => action.isVisibleFor(authContext))
-      .toList(growable: false);
-}
+) =>
+    roleAwarePlaceholderActions
+        .where((a) => a.isVisibleFor(authContext))
+        .toList(growable: false);
 
+/// Role-aware placeholder section rendered on the profile screen.
+///
+/// Displays role chips and placeholder action tiles derived from backend-
+/// provided role data. Backend authorisation remains final — this widget
+/// only renders what the backend returns.
 class RoleAwarePlaceholderSection extends StatelessWidget {
   const RoleAwarePlaceholderSection({
     required this.authContext,
@@ -54,49 +59,54 @@ class RoleAwarePlaceholderSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
     final visibleActions = visibleRoleAwarePlaceholderActions(authContext);
-    final roleLabels = authContext.roles.map((role) => role.key).join(', ');
+    final roleLabels = authContext.roles.map((r) => r.key).join(', ');
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return AIMCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Role-aware UI placeholder',
+            style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
+          ),
+          SizedBox(height: AimSpacing.innerGap),
+          Text(
+            'Visible items below come from backend-provided role data. '
+            'Backend authorisation remains final.',
+            style: AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
+          ),
+          SizedBox(height: AimSpacing.componentGap),
+          Wrap(
+            spacing: AimSpacing.innerGap,
+            runSpacing: AimSpacing.innerGap,
+            children: [
+              for (final role in authContext.roles)
+                AIMBadge(
+                  tone: AIMBadgeTone.primary,
+                  child: Text(role.name),
+                ),
+              if (authContext.roles.isEmpty)
+                AIMBadge(
+                  tone: AIMBadgeTone.neutral,
+                  child: const Text('No backend roles loaded'),
+                ),
+            ],
+          ),
+          SizedBox(height: AimSpacing.formFieldGap),
+          if (visibleActions.isEmpty)
             Text(
-              'Role-aware UI placeholder',
-              style: Theme.of(context).textTheme.titleMedium,
+              roleLabels.isEmpty
+                  ? 'No role-aware placeholder items are visible yet.'
+                  : 'No placeholder items are mapped for: $roleLabels.',
+              style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
+            )
+          else
+            ...visibleActions.map(
+              (action) => _RoleAwarePlaceholderTile(action: action),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Visible items below come from backend-provided role data. '
-              'Backend authorization remains final.',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final role in authContext.roles)
-                  Chip(label: Text(role.name)),
-                if (authContext.roles.isEmpty)
-                  const Chip(label: Text('No backend roles loaded')),
-              ],
-            ),
-            const SizedBox(height: 16),
-            if (visibleActions.isEmpty)
-              Text(
-                roleLabels.isEmpty
-                    ? 'No role-aware placeholder items are visible yet.'
-                    : 'No placeholder items are mapped for: $roleLabels.',
-              )
-            else
-              ...visibleActions.map(
-                (action) => _RoleAwarePlaceholderTile(action: action),
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -109,11 +119,39 @@ class _RoleAwarePlaceholderTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: const Icon(Icons.visibility_outlined),
-      title: Text(action.label),
-      subtitle: Text(action.description),
+    final surfaces = aimSurfacesOf(context);
+
+    return Padding(
+      padding: EdgeInsets.only(top: AimSpacing.componentGap),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.visibility_outlined,
+            size: AimSizes.iconMd,
+            color: surfaces.textMuted,
+          ),
+          SizedBox(width: AimSpacing.componentGap),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  action.label,
+                  style: AimTextStyles.title
+                      .copyWith(color: surfaces.textPrimary),
+                ),
+                SizedBox(height: AimSpacing.space2),
+                Text(
+                  action.description,
+                  style: AimTextStyles.bodySm
+                      .copyWith(color: surfaces.textSecondary),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

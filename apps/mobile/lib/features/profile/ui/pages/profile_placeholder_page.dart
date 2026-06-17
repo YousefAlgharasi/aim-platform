@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/routing/routing.dart';
 import '../../../../core/state/app_async_state.dart';
+import '../../../../core/theme/theme.dart';
+import '../../../../core/widgets/widgets.dart';
 import '../../../auth/data/models/auth_context_model.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
@@ -18,9 +20,9 @@ class ProfilePlaceholderPage extends ConsumerWidget {
     final authContextState = ref.watch(authContextProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('AIM Profile')),
+      appBar: AIMTopAppBar(title: 'Profile'),
       body: ListView(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(AimSpacing.sectionGap),
         children: [
           MainShellPlaceholderCard(
             title: 'Profile',
@@ -29,11 +31,12 @@ class ProfilePlaceholderPage extends ConsumerWidget {
                 : 'Profile placeholder for ${authState.email}. Real account data will come from the Backend API.',
           ),
           if (authContextState is AppAsyncSuccess<AuthContextModel>) ...[
-            const SizedBox(height: 16),
-            RoleAwarePlaceholderSection(authContext: authContextState.data),
+            SizedBox(height: AimSpacing.formFieldGap),
+            RoleAwarePlaceholderSection(
+                authContext: authContextState.data),
           ],
-          const SizedBox(height: 16),
-          OutlinedButton(
+          SizedBox(height: AimSpacing.formFieldGap),
+          AIMButton(
             onPressed: () {
               ref.read(authFlowProvider.notifier).signOutPlaceholder();
               Navigator.of(context).pushNamedAndRemoveUntil(
@@ -41,6 +44,9 @@ class ProfilePlaceholderPage extends ConsumerWidget {
                 (route) => false,
               );
             },
+            variant: AIMButtonVariant.outline,
+            fullWidth: true,
+            semanticLabel: 'Sign out',
             child: const Text('Sign out placeholder'),
           ),
         ],
