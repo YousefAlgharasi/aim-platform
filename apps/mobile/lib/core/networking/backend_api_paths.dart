@@ -4,14 +4,25 @@ class BackendApiPaths {
   static const String health = '/health';
   static const String version = '/version';
 
+  // ---------------------------------------------------------------------------
+  // Auth
+  // ---------------------------------------------------------------------------
+
   static const String authMe = '/auth/me';
   static const String authSyncUser = '/auth/sync-user';
   static const String authLogout = '/auth/logout';
 
+  // ---------------------------------------------------------------------------
+  // Profile
+  // ---------------------------------------------------------------------------
+
   static const String profileMe = '/profile/me';
 
-  // Phase 4 — P4-063: Placement Test endpoints (student-facing)
-  // Mirrors the API map from P4-006 and the endpoint contracts from P4-038–P4-048.
+  // ---------------------------------------------------------------------------
+  // Placement Test — Phase 4 P4-063 + Phase 6 P6-022
+  // Student-facing only. Admin/write endpoints are forbidden in Flutter.
+  // ---------------------------------------------------------------------------
+
   static const String placementActive = '/placement/active';
   static const String placementActiveSections = '/placement/active/sections';
   static const String placementQuestions = '/placement/questions';
@@ -28,4 +39,53 @@ class BackendApiPaths {
   /// POST /placement/attempts/:id/complete
   static String placementAttemptComplete(String attemptId) =>
       '/placement/attempts/$attemptId/complete';
+
+  // ---------------------------------------------------------------------------
+  // AIM Engine outputs — Phase 6 P6-022
+  // Read-only. Flutter never writes to these endpoints.
+  // Backend computes all AIM values; Flutter only displays them.
+  // ---------------------------------------------------------------------------
+
+  /// GET /aim/students/:studentId/skill-states
+  static String aimSkillStates(String studentId) =>
+      '/aim/students/$studentId/skill-states';
+
+  /// GET /aim/students/:studentId/weakness-records
+  static String aimWeaknessRecords(String studentId) =>
+      '/aim/students/$studentId/weakness-records';
+
+  /// GET /aim/students/:studentId/review-schedules
+  static String aimReviewSchedules(String studentId) =>
+      '/aim/students/$studentId/review-schedules';
+
+  /// GET /aim/students/:studentId/recommendations
+  static String aimRecommendations(String studentId) =>
+      '/aim/students/$studentId/recommendations';
+
+  // ---------------------------------------------------------------------------
+  // Curriculum — Phase 6 P6-022
+  // Read-only list endpoints. Write/admin endpoints are forbidden in Flutter.
+  // ---------------------------------------------------------------------------
+
+  static const String curriculumCourses = '/curriculum/courses';
+
+  /// GET /curriculum/courses/:courseId/sessions
+  static String curriculumCourseSessions(String courseId) =>
+      '/curriculum/courses/$courseId/sessions';
+
+  // ---------------------------------------------------------------------------
+  // Sessions — Phase 6 P6-022
+  // Answer submission flows through backend. Flutter never scores answers.
+  // ---------------------------------------------------------------------------
+
+  /// POST /sessions/start
+  static const String sessionsStart = '/sessions/start';
+
+  /// POST /sessions/:sessionId/attempt
+  static String sessionAttempt(String sessionId) =>
+      '/sessions/$sessionId/attempt';
+
+  /// GET /aim/students/:studentId/sessions/:sessionId/state
+  static String aimSessionState(String studentId, String sessionId) =>
+      '/aim/students/$studentId/sessions/$sessionId/state';
 }
