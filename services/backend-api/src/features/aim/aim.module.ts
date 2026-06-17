@@ -27,6 +27,7 @@ import { AimService } from './aim.service';
 import { AimHealthCheckService } from './aim-health-check.service';
 import { AimEngineAdapterService } from './adapter/aim-engine-adapter.service';
 import { AimRequestMapperService } from './adapter/aim-request-mapper.service';
+import { AimAdapterTimeoutPolicyService } from './adapter/aim-adapter-timeout-policy.service';
 import { AimResponseMapperService } from './adapter/aim-response-mapper.service';
 import { AimPipelineOrchestratorService } from './pipeline/aim-pipeline-orchestrator.service';
 import { AimStateAssemblyService } from './pipeline/aim-state-assembly.service';
@@ -51,6 +52,9 @@ import { AimResultService } from './result/aim-result.service';
 
     // Phase 5 — response mapper (Stage 5, P5-048)
     AimResponseMapperService,
+
+    // Phase 5 — timeout/retry policy (P5-049)
+    AimAdapterTimeoutPolicyService,
 
     // Phase 5 — pipeline
     AimPipelineOrchestratorService,
