@@ -40,6 +40,7 @@ from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.core.config import AimEngineSettings, get_settings
+from app.errors.aim_safe_failure import AimFailureCategory, AimSafeFailureBuilder
 from app.validation.aim_request_validator import AimRequestValidationError
 
 # Import the Phase 5 schemas produced in P5-021 and P5-022.
@@ -163,6 +164,8 @@ async def post_analysis(
     # -----------------------------------------------------------------------
     pipeline = getattr(request.app.state, "aim_pipeline", None)
 
+    _safe_failure_builder = AimSafeFailureBuilder()
+
     if pipeline is not None:
         # P5-023 has injected a real pipeline — delegate to it.
         try:
@@ -189,6 +192,29 @@ async def post_analysis(
                     "code": "VALIDATION_ERROR",
                     "message": "One or more fields are invalid.",
                     "violations": violations,
+                },
+            )
+        except HTTPException:
+            raise  # re-raise 400/401 etc. as-is
+        except Exception:
+            # P5-025: unexpected engine fault → safe failure shape, never raw exception.
+            safe_resp, http_status = _safe_failure_builder.internal_error(
+                request_id=x_request_id
+            )
+            logger.exception(
+                "aim_pipeline_unexpected_error",
+                extra={
+                    "backend_request_id": body.backend_request_id,
+                    "student_id": body.session.student_id,
+                    "session_id": body.session.session_id,
+                },
+            )
+            return JSONResponse(
+                content=safe_resp.model_dump(mode="json"),
+                status_code=http_status,
+                headers={
+                    "X-Request-Id": x_request_id or "",
+                    "Cache-Control": "no-store",
                 },
             )
     else:
