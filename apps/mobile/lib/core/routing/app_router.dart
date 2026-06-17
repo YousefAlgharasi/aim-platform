@@ -6,6 +6,11 @@ import '../../features/auth/data/models/auth_context_model.dart';
 import '../../features/auth/logic/entity/auth_flow_state.dart';
 import '../../features/auth/ui/pages/login_page.dart';
 import '../../features/onboarding/ui/pages/splash_placeholder_page.dart';
+import '../../features/placement/ui/pages/placement_question_page.dart';
+import '../../features/placement/ui/pages/placement_result_page.dart';
+import '../../features/placement/ui/pages/placement_section_page.dart';
+import '../../features/placement/ui/pages/placement_start_page.dart';
+import '../../features/placement/ui/pages/placement_submit_page.dart';
 import '../../features/shell/ui/pages/main_shell_page.dart';
 import 'app_route_paths.dart';
 
@@ -40,6 +45,17 @@ class AppRouter {
           case AppRoutePaths.progress:
           case AppRoutePaths.profile:
             return const MainShellPage();
+          // P6-021: Placement Test flow routes — guarded, backend-driven
+          case AppRoutePaths.placementStart:
+            return const PlacementStartPage();
+          case AppRoutePaths.placementSection:
+            return const PlacementSectionPage();
+          case AppRoutePaths.placementQuestion:
+            return const PlacementQuestionPage();
+          case AppRoutePaths.placementSubmit:
+            return const PlacementSubmitPage();
+          case AppRoutePaths.placementResult:
+            return const PlacementResultPage();
           default:
             return const SplashPlaceholderPage();
         }
@@ -87,5 +103,11 @@ class AppRouter {
     AppRoutePaths.review,
     AppRoutePaths.progress,
     AppRoutePaths.profile,
+    // P6-021: Placement routes are protected — must be authenticated
+    AppRoutePaths.placementStart,
+    AppRoutePaths.placementSection,
+    AppRoutePaths.placementQuestion,
+    AppRoutePaths.placementSubmit,
+    AppRoutePaths.placementResult,
   };
 }
