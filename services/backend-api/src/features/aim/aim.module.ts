@@ -89,8 +89,8 @@ import { AimResultService } from './result/aim-result.service';
     // Phase 5 — recommendation output persistence (P5-060)
     RecommendationOutputService,
 
-    // Phase 5 — review schedule output persistence (P5-061)
-    ReviewScheduleOutputService,
+    // Phase 5 — frustration/emotional signal persistence (P5-062)
+    FrustrationSignalService,
 
     // Phase 5 — frustration signal persistence (P5-062) carried forward
     FrustrationSignalService,
