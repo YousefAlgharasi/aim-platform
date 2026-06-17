@@ -132,13 +132,14 @@ export class AimPipelineOrchestratorService {
       });
       this.audit.record({
         backendRequestId,
+        requestId: context.xRequestId || backendRequestId,
+        endpoint: '/aim/v1/analysis',
         studentId: context.studentId,
         sessionId: context.sessionId,
         attemptId: context.attemptId,
         pipelineStage: 'state_assembly',
-        outcome: 'state_assembly_failed',
+        outcome: 'non_retryable',
         durationMs: Date.now() - startedAt,
-        xRequestId: context.xRequestId,
       });
       return {
         ok: false,
@@ -158,13 +159,14 @@ export class AimPipelineOrchestratorService {
       });
       this.audit.record({
         backendRequestId,
+        requestId: context.xRequestId || backendRequestId,
+        endpoint: '/aim/v1/analysis',
         studentId: context.studentId,
         sessionId: context.sessionId,
         attemptId: context.attemptId,
         pipelineStage: 'state_assembly',
-        outcome: 'skipped_stub',
+        outcome: 'success',
         durationMs: Date.now() - startedAt,
-        xRequestId: context.xRequestId,
       });
       return {
         ok: true,
@@ -203,14 +205,15 @@ export class AimPipelineOrchestratorService {
       });
       this.audit.record({
         backendRequestId,
+        requestId: context.xRequestId || backendRequestId,
+        endpoint: '/aim/v1/analysis',
         studentId: context.studentId,
         sessionId: context.sessionId,
         attemptId: context.attemptId,
-        pipelineStage: 'aim_call',
-        outcome: 'aim_engine_unavailable',
-        errorCode: adapterResult.error.code,
+        pipelineStage: 'aim_engine_call',
+        outcome: 'non_retryable',
+        integrationErrorCode: adapterResult.error.code,
         durationMs: Date.now() - startedAt,
-        xRequestId: context.xRequestId,
       });
       return {
         ok: false,
@@ -237,13 +240,14 @@ export class AimPipelineOrchestratorService {
       });
       this.audit.record({
         backendRequestId,
+        requestId: context.xRequestId || backendRequestId,
+        endpoint: '/aim/v1/analysis',
         studentId: context.studentId,
         sessionId: context.sessionId,
         attemptId: context.attemptId,
         pipelineStage: 'persistence',
         outcome: 'persistence_failed',
         durationMs: Date.now() - startedAt,
-        xRequestId: context.xRequestId,
       });
       return {
         ok: false,
@@ -258,13 +262,14 @@ export class AimPipelineOrchestratorService {
     const durationMs = Date.now() - startedAt;
     this.audit.record({
       backendRequestId,
+      requestId: context.xRequestId || backendRequestId,
+      endpoint: '/aim/v1/analysis',
       studentId: context.studentId,
       sessionId: context.sessionId,
       attemptId: context.attemptId,
-      pipelineStage: 'complete',
+      pipelineStage: 'audit_close_out',
       outcome: 'success',
       durationMs,
-      xRequestId: context.xRequestId,
     });
 
     this.logger.log('aim_pipeline_completed', {
