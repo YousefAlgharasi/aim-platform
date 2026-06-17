@@ -101,7 +101,7 @@ class _PlacementQuestionPageState
         PlacementQuestionSectionComplete() =>
           const Center(child: CircularProgressIndicator()),
         PlacementQuestionReady() => _QuestionBody(
-            state: state as PlacementQuestionReady,
+            state: state,
             sectionIndex: widget.sectionIndex,
             totalSections: widget.totalSections,
             submitError: _submitError,
@@ -111,7 +111,7 @@ class _PlacementQuestionPageState
                   .read(placementQuestionProvider.notifier)
                   .selectAnswer(answer);
             },
-            onSubmit: () => _submitAnswer(state as PlacementQuestionReady),
+            onSubmit: () => _submitAnswer(state),
           ),
       },
     );
@@ -169,7 +169,7 @@ class _QuestionBody extends StatelessWidget {
               Text(
                 'Section $sectionIndex/$totalSections',
                 style: theme.textTheme.labelMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
               ),
               const Spacer(),
@@ -189,7 +189,7 @@ class _QuestionBody extends StatelessWidget {
                 ? state.displayIndex / state.totalQuestions
                 : 0,
             backgroundColor:
-                theme.colorScheme.onSurface.withOpacity(0.12),
+                theme.colorScheme.onSurface.withValues(alpha: 0.12),
             minHeight: 4,
             borderRadius: BorderRadius.circular(2),
           ),
@@ -350,7 +350,7 @@ class _OptionButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
           color: isSelected
-              ? color.withOpacity(0.12)
+              ? color.withValues(alpha: 0.12)
               : theme.colorScheme.surface,
           border: Border.all(
             color: isSelected ? color : theme.colorScheme.outline,
@@ -453,7 +453,7 @@ class _TrueFalseButton extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(vertical: 20),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.12) : Colors.transparent,
+          color: isSelected ? color.withValues(alpha: 0.12) : Colors.transparent,
           border: Border.all(
             color: isSelected ? color : theme.colorScheme.outline,
             width: isSelected ? 2 : 1,

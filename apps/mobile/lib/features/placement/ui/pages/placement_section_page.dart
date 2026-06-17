@@ -79,10 +79,10 @@ class _PlacementSectionPageState extends ConsumerState<PlacementSectionPage> {
             },
           ),
         PlacementSectionReady() => _SectionBody(
-            state: state as PlacementSectionReady,
+            state: state,
             onStartSection: () => _navigateToQuestions(
               context,
-              state as PlacementSectionReady,
+              state,
             ),
           ),
       },
@@ -155,7 +155,7 @@ class _SectionBody extends StatelessWidget {
           Text(
             'Section ${state.displayIndex} of ${state.totalSections}',
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
           const SizedBox(height: 8),
@@ -189,7 +189,7 @@ class _SectionBody extends StatelessWidget {
             'Your answers are submitted to the backend for evaluation. '
             'All scoring is performed by the server.',
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.5),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           ),
 
@@ -252,7 +252,7 @@ class _SectionProgressBar extends StatelessWidget {
         LinearProgressIndicator(
           value: progress,
           backgroundColor:
-              theme.colorScheme.onSurface.withOpacity(0.12),
+              theme.colorScheme.onSurface.withValues(alpha: 0.12),
           minHeight: 6,
           borderRadius: BorderRadius.circular(3),
         ),
@@ -292,9 +292,9 @@ class _SkillBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.4)),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Text(
         label,
