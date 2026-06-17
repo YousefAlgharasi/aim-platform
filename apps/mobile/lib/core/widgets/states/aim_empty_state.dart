@@ -56,7 +56,7 @@ class AIMEmptyState extends StatelessWidget {
       label: semanticLabel,
       child: Center(
         child: Padding(
-          padding: EdgeInsets.symmetric(
+          padding: const EdgeInsets.symmetric(
             horizontal: AimSpacing.screenPaddingMobile,
           ),
           child: Column(
@@ -70,7 +70,7 @@ class AIMEmptyState extends StatelessWidget {
                   ),
                   child: icon!,
                 ),
-                SizedBox(height: AimSpacing.sectionGap),
+                const SizedBox(height: AimSpacing.sectionGap),
               ],
               Text(
                 title,
@@ -80,7 +80,7 @@ class AIMEmptyState extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               if (subtitle != null) ...[
-                SizedBox(height: AimSpacing.innerGap),
+                const SizedBox(height: AimSpacing.innerGap),
                 Text(
                   subtitle!,
                   style: AimTextStyles.bodyMd.copyWith(
@@ -90,7 +90,7 @@ class AIMEmptyState extends StatelessWidget {
                 ),
               ],
               if (action != null) ...[
-                SizedBox(height: AimSpacing.sectionGap),
+                const SizedBox(height: AimSpacing.sectionGap),
                 action!,
               ],
             ],

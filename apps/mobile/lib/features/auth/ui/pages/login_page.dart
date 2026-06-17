@@ -72,19 +72,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     return Scaffold(
       body: SafeArea(
         child: ListView(
-          padding: EdgeInsets.symmetric(
+          padding: const EdgeInsets.symmetric(
             horizontal: AimSpacing.screenPaddingMobile,
             vertical: AimSpacing.space32,
           ),
           children: [
             const _AimLogo(),
-            SizedBox(height: AimSpacing.space32),
+            const SizedBox(height: AimSpacing.space32),
             Text(
               'Sign in to AIM',
               style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: AimSpacing.sectionGap),
+            const SizedBox(height: AimSpacing.sectionGap),
 
             // Email field
             AIMInput(
@@ -100,7 +100,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               autofillHints: const [AutofillHints.email],
               semanticLabel: 'Email address',
             ),
-            SizedBox(height: AimSpacing.formFieldGap),
+            const SizedBox(height: AimSpacing.formFieldGap),
 
             // Password field
             AIMInput(
@@ -115,7 +115,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               autofillHints: const [AutofillHints.password],
               semanticLabel: 'Password',
             ),
-            SizedBox(height: AimSpacing.sectionGap),
+            const SizedBox(height: AimSpacing.sectionGap),
 
             // Error message
             if (formState.errorMessage != null) ...[
@@ -123,7 +123,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 tone: AIMAlertTone.error,
                 child: Text(formState.errorMessage!),
               ),
-              SizedBox(height: AimSpacing.formFieldGap),
+              const SizedBox(height: AimSpacing.formFieldGap),
             ],
 
             // Submit button
@@ -139,11 +139,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
             // Auth-checking progress indicator
             if (authFlow.isChecking) ...[
-              SizedBox(height: AimSpacing.componentGap),
+              const SizedBox(height: AimSpacing.componentGap),
               const LinearProgressIndicator(),
             ],
 
-            SizedBox(height: AimSpacing.innerGap),
+            const SizedBox(height: AimSpacing.innerGap),
 
             // Register link
             TextButton(
@@ -168,12 +168,12 @@ class _AimLogo extends StatelessWidget {
     return Center(
       child: Column(
         children: [
-          Icon(
+          const Icon(
             Icons.school_outlined,
             size: AimSizes.iconLg * 3,
             color: AimColors.primary500,
           ),
-          SizedBox(height: AimSpacing.innerGap),
+          const SizedBox(height: AimSpacing.innerGap),
           Text(
             'AIM',
             style: AimTextStyles.h1.copyWith(

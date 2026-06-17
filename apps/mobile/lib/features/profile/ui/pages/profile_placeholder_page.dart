@@ -20,9 +20,9 @@ class ProfilePlaceholderPage extends ConsumerWidget {
     final authContextState = ref.watch(authContextProvider);
 
     return Scaffold(
-      appBar: AIMTopAppBar(title: 'Profile'),
+      appBar: const AIMTopAppBar(title: 'Profile'),
       body: ListView(
-        padding: EdgeInsets.all(AimSpacing.sectionGap),
+        padding: const EdgeInsets.all(AimSpacing.sectionGap),
         children: [
           MainShellPlaceholderCard(
             title: 'Profile',
@@ -31,11 +31,11 @@ class ProfilePlaceholderPage extends ConsumerWidget {
                 : 'Profile placeholder for ${authState.email}. Real account data will come from the Backend API.',
           ),
           if (authContextState is AppAsyncSuccess<AuthContextModel>) ...[
-            SizedBox(height: AimSpacing.formFieldGap),
+            const SizedBox(height: AimSpacing.formFieldGap),
             RoleAwarePlaceholderSection(
                 authContext: authContextState.data),
           ],
-          SizedBox(height: AimSpacing.formFieldGap),
+          const SizedBox(height: AimSpacing.formFieldGap),
           AIMButton(
             onPressed: () {
               ref.read(authFlowProvider.notifier).signOutPlaceholder();

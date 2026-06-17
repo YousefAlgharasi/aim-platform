@@ -49,7 +49,7 @@ class AIMFullScreenError extends StatelessWidget {
       label: semanticLabel ?? 'Error: $message',
       child: Center(
         child: Padding(
-          padding: EdgeInsets.symmetric(
+          padding: const EdgeInsets.symmetric(
             horizontal: AimSpacing.screenPaddingMobile,
           ),
           child: Column(
@@ -62,7 +62,7 @@ class AIMFullScreenError extends StatelessWidget {
                   borderRadius: AimRadius.borderX2l,
                 ),
                 child: Padding(
-                  padding: EdgeInsets.all(AimSpacing.space20),
+                  padding: const EdgeInsets.all(AimSpacing.space20),
                   child: Icon(
                     Icons.error_outline_rounded,
                     size: AimSizes.iconLg * 2,
@@ -70,7 +70,7 @@ class AIMFullScreenError extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(height: AimSpacing.sectionGap),
+              const SizedBox(height: AimSpacing.sectionGap),
               Text(
                 'Something went wrong',
                 style: AimTextStyles.h3.copyWith(
@@ -78,7 +78,7 @@ class AIMFullScreenError extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: AimSpacing.innerGap),
+              const SizedBox(height: AimSpacing.innerGap),
               Text(
                 message,
                 style: AimTextStyles.bodyMd.copyWith(
@@ -87,7 +87,7 @@ class AIMFullScreenError extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               if (onRetry != null) ...[
-                SizedBox(height: AimSpacing.sectionGap),
+                const SizedBox(height: AimSpacing.sectionGap),
                 _AIMRetryButton(
                   label: retryLabel,
                   onPressed: onRetry!,
@@ -129,7 +129,7 @@ class _AIMRetryButton extends StatelessWidget {
               borderRadius: AimRadius.borderMd,
             ),
             child: Padding(
-              padding: EdgeInsets.symmetric(
+              padding: const EdgeInsets.symmetric(
                 horizontal: AimSpacing.space20,
               ),
               child: Row(
@@ -140,7 +140,7 @@ class _AIMRetryButton extends StatelessWidget {
                     size: AimSizes.iconMd,
                     color: surfaces.textPrimary,
                   ),
-                  SizedBox(width: AimSpacing.innerGap),
+                  const SizedBox(width: AimSpacing.innerGap),
                   Text(
                     label,
                     style: AimTextStyles.button.copyWith(
