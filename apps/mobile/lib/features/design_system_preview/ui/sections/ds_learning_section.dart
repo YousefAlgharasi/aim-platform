@@ -34,9 +34,9 @@ class _DSLearningSectionState extends State<DSLearningSection> {
               variant: AIMCardVariant.ai,
               child: Text('AI card (gradient border)'),
             ),
-            AIMCard(
+            const AIMCard(
               variant: AIMCardVariant.gradient,
-              child: const Text(
+              child: Text(
                 'Gradient card — AI adaptive content',
                 style: TextStyle(color: Colors.white),
               ),
@@ -104,22 +104,22 @@ class _DSLearningSectionState extends State<DSLearningSection> {
               runSpacing: 16,
               alignment: WrapAlignment.center,
               children: [
-                Column(
+                const Column(
                   children: [
-                    const AIMCircularProgress(value: 68, caption: 'daily goal'),
-                    const SizedBox(height: 4),
-                    const Text('Primary', style: AimTextStyles.caption),
+                    AIMCircularProgress(value: 68, caption: 'daily goal'),
+                    SizedBox(height: 4),
+                    Text('Primary', style: AimTextStyles.caption),
                   ],
                 ),
-                Column(
+                const Column(
                   children: [
-                    const AIMCircularProgress(
+                    AIMCircularProgress(
                       value: 68,
                       tone: AIMCircularProgressTone.gradient,
                       caption: 'daily goal',
                     ),
-                    const SizedBox(height: 4),
-                    const Text('Gradient', style: AimTextStyles.caption),
+                    SizedBox(height: 4),
+                    Text('Gradient', style: AimTextStyles.caption),
                   ],
                 ),
                 Column(
@@ -140,18 +140,18 @@ class _DSLearningSectionState extends State<DSLearningSection> {
                     const Text('Success', style: AimTextStyles.caption),
                   ],
                 ),
-                Column(
+                const Column(
                   children: [
-                    const AIMCircularProgress(value: 25, size: 64, thickness: 6),
-                    const SizedBox(height: 4),
-                    const Text('Small', style: AimTextStyles.caption),
+                    AIMCircularProgress(value: 25, size: 64, thickness: 6),
+                    SizedBox(height: 4),
+                    Text('Small', style: AimTextStyles.caption),
                   ],
                 ),
-                Column(
+                const Column(
                   children: [
-                    const AIMCircularProgress(value: 80, size: 128, thickness: 12),
-                    const SizedBox(height: 4),
-                    const Text('Large', style: AimTextStyles.caption),
+                    AIMCircularProgress(value: 80, size: 128, thickness: 12),
+                    SizedBox(height: 4),
+                    Text('Large', style: AimTextStyles.caption),
                   ],
                 ),
               ],
