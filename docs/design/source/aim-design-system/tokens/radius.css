@@ -1,0 +1,15 @@
+/* ============================================================
+   AIM — Radius System
+   Soft, AI-friendly rounding. Token: --radius-md
+   ============================================================ */
+
+:root {
+  --radius-xs:   6px;   /* chips, small inputs inner */
+  --radius-sm:   8px;   /* inputs, small buttons, badges */
+  --radius-md:   12px;  /* buttons, default cards */
+  --radius-lg:   16px;  /* feature cards, sheets */
+  --radius-xl:   24px;  /* hero cards, bottom sheets */
+  --radius-2xl:  32px;  /* large AI surfaces */
+  --radius-pill: 999px; /* pills, FAB, toggles, avatars */
+  --radius-full: 50%;
+}
