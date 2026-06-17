@@ -15,4 +15,4 @@ def test_create_app_returns_fastapi_instance() -> None:
 def test_app_has_phase_metadata() -> None:
     app = create_app()
 
-    assert app.state.service_phase == "phase-1-system-foundation"
+    assert app.state.service_phase == "phase-5-aim-integration"
