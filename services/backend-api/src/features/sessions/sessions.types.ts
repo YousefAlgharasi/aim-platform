@@ -76,3 +76,48 @@ export interface StartSessionResponse {
   readonly currentLevel: string;
   readonly skillFocusIds: readonly string[];
 }
+
+/** Raw behavioral signal category per the session_events migration (P5-031). */
+export type SessionEventType =
+  | 'item_presented'
+  | 'item_submitted'
+  | 'hesitation'
+  | 'retry'
+  | 'idle_gap';
+
+/** Raw row from session_events as returned by pg. */
+export interface SessionEventRow {
+  readonly id: string;
+  readonly learning_session_id: string;
+  readonly student_id: string;
+  readonly event_type: SessionEventType;
+  readonly item_id: string | null;
+  readonly response_time_ms: number | null;
+  readonly payload: Record<string, unknown>;
+  readonly occurred_at: string;
+  readonly recorded_at: string;
+}
+
+/** Minimal session ownership/state projection used to validate event writes. */
+export interface ActiveSessionOwnershipRow {
+  readonly id: string;
+}
+
+/** Input accepted by SessionEventService.recordEvent. studentId is never client-supplied. */
+export interface RecordSessionEventInput {
+  readonly learningSessionId: string;
+  readonly studentId: string;
+  readonly eventType: SessionEventType;
+  readonly itemId?: string;
+  readonly responseTimeMs?: number;
+  readonly payload?: Record<string, unknown>;
+  /** When the underlying client action occurred. Defaults to now() if omitted. */
+  readonly occurredAt?: string;
+}
+
+/** Safe response shape returned by recordEvent. */
+export interface RecordSessionEventResponse {
+  readonly id: string;
+  readonly eventType: SessionEventType;
+  readonly occurredAt: string;
+}
