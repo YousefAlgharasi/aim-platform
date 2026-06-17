@@ -32,7 +32,31 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic.alias_generators import to_camel
+
+# ---------------------------------------------------------------------------
+# Wire-format compatibility base (P5-076 contract fix)
+# ---------------------------------------------------------------------------
+#
+# The Backend's AimRequestMapperService (P5-047) emits camelCase JSON keys
+# (sessionId, studentId, behavioralContext, ...) over the wire, per the
+# JavaScript/TypeScript naming convention used throughout the backend.
+# This schema's internal field names remain snake_case (Python convention).
+#
+# AimCamelCaseModel bridges the two: alias_generator=to_camel derives a
+# camelCase alias for every field (e.g. session_id -> sessionId), and
+# populate_by_name=True additionally accepts the literal snake_case field
+# name. This means the model validates both the real backend wire format
+# and snake_case payloads (e.g. test fixtures, internal tooling) without
+# requiring either side to change its own naming convention.
+#
+# model_dump() defaults to snake_case (by_alias=False); pass by_alias=True
+# to serialize back to camelCase if ever needed for round-tripping.
+
+
+class AimCamelCaseModel(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
 # ---------------------------------------------------------------------------
 # Enumerations — locked to contract versions defined in P5-009 and P5-010
@@ -100,7 +124,7 @@ class AimAnswerFormat(str, Enum):
 # ---------------------------------------------------------------------------
 
 
-class AimLevelContext(BaseModel):
+class AimLevelContext(AimCamelCaseModel):
     """Student's current backend-persisted level context (P5-009).
 
     ``current_level`` is read-only context for the AIM Engine.  The AIM Engine
@@ -122,7 +146,7 @@ class AimLevelContext(BaseModel):
     )
 
 
-class AimInitialSkillSignal(BaseModel):
+class AimInitialSkillSignal(AimCamelCaseModel):
     """Bootstrap placement-derived signal for a single skill (P5-009).
 
     ``signal_strength`` is *not* a mastery value.  It is a placement-derived
@@ -142,7 +166,7 @@ class AimInitialSkillSignal(BaseModel):
     )
 
 
-class AimPlacementContext(BaseModel):
+class AimPlacementContext(AimCamelCaseModel):
     """Reference to the Phase 4 placement result (P5-009).
 
     Present only for a student's first analyzed sessions following placement.
@@ -163,7 +187,7 @@ class AimPlacementContext(BaseModel):
     )
 
 
-class AimSessionBehavioralContext(BaseModel):
+class AimSessionBehavioralContext(AimCamelCaseModel):
     """Raw session-level behavioral signals (P5-009).
 
     All fields are backend-computed aggregates derived from raw client events.
@@ -212,7 +236,7 @@ class AimSessionBehavioralContext(BaseModel):
     )
 
 
-class AimSessionInput(BaseModel):
+class AimSessionInput(AimCamelCaseModel):
     """Session-level portion of the AIM analysis request (P5-009).
 
     Every field is backend-owned.  No field is copied verbatim from an
@@ -283,7 +307,7 @@ class AimSessionInput(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class AimStudentAnswer(BaseModel):
+class AimStudentAnswer(AimCamelCaseModel):
     """Backend-normalized student answer (P5-010).
 
     ``value`` is the student's literal answer content included for AIM Engine
@@ -326,7 +350,7 @@ class AimStudentAnswer(BaseModel):
         return self
 
 
-class AimAttemptBehavioralContext(BaseModel):
+class AimAttemptBehavioralContext(AimCamelCaseModel):
     """Raw attempt-level behavioral signals (P5-010).
 
     All fields are raw signals computed by the Backend from recorded client
@@ -357,7 +381,7 @@ class AimAttemptBehavioralContext(BaseModel):
     )
 
 
-class AimAttemptInput(BaseModel):
+class AimAttemptInput(AimCamelCaseModel):
     """Attempt-level portion of the AIM analysis request (P5-010).
 
     One or more of these entries compose alongside ``AimSessionInput`` inside
@@ -445,7 +469,7 @@ class AimAttemptInput(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class AimAnalysisRequest(BaseModel):
+class AimAnalysisRequest(AimCamelCaseModel):
     """Top-level request payload for POST /aim/v1/analysis (P5-021).
 
     The Backend assembles this envelope through the pipeline stages defined in
