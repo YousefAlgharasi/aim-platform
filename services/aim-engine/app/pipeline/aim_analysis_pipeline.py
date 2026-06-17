@@ -40,6 +40,10 @@ import logging
 from datetime import UTC, datetime
 from typing import Protocol, runtime_checkable
 
+from app.validation.aim_request_validator import (
+    AimRequestValidationError,
+    AimRequestValidator,
+)
 from app.schemas.aim_analysis_request import (
     AimAnalysisRequest,
     AimAttemptInput,
@@ -118,6 +122,14 @@ class AimAnalysisPipelineEntrypoint:
                 "attempt_count": len(request.attempts),
             },
         )
+
+        # Stage: input validation (P5-024).
+        # The AIM Engine independently validates the request on receipt,
+        # per the obligation stated in P5-009 and P5-010 contracts.
+        validator = AimRequestValidator()
+        validation_result = validator.validate(request)
+        if not validation_result.is_valid:
+            raise AimRequestValidationError(validation_result)
 
         categories = await self._dispatch_categories(request)
 
