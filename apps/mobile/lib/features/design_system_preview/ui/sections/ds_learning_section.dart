@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/theme.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../widgets/ds_section.dart';
 
@@ -25,13 +26,13 @@ class _DSLearningSectionState extends State<DSLearningSection> {
           title: 'AIM Card',
           children: [
             const AIMCard(child: Text('Standard card')),
-            AIMCard(
+            const AIMCard(
               variant: AIMCardVariant.elevated,
-              child: const Text('Elevated card'),
+              child: Text('Elevated card'),
             ),
-            AIMCard(
+            const AIMCard(
               variant: AIMCardVariant.ai,
-              child: const Text('AI card (gradient border)'),
+              child: Text('AI card (gradient border)'),
             ),
             AIMCard(
               variant: AIMCardVariant.gradient,
@@ -103,22 +104,22 @@ class _DSLearningSectionState extends State<DSLearningSection> {
               runSpacing: 16,
               alignment: WrapAlignment.center,
               children: [
-                const Column(
+                Column(
                   children: [
-                    AIMCircularProgress(value: 68, caption: 'daily goal'),
-                    SizedBox(height: 4),
-                    Text('Primary', style: AimTextStyles.caption),
+                    const AIMCircularProgress(value: 68, caption: 'daily goal'),
+                    const SizedBox(height: 4),
+                    const Text('Primary', style: AimTextStyles.caption),
                   ],
                 ),
-                const Column(
+                Column(
                   children: [
-                    AIMCircularProgress(
+                    const AIMCircularProgress(
                       value: 68,
                       tone: AIMCircularProgressTone.gradient,
                       caption: 'daily goal',
                     ),
-                    SizedBox(height: 4),
-                    Text('Gradient', style: AimTextStyles.caption),
+                    const SizedBox(height: 4),
+                    const Text('Gradient', style: AimTextStyles.caption),
                   ],
                 ),
                 Column(
@@ -139,18 +140,18 @@ class _DSLearningSectionState extends State<DSLearningSection> {
                     const Text('Success', style: AimTextStyles.caption),
                   ],
                 ),
-                const Column(
+                Column(
                   children: [
-                    AIMCircularProgress(value: 25, size: 64, thickness: 6),
-                    SizedBox(height: 4),
-                    Text('Small', style: AimTextStyles.caption),
+                    const AIMCircularProgress(value: 25, size: 64, thickness: 6),
+                    const SizedBox(height: 4),
+                    const Text('Small', style: AimTextStyles.caption),
                   ],
                 ),
-                const Column(
+                Column(
                   children: [
-                    AIMCircularProgress(value: 80, size: 128, thickness: 12),
-                    SizedBox(height: 4),
-                    Text('Large', style: AimTextStyles.caption),
+                    const AIMCircularProgress(value: 80, size: 128, thickness: 12),
+                    const SizedBox(height: 4),
+                    const Text('Large', style: AimTextStyles.caption),
                   ],
                 ),
               ],
@@ -198,25 +199,25 @@ class _DSLearningSectionState extends State<DSLearningSection> {
         ),
 
         // AI Feedback Bubble
-        DSSection(
+        const DSSection(
           title: 'AI Feedback Bubble',
           children: [
-            const AIMAIFeedbackBubble(
+            AIMAIFeedbackBubble(
               child: Text('Welcome! Let\'s practice English together.'),
             ),
-            const AIMAIFeedbackBubble(
+            AIMAIFeedbackBubble(
               tone: AIMAIFeedbackTone.praise,
               child: Text(
                 'Great sentence! Your use of present perfect is spot on.',
               ),
             ),
-            const AIMAIFeedbackBubble(
+            AIMAIFeedbackBubble(
               tone: AIMAIFeedbackTone.correction,
               child: Text(
                 'Try "have been" instead of "has been" with I.',
               ),
             ),
-            const AIMAIFeedbackBubble(typing: true),
+            AIMAIFeedbackBubble(typing: true),
           ],
         ),
 

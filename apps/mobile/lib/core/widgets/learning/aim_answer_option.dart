@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../design_tokens/design_tokens.dart';
 import '../../theme/theme.dart';
 
 /// Visual state for [AIMAnswerOption].
@@ -188,7 +187,7 @@ _AnswerSpec _resolveSpec({
         keyBackground: surfaces.surfaceSunken,
         keyForeground: surfaces.textSecondary,
       ),
-    AIMAnswerOptionState.selected => _AnswerSpec(
+    AIMAnswerOptionState.selected => const _AnswerSpec(
         backgroundColor: AimColors.primary50,
         borderColor: AimColors.primary500,
         keyBackground: AimColors.primary500,

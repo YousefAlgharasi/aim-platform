@@ -6,6 +6,7 @@ import '../ds_preview_state.dart';
 import '../sections/ds_button_section.dart';
 import '../sections/ds_color_section.dart';
 import '../sections/ds_feedback_section.dart';
+import '../sections/ds_form_section.dart';
 import '../sections/ds_foundations_section.dart';
 import '../sections/ds_learning_section.dart';
 import '../sections/ds_navigation_section.dart';

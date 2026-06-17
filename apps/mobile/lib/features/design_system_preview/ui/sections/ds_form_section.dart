@@ -8,44 +8,44 @@ class DSFormSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DSSection(
+    return const DSSection(
       title: 'Form Controls',
       children: [
-        const AIMInput(
+        AIMInput(
           label: 'Default input',
           placeholder: 'Enter text…',
         ),
-        const AIMInput(
+        AIMInput(
           label: 'With helper text',
           placeholder: 'username@example.com',
           helper: 'Use your institutional email.',
           type: AIMInputType.email,
         ),
-        const AIMInput(
+        AIMInput(
           label: 'Error state',
           placeholder: 'Enter password',
           error: 'Password must be at least 8 characters.',
           type: AIMInputType.password,
         ),
-        const AIMInput(
+        AIMInput(
           label: 'Disabled',
           placeholder: 'Cannot edit',
           disabled: true,
         ),
-        const AIMInput(
+        AIMInput(
           label: 'Required',
           placeholder: 'Full name',
           required: true,
         ),
-        const AIMInput(
+        AIMInput(
           label: 'Search',
           placeholder: 'Search lessons…',
           type: AIMInputType.search,
           leadingIcon: Icon(Icons.search),
         ),
-        const _CheckboxRow(),
-        const _SwitchRow(),
-        const _RadioRow(),
+        _CheckboxRow(),
+        _SwitchRow(),
+        _RadioRow(),
       ],
     );
   }
