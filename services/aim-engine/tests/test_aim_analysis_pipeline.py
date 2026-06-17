@@ -209,7 +209,8 @@ def test_route_delegates_to_pipeline(monkeypatch) -> None:
     assert response.status_code == 200
     payload = response.json()
     # Pipeline must echo correlation ids (not the stub's static values)
-    assert payload["backend_request_id"] == VALID_BODY["backend_request_id"]
-    assert payload["student_id"] == VALID_BODY["session"]["student_id"]
-    assert payload["session_id"] == VALID_BODY["session"]["session_id"]
+    # Wire format is camelCase per the P5-076 contract fix.
+    assert payload["backendRequestId"] == VALID_BODY["backend_request_id"]
+    assert payload["studentId"] == VALID_BODY["session"]["student_id"]
+    assert payload["sessionId"] == VALID_BODY["session"]["session_id"]
     assert "categories" in payload
