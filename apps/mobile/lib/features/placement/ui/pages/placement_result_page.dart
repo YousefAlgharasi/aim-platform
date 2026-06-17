@@ -6,8 +6,8 @@
 // Responsibility:
 //   Display the backend-generated placement result:
 //     - estimatedLevel (displayed as-is — never recalculated by Flutter)
-//     - skillMasteryMap entries: skill name + mastery signal (derived from
-//       masteryScore, consistent with P4-048 skillSummary signal thresholds)
+//     - skillMasteryMap entries: skill name + mastery signal (received from
+//       backend — never derived locally from masteryScore)
 //     - weaknesses (top weaknesses ranked by backend, skill name + priority)
 //     - initialPathReady indicator
 //
@@ -263,7 +263,7 @@ class _LevelCard extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Skill row — shows signal (not raw score)
+// Skill row — shows backend-provided signal (never locally computed)
 // ---------------------------------------------------------------------------
 
 class _SkillRow extends StatelessWidget {
@@ -279,14 +279,10 @@ class _SkillRow extends StatelessWidget {
     'listening': 'Listening',
   };
 
-  // Derive signal from masteryScore — consistent with P4-045/P4-048 thresholds.
-  // Flutter never calculates mastery; it derives only a display label here.
-  String _signal(double score) {
-    if (score >= 0.75) return 'strong';
-    if (score >= 0.40) return 'developing';
-    return 'emerging';
-  }
-
+  // P4-070: Signal comes from mastery.signal (backend-provided).
+  // The _signal() helper that computed signal from masteryScore using
+  // threshold constants (0.75, 0.40) has been removed — that is backend
+  // config and must never appear in Flutter code (P4-035 §4).
   Color _signalColor(String signal, BuildContext context) {
     return switch (signal) {
       'strong' => const Color(0xFF27AE60),
@@ -297,7 +293,8 @@ class _SkillRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final signal = _signal(mastery.masteryScore);
+    // Use backend-provided signal directly — never compute from masteryScore.
+    final signal = mastery.signal;
     final color = _signalColor(signal, context);
     final name = _names[skillCode] ?? skillCode;
 
