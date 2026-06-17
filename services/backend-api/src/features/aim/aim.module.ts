@@ -24,6 +24,7 @@ import { AimEngineClientService } from './aim-engine-client.service';
 import { AimService } from './aim.service';
 
 // Phase 5 additions (P5-043 skeleton)
+import { AimHealthCheckService } from './aim-health-check.service';
 import { AimEngineAdapterService } from './adapter/aim-engine-adapter.service';
 import { AimPipelineOrchestratorService } from './pipeline/aim-pipeline-orchestrator.service';
 import { AimStateAssemblyService } from './pipeline/aim-state-assembly.service';
@@ -36,6 +37,9 @@ import { AimResultService } from './result/aim-result.service';
     // Existing (pre-Phase 5)
     AimEngineClientService,
     AimService,
+
+    // Phase 5 — health check (P5-046)
+    AimHealthCheckService,
 
     // Phase 5 — adapter (sole AIM Engine caller)
     AimEngineAdapterService,
@@ -56,8 +60,8 @@ import { AimResultService } from './result/aim-result.service';
     AimEngineClientService,
     AimService,
 
-    // Phase 5 exports — available for controllers and sibling features
-    // that consume AIM results through the approved read API only.
+    // Phase 5 exports
+    AimHealthCheckService,
     AimResultService,
   ],
 })
