@@ -45,6 +45,7 @@ import { FrustrationSignalService } from './persistence/frustration-signal.servi
 import { SessionSummaryService } from './persistence/session-summary.service';
 import { AimResultService } from './result/aim-result.service';
 import { StudentSkillStateReadService } from './result/student-skill-state-read.service';
+import { ReviewScheduleReadService } from './result/review-schedule-read.service';
 import { AimResultController } from './result/aim-result.controller';
 
 @Module({
@@ -107,6 +108,9 @@ import { AimResultController } from './result/aim-result.controller';
 
     // Phase 5 — skill state read service (P5-069)
     StudentSkillStateReadService,
+
+    // Phase 5 — review schedule read service (P5-072)
+    ReviewScheduleReadService,
   ],
   exports: [
     // Existing exports preserved
