@@ -21,6 +21,7 @@
 import { Module } from '@nestjs/common';
 
 import { DatabaseModule } from '../../database/database.module';
+import { AuthModule } from '../../auth/auth.module';
 import { AimEngineClientService } from './aim-engine-client.service';
 import { AimService } from './aim.service';
 
@@ -43,9 +44,13 @@ import { ReviewScheduleOutputService } from './persistence/review-schedule-outpu
 import { FrustrationSignalService } from './persistence/frustration-signal.service';
 import { SessionSummaryService } from './persistence/session-summary.service';
 import { AimResultService } from './result/aim-result.service';
+import { StudentSkillStateReadService } from './result/student-skill-state-read.service';
+import { RecommendationReadService } from './result/recommendation-read.service';
+import { AimResultController } from './result/aim-result.controller';
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, AuthModule],
+  controllers: [AimResultController],
   providers: [
     // Existing (pre-Phase 5)
     AimEngineClientService,
@@ -100,6 +105,8 @@ import { AimResultService } from './result/aim-result.service';
 
     // Phase 5 — result read APIs
     AimResultService,
+    StudentSkillStateReadService,
+    RecommendationReadService,
   ],
   exports: [
     // Existing exports preserved
