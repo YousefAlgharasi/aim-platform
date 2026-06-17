@@ -26,7 +26,7 @@
 //   - This controller never calls the AIM Engine directly.
 //   - No secrets, service-role keys, or AI provider keys are exposed here.
 
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
@@ -62,6 +62,13 @@ import {
   RecommendationReadService,
   RecommendationReadResponse,
 } from './recommendation-read.service';
+import {
+  RecommendationReadResponseDto,
+  ReviewScheduleReadResponseDto,
+  SessionStateReadResponseDto,
+  StudentSkillStateReadResponseDto,
+  WeaknessRecordsReadResponseDto,
+} from './aim-result.dto';
 
 @ApiTags(OPENAPI_TAGS.aim)
 @Controller('aim')
@@ -99,9 +106,10 @@ export class AimResultController {
   @ApiParam({ name: 'studentId', description: 'UUID of the student.' })
   @ApiOkResponse({
     description: 'Backend-validated skill states. Empty array if none yet persisted.',
+    type: StudentSkillStateReadResponseDto,
   })
   async getSkillStates(
-    @Param('studentId') studentId: string,
+    @Param('studentId', ParseUUIDPipe) studentId: string,
   ): Promise<StudentSkillStateReadResponse> {
     return this.skillStateReadService.getSkillStatesForStudent(studentId);
   }
@@ -131,9 +139,10 @@ export class AimResultController {
   @ApiParam({ name: 'studentId', description: 'UUID of the student.' })
   @ApiOkResponse({
     description: 'Backend-validated review schedules. Empty array if none yet persisted.',
+    type: ReviewScheduleReadResponseDto,
   })
   async getReviewSchedules(
-    @Param('studentId') studentId: string,
+    @Param('studentId', ParseUUIDPipe) studentId: string,
   ): Promise<ReviewScheduleReadResponse> {
     return this.reviewScheduleReadService.getReviewSchedulesForStudent(studentId);
   }
@@ -163,10 +172,11 @@ export class AimResultController {
   @ApiParam({ name: 'sessionId', description: 'UUID of the learning session.' })
   @ApiOkResponse({
     description: 'Backend-validated session state. found: false if not yet persisted.',
+    type: SessionStateReadResponseDto,
   })
   async getSessionState(
-    @Param('studentId') studentId: string,
-    @Param('sessionId') sessionId: string,
+    @Param('studentId', ParseUUIDPipe) studentId: string,
+    @Param('sessionId', ParseUUIDPipe) sessionId: string,
   ): Promise<SessionStateReadResponse> {
     return this.sessionStateReadService.getSessionState(studentId, sessionId);
   }
@@ -197,9 +207,10 @@ export class AimResultController {
   @ApiParam({ name: 'studentId', description: 'UUID of the student.' })
   @ApiOkResponse({
     description: 'Backend-validated weakness records. Empty array if none yet persisted.',
+    type: WeaknessRecordsReadResponseDto,
   })
   async getWeaknessRecords(
-    @Param('studentId') studentId: string,
+    @Param('studentId', ParseUUIDPipe) studentId: string,
   ): Promise<WeaknessRecordsReadResponse> {
     return this.weaknessRecordsReadService.getWeaknessRecordsForStudent(studentId);
   }
@@ -217,9 +228,12 @@ export class AimResultController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Read active AIM recommendations for a student (student).' })
   @ApiParam({ name: 'studentId', description: 'UUID of the student.' })
-  @ApiOkResponse({ description: 'Active recommendations ordered by rank. Empty array if none.' })
+  @ApiOkResponse({
+    description: 'Active recommendations ordered by rank. Empty array if none.',
+    type: RecommendationReadResponseDto,
+  })
   async getRecommendations(
-    @Param('studentId') studentId: string,
+    @Param('studentId', ParseUUIDPipe) studentId: string,
   ): Promise<RecommendationReadResponse> {
     return this.recommendationReadService.getActiveForStudent(studentId);
   }
