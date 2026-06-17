@@ -76,7 +76,7 @@ class _PlacementResultPageState extends ConsumerState<PlacementResultPage> {
                 const CircularProgressIndicator(),
                 const SizedBox(height: 20),
                 Text(
-                  'Scoring in progress… (${attempt}/$_maxPollAttempts)',
+                  'Scoring in progress… ($attempt/$_maxPollAttempts)',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 8),
@@ -86,7 +86,7 @@ class _PlacementResultPageState extends ConsumerState<PlacementResultPage> {
                         color: Theme.of(context)
                             .colorScheme
                             .onSurface
-                            .withOpacity(0.5),
+                            .withValues(alpha: 0.5),
                       ),
                 ),
               ],
@@ -160,7 +160,7 @@ class _ResultBody extends StatelessWidget {
             Text(
               'Identified by your backend evaluation — displayed in priority order.',
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.5),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
               ),
             ),
             const SizedBox(height: 12),
@@ -181,7 +181,7 @@ class _ResultBody extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color:
-                  theme.colorScheme.surfaceVariant.withOpacity(0.4),
+                  theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
@@ -190,7 +190,7 @@ class _ResultBody extends StatelessWidget {
               'exactly as received — no local calculations are performed.',
               style: theme.textTheme.bodySmall?.copyWith(
                 color:
-                    theme.colorScheme.onSurface.withOpacity(0.5),
+                    theme.colorScheme.onSurface.withValues(alpha: 0.5),
               ),
               textAlign: TextAlign.center,
             ),
@@ -236,7 +236,7 @@ class _LevelCard extends StatelessWidget {
             'Your Estimated Level',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onPrimaryContainer
-                  .withOpacity(0.7),
+                  .withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: 8),
@@ -252,7 +252,7 @@ class _LevelCard extends StatelessWidget {
             'Assigned by the backend based on your placement test',
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onPrimaryContainer
-                  .withOpacity(0.6),
+                  .withValues(alpha: 0.6),
             ),
             textAlign: TextAlign.center,
           ),
@@ -307,9 +307,9 @@ class _SkillRow extends StatelessWidget {
             padding:
                 const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: color.withOpacity(0.4)),
+              border: Border.all(color: color.withValues(alpha: 0.4)),
             ),
             child: Text(
               signal[0].toUpperCase() + signal.substring(1),
@@ -355,7 +355,7 @@ class _WeaknessRow extends StatelessWidget {
             height: 24,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: const Color(0xFFE74C3C).withOpacity(0.12),
+              color: const Color(0xFFE74C3C).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
@@ -396,8 +396,8 @@ class _InitialPathCard extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(
           color: isReady
-              ? const Color(0xFF27AE60).withOpacity(0.4)
-              : theme.colorScheme.outline.withOpacity(0.3),
+              ? const Color(0xFF27AE60).withValues(alpha: 0.4)
+              : theme.colorScheme.outline.withValues(alpha: 0.3),
         ),
         borderRadius: BorderRadius.circular(12),
       ),
@@ -407,7 +407,7 @@ class _InitialPathCard extends StatelessWidget {
             isReady ? Icons.check_circle_outline : Icons.hourglass_empty,
             color: isReady
                 ? const Color(0xFF27AE60)
-                : theme.colorScheme.onSurface.withOpacity(0.4),
+                : theme.colorScheme.onSurface.withValues(alpha: 0.4),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -426,7 +426,7 @@ class _InitialPathCard extends StatelessWidget {
                       : 'Your study path is being prepared by the backend.',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color:
-                        theme.colorScheme.onSurface.withOpacity(0.5),
+                        theme.colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
                 ),
               ],
