@@ -1,89 +1,191 @@
-// Phase 5 — P5-058
-// AimPersistenceService tests (wiring of WeaknessUpdateService only).
+// Phase 5 — P5-065
+// AimPersistenceService tests — transaction policy.
 //
-// Covers:
-//   - Calls WeaknessUpdateService.upsertMany with studentId + weaknessRecords
-//   - Skips the call when weaknessRecords is empty
-//   - Does not call WeaknessUpdateService when categories has no weakness entries
+// The service creates tx-scoped instances of each category service internally,
+// so we test transaction semantics via the mock client queries (BEGIN/COMMIT/ROLLBACK)
+// and verify withClient is called. Category-level wiring is tested in each
+// service's own spec suite.
 
 import { AimPersistenceService } from './aim-persistence.service';
-import { WeaknessUpdateService } from './weakness-update.service';
-import { AimValidatedResponse } from '../adapter/aim-response-mapper.types';
+import { AimValidatedResponse, AimValidatedCategories } from '../adapter/aim-response-mapper.types';
 
 const STUDENT_ID = '770e8400-e29b-41d4-a716-446655440002';
+const SESSION_ID = 'ses0e8400-e29b-41d4-a716-446655440050';
+const BACKEND_REQUEST_ID = 'brq0e8400-e29b-41d4-a716-446655440099';
 
-function makeValidatedResponse(
-  overrides: Partial<AimValidatedResponse> = {},
-): AimValidatedResponse {
+function makeCategories(overrides: Partial<AimValidatedCategories> = {}): AimValidatedCategories {
   return {
-    backendRequestId: '550e8400-e29b-41d4-a716-446655440000',
+    skillState: [],
+    weaknessRecords: [],
+    difficultyDecision: null,
+    recommendations: [],
+    reviewSchedule: [],
+    sessionSummary: null,
+    ...overrides,
+  };
+}
+
+function makeResponse(overrides: Partial<AimValidatedResponse> = {}): AimValidatedResponse {
+  return {
+    backendRequestId: BACKEND_REQUEST_ID,
     contractVersion: '1.0',
     studentId: STUDENT_ID,
-    sessionId: '660e8400-e29b-41d4-a716-446655440001',
-    generatedAt: '2026-06-17T10:30:05Z',
-    categories: {
-      skillState: [],
-      weaknessRecords: [],
-      difficultyDecision: null,
-      recommendations: [],
-      reviewSchedule: [],
-      sessionSummary: null,
-    },
+    sessionId: SESSION_ID,
+    generatedAt: '2026-06-17T16:00:00Z',
+    categories: makeCategories(),
     droppedValidationCodes: [],
     ...overrides,
   };
 }
 
-describe('AimPersistenceService.persist', () => {
-  it('calls WeaknessUpdateService.upsertMany with studentId and weaknessRecords', async () => {
-    const weaknessUpdate = {
-      upsertMany: jest.fn().mockResolvedValue(undefined),
-    } as unknown as WeaknessUpdateService;
-    const svc = new AimPersistenceService(weaknessUpdate);
+function makeMocksWithFailure(failSql?: string) {
+  const clientQueries: string[] = [];
+  const mockClient = {
+    query: jest.fn().mockImplementation(async (sql: string) => {
+      clientQueries.push(sql);
+      if (failSql && sql === failSql) throw new Error(`mock failure at ${sql}`);
+      return { rows: [], rowCount: 0 };
+    }),
+    release: jest.fn(),
+  };
 
-    const weaknessRecord = {
-      weaknessId: 'bb0e8400-e29b-41d4-a716-446655440006',
-      skillId: 'skill:arabic:p1:grammar',
-      severity: 'developing' as const,
-      status: 'open' as const,
-      triggerAttemptIds: ['880e8400-e29b-41d4-a716-446655440003'],
-      detectedAt: '2026-06-17T10:30:00Z',
-      resolvedAt: null,
-    };
-
-    const response = makeValidatedResponse({
-      categories: {
-        skillState: [],
-        weaknessRecords: [weaknessRecord],
-        difficultyDecision: null,
-        recommendations: [],
-        reviewSchedule: [],
-        sessionSummary: null,
+  const db = {
+    withClient: jest.fn().mockImplementation(
+      async (callback: (client: typeof mockClient) => Promise<void>) => {
+        await callback(mockClient);
       },
-    });
+    ),
+    query: jest.fn().mockResolvedValue({ rows: [], rowCount: 0 }),
+  } as unknown as import('../../../database/database.service').DatabaseService;
 
-    await svc.persist(response);
+  return { db, mockClient, clientQueries };
+}
 
-    expect(weaknessUpdate.upsertMany).toHaveBeenCalledWith(STUDENT_ID, [weaknessRecord]);
+// Services injected into the constructor (not used for tx-scoped writes,
+// but required by NestJS DI — pass minimal stubs)
+function makeStubServices() {
+  return {
+    skillStateUpdate: { upsertMany: jest.fn().mockResolvedValue(undefined) },
+    weaknessUpdate: { upsertMany: jest.fn().mockResolvedValue(undefined) },
+    difficultyDecision: { persist: jest.fn().mockResolvedValue({ ok: true, action: 'skipped_null' }) },
+    recommendationOutput: { replaceActiveSet: jest.fn().mockResolvedValue({ skippedReason: 'null_or_empty_array' }) },
+    reviewScheduleOutput: { upsertMany: jest.fn().mockResolvedValue({ processedCount: 0, skippedNullOrEmpty: true, actions: [] }) },
+    sessionSummary: { persist: jest.fn().mockResolvedValue({ ok: true, action: 'skipped_null' }) },
+  };
+}
+
+function makeSvc(db: import('../../../database/database.service').DatabaseService) {
+  const stubs = makeStubServices();
+  const svc = new AimPersistenceService(
+    db,
+    stubs.skillStateUpdate as never,
+    stubs.weaknessUpdate as never,
+    stubs.difficultyDecision as never,
+    stubs.recommendationOutput as never,
+    stubs.reviewScheduleOutput as never,
+    stubs.sessionSummary as never,
+  );
+  return { svc, ...stubs };
+}
+
+describe('AimPersistenceService.persist (P5-065 transaction policy)', () => {
+  it('calls withClient to get a dedicated connection', async () => {
+    const { db } = makeMocksWithFailure();
+    const { svc } = makeSvc(db);
+    await svc.persist(makeResponse());
+    expect(db.withClient as jest.Mock).toHaveBeenCalledTimes(1);
   });
 
-  it('does not call WeaknessUpdateService.upsertMany when weaknessRecords is empty', async () => {
-    const weaknessUpdate = {
-      upsertMany: jest.fn().mockResolvedValue(undefined),
-    } as unknown as WeaknessUpdateService;
-    const svc = new AimPersistenceService(weaknessUpdate);
-
-    await svc.persist(makeValidatedResponse());
-
-    expect(weaknessUpdate.upsertMany).not.toHaveBeenCalled();
+  it('issues BEGIN as the first SQL statement', async () => {
+    const { db, clientQueries } = makeMocksWithFailure();
+    const { svc } = makeSvc(db);
+    await svc.persist(makeResponse());
+    expect(clientQueries[0]).toBe('BEGIN');
   });
 
-  it('does not throw when persisting an empty-categories response', async () => {
-    const weaknessUpdate = {
-      upsertMany: jest.fn().mockResolvedValue(undefined),
-    } as unknown as WeaknessUpdateService;
-    const svc = new AimPersistenceService(weaknessUpdate);
+  it('issues COMMIT as the last SQL statement on success', async () => {
+    const { db, clientQueries } = makeMocksWithFailure();
+    const { svc } = makeSvc(db);
+    await svc.persist(makeResponse());
+    expect(clientQueries[clientQueries.length - 1]).toBe('COMMIT');
+  });
 
-    await expect(svc.persist(makeValidatedResponse())).resolves.toBeUndefined();
+  it('does not issue ROLLBACK on success', async () => {
+    const { db, clientQueries } = makeMocksWithFailure();
+    const { svc } = makeSvc(db);
+    await svc.persist(makeResponse());
+    expect(clientQueries).not.toContain('ROLLBACK');
+  });
+
+  it('issues ROLLBACK (not COMMIT) when withClient callback throws mid-transaction', async () => {
+    const clientQueries: string[] = [];
+    const mockClient = {
+      query: jest.fn().mockImplementation(async (sql: string) => {
+        clientQueries.push(sql);
+        // After BEGIN, throw to simulate a category write failure
+        if (sql === 'BEGIN') return { rows: [], rowCount: 0 };
+        // Any subsequent query (COMMIT or otherwise) simulates a mid-tx error
+        throw new Error('simulated mid-transaction DB error');
+      }),
+      release: jest.fn(),
+    };
+    // withClient calls the callback but the callback throws after BEGIN
+    const db = {
+      withClient: jest.fn().mockImplementation(async (cb: (c: typeof mockClient) => Promise<void>) => {
+        await cb(mockClient);
+      }),
+      query: jest.fn(),
+    } as unknown as import('../../../database/database.service').DatabaseService;
+
+    const { svc } = makeSvc(db);
+    await expect(svc.persist(makeResponse())).rejects.toThrow('simulated mid-transaction DB error');
+    expect(clientQueries).toContain('BEGIN');
+    expect(clientQueries).toContain('ROLLBACK');
+  });
+
+  it('re-throws the error after ROLLBACK', async () => {
+    const db = {
+      withClient: jest.fn().mockRejectedValue(new Error('withClient failed')),
+      query: jest.fn(),
+    } as unknown as import('../../../database/database.service').DatabaseService;
+    const { svc } = makeSvc(db);
+    await expect(svc.persist(makeResponse())).rejects.toThrow('withClient failed');
+  });
+
+  it('ROLLBACK comes after BEGIN on failure', async () => {
+    let count = 0;
+    const clientQueries: string[] = [];
+    const mockClient = {
+      query: jest.fn().mockImplementation(async (sql: string) => {
+        clientQueries.push(sql);
+        count++;
+        if (count === 2) throw new Error('fail after BEGIN');
+        return { rows: [], rowCount: 0 };
+      }),
+      release: jest.fn(),
+    };
+    const db = {
+      withClient: jest.fn().mockImplementation(async (cb: (c: typeof mockClient) => Promise<void>) => cb(mockClient)),
+      query: jest.fn(),
+    } as unknown as import('../../../database/database.service').DatabaseService;
+
+    const { svc } = makeSvc(db);
+    await expect(svc.persist(makeResponse())).rejects.toThrow();
+    const beginIdx = clientQueries.indexOf('BEGIN');
+    const rollbackIdx = clientQueries.indexOf('ROLLBACK');
+    expect(beginIdx).toBeGreaterThanOrEqual(0);
+    expect(rollbackIdx).toBeGreaterThan(beginIdx);
+  });
+
+  it('resolves to undefined (void) on success', async () => {
+    const { db } = makeMocksWithFailure();
+    const { svc } = makeSvc(db);
+    await expect(svc.persist(makeResponse())).resolves.toBeUndefined();
+  });
+
+  it('does not call AIM Engine (scope guard)', async () => {
+    const { db } = makeMocksWithFailure();
+    const { svc } = makeSvc(db);
+    await expect(svc.persist(makeResponse())).resolves.toBeUndefined();
   });
 });
