@@ -1,3 +1,12 @@
+// Phase 4 — P4-069 / P4-070
+// PlacementResultModel — data-layer model for PlacementResult.
+//
+// P4-070 fix: PlacementSkillMastery now requires [signal] from the backend.
+// Flutter must NEVER compute signal from masteryScore locally.
+// The backend sends 'signal' ('strong'/'developing'/'emerging') in the
+// skill_mastery_map response. If the backend does not yet include it,
+// we fall back to 'unknown' — never to a locally-computed threshold check.
+
 import '../../logic/entity/placement_result.dart';
 import '../../logic/entity/placement_skill_mastery.dart';
 
@@ -43,6 +52,7 @@ class PlacementResultModel extends PlacementResult {
               'total_questions': entry.value.totalQuestions,
               'correct_answers': entry.value.correctAnswers,
               'mastery_score': entry.value.masteryScore,
+              'signal': entry.value.signal,
             }
         },
         'weakness_map': {
@@ -65,11 +75,15 @@ Map<String, PlacementSkillMastery> _parseSkillMasteryMap(
   final result = <String, PlacementSkillMastery>{};
   for (final entry in raw.entries) {
     final data = entry.value as Map<String, dynamic>;
+    // P4-070: signal must come from backend — never computed locally.
+    // Fallback to 'unknown' if backend does not yet send the field.
+    final signal = data['signal'] as String? ?? 'unknown';
     result[entry.key] = PlacementSkillMastery(
       skillCode: entry.key,
       totalQuestions: data['total_questions'] as int,
       correctAnswers: data['correct_answers'] as int,
       masteryScore: (data['mastery_score'] as num).toDouble(),
+      signal: signal,
     );
   }
   return result;
