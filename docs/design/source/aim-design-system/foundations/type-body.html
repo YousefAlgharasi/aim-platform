@@ -1,0 +1,32 @@
+<!-- @dsCard group="Type" viewport="700x250" name="Body & UI Text" subtitle="Title, Body L/M/S, Caption, Button, Label, Helper" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; font-family: var(--font-en); background: var(--surface); padding: 18px 20px; color: var(--text-primary); }
+  .row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 5px 0; border-bottom: 1px solid var(--divider); }
+  .row:last-child { border-bottom: 0; }
+  .spec { font: var(--type-helper); font-family: var(--font-mono); color: var(--text-muted); white-space: nowrap; }
+  .title { font: var(--type-title); }
+  .blg { font: var(--type-body-lg); }
+  .bmd { font: var(--type-body-md); }
+  .bsm { font: var(--type-body-sm); color: var(--text-secondary); }
+  .cap { font: var(--type-caption); color: var(--text-muted); }
+  .btn { font: var(--type-button); color: var(--color-primary-600); }
+  .lab { font: var(--type-label); text-transform: uppercase; color: var(--text-secondary); }
+  .help { font: var(--type-helper); color: var(--text-muted); }
+</style>
+</head>
+<body>
+  <div class="row"><span class="title">Card title</span><span class="spec">Title · 17/24 · 600</span></div>
+  <div class="row"><span class="blg">Body large for intros</span><span class="spec">Body L · 17/26 · 400</span></div>
+  <div class="row"><span class="bmd">Body medium is the default reading size.</span><span class="spec">Body M · 16/24 · 400</span></div>
+  <div class="row"><span class="bsm">Body small for dense secondary content.</span><span class="spec">Body S · 14/21 · 400</span></div>
+  <div class="row"><span class="cap">CAPTION META</span><span class="spec">Caption · 12/16 · 500</span></div>
+  <div class="row"><span class="btn">Button text</span><span class="spec">Button · 15/20 · 600</span></div>
+  <div class="row"><span class="lab">Field label</span><span class="spec">Label · 13/18 · 600</span></div>
+  <div class="row"><span class="help">Helper / hint text under a field</span><span class="spec">Helper · 12/16 · 400</span></div>
+</body>
+</html>

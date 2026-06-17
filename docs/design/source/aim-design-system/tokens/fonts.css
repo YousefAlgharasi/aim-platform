@@ -1,0 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap');
+
+/* AIM webfonts
+   English  -> Inter            (fallback: system sans-serif)
+   Arabic   -> IBM Plex Sans Arabic (fallback: Noto Sans Arabic)
+   Mono     -> ui-monospace stack (for tokens / code specimens)
+*/
+
+:root {
+  --font-en: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-ar: 'IBM Plex Sans Arabic', 'Noto Sans Arabic', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Default document font (LTR). RTL containers should set font-family: var(--font-ar). */
+  --font-sans: var(--font-en);
+}
+
+/* Arabic / RTL convenience: any [dir="rtl"] subtree picks up the Arabic stack. */
+[dir="rtl"] {
+  --font-sans: var(--font-ar);
+  font-family: var(--font-ar);
+}

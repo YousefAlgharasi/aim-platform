@@ -15,11 +15,14 @@ class AimMobileApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authFlowProvider);
     final authContextState = ref.watch(authContextProvider);
+    final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp(
       title: appTitle,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: themeMode,
       initialRoute: AppRoutePaths.splash,
       onGenerateRoute: (settings) => AppRouter.onGenerateRoute(
         settings,
