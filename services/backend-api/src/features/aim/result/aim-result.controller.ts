@@ -7,6 +7,7 @@
 // Endpoints:
 //   GET /aim/students/:studentId/skill-states — Read student skill states (P5-069).
 //   GET /aim/students/:studentId/review-schedules — Read review schedules (P5-072).
+//   GET /aim/students/:studentId/sessions/:sessionId/state — Read session AIM state (P5-068).
 //
 // Security rules:
 //   - All endpoints require a valid Supabase JWT (SupabaseJwtAuthGuard).
@@ -42,6 +43,10 @@ import {
   ReviewScheduleReadService,
   ReviewScheduleReadResponse,
 } from './review-schedule-read.service';
+import {
+  SessionStateReadService,
+  SessionStateReadResponse,
+} from './session-state-read.service';
 
 @ApiTags(OPENAPI_TAGS.aim ?? 'aim')
 @Controller('aim')
@@ -49,6 +54,7 @@ export class AimResultController {
   constructor(
     private readonly skillStateReadService: StudentSkillStateReadService,
     private readonly reviewScheduleReadService: ReviewScheduleReadService,
+    private readonly sessionStateReadService: SessionStateReadService,
   ) {}
 
   /**
@@ -117,5 +123,48 @@ export class AimResultController {
     @Param('studentId') studentId: string,
   ): Promise<ReviewScheduleReadResponse> {
     return this.reviewScheduleReadService.getReviewSchedulesForStudent(studentId);
+  }
+
+  /**
+   * GET /aim/students/:studentId/sessions/:sessionId/state
+   *
+   * Return the persisted, backend-validated AIM session summary for the
+   * given session — the "current AIM state" for that session.
+   *
+   * Access is restricted to the owning student (or privileged roles).
+   * studentId in the route is validated against the JWT via
+   * StudentOwnershipGuard. sessionId is additionally checked against
+   * student_id inside the query itself (defense in depth) — a session
+   * belonging to another student returns found: false rather than leaking
+   * its existence.
+   *
+   * Returns only the last-AIM-validated summary from session_summaries. No
+   * live AIM Engine call is made. If no summary has been persisted yet for
+   * this session, returns found: false with all data fields null.
+   *
+   * AIM Engine is never called from this endpoint.
+   */
+  @Get('students/:studentId/sessions/:sessionId/state')
+  @UseGuards(SupabaseJwtAuthGuard, StudentOwnershipGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @RequireStudentOwnership({ paramName: 'studentId' })
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Read backend-validated current session AIM state (student).',
+    description:
+      'Returns the AIM-persisted session summary. No live AIM Engine call. ' +
+      'studentId in route validated against JWT; sessionId additionally ' +
+      'checked against student_id in the query.',
+  })
+  @ApiParam({ name: 'studentId', description: 'UUID of the student.' })
+  @ApiParam({ name: 'sessionId', description: 'UUID of the learning session.' })
+  @ApiOkResponse({
+    description: 'Backend-validated session state. found: false if not yet persisted.',
+  })
+  async getSessionState(
+    @Param('studentId') studentId: string,
+    @Param('sessionId') sessionId: string,
+  ): Promise<SessionStateReadResponse> {
+    return this.sessionStateReadService.getSessionState(studentId, sessionId);
   }
 }
