@@ -44,8 +44,10 @@ class LessonDetailRepositoryImpl implements LessonDetailRepository {
         lessonId: lessonId,
       );
 
-      final lesson = await lessonFuture;
-      final assets = await assetsFuture;
+      final results = await Future.wait<Object>([
+        lessonFuture,
+        assetsFuture,
+      ]);
 
       // Defensive guard: only render published assets in the student app.
       // The datasource already requests status=published; this is a second layer.

@@ -18,6 +18,7 @@ import 'package:aim_mobile/core/theme/app_theme.dart';
 import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_list_notifier.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
+import 'package:aim_mobile/features/lessons/logic/repository/lessons_repository.dart';
 import 'package:aim_mobile/features/lessons/ui/pages/lesson_list_page.dart';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -157,9 +158,11 @@ void main() {
 
 // ── Fake notifier ─────────────────────────────────────────────────────────────
 
-class _FakeLessonsListNotifier
-    extends StateNotifier<AppAsyncState<List<LessonModel>>> {
-  _FakeLessonsListNotifier(super.state);
+class _FakeLessonsListNotifier extends LessonsListNotifier {
+  _FakeLessonsListNotifier(AppAsyncState<List<LessonModel>> initialState)
+      : super(repository: _FakeLessonsRepository()) {
+    state = initialState;
+  }
 
   Future<void> load({
     required String bearerToken,
@@ -170,4 +173,24 @@ class _FakeLessonsListNotifier
     required String bearerToken,
     required String chapterId,
   }) async {}
+}
+
+class _FakeLessonsRepository implements LessonsRepository {
+  @override
+  Future<List<CourseModel>> getCourses({required String bearerToken}) async =>
+      const [];
+
+  @override
+  Future<List<ChapterModel>> getChapters({
+    required String bearerToken,
+    required String levelId,
+  }) async =>
+      const [];
+
+  @override
+  Future<List<LessonModel>> getLessons({
+    required String bearerToken,
+    required String chapterId,
+  }) async =>
+      const [];
 }

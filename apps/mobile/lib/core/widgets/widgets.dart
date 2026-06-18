@@ -1,3 +1,4 @@
+export '../theme/theme.dart';
 export 'buttons/buttons.dart';
 export 'feedback/feedback.dart';
 export 'forms/forms.dart';

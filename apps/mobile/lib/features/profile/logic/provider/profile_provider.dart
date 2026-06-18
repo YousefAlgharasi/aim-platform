@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/networking/backend_api_client_provider.dart';
 import '../../../auth/logic/provider/auth_token_interceptor_provider.dart';
 import '../../../../core/state/app_async_state.dart';
 import '../../data/datasources/profile_remote_datasource.dart';
