@@ -20,7 +20,6 @@ import 'package:aim_mobile/features/placement/logic/provider/placement_section_n
 import 'package:aim_mobile/features/placement/logic/provider/placement_submit_notifier.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:aim_mobile/core/networking/backend_api_client_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_token_interceptor_provider.dart';
 import 'package:aim_mobile/features/placement/data/datasources/placement_remote_datasource.dart';
 import 'package:aim_mobile/features/placement/data/datasources/placement_remote_datasource_impl.dart';
