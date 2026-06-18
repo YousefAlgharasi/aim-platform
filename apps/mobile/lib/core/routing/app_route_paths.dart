@@ -11,6 +11,9 @@ class AppRoutePaths {
   static const String progress = '/main/progress';
   static const String profile = '/main/profile';
 
+  // Phase 6 — P6-073: Curriculum browser routes
+  static const String courseChapters = '/lessons/chapters';
+
   // Phase 4 — P4-065: Placement Test flow routes
   static const String placementStart = '/placement/start';
   static const String placementSection = '/placement/section';

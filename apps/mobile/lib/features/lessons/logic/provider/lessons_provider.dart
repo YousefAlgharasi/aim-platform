@@ -1,4 +1,4 @@
-// Phase 6 — P6-072
+// Phase 6 — P6-072 / P6-073
 // lessons_provider.dart — Riverpod providers for the lessons feature.
 //
 // Scope: Lessons / curriculum browser only.
@@ -6,22 +6,25 @@
 // Registers:
 //   lessonsRemoteDatasourceProvider — datasource
 //   lessonsRepositoryProvider        — repository (use this in notifiers/UI)
+//   coursesProvider                  — course list notifier
 //
 // Security rules:
 // - Uses authenticatedBackendApiClientProvider so bearer token is injected
 //   automatically; never stored in the datasource or repository.
-// - levelId and chapterId are always sourced from prior backend responses;
-//   never from user input.
+// - levelId and chapterId are always sourced from prior backend responses.
 // - No AIM Engine runtime, AI Teacher, or AI provider calls from Flutter.
 // - No secrets, service-role keys, or privileged config here.
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_token_interceptor_provider.dart';
 import 'package:aim_mobile/features/lessons/data/datasources/lessons_remote_datasource.dart';
 import 'package:aim_mobile/features/lessons/data/datasources/lessons_remote_datasource_impl.dart';
+import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
 import 'package:aim_mobile/features/lessons/data/repository/repo_impl/lessons_repository_impl.dart';
 import 'package:aim_mobile/features/lessons/logic/repository/lessons_repository.dart';
+import 'courses_notifier.dart';
 
 /// Provides the concrete [LessonsRemoteDatasource].
 /// Consumers should depend on [lessonsRepositoryProvider] instead.
@@ -41,3 +44,15 @@ final lessonsRepositoryProvider = Provider<LessonsRepository>((ref) {
     datasource: ref.watch(lessonsRemoteDatasourceProvider),
   );
 });
+
+/// Course list state provider.
+///
+/// Consumers call [CoursesNotifier.load] with a bearer token from
+/// [authFlowProvider]. Stays alive for the session so the list page
+/// does not reload on every navigation event.
+final coursesProvider =
+    StateNotifierProvider<CoursesNotifier, AppAsyncState<List<CourseModel>>>(
+  (ref) => CoursesNotifier(
+    repository: ref.watch(lessonsRepositoryProvider),
+  ),
+);
