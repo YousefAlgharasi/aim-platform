@@ -64,4 +64,10 @@ class BackendApiPaths {
 
   /// GET /curriculum/lesson-assets?lessonId=:lessonId&status=published
   static const String curriculumLessonAssets = '/curriculum/lesson-assets';
+
+  // Phase 6 — P6-086: Question datasource endpoints
+
+  /// GET /curriculum/questions/:questionId — student-facing question detail
+  static String curriculumQuestion(String questionId) =>
+      '/curriculum/questions/$questionId';
 }
