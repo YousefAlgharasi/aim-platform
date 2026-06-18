@@ -1,4 +1,4 @@
-// Phase 6 — P6-069..P6-078
+// Phase 6 — P6-069..P6-079
 // Lessons feature barrel.
 
 export 'data/datasources/lessons_datasources.dart';
@@ -15,6 +15,7 @@ export 'logic/repository/lesson_detail_repository.dart';
 export 'logic/repository/lessons_repository.dart';
 export 'ui/pages/chapter_list_page.dart';
 export 'ui/pages/course_list_page.dart';
+export 'ui/pages/lesson_detail_page.dart';
 export 'ui/pages/lesson_list_page.dart';
 export 'ui/pages/lessons_placeholder_page.dart';
 export 'ui/widgets/lessons_widgets.dart';
