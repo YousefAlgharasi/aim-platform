@@ -9,6 +9,7 @@ import { StudentProfileContextAdapter } from './adapters/student-profile-context
 import { CurrentLessonContextAdapter } from './adapters/current-lesson-context.adapter';
 import { CurriculumSkillContextAdapter } from './adapters/curriculum-skill-context.adapter';
 import { PlacementResultContextAdapter } from './adapters/placement-result-context.adapter';
+import { SkillStateContextAdapter } from './adapters/skill-state-context.adapter';
 import { ContextBuilderService } from './context-builder.service';
 
 @Module({
@@ -19,6 +20,7 @@ import { ContextBuilderService } from './context-builder.service';
     CurrentLessonContextAdapter,
     CurriculumSkillContextAdapter,
     PlacementResultContextAdapter,
+    SkillStateContextAdapter,
   ],
   exports: [
     ContextBuilderService,
@@ -26,6 +28,7 @@ import { ContextBuilderService } from './context-builder.service';
     CurrentLessonContextAdapter,
     CurriculumSkillContextAdapter,
     PlacementResultContextAdapter,
+    SkillStateContextAdapter,
   ],
 })
 export class ContextBuilderModule {}
