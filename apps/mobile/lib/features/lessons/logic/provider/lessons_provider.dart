@@ -24,6 +24,7 @@ import 'package:aim_mobile/features/lessons/data/datasources/lessons_remote_data
 import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
 import 'package:aim_mobile/features/lessons/data/repository/repo_impl/lessons_repository_impl.dart';
 import 'package:aim_mobile/features/lessons/logic/repository/lessons_repository.dart';
+import 'chapters_notifier.dart';
 import 'courses_notifier.dart';
 
 /// Provides the concrete [LessonsRemoteDatasource].
@@ -53,6 +54,20 @@ final lessonsRepositoryProvider = Provider<LessonsRepository>((ref) {
 final coursesProvider =
     StateNotifierProvider<CoursesNotifier, AppAsyncState<List<CourseModel>>>(
   (ref) => CoursesNotifier(
+    repository: ref.watch(lessonsRepositoryProvider),
+  ),
+);
+
+/// Chapter list state provider.
+///
+/// Consumers must call [ChaptersNotifier.load] with a bearer token and
+/// the backend-supplied levelId. Uses .autoDispose so state is cleared
+/// when navigating away from the chapter list screen.
+///
+/// Security: levelId must come from a prior backend CourseModel response.
+final chaptersProvider = StateNotifierProvider.autoDispose<
+    ChaptersNotifier, AppAsyncState<List<ChapterModel>>>(
+  (ref) => ChaptersNotifier(
     repository: ref.watch(lessonsRepositoryProvider),
   ),
 );
