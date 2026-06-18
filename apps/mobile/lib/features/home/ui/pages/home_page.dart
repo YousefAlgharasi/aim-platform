@@ -22,7 +22,6 @@
 // - AIMTopAppBar handles RTL navigation icon mirroring internally.
 // - Padding uses symmetric EdgeInsets so it mirrors correctly under RTL.
 
-import 'package:aim_mobile/core/design_tokens/aim_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
