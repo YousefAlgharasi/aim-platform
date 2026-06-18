@@ -1,0 +1,39 @@
+// Phase 6 — P6-057
+// Home feature Riverpod providers.
+//
+// Scope: Home screen only.
+//
+// Registers:
+//   homeRemoteDatasourceProvider — datasource
+//   homeRepositoryProvider        — repository (use this in notifiers/UI)
+//
+// HomeNotifier and homeProvider are defined in home_notifier.dart (P6-061).
+//
+// Security rules:
+// - Uses authenticatedBackendApiClientProvider so bearer token is injected
+//   automatically; never stored in the datasource.
+// - No AIM Engine runtime, AI Teacher, or AI provider calls from Flutter.
+// - No secrets, service-role keys, or privileged config here.
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:aim_mobile/features/auth/logic/provider/auth_token_interceptor_provider.dart';
+import 'package:aim_mobile/features/home/data/datasources/home_remote_datasource.dart';
+import 'package:aim_mobile/features/home/data/datasources/home_remote_datasource_impl.dart';
+import 'package:aim_mobile/features/home/data/repository/repo_impl/home_repository_impl.dart';
+import 'package:aim_mobile/features/home/logic/repository/home_repository.dart';
+
+/// Provides the concrete [HomeRemoteDatasource].
+/// Consumers should depend on [homeRepositoryProvider] instead.
+final homeRemoteDatasourceProvider = Provider<HomeRemoteDatasource>((ref) {
+  return HomeRemoteDatasourceImpl(
+    apiClient: ref.watch(authenticatedBackendApiClientProvider),
+  );
+});
+
+/// Provides the [HomeRepository] used by notifiers and pages.
+final homeRepositoryProvider = Provider<HomeRepository>((ref) {
+  return HomeRepositoryImpl(
+    datasource: ref.watch(homeRemoteDatasourceProvider),
+  );
+});
