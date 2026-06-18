@@ -1,20 +1,11 @@
-// Phase 6 — P6-088
+// Phase 6 — P6-088 / P6-091
 // QuestionAnswerRepositoryImpl — data-layer implementation.
-//
-// Scope: Question/answer session only.
-//
-// Wraps QuestionRemoteDatasource and AttemptRemoteDatasource, mapping
-// ApiClientException to AppException so the logic layer deals in domain
-// errors only.
-//
-// Security rules:
-// - All values passed verbatim from datasources to logic layer.
-// - No correctness evaluation, mastery calculation, or AIM Engine logic here.
 
 import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/networking/api_client_exception.dart';
 import 'package:aim_mobile/features/question_answer/data/datasources/attempt_remote_datasource.dart';
 import 'package:aim_mobile/features/question_answer/data/datasources/question_remote_datasource.dart';
+import 'package:aim_mobile/features/question_answer/data/datasources/session_feedback_remote_datasource.dart';
 import 'package:aim_mobile/features/question_answer/data/models/question_answer_models.dart';
 import 'package:aim_mobile/features/question_answer/logic/repository/question_answer_repository.dart';
 
@@ -22,11 +13,14 @@ class QuestionAnswerRepositoryImpl implements QuestionAnswerRepository {
   const QuestionAnswerRepositoryImpl({
     required QuestionRemoteDatasource questionDatasource,
     required AttemptRemoteDatasource attemptDatasource,
+    required SessionFeedbackRemoteDatasource sessionFeedbackDatasource,
   })  : _questionDatasource = questionDatasource,
-        _attemptDatasource = attemptDatasource;
+        _attemptDatasource = attemptDatasource,
+        _sessionFeedbackDatasource = sessionFeedbackDatasource;
 
   final QuestionRemoteDatasource _questionDatasource;
   final AttemptRemoteDatasource _attemptDatasource;
+  final SessionFeedbackRemoteDatasource _sessionFeedbackDatasource;
 
   @override
   Future<QuestionModel> getQuestion({
@@ -48,6 +42,18 @@ class QuestionAnswerRepositoryImpl implements QuestionAnswerRepository {
             bearerToken: bearerToken,
             sessionId: sessionId,
             request: request,
+          ));
+
+  @override
+  Future<SessionFeedbackModel> getSessionState({
+    required String bearerToken,
+    required String studentId,
+    required String sessionId,
+  }) =>
+      _wrap(() => _sessionFeedbackDatasource.getSessionState(
+            bearerToken: bearerToken,
+            studentId: studentId,
+            sessionId: sessionId,
           ));
 
   Future<T> _wrap<T>(Future<T> Function() call) async {
