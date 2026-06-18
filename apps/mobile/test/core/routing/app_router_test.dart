@@ -62,7 +62,7 @@ void main() {
       ),
     );
 
-    expect(find.text('AIM Splash'), findsOneWidget);
+    expect(find.text('AIM'), findsOneWidget);
 
     await tester.tap(find.text('Start auth placeholder flow'));
     await tester.pumpAndSettle();
@@ -82,7 +82,7 @@ void main() {
       ),
     );
 
-    expect(find.text('AIM Splash'), findsOneWidget);
+    expect(find.text('AIM'), findsOneWidget);
   });
 }
 
