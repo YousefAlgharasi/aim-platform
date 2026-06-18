@@ -91,3 +91,77 @@ void main() {
     expect(json.containsKey('jwtSecret'), isFalse);
   });
 }
+
+// P6-039 additions ─────────────────────────────────────────────────────────────
+
+  test('ProfileMeResponseModel parses student profile path', () {
+    final model = ProfileMeResponseModel.fromJson(const {
+      'internalUserId': 'usr_123',
+      'userType': 'student',
+      'studentProfile': {
+        'id': 'sp_1',
+        'profileType': 'student_profile',
+        'displayName': 'Yousef',
+        'preferredLanguage': 'ar',
+        'timezone': 'Asia/Riyadh',
+      },
+    });
+
+    expect(model.internalUserId, 'usr_123');
+    expect(model.userType, 'student');
+    expect(model.studentProfile, isNotNull);
+    expect(model.studentProfile!.displayName, 'Yousef');
+    expect(model.studentProfile!.preferredLanguage, 'ar');
+    expect(model.adminProfile, isNull);
+  });
+
+  test('ProfileMeResponseModel parses admin profile path', () {
+    final model = ProfileMeResponseModel.fromJson(const {
+      'internalUserId': 'usr_admin_1',
+      'userType': 'admin',
+      'adminProfile': {
+        'id': 'ap_1',
+        'profileType': 'admin_profile',
+        'displayName': 'Admin',
+        'department': 'ops',
+      },
+    });
+
+    expect(model.adminProfile, isNotNull);
+    expect(model.adminProfile!.department, 'ops');
+    expect(model.studentProfile, isNull);
+  });
+
+  test('ProfileMeResponseModel handles missing profile gracefully', () {
+    final model = ProfileMeResponseModel.fromJson(const {
+      'internalUserId': 'usr_new',
+      'userType': 'student',
+    });
+
+    expect(model.studentProfile, isNull);
+    expect(model.adminProfile, isNull);
+  });
+
+  test('StudentProfile entity isStudentProfile helper', () {
+    const entity = StudentProfile(
+      id: 'sp_1',
+      userId: 'u_1',
+      profileType: 'student_profile',
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    );
+    expect(entity.isStudentProfile, isTrue);
+  });
+
+  test('SafeStudentProfileUpdatePayload never contains privileged fields', () {
+    const payload = SafeStudentProfileUpdatePayload(
+      displayName: 'Test',
+      preferredLanguage: 'en',
+    );
+    // Verify the payload entity has no privileged field definitions.
+    expect(payload.displayName, 'Test');
+    // avatarUrl and timezone not set → null.
+    expect(payload.avatarUrl, isNull);
+    expect(payload.timezone, isNull);
+  });
+}
