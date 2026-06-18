@@ -1,4 +1,4 @@
-// Phase 6 — P6-069 / P6-070 / P6-071 / P6-072 / P6-073 / P6-074 / P6-075
+// Phase 6 — P6-069..P6-076
 // Lessons feature barrel.
 
 export 'data/datasources/lessons_datasources.dart';
