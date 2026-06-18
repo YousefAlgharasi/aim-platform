@@ -9,13 +9,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/routing/app_route_paths.dart';
 import 'edit_profile_page.dart';
 import '../../../../core/state/app_async_state.dart';
+import '../../../../core/widgets/widgets.dart';
 import '../../../auth/data/models/auth_context_model.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
-import '../../../auth/logic/provider/logout_provider.dart';
+import '../../../auth/ui/widgets/logout_button.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -23,8 +23,17 @@ class ProfilePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authContextState = ref.watch(authContextProvider);
-    final logoutState = ref.watch(logoutProvider);
-    final isLoggingOut = logoutState is AppAsyncLoading;
+
+    // When the user signs out, authFlowProvider transitions to signedOut.
+    // The AuthGate (mounted in the splash stack) handles navigation to sign-in.
+    ref.listen(authFlowProvider, (_, next) {
+      if (next.isSignedOut && context.mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/auth/sign-in',
+          (_) => false,
+        );
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -52,34 +61,13 @@ class ProfilePage extends ConsumerWidget {
       },
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-          child: FilledButton.tonal(
-            onPressed: isLoggingOut
-                ? null
-                : () async {
-                    final token = ref
-                        .read(authFlowProvider)
-                        .accessToken;
-
-                    await ref
-                        .read(logoutProvider.notifier)
-                        .logout(token ?? '');
-
-                    if (context.mounted) {
-                      Navigator.of(context).pushNamedAndRemoveUntil(
-                        AppRoutePaths.signIn,
-                        (_) => false,
-                      );
-                    }
-                  },
-            child: isLoggingOut
-                ? const SizedBox(
-                    height: 18,
-                    width: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Sign out'),
+          padding: const EdgeInsets.fromLTRB(
+            AimSpacing.screenPaddingMobile,
+            AimSpacing.innerGap,
+            AimSpacing.screenPaddingMobile,
+            AimSpacing.space16,
           ),
+          child: const LogoutButton(),
         ),
       ),
     );
