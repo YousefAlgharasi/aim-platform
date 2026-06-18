@@ -41,14 +41,28 @@ class SplashPlaceholderPage extends ConsumerWidget {
                     letterSpacing: 2,
                   ),
                 ),
-                const SizedBox(height: AimSpacing.componentGap),
+                const SizedBox(height: AimSpacing.innerGap),
                 Text(
-                  'Auth state: ${authState.status.name}',
+                  'Adaptive Intelligence for Mastery',
                   style: AimTextStyles.bodySm.copyWith(
-                    color: surfaces.textMuted,
+                    color: surfaces.textSecondary,
                   ),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AimSpacing.sectionGap),
+                if (authState.isChecking) ...[
+                  const CircularProgressIndicator(
+                    color: AimColors.primary500,
+                  ),
+                  const SizedBox(height: AimSpacing.componentGap),
+                  Text(
+                    'Checking your session…',
+                    style: AimTextStyles.bodySm.copyWith(
+                      color: surfaces.textMuted,
+                    ),
+                  ),
+                  const SizedBox(height: AimSpacing.sectionGap),
+                ],
                 AIMButton(
                   onPressed: () {
                     ref.read(authFlowProvider.notifier).completeBootstrap();
