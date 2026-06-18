@@ -135,6 +135,9 @@ import { AimResultController } from './result/aim-result.controller';
     AimHealthCheckService,
     AimPipelineOrchestratorService,
     AimResultService,
+
+    // Phase 8 — recommendation read service (needed by AI Teacher context builder, P8-030)
+    RecommendationReadService,
   ],
 })
 export class AimModule {}
