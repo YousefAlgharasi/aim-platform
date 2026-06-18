@@ -55,4 +55,13 @@ class BackendApiPaths {
 
   /// GET /curriculum/lessons?chapterId=:chapterId
   static const String curriculumLessons = '/curriculum/lessons';
+
+  // Phase 6 — P6-077: Lesson detail endpoints
+
+  /// GET /curriculum/lessons/:lessonId
+  static String curriculumLessonDetail(String lessonId) =>
+      '/curriculum/lessons/$lessonId';
+
+  /// GET /curriculum/lesson-assets?lessonId=:lessonId&status=published
+  static const String curriculumLessonAssets = '/curriculum/lesson-assets';
 }
