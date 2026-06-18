@@ -1,6 +1,9 @@
 // Phase 4 — P4-071
 // Flutter placement no-scoring security tests.
 //
+// Updated — P6-056: PlacementQuestionModel construction fixed to match the
+// P6-048 model shape (id/section_id/text/options/type/media_url/ordinal).
+//
 // Scope: Placement Test phase only.
 //
 // Purpose:
@@ -91,11 +94,15 @@ void main() {
     test('PlacementQuestionModel.toJson never includes correct_answer', () {
       final q = PlacementQuestionModel.fromJson({
         'id': 'q-1',
-        'question_type': 'multiple_choice',
-        'prompt': 'Choose the correct word.',
+        'section_id': 's-1',
+        'text': 'Choose the correct word.',
+        'options': [
+          {'id': 'A', 'text': 'go'},
+          {'id': 'B', 'text': 'goes'},
+        ],
+        'type': 'multiple_choice',
         'media_url': null,
-        'order_index': 1,
-        'skill_code': 'grammar',
+        'ordinal': 1,
       });
 
       final json = q.toJson();
