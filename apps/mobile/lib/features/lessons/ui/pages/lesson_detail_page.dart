@@ -152,7 +152,7 @@ class _LessonDetailContent extends StatelessWidget {
               (asset) => Padding(
                 padding:
                     const EdgeInsets.only(bottom: AimSpacing.listItemGap),
-                child: LessonAssetTile(asset: asset),
+                child: LessonContentRenderer(asset: asset),
               ),
             ),
           ],
