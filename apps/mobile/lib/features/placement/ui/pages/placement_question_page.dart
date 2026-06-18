@@ -173,7 +173,7 @@ class _QuestionBody extends StatelessWidget {
           ),
           const SizedBox(height: AimSpacing.sectionGap),
           Text(
-            question.prompt,
+            question.text,
             style: AimTextStyles.bodyLg.copyWith(color: surfaces.textPrimary),
           ),
           const SizedBox(height: AimSpacing.sectionGap),
@@ -181,7 +181,7 @@ class _QuestionBody extends StatelessWidget {
             child: SingleChildScrollView(
               child: _AnswerInput(
                 key: ValueKey(question.id),
-                questionType: question.questionType,
+                questionType: question.type,
                 selectedAnswer: state.selectedAnswer,
                 onSelect: onSelectAnswer,
                 isSubmitting: state.isSubmitting,
