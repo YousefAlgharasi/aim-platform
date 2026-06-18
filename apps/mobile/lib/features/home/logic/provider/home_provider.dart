@@ -15,6 +15,9 @@
 // - No AIM Engine runtime, AI Teacher, or AI provider calls from Flutter.
 // - No secrets, service-role keys, or privileged config here.
 
+import 'package:aim_mobile/core/state/app_async_state.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_data.dart';
+import 'package:aim_mobile/features/home/logic/provider/home_notifier.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/features/auth/logic/provider/auth_token_interceptor_provider.dart';
@@ -39,9 +42,6 @@ final homeRepositoryProvider = Provider<HomeRepository>((ref) {
 });
 
 // Phase 6 — P6-061: HomeNotifier provider
-import 'package:aim_mobile/core/state/app_async_state.dart';
-import 'package:aim_mobile/features/home/logic/entity/home_data.dart';
-import 'home_notifier.dart';
 
 /// App-level home data provider.
 ///

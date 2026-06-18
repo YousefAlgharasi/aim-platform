@@ -14,6 +14,7 @@
 // - No secrets, service-role keys, or privileged config here.
 
 import 'package:aim_mobile/features/placement/logic/provider/placement_question_notifier.dart';
+import 'package:aim_mobile/features/placement/logic/provider/placement_required_notifier.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_result_notifier.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_section_notifier.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_submit_notifier.dart';
@@ -94,9 +95,6 @@ final placementResultProvider = StateNotifierProvider.autoDispose<
     repository: ref.watch(placementRepositoryProvider),
   ),
 );
-
-// Phase 6 — P6-046: Placement Required State
-import 'placement_required_notifier.dart';
 
 /// App-level provider that detects whether the student must complete
 /// placement before accessing regular content.

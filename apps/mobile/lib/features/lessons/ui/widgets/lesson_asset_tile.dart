@@ -45,7 +45,7 @@ class LessonAssetTile extends StatelessWidget {
     final surfaces = aimSurfacesOf(context);
 
     return AIMCard(
-      variant: AIMCardVariant.outlined,
+      variant: AIMCardVariant.standard,
       semanticLabel: '${asset.type} asset: ${asset.title}',
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

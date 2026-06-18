@@ -43,12 +43,14 @@ class LessonDetailRepositoryImpl implements LessonDetailRepository {
         lessonId: lessonId,
       );
 
-      final lesson = await lessonFuture;
-      final assets = await assetsFuture;
+      final results = await Future.wait<Object>([
+        lessonFuture,
+        assetsFuture,
+      ]);
 
       return LessonDetail(
-        lesson: lesson,
-        assets: assets,
+        lesson: results[0] as LessonModel,
+        assets: results[1] as List<LessonAssetModel>,
       );
     } on ApiClientException catch (e) {
       throw AppException(code: e.code, message: e.message);

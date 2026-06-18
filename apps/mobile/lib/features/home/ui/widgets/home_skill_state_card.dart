@@ -4,6 +4,10 @@
 // Displays topic, band, and masteryLevel exactly as returned by the backend.
 // Flutter never computes or infers these values locally.
 
+import 'package:aim_mobile/core/design_tokens/aim_colors.dart';
+import 'package:aim_mobile/core/design_tokens/aim_radius.dart';
+import 'package:aim_mobile/core/design_tokens/aim_sizes.dart';
+import 'package:aim_mobile/core/design_tokens/aim_spacing.dart';
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -35,8 +39,8 @@ class HomeSkillStateCard extends StatelessWidget {
               color: surfaces.surfaceSunken,
               borderRadius: AimRadius.borderX2l,
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(AimSpacing.space12),
+            child: const Padding(
+              padding: EdgeInsets.all(AimSpacing.space12),
               child: Icon(
                 Icons.auto_stories_outlined,
                 size: AimSizes.iconMd,

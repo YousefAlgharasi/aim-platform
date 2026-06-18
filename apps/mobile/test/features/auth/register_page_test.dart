@@ -61,6 +61,11 @@ void main() {
     expect(find.byType(AIMInput), findsNWidgets(3));
     expect(find.byType(AIMButton), findsOneWidget);
     expect(find.byType(AIMTopAppBar), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Already have an account? Sign in'),
+      80,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('Already have an account? Sign in'), findsOneWidget);
   });
 
