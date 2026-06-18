@@ -15,6 +15,7 @@ import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/networking/api_client_exception.dart';
 import 'package:aim_mobile/features/lessons/data/datasources/lessons_remote_datasource.dart';
 import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
+import 'package:aim_mobile/features/lessons/logic/content_status_guard.dart';
 import 'package:aim_mobile/features/lessons/logic/repository/lessons_repository.dart';
 
 class LessonsRepositoryImpl implements LessonsRepository {
@@ -25,30 +26,39 @@ class LessonsRepositoryImpl implements LessonsRepository {
   final LessonsRemoteDatasource _datasource;
 
   @override
+  @override
   Future<List<CourseModel>> getCourses({
     required String bearerToken,
-  }) =>
-      _wrap(() => _datasource.getCourses(bearerToken: bearerToken));
+  }) async {
+    final results = await _wrap(() => _datasource.getCourses(bearerToken: bearerToken));
+    return ContentStatusGuard.filterCourses(results);
+  }
 
+  @override
   @override
   Future<List<ChapterModel>> getChapters({
     required String bearerToken,
     required String levelId,
-  }) =>
-      _wrap(() => _datasource.getChapters(
-            bearerToken: bearerToken,
-            levelId: levelId,
-          ));
+  }) async {
+    final results = await _wrap(() => _datasource.getChapters(
+          bearerToken: bearerToken,
+          levelId: levelId,
+        ));
+    return ContentStatusGuard.filterChapters(results);
+  }
 
+  @override
   @override
   Future<List<LessonModel>> getLessons({
     required String bearerToken,
     required String chapterId,
-  }) =>
-      _wrap(() => _datasource.getLessons(
-            bearerToken: bearerToken,
-            chapterId: chapterId,
-          ));
+  }) async {
+    final results = await _wrap(() => _datasource.getLessons(
+          bearerToken: bearerToken,
+          chapterId: chapterId,
+        ));
+    return ContentStatusGuard.filterLessons(results);
+  }
 
   Future<T> _wrap<T>(Future<T> Function() call) async {
     try {
