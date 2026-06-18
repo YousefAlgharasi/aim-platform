@@ -44,4 +44,15 @@ class BackendApiPaths {
   /// GET /aim/students/:studentId/recommendations
   static String aimRecommendations(String studentId) =>
       '/aim/students/$studentId/recommendations';
+
+  // Phase 6 — P6-071: Curriculum endpoints (student-facing read)
+
+  /// GET /curriculum/courses?status=published
+  static const String curriculumCourses = '/curriculum/courses';
+
+  /// GET /curriculum/chapters?levelId=:levelId
+  static const String curriculumChapters = '/curriculum/chapters';
+
+  /// GET /curriculum/lessons?chapterId=:chapterId
+  static const String curriculumLessons = '/curriculum/lessons';
 }
