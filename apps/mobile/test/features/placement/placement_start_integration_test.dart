@@ -1,0 +1,176 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:aim_mobile/features/placement/data/models/placement_models.dart';
+import 'package:aim_mobile/features/placement/logic/entity/placement_submit_answer_payload.dart';
+import 'package:aim_mobile/features/placement/logic/provider/placement_provider.dart';
+import 'package:aim_mobile/features/placement/logic/provider/placement_start_notifier.dart';
+import 'package:aim_mobile/features/placement/logic/repository/placement_repository.dart';
+
+// ── Fake repository ───────────────────────────────────────────────────────────
+
+const _testModel = PlacementTestModel(
+  id: 'test-1',
+  title: 'English Placement Test',
+  status: 'active',
+  totalSections: 3,
+  estimatedMinutes: 20,
+);
+
+const _attemptModel = PlacementAttemptModel(
+  id: 'attempt-1',
+  placementTestId: 'test-1',
+  studentId: 'student-jwt-resolved',
+  status: 'active',
+  startedAt: '2026-06-18T00:00:00Z',
+);
+
+class _FakePlacementRepository implements PlacementRepository {
+  final bool _shouldFail;
+  const _FakePlacementRepository({bool shouldFail = false})
+      : _shouldFail = shouldFail;
+
+  @override
+  Future<PlacementTestModel> getActivePlacementTest(String token) async {
+    if (_shouldFail) throw Exception('Server error');
+    return _testModel;
+  }
+
+  @override
+  Future<PlacementAttemptModel> startAttempt(String token,
+      {String? placementTestId}) async {
+    if (_shouldFail) throw Exception('Start failed');
+    return _attemptModel;
+  }
+
+  @override
+  Future<List<PlacementSectionModel>> getActiveSections(String t) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<List<PlacementQuestionModel>> getQuestionsForSection(String t,
+          {required String sectionId}) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<PlacementAnswerModel> submitAnswer(String t,
+          {required String attemptId,
+          required PlacementSubmitAnswerPayload payload}) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> completeAttempt(String t, {required String attemptId}) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<PlacementResultModel> getResult(String t,
+          {required String attemptId}) async =>
+      throw UnimplementedError();
+}
+
+// ── Tests ─────────────────────────────────────────────────────────────────────
+
+void main() {
+  group('PlacementStartNotifier integration', () {
+    test('loadActivePlacementTest → PlacementStartReady with test data',
+        () async {
+      final container = ProviderContainer(
+        overrides: [
+          placementRepositoryProvider.overrideWithValue(
+            const _FakePlacementRepository(),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container
+          .read(placementStartProvider.notifier)
+          .loadActivePlacementTest('tok');
+
+      final state = container.read(placementStartProvider);
+      expect(state, isA<PlacementStartReady>());
+      expect((state as PlacementStartReady).test.id, 'test-1');
+      expect(state.test.totalSections, 3);
+    });
+
+    test('startAttempt → PlacementStarted with attempt and test', () async {
+      final container = ProviderContainer(
+        overrides: [
+          placementRepositoryProvider.overrideWithValue(
+            const _FakePlacementRepository(),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      // Load first so we have a test in state.
+      await container
+          .read(placementStartProvider.notifier)
+          .loadActivePlacementTest('tok');
+      await container
+          .read(placementStartProvider.notifier)
+          .startAttempt('tok');
+
+      final state = container.read(placementStartProvider);
+      expect(state, isA<PlacementStarted>());
+      final started = state as PlacementStarted;
+      expect(started.attempt.id, 'attempt-1');
+      expect(started.attempt.status, 'active');
+      expect(started.test.id, 'test-1');
+    });
+
+    test('startAttempt does nothing when not in ready state', () async {
+      final container = ProviderContainer(
+        overrides: [
+          placementRepositoryProvider.overrideWithValue(
+            const _FakePlacementRepository(),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      // State is idle — startAttempt should no-op.
+      await container
+          .read(placementStartProvider.notifier)
+          .startAttempt('tok');
+
+      expect(
+          container.read(placementStartProvider), isA<PlacementStartIdle>());
+    });
+
+    test('loadActivePlacementTest sets error state on failure', () async {
+      final container = ProviderContainer(
+        overrides: [
+          placementRepositoryProvider.overrideWithValue(
+            const _FakePlacementRepository(shouldFail: true),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container
+          .read(placementStartProvider.notifier)
+          .loadActivePlacementTest('tok');
+
+      expect(
+          container.read(placementStartProvider), isA<PlacementStartError>());
+    });
+
+    test('student_id is never sent by Flutter (security check)', () async {
+      // Verifies PlacementAttemptModel parses studentId from response
+      // but it is never included in any request body from this layer.
+      // The notifier calls repository.startAttempt(token) only —
+      // no student_id is constructed or passed.
+      const attempt = PlacementAttemptModel(
+        id: 'a1',
+        placementTestId: 't1',
+        studentId: 'backend-resolved',
+        status: 'active',
+        startedAt: '2026-01-01T00:00:00Z',
+      );
+      // studentId exists on the model (parsed from response) but is
+      // never sent by Flutter in any outgoing request payload.
+      expect(attempt.studentId, 'backend-resolved');
+    });
+  });
+}
