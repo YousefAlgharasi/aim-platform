@@ -23,6 +23,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -137,11 +138,18 @@ class _LessonListContent extends StatelessWidget {
             const SizedBox(height: AimSpacing.listItemGap),
         itemBuilder: (context, index) {
           final lesson = lessons[index];
-          // Lesson detail navigation is out of scope for P6-075.
-          // onTap is a no-op placeholder until the lesson player is built.
           return LessonListTile(
             model: lesson,
-            onTap: () {},
+            onTap: () {
+              // Navigate to lesson detail; lessonId is backend-supplied.
+              Navigator.of(context).pushNamed(
+                AppRoutePaths.lessonDetail,
+                arguments: {
+                  'lessonId': lesson.id,
+                  'lessonTitle': lesson.title,
+                },
+              );
+            },
           );
         },
       ),
