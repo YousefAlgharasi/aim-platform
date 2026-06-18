@@ -4,6 +4,7 @@ import { StudentProfileContextAdapter } from './adapters/student-profile-context
 import { CurrentLessonContextAdapter } from './adapters/current-lesson-context.adapter';
 import { CurriculumSkillContextAdapter } from './adapters/curriculum-skill-context.adapter';
 import { PlacementResultContextAdapter } from './adapters/placement-result-context.adapter';
+import { SkillStateContextAdapter } from './adapters/skill-state-context.adapter';
 import { AiTeacherContextSnapshot, BuildContextInput } from './context-builder.types';
 
 /**
@@ -12,6 +13,7 @@ import { AiTeacherContextSnapshot, BuildContextInput } from './context-builder.t
  * P8-030: Current lesson context wired in below.
  * P8-031: Curriculum skill context wired in below.
  * P8-032: Placement result context wired in below.
+ * P8-033: AIM skill state context wired in below.
  *
  * Read-only assembly point for backend-approved AI Teacher prompt context
  * (docs/phase-8/context-sources.md). This never reads the database
@@ -30,6 +32,7 @@ export class ContextBuilderService {
     private readonly currentLessonContext: CurrentLessonContextAdapter,
     private readonly curriculumSkillContext: CurriculumSkillContextAdapter,
     private readonly placementResultContext: PlacementResultContextAdapter,
+    private readonly skillStateContext: SkillStateContextAdapter,
   ) {}
 
   async buildContext(input: BuildContextInput): Promise<AiTeacherContextSnapshot> {
@@ -41,6 +44,7 @@ export class ContextBuilderService {
     const placementResult = await this.placementResultContext.getPlacementResultContext(
       input.studentId,
     );
+    const skillState = await this.skillStateContext.getSkillStateContext(input.studentId);
 
     return {
       studentId: input.studentId,
@@ -49,7 +53,7 @@ export class ContextBuilderService {
       currentLesson: currentLesson as unknown as Record<string, unknown> | null,
       curriculumSkill: curriculumSkill as unknown as Record<string, unknown> | null,
       placementResult: placementResult as unknown as Record<string, unknown> | null,
-      skillState: null,
+      skillState: skillState as unknown as Record<string, unknown> | null,
       weakness: null,
       recommendation: null,
       reviewSchedule: null,
