@@ -18,6 +18,7 @@ import 'package:aim_mobile/core/networking/api_client_exception.dart';
 import 'package:aim_mobile/features/lessons/data/datasources/lesson_detail_remote_datasource.dart';
 import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lesson_detail.dart';
+import 'package:aim_mobile/features/lessons/logic/content_status_guard.dart';
 import 'package:aim_mobile/features/lessons/logic/repository/lesson_detail_repository.dart';
 
 class LessonDetailRepositoryImpl implements LessonDetailRepository {
@@ -48,9 +49,11 @@ class LessonDetailRepositoryImpl implements LessonDetailRepository {
         assetsFuture,
       ]);
 
+      // Defensive guard: only render published assets in the student app.
+      // The datasource already requests status=published; this is a second layer.
       return LessonDetail(
-        lesson: results[0] as LessonModel,
-        assets: results[1] as List<LessonAssetModel>,
+        lesson: lesson,
+        assets: ContentStatusGuard.filterAssets(assets),
       );
     } on ApiClientException catch (e) {
       throw AppException(code: e.code, message: e.message);
