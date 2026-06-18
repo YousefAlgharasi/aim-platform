@@ -20,7 +20,6 @@ const _testModel = PlacementTestModel(
 const _attemptModel = PlacementAttemptModel(
   id: 'attempt-1',
   placementTestId: 'test-1',
-  studentId: 'student-jwt-resolved',
   status: 'active',
   startedAt: '2026-06-18T00:00:00Z',
 );
@@ -59,7 +58,8 @@ class _FakePlacementRepository implements PlacementRepository {
       throw UnimplementedError();
 
   @override
-  Future<void> completeAttempt(String t, {required String attemptId}) async =>
+  Future<PlacementAttemptModel> completeAttempt(String t,
+          {required String attemptId}) async =>
       throw UnimplementedError();
 
   @override
@@ -156,21 +156,23 @@ void main() {
           container.read(placementStartProvider), isA<PlacementStartError>());
     });
 
-    test('student_id is never sent by Flutter (security check)', () async {
-      // Verifies PlacementAttemptModel parses studentId from response
-      // but it is never included in any request body from this layer.
-      // The notifier calls repository.startAttempt(token) only —
-      // no student_id is constructed or passed.
-      const attempt = PlacementAttemptModel(
-        id: 'a1',
-        placementTestId: 't1',
-        studentId: 'backend-resolved',
-        status: 'active',
-        startedAt: '2026-01-01T00:00:00Z',
-      );
-      // studentId exists on the model (parsed from response) but is
-      // never sent by Flutter in any outgoing request payload.
-      expect(attempt.studentId, 'backend-resolved');
+    test('student_id is never exposed by Flutter (security check)', () async {
+      // PlacementAttemptModel has no studentId field at all — even if the
+      // backend response includes student_id, Flutter cannot read, store,
+      // or forward it. The notifier calls repository.startAttempt(token)
+      // only — no student_id is constructed or passed by this layer.
+      final attempt = PlacementAttemptModel.fromJson({
+        'id': 'a1',
+        'placement_test_id': 't1',
+        'status': 'active',
+        'started_at': '2026-01-01T00:00:00Z',
+        // Even if the backend were to include this, Flutter has no field
+        // to receive it into.
+        'student_id': 'backend-resolved',
+      });
+
+      expect(attempt.toJson().containsKey('student_id'), isFalse);
+      expect(attempt.toJson().containsKey('studentId'), isFalse);
     });
   });
 }
