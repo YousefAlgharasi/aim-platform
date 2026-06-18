@@ -10,6 +10,7 @@ export const OPENAPI_TAGS = {
   reports: 'reports',
   profile: 'profile',
   curriculum: 'curriculum',
+  placement: 'placement',
 } as const;
 
 export type OpenApiTag = (typeof OPENAPI_TAGS)[keyof typeof OPENAPI_TAGS];

@@ -1,0 +1,45 @@
+/* ============================================================
+   AIM — Z-index scale & component sizing tokens
+   ============================================================ */
+
+:root {
+  /* z-index */
+  --z-base:     0;   /* @kind other */
+  --z-raised:   10;  /* @kind other */
+  --z-sticky:   100; /* @kind other */
+  --z-dropdown: 1000; /* @kind other */
+  --z-overlay:  1100; /* @kind other */
+  --z-modal:    1200; /* @kind other */
+  --z-sheet:    1200; /* @kind other */
+  --z-toast:    1400; /* @kind other */
+  --z-tooltip:  1500; /* @kind other */
+
+  /* Control heights */
+  --size-btn-sm: 36px;
+  --size-btn-md: 44px;
+  --size-btn-lg: 52px;
+  --size-input:  48px;     /* default field height */
+  --size-input-sm: 40px;
+  --size-icon-btn: 44px;
+  --size-fab:    56px;
+
+  /* Icon sizes */
+  --icon-sm: 16px;
+  --icon-md: 20px;
+  --icon-lg: 24px;
+
+  /* Avatars */
+  --avatar-sm: 32px;
+  --avatar-md: 40px;
+  --avatar-lg: 56px;
+
+  /* Min touch target (accessibility) */
+  --touch-target: 44px;
+
+  /* Standard transitions */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1); /* @kind other */
+  --ease-emphasis: cubic-bezier(0.2, 0, 0, 1.2); /* @kind other */
+  --duration-fast: 120ms; /* @kind other */
+  --duration-base: 180ms; /* @kind other */
+  --duration-slow: 260ms; /* @kind other */
+}

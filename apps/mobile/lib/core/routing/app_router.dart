@@ -6,6 +6,11 @@ import '../../features/auth/data/models/auth_context_model.dart';
 import '../../features/auth/logic/entity/auth_flow_state.dart';
 import '../../features/auth/ui/pages/login_page.dart';
 import '../../features/onboarding/ui/pages/splash_placeholder_page.dart';
+import '../../features/placement/ui/pages/placement_question_page.dart';
+import '../../features/placement/ui/pages/placement_result_page.dart';
+import '../../features/placement/ui/pages/placement_section_page.dart';
+import '../../features/placement/ui/pages/placement_start_page.dart';
+import '../../features/placement/ui/pages/placement_submit_page.dart';
 import '../../features/shell/ui/pages/main_shell_page.dart';
 import 'app_route_paths.dart';
 
@@ -40,11 +45,77 @@ class AppRouter {
           case AppRoutePaths.progress:
           case AppRoutePaths.profile:
             return const MainShellPage();
+          case AppRoutePaths.placementStart:
+            return const PlacementStartPage();
+          case AppRoutePaths.placementSection:
+            return _buildPlacementSection(settings.arguments);
+          case AppRoutePaths.placementQuestion:
+            return _buildPlacementQuestion(settings.arguments);
+          case AppRoutePaths.placementSubmit:
+            return _buildPlacementSubmit(settings.arguments);
+          case AppRoutePaths.placementResult:
+            return _buildPlacementResult(settings.arguments);
           default:
             return const SplashPlaceholderPage();
         }
       },
     );
+  }
+
+  static Widget _buildPlacementSection(Object? arguments) {
+    final args = _placementArgs(arguments);
+    final attemptId = args['attemptId'];
+
+    if (attemptId is! String) return const SplashPlaceholderPage();
+
+    return PlacementSectionPage(attemptId: attemptId);
+  }
+
+  static Widget _buildPlacementQuestion(Object? arguments) {
+    final args = _placementArgs(arguments);
+    final sectionId = args['sectionId'];
+    final attemptId = args['attemptId'];
+    final sectionTitle = args['sectionTitle'];
+    final sectionIndex = args['sectionIndex'];
+    final totalSections = args['totalSections'];
+
+    if (sectionId is! String ||
+        attemptId is! String ||
+        sectionTitle is! String ||
+        sectionIndex is! int ||
+        totalSections is! int) {
+      return const SplashPlaceholderPage();
+    }
+
+    return PlacementQuestionPage(
+      sectionId: sectionId,
+      attemptId: attemptId,
+      sectionTitle: sectionTitle,
+      sectionIndex: sectionIndex,
+      totalSections: totalSections,
+    );
+  }
+
+  static Widget _buildPlacementSubmit(Object? arguments) {
+    final args = _placementArgs(arguments);
+    final attemptId = args['attemptId'];
+
+    if (attemptId is! String) return const SplashPlaceholderPage();
+
+    return PlacementSubmitPage(attemptId: attemptId);
+  }
+
+  static Widget _buildPlacementResult(Object? arguments) {
+    final args = _placementArgs(arguments);
+    final attemptId = args['attemptId'];
+
+    if (attemptId is! String) return const SplashPlaceholderPage();
+
+    return PlacementResultPage(attemptId: attemptId);
+  }
+
+  static Map<String, dynamic> _placementArgs(Object? arguments) {
+    return arguments is Map<String, dynamic> ? arguments : const {};
   }
 
   static String resolveRouteName(
@@ -87,5 +158,10 @@ class AppRouter {
     AppRoutePaths.review,
     AppRoutePaths.progress,
     AppRoutePaths.profile,
+    AppRoutePaths.placementStart,
+    AppRoutePaths.placementSection,
+    AppRoutePaths.placementQuestion,
+    AppRoutePaths.placementSubmit,
+    AppRoutePaths.placementResult,
   };
 }

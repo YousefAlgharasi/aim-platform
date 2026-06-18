@@ -1,0 +1,176 @@
+/* ============================================================
+   AIM — Color System
+   Modern AI-learning feel: blue (trust) · purple (intelligence)
+   · teal (growth) · cool neutral grays · soft white surfaces.
+   Naming follows color.<family>.<step> => --color-primary-500
+   ============================================================ */
+
+:root {
+  /* ---- Primary · AIM Blue (trust, focus) ---- */
+  --color-primary-50:  #EDF1FF;
+  --color-primary-100: #DCE4FF;
+  --color-primary-200: #BBC9FF;
+  --color-primary-300: #93A6FF;
+  --color-primary-400: #6B82FB;
+  --color-primary-500: #4762EE;
+  --color-primary-600: #3349D6;
+  --color-primary-700: #2837AC;
+  --color-primary-800: #243189;
+  --color-primary-900: #1F2A6E;
+
+  /* ---- Secondary · Purple (intelligence, AI) ---- */
+  --color-secondary-50:  #F5F1FE;
+  --color-secondary-100: #EBE3FD;
+  --color-secondary-200: #D7C8FB;
+  --color-secondary-300: #BBA1F6;
+  --color-secondary-400: #9E78EF;
+  --color-secondary-500: #8455E4;
+  --color-secondary-600: #6F3FD0;
+  --color-secondary-700: #5C32AE;
+  --color-secondary-800: #4C2C8C;
+  --color-secondary-900: #3F2772;
+
+  /* ---- Accent · Teal (growth, progress) ---- */
+  --color-accent-50:  #ECFBF8;
+  --color-accent-100: #D2F5EE;
+  --color-accent-200: #A7EBDF;
+  --color-accent-300: #6FDAC9;
+  --color-accent-400: #38C2AF;
+  --color-accent-500: #15A898;
+  --color-accent-600: #0C897C;
+  --color-accent-700: #0E6D64;
+  --color-accent-800: #105751;
+  --color-accent-900: #114945;
+
+  /* ---- Neutral · cool gray ---- */
+  --color-neutral-0:   #FFFFFF;
+  --color-neutral-50:  #F7F8FA;
+  --color-neutral-100: #EEF0F4;
+  --color-neutral-200: #E2E5EC;
+  --color-neutral-300: #CDD2DD;
+  --color-neutral-400: #A6AEBF;
+  --color-neutral-500: #7A8499;
+  --color-neutral-600: #5A6377;
+  --color-neutral-700: #424A5C;
+  --color-neutral-800: #2B3140;
+  --color-neutral-900: #181C26;
+
+  /* ---- Semantic · Success (green) ---- */
+  --color-success-50:  #E7F7EF;
+  --color-success-100: #C6ECD9;
+  --color-success-500: #1FA971;
+  --color-success-600: #168A5C;
+  --color-success-700: #126E4A;
+
+  /* ---- Semantic · Warning (amber) ---- */
+  --color-warning-50:  #FEF4E2;
+  --color-warning-100: #FCE6BC;
+  --color-warning-500: #F5A524;
+  --color-warning-600: #D8871A;
+  --color-warning-700: #A96512;
+
+  /* ---- Semantic · Error (red) ---- */
+  --color-error-50:  #FDECEC;
+  --color-error-100: #FAC9CB;
+  --color-error-500: #E5484D;
+  --color-error-600: #C7363B;
+  --color-error-700: #9E282D;
+
+  /* ---- Semantic · Info (sky) ---- */
+  --color-info-50:  #E8F2FC;
+  --color-info-100: #C7DFF8;
+  --color-info-500: #3A8DDE;
+  --color-info-600: #2A72BC;
+  --color-info-700: #205893;
+
+  /* ============================================================
+     SEMANTIC ALIASES — Light mode (default)
+     ============================================================ */
+  --background:        var(--color-neutral-50);   /* app canvas */
+  --surface:           var(--color-neutral-0);    /* cards / sheets */
+  --surface-raised:    var(--color-neutral-0);
+  --surface-sunken:    var(--color-neutral-100);
+
+  --text-primary:      var(--color-neutral-900);
+  --text-secondary:    var(--color-neutral-600);
+  --text-muted:        var(--color-neutral-500);
+  --text-on-primary:   var(--color-neutral-0);
+  --text-link:         var(--color-primary-600);
+
+  --border:            var(--color-neutral-200);
+  --border-strong:     var(--color-neutral-300);
+  --divider:           var(--color-neutral-100);
+
+  --focus-ring:        var(--color-primary-400);
+
+  /* Tonal surfaces for badges / soft fills */
+  --primary-soft:      var(--color-primary-50);
+  --primary-soft-fg:   var(--color-primary-700);
+  --secondary-soft:    var(--color-secondary-50);
+  --secondary-soft-fg: var(--color-secondary-700);
+  --accent-soft:       var(--color-accent-50);
+  --accent-soft-fg:    var(--color-accent-700);
+  --success-soft:      var(--color-success-50);
+  --success-soft-fg:   var(--color-success-700);
+  --warning-soft:      var(--color-warning-50);
+  --warning-soft-fg:   var(--color-warning-700);
+  --error-soft:        var(--color-error-50);
+  --error-soft-fg:     var(--color-error-700);
+  --info-soft:         var(--color-info-50);
+  --info-soft-fg:      var(--color-info-700);
+
+  /* Interaction states (overlay tints, applied to fills) */
+  --state-hover:   color-mix(in srgb, var(--color-neutral-900) 6%, transparent);
+  --state-pressed: color-mix(in srgb, var(--color-neutral-900) 12%, transparent);
+  --disabled-bg:   var(--color-neutral-100);
+  --disabled-fg:   var(--color-neutral-400);
+  --disabled-border: var(--color-neutral-200);
+
+  /* AI gradients — reserved for AI-generated / adaptive elements */
+  --gradient-ai:      linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-secondary-500) 100%);
+  --gradient-ai-soft: linear-gradient(135deg, var(--color-primary-50) 0%, var(--color-secondary-50) 100%);
+  --gradient-growth:  linear-gradient(135deg, var(--color-accent-500) 0%, var(--color-primary-500) 100%);
+}
+
+/* ============================================================
+   DARK MODE — opt-in via [data-theme="dark"] on a container.
+   ============================================================ */
+[data-theme="dark"] {
+  --background:        #0E1118;
+  --surface:           #181C26;
+  --surface-raised:    #202533;
+  --surface-sunken:    #11141C;
+
+  --text-primary:      #F2F4F8;
+  --text-secondary:    #A6AEBF;
+  --text-muted:        #7A8499;
+  --text-on-primary:   #FFFFFF;
+  --text-link:         var(--color-primary-300);
+
+  --border:            #2B3140;
+  --border-strong:     #3A4253;
+  --divider:           #232838;
+
+  --focus-ring:        var(--color-primary-400);
+
+  --primary-soft:      color-mix(in srgb, var(--color-primary-500) 22%, #181C26);
+  --primary-soft-fg:   var(--color-primary-200);
+  --secondary-soft:    color-mix(in srgb, var(--color-secondary-500) 22%, #181C26);
+  --secondary-soft-fg: var(--color-secondary-200);
+  --accent-soft:       color-mix(in srgb, var(--color-accent-500) 22%, #181C26);
+  --accent-soft-fg:    var(--color-accent-200);
+  --success-soft:      color-mix(in srgb, var(--color-success-500) 22%, #181C26);
+  --success-soft-fg:   #7FE0B4;
+  --warning-soft:      color-mix(in srgb, var(--color-warning-500) 22%, #181C26);
+  --warning-soft-fg:   #FBD089;
+  --error-soft:        color-mix(in srgb, var(--color-error-500) 22%, #181C26);
+  --error-soft-fg:     #F2A6A8;
+  --info-soft:         color-mix(in srgb, var(--color-info-500) 22%, #181C26);
+  --info-soft-fg:      #A8CCF0;
+
+  --state-hover:   color-mix(in srgb, #FFFFFF 8%, transparent);
+  --state-pressed: color-mix(in srgb, #FFFFFF 14%, transparent);
+  --disabled-bg:   #202533;
+  --disabled-fg:   #5A6377;
+  --disabled-border: #2B3140;
+}

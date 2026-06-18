@@ -11,7 +11,7 @@ void main() {
       ),
     );
 
-    expect(find.text('AIM Splash'), findsOneWidget);
-    expect(find.text('Splash placeholder'), findsOneWidget);
+    expect(find.text('AIM'), findsOneWidget);
+    expect(find.text('Adaptive Intelligence for Mastery'), findsOneWidget);
   });
 }
