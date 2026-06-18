@@ -12,6 +12,7 @@ import '../../features/placement/ui/pages/placement_section_page.dart';
 import '../../features/placement/ui/pages/placement_start_page.dart';
 import '../../features/placement/ui/pages/placement_submit_page.dart';
 import '../../features/lessons/ui/pages/chapter_list_page.dart';
+import '../../features/lessons/ui/pages/lesson_list_page.dart';
 import '../../features/lessons/ui/pages/course_list_page.dart';
 import '../../features/shell/ui/pages/main_shell_page.dart';
 import 'app_route_paths.dart';
@@ -61,6 +62,8 @@ class AppRouter {
             return const CourseListPage();
           case AppRoutePaths.chapterLessons:
             return _buildChapterListPage(settings.arguments);
+          case AppRoutePaths.lessonDetail:
+            return _buildLessonListPage(settings.arguments);
           default:
             return const SplashPlaceholderPage();
         }
@@ -118,6 +121,16 @@ class AppRouter {
     if (attemptId is! String) return const SplashPlaceholderPage();
 
     return PlacementResultPage(attemptId: attemptId);
+  }
+
+  static Widget _buildLessonListPage(Object? arguments) {
+    final args = arguments is Map<String, dynamic> ? arguments : const <String, dynamic>{};
+    final chapterId = args['chapterId'];
+    final chapterTitle = args['chapterTitle'];
+    if (chapterId is! String || chapterTitle is! String) {
+      return const SplashPlaceholderPage();
+    }
+    return LessonListPage(chapterId: chapterId, chapterTitle: chapterTitle);
   }
 
   static Widget _buildChapterListPage(Object? arguments) {
@@ -181,5 +194,6 @@ class AppRouter {
     AppRoutePaths.placementResult,
     AppRoutePaths.courseChapters,
     AppRoutePaths.chapterLessons,
+    AppRoutePaths.lessonDetail,
   };
 }

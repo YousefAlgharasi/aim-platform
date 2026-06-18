@@ -14,6 +14,7 @@ class AppRoutePaths {
   // Phase 6 — P6-073: Curriculum browser routes
   static const String courseChapters = '/lessons/chapters';
   static const String chapterLessons = '/lessons/lessons';
+  static const String lessonDetail = '/lessons/detail';
 
   // Phase 4 — P4-065: Placement Test flow routes
   static const String placementStart = '/placement/start';
