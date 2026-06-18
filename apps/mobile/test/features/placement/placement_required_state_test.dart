@@ -52,7 +52,7 @@ class _FakePlacementRepository implements PlacementRepository {
       throw UnimplementedError();
 
   @override
-  Future<void> completeAttempt(
+  Future<PlacementAttemptModel> completeAttempt(
     String bearerToken, {
     required String attemptId,
   }) async =>
