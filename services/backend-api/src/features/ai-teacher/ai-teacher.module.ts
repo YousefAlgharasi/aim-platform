@@ -3,10 +3,11 @@ import { ConfigModule } from '@nestjs/config';
 
 import { AiTeacherService } from './ai-teacher.service';
 import { ContextBuilderModule } from './context-builder';
+import { AiChatRepositoriesModule } from './repositories';
 
 @Module({
-  imports: [ConfigModule, ContextBuilderModule],
+  imports: [ConfigModule, ContextBuilderModule, AiChatRepositoriesModule],
   providers: [AiTeacherService],
-  exports: [AiTeacherService, ContextBuilderModule],
+  exports: [AiTeacherService, ContextBuilderModule, AiChatRepositoriesModule],
 })
 export class AiTeacherModule {}
