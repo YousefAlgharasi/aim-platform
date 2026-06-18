@@ -20,6 +20,7 @@ import 'package:aim_mobile/features/placement/logic/provider/placement_submit_no
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/networking/backend_api_client_provider.dart';
+import 'package:aim_mobile/features/auth/logic/provider/auth_token_interceptor_provider.dart';
 import 'package:aim_mobile/features/placement/data/datasources/placement_remote_datasource.dart';
 import 'package:aim_mobile/features/placement/data/datasources/placement_remote_datasource_impl.dart';
 import 'package:aim_mobile/features/placement/data/repository/repo_impl/placement_repository_impl.dart';
@@ -31,7 +32,7 @@ import 'placement_start_notifier.dart';
 final placementRemoteDatasourceProvider =
     Provider<PlacementRemoteDatasource>((ref) {
   return PlacementRemoteDatasourceImpl(
-    apiClient: ref.watch(backendApiClientProvider),
+    apiClient: ref.watch(authenticatedBackendApiClientProvider),
   );
 });
 
