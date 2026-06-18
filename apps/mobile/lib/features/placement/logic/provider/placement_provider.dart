@@ -93,3 +93,18 @@ final placementResultProvider = StateNotifierProvider.autoDispose<
     repository: ref.watch(placementRepositoryProvider),
   ),
 );
+
+// Phase 6 — P6-046: Placement Required State
+import 'placement_required_notifier.dart';
+
+/// App-level provider that detects whether the student must complete
+/// placement before accessing regular content.
+///
+/// Call [PlacementRequiredNotifier.check] after sign-in to gate access.
+/// The backend is the sole authority for this decision.
+final placementRequiredProvider = StateNotifierProvider<
+    PlacementRequiredNotifier, PlacementRequiredState>(
+  (ref) => PlacementRequiredNotifier(
+    repository: ref.watch(placementRepositoryProvider),
+  ),
+);
