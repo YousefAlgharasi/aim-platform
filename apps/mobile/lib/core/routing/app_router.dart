@@ -11,6 +11,7 @@ import '../../features/placement/ui/pages/placement_result_page.dart';
 import '../../features/placement/ui/pages/placement_section_page.dart';
 import '../../features/placement/ui/pages/placement_start_page.dart';
 import '../../features/placement/ui/pages/placement_submit_page.dart';
+import '../../features/lessons/ui/pages/chapter_list_page.dart';
 import '../../features/lessons/ui/pages/course_list_page.dart';
 import '../../features/shell/ui/pages/main_shell_page.dart';
 import 'app_route_paths.dart';
@@ -58,6 +59,8 @@ class AppRouter {
             return _buildPlacementResult(settings.arguments);
           case AppRoutePaths.courseChapters:
             return const CourseListPage();
+          case AppRoutePaths.chapterLessons:
+            return _buildChapterListPage(settings.arguments);
           default:
             return const SplashPlaceholderPage();
         }
@@ -117,6 +120,16 @@ class AppRouter {
     return PlacementResultPage(attemptId: attemptId);
   }
 
+  static Widget _buildChapterListPage(Object? arguments) {
+    final args = arguments is Map<String, dynamic> ? arguments : const <String, dynamic>{};
+    final levelId = args['levelId'];
+    final courseTitle = args['courseTitle'];
+    if (levelId is! String || courseTitle is! String) {
+      return const SplashPlaceholderPage();
+    }
+    return ChapterListPage(levelId: levelId, courseTitle: courseTitle);
+  }
+
   static Map<String, dynamic> _placementArgs(Object? arguments) {
     return arguments is Map<String, dynamic> ? arguments : const {};
   }
@@ -167,5 +180,6 @@ class AppRouter {
     AppRoutePaths.placementSubmit,
     AppRoutePaths.placementResult,
     AppRoutePaths.courseChapters,
+    AppRoutePaths.chapterLessons,
   };
 }
