@@ -1,0 +1,24 @@
+<!-- @dsCard group="Type" viewport="700x230" name="Display & Headings" subtitle="Inter — Display, H1, H2, H3" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; font-family: var(--font-en); background: var(--surface); padding: 18px 20px; color: var(--text-primary); }
+  .row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 7px 0; border-bottom: 1px solid var(--divider); }
+  .row:last-child { border-bottom: 0; }
+  .spec { font: var(--type-helper); font-family: var(--font-mono); color: var(--text-muted); white-space: nowrap; }
+  .d { font: var(--type-display); letter-spacing: var(--type-display-tracking); }
+  .h1 { font: var(--type-h1); letter-spacing: var(--type-h1-tracking); }
+  .h2 { font: var(--type-h2); letter-spacing: var(--type-h2-tracking); }
+  .h3 { font: var(--type-h3); }
+</style>
+</head>
+<body>
+  <div class="row"><span class="d">Learn smarter</span><span class="spec">Display · 34/40 · 800</span></div>
+  <div class="row"><span class="h1">Your daily lesson</span><span class="spec">H1 · 28/34 · 700</span></div>
+  <div class="row"><span class="h2">Speaking practice</span><span class="spec">H2 · 23/30 · 700</span></div>
+  <div class="row"><span class="h3">Recommended for you</span><span class="spec">H3 · 19/26 · 600</span></div>
+</body>
+</html>

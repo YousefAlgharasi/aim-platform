@@ -19,6 +19,15 @@ void main() {
     expect(resolvedRoute, AppRoutePaths.signIn);
   });
 
+  test('redirects placement routes for unauthenticated users', () {
+    final resolvedRoute = AppRouter.resolveRouteName(
+      AppRoutePaths.placementStart,
+      authState: const AuthFlowState.signedOut(),
+    );
+
+    expect(resolvedRoute, AppRoutePaths.signIn);
+  });
+
   test('keeps checking users on splash', () {
     final resolvedRoute = AppRouter.resolveRouteName(
       AppRoutePaths.profile,
@@ -53,13 +62,27 @@ void main() {
       ),
     );
 
-    expect(find.text('AIM Splash'), findsOneWidget);
+    expect(find.text('AIM'), findsOneWidget);
 
     await tester.tap(find.text('Start auth placeholder flow'));
     await tester.pumpAndSettle();
 
     expect(find.text('Sign In'), findsWidgets);
     expect(find.text('Sign in to AIM'), findsOneWidget);
+  });
+
+  testWidgets('falls back to splash when placement question arguments are missing',
+      (tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          initialRoute: AppRoutePaths.placementQuestion,
+          onGenerateRoute: AppRouter.onGenerateRoute,
+        ),
+      ),
+    );
+
+    expect(find.text('AIM'), findsOneWidget);
   });
 }
 

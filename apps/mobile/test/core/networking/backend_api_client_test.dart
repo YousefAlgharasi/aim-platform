@@ -83,4 +83,29 @@ void main() {
       ),
     );
   });
+
+  test('attaches token from interceptor on outgoing requests', () async {
+    final client = BackendApiClient(
+      config: const AppConfig(
+        environment: 'test',
+        backendApiBaseUrl: 'https://api.example.com',
+        supabaseUrl: 'https://example.supabase.co',
+        supabaseAnonKey: 'test-anon-key',
+      ),
+      authInterceptor: AuthInterceptor(() => 'token-abc'),
+      httpClient: MockClient((request) async {
+        expect(request.headers['authorization'], 'Bearer token-abc');
+
+        return http.Response(
+          '{"success":true,"data":{"ok":true},"meta":{}}',
+          200,
+        );
+      }),
+    );
+
+    await client.get<Map<String, dynamic>>(
+      BackendApiPaths.health,
+      decodeData: (json) => json! as Map<String, dynamic>,
+    );
+  });
 }
