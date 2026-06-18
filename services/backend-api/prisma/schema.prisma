@@ -21,6 +21,7 @@ model User {
   updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   studentProfile  StudentProfile?
+  aiChatSessions  AiChatSession[]
 
   @@index([supabaseAuthUid])
   @@index([email])
@@ -80,6 +81,25 @@ model Permission {
   @@index([key])
   @@index([scope])
   @@map("permissions")
+}
+
+model AiChatSession {
+  id          String   @id @default(uuid()) @db.Uuid
+  studentId   String   @map("student_id") @db.Uuid
+
+  contextRef  String   @map("context_ref")
+  status      String   @default("active")
+
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([studentId, status])
+  @@index([studentId, createdAt(sort: Desc)])
+  @@index([status])
+  @@map("ai_chat_sessions")
 }
 
 model RolePermission {
