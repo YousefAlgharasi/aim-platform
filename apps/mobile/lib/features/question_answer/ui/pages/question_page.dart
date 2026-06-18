@@ -1,25 +1,23 @@
-// Phase 6 — P6-089
+// Phase 6 — P6-089 / P6-090
 // QuestionPage — Student question/answer screen MVP.
 //
 // Accepts [sessionId] and [questionId] as route arguments (both
 // backend-supplied). Loads the question, collects the student's answer,
-// and submits it to the backend.
+// and delegates submission to [AnswerSubmitFlow] (P6-090).
 //
 // CRITICAL SECURITY RULES:
 // - Flutter NEVER evaluates correctness locally.
 // - Flutter NEVER calls the AIM Engine or any AI provider.
-// - selectedOptionId / writtenAnswer are submitted verbatim to the backend.
-// - attemptResult (backend acknowledgement) contains no is_correct field.
-// - All AIM-owned values are shown only via backend-approved APIs (separate
-//   session state endpoint, out of scope here).
-// - sessionId and questionId must be backend-supplied; never from user input.
+// - selectedOptionId / writtenAnswer submitted verbatim via notifier.
+// - attemptResult (backend ack) contains no is_correct field.
+// - sessionId and questionId must be backend-supplied; never user input.
 // - Bearer token from authFlowProvider; never stored in this widget.
 //
 // RTL/Arabic rules:
-// - Row/Column/CrossAxisAlignment: direction-aware.
-// - AIMTopAppBar handles RTL icon mirroring.
-// - EdgeInsets.symmetric — safe for RTL.
+// - EdgeInsets.symmetric — RTL-safe.
+// - AIMTopAppBar mirrors RTL navigation icon internally.
 // - AIMAnswerOption uses leading-edge text alignment internally.
+// - Column/CrossAxisAlignment: direction-aware.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,11 +26,9 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/question_answer/logic/entity/question_session_state.dart';
 import 'package:aim_mobile/features/question_answer/logic/provider/question_answer_provider.dart';
+import '../widgets/answer_submit_flow.dart';
 import '../widgets/question_answer_widgets.dart';
 
-/// Student question/answer screen.
-///
-/// Route arguments must be passed as [QuestionPageArgs].
 class QuestionPage extends ConsumerStatefulWidget {
   const QuestionPage({
     required this.sessionId,
@@ -67,23 +63,28 @@ class _QuestionPageState extends ConsumerState<QuestionPage> {
         );
   }
 
-  Future<void> _submit() async {
-    final token = ref.read(authFlowProvider).accessToken;
-    if (token == null || token.isEmpty) return;
-    await ref.read(questionAnswerSessionProvider.notifier).submitAnswer(
-          bearerToken: token,
-          sessionId: widget.sessionId,
-        );
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(questionAnswerSessionProvider);
+    final token = ref.watch(authFlowProvider).accessToken ?? '';
 
     return Scaffold(
       appBar: AIMTopAppBar(title: 'Question'),
       body: _buildBody(state),
-      bottomNavigationBar: _buildSubmitBar(state),
+      bottomNavigationBar: state.hasQuestion && !state.isSubmitted
+          ? SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AimSpacing.screenPaddingMobile,
+                  vertical: AimSpacing.space16,
+                ),
+                child: AnswerSubmitFlow(
+                  sessionId: widget.sessionId,
+                  bearerToken: token,
+                ),
+              ),
+            )
+          : null,
     );
   }
 
@@ -91,14 +92,12 @@ class _QuestionPageState extends ConsumerState<QuestionPage> {
     if (state.isLoadingQuestion) {
       return const AIMFullScreenLoading(semanticLabel: 'Loading question');
     }
-
     if (state.questionError != null) {
       return AIMFullScreenError(
         message: state.questionError!,
         onRetry: _loadQuestion,
       );
     }
-
     if (!state.hasQuestion) {
       return const AIMFullScreenLoading(semanticLabel: 'Loading question');
     }
@@ -134,32 +133,7 @@ class _QuestionPageState extends ConsumerState<QuestionPage> {
                 .read(questionAnswerSessionProvider.notifier)
                 .updateWrittenAnswer(v),
           ),
-        if (state.submitError != null) ...[
-          const SizedBox(height: AimSpacing.componentGap),
-          AIMAlertBanner(
-            tone: AIMAlertTone.error,
-            child: Text(state.submitError!),
-          ),
-        ],
       ],
-    );
-  }
-
-  Widget? _buildSubmitBar(QuestionSessionState state) {
-    if (!state.hasQuestion || state.isSubmitted) return null;
-
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AimSpacing.screenPaddingMobile,
-          vertical: AimSpacing.space16,
-        ),
-        child: AIMButton(
-          loading: state.isSubmitting,
-          onPressed: state.canSubmit ? _submit : null,
-          child: const Text('Submit Answer'),
-        ),
-      ),
     );
   }
 }
