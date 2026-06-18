@@ -1,4 +1,4 @@
-// Phase 6 — P6-088
+// Phase 6 — P6-088 / P6-089
 // Question/answer feature Riverpod providers.
 //
 // Scope: Question/answer session only.
@@ -7,6 +7,7 @@
 //   questionRemoteDatasourceProvider  — question datasource
 //   attemptRemoteDatasourceProvider   — attempt datasource
 //   questionAnswerRepositoryProvider  — repository (use this in notifiers/UI)
+//   questionAnswerSessionProvider     — per-session notifier (P6-089)
 //
 // Security rules:
 // - Uses authenticatedBackendApiClientProvider so bearer token is injected
@@ -22,7 +23,9 @@ import 'package:aim_mobile/features/question_answer/data/datasources/attempt_rem
 import 'package:aim_mobile/features/question_answer/data/datasources/question_remote_datasource.dart';
 import 'package:aim_mobile/features/question_answer/data/datasources/question_remote_datasource_impl.dart';
 import 'package:aim_mobile/features/question_answer/data/repository/repo_impl/question_answer_repository_impl.dart';
+import 'package:aim_mobile/features/question_answer/logic/entity/question_session_state.dart';
 import 'package:aim_mobile/features/question_answer/logic/repository/question_answer_repository.dart';
+import 'question_answer_notifier.dart';
 
 /// Provides the concrete [QuestionRemoteDatasource].
 final questionRemoteDatasourceProvider =
@@ -48,3 +51,17 @@ final questionAnswerRepositoryProvider =
     attemptDatasource: ref.watch(attemptRemoteDatasourceProvider),
   );
 });
+
+/// Per-session question/answer state provider.
+///
+/// autoDispose ensures state is cleaned up when the screen is popped.
+/// Consumers call [QuestionAnswerNotifier.loadQuestion] then
+/// [QuestionAnswerNotifier.submitAnswer].
+///
+/// Security: sessionId and questionId must be backend-supplied values.
+final questionAnswerSessionProvider = StateNotifierProvider.autoDispose<
+    QuestionAnswerNotifier, QuestionSessionState>(
+  (ref) => QuestionAnswerNotifier(
+    repository: ref.watch(questionAnswerRepositoryProvider),
+  ),
+);
