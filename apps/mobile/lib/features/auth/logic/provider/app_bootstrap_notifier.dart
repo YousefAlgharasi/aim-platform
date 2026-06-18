@@ -1,29 +1,30 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/session/session.dart';
 import 'auth_flow_provider.dart';
+import 'session_store_provider.dart';
 
 /// Represents the state of the app bootstrap / session-restore check.
-///
-/// The app starts in [AppBootstrapStatus.checking] while it determines
-/// whether a prior session is still valid.  Once resolved it transitions to
-/// [AppBootstrapStatus.done] and [authFlowProvider] is updated accordingly.
 enum AppBootstrapStatus { checking, done }
 
 /// Drives the initial session-restore check on app launch.
 ///
-/// On creation the notifier immediately begins the async session check.
-/// When the check finishes it calls [AuthFlowNotifier.completeBootstrap]
-/// (no session found) or [AuthFlowNotifier.signIn] (session restored).
+/// On creation the notifier reads any persisted session from [SessionStore].
+/// - If a token is found → [AuthFlowNotifier.signIn] is called so the user
+///   is taken directly to the main shell without re-authenticating.
+/// - If no token is found → [AuthFlowNotifier.completeBootstrap] transitions
+///   to signedOut and the auth gate routes to the sign-in page.
 ///
-/// Phase 6 MVP: Supabase session persistence is not yet integrated.
-/// The notifier performs a short async delay to simulate the check and then
-/// transitions to signedOut.  When the Supabase Flutter SDK is added in a
-/// later phase, replace [checkSession] with a real token-refresh call.
+/// A real Supabase token refresh (to verify the persisted token is still
+/// valid) can be added inside [checkSession] when the Supabase Flutter SDK
+/// is integrated.
 ///
 /// Security:
-/// - The notifier never decides authorisation — it only restores an existing
-///   Supabase session token and hands it to [authFlowProvider].
-/// - No credentials are stored or logged here.
+/// - The notifier reads the token from [SessionStore] (OS-level secure
+///   storage — Keychain on iOS, EncryptedSharedPreferences on Android).
+/// - The token is passed to [authFlowProvider] only; it is never logged
+///   or exposed to any other layer.
+/// - No credentials are hardcoded here.
 class AppBootstrapNotifier extends StateNotifier<AppBootstrapStatus> {
   AppBootstrapNotifier(this._ref) : super(AppBootstrapStatus.checking) {
     checkSession();
@@ -33,19 +34,25 @@ class AppBootstrapNotifier extends StateNotifier<AppBootstrapStatus> {
 
   /// Performs the session-restore check.
   ///
-  /// Overridable in tests to inject deterministic outcomes without async delays.
+  /// Overridable in tests to inject deterministic outcomes without touching
+  /// device storage.
   Future<void> checkSession() async {
     try {
-      // Phase 6 MVP stub: no Supabase SDK persistence yet.
-      // A real implementation would call
-      //   await Supabase.instance.client.auth.refreshSession()
-      // and, on success, call authFlowProvider.notifier.signIn(email, accessToken: token).
-      // For now we complete the bootstrap immediately with no session.
-      await Future<void>.microtask(() {});
-      _ref.read(authFlowProvider.notifier).completeBootstrap();
+      final store = _ref.read(sessionStoreProvider);
+      final session = await store.read();
+
+      if (session != null && session.accessToken.isNotEmpty) {
+        // Restore the prior session — navigate directly to main shell.
+        _ref.read(authFlowProvider.notifier).signIn(
+              session.email,
+              accessToken: session.accessToken,
+            );
+      } else {
+        // No persisted session — go to sign-in.
+        _ref.read(authFlowProvider.notifier).completeBootstrap();
+      }
     } catch (_) {
-      // Any unexpected error still resolves the gate to signedOut so the
-      // user is not stuck on the splash screen.
+      // Any storage error must not block the user — fall back to sign-in.
       _ref.read(authFlowProvider.notifier).completeBootstrap();
     } finally {
       if (mounted) {
