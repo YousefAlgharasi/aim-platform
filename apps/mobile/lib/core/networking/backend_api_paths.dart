@@ -70,4 +70,13 @@ class BackendApiPaths {
   /// GET /curriculum/questions/:questionId — student-facing question detail
   static String curriculumQuestion(String questionId) =>
       '/curriculum/questions/$questionId';
+
+  // Phase 6 — P6-087: Session/attempt endpoints
+
+  /// POST /sessions/start — start a new learning session
+  static const String sessionsStart = '/sessions/start';
+
+  /// POST /sessions/:sessionId/attempt — submit a lesson attempt
+  static String sessionAttempt(String sessionId) =>
+      '/sessions/$sessionId/attempt';
 }
