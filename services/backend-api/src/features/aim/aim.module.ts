@@ -138,6 +138,9 @@ import { AimResultController } from './result/aim-result.controller';
 
     // Phase 8 — recommendation read service (needed by AI Teacher context builder, P8-030)
     RecommendationReadService,
+
+    // Phase 8 — skill state read service (needed by AI Teacher context builder, P8-033)
+    StudentSkillStateReadService,
   ],
 })
 export class AimModule {}
