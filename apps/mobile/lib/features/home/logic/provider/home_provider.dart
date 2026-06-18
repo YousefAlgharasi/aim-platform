@@ -37,3 +37,22 @@ final homeRepositoryProvider = Provider<HomeRepository>((ref) {
     datasource: ref.watch(homeRemoteDatasourceProvider),
   );
 });
+
+// Phase 6 — P6-061: HomeNotifier provider
+import 'package:aim_mobile/core/state/app_async_state.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_data.dart';
+import 'home_notifier.dart';
+
+/// App-level home data provider.
+///
+/// Consumers call [HomeNotifier.load] after sign-in with the studentId from
+/// [authContextProvider]. Stays alive for the session so the home page does
+/// not reload on every navigation event.
+///
+/// Security: studentId must come from authContextProvider (JWT-resolved).
+final homeProvider =
+    StateNotifierProvider<HomeNotifier, AppAsyncState<HomeData>>(
+  (ref) => HomeNotifier(
+    repository: ref.watch(homeRepositoryProvider),
+  ),
+);
