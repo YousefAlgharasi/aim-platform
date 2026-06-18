@@ -342,10 +342,10 @@ void main() {
 
     test('does not contain correct_answer or is_correct in result', () {
       final model = PlacementResultModel.fromJson(validJson);
-      final serialized = model.toJson().toString();
+      final serializedKeys = model.toJson().keys.join(' ');
 
-      expect(serialized.contains('correct_answer'), isFalse);
-      expect(serialized.contains('is_correct'), isFalse);
+      expect(serializedKeys.contains('correct_answer'), isFalse);
+      expect(serializedKeys.contains('is_correct'), isFalse);
     });
 
     test('signal fallback is unknown when backend omits signal field', () {

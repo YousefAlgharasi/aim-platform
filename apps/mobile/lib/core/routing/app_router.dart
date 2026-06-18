@@ -174,7 +174,8 @@ class AppRouter {
       return AppRoutePaths.splash;
     }
 
-    if (authState.isSignedOut && isProtectedRoute) {
+    if (authState.isSignedOut &&
+        (isProtectedRoute || routeName == AppRoutePaths.splash)) {
       return AppRoutePaths.signIn;
     }
 

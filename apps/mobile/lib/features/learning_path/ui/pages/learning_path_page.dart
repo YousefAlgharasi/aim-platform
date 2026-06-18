@@ -58,13 +58,17 @@ class _LearningPathPageState extends ConsumerState<LearningPathPage> {
     final authFlow = ref.read(authFlowProvider);
 
     // Only load when auth context has resolved and a token is available.
-    if (authContext is! AppAsyncSuccess) return;
+    final contextData = switch (authContext) {
+      AppAsyncSuccess(:final data) => data,
+      _ => null,
+    };
+    if (contextData == null) return;
     final token = authFlow.accessToken;
     if (token == null || token.isEmpty) return;
 
     ref.read(learningPathProvider.notifier).load(
           bearerToken: token,
-          studentId: authContext.data.user.id,
+          studentId: contextData.user.id,
         );
   }
 
@@ -72,13 +76,17 @@ class _LearningPathPageState extends ConsumerState<LearningPathPage> {
     final authContext = ref.read(authContextProvider);
     final authFlow = ref.read(authFlowProvider);
 
-    if (authContext is! AppAsyncSuccess) return;
+    final contextData = switch (authContext) {
+      AppAsyncSuccess(:final data) => data,
+      _ => null,
+    };
+    if (contextData == null) return;
     final token = authFlow.accessToken;
     if (token == null || token.isEmpty) return;
 
     await ref.read(learningPathProvider.notifier).refresh(
           bearerToken: token,
-          studentId: authContext.data.user.id,
+          studentId: contextData.user.id,
         );
   }
 

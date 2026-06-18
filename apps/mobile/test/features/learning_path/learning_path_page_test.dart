@@ -16,7 +16,9 @@ import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
 import 'package:aim_mobile/features/learning_path/data/models/learning_path_models.dart';
 import 'package:aim_mobile/features/learning_path/logic/entity/learning_path_data.dart';
+import 'package:aim_mobile/features/learning_path/logic/provider/learning_path_notifier.dart';
 import 'package:aim_mobile/features/learning_path/logic/provider/learning_path_provider.dart';
+import 'package:aim_mobile/features/learning_path/logic/repository/learning_path_repository.dart';
 import 'package:aim_mobile/features/learning_path/ui/pages/learning_path_page.dart';
 
 // ---------------------------------------------------------------------------
@@ -182,9 +184,11 @@ void main() {
 // Fake notifier
 // ---------------------------------------------------------------------------
 
-class _FakeLearningPathNotifier
-    extends StateNotifier<AppAsyncState<LearningPathData>> {
-  _FakeLearningPathNotifier(super.state);
+class _FakeLearningPathNotifier extends LearningPathNotifier {
+  _FakeLearningPathNotifier(AppAsyncState<LearningPathData> initialState)
+      : super(repository: _FakeLearningPathRepository()) {
+    state = initialState;
+  }
 
   Future<void> load({
     required String bearerToken,
@@ -197,4 +201,27 @@ class _FakeLearningPathNotifier
   }) async {}
 
   void clear() {}
+}
+
+class _FakeLearningPathRepository implements LearningPathRepository {
+  @override
+  Future<List<LearningPathSkillStateModel>> getSkillStates({
+    required String bearerToken,
+    required String studentId,
+  }) async =>
+      const [];
+
+  @override
+  Future<List<LearningPathWeaknessRecordModel>> getWeaknessRecords({
+    required String bearerToken,
+    required String studentId,
+  }) async =>
+      const [];
+
+  @override
+  Future<List<LearningPathRecommendationModel>> getRecommendations({
+    required String bearerToken,
+    required String studentId,
+  }) async =>
+      const [];
 }

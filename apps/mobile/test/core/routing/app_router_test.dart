@@ -3,11 +3,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/routing/routing.dart';
+import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
 import 'package:aim_mobile/features/auth/data/models/client_safe_profile_model.dart';
 import 'package:aim_mobile/features/auth/data/models/current_user_model.dart';
 import 'package:aim_mobile/features/auth/logic/entity/auth_flow_state.dart';
+import 'package:aim_mobile/features/auth/logic/provider/app_bootstrap_notifier.dart';
+import 'package:aim_mobile/features/auth/logic/provider/app_bootstrap_provider.dart';
+import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 
 void main() {
@@ -82,6 +86,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          appBootstrapProvider.overrideWith(
+            (ref) => _ImmediateDoneBootstrap(ref),
+          ),
           authFlowProvider.overrideWith(
             (ref) {
               final notifier = AuthFlowNotifier();
@@ -135,6 +142,15 @@ void main() {
 
     expect(find.text('AIM'), findsOneWidget);
   });
+}
+
+class _ImmediateDoneBootstrap extends AppBootstrapNotifier {
+  _ImmediateDoneBootstrap(super.ref);
+
+  @override
+  Future<void> checkSession() async {
+    if (mounted) state = AppBootstrapStatus.done;
+  }
 }
 
 const _timestamp = '2026-06-12T00:00:00.000Z';

@@ -20,6 +20,7 @@ import 'package:aim_mobile/features/lessons/logic/entity/lesson.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lesson_detail.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lesson_detail_notifier.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
+import 'package:aim_mobile/features/lessons/logic/repository/lesson_detail_repository.dart';
 import 'package:aim_mobile/features/lessons/ui/pages/lesson_detail_page.dart';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -175,9 +176,11 @@ void main() {
 
 // ── Fake notifier ─────────────────────────────────────────────────────────────
 
-class _FakeLessonDetailNotifier
-    extends StateNotifier<AppAsyncState<LessonDetail>> {
-  _FakeLessonDetailNotifier(super.state);
+class _FakeLessonDetailNotifier extends LessonDetailNotifier {
+  _FakeLessonDetailNotifier(AppAsyncState<LessonDetail> initialState)
+      : super(repository: _FakeLessonDetailRepository()) {
+    state = initialState;
+  }
 
   Future<void> load({
     required String bearerToken,
@@ -188,4 +191,13 @@ class _FakeLessonDetailNotifier
     required String bearerToken,
     required String lessonId,
   }) async {}
+}
+
+class _FakeLessonDetailRepository implements LessonDetailRepository {
+  @override
+  Future<LessonDetail> getLessonDetail({
+    required String bearerToken,
+    required String lessonId,
+  }) async =>
+      _empty;
 }

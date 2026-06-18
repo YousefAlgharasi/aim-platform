@@ -1,6 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:aim_mobile/features/profile/data/models/profile_me_response_model.dart';
 import 'package:aim_mobile/features/profile/data/models/profile_models.dart';
+import 'package:aim_mobile/features/profile/logic/entity/profile_update_payloads.dart';
+import 'package:aim_mobile/features/profile/logic/entity/student_profile.dart';
 
 void main() {
   test('parses user profile contract fields', () {
@@ -90,8 +93,6 @@ void main() {
     expect(json.containsKey('serviceRoleKey'), isFalse);
     expect(json.containsKey('jwtSecret'), isFalse);
   });
-}
-
 // P6-039 additions ─────────────────────────────────────────────────────────────
 
   test('ProfileMeResponseModel parses student profile path', () {

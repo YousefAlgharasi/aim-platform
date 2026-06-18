@@ -40,7 +40,10 @@ class _FakePlacementRepository implements PlacementRepository {
       throw UnimplementedError();
 
   @override
-  Future<PlacementAttemptModel> startAttempt(String bearerToken) async =>
+  Future<PlacementAttemptModel> startAttempt(
+    String bearerToken, {
+    required String placementTestId,
+  }) async =>
       throw UnimplementedError();
 
   @override
