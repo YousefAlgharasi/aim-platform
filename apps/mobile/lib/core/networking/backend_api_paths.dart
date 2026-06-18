@@ -11,7 +11,6 @@ class BackendApiPaths {
   static const String profileMe = '/profile/me';
 
   // Phase 4 — P4-063: Placement Test endpoints (student-facing)
-  // Mirrors the API map from P4-006 and the endpoint contracts from P4-038–P4-048.
   static const String placementActive = '/placement/active';
   static const String placementActiveSections = '/placement/active/sections';
   static const String placementQuestions = '/placement/questions';
@@ -28,4 +27,21 @@ class BackendApiPaths {
   /// POST /placement/attempts/:id/complete
   static String placementAttemptComplete(String attemptId) =>
       '/placement/attempts/$attemptId/complete';
+
+  // Phase 6 — P6-060: Home screen AIM endpoints
+  /// GET /aim/students/:studentId/skill-states
+  static String aimSkillStates(String studentId) =>
+      '/aim/students/$studentId/skill-states';
+
+  /// GET /aim/students/:studentId/weakness-records
+  static String aimWeaknessRecords(String studentId) =>
+      '/aim/students/$studentId/weakness-records';
+
+  /// GET /aim/students/:studentId/review-schedules
+  static String aimReviewSchedules(String studentId) =>
+      '/aim/students/$studentId/review-schedules';
+
+  /// GET /aim/students/:studentId/recommendations
+  static String aimRecommendations(String studentId) =>
+      '/aim/students/$studentId/recommendations';
 }
