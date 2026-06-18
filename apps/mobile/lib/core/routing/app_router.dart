@@ -11,6 +11,7 @@ import '../../features/placement/ui/pages/placement_result_page.dart';
 import '../../features/placement/ui/pages/placement_section_page.dart';
 import '../../features/placement/ui/pages/placement_start_page.dart';
 import '../../features/placement/ui/pages/placement_submit_page.dart';
+import '../../features/lessons/ui/pages/course_list_page.dart';
 import '../../features/shell/ui/pages/main_shell_page.dart';
 import 'app_route_paths.dart';
 
@@ -55,6 +56,8 @@ class AppRouter {
             return _buildPlacementSubmit(settings.arguments);
           case AppRoutePaths.placementResult:
             return _buildPlacementResult(settings.arguments);
+          case AppRoutePaths.courseChapters:
+            return const CourseListPage();
           default:
             return const SplashPlaceholderPage();
         }
@@ -163,5 +166,6 @@ class AppRouter {
     AppRoutePaths.placementQuestion,
     AppRoutePaths.placementSubmit,
     AppRoutePaths.placementResult,
+    AppRoutePaths.courseChapters,
   };
 }
