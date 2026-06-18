@@ -130,7 +130,8 @@ class _LessonDetailContent extends StatelessWidget {
           if (detail.lesson.description.isNotEmpty) ...[
             Text(
               detail.lesson.description,
-              style: AimTextStyles.body.copyWith(color: surfaces.textSecondary),
+              style:
+                  AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
             ),
             const SizedBox(height: AimSpacing.sectionGap),
           ],

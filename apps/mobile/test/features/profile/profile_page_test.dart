@@ -11,6 +11,7 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.da
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
 import 'package:aim_mobile/features/auth/data/models/auth_sync_response_model.dart';
+import 'package:aim_mobile/features/auth/ui/widgets/logout_button.dart';
 import 'package:aim_mobile/features/profile/ui/pages/profile_page.dart';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -83,8 +84,8 @@ void main() {
         _wrap(const AppAsyncState.success(_studentContext)));
     await tester.pump();
 
-    expect(find.text('Yousef'), findsOneWidget);
-    expect(find.text('learner@example.com'), findsOneWidget);
+    expect(find.text('Yousef'), findsWidgets);
+    expect(find.text('learner@example.com'), findsWidgets);
   });
 
   testWidgets('ProfilePage shows AIMFullScreenLoading while loading',

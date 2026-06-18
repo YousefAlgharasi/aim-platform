@@ -40,6 +40,7 @@ class AppBootstrapNotifier extends StateNotifier<AppBootstrapStatus> {
     try {
       final store = _ref.read(sessionStoreProvider);
       final session = await store.read();
+      if (!mounted) return;
 
       if (session != null && session.accessToken.isNotEmpty) {
         // Restore the prior session — navigate directly to main shell.
@@ -52,6 +53,7 @@ class AppBootstrapNotifier extends StateNotifier<AppBootstrapStatus> {
         _ref.read(authFlowProvider.notifier).completeBootstrap();
       }
     } catch (_) {
+      if (!mounted) return;
       // Any storage error must not block the user — fall back to sign-in.
       _ref.read(authFlowProvider.notifier).completeBootstrap();
     } finally {

@@ -3,16 +3,24 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/routing/routing.dart';
+import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/features/auth/data/session/session_store.dart';
 import 'package:aim_mobile/features/auth/logic/entity/auth_flow_state.dart';
 import 'package:aim_mobile/features/auth/logic/provider/app_bootstrap_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/provider/app_bootstrap_provider.dart';
+import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/features/auth/logic/provider/session_store_provider.dart';
 
 void main() {
   // ── AppBootstrapNotifier unit tests ─────────────────────────────────────
 
   test('AppBootstrapNotifier starts in checking state', () async {
-    final container = ProviderContainer();
+    final container = ProviderContainer(
+      overrides: [
+        sessionStoreProvider.overrideWithValue(_FakeSessionStore()),
+      ],
+    );
     addTearDown(container.dispose);
 
     // Synchronously read — should start checking before the microtask runs.
@@ -24,7 +32,11 @@ void main() {
 
   test('AppBootstrapNotifier resolves to done and sets authFlow to signedOut',
       () async {
-    final container = ProviderContainer();
+    final container = ProviderContainer(
+      overrides: [
+        sessionStoreProvider.overrideWithValue(_FakeSessionStore()),
+      ],
+    );
     addTearDown(container.dispose);
 
     container.read(appBootstrapProvider);
@@ -107,7 +119,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.byType(BottomNavigationBar), findsOneWidget);
+    expect(find.byType(AIMBottomNav<int>), findsOneWidget);
   });
 }
 
@@ -121,6 +133,20 @@ class _ImmediateDoneNotifier extends AppBootstrapNotifier {
   Future<void> checkSession() async {
     if (mounted) state = AppBootstrapStatus.done;
   }
+}
+
+class _FakeSessionStore implements SessionStore {
+  @override
+  Future<void> clear() async {}
+
+  @override
+  Future<SessionData?> read() async => null;
+
+  @override
+  Future<void> save({
+    required String accessToken,
+    required String email,
+  }) async {}
 }
 
 /// Stays in checking indefinitely — simulates a slow network.

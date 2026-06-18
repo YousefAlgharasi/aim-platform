@@ -15,7 +15,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/features/home/data/models/home_models.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_data.dart';
+import 'package:aim_mobile/features/home/logic/provider/home_notifier.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_provider.dart';
+import 'package:aim_mobile/features/home/logic/repository/home_repository.dart';
 import 'package:aim_mobile/features/home/ui/pages/home_page.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
 
@@ -190,8 +192,11 @@ void main() {
 // Fake notifier
 // ---------------------------------------------------------------------------
 
-class _FakeHomeNotifier extends StateNotifier<AppAsyncState<HomeData>> {
-  _FakeHomeNotifier(super.state);
+class _FakeHomeNotifier extends HomeNotifier {
+  _FakeHomeNotifier(AppAsyncState<HomeData> initialState)
+      : super(repository: _FakeHomeRepository()) {
+    state = initialState;
+  }
 
   Future<void> load({
     required String bearerToken,
@@ -204,4 +209,34 @@ class _FakeHomeNotifier extends StateNotifier<AppAsyncState<HomeData>> {
   }) async {}
 
   void clear() {}
+}
+
+class _FakeHomeRepository implements HomeRepository {
+  @override
+  Future<List<HomeSkillStateModel>> getSkillStates({
+    required String bearerToken,
+    required String studentId,
+  }) async =>
+      const [];
+
+  @override
+  Future<List<HomeWeaknessRecordModel>> getWeaknessRecords({
+    required String bearerToken,
+    required String studentId,
+  }) async =>
+      const [];
+
+  @override
+  Future<List<HomeReviewScheduleModel>> getReviewSchedules({
+    required String bearerToken,
+    required String studentId,
+  }) async =>
+      const [];
+
+  @override
+  Future<List<HomeRecommendationModel>> getRecommendations({
+    required String bearerToken,
+    required String studentId,
+  }) async =>
+      const [];
 }

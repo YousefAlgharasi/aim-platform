@@ -22,6 +22,7 @@
 // - AIMTopAppBar handles RTL navigation icon mirroring internally.
 // - Padding uses symmetric EdgeInsets so it mirrors correctly under RTL.
 
+import 'package:aim_mobile/core/design_tokens/aim_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -58,13 +59,17 @@ class _HomePageState extends ConsumerState<HomePage> {
     final authFlow = ref.read(authFlowProvider);
 
     // Only load when auth context has resolved and a token is available.
-    if (authContext is! AppAsyncSuccess) return;
+    final contextData = switch (authContext) {
+      AppAsyncSuccess(:final data) => data,
+      _ => null,
+    };
+    if (contextData == null) return;
     final token = authFlow.accessToken;
     if (token == null || token.isEmpty) return;
 
     ref.read(homeProvider.notifier).load(
           bearerToken: token,
-          studentId: authContext.data.user.id,
+          studentId: contextData.user.id,
         );
   }
 
@@ -72,13 +77,17 @@ class _HomePageState extends ConsumerState<HomePage> {
     final authContext = ref.read(authContextProvider);
     final authFlow = ref.read(authFlowProvider);
 
-    if (authContext is! AppAsyncSuccess) return;
+    final contextData = switch (authContext) {
+      AppAsyncSuccess(:final data) => data,
+      _ => null,
+    };
+    if (contextData == null) return;
     final token = authFlow.accessToken;
     if (token == null || token.isEmpty) return;
 
     await ref.read(homeProvider.notifier).refresh(
           bearerToken: token,
-          studentId: authContext.data.user.id,
+          studentId: contextData.user.id,
         );
   }
 
@@ -87,12 +96,12 @@ class _HomePageState extends ConsumerState<HomePage> {
     final state = ref.watch(homeProvider);
 
     return Scaffold(
-      appBar: AIMTopAppBar(title: 'Home'),
+      appBar: const AIMTopAppBar(title: 'Home'),
       body: switch (state) {
-        AppAsyncLoading() => AIMFullScreenLoading(
+        AppAsyncLoading() => const AIMFullScreenLoading(
             semanticLabel: 'Loading home data',
           ),
-        AppAsyncFailure(:final message) => AIMFullScreenError(
+        AppAsyncFailure(:final message) =>  AIMFullScreenError(
             message: message,
             onRetry: _load,
           ),
@@ -100,7 +109,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             data: data,
             onRefresh: _refresh,
           ),
-        AppAsyncIdle() => AIMFullScreenLoading(
+        AppAsyncIdle() => const AIMFullScreenLoading(
             semanticLabel: 'Loading home data',
           ),
       },
@@ -124,8 +133,8 @@ class _HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (data.isEmpty) {
-      return AIMEmptyState(
-        icon: const Icon(Icons.home_outlined),
+      return const AIMEmptyState(
+        icon:  Icon(Icons.home_outlined),
         title: 'Your dashboard is empty',
         subtitle:
             'Complete your placement test to see personalised recommendations.',
