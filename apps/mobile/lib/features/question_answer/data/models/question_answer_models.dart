@@ -1,2 +1,5 @@
-// Phase 6 — P6-083
-// Question/answer models barrel — populated by P6-084 and P6-085.
+// Phase 6 — P6-083 / P6-084
+// Question/answer models barrel.
+
+export 'answer_option_model.dart';
+export 'question_model.dart';
