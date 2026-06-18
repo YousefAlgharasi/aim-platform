@@ -113,8 +113,7 @@ class _ImageRenderer extends StatelessWidget {
           const SizedBox(height: AimSpacing.space8),
           Text(
             asset.description!,
-            style: AimTextStyles.bodySm
-                .copyWith(color: surfaces.textSecondary),
+            style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
             textAlign: TextAlign.start,
           ),
         ],
@@ -234,7 +233,7 @@ class _MediaInfoCard extends StatelessWidget {
     final surfaces = aimSurfacesOf(context);
 
     return AIMCard(
-      variant: AIMCardVariant.outlined,
+      variant: AIMCardVariant.standard,
       semanticLabel: '${asset.type} asset: ${asset.title}',
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -247,8 +246,8 @@ class _MediaInfoCard extends StatelessWidget {
               children: [
                 Text(
                   asset.title,
-                  style: AimTextStyles.label
-                      .copyWith(color: surfaces.textPrimary),
+                  style:
+                      AimTextStyles.label.copyWith(color: surfaces.textPrimary),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -290,18 +289,17 @@ class _AssetErrorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
     return AIMCard(
-      variant: AIMCardVariant.outlined,
+      variant: AIMCardVariant.standard,
       child: Row(
         children: [
-          Icon(Icons.error_outline,
+          const Icon(Icons.error_outline,
               size: AimSizes.iconMd, color: AimColors.error500),
           const SizedBox(width: AimSpacing.innerGap),
           Expanded(
             child: Text(
               message,
-              style: AimTextStyles.bodySm.copyWith(color: surfaces.textError),
+              style: AimTextStyles.bodySm.copyWith(color: AimColors.error600),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
