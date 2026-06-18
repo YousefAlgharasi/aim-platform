@@ -11,6 +11,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/routing/routing.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
@@ -185,6 +186,16 @@ class _ResultBody extends StatelessWidget {
             const SizedBox(height: AimSpacing.sectionGap),
           ],
           _InitialPathBanner(initialPathId: result.initialPathId),
+          const SizedBox(height: AimSpacing.sectionGap),
+          AIMButton(
+            fullWidth: true,
+            semanticLabel: 'Continue to home',
+            onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
+              AppRoutePaths.mainShell,
+              (route) => false,
+            ),
+            child: const Text('Continue to Home'),
+          ),
           const SizedBox(height: AimSpacing.sectionGap),
           Text(
             'Your level and study plan were determined by the backend based '
