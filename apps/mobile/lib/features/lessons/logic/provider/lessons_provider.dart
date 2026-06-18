@@ -22,9 +22,15 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_token_interceptor_p
 import 'package:aim_mobile/features/lessons/data/datasources/lessons_remote_datasource.dart';
 import 'package:aim_mobile/features/lessons/data/datasources/lessons_remote_datasource_impl.dart';
 import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
+import 'package:aim_mobile/features/lessons/data/datasources/lesson_detail_remote_datasource.dart';
+import 'package:aim_mobile/features/lessons/data/datasources/lesson_detail_remote_datasource_impl.dart';
+import 'package:aim_mobile/features/lessons/data/repository/repo_impl/lesson_detail_repository_impl.dart';
 import 'package:aim_mobile/features/lessons/data/repository/repo_impl/lessons_repository_impl.dart';
+import 'package:aim_mobile/features/lessons/logic/entity/lesson_detail.dart';
+import 'package:aim_mobile/features/lessons/logic/repository/lesson_detail_repository.dart';
 import 'package:aim_mobile/features/lessons/logic/repository/lessons_repository.dart';
 import 'chapters_notifier.dart';
+import 'lesson_detail_notifier.dart';
 import 'lessons_list_notifier.dart';
 import 'courses_notifier.dart';
 
@@ -84,5 +90,35 @@ final lessonsListProvider = StateNotifierProvider.autoDispose<
     LessonsListNotifier, AppAsyncState<List<LessonModel>>>(
   (ref) => LessonsListNotifier(
     repository: ref.watch(lessonsRepositoryProvider),
+  ),
+);
+
+/// Lesson detail datasource provider.
+final lessonDetailRemoteDatasourceProvider =
+    Provider<LessonDetailRemoteDatasource>((ref) {
+  return LessonDetailRemoteDatasourceImpl(
+    apiClient: ref.watch(authenticatedBackendApiClientProvider),
+  );
+});
+
+/// Lesson detail repository provider.
+final lessonDetailRepositoryProvider =
+    Provider<LessonDetailRepository>((ref) {
+  return LessonDetailRepositoryImpl(
+    datasource: ref.watch(lessonDetailRemoteDatasourceProvider),
+  );
+});
+
+/// Lesson detail state provider.
+///
+/// Consumers call [LessonDetailNotifier.load] with bearerToken and
+/// the backend-supplied lessonId. Uses .autoDispose so state is cleared
+/// when navigating away from the lesson detail screen.
+///
+/// Security: lessonId must come from a prior backend LessonModel response.
+final lessonDetailProvider = StateNotifierProvider.autoDispose<
+    LessonDetailNotifier, AppAsyncState<LessonDetail>>(
+  (ref) => LessonDetailNotifier(
+    repository: ref.watch(lessonDetailRepositoryProvider),
   ),
 );
