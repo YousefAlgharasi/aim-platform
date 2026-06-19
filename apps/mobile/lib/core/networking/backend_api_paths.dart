@@ -11,7 +11,6 @@ class BackendApiPaths {
   static const String profileMe = '/profile/me';
 
   // Phase 4 — P4-063: Placement Test endpoints (student-facing)
-  // Mirrors the API map from P4-006 and the endpoint contracts from P4-038–P4-048.
   static const String placementActive = '/placement/active';
   static const String placementActiveSections = '/placement/active/sections';
   static const String placementQuestions = '/placement/questions';
@@ -28,4 +27,60 @@ class BackendApiPaths {
   /// POST /placement/attempts/:id/complete
   static String placementAttemptComplete(String attemptId) =>
       '/placement/attempts/$attemptId/complete';
+
+  // Phase 6 — P6-060: Home screen AIM endpoints
+  /// GET /aim/students/:studentId/skill-states
+  static String aimSkillStates(String studentId) =>
+      '/aim/students/$studentId/skill-states';
+
+  /// GET /aim/students/:studentId/weakness-records
+  static String aimWeaknessRecords(String studentId) =>
+      '/aim/students/$studentId/weakness-records';
+
+  /// GET /aim/students/:studentId/review-schedules
+  static String aimReviewSchedules(String studentId) =>
+      '/aim/students/$studentId/review-schedules';
+
+  /// GET /aim/students/:studentId/recommendations
+  static String aimRecommendations(String studentId) =>
+      '/aim/students/$studentId/recommendations';
+
+  /// GET /aim/students/:studentId/sessions/:sessionId/state
+  static String aimSessionState(String studentId, String sessionId) =>
+      '/aim/students/$studentId/sessions/$sessionId/state';
+
+  // Phase 6 — P6-071: Curriculum endpoints (student-facing read)
+
+  /// GET /curriculum/courses?status=published
+  static const String curriculumCourses = '/curriculum/courses';
+
+  /// GET /curriculum/chapters?levelId=:levelId
+  static const String curriculumChapters = '/curriculum/chapters';
+
+  /// GET /curriculum/lessons?chapterId=:chapterId
+  static const String curriculumLessons = '/curriculum/lessons';
+
+  // Phase 6 — P6-077: Lesson detail endpoints
+
+  /// GET /curriculum/lessons/:lessonId
+  static String curriculumLessonDetail(String lessonId) =>
+      '/curriculum/lessons/$lessonId';
+
+  /// GET /curriculum/lesson-assets?lessonId=:lessonId&status=published
+  static const String curriculumLessonAssets = '/curriculum/lesson-assets';
+
+  // Phase 6 — P6-086: Question datasource endpoints
+
+  /// GET /curriculum/questions/:questionId — student-facing question detail
+  static String curriculumQuestion(String questionId) =>
+      '/curriculum/questions/$questionId';
+
+  // Phase 6 — P6-087: Session/attempt endpoints
+
+  /// POST /sessions/start — start a new learning session
+  static const String sessionsStart = '/sessions/start';
+
+  /// POST /sessions/:sessionId/attempt — submit a lesson attempt
+  static String sessionAttempt(String sessionId) =>
+      '/sessions/$sessionId/attempt';
 }

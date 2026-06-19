@@ -63,6 +63,92 @@ class AppRouter {
     );
   }
 
+  static Widget _buildPlacementSection(Object? arguments) {
+    final args = _placementArgs(arguments);
+    final attemptId = args['attemptId'];
+
+    if (attemptId is! String) return const SplashPlaceholderPage();
+
+    return PlacementSectionPage(attemptId: attemptId);
+  }
+
+  static Widget _buildPlacementQuestion(Object? arguments) {
+    final args = _placementArgs(arguments);
+    final sectionId = args['sectionId'];
+    final attemptId = args['attemptId'];
+    final sectionTitle = args['sectionTitle'];
+    final sectionIndex = args['sectionIndex'];
+    final totalSections = args['totalSections'];
+
+    if (sectionId is! String ||
+        attemptId is! String ||
+        sectionTitle is! String ||
+        sectionIndex is! int ||
+        totalSections is! int) {
+      return const SplashPlaceholderPage();
+    }
+
+    return PlacementQuestionPage(
+      sectionId: sectionId,
+      attemptId: attemptId,
+      sectionTitle: sectionTitle,
+      sectionIndex: sectionIndex,
+      totalSections: totalSections,
+    );
+  }
+
+  static Widget _buildPlacementSubmit(Object? arguments) {
+    final args = _placementArgs(arguments);
+    final attemptId = args['attemptId'];
+
+    if (attemptId is! String) return const SplashPlaceholderPage();
+
+    return PlacementSubmitPage(attemptId: attemptId);
+  }
+
+  static Widget _buildPlacementResult(Object? arguments) {
+    final args = _placementArgs(arguments);
+    final attemptId = args['attemptId'];
+
+    if (attemptId is! String) return const SplashPlaceholderPage();
+
+    return PlacementResultPage(attemptId: attemptId);
+  }
+
+  static Widget _buildLessonDetailPage(Object? arguments) {
+    final args = arguments is Map<String, dynamic> ? arguments : const <String, dynamic>{};
+    final lessonId = args['lessonId'];
+    final lessonTitle = args['lessonTitle'];
+    if (lessonId is! String || lessonTitle is! String) {
+      return const SplashPlaceholderPage();
+    }
+    return LessonDetailPage(lessonId: lessonId, lessonTitle: lessonTitle);
+  }
+
+  static Widget _buildLessonListPage(Object? arguments) {
+    final args = arguments is Map<String, dynamic> ? arguments : const <String, dynamic>{};
+    final chapterId = args['chapterId'];
+    final chapterTitle = args['chapterTitle'];
+    if (chapterId is! String || chapterTitle is! String) {
+      return const SplashPlaceholderPage();
+    }
+    return LessonListPage(chapterId: chapterId, chapterTitle: chapterTitle);
+  }
+
+  static Widget _buildChapterListPage(Object? arguments) {
+    final args = arguments is Map<String, dynamic> ? arguments : const <String, dynamic>{};
+    final levelId = args['levelId'];
+    final courseTitle = args['courseTitle'];
+    if (levelId is! String || courseTitle is! String) {
+      return const SplashPlaceholderPage();
+    }
+    return ChapterListPage(levelId: levelId, courseTitle: courseTitle);
+  }
+
+  static Map<String, dynamic> _placementArgs(Object? arguments) {
+    return arguments is Map<String, dynamic> ? arguments : const {};
+  }
+
   static String resolveRouteName(
     String? requestedRouteName, {
     AuthFlowState? authState,
@@ -79,7 +165,8 @@ class AppRouter {
       return AppRoutePaths.splash;
     }
 
-    if (authState.isSignedOut && isProtectedRoute) {
+    if (authState.isSignedOut &&
+        (isProtectedRoute || routeName == AppRoutePaths.splash)) {
       return AppRoutePaths.signIn;
     }
 
