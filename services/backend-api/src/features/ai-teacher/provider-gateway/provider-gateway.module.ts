@@ -22,6 +22,7 @@
  */
 import { Module } from '@nestjs/common';
 
+import { AiChatRepositoriesModule } from '../repositories/ai-chat-repositories.module';
 import { ProviderGatewayConfigService } from './provider-gateway.config';
 import { ProviderGatewayTimeoutPolicyService } from './provider-gateway-timeout-policy.service';
 import { ProviderGatewaySafeFailureService } from './provider-gateway-safe-failure.service';
