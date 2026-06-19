@@ -32,6 +32,11 @@ export interface BackendConfig {
     readonly apiKey: string;
     readonly model: string;
   };
+  /** P9-039 — STT provider settings for Group E's STT Gateway. */
+  readonly sttProvider: {
+    readonly apiKey: string;
+    readonly model: string;
+  };
   readonly cors: {
     readonly origins: readonly string[];
   };
