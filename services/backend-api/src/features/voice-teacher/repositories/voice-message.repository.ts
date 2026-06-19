@@ -77,4 +77,47 @@ export class VoiceMessageRepository {
       [messageId],
     );
   }
+
+  // -------------------------------------------------------------------------
+  // P9-055: Voice rate limit policy helpers
+  // -------------------------------------------------------------------------
+
+  /** Count voice messages recorded for a given session (one per voice
+   *  turn from the student's side). */
+  async countBySessionId(sessionId: string): Promise<number> {
+    const result = await this.db.query<{ count: string }>(
+      `SELECT COUNT(*) AS count
+       FROM voice_messages
+       WHERE session_id = $1`,
+      [sessionId],
+    );
+    return parseInt(result.rows[0]?.count ?? '0', 10);
+  }
+
+  /** Count voice messages for a given student within a rolling time
+   *  window (defined by `windowStart`). */
+  async countByStudentIdSince(studentId: string, windowStart: Date): Promise<number> {
+    const result = await this.db.query<{ count: string }>(
+      `SELECT COUNT(*) AS count
+       FROM voice_messages
+       WHERE student_id = $1
+         AND created_at >= $2`,
+      [studentId, windowStart],
+    );
+    return parseInt(result.rows[0]?.count ?? '0', 10);
+  }
+
+  /** Return the most recent voice message timestamp for a given session,
+   *  or null if no voice message exists yet. */
+  async findLastCreatedAtBySessionId(sessionId: string): Promise<Date | null> {
+    const result = await this.db.query<{ created_at: Date }>(
+      `SELECT created_at
+       FROM voice_messages
+       WHERE session_id = $1
+       ORDER BY created_at DESC
+       LIMIT 1`,
+      [sessionId],
+    );
+    return result.rows[0]?.created_at ?? null;
+  }
 }
