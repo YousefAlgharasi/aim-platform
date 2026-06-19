@@ -1,4 +1,4 @@
-// Phase 8 — P8-085 / P8-086 / P8-087 / P8-088
+// Phase 8 — P8-085 / P8-086 / P8-087 / P8-088 / P8-089
 // AiTeacherChatPage — main text chat screen for the AI Teacher feature.
 //
 // Provides the chat screen layout: top bar, message history list,
@@ -7,6 +7,8 @@
 // [AiChatMessageBubble] (P8-086). The input row is the dedicated
 // [AiChatInputBar] (P8-087). While a reply is being generated, the
 // dedicated [AiTypingIndicator] (P8-088) is appended to the message list.
+// [AiChatErrorState] (P8-089) renders safe retryable errors without exposing
+// backend/provider internals.
 //
 // Security rules:
 // - studentId is never supplied by this screen; the backend always resolves
@@ -141,8 +143,7 @@ class _AiTeacherChatPageState extends ConsumerState<AiTeacherChatPage> {
           AppAsyncIdle() => const AIMFullScreenLoading(
               semanticLabel: 'Loading AI Teacher chat',
             ),
-          AppAsyncFailure(:final message) => AIMFullScreenError(
-              message: message,
+          AppAsyncFailure() => AiChatErrorState(
               onRetry: _init,
             ),
           AppAsyncSuccess(:final data) => _ChatContent(
@@ -181,8 +182,8 @@ class _ChatContent extends StatelessWidget {
       children: [
         Expanded(
           child: messages.isEmpty && !isSending
-              ? AIMEmptyState(
-                  icon: const Icon(Icons.chat_bubble_outline_rounded),
+              ? const AIMEmptyState(
+                  icon: Icon(Icons.chat_bubble_outline_rounded),
                   title: 'Ask AI Teacher anything',
                   subtitle: 'Start the conversation by sending a message.',
                 )

@@ -3,7 +3,7 @@
 //
 // Covers:
 //   1. Loading state renders without crash.
-//   2. Error state renders error message.
+//   2. Error state renders safe generic message, not raw internals.
 //   3. Empty history renders the empty state.
 //   4. Populated history renders student/AI message text.
 //   5. RTL layout renders without error.
@@ -16,6 +16,7 @@ import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
 import 'package:aim_mobile/features/ai_teacher/data/models/ai_teacher_chat_models.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_chat_state.dart';
+import 'package:aim_mobile/features/ai_teacher/logic/provider/ai_teacher_chat_notifier.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/provider/ai_teacher_provider.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/repository/ai_teacher_chat_repository.dart';
 import 'package:aim_mobile/features/ai_teacher/ui/pages/ai_teacher_chat_page.dart';
@@ -78,19 +79,29 @@ void main() {
       expect(find.byType(AiTeacherChatPage), findsOneWidget);
     });
 
-    testWidgets('shows error state with message', (tester) async {
+    testWidgets('shows safe error state without raw backend details',
+        (tester) async {
       await tester.pumpWidget(_wrap(
         const AiTeacherChatPage(contextRef: 'lesson-1'),
         overrides: [
           aiTeacherChatProvider.overrideWith(
             (ref) => _FakeAiTeacherChatNotifier(
-              const AppAsyncState.failure(message: 'Load failed'),
+              const AppAsyncState.failure(
+                message: 'internal upstream timeout trace=abc123',
+              ),
             ),
           ),
         ],
       ));
       await tester.pump();
-      expect(find.text('Load failed'), findsOneWidget);
+      expect(
+        find.text(
+          'AI Teacher is temporarily unavailable. Your progress is safe, and you can try again.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('internal upstream timeout trace=abc123'), findsNothing);
+      expect(find.text('Retry chat'), findsOneWidget);
     });
 
     testWidgets('shows empty state when history has no messages',
@@ -153,8 +164,7 @@ void main() {
 // ── Fakes ─────────────────────────────────────────────────────────────────
 
 class _SignedInAuthFlowNotifier extends AuthFlowNotifier {
-  _SignedInAuthFlowNotifier()
-      : super() {
+  _SignedInAuthFlowNotifier() : super() {
     state = const AuthFlowState.signedIn(
       email: 'student@example.com',
       accessToken: 'test-token',
@@ -235,7 +245,7 @@ class _FakeAiTeacherChatRepository implements AiTeacherChatRepository {
     required String messageId,
     required String rating,
   }) async =>
-      const AiTeacherFeedbackModel(
+      AiTeacherFeedbackModel(
         feedbackId: 'f1',
         messageId: messageId,
         rating: rating,
