@@ -12,13 +12,20 @@
  * module rather than `process.env` directly. `BackendConfigModule` is
  * `@Global()`, so `BackendConfigService` does not need to be imported
  * here explicitly.
+ *
+ * P8-059: Imports `AiChatRepositoriesModule` and provides
+ * `ProviderGatewayLoggingService`, which persists safe provider-call
+ * metadata via `AiProviderLogRepository` (P8-026/P8-021).
  */
 import { Module } from '@nestjs/common';
 
+import { AiChatRepositoriesModule } from '../repositories/ai-chat-repositories.module';
 import { ProviderGatewayConfigService } from './provider-gateway.config';
+import { ProviderGatewayLoggingService } from './provider-gateway-logging.service';
 
 @Module({
-  providers: [ProviderGatewayConfigService],
-  exports: [ProviderGatewayConfigService],
+  imports: [AiChatRepositoriesModule],
+  providers: [ProviderGatewayConfigService, ProviderGatewayLoggingService],
+  exports: [ProviderGatewayConfigService, ProviderGatewayLoggingService],
 })
 export class ProviderGatewayModule {}
