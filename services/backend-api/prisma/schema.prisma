@@ -22,6 +22,7 @@ model User {
 
   studentProfile  StudentProfile?
   aiChatSessions  AiChatSession[]
+  voiceSessions   VoiceSession[]
 
   @@index([supabaseAuthUid])
   @@index([email])
@@ -116,6 +117,90 @@ model AiChatSession {
   @@index([studentId, createdAt(sort: Desc)])
   @@index([status])
   @@map("ai_chat_sessions")
+}
+
+model VoiceSession {
+  id          String   @id @default(uuid()) @db.Uuid
+  studentId   String   @map("student_id") @db.Uuid
+
+  contextRef  String   @map("context_ref")
+  status      String   @default("active")
+
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  messages    VoiceMessage[]
+
+  @@index([studentId])
+  @@index([studentId, status])
+  @@index([studentId, createdAt(sort: Desc)])
+  @@index([status])
+  @@map("voice_sessions")
+}
+
+model VoiceMessage {
+  id          String       @id @default(uuid()) @db.Uuid
+  sessionId   String       @map("session_id") @db.Uuid
+  studentId   String       @map("student_id") @db.Uuid
+
+  transcript  String?
+  reply       String?
+  audioRef    String?      @map("audio_ref")
+
+  status      String       @default("pending")
+
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  session     VoiceSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  audioAsset  VoiceAudioAsset?
+  providerLogs VoiceProviderLog[]
+
+  @@index([sessionId, createdAt(sort: Asc)])
+  @@index([studentId, createdAt(sort: Desc)])
+  @@index([sessionId, status])
+  @@map("voice_messages")
+}
+
+model VoiceProviderLog {
+  id            String       @id @default(uuid()) @db.Uuid
+  messageId     String       @map("message_id") @db.Uuid
+
+  providerType  String       @map("provider_type")
+  provider      String
+  model         String
+
+  status        String
+  errorCategory String?      @map("error_category")
+
+  latencyMs     Int?         @map("latency_ms")
+
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  message       VoiceMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@index([providerType])
+  @@index([status])
+  @@index([messageId, createdAt(sort: Desc)])
+  @@map("voice_provider_logs")
+}
+
+model VoiceAudioAsset {
+  id          String       @id @default(uuid()) @db.Uuid
+  messageId   String       @unique @map("message_id") @db.Uuid
+  studentId   String       @map("student_id") @db.Uuid
+
+  storageKey  String       @map("storage_key")
+  contentType String       @map("content_type")
+  durationMs  Int?         @map("duration_ms")
+
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  message     VoiceMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, createdAt(sort: Desc)])
+  @@map("voice_audio_assets")
 }
 
 model AiChatMessage {

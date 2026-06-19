@@ -166,7 +166,7 @@ class _RecommendationDetailCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.auto_awesome_outlined,
                 size: AimSizes.iconSm,
                 color: AimColors.primary400,
@@ -208,7 +208,7 @@ class _RecommendationDetailCard extends StatelessWidget {
           const SizedBox(height: AimSpacing.componentGap),
           Text(
             model.reason,
-            style: AimTextStyles.body.copyWith(color: surfaces.textPrimary),
+            style: AimTextStyles.bodySm.copyWith(color: surfaces.textPrimary),
           ),
           if (model.targetLessonId != null) ...[
             const SizedBox(height: AimSpacing.space8),
