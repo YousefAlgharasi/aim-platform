@@ -13,6 +13,7 @@ import { RolesModule } from './roles/roles.module';
 import { SessionsModule } from './sessions/sessions.module';
 import { StudentsModule } from './students/students.module';
 import { UsersModule } from './users/users.module';
+import { VoiceTeacherModule } from './voice-teacher/voice-teacher.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { UsersModule } from './users/users.module';
     SessionsModule,
     AimModule,
     AiTeacherModule,
+    VoiceTeacherModule,
     AdminModule,
     ReportsModule,
     ProfileModule,
@@ -39,6 +41,7 @@ import { UsersModule } from './users/users.module';
     SessionsModule,
     AimModule,
     AiTeacherModule,
+    VoiceTeacherModule,
     AdminModule,
     ReportsModule,
     ProfileModule,

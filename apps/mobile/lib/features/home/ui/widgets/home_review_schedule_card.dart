@@ -4,11 +4,6 @@
 // dueAt and priority are backend-computed.
 // Flutter displays them verbatim — no local reordering or priority inference.
 
-import 'package:aim_mobile/core/design_tokens/aim_colors.dart';
-import 'package:aim_mobile/core/design_tokens/aim_sizes.dart';
-import 'package:aim_mobile/core/design_tokens/aim_spacing.dart';
-import 'package:aim_mobile/core/design_tokens/aim_typography.dart';
-import 'package:aim_mobile/core/theme/aim_theme_extensions.dart';
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';

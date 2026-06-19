@@ -74,11 +74,13 @@ class SupabaseAuthDatasourceImpl implements SupabaseAuthDatasource {
     }
 
     // Supabase returns error_description or error on failure.
-    final errorDesc = body['error_description'] as String?;
     final errorCode = body['error'] as String?;
 
     throw AppException(
-      message: errorDesc ?? 'Sign in failed. Please check your credentials.',
+      message: _authErrorMessage(
+        body,
+        fallback: 'Sign in failed. Please check your credentials.',
+      ),
       code: errorCode ?? 'AUTH_FAILED',
     );
   }
@@ -122,8 +124,7 @@ class SupabaseAuthDatasourceImpl implements SupabaseAuthDatasource {
       final accessToken = body['access_token'] as String?;
       // Supabase returns access_token when email confirmation is disabled.
       // When confirmation is required it returns user object without a token.
-      final requiresConfirmation =
-          accessToken == null || accessToken.isEmpty;
+      final requiresConfirmation = accessToken == null || accessToken.isEmpty;
 
       return SignUpResult(
         email: email,
@@ -132,13 +133,37 @@ class SupabaseAuthDatasourceImpl implements SupabaseAuthDatasource {
       );
     }
 
-    final errorDesc = body['error_description'] as String?;
     final errorCode = body['error'] as String?;
-    final msg = body['msg'] as String?; // some Supabase versions use msg
 
     throw AppException(
-      message: errorDesc ?? msg ?? 'Registration failed. Please try again.',
+      message: _authErrorMessage(
+        body,
+        fallback: 'Registration failed. Please try again.',
+      ),
       code: errorCode ?? 'REGISTER_FAILED',
     );
+  }
+
+  String _authErrorMessage(
+    Map<String, dynamic> body, {
+    required String fallback,
+  }) {
+    final errorDesc = body['error_description'] as String?;
+    final errorCode = body['error'] as String?;
+    final code = body['code'] as String?;
+    final msg = body['msg'] as String?;
+    final rawMessage = errorDesc ?? msg ?? fallback;
+    final normalized = [
+      errorCode,
+      code,
+      rawMessage,
+    ].whereType<String>().join(' ').toLowerCase();
+
+    if (normalized.contains('email') &&
+        (normalized.contains('rate') || normalized.contains('limit'))) {
+      return 'Too many authentication emails were sent. Please wait a few minutes, then try again or sign in with an existing account.';
+    }
+
+    return rawMessage;
   }
 }
