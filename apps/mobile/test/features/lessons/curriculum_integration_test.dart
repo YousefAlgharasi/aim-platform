@@ -122,41 +122,92 @@ const _draft = 'draft';
 const _archived = 'archived';
 
 const _publishedCourse = CourseModel(
-    id: 'c-pub', title: 'Published', status: _pub,
-    sortOrder: 1, createdAt: '', updatedAt: '');
+    id: 'c-pub',
+    title: 'Published',
+    status: _pub,
+    sortOrder: 1,
+    createdAt: '',
+    updatedAt: '');
 const _draftCourse = CourseModel(
-    id: 'c-draft', title: 'Draft', status: _draft,
-    sortOrder: 2, createdAt: '', updatedAt: '');
+    id: 'c-draft',
+    title: 'Draft',
+    status: _draft,
+    sortOrder: 2,
+    createdAt: '',
+    updatedAt: '');
 const _archivedCourse = CourseModel(
-    id: 'c-arch', title: 'Archived', status: _archived,
-    sortOrder: 3, createdAt: '', updatedAt: '');
+    id: 'c-arch',
+    title: 'Archived',
+    status: _archived,
+    sortOrder: 3,
+    createdAt: '',
+    updatedAt: '');
 
 const _publishedChapter = ChapterModel(
-    id: 'ch-pub', levelId: 'lv-1', title: 'Pub Chapter', status: _pub,
-    sortOrder: 1, createdAt: '', updatedAt: '');
+    id: 'ch-pub',
+    levelId: 'lv-1',
+    title: 'Pub Chapter',
+    status: _pub,
+    sortOrder: 1,
+    createdAt: '',
+    updatedAt: '');
 const _draftChapter = ChapterModel(
-    id: 'ch-draft', levelId: 'lv-1', title: 'Draft Chapter', status: _draft,
-    sortOrder: 2, createdAt: '', updatedAt: '');
+    id: 'ch-draft',
+    levelId: 'lv-1',
+    title: 'Draft Chapter',
+    status: _draft,
+    sortOrder: 2,
+    createdAt: '',
+    updatedAt: '');
 
 const _publishedLesson = LessonModel(
-    id: 'l-pub', chapterId: 'ch-1', title: 'Pub Lesson', description: '',
-    status: _pub, sortOrder: 1, createdAt: '', updatedAt: '');
+    id: 'l-pub',
+    chapterId: 'ch-1',
+    title: 'Pub Lesson',
+    description: '',
+    status: _pub,
+    sortOrder: 1,
+    createdAt: '',
+    updatedAt: '');
 const _draftLesson = LessonModel(
-    id: 'l-draft', chapterId: 'ch-1', title: 'Draft Lesson', description: '',
-    status: _draft, sortOrder: 2, createdAt: '', updatedAt: '');
+    id: 'l-draft',
+    chapterId: 'ch-1',
+    title: 'Draft Lesson',
+    description: '',
+    status: _draft,
+    sortOrder: 2,
+    createdAt: '',
+    updatedAt: '');
 
 LessonAssetModel _assetWithStatus(String id, String status) =>
     LessonAssetModel.fromJson({
-      'id': id, 'lessonId': 'l-1', 'type': 'image', 'title': 'T',
-      'description': null, 'url': null, 'mimeType': null, 'sizeBytes': null,
-      'durationSeconds': null, 'altText': null, 'thumbnailUrl': null,
-      'order': 1, 'status': status, 'metadata': null,
-      'createdAt': '', 'updatedAt': '',
+      'id': id,
+      'lessonId': 'l-1',
+      'type': 'image',
+      'title': 'T',
+      'description': null,
+      'url': null,
+      'mimeType': null,
+      'sizeBytes': null,
+      'durationSeconds': null,
+      'altText': null,
+      'thumbnailUrl': null,
+      'order': 1,
+      'status': status,
+      'metadata': null,
+      'createdAt': '',
+      'updatedAt': '',
     });
 
 const _baseLesson = LessonModel(
-    id: 'l-1', chapterId: 'ch-1', title: 'Lesson', description: '',
-    status: _pub, sortOrder: 1, createdAt: '', updatedAt: '');
+    id: 'l-1',
+    chapterId: 'ch-1',
+    title: 'Lesson',
+    description: '',
+    status: _pub,
+    sortOrder: 1,
+    createdAt: '',
+    updatedAt: '');
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
@@ -165,8 +216,7 @@ void main() {
     test('1. Published courses flow through repository to notifier state',
         () async {
       final repo = LessonsRepositoryImpl(
-        datasource: const _FakeLessonsDatasource(
-            courses: [_publishedCourse]),
+        datasource: const _FakeLessonsDatasource(courses: [_publishedCourse]),
       );
       final notifier = CoursesNotifier(repository: repo);
       await notifier.load(bearerToken: 'tok');
@@ -203,8 +253,7 @@ void main() {
   group('Curriculum integration — chapters pipeline', () {
     test('4. Published chapters flow through for a given levelId', () async {
       final repo = LessonsRepositoryImpl(
-        datasource: const _FakeLessonsDatasource(
-            chapters: [_publishedChapter]),
+        datasource: const _FakeLessonsDatasource(chapters: [_publishedChapter]),
       );
       final notifier = ChaptersNotifier(repository: repo);
       await notifier.load(bearerToken: 'tok', levelId: 'lv-1');
@@ -229,8 +278,7 @@ void main() {
   group('Curriculum integration — lessons pipeline', () {
     test('6. Published lessons flow through for a given chapterId', () async {
       final repo = LessonsRepositoryImpl(
-        datasource: const _FakeLessonsDatasource(
-            lessons: [_publishedLesson]),
+        datasource: const _FakeLessonsDatasource(lessons: [_publishedLesson]),
       );
       final notifier = LessonsListNotifier(repository: repo);
       await notifier.load(bearerToken: 'tok', chapterId: 'ch-1');
@@ -266,8 +314,7 @@ void main() {
       );
       final notifier = LessonDetailNotifier(repository: repo);
       await notifier.load(bearerToken: 'tok', lessonId: 'l-1');
-      final detail =
-          (notifier.state as AppAsyncSuccess<LessonDetail>).data;
+      final detail = (notifier.state as AppAsyncSuccess<LessonDetail>).data;
       expect(detail.assets.length, 1);
       expect(detail.assets.first.id, 'a-pub');
     });
@@ -282,8 +329,7 @@ void main() {
       );
       final notifier = LessonDetailNotifier(repository: repo);
       await notifier.load(bearerToken: 'tok', lessonId: 'l-1');
-      final detail =
-          (notifier.state as AppAsyncSuccess<LessonDetail>).data;
+      final detail = (notifier.state as AppAsyncSuccess<LessonDetail>).data;
       expect(detail.hasNoContent, isTrue);
     });
   });
@@ -291,12 +337,11 @@ void main() {
   group('Curriculum integration — notifier state transitions', () {
     test('10. CoursesNotifier emits loading then success', () async {
       final repo = LessonsRepositoryImpl(
-        datasource: const _FakeLessonsDatasource(
-            courses: [_publishedCourse]),
+        datasource: const _FakeLessonsDatasource(courses: [_publishedCourse]),
       );
       final notifier = CoursesNotifier(repository: repo);
       final emitted = <AppAsyncState<List<CourseModel>>>[];
-      notifier.addListener((s) => emitted.add(s));
+      notifier.addListener((s) => emitted.add(s), fireImmediately: false);
       await notifier.load(bearerToken: 'tok');
       expect(emitted.first, isA<AppAsyncLoading>());
       expect(emitted.last, isA<AppAsyncSuccess>());
@@ -304,12 +349,11 @@ void main() {
 
     test('11. ChaptersNotifier emits loading then success', () async {
       final repo = LessonsRepositoryImpl(
-        datasource: const _FakeLessonsDatasource(
-            chapters: [_publishedChapter]),
+        datasource: const _FakeLessonsDatasource(chapters: [_publishedChapter]),
       );
       final notifier = ChaptersNotifier(repository: repo);
       final emitted = <AppAsyncState<List<ChapterModel>>>[];
-      notifier.addListener((s) => emitted.add(s));
+      notifier.addListener((s) => emitted.add(s), fireImmediately: false);
       await notifier.load(bearerToken: 'tok', levelId: 'lv-1');
       expect(emitted.first, isA<AppAsyncLoading>());
       expect(emitted.last, isA<AppAsyncSuccess>());
@@ -317,12 +361,11 @@ void main() {
 
     test('12. LessonsListNotifier emits loading then success', () async {
       final repo = LessonsRepositoryImpl(
-        datasource: const _FakeLessonsDatasource(
-            lessons: [_publishedLesson]),
+        datasource: const _FakeLessonsDatasource(lessons: [_publishedLesson]),
       );
       final notifier = LessonsListNotifier(repository: repo);
       final emitted = <AppAsyncState<List<LessonModel>>>[];
-      notifier.addListener((s) => emitted.add(s));
+      notifier.addListener((s) => emitted.add(s), fireImmediately: false);
       await notifier.load(bearerToken: 'tok', chapterId: 'ch-1');
       expect(emitted.first, isA<AppAsyncLoading>());
       expect(emitted.last, isA<AppAsyncSuccess>());
@@ -334,7 +377,7 @@ void main() {
       );
       final notifier = LessonDetailNotifier(repository: repo);
       final emitted = <AppAsyncState<LessonDetail>>[];
-      notifier.addListener((s) => emitted.add(s));
+      notifier.addListener((s) => emitted.add(s), fireImmediately: false);
       await notifier.load(bearerToken: 'tok', lessonId: 'l-1');
       expect(emitted.first, isA<AppAsyncLoading>());
       expect(emitted.last, isA<AppAsyncSuccess>());
