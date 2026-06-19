@@ -4,10 +4,10 @@
 // SHELL RULES (P6-105):
 // - No AI provider imports.
 // - No AIM Engine calls from Flutter.
-// - Placeholder page only — real AI Teacher text mode UI ships in a
-//   later Phase 8 task; P8-081 adds chat session/message models only.
+// - P8-085 adds the real text chat screen (AiTeacherChatPage).
 
 export 'ui/pages/ai_teacher_placeholder_page.dart';
+export 'ui/pages/ai_teacher_chat_page.dart';
 export 'ui/widgets/ai_teacher_widgets.dart';
 export 'logic/entity/ai_teacher_entities.dart';
 export 'logic/provider/ai_teacher_providers.dart';
