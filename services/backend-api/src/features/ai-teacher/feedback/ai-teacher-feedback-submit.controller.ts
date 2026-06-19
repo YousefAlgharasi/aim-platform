@@ -1,29 +1,42 @@
-// P8-075: Create AI Teacher Feedback API (Group H — AI Teacher API
-// Endpoints).
-//
-// Endpoint:
-//   POST /ai-teacher/messages/:id/feedback — Submit a helpful/not_helpful
-//                                            rating for an AI Teacher
-//                                            reply (P8-068).
-//
-// Security rules:
-//   - Requires a valid Supabase JWT (SupabaseJwtAuthGuard).
-//   - studentId is ALWAYS resolved from the verified JWT via @CurrentUser();
-//     never accepted from the request body.
-//   - Message ownership and role ('ai_teacher' only) are enforced inside
-//     AiTeacherFeedbackSubmitService (P8-068); cross-student or
-//     wrong-role attempts are surfaced as safe, generic errors here, never
-//     internal details.
-//   - Restricted to the STUDENT role.
-//   - Feedback is advisory only and never calls an AI provider; it never
-//     feeds the AIM Engine and computes no mastery/level/weakness/
-//     difficulty/recommendation/review-schedule value
-//     (docs/phase-8/no-aim-replacement-rule.md).
-//   - DTO validation rejects a missing/invalid rating or messageId before
-//     the service is invoked.
-
-import { Body, Controller, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+/**
+ * P8-076: Add AI Teacher API Guards (Group H — AI Teacher API Endpoints).
+ * Completes P8-075 by exposing the `AiTeacherFeedbackSubmitService`
+ * (P8-068) behind a guarded HTTP endpoint.
+ *
+ * Endpoint:
+ *   POST /ai-teacher/messages/:messageId/feedback — Submit a helpful /
+ *   not_helpful rating for an AI Teacher reply message.
+ *
+ * Security rules:
+ *   - Requires a valid Supabase JWT (SupabaseJwtAuthGuard).
+ *   - studentId is ALWAYS resolved from the verified JWT via @CurrentUser();
+ *     never accepted from the request body.
+ *   - The message referenced by :messageId must belong to the authenticated
+ *     student (validated inside AiTeacherFeedbackSubmitService). If not,
+ *     a 404 is returned — no existence leak.
+ *   - Restricted to the STUDENT role.
+ *   - No AI provider call is made here. No mastery/level/weakness/
+ *     difficulty/recommendation/review-schedule value is computed
+ *     (docs/phase-8/no-aim-replacement-rule.md).
+ *   - DTO validation rejects a missing/invalid rating before the service
+ *     is invoked. Errors are safe and generic — no internals are leaked.
+ */
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
 import { RoleGuard } from '../../../auth/authorization/role.guard';
@@ -31,51 +44,46 @@ import { CurrentUser } from '../../../auth/current-user.decorator';
 import { AuthenticatedUser } from '../../../auth/authenticated-user';
 import { AuthorizedRole } from '../../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../../auth/authorization/required-roles.decorator';
-import { OPENAPI_TAGS } from '../../../openapi/openapi.tags';
 import { AppError } from '../../../common/errors/app-error';
 import { ApiErrorCode } from '../../../common/errors/api-error-code';
+import { OPENAPI_TAGS } from '../../../openapi/openapi.tags';
 
 import { AiTeacherFeedbackSubmitService } from './ai-teacher-feedback-submit.service';
-import { SubmitTeacherFeedbackRequestDto } from './ai-teacher-feedback-submit.dto';
 import { SubmitTeacherFeedbackResult } from './ai-teacher-feedback-submit.types';
-
-const NOT_FOUND_MESSAGE = 'message not found';
-const ROLE_MESSAGE = 'not an AI Teacher reply';
-const DUPLICATE_MESSAGE = 'already recorded';
+import { SubmitFeedbackRequestDto } from './ai-teacher-feedback-submit.dto';
 
 @ApiTags(OPENAPI_TAGS.aiTeacher)
 @Controller('ai-teacher')
 export class AiTeacherFeedbackSubmitController {
-  constructor(private readonly feedbackSubmitService: AiTeacherFeedbackSubmitService) {}
+  constructor(
+    private readonly feedbackSubmitService: AiTeacherFeedbackSubmitService,
+  ) {}
 
   /**
-   * POST /ai-teacher/messages/:id/feedback
+   * POST /ai-teacher/messages/:messageId/feedback
    *
-   * Submit a helpful/not_helpful rating for an AI Teacher reply.
-   * studentId is always resolved from the verified JWT — never from the
-   * body. Errors from the service (message not found, wrong role,
-   * duplicate feedback) are translated to safe, specific HTTP errors —
-   * no internal details are exposed.
+   * Record a helpful / not_helpful rating for an AI Teacher reply.
+   * studentId is always resolved from the verified JWT — never from the body.
    */
-  @Post('messages/:id/feedback')
+  @Post('messages/:messageId/feedback')
   @UseGuards(SupabaseJwtAuthGuard, RoleGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Submit feedback on an AI Teacher reply (student).',
+    summary: 'Submit feedback for an AI Teacher reply (student).',
     description:
-      'Records a helpful/not_helpful rating. studentId always from JWT. ' +
-      'Feedback is advisory only and is never read by the AIM Engine.',
+      'Records a helpful or not_helpful rating for an AI Teacher reply message. ' +
+      'studentId always from JWT. No AI provider call is made.',
   })
-  @ApiParam({ name: 'id', description: 'UUID of the AI Teacher reply message.' })
+  @ApiParam({ name: 'messageId', description: 'UUID of the AI Teacher reply message.' })
   @ApiCreatedResponse({ description: 'Feedback recorded.' })
   async submitFeedback(
     @CurrentUser() user: AuthenticatedUser,
-    @Param('id') messageId: string,
+    @Param('messageId') messageId: string,
     @Body() body: unknown,
   ): Promise<SubmitTeacherFeedbackResult> {
-    const dto = SubmitTeacherFeedbackRequestDto.fromBody(body);
+    const dto = SubmitFeedbackRequestDto.fromBody(body);
 
     try {
       return await this.feedbackSubmitService.submitFeedback({
@@ -83,42 +91,39 @@ export class AiTeacherFeedbackSubmitController {
         messageId,
         rating: dto.rating,
       });
-    } catch (error) {
-      throw this.toSafeError(error);
-    }
-  }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
 
-  private toSafeError(error: unknown): AppError {
-    const message = error instanceof Error ? error.message : '';
+      // Map service-level errors to safe HTTP responses — never leak internals.
+      if (message.includes('message not found')) {
+        throw new AppError({
+          code: ApiErrorCode.NOT_FOUND,
+          message: 'Message not found.',
+          statusCode: HttpStatus.NOT_FOUND,
+        });
+      }
 
-    if (message.includes(NOT_FOUND_MESSAGE)) {
-      return new AppError({
-        code: ApiErrorCode.NOT_FOUND,
-        message: 'Message not found.',
-        statusCode: HttpStatus.NOT_FOUND,
+      if (message.includes('feedback already recorded')) {
+        throw new AppError({
+          code: ApiErrorCode.CONFLICT,
+          message: 'Feedback has already been submitted for this message.',
+          statusCode: HttpStatus.CONFLICT,
+        });
+      }
+
+      if (message.includes('not an AI Teacher reply')) {
+        throw new AppError({
+          code: ApiErrorCode.VALIDATION_ERROR,
+          message: 'Feedback can only be submitted for AI Teacher reply messages.',
+          statusCode: HttpStatus.BAD_REQUEST,
+        });
+      }
+
+      throw new AppError({
+        code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+        message: 'An unexpected error occurred.',
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       });
     }
-
-    if (message.includes(ROLE_MESSAGE)) {
-      return new AppError({
-        code: ApiErrorCode.FORBIDDEN,
-        message: 'Feedback can only be submitted for an AI Teacher reply.',
-        statusCode: HttpStatus.FORBIDDEN,
-      });
-    }
-
-    if (message.includes(DUPLICATE_MESSAGE)) {
-      return new AppError({
-        code: ApiErrorCode.CONFLICT,
-        message: 'Feedback has already been recorded for this message.',
-        statusCode: HttpStatus.CONFLICT,
-      });
-    }
-
-    return new AppError({
-      code: ApiErrorCode.INTERNAL_SERVER_ERROR,
-      message: 'Unable to record feedback.',
-      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-    });
   }
 }
