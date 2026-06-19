@@ -58,6 +58,10 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
   // STT_PROVIDER_API_KEY is a secret: never logged, never returned to clients.
   const sttProviderApiKey = readRequiredString(env, 'STT_PROVIDER_API_KEY', issues);
   const sttProviderModel = readRequiredString(env, 'STT_PROVIDER_MODEL', issues);
+  // P9-059 — TTS provider settings for Group G's TTS Gateway.
+  // TTS_PROVIDER_API_KEY is a secret: never logged, never returned to clients.
+  const ttsProviderApiKey = readRequiredString(env, 'TTS_PROVIDER_API_KEY', issues);
+  const ttsProviderModel = readRequiredString(env, 'TTS_PROVIDER_MODEL', issues);
   const corsOriginsValue = readRequiredString(env, 'CORS_ORIGINS', issues);
 
   const parsedNodeEnv = parseNodeEnv(nodeEnv, issues);
@@ -97,6 +101,10 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
     sttProvider: {
       apiKey: sttProviderApiKey,
       model: sttProviderModel,
+    },
+    ttsProvider: {
+      apiKey: ttsProviderApiKey,
+      model: ttsProviderModel,
     },
     cors: {
       origins: corsOrigins,

@@ -38,6 +38,10 @@ export class BackendConfigService {
     return this.config.sttProvider;
   }
 
+  get ttsProvider(): BackendConfig['ttsProvider'] {
+    return this.config.ttsProvider;
+  }
+
   snapshot(): BackendConfig {
     return this.config;
   }
