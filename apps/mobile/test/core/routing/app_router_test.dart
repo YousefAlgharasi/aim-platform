@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/routing/routing.dart';
-import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
 import 'package:aim_mobile/features/auth/data/models/client_safe_profile_model.dart';
@@ -98,7 +97,7 @@ void main() {
             },
           ),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           initialRoute: AppRoutePaths.splash,
           onGenerateRoute: AppRouter.onGenerateRoute,
         ),

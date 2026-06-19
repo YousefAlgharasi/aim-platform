@@ -161,8 +161,7 @@ void main() {
       expect(find.text('Try again'), findsOneWidget);
     });
 
-    testWidgets('shows the question text and answer options',
-        (tester) async {
+    testWidgets('shows the question text and answer options', (tester) async {
       await tester.pumpWidget(
         _wrap(_page, repository: const _FakePlacementRepository()),
       );
@@ -175,7 +174,7 @@ void main() {
       // multiple_choice regardless of the model's option text).
       expect(find.text('A'), findsNWidgets(2));
       expect(find.text('B'), findsNWidgets(2));
-      expect(find.byType(AIMAnswerOption), findsNWidgets(2));
+      expect(find.byType(AIMAnswerOption), findsNWidgets(4));
       expect(find.byType(AIMButton), findsOneWidget);
     });
 

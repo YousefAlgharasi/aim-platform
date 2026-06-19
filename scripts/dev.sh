@@ -33,7 +33,23 @@ case "$SERVICE" in
     ;;
   mobile)
     echo "→ mobile: flutter run"
-    cd "$ROOT/apps/mobile" && flutter run
+    MOBILE_ENV="$ROOT/apps/mobile/.env"
+    if [ -f "$MOBILE_ENV" ]; then
+      mobile_env_value() {
+        awk -F= -v key="$1" '$1 == key { sub(/\r$/, "", $2); print $2 }' "$MOBILE_ENV"
+      }
+
+      BACKEND_API_BASE_URL_VALUE="$(mobile_env_value BACKEND_API_BASE_URL)"
+      SUPABASE_URL_VALUE="$(mobile_env_value SUPABASE_URL)"
+      SUPABASE_ANON_KEY_VALUE="$(mobile_env_value SUPABASE_ANON_KEY)"
+
+      cd "$ROOT/apps/mobile" && flutter run \
+        --dart-define="BACKEND_API_BASE_URL=$BACKEND_API_BASE_URL_VALUE" \
+        --dart-define="SUPABASE_URL=$SUPABASE_URL_VALUE" \
+        --dart-define="SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY_VALUE"
+    else
+      cd "$ROOT/apps/mobile" && flutter run
+    fi
     ;;
   docker)
     echo "→ docker compose up (backend-api + aim-engine)"

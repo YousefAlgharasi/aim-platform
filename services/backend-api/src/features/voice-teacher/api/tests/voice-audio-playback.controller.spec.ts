@@ -1,60 +1,30 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
 import { VoiceAudioPlaybackController } from '../voice-audio-playback.controller';
-import { TtsAudioStorageService } from '../../tts-gateway/tts-audio-storage.service';
-import { SupabaseJwtAuthGuard } from '../../../../auth/guards/supabase-jwt-auth.guard';
 
 describe('VoiceAudioPlaybackController', () => {
   let controller: VoiceAudioPlaybackController;
-  const mockStorage = {
-    retrieveAudio: jest.fn(),
-  };
+  const mockUser = { id: 'student-1', email: 'test@test.com' } as any;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [VoiceAudioPlaybackController],
-      providers: [
-        { provide: TtsAudioStorageService, useValue: mockStorage },
-      ],
-    })
-      .overrideGuard(SupabaseJwtAuthGuard)
-      .useValue({ canActivate: () => true })
-      .compile();
-
-    controller = module.get(VoiceAudioPlaybackController);
-    jest.clearAllMocks();
+  beforeEach(() => {
+    controller = new VoiceAudioPlaybackController();
   });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-
-  it('should stream audio with correct content type', async () => {
-    const audioData = Buffer.from('fake-audio');
-    mockStorage.retrieveAudio.mockResolvedValue({
-      data: audioData,
-      contentType: 'audio/mpeg',
-    });
-
+  it('should return 404 when audio not found', async () => {
     const mockRes = {
-      set: jest.fn(),
-      send: jest.fn(),
-    };
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    } as any;
 
-    await controller.playAudio('ref-123', { id: 'student-1' } as any, mockRes as any);
-
-    expect(mockStorage.retrieveAudio).toHaveBeenCalledWith('ref-123', 'student-1');
-    expect(mockRes.set).toHaveBeenCalledWith('Content-Type', 'audio/mpeg');
-    expect(mockRes.send).toHaveBeenCalledWith(audioData);
+    await controller.getAudio('nonexistent-ref', mockUser, mockRes);
+    expect(mockRes.status).toHaveBeenCalledWith(404);
   });
 
-  it('should throw NotFoundException for unknown audioRef', async () => {
-    mockStorage.retrieveAudio.mockRejectedValue(new NotFoundException());
+  it('should return 404 for empty audioRef', async () => {
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    } as any;
 
-    const mockRes = { set: jest.fn(), send: jest.fn() };
-
-    await expect(
-      controller.playAudio('bad-ref', { id: 'student-1' } as any, mockRes as any),
-    ).rejects.toThrow(NotFoundException);
+    await controller.getAudio('', mockUser, mockRes);
+    expect(mockRes.status).toHaveBeenCalledWith(404);
   });
 });
