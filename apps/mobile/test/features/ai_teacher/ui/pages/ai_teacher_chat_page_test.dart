@@ -6,7 +6,8 @@
 //   2. Error state renders error message.
 //   3. Empty history renders the empty state.
 //   4. Populated history renders student/AI message text.
-//   5. RTL layout renders without error.
+//   5. Lesson context header renders only when safe labels are supplied.
+//   6. RTL layout renders without error.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,6 +17,7 @@ import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
 import 'package:aim_mobile/features/ai_teacher/data/models/ai_teacher_chat_models.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_chat_state.dart';
+import 'package:aim_mobile/features/ai_teacher/logic/provider/ai_teacher_chat_notifier.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/provider/ai_teacher_provider.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/repository/ai_teacher_chat_repository.dart';
 import 'package:aim_mobile/features/ai_teacher/ui/pages/ai_teacher_chat_page.dart';
@@ -109,10 +111,59 @@ void main() {
       expect(find.text('Ask AI Teacher anything'), findsOneWidget);
     });
 
+    testWidgets('shows lesson context header when lesson title is provided',
+        (tester) async {
+      await tester.pumpWidget(_wrap(
+        const AiTeacherChatPage(
+          contextRef: 'lesson-1',
+          lessonTitle: 'Past tense verbs',
+          contextLabel: 'Grammar practice',
+        ),
+        overrides: [
+          aiTeacherChatProvider.overrideWith(
+            (ref) => _FakeAiTeacherChatNotifier(
+              const AppAsyncState.success(AiTeacherChatState()),
+            ),
+          ),
+        ],
+      ));
+      await tester.pump();
+
+      expect(find.text('Current lesson'), findsOneWidget);
+      expect(find.text('Past tense verbs'), findsOneWidget);
+      expect(find.text('Grammar practice'), findsOneWidget);
+    });
+
+    testWidgets('hides lesson context header when lesson title is absent',
+        (tester) async {
+      await tester.pumpWidget(_wrap(
+        const AiTeacherChatPage(
+          contextRef: 'lesson-1',
+          contextLabel: 'Grammar practice',
+        ),
+        overrides: [
+          aiTeacherChatProvider.overrideWith(
+            (ref) => _FakeAiTeacherChatNotifier(
+              const AppAsyncState.success(AiTeacherChatState()),
+            ),
+          ),
+        ],
+      ));
+      await tester.pump();
+
+      expect(find.text('Current lesson'), findsNothing);
+      expect(find.text('Grammar practice'), findsNothing);
+    });
+
     testWidgets('shows student and AI Teacher messages when populated',
         (tester) async {
       await tester.pumpWidget(_wrap(
-        const AiTeacherChatPage(contextRef: 'lesson-1', sessionId: 'session-1'),
+        const AiTeacherChatPage(
+          contextRef: 'lesson-1',
+          sessionId: 'session-1',
+          lessonTitle: 'مهارة القراءة',
+          contextLabel: 'درس اليوم',
+        ),
         overrides: [
           aiTeacherChatProvider.overrideWith(
             (ref) => _FakeAiTeacherChatNotifier(
@@ -131,7 +182,12 @@ void main() {
     testWidgets('renders without error under RTL directionality',
         (tester) async {
       await tester.pumpWidget(_wrap(
-        const AiTeacherChatPage(contextRef: 'lesson-1', sessionId: 'session-1'),
+        const AiTeacherChatPage(
+          contextRef: 'lesson-1',
+          sessionId: 'session-1',
+          lessonTitle: 'مهارة القراءة',
+          contextLabel: 'درس اليوم',
+        ),
         overrides: [
           aiTeacherChatProvider.overrideWith(
             (ref) => _FakeAiTeacherChatNotifier(
@@ -146,6 +202,7 @@ void main() {
       await tester.pump();
       expect(find.byType(AiTeacherChatPage), findsOneWidget);
       expect(find.text('What is the past tense of go?'), findsOneWidget);
+      expect(find.text('مهارة القراءة'), findsOneWidget);
     });
   });
 }
@@ -153,8 +210,7 @@ void main() {
 // ── Fakes ─────────────────────────────────────────────────────────────────
 
 class _SignedInAuthFlowNotifier extends AuthFlowNotifier {
-  _SignedInAuthFlowNotifier()
-      : super() {
+  _SignedInAuthFlowNotifier() : super() {
     state = const AuthFlowState.signedIn(
       email: 'student@example.com',
       accessToken: 'test-token',
@@ -235,7 +291,7 @@ class _FakeAiTeacherChatRepository implements AiTeacherChatRepository {
     required String messageId,
     required String rating,
   }) async =>
-      const AiTeacherFeedbackModel(
+      AiTeacherFeedbackModel(
         feedbackId: 'f1',
         messageId: messageId,
         rating: rating,
