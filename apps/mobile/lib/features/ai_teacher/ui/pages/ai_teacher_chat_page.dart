@@ -1,12 +1,12 @@
-// Phase 8 — P8-085 / P8-086 / P8-087
+// Phase 8 — P8-085 / P8-086 / P8-087 / P8-088
 // AiTeacherChatPage — main text chat screen for the AI Teacher feature.
 //
 // Provides the chat screen layout: top bar, message history list,
 // loading/empty/error states, and a send row wired to
 // [aiTeacherChatProvider] (P8-083). Messages render via the dedicated
 // [AiChatMessageBubble] (P8-086). The input row is the dedicated
-// [AiChatInputBar] (P8-087). A typing/loading indicator (P8-088) is a
-// separate Phase 8 task and is intentionally not built here.
+// [AiChatInputBar] (P8-087). While a reply is being generated, the
+// dedicated [AiTypingIndicator] (P8-088) is appended to the message list.
 //
 // Security rules:
 // - studentId is never supplied by this screen; the backend always resolves
@@ -174,11 +174,13 @@ class _ChatContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final messages = chatState.history?.messages ?? const [];
+    final isSending = chatState.isSending;
+    final itemCount = messages.length + (isSending ? 1 : 0);
 
     return Column(
       children: [
         Expanded(
-          child: messages.isEmpty
+          child: messages.isEmpty && !isSending
               ? AIMEmptyState(
                   icon: const Icon(Icons.chat_bubble_outline_rounded),
                   title: 'Ask AI Teacher anything',
@@ -189,10 +191,13 @@ class _ChatContent extends StatelessWidget {
                     horizontal: AimSpacing.screenPaddingMobile,
                     vertical: AimSpacing.sectionGap,
                   ),
-                  itemCount: messages.length,
+                  itemCount: itemCount,
                   separatorBuilder: (_, __) =>
                       const SizedBox(height: AimSpacing.innerGap),
                   itemBuilder: (context, index) {
+                    if (index >= messages.length) {
+                      return const AiTypingIndicator();
+                    }
                     return AiChatMessageBubble(message: messages[index]);
                   },
                 ),
