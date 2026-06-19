@@ -7,4 +7,6 @@ export * from './provider-gateway-safe-failure.constants';
 export * from './provider-gateway-safe-failure.service';
 export * from './provider-request-mapper.types';
 export * from './provider-request.mapper';
+export * from './provider-response-mapper.types';
+export * from './provider-response.mapper';
 export * from './provider-gateway.module';
