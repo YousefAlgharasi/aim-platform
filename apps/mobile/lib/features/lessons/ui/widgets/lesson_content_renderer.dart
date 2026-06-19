@@ -79,6 +79,13 @@ class _ImageRenderer extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Text(
+          asset.title,
+          style: AimTextStyles.label.copyWith(color: surfaces.textPrimary),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: AimSpacing.space8),
         ClipRRect(
           borderRadius: AimRadius.borderLg,
           child: Image.network(
