@@ -7,12 +7,14 @@
 import { Module } from '@nestjs/common';
 
 import { AuthModule } from '../../../auth/auth.module';
+import { RolesModule } from '../../roles';
+import { UsersModule } from '../../users';
 import { AiChatRepositoriesModule } from '../repositories/ai-chat-repositories.module';
 import { ChatHistoryReadService } from './chat-history-read.service';
 import { ChatHistoryReadController } from './chat-history-read.controller';
 
 @Module({
-  imports: [AuthModule, AiChatRepositoriesModule],
+  imports: [AuthModule, RolesModule, UsersModule, AiChatRepositoriesModule],
   controllers: [ChatHistoryReadController],
   providers: [ChatHistoryReadService],
   exports: [ChatHistoryReadService],

@@ -156,14 +156,14 @@ AppAsyncState<AimResultsData> get _loadingState => const AppAsyncLoading();
 AppAsyncState<AimResultsData> get _errorState =>
     const AppAsyncFailure(message: 'Network error', code: 'ERR');
 AppAsyncState<AimResultsData> get _emptySuccess =>
-    AppAsyncSuccess(const AimResultsData(
+    const AppAsyncSuccess(AimResultsData(
       skillStates: [],
       weaknessRecords: [],
       recommendations: [],
       reviewSchedules: [],
     ));
 AppAsyncState<AimResultsData> get _populatedSuccess =>
-    AppAsyncSuccess(const AimResultsData(
+    const AppAsyncSuccess(AimResultsData(
       skillStates: [_skillState],
       weaknessRecords: [_weakness],
       recommendations: [_recommendation],

@@ -190,16 +190,19 @@ class _FakeLearningPathNotifier extends LearningPathNotifier {
     state = initialState;
   }
 
+  @override
   Future<void> load({
     required String bearerToken,
     required String studentId,
   }) async {}
 
+  @override
   Future<void> refresh({
     required String bearerToken,
     required String studentId,
   }) async {}
 
+  @override
   void clear() {}
 }
 
