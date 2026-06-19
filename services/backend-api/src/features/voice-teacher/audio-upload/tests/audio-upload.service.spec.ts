@@ -1,4 +1,6 @@
 // P9-029: Add Audio File Validation.
+// P9-032: Persist Audio Metadata — updated to mock AudioMetadataPersistenceService
+// as the third constructor argument; success results now include assetId.
 // Verifies AudioUploadService rejects declared/actual MIME mismatches
 // and declared/actual duration mismatches, while preserving the
 // P9-028 behavior for field presence, size, and session ownership.
@@ -19,6 +21,7 @@ describe('AudioUploadService', () => {
   function buildService(overrides?: {
     findById?: jest.Mock;
     create?: jest.Mock;
+    persist?: jest.Mock;
   }) {
     const voiceSessionRepo = {
       findById: overrides?.findById ?? jest.fn().mockResolvedValue(session),
@@ -30,7 +33,14 @@ describe('AudioUploadService', () => {
         jest.fn().mockResolvedValue({ id: 'message-1' }),
     } as any;
 
-    return new AudioUploadService(voiceSessionRepo, voiceMessageRepo);
+    // P9-032: mock AudioMetadataPersistenceService
+    const audioMetadataPersistence = {
+      persist:
+        overrides?.persist ??
+        jest.fn().mockResolvedValue({ assetId: 'asset-1', storageKey: 'key-1' }),
+    } as any;
+
+    return new AudioUploadService(voiceSessionRepo, voiceMessageRepo, audioMetadataPersistence);
   }
 
   it('accepts a valid WAV upload matching declared mime and duration', async () => {
@@ -45,7 +55,7 @@ describe('AudioUploadService', () => {
       durationMs: 1500,
     });
 
-    expect(result).toEqual({ messageId: 'message-1', status: 'pending' });
+    expect(result).toEqual({ messageId: 'message-1', assetId: 'asset-1', status: 'pending' });
   });
 
   it('rejects when declared mimeType does not match actual container bytes', async () => {
@@ -120,7 +130,7 @@ describe('AudioUploadService', () => {
       durationMs: 2000,
     });
 
-    expect(result).toEqual({ messageId: 'message-1', status: 'pending' });
+    expect(result).toEqual({ messageId: 'message-1', assetId: 'asset-1', status: 'pending' });
   });
 
   it('still rejects oversized files before any container parsing', async () => {
@@ -167,6 +177,8 @@ describe('AudioUploadService', () => {
       durationMs: 1000,
     })) as any;
 
+    // P9-032: assetId is now present; AIM fields must still be absent
+    expect(result.assetId).toBeDefined();
     expect(result.mastery).toBeUndefined();
     expect(result.difficulty).toBeUndefined();
     expect(result.weakness).toBeUndefined();
