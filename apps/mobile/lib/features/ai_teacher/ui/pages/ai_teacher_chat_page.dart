@@ -1,4 +1,4 @@
-// Phase 8 — P8-085 / P8-086 / P8-087 / P8-088 / P8-090
+// Phase 8 — P8-085 / P8-086 / P8-087 / P8-088 / P8-090 / P8-091
 // Phase 8 — P8-085 / P8-086 / P8-087 / P8-088 / P8-089
 // AiTeacherChatPage — main text chat screen for the AI Teacher feature.
 //
@@ -139,6 +139,11 @@ class _AiTeacherChatPageState extends ConsumerState<AiTeacherChatPage> {
     await notifier.loadHistory(bearerToken: token, sessionId: sessionId);
   }
 
+  Future<void> _onSelectPrompt(String prompt) async {
+    _messageController.text = prompt;
+    await _sendMessage();
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(aiTeacherChatProvider);
@@ -160,6 +165,7 @@ class _AiTeacherChatPageState extends ConsumerState<AiTeacherChatPage> {
               chatState: data,
               messageController: _messageController,
               onSend: _sendMessage,
+              onSelectPrompt: _onSelectPrompt,
               lessonTitle: widget.lessonTitle,
               contextLabel: widget.contextLabel,
             ),
@@ -178,6 +184,7 @@ class _ChatContent extends StatelessWidget {
     required this.chatState,
     required this.messageController,
     required this.onSend,
+    required this.onSelectPrompt,
     this.lessonTitle,
     this.contextLabel,
   });
@@ -185,6 +192,7 @@ class _ChatContent extends StatelessWidget {
   final AiTeacherChatState chatState;
   final TextEditingController messageController;
   final Future<void> Function() onSend;
+  final Future<void> Function(String) onSelectPrompt;
   final String? lessonTitle;
   final String? contextLabel;
 
@@ -214,10 +222,21 @@ class _ChatContent extends StatelessWidget {
           ),
         Expanded(
           child: messages.isEmpty && !isSending
-              ? const AIMEmptyState(
-                  icon: Icon(Icons.chat_bubble_outline_rounded),
-                  title: 'Ask AI Teacher anything',
-                  subtitle: 'Start the conversation by sending a message.',
+              ? Column(
+                  children: [
+                    const Expanded(
+                      child: AIMEmptyState(
+                        icon: Icon(Icons.chat_bubble_outline_rounded),
+                        title: 'Ask AI Teacher anything',
+                        subtitle: 'Start the conversation by sending a message.',
+                      ),
+                    ),
+                    AiSuggestedPromptsRow(
+                      disabled: isSending,
+                      onSelect: (prompt) => onSelectPrompt(prompt),
+                    ),
+                    const SizedBox(height: AimSpacing.innerGap),
+                  ],
                 )
               : ListView.separated(
                   padding: const EdgeInsets.symmetric(
