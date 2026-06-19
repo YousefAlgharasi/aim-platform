@@ -1,11 +1,12 @@
-// Phase 8 — P8-085
+// Phase 8 — P8-085 / P8-086
 // AiTeacherChatPage — main text chat screen for the AI Teacher feature.
 //
-// Provides the chat screen layout only: top bar, message history list,
+// Provides the chat screen layout: top bar, message history list,
 // loading/empty/error states, and a basic send row wired to
-// [aiTeacherChatProvider] (P8-083). Dedicated message-bubble styling
-// (P8-086), refined message input (P8-087), and a typing/loading indicator
-// (P8-088) are separate Phase 8 tasks and are intentionally not built here.
+// [aiTeacherChatProvider] (P8-083). Messages render via the dedicated
+// [AiChatMessageBubble] (P8-086). Refined message input (P8-087) and a
+// typing/loading indicator (P8-088) are separate Phase 8 tasks and are
+// intentionally not built here.
 //
 // Security rules:
 // - studentId is never supplied by this screen; the backend always resolves
@@ -18,9 +19,8 @@
 //
 // RTL/Arabic rules:
 // - AIMTopAppBar mirrors its back arrow internally.
-// - Message rows align to MainAxisAlignment.end/start using the student/
-//   ai_teacher role, which mirrors correctly under RTL since Flutter's Row
-//   alignment is direction-aware.
+// - Message bubbles (AiChatMessageBubble) align to the student/ai_teacher
+//   side using direction-aware MainAxisAlignment.end/start.
 // - The send button is a trailing element in a Row, so it mirrors under RTL
 //   automatically; no hard-coded TextDirection or Alignment.
 
@@ -29,10 +29,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
-import 'package:aim_mobile/features/ai_teacher/data/models/ai_teacher_chat_models.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_chat_state.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/provider/ai_teacher_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import '../widgets/ai_teacher_widgets.dart';
 
 /// Main AI Teacher text chat screen.
 ///
@@ -193,7 +193,7 @@ class _ChatContent extends StatelessWidget {
                   separatorBuilder: (_, __) =>
                       const SizedBox(height: AimSpacing.innerGap),
                   itemBuilder: (context, index) {
-                    return _ChatMessageRow(message: messages[index]);
+                    return AiChatMessageBubble(message: messages[index]);
                   },
                 ),
         ),
@@ -201,45 +201,6 @@ class _ChatContent extends StatelessWidget {
           controller: messageController,
           isSending: chatState.isSending,
           onSend: onSend,
-        ),
-      ],
-    );
-  }
-}
-
-/// Minimal role-aligned message row.
-///
-/// Dedicated bubble styling (avatars, tails, RTL-mirrored bubble shape) is
-/// built in P8-086; this row only places the message on the correct side
-/// using the design system's card/text tokens.
-class _ChatMessageRow extends StatelessWidget {
-  const _ChatMessageRow({required this.message});
-
-  final AiChatMessageModel message;
-
-  @override
-  Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-    final isStudent = message.isFromStudent;
-
-    return Row(
-      mainAxisAlignment:
-          isStudent ? MainAxisAlignment.end : MainAxisAlignment.start,
-      children: [
-        ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.8,
-          ),
-          child: AIMCard(
-            variant:
-                isStudent ? AIMCardVariant.standard : AIMCardVariant.ai,
-            child: Text(
-              message.text,
-              style: AimTextStyles.bodyMd.copyWith(
-                color: surfaces.textPrimary,
-              ),
-            ),
-          ),
         ),
       ],
     );
