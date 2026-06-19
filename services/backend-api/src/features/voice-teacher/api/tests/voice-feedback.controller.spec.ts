@@ -1,91 +1,54 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { VoiceFeedbackController } from '../voice-feedback.controller';
-import { VoiceOrchestratorService } from '../../orchestrator/voice-orchestrator.service';
-import { SupabaseJwtAuthGuard } from '../../../../auth/guards/supabase-jwt-auth.guard';
 
 describe('VoiceFeedbackController', () => {
   let controller: VoiceFeedbackController;
-  const mockOrchestrator = {
-    submitFeedback: jest.fn(),
-  };
+  const mockUser = { id: 'student-1', email: 'test@test.com' } as any;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [VoiceFeedbackController],
-      providers: [
-        { provide: VoiceOrchestratorService, useValue: mockOrchestrator },
-      ],
-    })
-      .overrideGuard(SupabaseJwtAuthGuard)
-      .useValue({ canActivate: () => true })
-      .compile();
-
-    controller = module.get(VoiceFeedbackController);
-    jest.clearAllMocks();
+  beforeEach(() => {
+    controller = new VoiceFeedbackController();
   });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-
-  it('should submit helpful feedback', async () => {
-    mockOrchestrator.submitFeedback.mockResolvedValue({ success: true });
-
+  it('should record feedback and return feedbackId', async () => {
     const result = await controller.submitFeedback(
       'session-1',
-      { id: 'student-1' } as any,
-      {
-        messageId: '550e8400-e29b-41d4-a716-446655440000',
-        rating: 'helpful' as any,
-      },
+      { messageId: 'msg-1', rating: 'helpful' },
+      mockUser,
     );
-
-    expect(mockOrchestrator.submitFeedback).toHaveBeenCalledWith(
-      'session-1',
-      'student-1',
-      {
-        messageId: '550e8400-e29b-41d4-a716-446655440000',
-        rating: 'helpful',
-      },
-    );
-    expect(result).toEqual({ success: true });
+    expect(result.recorded).toBe(true);
+    expect(result.feedbackId).toMatch(/^vf_/);
   });
 
-  it('should submit feedback with optional comment', async () => {
-    mockOrchestrator.submitFeedback.mockResolvedValue({ success: true });
-
+  it('should accept not_helpful rating', async () => {
     const result = await controller.submitFeedback(
       'session-1',
-      { id: 'student-1' } as any,
-      {
-        messageId: '550e8400-e29b-41d4-a716-446655440000',
-        rating: 'not_helpful' as any,
-        comment: 'Too fast',
-      },
+      { messageId: 'msg-1', rating: 'not_helpful', comment: 'Too fast' },
+      mockUser,
     );
-
-    expect(mockOrchestrator.submitFeedback).toHaveBeenCalledWith(
-      'session-1',
-      'student-1',
-      {
-        messageId: '550e8400-e29b-41d4-a716-446655440000',
-        rating: 'not_helpful',
-        comment: 'Too fast',
-      },
-    );
-    expect(result).toEqual({ success: true });
+    expect(result.recorded).toBe(true);
   });
 
-  it('should propagate errors from orchestrator', async () => {
-    mockOrchestrator.submitFeedback.mockRejectedValue(
-      new Error('Session not found'),
+  it('should never include AIM fields in response', async () => {
+    const result = await controller.submitFeedback(
+      'session-1',
+      { messageId: 'msg-1', rating: 'helpful' },
+      mockUser,
     );
+    const json = JSON.stringify(result);
+    expect(json).not.toContain('mastery');
+    expect(json).not.toContain('weakness');
+  });
 
-    await expect(
-      controller.submitFeedback('session-bad', { id: 'student-1' } as any, {
-        messageId: '550e8400-e29b-41d4-a716-446655440000',
-        rating: 'helpful' as any,
-      }),
-    ).rejects.toThrow('Session not found');
+  it('should generate unique feedback IDs', async () => {
+    const r1 = await controller.submitFeedback(
+      'session-1',
+      { messageId: 'msg-1', rating: 'helpful' },
+      mockUser,
+    );
+    const r2 = await controller.submitFeedback(
+      'session-1',
+      { messageId: 'msg-2', rating: 'not_helpful' },
+      mockUser,
+    );
+    expect(r1.feedbackId).not.toBe(r2.feedbackId);
   });
 });

@@ -3,7 +3,6 @@
 //
 // Flutter NEVER computes any AIM value. All are backend outputs.
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/state/app_state_notifier.dart';

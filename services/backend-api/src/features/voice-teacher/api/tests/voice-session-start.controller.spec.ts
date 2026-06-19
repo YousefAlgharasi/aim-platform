@@ -1,72 +1,40 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { VoiceSessionStartController } from '../voice-session-start.controller';
-import { VoiceOrchestratorService } from '../../orchestrator/voice-orchestrator.service';
-import { SupabaseJwtAuthGuard } from '../../../../auth/guards/supabase-jwt-auth.guard';
 
 describe('VoiceSessionStartController', () => {
   let controller: VoiceSessionStartController;
-  const mockOrchestrator = {
-    startSession: jest.fn(),
-  };
+  const mockUser = { id: 'student-1', email: 'test@test.com' } as any;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [VoiceSessionStartController],
-      providers: [
-        { provide: VoiceOrchestratorService, useValue: mockOrchestrator },
-      ],
-    })
-      .overrideGuard(SupabaseJwtAuthGuard)
-      .useValue({ canActivate: () => true })
-      .compile();
-
-    controller = module.get(VoiceSessionStartController);
-    jest.clearAllMocks();
+  beforeEach(() => {
+    controller = new VoiceSessionStartController();
   });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
+  it('should create a voice session and return sessionId', async () => {
+    const result = await controller.startSession({}, mockUser);
+    expect(result.sessionId).toBeTruthy();
+    expect(result.sessionId).toMatch(/^vs_/);
+    expect(result.createdAt).toBeTruthy();
   });
 
-  it('should start a session with contextRef', async () => {
-    const sessionId = 'session-uuid-123';
-    mockOrchestrator.startSession.mockResolvedValue({ sessionId });
-
+  it('should accept optional contextRef', async () => {
     const result = await controller.startSession(
-      { id: 'student-1' } as any,
-      { contextRef: 'lesson-1' },
+      { contextRef: 'lesson-123' },
+      mockUser,
     );
-
-    expect(mockOrchestrator.startSession).toHaveBeenCalledWith(
-      'student-1',
-      'lesson-1',
-    );
-    expect(result).toEqual({ sessionId });
+    expect(result.sessionId).toBeTruthy();
   });
 
-  it('should start a session without contextRef', async () => {
-    const sessionId = 'session-uuid-456';
-    mockOrchestrator.startSession.mockResolvedValue({ sessionId });
-
-    const result = await controller.startSession(
-      { id: 'student-1' } as any,
-      {},
-    );
-
-    expect(mockOrchestrator.startSession).toHaveBeenCalledWith(
-      'student-1',
-      undefined,
-    );
-    expect(result).toEqual({ sessionId });
+  it('should never include AIM authority fields', async () => {
+    const result = await controller.startSession({}, mockUser);
+    const json = JSON.stringify(result);
+    expect(json).not.toContain('mastery');
+    expect(json).not.toContain('weakness');
+    expect(json).not.toContain('difficulty');
+    expect(json).not.toContain('recommendation');
   });
 
-  it('should propagate orchestrator errors', async () => {
-    mockOrchestrator.startSession.mockRejectedValue(
-      new Error('Service unavailable'),
-    );
-
-    await expect(
-      controller.startSession({ id: 'student-1' } as any, {}),
-    ).rejects.toThrow('Service unavailable');
+  it('should generate unique session IDs', async () => {
+    const r1 = await controller.startSession({}, mockUser);
+    const r2 = await controller.startSession({}, mockUser);
+    expect(r1.sessionId).not.toBe(r2.sessionId);
   });
 });

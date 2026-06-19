@@ -158,7 +158,7 @@ class _ReviewScheduleDetailCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.schedule_outlined,
                 size: AimSizes.iconSm,
                 color: AimColors.primary500,
@@ -186,14 +186,14 @@ class _ReviewScheduleDetailCard extends StatelessWidget {
             children: [
               Icon(
                 Icons.calendar_today_outlined,
-                size: AimSizes.iconXs,
+                size: AimSizes.iconSm,
                 color: surfaces.textSecondary,
               ),
               const SizedBox(width: AimSpacing.space4),
               Text(
                 'Due: ${model.dueAt}',
                 style:
-                    AimTextStyles.body.copyWith(color: surfaces.textPrimary),
+                    AimTextStyles.bodySm.copyWith(color: surfaces.textPrimary),
               ),
               const Spacer(),
               AIMBadge(
