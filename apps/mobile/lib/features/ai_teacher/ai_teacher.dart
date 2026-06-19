@@ -10,5 +10,8 @@
 export 'ui/pages/ai_teacher_placeholder_page.dart';
 export 'ui/widgets/ai_teacher_widgets.dart';
 export 'logic/entity/ai_teacher_entities.dart';
+export 'logic/provider/ai_teacher_providers.dart';
+export 'logic/repository/ai_teacher_repositories.dart';
 export 'data/models/ai_teacher_chat_models.dart';
 export 'data/datasources/ai_teacher_datasources.dart';
+export 'data/repository/ai_teacher_repositories.dart';
