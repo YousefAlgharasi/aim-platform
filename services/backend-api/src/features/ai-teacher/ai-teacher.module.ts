@@ -8,6 +8,7 @@ import { ChatSessionStartModule } from './chat-session/chat-session-start.module
 import { ChatMessageSubmitModule } from './chat-message/chat-message-submit.module';
 import { ChatHistoryReadModule } from './chat-history/chat-history-read.module';
 import { ChatSessionListReadModule } from './chat-session-list/chat-session-list-read.module';
+import { AiTeacherFeedbackModule } from './feedback/ai-teacher-feedback.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ChatSessionListReadModule } from './chat-session-list/chat-session-list
     ChatMessageSubmitModule,
     ChatHistoryReadModule,
     ChatSessionListReadModule,
+    AiTeacherFeedbackModule,
   ],
   providers: [AiTeacherService],
   exports: [AiTeacherService, ContextBuilderModule, AiChatRepositoriesModule],
