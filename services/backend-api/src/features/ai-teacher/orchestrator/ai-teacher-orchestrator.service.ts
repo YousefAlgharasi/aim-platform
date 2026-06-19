@@ -40,6 +40,7 @@ import { ProviderGatewayTimeoutPolicyService } from '../provider-gateway/provide
 import { ProviderGatewaySafeFailureService } from '../provider-gateway/provider-gateway-safe-failure.service';
 import { ProviderGatewayLoggingService } from '../provider-gateway/provider-gateway-logging.service';
 import { ResponseSafetyFilterService } from '../response-safety/response-safety-filter.service';
+import { RateLimitPolicyService } from '../rate-limit-policy/rate-limit-policy.service';
 import { ChatTurnInput, ChatTurnResult } from './ai-teacher-orchestrator.types';
 
 @Injectable()
@@ -55,11 +56,18 @@ export class AiTeacherOrchestratorService {
     private readonly providerLogging: ProviderGatewayLoggingService,
     private readonly responseSafetyFilter: ResponseSafetyFilterService,
     private readonly chatMessageRepository: AiChatMessageRepository,
+    private readonly rateLimitPolicy: RateLimitPolicyService,
     @Inject(AI_PROVIDER_GATEWAY) private readonly providerGateway: AiProviderGateway,
   ) {}
 
   async handleTurn(input: ChatTurnInput): Promise<ChatTurnResult> {
     this.noSecretCheck.assertConfigIsSafe();
+
+    // P8-069: Enforce rate limit policy before any AI provider call.
+    await this.rateLimitPolicy.assertNotRateLimited({
+      studentId: input.studentId,
+      sessionId: input.sessionId,
+    });
 
     const context = await this.contextBuilder.buildContext({
       studentId: input.studentId,
