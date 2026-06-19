@@ -12,6 +12,7 @@ import { PlacementResultContextAdapter } from './adapters/placement-result-conte
 import { SkillStateContextAdapter } from './adapters/skill-state-context.adapter';
 import { WeaknessContextAdapter } from './adapters/weakness-context.adapter';
 import { RecommendationContextAdapter } from './adapters/recommendation-context.adapter';
+import { ReviewScheduleContextAdapter } from './adapters/review-schedule-context.adapter';
 import { ContextBuilderService } from './context-builder.service';
 import { ContextBudgetPolicyService } from './context-budget-policy.service';
 
@@ -27,6 +28,7 @@ import { ContextBudgetPolicyService } from './context-budget-policy.service';
     SkillStateContextAdapter,
     WeaknessContextAdapter,
     RecommendationContextAdapter,
+    ReviewScheduleContextAdapter,
   ],
   exports: [
     ContextBuilderService,
@@ -38,6 +40,7 @@ import { ContextBudgetPolicyService } from './context-budget-policy.service';
     SkillStateContextAdapter,
     WeaknessContextAdapter,
     RecommendationContextAdapter,
+    ReviewScheduleContextAdapter,
   ],
 })
 export class ContextBuilderModule {}

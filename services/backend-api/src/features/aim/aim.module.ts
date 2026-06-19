@@ -144,6 +144,9 @@ import { AimResultController } from './result/aim-result.controller';
 
     // Phase 8 — weakness records read service (needed by AI Teacher context builder, P8-034)
     WeaknessRecordsReadService,
+
+    // Phase 8 — review schedule read service (needed by AI Teacher context builder, P8-036)
+    ReviewScheduleReadService,
   ],
 })
 export class AimModule {}
