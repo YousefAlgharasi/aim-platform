@@ -1,5 +1,3 @@
-import '../../logic/entity/voice_session.dart';
-
 class VoiceSessionModel {
   final String sessionId;
   final String createdAt;
@@ -17,17 +15,17 @@ class VoiceSessionModel {
     return VoiceSessionModel(
       sessionId: json['sessionId'] as String,
       createdAt: json['createdAt'] as String,
-      messageCount: json['messageCount'] as int,
+      messageCount: json['messageCount'] as int? ?? 0,
       contextRef: json['contextRef'] as String?,
     );
   }
 
-  VoiceSession toEntity() {
-    return VoiceSession(
-      sessionId: sessionId,
-      createdAt: DateTime.parse(createdAt),
-      messageCount: messageCount,
-      contextRef: contextRef,
-    );
+  Map<String, dynamic> toJson() {
+    return {
+      'sessionId': sessionId,
+      'createdAt': createdAt,
+      'messageCount': messageCount,
+      if (contextRef != null) 'contextRef': contextRef,
+    };
   }
 }
