@@ -5,5 +5,4 @@ export * from './prompt-builder.module';
 export * from './templates/lesson-help.template';
 export * from './templates/mistake-explanation.template';
 export * from './templates/answer-explanation.template';
-export * from './templates/tutoring-behavior.template';
-export * from './templates/hint-generation.template';
+export * from './templates/safety-instruction.template';
