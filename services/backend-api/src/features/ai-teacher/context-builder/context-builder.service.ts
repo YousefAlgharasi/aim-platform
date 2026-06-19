@@ -6,6 +6,7 @@ import { CurriculumSkillContextAdapter } from './adapters/curriculum-skill-conte
 import { PlacementResultContextAdapter } from './adapters/placement-result-context.adapter';
 import { SkillStateContextAdapter } from './adapters/skill-state-context.adapter';
 import { WeaknessContextAdapter } from './adapters/weakness-context.adapter';
+import { RecommendationContextAdapter } from './adapters/recommendation-context.adapter';
 import { AiTeacherContextSnapshot, BuildContextInput } from './context-builder.types';
 
 /**
@@ -16,6 +17,7 @@ import { AiTeacherContextSnapshot, BuildContextInput } from './context-builder.t
  * P8-032: Placement result context wired in below.
  * P8-033: AIM skill state context wired in below.
  * P8-034: Weakness context wired in below.
+ * P8-035: Recommendation context wired in below.
  *
  * Read-only assembly point for backend-approved AI Teacher prompt context
  * (docs/phase-8/context-sources.md). This never reads the database
@@ -36,6 +38,7 @@ export class ContextBuilderService {
     private readonly placementResultContext: PlacementResultContextAdapter,
     private readonly skillStateContext: SkillStateContextAdapter,
     private readonly weaknessContext: WeaknessContextAdapter,
+    private readonly recommendationContext: RecommendationContextAdapter,
   ) {}
 
   async buildContext(input: BuildContextInput): Promise<AiTeacherContextSnapshot> {
@@ -49,6 +52,9 @@ export class ContextBuilderService {
     );
     const skillState = await this.skillStateContext.getSkillStateContext(input.studentId);
     const weakness = await this.weaknessContext.getWeaknessContext(input.studentId);
+    const recommendation = await this.recommendationContext.getRecommendationContext(
+      input.studentId,
+    );
 
     return {
       studentId: input.studentId,
@@ -59,7 +65,7 @@ export class ContextBuilderService {
       placementResult: placementResult as unknown as Record<string, unknown> | null,
       skillState: skillState as unknown as Record<string, unknown> | null,
       weakness: weakness as unknown as Record<string, unknown> | null,
-      recommendation: null,
+      recommendation: recommendation as unknown as Record<string, unknown> | null,
       reviewSchedule: null,
       recentMistakes: [],
     };
