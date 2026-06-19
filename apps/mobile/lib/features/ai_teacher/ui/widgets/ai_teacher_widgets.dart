@@ -6,9 +6,11 @@
 // Phase 8 — P8-087 adds AiChatInputBar.
 // Phase 8 — P8-088 adds AiTypingIndicator.
 // Phase 8 — P8-090 adds AiLessonContextHeader.
+// Phase 8 — P8-089 adds AiChatErrorState.
 
 export 'ai_teacher_entry_card.dart';
 export 'ai_chat_message_bubble.dart';
 export 'ai_chat_input_bar.dart';
 export 'ai_typing_indicator.dart';
 export 'ai_lesson_context_header.dart';
+export 'ai_chat_error_state.dart';

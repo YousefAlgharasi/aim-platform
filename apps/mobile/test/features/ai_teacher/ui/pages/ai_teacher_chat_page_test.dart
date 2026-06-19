@@ -3,7 +3,7 @@
 //
 // Covers:
 //   1. Loading state renders without crash.
-//   2. Error state renders error message.
+//   2. Error state renders safe generic message, not raw internals.
 //   3. Empty history renders the empty state.
 //   4. Populated history renders student/AI message text.
 //   5. Lesson context header renders only when safe labels are supplied.
@@ -80,19 +80,29 @@ void main() {
       expect(find.byType(AiTeacherChatPage), findsOneWidget);
     });
 
-    testWidgets('shows error state with message', (tester) async {
+    testWidgets('shows safe error state without raw backend details',
+        (tester) async {
       await tester.pumpWidget(_wrap(
         const AiTeacherChatPage(contextRef: 'lesson-1'),
         overrides: [
           aiTeacherChatProvider.overrideWith(
             (ref) => _FakeAiTeacherChatNotifier(
-              const AppAsyncState.failure(message: 'Load failed'),
+              const AppAsyncState.failure(
+                message: 'internal upstream timeout trace=abc123',
+              ),
             ),
           ),
         ],
       ));
       await tester.pump();
-      expect(find.text('Load failed'), findsOneWidget);
+      expect(
+        find.text(
+          'AI Teacher is temporarily unavailable. Your progress is safe, and you can try again.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('internal upstream timeout trace=abc123'), findsNothing);
+      expect(find.text('Retry chat'), findsOneWidget);
     });
 
     testWidgets('shows empty state when history has no messages',
