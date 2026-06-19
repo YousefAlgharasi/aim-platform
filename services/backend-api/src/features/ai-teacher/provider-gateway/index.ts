@@ -5,4 +5,6 @@ export * from './provider-gateway-timeout.constants';
 export * from './provider-gateway-timeout-policy.service';
 export * from './provider-gateway-safe-failure.constants';
 export * from './provider-gateway-safe-failure.service';
+export * from './provider-request-mapper.types';
+export * from './provider-request.mapper';
 export * from './provider-gateway.module';

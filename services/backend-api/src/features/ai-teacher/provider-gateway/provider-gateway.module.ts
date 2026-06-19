@@ -19,6 +19,11 @@
  * P8-058: Provides `ProviderGatewaySafeFailureService`, converting any
  * non-success provider response into the fixed, student-safe fallback
  * reply defined in docs/phase-8/ai-teacher-error-policy.md.
+ *
+ * P8-055: Also provides `ProviderRequestMapperService` so any concrete
+ * provider implementation bound to `AI_PROVIDER_GATEWAY` maps an
+ * `AiProviderRequest` into a provider-specific request through this
+ * module rather than re-implementing mapping per provider.
  */
 import { Module } from '@nestjs/common';
 
@@ -26,17 +31,20 @@ import { AiChatRepositoriesModule } from '../repositories/ai-chat-repositories.m
 import { ProviderGatewayConfigService } from './provider-gateway.config';
 import { ProviderGatewayTimeoutPolicyService } from './provider-gateway-timeout-policy.service';
 import { ProviderGatewaySafeFailureService } from './provider-gateway-safe-failure.service';
+import { ProviderRequestMapperService } from './provider-request.mapper';
 
 @Module({
   providers: [
     ProviderGatewayConfigService,
     ProviderGatewayTimeoutPolicyService,
     ProviderGatewaySafeFailureService,
+    ProviderRequestMapperService,
   ],
   exports: [
     ProviderGatewayConfigService,
     ProviderGatewayTimeoutPolicyService,
     ProviderGatewaySafeFailureService,
+    ProviderRequestMapperService,
   ],
 })
 export class ProviderGatewayModule {}
