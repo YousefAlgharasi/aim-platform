@@ -1,16 +1,18 @@
 /**
  * P8-063: Build Chat Session Start Service — module skeleton.
- * Exposes `ChatSessionStartService`, backed by `AiChatRepositoriesModule`
- * (P8-026), for callers to depend on. Not yet wired into a public API
- * endpoint — that is a separate, later task.
+ * P8-071: Wires `ChatSessionStartController` (POST /ai-teacher/sessions)
+ * onto this module, backed by `AiChatRepositoriesModule` (P8-026).
  */
 import { Module } from '@nestjs/common';
 
+import { AuthModule } from '../../../auth/auth.module';
 import { AiChatRepositoriesModule } from '../repositories/ai-chat-repositories.module';
 import { ChatSessionStartService } from './chat-session-start.service';
+import { ChatSessionStartController } from './chat-session-start.controller';
 
 @Module({
-  imports: [AiChatRepositoriesModule],
+  imports: [AuthModule, AiChatRepositoriesModule],
+  controllers: [ChatSessionStartController],
   providers: [ChatSessionStartService],
   exports: [ChatSessionStartService],
 })
