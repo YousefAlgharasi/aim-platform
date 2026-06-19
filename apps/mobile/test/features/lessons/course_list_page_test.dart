@@ -164,7 +164,9 @@ class _FakeCoursesNotifier extends CoursesNotifier {
     state = initialState;
   }
 
+  @override
   Future<void> load({required String bearerToken}) async {}
+  @override
   Future<void> refresh({required String bearerToken}) async {}
 }
 

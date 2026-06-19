@@ -8,13 +8,21 @@
 import { Module } from '@nestjs/common';
 
 import { AuthModule } from '../../../auth/auth.module';
+import { RolesModule } from '../../roles';
+import { UsersModule } from '../../users';
 import { AiTeacherOrchestratorModule } from '../orchestrator/ai-teacher-orchestrator.module';
 import { AiChatRepositoriesModule } from '../repositories/ai-chat-repositories.module';
 import { ChatMessageSubmitService } from './chat-message-submit.service';
 import { ChatMessageSubmitController } from './chat-message-submit.controller';
 
 @Module({
-  imports: [AuthModule, AiTeacherOrchestratorModule, AiChatRepositoriesModule],
+  imports: [
+    AuthModule,
+    RolesModule,
+    UsersModule,
+    AiTeacherOrchestratorModule,
+    AiChatRepositoriesModule,
+  ],
   controllers: [ChatMessageSubmitController],
   providers: [ChatMessageSubmitService],
   exports: [ChatMessageSubmitService],

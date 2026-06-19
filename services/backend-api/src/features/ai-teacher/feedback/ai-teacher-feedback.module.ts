@@ -6,12 +6,15 @@
  */
 import { Module } from '@nestjs/common';
 
+import { AuthModule } from '../../../auth/auth.module';
+import { RolesModule } from '../../roles';
+import { UsersModule } from '../../users';
 import { AiChatRepositoriesModule } from '../repositories/ai-chat-repositories.module';
 import { AiTeacherFeedbackSubmitService } from './ai-teacher-feedback-submit.service';
 import { AiTeacherFeedbackSubmitController } from './ai-teacher-feedback-submit.controller';
 
 @Module({
-  imports: [AiChatRepositoriesModule],
+  imports: [AuthModule, RolesModule, UsersModule, AiChatRepositoriesModule],
   controllers: [AiTeacherFeedbackSubmitController],
   providers: [AiTeacherFeedbackSubmitService],
   exports: [AiTeacherFeedbackSubmitService],

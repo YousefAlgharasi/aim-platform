@@ -58,9 +58,10 @@ class _FakeAttemptDatasource implements AttemptRemoteDatasource {
       {required String bearerToken,
       required String sessionId,
       required AttemptSubmitRequestModel request}) async {
-    if (shouldFail)
+    if (shouldFail) {
       throw const ApiClientException(
           code: 'E', message: 'fail', statusCode: 400);
+    }
     return AttemptSubmitResponseModel.fromJson({
       'attemptId': 'att-1',
       'answerId': 'ans-1',

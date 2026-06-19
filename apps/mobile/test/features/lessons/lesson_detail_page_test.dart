@@ -113,7 +113,7 @@ void main() {
         _page,
         overrides: [
           lessonDetailProvider.overrideWith(
-            (ref) => _FakeLessonDetailNotifier(AppAsyncState.success(_empty)),
+            (ref) => _FakeLessonDetailNotifier(const AppAsyncState.success(_empty)),
           ),
         ],
       ));
@@ -160,7 +160,7 @@ void main() {
         _page,
         overrides: [
           lessonDetailProvider.overrideWith(
-            (ref) => _FakeLessonDetailNotifier(AppAsyncState.success(_empty)),
+            (ref) => _FakeLessonDetailNotifier(const AppAsyncState.success(_empty)),
           ),
         ],
       ));

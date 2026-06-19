@@ -6,12 +6,14 @@
 import { Module } from '@nestjs/common';
 
 import { AuthModule } from '../../../auth/auth.module';
+import { RolesModule } from '../../roles';
+import { UsersModule } from '../../users';
 import { AiChatRepositoriesModule } from '../repositories/ai-chat-repositories.module';
 import { ChatSessionStartService } from './chat-session-start.service';
 import { ChatSessionStartController } from './chat-session-start.controller';
 
 @Module({
-  imports: [AuthModule, AiChatRepositoriesModule],
+  imports: [AuthModule, RolesModule, UsersModule, AiChatRepositoriesModule],
   controllers: [ChatSessionStartController],
   providers: [ChatSessionStartService],
   exports: [ChatSessionStartService],
