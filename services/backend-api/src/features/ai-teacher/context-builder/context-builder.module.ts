@@ -11,6 +11,7 @@ import { CurriculumSkillContextAdapter } from './adapters/curriculum-skill-conte
 import { PlacementResultContextAdapter } from './adapters/placement-result-context.adapter';
 import { SkillStateContextAdapter } from './adapters/skill-state-context.adapter';
 import { WeaknessContextAdapter } from './adapters/weakness-context.adapter';
+import { RecommendationContextAdapter } from './adapters/recommendation-context.adapter';
 import { ContextBuilderService } from './context-builder.service';
 
 @Module({
@@ -23,6 +24,7 @@ import { ContextBuilderService } from './context-builder.service';
     PlacementResultContextAdapter,
     SkillStateContextAdapter,
     WeaknessContextAdapter,
+    RecommendationContextAdapter,
   ],
   exports: [
     ContextBuilderService,
@@ -32,6 +34,7 @@ import { ContextBuilderService } from './context-builder.service';
     PlacementResultContextAdapter,
     SkillStateContextAdapter,
     WeaknessContextAdapter,
+    RecommendationContextAdapter,
   ],
 })
 export class ContextBuilderModule {}
