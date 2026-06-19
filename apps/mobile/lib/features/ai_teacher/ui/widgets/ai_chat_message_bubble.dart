@@ -1,4 +1,4 @@
-// Phase 8 — P8-086
+// Phase 8 — P8-086 / P8-092
 // AiChatMessageBubble — renders a single AI Teacher chat message (student or
 // ai_teacher) as a role-aligned bubble using AIM Mobile Design System tokens.
 //
@@ -7,6 +7,11 @@
 // recommendation/review-schedule value — it only displays the backend-
 // persisted [AiChatMessage.text] and [AiChatMessage.role] exactly
 // as returned by GET /ai-teacher/sessions/:id/messages.
+//
+// When [onFeedback] is supplied, AI Teacher (non-student) messages render
+// [AiReplyFeedbackActions] beneath the bubble so students can mark a reply
+// helpful/not helpful (P8-092). Feedback is advisory-only and never read by
+// the AIM Engine.
 //
 // RTL/Arabic rules:
 // - The bubble side (student vs. ai_teacher) is expressed via
@@ -22,6 +27,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_chat_message.dart';
+import 'ai_reply_feedback_actions.dart';
 
 /// Role-aligned chat bubble for one [AiChatMessage].
 ///
@@ -32,9 +38,11 @@ class AiChatMessageBubble extends StatelessWidget {
   const AiChatMessageBubble({
     required this.message,
     super.key,
+    this.onFeedback,
   });
 
   final AiChatMessage message;
+  final Future<void> Function(String messageId, String rating)? onFeedback;
 
   @override
   Widget build(BuildContext context) {
@@ -56,22 +64,36 @@ class AiChatMessageBubble extends StatelessWidget {
       ),
     );
 
-    final bubble = ConstrainedBox(
-      constraints: BoxConstraints(
-        maxWidth: MediaQuery.of(context).size.width * 0.72,
-      ),
-      child: AIMCard(
-        variant: isStudent ? AIMCardVariant.standard : AIMCardVariant.ai,
-        semanticLabel: isStudent
-            ? 'Your message: ${message.text}'
-            : 'AI Teacher: ${message.text}',
-        child: Text(message.text),
-      ),
+    final bubbleColumn = Column(
+      crossAxisAlignment:
+          isStudent ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.72,
+          ),
+          child: AIMCard(
+            variant: isStudent ? AIMCardVariant.standard : AIMCardVariant.ai,
+            semanticLabel: isStudent
+                ? 'Your message: ${message.text}'
+                : 'AI Teacher: ${message.text}',
+            child: Text(message.text),
+          ),
+        ),
+        if (!isStudent && onFeedback != null) ...[
+          const SizedBox(height: AimSpacing.space4),
+          AiReplyFeedbackActions(
+            messageId: message.id,
+            onRate: onFeedback!,
+          ),
+        ],
+      ],
     );
 
     final rowChildren = isStudent
-        ? [bubble, const SizedBox(width: AimSpacing.space8), avatar]
-        : [avatar, const SizedBox(width: AimSpacing.space8), bubble];
+        ? [bubbleColumn, const SizedBox(width: AimSpacing.space8), avatar]
+        : [avatar, const SizedBox(width: AimSpacing.space8), bubbleColumn];
 
     return Row(
       mainAxisAlignment:
