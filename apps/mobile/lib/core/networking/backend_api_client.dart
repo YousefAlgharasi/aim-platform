@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import '../config/config.dart';
 import 'api_client_exception.dart';
 import 'api_response_envelope.dart';
+import 'auth_interceptor.dart';
 
 // P6-022: BackendApiClient — centralised backend API consumer.
 //
@@ -19,11 +20,14 @@ class BackendApiClient {
   BackendApiClient({
     required AppConfig config,
     http.Client? httpClient,
+    AuthInterceptor? authInterceptor,
   })  : _config = config,
-        _httpClient = httpClient ?? http.Client();
+        _httpClient = httpClient ?? http.Client(),
+        _authInterceptor = authInterceptor;
 
   final AppConfig _config;
   final http.Client _httpClient;
+  final AuthInterceptor? _authInterceptor;
 
   // ---------------------------------------------------------------------------
   // Auth header helper — P6-022
@@ -140,11 +144,13 @@ class BackendApiClient {
   // ---------------------------------------------------------------------------
 
   Map<String, String> _jsonHeaders(Map<String, String>? headers) {
-    return <String, String>{
+    final base = <String, String>{
       'accept': 'application/json',
       'content-type': 'application/json',
       ...?headers,
     };
+
+    return _authInterceptor?.apply(base) ?? base;
   }
 
   String _joinPaths(String basePath, String requestPath) {
