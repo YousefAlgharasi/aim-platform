@@ -42,9 +42,10 @@ class _FakeQuestionDatasource implements QuestionRemoteDatasource {
   @override
   Future<QuestionModel> getQuestion(
       {required String bearerToken, required String questionId}) async {
-    if (shouldFail)
+    if (shouldFail) {
       throw const ApiClientException(
           code: 'E', message: 'fail', statusCode: 404);
+    }
     return _q;
   }
 }
