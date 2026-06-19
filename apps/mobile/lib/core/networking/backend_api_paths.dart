@@ -4,13 +4,25 @@ class BackendApiPaths {
   static const String health = '/health';
   static const String version = '/version';
 
+  // ---------------------------------------------------------------------------
+  // Auth
+  // ---------------------------------------------------------------------------
+
   static const String authMe = '/auth/me';
-  static const String authSyncUser = '/auth/sync-user';
+  static const String authSyncUser = '/auth/bootstrap';
   static const String authLogout = '/auth/logout';
+
+  // ---------------------------------------------------------------------------
+  // Profile
+  // ---------------------------------------------------------------------------
 
   static const String profileMe = '/profile/me';
 
-  // Phase 4 — P4-063: Placement Test endpoints (student-facing)
+  // ---------------------------------------------------------------------------
+  // Placement Test — Phase 4 P4-063 + Phase 6 P6-022
+  // Student-facing only. Admin/write endpoints are forbidden in Flutter.
+  // ---------------------------------------------------------------------------
+
   static const String placementActive = '/placement/active';
   static const String placementActiveSections = '/placement/active/sections';
   static const String placementQuestions = '/placement/questions';
@@ -28,7 +40,12 @@ class BackendApiPaths {
   static String placementAttemptComplete(String attemptId) =>
       '/placement/attempts/$attemptId/complete';
 
-  // Phase 6 — P6-060: Home screen AIM endpoints
+  // ---------------------------------------------------------------------------
+  // AIM Engine outputs — Phase 6 P6-022
+  // Read-only. Flutter never writes to these endpoints.
+  // Backend computes all AIM values; Flutter only displays them.
+  // ---------------------------------------------------------------------------
+
   /// GET /aim/students/:studentId/skill-states
   static String aimSkillStates(String studentId) =>
       '/aim/students/$studentId/skill-states';
@@ -45,42 +62,59 @@ class BackendApiPaths {
   static String aimRecommendations(String studentId) =>
       '/aim/students/$studentId/recommendations';
 
-  /// GET /aim/students/:studentId/sessions/:sessionId/state
-  static String aimSessionState(String studentId, String sessionId) =>
-      '/aim/students/$studentId/sessions/$sessionId/state';
+  // ---------------------------------------------------------------------------
+  // Curriculum — Phase 6 P6-022
+  // Read-only list endpoints. Write/admin endpoints are forbidden in Flutter.
+  // ---------------------------------------------------------------------------
 
-  // Phase 6 — P6-071: Curriculum endpoints (student-facing read)
-
-  /// GET /curriculum/courses?status=published
   static const String curriculumCourses = '/curriculum/courses';
-
-  /// GET /curriculum/chapters?levelId=:levelId
   static const String curriculumChapters = '/curriculum/chapters';
-
-  /// GET /curriculum/lessons?chapterId=:chapterId
   static const String curriculumLessons = '/curriculum/lessons';
+  static const String curriculumLessonAssets = '/curriculum/lesson-assets';
 
-  // Phase 6 — P6-077: Lesson detail endpoints
+  /// GET /curriculum/courses/:courseId/sessions
+  static String curriculumCourseSessions(String courseId) =>
+      '/curriculum/courses/$courseId/sessions';
 
   /// GET /curriculum/lessons/:lessonId
   static String curriculumLessonDetail(String lessonId) =>
       '/curriculum/lessons/$lessonId';
 
-  /// GET /curriculum/lesson-assets?lessonId=:lessonId&status=published
-  static const String curriculumLessonAssets = '/curriculum/lesson-assets';
-
-  // Phase 6 — P6-086: Question datasource endpoints
-
-  /// GET /curriculum/questions/:questionId — student-facing question detail
+  /// GET /curriculum/questions/:questionId
   static String curriculumQuestion(String questionId) =>
       '/curriculum/questions/$questionId';
 
-  // Phase 6 — P6-087: Session/attempt endpoints
+  // ---------------------------------------------------------------------------
+  // Sessions — Phase 6 P6-022
+  // Answer submission flows through backend. Flutter never scores answers.
+  // ---------------------------------------------------------------------------
 
-  /// POST /sessions/start — start a new learning session
+  /// POST /sessions/start
   static const String sessionsStart = '/sessions/start';
 
-  /// POST /sessions/:sessionId/attempt — submit a lesson attempt
+  /// POST /sessions/:sessionId/attempt
   static String sessionAttempt(String sessionId) =>
       '/sessions/$sessionId/attempt';
+
+  /// GET /aim/students/:studentId/sessions/:sessionId/state
+  static String aimSessionState(String studentId, String sessionId) =>
+      '/aim/students/$studentId/sessions/$sessionId/state';
+
+  // ---------------------------------------------------------------------------
+  // AI Teacher chat — Phase 8 P8-082
+  // Backend-only. Flutter never calls an AI provider directly.
+  // ---------------------------------------------------------------------------
+
+  /// POST /ai-teacher/sessions (P8-071)
+  /// GET  /ai-teacher/sessions (P8-074)
+  static const String aiTeacherSessions = '/ai-teacher/sessions';
+
+  /// POST /ai-teacher/sessions/:id/messages (P8-072)
+  /// GET  /ai-teacher/sessions/:id/messages (P8-073)
+  static String aiTeacherSessionMessages(String sessionId) =>
+      '/ai-teacher/sessions/$sessionId/messages';
+
+  /// POST /ai-teacher/messages/:id/feedback (P8-075)
+  static String aiTeacherMessageFeedback(String messageId) =>
+      '/ai-teacher/messages/$messageId/feedback';
 }

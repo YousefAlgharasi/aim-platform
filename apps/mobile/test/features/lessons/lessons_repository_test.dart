@@ -101,8 +101,8 @@ class _FakeDatasource implements LessonsRemoteDatasource {
 void main() {
   group('LessonsRepositoryImpl', () {
     test('getCourses returns list verbatim from datasource', () async {
-      final repo = LessonsRepositoryImpl(
-        datasource: const _FakeDatasource(),
+      const repo = LessonsRepositoryImpl(
+        datasource: _FakeDatasource(),
       );
       final result = await repo.getCourses(bearerToken: 'tok');
       expect(result.length, 1);
@@ -112,8 +112,8 @@ void main() {
     });
 
     test('getChapters returns list verbatim for given levelId', () async {
-      final repo = LessonsRepositoryImpl(
-        datasource: const _FakeDatasource(),
+      const repo = LessonsRepositoryImpl(
+        datasource:  _FakeDatasource(),
       );
       final result = await repo.getChapters(
         bearerToken: 'tok',
@@ -125,8 +125,8 @@ void main() {
     });
 
     test('getLessons returns list verbatim for given chapterId', () async {
-      final repo = LessonsRepositoryImpl(
-        datasource: const _FakeDatasource(),
+      const repo = LessonsRepositoryImpl(
+        datasource: _FakeDatasource(),
       );
       final result = await repo.getLessons(
         bearerToken: 'tok',
@@ -138,8 +138,8 @@ void main() {
     });
 
     test('ApiClientException is mapped to AppException', () async {
-      final repo = LessonsRepositoryImpl(
-        datasource: const _FakeDatasource(shouldFail: true),
+      const repo = LessonsRepositoryImpl(
+        datasource: _FakeDatasource(shouldFail: true),
       );
       expect(
         () => repo.getCourses(bearerToken: 'tok'),
@@ -148,8 +148,8 @@ void main() {
     });
 
     test('AppException preserves code from ApiClientException', () async {
-      final repo = LessonsRepositoryImpl(
-        datasource: const _FakeDatasource(shouldFail: true),
+      const repo = LessonsRepositoryImpl(
+        datasource: _FakeDatasource(shouldFail: true),
       );
       try {
         await repo.getCourses(bearerToken: 'tok');
