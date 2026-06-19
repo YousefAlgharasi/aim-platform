@@ -13,11 +13,13 @@ import { SkillStateContextAdapter } from './adapters/skill-state-context.adapter
 import { WeaknessContextAdapter } from './adapters/weakness-context.adapter';
 import { RecommendationContextAdapter } from './adapters/recommendation-context.adapter';
 import { ContextBuilderService } from './context-builder.service';
+import { ContextBudgetPolicyService } from './context-budget-policy.service';
 
 @Module({
   imports: [StudentsModule, AimModule, LessonsModule, SkillsModule, PlacementModule],
   providers: [
     ContextBuilderService,
+    ContextBudgetPolicyService,
     StudentProfileContextAdapter,
     CurrentLessonContextAdapter,
     CurriculumSkillContextAdapter,
@@ -28,6 +30,7 @@ import { ContextBuilderService } from './context-builder.service';
   ],
   exports: [
     ContextBuilderService,
+    ContextBudgetPolicyService,
     StudentProfileContextAdapter,
     CurrentLessonContextAdapter,
     CurriculumSkillContextAdapter,
