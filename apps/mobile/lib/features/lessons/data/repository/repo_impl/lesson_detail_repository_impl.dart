@@ -48,6 +48,8 @@ class LessonDetailRepositoryImpl implements LessonDetailRepository {
         lessonFuture,
         assetsFuture,
       ]);
+      final lesson = results[0] as LessonModel;
+      final assets = results[1] as List<LessonAssetModel>;
 
       // Defensive guard: only render published assets in the student app.
       // The datasource already requests status=published; this is a second layer.
