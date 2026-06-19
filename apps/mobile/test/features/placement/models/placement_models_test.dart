@@ -1,6 +1,11 @@
 // Phase 4 — P4-071
 // Placement model unit tests.
 //
+// Updated — P6-056: PlacementQuestionModel coverage rewritten to match the
+// P6-048 model shape (id/section_id/text/options/type/media_url/ordinal).
+// The previous version tested a stale shape (question_type/prompt/
+// order_index/skill_code) that no longer exists on the model.
+//
 // Scope: Placement Test phase only.
 //
 // Coverage:
@@ -114,38 +119,52 @@ void main() {
   group('PlacementQuestionModel', () {
     const validJson = {
       'id': 'question-uuid-001',
-      'question_type': 'multiple_choice',
-      'prompt': 'Choose the correct form of the verb.',
+      'section_id': 'section-uuid-001',
+      'text': 'Choose the correct form of the verb.',
+      'options': [
+        {'id': 'A', 'text': 'go'},
+        {'id': 'B', 'text': 'goes'},
+        {'id': 'C', 'text': 'going'},
+        {'id': 'D', 'text': 'gone'},
+      ],
+      'type': 'multiple_choice',
       'media_url': null,
-      'order_index': 1,
-      'skill_code': 'grammar',
+      'ordinal': 1,
     };
 
     const listeningJson = {
       'id': 'question-uuid-002',
-      'question_type': 'listening_choice',
-      'prompt': '[Audio: instruction] What does the speaker want?',
+      'section_id': 'section-uuid-001',
+      'text': '[Audio: instruction] What does the speaker want?',
+      'options': [
+        {'id': 'A', 'text': 'A coffee'},
+        {'id': 'B', 'text': 'A tea'},
+      ],
+      'type': 'listening_choice',
       'media_url': 'audio/placement/listen-q1-instruction.mp3',
-      'order_index': 1,
-      'skill_code': 'listening',
+      'ordinal': 1,
     };
 
     test('fromJson parses all student-safe fields', () {
       final model = PlacementQuestionModel.fromJson(validJson);
 
       expect(model.id, 'question-uuid-001');
-      expect(model.questionType, 'multiple_choice');
-      expect(model.prompt, 'Choose the correct form of the verb.');
+      expect(model.sectionId, 'section-uuid-001');
+      expect(model.text, 'Choose the correct form of the verb.');
+      expect(model.type, 'multiple_choice');
       expect(model.mediaUrl, isNull);
-      expect(model.orderIndex, 1);
-      expect(model.skillCode, 'grammar');
+      expect(model.ordinal, 1);
+      expect(model.options, hasLength(4));
+      expect(model.options.first.id, 'A');
+      expect(model.options.first.text, 'go');
     });
 
     test('fromJson parses listening question with media_url', () {
       final model = PlacementQuestionModel.fromJson(listeningJson);
 
-      expect(model.questionType, 'listening_choice');
+      expect(model.type, 'listening_choice');
       expect(model.mediaUrl, 'audio/placement/listen-q1-instruction.mp3');
+      expect(model.options, hasLength(2));
     });
 
     test('media_url is nullable — not required for non-listening types', () {
@@ -161,11 +180,27 @@ void main() {
       expect(json.containsKey('is_correct'), isFalse);
     });
 
-    test('does not contain placement_section_id (internal FK)', () {
+    test('options round-trip via toJson without correctness fields', () {
       final model = PlacementQuestionModel.fromJson(validJson);
       final json = model.toJson();
+      final options = json['options'] as List<dynamic>;
 
-      expect(json.containsKey('placement_section_id'), isFalse);
+      expect(options, hasLength(4));
+      for (final option in options) {
+        final map = option as Map<String, dynamic>;
+        expect(map.containsKey('correct_answer'), isFalse);
+        expect(map.containsKey('is_correct'), isFalse);
+        expect(map.keys, containsAll(<String>['id', 'text']));
+      }
+    });
+
+    test('toEntity maps options to PlacementOption domain entities', () {
+      final model = PlacementQuestionModel.fromJson(validJson);
+      final entity = model.toEntity();
+
+      expect(entity.id, model.id);
+      expect(entity.options, hasLength(4));
+      expect(entity.options.first.id, 'A');
     });
   });
 
@@ -307,10 +342,10 @@ void main() {
 
     test('does not contain correct_answer or is_correct in result', () {
       final model = PlacementResultModel.fromJson(validJson);
-      final serialized = model.toJson().toString();
+      final serializedKeys = model.toJson().keys.join(' ');
 
-      expect(serialized.contains('correct_answer'), isFalse);
-      expect(serialized.contains('is_correct'), isFalse);
+      expect(serializedKeys.contains('correct_answer'), isFalse);
+      expect(serializedKeys.contains('is_correct'), isFalse);
     });
 
     test('signal fallback is unknown when backend omits signal field', () {

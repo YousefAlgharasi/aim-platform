@@ -1,35 +1,57 @@
-/// Domain entity for a placement test question (student-safe fields only).
-///
-/// Scope: Phase 4 — Placement Test only.
-/// skill_code is inherited from the parent section — never set by Flutter.
+﻿// P6-048: Placement question domain entity.
+// Pure Dart — no Flutter imports, no correctness logic, no scoring.
+// Flutter NEVER evaluates answers; backend is the sole authority.
+
 class PlacementQuestion {
   const PlacementQuestion({
     required this.id,
-    required this.questionType,
-    required this.prompt,
+    required this.sectionId,
+    required this.text,
+    required this.options,
+    required this.type,
     this.mediaUrl,
-    required this.orderIndex,
-    required this.skillCode,
+    this.ordinal,
   });
 
-  /// Backend-generated UUID.
   final String id;
-
-  /// One of: multiple_choice, true_false, fill_blank, listening_choice.
-  final String questionType;
-
-  /// Question text shown to the student.
-  final String prompt;
-
-  /// Optional audio or image URL (required for listening_choice type).
+  final String sectionId;
+  final String text;
+  final List<PlacementOption> options;
+  final String type;
   final String? mediaUrl;
+  final int? ordinal;
 
-  /// Display order within the section (1-based, unique per section).
-  final int orderIndex;
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PlacementQuestion &&
+          runtimeType == other.runtimeType &&
+          id == other.id;
 
-  /// Inherited from parent section — backend-controlled, never set by Flutter.
-  final String skillCode;
+  @override
+  int get hashCode => id.hashCode;
 
-  bool get isListeningQuestion => questionType == 'listening_choice';
-  bool get requiresMedia => isListeningQuestion;
+  @override
+  String toString() =>
+      'PlacementQuestion(id: $id, sectionId: $sectionId, type: $type)';
+}
+
+class PlacementOption {
+  const PlacementOption({required this.id, required this.text});
+
+  final String id;
+  final String text;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PlacementOption &&
+          runtimeType == other.runtimeType &&
+          id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  String toString() => 'PlacementOption(id: $id)';
 }

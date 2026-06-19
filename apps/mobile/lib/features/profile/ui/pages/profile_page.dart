@@ -1,5 +1,5 @@
-// Phase 2 — P2-054
-// Profile screen.
+// Phase 6 — P6-041
+// Profile screen — Student Mobile App MVP.
 //
 // Security boundary:
 // - Displays only data returned from the backend via authContextProvider.
@@ -9,136 +9,196 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/routing/app_route_paths.dart';
 import 'edit_profile_page.dart';
+import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/state/app_async_state.dart';
+import '../../../../core/theme/theme.dart';
+import '../../../../core/widgets/widgets.dart';
 import '../../../auth/data/models/auth_context_model.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
-import '../../../auth/logic/provider/logout_provider.dart';
+import '../../../auth/ui/widgets/logout_button.dart';
 
+/// Student profile screen.
+///
+/// Renders account info, student profile fields, and role badges sourced from
+/// the backend [authContextProvider]. The [LogoutButton] at the bottom calls
+/// [LogoutNotifier] which clears the persisted session and in-memory state.
+///
+/// Design system: all colours, typography, spacing, and interactive widgets
+/// use AIM Mobile Design System tokens. No hard-coded values.
+///
+/// RTL/Arabic: no [TextDirection] hard-coded. [ListView] and all children
+/// respect the ambient locale direction. [AIMTopAppBar] mirrors back icon.
+///
+/// Security:
+/// - Reads data only from authContextProvider (backend-sourced).
+/// - No credentials, no scoring, no AIM Engine calls.
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authContextState = ref.watch(authContextProvider);
-    final logoutState = ref.watch(logoutProvider);
-    final isLoggingOut = logoutState is AppAsyncLoading;
+    final surfaces = aimSurfacesOf(context);
+
+    // Navigate to sign-in when sign-out completes.
+    ref.listen(authFlowProvider, (_, next) {
+      if (next.isSignedOut && context.mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          AppRoutePaths.signIn,
+          (_) => false,
+        );
+      }
+    });
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
+      appBar: AIMTopAppBar(
+        title: 'Profile',
+        centerTitle: false,
         actions: [
           if (authContextState is AppAsyncSuccess<AuthContextModel>)
             IconButton(
               icon: const Icon(Icons.edit_outlined),
               tooltip: 'Edit profile',
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const EditProfilePage(),
-                  ),
-                );
-              },
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const EditProfilePage(),
+                ),
+              ),
             ),
         ],
       ),
       body: switch (authContextState) {
-        AppAsyncLoading() => const Center(child: CircularProgressIndicator()),
-        AppAsyncFailure(:final message) => _ErrorBody(message: message),
-        AppAsyncSuccess(:final data) => _ProfileBody(authContext: data),
-        _ => const Center(child: Text('No profile loaded.')),
+        AppAsyncLoading() => AIMFullScreenLoading(
+            semanticLabel: 'Loading profile',
+          ),
+        AppAsyncFailure(:final message) => AIMFullScreenError(
+            message: 'Could not load profile: $message',
+            onRetry: null,
+          ),
+        AppAsyncSuccess(:final data) => _ProfileBody(
+            authContext: data,
+            surfaces: surfaces,
+          ),
+        _ => Center(
+            child: Text(
+              'No profile loaded.',
+              style: AimTextStyles.bodyMd.copyWith(color: surfaces.textMuted),
+            ),
+          ),
       },
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-          child: FilledButton.tonal(
-            onPressed: isLoggingOut
-                ? null
-                : () async {
-                    final token = ref
-                        .read(authFlowProvider)
-                        .accessToken;
-
-                    await ref
-                        .read(logoutProvider.notifier)
-                        .logout(token ?? '');
-
-                    if (context.mounted) {
-                      Navigator.of(context).pushNamedAndRemoveUntil(
-                        AppRoutePaths.signIn,
-                        (_) => false,
-                      );
-                    }
-                  },
-            child: isLoggingOut
-                ? const SizedBox(
-                    height: 18,
-                    width: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Sign out'),
+          padding: const EdgeInsets.fromLTRB(
+            AimSpacing.screenPaddingMobile,
+            AimSpacing.innerGap,
+            AimSpacing.screenPaddingMobile,
+            AimSpacing.space16,
           ),
+          child: const LogoutButton(),
         ),
       ),
     );
   }
 }
 
+// ── Profile body ──────────────────────────────────────────────────────────────
+
 class _ProfileBody extends StatelessWidget {
-  const _ProfileBody({required this.authContext});
+  const _ProfileBody({
+    required this.authContext,
+    required this.surfaces,
+  });
 
   final AuthContextModel authContext;
+  final AimSurfaceTheme surfaces;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final profile = authContext.profile;
 
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AimSpacing.screenPaddingMobile,
+        vertical: AimSpacing.space24,
+      ),
       children: [
-        _ProfileAvatar(displayName: profile?.displayName, email: authContext.user.email),
-        const SizedBox(height: 24),
-        _SectionCard(
-          title: 'Account',
+        // Avatar + name/email header
+        _ProfileAvatar(
+          displayName: profile?.displayName,
+          email: authContext.user.email,
+          surfaces: surfaces,
+        ),
+        const SizedBox(height: AimSpacing.sectionGap),
+
+        // Account section
+        _ProfileSection(
+          title: 'ACCOUNT',
+          surfaces: surfaces,
           children: [
-            _InfoRow(label: 'Email', value: authContext.user.email),
-            _InfoRow(label: 'Status', value: authContext.user.status),
-            _InfoRow(label: 'Type', value: authContext.user.userType),
+            _InfoRow(
+              label: 'Email',
+              value: authContext.user.email,
+              surfaces: surfaces,
+            ),
+            _InfoRow(
+              label: 'Status',
+              value: authContext.user.status,
+              surfaces: surfaces,
+            ),
+            _InfoRow(
+              label: 'Type',
+              value: authContext.user.userType,
+              surfaces: surfaces,
+            ),
           ],
         ),
+
+        // Student profile section
         if (profile != null) ...[
-          const SizedBox(height: 16),
-          _SectionCard(
-            title: 'Profile',
+          const SizedBox(height: AimSpacing.sectionGap),
+          _ProfileSection(
+            title: 'PROFILE',
+            surfaces: surfaces,
             children: [
-              _InfoRow(label: 'Display Name', value: profile.displayName),
+              _InfoRow(
+                label: 'Display Name',
+                value: profile.displayName,
+                surfaces: surfaces,
+              ),
               if (profile.profileType == 'student_profile') ...[
-                _InfoRow(label: 'Language', value: profile.preferredLanguage),
-                _InfoRow(label: 'Timezone', value: profile.timezone),
+                _InfoRow(
+                  label: 'Language',
+                  value: profile.preferredLanguage,
+                  surfaces: surfaces,
+                ),
+                _InfoRow(
+                  label: 'Timezone',
+                  value: profile.timezone,
+                  surfaces: surfaces,
+                ),
               ],
             ],
           ),
         ],
+
+        // Roles section
         if (authContext.roles.isNotEmpty) ...[
-          const SizedBox(height: 16),
-          _SectionCard(
-            title: 'Roles',
+          const SizedBox(height: AimSpacing.sectionGap),
+          _ProfileSection(
+            title: 'ROLES',
             subtitle: 'Displayed for reference only. Enforced by backend.',
+            surfaces: surfaces,
             children: [
               Wrap(
-                spacing: 8,
-                runSpacing: 8,
+                spacing: AimSpacing.innerGap,
+                runSpacing: AimSpacing.innerGap,
                 children: authContext.roles
                     .map(
-                      (r) => Chip(
-                        label: Text(
-                          r.name,
-                          style: theme.textTheme.labelSmall,
-                        ),
-                        visualDensity: VisualDensity.compact,
+                      (r) => AIMBadge(
+                        tone: AIMBadgeTone.primary,
+                        child: Text(r.name),
                       ),
                     )
                     .toList(),
@@ -146,43 +206,52 @@ class _ProfileBody extends StatelessWidget {
             ],
           ),
         ],
+
+        const SizedBox(height: AimSpacing.sectionGap),
       ],
     );
   }
 }
 
+// ── Avatar ────────────────────────────────────────────────────────────────────
+
 class _ProfileAvatar extends StatelessWidget {
-  const _ProfileAvatar({this.displayName, this.email});
+  const _ProfileAvatar({
+    this.displayName,
+    this.email,
+    required this.surfaces,
+  });
 
   final String? displayName;
   final String? email;
+  final AimSurfaceTheme surfaces;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final initials = _initials(displayName ?? email);
 
     return Column(
       children: [
         CircleAvatar(
-          radius: 40,
-          backgroundColor: theme.colorScheme.primaryContainer,
+          radius: AimSizes.iconLg * 2,
+          backgroundColor: AimColors.primary100,
           child: Text(
             initials,
-            style: theme.textTheme.headlineMedium?.copyWith(
-              color: theme.colorScheme.onPrimaryContainer,
-            ),
+            style: AimTextStyles.h2.copyWith(color: AimColors.primary700),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AimSpacing.componentGap),
         if (displayName != null)
-          Text(displayName!, style: theme.textTheme.titleLarge),
+          Text(
+            displayName!,
+            style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
+            textAlign: TextAlign.center,
+          ),
         if (email != null)
           Text(
             email!,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
+            style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
+            textAlign: TextAlign.center,
           ),
       ],
     );
@@ -198,106 +267,83 @@ class _ProfileAvatar extends StatelessWidget {
   }
 }
 
-class _SectionCard extends StatelessWidget {
-  const _SectionCard({
+// ── Section card ──────────────────────────────────────────────────────────────
+
+class _ProfileSection extends StatelessWidget {
+  const _ProfileSection({
     required this.title,
     required this.children,
+    required this.surfaces,
     this.subtitle,
   });
 
   final String title;
   final String? subtitle;
   final List<Widget> children;
+  final AimSurfaceTheme surfaces;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title.toUpperCase(),
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: theme.colorScheme.primary,
-                letterSpacing: 1.2,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            if (subtitle != null) ...[
-              const SizedBox(height: 2),
-              Text(
-                subtitle!,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-            const SizedBox(height: 12),
-            ...children,
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.label, required this.value});
-
-  final String label;
-  final String? value;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
+    return AIMCard(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
+          Text(
+            title,
+            style: AimTextStyles.label.copyWith(
+              color: AimColors.primary600,
+              letterSpacing: 1.2,
             ),
           ),
-          Expanded(
-            child: Text(
-              value ?? '—',
-              style: theme.textTheme.bodyMedium,
+          if (subtitle != null) ...[
+            const SizedBox(height: AimSpacing.space2),
+            Text(
+              subtitle!,
+              style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
             ),
-          ),
+          ],
+          const SizedBox(height: AimSpacing.componentGap),
+          ...children,
         ],
       ),
     );
   }
 }
 
-class _ErrorBody extends StatelessWidget {
-  const _ErrorBody({required this.message});
+// ── Info row ──────────────────────────────────────────────────────────────────
 
-  final String message;
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({
+    required this.label,
+    required this.value,
+    required this.surfaces,
+  });
+
+  final String label;
+  final String? value;
+  final AimSurfaceTheme surfaces;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Text(
-          'Could not load profile: $message',
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.error,
-              ),
-        ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AimSpacing.space4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 112,
+            child: Text(
+              label,
+              style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value ?? '—',
+              style: AimTextStyles.bodyMd.copyWith(color: surfaces.textPrimary),
+            ),
+          ),
+        ],
       ),
     );
   }
