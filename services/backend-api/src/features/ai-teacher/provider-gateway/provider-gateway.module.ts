@@ -13,19 +13,30 @@
  * `@Global()`, so `BackendConfigService` does not need to be imported
  * here explicitly.
  *
- * P8-059: Imports `AiChatRepositoriesModule` and provides
- * `ProviderGatewayLoggingService`, which persists safe provider-call
- * metadata via `AiProviderLogRepository` (P8-026/P8-021).
+ * P8-057: Provides `ProviderGatewayTimeoutPolicyService` for bounded
+ * timeout/retry/backoff around a single provider call attempt.
+ *
+ * P8-058: Provides `ProviderGatewaySafeFailureService`, converting any
+ * non-success provider response into the fixed, student-safe fallback
+ * reply defined in docs/phase-8/ai-teacher-error-policy.md.
  */
 import { Module } from '@nestjs/common';
 
 import { AiChatRepositoriesModule } from '../repositories/ai-chat-repositories.module';
 import { ProviderGatewayConfigService } from './provider-gateway.config';
-import { ProviderGatewayLoggingService } from './provider-gateway-logging.service';
+import { ProviderGatewayTimeoutPolicyService } from './provider-gateway-timeout-policy.service';
+import { ProviderGatewaySafeFailureService } from './provider-gateway-safe-failure.service';
 
 @Module({
-  imports: [AiChatRepositoriesModule],
-  providers: [ProviderGatewayConfigService, ProviderGatewayLoggingService],
-  exports: [ProviderGatewayConfigService, ProviderGatewayLoggingService],
+  providers: [
+    ProviderGatewayConfigService,
+    ProviderGatewayTimeoutPolicyService,
+    ProviderGatewaySafeFailureService,
+  ],
+  exports: [
+    ProviderGatewayConfigService,
+    ProviderGatewayTimeoutPolicyService,
+    ProviderGatewaySafeFailureService,
+  ],
 })
 export class ProviderGatewayModule {}
