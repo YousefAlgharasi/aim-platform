@@ -7,6 +7,7 @@ import { PlacementResultContextAdapter } from './adapters/placement-result-conte
 import { SkillStateContextAdapter } from './adapters/skill-state-context.adapter';
 import { WeaknessContextAdapter } from './adapters/weakness-context.adapter';
 import { RecommendationContextAdapter } from './adapters/recommendation-context.adapter';
+import { ReviewScheduleContextAdapter } from './adapters/review-schedule-context.adapter';
 import { AiTeacherContextSnapshot, BuildContextInput } from './context-builder.types';
 
 /**
@@ -18,6 +19,7 @@ import { AiTeacherContextSnapshot, BuildContextInput } from './context-builder.t
  * P8-033: AIM skill state context wired in below.
  * P8-034: Weakness context wired in below.
  * P8-035: Recommendation context wired in below.
+ * P8-036: Review schedule context wired in below.
  *
  * Read-only assembly point for backend-approved AI Teacher prompt context
  * (docs/phase-8/context-sources.md). This never reads the database
@@ -39,6 +41,7 @@ export class ContextBuilderService {
     private readonly skillStateContext: SkillStateContextAdapter,
     private readonly weaknessContext: WeaknessContextAdapter,
     private readonly recommendationContext: RecommendationContextAdapter,
+    private readonly reviewScheduleContext: ReviewScheduleContextAdapter,
   ) {}
 
   async buildContext(input: BuildContextInput): Promise<AiTeacherContextSnapshot> {
@@ -55,6 +58,9 @@ export class ContextBuilderService {
     const recommendation = await this.recommendationContext.getRecommendationContext(
       input.studentId,
     );
+    const reviewSchedule = await this.reviewScheduleContext.getReviewScheduleContext(
+      input.studentId,
+    );
 
     return {
       studentId: input.studentId,
@@ -66,7 +72,7 @@ export class ContextBuilderService {
       skillState: skillState as unknown as Record<string, unknown> | null,
       weakness: weakness as unknown as Record<string, unknown> | null,
       recommendation: recommendation as unknown as Record<string, unknown> | null,
-      reviewSchedule: null,
+      reviewSchedule: reviewSchedule as unknown as Record<string, unknown> | null,
       recentMistakes: [],
     };
   }
