@@ -6,6 +6,7 @@ export * from './adapters/skill-state-context.adapter';
 export * from './adapters/weakness-context.adapter';
 export * from './adapters/recommendation-context.adapter';
 export * from './adapters/review-schedule-context.adapter';
+export * from './adapters/recent-mistakes-context.adapter';
 export * from './context-builder.module';
 export * from './context-builder.service';
 export * from './context-builder.types';
