@@ -16,9 +16,10 @@
 import { Module } from '@nestjs/common';
 
 import { ProviderGatewayConfigService } from './provider-gateway.config';
+import { ProviderGatewayTimeoutPolicyService } from './provider-gateway-timeout-policy.service';
 
 @Module({
-  providers: [ProviderGatewayConfigService],
-  exports: [ProviderGatewayConfigService],
+  providers: [ProviderGatewayConfigService, ProviderGatewayTimeoutPolicyService],
+  exports: [ProviderGatewayConfigService, ProviderGatewayTimeoutPolicyService],
 })
 export class ProviderGatewayModule {}
