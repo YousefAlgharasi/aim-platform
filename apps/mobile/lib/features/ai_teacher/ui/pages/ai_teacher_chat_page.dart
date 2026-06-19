@@ -1,4 +1,4 @@
-// Phase 8 — P8-085 / P8-086 / P8-087 / P8-088 / P8-090 / P8-091
+// Phase 8 — P8-085 / P8-086 / P8-087 / P8-088 / P8-090 / P8-091 / P8-092
 // Phase 8 — P8-085 / P8-086 / P8-087 / P8-088 / P8-089
 // AiTeacherChatPage — main text chat screen for the AI Teacher feature.
 //
@@ -144,6 +144,17 @@ class _AiTeacherChatPageState extends ConsumerState<AiTeacherChatPage> {
     await _sendMessage();
   }
 
+  Future<void> _onFeedback(String messageId, String rating) async {
+    final token = _token;
+    if (token == null || token.isEmpty) return;
+
+    await ref.read(aiTeacherChatProvider.notifier).submitFeedback(
+          bearerToken: token,
+          messageId: messageId,
+          rating: rating,
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(aiTeacherChatProvider);
@@ -166,6 +177,7 @@ class _AiTeacherChatPageState extends ConsumerState<AiTeacherChatPage> {
               messageController: _messageController,
               onSend: _sendMessage,
               onSelectPrompt: _onSelectPrompt,
+              onFeedback: _onFeedback,
               lessonTitle: widget.lessonTitle,
               contextLabel: widget.contextLabel,
             ),
@@ -185,6 +197,7 @@ class _ChatContent extends StatelessWidget {
     required this.messageController,
     required this.onSend,
     required this.onSelectPrompt,
+    required this.onFeedback,
     this.lessonTitle,
     this.contextLabel,
   });
@@ -193,6 +206,7 @@ class _ChatContent extends StatelessWidget {
   final TextEditingController messageController;
   final Future<void> Function() onSend;
   final Future<void> Function(String) onSelectPrompt;
+  final Future<void> Function(String messageId, String rating) onFeedback;
   final String? lessonTitle;
   final String? contextLabel;
 
@@ -250,7 +264,10 @@ class _ChatContent extends StatelessWidget {
                     if (index >= messages.length) {
                       return const AiTypingIndicator();
                     }
-                    return AiChatMessageBubble(message: messages[index]);
+                    return AiChatMessageBubble(
+                      message: messages[index],
+                      onFeedback: onFeedback,
+                    );
                   },
                 ),
         ),
