@@ -10,4 +10,6 @@ export * from './provider-request.mapper';
 export * from './provider-response-mapper.types';
 export * from './provider-response.mapper';
 export * from './provider-gateway-no-secret-check.service';
+export * from './provider-gateway-http-client.constants';
+export * from './provider-gateway-http-client.service';
 export * from './provider-gateway.module';

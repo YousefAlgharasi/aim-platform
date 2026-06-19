@@ -33,6 +33,13 @@
  * startup-time guard that fails fast if the resolved provider config is
  * missing or placeholder-shaped, without ever logging or exposing the
  * secret value itself.
+ *
+ * P8-065: Binds `AI_PROVIDER_GATEWAY` to `ProviderGatewayHttpClientService`,
+ * the concrete HTTP client that actually calls the AI provider over the
+ * network. This is the only binding for that token anywhere in the
+ * codebase — callers (e.g. `AiTeacherOrchestratorService`) continue to
+ * depend only on the abstract `AiProviderGateway`/`AI_PROVIDER_GATEWAY`
+ * token, never on this concrete class directly.
  */
 import { Module } from '@nestjs/common';
 
@@ -43,6 +50,8 @@ import { ProviderGatewaySafeFailureService } from './provider-gateway-safe-failu
 import { ProviderRequestMapperService } from './provider-request.mapper';
 import { ProviderResponseMapperService } from './provider-response.mapper';
 import { ProviderGatewayNoSecretCheckService } from './provider-gateway-no-secret-check.service';
+import { AI_PROVIDER_GATEWAY } from './ai-provider-gateway.interface';
+import { ProviderGatewayHttpClientService } from './provider-gateway-http-client.service';
 
 @Module({
   providers: [
@@ -52,6 +61,7 @@ import { ProviderGatewayNoSecretCheckService } from './provider-gateway-no-secre
     ProviderRequestMapperService,
     ProviderResponseMapperService,
     ProviderGatewayNoSecretCheckService,
+    { provide: AI_PROVIDER_GATEWAY, useClass: ProviderGatewayHttpClientService },
   ],
   exports: [
     ProviderGatewayConfigService,
@@ -60,6 +70,7 @@ import { ProviderGatewayNoSecretCheckService } from './provider-gateway-no-secre
     ProviderRequestMapperService,
     ProviderResponseMapperService,
     ProviderGatewayNoSecretCheckService,
+    AI_PROVIDER_GATEWAY,
   ],
 })
 export class ProviderGatewayModule {}
