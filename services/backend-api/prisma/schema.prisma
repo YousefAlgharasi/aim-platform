@@ -152,12 +152,30 @@ model VoiceMessage {
 
   createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  session     VoiceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  session     VoiceSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  audioAsset  VoiceAudioAsset?
 
   @@index([sessionId, createdAt(sort: Asc)])
   @@index([studentId, createdAt(sort: Desc)])
   @@index([sessionId, status])
   @@map("voice_messages")
+}
+
+model VoiceAudioAsset {
+  id          String       @id @default(uuid()) @db.Uuid
+  messageId   String       @unique @map("message_id") @db.Uuid
+  studentId   String       @map("student_id") @db.Uuid
+
+  storageKey  String       @map("storage_key")
+  contentType String       @map("content_type")
+  durationMs  Int?         @map("duration_ms")
+
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  message     VoiceMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, createdAt(sort: Desc)])
+  @@map("voice_audio_assets")
 }
 
 model AiChatMessage {
