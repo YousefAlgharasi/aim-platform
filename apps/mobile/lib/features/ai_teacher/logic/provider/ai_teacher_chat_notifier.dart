@@ -140,13 +140,16 @@ class AiTeacherChatNotifier extends AppStateNotifier<AiTeacherChatState> {
     return const AiTeacherChatState();
   }
 
+  @override
   void setLoading() => state = const AppAsyncState.loading();
 
+  @override
   void setSuccess(AiTeacherChatState data) {
     if (mounted) state = AppAsyncState.success(data);
   }
 
-  void setFailure({required String message, required String code}) {
+  @override
+  void setFailure({required String message, String? code}) {
     if (mounted) {
       state = AppAsyncState.failure(message: message, code: code);
     }
