@@ -5,7 +5,7 @@
 // This widget is purely presentational. It does not call an AI provider, an
 // AIM Engine endpoint, or compute any mastery/level/weakness/difficulty/
 // recommendation/review-schedule value — it only displays the backend-
-// persisted [AiChatMessageModel.text] and [AiChatMessageModel.role] exactly
+// persisted [AiChatMessage.text] and [AiChatMessage.role] exactly
 // as returned by GET /ai-teacher/sessions/:id/messages.
 //
 // RTL/Arabic rules:
@@ -21,9 +21,9 @@
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
-import 'package:aim_mobile/features/ai_teacher/data/models/ai_teacher_chat_models.dart';
+import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_chat_message.dart';
 
-/// Role-aligned chat bubble for one [AiChatMessageModel].
+/// Role-aligned chat bubble for one [AiChatMessage].
 ///
 /// Student messages align to the trailing edge using
 /// [AIMCardVariant.standard]; AI Teacher messages align to the leading edge
@@ -34,7 +34,7 @@ class AiChatMessageBubble extends StatelessWidget {
     super.key,
   });
 
-  final AiChatMessageModel message;
+  final AiChatMessage message;
 
   @override
   Widget build(BuildContext context) {
