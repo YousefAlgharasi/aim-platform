@@ -1,5 +1,6 @@
 export * from './audio-container.types';
 export * from './audio-duration-decoder';
+export * from './audio-duration-policy';
 export * from './audio-format-sniffer';
 export * from './audio-upload.constants';
 export * from './audio-upload.service';
