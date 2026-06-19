@@ -16,6 +16,7 @@ import { ProviderGatewayModule } from '../provider-gateway/provider-gateway.modu
 import { ResponseSafetyFilterModule } from '../response-safety/response-safety-filter.module';
 import { AiChatRepositoriesModule } from '../repositories/ai-chat-repositories.module';
 import { ProviderGatewayLoggingService } from '../provider-gateway/provider-gateway-logging.service';
+import { RateLimitPolicyModule } from '../rate-limit-policy/rate-limit-policy.module';
 import { AiTeacherOrchestratorService } from './ai-teacher-orchestrator.service';
 
 @Module({
@@ -25,6 +26,7 @@ import { AiTeacherOrchestratorService } from './ai-teacher-orchestrator.service'
     ProviderGatewayModule,
     ResponseSafetyFilterModule,
     AiChatRepositoriesModule,
+    RateLimitPolicyModule,
   ],
   providers: [AiTeacherOrchestratorService, ProviderGatewayLoggingService],
   exports: [AiTeacherOrchestratorService],
