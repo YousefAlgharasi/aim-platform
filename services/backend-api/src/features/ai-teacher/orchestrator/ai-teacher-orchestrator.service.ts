@@ -9,6 +9,11 @@
  *   4. Safety (Group F) — any non-success provider response is converted
  *      into the fixed, student-safe fallback reply before it ever leaves
  *      this service.
+ *   4b. Response safety filter (P8-066) — the resulting reply text is
+ *      checked again for a learning-authority violation, a leaked
+ *      secret, or unsafe content before it is ever persisted or
+ *      returned, guaranteeing only a safety-filtered reply is ever
+ *      stored as conversation history (P8-067).
  *   5. Persistence (Group C/F) — the student message, the AI Teacher
  *      reply, the context snapshot used to build it, and provider call
  *      metadata are each persisted via their existing repositories.
@@ -34,6 +39,7 @@ import { ProviderGatewayNoSecretCheckService } from '../provider-gateway/provide
 import { ProviderGatewayTimeoutPolicyService } from '../provider-gateway/provider-gateway-timeout-policy.service';
 import { ProviderGatewaySafeFailureService } from '../provider-gateway/provider-gateway-safe-failure.service';
 import { ProviderGatewayLoggingService } from '../provider-gateway/provider-gateway-logging.service';
+import { ResponseSafetyFilterService } from '../response-safety/response-safety-filter.service';
 import { ChatTurnInput, ChatTurnResult } from './ai-teacher-orchestrator.types';
 
 @Injectable()
@@ -47,6 +53,7 @@ export class AiTeacherOrchestratorService {
     private readonly timeoutPolicy: ProviderGatewayTimeoutPolicyService,
     private readonly safeFailure: ProviderGatewaySafeFailureService,
     private readonly providerLogging: ProviderGatewayLoggingService,
+    private readonly responseSafetyFilter: ResponseSafetyFilterService,
     private readonly chatMessageRepository: AiChatMessageRepository,
     @Inject(AI_PROVIDER_GATEWAY) private readonly providerGateway: AiProviderGateway,
   ) {}
@@ -80,11 +87,16 @@ export class AiTeacherOrchestratorService {
 
     const safeReply = this.safeFailure.toSafeReply(outcome.response);
 
+    const filteredReply = await this.responseSafetyFilter.filterResponse({
+      sessionId: input.sessionId,
+      text: safeReply.text,
+    });
+
     const aiMessage = await this.chatMessageRepository.create(
       input.sessionId,
       input.studentId,
       'ai_teacher',
-      safeReply.text,
+      filteredReply.text,
     );
 
     await this.contextBuilder.persistSnapshot(aiMessage.id, context);
@@ -92,8 +104,8 @@ export class AiTeacherOrchestratorService {
     this.logger.log(`Completed AI Teacher turn for session ${input.sessionId}`);
 
     return {
-      text: safeReply.text,
-      isFallback: safeReply.isFallback,
+      text: filteredReply.text,
+      isFallback: safeReply.isFallback || filteredReply.wasFiltered,
       provider: outcome.response.provider,
       model: outcome.response.model,
       latencyMs: outcome.response.latencyMs,
