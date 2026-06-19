@@ -8,6 +8,7 @@ import { ProviderGatewayNoSecretCheckService } from '../../provider-gateway/prov
 import { ProviderGatewayTimeoutPolicyService } from '../../provider-gateway/provider-gateway-timeout-policy.service';
 import { ProviderGatewaySafeFailureService } from '../../provider-gateway/provider-gateway-safe-failure.service';
 import { ProviderGatewayLoggingService } from '../../provider-gateway/provider-gateway-logging.service';
+import { ResponseSafetyFilterService } from '../../response-safety/response-safety-filter.service';
 import { AiChatMessageRepository } from '../../repositories/ai-chat-message.repository';
 import { AiProviderGateway } from '../../provider-gateway/ai-provider-gateway.interface';
 import { AiTeacherContextSnapshot } from '../../context-builder/context-builder.types';
@@ -32,6 +33,7 @@ function makeContext(): AiTeacherContextSnapshot {
 function makeOrchestrator(overrides: {
   providerResponse?: AiProviderResponse;
   noSecretCheckImpl?: () => void;
+  safetyFilterResult?: { text: string; wasFiltered: boolean; reasonCategory: string | null };
 } = {}) {
   const contextBuilder = {
     buildContext: jest.fn().mockResolvedValue(makeContext()),
@@ -77,6 +79,18 @@ function makeOrchestrator(overrides: {
     logAttempt: jest.fn().mockResolvedValue(undefined),
   } as unknown as ProviderGatewayLoggingService;
 
+  const defaultSafetyFilterResult = {
+    text: providerResponse.text ?? safeFailure.toSafeReply(providerResponse).text,
+    wasFiltered: false,
+    reasonCategory: null,
+  };
+
+  const responseSafetyFilter = {
+    filterResponse: jest
+      .fn()
+      .mockResolvedValue(overrides.safetyFilterResult ?? defaultSafetyFilterResult),
+  } as unknown as ResponseSafetyFilterService;
+
   const chatMessageRepository = {
     create: jest
       .fn()
@@ -93,7 +107,7 @@ function makeOrchestrator(overrides: {
         session_id: 'session-1',
         student_id: 'student-1',
         role: 'ai_teacher',
-        text: providerResponse.text ?? '',
+        text: (overrides.safetyFilterResult ?? defaultSafetyFilterResult).text,
         created_at: 'now',
       }),
   } as unknown as AiChatMessageRepository;
@@ -105,6 +119,7 @@ function makeOrchestrator(overrides: {
     timeoutPolicy,
     safeFailure,
     providerLogging,
+    responseSafetyFilter,
     chatMessageRepository,
     providerGateway,
   );
@@ -117,6 +132,7 @@ function makeOrchestrator(overrides: {
     providerGateway,
     timeoutPolicy,
     providerLogging,
+    responseSafetyFilter,
     chatMessageRepository,
   };
 }
@@ -244,6 +260,39 @@ describe('AiTeacherOrchestratorService', () => {
       'ai_teacher',
       result.text,
     );
+  });
+
+  it('passes the safe-failure reply text through the response safety filter before persisting/returning it', async () => {
+    const { service, responseSafetyFilter, chatMessageRepository } = makeOrchestrator();
+
+    const result = await service.handleTurn(makeInput());
+
+    expect(responseSafetyFilter.filterResponse).toHaveBeenCalledWith({
+      sessionId: 'session-1',
+      text: 'Add the numerators when denominators match.',
+    });
+    expect(chatMessageRepository.create).toHaveBeenNthCalledWith(
+      2,
+      'session-1',
+      'student-1',
+      'ai_teacher',
+      result.text,
+    );
+  });
+
+  it('returns the safety-filtered text and marks the result as a fallback when the filter rejects the reply', async () => {
+    const { service } = makeOrchestrator({
+      safetyFilterResult: {
+        text: "AI Teacher can't share that response, please rephrase your question.",
+        wasFiltered: true,
+        reasonCategory: 'LEARNING_AUTHORITY_VIOLATION',
+      },
+    });
+
+    const result = await service.handleTurn(makeInput());
+
+    expect(result.text).toBe("AI Teacher can't share that response, please rephrase your question.");
+    expect(result.isFallback).toBe(true);
   });
 
   it('never computes a mastery, level, weakness, difficulty, recommendation, or review-schedule value', async () => {
