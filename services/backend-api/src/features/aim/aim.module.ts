@@ -50,6 +50,7 @@ import { ReviewScheduleReadService } from './result/review-schedule-read.service
 import { SessionStateReadService } from './result/session-state-read.service';
 import { WeaknessRecordsReadService } from './result/weakness-records-read.service';
 import { RecommendationReadService } from './result/recommendation-read.service';
+import { ErrorPatternsReadService } from './result/error-patterns-read.service';
 import { AimResultController } from './result/aim-result.controller';
 
 @Module({
@@ -125,6 +126,9 @@ import { AimResultController } from './result/aim-result.controller';
 
     // Phase 5 — recommendation read service (P5-071)
     RecommendationReadService,
+
+    // Phase 5 — error patterns read service (P5-035 table)
+    ErrorPatternsReadService,
   ],
   exports: [
     // Existing exports preserved
@@ -147,6 +151,9 @@ import { AimResultController } from './result/aim-result.controller';
 
     // Phase 8 — review schedule read service (needed by AI Teacher context builder, P8-036)
     ReviewScheduleReadService,
+
+    // Phase 8 — error patterns read service (needed by AI Teacher context builder, P8-037)
+    ErrorPatternsReadService,
   ],
 })
 export class AimModule {}
