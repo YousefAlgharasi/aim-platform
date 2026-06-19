@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:aim_mobile/core/routing/routing.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/data/session/session_store.dart';
-import 'package:aim_mobile/features/auth/logic/entity/auth_flow_state.dart';
 import 'package:aim_mobile/features/auth/logic/provider/app_bootstrap_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/provider/app_bootstrap_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart';
@@ -65,7 +64,7 @@ void main() {
             return n;
           }),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           initialRoute: AppRoutePaths.splash,
           onGenerateRoute: AppRouter.onGenerateRoute,
         ),
@@ -85,7 +84,7 @@ void main() {
           appBootstrapProvider.overrideWith(
               (ref) => _StuckCheckingNotifier(ref)),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           initialRoute: AppRoutePaths.splash,
           onGenerateRoute: AppRouter.onGenerateRoute,
         ),
@@ -110,7 +109,7 @@ void main() {
               ..signIn('learner@example.com', accessToken: 'tok-abc');
           }),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           initialRoute: AppRoutePaths.splash,
           onGenerateRoute: AppRouter.onGenerateRoute,
         ),
