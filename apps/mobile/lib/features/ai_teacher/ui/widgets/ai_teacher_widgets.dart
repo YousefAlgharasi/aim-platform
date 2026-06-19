@@ -1,4 +1,6 @@
 // Phase 6 — P6-106
-// AI Teacher widgets barrel — shell only.
-// No widgets are implemented in Phase 6.
-// Extend here when Phase 8 adds real AI Teacher widgets.
+// AI Teacher widgets barrel.
+//
+// Phase 8 — P8-084 adds AiTeacherEntryCard.
+
+export 'ai_teacher_entry_card.dart';
