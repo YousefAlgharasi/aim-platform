@@ -154,11 +154,36 @@ model VoiceMessage {
 
   session     VoiceSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   audioAsset  VoiceAudioAsset?
+  providerLogs VoiceProviderLog[]
 
   @@index([sessionId, createdAt(sort: Asc)])
   @@index([studentId, createdAt(sort: Desc)])
   @@index([sessionId, status])
   @@map("voice_messages")
+}
+
+model VoiceProviderLog {
+  id            String       @id @default(uuid()) @db.Uuid
+  messageId     String       @map("message_id") @db.Uuid
+
+  providerType  String       @map("provider_type")
+  provider      String
+  model         String
+
+  status        String
+  errorCategory String?      @map("error_category")
+
+  latencyMs     Int?         @map("latency_ms")
+
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  message       VoiceMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@index([providerType])
+  @@index([status])
+  @@index([messageId, createdAt(sort: Desc)])
+  @@map("voice_provider_logs")
 }
 
 model VoiceAudioAsset {
