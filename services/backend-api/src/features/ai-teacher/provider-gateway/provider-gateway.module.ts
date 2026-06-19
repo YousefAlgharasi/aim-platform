@@ -12,14 +12,30 @@
  * module rather than `process.env` directly. `BackendConfigModule` is
  * `@Global()`, so `BackendConfigService` does not need to be imported
  * here explicitly.
+ *
+ * P8-057: Provides `ProviderGatewayTimeoutPolicyService` for bounded
+ * timeout/retry/backoff around a single provider call attempt.
+ *
+ * P8-058: Provides `ProviderGatewaySafeFailureService`, converting any
+ * non-success provider response into the fixed, student-safe fallback
+ * reply defined in docs/phase-8/ai-teacher-error-policy.md.
  */
 import { Module } from '@nestjs/common';
 
 import { ProviderGatewayConfigService } from './provider-gateway.config';
 import { ProviderGatewayTimeoutPolicyService } from './provider-gateway-timeout-policy.service';
+import { ProviderGatewaySafeFailureService } from './provider-gateway-safe-failure.service';
 
 @Module({
-  providers: [ProviderGatewayConfigService, ProviderGatewayTimeoutPolicyService],
-  exports: [ProviderGatewayConfigService, ProviderGatewayTimeoutPolicyService],
+  providers: [
+    ProviderGatewayConfigService,
+    ProviderGatewayTimeoutPolicyService,
+    ProviderGatewaySafeFailureService,
+  ],
+  exports: [
+    ProviderGatewayConfigService,
+    ProviderGatewayTimeoutPolicyService,
+    ProviderGatewaySafeFailureService,
+  ],
 })
 export class ProviderGatewayModule {}
