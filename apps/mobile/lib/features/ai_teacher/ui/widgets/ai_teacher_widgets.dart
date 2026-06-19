@@ -3,6 +3,8 @@
 //
 // Phase 8 — P8-084 adds AiTeacherEntryCard.
 // Phase 8 — P8-086 adds AiChatMessageBubble.
+// Phase 8 — P8-087 adds AiChatInputBar.
 
 export 'ai_teacher_entry_card.dart';
 export 'ai_chat_message_bubble.dart';
+export 'ai_chat_input_bar.dart';
