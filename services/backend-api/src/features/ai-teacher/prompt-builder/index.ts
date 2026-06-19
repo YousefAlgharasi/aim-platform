@@ -7,3 +7,4 @@ export * from './templates/mistake-explanation.template';
 export * from './templates/answer-explanation.template';
 export * from './templates/safety-instruction.template';
 export * from './policies/no-diagnosis.policy';
+export * from './policies/no-authority-change.policy';
