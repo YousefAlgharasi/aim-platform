@@ -121,6 +121,7 @@ function makeOrchestrator(overrides: {
     providerLogging,
     responseSafetyFilter,
     chatMessageRepository,
+    { assertNotRateLimited: jest.fn().mockResolvedValue(undefined) } as any,
     providerGateway,
   );
 
