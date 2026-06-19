@@ -1,4 +1,4 @@
-// Phase 8 — P8-085 / P8-086 / P8-087 / P8-088
+// Phase 8 — P8-085 / P8-086 / P8-087 / P8-088 / P8-090
 // AiTeacherChatPage — main text chat screen for the AI Teacher feature.
 //
 // Provides the chat screen layout: top bar, message history list,
@@ -7,6 +7,8 @@
 // [AiChatMessageBubble] (P8-086). The input row is the dedicated
 // [AiChatInputBar] (P8-087). While a reply is being generated, the
 // dedicated [AiTypingIndicator] (P8-088) is appended to the message list.
+// [AiLessonContextHeader] (P8-090) shows safe, caller-provided lesson
+// context when available.
 //
 // Security rules:
 // - studentId is never supplied by this screen; the backend always resolves
@@ -16,6 +18,9 @@
 //   (docs/phase-8/no-aim-replacement-rule.md). It only renders backend
 //   responses returned via [AiTeacherChatNotifier].
 // - Bearer token is read from authFlowProvider on demand; never stored here.
+// - Lesson context labels are display-only, caller-provided values from
+//   backend-approved navigation/context sources. This screen never derives
+//   learning state from contextRef.
 //
 // RTL/Arabic rules:
 // - AIMTopAppBar mirrors its back arrow internally.
@@ -44,11 +49,15 @@ class AiTeacherChatPage extends ConsumerStatefulWidget {
   const AiTeacherChatPage({
     required this.contextRef,
     this.sessionId,
+    this.lessonTitle,
+    this.contextLabel,
     super.key,
   });
 
   final String contextRef;
   final String? sessionId;
+  final String? lessonTitle;
+  final String? contextLabel;
 
   @override
   ConsumerState<AiTeacherChatPage> createState() => _AiTeacherChatPageState();
@@ -149,6 +158,8 @@ class _AiTeacherChatPageState extends ConsumerState<AiTeacherChatPage> {
               chatState: data,
               messageController: _messageController,
               onSend: _sendMessage,
+              lessonTitle: widget.lessonTitle,
+              contextLabel: widget.contextLabel,
             ),
         },
       ),
@@ -165,24 +176,44 @@ class _ChatContent extends StatelessWidget {
     required this.chatState,
     required this.messageController,
     required this.onSend,
+    this.lessonTitle,
+    this.contextLabel,
   });
 
   final AiTeacherChatState chatState;
   final TextEditingController messageController;
   final Future<void> Function() onSend;
+  final String? lessonTitle;
+  final String? contextLabel;
 
   @override
   Widget build(BuildContext context) {
     final messages = chatState.history?.messages ?? const [];
     final isSending = chatState.isSending;
     final itemCount = messages.length + (isSending ? 1 : 0);
+    final safeLessonTitle = lessonTitle?.trim();
+    final showLessonHeader =
+        safeLessonTitle != null && safeLessonTitle.isNotEmpty;
 
     return Column(
       children: [
+        if (showLessonHeader)
+          Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(
+              AimSpacing.screenPaddingMobile,
+              AimSpacing.sectionGap,
+              AimSpacing.screenPaddingMobile,
+              0,
+            ),
+            child: AiLessonContextHeader(
+              lessonTitle: safeLessonTitle,
+              contextLabel: contextLabel,
+            ),
+          ),
         Expanded(
           child: messages.isEmpty && !isSending
-              ? AIMEmptyState(
-                  icon: const Icon(Icons.chat_bubble_outline_rounded),
+              ? const AIMEmptyState(
+                  icon: Icon(Icons.chat_bubble_outline_rounded),
                   title: 'Ask AI Teacher anything',
                   subtitle: 'Start the conversation by sending a message.',
                 )
