@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/widgets/widgets.dart';
 import '../../../shell/ui/widgets/main_shell_placeholder_card.dart';
 
 class HomePlaceholderPage extends StatelessWidget {
@@ -8,23 +9,12 @@ class HomePlaceholderPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      appBar: _HomePlaceholderAppBar(),
+      appBar: AIMTopAppBar(title: 'Home'),
       body: MainShellPlaceholderCard(
         title: 'Home',
-        description: 'Learner dashboard placeholder. No feature logic is implemented.',
+        description:
+            'Learner dashboard placeholder. No feature logic is implemented.',
       ),
     );
   }
-}
-
-class _HomePlaceholderAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const _HomePlaceholderAppBar();
-
-  @override
-  Widget build(BuildContext context) {
-    return AppBar(title: const Text('AIM Home'));
-  }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
