@@ -30,11 +30,11 @@ class VoiceErrorState extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      margin: EdgeInsets.all(AIMSpacing.md),
-      padding: EdgeInsets.all(AIMSpacing.md),
+      margin: EdgeInsets.all(AimSpacing.md),
+      padding: EdgeInsets.all(AimSpacing.md),
       decoration: BoxDecoration(
         color: theme.colorScheme.errorContainer.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(AIMRadius.md),
+        borderRadius: BorderRadius.circular(AimRadius.md),
         border: Border.all(
           color: theme.colorScheme.error.withOpacity(0.2),
         ),
@@ -50,7 +50,7 @@ class VoiceErrorState extends StatelessWidget {
                 size: 20,
                 color: theme.colorScheme.error,
               ),
-              SizedBox(width: AIMSpacing.sm),
+              SizedBox(width: AimSpacing.sm),
               Expanded(
                 child: Text(
                   _titleForType(errorType, isRtl),
@@ -71,7 +71,7 @@ class VoiceErrorState extends StatelessWidget {
                 ),
             ],
           ),
-          SizedBox(height: AIMSpacing.xs),
+          SizedBox(height: AimSpacing.xs),
           Text(
             _messageForType(errorType, isRtl),
             style: theme.textTheme.bodySmall?.copyWith(
@@ -79,13 +79,13 @@ class VoiceErrorState extends StatelessWidget {
             ),
           ),
           if (fallbackText != null && fallbackText!.isNotEmpty) ...[
-            SizedBox(height: AIMSpacing.sm),
+            SizedBox(height: AimSpacing.sm),
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(AIMSpacing.sm),
+              padding: EdgeInsets.all(AimSpacing.sm),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(AIMRadius.sm),
+                borderRadius: BorderRadius.circular(AimRadius.sm),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,7 +96,7 @@ class VoiceErrorState extends StatelessWidget {
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
-                  SizedBox(height: AIMSpacing.xs),
+                  SizedBox(height: AimSpacing.xs),
                   Text(
                     fallbackText!,
                     style: theme.textTheme.bodyMedium,
@@ -109,7 +109,7 @@ class VoiceErrorState extends StatelessWidget {
             ),
           ],
           if (onRetry != null) ...[
-            SizedBox(height: AIMSpacing.sm),
+            SizedBox(height: AimSpacing.sm),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -117,8 +117,8 @@ class VoiceErrorState extends StatelessWidget {
                 icon: const Icon(Icons.refresh, size: 18),
                 label: Text(isRtl ? 'إعادة المحاولة' : 'Try Again'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AIMColors.primary,
-                  side: BorderSide(color: AIMColors.primary.withOpacity(0.3)),
+                  foregroundColor: AimColors.primary,
+                  side: BorderSide(color: AimColors.primary.withOpacity(0.3)),
                 ),
               ),
             ),

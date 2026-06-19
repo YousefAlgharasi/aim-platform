@@ -32,20 +32,20 @@ class RecordingStateBar extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: AIMSpacing.md,
-        vertical: AIMSpacing.sm,
+        horizontal: AimSpacing.md,
+        vertical: AimSpacing.sm,
       ),
       decoration: BoxDecoration(
         color: state == RecordingState.recording
             ? Colors.red.withOpacity(0.08)
             : theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AIMRadius.lg),
+        borderRadius: BorderRadius.circular(AimRadius.lg),
       ),
       child: Row(
         children: [
           if (state == RecordingState.recording) ...[
             _PulsingDot(),
-            SizedBox(width: AIMSpacing.sm),
+            SizedBox(width: AimSpacing.sm),
             Text(
               duration ?? '0:00',
               style: theme.textTheme.bodyMedium?.copyWith(
@@ -60,7 +60,7 @@ class RecordingStateBar extends StatelessWidget {
               color: theme.colorScheme.onSurfaceVariant,
               onTap: onCancel,
             ),
-            SizedBox(width: AIMSpacing.sm),
+            SizedBox(width: AimSpacing.sm),
             _ActionButton(
               icon: Icons.stop,
               label: isRtl ? 'إيقاف' : 'Stop',
@@ -69,14 +69,14 @@ class RecordingStateBar extends StatelessWidget {
             ),
           ],
           if (state == RecordingState.stopped) ...[
-            Icon(Icons.check_circle, color: AIMColors.primary, size: 20),
-            SizedBox(width: AIMSpacing.sm),
+            Icon(Icons.check_circle, color: AimColors.primary, size: 20),
+            SizedBox(width: AimSpacing.sm),
             Text(
               isRtl ? 'تم التسجيل' : 'Recorded',
               style: theme.textTheme.bodyMedium,
             ),
             if (duration != null) ...[
-              SizedBox(width: AIMSpacing.xs),
+              SizedBox(width: AimSpacing.xs),
               Text(
                 duration!,
                 style: theme.textTheme.bodySmall?.copyWith(
@@ -91,11 +91,11 @@ class RecordingStateBar extends StatelessWidget {
               color: theme.colorScheme.error,
               onTap: onCancel,
             ),
-            SizedBox(width: AIMSpacing.sm),
+            SizedBox(width: AimSpacing.sm),
             _ActionButton(
               icon: Icons.send,
               label: isRtl ? 'إرسال' : 'Send',
-              color: AIMColors.primary,
+              color: AimColors.primary,
               onTap: onSend,
             ),
           ],
@@ -121,18 +121,18 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(AIMRadius.sm),
+      borderRadius: BorderRadius.circular(AimRadius.sm),
       onTap: onTap,
       child: Padding(
         padding: EdgeInsets.symmetric(
-          horizontal: AIMSpacing.sm,
-          vertical: AIMSpacing.xs,
+          horizontal: AimSpacing.sm,
+          vertical: AimSpacing.xs,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 18, color: color),
-            SizedBox(width: AIMSpacing.xs),
+            SizedBox(width: AimSpacing.xs),
             Text(
               label,
               style: TextStyle(color: color, fontSize: 13),
