@@ -67,7 +67,7 @@ class _VoiceFeedbackActionsState extends State<VoiceFeedbackActions> {
 
     if (_selection != VoiceFeedbackSelection.none && !_showCommentField) {
       return Padding(
-        padding: EdgeInsets.symmetric(vertical: AIMSpacing.xs),
+        padding: EdgeInsets.symmetric(vertical: AimSpacing.xs),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -78,7 +78,7 @@ class _VoiceFeedbackActionsState extends State<VoiceFeedbackActions> {
               size: 14,
               color: theme.colorScheme.onSurfaceVariant,
             ),
-            SizedBox(width: AIMSpacing.xs),
+            SizedBox(width: AimSpacing.xs),
             Text(
               _selection == VoiceFeedbackSelection.helpful
                   ? (isRtl ? 'شكراً!' : 'Thanks!')
@@ -105,7 +105,7 @@ class _VoiceFeedbackActionsState extends State<VoiceFeedbackActions> {
               isSelected: _selection == VoiceFeedbackSelection.helpful,
               onTap: () => _onSelect(VoiceFeedbackSelection.helpful),
             ),
-            SizedBox(width: AIMSpacing.sm),
+            SizedBox(width: AimSpacing.sm),
             _FeedbackButton(
               icon: Icons.thumb_down_outlined,
               label: isRtl ? 'غير مفيد' : 'Not helpful',
@@ -115,7 +115,7 @@ class _VoiceFeedbackActionsState extends State<VoiceFeedbackActions> {
           ],
         ),
         if (_showCommentField) ...[
-          SizedBox(height: AIMSpacing.sm),
+          SizedBox(height: AimSpacing.sm),
           Row(
             children: [
               Expanded(
@@ -129,7 +129,7 @@ class _VoiceFeedbackActionsState extends State<VoiceFeedbackActions> {
                         : 'Tell us more (optional)',
                     isDense: true,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AIMRadius.sm),
+                      borderRadius: BorderRadius.circular(AimRadius.sm),
                     ),
                     counterText: '',
                   ),
@@ -137,10 +137,10 @@ class _VoiceFeedbackActionsState extends State<VoiceFeedbackActions> {
                       isRtl ? TextDirection.rtl : TextDirection.ltr,
                 ),
               ),
-              SizedBox(width: AIMSpacing.xs),
+              SizedBox(width: AimSpacing.xs),
               IconButton(
                 icon: const Icon(Icons.send, size: 20),
-                color: AIMColors.primary,
+                color: AimColors.primary,
                 onPressed: _submitNotHelpful,
                 tooltip: isRtl ? 'إرسال' : 'Submit',
               ),
@@ -170,31 +170,31 @@ class _FeedbackButton extends StatelessWidget {
     final theme = Theme.of(context);
 
     return InkWell(
-      borderRadius: BorderRadius.circular(AIMRadius.sm),
+      borderRadius: BorderRadius.circular(AimRadius.sm),
       onTap: isSelected ? null : onTap,
       child: Container(
         padding: EdgeInsets.symmetric(
-          horizontal: AIMSpacing.sm,
-          vertical: AIMSpacing.xs,
+          horizontal: AimSpacing.sm,
+          vertical: AimSpacing.xs,
         ),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AIMRadius.sm),
+          borderRadius: BorderRadius.circular(AimRadius.sm),
           border: Border.all(
             color: isSelected
-                ? AIMColors.primary
+                ? AimColors.primary
                 : theme.dividerColor,
           ),
-          color: isSelected ? AIMColors.primary.withOpacity(0.08) : null,
+          color: isSelected ? AimColors.primary.withOpacity(0.08) : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: isSelected ? AIMColors.primary : null),
-            SizedBox(width: AIMSpacing.xs),
+            Icon(icon, size: 16, color: isSelected ? AimColors.primary : null),
+            SizedBox(width: AimSpacing.xs),
             Text(
               label,
               style: theme.textTheme.labelSmall?.copyWith(
-                color: isSelected ? AIMColors.primary : null,
+                color: isSelected ? AimColors.primary : null,
               ),
             ),
           ],

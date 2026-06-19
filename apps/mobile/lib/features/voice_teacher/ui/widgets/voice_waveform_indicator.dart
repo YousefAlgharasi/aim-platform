@@ -55,7 +55,7 @@ class _VoiceWaveformIndicatorState extends State<VoiceWaveformIndicator>
 
   @override
   Widget build(BuildContext context) {
-    final barColor = widget.color ?? AIMColors.primary;
+    final barColor = widget.color ?? AimColors.primary;
     final reducedMotion = MediaQuery.of(context).disableAnimations;
 
     return SizedBox(
@@ -65,7 +65,7 @@ class _VoiceWaveformIndicatorState extends State<VoiceWaveformIndicator>
         crossAxisAlignment: CrossAxisAlignment.center,
         children: List.generate(widget.barCount, (index) {
           return Padding(
-            padding: EdgeInsets.symmetric(horizontal: AIMSpacing.xs / 2),
+            padding: EdgeInsets.symmetric(horizontal: AimSpacing.xs / 2),
             child: AnimatedBuilder(
               animation: _controller,
               builder: (context, child) {
