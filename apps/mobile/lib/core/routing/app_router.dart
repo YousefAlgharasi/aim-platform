@@ -5,6 +5,9 @@ import '../state/app_async_state.dart';
 import '../../features/auth/data/models/auth_context_model.dart';
 import '../../features/auth/logic/entity/auth_flow_state.dart';
 import '../../features/auth/ui/pages/login_page.dart';
+import '../../features/lessons/ui/pages/chapter_list_page.dart';
+import '../../features/lessons/ui/pages/lesson_detail_page.dart';
+import '../../features/lessons/ui/pages/lesson_list_page.dart';
 import '../../features/onboarding/ui/pages/splash_placeholder_page.dart';
 import '../../features/placement/ui/pages/placement_question_page.dart';
 import '../../features/placement/ui/pages/placement_result_page.dart';
@@ -49,13 +52,19 @@ class AppRouter {
           case AppRoutePaths.placementStart:
             return const PlacementStartPage();
           case AppRoutePaths.placementSection:
-            return const PlacementSectionPage();
+            return _buildPlacementSection(settings.arguments);
           case AppRoutePaths.placementQuestion:
-            return const PlacementQuestionPage();
+            return _buildPlacementQuestion(settings.arguments);
           case AppRoutePaths.placementSubmit:
-            return const PlacementSubmitPage();
+            return _buildPlacementSubmit(settings.arguments);
           case AppRoutePaths.placementResult:
-            return const PlacementResultPage();
+            return _buildPlacementResult(settings.arguments);
+          case AppRoutePaths.courseChapters:
+            return _buildChapterListPage(settings.arguments);
+          case AppRoutePaths.chapterLessons:
+            return _buildLessonListPage(settings.arguments);
+          case AppRoutePaths.lessonDetail:
+            return _buildLessonDetailPage(settings.arguments);
           default:
             return const SplashPlaceholderPage();
         }
@@ -116,7 +125,9 @@ class AppRouter {
   }
 
   static Widget _buildLessonDetailPage(Object? arguments) {
-    final args = arguments is Map<String, dynamic> ? arguments : const <String, dynamic>{};
+    final args = arguments is Map<String, dynamic>
+        ? arguments
+        : const <String, dynamic>{};
     final lessonId = args['lessonId'];
     final lessonTitle = args['lessonTitle'];
     if (lessonId is! String || lessonTitle is! String) {
@@ -126,7 +137,9 @@ class AppRouter {
   }
 
   static Widget _buildLessonListPage(Object? arguments) {
-    final args = arguments is Map<String, dynamic> ? arguments : const <String, dynamic>{};
+    final args = arguments is Map<String, dynamic>
+        ? arguments
+        : const <String, dynamic>{};
     final chapterId = args['chapterId'];
     final chapterTitle = args['chapterTitle'];
     if (chapterId is! String || chapterTitle is! String) {
@@ -136,7 +149,9 @@ class AppRouter {
   }
 
   static Widget _buildChapterListPage(Object? arguments) {
-    final args = arguments is Map<String, dynamic> ? arguments : const <String, dynamic>{};
+    final args = arguments is Map<String, dynamic>
+        ? arguments
+        : const <String, dynamic>{};
     final levelId = args['levelId'];
     final courseTitle = args['courseTitle'];
     if (levelId is! String || courseTitle is! String) {
