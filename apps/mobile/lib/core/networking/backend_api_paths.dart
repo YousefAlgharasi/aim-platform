@@ -88,4 +88,22 @@ class BackendApiPaths {
   /// GET /aim/students/:studentId/sessions/:sessionId/state
   static String aimSessionState(String studentId, String sessionId) =>
       '/aim/students/$studentId/sessions/$sessionId/state';
+
+  // ---------------------------------------------------------------------------
+  // AI Teacher chat — Phase 8 P8-082
+  // Backend-only. Flutter never calls an AI provider directly.
+  // ---------------------------------------------------------------------------
+
+  /// POST /ai-teacher/sessions (P8-071)
+  /// GET  /ai-teacher/sessions (P8-074)
+  static const String aiTeacherSessions = '/ai-teacher/sessions';
+
+  /// POST /ai-teacher/sessions/:id/messages (P8-072)
+  /// GET  /ai-teacher/sessions/:id/messages (P8-073)
+  static String aiTeacherSessionMessages(String sessionId) =>
+      '/ai-teacher/sessions/$sessionId/messages';
+
+  /// POST /ai-teacher/messages/:id/feedback (P8-075)
+  static String aiTeacherMessageFeedback(String messageId) =>
+      '/ai-teacher/messages/$messageId/feedback';
 }
