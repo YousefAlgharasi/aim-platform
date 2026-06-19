@@ -16,7 +16,6 @@ import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
 import 'package:aim_mobile/features/auth/data/models/auth_sync_response_model.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart';
-import 'package:aim_mobile/features/auth/logic/repository/auth_flow_repository.dart';
 import 'package:aim_mobile/features/profile/ui/pages/edit_profile_page.dart';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
