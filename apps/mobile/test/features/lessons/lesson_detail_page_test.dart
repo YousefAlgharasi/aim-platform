@@ -73,11 +73,9 @@ final _asset = LessonAssetModel.fromJson({
   'updatedAt': '2025-06-01T00:00:00Z',
 });
 
-LessonDetail get _populated =>
-    LessonDetail(lesson: _lesson, assets: [_asset]);
+LessonDetail get _populated => LessonDetail(lesson: _lesson, assets: [_asset]);
 
-const LessonDetail _empty =
-    LessonDetail(lesson: _lesson, assets: []);
+const LessonDetail _empty = LessonDetail(lesson: _lesson, assets: []);
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
@@ -88,8 +86,7 @@ void main() {
         _page,
         overrides: [
           lessonDetailProvider.overrideWith(
-            (ref) =>
-                _FakeLessonDetailNotifier(const AppAsyncState.loading()),
+            (ref) => _FakeLessonDetailNotifier(const AppAsyncState.loading()),
           ),
         ],
       ));
@@ -116,8 +113,7 @@ void main() {
         _page,
         overrides: [
           lessonDetailProvider.overrideWith(
-            (ref) => _FakeLessonDetailNotifier(
-                AppAsyncState.success(_empty)),
+            (ref) => _FakeLessonDetailNotifier(AppAsyncState.success(_empty)),
           ),
         ],
       ));
@@ -131,24 +127,25 @@ void main() {
         _page,
         overrides: [
           lessonDetailProvider.overrideWith(
-            (ref) => _FakeLessonDetailNotifier(
-                AppAsyncState.success(_populated)),
+            (ref) =>
+                _FakeLessonDetailNotifier(AppAsyncState.success(_populated)),
           ),
         ],
       ));
       await tester.pump();
-      expect(
-          find.text('An introduction to basic grammar concepts.'), findsOneWidget);
+      expect(find.text('An introduction to basic grammar concepts.'),
+          findsOneWidget);
       expect(find.text('Grammar Diagram'), findsOneWidget);
     });
 
-    testWidgets('renders without error under RTL directionality', (tester) async {
+    testWidgets('renders without error under RTL directionality',
+        (tester) async {
       await tester.pumpWidget(_wrap(
         _page,
         overrides: [
           lessonDetailProvider.overrideWith(
-            (ref) => _FakeLessonDetailNotifier(
-                AppAsyncState.success(_populated)),
+            (ref) =>
+                _FakeLessonDetailNotifier(AppAsyncState.success(_populated)),
           ),
         ],
         dir: TextDirection.rtl,
@@ -163,8 +160,7 @@ void main() {
         _page,
         overrides: [
           lessonDetailProvider.overrideWith(
-            (ref) => _FakeLessonDetailNotifier(
-                AppAsyncState.success(_empty)),
+            (ref) => _FakeLessonDetailNotifier(AppAsyncState.success(_empty)),
           ),
         ],
       ));
@@ -182,11 +178,13 @@ class _FakeLessonDetailNotifier extends LessonDetailNotifier {
     state = initialState;
   }
 
+  @override
   Future<void> load({
     required String bearerToken,
     required String lessonId,
   }) async {}
 
+  @override
   Future<void> refresh({
     required String bearerToken,
     required String lessonId,
