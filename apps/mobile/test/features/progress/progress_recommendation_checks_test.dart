@@ -25,6 +25,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
+import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/aim_results/data/models/aim_results_models.dart';
 import 'package:aim_mobile/features/aim_results/logic/entity/aim_results_data.dart';
 import 'package:aim_mobile/features/aim_results/logic/provider/aim_results_notifier.dart';
@@ -62,6 +63,18 @@ class _StubNotifier extends AimResultsNotifier {
       : super(repository: _NoOpRepo()) {
     state = initial;
   }
+
+  @override
+  Future<void> load({
+    required String bearerToken,
+    required String studentId,
+  }) async {}
+
+  @override
+  Future<void> refresh({
+    required String bearerToken,
+    required String studentId,
+  }) async {}
 }
 
 class _NoOpRepo implements AimResultsRepository {
@@ -69,25 +82,29 @@ class _NoOpRepo implements AimResultsRepository {
   Future<List<AimSkillStateModel>> getSkillStates({
     required String bearerToken,
     required String studentId,
-  }) async => [];
+  }) async =>
+      [];
 
   @override
   Future<List<AimWeaknessRecordModel>> getWeaknessRecords({
     required String bearerToken,
     required String studentId,
-  }) async => [];
+  }) async =>
+      [];
 
   @override
   Future<List<AimRecommendationModel>> getRecommendations({
     required String bearerToken,
     required String studentId,
-  }) async => [];
+  }) async =>
+      [];
 
   @override
   Future<List<AimReviewScheduleModel>> getReviewSchedules({
     required String bearerToken,
     required String studentId,
-  }) async => [];
+  }) async =>
+      [];
 }
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -139,14 +156,14 @@ AppAsyncState<AimResultsData> get _loadingState => const AppAsyncLoading();
 AppAsyncState<AimResultsData> get _errorState =>
     const AppAsyncFailure(message: 'Network error', code: 'ERR');
 AppAsyncState<AimResultsData> get _emptySuccess =>
-    AppAsyncSuccess(data: const AimResultsData(
+    const AppAsyncSuccess(AimResultsData(
       skillStates: [],
       weaknessRecords: [],
       recommendations: [],
       reviewSchedules: [],
     ));
 AppAsyncState<AimResultsData> get _populatedSuccess =>
-    AppAsyncSuccess(data: const AimResultsData(
+    const AppAsyncSuccess(AimResultsData(
       skillStates: [_skillState],
       weaknessRecords: [_weakness],
       recommendations: [_recommendation],
@@ -157,12 +174,13 @@ AppAsyncState<AimResultsData> get _populatedSuccess =>
 
 void main() {
   group('P6-104 — ProgressPage widget checks', () {
-    testWidgets('1. loading state renders AIMFullScreenLoading', (tester) async {
+    testWidgets('1. loading state renders AIMFullScreenLoading',
+        (tester) async {
       await tester.pumpWidget(
         _wrap(const ProgressPage(), state: _loadingState),
       );
       await tester.pump();
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(AIMFullScreenLoading), findsOneWidget);
     });
 
     testWidgets('2. error state renders AIMFullScreenError', (tester) async {
@@ -206,12 +224,13 @@ void main() {
   });
 
   group('P6-104 — RecommendationsPage widget checks', () {
-    testWidgets('6. loading state renders AIMFullScreenLoading', (tester) async {
+    testWidgets('6. loading state renders AIMFullScreenLoading',
+        (tester) async {
       await tester.pumpWidget(
         _wrap(const RecommendationsPage(), state: _loadingState),
       );
       await tester.pump();
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(AIMFullScreenLoading), findsOneWidget);
     });
 
     testWidgets('7. error state renders AIMFullScreenError', (tester) async {
@@ -230,7 +249,8 @@ void main() {
       expect(find.text('No recommendations yet'), findsOneWidget);
     });
 
-    testWidgets('9. populated state renders recommendation content', (tester) async {
+    testWidgets('9. populated state renders recommendation content',
+        (tester) async {
       await tester.pumpWidget(
         _wrap(const RecommendationsPage(), state: _populatedSuccess),
       );
@@ -254,12 +274,13 @@ void main() {
   });
 
   group('P6-104 — ReviewSchedulePage widget checks', () {
-    testWidgets('11. loading state renders AIMFullScreenLoading', (tester) async {
+    testWidgets('11. loading state renders AIMFullScreenLoading',
+        (tester) async {
       await tester.pumpWidget(
         _wrap(const ReviewSchedulePage(), state: _loadingState),
       );
       await tester.pump();
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(AIMFullScreenLoading), findsOneWidget);
     });
 
     testWidgets('12. error state renders AIMFullScreenError', (tester) async {
@@ -270,7 +291,8 @@ void main() {
       expect(find.text('Network error'), findsOneWidget);
     });
 
-    testWidgets('13. empty success state renders AIMEmptyState', (tester) async {
+    testWidgets('13. empty success state renders AIMEmptyState',
+        (tester) async {
       await tester.pumpWidget(
         _wrap(const ReviewSchedulePage(), state: _emptySuccess),
       );

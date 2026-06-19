@@ -16,7 +16,6 @@ import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
 import 'package:aim_mobile/features/auth/data/models/auth_sync_response_model.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart';
-import 'package:aim_mobile/features/auth/logic/repository/auth_flow_repository.dart';
 import 'package:aim_mobile/features/profile/ui/pages/edit_profile_page.dart';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -55,13 +54,12 @@ class _StubAuthRepo implements AuthRepository {
   Future<void> logout(String t) async {}
 }
 
-class _StubAuthFlowRepo implements AuthFlowRepository {
-  @override
+class _StubAuthFlowRepo {
   Future<void> signIn(String email, String password) async =>
       throw UnimplementedError();
-  @override
+
   Future<void> signOut(String token) async {}
-  @override
+
   Future<String?> restoreSession() async => null;
 }
 
@@ -88,24 +86,24 @@ Widget _wrap(AppAsyncState<AuthContextModel> authState) {
 
 void main() {
   testWidgets('EditProfilePage uses AIMTopAppBar', (tester) async {
-    await tester.pumpWidget(
-        _wrap(const AppAsyncState.success(_studentContext)));
+    await tester
+        .pumpWidget(_wrap(const AppAsyncState.success(_studentContext)));
     await tester.pump();
 
     expect(find.byType(AIMTopAppBar), findsOneWidget);
   });
 
   testWidgets('EditProfilePage renders without exceptions', (tester) async {
-    await tester.pumpWidget(
-        _wrap(const AppAsyncState.success(_studentContext)));
+    await tester
+        .pumpWidget(_wrap(const AppAsyncState.success(_studentContext)));
     await tester.pump();
 
     expect(tester.takeException(), isNull);
   });
 
   testWidgets('EditProfilePage shows AIMInput fields', (tester) async {
-    await tester.pumpWidget(
-        _wrap(const AppAsyncState.success(_studentContext)));
+    await tester
+        .pumpWidget(_wrap(const AppAsyncState.success(_studentContext)));
     await tester.pump();
 
     expect(find.byType(AIMInput), findsNWidgets(3));
@@ -113,8 +111,8 @@ void main() {
 
   testWidgets('EditProfilePage pre-populates fields from auth context',
       (tester) async {
-    await tester.pumpWidget(
-        _wrap(const AppAsyncState.success(_studentContext)));
+    await tester
+        .pumpWidget(_wrap(const AppAsyncState.success(_studentContext)));
     await tester.pump();
 
     expect(find.text('Yousef'), findsOneWidget);
@@ -123,8 +121,8 @@ void main() {
   });
 
   testWidgets('EditProfilePage shows safe-fields info banner', (tester) async {
-    await tester.pumpWidget(
-        _wrap(const AppAsyncState.success(_studentContext)));
+    await tester
+        .pumpWidget(_wrap(const AppAsyncState.success(_studentContext)));
     await tester.pump();
 
     expect(find.byType(AIMAlertBanner), findsOneWidget);
@@ -136,8 +134,8 @@ void main() {
       ProviderScope(
         overrides: [
           authContextProvider.overrideWith((ref) {
-            final n = AuthContextNotifier(
-                repository: _StubAuthRepo(), ref: ref);
+            final n =
+                AuthContextNotifier(repository: _StubAuthRepo(), ref: ref);
             n.state = const AppAsyncState.success(_studentContext);
             return n;
           }),
@@ -158,8 +156,8 @@ void main() {
 
   testWidgets('EditProfilePage Save button disabled when not dirty',
       (tester) async {
-    await tester.pumpWidget(
-        _wrap(const AppAsyncState.success(_studentContext)));
+    await tester
+        .pumpWidget(_wrap(const AppAsyncState.success(_studentContext)));
     await tester.pump();
 
     // Save button should be disabled (not dirty yet).

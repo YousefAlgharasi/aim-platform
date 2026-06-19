@@ -164,11 +164,13 @@ class _FakeLessonsListNotifier extends LessonsListNotifier {
     state = initialState;
   }
 
+  @override
   Future<void> load({
     required String bearerToken,
     required String chapterId,
   }) async {}
 
+  @override
   Future<void> refresh({
     required String bearerToken,
     required String chapterId,

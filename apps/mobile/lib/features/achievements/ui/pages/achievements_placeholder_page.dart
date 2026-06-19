@@ -74,12 +74,12 @@ class AchievementsPlaceholderPage extends StatelessWidget {
                     const SizedBox(height: AimSpacing.componentGap),
 
                     // Badge
-                    AIMBadge(
+                    const AIMBadge(
                       tone: AIMBadgeTone.neutral,
                       variant: AIMBadgeVariant.soft,
                       pill: true,
-                      icon: const Icon(Icons.schedule_rounded),
-                      child: const Text('Coming Soon'),
+                      icon: Icon(Icons.schedule_rounded),
+                      child: Text('Coming Soon'),
                     ),
 
                     const SizedBox(height: AimSpacing.componentGap),
