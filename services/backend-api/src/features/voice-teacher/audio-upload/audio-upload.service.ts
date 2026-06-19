@@ -2,13 +2,20 @@
  * P9-028: Build Audio Upload Service.
  * P9-029: Add Audio File Validation.
  * P9-030: Add Audio Duration Policy.
+ * P9-032: Persist Audio Metadata — after validation passes, writes audio
+ *         bytes to opaque backend storage and creates a voice_audio_assets
+ *         row via AudioMetadataPersistenceService. Returns assetId alongside
+ *         messageId so the orchestration layer can reference stored audio
+ *         without ever touching a filesystem path or public URL.
+ *
  * Receives validated audio from the voice API endpoint, enforces the
  * backend validation sequence from docs/phase-9/audio-upload-contract.md
  * (steps 3–8: field presence, file size, declared MIME type, actual MIME
  * type via magic-byte sniffing, declared duration, and actual duration
  * decoded from the container header), creates a pending voice message
- * record via VoiceMessageRepository, and returns the message ID. Steps
- * 1–2 (auth + session ownership) are handled by the API
+ * record via VoiceMessageRepository, persists audio + metadata via
+ * AudioMetadataPersistenceService, and returns messageId + assetId.
+ * Steps 1–2 (auth + session ownership) are handled by the API
  * controller/guard layer before this service is called. Both the
  * declared and actual duration checks delegate to
  * evaluateAudioDurationPolicy so the min/max rule lives in one place.
@@ -28,25 +35,36 @@ import {
 import { decodeActualAudioDurationMs } from './audio-duration-decoder';
 import { evaluateAudioDurationPolicy } from './audio-duration-policy';
 import { detectAudioContainerFamily } from './audio-format-sniffer';
+import { AudioMetadataPersistenceService } from './audio-metadata-persistence.service';
 import {
   AudioUploadInput,
   AudioUploadResult,
   AudioUploadValidationError,
 } from './audio-upload.types';
+import { AudioContainerFamily } from './audio-container.types';
+
+/** Internal result of the validation step — error or confirmed details. */
+type ValidationPass = {
+  ok: true;
+  actualFamily: AudioContainerFamily;
+  actualDurationMs: number;
+};
+type ValidationFail = { ok: false; error: AudioUploadValidationError };
 
 @Injectable()
 export class AudioUploadService {
   constructor(
     private readonly voiceSessionRepo: VoiceSessionRepository,
     private readonly voiceMessageRepo: VoiceMessageRepository,
+    private readonly audioMetadataPersistence: AudioMetadataPersistenceService,
   ) {}
 
   async upload(
     input: AudioUploadInput,
   ): Promise<AudioUploadResult | AudioUploadValidationError> {
-    const validationError = this.validate(input);
-    if (validationError) {
-      return validationError;
+    const validation = this.validate(input);
+    if (!validation.ok) {
+      return validation.error;
     }
 
     const session = await this.voiceSessionRepo.findById(input.sessionId);
@@ -63,18 +81,30 @@ export class AudioUploadService {
       input.studentId,
     );
 
-    return { messageId: message.id, status: 'pending' };
+    // P9-032: Persist bytes to opaque storage + write voice_audio_assets row.
+    const { assetId } = await this.audioMetadataPersistence.persist({
+      messageId: message.id,
+      studentId: input.studentId,
+      audio: input.audio,
+      contentType: input.mimeType,
+      durationMs: validation.actualDurationMs,
+    });
+
+    return { messageId: message.id, assetId, status: 'pending' };
   }
 
-  private validate(
-    input: AudioUploadInput,
-  ): AudioUploadValidationError | null {
+  private validate(input: AudioUploadInput): ValidationPass | ValidationFail {
+    const fail = (statusCode: number, error: string): ValidationFail => ({
+      ok: false,
+      error: { statusCode, error },
+    });
+
     if (!input.audio || !input.mimeType || input.durationMs == null) {
-      return { statusCode: 400, error: 'Bad Request' };
+      return fail(400, 'Bad Request');
     }
 
     if (input.audio.length > AUDIO_UPLOAD_MAX_FILE_SIZE_BYTES) {
-      return { statusCode: 413, error: 'Payload Too Large' };
+      return fail(413, 'Payload Too Large');
     }
 
     if (
@@ -82,7 +112,7 @@ export class AudioUploadService {
         input.mimeType as (typeof AUDIO_UPLOAD_ALLOWED_MIME_TYPES)[number],
       )
     ) {
-      return { statusCode: 400, error: 'Bad Request' };
+      return fail(400, 'Bad Request');
     }
 
     const expectedFamily =
@@ -91,16 +121,16 @@ export class AudioUploadService {
       ];
     const actualFamily = detectAudioContainerFamily(input.audio);
     if (!actualFamily || actualFamily !== expectedFamily) {
-      return { statusCode: 400, error: 'Bad Request' };
+      return fail(400, 'Bad Request');
     }
 
     if (!Number.isInteger(input.durationMs)) {
-      return { statusCode: 400, error: 'Bad Request' };
+      return fail(400, 'Bad Request');
     }
 
     const declaredPolicy = evaluateAudioDurationPolicy(input.durationMs);
     if (!declaredPolicy.valid) {
-      return { statusCode: 400, error: 'Bad Request' };
+      return fail(400, 'Bad Request');
     }
 
     const actualDurationMs = decodeActualAudioDurationMs(
@@ -108,14 +138,14 @@ export class AudioUploadService {
       actualFamily,
     );
     if (actualDurationMs == null) {
-      return { statusCode: 400, error: 'Bad Request' };
+      return fail(400, 'Bad Request');
     }
 
     const actualPolicy = evaluateAudioDurationPolicy(actualDurationMs);
     if (!actualPolicy.valid) {
-      return { statusCode: 400, error: 'Bad Request' };
+      return fail(400, 'Bad Request');
     }
 
-    return null;
+    return { ok: true, actualFamily, actualDurationMs };
   }
 }
