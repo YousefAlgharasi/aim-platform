@@ -4,15 +4,10 @@ import { ConfigModule } from '@nestjs/config';
 import { AiTeacherService } from './ai-teacher.service';
 import { ContextBuilderModule } from './context-builder';
 import { AiChatRepositoriesModule } from './repositories';
-import { ChatSessionStartModule } from './chat-session/chat-session-start.module';
+import { ChatMessageSubmitModule } from './chat-message/chat-message-submit.module';
 
 @Module({
-  imports: [
-    ConfigModule,
-    ContextBuilderModule,
-    AiChatRepositoriesModule,
-    ChatSessionStartModule,
-  ],
+  imports: [ConfigModule, ContextBuilderModule, AiChatRepositoriesModule, ChatMessageSubmitModule],
   providers: [AiTeacherService],
   exports: [AiTeacherService, ContextBuilderModule, AiChatRepositoriesModule],
 })
