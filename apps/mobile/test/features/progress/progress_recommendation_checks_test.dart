@@ -25,6 +25,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
+import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/aim_results/data/models/aim_results_models.dart';
 import 'package:aim_mobile/features/aim_results/logic/entity/aim_results_data.dart';
 import 'package:aim_mobile/features/aim_results/logic/provider/aim_results_notifier.dart';
@@ -62,6 +63,18 @@ class _StubNotifier extends AimResultsNotifier {
       : super(repository: _NoOpRepo()) {
     state = initial;
   }
+
+  @override
+  Future<void> load({
+    required String bearerToken,
+    required String studentId,
+  }) async {}
+
+  @override
+  Future<void> refresh({
+    required String bearerToken,
+    required String studentId,
+  }) async {}
 }
 
 class _NoOpRepo implements AimResultsRepository {
@@ -167,7 +180,7 @@ void main() {
         _wrap(const ProgressPage(), state: _loadingState),
       );
       await tester.pump();
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(AIMFullScreenLoading), findsOneWidget);
     });
 
     testWidgets('2. error state renders AIMFullScreenError', (tester) async {
@@ -217,7 +230,7 @@ void main() {
         _wrap(const RecommendationsPage(), state: _loadingState),
       );
       await tester.pump();
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(AIMFullScreenLoading), findsOneWidget);
     });
 
     testWidgets('7. error state renders AIMFullScreenError', (tester) async {
@@ -267,7 +280,7 @@ void main() {
         _wrap(const ReviewSchedulePage(), state: _loadingState),
       );
       await tester.pump();
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(AIMFullScreenLoading), findsOneWidget);
     });
 
     testWidgets('12. error state renders AIMFullScreenError', (tester) async {
