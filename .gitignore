@@ -28,4 +28,5 @@ Thumbs.db
 # Runtime artifacts
 *.log
 aim_dev.db
+services/backend-api/var/
 #pilot_accounts.local.md

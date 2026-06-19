@@ -6,6 +6,7 @@ export const OPENAPI_TAGS = {
   sessions: 'sessions',
   aim: 'aim',
   aiTeacher: 'ai-teacher',
+  voiceTeacher: 'voice-teacher',
   admin: 'admin',
   reports: 'reports',
   profile: 'profile',

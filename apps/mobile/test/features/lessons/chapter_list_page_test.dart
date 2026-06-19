@@ -160,11 +160,13 @@ class _FakeChaptersNotifier extends ChaptersNotifier {
     state = initialState;
   }
 
+  @override
   Future<void> load({
     required String bearerToken,
     required String levelId,
   }) async {}
 
+  @override
   Future<void> refresh({
     required String bearerToken,
     required String levelId,
