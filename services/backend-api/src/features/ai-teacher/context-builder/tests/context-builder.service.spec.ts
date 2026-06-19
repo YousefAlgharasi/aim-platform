@@ -1,18 +1,91 @@
 // P8-039: Persist Context Snapshots
-// ContextBuilderService.persistSnapshot() tests.
+// P8-040: Add Context Builder Tests
+// ContextBuilderService.buildContext() / persistSnapshot() pipeline tests.
 
 import { ContextBuilderService } from '../context-builder.service';
 import { AiContextSnapshotRepository } from '../../repositories/ai-context-snapshot.repository';
 import { AiTeacherContextSnapshot } from '../context-builder.types';
+import { StudentProfileContextAdapter } from '../adapters/student-profile-context.adapter';
+import { CurrentLessonContextAdapter } from '../adapters/current-lesson-context.adapter';
+import { CurriculumSkillContextAdapter } from '../adapters/curriculum-skill-context.adapter';
+import { PlacementResultContextAdapter } from '../adapters/placement-result-context.adapter';
+import { SkillStateContextAdapter } from '../adapters/skill-state-context.adapter';
+import { WeaknessContextAdapter } from '../adapters/weakness-context.adapter';
+import { RecommendationContextAdapter } from '../adapters/recommendation-context.adapter';
+import { ReviewScheduleContextAdapter } from '../adapters/review-schedule-context.adapter';
+import { RecentMistakesContextAdapter } from '../adapters/recent-mistakes-context.adapter';
 
 const STUDENT_ID = '770e8400-e29b-41d4-a716-446655440002';
 const SESSION_ID = '880e8400-e29b-41d4-a716-446655440003';
 const MESSAGE_ID = '990e8400-e29b-41d4-a716-446655440004';
+const OTHER_STUDENT_ID = '660e8400-e29b-41d4-a716-446655440099';
 
 function makeMockRepository(
   create: AiContextSnapshotRepository['create'],
 ) {
   return { create } as unknown as AiContextSnapshotRepository;
+}
+
+function makeMockAdapter<T extends object>(methodName: keyof T, impl: (studentId: string) => Promise<unknown>) {
+  return { [methodName]: impl } as unknown as T;
+}
+
+function buildServiceWithAdapterSpies(studentIdsSeen: string[]) {
+  const recordCall = (value: unknown) => async (studentId: string) => {
+    studentIdsSeen.push(studentId);
+    return value;
+  };
+
+  const studentProfile = makeMockAdapter<StudentProfileContextAdapter>(
+    'getProfileContext',
+    recordCall({ gradeLevel: 6 }),
+  );
+  const currentLesson = makeMockAdapter<CurrentLessonContextAdapter>(
+    'getCurrentLessonContext',
+    recordCall({ lessonId: 'lesson-1' }),
+  );
+  const curriculumSkill = makeMockAdapter<CurriculumSkillContextAdapter>(
+    'getSkillContext',
+    recordCall({ skillId: 'skill-1' }),
+  );
+  const placementResult = makeMockAdapter<PlacementResultContextAdapter>(
+    'getPlacementResultContext',
+    recordCall(null),
+  );
+  const skillState = makeMockAdapter<SkillStateContextAdapter>(
+    'getSkillStateContext',
+    recordCall(null),
+  );
+  const weakness = makeMockAdapter<WeaknessContextAdapter>('getWeaknessContext', recordCall(null));
+  const recommendation = makeMockAdapter<RecommendationContextAdapter>(
+    'getRecommendationContext',
+    recordCall(null),
+  );
+  const reviewSchedule = makeMockAdapter<ReviewScheduleContextAdapter>(
+    'getReviewScheduleContext',
+    recordCall(null),
+  );
+  const recentMistakes = makeMockAdapter<RecentMistakesContextAdapter>(
+    'getRecentMistakesContext',
+    recordCall([]),
+  );
+
+  const service = new ContextBuilderService(
+    studentProfile,
+    currentLesson,
+    curriculumSkill,
+    placementResult,
+    skillState,
+    weakness,
+    recommendation,
+    reviewSchedule,
+    recentMistakes,
+    makeMockRepository(async () => {
+      throw new Error('not used in buildContext tests');
+    }),
+  );
+
+  return service;
 }
 
 function makeSnapshot(): AiTeacherContextSnapshot {
@@ -30,6 +103,59 @@ function makeSnapshot(): AiTeacherContextSnapshot {
     recentMistakes: [],
   };
 }
+
+describe('ContextBuilderService.buildContext', () => {
+  it('scopes every adapter call to the same studentId resolved from input, never a different/client-supplied id', async () => {
+    const studentIdsSeen: string[] = [];
+    const service = buildServiceWithAdapterSpies(studentIdsSeen);
+
+    await service.buildContext({
+      studentId: STUDENT_ID,
+      sessionId: SESSION_ID,
+      contextRef: 'lesson:p1:l3',
+    });
+
+    expect(studentIdsSeen).toHaveLength(9);
+    expect(studentIdsSeen.every((id) => id === STUDENT_ID)).toBe(true);
+    expect(studentIdsSeen).not.toContain(OTHER_STUDENT_ID);
+  });
+
+  it('assembles all nine context fields plus studentId/sessionId into a single snapshot', async () => {
+    const service = buildServiceWithAdapterSpies([]);
+
+    const snapshot = await service.buildContext({
+      studentId: STUDENT_ID,
+      sessionId: SESSION_ID,
+      contextRef: 'lesson:p1:l3',
+    });
+
+    expect(snapshot).toEqual({
+      studentId: STUDENT_ID,
+      sessionId: SESSION_ID,
+      studentProfile: { gradeLevel: 6 },
+      currentLesson: { lessonId: 'lesson-1' },
+      curriculumSkill: { skillId: 'skill-1' },
+      placementResult: null,
+      skillState: null,
+      weakness: null,
+      recommendation: null,
+      reviewSchedule: null,
+      recentMistakes: [],
+    });
+  });
+
+  it('handles all adapters returning null/empty gracefully without throwing', async () => {
+    const service = buildServiceWithAdapterSpies([]);
+
+    await expect(
+      service.buildContext({
+        studentId: STUDENT_ID,
+        sessionId: SESSION_ID,
+        contextRef: 'lesson:p1:l3',
+      }),
+    ).resolves.toBeDefined();
+  });
+});
 
 describe('ContextBuilderService.persistSnapshot', () => {
   it('stores context_data without duplicating studentId/sessionId, keyed by the resolved messageId', async () => {
