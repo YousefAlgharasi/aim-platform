@@ -1,12 +1,12 @@
-// Phase 8 — P8-085 / P8-086
+// Phase 8 — P8-085 / P8-086 / P8-087
 // AiTeacherChatPage — main text chat screen for the AI Teacher feature.
 //
 // Provides the chat screen layout: top bar, message history list,
-// loading/empty/error states, and a basic send row wired to
+// loading/empty/error states, and a send row wired to
 // [aiTeacherChatProvider] (P8-083). Messages render via the dedicated
-// [AiChatMessageBubble] (P8-086). Refined message input (P8-087) and a
-// typing/loading indicator (P8-088) are separate Phase 8 tasks and are
-// intentionally not built here.
+// [AiChatMessageBubble] (P8-086). The input row is the dedicated
+// [AiChatInputBar] (P8-087). A typing/loading indicator (P8-088) is a
+// separate Phase 8 task and is intentionally not built here.
 //
 // Security rules:
 // - studentId is never supplied by this screen; the backend always resolves
@@ -197,59 +197,12 @@ class _ChatContent extends StatelessWidget {
                   },
                 ),
         ),
-        _ChatInputBar(
+        AiChatInputBar(
           controller: messageController,
           isSending: chatState.isSending,
           onSend: onSend,
         ),
       ],
-    );
-  }
-}
-
-/// Minimal send row: text input plus a send button.
-///
-/// Refined input behavior (multiline growth, attachments, character limits)
-/// is owned by P8-087; this only wires submission to the chat provider.
-class _ChatInputBar extends StatelessWidget {
-  const _ChatInputBar({
-    required this.controller,
-    required this.isSending,
-    required this.onSend,
-  });
-
-  final TextEditingController controller;
-  final bool isSending;
-  final Future<void> Function() onSend;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AimSpacing.screenPaddingMobile,
-        vertical: AimSpacing.innerGap,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: AIMInput(
-              controller: controller,
-              placeholder: 'Ask AI Teacher...',
-              disabled: isSending,
-              textInputAction: TextInputAction.send,
-              onSubmitted: (_) => onSend(),
-              semanticLabel: 'AI Teacher message input',
-            ),
-          ),
-          const SizedBox(width: AimSpacing.innerGap),
-          AIMIconButton(
-            icon: const Icon(Icons.send_rounded),
-            semanticLabel: 'Send message',
-            disabled: isSending,
-            onPressed: isSending ? null : () => onSend(),
-          ),
-        ],
-      ),
     );
   }
 }
