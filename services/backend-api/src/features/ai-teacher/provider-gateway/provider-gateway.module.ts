@@ -28,6 +28,11 @@
  * P8-056: Also provides `ProviderResponseMapperService` so any concrete
  * provider implementation maps a raw provider completion response back
  * into the internal `AiProviderResponse` contract through this module.
+ *
+ * P8-060: Also provides `ProviderGatewayNoSecretCheckService`, a
+ * startup-time guard that fails fast if the resolved provider config is
+ * missing or placeholder-shaped, without ever logging or exposing the
+ * secret value itself.
  */
 import { Module } from '@nestjs/common';
 
@@ -37,6 +42,7 @@ import { ProviderGatewayTimeoutPolicyService } from './provider-gateway-timeout-
 import { ProviderGatewaySafeFailureService } from './provider-gateway-safe-failure.service';
 import { ProviderRequestMapperService } from './provider-request.mapper';
 import { ProviderResponseMapperService } from './provider-response.mapper';
+import { ProviderGatewayNoSecretCheckService } from './provider-gateway-no-secret-check.service';
 
 @Module({
   providers: [
@@ -45,6 +51,7 @@ import { ProviderResponseMapperService } from './provider-response.mapper';
     ProviderGatewaySafeFailureService,
     ProviderRequestMapperService,
     ProviderResponseMapperService,
+    ProviderGatewayNoSecretCheckService,
   ],
   exports: [
     ProviderGatewayConfigService,
@@ -52,6 +59,7 @@ import { ProviderResponseMapperService } from './provider-response.mapper';
     ProviderGatewaySafeFailureService,
     ProviderRequestMapperService,
     ProviderResponseMapperService,
+    ProviderGatewayNoSecretCheckService,
   ],
 })
 export class ProviderGatewayModule {}
