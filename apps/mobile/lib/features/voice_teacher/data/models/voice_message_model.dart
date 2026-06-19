@@ -1,3 +1,5 @@
+import '../../logic/entity/voice_message.dart';
+
 class VoiceMessageModel {
   final String id;
   final String role;
@@ -23,13 +25,13 @@ class VoiceMessageModel {
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'role': role,
-      'text': text,
-      if (audioRef != null) 'audioRef': audioRef,
-      'timestamp': timestamp,
-    };
+  VoiceMessage toEntity() {
+    return VoiceMessage(
+      id: id,
+      role: role == 'teacher' ? VoiceMessageRole.teacher : VoiceMessageRole.student,
+      text: text,
+      audioRef: audioRef,
+      timestamp: DateTime.parse(timestamp),
+    );
   }
 }
