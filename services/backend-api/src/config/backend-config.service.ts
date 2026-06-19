@@ -34,6 +34,10 @@ export class BackendConfigService {
     return this.config.aiProvider;
   }
 
+  get sttProvider(): BackendConfig['sttProvider'] {
+    return this.config.sttProvider;
+  }
+
   snapshot(): BackendConfig {
     return this.config;
   }

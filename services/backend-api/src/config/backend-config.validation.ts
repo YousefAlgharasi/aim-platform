@@ -54,6 +54,10 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
   );
   const aiProviderApiKey = readRequiredString(env, 'AI_PROVIDER_API_KEY', issues);
   const aiProviderModel = readRequiredString(env, 'AI_PROVIDER_MODEL', issues);
+  // P9-039 — STT provider settings for Group E's STT Gateway.
+  // STT_PROVIDER_API_KEY is a secret: never logged, never returned to clients.
+  const sttProviderApiKey = readRequiredString(env, 'STT_PROVIDER_API_KEY', issues);
+  const sttProviderModel = readRequiredString(env, 'STT_PROVIDER_MODEL', issues);
   const corsOriginsValue = readRequiredString(env, 'CORS_ORIGINS', issues);
 
   const parsedNodeEnv = parseNodeEnv(nodeEnv, issues);
@@ -89,6 +93,10 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
     aiProvider: {
       apiKey: aiProviderApiKey,
       model: aiProviderModel,
+    },
+    sttProvider: {
+      apiKey: sttProviderApiKey,
+      model: sttProviderModel,
     },
     cors: {
       origins: corsOrigins,
