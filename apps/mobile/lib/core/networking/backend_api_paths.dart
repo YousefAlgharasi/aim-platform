@@ -9,7 +9,7 @@ class BackendApiPaths {
   // ---------------------------------------------------------------------------
 
   static const String authMe = '/auth/me';
-  static const String authSyncUser = '/auth/sync-user';
+  static const String authSyncUser = '/auth/bootstrap';
   static const String authLogout = '/auth/logout';
 
   // ---------------------------------------------------------------------------
