@@ -6,3 +6,4 @@ export * from './templates/lesson-help.template';
 export * from './templates/mistake-explanation.template';
 export * from './templates/answer-explanation.template';
 export * from './templates/safety-instruction.template';
+export * from './policies/no-diagnosis.policy';
