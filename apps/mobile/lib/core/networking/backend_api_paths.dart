@@ -68,10 +68,21 @@ class BackendApiPaths {
   // ---------------------------------------------------------------------------
 
   static const String curriculumCourses = '/curriculum/courses';
+  static const String curriculumChapters = '/curriculum/chapters';
+  static const String curriculumLessons = '/curriculum/lessons';
+  static const String curriculumLessonAssets = '/curriculum/lesson-assets';
 
   /// GET /curriculum/courses/:courseId/sessions
   static String curriculumCourseSessions(String courseId) =>
       '/curriculum/courses/$courseId/sessions';
+
+  /// GET /curriculum/lessons/:lessonId
+  static String curriculumLessonDetail(String lessonId) =>
+      '/curriculum/lessons/$lessonId';
+
+  /// GET /curriculum/questions/:questionId
+  static String curriculumQuestion(String questionId) =>
+      '/curriculum/questions/$questionId';
 
   // ---------------------------------------------------------------------------
   // Sessions — Phase 6 P6-022
