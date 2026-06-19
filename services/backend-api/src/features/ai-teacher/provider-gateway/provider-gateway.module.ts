@@ -24,6 +24,10 @@
  * provider implementation bound to `AI_PROVIDER_GATEWAY` maps an
  * `AiProviderRequest` into a provider-specific request through this
  * module rather than re-implementing mapping per provider.
+ *
+ * P8-056: Also provides `ProviderResponseMapperService` so any concrete
+ * provider implementation maps a raw provider completion response back
+ * into the internal `AiProviderResponse` contract through this module.
  */
 import { Module } from '@nestjs/common';
 
@@ -32,6 +36,7 @@ import { ProviderGatewayConfigService } from './provider-gateway.config';
 import { ProviderGatewayTimeoutPolicyService } from './provider-gateway-timeout-policy.service';
 import { ProviderGatewaySafeFailureService } from './provider-gateway-safe-failure.service';
 import { ProviderRequestMapperService } from './provider-request.mapper';
+import { ProviderResponseMapperService } from './provider-response.mapper';
 
 @Module({
   providers: [
@@ -39,12 +44,14 @@ import { ProviderRequestMapperService } from './provider-request.mapper';
     ProviderGatewayTimeoutPolicyService,
     ProviderGatewaySafeFailureService,
     ProviderRequestMapperService,
+    ProviderResponseMapperService,
   ],
   exports: [
     ProviderGatewayConfigService,
     ProviderGatewayTimeoutPolicyService,
     ProviderGatewaySafeFailureService,
     ProviderRequestMapperService,
+    ProviderResponseMapperService,
   ],
 })
 export class ProviderGatewayModule {}
