@@ -9,3 +9,4 @@ export * from './revoke-parent-consent-request.dto';
 export * from './parent-access-scope.entity';
 export * from './parent-dashboard-summary.dto';
 export * from './parent-child-report.entity';
+export * from './parent-child-progress.entity';
