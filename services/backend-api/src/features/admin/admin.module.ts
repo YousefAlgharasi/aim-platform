@@ -10,13 +10,14 @@ import { UsersModule } from '../users';
 import { AdminController } from './admin.controller';
 import { AdminRoleAssignmentController } from './admin-role-assignment.controller';
 import { AdminRoleAssignmentService } from './admin-role-assignment.service';
+import { AdminRolesController } from './admin-roles.controller';
 import { AdminService } from './admin.service';
 import { AdminUsersController } from './users/admin-users.controller';
 import { AdminUsersService } from './users/admin-users.service';
 
 @Module({
   imports: [AuthModule, DatabaseModule, RolesModule, UsersModule],
-  controllers: [AdminController, AdminRoleAssignmentController, AdminUsersController],
+  controllers: [AdminController, AdminRoleAssignmentController, AdminRolesController, AdminUsersController],
   providers: [AdminService, AdminRoleAssignmentService, AdminUsersService],
   exports: [AdminService, AdminRoleAssignmentService],
 })
