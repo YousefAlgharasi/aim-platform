@@ -116,6 +116,20 @@ export async function fetchAdminLessons(
   return envelope.data;
 }
 
+export async function fetchAdminLesson(
+  token: string,
+  lessonId: string,
+): Promise<AdminLessonSummary> {
+  const envelope = await adminApiClient.get<AdminLessonSummary>(
+    `/curriculum/lessons/${encodeURIComponent(lessonId)}`,
+    decodeLessonSummary,
+    {
+      headers: { authorization: `Bearer ${token}` },
+    },
+  );
+  return envelope.data;
+}
+
 export async function createAdminLesson(
   token: string,
   chapterId: string,
