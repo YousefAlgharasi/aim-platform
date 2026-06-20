@@ -91,6 +91,12 @@ export class ParentChildLinkService {
     return rows.map((row) => this.toEntity(row));
   }
 
+  async findLinkById(linkId: string): Promise<ParentChildLinkEntity | null> {
+    const row = await this.parentRepository.findLinkById(linkId);
+
+    return row ? this.toEntity(row) : null;
+  }
+
   private toEntity(row: ParentChildLinkRow): ParentChildLinkEntity {
     const entity = new ParentChildLinkEntity();
 
