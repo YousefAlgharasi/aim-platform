@@ -1,7 +1,8 @@
-// P10-029: AssessmentResultService.
+// P10-029 / P10-040: AssessmentResultService.
 //
 // Scope: Persist the authoritative assessment result and per-question
 //        breakdown after grading (P10-027) and score policy (P10-028).
+//        List result history for a student on an assessment (P10-040).
 //
 // Security rules:
 //   - Called by the backend submission flow only — never by Flutter.
@@ -9,6 +10,7 @@
 //     backend ScoredResult only; no client-supplied values are accepted.
 //   - isCorrect in result_breakdowns is written from GradingOutcome only;
 //     the API layer (P10-034+) enforces feedback policy before returning it.
+//   - Result history scoped by student_id from JWT — never client-supplied.
 //   - No AIM Engine, AI Teacher, or progress-mutation calls here.
 //   - No secrets, service-role keys, DB credentials, or AI provider keys.
 
@@ -42,6 +44,24 @@ export interface PersistedResult {
   readonly passed: boolean;
   readonly latePenaltyApplied: boolean;
   readonly gradedAt: Date;
+}
+
+export interface ResultHistoryItem {
+  readonly resultId: string;
+  readonly attemptId: string;
+  readonly attemptNumber: number;
+  readonly score: number;
+  readonly maxScore: number;
+  readonly passed: boolean;
+  readonly latePenaltyApplied: boolean;
+  readonly gradedAt: Date;
+  readonly submittedAt: Date | null;
+}
+
+export interface ResultHistoryResponse {
+  readonly assessmentId: string;
+  readonly totalAttempts: number;
+  readonly results: readonly ResultHistoryItem[];
 }
 
 @Injectable()
@@ -154,6 +174,40 @@ export class AssessmentResultService {
         throw err;
       }
     });
+  }
+
+  /** List all graded results for a student on a given assessment (P10-040). */
+  async listByAssessment(assessmentId: string, studentId: string): Promise<ResultHistoryResponse> {
+    const res = await this.db.query<{
+      result_id: string; attempt_id: string; attempt_number: number;
+      score: number; max_score: number; passed: boolean;
+      late_penalty_applied: boolean; graded_at: Date; submitted_at: Date | null;
+    }>(
+      `SELECT r.id AS result_id, r.attempt_id, a.attempt_number,
+              r.score, r.max_score, r.passed, r.late_penalty_applied,
+              r.graded_at, a.submitted_at
+       FROM assessment_results r
+       JOIN assessment_attempts a ON a.id = r.attempt_id
+       WHERE r.assessment_id = $1 AND r.student_id = $2
+       ORDER BY a.attempt_number ASC`,
+      [assessmentId, studentId],
+    );
+
+    return {
+      assessmentId,
+      totalAttempts: res.rows.length,
+      results: res.rows.map(r => ({
+        resultId: r.result_id,
+        attemptId: r.attempt_id,
+        attemptNumber: r.attempt_number,
+        score: Number(r.score),
+        maxScore: Number(r.max_score),
+        passed: r.passed,
+        latePenaltyApplied: r.late_penalty_applied,
+        gradedAt: r.graded_at,
+        submittedAt: r.submitted_at,
+      })),
+    };
   }
 
   /** Read a result by attempt ID — for the result API (P10-034). */

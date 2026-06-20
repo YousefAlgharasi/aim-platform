@@ -1,10 +1,10 @@
-// P10-033: AssessmentController unit tests.
-//
-// Scope: Student Assessment List API only.
+// P10-033 / P10-040: AssessmentController unit tests.
 //
 // Coverage:
 //   - GET /student/assessments delegates to AssessmentService.listForStudent
 //     with the authenticated user's id (never client-supplied).
+//   - GET /student/assessments/:id/history delegates to
+//     AssessmentResultService.listByAssessment (P10-040).
 //   - Response never includes pass_threshold/late_penalty_percent/weight/
 //     correct_answer fields (verified by mock response shape contract).
 
@@ -19,6 +19,7 @@ import {
 import { AttemptLifecycleService, StartAttemptResult, ResumeAttemptResult } from './assessment-attempt.service';
 import { AssessmentSubmissionFlowService, SubmitAttemptApiResult } from './assessment-submission-flow.service';
 import { AssessmentFeedbackService, FeedbackSummary } from './assessment-feedback.service';
+import { AssessmentResultService, ResultHistoryResponse } from './assessment-result.service';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { AssessmentPermissionGuard } from './guards/assessment-permission.guard';
 import { AssessmentAttemptOwnershipGuard } from './guards/assessment-attempt-ownership.guard';
@@ -31,6 +32,7 @@ describe('AssessmentController', () => {
   let attemptLifecycleService: jest.Mocked<Pick<AttemptLifecycleService, 'startAttempt' | 'resumeAttempt'>>;
   let submissionFlowService: jest.Mocked<Pick<AssessmentSubmissionFlowService, 'submitAndGrade'>>;
   let feedbackService: jest.Mocked<Pick<AssessmentFeedbackService, 'getFeedback'>>;
+  let resultService: jest.Mocked<Pick<AssessmentResultService, 'listByAssessment'>>;
 
   const mockListItems: AssessmentListItem[] = [
     { id: 'assessment-1', type: 'quiz', title: 'Quiz 1', description: null, deadlineStatus: 'open' },
@@ -65,6 +67,16 @@ describe('AssessmentController', () => {
     late: [], missed: [], closed: [],
   };
 
+  const mockResultHistory: ResultHistoryResponse = {
+    assessmentId: 'assessment-1',
+    totalAttempts: 1,
+    results: [{
+      resultId: 'result-1', attemptId: 'att-1', attemptNumber: 1,
+      score: 8, maxScore: 10, passed: true, latePenaltyApplied: false,
+      gradedAt: new Date(), submittedAt: new Date(),
+    }],
+  };
+
   const mockFeedbackSummary: FeedbackSummary = {
     resultId: 'result-1', attemptId: 'att-1', score: 8, maxScore: 10, passed: true,
     latePenaltyApplied: false, gradedAt: new Date(), feedbackAllowed: true,
@@ -87,6 +99,9 @@ describe('AssessmentController', () => {
     feedbackService = {
       getFeedback: jest.fn().mockResolvedValue(mockFeedbackSummary),
     };
+    resultService = {
+      listByAssessment: jest.fn().mockResolvedValue(mockResultHistory),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AssessmentController],
@@ -95,6 +110,7 @@ describe('AssessmentController', () => {
         { provide: AttemptLifecycleService, useValue: attemptLifecycleService },
         { provide: AssessmentSubmissionFlowService, useValue: submissionFlowService },
         { provide: AssessmentFeedbackService, useValue: feedbackService },
+        { provide: AssessmentResultService, useValue: resultService },
       ],
     })
       .overrideGuard(SupabaseJwtAuthGuard)
@@ -284,6 +300,39 @@ describe('AssessmentController', () => {
       expect(result).not.toHaveProperty('maxScore');
       expect(result).not.toHaveProperty('passed');
       expect(result).not.toHaveProperty('latePenaltyApplied');
+    });
+  });
+
+  describe('getResultHistory', () => {
+    it('delegates to AssessmentResultService.listByAssessment with the JWT-derived user id', async () => {
+      const user = makeUser('student-1');
+      const result = await controller.getResultHistory('assessment-1', user);
+
+      expect(resultService.listByAssessment).toHaveBeenCalledWith('assessment-1', 'student-1');
+      expect(result).toEqual(mockResultHistory);
+    });
+
+    it('never trusts a client-supplied student id — only the JWT-derived user.id is used', async () => {
+      const user = makeUser('student-from-jwt');
+      await controller.getResultHistory('assessment-2', user);
+
+      expect(resultService.listByAssessment).toHaveBeenCalledTimes(1);
+      expect(resultService.listByAssessment).toHaveBeenCalledWith('assessment-2', 'student-from-jwt');
+    });
+
+    it('response exposes no backend-only fields (pass_threshold, late_penalty_percent, correct_answer)', async () => {
+      const user = makeUser('student-1');
+      const result = await controller.getResultHistory('assessment-1', user) as unknown as Record<string, unknown>;
+
+      expect(result).not.toHaveProperty('pass_threshold');
+      expect(result).not.toHaveProperty('late_penalty_percent');
+      expect(result).not.toHaveProperty('correct_answer');
+      const results = result['results'] as Record<string, unknown>[];
+      for (const item of results) {
+        expect(item).not.toHaveProperty('correct_answer');
+        expect(item).not.toHaveProperty('correctAnswer');
+        expect(item).not.toHaveProperty('pass_threshold');
+      }
     });
   });
 
