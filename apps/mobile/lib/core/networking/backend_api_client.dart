@@ -102,6 +102,19 @@ class BackendApiClient {
     return _parseResponse<T>(response, decodeData: decodeData);
   }
 
+  Future<ApiResponseEnvelope<T>> delete<T>(
+    String path, {
+    required ApiJsonDecoder<T> decodeData,
+    Map<String, String>? headers,
+  }) async {
+    final response = await _httpClient.delete(
+      buildUri(path),
+      headers: _jsonHeaders(headers),
+    );
+
+    return _parseResponse<T>(response, decodeData: decodeData);
+  }
+
   // ---------------------------------------------------------------------------
   // Response parsing
   // ---------------------------------------------------------------------------
