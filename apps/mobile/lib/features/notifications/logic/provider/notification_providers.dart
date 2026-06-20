@@ -12,6 +12,7 @@ import 'notification_inbox_notifier.dart';
 import 'notification_preferences_notifier.dart';
 import 'quiet_hours_notifier.dart';
 import 'reminder_schedule_notifier.dart';
+import 'unread_count_notifier.dart';
 
 // P13-053/P13-055: Notification feature providers.
 //
@@ -52,6 +53,15 @@ final notificationPreferencesProvider = StateNotifierProvider.autoDispose<
 final notificationRemindersProvider = StateNotifierProvider.autoDispose<
     ReminderScheduleNotifier, AppAsyncState<List<ReminderScheduleModel>>>(
   (ref) => ReminderScheduleNotifier(
+    repository: ref.watch(notificationRepositoryProvider),
+  ),
+);
+
+/// Holds the unread in-app notification count, used to drive unread
+/// badges/indicators in navigation.
+final notificationUnreadCountProvider = StateNotifierProvider.autoDispose<
+    UnreadCountNotifier, AppAsyncState<int>>(
+  (ref) => UnreadCountNotifier(
     repository: ref.watch(notificationRepositoryProvider),
   ),
 );
