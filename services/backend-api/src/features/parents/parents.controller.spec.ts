@@ -8,6 +8,7 @@ const PARENT_ID = 'parent-uuid-001';
 function buildController(overrides: {
   links?: Array<Record<string, unknown>>;
   findByUserId?: jest.Mock;
+  getSummaryForParent?: jest.Mock;
 } = {}) {
   const parentChildLinkService = {
     listLinksForParent: jest.fn().mockResolvedValue(
@@ -28,12 +29,19 @@ function buildController(overrides: {
       overrides.findByUserId ?? jest.fn().mockResolvedValue({ displayName: 'Child One' }),
   };
 
+  const parentDashboardSummaryService = {
+    getSummaryForParent:
+      overrides.getSummaryForParent ??
+      jest.fn().mockResolvedValue({ parentId: PARENT_ID, children: [] }),
+  };
+
   const controller = new ParentsController(
     parentChildLinkService as never,
     studentsService as never,
+    parentDashboardSummaryService as never,
   );
 
-  return { controller, parentChildLinkService, studentsService };
+  return { controller, parentChildLinkService, studentsService, parentDashboardSummaryService };
 }
 
 describe('ParentsController', () => {
@@ -83,6 +91,17 @@ describe('ParentsController', () => {
       const result = await controller.listChildren({ id: PARENT_ID } as never);
 
       expect(result[0].displayName).toBe('child-1');
+    });
+  });
+
+  describe('getDashboardSummary', () => {
+    it('delegates to ParentDashboardSummaryService for the authenticated parent', async () => {
+      const { controller, parentDashboardSummaryService } = buildController();
+
+      const result = await controller.getDashboardSummary({ id: PARENT_ID } as never);
+
+      expect(parentDashboardSummaryService.getSummaryForParent).toHaveBeenCalledWith(PARENT_ID);
+      expect(result).toEqual({ parentId: PARENT_ID, children: [] });
     });
   });
 });
