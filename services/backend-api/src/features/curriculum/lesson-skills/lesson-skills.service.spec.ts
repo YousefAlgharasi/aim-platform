@@ -1,12 +1,17 @@
 import { HttpStatus } from '@nestjs/common';
 import { LessonSkillsService } from './lesson-skills.service';
 import { DatabaseService } from '../../../database/database.service';
+import { CurriculumAuditLogService } from '../curriculum-audit-log/curriculum-audit-log.service';
 
 const mockDb = {
   query: jest.fn(),
 } as unknown as DatabaseService;
 
-const service = new LessonSkillsService(mockDb);
+const mockAuditLog = {
+  log: jest.fn().mockResolvedValue(undefined),
+} as unknown as CurriculumAuditLogService;
+
+const service = new LessonSkillsService(mockDb, mockAuditLog);
 
 beforeEach(() => jest.clearAllMocks());
 
