@@ -15,6 +15,7 @@ import { RolesModule } from './roles/roles.module';
 import { SessionsModule } from './sessions/sessions.module';
 import { StudentsModule } from './students/students.module';
 import { UsersModule } from './users/users.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { VoiceTeacherModule } from './voice-teacher/voice-teacher.module';
 
 @Module({
@@ -35,6 +36,7 @@ import { VoiceTeacherModule } from './voice-teacher/voice-teacher.module';
     CurriculumModule,
     PlacementModule,
     AssessmentsModule,
+    NotificationsModule,
   ],
   exports: [
     AuthModule,
@@ -53,6 +55,7 @@ import { VoiceTeacherModule } from './voice-teacher/voice-teacher.module';
     CurriculumModule,
     PlacementModule,
     AssessmentsModule,
+    NotificationsModule,
   ],
 })
 export class FeaturesModule {}
