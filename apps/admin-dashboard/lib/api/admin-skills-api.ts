@@ -71,18 +71,38 @@ function decodeSkillListData(value: unknown): AdminSkillListData {
   };
 }
 
+export type FetchAdminSkillsOptions = {
+  readonly token: string;
+  readonly page?: number;
+  readonly limit?: number;
+  readonly status?: SkillStatus;
+  readonly domain?: SkillDomain;
+  readonly q?: string;
+};
+
 export async function fetchAdminSkills(
-  token: string,
+  tokenOrOptions: string | FetchAdminSkillsOptions,
   page = 1,
   limit = 20,
   status?: SkillStatus,
 ): Promise<AdminSkillListData> {
+  const opts: FetchAdminSkillsOptions =
+    typeof tokenOrOptions === 'string'
+      ? { token: tokenOrOptions, page, limit, status }
+      : tokenOrOptions;
+
   const envelope = await adminApiClient.get<AdminSkillListData>(
     '/curriculum/skills',
     decodeSkillListData,
     {
-      headers: { authorization: `Bearer ${token}` },
-      query: { page, limit, ...(status ? { status } : {}) },
+      headers: { authorization: `Bearer ${opts.token}` },
+      query: {
+        page: opts.page ?? 1,
+        limit: opts.limit ?? 20,
+        ...(opts.status ? { status: opts.status } : {}),
+        ...(opts.domain ? { domain: opts.domain } : {}),
+        ...(opts.q ? { q: opts.q } : {}),
+      },
     },
   );
   return envelope.data;
