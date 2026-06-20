@@ -6,6 +6,8 @@ import { AdminApiClientError } from '../../../../lib/api';
 import {
   fetchAdminAssessmentDetail,
   updateAdminAssessment,
+  publishAdminAssessment,
+  unpublishAdminAssessment,
   type AdminAssessmentSettings,
 } from '../../../../lib/api/admin-assessments-api';
 import { fetchAdminQuestions } from '../../../../lib/api/admin-question-bank-api';
@@ -13,6 +15,7 @@ import { AssessmentEditorClient } from './assessment-editor-client';
 import { AssessmentQuestionBuilder } from './question-builder';
 import { AssessmentSettings } from './assessment-settings';
 import { DeadlineManagement } from './deadline-management';
+import { AssessmentPublishing } from './assessment-publishing';
 
 type Props = {
   params: Promise<{ assessmentId: string }>;
@@ -55,6 +58,54 @@ export default async function AdminAssessmentDetailPage({ params }: Props) {
         err instanceof AdminApiClientError
           ? `Backend error ${err.status}: ${err.message}`
           : 'Failed to update assessment.';
+      return { error: msg };
+    }
+  }
+
+  async function handlePublish(): Promise<{ error?: string }> {
+    'use server';
+    const cookieStore = await cookies();
+    const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      await publishAdminAssessment(token, assessmentId);
+      return {};
+    } catch (err) {
+      const msg =
+        err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to publish assessment.';
+      return { error: msg };
+    }
+  }
+
+  async function handleUnpublish(): Promise<{ error?: string }> {
+    'use server';
+    const cookieStore = await cookies();
+    const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      await unpublishAdminAssessment(token, assessmentId);
+      return {};
+    } catch (err) {
+      const msg =
+        err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to unpublish assessment.';
+      return { error: msg };
+    }
+  }
+
+  async function handleArchive(): Promise<{ error?: string }> {
+    'use server';
+    const cookieStore = await cookies();
+    const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      await updateAdminAssessment(token, assessmentId, { status: 'archived' } as never);
+      return {};
+    } catch (err) {
+      const msg =
+        err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to archive assessment.';
       return { error: msg };
     }
   }
@@ -166,6 +217,14 @@ export default async function AdminAssessmentDetailPage({ params }: Props) {
       {assessment && (
         <>
           <AssessmentEditorClient assessment={assessment} onUpdate={handleUpdate} />
+          <AssessmentPublishing
+            assessmentId={assessmentId}
+            status={assessment.status}
+            questionCount={assessment.questionIds.length}
+            onPublish={handlePublish}
+            onUnpublish={handleUnpublish}
+            onArchive={handleArchive}
+          />
           <AssessmentSettings
             assessmentId={assessmentId}
             settings={assessment.settings}
