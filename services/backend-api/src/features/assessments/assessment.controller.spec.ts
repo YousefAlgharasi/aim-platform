@@ -16,7 +16,7 @@ import {
   AssessmentDetailWithDeadline,
   StudentDeadlinesResponse,
 } from './assessment.service';
-import { AttemptLifecycleService, StartAttemptResult } from './assessment-attempt.service';
+import { AttemptLifecycleService, StartAttemptResult, ResumeAttemptResult } from './assessment-attempt.service';
 import { AssessmentSubmissionFlowService, SubmitAttemptApiResult } from './assessment-submission-flow.service';
 import { AssessmentFeedbackService, FeedbackSummary } from './assessment-feedback.service';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
@@ -28,7 +28,7 @@ import { AuthenticatedUser } from '../../auth/authenticated-user';
 describe('AssessmentController', () => {
   let controller: AssessmentController;
   let assessmentService: jest.Mocked<Pick<AssessmentService, 'listForStudent' | 'getDetailWithDeadline' | 'listDeadlinesForStudent'>>;
-  let attemptLifecycleService: jest.Mocked<Pick<AttemptLifecycleService, 'startAttempt'>>;
+  let attemptLifecycleService: jest.Mocked<Pick<AttemptLifecycleService, 'startAttempt' | 'resumeAttempt'>>;
   let submissionFlowService: jest.Mocked<Pick<AssessmentSubmissionFlowService, 'submitAndGrade'>>;
   let feedbackService: jest.Mocked<Pick<AssessmentFeedbackService, 'getFeedback'>>;
 
@@ -79,6 +79,7 @@ describe('AssessmentController', () => {
     };
     attemptLifecycleService = {
       startAttempt: jest.fn().mockResolvedValue(mockStartAttemptResult),
+      resumeAttempt: jest.fn().mockResolvedValue({ attemptId: 'att-1', status: 'in_progress', expiresAt: null } as ResumeAttemptResult),
     };
     submissionFlowService = {
       submitAndGrade: jest.fn().mockResolvedValue(mockSubmitAttemptResult),
@@ -226,6 +227,35 @@ describe('AssessmentController', () => {
       expect(result).not.toHaveProperty('pass_threshold');
       expect(result).not.toHaveProperty('late_penalty_percent');
       expect(result).not.toHaveProperty('correct_answer');
+    });
+  });
+
+  describe('resumeAttempt', () => {
+    it('delegates to AttemptLifecycleService.resumeAttempt with the JWT-derived user id', async () => {
+      const user = makeUser('student-1');
+      const result = await controller.resumeAttempt('att-1', user);
+
+      expect(attemptLifecycleService.resumeAttempt).toHaveBeenCalledWith('att-1', 'student-1');
+      expect(result).toEqual({ attemptId: 'att-1', status: 'in_progress', expiresAt: null });
+    });
+
+    it('never trusts a client-supplied student id — only the JWT-derived user.id is used', async () => {
+      const user = makeUser('student-from-jwt');
+      await controller.resumeAttempt('att-2', user);
+
+      expect(attemptLifecycleService.resumeAttempt).toHaveBeenCalledTimes(1);
+      expect(attemptLifecycleService.resumeAttempt).toHaveBeenCalledWith('att-2', 'student-from-jwt');
+    });
+
+    it('response exposes no backend-only fields (pass_threshold, late_penalty_percent, correct_answer, score)', async () => {
+      const user = makeUser('student-1');
+      const result = await controller.resumeAttempt('att-1', user) as unknown as Record<string, unknown>;
+
+      expect(result).not.toHaveProperty('pass_threshold');
+      expect(result).not.toHaveProperty('late_penalty_percent');
+      expect(result).not.toHaveProperty('correct_answer');
+      expect(result).not.toHaveProperty('score');
+      expect(result).not.toHaveProperty('passed');
     });
   });
 
