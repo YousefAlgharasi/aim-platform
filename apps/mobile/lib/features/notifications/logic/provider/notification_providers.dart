@@ -11,6 +11,7 @@ import '../repository/notification_repository.dart';
 import 'notification_inbox_notifier.dart';
 import 'notification_preferences_notifier.dart';
 import 'quiet_hours_notifier.dart';
+import 'reminder_schedule_notifier.dart';
 
 // P13-053/P13-055: Notification feature providers.
 //
@@ -48,10 +49,12 @@ final notificationPreferencesProvider = StateNotifierProvider.autoDispose<
 );
 
 /// Holds the user's active reminder schedules.
-final notificationRemindersProvider = StateProvider<
-    AppAsyncState<List<ReminderScheduleModel>>>((ref) {
-  return const AppAsyncState.idle();
-});
+final notificationRemindersProvider = StateNotifierProvider.autoDispose<
+    ReminderScheduleNotifier, AppAsyncState<List<ReminderScheduleModel>>>(
+  (ref) => ReminderScheduleNotifier(
+    repository: ref.watch(notificationRepositoryProvider),
+  ),
+);
 
 /// Holds the user's quiet hours settings.
 final notificationQuietHoursProvider = StateNotifierProvider.autoDispose<
