@@ -8,6 +8,7 @@ import { ParentAccessPolicyService } from './parent-access-policy.service';
 import { ParentChildLinkService } from './parent-child-link.service';
 import { ParentConsentService } from './parent-consent.service';
 import { ParentChildProgressService } from './parent-child-progress.service';
+import { ParentAssessmentSummaryService } from './parent-assessment-summary.service';
 import { ParentDashboardSummaryService } from './parent-dashboard-summary.service';
 import { ParentRepository } from './parent.repository';
 import { ParentChildAccessGuard } from './guards';
@@ -26,6 +27,7 @@ import { ParentsService } from './parents.service';
     ParentChildAccessGuard,
     ParentDashboardSummaryService,
     ParentChildProgressService,
+    ParentAssessmentSummaryService,
   ],
   exports: [
     ParentsService,
@@ -36,6 +38,7 @@ import { ParentsService } from './parents.service';
     ParentChildAccessGuard,
     ParentDashboardSummaryService,
     ParentChildProgressService,
+    ParentAssessmentSummaryService,
   ],
 })
 export class ParentsModule {}
