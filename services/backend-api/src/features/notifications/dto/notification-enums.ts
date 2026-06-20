@@ -2,17 +2,21 @@
 // Shared enums for the notification/reminder domain. Values must match the
 // CHECK constraints defined in the Phase 13 migrations.
 
-export type NotificationChannel = 'in_app' | 'push' | 'email';
+export const NOTIFICATION_CHANNELS = ['in_app', 'push', 'email'] as const;
+export type NotificationChannel = (typeof NOTIFICATION_CHANNELS)[number];
 
-export type NotificationCategory =
-  | 'learning_reminder'
-  | 'deadline_reminder'
-  | 'progress_update'
-  | 'assessment_result'
-  | 'parent_summary'
-  | 'system_alert';
+export const NOTIFICATION_CATEGORIES = [
+  'learning_reminder',
+  'deadline_reminder',
+  'progress_update',
+  'assessment_result',
+  'parent_summary',
+  'system_alert',
+] as const;
+export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
 
-export type NotificationLocale = 'en' | 'ar';
+export const NOTIFICATION_LOCALES = ['en', 'ar'] as const;
+export type NotificationLocale = (typeof NOTIFICATION_LOCALES)[number];
 
 export type NotificationTemplateStatus = 'active' | 'disabled';
 
@@ -27,16 +31,15 @@ export type NotificationEventState =
   | 'dismissed'
   | 'read';
 
-export type DeviceTokenPlatform = 'ios' | 'android';
+// Must match the `platform` CHECK constraint in the device_tokens migration.
+export const DEVICE_TOKEN_PLATFORMS = ['ios', 'android'] as const;
+export type DeviceTokenPlatform = (typeof DEVICE_TOKEN_PLATFORMS)[number];
 
 export type DeviceTokenStatus = 'active' | 'revoked' | 'stale';
 
-export type ReminderScheduleKind =
-  | 'learning_plan'
-  | 'review'
-  | 'deadline'
-  | 'streak'
-  | 'custom';
+export const REMINDER_TYPES = ['learning_plan', 'review', 'deadline', 'streak', 'custom'] as const;
+export type ReminderScheduleKind = (typeof REMINDER_TYPES)[number];
+export type ReminderType = ReminderScheduleKind;
 
 export type ReminderScheduleStatus = 'active' | 'paused' | 'completed' | 'cancelled';
 
