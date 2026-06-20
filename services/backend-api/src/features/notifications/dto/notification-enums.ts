@@ -1,75 +1,59 @@
-export const NOTIFICATION_CHANNELS = ['in_app', 'push', 'email'] as const;
-export type NotificationChannel = (typeof NOTIFICATION_CHANNELS)[number];
+// P13-020: Create Notification DTOs and Entities
+// Shared enums for the notification/reminder domain. Values must match the
+// CHECK constraints defined in the Phase 13 migrations.
 
-export const NOTIFICATION_CATEGORIES = [
-  'learning_reminder',
-  'deadline_reminder',
-  'progress_update',
-  'assessment_result',
-  'parent_summary',
-  'system_alert',
-] as const;
-export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
+export type NotificationChannel = 'in_app' | 'push' | 'email';
 
-export const NOTIFICATION_TEMPLATE_STATUSES = ['active', 'disabled'] as const;
-export type NotificationTemplateStatus = (typeof NOTIFICATION_TEMPLATE_STATUSES)[number];
+export type NotificationCategory =
+  | 'learning_reminder'
+  | 'deadline_reminder'
+  | 'progress_update'
+  | 'assessment_result'
+  | 'parent_summary'
+  | 'system_alert';
 
-export const NOTIFICATION_LOCALES = ['en', 'ar'] as const;
-export type NotificationLocale = (typeof NOTIFICATION_LOCALES)[number];
+export type NotificationLocale = 'en' | 'ar';
 
-export const NOTIFICATION_EVENT_STATUSES = [
-  'scheduled',
-  'queued',
-  'sent',
-  'failed',
-  'dismissed',
-  'read',
-] as const;
-export type NotificationEventStatus = (typeof NOTIFICATION_EVENT_STATUSES)[number];
+export type NotificationTemplateStatus = 'active' | 'disabled';
 
-export const NOTIFICATION_USER_TYPES = ['student', 'parent'] as const;
-export type NotificationUserType = (typeof NOTIFICATION_USER_TYPES)[number];
+export type NotificationRecipientType = 'student' | 'parent';
 
-export const DEVICE_TOKEN_PLATFORMS = ['ios', 'android', 'web'] as const;
-export type DeviceTokenPlatform = (typeof DEVICE_TOKEN_PLATFORMS)[number];
+export type NotificationEventState =
+  | 'scheduled'
+  | 'queued'
+  | 'sent'
+  | 'failed'
+  | 'delivered'
+  | 'dismissed'
+  | 'read';
 
-export const DEVICE_TOKEN_STATUSES = ['active', 'disabled', 'expired'] as const;
-export type DeviceTokenStatus = (typeof DEVICE_TOKEN_STATUSES)[number];
+export type DeviceTokenPlatform = 'ios' | 'android';
 
-export const REMINDER_TYPES = [
-  'learning_plan',
-  'review_schedule',
-  'deadline',
-  'streak',
-  'custom',
-] as const;
-export type ReminderType = (typeof REMINDER_TYPES)[number];
+export type DeviceTokenStatus = 'active' | 'revoked' | 'stale';
 
-export const REMINDER_SCHEDULE_STATUSES = ['active', 'paused', 'completed', 'cancelled'] as const;
-export type ReminderScheduleStatus = (typeof REMINDER_SCHEDULE_STATUSES)[number];
+export type ReminderScheduleKind =
+  | 'learning_plan'
+  | 'review'
+  | 'deadline'
+  | 'streak'
+  | 'custom';
 
-export const DELIVERY_ATTEMPT_STATUSES = ['pending', 'success', 'failed'] as const;
-export type DeliveryAttemptStatus = (typeof DELIVERY_ATTEMPT_STATUSES)[number];
+export type ReminderScheduleStatus = 'active' | 'paused' | 'completed' | 'cancelled';
 
-export const DIGEST_FREQUENCIES = ['daily', 'weekly'] as const;
-export type DigestFrequency = (typeof DIGEST_FREQUENCIES)[number];
+export type DeliveryAttemptStatus = 'pending' | 'success' | 'failed';
 
-export const DIGEST_STATUSES = ['pending', 'sent', 'failed'] as const;
-export type DigestStatus = (typeof DIGEST_STATUSES)[number];
+export type DigestPeriod = 'daily' | 'weekly';
 
-export const NOTIFICATION_AUDIT_EVENT_TYPES = [
-  'preference_updated',
-  'token_registered',
-  'token_disabled',
-  'schedule_created',
-  'schedule_paused',
-  'schedule_cancelled',
-  'notification_sent',
-  'notification_failed',
-  'notification_read',
-  'notification_dismissed',
-  'quiet_hours_updated',
-  'rate_limit_hit',
-  'digest_sent',
-] as const;
-export type NotificationAuditEventType = (typeof NOTIFICATION_AUDIT_EVENT_TYPES)[number];
+export type DigestState = 'pending' | 'sent';
+
+export type NotificationAuditActorType = 'student' | 'parent' | 'admin' | 'system';
+
+export type NotificationAuditEntityType =
+  | 'notification_template'
+  | 'notification_preference'
+  | 'device_token'
+  | 'notification_event'
+  | 'reminder_schedule'
+  | 'notification_delivery_attempt'
+  | 'notification_digest'
+  | 'notification_quiet_hours';

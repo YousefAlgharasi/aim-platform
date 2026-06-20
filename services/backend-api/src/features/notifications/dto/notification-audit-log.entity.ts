@@ -1,25 +1,15 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { NotificationAuditEventType } from './notification-enums';
+import { NotificationAuditActorType, NotificationAuditEntityType } from './notification-enums';
 
+// `metadata` must remain safe and non-sensitive per
+// docs/phase-13/notification-privacy-rules.md -- never notification body
+// content, provider credentials, or child personal data beyond opaque ids.
 export class NotificationAuditLogEntity {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty()
-  userId!: string;
-
-  @ApiProperty()
-  eventType!: NotificationAuditEventType;
-
-  @ApiProperty({ nullable: true })
-  resourceId!: string | null;
-
-  @ApiProperty({ nullable: true })
-  resourceType!: string | null;
-
-  @ApiProperty({ nullable: true, description: 'Safe metadata only — no secrets or sensitive data' })
-  metadata!: Record<string, unknown> | null;
-
-  @ApiProperty()
-  createdAt!: string;
+  id: string;
+  actorId: string | null;
+  actorType: NotificationAuditActorType;
+  action: string;
+  entityType: NotificationAuditEntityType;
+  entityId: string;
+  metadata: Record<string, unknown>;
+  createdAt: Date;
 }
