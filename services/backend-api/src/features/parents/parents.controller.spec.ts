@@ -12,6 +12,7 @@ function buildController(overrides: {
   getProgressForParent?: jest.Mock;
   getAssessmentSummaryForParent?: jest.Mock;
   getActivitySummaryForParent?: jest.Mock;
+  getReportForParent?: jest.Mock;
 } = {}) {
   const parentChildLinkService = {
     listLinksForParent: jest.fn().mockResolvedValue(
@@ -56,6 +57,12 @@ function buildController(overrides: {
       jest.fn().mockResolvedValue({ childId: 'child-1', recentSessions: [], lastActiveAt: null }),
   };
 
+  const parentReportService = {
+    getReportForParent:
+      overrides.getReportForParent ??
+      jest.fn().mockResolvedValue({ childId: 'child-1', reportType: 'weekly', summary: 'ok' }),
+  };
+
   const controller = new ParentsController(
     parentChildLinkService as never,
     studentsService as never,
@@ -63,6 +70,7 @@ function buildController(overrides: {
     parentChildProgressService as never,
     parentAssessmentSummaryService as never,
     parentActivitySummaryService as never,
+    parentReportService as never,
   );
 
   return {
@@ -73,6 +81,7 @@ function buildController(overrides: {
     parentChildProgressService,
     parentAssessmentSummaryService,
     parentActivitySummaryService,
+    parentReportService,
   };
 }
 
@@ -173,6 +182,31 @@ describe('ParentsController', () => {
         'child-1',
       );
       expect(result).toEqual({ childId: 'child-1', recentSessions: [], lastActiveAt: null });
+    });
+  });
+
+  describe('getChildReport', () => {
+    it('delegates to ParentReportService with the authenticated parent, childId, and requested period', async () => {
+      const { controller, parentReportService } = buildController();
+
+      const result = await controller.getChildReport({ id: PARENT_ID } as never, 'child-1', {
+        period: 'monthly',
+      });
+
+      expect(parentReportService.getReportForParent).toHaveBeenCalledWith(
+        PARENT_ID,
+        'child-1',
+        'monthly',
+      );
+      expect(result).toEqual({ childId: 'child-1', reportType: 'weekly', summary: 'ok' });
+    });
+
+    it('defaults to a weekly report when no period is given', async () => {
+      const { controller, parentReportService } = buildController();
+
+      await controller.getChildReport({ id: PARENT_ID } as never, 'child-1', {});
+
+      expect(parentReportService.getReportForParent).toHaveBeenCalledWith(PARENT_ID, 'child-1', 'weekly');
     });
   });
 });
