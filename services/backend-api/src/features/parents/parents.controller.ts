@@ -4,7 +4,7 @@
 // parent), so it requires authentication only — no per-child guard is
 // needed since no single child id is taken from client input.
 
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
@@ -18,12 +18,16 @@ import { ParentAssessmentSummaryEntity } from './dto/parent-assessment-summary.e
 import { ParentActivitySummaryEntity } from './dto/parent-activity-summary.entity';
 import { ParentChildReportEntity } from './dto/parent-child-report.entity';
 import { GetParentReportRequestDto } from './dto/get-parent-report-request.dto';
+import { ParentInvitationEntity } from './dto/parent-invitation.entity';
+import { CreateParentInvitationRequestDto } from './dto/create-parent-invitation-request.dto';
+import { AcceptParentInvitationRequestDto } from './dto/accept-parent-invitation-request.dto';
 import { ParentChildLinkService } from './parent-child-link.service';
 import { ParentDashboardSummaryService } from './parent-dashboard-summary.service';
 import { ParentChildProgressService } from './parent-child-progress.service';
 import { ParentAssessmentSummaryService } from './parent-assessment-summary.service';
 import { ParentActivitySummaryService } from './parent-activity-summary.service';
 import { ParentReportService } from './parent-report.service';
+import { ParentInvitationService } from './parent-invitation.service';
 import { RequireParentChildAccess, ParentChildAccessGuard } from './guards';
 
 @ApiTags('Parent')
@@ -38,6 +42,7 @@ export class ParentsController {
     private readonly parentAssessmentSummaryService: ParentAssessmentSummaryService,
     private readonly parentActivitySummaryService: ParentActivitySummaryService,
     private readonly parentReportService: ParentReportService,
+    private readonly parentInvitationService: ParentInvitationService,
   ) {}
 
   @Get('children')
@@ -124,5 +129,52 @@ export class ParentsController {
     @Query() query: GetParentReportRequestDto,
   ): Promise<ParentChildReportEntity> {
     return this.parentReportService.getReportForParent(user.id, childId, query.period ?? 'weekly');
+  }
+
+  @Post('invitations')
+  @UseGuards(SupabaseJwtAuthGuard)
+  @ApiOperation({ summary: 'Create a pending parent-child invitation.' })
+  @ApiOkResponse({ type: ParentInvitationEntity })
+  async createInvitation(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() body: CreateParentInvitationRequestDto,
+  ): Promise<ParentInvitationEntity> {
+    return this.parentInvitationService.createInvitation(
+      user.id,
+      body.relationshipType,
+      body.childEmail,
+      body.childId,
+    );
+  }
+
+  @Post('invitations/accept')
+  @UseGuards(SupabaseJwtAuthGuard)
+  @ApiOperation({ summary: 'Accept a pending invitation by its code, establishing an active link.' })
+  @ApiOkResponse({ type: ParentInvitationEntity })
+  async acceptInvitation(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() body: AcceptParentInvitationRequestDto,
+  ): Promise<ParentInvitationEntity> {
+    return this.parentInvitationService.acceptInvitation(user.id, body.invitationCode);
+  }
+
+  @Post('invitations/:invitationId/revoke')
+  @UseGuards(SupabaseJwtAuthGuard)
+  @ApiOperation({ summary: "Revoke one of the authenticated parent's own pending invitations." })
+  @ApiParam({ name: 'invitationId' })
+  @ApiOkResponse({ type: ParentInvitationEntity })
+  async revokeInvitation(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('invitationId') invitationId: string,
+  ): Promise<ParentInvitationEntity> {
+    return this.parentInvitationService.revokeInvitation(user.id, invitationId);
+  }
+
+  @Get('invitations')
+  @UseGuards(SupabaseJwtAuthGuard)
+  @ApiOperation({ summary: "List the authenticated parent's invitations." })
+  @ApiOkResponse({ type: ParentInvitationEntity, isArray: true })
+  async listInvitations(@CurrentUser() user: AuthenticatedUser): Promise<ParentInvitationEntity[]> {
+    return this.parentInvitationService.listInvitationsForParent(user.id);
   }
 }
