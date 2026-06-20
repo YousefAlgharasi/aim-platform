@@ -16,6 +16,7 @@
 
 export 'ui/pages/notifications_placeholder_page.dart';
 export 'ui/pages/notification_inbox_page.dart';
+export 'ui/pages/notification_detail_page.dart';
 export 'data/models/notification_models.dart';
 export 'data/datasources/notification_datasources.dart';
 export 'data/repository/repo_impl/notification_repository_impl.dart';
