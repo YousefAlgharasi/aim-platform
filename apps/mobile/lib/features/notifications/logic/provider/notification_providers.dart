@@ -8,8 +8,9 @@ import '../../data/datasources/notification_remote_datasource_impl.dart';
 import '../../data/repository/repo_impl/notification_repository_impl.dart';
 import '../entity/notification_entities.dart';
 import '../repository/notification_repository.dart';
+import 'notification_inbox_notifier.dart';
 
-// P13-053: Notification feature providers.
+// P13-053/P13-055: Notification feature providers.
 //
 // These only expose backend-returned state to the UI. Eligibility, delivery
 // state, quiet-hour enforcement, and token validity are never computed here.
@@ -27,15 +28,12 @@ final notificationRepositoryProvider = Provider<NotificationRepository>(
   ),
 );
 
-/// Holds the in-app notification inbox state for the current user.
-final notificationInboxProvider = StateProvider<
-    AppAsyncState<List<NotificationEventModel>>>((ref) {
-  return const AppAsyncState.idle();
-});
-
-/// Holds the unread notification count badge state.
-final notificationUnreadCountProvider = StateProvider<AppAsyncState<int>>(
-  (ref) => const AppAsyncState.idle(),
+/// In-app notification inbox screen state.
+final notificationInboxProvider = StateNotifierProvider.autoDispose<
+    NotificationInboxNotifier, AppAsyncState<List<NotificationEventModel>>>(
+  (ref) => NotificationInboxNotifier(
+    repository: ref.watch(notificationRepositoryProvider),
+  ),
 );
 
 /// Holds the user's notification channel/category preferences.
