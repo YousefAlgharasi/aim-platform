@@ -1,4 +1,4 @@
-// P10-055: AssessmentDetailPage — displays assessment info before attempt.
+// P10-055/P10-057: AssessmentDetailPage — displays assessment info before attempt.
 // All data is backend-supplied; Flutter never computes deadline status.
 
 import 'package:flutter/material.dart';
@@ -41,6 +41,16 @@ class _AssessmentDetailPageState extends ConsumerState<AssessmentDetailPage> {
         );
   }
 
+  void _navigateToStartAttempt(AssessmentDetail detail) {
+    Navigator.of(context).pushNamed(
+      '/student/assessments/start',
+      arguments: {
+        'assessmentId': detail.id,
+        'assessmentTitle': detail.title,
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(assessmentDetailProvider);
@@ -55,7 +65,10 @@ class _AssessmentDetailPageState extends ConsumerState<AssessmentDetailPage> {
             message: message,
             onRetry: _load,
           ),
-        AppAsyncSuccess(:final data) => _AssessmentDetailContent(detail: data),
+        AppAsyncSuccess(:final data) => _AssessmentDetailContent(
+            detail: data,
+            onStartAttempt: () => _navigateToStartAttempt(data),
+          ),
         AppAsyncIdle() => AIMFullScreenLoading(
             semanticLabel: 'Loading assessment',
           ),
@@ -65,9 +78,13 @@ class _AssessmentDetailPageState extends ConsumerState<AssessmentDetailPage> {
 }
 
 class _AssessmentDetailContent extends StatelessWidget {
-  const _AssessmentDetailContent({required this.detail});
+  const _AssessmentDetailContent({
+    required this.detail,
+    required this.onStartAttempt,
+  });
 
   final AssessmentDetail detail;
+  final VoidCallback onStartAttempt;
 
   @override
   Widget build(BuildContext context) {
@@ -135,6 +152,15 @@ class _AssessmentDetailContent extends StatelessWidget {
             ),
           ),
         ],
+
+        const SizedBox(height: AimSpacing.sectionGap),
+        AIMButton(
+          onPressed: onStartAttempt,
+          fullWidth: true,
+          size: AIMButtonSize.large,
+          semanticLabel: 'Start attempt for ${detail.title}',
+          child: const Text('Start Attempt'),
+        ),
       ],
     );
   }
