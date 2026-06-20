@@ -220,7 +220,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
       {data && data.users.length === 0 && !fetchError && (
         <AdminEmptyState
           title="No users found"
-          message={
+          description={
             status || userType || email
               ? 'Try adjusting the filters above.'
               : 'No users have been created yet.'
