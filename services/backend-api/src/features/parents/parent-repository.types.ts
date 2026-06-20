@@ -42,6 +42,16 @@ export interface ParentConsentRow {
   updated_at: Date;
 }
 
+export interface ParentNotificationPreferenceRow {
+  id: string;
+  parent_id: string;
+  channel: string;
+  category: string;
+  enabled: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
 export interface ParentAccessAuditLogRow {
   id: string;
   parent_id: string;
