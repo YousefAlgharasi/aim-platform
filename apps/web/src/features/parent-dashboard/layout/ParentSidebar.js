@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { key: 'assessments', label: 'التقييمات', icon: '📝' },
   { key: 'activity', label: 'النشاط', icon: '📅' },
   { key: 'reports', label: 'التقارير', icon: '📄' },
+  { key: 'notifications', label: 'الإشعارات', icon: '🔔' },
   { key: 'consent', label: 'الموافقات', icon: '🔒' },
   { key: 'settings', label: 'الإعدادات', icon: '⚙️' },
 ];

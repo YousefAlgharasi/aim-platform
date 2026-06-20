@@ -11,3 +11,4 @@ export { default as ParentDeadlineStatus } from './ParentDeadlineStatus';
 export { default as ParentActivity } from './ParentActivity';
 export { default as ParentReports } from './ParentReports';
 export { default as ParentNotificationPreferences } from './ParentNotificationPreferences';
+export { default as ParentNotifications } from './ParentNotifications';
