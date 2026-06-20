@@ -12,7 +12,9 @@ import { CurrentUser } from '../../auth/current-user.decorator';
 import { AuthenticatedUser } from '../../auth/authenticated-user';
 import { StudentsService } from '../students/students.service';
 import { ParentChildSummaryEntity } from './dto/parent-child-summary.entity';
+import { ParentDashboardSummaryDto } from './dto/parent-dashboard-summary.dto';
 import { ParentChildLinkService } from './parent-child-link.service';
+import { ParentDashboardSummaryService } from './parent-dashboard-summary.service';
 
 @ApiTags('Parent')
 @ApiBearerAuth()
@@ -21,6 +23,7 @@ export class ParentsController {
   constructor(
     private readonly parentChildLinkService: ParentChildLinkService,
     private readonly studentsService: StudentsService,
+    private readonly parentDashboardSummaryService: ParentDashboardSummaryService,
   ) {}
 
   @Get('children')
@@ -44,5 +47,15 @@ export class ParentsController {
         return summary;
       }),
     );
+  }
+
+  @Get('dashboard-summary')
+  @UseGuards(SupabaseJwtAuthGuard)
+  @ApiOperation({ summary: "Return the authenticated parent's dashboard summary across all linked children." })
+  @ApiOkResponse({ type: ParentDashboardSummaryDto })
+  async getDashboardSummary(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ParentDashboardSummaryDto> {
+    return this.parentDashboardSummaryService.getSummaryForParent(user.id);
   }
 }
