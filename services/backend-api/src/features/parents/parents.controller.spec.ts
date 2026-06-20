@@ -295,6 +295,28 @@ describe('ParentsController', () => {
 
       expect(parentInvitationService.acceptInvitation).toHaveBeenCalledWith('child-1', 'abc123');
     });
+
+    it('propagates a not-found error for an invalid/unknown invitation token', async () => {
+      const { NotFoundException } = await import('@nestjs/common');
+      const { controller } = buildController({
+        acceptInvitation: jest.fn().mockRejectedValue(new NotFoundException('Invitation not found or already used.')),
+      });
+
+      await expect(
+        controller.acceptInvitation({ id: 'child-1' } as never, { invitationCode: 'garbage-token' }),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('propagates a bad-request error for an expired invitation token', async () => {
+      const { BadRequestException } = await import('@nestjs/common');
+      const { controller } = buildController({
+        acceptInvitation: jest.fn().mockRejectedValue(new BadRequestException('Invitation has expired.')),
+      });
+
+      await expect(
+        controller.acceptInvitation({ id: 'child-1' } as never, { invitationCode: 'expired-code' }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
   });
 
   describe('revokeInvitation', () => {
@@ -304,6 +326,17 @@ describe('ParentsController', () => {
       await controller.revokeInvitation({ id: PARENT_ID } as never, 'invitation-1');
 
       expect(parentInvitationService.revokeInvitation).toHaveBeenCalledWith(PARENT_ID, 'invitation-1');
+    });
+
+    it('propagates a forbidden error when revoking an invitation owned by another parent', async () => {
+      const { ForbiddenException } = await import('@nestjs/common');
+      const { controller } = buildController({
+        revokeInvitation: jest.fn().mockRejectedValue(new ForbiddenException('Invitation does not belong to this parent.')),
+      });
+
+      await expect(
+        controller.revokeInvitation({ id: 'someone-else' } as never, 'invitation-1'),
+      ).rejects.toBeInstanceOf(ForbiddenException);
     });
   });
 
