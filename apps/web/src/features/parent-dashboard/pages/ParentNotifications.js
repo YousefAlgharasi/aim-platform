@@ -15,6 +15,7 @@ import {
 import { ParentCard, ParentBadge } from '../components';
 import { ParentNotificationsShell } from '../notifications';
 import ParentNotificationSettings from './ParentNotificationSettings';
+import ParentDeadlineReminders from './ParentDeadlineReminders';
 import './ParentPages.css';
 
 const CATEGORY_LABELS = {
@@ -92,6 +93,15 @@ function ParentNotifications() {
       >
         التفضيلات
       </button>
+      <button
+        type="button"
+        role="tab"
+        aria-selected={activeTab === 'deadlines'}
+        className={`parent-btn${activeTab === 'deadlines' ? ' parent-btn--primary' : ''}`}
+        onClick={() => setActiveTab('deadlines')}
+      >
+        تذكيرات المواعيد النهائية
+      </button>
     </div>
   );
 
@@ -100,6 +110,15 @@ function ParentNotifications() {
       <div className="parent-notifications">
         {tabs}
         <ParentNotificationSettings />
+      </div>
+    );
+  }
+
+  if (activeTab === 'deadlines') {
+    return (
+      <div className="parent-notifications">
+        {tabs}
+        <ParentDeadlineReminders />
       </div>
     );
   }
