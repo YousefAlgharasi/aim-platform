@@ -1,14 +1,3 @@
-// Phase 2 — P2-062
-// Admin user detail page.
-//
-// Scope: Auth, Users, Roles only.
-//
-// Security:
-// - Token is read from the HTTP-only cookie server-side; never exposed to the browser.
-// - This page only renders data returned by the backend — it makes no authorization decisions.
-// - Role/permission enforcement is the backend's responsibility.
-// - supabaseAuthUid is never present in the response (stripped by backend).
-
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -19,12 +8,28 @@ import {
   type AdminUserDetail,
 } from '../../../../lib/api/admin-users-api';
 import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../lib/auth';
+import { AdminPageHeader } from '../../../../components/layout';
+import { AdminCard, AdminBadge, AdminStatusBadge, AdminIdCell, AdminDateCell } from '../../../../components/common';
+import { AdminApiErrorState } from '../../../../components/error-handling';
 import { RoleChangeForm } from './role-change-form';
 import { UserStatusActions } from './user-status-actions';
 
 type Props = {
   params: Promise<{ id: string }>;
 };
+
+function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="aim-detail-row">
+      <dt className="aim-detail-label">{label}</dt>
+      <dd className="aim-detail-value">{children}</dd>
+    </div>
+  );
+}
+
+function NullValue() {
+  return <span style={{ color: 'var(--text-muted)' }}>—</span>;
+}
 
 export default async function AdminUserDetailPage({ params }: Props) {
   const { id } = await params;
@@ -41,7 +46,6 @@ export default async function AdminUserDetailPage({ params }: Props) {
     if (error instanceof AdminApiClientError && error.status === 404) {
       notFound();
     }
-
     fetchError =
       error instanceof AdminApiClientError
         ? `Backend error ${error.status}: ${error.message}`
@@ -49,171 +53,122 @@ export default async function AdminUserDetailPage({ params }: Props) {
   }
 
   return (
-    <section className="admin-user-detail-page">
-      <nav className="admin-breadcrumb">
-        <Link href="/admin/users" className="admin-breadcrumb-link">
-          ← Users
+    <section>
+      <nav style={{ marginBlockEnd: 'var(--space-16)' }}>
+        <Link
+          href="/admin/users"
+          className="aim-back-link"
+        >
+          ← Back to Users
+          <style>{`
+            .aim-back-link {
+              font-size: 14px;
+              color: var(--text-link);
+              text-decoration: none;
+              font-weight: var(--weight-medium);
+            }
+            .aim-back-link:hover { text-decoration: underline; }
+            .aim-back-link:focus-visible {
+              outline: 2px solid var(--focus-ring);
+              outline-offset: 2px;
+              border-radius: var(--radius-xs);
+            }
+          `}</style>
         </Link>
       </nav>
 
-      <header className="admin-page-header">
-        <p className="eyebrow">Admin — User Management</p>
-        <h1>User Detail</h1>
-        {user && (
-          <p className="admin-page-meta admin-table-id" title={user.id}>
-            {user.id}
-          </p>
-        )}
-      </header>
+      <AdminPageHeader
+        eyebrow="User Management"
+        title="User Detail"
+        description={user ? user.email ?? user.id : undefined}
+      />
 
-      <div className="admin-boundary-note">
-        <strong>Security boundary:</strong> This page renders backend-approved
-        data only. Role enforcement and data filtering are backend
-        responsibilities.
-      </div>
-
-      {fetchError && (
-        <div className="admin-error-banner" role="alert">
-          {fetchError}
-        </div>
-      )}
+      {fetchError && <AdminApiErrorState message={fetchError} />}
 
       {user && (
-        <div className="admin-detail-grid">
-          {/* Identity */}
-          <section className="admin-detail-card">
-            <h2 className="admin-detail-card-title">Identity</h2>
-            <dl className="admin-detail-list">
-              <div className="admin-detail-row">
-                <dt>ID</dt>
-                <dd className="admin-table-id">{user.id}</dd>
-              </div>
-              <div className="admin-detail-row">
-                <dt>Email</dt>
-                <dd>{user.email ?? <span className="admin-null">—</span>}</dd>
-              </div>
-              <div className="admin-detail-row">
-                <dt>Phone</dt>
-                <dd>{user.phone ?? <span className="admin-null">—</span>}</dd>
-              </div>
-              <div className="admin-detail-row">
-                <dt>Type</dt>
-                <dd>
-                  <span className={`admin-badge admin-badge--type-${user.userType}`}>
-                    {user.userType}
-                  </span>
-                </dd>
-              </div>
-              <div className="admin-detail-row">
-                <dt>Status</dt>
-                <dd>
-                  <span className={`admin-badge admin-badge--status-${user.status}`}>
-                    {user.status}
-                  </span>
-                </dd>
-              </div>
-              <div className="admin-detail-row">
-                <dt>Created</dt>
-                <dd className="admin-table-date">{formatDate(user.createdAt)}</dd>
-              </div>
-              <div className="admin-detail-row">
-                <dt>Updated</dt>
-                <dd className="admin-table-date">{formatDate(user.updatedAt)}</dd>
-              </div>
+        <div className="aim-detail-grid">
+          <AdminCard title="Identity">
+            <dl className="aim-detail-list">
+              <DetailRow label="ID">
+                <AdminIdCell id={user.id} />
+              </DetailRow>
+              <DetailRow label="Email">
+                {user.email ?? <NullValue />}
+              </DetailRow>
+              <DetailRow label="Phone">
+                {user.phone ?? <NullValue />}
+              </DetailRow>
+              <DetailRow label="Type">
+                <AdminBadge variant="primary">{user.userType}</AdminBadge>
+              </DetailRow>
+              <DetailRow label="Status">
+                <AdminStatusBadge status={user.status} />
+              </DetailRow>
+              <DetailRow label="Created">
+                <AdminDateCell iso={user.createdAt} />
+              </DetailRow>
+              <DetailRow label="Updated">
+                <AdminDateCell iso={user.updatedAt} />
+              </DetailRow>
             </dl>
-          </section>
+          </AdminCard>
 
-          {/* Roles */}
-          <section className="admin-detail-card">
-            <h2 className="admin-detail-card-title">Roles</h2>
+          <AdminCard title="Roles">
             {user.roles.length === 0 ? (
-              <p className="admin-empty-state">No roles assigned.</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: 14, margin: 0 }}>
+                No roles assigned.
+              </p>
             ) : (
-              <ul className="admin-role-badge-list">
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-8)' }}>
                 {user.roles.map((role) => (
-                  <li key={role}>
-                    <span className={`admin-badge admin-badge--type-${role}`}>
-                      {role}
-                    </span>
-                  </li>
+                  <AdminBadge key={role} variant="info">{role}</AdminBadge>
                 ))}
-              </ul>
+              </div>
             )}
-          </section>
+          </AdminCard>
 
-          {/* Student Profile */}
-          <section className="admin-detail-card">
-            <h2 className="admin-detail-card-title">Student Profile</h2>
+          <AdminCard title="Student Profile">
             {!user.studentProfile ? (
-              <p className="admin-empty-state">No student profile.</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: 14, margin: 0 }}>
+                No student profile.
+              </p>
             ) : (
-              <dl className="admin-detail-list">
-                <div className="admin-detail-row">
-                  <dt>Display Name</dt>
-                  <dd>
-                    {user.studentProfile.displayName ?? (
-                      <span className="admin-null">—</span>
-                    )}
-                  </dd>
-                </div>
-                <div className="admin-detail-row">
-                  <dt>Native Language</dt>
-                  <dd>
-                    {user.studentProfile.nativeLanguage ?? (
-                      <span className="admin-null">—</span>
-                    )}
-                  </dd>
-                </div>
-                <div className="admin-detail-row">
-                  <dt>Target Language</dt>
-                  <dd>
-                    {user.studentProfile.targetLanguage ?? (
-                      <span className="admin-null">—</span>
-                    )}
-                  </dd>
-                </div>
-                <div className="admin-detail-row">
-                  <dt>Created</dt>
-                  <dd className="admin-table-date">
-                    {formatDate(user.studentProfile.createdAt)}
-                  </dd>
-                </div>
+              <dl className="aim-detail-list">
+                <DetailRow label="Display Name">
+                  {user.studentProfile.displayName ?? <NullValue />}
+                </DetailRow>
+                <DetailRow label="Native Language">
+                  {user.studentProfile.nativeLanguage ?? <NullValue />}
+                </DetailRow>
+                <DetailRow label="Target Language">
+                  {user.studentProfile.targetLanguage ?? <NullValue />}
+                </DetailRow>
+                <DetailRow label="Created">
+                  <AdminDateCell iso={user.studentProfile.createdAt} />
+                </DetailRow>
               </dl>
             )}
-          </section>
+          </AdminCard>
 
-          {/* Admin Profile */}
-          <section className="admin-detail-card">
-            <h2 className="admin-detail-card-title">Admin Profile</h2>
+          <AdminCard title="Admin Profile">
             {!user.adminProfile ? (
-              <p className="admin-empty-state">No admin profile.</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: 14, margin: 0 }}>
+                No admin profile.
+              </p>
             ) : (
-              <dl className="admin-detail-list">
-                <div className="admin-detail-row">
-                  <dt>Display Name</dt>
-                  <dd>
-                    {user.adminProfile.displayName ?? (
-                      <span className="admin-null">—</span>
-                    )}
-                  </dd>
-                </div>
-                <div className="admin-detail-row">
-                  <dt>Department</dt>
-                  <dd>
-                    {user.adminProfile.department ?? (
-                      <span className="admin-null">—</span>
-                    )}
-                  </dd>
-                </div>
-                <div className="admin-detail-row">
-                  <dt>Created</dt>
-                  <dd className="admin-table-date">
-                    {formatDate(user.adminProfile.createdAt)}
-                  </dd>
-                </div>
+              <dl className="aim-detail-list">
+                <DetailRow label="Display Name">
+                  {user.adminProfile.displayName ?? <NullValue />}
+                </DetailRow>
+                <DetailRow label="Department">
+                  {user.adminProfile.department ?? <NullValue />}
+                </DetailRow>
+                <DetailRow label="Created">
+                  <AdminDateCell iso={user.adminProfile.createdAt} />
+                </DetailRow>
               </dl>
             )}
-          </section>
+          </AdminCard>
 
           {/* Status Actions — client component, token passed from server */}
           <UserStatusActions
@@ -229,23 +184,51 @@ export default async function AdminUserDetailPage({ params }: Props) {
             currentRoles={user.roles}
             userType={user.userType}
           />
+
+          <style>{`
+            .aim-detail-grid {
+              display: grid;
+              grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+              gap: var(--section-gap);
+            }
+            .aim-detail-list {
+              margin: 0;
+              padding: 0;
+              display: flex;
+              flex-direction: column;
+              gap: var(--space-12);
+            }
+            .aim-detail-row {
+              display: flex;
+              align-items: baseline;
+              gap: var(--space-12);
+            }
+            .aim-detail-label {
+              flex-shrink: 0;
+              width: 130px;
+              font-size: 13px;
+              font-weight: var(--weight-medium);
+              color: var(--text-secondary);
+            }
+            .aim-detail-value {
+              margin: 0;
+              font-size: 14px;
+              color: var(--text-primary);
+              word-break: break-word;
+            }
+            @media (max-width: 480px) {
+              .aim-detail-row {
+                flex-direction: column;
+                gap: var(--space-2);
+              }
+              .aim-detail-label { width: auto; }
+              .aim-detail-grid {
+                grid-template-columns: 1fr;
+              }
+            }
+          `}</style>
         </div>
       )}
     </section>
   );
-}
-
-function formatDate(iso: string): string {
-  if (!iso) return '—';
-  try {
-    return new Intl.DateTimeFormat('en-GB', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
 }
