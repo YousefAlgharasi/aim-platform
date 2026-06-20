@@ -1,5 +1,6 @@
-// P10-049: assessment domain entities barrel.
-// Entities are added in subsequent tasks (P10-050+).
-// Entities are immutable value objects shaped by the backend API contract.
-// They must not contain scoring logic, correctness computation, or
-// deadline-status derivation.
+// P10-050: assessment domain entities barrel.
+export 'assessment_list_item.dart';
+export 'assessment_detail.dart';
+export 'attempt_result.dart';
+export 'result_history.dart';
+export 'student_deadline.dart';
