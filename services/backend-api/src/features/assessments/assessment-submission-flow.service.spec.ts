@@ -1,4 +1,4 @@
-// P10-037: AssessmentSubmissionFlowService unit tests.
+// P10-037 / P10-069: AssessmentSubmissionFlowService unit tests.
 
 import { AssessmentSubmissionFlowService } from './assessment-submission-flow.service';
 
@@ -33,6 +33,15 @@ function makeResultService(overrides: Partial<Record<string, jest.Mock>> = {}) {
   };
 }
 
+function makeProgressIntegration(overrides: Partial<Record<string, jest.Mock>> = {}) {
+  return {
+    recordAssessmentResult: jest.fn().mockResolvedValue({
+      recorded: true, attemptId: 'att-1', studentId: 'stu-1',
+    }),
+    ...overrides,
+  };
+}
+
 describe('AssessmentSubmissionFlowService', () => {
   describe('submitAndGrade', () => {
     it('runs submit -> grade -> persist in order and returns a confirmation shape', async () => {
@@ -44,7 +53,8 @@ describe('AssessmentSubmissionFlowService', () => {
       };
       const grading = makeGradingService({ gradeAttempt: jest.fn().mockResolvedValue(gradingResult) });
       const result = makeResultService();
-      const svc = new AssessmentSubmissionFlowService(attemptLifecycle as any, grading as any, result as any);
+      const progress = makeProgressIntegration();
+      const svc = new AssessmentSubmissionFlowService(attemptLifecycle as any, grading as any, result as any, progress as any);
 
       const out = await svc.submitAndGrade('att-1', 'stu-1');
 
@@ -61,7 +71,7 @@ describe('AssessmentSubmissionFlowService', () => {
 
     it('never returns score, maxScore, passed, or latePenaltyApplied to the caller', async () => {
       const svc = new AssessmentSubmissionFlowService(
-        makeAttemptLifecycle() as any, makeGradingService() as any, makeResultService() as any,
+        makeAttemptLifecycle() as any, makeGradingService() as any, makeResultService() as any, makeProgressIntegration() as any,
       );
       const out = await svc.submitAndGrade('att-1', 'stu-1') as unknown as Record<string, unknown>;
 
@@ -76,10 +86,49 @@ describe('AssessmentSubmissionFlowService', () => {
         submitAttempt: jest.fn().mockRejectedValue(new Error('DEADLINE_BLOCKS_SUBMISSION')),
       });
       const grading = makeGradingService();
-      const svc = new AssessmentSubmissionFlowService(attemptLifecycle as any, grading as any, makeResultService() as any);
+      const svc = new AssessmentSubmissionFlowService(attemptLifecycle as any, grading as any, makeResultService() as any, makeProgressIntegration() as any);
 
       await expect(svc.submitAndGrade('att-1', 'stu-1')).rejects.toThrow('DEADLINE_BLOCKS_SUBMISSION');
       expect(grading.gradeAttempt).not.toHaveBeenCalled();
+    });
+
+    // P10-069: Progress integration tests
+    it('calls progressIntegration.recordAssessmentResult after successful grading', async () => {
+      const progress = makeProgressIntegration();
+      const svc = new AssessmentSubmissionFlowService(
+        makeAttemptLifecycle() as any, makeGradingService() as any, makeResultService() as any, progress as any,
+      );
+
+      await svc.submitAndGrade('att-1', 'stu-1');
+
+      expect(progress.recordAssessmentResult).toHaveBeenCalledWith({
+        assessmentId: 'a-1',
+        attemptId: 'att-1',
+        studentId: 'stu-1',
+        score: 8,
+        maxScore: 10,
+        passed: true,
+        latePenaltyApplied: false,
+        gradedAt: new Date('2026-01-01T00:00:01Z'),
+      });
+    });
+
+    it('still returns confirmation even if progress integration throws', async () => {
+      const progress = makeProgressIntegration({
+        recordAssessmentResult: jest.fn().mockRejectedValue(new Error('PROGRESS_UNAVAILABLE')),
+      });
+      const svc = new AssessmentSubmissionFlowService(
+        makeAttemptLifecycle() as any, makeGradingService() as any, makeResultService() as any, progress as any,
+      );
+
+      const out = await svc.submitAndGrade('att-1', 'stu-1');
+
+      expect(out).toEqual({
+        attemptId: 'att-1',
+        status: 'graded',
+        submittedAt: new Date('2026-01-01T00:00:00Z'),
+        resultId: 'result-1',
+      });
     });
   });
 });
