@@ -90,6 +90,75 @@ describe('SessionStateReadService', () => {
   });
 });
 
+describe('SessionStateReadService.getRecentSessionsForStudent (P12-029)', () => {
+  it('queries session_summaries scoped by student_id, ordered by updated_at desc', async () => {
+    const captured: { sql: string; params: unknown[] }[] = [];
+    const db = makeMockDb(async (sql, params) => {
+      captured.push({ sql, params });
+      return { rows: [], rowCount: 0 };
+    });
+    const svc = new SessionStateReadService(db);
+    await svc.getRecentSessionsForStudent(STUDENT_ID, 5);
+
+    expect(captured[0].params).toEqual([STUDENT_ID, 5]);
+    expect(captured[0].sql).toContain('FROM session_summaries');
+    expect(captured[0].sql).toContain('WHERE student_id = $1');
+    expect(captured[0].sql).toContain('ORDER BY updated_at DESC');
+  });
+
+  it('defaults to a limit of 10 when not provided', async () => {
+    const captured: unknown[][] = [];
+    const db = makeMockDb(async (sql, params) => {
+      captured.push(params);
+      return { rows: [], rowCount: 0 };
+    });
+    const svc = new SessionStateReadService(db);
+    await svc.getRecentSessionsForStudent(STUDENT_ID);
+
+    expect(captured[0]).toEqual([STUDENT_ID, 10]);
+  });
+
+  it('maps rows into RecentSessionSummaryItem entries', async () => {
+    const db = makeMockDb(async () => ({
+      rows: [
+        {
+          session_id: SESSION_ID,
+          items_attempted: 4,
+          items_correct: 3,
+          skills_touched: ['skill:arabic:p1:vocab'],
+          overall_mastery_shift: 'positive',
+          closed_out_at: '2026-06-17T10:30:05.000Z',
+          updated_at: '2026-06-17T10:30:05.000Z',
+        },
+      ],
+      rowCount: 1,
+    }));
+    const svc = new SessionStateReadService(db);
+    const result = await svc.getRecentSessionsForStudent(STUDENT_ID);
+
+    expect(result.studentId).toBe(STUDENT_ID);
+    expect(result.sessions).toEqual([
+      {
+        sessionId: SESSION_ID,
+        itemsAttempted: 4,
+        itemsCorrect: 3,
+        skillsTouched: ['skill:arabic:p1:vocab'],
+        overallMasteryShift: 'positive',
+        closedOutAt: '2026-06-17T10:30:05.000Z',
+        updatedAt: '2026-06-17T10:30:05.000Z',
+      },
+    ]);
+  });
+
+  it('returns an empty sessions array when no rows exist', async () => {
+    const db = makeMockDb(async () => ({ rows: [], rowCount: 0 }));
+    const svc = new SessionStateReadService(db);
+    const result = await svc.getRecentSessionsForStudent(STUDENT_ID);
+
+    expect(result.sessions).toEqual([]);
+  });
+});
+
 describe('AimResultController.getSessionState (P5-068)', () => {
   function makeStubs() {
     return {

@@ -42,6 +42,21 @@ export interface SessionStateReadResponse {
   readonly updatedAt: string | null;
 }
 
+export interface RecentSessionSummaryItem {
+  readonly sessionId: string;
+  readonly itemsAttempted: number;
+  readonly itemsCorrect: number;
+  readonly skillsTouched: string[];
+  readonly overallMasteryShift: string;
+  readonly closedOutAt: string | null;
+  readonly updatedAt: string;
+}
+
+export interface RecentSessionsReadResponse {
+  readonly studentId: string;
+  readonly sessions: RecentSessionSummaryItem[];
+}
+
 // ---------------------------------------------------------------------------
 // Internal DB row shape
 // ---------------------------------------------------------------------------
@@ -55,6 +70,16 @@ interface SessionSummaryRow {
   readonly engagement_level: string;
   readonly signal_basis: string[];
   readonly closed_out_at: string;
+  readonly updated_at: string;
+}
+
+interface RecentSessionSummaryRow {
+  readonly session_id: string;
+  readonly items_attempted: number;
+  readonly items_correct: number;
+  readonly skills_touched: string[];
+  readonly overall_mastery_shift: string;
+  readonly closed_out_at: string | null;
   readonly updated_at: string;
 }
 
@@ -139,6 +164,51 @@ export class SessionStateReadService {
       },
       closedOutAt: row.closed_out_at,
       updatedAt: row.updated_at,
+    };
+  }
+
+  /**
+   * Return the student's most recently updated persisted session summaries,
+   * scoped to studentId. Used to surface "recent learning activity" without
+   * requiring a caller-known sessionId. No AIM Engine call is made and no
+   * value here is computed — every field is a direct column pass-through.
+   */
+  async getRecentSessionsForStudent(
+    studentId: string,
+    limit = 10,
+  ): Promise<RecentSessionsReadResponse> {
+    const result = await this.db.query<RecentSessionSummaryRow>(
+      `SELECT
+         session_id,
+         items_attempted,
+         items_correct,
+         skills_touched,
+         overall_mastery_shift,
+         closed_out_at,
+         updated_at
+       FROM session_summaries
+       WHERE student_id = $1
+       ORDER BY updated_at DESC
+       LIMIT $2`,
+      [studentId, limit],
+    );
+
+    this.logger.debug('recent_sessions_read', {
+      studentId,
+      count: result.rowCount ?? 0,
+    });
+
+    return {
+      studentId,
+      sessions: result.rows.map((row) => ({
+        sessionId: row.session_id,
+        itemsAttempted: row.items_attempted,
+        itemsCorrect: row.items_correct,
+        skillsTouched: row.skills_touched,
+        overallMasteryShift: row.overall_mastery_shift,
+        closedOutAt: row.closed_out_at,
+        updatedAt: row.updated_at,
+      })),
     };
   }
 }

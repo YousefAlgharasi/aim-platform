@@ -8,5 +8,6 @@ export { ParentAccessPolicyService } from './parent-access-policy.service';
 export { ParentDashboardSummaryService } from './parent-dashboard-summary.service';
 export { ParentChildProgressService } from './parent-child-progress.service';
 export { ParentAssessmentSummaryService } from './parent-assessment-summary.service';
+export { ParentActivitySummaryService } from './parent-activity-summary.service';
 export * from './dto';
 export * from './guards';
