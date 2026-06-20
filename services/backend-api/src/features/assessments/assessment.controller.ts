@@ -1,4 +1,4 @@
-// P10-033 / P10-034 / P10-035 / P10-036 / P10-037 / P10-038 / P10-039: AssessmentController —
+// P10-033 / P10-034 / P10-035 / P10-036 / P10-037 / P10-038 / P10-039 / P10-040: AssessmentController —
 // Student Assessment List, Detail, Start Attempt, Resume Attempt, Submit
 // Attempt, Attempt Result, and Deadlines API.
 //
@@ -91,6 +91,7 @@ import {
 import { AttemptLifecycleService, StartAttemptResult, ResumeAttemptResult } from './assessment-attempt.service';
 import { AssessmentSubmissionFlowService, SubmitAttemptApiResult } from './assessment-submission-flow.service';
 import { AssessmentFeedbackService, FeedbackSummary } from './assessment-feedback.service';
+import { AssessmentResultService, ResultHistoryResponse } from './assessment-result.service';
 
 @ApiTags('assessments')
 @Controller('student/assessments')
@@ -100,6 +101,7 @@ export class AssessmentController {
     private readonly attemptLifecycleService: AttemptLifecycleService,
     private readonly submissionFlowService: AssessmentSubmissionFlowService,
     private readonly feedbackService: AssessmentFeedbackService,
+    private readonly resultService: AssessmentResultService,
   ) {}
 
   /**
@@ -171,6 +173,30 @@ export class AssessmentController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<AssessmentDetailWithDeadline> {
     return this.assessmentService.getDetailWithDeadline(assessmentId, user.id);
+  }
+
+  /**
+   * GET /student/assessments/:id/history
+   * Return all previous attempt results for the authenticated student on this
+   * assessment, ordered by attempt number. P10-040.
+   */
+  @Get(':id/history')
+  @UseGuards(SupabaseJwtAuthGuard, AssessmentPermissionGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List previous attempt results for the authenticated student on this assessment.' })
+  @ApiParam({ name: 'id', description: 'UUID of the published assessment.' })
+  @ApiOkResponse({
+    description:
+      'Result history with backend-authoritative score, passed, and latePenaltyApplied. ' +
+      'correct_answer, pass_threshold, and late_penalty_percent are never included.',
+  })
+  async getResultHistory(
+    @Param('id') assessmentId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ResultHistoryResponse> {
+    return this.resultService.listByAssessment(assessmentId, user.id);
   }
 
   /**
