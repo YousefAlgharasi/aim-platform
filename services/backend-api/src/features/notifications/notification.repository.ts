@@ -41,6 +41,21 @@ export class NotificationRepository {
     return result.rows;
   }
 
+  async findAllTemplates(): Promise<NotificationTemplateRow[]> {
+    const result = await this.db.query<NotificationTemplateRow>(
+      `SELECT * FROM notification_templates ORDER BY key, channel, locale`,
+    );
+    return result.rows;
+  }
+
+  async findTemplateById(id: string): Promise<NotificationTemplateRow | null> {
+    const result = await this.db.query<NotificationTemplateRow>(
+      `SELECT * FROM notification_templates WHERE id = $1 LIMIT 1`,
+      [id],
+    );
+    return result.rows[0] ?? null;
+  }
+
   // --- Preferences ---
 
   async findPreferencesByUserId(userId: string): Promise<NotificationPreferenceRow[]> {
