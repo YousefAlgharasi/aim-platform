@@ -12,6 +12,7 @@ import { AdminPageHeader } from '../../../../components/layout';
 import { AdminCard, AdminBadge, AdminStatusBadge, AdminIdCell, AdminDateCell } from '../../../../components/common';
 import { AdminApiErrorState } from '../../../../components/error-handling';
 import { RoleChangeForm } from './role-change-form';
+import { UserStatusActions } from './user-status-actions';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -169,6 +170,14 @@ export default async function AdminUserDetailPage({ params }: Props) {
             )}
           </AdminCard>
 
+          {/* Status Actions — client component, token passed from server */}
+          <UserStatusActions
+            token={token}
+            userId={user.id}
+            currentStatus={user.status}
+          />
+
+          {/* Role Change — client component, token passed from server */}
           <RoleChangeForm
             token={token}
             userId={user.id}

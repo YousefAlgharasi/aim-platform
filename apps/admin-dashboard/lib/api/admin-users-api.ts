@@ -255,6 +255,49 @@ export async function changeAdminUserRole(
   return envelope.data;
 }
 
+// ---------------------------------------------------------------------------
+// Status update (P11-017)
+// ---------------------------------------------------------------------------
+
+export type AdminUserStatusUpdateResult = {
+  readonly id: string;
+  readonly email: string | null;
+  readonly userType: AdminUserType;
+  readonly status: AdminUserStatus;
+  readonly updatedAt: string;
+};
+
+export async function updateAdminUserStatus(
+  token: string,
+  userId: string,
+  status: 'active' | 'disabled',
+): Promise<AdminUserStatusUpdateResult> {
+  const envelope = await adminApiClient.patch<AdminUserStatusUpdateResult>(
+    `/admin/users/${encodeURIComponent(userId)}/status`,
+    decodeUserStatusUpdateResult,
+    {
+      headers: { authorization: `Bearer ${token}` },
+      body: { status },
+    },
+  );
+
+  return envelope.data;
+}
+
+function decodeUserStatusUpdateResult(value: unknown): AdminUserStatusUpdateResult {
+  if (!isObject(value) || typeof value.id !== 'string') {
+    throw new Error('Invalid status update response.');
+  }
+
+  return {
+    id: value.id,
+    email: typeof value.email === 'string' ? value.email : null,
+    userType: isAdminUserType(value.userType) ? value.userType : 'student',
+    status: isAdminUserStatus(value.status) ? value.status : 'active',
+    updatedAt: typeof value.updatedAt === 'string' ? value.updatedAt : '',
+  };
+}
+
 function decodeRoleChangeResult(value: unknown): AdminRoleChangeResult {
   if (!isObject(value) || typeof value.userId !== 'string') {
     throw new Error('Invalid role change response.');
