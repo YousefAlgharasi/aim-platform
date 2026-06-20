@@ -9,6 +9,7 @@ function buildController(overrides: {
   links?: Array<Record<string, unknown>>;
   findByUserId?: jest.Mock;
   getSummaryForParent?: jest.Mock;
+  getProgressForParent?: jest.Mock;
 } = {}) {
   const parentChildLinkService = {
     listLinksForParent: jest.fn().mockResolvedValue(
@@ -35,13 +36,26 @@ function buildController(overrides: {
       jest.fn().mockResolvedValue({ parentId: PARENT_ID, children: [] }),
   };
 
+  const parentChildProgressService = {
+    getProgressForParent:
+      overrides.getProgressForParent ??
+      jest.fn().mockResolvedValue({ childId: 'child-1', skillStates: [] }),
+  };
+
   const controller = new ParentsController(
     parentChildLinkService as never,
     studentsService as never,
     parentDashboardSummaryService as never,
+    parentChildProgressService as never,
   );
 
-  return { controller, parentChildLinkService, studentsService, parentDashboardSummaryService };
+  return {
+    controller,
+    parentChildLinkService,
+    studentsService,
+    parentDashboardSummaryService,
+    parentChildProgressService,
+  };
 }
 
 describe('ParentsController', () => {
@@ -102,6 +116,17 @@ describe('ParentsController', () => {
 
       expect(parentDashboardSummaryService.getSummaryForParent).toHaveBeenCalledWith(PARENT_ID);
       expect(result).toEqual({ parentId: PARENT_ID, children: [] });
+    });
+  });
+
+  describe('getChildProgress', () => {
+    it('delegates to ParentChildProgressService with the authenticated parent and route childId', async () => {
+      const { controller, parentChildProgressService } = buildController();
+
+      const result = await controller.getChildProgress({ id: PARENT_ID } as never, 'child-1');
+
+      expect(parentChildProgressService.getProgressForParent).toHaveBeenCalledWith(PARENT_ID, 'child-1');
+      expect(result).toEqual({ childId: 'child-1', skillStates: [] });
     });
   });
 });
