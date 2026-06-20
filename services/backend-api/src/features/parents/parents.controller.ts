@@ -14,9 +14,11 @@ import { StudentsService } from '../students/students.service';
 import { ParentChildSummaryEntity } from './dto/parent-child-summary.entity';
 import { ParentDashboardSummaryDto } from './dto/parent-dashboard-summary.dto';
 import { ParentChildProgressEntity } from './dto/parent-child-progress.entity';
+import { ParentAssessmentSummaryEntity } from './dto/parent-assessment-summary.entity';
 import { ParentChildLinkService } from './parent-child-link.service';
 import { ParentDashboardSummaryService } from './parent-dashboard-summary.service';
 import { ParentChildProgressService } from './parent-child-progress.service';
+import { ParentAssessmentSummaryService } from './parent-assessment-summary.service';
 import { RequireParentChildAccess, ParentChildAccessGuard } from './guards';
 
 @ApiTags('Parent')
@@ -28,6 +30,7 @@ export class ParentsController {
     private readonly studentsService: StudentsService,
     private readonly parentDashboardSummaryService: ParentDashboardSummaryService,
     private readonly parentChildProgressService: ParentChildProgressService,
+    private readonly parentAssessmentSummaryService: ParentAssessmentSummaryService,
   ) {}
 
   @Get('children')
@@ -74,5 +77,18 @@ export class ParentsController {
     @Param('childId') childId: string,
   ): Promise<ParentChildProgressEntity> {
     return this.parentChildProgressService.getProgressForParent(user.id, childId);
+  }
+
+  @Get('children/:childId/assessments')
+  @UseGuards(SupabaseJwtAuthGuard, ParentChildAccessGuard)
+  @RequireParentChildAccess({ consentType: 'assessment_view' })
+  @ApiOperation({ summary: "Return a linked, consented child's assessment results and upcoming deadlines." })
+  @ApiParam({ name: 'childId' })
+  @ApiOkResponse({ type: ParentAssessmentSummaryEntity })
+  async getChildAssessments(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('childId') childId: string,
+  ): Promise<ParentAssessmentSummaryEntity> {
+    return this.parentAssessmentSummaryService.getAssessmentSummaryForParent(user.id, childId);
   }
 }
