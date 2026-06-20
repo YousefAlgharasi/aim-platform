@@ -12,6 +12,7 @@ import { ParentAssessmentSummaryService } from './parent-assessment-summary.serv
 import { ParentActivitySummaryService } from './parent-activity-summary.service';
 import { ParentReportService } from './parent-report.service';
 import { ParentInvitationService } from './parent-invitation.service';
+import { ParentNotificationPreferenceService } from './parent-notification-preference.service';
 import { ParentDashboardSummaryService } from './parent-dashboard-summary.service';
 import { ParentRepository } from './parent.repository';
 import { ParentChildAccessGuard } from './guards';
@@ -34,6 +35,7 @@ import { ParentsService } from './parents.service';
     ParentActivitySummaryService,
     ParentReportService,
     ParentInvitationService,
+    ParentNotificationPreferenceService,
   ],
   exports: [
     ParentsService,
@@ -48,6 +50,7 @@ import { ParentsService } from './parents.service';
     ParentActivitySummaryService,
     ParentReportService,
     ParentInvitationService,
+    ParentNotificationPreferenceService,
   ],
 })
 export class ParentsModule {}
