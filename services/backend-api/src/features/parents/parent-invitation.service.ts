@@ -1,26 +1,23 @@
-// P12-021: Create Parent Invitation Service
-// Secure invitation creation, acceptance, and expiry logic for parent
-// onboarding and child linking.
+// P12-037: Create Parent Invitation APIs
+// Backend authority for the parent invitation lifecycle: creating a
+// pending invitation, accepting it (which establishes an active
+// parent-child link), revoking it, and listing a parent's invitations.
 //
-// This service is the backend authority for invitation lifecycle. It
-// never trusts a client-submitted invitation status or expiry, generates
-// invitation codes itself, and only activates a parent-child link via
-// ParentChildLinkService once an invitation has been validated as
-// pending and unexpired. It never computes or exposes mastery, weakness,
-// score, correctness, recommendations, or any AIM/assessment output.
+// This service never trusts a client-submitted invitation status,
+// expiry, or child id — it always generates the invitation code and
+// expiry itself, and resolves current state from ParentRepository before
+// any transition.
 
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
-
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { ParentInvitationEntity } from './dto/parent-invitation.entity';
 import { ParentRelationshipType } from './dto/parent-enums';
-import { ParentChildLinkService } from './parent-child-link.service';
 import { ParentInvitationRow } from './parent-repository.types';
 import { ParentRepository } from './parent.repository';
+import { ParentChildLinkService } from './parent-child-link.service';
 
-const INVITATION_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
-const INVITATION_CODE_BYTES = 24;
+const INVITATION_VALIDITY_DAYS = 7;
 
 @Injectable()
 export class ParentInvitationService {
@@ -32,38 +29,38 @@ export class ParentInvitationService {
   async createInvitation(
     parentId: string,
     relationshipType: ParentRelationshipType,
-    childEmail: string | null,
-    childId: string | null,
+    childEmail?: string,
+    childId?: string,
   ): Promise<ParentInvitationEntity> {
     if (!childEmail && !childId) {
-      throw new BadRequestException('An invitation requires either a childEmail or a childId.');
+      throw new BadRequestException('Either childEmail or childId is required.');
     }
 
     const invitationCode = this.generateInvitationCode();
-    const expiresAt = new Date(Date.now() + INVITATION_EXPIRY_MS);
+    const expiresAt = new Date(Date.now() + INVITATION_VALIDITY_DAYS * 24 * 60 * 60 * 1000);
 
     const row = await this.parentRepository.createInvitation(
       parentId,
       relationshipType,
       invitationCode,
       expiresAt,
-      childEmail,
-      childId,
+      childEmail ?? null,
+      childId ?? null,
     );
 
     return this.toEntity(row);
   }
 
-  async acceptInvitation(invitationCode: string, childId: string): Promise<ParentInvitationEntity> {
+  async acceptInvitation(childId: string, invitationCode: string): Promise<ParentInvitationEntity> {
     const row = await this.parentRepository.findInvitationByCode(invitationCode);
 
     if (!row) {
-      throw new NotFoundException('Invitation not found or no longer pending.');
+      throw new NotFoundException('Invitation not found or already used.');
     }
 
-    if (this.isExpired(row)) {
+    if (row.expires_at.getTime() < Date.now()) {
       await this.parentRepository.markInvitationStatus(row.id, 'expired');
-      throw new BadRequestException('This invitation has expired.');
+      throw new BadRequestException('Invitation has expired.');
     }
 
     await this.parentRepository.markInvitationAccepted(row.id, childId);
@@ -80,36 +77,22 @@ export class ParentInvitationService {
     return this.toEntity(updatedRow as ParentInvitationRow);
   }
 
-  async cancelInvitation(invitationId: string): Promise<ParentInvitationEntity> {
+  async revokeInvitation(parentId: string, invitationId: string): Promise<ParentInvitationEntity> {
     const row = await this.parentRepository.findInvitationById(invitationId);
 
     if (!row) {
       throw new NotFoundException(`Invitation ${invitationId} not found.`);
+    }
+
+    if (row.parent_id !== parentId) {
+      throw new ForbiddenException('Invitation does not belong to this parent.');
     }
 
     if (row.status !== 'pending') {
-      throw new BadRequestException('Only a pending invitation can be cancelled.');
+      throw new BadRequestException('Only a pending invitation can be revoked.');
     }
 
     await this.parentRepository.markInvitationStatus(invitationId, 'cancelled');
-
-    const updatedRow = await this.parentRepository.findInvitationById(invitationId);
-
-    return this.toEntity(updatedRow as ParentInvitationRow);
-  }
-
-  async expireStaleInvitation(invitationId: string): Promise<ParentInvitationEntity> {
-    const row = await this.parentRepository.findInvitationById(invitationId);
-
-    if (!row) {
-      throw new NotFoundException(`Invitation ${invitationId} not found.`);
-    }
-
-    if (row.status !== 'pending' || !this.isExpired(row)) {
-      throw new BadRequestException('Only a pending, time-expired invitation can be expired.');
-    }
-
-    await this.parentRepository.markInvitationStatus(invitationId, 'expired');
 
     const updatedRow = await this.parentRepository.findInvitationById(invitationId);
 
@@ -122,12 +105,8 @@ export class ParentInvitationService {
     return rows.map((row) => this.toEntity(row));
   }
 
-  private isExpired(row: ParentInvitationRow): boolean {
-    return row.expires_at.getTime() <= Date.now();
-  }
-
   private generateInvitationCode(): string {
-    return randomBytes(INVITATION_CODE_BYTES).toString('hex');
+    return randomBytes(16).toString('hex');
   }
 
   private toEntity(row: ParentInvitationRow): ParentInvitationEntity {
