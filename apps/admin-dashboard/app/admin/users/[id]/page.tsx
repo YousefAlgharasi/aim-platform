@@ -20,6 +20,7 @@ import {
 } from '../../../../lib/api/admin-users-api';
 import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../lib/auth';
 import { RoleChangeForm } from './role-change-form';
+import { UserStatusActions } from './user-status-actions';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -213,6 +214,13 @@ export default async function AdminUserDetailPage({ params }: Props) {
               </dl>
             )}
           </section>
+
+          {/* Status Actions — client component, token passed from server */}
+          <UserStatusActions
+            token={token}
+            userId={user.id}
+            currentStatus={user.status}
+          />
 
           {/* Role Change — client component, token passed from server */}
           <RoleChangeForm
