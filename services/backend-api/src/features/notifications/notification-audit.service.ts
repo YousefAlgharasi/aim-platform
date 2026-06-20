@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { NotificationRepository } from './notification.repository';
 import { NotificationAuditLogRow } from './notification-repository.types';
-import { NotificationAuditEventType } from './dto';
 import { containsSensitiveData } from './notification-validation.helpers';
 
 @Injectable()
@@ -10,7 +9,7 @@ export class NotificationAuditService {
 
   async log(
     userId: string,
-    eventType: NotificationAuditEventType,
+    eventType: string,
     resourceId: string | null,
     resourceType: string | null,
     metadata: Record<string, unknown> | null,
