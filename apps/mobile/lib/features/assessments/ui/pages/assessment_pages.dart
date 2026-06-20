@@ -4,4 +4,5 @@ export 'assessment_list_page.dart';
 export 'attempt_page.dart';
 export 'deadlines_page.dart';
 export 'start_attempt_page.dart';
+export 'assessment_result_page.dart';
 export 'submit_attempt_page.dart';
