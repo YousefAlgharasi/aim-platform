@@ -1,0 +1,181 @@
+/* P12-049: Parent Common Components — AIM Design System */
+
+/* Card */
+.parent-card {
+  background: var(--color-neutral-0, #fff);
+  border: 1px solid var(--color-neutral-200, #E2E5EB);
+  border-radius: var(--radius-md, 12px);
+  padding: var(--card-padding, 16px);
+  box-shadow: var(--shadow-card);
+}
+
+.parent-card__title {
+  font-size: var(--type-h3-size, 18px);
+  font-weight: var(--weight-semibold, 600);
+  color: var(--color-neutral-900, #181C26);
+  margin: 0 0 var(--space-12, 12px) 0;
+}
+
+.parent-card__body {
+  color: var(--color-neutral-700, #3E4350);
+}
+
+/* Table */
+.parent-table__wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.parent-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--type-body-size, 15px);
+}
+
+.parent-table th {
+  text-align: start;
+  padding: var(--space-8, 8px) var(--space-12, 12px);
+  font-weight: var(--weight-semibold, 600);
+  color: var(--color-neutral-600, #5A5F6B);
+  border-bottom: 2px solid var(--color-neutral-200, #E2E5EB);
+  white-space: nowrap;
+}
+
+.parent-table td {
+  padding: var(--space-8, 8px) var(--space-12, 12px);
+  border-bottom: 1px solid var(--color-neutral-100, #F0F2F5);
+  color: var(--color-neutral-800, #2A2E38);
+}
+
+.parent-table__empty {
+  color: var(--color-neutral-500, #72778A);
+  font-style: italic;
+  padding: var(--space-16, 16px);
+  text-align: center;
+}
+
+/* Badge */
+.parent-badge {
+  display: inline-block;
+  padding: var(--space-2, 2px) var(--space-8, 8px);
+  border-radius: var(--radius-pill, 999px);
+  font-size: 0.78rem;
+  font-weight: var(--weight-semibold, 600);
+  line-height: 1.5;
+}
+
+.parent-badge--success {
+  background: var(--color-success-50, #ECFDF5);
+  color: var(--color-success-700, #15803D);
+}
+
+.parent-badge--warning {
+  background: var(--color-warning-50, #FFFBEB);
+  color: var(--color-warning-700, #A16207);
+}
+
+.parent-badge--error {
+  background: var(--color-error-50, #FEF2F2);
+  color: var(--color-error-700, #B91C1C);
+}
+
+.parent-badge--info {
+  background: var(--color-primary-50, #EDF1FF);
+  color: var(--color-primary-700, #2837AC);
+}
+
+.parent-badge--neutral {
+  background: var(--color-neutral-100, #F0F2F5);
+  color: var(--color-neutral-600, #5A5F6B);
+}
+
+/* Progress Block */
+.parent-progress-block {
+  margin-bottom: var(--space-12, 12px);
+}
+
+.parent-progress-block__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--space-4, 4px);
+}
+
+.parent-progress-block__label {
+  font-size: var(--type-caption-size, 13px);
+  font-weight: var(--weight-medium, 500);
+  color: var(--color-neutral-700, #3E4350);
+}
+
+.parent-progress-block__value {
+  font-size: var(--type-caption-size, 13px);
+  font-weight: var(--weight-semibold, 600);
+  color: var(--color-primary-600, #3349D6);
+}
+
+.parent-progress-block__track {
+  height: 8px;
+  background: var(--color-neutral-100, #F0F2F5);
+  border-radius: var(--radius-pill, 999px);
+  overflow: hidden;
+}
+
+.parent-progress-block__fill {
+  height: 100%;
+  background: var(--color-primary-500, #4762EE);
+  border-radius: var(--radius-pill, 999px);
+  transition: width 0.3s ease;
+}
+
+/* Chart Shell */
+.parent-chart-shell {
+  background: var(--color-neutral-0, #fff);
+  border: 1px solid var(--color-neutral-200, #E2E5EB);
+  border-radius: var(--radius-md, 12px);
+  padding: var(--card-padding, 16px);
+}
+
+.parent-chart-shell__title {
+  font-size: var(--type-body-size, 15px);
+  font-weight: var(--weight-semibold, 600);
+  color: var(--color-neutral-800, #2A2E38);
+  margin: 0 0 var(--space-8, 8px) 0;
+}
+
+.parent-chart-shell__area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.parent-chart-shell__placeholder {
+  color: var(--color-neutral-400, #9499AB);
+  font-style: italic;
+}
+
+/* States */
+.parent-state {
+  border-radius: var(--radius-sm, 8px);
+  padding: var(--space-16, 16px);
+  text-align: center;
+  font-weight: var(--weight-semibold, 600);
+}
+
+.parent-state p {
+  margin: 0;
+}
+
+.parent-state--loading {
+  background: var(--color-primary-50, #EDF1FF);
+  color: var(--color-primary-700, #2837AC);
+}
+
+.parent-state--empty {
+  background: var(--color-neutral-50, #F8F9FB);
+  color: var(--color-neutral-500, #72778A);
+}
+
+.parent-state--error {
+  background: var(--color-error-50, #FEF2F2);
+  color: var(--color-error-700, #B91C1C);
+}
