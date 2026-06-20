@@ -1,9 +1,9 @@
 // P8-075: Create AI Teacher Feedback API
-// AiTeacherFeedbackSubmitController + SubmitTeacherFeedbackRequestDto tests.
+// AiTeacherFeedbackSubmitController + SubmitFeedbackRequestDto tests.
 
 import { AiTeacherFeedbackSubmitController } from '../ai-teacher-feedback-submit.controller';
 import { AiTeacherFeedbackSubmitService } from '../ai-teacher-feedback-submit.service';
-import { SubmitTeacherFeedbackRequestDto } from '../ai-teacher-feedback-submit.dto';
+import { SubmitFeedbackRequestDto } from '../ai-teacher-feedback-submit.dto';
 import { SubmitTeacherFeedbackResult } from '../ai-teacher-feedback-submit.types';
 import { AppError } from '../../../../common/errors/app-error';
 import { ApiErrorCode } from '../../../../common/errors/api-error-code';
@@ -25,12 +25,12 @@ function makeResult(
   };
 }
 
-describe('SubmitTeacherFeedbackRequestDto.fromBody', () => {
+describe('SubmitFeedbackRequestDto.fromBody', () => {
   it('returns the rating when valid', () => {
-    expect(SubmitTeacherFeedbackRequestDto.fromBody({ rating: 'helpful' })).toEqual({
+    expect(SubmitFeedbackRequestDto.fromBody({ rating: 'helpful' })).toEqual({
       rating: 'helpful',
     });
-    expect(SubmitTeacherFeedbackRequestDto.fromBody({ rating: 'not_helpful' })).toEqual({
+    expect(SubmitFeedbackRequestDto.fromBody({ rating: 'not_helpful' })).toEqual({
       rating: 'not_helpful',
     });
   });
@@ -38,7 +38,7 @@ describe('SubmitTeacherFeedbackRequestDto.fromBody', () => {
   it.each([{ rating: '' }, { rating: 'love_it' }, {}, null, undefined, 'string-body', 42])(
     'throws an AppError VALIDATION_ERROR for invalid body %p',
     (body) => {
-      expect(() => SubmitTeacherFeedbackRequestDto.fromBody(body)).toThrow(AppError);
+      expect(() => SubmitFeedbackRequestDto.fromBody(body)).toThrow(AppError);
     },
   );
 });
