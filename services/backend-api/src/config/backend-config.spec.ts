@@ -26,6 +26,8 @@ const BASE_ENV: NodeJS.ProcessEnv = {
   AI_PROVIDER_MODEL: 'gpt-4',
   STT_PROVIDER_API_KEY: 'stt-key',
   STT_PROVIDER_MODEL: 'whisper-1',
+  TTS_PROVIDER_API_KEY: 'tts-key',
+  TTS_PROVIDER_MODEL: 'tts-1',
   CORS_ORIGINS: 'http://localhost:3000',
 };
 
