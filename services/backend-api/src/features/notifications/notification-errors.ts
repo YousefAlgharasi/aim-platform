@@ -4,46 +4,98 @@ import { ApiErrorCode } from '../../common/errors/api-error-code';
 
 export class InvalidDeviceTokenError extends AppError {
   constructor() {
-    super('Invalid or expired device token', HttpStatus.BAD_REQUEST, ApiErrorCode.VALIDATION_ERROR);
+    super({
+      message: 'Invalid or expired device token',
+      statusCode: HttpStatus.BAD_REQUEST,
+      code: ApiErrorCode.VALIDATION_ERROR,
+    });
+  }
+
+  getStatus(): number {
+    return this.statusCode;
   }
 }
 
 export class DisabledChannelError extends AppError {
   constructor(channel: string) {
-    super(`Notification channel '${channel}' is disabled`, HttpStatus.BAD_REQUEST, ApiErrorCode.VALIDATION_ERROR);
+    super({
+      message: `Notification channel '${channel}' is disabled`,
+      statusCode: HttpStatus.BAD_REQUEST,
+      code: ApiErrorCode.VALIDATION_ERROR,
+    });
+  }
+
+  getStatus(): number {
+    return this.statusCode;
   }
 }
 
 export class NotificationForbiddenError extends AppError {
   constructor() {
-    super('Not authorized to access this notification resource', HttpStatus.FORBIDDEN, ApiErrorCode.FORBIDDEN);
+    super({
+      message: 'Not authorized to access this notification resource',
+      statusCode: HttpStatus.FORBIDDEN,
+      code: ApiErrorCode.FORBIDDEN,
+    });
+  }
+
+  getStatus(): number {
+    return this.statusCode;
   }
 }
 
 export class QuietHoursActiveError extends AppError {
   constructor() {
-    super('Notification suppressed — quiet hours active', HttpStatus.UNPROCESSABLE_ENTITY, ApiErrorCode.VALIDATION_ERROR);
+    super({
+      message: 'Notification suppressed — quiet hours active',
+      statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+      code: ApiErrorCode.VALIDATION_ERROR,
+    });
+  }
+
+  getStatus(): number {
+    return this.statusCode;
   }
 }
 
 export class ProviderDeliveryError extends AppError {
   constructor(providerError: string) {
-    super(
-      `Notification delivery failed: ${providerError}`,
-      HttpStatus.BAD_GATEWAY,
-      ApiErrorCode.EXTERNAL_SERVICE_ERROR,
-    );
+    super({
+      message: `Notification delivery failed: ${providerError}`,
+      statusCode: HttpStatus.BAD_GATEWAY,
+      code: ApiErrorCode.EXTERNAL_SERVICE_ERROR,
+    });
+  }
+
+  getStatus(): number {
+    return this.statusCode;
   }
 }
 
 export class NotificationRateLimitedError extends AppError {
   constructor() {
-    super('Notification rate limit exceeded', HttpStatus.TOO_MANY_REQUESTS, ApiErrorCode.RATE_LIMITED);
+    super({
+      message: 'Notification rate limit exceeded',
+      statusCode: HttpStatus.TOO_MANY_REQUESTS,
+      code: ApiErrorCode.RATE_LIMITED,
+    });
+  }
+
+  getStatus(): number {
+    return this.statusCode;
   }
 }
 
 export class NotificationNotFoundError extends AppError {
   constructor(resourceType: string) {
-    super(`${resourceType} not found`, HttpStatus.NOT_FOUND, ApiErrorCode.NOT_FOUND);
+    super({
+      message: `${resourceType} not found`,
+      statusCode: HttpStatus.NOT_FOUND,
+      code: ApiErrorCode.NOT_FOUND,
+    });
+  }
+
+  getStatus(): number {
+    return this.statusCode;
   }
 }
