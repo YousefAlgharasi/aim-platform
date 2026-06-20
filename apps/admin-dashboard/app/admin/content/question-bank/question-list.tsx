@@ -10,6 +10,7 @@ import {
   type QuestionType,
   type QuestionDifficulty,
 } from '../../../../lib/api/admin-question-bank-api';
+import Link from 'next/link';
 import {
   AdminButton,
   AdminTable,
@@ -132,9 +133,9 @@ export function QuestionList({
       key: 'stem',
       header: 'Stem',
       render: (q) => (
-        <span title={q.stem}>
+        <Link href={`/admin/content/question-bank/${q.id}`} title={q.stem} style={{ color: 'var(--color-primary-600)' }}>
           {q.stem.length > 80 ? `${q.stem.slice(0, 80)}…` : q.stem}
-        </span>
+        </Link>
       ),
     },
     {
