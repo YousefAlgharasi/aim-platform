@@ -26,7 +26,6 @@ import {
   NotificationPreferenceEntity,
   NotificationEventEntity,
   ReminderScheduleEntity,
-  QuietHoursEntity,
 } from './dto';
 import { NotificationRepository } from './notification.repository';
 import { NotificationOwnershipGuard } from './guards';

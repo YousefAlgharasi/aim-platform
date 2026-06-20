@@ -47,9 +47,9 @@ describe('Notification Validation Helpers', () => {
     it('accepts valid platforms', () => {
       expect(isValidPlatform('ios')).toBe(true);
       expect(isValidPlatform('android')).toBe(true);
-      expect(isValidPlatform('web')).toBe(true);
     });
     it('rejects invalid', () => {
+      expect(isValidPlatform('web')).toBe(false);
       expect(isValidPlatform('windows')).toBe(false);
     });
   });
