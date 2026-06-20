@@ -7,6 +7,26 @@ describe('Health endpoint foundation', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
+    process.env = {
+      ...process.env,
+      NODE_ENV: 'test',
+      PORT: '3000',
+      SUPABASE_URL: 'https://test.supabase.co',
+      SUPABASE_ANON_KEY: 'test-anon-key',
+      SUPABASE_SERVICE_ROLE_KEY: 'test-service-role-key',
+      SUPABASE_JWT_SECRET: 'test-jwt-secret',
+      SUPABASE_JWT_AUDIENCE: 'authenticated',
+      DATABASE_URL: 'postgresql://localhost:5432/aim_test',
+      AIM_ENGINE_URL: 'http://localhost:8010',
+      AIM_ENGINE_SERVICE_TOKEN: 'test-service-token',
+      AI_PROVIDER_API_KEY: 'test-ai-provider-key',
+      AI_PROVIDER_MODEL: 'gpt-4',
+      STT_PROVIDER_API_KEY: 'test-stt-key',
+      STT_PROVIDER_MODEL: 'whisper-1',
+      TTS_PROVIDER_API_KEY: 'test-tts-key',
+      TTS_PROVIDER_MODEL: 'tts-1',
+      CORS_ORIGINS: 'http://localhost:3000',
+    };
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
