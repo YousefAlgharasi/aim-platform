@@ -18,6 +18,7 @@ import '../../../auth/data/models/auth_context_model.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
 import '../../../auth/ui/widgets/logout_button.dart';
+import '../../../notifications/ui/widgets/notification_bell_button.dart';
 
 /// Student profile screen.
 ///
@@ -57,6 +58,7 @@ class ProfilePage extends ConsumerWidget {
         title: 'Profile',
         centerTitle: false,
         actions: [
+          const NotificationBellButton(),
           if (authContextState is AppAsyncSuccess<AuthContextModel>)
             IconButton(
               icon: const Icon(Icons.edit_outlined),
