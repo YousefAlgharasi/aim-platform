@@ -1,15 +1,2 @@
 export { NotificationsModule } from './notifications.module';
 export * from './dto';
-export { NotificationRepository } from './notification.repository';
-export { NotificationTemplateService } from './notification-template.service';
-export { NotificationPreferenceService } from './notification-preference.service';
-export { DeviceTokenService } from './device-token.service';
-export { ReminderScheduleService } from './reminder-schedule.service';
-export { NotificationEligibilityService } from './notification-eligibility.service';
-export { NotificationQueueService } from './notification-queue.service';
-export { InAppNotificationService } from './in-app-notification.service';
-export { NotificationDeliveryWorker } from './notification-delivery.worker';
-export { NotificationRetryService } from './notification-retry.service';
-export { NotificationDigestService } from './notification-digest.service';
-export { NotificationAuditService } from './notification-audit.service';
-export { NotificationRateLimitService } from './notification-rate-limit.service';

@@ -1,37 +1,25 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { ReminderType, ReminderScheduleStatus } from './notification-enums';
+import {
+  NotificationRecipientType,
+  ReminderScheduleKind,
+  ReminderScheduleStatus,
+} from './notification-enums';
 
 export class ReminderScheduleEntity {
-  @ApiProperty()
-  id!: string;
+  id: string;
+  ownerId: string;
+  ownerType: NotificationRecipientType;
+  kind: ReminderScheduleKind;
+  cadence: string;
+  nextRunAt: Date;
+  status: ReminderScheduleStatus;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-  @ApiProperty()
-  userId!: string;
-
-  @ApiProperty({ enum: ['learning_plan', 'review_schedule', 'deadline', 'streak', 'custom'] })
-  reminderType!: ReminderType;
-
-  @ApiProperty({ enum: ['active', 'paused', 'completed', 'cancelled'] })
-  status!: ReminderScheduleStatus;
-
-  @ApiProperty({ nullable: true })
-  referenceId!: string | null;
-
-  @ApiProperty()
-  cronExpression!: string;
-
-  @ApiProperty({ nullable: true })
-  nextFireAt!: string | null;
-
-  @ApiProperty({ nullable: true })
-  lastFiredAt!: string | null;
-
-  @ApiProperty({ nullable: true })
-  endsAt!: string | null;
-
-  @ApiProperty()
-  createdAt!: string;
-
-  @ApiProperty()
-  updatedAt!: string;
+// Request DTO for a caller-requested custom reminder. `nextRunAt`/`status`
+// here are a request, not a guarantee -- the backend validates and assigns
+// the authoritative schedule (see notification-authority-rules.md).
+export class CreateCustomReminderRequestDto {
+  cadence: string;
+  requestedNextRunAt: Date;
 }

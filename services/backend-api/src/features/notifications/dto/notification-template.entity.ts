@@ -1,39 +1,19 @@
-import { ApiProperty } from '@nestjs/swagger';
 import {
+  NotificationCategory,
   NotificationChannel,
   NotificationLocale,
-  NotificationCategory,
   NotificationTemplateStatus,
 } from './notification-enums';
 
 export class NotificationTemplateEntity {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty()
-  key!: string;
-
-  @ApiProperty({ enum: ['in_app', 'push', 'email'] })
-  channel!: NotificationChannel;
-
-  @ApiProperty({ enum: ['en', 'ar'] })
-  locale!: NotificationLocale;
-
-  @ApiProperty()
-  category!: NotificationCategory;
-
-  @ApiProperty({ enum: ['active', 'disabled'] })
-  status!: NotificationTemplateStatus;
-
-  @ApiProperty()
-  titleTemplate!: string;
-
-  @ApiProperty()
-  bodyTemplate!: string;
-
-  @ApiProperty()
-  createdAt!: string;
-
-  @ApiProperty()
-  updatedAt!: string;
+  id: string;
+  key: string;
+  channel: NotificationChannel;
+  locale: NotificationLocale;
+  category: NotificationCategory;
+  status: NotificationTemplateStatus;
+  titleTemplate: string;
+  bodyTemplate: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
