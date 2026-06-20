@@ -8,6 +8,8 @@ const PARENT_ID = 'parent-uuid-001';
 function buildController(overrides: {
   links?: Array<Record<string, unknown>>;
   findByUserId?: jest.Mock;
+  getSummaryForParent?: jest.Mock;
+  getProgressForParent?: jest.Mock;
 } = {}) {
   const parentChildLinkService = {
     listLinksForParent: jest.fn().mockResolvedValue(
@@ -28,12 +30,32 @@ function buildController(overrides: {
       overrides.findByUserId ?? jest.fn().mockResolvedValue({ displayName: 'Child One' }),
   };
 
+  const parentDashboardSummaryService = {
+    getSummaryForParent:
+      overrides.getSummaryForParent ??
+      jest.fn().mockResolvedValue({ parentId: PARENT_ID, children: [] }),
+  };
+
+  const parentChildProgressService = {
+    getProgressForParent:
+      overrides.getProgressForParent ??
+      jest.fn().mockResolvedValue({ childId: 'child-1', skillStates: [] }),
+  };
+
   const controller = new ParentsController(
     parentChildLinkService as never,
     studentsService as never,
+    parentDashboardSummaryService as never,
+    parentChildProgressService as never,
   );
 
-  return { controller, parentChildLinkService, studentsService };
+  return {
+    controller,
+    parentChildLinkService,
+    studentsService,
+    parentDashboardSummaryService,
+    parentChildProgressService,
+  };
 }
 
 describe('ParentsController', () => {
@@ -83,6 +105,28 @@ describe('ParentsController', () => {
       const result = await controller.listChildren({ id: PARENT_ID } as never);
 
       expect(result[0].displayName).toBe('child-1');
+    });
+  });
+
+  describe('getDashboardSummary', () => {
+    it('delegates to ParentDashboardSummaryService for the authenticated parent', async () => {
+      const { controller, parentDashboardSummaryService } = buildController();
+
+      const result = await controller.getDashboardSummary({ id: PARENT_ID } as never);
+
+      expect(parentDashboardSummaryService.getSummaryForParent).toHaveBeenCalledWith(PARENT_ID);
+      expect(result).toEqual({ parentId: PARENT_ID, children: [] });
+    });
+  });
+
+  describe('getChildProgress', () => {
+    it('delegates to ParentChildProgressService with the authenticated parent and route childId', async () => {
+      const { controller, parentChildProgressService } = buildController();
+
+      const result = await controller.getChildProgress({ id: PARENT_ID } as never, 'child-1');
+
+      expect(parentChildProgressService.getProgressForParent).toHaveBeenCalledWith(PARENT_ID, 'child-1');
+      expect(result).toEqual({ childId: 'child-1', skillStates: [] });
     });
   });
 });
