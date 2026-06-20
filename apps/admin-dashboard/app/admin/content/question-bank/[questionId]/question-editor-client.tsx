@@ -19,6 +19,7 @@ import {
 } from '../../../../../components/common';
 import { QuestionChoiceEditor } from './question-choice-editor';
 import { QuestionValidationPanel } from './question-validation-panel';
+import { QuestionPreview } from './question-preview';
 
 const TYPE_LABELS: Record<string, string> = {
   multiple_choice: 'Multiple Choice',
@@ -161,6 +162,8 @@ export function QuestionEditorClient({ question, onUpdate }: Props) {
         </AdminCard>
 
         <QuestionValidationPanel question={question} hasSkillLinks={false} />
+
+        <QuestionPreview question={question} />
 
         <QuestionChoiceEditor questionType={question.type} questionId={question.id} />
 
