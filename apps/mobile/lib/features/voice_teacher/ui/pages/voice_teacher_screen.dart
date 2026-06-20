@@ -42,9 +42,9 @@ class _VoiceTeacherScreenState extends State<VoiceTeacherScreen> {
                         Icon(
                           Icons.mic_none,
                           size: 64,
-                          color: AIMColors.primary.withOpacity(0.4),
+                          color: AimColors.primary.withOpacity(0.4),
                         ),
-                        SizedBox(height: AIMSpacing.md),
+                        SizedBox(height: AimSpacing.md),
                         Text(
                           isRtl
                               ? 'اضغط على الزر للبدء بالتحدث'
@@ -57,7 +57,7 @@ class _VoiceTeacherScreenState extends State<VoiceTeacherScreen> {
                     ),
                   )
                 : ListView.builder(
-                    padding: EdgeInsets.all(AIMSpacing.md),
+                    padding: EdgeInsets.all(AimSpacing.md),
                     reverse: true,
                     itemCount: _messages.length,
                     itemBuilder: (context, index) {
@@ -81,10 +81,10 @@ class _VoiceTeacherScreenState extends State<VoiceTeacherScreen> {
           ? (isRtl ? Alignment.centerRight : Alignment.centerLeft)
           : (isRtl ? Alignment.centerLeft : Alignment.centerRight),
       child: Container(
-        margin: EdgeInsets.only(bottom: AIMSpacing.sm),
+        margin: EdgeInsets.only(bottom: AimSpacing.sm),
         padding: EdgeInsets.symmetric(
-          horizontal: AIMSpacing.md,
-          vertical: AIMSpacing.sm,
+          horizontal: AimSpacing.md,
+          vertical: AimSpacing.sm,
         ),
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.75,
@@ -92,7 +92,7 @@ class _VoiceTeacherScreenState extends State<VoiceTeacherScreen> {
         decoration: BoxDecoration(
           color: isTeacher
               ? theme.colorScheme.surfaceContainerHighest
-              : AIMColors.primary.withOpacity(0.1),
+              : AimColors.primary.withOpacity(0.1),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -105,11 +105,11 @@ class _VoiceTeacherScreenState extends State<VoiceTeacherScreen> {
             ),
             if (msg.audioRef != null)
               Padding(
-                padding: EdgeInsets.only(top: AIMSpacing.xs),
+                padding: EdgeInsets.only(top: AimSpacing.xs),
                 child: Icon(
                   Icons.play_circle_outline,
                   size: 20,
-                  color: AIMColors.primary,
+                  color: AimColors.primary,
                 ),
               ),
           ],
@@ -122,7 +122,7 @@ class _VoiceTeacherScreenState extends State<VoiceTeacherScreen> {
     final theme = Theme.of(context);
 
     return Container(
-      padding: EdgeInsets.all(AIMSpacing.lg),
+      padding: EdgeInsets.all(AimSpacing.lg),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         border: Border(
@@ -135,17 +135,17 @@ class _VoiceTeacherScreenState extends State<VoiceTeacherScreen> {
           children: [
             if (_state == VoiceScreenState.listening)
               Padding(
-                padding: EdgeInsets.only(bottom: AIMSpacing.sm),
+                padding: EdgeInsets.only(bottom: AimSpacing.sm),
                 child: Text(
                   isRtl ? 'جارٍ الاستماع...' : 'Listening...',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: AIMColors.primary,
+                    color: AimColors.primary,
                   ),
                 ),
               ),
             if (_state == VoiceScreenState.processing)
               Padding(
-                padding: EdgeInsets.only(bottom: AIMSpacing.sm),
+                padding: EdgeInsets.only(bottom: AimSpacing.sm),
                 child: Text(
                   isRtl ? 'جارٍ المعالجة...' : 'Processing...',
                   style: theme.textTheme.bodySmall?.copyWith(
@@ -162,7 +162,7 @@ class _VoiceTeacherScreenState extends State<VoiceTeacherScreen> {
                   shape: BoxShape.circle,
                   color: _state == VoiceScreenState.listening
                       ? Colors.red
-                      : AIMColors.primary,
+                      : AimColors.primary,
                 ),
                 child: Icon(
                   _state == VoiceScreenState.listening
