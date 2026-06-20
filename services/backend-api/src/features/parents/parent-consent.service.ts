@@ -51,6 +51,21 @@ export class ParentConsentService {
     return this.toEntity(row);
   }
 
+  async revokeConsentByType(
+    parentChildLinkId: string,
+    consentType: ParentConsentType,
+  ): Promise<ParentConsentEntity> {
+    const activeConsent = await this.parentRepository.findActiveConsent(parentChildLinkId, consentType);
+
+    if (!activeConsent) {
+      throw new NotFoundException(
+        `No granted "${consentType}" consent found for this parent-child link.`,
+      );
+    }
+
+    return this.revokeConsent(activeConsent.id);
+  }
+
   async revokeConsent(consentId: string): Promise<ParentConsentEntity> {
     const row = await this.parentRepository.findConsentById(consentId);
 
