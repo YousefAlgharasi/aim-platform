@@ -1,8 +1,9 @@
-// P10-033 / P10-034 / P10-035 / P10-037: AssessmentController — Student
-// Assessment List, Detail, Start Attempt, and Submit Attempt API.
+// P10-033 / P10-034 / P10-035 / P10-037 / P10-038: AssessmentController —
+// Student Assessment List, Detail, Start Attempt, Submit Attempt, and
+// Attempt Result API.
 //
-// Scope: Student-facing assessment list, detail, start-attempt, and
-//        submit-attempt endpoints only.
+// Scope: Student-facing assessment list, detail, start-attempt,
+//        submit-attempt, and attempt-result endpoints only.
 //
 // Endpoints:
 //   GET  /student/assessments                       — List published
@@ -23,6 +24,12 @@
 //                                                      submit -> grade ->
 //                                                      persist pipeline
 //                                                      (P10-037).
+//   GET  /student/assessments/attempts/:attemptId/result — Return the
+//                                                      backend-approved
+//                                                      result (score,
+//                                                      pass/fail, feedback)
+//                                                      for an owned attempt
+//                                                      (P10-038).
 //
 // Security rules:
 //   - Guarded by SupabaseJwtAuthGuard (authentication) and
@@ -38,9 +45,13 @@
 //   - Submit attempt is guarded by AssessmentAttemptOwnershipGuard (P10-032)
 //     so only the owning student may submit; grading and persistence are
 //     fully backend-evaluated (AssessmentSubmissionFlowService, P10-037).
-//   - pass_threshold, late_penalty_percent, section weights, correct_answer,
-//     score, maxScore, passed, and latePenaltyApplied are never included in
-//     these responses.
+//   - Attempt result is guarded by AssessmentResultOwnershipGuard (P10-032)
+//     so only the owning student may view it; score, passed, and
+//     latePenaltyApplied are backend-authoritative values from
+//     AssessmentFeedbackService (P10-030) — never recomputed by Flutter.
+//     Correct answer text is never included regardless of feedback policy.
+//   - pass_threshold, late_penalty_percent, section weights, and
+//     correct_answer are never included in these responses.
 //   - No AIM Engine, AI Teacher, payments, parent dashboard, or voice AI.
 //   - No secrets, service-role keys, DB credentials, or AI provider keys.
 
@@ -54,6 +65,7 @@ import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../auth/authorization/required-roles.decorator';
 import { AssessmentPermissionGuard } from './guards/assessment-permission.guard';
 import { AssessmentAttemptOwnershipGuard } from './guards/assessment-attempt-ownership.guard';
+import { AssessmentResultOwnershipGuard } from './guards/assessment-result-ownership.guard';
 import {
   AssessmentService,
   AssessmentListItem,
@@ -61,6 +73,7 @@ import {
 } from './assessment.service';
 import { AttemptLifecycleService, StartAttemptResult } from './assessment-attempt.service';
 import { AssessmentSubmissionFlowService, SubmitAttemptApiResult } from './assessment-submission-flow.service';
+import { AssessmentFeedbackService, FeedbackSummary } from './assessment-feedback.service';
 
 @ApiTags('assessments')
 @Controller('student/assessments')
@@ -69,6 +82,7 @@ export class AssessmentController {
     private readonly assessmentService: AssessmentService,
     private readonly attemptLifecycleService: AttemptLifecycleService,
     private readonly submissionFlowService: AssessmentSubmissionFlowService,
+    private readonly feedbackService: AssessmentFeedbackService,
   ) {}
 
   /**
@@ -167,5 +181,33 @@ export class AssessmentController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<SubmitAttemptApiResult> {
     return this.submissionFlowService.submitAndGrade(attemptId, user.id);
+  }
+
+  /**
+   * GET /student/assessments/attempts/:attemptId/result
+   * Return the backend-approved result for an attempt owned by the
+   * authenticated student. P10-038. Mobile displays this result only —
+   * score, pass/fail, and per-question isCorrect (gated by feedback_policy)
+   * are computed entirely backend-side; correct answer text is never
+   * included.
+   */
+  @Get('attempts/:attemptId/result')
+  @UseGuards(SupabaseJwtAuthGuard, AssessmentPermissionGuard, AssessmentResultOwnershipGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get the backend-approved result for an assessment attempt.' })
+  @ApiParam({ name: 'attemptId', description: 'UUID of the attempt owned by the authenticated student.' })
+  @ApiOkResponse({
+    description:
+      'Backend-approved result (score, maxScore, passed, latePenaltyApplied, breakdown). ' +
+      'Per-question isCorrect is included only when feedback_policy allows; correct answer text ' +
+      'is never included.',
+  })
+  async getAttemptResult(
+    @Param('attemptId') attemptId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<FeedbackSummary> {
+    return this.feedbackService.getFeedback(attemptId, user.id);
   }
 }
