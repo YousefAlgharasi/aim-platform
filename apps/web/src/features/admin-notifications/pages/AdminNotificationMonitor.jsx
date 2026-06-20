@@ -131,11 +131,11 @@ function AdminNotificationMonitor() {
               <tbody>
                 {logs.map((log, index) => (
                   <tr key={log.id || index}>
-                    <td>{log.action || log.eventType}</td>
-                    <td>{log.entityType}</td>
-                    <td>{log.entityId}</td>
-                    <td>{log.userId}</td>
-                    <td>{formatDate(log.createdAt)}</td>
+                    <td>{log.event_type}</td>
+                    <td>{log.resource_type}</td>
+                    <td>{log.resource_id}</td>
+                    <td>{log.user_id}</td>
+                    <td>{formatDate(log.created_at)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -191,8 +191,8 @@ function AdminNotificationMonitor() {
                   <tr key={attempt.id || index}>
                     <td>{attempt.channel}</td>
                     <td>{attempt.status}</td>
-                    <td>{formatDate(attempt.attemptedAt || attempt.createdAt)}</td>
-                    <td>{attempt.errorMessage || 'None'}</td>
+                    <td>{formatDate(attempt.attempted_at || attempt.created_at)}</td>
+                    <td>{attempt.error_message || 'None'}</td>
                   </tr>
                 ))}
               </tbody>
