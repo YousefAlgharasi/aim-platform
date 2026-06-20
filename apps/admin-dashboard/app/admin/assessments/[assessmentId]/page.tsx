@@ -12,6 +12,7 @@ import { fetchAdminQuestions } from '../../../../lib/api/admin-question-bank-api
 import { AssessmentEditorClient } from './assessment-editor-client';
 import { AssessmentQuestionBuilder } from './question-builder';
 import { AssessmentSettings } from './assessment-settings';
+import { DeadlineManagement } from './deadline-management';
 
 type Props = {
   params: Promise<{ assessmentId: string }>;
@@ -54,6 +55,28 @@ export default async function AdminAssessmentDetailPage({ params }: Props) {
         err instanceof AdminApiClientError
           ? `Backend error ${err.status}: ${err.message}`
           : 'Failed to update assessment.';
+      return { error: msg };
+    }
+  }
+
+  async function handleUpdateDeadline(deadline: {
+    opensAt: string | null;
+    closesAt: string | null;
+    lateSubmissionPolicy: 'none' | 'penalty' | 'allow';
+    latePenaltyPercent: number | null;
+    lateWindowMinutes: number | null;
+  }): Promise<{ error?: string }> {
+    'use server';
+    const cookieStore = await cookies();
+    const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      await updateAdminAssessment(token, assessmentId, { settings: deadline } as never);
+      return {};
+    } catch (err) {
+      const msg =
+        err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to update deadline.';
       return { error: msg };
     }
   }
@@ -148,6 +171,18 @@ export default async function AdminAssessmentDetailPage({ params }: Props) {
             settings={assessment.settings}
             disabled={assessment.status === 'archived'}
             onUpdateSettings={handleUpdateSettings}
+          />
+          <DeadlineManagement
+            assessmentId={assessmentId}
+            deadline={{
+              opensAt: (assessment as Record<string, unknown>).opensAt as string | null ?? null,
+              closesAt: (assessment as Record<string, unknown>).closesAt as string | null ?? null,
+              lateSubmissionPolicy: ((assessment as Record<string, unknown>).lateSubmissionPolicy as 'none' | 'penalty' | 'allow') ?? 'none',
+              latePenaltyPercent: (assessment as Record<string, unknown>).latePenaltyPercent as number | null ?? null,
+              lateWindowMinutes: (assessment as Record<string, unknown>).lateWindowMinutes as number | null ?? null,
+            }}
+            disabled={assessment.status === 'archived'}
+            onUpdateDeadline={handleUpdateDeadline}
           />
           <AssessmentQuestionBuilder
             assessmentId={assessmentId}
