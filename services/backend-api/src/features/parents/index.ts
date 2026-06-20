@@ -12,5 +12,6 @@ export { ParentActivitySummaryService } from './parent-activity-summary.service'
 export { ParentReportService } from './parent-report.service';
 export type { ParentReportType } from './parent-report.service';
 export { ParentInvitationService } from './parent-invitation.service';
+export { ParentNotificationPreferenceService } from './parent-notification-preference.service';
 export * from './dto';
 export * from './guards';

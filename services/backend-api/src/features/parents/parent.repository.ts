@@ -16,6 +16,7 @@ import {
   ParentChildLinkRow,
   ParentConsentRow,
   ParentInvitationRow,
+  ParentNotificationPreferenceRow,
 } from './parent-repository.types';
 
 const PARENT_CHILD_LINK_COLUMNS = `id, parent_id, child_id, relationship_type, status,
@@ -29,6 +30,9 @@ const PARENT_CONSENT_COLUMNS = `id, parent_child_link_id, consent_type, status,
 
 const PARENT_ACCESS_AUDIT_LOG_COLUMNS = `id, parent_id, child_id, action, resource_type,
        ip_address, user_agent, created_at`;
+
+const PARENT_NOTIFICATION_PREFERENCE_COLUMNS = `id, parent_id, channel, category, enabled,
+       created_at, updated_at`;
 
 @Injectable()
 export class ParentRepository {
@@ -311,5 +315,41 @@ export class ParentRepository {
     );
 
     return result.rows;
+  }
+
+  // ---------------------------------------------------------------------
+  // Parent notification preferences
+  // ---------------------------------------------------------------------
+
+  async findNotificationPreferencesByParent(
+    parentId: string,
+  ): Promise<ParentNotificationPreferenceRow[]> {
+    const result = await this.db.query<ParentNotificationPreferenceRow>(
+      `SELECT ${PARENT_NOTIFICATION_PREFERENCE_COLUMNS}
+       FROM parent_notification_preferences
+       WHERE parent_id = $1
+       ORDER BY channel, category`,
+      [parentId],
+    );
+
+    return result.rows;
+  }
+
+  async upsertNotificationPreference(
+    parentId: string,
+    channel: string,
+    category: string,
+    enabled: boolean,
+  ): Promise<ParentNotificationPreferenceRow> {
+    const result = await this.db.query<ParentNotificationPreferenceRow>(
+      `INSERT INTO parent_notification_preferences (parent_id, channel, category, enabled)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (parent_id, channel, category)
+       DO UPDATE SET enabled = EXCLUDED.enabled
+       RETURNING ${PARENT_NOTIFICATION_PREFERENCE_COLUMNS}`,
+      [parentId, channel, category, enabled],
+    );
+
+    return result.rows[0];
   }
 }
