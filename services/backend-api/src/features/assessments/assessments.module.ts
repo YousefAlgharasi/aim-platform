@@ -18,6 +18,7 @@ import { AssessmentFeedbackService } from './assessment-feedback.service';
 import { AssessmentRepository } from './assessment.repository';
 import { AssessmentService } from './assessment.service';
 import { AssessmentDeadlineService } from './assessment-deadline.service';
+import { AttemptLifecycleService } from './assessment-attempt.service';
 import { AssessmentController } from './assessment.controller';
 import { AssessmentPermissionGuard } from './guards/assessment-permission.guard';
 import { AssessmentAttemptOwnershipGuard } from './guards/assessment-attempt-ownership.guard';
@@ -30,6 +31,7 @@ import { AssessmentResultOwnershipGuard } from './guards/assessment-result-owner
     AssessmentRepository,
     AssessmentService,
     AssessmentDeadlineService,
+    AttemptLifecycleService,
     AssessmentGradingService,
     AssessmentScorePolicyService,
     AssessmentResultService,
@@ -42,6 +44,7 @@ import { AssessmentResultOwnershipGuard } from './guards/assessment-result-owner
     AssessmentRepository,
     AssessmentService,
     AssessmentDeadlineService,
+    AttemptLifecycleService,
     AssessmentGradingService,
     AssessmentScorePolicyService,
     AssessmentResultService,

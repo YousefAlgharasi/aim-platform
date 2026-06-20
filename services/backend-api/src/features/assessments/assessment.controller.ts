@@ -1,14 +1,19 @@
-// P10-033 / P10-034: AssessmentController — Student Assessment List & Detail API.
+// P10-033 / P10-034 / P10-035: AssessmentController — Student Assessment List,
+// Detail, and Start Attempt API.
 //
-// Scope: Student-facing assessment list and detail endpoints only.
+// Scope: Student-facing assessment list, detail, and start-attempt endpoints only.
 //
 // Endpoints:
-//   GET /student/assessments     — List published quizzes/exams available
-//                                   to the authenticated student, with
-//                                   backend-derived deadline status.
-//   GET /student/assessments/:id — Return assessment metadata, settings,
-//                                   and backend-derived deadline state
-//                                   (P10-034).
+//   GET  /student/assessments             — List published quizzes/exams
+//                                            available to the authenticated
+//                                            student, with backend-derived
+//                                            deadline status.
+//   GET  /student/assessments/:id         — Return assessment metadata,
+//                                            settings, and backend-derived
+//                                            deadline state (P10-034).
+//   POST /student/assessments/:id/attempts — Start an attempt if the
+//                                            authenticated student is
+//                                            eligible (P10-035).
 //
 // Security rules:
 //   - Guarded by SupabaseJwtAuthGuard (authentication) and
@@ -18,12 +23,15 @@
 //   - deadline status is backend-derived (AssessmentDeadlineService, P10-024,
 //     via AssessmentService.getDetailWithDeadline); never accepted from or
 //     recomputed by Flutter.
+//   - Attempt eligibility (deadline window, max attempts) is always
+//     backend-evaluated (AttemptLifecycleService, P10-025); never accepted
+//     from or recomputed by Flutter.
 //   - pass_threshold, late_penalty_percent, section weights, correct_answer
 //     are never included in these responses.
 //   - No AIM Engine, AI Teacher, payments, parent dashboard, or voice AI.
 //   - No secrets, service-role keys, DB credentials, or AI provider keys.
 
-import { Controller, Get, HttpCode, HttpStatus, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
@@ -37,11 +45,15 @@ import {
   AssessmentListItem,
   AssessmentDetailWithDeadline,
 } from './assessment.service';
+import { AttemptLifecycleService, StartAttemptResult } from './assessment-attempt.service';
 
 @ApiTags('assessments')
 @Controller('student/assessments')
 export class AssessmentController {
-  constructor(private readonly assessmentService: AssessmentService) {}
+  constructor(
+    private readonly assessmentService: AssessmentService,
+    private readonly attemptLifecycleService: AttemptLifecycleService,
+  ) {}
 
   /**
    * GET /student/assessments
@@ -88,5 +100,30 @@ export class AssessmentController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<AssessmentDetailWithDeadline> {
     return this.assessmentService.getDetailWithDeadline(assessmentId, user.id);
+  }
+
+  /**
+   * POST /student/assessments/:id/attempts
+   * Start an attempt for the authenticated student if eligible. P10-035.
+   * Eligibility (deadline window, max attempts) is fully backend-evaluated
+   * by AttemptLifecycleService — never accepted from or recomputed by Flutter.
+   */
+  @Post(':id/attempts')
+  @UseGuards(SupabaseJwtAuthGuard, AssessmentPermissionGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.CREATED)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Start an assessment attempt for the authenticated student if eligible.' })
+  @ApiParam({ name: 'id', description: 'UUID of the published assessment.' })
+  @ApiOkResponse({
+    description:
+      'Started attempt with backend-computed expiresAt. Backend evaluates deadline window and ' +
+      'max-attempts eligibility; client-supplied eligibility is never accepted.',
+  })
+  async startAttempt(
+    @Param('id') assessmentId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<StartAttemptResult> {
+    return this.attemptLifecycleService.startAttempt(assessmentId, user.id);
   }
 }

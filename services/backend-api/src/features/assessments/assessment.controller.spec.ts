@@ -11,6 +11,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AssessmentController } from './assessment.controller';
 import { AssessmentService, AssessmentListItem, AssessmentDetailWithDeadline } from './assessment.service';
+import { AttemptLifecycleService, StartAttemptResult } from './assessment-attempt.service';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { AssessmentPermissionGuard } from './guards/assessment-permission.guard';
 import { AuthenticatedUser } from '../../auth/authenticated-user';
@@ -18,6 +19,7 @@ import { AuthenticatedUser } from '../../auth/authenticated-user';
 describe('AssessmentController', () => {
   let controller: AssessmentController;
   let assessmentService: jest.Mocked<Pick<AssessmentService, 'listForStudent' | 'getDetailWithDeadline'>>;
+  let attemptLifecycleService: jest.Mocked<Pick<AttemptLifecycleService, 'startAttempt'>>;
 
   const mockListItems: AssessmentListItem[] = [
     { id: 'assessment-1', type: 'quiz', title: 'Quiz 1', description: null, deadlineStatus: 'open' },
@@ -34,15 +36,26 @@ describe('AssessmentController', () => {
     },
   };
 
+  const mockStartAttemptResult: StartAttemptResult = {
+    attemptId: 'att-1', assessmentId: 'assessment-1', attemptNumber: 1,
+    status: 'started', startedAt: new Date(), expiresAt: null,
+  };
+
   beforeEach(async () => {
     assessmentService = {
       listForStudent: jest.fn().mockResolvedValue(mockListItems),
       getDetailWithDeadline: jest.fn().mockResolvedValue(mockDetail),
     };
+    attemptLifecycleService = {
+      startAttempt: jest.fn().mockResolvedValue(mockStartAttemptResult),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AssessmentController],
-      providers: [{ provide: AssessmentService, useValue: assessmentService }],
+      providers: [
+        { provide: AssessmentService, useValue: assessmentService },
+        { provide: AttemptLifecycleService, useValue: attemptLifecycleService },
+      ],
     })
       .overrideGuard(SupabaseJwtAuthGuard)
       .useValue({ canActivate: () => true })
@@ -111,6 +124,33 @@ describe('AssessmentController', () => {
       expect(result).not.toHaveProperty('correct_answer');
       const sections = result['sections'] as Record<string, unknown>[];
       expect(sections[0]).not.toHaveProperty('weight');
+    });
+  });
+
+  describe('startAttempt', () => {
+    it('delegates to AttemptLifecycleService.startAttempt with the JWT-derived user id', async () => {
+      const user = makeUser('student-1');
+      const result = await controller.startAttempt('assessment-1', user);
+
+      expect(attemptLifecycleService.startAttempt).toHaveBeenCalledWith('assessment-1', 'student-1');
+      expect(result).toEqual(mockStartAttemptResult);
+    });
+
+    it('never trusts a client-supplied student id — only the JWT-derived user.id is used', async () => {
+      const user = makeUser('student-from-jwt');
+      await controller.startAttempt('assessment-2', user);
+
+      expect(attemptLifecycleService.startAttempt).toHaveBeenCalledTimes(1);
+      expect(attemptLifecycleService.startAttempt).toHaveBeenCalledWith('assessment-2', 'student-from-jwt');
+    });
+
+    it('response exposes no backend-only fields (pass_threshold, late_penalty_percent, correct_answer)', async () => {
+      const user = makeUser('student-1');
+      const result = await controller.startAttempt('assessment-1', user) as unknown as Record<string, unknown>;
+
+      expect(result).not.toHaveProperty('pass_threshold');
+      expect(result).not.toHaveProperty('late_penalty_percent');
+      expect(result).not.toHaveProperty('correct_answer');
     });
   });
 });
