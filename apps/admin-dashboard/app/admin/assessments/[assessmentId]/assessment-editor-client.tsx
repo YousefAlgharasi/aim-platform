@@ -117,7 +117,10 @@ export function AssessmentEditorClient({ assessment, onUpdate }: Props) {
               <dd>{new Date(assessment.updatedAt).toLocaleDateString()}</dd>
             </div>
           </dl>
-          <div style={{ marginBlockStart: 'var(--space-16)' }}>
+          <div style={{ marginBlockStart: 'var(--space-16)', display: 'flex', gap: 'var(--space-16)' }}>
+            <Link href={`/admin/assessments/${assessment.id}/preview`} style={{ color: 'var(--color-primary-600)', fontSize: '14px' }}>
+              Preview as Student →
+            </Link>
             <Link href={`/admin/assessments/${assessment.id}/results`} style={{ color: 'var(--color-primary-600)', fontSize: '14px' }}>
               View Results →
             </Link>
