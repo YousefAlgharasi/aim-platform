@@ -15,20 +15,32 @@ import { AssessmentGradingService } from './assessment-grading.service';
 import { AssessmentScorePolicyService } from './assessment-score-policy.service';
 import { AssessmentResultService } from './assessment-result.service';
 import { AssessmentFeedbackService } from './assessment-feedback.service';
+import { AssessmentRepository } from './assessment.repository';
+import { AssessmentPermissionGuard } from './guards/assessment-permission.guard';
+import { AssessmentAttemptOwnershipGuard } from './guards/assessment-attempt-ownership.guard';
+import { AssessmentResultOwnershipGuard } from './guards/assessment-result-ownership.guard';
 
 @Module({
   imports: [DatabaseModule, AuthModule],
   providers: [
+    AssessmentRepository,
     AssessmentGradingService,
     AssessmentScorePolicyService,
     AssessmentResultService,
     AssessmentFeedbackService,
+    AssessmentPermissionGuard,
+    AssessmentAttemptOwnershipGuard,
+    AssessmentResultOwnershipGuard,
   ],
   exports: [
+    AssessmentRepository,
     AssessmentGradingService,
     AssessmentScorePolicyService,
     AssessmentResultService,
     AssessmentFeedbackService,
+    AssessmentPermissionGuard,
+    AssessmentAttemptOwnershipGuard,
+    AssessmentResultOwnershipGuard,
   ],
 })
 export class AssessmentsModule {}
