@@ -4,7 +4,7 @@
 // parent), so it requires authentication only — no per-child guard is
 // needed since no single child id is taken from client input.
 
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
@@ -21,6 +21,9 @@ import { GetParentReportRequestDto } from './dto/get-parent-report-request.dto';
 import { ParentInvitationEntity } from './dto/parent-invitation.entity';
 import { CreateParentInvitationRequestDto } from './dto/create-parent-invitation-request.dto';
 import { AcceptParentInvitationRequestDto } from './dto/accept-parent-invitation-request.dto';
+import { ParentConsentEntity } from './dto/parent-consent.entity';
+import { GrantParentConsentRequestDto } from './dto/grant-parent-consent-request.dto';
+import { RevokeParentConsentRequestDto } from './dto/revoke-parent-consent-request.dto';
 import { ParentChildLinkService } from './parent-child-link.service';
 import { ParentDashboardSummaryService } from './parent-dashboard-summary.service';
 import { ParentChildProgressService } from './parent-child-progress.service';
@@ -28,6 +31,7 @@ import { ParentAssessmentSummaryService } from './parent-assessment-summary.serv
 import { ParentActivitySummaryService } from './parent-activity-summary.service';
 import { ParentReportService } from './parent-report.service';
 import { ParentInvitationService } from './parent-invitation.service';
+import { ParentConsentService } from './parent-consent.service';
 import { RequireParentChildAccess, ParentChildAccessGuard } from './guards';
 
 @ApiTags('Parent')
@@ -43,6 +47,7 @@ export class ParentsController {
     private readonly parentActivitySummaryService: ParentActivitySummaryService,
     private readonly parentReportService: ParentReportService,
     private readonly parentInvitationService: ParentInvitationService,
+    private readonly parentConsentService: ParentConsentService,
   ) {}
 
   @Get('children')
@@ -176,5 +181,62 @@ export class ParentsController {
   @ApiOkResponse({ type: ParentInvitationEntity, isArray: true })
   async listInvitations(@CurrentUser() user: AuthenticatedUser): Promise<ParentInvitationEntity[]> {
     return this.parentInvitationService.listInvitationsForParent(user.id);
+  }
+
+  @Post('consents')
+  @UseGuards(SupabaseJwtAuthGuard)
+  @ApiOperation({ summary: 'Grant a consent type on an existing parent-child link. Only the child party of the link may grant their own consent.' })
+  @ApiOkResponse({ type: ParentConsentEntity })
+  async grantConsent(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() body: GrantParentConsentRequestDto,
+  ): Promise<ParentConsentEntity> {
+    await this.assertChildOwnsLink(user.id, body.parentChildLinkId);
+
+    return this.parentConsentService.grantConsent(body.parentChildLinkId, body.consentType, user.id);
+  }
+
+  @Post('consents/revoke')
+  @UseGuards(SupabaseJwtAuthGuard)
+  @ApiOperation({ summary: 'Revoke a consent type on an existing parent-child link. Only the child party of the link may revoke their own consent.' })
+  @ApiOkResponse({ type: ParentConsentEntity })
+  async revokeConsent(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() body: RevokeParentConsentRequestDto,
+  ): Promise<ParentConsentEntity> {
+    await this.assertChildOwnsLink(user.id, body.parentChildLinkId);
+
+    return this.parentConsentService.revokeConsentByType(body.parentChildLinkId, body.consentType);
+  }
+
+  @Get('links/:linkId/consents')
+  @UseGuards(SupabaseJwtAuthGuard)
+  @ApiOperation({ summary: 'List consents for a parent-child link. Only the parent or child party of the link may read it.' })
+  @ApiParam({ name: 'linkId' })
+  @ApiOkResponse({ type: ParentConsentEntity, isArray: true })
+  async listConsentsForLink(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('linkId') linkId: string,
+  ): Promise<ParentConsentEntity[]> {
+    const link = await this.parentChildLinkService.findLinkById(linkId);
+
+    if (!link || (link.parentId !== user.id && link.childId !== user.id)) {
+      throw new ForbiddenException('You do not have access to this parent-child link.');
+    }
+
+    return this.parentConsentService.listConsentsForLink(linkId);
+  }
+
+  /**
+   * Consent is the child's own grant of visibility to a parent — only the
+   * child party of the link may grant or revoke it, never the parent
+   * themselves or an unrelated caller.
+   */
+  private async assertChildOwnsLink(userId: string, linkId: string): Promise<void> {
+    const link = await this.parentChildLinkService.findLinkById(linkId);
+
+    if (!link || link.childId !== userId) {
+      throw new ForbiddenException('Only the child party of this link may manage its consent.');
+    }
   }
 }
