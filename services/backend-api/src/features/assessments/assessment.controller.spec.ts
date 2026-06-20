@@ -10,7 +10,12 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { AssessmentController } from './assessment.controller';
-import { AssessmentService, AssessmentListItem, AssessmentDetailWithDeadline } from './assessment.service';
+import {
+  AssessmentService,
+  AssessmentListItem,
+  AssessmentDetailWithDeadline,
+  StudentDeadlinesResponse,
+} from './assessment.service';
 import { AttemptLifecycleService, StartAttemptResult } from './assessment-attempt.service';
 import { AssessmentSubmissionFlowService, SubmitAttemptApiResult } from './assessment-submission-flow.service';
 import { AssessmentFeedbackService, FeedbackSummary } from './assessment-feedback.service';
@@ -22,7 +27,7 @@ import { AuthenticatedUser } from '../../auth/authenticated-user';
 
 describe('AssessmentController', () => {
   let controller: AssessmentController;
-  let assessmentService: jest.Mocked<Pick<AssessmentService, 'listForStudent' | 'getDetailWithDeadline'>>;
+  let assessmentService: jest.Mocked<Pick<AssessmentService, 'listForStudent' | 'getDetailWithDeadline' | 'listDeadlinesForStudent'>>;
   let attemptLifecycleService: jest.Mocked<Pick<AttemptLifecycleService, 'startAttempt'>>;
   let submissionFlowService: jest.Mocked<Pick<AssessmentSubmissionFlowService, 'submitAndGrade'>>;
   let feedbackService: jest.Mocked<Pick<AssessmentFeedbackService, 'getFeedback'>>;
@@ -51,6 +56,15 @@ describe('AssessmentController', () => {
     attemptId: 'att-1', status: 'graded', submittedAt: new Date(), resultId: 'result-1',
   };
 
+  const mockDeadlinesResponse: StudentDeadlinesResponse = {
+    upcoming: [],
+    active: [{
+      assessmentId: 'assessment-1', assessmentTitle: 'Quiz 1', deadlineId: 'd-1',
+      opensAt: new Date(), closesAt: new Date(), extendedClosesAt: null, status: 'open',
+    }],
+    late: [], missed: [], closed: [],
+  };
+
   const mockFeedbackSummary: FeedbackSummary = {
     resultId: 'result-1', attemptId: 'att-1', score: 8, maxScore: 10, passed: true,
     latePenaltyApplied: false, gradedAt: new Date(), feedbackAllowed: true,
@@ -61,6 +75,7 @@ describe('AssessmentController', () => {
     assessmentService = {
       listForStudent: jest.fn().mockResolvedValue(mockListItems),
       getDetailWithDeadline: jest.fn().mockResolvedValue(mockDetail),
+      listDeadlinesForStudent: jest.fn().mockResolvedValue(mockDeadlinesResponse),
     };
     attemptLifecycleService = {
       startAttempt: jest.fn().mockResolvedValue(mockStartAttemptResult),
@@ -124,6 +139,38 @@ describe('AssessmentController', () => {
       expect(item).not.toHaveProperty('weight');
       expect(item).not.toHaveProperty('correct_answer');
     }
+  });
+
+  describe('listDeadlines', () => {
+    it('delegates to AssessmentService.listDeadlinesForStudent with the JWT-derived user id', async () => {
+      const user = makeUser('student-1');
+      const result = await controller.listDeadlines(user);
+
+      expect(assessmentService.listDeadlinesForStudent).toHaveBeenCalledWith('student-1');
+      expect(result).toEqual(mockDeadlinesResponse);
+    });
+
+    it('never trusts a client-supplied student id — only the JWT-derived user.id is used', async () => {
+      const user = makeUser('student-from-jwt');
+      await controller.listDeadlines(user);
+
+      expect(assessmentService.listDeadlinesForStudent).toHaveBeenCalledTimes(1);
+      expect(assessmentService.listDeadlinesForStudent).toHaveBeenCalledWith('student-from-jwt');
+    });
+
+    it('response groups deadlines into upcoming/active/late/missed/closed and never leaks backend-only fields', async () => {
+      const user = makeUser('student-1');
+      const result = await controller.listDeadlines(user) as unknown as Record<string, unknown>;
+
+      expect(result).toHaveProperty('upcoming');
+      expect(result).toHaveProperty('active');
+      expect(result).toHaveProperty('late');
+      expect(result).toHaveProperty('missed');
+      expect(result).toHaveProperty('closed');
+      const json = JSON.stringify(result);
+      expect(json).not.toContain('late_window_seconds');
+      expect(json).not.toContain('late_penalty_percent');
+    });
   });
 
   describe('getAssessmentDetail', () => {

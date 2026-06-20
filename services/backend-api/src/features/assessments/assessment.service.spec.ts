@@ -110,6 +110,90 @@ describe('AssessmentService', () => {
     });
   });
 
+  describe('listDeadlinesForStudent', () => {
+    function makeMultiRepo() {
+      return {
+        findAllPublished: jest.fn().mockResolvedValue([
+          { id: 'a-1', type: 'quiz', title: 'Quiz 1', description: null, status: 'published', created_by: 'u-1', created_at: now, updated_at: now },
+          { id: 'a-2', type: 'quiz', title: 'Quiz 2', description: null, status: 'published', created_by: 'u-1', created_at: now, updated_at: now },
+          { id: 'a-3', type: 'quiz', title: 'Quiz 3', description: null, status: 'published', created_by: 'u-1', created_at: now, updated_at: now },
+          { id: 'a-4', type: 'quiz', title: 'Quiz 4', description: null, status: 'published', created_by: 'u-1', created_at: now, updated_at: now },
+          { id: 'a-5', type: 'quiz', title: 'Quiz 5', description: null, status: 'published', created_by: 'u-1', created_at: now, updated_at: now },
+          { id: 'a-6', type: 'quiz', title: 'Quiz 6 (no deadline)', description: null, status: 'published', created_by: 'u-1', created_at: now, updated_at: now },
+        ]),
+      };
+    }
+
+    function statusFor(assessmentId: string, status: string | null) {
+      if (status === null) return null;
+      return {
+        deadlineId: `d-${assessmentId}`, opensAt: past, closesAt: future,
+        extendedClosesAt: null, status,
+      };
+    }
+
+    it('buckets upcoming/open/extended/late/expired/closed into upcoming/active/active/late/missed/closed', async () => {
+      const deadlineService = {
+        getDeadlineStatus: jest
+          .fn()
+          .mockImplementation((assessmentId: string) => {
+            const map: Record<string, string | null> = {
+              'a-1': 'upcoming', 'a-2': 'open', 'a-3': 'late', 'a-4': 'expired', 'a-5': 'closed', 'a-6': null,
+            };
+            return Promise.resolve(statusFor(assessmentId, map[assessmentId]));
+          }),
+      };
+      const svc = new AssessmentService(makeMultiRepo() as any, mockDb as any, deadlineService as any);
+      const result = await svc.listDeadlinesForStudent('stu-1');
+
+      expect(result.upcoming).toHaveLength(1);
+      expect(result.upcoming[0].assessmentId).toBe('a-1');
+      expect(result.active).toHaveLength(1);
+      expect(result.active[0].assessmentId).toBe('a-2');
+      expect(result.late).toHaveLength(1);
+      expect(result.late[0].assessmentId).toBe('a-3');
+      expect(result.missed).toHaveLength(1);
+      expect(result.missed[0].assessmentId).toBe('a-4');
+      expect(result.closed).toHaveLength(1);
+      expect(result.closed[0].assessmentId).toBe('a-5');
+    });
+
+    it('maps extended status into the active bucket', async () => {
+      const deadlineService = {
+        getDeadlineStatus: jest.fn().mockResolvedValue(statusFor('a-1', 'extended')),
+      };
+      const svc = new AssessmentService(makeMultiRepo() as any, mockDb as any, deadlineService as any);
+      const result = await svc.listDeadlinesForStudent('stu-1');
+      expect(result.active.some((i) => i.assessmentId === 'a-1')).toBe(true);
+    });
+
+    it('skips assessments with no deadline configured', async () => {
+      const deadlineService = { getDeadlineStatus: jest.fn().mockResolvedValue(null) };
+      const svc = new AssessmentService(makeMultiRepo() as any, mockDb as any, deadlineService as any);
+      const result = await svc.listDeadlinesForStudent('stu-1');
+      const total = result.upcoming.length + result.active.length + result.late.length + result.missed.length + result.closed.length;
+      expect(total).toBe(0);
+    });
+
+    it('returns all-empty buckets when no deadlineService is provided', async () => {
+      const svc = new AssessmentService(makeMultiRepo() as any, mockDb as any);
+      const result = await svc.listDeadlinesForStudent('stu-1');
+      expect(result).toEqual({ upcoming: [], active: [], late: [], missed: [], closed: [] });
+    });
+
+    it('never leaks late_window_seconds or late_penalty_percent in the response', async () => {
+      const deadlineService = {
+        getDeadlineStatus: jest.fn().mockResolvedValue(statusFor('a-1', 'late')),
+      };
+      const svc = new AssessmentService(makeMultiRepo() as any, mockDb as any, deadlineService as any);
+      const result = await svc.listDeadlinesForStudent('stu-1') as unknown as Record<string, unknown>;
+      const json = JSON.stringify(result);
+      expect(json).not.toContain('late_window_seconds');
+      expect(json).not.toContain('late_penalty_percent');
+      expect(json).not.toContain('latePenaltyPercent');
+    });
+  });
+
   describe('getDetail', () => {
     it('returns sections with questionCount', async () => {
       const svc = new AssessmentService(makeRepo() as any, mockDb as any);
