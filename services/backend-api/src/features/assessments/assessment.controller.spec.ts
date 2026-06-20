@@ -10,23 +10,34 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { AssessmentController } from './assessment.controller';
-import { AssessmentService, AssessmentListItem } from './assessment.service';
+import { AssessmentService, AssessmentListItem, AssessmentDetailWithDeadline } from './assessment.service';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { AssessmentPermissionGuard } from './guards/assessment-permission.guard';
 import { AuthenticatedUser } from '../../auth/authenticated-user';
 
 describe('AssessmentController', () => {
   let controller: AssessmentController;
-  let assessmentService: jest.Mocked<Pick<AssessmentService, 'listForStudent'>>;
+  let assessmentService: jest.Mocked<Pick<AssessmentService, 'listForStudent' | 'getDetailWithDeadline'>>;
 
   const mockListItems: AssessmentListItem[] = [
     { id: 'assessment-1', type: 'quiz', title: 'Quiz 1', description: null, deadlineStatus: 'open' },
     { id: 'assessment-2', type: 'exam', title: 'Exam 1', description: 'Midterm', deadlineStatus: 'upcoming' },
   ];
 
+  const mockDetail: AssessmentDetailWithDeadline = {
+    id: 'assessment-1', type: 'quiz', title: 'Quiz 1', description: null,
+    sections: [{ id: 'sec-1', title: 'Grammar', order: 1, questionCount: 10 }],
+    maxAttempts: 2, timeLimitSeconds: 900,
+    deadline: {
+      deadlineId: 'd-1', opensAt: new Date(), closesAt: new Date(),
+      extendedClosesAt: null, status: 'open',
+    },
+  };
+
   beforeEach(async () => {
     assessmentService = {
       listForStudent: jest.fn().mockResolvedValue(mockListItems),
+      getDetailWithDeadline: jest.fn().mockResolvedValue(mockDetail),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -72,5 +83,34 @@ describe('AssessmentController', () => {
       expect(item).not.toHaveProperty('weight');
       expect(item).not.toHaveProperty('correct_answer');
     }
+  });
+
+  describe('getAssessmentDetail', () => {
+    it('delegates to AssessmentService.getDetailWithDeadline with the JWT-derived user id', async () => {
+      const user = makeUser('student-1');
+      const result = await controller.getAssessmentDetail('assessment-1', user);
+
+      expect(assessmentService.getDetailWithDeadline).toHaveBeenCalledWith('assessment-1', 'student-1');
+      expect(result).toEqual(mockDetail);
+    });
+
+    it('never trusts a client-supplied student id — only the JWT-derived user.id is used', async () => {
+      const user = makeUser('student-from-jwt');
+      await controller.getAssessmentDetail('assessment-2', user);
+
+      expect(assessmentService.getDetailWithDeadline).toHaveBeenCalledTimes(1);
+      expect(assessmentService.getDetailWithDeadline).toHaveBeenCalledWith('assessment-2', 'student-from-jwt');
+    });
+
+    it('response exposes no backend-only fields (pass_threshold, late_penalty_percent, weight, correct_answer)', async () => {
+      const user = makeUser('student-1');
+      const result = await controller.getAssessmentDetail('assessment-1', user) as unknown as Record<string, unknown>;
+
+      expect(result).not.toHaveProperty('pass_threshold');
+      expect(result).not.toHaveProperty('late_penalty_percent');
+      expect(result).not.toHaveProperty('correct_answer');
+      const sections = result['sections'] as Record<string, unknown>[];
+      expect(sections[0]).not.toHaveProperty('weight');
+    });
   });
 });
