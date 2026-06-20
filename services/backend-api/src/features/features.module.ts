@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { AuthModule } from '../auth/auth.module';
+import { AssessmentsModule } from './assessments/assessments.module';
 import { AdminModule } from './admin/admin.module';
 import { AiTeacherModule } from './ai-teacher/ai-teacher.module';
 import { AimModule } from './aim/aim.module';
@@ -31,6 +32,7 @@ import { VoiceTeacherModule } from './voice-teacher/voice-teacher.module';
     ProfileModule,
     CurriculumModule,
     PlacementModule,
+    AssessmentsModule,
   ],
   exports: [
     AuthModule,
@@ -47,6 +49,7 @@ import { VoiceTeacherModule } from './voice-teacher/voice-teacher.module';
     ProfileModule,
     CurriculumModule,
     PlacementModule,
+    AssessmentsModule,
   ],
 })
 export class FeaturesModule {}
