@@ -1,19 +1,28 @@
-// P10-033 / P10-034 / P10-035: AssessmentController — Student Assessment List,
-// Detail, and Start Attempt API.
+// P10-033 / P10-034 / P10-035 / P10-037: AssessmentController — Student
+// Assessment List, Detail, Start Attempt, and Submit Attempt API.
 //
-// Scope: Student-facing assessment list, detail, and start-attempt endpoints only.
+// Scope: Student-facing assessment list, detail, start-attempt, and
+//        submit-attempt endpoints only.
 //
 // Endpoints:
-//   GET  /student/assessments             — List published quizzes/exams
-//                                            available to the authenticated
-//                                            student, with backend-derived
-//                                            deadline status.
-//   GET  /student/assessments/:id         — Return assessment metadata,
-//                                            settings, and backend-derived
-//                                            deadline state (P10-034).
-//   POST /student/assessments/:id/attempts — Start an attempt if the
-//                                            authenticated student is
-//                                            eligible (P10-035).
+//   GET  /student/assessments                       — List published
+//                                                      quizzes/exams available
+//                                                      to the authenticated
+//                                                      student, with
+//                                                      backend-derived deadline
+//                                                      status.
+//   GET  /student/assessments/:id                   — Return assessment
+//                                                      metadata, settings, and
+//                                                      backend-derived deadline
+//                                                      state (P10-034).
+//   POST /student/assessments/:id/attempts           — Start an attempt if the
+//                                                      authenticated student is
+//                                                      eligible (P10-035).
+//   POST /student/assessments/attempts/:attemptId/submit — Submit an attempt
+//                                                      and run the backend-only
+//                                                      submit -> grade ->
+//                                                      persist pipeline
+//                                                      (P10-037).
 //
 // Security rules:
 //   - Guarded by SupabaseJwtAuthGuard (authentication) and
@@ -26,8 +35,12 @@
 //   - Attempt eligibility (deadline window, max attempts) is always
 //     backend-evaluated (AttemptLifecycleService, P10-025); never accepted
 //     from or recomputed by Flutter.
-//   - pass_threshold, late_penalty_percent, section weights, correct_answer
-//     are never included in these responses.
+//   - Submit attempt is guarded by AssessmentAttemptOwnershipGuard (P10-032)
+//     so only the owning student may submit; grading and persistence are
+//     fully backend-evaluated (AssessmentSubmissionFlowService, P10-037).
+//   - pass_threshold, late_penalty_percent, section weights, correct_answer,
+//     score, maxScore, passed, and latePenaltyApplied are never included in
+//     these responses.
 //   - No AIM Engine, AI Teacher, payments, parent dashboard, or voice AI.
 //   - No secrets, service-role keys, DB credentials, or AI provider keys.
 
@@ -40,12 +53,14 @@ import { AuthenticatedUser } from '../../auth/authenticated-user';
 import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../auth/authorization/required-roles.decorator';
 import { AssessmentPermissionGuard } from './guards/assessment-permission.guard';
+import { AssessmentAttemptOwnershipGuard } from './guards/assessment-attempt-ownership.guard';
 import {
   AssessmentService,
   AssessmentListItem,
   AssessmentDetailWithDeadline,
 } from './assessment.service';
 import { AttemptLifecycleService, StartAttemptResult } from './assessment-attempt.service';
+import { AssessmentSubmissionFlowService, SubmitAttemptApiResult } from './assessment-submission-flow.service';
 
 @ApiTags('assessments')
 @Controller('student/assessments')
@@ -53,6 +68,7 @@ export class AssessmentController {
   constructor(
     private readonly assessmentService: AssessmentService,
     private readonly attemptLifecycleService: AttemptLifecycleService,
+    private readonly submissionFlowService: AssessmentSubmissionFlowService,
   ) {}
 
   /**
@@ -125,5 +141,31 @@ export class AssessmentController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<StartAttemptResult> {
     return this.attemptLifecycleService.startAttempt(assessmentId, user.id);
+  }
+
+  /**
+   * POST /student/assessments/attempts/:attemptId/submit
+   * Submit an attempt for the authenticated student and run the backend-only
+   * submit -> grade -> persist pipeline. P10-037.
+   * Returns only a submission confirmation shape; score, maxScore, passed,
+   * and latePenaltyApplied are never returned here (see P10-038 result API).
+   */
+  @Post('attempts/:attemptId/submit')
+  @UseGuards(SupabaseJwtAuthGuard, AssessmentPermissionGuard, AssessmentAttemptOwnershipGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Submit an assessment attempt and run backend grading and result persistence.' })
+  @ApiParam({ name: 'attemptId', description: 'UUID of the attempt owned by the authenticated student.' })
+  @ApiOkResponse({
+    description:
+      'Submission confirmation (attemptId, status, submittedAt, resultId). Backend computes grading; ' +
+      'score, maxScore, passed, and latePenaltyApplied are never included here.',
+  })
+  async submitAttempt(
+    @Param('attemptId') attemptId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<SubmitAttemptApiResult> {
+    return this.submissionFlowService.submitAndGrade(attemptId, user.id);
   }
 }
