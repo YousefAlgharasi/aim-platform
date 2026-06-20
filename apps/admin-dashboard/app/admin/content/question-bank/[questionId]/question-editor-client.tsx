@@ -18,6 +18,7 @@ import {
   AdminBadge,
 } from '../../../../../components/common';
 import { QuestionChoiceEditor } from './question-choice-editor';
+import { QuestionValidationPanel } from './question-validation-panel';
 
 const TYPE_LABELS: Record<string, string> = {
   multiple_choice: 'Multiple Choice',
@@ -158,6 +159,8 @@ export function QuestionEditorClient({ question, onUpdate }: Props) {
             </div>
           )}
         </AdminCard>
+
+        <QuestionValidationPanel question={question} hasSkillLinks={false} />
 
         <QuestionChoiceEditor questionType={question.type} questionId={question.id} />
 
