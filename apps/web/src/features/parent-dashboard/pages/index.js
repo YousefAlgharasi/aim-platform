@@ -14,3 +14,4 @@ export { default as ParentNotificationPreferences } from './ParentNotificationPr
 export { default as ParentNotifications } from './ParentNotifications';
 export { default as ParentNotificationSettings } from './ParentNotificationSettings';
 export { default as ParentDeadlineReminders } from './ParentDeadlineReminders';
+export { default as ParentBilling } from './ParentBilling';
