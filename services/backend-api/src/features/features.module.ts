@@ -7,6 +7,7 @@ import { AiTeacherModule } from './ai-teacher/ai-teacher.module';
 import { AimModule } from './aim/aim.module';
 import { CurriculumModule } from './curriculum/curriculum.module';
 import { LessonsModule } from './lessons/lessons.module';
+import { ParentsModule } from './parents/parents.module';
 import { PlacementModule } from './placement/placement.module';
 import { ProfileModule } from './profile/profile.module';
 import { ReportsModule } from './reports/reports.module';
@@ -28,6 +29,7 @@ import { VoiceTeacherModule } from './voice-teacher/voice-teacher.module';
     AiTeacherModule,
     VoiceTeacherModule,
     AdminModule,
+    ParentsModule,
     ReportsModule,
     ProfileModule,
     CurriculumModule,
@@ -45,6 +47,7 @@ import { VoiceTeacherModule } from './voice-teacher/voice-teacher.module';
     AiTeacherModule,
     VoiceTeacherModule,
     AdminModule,
+    ParentsModule,
     ReportsModule,
     ProfileModule,
     CurriculumModule,
