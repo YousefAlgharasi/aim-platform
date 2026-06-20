@@ -98,6 +98,12 @@ export function LessonEditorForm({ lesson, onUpdate }: LessonEditorFormProps) {
         <span className="aim-lesson-editor-meta-item">
           <strong>Updated:</strong> {new Date(lesson.updatedAt).toLocaleDateString()}
         </span>
+        <a
+          href={`/admin/content/lessons/${encodeURIComponent(lesson.id)}/content-blocks`}
+          className="aim-lesson-editor-link"
+        >
+          Manage Content Blocks →
+        </a>
       </div>
 
       {error && (
@@ -203,6 +209,21 @@ export function LessonEditorForm({ lesson, onUpdate }: LessonEditorFormProps) {
           border-bottom: 1px solid var(--border-default);
           font-size: 13px;
           color: var(--text-secondary);
+        }
+        .aim-lesson-editor-link {
+          display: inline-flex;
+          align-items: center;
+          padding: 4px 12px;
+          border-radius: var(--radius-sm);
+          background: var(--color-primary-50);
+          color: var(--color-primary-700);
+          font-size: 13px;
+          font-weight: var(--weight-semibold);
+          text-decoration: none;
+          transition: background var(--duration-fast) var(--ease-standard);
+        }
+        .aim-lesson-editor-link:hover {
+          background: var(--color-primary-100);
         }
         .aim-lesson-editor-meta-item code {
           font-size: 12px;
