@@ -41,6 +41,25 @@ export interface LegacyDeadlineStatusResult {
   extendedClosesAt: Date | null; status: DeadlineStatus;
 }
 
+export interface StudentDeadlineItem {
+  readonly assessmentId: string;
+  readonly assessmentTitle: string;
+  readonly deadlineId: string;
+  readonly opensAt: Date;
+  readonly closesAt: Date;
+  readonly extendedClosesAt: Date | null;
+  /** Backend-computed — Flutter displays as-is, never recomputes. */
+  readonly status: DeadlineStatus;
+}
+
+export interface StudentDeadlinesResponse {
+  readonly upcoming: StudentDeadlineItem[];
+  readonly active: StudentDeadlineItem[];
+  readonly late: StudentDeadlineItem[];
+  readonly missed: StudentDeadlineItem[];
+  readonly closed: StudentDeadlineItem[];
+}
+
 @Injectable()
 export class AssessmentService {
   constructor(
@@ -102,6 +121,59 @@ export class AssessmentService {
       ? await this.deadlineService.getDeadlineStatus(assessmentId, studentId)
       : null;
     return { ...detail, deadline };
+  }
+
+  /**
+   * P10-039: Return the authenticated student's deadlines across all
+   * published assessments, grouped into upcoming/active/late/missed/closed
+   * buckets. Status is always backend-derived (AssessmentDeadlineService,
+   * P10-024) — never accepted from or recomputed by Flutter.
+   * 'open'/'extended' map to "active"; 'expired' (past the late window)
+   * maps to "missed"; 'closed' (no late window, past close) stays "closed".
+   */
+  async listDeadlinesForStudent(studentId: string): Promise<StudentDeadlinesResponse> {
+    const assessments = await this.repo.findAllPublished();
+    const buckets: StudentDeadlinesResponse = {
+      upcoming: [], active: [], late: [], missed: [], closed: [],
+    };
+
+    for (const a of assessments) {
+      const deadline = this.deadlineService
+        ? await this.deadlineService.getDeadlineStatus(a.id, studentId)
+        : null;
+      if (!deadline) continue;
+
+      const item: StudentDeadlineItem = {
+        assessmentId: a.id,
+        assessmentTitle: a.title,
+        deadlineId: deadline.deadlineId,
+        opensAt: deadline.opensAt,
+        closesAt: deadline.closesAt,
+        extendedClosesAt: deadline.extendedClosesAt,
+        status: deadline.status,
+      };
+
+      switch (deadline.status) {
+        case 'upcoming':
+          buckets.upcoming.push(item);
+          break;
+        case 'open':
+        case 'extended':
+          buckets.active.push(item);
+          break;
+        case 'late':
+          buckets.late.push(item);
+          break;
+        case 'expired':
+          buckets.missed.push(item);
+          break;
+        case 'closed':
+          buckets.closed.push(item);
+          break;
+      }
+    }
+
+    return buckets;
   }
 
   async getDeadlineStatus(assessmentId: string, studentId: string): Promise<LegacyDeadlineStatusResult | null> {
