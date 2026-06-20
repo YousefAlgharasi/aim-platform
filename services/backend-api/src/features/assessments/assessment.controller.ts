@@ -1,9 +1,9 @@
-// P10-033 / P10-034 / P10-035 / P10-037 / P10-038: AssessmentController —
-// Student Assessment List, Detail, Start Attempt, Submit Attempt, and
-// Attempt Result API.
+// P10-033 / P10-034 / P10-035 / P10-037 / P10-038 / P10-039: AssessmentController —
+// Student Assessment List, Detail, Start Attempt, Submit Attempt, Attempt
+// Result, and Deadlines API.
 //
 // Scope: Student-facing assessment list, detail, start-attempt,
-//        submit-attempt, and attempt-result endpoints only.
+//        submit-attempt, attempt-result, and deadlines endpoints only.
 //
 // Endpoints:
 //   GET  /student/assessments                       — List published
@@ -12,6 +12,13 @@
 //                                                      student, with
 //                                                      backend-derived deadline
 //                                                      status.
+//   GET  /student/assessments/deadlines              — List the authenticated
+//                                                      student's deadlines
+//                                                      across all published
+//                                                      assessments, grouped
+//                                                      into upcoming/active/
+//                                                      late/missed/closed
+//                                                      (P10-039).
 //   GET  /student/assessments/:id                   — Return assessment
 //                                                      metadata, settings, and
 //                                                      backend-derived deadline
@@ -52,6 +59,11 @@
 //     Correct answer text is never included regardless of feedback policy.
 //   - pass_threshold, late_penalty_percent, section weights, and
 //     correct_answer are never included in these responses.
+//   - Deadline grouping (upcoming/active/late/missed/closed) is always
+//     backend-derived (AssessmentDeadlineService, P10-024, via
+//     AssessmentService.listDeadlinesForStudent); never accepted from or
+//     recomputed by Flutter. late_window_seconds and late_penalty_percent
+//     are never included in the deadlines response.
 //   - No AIM Engine, AI Teacher, payments, parent dashboard, or voice AI.
 //   - No secrets, service-role keys, DB credentials, or AI provider keys.
 
@@ -70,6 +82,7 @@ import {
   AssessmentService,
   AssessmentListItem,
   AssessmentDetailWithDeadline,
+  StudentDeadlinesResponse,
 } from './assessment.service';
 import { AttemptLifecycleService, StartAttemptResult } from './assessment-attempt.service';
 import { AssessmentSubmissionFlowService, SubmitAttemptApiResult } from './assessment-submission-flow.service';
@@ -105,6 +118,30 @@ export class AssessmentController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<AssessmentListItem[]> {
     return this.assessmentService.listForStudent(user.id);
+  }
+
+  /**
+   * GET /student/assessments/deadlines
+   * Return the authenticated student's deadlines across all published
+   * assessments, grouped into upcoming/active/late/missed/closed. P10-039.
+   * Declared before the ':id' route so 'deadlines' is never matched as an
+   * assessment id.
+   */
+  @Get('deadlines')
+  @UseGuards(SupabaseJwtAuthGuard, AssessmentPermissionGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List the authenticated student\'s deadlines, grouped by backend-derived status.' })
+  @ApiOkResponse({
+    description:
+      'Deadlines grouped into upcoming/active/late/missed/closed. Status is backend-derived; ' +
+      'late_window_seconds and late_penalty_percent are never included.',
+  })
+  async listDeadlines(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<StudentDeadlinesResponse> {
+    return this.assessmentService.listDeadlinesForStudent(user.id);
   }
 
   /**
