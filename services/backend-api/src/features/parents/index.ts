@@ -5,4 +5,5 @@ export * from './parent-repository.types';
 export { ParentChildLinkService } from './parent-child-link.service';
 export { ParentConsentService } from './parent-consent.service';
 export { ParentAccessPolicyService } from './parent-access-policy.service';
+export { ParentAccessAuditService } from './parent-access-audit.service';
 export * from './dto';
