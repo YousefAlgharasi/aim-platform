@@ -1,4 +1,6 @@
-// P10-049: assessment models barrel.
-// JSON response models are added in subsequent tasks (P10-050+).
-// Models must map backend JSON to entities only; they must not contain
-// scoring logic, correctness checks, or deadline-status derivation.
+// P10-050: assessment data models barrel.
+export 'assessment_list_item_model.dart';
+export 'assessment_detail_model.dart';
+export 'attempt_result_model.dart';
+export 'result_history_model.dart';
+export 'student_deadline_model.dart';
