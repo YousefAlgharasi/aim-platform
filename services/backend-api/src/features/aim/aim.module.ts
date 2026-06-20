@@ -154,6 +154,9 @@ import { AimResultController } from './result/aim-result.controller';
 
     // Phase 8 — error patterns read service (needed by AI Teacher context builder, P8-037)
     ErrorPatternsReadService,
+
+    // Phase 12 — session state read service (needed by Parent Activity Summary Service, P12-029)
+    SessionStateReadService,
   ],
 })
 export class AimModule {}
