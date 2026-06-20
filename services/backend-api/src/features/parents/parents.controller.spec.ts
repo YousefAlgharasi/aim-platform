@@ -17,6 +17,10 @@ function buildController(overrides: {
   acceptInvitation?: jest.Mock;
   revokeInvitation?: jest.Mock;
   listInvitationsForParent?: jest.Mock;
+  findLinkById?: jest.Mock;
+  grantConsent?: jest.Mock;
+  revokeConsentByType?: jest.Mock;
+  listConsentsForLink?: jest.Mock;
 } = {}) {
   const parentChildLinkService = {
     listLinksForParent: jest.fn().mockResolvedValue(
@@ -30,6 +34,15 @@ function buildController(overrides: {
         },
       ],
     ),
+    findLinkById:
+      overrides.findLinkById ??
+      jest.fn().mockResolvedValue({
+        id: 'link-1',
+        parentId: PARENT_ID,
+        childId: 'child-1',
+        relationshipType: 'parent',
+        status: 'active',
+      }),
   };
 
   const studentsService = {
@@ -81,6 +94,17 @@ function buildController(overrides: {
       overrides.listInvitationsForParent ?? jest.fn().mockResolvedValue([{ id: 'invitation-1' }]),
   };
 
+  const parentConsentService = {
+    grantConsent:
+      overrides.grantConsent ??
+      jest.fn().mockResolvedValue({ id: 'consent-1', status: 'granted' }),
+    revokeConsentByType:
+      overrides.revokeConsentByType ??
+      jest.fn().mockResolvedValue({ id: 'consent-1', status: 'revoked' }),
+    listConsentsForLink:
+      overrides.listConsentsForLink ?? jest.fn().mockResolvedValue([{ id: 'consent-1' }]),
+  };
+
   const controller = new ParentsController(
     parentChildLinkService as never,
     studentsService as never,
@@ -90,6 +114,7 @@ function buildController(overrides: {
     parentActivitySummaryService as never,
     parentReportService as never,
     parentInvitationService as never,
+    parentConsentService as never,
   );
 
   return {
@@ -102,6 +127,7 @@ function buildController(overrides: {
     parentActivitySummaryService,
     parentReportService,
     parentInvitationService,
+    parentConsentService,
   };
 }
 
@@ -276,6 +302,66 @@ describe('ParentsController', () => {
 
       expect(parentInvitationService.listInvitationsForParent).toHaveBeenCalledWith(PARENT_ID);
       expect(result).toEqual([{ id: 'invitation-1' }]);
+    });
+  });
+
+  describe('grantConsent', () => {
+    it('grants consent when the caller is the child party of the link', async () => {
+      const { controller, parentConsentService } = buildController();
+
+      await controller.grantConsent({ id: 'child-1' } as never, {
+        parentChildLinkId: 'link-1',
+        consentType: 'progress_view',
+      });
+
+      expect(parentConsentService.grantConsent).toHaveBeenCalledWith(
+        'link-1',
+        'progress_view',
+        'child-1',
+      );
+    });
+
+    it('rejects the grant when the caller is not the child party of the link', async () => {
+      const { controller } = buildController();
+
+      await expect(
+        controller.grantConsent({ id: PARENT_ID } as never, {
+          parentChildLinkId: 'link-1',
+          consentType: 'progress_view',
+        }),
+      ).rejects.toThrow('Only the child party of this link may manage its consent.');
+    });
+  });
+
+  describe('revokeConsent', () => {
+    it('revokes consent when the caller is the child party of the link', async () => {
+      const { controller, parentConsentService } = buildController();
+
+      await controller.revokeConsent({ id: 'child-1' } as never, {
+        parentChildLinkId: 'link-1',
+        consentType: 'progress_view',
+      });
+
+      expect(parentConsentService.revokeConsentByType).toHaveBeenCalledWith('link-1', 'progress_view');
+    });
+  });
+
+  describe('listConsentsForLink', () => {
+    it('returns consents when the caller is the parent party of the link', async () => {
+      const { controller, parentConsentService } = buildController();
+
+      const result = await controller.listConsentsForLink({ id: PARENT_ID } as never, 'link-1');
+
+      expect(parentConsentService.listConsentsForLink).toHaveBeenCalledWith('link-1');
+      expect(result).toEqual([{ id: 'consent-1' }]);
+    });
+
+    it('rejects an unrelated caller', async () => {
+      const { controller } = buildController();
+
+      await expect(
+        controller.listConsentsForLink({ id: 'someone-else' } as never, 'link-1'),
+      ).rejects.toThrow('You do not have access to this parent-child link.');
     });
   });
 });
