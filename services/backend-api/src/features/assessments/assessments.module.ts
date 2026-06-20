@@ -24,6 +24,7 @@ import { AssessmentController } from './assessment.controller';
 import { AssessmentPermissionGuard } from './guards/assessment-permission.guard';
 import { AssessmentAttemptOwnershipGuard } from './guards/assessment-attempt-ownership.guard';
 import { AssessmentResultOwnershipGuard } from './guards/assessment-result-ownership.guard';
+import { AssessmentAuditService } from './assessment-audit.service';
 
 @Module({
   imports: [DatabaseModule, AuthModule],
@@ -41,6 +42,7 @@ import { AssessmentResultOwnershipGuard } from './guards/assessment-result-owner
     AssessmentPermissionGuard,
     AssessmentAttemptOwnershipGuard,
     AssessmentResultOwnershipGuard,
+    AssessmentAuditService,
   ],
   exports: [
     AssessmentRepository,
@@ -55,6 +57,7 @@ import { AssessmentResultOwnershipGuard } from './guards/assessment-result-owner
     AssessmentPermissionGuard,
     AssessmentAttemptOwnershipGuard,
     AssessmentResultOwnershipGuard,
+    AssessmentAuditService,
   ],
 })
 export class AssessmentsModule {}
