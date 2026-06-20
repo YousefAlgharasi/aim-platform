@@ -117,4 +117,41 @@ class BackendApiPaths {
   /// POST /ai-teacher/messages/:id/feedback (P8-075)
   static String aiTeacherMessageFeedback(String messageId) =>
       '/ai-teacher/messages/$messageId/feedback';
+
+  // ---------------------------------------------------------------------------
+  // Assessments — Phase 10 P10-051
+  // Student-facing only. Backend is the final authority for grading, deadlines,
+  // attempt eligibility, and results. Flutter displays backend values as-is.
+  // ---------------------------------------------------------------------------
+
+  /// GET /student/assessments
+  static const String studentAssessments = '/student/assessments';
+
+  /// GET /student/assessments/deadlines
+  static const String studentAssessmentDeadlines =
+      '/student/assessments/deadlines';
+
+  /// GET /student/assessments/:id
+  static String studentAssessmentDetail(String assessmentId) =>
+      '/student/assessments/$assessmentId';
+
+  /// GET /student/assessments/:id/history
+  static String studentAssessmentHistory(String assessmentId) =>
+      '/student/assessments/$assessmentId/history';
+
+  /// POST /student/assessments/:id/attempts
+  static String studentStartAttempt(String assessmentId) =>
+      '/student/assessments/$assessmentId/attempts';
+
+  /// GET /student/assessments/attempts/:attemptId/resume
+  static String studentResumeAttempt(String attemptId) =>
+      '/student/assessments/attempts/$attemptId/resume';
+
+  /// POST /student/assessments/attempts/:attemptId/submit
+  static String studentSubmitAttempt(String attemptId) =>
+      '/student/assessments/attempts/$attemptId/submit';
+
+  /// GET /student/assessments/attempts/:attemptId/result
+  static String studentAttemptResult(String attemptId) =>
+      '/student/assessments/attempts/$attemptId/result';
 }
