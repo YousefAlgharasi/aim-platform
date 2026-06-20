@@ -10,11 +10,11 @@ export class NotificationOwnershipGuard implements CanActivate {
     const user = request.user;
 
     if (!user?.id) {
-      throw new AppError(
-        'Authentication required',
-        HttpStatus.UNAUTHORIZED,
-        ApiErrorCode.UNAUTHORIZED,
-      );
+      throw new AppError({
+        message: 'Authentication required',
+        statusCode: HttpStatus.UNAUTHORIZED,
+        code: ApiErrorCode.UNAUTHORIZED,
+      });
     }
 
     return true;
