@@ -10,19 +10,19 @@ export class NotificationAdminGuard implements CanActivate {
     const user = request.user;
 
     if (!user?.id) {
-      throw new AppError(
-        'Authentication required',
-        HttpStatus.UNAUTHORIZED,
-        ApiErrorCode.UNAUTHORIZED,
-      );
+      throw new AppError({
+        message: 'Authentication required',
+        statusCode: HttpStatus.UNAUTHORIZED,
+        code: ApiErrorCode.UNAUTHORIZED,
+      });
     }
 
     if (user.role !== 'admin') {
-      throw new AppError(
-        'Admin access required',
-        HttpStatus.FORBIDDEN,
-        ApiErrorCode.FORBIDDEN,
-      );
+      throw new AppError({
+        message: 'Admin access required',
+        statusCode: HttpStatus.FORBIDDEN,
+        code: ApiErrorCode.FORBIDDEN,
+      });
     }
 
     return true;
