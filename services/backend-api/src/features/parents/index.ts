@@ -7,3 +7,4 @@ export { ParentConsentService } from './parent-consent.service';
 export { ParentAccessPolicyService } from './parent-access-policy.service';
 export { ParentAccessAuditService } from './parent-access-audit.service';
 export * from './dto';
+export * from './guards';

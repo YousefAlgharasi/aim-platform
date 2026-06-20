@@ -6,6 +6,7 @@ import { ParentAccessPolicyService } from './parent-access-policy.service';
 import { ParentChildLinkService } from './parent-child-link.service';
 import { ParentConsentService } from './parent-consent.service';
 import { ParentRepository } from './parent.repository';
+import { ParentChildAccessGuard } from './guards';
 import { ParentsController } from './parents.controller';
 import { ParentsService } from './parents.service';
 
@@ -18,7 +19,7 @@ import { ParentsService } from './parents.service';
     ParentChildLinkService,
     ParentConsentService,
     ParentAccessPolicyService,
-    ParentAccessAuditService,
+    ParentChildAccessGuard,
   ],
   exports: [
     ParentsService,
@@ -26,7 +27,7 @@ import { ParentsService } from './parents.service';
     ParentChildLinkService,
     ParentConsentService,
     ParentAccessPolicyService,
-    ParentAccessAuditService,
+    ParentChildAccessGuard,
   ],
 })
 export class ParentsModule {}
