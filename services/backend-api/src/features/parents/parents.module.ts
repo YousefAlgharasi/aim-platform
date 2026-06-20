@@ -7,6 +7,7 @@ import { StudentsModule } from '../students/students.module';
 import { ParentAccessPolicyService } from './parent-access-policy.service';
 import { ParentChildLinkService } from './parent-child-link.service';
 import { ParentConsentService } from './parent-consent.service';
+import { ParentChildProgressService } from './parent-child-progress.service';
 import { ParentDashboardSummaryService } from './parent-dashboard-summary.service';
 import { ParentRepository } from './parent.repository';
 import { ParentChildAccessGuard } from './guards';
@@ -24,6 +25,7 @@ import { ParentsService } from './parents.service';
     ParentAccessPolicyService,
     ParentChildAccessGuard,
     ParentDashboardSummaryService,
+    ParentChildProgressService,
   ],
   exports: [
     ParentsService,
@@ -33,6 +35,7 @@ import { ParentsService } from './parents.service';
     ParentAccessPolicyService,
     ParentChildAccessGuard,
     ParentDashboardSummaryService,
+    ParentChildProgressService,
   ],
 })
 export class ParentsModule {}
