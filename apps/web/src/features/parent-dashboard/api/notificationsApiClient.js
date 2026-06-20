@@ -72,3 +72,25 @@ export async function dismissNotification(eventId) {
     method: 'PATCH',
   });
 }
+
+export async function getChannelPreferences() {
+  return notificationsRequest('/preferences');
+}
+
+export async function updateChannelPreference(channel, category, enabled) {
+  return notificationsRequest('/preferences', {
+    method: 'PATCH',
+    body: { channel, category, enabled },
+  });
+}
+
+export async function getQuietHours() {
+  return notificationsRequest('/quiet-hours');
+}
+
+export async function updateQuietHours(data) {
+  return notificationsRequest('/quiet-hours', {
+    method: 'PATCH',
+    body: data,
+  });
+}
