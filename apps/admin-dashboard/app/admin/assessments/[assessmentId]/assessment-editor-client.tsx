@@ -7,6 +7,7 @@ import type {
   AdminAssessmentType,
   AdminAssessmentSettings,
 } from '../../../../lib/api/admin-assessments-api';
+import Link from 'next/link';
 import {
   AdminButton,
   AdminCard,
@@ -116,6 +117,11 @@ export function AssessmentEditorClient({ assessment, onUpdate }: Props) {
               <dd>{new Date(assessment.updatedAt).toLocaleDateString()}</dd>
             </div>
           </dl>
+          <div style={{ marginBlockStart: 'var(--space-16)' }}>
+            <Link href={`/admin/assessments/${assessment.id}/results`} style={{ color: 'var(--color-primary-600)', fontSize: '14px' }}>
+              View Results →
+            </Link>
+          </div>
         </AdminCard>
 
         <AdminCard title="Settings">
