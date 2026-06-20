@@ -94,3 +94,25 @@ export async function updateQuietHours(data) {
     body: data,
   });
 }
+
+export async function getReminderSchedules() {
+  return notificationsRequest('/reminders');
+}
+
+export async function pauseReminderSchedule(scheduleId) {
+  return notificationsRequest(`/reminders/${encodeURIComponent(scheduleId)}/pause`, {
+    method: 'PATCH',
+  });
+}
+
+export async function resumeReminderSchedule(scheduleId) {
+  return notificationsRequest(`/reminders/${encodeURIComponent(scheduleId)}/resume`, {
+    method: 'PATCH',
+  });
+}
+
+export async function cancelReminderSchedule(scheduleId) {
+  return notificationsRequest(`/reminders/${encodeURIComponent(scheduleId)}/cancel`, {
+    method: 'PATCH',
+  });
+}
