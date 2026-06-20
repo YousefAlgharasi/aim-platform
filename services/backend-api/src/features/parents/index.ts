@@ -6,3 +6,4 @@ export { ParentChildLinkService } from './parent-child-link.service';
 export { ParentConsentService } from './parent-consent.service';
 export { ParentAccessPolicyService } from './parent-access-policy.service';
 export * from './dto';
+export * from './guards';
