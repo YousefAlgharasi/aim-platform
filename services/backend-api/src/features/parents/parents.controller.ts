@@ -4,7 +4,7 @@
 // parent), so it requires authentication only — no per-child guard is
 // needed since no single child id is taken from client input.
 
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
@@ -16,11 +16,14 @@ import { ParentDashboardSummaryDto } from './dto/parent-dashboard-summary.dto';
 import { ParentChildProgressEntity } from './dto/parent-child-progress.entity';
 import { ParentAssessmentSummaryEntity } from './dto/parent-assessment-summary.entity';
 import { ParentActivitySummaryEntity } from './dto/parent-activity-summary.entity';
+import { ParentChildReportEntity } from './dto/parent-child-report.entity';
+import { GetParentReportRequestDto } from './dto/get-parent-report-request.dto';
 import { ParentChildLinkService } from './parent-child-link.service';
 import { ParentDashboardSummaryService } from './parent-dashboard-summary.service';
 import { ParentChildProgressService } from './parent-child-progress.service';
 import { ParentAssessmentSummaryService } from './parent-assessment-summary.service';
 import { ParentActivitySummaryService } from './parent-activity-summary.service';
+import { ParentReportService } from './parent-report.service';
 import { RequireParentChildAccess, ParentChildAccessGuard } from './guards';
 
 @ApiTags('Parent')
@@ -34,6 +37,7 @@ export class ParentsController {
     private readonly parentChildProgressService: ParentChildProgressService,
     private readonly parentAssessmentSummaryService: ParentAssessmentSummaryService,
     private readonly parentActivitySummaryService: ParentActivitySummaryService,
+    private readonly parentReportService: ParentReportService,
   ) {}
 
   @Get('children')
@@ -106,5 +110,19 @@ export class ParentsController {
     @Param('childId') childId: string,
   ): Promise<ParentActivitySummaryEntity> {
     return this.parentActivitySummaryService.getActivitySummaryForParent(user.id, childId);
+  }
+
+  @Get('children/:childId/reports')
+  @UseGuards(SupabaseJwtAuthGuard, ParentChildAccessGuard)
+  @RequireParentChildAccess()
+  @ApiOperation({ summary: "Return a backend-approved weekly/monthly report for a linked child." })
+  @ApiParam({ name: 'childId' })
+  @ApiOkResponse({ type: ParentChildReportEntity })
+  async getChildReport(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('childId') childId: string,
+    @Query() query: GetParentReportRequestDto,
+  ): Promise<ParentChildReportEntity> {
+    return this.parentReportService.getReportForParent(user.id, childId, query.period ?? 'weekly');
   }
 }
