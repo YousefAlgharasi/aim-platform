@@ -21,6 +21,8 @@ function buildController(overrides: {
   grantConsent?: jest.Mock;
   revokeConsentByType?: jest.Mock;
   listConsentsForLink?: jest.Mock;
+  listPreferencesForParent?: jest.Mock;
+  updatePreference?: jest.Mock;
 } = {}) {
   const parentChildLinkService = {
     listLinksForParent: jest.fn().mockResolvedValue(
@@ -105,6 +107,15 @@ function buildController(overrides: {
       overrides.listConsentsForLink ?? jest.fn().mockResolvedValue([{ id: 'consent-1' }]),
   };
 
+  const parentNotificationPreferenceService = {
+    listPreferencesForParent:
+      overrides.listPreferencesForParent ??
+      jest.fn().mockResolvedValue([{ id: 'pref-1', channel: 'email', category: 'progress_update', enabled: true }]),
+    updatePreference:
+      overrides.updatePreference ??
+      jest.fn().mockResolvedValue({ id: 'pref-1', channel: 'email', category: 'progress_update', enabled: false }),
+  };
+
   const controller = new ParentsController(
     parentChildLinkService as never,
     studentsService as never,
@@ -115,6 +126,7 @@ function buildController(overrides: {
     parentReportService as never,
     parentInvitationService as never,
     parentConsentService as never,
+    parentNotificationPreferenceService as never,
   );
 
   return {
@@ -128,6 +140,7 @@ function buildController(overrides: {
     parentReportService,
     parentInvitationService,
     parentConsentService,
+    parentNotificationPreferenceService,
   };
 }
 
@@ -362,6 +375,37 @@ describe('ParentsController', () => {
       await expect(
         controller.listConsentsForLink({ id: 'someone-else' } as never, 'link-1'),
       ).rejects.toThrow('You do not have access to this parent-child link.');
+    });
+  });
+
+  describe('listNotificationPreferences', () => {
+    it('lists notification preferences for the authenticated parent', async () => {
+      const { controller, parentNotificationPreferenceService } = buildController();
+
+      const result = await controller.listNotificationPreferences({ id: PARENT_ID } as never);
+
+      expect(parentNotificationPreferenceService.listPreferencesForParent).toHaveBeenCalledWith(PARENT_ID);
+      expect(result).toEqual([{ id: 'pref-1', channel: 'email', category: 'progress_update', enabled: true }]);
+    });
+  });
+
+  describe('updateNotificationPreference', () => {
+    it('updates the notification preference for the authenticated parent', async () => {
+      const { controller, parentNotificationPreferenceService } = buildController();
+
+      const result = await controller.updateNotificationPreference({ id: PARENT_ID } as never, {
+        channel: 'email',
+        category: 'progress_update',
+        enabled: false,
+      } as never);
+
+      expect(parentNotificationPreferenceService.updatePreference).toHaveBeenCalledWith(
+        PARENT_ID,
+        'email',
+        'progress_update',
+        false,
+      );
+      expect(result.enabled).toBe(false);
     });
   });
 });

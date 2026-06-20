@@ -14,3 +14,6 @@ export * from './parent-assessment-summary.entity';
 export * from './parent-activity-summary.entity';
 export * from './parent-child-summary.entity';
 export * from './get-parent-report-request.dto';
+export * from './parent-notification-enums';
+export * from './parent-notification-preference.entity';
+export * from './update-parent-notification-preference-request.dto';
