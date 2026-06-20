@@ -1,6 +1,6 @@
-// P10-033 / P10-034 / P10-035 / P10-037 / P10-038 / P10-039: AssessmentController —
-// Student Assessment List, Detail, Start Attempt, Submit Attempt, Attempt
-// Result, and Deadlines API.
+// P10-033 / P10-034 / P10-035 / P10-036 / P10-037 / P10-038 / P10-039: AssessmentController —
+// Student Assessment List, Detail, Start Attempt, Resume Attempt, Submit
+// Attempt, Attempt Result, and Deadlines API.
 //
 // Scope: Student-facing assessment list, detail, start-attempt,
 //        submit-attempt, attempt-result, and deadlines endpoints only.
@@ -26,6 +26,10 @@
 //   POST /student/assessments/:id/attempts           — Start an attempt if the
 //                                                      authenticated student is
 //                                                      eligible (P10-035).
+//   GET  /student/assessments/attempts/:attemptId/resume — Resume an active
+//                                                      attempt if owned by the
+//                                                      authenticated student
+//                                                      (P10-036).
 //   POST /student/assessments/attempts/:attemptId/submit — Submit an attempt
 //                                                      and run the backend-only
 //                                                      submit -> grade ->
@@ -84,7 +88,7 @@ import {
   AssessmentDetailWithDeadline,
   StudentDeadlinesResponse,
 } from './assessment.service';
-import { AttemptLifecycleService, StartAttemptResult } from './assessment-attempt.service';
+import { AttemptLifecycleService, StartAttemptResult, ResumeAttemptResult } from './assessment-attempt.service';
 import { AssessmentSubmissionFlowService, SubmitAttemptApiResult } from './assessment-submission-flow.service';
 import { AssessmentFeedbackService, FeedbackSummary } from './assessment-feedback.service';
 
@@ -192,6 +196,32 @@ export class AssessmentController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<StartAttemptResult> {
     return this.attemptLifecycleService.startAttempt(assessmentId, user.id);
+  }
+
+  /**
+   * GET /student/assessments/attempts/:attemptId/resume
+   * Resume an active attempt for the authenticated student. P10-036.
+   * Backend validates ownership and resumability (only 'started' or
+   * 'in_progress' attempts may be resumed). expiresAt is backend-computed;
+   * Flutter uses it for display countdown only.
+   */
+  @Get('attempts/:attemptId/resume')
+  @UseGuards(SupabaseJwtAuthGuard, AssessmentPermissionGuard, AssessmentAttemptOwnershipGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Resume an active assessment attempt for the authenticated student.' })
+  @ApiParam({ name: 'attemptId', description: 'UUID of the attempt owned by the authenticated student.' })
+  @ApiOkResponse({
+    description:
+      'Resumed attempt with backend-computed expiresAt. Only attempts in started/in_progress ' +
+      'status may be resumed. Backend validates ownership and status.',
+  })
+  async resumeAttempt(
+    @Param('attemptId') attemptId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ResumeAttemptResult> {
+    return this.attemptLifecycleService.resumeAttempt(attemptId, user.id);
   }
 
   /**
