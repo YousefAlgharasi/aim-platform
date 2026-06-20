@@ -15,6 +15,7 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AssessmentRepository } from './assessment.repository';
+import { AssessmentDeadlineService, DeadlineStatusResult } from './assessment-deadline.service';
 
 // Inlined until P10-020 merges
 type DeadlineStatus = 'upcoming' | 'open' | 'closed' | 'missed' | 'late' | 'extended' | 'expired';
@@ -30,7 +31,12 @@ export interface AssessmentDetail {
   maxAttempts: number; timeLimitSeconds: number | null;
 }
 
-export interface DeadlineStatusResult {
+export interface AssessmentDetailWithDeadline extends AssessmentDetail {
+  /** Backend-derived deadline state (P10-024). Null when no deadline configured. */
+  deadline: DeadlineStatusResult | null;
+}
+
+export interface LegacyDeadlineStatusResult {
   deadlineId: string; opensAt: Date; closesAt: Date;
   extendedClosesAt: Date | null; status: DeadlineStatus;
 }
@@ -40,6 +46,7 @@ export class AssessmentService {
   constructor(
     private readonly repo: AssessmentRepository,
     private readonly db: DatabaseService,
+    private readonly deadlineService?: AssessmentDeadlineService,
   ) {}
 
   async listForStudent(studentId: string): Promise<AssessmentListItem[]> {
@@ -80,7 +87,24 @@ export class AssessmentService {
     };
   }
 
-  async getDeadlineStatus(assessmentId: string, studentId: string): Promise<DeadlineStatusResult | null> {
+  /**
+   * P10-034: Assessment detail combined with backend-derived deadline state
+   * (P10-024 AssessmentDeadlineService — the single source of deadline
+   * status, late-window, and penalty authority). Used by the student
+   * assessment detail endpoint.
+   */
+  async getDetailWithDeadline(
+    assessmentId: string,
+    studentId: string,
+  ): Promise<AssessmentDetailWithDeadline> {
+    const detail = await this.getDetail(assessmentId, studentId);
+    const deadline = this.deadlineService
+      ? await this.deadlineService.getDeadlineStatus(assessmentId, studentId)
+      : null;
+    return { ...detail, deadline };
+  }
+
+  async getDeadlineStatus(assessmentId: string, studentId: string): Promise<LegacyDeadlineStatusResult | null> {
     const deadline = await this.repo.findEffectiveDeadline(assessmentId, studentId);
     if (!deadline) return null;
     return {
