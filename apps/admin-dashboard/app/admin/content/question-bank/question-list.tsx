@@ -10,6 +10,17 @@ import {
   type QuestionType,
   type QuestionDifficulty,
 } from '../../../../lib/api/admin-question-bank-api';
+import {
+  AdminButton,
+  AdminTable,
+  AdminPagination,
+  AdminFilterBar,
+  AdminSelect,
+  AdminStatusBadge,
+  AdminBadge,
+  AdminDateCell,
+  type AdminTableColumn,
+} from '../../../../components/common';
 
 type QuestionListProps = {
   readonly questions: AdminQuestionSummary[];
@@ -49,18 +60,12 @@ const TYPE_LABELS: Record<QuestionType, string> = {
   matching: 'Matching',
 };
 
-const STATUS_CLASSES: Record<string, string> = {
-  draft: 'status-draft',
-  published: 'status-published',
-  archived: 'status-archived',
-};
-
-const DIFFICULTY_CLASSES: Record<string, string> = {
-  beginner: 'domain-grammar',
-  elementary: 'domain-vocabulary',
-  intermediate: 'domain-reading',
-  upper_intermediate: 'domain-listening',
-  advanced: 'domain-speaking',
+const DIFFICULTY_VARIANTS: Record<string, 'success' | 'warning' | 'error' | 'info' | 'neutral' | 'primary'> = {
+  beginner: 'success',
+  elementary: 'info',
+  intermediate: 'warning',
+  upper_intermediate: 'primary',
+  advanced: 'error',
 };
 
 export function QuestionList({
@@ -93,6 +98,15 @@ export function QuestionList({
     return `?${params.toString()}`;
   }
 
+  function buildPageHref(p: number) {
+    const params = new URLSearchParams();
+    if (filterType) params.set('type', filterType);
+    if (filterDifficulty) params.set('difficulty', filterDifficulty);
+    if (filterStatus) params.set('status', filterStatus);
+    params.set('page', String(p));
+    return `?${params.toString()}`;
+  }
+
   async function handleCreate(data: Parameters<typeof onCreateQuestion>[0]) {
     const result = await onCreateQuestion(data);
     if (!result.error) { setShowCreate(false); refresh(); }
@@ -113,106 +127,124 @@ export function QuestionList({
     return <QuestionForm mode="edit" initial={editing} onSubmit={handleUpdate} onCancel={() => setEditing(null)} />;
   }
 
+  const columns: AdminTableColumn<AdminQuestionSummary>[] = [
+    {
+      key: 'stem',
+      header: 'Stem',
+      render: (q) => (
+        <span title={q.stem}>
+          {q.stem.length > 80 ? `${q.stem.slice(0, 80)}…` : q.stem}
+        </span>
+      ),
+    },
+    {
+      key: 'type',
+      header: 'Type',
+      width: '100px',
+      render: (q) => <AdminBadge variant="neutral">{TYPE_LABELS[q.type] ?? q.type}</AdminBadge>,
+    },
+    {
+      key: 'difficulty',
+      header: 'Difficulty',
+      width: '120px',
+      render: (q) => (
+        <AdminBadge variant={DIFFICULTY_VARIANTS[q.difficulty] ?? 'neutral'}>
+          {q.difficulty.replace('_', ' ')}
+        </AdminBadge>
+      ),
+    },
+    {
+      key: 'tags',
+      header: 'Tags',
+      render: (q) =>
+        q.tags.length > 0
+          ? q.tags.slice(0, 3).map((tag) => (
+              <AdminBadge key={tag} variant="default">{tag}</AdminBadge>
+            ))
+          : '—',
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      width: '100px',
+      render: (q) => <AdminStatusBadge status={q.status} />,
+    },
+    {
+      key: 'updatedAt',
+      header: 'Updated',
+      width: '110px',
+      render: (q) => <AdminDateCell iso={q.updatedAt} />,
+    },
+    {
+      key: 'actions',
+      header: '',
+      width: '80px',
+      render: (q) => (
+        <AdminButton
+          variant="secondary"
+          size="sm"
+          onClick={() => setEditing(q)}
+          disabled={q.status === 'archived'}
+        >
+          Edit
+        </AdminButton>
+      ),
+    },
+  ];
+
   return (
     <div>
-      <div className="qb-toolbar">
-        <div className="qb-filters">
-          <select
-            value={filterType}
-            onChange={(e) => router.push(buildFilterHref({ type: e.target.value }))}
-            aria-label="Filter by type"
-          >
-            <option value="">All Types</option>
-            {QUESTION_TYPES.map((t) => <option key={t} value={t}>{TYPE_LABELS[t]}</option>)}
-          </select>
-          <select
-            value={filterDifficulty}
-            onChange={(e) => router.push(buildFilterHref({ difficulty: e.target.value }))}
-            aria-label="Filter by difficulty"
-          >
-            <option value="">All Difficulties</option>
-            {QUESTION_DIFFICULTIES.map((d) => <option key={d} value={d}>{d.replace('_', ' ')}</option>)}
-          </select>
-          <select
-            value={filterStatus}
-            onChange={(e) => router.push(buildFilterHref({ status: e.target.value }))}
-            aria-label="Filter by status"
-          >
-            <option value="">All Statuses</option>
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
-            <option value="archived">Archived</option>
-          </select>
-        </div>
-        <button className="btn-primary" onClick={() => setShowCreate(true)}>+ New Question</button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBlockEnd: 'var(--space-16)' }}>
+        <span>{total} question{total !== 1 ? 's' : ''}</span>
+        <AdminButton variant="primary" onClick={() => setShowCreate(true)}>+ New Question</AdminButton>
       </div>
+
+      <AdminFilterBar label="Filter questions">
+        <AdminSelect
+          value={filterType}
+          onChange={(e) => router.push(buildFilterHref({ type: e.target.value }))}
+          aria-label="Filter by type"
+        >
+          <option value="">All Types</option>
+          {QUESTION_TYPES.map((t) => <option key={t} value={t}>{TYPE_LABELS[t]}</option>)}
+        </AdminSelect>
+        <AdminSelect
+          value={filterDifficulty}
+          onChange={(e) => router.push(buildFilterHref({ difficulty: e.target.value }))}
+          aria-label="Filter by difficulty"
+        >
+          <option value="">All Difficulties</option>
+          {QUESTION_DIFFICULTIES.map((d) => <option key={d} value={d}>{d.replace('_', ' ')}</option>)}
+        </AdminSelect>
+        <AdminSelect
+          value={filterStatus}
+          onChange={(e) => router.push(buildFilterHref({ status: e.target.value }))}
+          aria-label="Filter by status"
+        >
+          <option value="">All Statuses</option>
+          <option value="draft">Draft</option>
+          <option value="published">Published</option>
+          <option value="archived">Archived</option>
+        </AdminSelect>
+      </AdminFilterBar>
 
       {questions.length === 0 ? (
         <p className="courses-empty">No questions match the current filters.</p>
       ) : (
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Stem</th>
-              <th>Type</th>
-              <th>Difficulty</th>
-              <th>Tags</th>
-              <th>Status</th>
-              <th>Updated</th>
-              <th aria-label="Actions" />
-            </tr>
-          </thead>
-          <tbody>
-            {questions.map((q) => (
-              <tr key={q.id}>
-                <td className="qb-stem-cell">
-                  <span title={q.stem}>
-                    {q.stem.length > 80 ? `${q.stem.slice(0, 80)}…` : q.stem}
-                  </span>
-                </td>
-                <td><span className="qb-type-badge">{TYPE_LABELS[q.type] ?? q.type}</span></td>
-                <td>
-                  <span className={`skill-domain-badge ${DIFFICULTY_CLASSES[q.difficulty] ?? ''}`}>
-                    {q.difficulty.replace('_', ' ')}
-                  </span>
-                </td>
-                <td className="qb-tags-cell">
-                  {q.tags.length > 0
-                    ? q.tags.slice(0, 3).map((tag) => (
-                        <code key={tag} className="qb-tag">{tag}</code>
-                      ))
-                    : <span className="courses-empty">—</span>}
-                </td>
-                <td>
-                  <span className={`status-badge ${STATUS_CLASSES[q.status] ?? ''}`}>
-                    {q.status}
-                  </span>
-                </td>
-                <td className="course-date-cell">
-                  {new Date(q.updatedAt).toLocaleDateString()}
-                </td>
-                <td>
-                  <button
-                    className="btn-secondary btn-sm"
-                    onClick={() => setEditing(q)}
-                    disabled={q.status === 'archived'}
-                  >
-                    Edit
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <AdminTable
+          columns={columns}
+          rows={questions}
+          getRowKey={(q) => q.id}
+          caption="Question bank"
+        />
       )}
 
-      {totalPages > 1 && (
-        <nav className="admin-pagination" aria-label="Questions pagination">
-          {page > 1 && <a href={`?page=${page - 1}`} className="pagination-link">← Previous</a>}
-          <span className="pagination-info">Page {page} of {totalPages} ({total} total)</span>
-          {page < totalPages && <a href={`?page=${page + 1}`} className="pagination-link">Next →</a>}
-        </nav>
-      )}
+      <AdminPagination
+        page={page}
+        totalPages={totalPages}
+        buildHref={buildPageHref}
+        label="Questions pagination"
+      />
     </div>
   );
 }
