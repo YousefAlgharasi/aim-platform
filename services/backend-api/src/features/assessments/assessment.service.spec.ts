@@ -70,6 +70,46 @@ describe('AssessmentService', () => {
     });
   });
 
+  describe('getDetailWithDeadline', () => {
+    it('returns deadline: null when no deadlineService is provided', async () => {
+      const svc = new AssessmentService(makeRepo() as any, mockDb as any);
+      const detail = await svc.getDetailWithDeadline('a-1', 'stu-1');
+      expect(detail.deadline).toBeNull();
+    });
+
+    it('returns deadline: null when deadlineService resolves no deadline', async () => {
+      const deadlineService = { getDeadlineStatus: jest.fn().mockResolvedValue(null) };
+      const svc = new AssessmentService(makeRepo() as any, mockDb as any, deadlineService as any);
+      const detail = await svc.getDetailWithDeadline('a-1', 'stu-1');
+      expect(deadlineService.getDeadlineStatus).toHaveBeenCalledWith('a-1', 'stu-1');
+      expect(detail.deadline).toBeNull();
+    });
+
+    it('returns the backend-computed deadline status from AssessmentDeadlineService', async () => {
+      const deadlineResult = {
+        deadlineId: 'd-1', opensAt: past, closesAt: farFuture,
+        extendedClosesAt: null, status: 'open' as const,
+      };
+      const deadlineService = { getDeadlineStatus: jest.fn().mockResolvedValue(deadlineResult) };
+      const svc = new AssessmentService(makeRepo() as any, mockDb as any, deadlineService as any);
+      const detail = await svc.getDetailWithDeadline('a-1', 'stu-1');
+      expect(detail.deadline).toEqual(deadlineResult);
+    });
+
+    it('never leaks late_window_seconds or late_penalty_percent in the response', async () => {
+      const deadlineResult = {
+        deadlineId: 'd-1', opensAt: past, closesAt: past,
+        extendedClosesAt: null, status: 'late' as const,
+      };
+      const deadlineService = { getDeadlineStatus: jest.fn().mockResolvedValue(deadlineResult) };
+      const svc = new AssessmentService(makeRepo() as any, mockDb as any, deadlineService as any);
+      const detail = await svc.getDetailWithDeadline('a-1', 'stu-1') as unknown as Record<string, unknown>;
+      expect(detail).not.toHaveProperty('late_window_seconds');
+      expect(detail).not.toHaveProperty('late_penalty_percent');
+      expect(detail).not.toHaveProperty('latePenaltyPercent');
+    });
+  });
+
   describe('getDetail', () => {
     it('returns sections with questionCount', async () => {
       const svc = new AssessmentService(makeRepo() as any, mockDb as any);
