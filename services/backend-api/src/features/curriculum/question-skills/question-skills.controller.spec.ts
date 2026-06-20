@@ -62,14 +62,14 @@ describe('QuestionSkillsController', () => {
   describe('addSkillToQuestion', () => {
     it('requires CONTENT_UPDATE permission', () => {
       const perms = getMethodPermissions(controller, 'addSkillToQuestion');
-      expect(perms).toContain(CurriculumPermission.CONTENT_UPDATE);
+      expect(perms).toContain(CurriculumPermission.SKILL_LINKS_MANAGE);
     });
   });
 
   describe('removeSkillFromQuestion', () => {
     it('requires CONTENT_UPDATE permission', () => {
       const perms = getMethodPermissions(controller, 'removeSkillFromQuestion');
-      expect(perms).toContain(CurriculumPermission.CONTENT_UPDATE);
+      expect(perms).toContain(CurriculumPermission.SKILL_LINKS_MANAGE);
     });
   });
 });
