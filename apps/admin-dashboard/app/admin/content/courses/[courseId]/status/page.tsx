@@ -1,9 +1,5 @@
-// Phase 3 — P3-060
-// Admin course status workflow page.
-//
-// Calls backend POST /curriculum/courses/:id/publish|archive|restore.
-// Backend enforces: curriculum.content.publish / archive / restore permissions.
-// This page does not implement authorization logic — backend is authoritative.
+// P11-028: Admin course status workflow page using AIM design system.
+// Backend is the sole authority for status transitions.
 
 import { cookies } from 'next/headers';
 import Link from 'next/link';
@@ -17,6 +13,8 @@ import {
   type ContentStatus,
 } from '../../../../../../lib/api/admin-content-status-api';
 import { ContentStatusWorkflow } from '../../../../../../components/content-status-workflow';
+import { AdminPageHeader } from '../../../../../../components/layout';
+import { AdminApiErrorState } from '../../../../../../components/error-handling';
 
 type Props = { params: Promise<{ courseId: string }> };
 
@@ -29,7 +27,7 @@ async function fetchCourse(token: string, courseId: string) {
     const envelope = await adminApiClient.get<{ id: string; title: string; status: string }>(
       `/curriculum/courses/${encodeURIComponent(courseId)}`,
       (v) => {
-        if (!isObj(v) || typeof (v as Record<string,unknown>).id !== 'string') throw new Error('bad');
+        if (!isObj(v) || typeof (v as Record<string, unknown>).id !== 'string') throw new Error('bad');
         const r = v as Record<string, unknown>;
         return { id: String(r.id), title: String(r.title ?? ''), status: String(r.status ?? 'draft') };
       },
@@ -69,18 +67,20 @@ export default async function CourseStatusPage({ params }: Props) {
   }
 
   return (
-    <section className="admin-curriculum-page">
+    <section className="aim-status-page">
       <nav className="admin-breadcrumb" aria-label="Breadcrumb">
-        <Link href="/admin/content">Content</Link>
-        <span aria-hidden="true">/</span>
-        <Link href="/admin/content/courses">Courses</Link>
-        <span aria-hidden="true">/</span>
+        <Link href="/admin/content" className="admin-breadcrumb-link">Content</Link>
+        <span aria-hidden="true"> / </span>
+        <Link href="/admin/content/courses" className="admin-breadcrumb-link">Courses</Link>
+        <span aria-hidden="true"> / </span>
         <span>Status</span>
       </nav>
-      <header className="admin-page-header">
-        <p className="eyebrow">Admin — Curriculum — Status Workflow</p>
-        <h1>Course Status</h1>
-      </header>
+
+      <AdminPageHeader
+        eyebrow="Admin — Curriculum — Status Workflow"
+        title="Course Status"
+      />
+
       {course ? (
         <ContentStatusWorkflow
           entityId={courseId}
@@ -90,8 +90,16 @@ export default async function CourseStatusPage({ params }: Props) {
           onTransition={handleTransition}
         />
       ) : (
-        <p className="admin-error-banner" role="alert">Course not found or backend unavailable.</p>
+        <AdminApiErrorState message="Course not found or backend unavailable." />
       )}
+
+      <style>{`
+        .aim-status-page {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-20);
+        }
+      `}</style>
     </section>
   );
 }

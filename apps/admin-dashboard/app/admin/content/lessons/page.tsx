@@ -1,16 +1,5 @@
-// Phase 3 — P3-055
-// Admin lessons page.
-//
-// Scope: Curriculum & Content System — lessons only.
-//
-// Security:
-// - Token is read from the HTTP-only cookie server-side; never exposed to the browser.
-// - Auth state enforcement is handled by the parent layout (admin/layout.tsx).
-// - This page renders data from backend only — it makes no authorization decisions.
-// - Status transitions (publish, archive) are intentionally absent; backend controls those.
-// - Lesson-to-skill linking is managed by a dedicated lesson-skills UI (P3-058);
-//   this page does not set or display skill links. The critical "every published
-//   lesson must be linked to at least one skill" rule is enforced by the backend.
+// P11-024: Admin lessons list page with AIM design system.
+// Backend is final authority for lesson data and status transitions.
 
 import { cookies } from 'next/headers';
 import Link from 'next/link';
@@ -34,11 +23,35 @@ import {
   createAdminLesson,
   updateAdminLesson,
   type AdminLessonListData,
+  type AdminLessonSummary,
+  type LessonStatus,
 } from '../../../../lib/api/admin-lessons-api';
+import {
+  AdminTable,
+  AdminPagination,
+  AdminBadge,
+  AdminFilterBar,
+  AdminInput,
+  AdminSelect,
+  AdminDateCell,
+  type AdminTableColumn,
+} from '../../../../components/common';
+import { AdminPageHeader, AdminEmptyState } from '../../../../components/layout';
+import { AdminApiErrorState } from '../../../../components/error-handling';
 import { LessonsList } from './lessons-list';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
+
+const STATUS_OPTIONS: LessonStatus[] = ['draft', 'in_review', 'approved', 'published', 'archived'];
+
+const STATUS_VARIANT: Record<string, 'success' | 'warning' | 'error' | 'info' | 'neutral'> = {
+  draft: 'neutral',
+  in_review: 'warning',
+  approved: 'info',
+  published: 'success',
+  archived: 'error',
+};
 
 type Props = {
   searchParams: Promise<{
@@ -47,28 +60,36 @@ type Props = {
     chapterId?: string;
     page?: string;
     limit?: string;
+    status?: string;
+    q?: string;
   }>;
 };
 
+function skillLinkHref(lessonId: string, courseId: string, levelId: string, chapterId: string): string {
+  return `/admin/content/lessons/skills?lessonId=${encodeURIComponent(lessonId)}&courseId=${encodeURIComponent(courseId)}&levelId=${encodeURIComponent(levelId)}&chapterId=${encodeURIComponent(chapterId)}`;
+}
+
 export default async function AdminLessonsPage({ searchParams }: Props) {
+  const resolvedParams = await searchParams;
   const {
     courseId,
     levelId,
     chapterId,
-    page: pageParam,
-    limit: limitParam,
-  } = await searchParams;
+  } = resolvedParams;
 
-  const page = parseInt(pageParam ?? String(DEFAULT_PAGE), 10) || DEFAULT_PAGE;
-  const limit = parseInt(limitParam ?? String(DEFAULT_LIMIT), 10) || DEFAULT_LIMIT;
+  const page = parseInt(resolvedParams.page ?? String(DEFAULT_PAGE), 10) || DEFAULT_PAGE;
+  const limit = parseInt(resolvedParams.limit ?? String(DEFAULT_LIMIT), 10) || DEFAULT_LIMIT;
+  const statusFilter = STATUS_OPTIONS.includes(resolvedParams.status as LessonStatus)
+    ? (resolvedParams.status as LessonStatus)
+    : undefined;
+  const searchQuery = resolvedParams.q?.trim() || undefined;
 
   const cookieStore = await cookies();
   const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
 
-  // Step 1: courses (always loaded for the top-level selector).
+  // Step 1: courses
   let courses: AdminCourseSummary[] = [];
   let coursesError: string | null = null;
-
   try {
     const coursesData = await fetchAdminCourses(token, 1, 100);
     courses = coursesData.courses;
@@ -76,13 +97,12 @@ export default async function AdminLessonsPage({ searchParams }: Props) {
     coursesError =
       error instanceof AdminApiClientError
         ? `Backend error ${error.status}: ${error.message}`
-        : 'Failed to load courses. Check backend connectivity.';
+        : 'Failed to load courses.';
   }
 
-  // Step 2: levels for the selected course.
+  // Step 2: levels
   let levels: AdminLevelSummary[] = [];
   let levelsError: string | null = null;
-
   if (courseId) {
     try {
       const levelsData = await fetchAdminLevels(token, courseId, 1, 100);
@@ -91,14 +111,13 @@ export default async function AdminLessonsPage({ searchParams }: Props) {
       levelsError =
         error instanceof AdminApiClientError
           ? `Backend error ${error.status}: ${error.message}`
-          : 'Failed to load levels. Check backend connectivity.';
+          : 'Failed to load levels.';
     }
   }
 
-  // Step 3: chapters for the selected level.
+  // Step 3: chapters
   let chapters: AdminChapterSummary[] = [];
   let chaptersError: string | null = null;
-
   if (levelId) {
     try {
       const chaptersData = await fetchAdminChapters(token, levelId, 1, 100);
@@ -107,22 +126,28 @@ export default async function AdminLessonsPage({ searchParams }: Props) {
       chaptersError =
         error instanceof AdminApiClientError
           ? `Backend error ${error.status}: ${error.message}`
-          : 'Failed to load chapters. Check backend connectivity.';
+          : 'Failed to load chapters.';
     }
   }
 
-  // Step 4: lessons for the selected chapter.
+  // Step 4: lessons
   let data: AdminLessonListData | null = null;
   let fetchError: string | null = null;
-
   if (chapterId) {
     try {
-      data = await fetchAdminLessons(token, chapterId, page, limit);
+      data = await fetchAdminLessons({
+        token,
+        chapterId,
+        page,
+        limit,
+        status: statusFilter,
+        q: searchQuery,
+      });
     } catch (error) {
       fetchError =
         error instanceof AdminApiClientError
           ? `Backend error ${error.status}: ${error.message}`
-          : 'Failed to load lessons. Check backend connectivity.';
+          : 'Failed to load lessons.';
     }
   }
 
@@ -130,6 +155,70 @@ export default async function AdminLessonsPage({ searchParams }: Props) {
   const selectedCourse = courseId ? courses.find((c) => c.id === courseId) : undefined;
   const selectedLevel = levelId ? levels.find((l) => l.id === levelId) : undefined;
   const selectedChapter = chapterId ? chapters.find((c) => c.id === chapterId) : undefined;
+
+  const columns: AdminTableColumn<AdminLessonSummary>[] = [
+    {
+      key: 'title',
+      header: 'Title',
+      render: (lesson) => lesson.title,
+    },
+    {
+      key: 'description',
+      header: 'Description',
+      render: (lesson) =>
+        lesson.description ? (
+          <span style={{ color: 'var(--text-secondary)' }}>{lesson.description}</span>
+        ) : (
+          <span style={{ color: 'var(--text-muted)' }}>—</span>
+        ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (lesson) => (
+        <AdminBadge variant={STATUS_VARIANT[lesson.status] ?? 'neutral'}>
+          {lesson.status.replace('_', ' ')}
+        </AdminBadge>
+      ),
+    },
+    {
+      key: 'skills',
+      header: 'Skills',
+      render: (lesson) => {
+        if (lesson.status === 'archived') {
+          return <span style={{ color: 'var(--text-muted)' }}>—</span>;
+        }
+        const href = skillLinkHref(lesson.id, courseId ?? '', levelId ?? '', chapterId ?? '');
+        if (lesson.status === 'published') {
+          return (
+            <a href={href} className="aim-skill-link aim-skill-link--ok">
+              Linked ✓
+            </a>
+          );
+        }
+        return (
+          <a
+            href={href}
+            className="aim-skill-link aim-skill-link--required"
+            title="Every lesson must be linked to at least one skill before it can be published."
+          >
+            Link skills ⚠
+          </a>
+        );
+      },
+    },
+    {
+      key: 'sortOrder',
+      header: 'Order',
+      width: '80px',
+      render: (lesson) => String(lesson.sortOrder),
+    },
+    {
+      key: 'updatedAt',
+      header: 'Updated',
+      render: (lesson) => <AdminDateCell iso={lesson.updatedAt} />,
+    },
+  ];
 
   async function handleCreate(formData: {
     title: string;
@@ -171,44 +260,37 @@ export default async function AdminLessonsPage({ searchParams }: Props) {
   }
 
   return (
-    <section className="admin-curriculum-page">
+    <section className="aim-lessons-page">
       <nav className="admin-breadcrumb" aria-label="Breadcrumb">
-        <Link href="/admin/content">Content</Link>
-        <span aria-hidden="true">/</span>
+        <Link href="/admin/content" className="admin-breadcrumb-link">Content</Link>
+        <span aria-hidden="true"> / </span>
         <span>Lessons</span>
       </nav>
 
-      <header className="admin-page-header">
-        <p className="eyebrow">Admin — Curriculum</p>
-        <h1>Lessons</h1>
-        {data && (
-          <p className="admin-page-meta">
-            {data.total} lesson{data.total !== 1 ? 's' : ''} in{' '}
-            {selectedChapter?.title ?? chapterId}
-          </p>
-        )}
-      </header>
+      <AdminPageHeader
+        eyebrow="Admin — Curriculum"
+        title="Lessons"
+        description={
+          data
+            ? `${data.total} lesson${data.total !== 1 ? 's' : ''} in ${selectedChapter?.title ?? chapterId}`
+            : undefined
+        }
+      />
 
       <div className="admin-boundary-note">
         <strong>Backend authority:</strong> Lesson records, status, and ordering are
-        controlled by backend curriculum APIs. Publish and archive actions require
-        backend permission checks not exposed here. Every lesson must be linked to
-        at least one skill before it can be published — manage links via the Lesson
-        Skill Linking page.
+        controlled by backend curriculum APIs. Every lesson must be linked to at
+        least one skill before it can be published.
       </div>
 
       {/* Step 1: course selector */}
       <div className="admin-course-selector">
-        <p className="admin-course-selector-label">Select a course:</p>
-
+        <p className="admin-course-selector-label">1. Select a course:</p>
         {coursesError ? (
-          <p className="admin-error-banner" role="alert">
-            {coursesError}
-          </p>
+          <p className="admin-error-banner" role="alert">{coursesError}</p>
         ) : courses.length === 0 ? (
           <p className="courses-empty">
-            No courses found. Create a course first via{' '}
-            <Link href="/admin/content/courses">Courses</Link>.
+            No courses found. Create one via <Link href="/admin/content/courses">Courses</Link>.
           </p>
         ) : (
           <div className="admin-course-selector-links">
@@ -216,22 +298,12 @@ export default async function AdminLessonsPage({ searchParams }: Props) {
               <a
                 key={course.id}
                 href={`?courseId=${encodeURIComponent(course.id)}`}
-                className={`admin-course-selector-item${
-                  courseId === course.id ? ' active' : ''
-                }`}
+                className={`admin-course-selector-item${courseId === course.id ? ' active' : ''}`}
               >
                 <span className="selector-item-title">{course.title}</span>
-                <span
-                  className={`status-badge ${
-                    course.status === 'published'
-                      ? 'status-published'
-                      : course.status === 'archived'
-                      ? 'status-archived'
-                      : 'status-draft'
-                  }`}
-                >
+                <AdminBadge variant={STATUS_VARIANT[course.status] ?? 'neutral'}>
                   {course.status}
-                </span>
+                </AdminBadge>
               </a>
             ))}
           </div>
@@ -239,23 +311,17 @@ export default async function AdminLessonsPage({ searchParams }: Props) {
       </div>
 
       {/* Step 2: level selector */}
-      {courseId && (
+      {courseId && !coursesError && (
         <div className="admin-course-selector">
           <p className="admin-course-selector-label">
-            Select a level in {selectedCourse?.title ?? courseId}:
+            2. Select a level in <strong>{selectedCourse?.title ?? courseId}</strong>:
           </p>
-
           {levelsError ? (
-            <p className="admin-error-banner" role="alert">
-              {levelsError}
-            </p>
+            <p className="admin-error-banner" role="alert">{levelsError}</p>
           ) : levels.length === 0 ? (
             <p className="courses-empty">
-              No levels found. Create a level first via{' '}
-              <Link href={`/admin/content/levels?courseId=${encodeURIComponent(courseId)}`}>
-                Levels
-              </Link>
-              .
+              No levels found. Create one via{' '}
+              <Link href={`/admin/content/levels?courseId=${encodeURIComponent(courseId)}`}>Levels</Link>.
             </p>
           ) : (
             <div className="admin-course-selector-links">
@@ -266,17 +332,10 @@ export default async function AdminLessonsPage({ searchParams }: Props) {
                   className={`admin-course-selector-item${levelId === level.id ? ' active' : ''}`}
                 >
                   <span className="selector-item-title">{level.title}</span>
-                  <span
-                    className={`status-badge ${
-                      level.status === 'published'
-                        ? 'status-published'
-                        : level.status === 'archived'
-                        ? 'status-archived'
-                        : 'status-draft'
-                    }`}
-                  >
+                  {level.code && <code className="level-code-badge">{level.code}</code>}
+                  <AdminBadge variant={STATUS_VARIANT[level.status] ?? 'neutral'}>
                     {level.status}
-                  </span>
+                  </AdminBadge>
                 </a>
               ))}
             </div>
@@ -285,48 +344,30 @@ export default async function AdminLessonsPage({ searchParams }: Props) {
       )}
 
       {/* Step 3: chapter selector */}
-      {levelId && (
+      {levelId && !levelsError && (
         <div className="admin-course-selector">
           <p className="admin-course-selector-label">
-            Select a chapter in {selectedLevel?.title ?? levelId}:
+            3. Select a chapter in <strong>{selectedLevel?.title ?? levelId}</strong>:
           </p>
-
           {chaptersError ? (
-            <p className="admin-error-banner" role="alert">
-              {chaptersError}
-            </p>
+            <p className="admin-error-banner" role="alert">{chaptersError}</p>
           ) : chapters.length === 0 ? (
             <p className="courses-empty">
-              No chapters found. Create a chapter first via{' '}
-              <Link href={`/admin/content/chapters?levelId=${encodeURIComponent(levelId)}`}>
-                Chapters
-              </Link>
-              .
+              No chapters found. Create one via{' '}
+              <Link href={`/admin/content/chapters?courseId=${encodeURIComponent(courseId ?? '')}&levelId=${encodeURIComponent(levelId)}`}>Chapters</Link>.
             </p>
           ) : (
             <div className="admin-course-selector-links">
               {chapters.map((chapter) => (
                 <a
                   key={chapter.id}
-                  href={`?courseId=${encodeURIComponent(courseId ?? '')}&levelId=${encodeURIComponent(
-                    levelId,
-                  )}&chapterId=${encodeURIComponent(chapter.id)}`}
-                  className={`admin-course-selector-item${
-                    chapterId === chapter.id ? ' active' : ''
-                  }`}
+                  href={`?courseId=${encodeURIComponent(courseId ?? '')}&levelId=${encodeURIComponent(levelId)}&chapterId=${encodeURIComponent(chapter.id)}`}
+                  className={`admin-course-selector-item${chapterId === chapter.id ? ' active' : ''}`}
                 >
                   <span className="selector-item-title">{chapter.title}</span>
-                  <span
-                    className={`status-badge ${
-                      chapter.status === 'published'
-                        ? 'status-published'
-                        : chapter.status === 'archived'
-                        ? 'status-archived'
-                        : 'status-draft'
-                    }`}
-                  >
+                  <AdminBadge variant={STATUS_VARIANT[chapter.status] ?? 'neutral'}>
                     {chapter.status}
-                  </span>
+                  </AdminBadge>
                 </a>
               ))}
             </div>
@@ -334,13 +375,76 @@ export default async function AdminLessonsPage({ searchParams }: Props) {
         </div>
       )}
 
-      {/* Step 4: lessons table — rendered only when a chapter is selected */}
-      {chapterId && (
+      {/* Step 4: lessons table */}
+      {chapterId && !chaptersError && (
         <>
-          {fetchError && (
-            <p className="admin-error-banner" role="alert">
-              {fetchError}
-            </p>
+          <form
+            action={`/admin/content/lessons`}
+            method="get"
+          >
+            <input type="hidden" name="courseId" value={courseId ?? ''} />
+            <input type="hidden" name="levelId" value={levelId ?? ''} />
+            <input type="hidden" name="chapterId" value={chapterId} />
+            <AdminFilterBar>
+              <AdminInput
+                name="q"
+                placeholder="Search lessons…"
+                defaultValue={searchQuery ?? ''}
+                aria-label="Search lessons"
+              />
+              <AdminSelect
+                name="status"
+                defaultValue={statusFilter ?? ''}
+                aria-label="Filter by status"
+              >
+                <option value="">All statuses</option>
+                {STATUS_OPTIONS.map((s) => (
+                  <option key={s} value={s}>
+                    {s.replace('_', ' ')}
+                  </option>
+                ))}
+              </AdminSelect>
+              <button type="submit" className="aim-filter-btn">Filter</button>
+            </AdminFilterBar>
+          </form>
+
+          {fetchError && <AdminApiErrorState message={fetchError} />}
+
+          {data && data.lessons.length === 0 && !fetchError && (
+            <AdminEmptyState
+              title="No lessons found"
+              description={
+                statusFilter || searchQuery
+                  ? 'Try adjusting your filters or search query.'
+                  : 'No lessons exist yet. Create the first one.'
+              }
+            />
+          )}
+
+          {data && data.lessons.length > 0 && (
+            <>
+              <AdminTable
+                columns={columns}
+                rows={data.lessons}
+                getRowKey={(l) => l.id}
+                caption="Lessons"
+              />
+
+              <AdminPagination
+                page={data.page}
+                totalPages={totalPages}
+                buildHref={(p) => {
+                  const params = new URLSearchParams();
+                  params.set('courseId', courseId ?? '');
+                  params.set('levelId', levelId ?? '');
+                  params.set('chapterId', chapterId);
+                  params.set('page', String(p));
+                  if (statusFilter) params.set('status', statusFilter);
+                  if (searchQuery) params.set('q', searchQuery);
+                  return `/admin/content/lessons?${params.toString()}`;
+                }}
+              />
+            </>
           )}
 
           {data && (
@@ -360,10 +464,50 @@ export default async function AdminLessonsPage({ searchParams }: Props) {
       )}
 
       {!courseId && !coursesError && courses.length > 0 && (
-        <p className="courses-empty">
-          Select a course, level, and chapter above to view and manage its lessons.
-        </p>
+        <p className="courses-empty">Select a course above to continue.</p>
       )}
+
+      <style>{`
+        .aim-lessons-page {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-20);
+        }
+        .aim-filter-btn {
+          display: inline-flex;
+          align-items: center;
+          height: var(--size-btn-md);
+          padding: 0 var(--space-20);
+          border: none;
+          border-radius: var(--radius-md);
+          background: var(--color-primary-500);
+          color: var(--text-on-primary);
+          font-family: inherit;
+          font-size: 14px;
+          font-weight: var(--weight-semibold);
+          cursor: pointer;
+          transition: background var(--duration-fast) var(--ease-standard);
+        }
+        .aim-filter-btn:hover { background: var(--color-primary-600); }
+        .aim-filter-btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+        .aim-skill-link {
+          display: inline-block;
+          padding: 2px 8px;
+          border-radius: var(--radius-sm);
+          font-size: 12px;
+          font-weight: var(--weight-semibold);
+          text-decoration: none;
+        }
+        .aim-skill-link--ok {
+          background: var(--color-success-50);
+          color: var(--color-success-700);
+        }
+        .aim-skill-link--required {
+          background: var(--color-warning-50);
+          color: var(--color-warning-700);
+        }
+        .aim-skill-link:hover { opacity: 0.85; }
+      `}</style>
     </section>
   );
 }

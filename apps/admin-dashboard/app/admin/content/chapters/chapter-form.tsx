@@ -1,16 +1,15 @@
 'use client';
-
-// Phase 3 — P3-054
-// Admin chapter create/edit form client component.
-//
-// Scope: Curriculum & Content System — chapters only.
-//
-// Security:
-// - No token or credential ever enters this component.
-// - Status field is intentionally absent; status changes are backend-only operations.
+// P11-023: Admin chapter editor form using AIM design system.
 
 import { useState, useTransition } from 'react';
 import type { AdminChapterSummary } from '../../../../lib/api/admin-chapters-api';
+import {
+  AdminInput,
+  AdminTextarea,
+  AdminButton,
+  AdminFormField,
+  AdminCard,
+} from '../../../../components/common';
 
 type ChapterFormData = {
   title: string;
@@ -30,13 +29,21 @@ export function ChapterForm({ mode, initial, onSubmit, onCancel }: ChapterFormPr
   const [slug, setSlug] = useState(initial?.slug ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
 
-  function handleSubmit() {
-    if (!title.trim()) {
-      setError('Title is required.');
-      return;
+  function validate(): boolean {
+    const errors: Record<string, string> = {};
+    if (!title.trim()) errors.title = 'Title is required.';
+    if (slug.trim() && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug.trim())) {
+      errors.slug = 'Slug must be lowercase letters, numbers, and hyphens only.';
     }
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  }
+
+  function handleSubmit() {
+    if (!validate()) return;
     setError(null);
     startTransition(async () => {
       const result = await onSubmit({
@@ -49,72 +56,84 @@ export function ChapterForm({ mode, initial, onSubmit, onCancel }: ChapterFormPr
   }
 
   return (
-    <div className="course-form">
-      <h2 className="course-form-title">
-        {mode === 'create' ? 'New Chapter' : 'Edit Chapter'}
-      </h2>
-
+    <AdminCard title={mode === 'create' ? 'New Chapter' : 'Edit Chapter'}>
       {error && (
-        <p className="course-form-error" role="alert">
+        <div className="admin-error-banner" role="alert" style={{ marginBlockEnd: 'var(--space-16)' }}>
           {error}
-        </p>
+        </div>
       )}
 
-      <div className="course-form-field">
-        <label htmlFor="chapter-title">
-          Title <span aria-hidden="true">*</span>
-        </label>
-        <input
-          id="chapter-title"
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g. Introduction to Past Tense"
-          disabled={isPending}
-          maxLength={255}
-        />
-      </div>
+      <div className="aim-chapter-form-fields">
+        <AdminFormField id="chapter-title" label="Title" required error={fieldErrors.title}>
+          <AdminInput
+            id="chapter-title"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g. Introduction to Past Tense"
+            disabled={isPending}
+            maxLength={255}
+            hasError={!!fieldErrors.title}
+            aria-required="true"
+          />
+        </AdminFormField>
 
-      <div className="course-form-field">
-        <label htmlFor="chapter-slug">Slug</label>
-        <input
+        <AdminFormField
           id="chapter-slug"
-          type="text"
-          value={slug}
-          onChange={(e) => setSlug(e.target.value)}
-          placeholder="e.g. intro-past-tense"
-          disabled={isPending}
-          maxLength={255}
-        />
-        <small>Optional. Must be unique within a level. Leave blank to omit.</small>
+          label="Slug"
+          hint="Optional. Lowercase letters, numbers, and hyphens. Must be unique within a level."
+          error={fieldErrors.slug}
+        >
+          <AdminInput
+            id="chapter-slug"
+            type="text"
+            value={slug}
+            onChange={(e) => setSlug(e.target.value)}
+            placeholder="e.g. intro-past-tense"
+            disabled={isPending}
+            maxLength={255}
+            hasError={!!fieldErrors.slug}
+          />
+        </AdminFormField>
+
+        <AdminFormField id="chapter-description" label="Description">
+          <AdminTextarea
+            id="chapter-description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Brief summary of this chapter."
+            disabled={isPending}
+            rows={3}
+            maxLength={2000}
+          />
+        </AdminFormField>
       </div>
 
-      <div className="course-form-field">
-        <label htmlFor="chapter-description">Description</label>
-        <textarea
-          id="chapter-description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Brief summary of this chapter."
-          disabled={isPending}
-          rows={3}
-          maxLength={2000}
-        />
-      </div>
-
-      <div className="admin-boundary-note">
+      <div className="admin-boundary-note" style={{ marginBlock: 'var(--space-16)' }}>
         <strong>Backend authority:</strong> Status changes (publish, archive) are
         controlled by backend APIs only and cannot be set here.
       </div>
 
-      <div className="course-form-actions">
-        <button className="btn-primary" onClick={handleSubmit} disabled={isPending}>
-          {isPending ? 'Saving…' : mode === 'create' ? 'Create Chapter' : 'Save Changes'}
-        </button>
-        <button className="btn-secondary" onClick={onCancel} disabled={isPending}>
+      <div className="aim-chapter-form-actions">
+        <AdminButton variant="primary" onClick={handleSubmit} disabled={isPending} loading={isPending}>
+          {mode === 'create' ? 'Create Chapter' : 'Save Changes'}
+        </AdminButton>
+        <AdminButton variant="secondary" onClick={onCancel} disabled={isPending}>
           Cancel
-        </button>
+        </AdminButton>
       </div>
-    </div>
+
+      <style>{`
+        .aim-chapter-form-fields {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-16);
+        }
+        .aim-chapter-form-actions {
+          display: flex;
+          gap: var(--space-12);
+        }
+      `}</style>
+    </AdminCard>
   );
 }
