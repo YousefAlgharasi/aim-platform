@@ -12,3 +12,4 @@ export * from './parent-child-report.entity';
 export * from './parent-child-progress.entity';
 export * from './parent-assessment-summary.entity';
 export * from './parent-activity-summary.entity';
+export * from './parent-child-summary.entity';
