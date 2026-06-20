@@ -8,7 +8,10 @@ import {
   updateAdminAssessment,
   type AdminAssessmentSettings,
 } from '../../../../lib/api/admin-assessments-api';
+import { fetchAdminQuestions } from '../../../../lib/api/admin-question-bank-api';
 import { AssessmentEditorClient } from './assessment-editor-client';
+import { AssessmentQuestionBuilder } from './question-builder';
+import { AssessmentSettings } from './assessment-settings';
 
 type Props = {
   params: Promise<{ assessmentId: string }>;
@@ -32,6 +35,10 @@ export default async function AdminAssessmentDetailPage({ params }: Props) {
         : 'Failed to load assessment. Check backend connectivity.';
   }
 
+  const attachedQuestions = (assessment?.questionIds ?? []).map((id) => {
+    return { id, stem: `Question ${id}`, type: 'multiple_choice', difficulty: 'beginner' };
+  });
+
   async function handleUpdate(data: {
     title: string;
     settings: Partial<AdminAssessmentSettings>;
@@ -47,6 +54,69 @@ export default async function AdminAssessmentDetailPage({ params }: Props) {
         err instanceof AdminApiClientError
           ? `Backend error ${err.status}: ${err.message}`
           : 'Failed to update assessment.';
+      return { error: msg };
+    }
+  }
+
+  async function handleSearchQuestions(query: {
+    page: number;
+    search?: string;
+    type?: string;
+    difficulty?: string;
+  }): Promise<{
+    questions: Array<{ id: string; type: string; stem: string; difficulty: string; tags: string[]; status: string; createdBy: string; createdAt: string; updatedAt: string }>;
+    total: number;
+    page: number;
+    limit: number;
+    error?: string;
+  }> {
+    'use server';
+    const cookieStore = await cookies();
+    const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      const result = await fetchAdminQuestions(token, query.page, 20, {
+        type: query.type,
+        difficulty: query.difficulty,
+        status: 'published',
+      });
+      return result;
+    } catch (err) {
+      const msg =
+        err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to search questions.';
+      return { questions: [], total: 0, page: 1, limit: 20, error: msg };
+    }
+  }
+
+  async function handleUpdateSettings(settings: Record<string, unknown>): Promise<{ error?: string }> {
+    'use server';
+    const cookieStore = await cookies();
+    const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      await updateAdminAssessment(token, assessmentId, { settings } as never);
+      return {};
+    } catch (err) {
+      const msg =
+        err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to update settings.';
+      return { error: msg };
+    }
+  }
+
+  async function handleUpdateQuestions(questionIds: string[]): Promise<{ error?: string }> {
+    'use server';
+    const cookieStore = await cookies();
+    const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      await updateAdminAssessment(token, assessmentId, { questionIds });
+      return {};
+    } catch (err) {
+      const msg =
+        err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to update questions.';
       return { error: msg };
     }
   }
@@ -71,7 +141,23 @@ export default async function AdminAssessmentDetailPage({ params }: Props) {
       )}
 
       {assessment && (
-        <AssessmentEditorClient assessment={assessment} onUpdate={handleUpdate} />
+        <>
+          <AssessmentEditorClient assessment={assessment} onUpdate={handleUpdate} />
+          <AssessmentSettings
+            assessmentId={assessmentId}
+            settings={assessment.settings}
+            disabled={assessment.status === 'archived'}
+            onUpdateSettings={handleUpdateSettings}
+          />
+          <AssessmentQuestionBuilder
+            assessmentId={assessmentId}
+            questionIds={assessment.questionIds}
+            attachedQuestions={attachedQuestions}
+            disabled={assessment.status === 'archived'}
+            onSearchQuestions={handleSearchQuestions}
+            onUpdateQuestions={handleUpdateQuestions}
+          />
+        </>
       )}
     </section>
   );
