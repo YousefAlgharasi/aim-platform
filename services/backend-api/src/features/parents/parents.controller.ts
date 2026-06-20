@@ -4,7 +4,7 @@
 // parent), so it requires authentication only — no per-child guard is
 // needed since no single child id is taken from client input.
 
-import { Body, Controller, ForbiddenException, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
@@ -24,6 +24,8 @@ import { AcceptParentInvitationRequestDto } from './dto/accept-parent-invitation
 import { ParentConsentEntity } from './dto/parent-consent.entity';
 import { GrantParentConsentRequestDto } from './dto/grant-parent-consent-request.dto';
 import { RevokeParentConsentRequestDto } from './dto/revoke-parent-consent-request.dto';
+import { ParentNotificationPreferenceEntity } from './dto/parent-notification-preference.entity';
+import { UpdateParentNotificationPreferenceRequestDto } from './dto/update-parent-notification-preference-request.dto';
 import { ParentChildLinkService } from './parent-child-link.service';
 import { ParentDashboardSummaryService } from './parent-dashboard-summary.service';
 import { ParentChildProgressService } from './parent-child-progress.service';
@@ -32,6 +34,7 @@ import { ParentActivitySummaryService } from './parent-activity-summary.service'
 import { ParentReportService } from './parent-report.service';
 import { ParentInvitationService } from './parent-invitation.service';
 import { ParentConsentService } from './parent-consent.service';
+import { ParentNotificationPreferenceService } from './parent-notification-preference.service';
 import { RequireParentChildAccess, ParentChildAccessGuard } from './guards';
 
 @ApiTags('Parent')
@@ -48,6 +51,7 @@ export class ParentsController {
     private readonly parentReportService: ParentReportService,
     private readonly parentInvitationService: ParentInvitationService,
     private readonly parentConsentService: ParentConsentService,
+    private readonly parentNotificationPreferenceService: ParentNotificationPreferenceService,
   ) {}
 
   @Get('children')
@@ -225,6 +229,32 @@ export class ParentsController {
     }
 
     return this.parentConsentService.listConsentsForLink(linkId);
+  }
+
+  @Get('notification-preferences')
+  @UseGuards(SupabaseJwtAuthGuard)
+  @ApiOperation({ summary: "List the authenticated parent's notification preferences." })
+  @ApiOkResponse({ type: ParentNotificationPreferenceEntity, isArray: true })
+  async listNotificationPreferences(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ParentNotificationPreferenceEntity[]> {
+    return this.parentNotificationPreferenceService.listPreferencesForParent(user.id);
+  }
+
+  @Patch('notification-preferences')
+  @UseGuards(SupabaseJwtAuthGuard)
+  @ApiOperation({ summary: "Update one of the authenticated parent's notification preferences." })
+  @ApiOkResponse({ type: ParentNotificationPreferenceEntity })
+  async updateNotificationPreference(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() body: UpdateParentNotificationPreferenceRequestDto,
+  ): Promise<ParentNotificationPreferenceEntity> {
+    return this.parentNotificationPreferenceService.updatePreference(
+      user.id,
+      body.channel,
+      body.category,
+      body.enabled,
+    );
   }
 
   /**
