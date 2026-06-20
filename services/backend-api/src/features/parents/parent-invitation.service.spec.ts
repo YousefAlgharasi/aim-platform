@@ -89,6 +89,25 @@ describe('ParentInvitationService', () => {
       );
     });
 
+    it('throws NotFoundException for an invalid/garbage invitation token', async () => {
+      const { service } = buildService({ findInvitationByCode: jest.fn().mockResolvedValue(null) });
+
+      await expect(service.acceptInvitation(CHILD_ID, 'not-a-real-token')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+
+    it('throws NotFoundException when re-accepting an already-accepted invitation code', async () => {
+      // findInvitationByCode only ever resolves pending invitations (the
+      // repository query filters WHERE status = 'pending'), so an
+      // already-accepted code behaves identically to an unknown one here.
+      const { service } = buildService({ findInvitationByCode: jest.fn().mockResolvedValue(null) });
+
+      await expect(service.acceptInvitation(CHILD_ID, 'abc123')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+
     it('marks an expired invitation as expired and throws', async () => {
       const { service, parentRepository } = buildService({
         findInvitationByCode: jest.fn().mockResolvedValue(buildRow({ expires_at: new Date(Date.now() - 1000) })),
