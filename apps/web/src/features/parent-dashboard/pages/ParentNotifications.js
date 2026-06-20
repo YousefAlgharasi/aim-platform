@@ -14,6 +14,7 @@ import {
 } from '../api';
 import { ParentCard, ParentBadge } from '../components';
 import { ParentNotificationsShell } from '../notifications';
+import ParentNotificationSettings from './ParentNotificationSettings';
 import './ParentPages.css';
 
 const CATEGORY_LABELS = {
@@ -29,6 +30,7 @@ function ParentNotifications() {
   const [events, setEvents] = useState([]);
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('inbox');
 
   useEffect(() => {
     let cancelled = false;
@@ -70,25 +72,71 @@ function ParentNotifications() {
 
   const visibleEvents = events.filter((e) => !e.dismissedAt && !e.dismissed_at);
 
+  const tabs = (
+    <div className="parent-notifications__tabs" role="tablist">
+      <button
+        type="button"
+        role="tab"
+        aria-selected={activeTab === 'inbox'}
+        className={`parent-btn${activeTab === 'inbox' ? ' parent-btn--primary' : ''}`}
+        onClick={() => setActiveTab('inbox')}
+      >
+        صندوق الإشعارات
+      </button>
+      <button
+        type="button"
+        role="tab"
+        aria-selected={activeTab === 'settings'}
+        className={`parent-btn${activeTab === 'settings' ? ' parent-btn--primary' : ''}`}
+        onClick={() => setActiveTab('settings')}
+      >
+        التفضيلات
+      </button>
+    </div>
+  );
+
+  if (activeTab === 'settings') {
+    return (
+      <div className="parent-notifications">
+        {tabs}
+        <ParentNotificationSettings />
+      </div>
+    );
+  }
+
   if (status === 'loading') {
-    return <ParentNotificationsShell status="loading" />;
+    return (
+      <div className="parent-notifications">
+        {tabs}
+        <ParentNotificationsShell status="loading" />
+      </div>
+    );
   }
 
   if (status === 'error') {
-    return <ParentNotificationsShell status="error" errorMessage={error} />;
+    return (
+      <div className="parent-notifications">
+        {tabs}
+        <ParentNotificationsShell status="error" errorMessage={error} />
+      </div>
+    );
   }
 
   if (status === 'empty' || visibleEvents.length === 0) {
     return (
-      <ParentNotificationsShell
-        status="empty"
-        emptyMessage="لا توجد إشعارات بعد."
-      />
+      <div className="parent-notifications">
+        {tabs}
+        <ParentNotificationsShell
+          status="empty"
+          emptyMessage="لا توجد إشعارات بعد."
+        />
+      </div>
     );
   }
 
   return (
     <div className="parent-notifications">
+      {tabs}
       <h2 className="parent-page__title">الإشعارات</h2>
       <div className="parent-notifications__list">
         {visibleEvents.map((event) => {
