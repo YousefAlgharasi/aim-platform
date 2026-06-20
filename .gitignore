@@ -31,3 +31,4 @@ aim_dev.db
 services/backend-api/var/
 #pilot_accounts.local.md
 env.json
+.claude/
