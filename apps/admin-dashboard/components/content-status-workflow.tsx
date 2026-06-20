@@ -1,4 +1,6 @@
 'use client';
+// P11-028: Content status workflow component using AIM design system.
+// Backend is the sole authority for status transitions.
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
@@ -7,6 +9,11 @@ import {
   type AllowedTransition,
   type ContentStatus,
 } from '../lib/api/admin-content-status-api';
+import {
+  AdminCard,
+  AdminBadge,
+  AdminButton,
+} from './common';
 
 type StatusWorkflowProps = {
   readonly entityId: string;
@@ -25,16 +32,16 @@ const STATUS_LABELS: Record<ContentStatus, string> = {
   archived: 'Archived',
 };
 
-const STATUS_CLASSES: Record<ContentStatus, string> = {
-  draft: 'status-draft',
-  published: 'status-published',
-  archived: 'status-archived',
+const STATUS_VARIANT: Record<ContentStatus, 'success' | 'warning' | 'error' | 'info' | 'neutral'> = {
+  draft: 'neutral',
+  published: 'success',
+  archived: 'error',
 };
 
-const ACTION_CLASSES: Record<string, string> = {
-  publish: 'btn-workflow-publish',
-  archive: 'btn-workflow-archive',
-  restore: 'btn-workflow-restore',
+const ACTION_VARIANT: Record<string, 'primary' | 'secondary'> = {
+  publish: 'primary',
+  archive: 'secondary',
+  restore: 'secondary',
 };
 
 export function ContentStatusWorkflow({
@@ -82,72 +89,129 @@ export function ContentStatusWorkflow({
   }
 
   return (
-    <div className="status-workflow">
-      <div className="status-workflow-header">
-        <span className="status-workflow-entity-title">{entityTitle}</span>
-        <span className={`status-badge ${STATUS_CLASSES[currentStatus]}`}>
+    <AdminCard title="Status Workflow">
+      <div className="aim-status-workflow-header">
+        <span className="aim-status-workflow-title">{entityTitle}</span>
+        <AdminBadge variant={STATUS_VARIANT[currentStatus]}>
           {STATUS_LABELS[currentStatus]}
-        </span>
+        </AdminBadge>
       </div>
 
       {isLesson && typeof skillLinkCount === 'number' && (
         <div
           className={
             skillLinkCount === 0
-              ? 'status-workflow-skill-warning'
-              : 'status-workflow-skill-ok'
+              ? 'aim-status-workflow-skill-warning'
+              : 'aim-status-workflow-skill-ok'
           }
         >
           {skillLinkCount === 0 ? (
             <>
-              <strong>⚠ No skills linked.</strong> Publish is blocked until at least
+              <strong>No skills linked.</strong> Publish is blocked until at least
               one skill is linked to this lesson.
             </>
           ) : (
-            <>✓ {skillLinkCount} skill{skillLinkCount !== 1 ? 's' : ''} linked.</>
+            <>{skillLinkCount} skill{skillLinkCount !== 1 ? 's' : ''} linked.</>
           )}
         </div>
       )}
 
       {actionError && (
-        <p className="course-form-error" role="alert">{actionError}</p>
+        <div className="admin-error-banner" role="alert" style={{ marginBlock: 'var(--space-12)' }}>
+          {actionError}
+        </div>
       )}
 
       {actionSuccess && (
-        <p className="status-workflow-success" role="status">{actionSuccess}</p>
+        <div className="aim-status-workflow-success" role="status">
+          {actionSuccess}
+        </div>
       )}
 
       {transitions.length === 0 ? (
-        <p className="courses-empty">No transitions available for current status.</p>
+        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
+          No transitions available for current status.
+        </p>
       ) : (
-        <div className="status-workflow-actions">
+        <div className="aim-status-workflow-actions">
           {transitions.map((t) => (
-            <button
+            <AdminButton
               key={t.action}
-              className={`btn-workflow ${ACTION_CLASSES[t.action] ?? ''}`}
+              variant={ACTION_VARIANT[t.action] ?? 'secondary'}
               onClick={() => handleTransition(t)}
               disabled={isPending || (t.action === 'publish' && publishBlockedBySkills)}
-              title={
-                t.superAdminOnly
-                  ? 'Super Admin only — backend enforces this restriction'
-                  : `Requires ${t.permissionRequired}`
-              }
+              loading={isPending}
             >
-              {isPending ? 'Processing…' : t.label}
+              {t.label}
               {t.superAdminOnly && (
-                <span className="status-workflow-super-badge">SA</span>
+                <span className="aim-status-workflow-sa-badge">SA</span>
               )}
-            </button>
+            </AdminButton>
           ))}
         </div>
       )}
 
-      <div className="admin-boundary-note">
+      <div className="admin-boundary-note" style={{ marginBlockStart: 'var(--space-16)' }}>
         <strong>Backend authority:</strong> All status transitions are validated and
         enforced by backend APIs. Permission checks, skill-link requirements, and
-        audit logging are applied server-side. This UI calls backend workflow
-        endpoints and cannot bypass backend content authority.
+        audit logging are applied server-side.
       </div>
-    </div>
+
+      <style>{`
+        .aim-status-workflow-header {
+          display: flex;
+          align-items: center;
+          gap: var(--space-12);
+          margin-block-end: var(--space-16);
+        }
+        .aim-status-workflow-title {
+          font-size: 16px;
+          font-weight: var(--weight-semibold);
+        }
+        .aim-status-workflow-skill-warning {
+          padding: var(--space-12) var(--space-16);
+          margin-block-end: var(--space-12);
+          border-radius: var(--radius-md);
+          background: var(--color-warning-50);
+          color: var(--color-warning-700);
+          font-size: 14px;
+        }
+        .aim-status-workflow-skill-ok {
+          padding: var(--space-12) var(--space-16);
+          margin-block-end: var(--space-12);
+          border-radius: var(--radius-md);
+          background: var(--color-success-50);
+          color: var(--color-success-700);
+          font-size: 14px;
+        }
+        .aim-status-workflow-success {
+          padding: var(--space-12) var(--space-16);
+          margin-block: var(--space-12);
+          border-radius: var(--radius-md);
+          background: var(--color-success-50);
+          color: var(--color-success-700);
+          font-size: 14px;
+          font-weight: var(--weight-medium);
+        }
+        .aim-status-workflow-actions {
+          display: flex;
+          gap: var(--space-12);
+          flex-wrap: wrap;
+        }
+        .aim-status-workflow-sa-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          margin-inline-start: var(--space-4);
+          padding: 1px 6px;
+          border-radius: var(--radius-sm);
+          background: var(--color-warning-100);
+          color: var(--color-warning-800);
+          font-size: 10px;
+          font-weight: var(--weight-bold);
+          letter-spacing: 0.5px;
+        }
+      `}</style>
+    </AdminCard>
   );
 }

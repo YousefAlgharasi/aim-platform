@@ -4,6 +4,7 @@ import WebPilot from '../pages/WebPilot';
 import AlgorithmTester from '../pages/AlgorithmTester';
 import AimDemo from '../pages/AimDemo';
 import AdminDashboard from '../pages/AdminDashboard';
+import ParentDashboard from '../pages/ParentDashboard';
 
 function App() {
   useEffect(() => {
@@ -28,6 +29,10 @@ function App() {
     pathname === '/admin-dashboard'
   ) {
     return <AdminDashboard />;
+  }
+
+  if (pathname === '/parent' || pathname === '/parent-dashboard') {
+    return <ParentDashboard />;
   }
 
   // All student-facing routes are handled internally by WebPilot
