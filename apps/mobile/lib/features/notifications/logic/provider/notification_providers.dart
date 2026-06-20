@@ -9,6 +9,8 @@ import '../../data/repository/repo_impl/notification_repository_impl.dart';
 import '../entity/notification_entities.dart';
 import '../repository/notification_repository.dart';
 import 'notification_inbox_notifier.dart';
+import 'notification_preferences_notifier.dart';
+import 'quiet_hours_notifier.dart';
 
 // P13-053/P13-055: Notification feature providers.
 //
@@ -37,10 +39,13 @@ final notificationInboxProvider = StateNotifierProvider.autoDispose<
 );
 
 /// Holds the user's notification channel/category preferences.
-final notificationPreferencesProvider = StateProvider<
-    AppAsyncState<List<NotificationPreferenceModel>>>((ref) {
-  return const AppAsyncState.idle();
-});
+final notificationPreferencesProvider = StateNotifierProvider.autoDispose<
+    NotificationPreferencesNotifier,
+    AppAsyncState<List<NotificationPreferenceModel>>>(
+  (ref) => NotificationPreferencesNotifier(
+    repository: ref.watch(notificationRepositoryProvider),
+  ),
+);
 
 /// Holds the user's active reminder schedules.
 final notificationRemindersProvider = StateProvider<
@@ -49,7 +54,9 @@ final notificationRemindersProvider = StateProvider<
 });
 
 /// Holds the user's quiet hours settings.
-final notificationQuietHoursProvider =
-    StateProvider<AppAsyncState<QuietHoursModel>>(
-  (ref) => const AppAsyncState.idle(),
+final notificationQuietHoursProvider = StateNotifierProvider.autoDispose<
+    QuietHoursNotifier, AppAsyncState<QuietHoursModel>>(
+  (ref) => QuietHoursNotifier(
+    repository: ref.watch(notificationRepositoryProvider),
+  ),
 );

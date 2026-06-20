@@ -17,6 +17,7 @@
 export 'ui/pages/notifications_placeholder_page.dart';
 export 'ui/pages/notification_inbox_page.dart';
 export 'ui/pages/notification_detail_page.dart';
+export 'ui/pages/notification_preferences_page.dart';
 export 'data/models/notification_models.dart';
 export 'data/datasources/notification_datasources.dart';
 export 'data/repository/repo_impl/notification_repository_impl.dart';
@@ -25,3 +26,5 @@ export 'logic/repository/notification_repository.dart';
 export 'logic/provider/notification_providers.dart';
 export 'logic/provider/notification_inbox_notifier.dart';
 export 'logic/provider/device_token_notifier.dart';
+export 'logic/provider/notification_preferences_notifier.dart';
+export 'logic/provider/quiet_hours_notifier.dart';
