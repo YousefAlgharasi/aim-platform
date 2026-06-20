@@ -1,32 +1,24 @@
-import { ApiProperty } from '@nestjs/swagger';
 import {
-  NotificationChannel,
   NotificationCategory,
-  NotificationUserType,
+  NotificationChannel,
+  NotificationRecipientType,
 } from './notification-enums';
 
 export class NotificationPreferenceEntity {
-  @ApiProperty()
-  id!: string;
+  id: string;
+  userId: string;
+  userType: NotificationRecipientType;
+  channel: NotificationChannel;
+  category: NotificationCategory;
+  enabled: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-  @ApiProperty()
-  userId!: string;
-
-  @ApiProperty({ enum: ['student', 'parent'] })
-  userType!: NotificationUserType;
-
-  @ApiProperty({ enum: ['in_app', 'push', 'email'] })
-  channel!: NotificationChannel;
-
-  @ApiProperty()
-  category!: NotificationCategory;
-
-  @ApiProperty()
-  enabled!: boolean;
-
-  @ApiProperty()
-  createdAt!: string;
-
-  @ApiProperty()
-  updatedAt!: string;
+// Request DTO for updating a single preference. The backend resolves
+// `userId`/`userType` from the authenticated caller -- never from this body.
+export class UpdateNotificationPreferenceRequestDto {
+  channel: NotificationChannel;
+  category: NotificationCategory;
+  enabled: boolean;
 }
