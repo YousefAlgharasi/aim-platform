@@ -72,3 +72,11 @@ export async function getUserEvents(userId, { channel = 'in_app', limit = 50, of
   params.set('offset', String(offset));
   return adminNotificationsRequest(`/events/${encodeURIComponent(userId)}?${params.toString()}`);
 }
+
+export async function getTemplates() {
+  return adminNotificationsRequest('/templates');
+}
+
+export async function getTemplate(templateId) {
+  return adminNotificationsRequest(`/templates/${encodeURIComponent(templateId)}`);
+}

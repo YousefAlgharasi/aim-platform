@@ -56,4 +56,16 @@ export class NotificationsAdminController {
       offset ? parseInt(offset, 10) : 0,
     );
   }
+
+  @Get('templates')
+  @ApiOperation({ summary: 'List notification templates (admin read-only)' })
+  async getTemplates() {
+    return this.repo.findAllTemplates();
+  }
+
+  @Get('templates/:templateId')
+  @ApiOperation({ summary: 'View a notification template (admin read-only)' })
+  async getTemplate(@Param('templateId') templateId: string) {
+    return this.repo.findTemplateById(templateId);
+  }
 }
