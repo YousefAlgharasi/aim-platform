@@ -13,6 +13,10 @@ function buildController(overrides: {
   getAssessmentSummaryForParent?: jest.Mock;
   getActivitySummaryForParent?: jest.Mock;
   getReportForParent?: jest.Mock;
+  createInvitation?: jest.Mock;
+  acceptInvitation?: jest.Mock;
+  revokeInvitation?: jest.Mock;
+  listInvitationsForParent?: jest.Mock;
 } = {}) {
   const parentChildLinkService = {
     listLinksForParent: jest.fn().mockResolvedValue(
@@ -63,6 +67,20 @@ function buildController(overrides: {
       jest.fn().mockResolvedValue({ childId: 'child-1', reportType: 'weekly', summary: 'ok' }),
   };
 
+  const parentInvitationService = {
+    createInvitation:
+      overrides.createInvitation ??
+      jest.fn().mockResolvedValue({ id: 'invitation-1', status: 'pending' }),
+    acceptInvitation:
+      overrides.acceptInvitation ??
+      jest.fn().mockResolvedValue({ id: 'invitation-1', status: 'accepted' }),
+    revokeInvitation:
+      overrides.revokeInvitation ??
+      jest.fn().mockResolvedValue({ id: 'invitation-1', status: 'cancelled' }),
+    listInvitationsForParent:
+      overrides.listInvitationsForParent ?? jest.fn().mockResolvedValue([{ id: 'invitation-1' }]),
+  };
+
   const controller = new ParentsController(
     parentChildLinkService as never,
     studentsService as never,
@@ -71,6 +89,7 @@ function buildController(overrides: {
     parentAssessmentSummaryService as never,
     parentActivitySummaryService as never,
     parentReportService as never,
+    parentInvitationService as never,
   );
 
   return {
@@ -82,6 +101,7 @@ function buildController(overrides: {
     parentAssessmentSummaryService,
     parentActivitySummaryService,
     parentReportService,
+    parentInvitationService,
   };
 }
 
@@ -207,6 +227,55 @@ describe('ParentsController', () => {
       await controller.getChildReport({ id: PARENT_ID } as never, 'child-1', {});
 
       expect(parentReportService.getReportForParent).toHaveBeenCalledWith(PARENT_ID, 'child-1', 'weekly');
+    });
+  });
+
+  describe('createInvitation', () => {
+    it('delegates to ParentInvitationService with the authenticated parent and body fields', async () => {
+      const { controller, parentInvitationService } = buildController();
+
+      await controller.createInvitation({ id: PARENT_ID } as never, {
+        relationshipType: 'parent',
+        childEmail: 'child@example.com',
+      });
+
+      expect(parentInvitationService.createInvitation).toHaveBeenCalledWith(
+        PARENT_ID,
+        'parent',
+        'child@example.com',
+        undefined,
+      );
+    });
+  });
+
+  describe('acceptInvitation', () => {
+    it('delegates to ParentInvitationService with the authenticated child and invitation code', async () => {
+      const { controller, parentInvitationService } = buildController();
+
+      await controller.acceptInvitation({ id: 'child-1' } as never, { invitationCode: 'abc123' });
+
+      expect(parentInvitationService.acceptInvitation).toHaveBeenCalledWith('child-1', 'abc123');
+    });
+  });
+
+  describe('revokeInvitation', () => {
+    it('delegates to ParentInvitationService with the authenticated parent and route invitationId', async () => {
+      const { controller, parentInvitationService } = buildController();
+
+      await controller.revokeInvitation({ id: PARENT_ID } as never, 'invitation-1');
+
+      expect(parentInvitationService.revokeInvitation).toHaveBeenCalledWith(PARENT_ID, 'invitation-1');
+    });
+  });
+
+  describe('listInvitations', () => {
+    it('delegates to ParentInvitationService for the authenticated parent', async () => {
+      const { controller, parentInvitationService } = buildController();
+
+      const result = await controller.listInvitations({ id: PARENT_ID } as never);
+
+      expect(parentInvitationService.listInvitationsForParent).toHaveBeenCalledWith(PARENT_ID);
+      expect(result).toEqual([{ id: 'invitation-1' }]);
     });
   });
 });

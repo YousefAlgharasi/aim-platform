@@ -11,5 +11,6 @@ export { ParentAssessmentSummaryService } from './parent-assessment-summary.serv
 export { ParentActivitySummaryService } from './parent-activity-summary.service';
 export { ParentReportService } from './parent-report.service';
 export type { ParentReportType } from './parent-report.service';
+export { ParentInvitationService } from './parent-invitation.service';
 export * from './dto';
 export * from './guards';
