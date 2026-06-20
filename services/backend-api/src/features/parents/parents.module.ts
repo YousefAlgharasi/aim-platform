@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../../auth';
 import { DatabaseModule } from '../../database/database.module';
+import { ParentAccessAuditService } from './parent-access-audit.service';
 import { ParentAccessPolicyService } from './parent-access-policy.service';
 import { ParentChildLinkService } from './parent-child-link.service';
 import { ParentConsentService } from './parent-consent.service';
