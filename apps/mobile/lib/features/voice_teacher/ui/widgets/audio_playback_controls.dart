@@ -32,18 +32,18 @@ class AudioPlaybackControls extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: AIMSpacing.sm,
-        vertical: AIMSpacing.xs,
+        horizontal: AimSpacing.sm,
+        vertical: AimSpacing.xs,
       ),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AIMRadius.lg),
+        borderRadius: BorderRadius.circular(AimRadius.lg),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildMainButton(context),
-          SizedBox(width: AIMSpacing.sm),
+          SizedBox(width: AimSpacing.sm),
           if (state == AudioPlaybackState.playing ||
               state == AudioPlaybackState.paused) ...[
             Expanded(
@@ -56,12 +56,12 @@ class AudioPlaybackControls extends StatelessWidget {
                     child: LinearProgressIndicator(
                       value: progress.clamp(0.0, 1.0),
                       minHeight: 4,
-                      backgroundColor: AIMColors.primary.withOpacity(0.15),
-                      valueColor: const AlwaysStoppedAnimation(AIMColors.primary),
+                      backgroundColor: AimColors.primary.withOpacity(0.15),
+                      valueColor: const AlwaysStoppedAnimation(AimColors.primary),
                     ),
                   ),
                   if (duration != null) ...[
-                    SizedBox(height: AIMSpacing.xs / 2),
+                    SizedBox(height: AimSpacing.xs / 2),
                     Text(
                       duration!,
                       style: theme.textTheme.labelSmall?.copyWith(
@@ -73,10 +73,10 @@ class AudioPlaybackControls extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(width: AIMSpacing.xs),
+            SizedBox(width: AimSpacing.xs),
             IconButton(
               icon: const Icon(Icons.replay, size: 20),
-              color: AIMColors.primary,
+              color: AimColors.primary,
               onPressed: onReplay,
               tooltip: isRtl ? 'إعادة' : 'Replay',
               padding: EdgeInsets.zero,
@@ -84,7 +84,7 @@ class AudioPlaybackControls extends StatelessWidget {
             ),
           ],
           if (state == AudioPlaybackState.error) ...[
-            SizedBox(width: AIMSpacing.xs),
+            SizedBox(width: AimSpacing.xs),
             Text(
               isRtl ? 'فشل التشغيل' : 'Playback failed',
               style: theme.textTheme.bodySmall?.copyWith(
@@ -93,13 +93,13 @@ class AudioPlaybackControls extends StatelessWidget {
             ),
           ],
           if (state == AudioPlaybackState.loading) ...[
-            SizedBox(width: AIMSpacing.xs),
+            SizedBox(width: AimSpacing.xs),
             SizedBox(
               width: 16,
               height: 16,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: AIMColors.primary,
+                color: AimColors.primary,
               ),
             ),
           ],
@@ -115,7 +115,7 @@ class AudioPlaybackControls extends StatelessWidget {
       case AudioPlaybackState.idle:
         return IconButton(
           icon: const Icon(Icons.play_arrow),
-          color: AIMColors.primary,
+          color: AimColors.primary,
           onPressed: onPlay,
           tooltip: isRtl ? 'تشغيل' : 'Play',
           padding: EdgeInsets.zero,
@@ -136,7 +136,7 @@ class AudioPlaybackControls extends StatelessWidget {
       case AudioPlaybackState.playing:
         return IconButton(
           icon: const Icon(Icons.pause),
-          color: AIMColors.primary,
+          color: AimColors.primary,
           onPressed: onPause,
           tooltip: isRtl ? 'إيقاف مؤقت' : 'Pause',
           padding: EdgeInsets.zero,
@@ -145,7 +145,7 @@ class AudioPlaybackControls extends StatelessWidget {
       case AudioPlaybackState.paused:
         return IconButton(
           icon: const Icon(Icons.play_arrow),
-          color: AIMColors.primary,
+          color: AimColors.primary,
           onPressed: onPlay,
           tooltip: isRtl ? 'استئناف' : 'Resume',
           padding: EdgeInsets.zero,
