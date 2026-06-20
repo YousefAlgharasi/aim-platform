@@ -154,4 +154,51 @@ class BackendApiPaths {
   /// GET /student/assessments/attempts/:attemptId/result
   static String studentAttemptResult(String attemptId) =>
       '/student/assessments/attempts/$attemptId/result';
+
+  // ---------------------------------------------------------------------------
+  // Notifications — Phase 13 P13-042..P13-046
+  // Backend is the final authority for eligibility, delivery state, quiet
+  // hours, and token validity. Flutter only displays and requests changes.
+  // ---------------------------------------------------------------------------
+
+  static const String notificationDeviceTokens =
+      '/api/v1/notifications/device-tokens';
+
+  /// DELETE /api/v1/notifications/device-tokens/:tokenId
+  static String notificationDeviceToken(String tokenId) =>
+      '/api/v1/notifications/device-tokens/$tokenId';
+
+  static const String notificationPreferences =
+      '/api/v1/notifications/preferences';
+
+  static const String notificationInbox = '/api/v1/notifications/inbox';
+
+  static const String notificationInboxUnreadCount =
+      '/api/v1/notifications/inbox/unread-count';
+
+  /// PATCH /api/v1/notifications/inbox/:eventId/read
+  static String notificationMarkRead(String eventId) =>
+      '/api/v1/notifications/inbox/$eventId/read';
+
+  /// PATCH /api/v1/notifications/inbox/:eventId/dismiss
+  static String notificationDismiss(String eventId) =>
+      '/api/v1/notifications/inbox/$eventId/dismiss';
+
+  static const String notificationReminders =
+      '/api/v1/notifications/reminders';
+
+  /// PATCH /api/v1/notifications/reminders/:scheduleId/pause
+  static String notificationPauseReminder(String scheduleId) =>
+      '/api/v1/notifications/reminders/$scheduleId/pause';
+
+  /// PATCH /api/v1/notifications/reminders/:scheduleId/resume
+  static String notificationResumeReminder(String scheduleId) =>
+      '/api/v1/notifications/reminders/$scheduleId/resume';
+
+  /// PATCH /api/v1/notifications/reminders/:scheduleId/cancel
+  static String notificationCancelReminder(String scheduleId) =>
+      '/api/v1/notifications/reminders/$scheduleId/cancel';
+
+  static const String notificationQuietHours =
+      '/api/v1/notifications/quiet-hours';
 }
