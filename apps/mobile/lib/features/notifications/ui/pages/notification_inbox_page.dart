@@ -14,6 +14,7 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart'
 
 import '../../logic/entity/notification_entities.dart';
 import '../../logic/provider/notification_providers.dart';
+import 'notification_detail_page.dart';
 
 class NotificationInboxPage extends ConsumerStatefulWidget {
   const NotificationInboxPage({super.key});
@@ -37,13 +38,12 @@ class _NotificationInboxPageState
     ref.read(notificationInboxProvider.notifier).load(bearerToken: token);
   }
 
-  void _onMarkAsRead(NotificationEventModel event) {
-    final token = ref.read(authFlowProvider).accessToken;
-    if (token == null || token.isEmpty) return;
-    ref.read(notificationInboxProvider.notifier).markAsRead(
-          bearerToken: token,
-          eventId: event.id,
-        );
+  void _onOpen(NotificationEventModel event) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => NotificationDetailPage(event: event),
+      ),
+    );
   }
 
   void _onDismiss(NotificationEventModel event) {
@@ -76,7 +76,7 @@ class _NotificationInboxPageState
               onRefresh: () async => _load(),
               child: _NotificationInboxList(
                 events: data,
-                onMarkAsRead: _onMarkAsRead,
+                onOpen: _onOpen,
                 onDismiss: _onDismiss,
               ),
             ),
@@ -89,12 +89,12 @@ class _NotificationInboxPageState
 class _NotificationInboxList extends StatelessWidget {
   const _NotificationInboxList({
     required this.events,
-    required this.onMarkAsRead,
+    required this.onOpen,
     required this.onDismiss,
   });
 
   final List<NotificationEventModel> events;
-  final void Function(NotificationEventModel) onMarkAsRead;
+  final void Function(NotificationEventModel) onOpen;
   final void Function(NotificationEventModel) onDismiss;
 
   @override
@@ -123,7 +123,7 @@ class _NotificationInboxList extends StatelessWidget {
         final event = visible[index];
         return _NotificationTile(
           event: event,
-          onMarkAsRead: () => onMarkAsRead(event),
+          onOpen: () => onOpen(event),
           onDismiss: () => onDismiss(event),
         );
       },
@@ -134,12 +134,12 @@ class _NotificationInboxList extends StatelessWidget {
 class _NotificationTile extends StatelessWidget {
   const _NotificationTile({
     required this.event,
-    required this.onMarkAsRead,
+    required this.onOpen,
     required this.onDismiss,
   });
 
   final NotificationEventModel event;
-  final VoidCallback onMarkAsRead;
+  final VoidCallback onOpen;
   final VoidCallback onDismiss;
 
   @override
@@ -164,8 +164,8 @@ class _NotificationTile extends StatelessWidget {
       ),
       child: AIMCard(
         variant: AIMCardVariant.elevated,
-        interactive: isUnread,
-        onTap: isUnread ? onMarkAsRead : null,
+        interactive: true,
+        onTap: onOpen,
         semanticLabel: isUnread
             ? 'Unread notification: ${event.title}'
             : 'Notification: ${event.title}',
