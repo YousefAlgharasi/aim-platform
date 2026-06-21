@@ -1,0 +1,36 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.title {
+  font-size: var(--type-h1-size, 28px);
+  font-weight: var(--weight-bold, 700);
+  color: var(--color-neutral-900);
+  margin: 0;
+}
+
+.text {
+  font-size: 14px;
+  color: var(--color-neutral-600, #5C6178);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.links {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-16);
+}
+
+.link {
+  font-size: 14px;
+  color: var(--color-primary-500);
+  text-decoration: none;
+  font-weight: var(--weight-medium, 500);
+}
+
+.link:hover {
+  text-decoration: underline;
+}
