@@ -37,6 +37,8 @@ Every `analytics_events` row uses this shape:
 - `curriculum.unit_started` / `curriculum.unit_completed` — metadata: `unit_id`,
   `path_id`.
 - `curriculum.path_assigned` — metadata: `path_id`.
+- `curriculum.content_status_changed` — metadata: `entity_type` (`course` |
+  `chapter` | `lesson`), `previous_status`, `current_status`.
 
 ### Assessments
 
