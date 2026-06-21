@@ -1,0 +1,35 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --color-primary-500: #4762EE;
+  --color-neutral-0: #FFFFFF;
+  --color-neutral-900: #1A1D2B;
+  --radius-md: 12px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --screen-padding-mobile: var(--space-16);
+  --screen-padding-web: var(--space-24);
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--color-neutral-900);
+  background: var(--color-neutral-0);
+  -webkit-font-smoothing: antialiased;
+}
+
+[lang="ar"] body {
+  font-family: 'IBM Plex Sans Arabic', sans-serif;
+  line-height: 1.7;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
