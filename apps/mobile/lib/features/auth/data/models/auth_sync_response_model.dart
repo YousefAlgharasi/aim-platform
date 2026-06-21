@@ -7,9 +7,19 @@ class AuthSyncResponseModel {
   });
 
   factory AuthSyncResponseModel.fromJson(Map<String, dynamic> json) {
+    final rawUser = json['user'];
+
     return AuthSyncResponseModel(
-      user: CurrentUserModel.fromJson(json['user'] as Map<String, dynamic>),
-      created: json['created'] as bool? ?? false,
+      user: rawUser is Map<String, dynamic>
+          ? CurrentUserModel.fromJson(rawUser)
+          : CurrentUserModel(
+              id: json['internalUserId'] as String,
+              email: null,
+              userType: json['userType'] as String,
+              status: json['status'] as String,
+            ),
+      created:
+          json['created'] as bool? ?? json['userCreated'] as bool? ?? false,
     );
   }
 

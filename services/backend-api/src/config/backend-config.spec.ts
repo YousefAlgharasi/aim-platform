@@ -24,6 +24,10 @@ const BASE_ENV: NodeJS.ProcessEnv = {
   AIM_ENGINE_SERVICE_TOKEN: 'test-service-token',
   AI_PROVIDER_API_KEY: 'ai-key',
   AI_PROVIDER_MODEL: 'gpt-4',
+  STT_PROVIDER_API_KEY: 'stt-key',
+  STT_PROVIDER_MODEL: 'whisper-1',
+  TTS_PROVIDER_API_KEY: 'tts-key',
+  TTS_PROVIDER_MODEL: 'tts-1',
   CORS_ORIGINS: 'http://localhost:3000',
 };
 

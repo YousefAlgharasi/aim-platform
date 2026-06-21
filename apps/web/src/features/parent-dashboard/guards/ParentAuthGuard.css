@@ -1,0 +1,8 @@
+/* P12-051: Parent Auth Guard UI */
+.parent-auth-guard__forbidden {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: var(--space-24, 24px);
+}

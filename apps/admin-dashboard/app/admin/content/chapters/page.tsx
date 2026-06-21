@@ -1,12 +1,6 @@
-// Phase 3 — P3-054
-// Admin chapters page.
-//
-// Scope: Curriculum & Content System — chapters only.
-//
-// Security:
-// - Token is read from the HTTP-only cookie server-side; never exposed to the browser.
-// - Auth enforcement is handled by the parent layout (admin/layout.tsx).
-// - Status transitions (publish, archive) are intentionally absent; backend controls those.
+// P11-023: Admin chapters page with AIM design system.
+// Nested under courses: select course → select level → view/manage chapters.
+// Backend is final authority for chapter data and status transitions.
 
 import { cookies } from 'next/headers';
 import Link from 'next/link';
@@ -16,7 +10,9 @@ import {
   fetchAdminChapters,
   createAdminChapter,
   updateAdminChapter,
+  type AdminChapterSummary,
   type AdminChapterListData,
+  type ChapterStatus,
 } from '../../../../lib/api/admin-chapters-api';
 import {
   fetchAdminCourses,
@@ -27,10 +23,28 @@ import {
   type AdminLevelSummary,
 } from '../../../../lib/api/admin-levels-api';
 import { AdminApiClientError } from '../../../../lib/api';
+import {
+  AdminTable,
+  AdminPagination,
+  AdminBadge,
+  AdminIdCell,
+  AdminDateCell,
+  type AdminTableColumn,
+} from '../../../../components/common';
+import { AdminPageHeader, AdminEmptyState } from '../../../../components/layout';
+import { AdminApiErrorState } from '../../../../components/error-handling';
 import { ChaptersList } from './chapters-list';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
+
+const STATUS_VARIANT: Record<string, 'success' | 'warning' | 'error' | 'info' | 'neutral'> = {
+  draft: 'neutral',
+  in_review: 'warning',
+  approved: 'info',
+  published: 'success',
+  archived: 'error',
+};
 
 type Props = {
   searchParams: Promise<{
@@ -38,8 +52,58 @@ type Props = {
     levelId?: string;
     page?: string;
     limit?: string;
+    status?: string;
+    q?: string;
   }>;
 };
+
+const chapterColumns: AdminTableColumn<AdminChapterSummary>[] = [
+  {
+    key: 'id',
+    header: 'ID',
+    width: '120px',
+    render: (ch) => (
+      <Link href={`/admin/content/chapters/${ch.id}/status`} style={{ textDecoration: 'none' }}>
+        <AdminIdCell id={ch.id} />
+      </Link>
+    ),
+  },
+  {
+    key: 'title',
+    header: 'Title',
+    render: (ch) => ch.title,
+  },
+  {
+    key: 'slug',
+    header: 'Slug',
+    render: (ch) =>
+      ch.slug ? (
+        <code style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{ch.slug}</code>
+      ) : (
+        <span style={{ color: 'var(--text-muted)' }}>—</span>
+      ),
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    render: (ch) => (
+      <AdminBadge variant={STATUS_VARIANT[ch.status] ?? 'neutral'}>
+        {ch.status.replace('_', ' ')}
+      </AdminBadge>
+    ),
+  },
+  {
+    key: 'sortOrder',
+    header: 'Order',
+    width: '80px',
+    render: (ch) => String(ch.sortOrder),
+  },
+  {
+    key: 'updatedAt',
+    header: 'Updated',
+    render: (ch) => <AdminDateCell iso={ch.updatedAt} />,
+  },
+];
 
 export default async function AdminChaptersPage({ searchParams }: Props) {
   const { courseId, levelId, page: pageParam, limit: limitParam } = await searchParams;
@@ -50,7 +114,6 @@ export default async function AdminChaptersPage({ searchParams }: Props) {
   const cookieStore = await cookies();
   const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
 
-  // Step 1 — always fetch courses for the course selector.
   let courses: AdminCourseSummary[] = [];
   let coursesError: string | null = null;
   try {
@@ -63,7 +126,6 @@ export default async function AdminChaptersPage({ searchParams }: Props) {
         : 'Failed to load courses.';
   }
 
-  // Step 2 — fetch levels when a course is selected.
   let levels: AdminLevelSummary[] = [];
   let levelsError: string | null = null;
   const selectedCourse = courseId ? courses.find((c) => c.id === courseId) : undefined;
@@ -80,7 +142,6 @@ export default async function AdminChaptersPage({ searchParams }: Props) {
     }
   }
 
-  // Step 3 — fetch chapters when a level is selected.
   let chaptersData: AdminChapterListData | null = null;
   let chaptersError: string | null = null;
   const selectedLevel = levelId ? levels.find((l) => l.id === levelId) : undefined;
@@ -141,82 +202,90 @@ export default async function AdminChaptersPage({ searchParams }: Props) {
   }
 
   return (
-    <section className="admin-curriculum-page">
+    <section className="aim-chapters-page">
       <nav className="admin-breadcrumb" aria-label="Breadcrumb">
-        <Link href="/admin/content">Content</Link>
-        <span aria-hidden="true">/</span>
+        <Link href="/admin/content" className="admin-breadcrumb-link">Content</Link>
+        <span aria-hidden="true"> / </span>
         <span>Chapters</span>
       </nav>
 
-      <header className="admin-page-header">
-        <p className="eyebrow">Admin — Curriculum</p>
-        <h1>Chapters</h1>
-        {chaptersData && (
-          <p className="admin-page-meta">
-            {chaptersData.total} chapter{chaptersData.total !== 1 ? 's' : ''} in{' '}
-            {selectedLevel?.title ?? levelId}
-          </p>
-        )}
-      </header>
+      <AdminPageHeader
+        eyebrow="Admin — Curriculum"
+        title="Chapters"
+        description={
+          chaptersData
+            ? `${chaptersData.total} chapter${chaptersData.total !== 1 ? 's' : ''} in ${selectedLevel?.title ?? levelId}`
+            : undefined
+        }
+      />
 
       <div className="admin-boundary-note">
         <strong>Backend authority:</strong> Chapter records, status, and ordering are
-        controlled by backend curriculum APIs. Publish and archive actions require
-        backend permission checks not exposed here.
+        controlled by backend curriculum APIs.
       </div>
 
       {/* Step 1 — Course selector */}
-      <div className="admin-course-selector">
-        <p className="admin-course-selector-label">1. Select a course:</p>
+      <div className="aim-selector-section">
+        <p className="aim-selector-label">1. Select a course:</p>
         {coursesError ? (
-          <p className="admin-error-banner" role="alert">{coursesError}</p>
+          <AdminApiErrorState message={coursesError} />
         ) : courses.length === 0 ? (
-          <p className="courses-empty">
-            No courses found. Create one via <Link href="/admin/content/courses">Courses</Link>.
-          </p>
+          <AdminEmptyState
+            title="No courses found"
+            description="Create one via the Courses page."
+            action={<Link href="/admin/content/courses" className="admin-breadcrumb-link">Go to Courses</Link>}
+          />
         ) : (
-          <div className="admin-course-selector-links">
+          <div className="aim-selector-grid">
             {courses.map((course) => (
               <a
                 key={course.id}
                 href={`?courseId=${encodeURIComponent(course.id)}`}
-                className={`admin-course-selector-item${courseId === course.id ? ' active' : ''}`}
+                className={`aim-selector-card${courseId === course.id ? ' aim-selector-card--active' : ''}`}
               >
-                <span className="selector-item-title">{course.title}</span>
-                <span className={`status-badge ${course.status === 'published' ? 'status-published' : course.status === 'archived' ? 'status-archived' : 'status-draft'}`}>
+                <span className="aim-selector-card-title">{course.title}</span>
+                <AdminBadge variant={STATUS_VARIANT[course.status] ?? 'neutral'}>
                   {course.status}
-                </span>
+                </AdminBadge>
               </a>
             ))}
           </div>
         )}
       </div>
 
-      {/* Step 2 — Level selector (only when a course is selected) */}
+      {/* Step 2 — Level selector */}
       {courseId && !coursesError && (
-        <div className="admin-course-selector">
-          <p className="admin-course-selector-label">
+        <div className="aim-selector-section">
+          <p className="aim-selector-label">
             2. Select a level in <strong>{selectedCourse?.title ?? courseId}</strong>:
           </p>
           {levelsError ? (
-            <p className="admin-error-banner" role="alert">{levelsError}</p>
+            <AdminApiErrorState message={levelsError} />
           ) : levels.length === 0 ? (
-            <p className="courses-empty">
-              No levels found. Create one via <Link href={`/admin/content/levels?courseId=${encodeURIComponent(courseId)}`}>Levels</Link>.
-            </p>
+            <AdminEmptyState
+              title="No levels found"
+              description="Create one via the Levels page."
+              action={
+                <Link
+                  href={`/admin/content/levels?courseId=${encodeURIComponent(courseId)}`}
+                  className="admin-breadcrumb-link"
+                >
+                  Go to Levels
+                </Link>
+              }
+            />
           ) : (
-            <div className="admin-course-selector-links">
+            <div className="aim-selector-grid">
               {levels.map((level) => (
                 <a
                   key={level.id}
                   href={`?courseId=${encodeURIComponent(courseId)}&levelId=${encodeURIComponent(level.id)}`}
-                  className={`admin-course-selector-item${levelId === level.id ? ' active' : ''}`}
+                  className={`aim-selector-card${levelId === level.id ? ' aim-selector-card--active' : ''}`}
                 >
-                  <span className="selector-item-title">{level.title}</span>
-                  {level.code && <code className="level-code-badge">{level.code}</code>}
-                  <span className={`status-badge ${level.status === 'published' ? 'status-published' : level.status === 'archived' ? 'status-archived' : 'status-draft'}`}>
+                  <span className="aim-selector-card-title">{level.title}</span>
+                  <AdminBadge variant={STATUS_VARIANT[level.status] ?? 'neutral'}>
                     {level.status}
-                  </span>
+                  </AdminBadge>
                 </a>
               ))}
             </div>
@@ -224,12 +293,37 @@ export default async function AdminChaptersPage({ searchParams }: Props) {
         </div>
       )}
 
-      {/* Step 3 — Chapters table (only when course + level selected) */}
+      {/* Step 3 — Chapters table */}
       {courseId && levelId && (
         <>
-          {chaptersError && (
-            <p className="admin-error-banner" role="alert">{chaptersError}</p>
+          {chaptersError && <AdminApiErrorState message={chaptersError} />}
+
+          {chaptersData && chaptersData.chapters.length === 0 && (
+            <AdminEmptyState
+              title="No chapters yet"
+              description="Create the first chapter for this level."
+            />
           )}
+
+          {chaptersData && chaptersData.chapters.length > 0 && (
+            <>
+              <AdminTable
+                columns={chapterColumns}
+                rows={chaptersData.chapters}
+                getRowKey={(ch) => ch.id}
+                caption="Chapters"
+              />
+
+              <AdminPagination
+                page={chaptersData.page}
+                totalPages={totalPages}
+                buildHref={(p) =>
+                  `?courseId=${encodeURIComponent(courseId)}&levelId=${encodeURIComponent(levelId)}&page=${p}`
+                }
+              />
+            </>
+          )}
+
           {chaptersData && (
             <ChaptersList
               chapters={chaptersData.chapters}
@@ -246,8 +340,60 @@ export default async function AdminChaptersPage({ searchParams }: Props) {
       )}
 
       {!courseId && !coursesError && courses.length > 0 && (
-        <p className="courses-empty">Select a course above to continue.</p>
+        <AdminEmptyState
+          title="Select a course"
+          description="Choose a course above to view and manage its chapters."
+        />
       )}
+
+      <style>{`
+        .aim-chapters-page {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-20);
+        }
+        .aim-selector-section {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-12);
+        }
+        .aim-selector-label {
+          font-size: 14px;
+          font-weight: var(--weight-semibold);
+          color: var(--text-secondary);
+          margin: 0;
+        }
+        .aim-selector-grid {
+          display: flex;
+          flex-wrap: wrap;
+          gap: var(--space-8);
+        }
+        .aim-selector-card {
+          display: inline-flex;
+          align-items: center;
+          gap: var(--space-8);
+          padding: var(--space-8) var(--space-16);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-md);
+          background: var(--surface);
+          text-decoration: none;
+          color: var(--text-primary);
+          font-size: 14px;
+          transition: border-color var(--duration-fast) var(--ease-standard),
+                      background var(--duration-fast) var(--ease-standard);
+        }
+        .aim-selector-card:hover {
+          border-color: var(--color-primary-500);
+          background: var(--state-hover);
+        }
+        .aim-selector-card--active {
+          border-color: var(--color-primary-500);
+          background: var(--primary-soft);
+        }
+        .aim-selector-card-title {
+          font-weight: var(--weight-medium);
+        }
+      `}</style>
     </section>
   );
 }

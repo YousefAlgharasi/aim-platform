@@ -47,6 +47,10 @@ import { SessionSummaryService } from './persistence/session-summary.service';
 import { AimResultService } from './result/aim-result.service';
 import { StudentSkillStateReadService } from './result/student-skill-state-read.service';
 import { ReviewScheduleReadService } from './result/review-schedule-read.service';
+import { SessionStateReadService } from './result/session-state-read.service';
+import { WeaknessRecordsReadService } from './result/weakness-records-read.service';
+import { RecommendationReadService } from './result/recommendation-read.service';
+import { ErrorPatternsReadService } from './result/error-patterns-read.service';
 import { AimResultController } from './result/aim-result.controller';
 
 @Module({
@@ -101,11 +105,7 @@ import { AimResultController } from './result/aim-result.controller';
     // Phase 5 — review schedule output persistence (P5-061)
     ReviewScheduleOutputService,
 
-    // Phase 5 — frustration/emotional signal persistence (P5-062).
-    // Registered for DI completeness but NOT called from
-    // AimPersistenceService.persist() — see that file's docstring:
-    // this service writes the same session_summaries row as
-    // SessionSummaryService (P5-063), which is the canonical owner.
+    // Phase 5 — frustration signal persistence (P5-062)
     FrustrationSignalService,
 
     // Phase 5 — session summary persistence (P5-063)
@@ -113,12 +113,22 @@ import { AimResultController } from './result/aim-result.controller';
 
     // Phase 5 — result read APIs
     AimResultService,
-
-    // Phase 5 — skill state read service (P5-069)
     StudentSkillStateReadService,
 
     // Phase 5 — review schedule read service (P5-072)
     ReviewScheduleReadService,
+
+    // Phase 5 — session state read service (P5-068)
+    SessionStateReadService,
+
+    // Phase 5 — weakness records read service (P5-070)
+    WeaknessRecordsReadService,
+
+    // Phase 5 — recommendation read service (P5-071)
+    RecommendationReadService,
+
+    // Phase 5 — error patterns read service (P5-035 table)
+    ErrorPatternsReadService,
   ],
   exports: [
     // Existing exports preserved
@@ -129,6 +139,24 @@ import { AimResultController } from './result/aim-result.controller';
     AimHealthCheckService,
     AimPipelineOrchestratorService,
     AimResultService,
+
+    // Phase 8 — recommendation read service (needed by AI Teacher context builder, P8-030)
+    RecommendationReadService,
+
+    // Phase 8 — skill state read service (needed by AI Teacher context builder, P8-033)
+    StudentSkillStateReadService,
+
+    // Phase 8 — weakness records read service (needed by AI Teacher context builder, P8-034)
+    WeaknessRecordsReadService,
+
+    // Phase 8 — review schedule read service (needed by AI Teacher context builder, P8-036)
+    ReviewScheduleReadService,
+
+    // Phase 8 — error patterns read service (needed by AI Teacher context builder, P8-037)
+    ErrorPatternsReadService,
+
+    // Phase 12 — session state read service (needed by Parent Activity Summary Service, P12-029)
+    SessionStateReadService,
   ],
 })
 export class AimModule {}
