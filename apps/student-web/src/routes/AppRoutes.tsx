@@ -30,6 +30,8 @@ import { NotificationCenterPage } from '../features/notifications/NotificationCe
 import { NotificationPreferencesPage } from '../features/notifications/NotificationPreferencesPage';
 import { BillingPage } from '../features/billing/BillingPage';
 import { CheckoutPage } from '../features/billing/CheckoutPage';
+import { ReportsSummaryPage } from '../features/reports/ReportsSummaryPage';
+import { SupportPage } from '../features/support/SupportPage';
 import { NotFoundPage } from '../components/common/NotFoundPage';
 import { ForbiddenPage } from '../components/common/ForbiddenPage';
 
@@ -70,6 +72,8 @@ export function AppRoutes() {
         <Route path="/notifications/preferences" element={<NotificationPreferencesPage />} />
         <Route path="/billing" element={<BillingPage />} />
         <Route path="/billing/checkout/:planId" element={<CheckoutPage />} />
+        <Route path="/reports" element={<ReportsSummaryPage />} />
+        <Route path="/support" element={<SupportPage />} />
       </Route>
 
       {/* Error routes */}
