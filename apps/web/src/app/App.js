@@ -7,6 +7,7 @@ import AdminDashboard from '../pages/AdminDashboard';
 import ParentDashboard from '../pages/ParentDashboard';
 import AdminNotificationMonitor from '../features/admin-notifications/pages/AdminNotificationMonitor';
 import AdminTemplateMonitor from '../features/admin-notifications/pages/AdminTemplateMonitor';
+import AdaptiveResult from '../pages/AdaptiveResult';
 
 function App() {
   useEffect(() => {
@@ -43,6 +44,10 @@ function App() {
 
   if (pathname === '/admin/notification-templates') {
     return <AdminTemplateMonitor />;
+  }
+
+  if (pathname === '/adaptive-result') {
+    return <AdaptiveResult />;
   }
 
   // All student-facing routes are handled internally by WebPilot

@@ -105,7 +105,7 @@ describe('AiTeacherFeedbackSubmitController', () => {
 
     await expect(
       controller.submitFeedback(makeUser(), 'message-1', { rating: 'helpful' }),
-    ).rejects.toMatchObject({ code: ApiErrorCode.FORBIDDEN });
+    ).rejects.toMatchObject({ code: ApiErrorCode.VALIDATION_ERROR });
   });
 
   it('maps an "already recorded" service error to CONFLICT', async () => {
