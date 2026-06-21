@@ -126,6 +126,14 @@ class BackendApiPaths {
   static String aiTeacherMessageFeedback(String messageId) =>
       '/ai-teacher/messages/$messageId/feedback';
 
+  /// POST /ai-teacher/sessions/:id/messages/stream (P18-043, SSE) (P18-061)
+  static String aiTeacherSessionMessagesStream(String sessionId) =>
+      '/ai-teacher/sessions/$sessionId/messages/stream';
+
+  /// GET /ai-teacher/sessions/:id/safety-status (P18-047) (P18-064)
+  static String aiTeacherSessionSafetyStatus(String sessionId) =>
+      '/ai-teacher/sessions/$sessionId/safety-status';
+
   // ---------------------------------------------------------------------------
   // Assessments — Phase 10 P10-051
   // Student-facing only. Backend is the final authority for grading, deadlines,

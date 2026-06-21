@@ -11,6 +11,9 @@ class AiTeacherChatState {
     this.lastReply,
     this.lastFeedback,
     this.isSending = false,
+    this.streamingText,
+    this.isStreaming = false,
+    this.safetyStatus,
   });
 
   final AiChatSessionModel? activeSession;
@@ -20,7 +23,16 @@ class AiTeacherChatState {
   final AiTeacherFeedbackModel? lastFeedback;
   final bool isSending;
 
+  /// Accumulated safety-filtered text chunks for an in-progress streamed
+  /// reply (P18-061). Null when no stream is in progress.
+  final String? streamingText;
+  final bool isStreaming;
+
+  /// Student-safe safety status for the active session (P18-064).
+  final AiTeacherSafetyStatusModel? safetyStatus;
+
   bool get hasActiveSession => activeSession != null;
+  bool get isSafetyLimited => safetyStatus?.isLimited ?? false;
 
   AiTeacherChatState copyWith({
     AiChatSessionModel? activeSession,
@@ -29,8 +41,12 @@ class AiTeacherChatState {
     AiTeacherReplyModel? lastReply,
     AiTeacherFeedbackModel? lastFeedback,
     bool? isSending,
+    String? streamingText,
+    bool? isStreaming,
+    AiTeacherSafetyStatusModel? safetyStatus,
     bool clearLastReply = false,
     bool clearLastFeedback = false,
+    bool clearStreamingText = false,
   }) {
     return AiTeacherChatState(
       activeSession: activeSession ?? this.activeSession,
@@ -40,6 +56,10 @@ class AiTeacherChatState {
       lastFeedback:
           clearLastFeedback ? null : lastFeedback ?? this.lastFeedback,
       isSending: isSending ?? this.isSending,
+      streamingText:
+          clearStreamingText ? null : streamingText ?? this.streamingText,
+      isStreaming: isStreaming ?? this.isStreaming,
+      safetyStatus: safetyStatus ?? this.safetyStatus,
     );
   }
 }

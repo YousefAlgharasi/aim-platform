@@ -9,6 +9,7 @@ import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/networking/api_client_exception.dart';
 import 'package:aim_mobile/features/ai_teacher/data/datasources/ai_teacher_remote_datasource.dart';
 import 'package:aim_mobile/features/ai_teacher/data/models/ai_teacher_chat_models.dart';
+import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_stream_event.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/repository/ai_teacher_chat_repository.dart';
 
 class AiTeacherChatRepositoryImpl implements AiTeacherChatRepository {
@@ -66,6 +67,36 @@ class AiTeacherChatRepositoryImpl implements AiTeacherChatRepository {
             bearerToken: bearerToken,
             messageId: messageId,
             rating: rating,
+          ));
+
+  @override
+  Stream<AiTeacherStreamEvent> streamMessage({
+    required String bearerToken,
+    required String sessionId,
+    required String message,
+  }) {
+    return _datasource
+        .streamMessage(
+          bearerToken: bearerToken,
+          sessionId: sessionId,
+          message: message,
+        )
+        .handleError((Object error, StackTrace stackTrace) {
+      if (error is ApiClientException) {
+        throw AppException(code: error.code, message: error.message);
+      }
+      throw error;
+    });
+  }
+
+  @override
+  Future<AiTeacherSafetyStatusModel> getSafetyStatus({
+    required String bearerToken,
+    required String sessionId,
+  }) =>
+      _wrap(() => _datasource.getSafetyStatus(
+            bearerToken: bearerToken,
+            sessionId: sessionId,
           ));
 
   Future<T> _wrap<T>(Future<T> Function() call) async {

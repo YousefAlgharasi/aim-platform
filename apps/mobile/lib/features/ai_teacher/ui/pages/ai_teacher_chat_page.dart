@@ -95,6 +95,7 @@ class _AiTeacherChatPageState extends ConsumerState<AiTeacherChatPage> {
         bearerToken: token,
         sessionId: existingSessionId,
       );
+      await _loadSafetyStatus(existingSessionId);
       return;
     }
 
@@ -111,8 +112,18 @@ class _AiTeacherChatPageState extends ConsumerState<AiTeacherChatPage> {
           bearerToken: token,
           sessionId: session.sessionId,
         );
+        await _loadSafetyStatus(session.sessionId);
       }
     }
+  }
+
+  Future<void> _loadSafetyStatus(String sessionId) async {
+    final token = _token;
+    if (token == null || token.isEmpty) return;
+    await ref.read(aiTeacherChatProvider.notifier).loadSafetyStatus(
+          bearerToken: token,
+          sessionId: sessionId,
+        );
   }
 
   Future<void> _sendMessage() async {
@@ -130,13 +141,13 @@ class _AiTeacherChatPageState extends ConsumerState<AiTeacherChatPage> {
     final notifier = ref.read(aiTeacherChatProvider.notifier);
     _messageController.clear();
 
-    await notifier.sendMessage(
+    await notifier.streamMessage(
       bearerToken: token,
       sessionId: sessionId,
       message: text,
     );
 
-    await notifier.loadHistory(bearerToken: token, sessionId: sessionId);
+    await _loadSafetyStatus(sessionId);
   }
 
   Future<void> _onSelectPrompt(String prompt) async {
@@ -219,8 +230,21 @@ class _ChatContent extends StatelessWidget {
     final showLessonHeader =
         safeLessonTitle != null && safeLessonTitle.isNotEmpty;
 
+    final streamingText = chatState.isStreaming ? chatState.streamingText ?? '' : null;
+    final streamItemCount = itemCount + (streamingText != null ? 1 : 0);
+
     return Column(
       children: [
+        if (chatState.isSafetyLimited)
+          const Padding(
+            padding: EdgeInsetsDirectional.fromSTEB(
+              AimSpacing.screenPaddingMobile,
+              AimSpacing.sectionGap,
+              AimSpacing.screenPaddingMobile,
+              0,
+            ),
+            child: AiSafetyBlockBanner(),
+          ),
         if (showLessonHeader)
           Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(
@@ -235,7 +259,7 @@ class _ChatContent extends StatelessWidget {
             ),
           ),
         Expanded(
-          child: messages.isEmpty && !isSending
+          child: messages.isEmpty && !isSending && streamingText == null
               ? Column(
                   children: [
                     const Expanded(
@@ -257,10 +281,13 @@ class _ChatContent extends StatelessWidget {
                     horizontal: AimSpacing.screenPaddingMobile,
                     vertical: AimSpacing.sectionGap,
                   ),
-                  itemCount: itemCount,
+                  itemCount: streamItemCount,
                   separatorBuilder: (_, __) =>
                       const SizedBox(height: AimSpacing.innerGap),
                   itemBuilder: (context, index) {
+                    if (index >= messages.length + (isSending ? 1 : 0)) {
+                      return AiStreamingMessageBubble(text: streamingText!);
+                    }
                     if (index >= messages.length) {
                       return const AiTypingIndicator();
                     }
@@ -273,7 +300,7 @@ class _ChatContent extends StatelessWidget {
         ),
         AiChatInputBar(
           controller: messageController,
-          isSending: chatState.isSending,
+          isSending: chatState.isSending || chatState.isStreaming,
           onSend: onSend,
         ),
       ],

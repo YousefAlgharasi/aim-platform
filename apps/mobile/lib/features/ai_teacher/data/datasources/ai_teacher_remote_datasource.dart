@@ -19,6 +19,7 @@
 //   stored here.
 
 import 'package:aim_mobile/features/ai_teacher/data/models/ai_teacher_chat_models.dart';
+import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_stream_event.dart';
 
 abstract class AiTeacherRemoteDatasource {
   /// POST /ai-teacher/sessions (P8-071)
@@ -50,5 +51,21 @@ abstract class AiTeacherRemoteDatasource {
     required String bearerToken,
     required String messageId,
     required String rating,
+  });
+
+  /// POST /ai-teacher/sessions/:id/messages/stream (P18-043, SSE) (P18-061)
+  ///
+  /// Streams an already safety-filtered AI Teacher reply. Yields zero or
+  /// more chunk events followed by exactly one terminal done event.
+  Stream<AiTeacherStreamEvent> streamMessage({
+    required String bearerToken,
+    required String sessionId,
+    required String message,
+  });
+
+  /// GET /ai-teacher/sessions/:id/safety-status (P18-047) (P18-064)
+  Future<AiTeacherSafetyStatusModel> getSafetyStatus({
+    required String bearerToken,
+    required String sessionId,
   });
 }

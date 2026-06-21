@@ -116,6 +116,49 @@ class BackendApiClient {
   }
 
   // ---------------------------------------------------------------------------
+  // Server-Sent Events — P18-061
+  // Used only for backend SSE endpoints that stream an already
+  // safety-filtered reply (e.g. /ai-teacher/sessions/:id/messages/stream).
+  // Never used for a direct AI provider call.
+  // ---------------------------------------------------------------------------
+
+  Stream<Map<String, dynamic>> streamSse(
+    String path, {
+    Object? body,
+    Map<String, String>? headers,
+  }) async* {
+    final request = http.Request('POST', buildUri(path))
+      ..headers.addAll(_jsonHeaders(headers))
+      ..body = body == null ? '' : jsonEncode(body);
+
+    final streamedResponse = await _httpClient.send(request);
+
+    if (streamedResponse.statusCode < 200 || streamedResponse.statusCode >= 300) {
+      final raw = await streamedResponse.stream.bytesToString();
+      throw ApiClientException(
+        code: 'STREAM_REQUEST_FAILED',
+        message: 'AI Teacher stream request failed.',
+        statusCode: streamedResponse.statusCode,
+        details: raw,
+      );
+    }
+
+    final lines =
+        streamedResponse.stream.transform(utf8.decoder).transform(const LineSplitter());
+
+    await for (final line in lines) {
+      if (!line.startsWith('data:')) continue;
+      final payload = line.substring('data:'.length).trim();
+      if (payload.isEmpty) continue;
+
+      final decoded = jsonDecode(payload);
+      if (decoded is Map<String, dynamic>) {
+        yield decoded;
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Response parsing
   // ---------------------------------------------------------------------------
 
