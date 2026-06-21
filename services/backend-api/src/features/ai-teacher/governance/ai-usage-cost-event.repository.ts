@@ -66,4 +66,33 @@ export class AiUsageCostEventRepository {
     );
     return result.rows[0] ?? null;
   }
+
+  // ---------------------------------------------------------------------
+  // P18-050: Admin AI Usage and Cost API — read-only listing for admins.
+  // No mastery/weakness/difficulty/recommendation/review-schedule value is
+  // ever stored on or derived from these rows.
+  // ---------------------------------------------------------------------
+
+  async listRecent(limit: number): Promise<AiUsageCostEventRow[]> {
+    const result = await this.db.query<AiUsageCostEventRow>(
+      `SELECT id, student_id, event_type, model_config_id, request_id, tokens_used, duration_seconds, cost_estimate, quota_period, metadata, created_at
+       FROM ai_usage_cost_events
+       ORDER BY created_at DESC
+       LIMIT $1`,
+      [limit],
+    );
+    return result.rows;
+  }
+
+  async listByStudentId(studentId: string, limit: number): Promise<AiUsageCostEventRow[]> {
+    const result = await this.db.query<AiUsageCostEventRow>(
+      `SELECT id, student_id, event_type, model_config_id, request_id, tokens_used, duration_seconds, cost_estimate, quota_period, metadata, created_at
+       FROM ai_usage_cost_events
+       WHERE student_id = $1
+       ORDER BY created_at DESC
+       LIMIT $2`,
+      [studentId, limit],
+    );
+    return result.rows;
+  }
 }
