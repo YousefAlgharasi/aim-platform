@@ -9,6 +9,7 @@ import {
   DashboardWidget,
   ExportJob,
   AnalyticsCohort,
+  AnalyticsCohortMember,
   AnalyticsAccessAuditLog,
   AnalyticsAuditAction,
   AnalyticsAuditResult,
@@ -283,12 +284,46 @@ export class AnalyticsRepository {
     return result.rows;
   }
 
+  async findCohortByKey(key: string): Promise<AnalyticsCohort | null> {
+    const result = await this.db.query<AnalyticsCohort>(
+      `SELECT * FROM analytics_cohorts WHERE key = $1 AND is_active = true`,
+      [key],
+    );
+    return result.rows[0] || null;
+  }
+
   async countCohortMembers(cohortId: string): Promise<number> {
     const result = await this.db.query<{ count: string }>(
       `SELECT COUNT(*)::text AS count FROM analytics_cohort_members WHERE cohort_id = $1`,
       [cohortId],
     );
     return parseInt(result.rows[0]?.count ?? '0', 10);
+  }
+
+  async addCohortMember(cohortId: string, userId: string): Promise<AnalyticsCohortMember> {
+    const result = await this.db.query<AnalyticsCohortMember>(
+      `INSERT INTO analytics_cohort_members (cohort_id, user_id)
+       VALUES ($1, $2)
+       ON CONFLICT (cohort_id, user_id) DO UPDATE SET cohort_id = EXCLUDED.cohort_id
+       RETURNING *`,
+      [cohortId, userId],
+    );
+    return result.rows[0];
+  }
+
+  async removeCohortMember(cohortId: string, userId: string): Promise<void> {
+    await this.db.query(
+      `DELETE FROM analytics_cohort_members WHERE cohort_id = $1 AND user_id = $2`,
+      [cohortId, userId],
+    );
+  }
+
+  async findCohortMembers(cohortId: string): Promise<AnalyticsCohortMember[]> {
+    const result = await this.db.query<AnalyticsCohortMember>(
+      `SELECT * FROM analytics_cohort_members WHERE cohort_id = $1 ORDER BY added_at ASC`,
+      [cohortId],
+    );
+    return result.rows;
   }
 
   // --- Access Audit Logs ---
