@@ -10,6 +10,7 @@ import { ChatHistoryReadModule } from './chat-history/chat-history-read.module';
 import { ChatSessionListReadModule } from './chat-session-list/chat-session-list-read.module';
 import { AiTeacherFeedbackModule } from './feedback/ai-teacher-feedback.module';
 import { AiTeacherGovernanceModule } from './governance/governance.module';
+import { AiTeacherStreamMessageModule } from './streaming-api/ai-teacher-stream-message.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AiTeacherGovernanceModule } from './governance/governance.module';
     ChatSessionListReadModule,
     AiTeacherFeedbackModule,
     AiTeacherGovernanceModule,
+    AiTeacherStreamMessageModule,
   ],
   providers: [AiTeacherService],
   exports: [AiTeacherService, ContextBuilderModule, AiChatRepositoriesModule, AiTeacherGovernanceModule],
