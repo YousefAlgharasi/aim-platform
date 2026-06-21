@@ -15,6 +15,14 @@ import { SupportTicketController } from './support-ticket.controller';
 import { FeedbackController } from './feedback.controller';
 import { FeatureRequestController } from './feature-request.controller';
 import { ReleaseNotesController } from './release-notes.controller';
+import { OperationalStatusController } from './operational-status.controller';
+import { MaintenanceWindowController } from './maintenance-window.controller';
+import { AdminSupportController } from './admin-support.controller';
+import { AdminIncidentController } from './admin-incident.controller';
+import { AdminMaintenanceController } from './admin-maintenance.controller';
+import { AdminReleaseNotesController } from './admin-release-notes.controller';
+import { AdminFeatureFlagsController } from './admin-feature-flags.controller';
+import { AdminOperationsDashboardController } from './admin-operations-dashboard.controller';
 
 @Module({
   imports: [DatabaseModule],
@@ -35,6 +43,14 @@ import { ReleaseNotesController } from './release-notes.controller';
     FeedbackController,
     FeatureRequestController,
     ReleaseNotesController,
+    OperationalStatusController,
+    MaintenanceWindowController,
+    AdminSupportController,
+    AdminIncidentController,
+    AdminMaintenanceController,
+    AdminReleaseNotesController,
+    AdminFeatureFlagsController,
+    AdminOperationsDashboardController,
   ],
   exports: [
     OperationsRepository,
