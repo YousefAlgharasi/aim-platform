@@ -14,6 +14,7 @@ import { AiTeacherStreamMessageModule } from './streaming-api/ai-teacher-stream-
 import { AiTeacherSafetyStatusModule } from './safety-status/ai-teacher-safety-status.module';
 import { AdminPromptModule } from './admin-prompts/admin-prompt.module';
 import { AdminModelConfigModule } from './admin-model-configs/admin-model-config.module';
+import { AdminUsageCostModule } from './admin-usage-cost/admin-usage-cost.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { AdminModelConfigModule } from './admin-model-configs/admin-model-config
     AiTeacherSafetyStatusModule,
     AdminPromptModule,
     AdminModelConfigModule,
+    AdminUsageCostModule,
   ],
   providers: [AiTeacherService],
   exports: [AiTeacherService, ContextBuilderModule, AiChatRepositoriesModule, AiTeacherGovernanceModule],

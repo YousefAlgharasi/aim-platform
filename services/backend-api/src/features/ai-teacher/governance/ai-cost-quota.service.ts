@@ -52,6 +52,32 @@ export class AiCostQuotaService {
     return this.usageCostEventRepository.create(input);
   }
 
+  // ---------------------------------------------------------------------
+  // P18-050: Admin AI Usage and Cost API — read-only listing/limit-status
+  // for admins. Only an admin caller (enforced by the controller's role
+  // guard) may reach these.
+  // ---------------------------------------------------------------------
+
+  async listRecentUsage(limit: number): Promise<AiUsageCostEventRow[]> {
+    return this.usageCostEventRepository.listRecent(limit);
+  }
+
+  async listUsageForStudent(studentId: string, limit: number): Promise<AiUsageCostEventRow[]> {
+    return this.usageCostEventRepository.listByStudentId(studentId, limit);
+  }
+
+  async getLimitStatusForStudent(studentId: string): Promise<{
+    readonly studentId: string;
+    readonly daily: QuotaCheckResult;
+    readonly monthly: QuotaCheckResult;
+  }> {
+    const [daily, monthly] = await Promise.all([
+      this.checkQuota(studentId, 'daily', 0),
+      this.checkQuota(studentId, 'monthly', 0),
+    ]);
+    return { studentId, daily, monthly };
+  }
+
   private windowStartFor(quotaPeriod: 'daily' | 'monthly'): Date {
     const now = new Date();
     if (quotaPeriod === 'daily') {
