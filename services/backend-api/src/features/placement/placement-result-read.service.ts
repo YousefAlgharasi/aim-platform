@@ -98,6 +98,34 @@ export class PlacementResultReadService {
   constructor(private readonly db: DatabaseService) {}
 
   /**
+   * P8-032: Fetch the student-safe placement result for the student's most
+   * recently completed placement attempt, without requiring the caller to
+   * already know an attemptId. Used by the AI Teacher context builder
+   * (CurriculumSkillContextAdapter's sibling, PlacementResultContextAdapter)
+   * to surface the student's starting level without recalculating it.
+   *
+   * @param studentId  Internal student ID — never from client input.
+   * @returns          The same student-safe shape as getResult, or null when
+   *                    the student has no completed placement attempt yet.
+   */
+  async getLatestResultForStudent(studentId: string): Promise<PlacementResultResponse | null> {
+    const latestAttempt = await this.db.query<{ id: string }>(
+      `SELECT id
+       FROM placement_attempts
+       WHERE student_id = $1 AND status = 'completed'
+       ORDER BY completed_at DESC
+       LIMIT 1`,
+      [studentId],
+    );
+
+    if ((latestAttempt.rowCount ?? 0) === 0) {
+      return null;
+    }
+
+    return this.getResult(latestAttempt.rows[0].id, studentId);
+  }
+
+  /**
    * Fetch the student-safe placement result for a given attempt.
    *
    * @param attemptId  UUID of the placement_attempt (from URL path).

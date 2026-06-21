@@ -156,7 +156,7 @@ describe('AimResultController.getSkillStates (P5-069)', () => {
     const svc = {
       getSkillStatesForStudent: jest.fn().mockResolvedValue({ studentId: STUDENT_ID, skillStates: [] }),
     } as unknown as StudentSkillStateReadService;
-    const ctrl = new AimResultController(svc, {} as unknown as import('./review-schedule-read.service').ReviewScheduleReadService);
+    const ctrl = new AimResultController(svc, {} as unknown as import('./review-schedule-read.service').ReviewScheduleReadService, {} as unknown as import('./session-state-read.service').SessionStateReadService, {} as unknown as import('./weakness-records-read.service').WeaknessRecordsReadService, {} as unknown as import('./recommendation-read.service').RecommendationReadService);
 
     await ctrl.getSkillStates(STUDENT_ID);
 
@@ -169,7 +169,7 @@ describe('AimResultController.getSkillStates (P5-069)', () => {
       skillStates: [{ skillId: 'skill:arabic:p1:vocab', masteryScore: 0.75, masteryConfidence: 0.8, masteryTrend: 'improving', previousMasteryScore: null, lastAttemptId: 'att-001', lastEvaluatedAt: '2026-06-17T16:00:00Z', updatedAt: '2026-06-17T16:00:01Z' }],
     };
     const svc = { getSkillStatesForStudent: jest.fn().mockResolvedValue(response) } as unknown as StudentSkillStateReadService;
-    const ctrl = new AimResultController(svc, {} as unknown as import('./review-schedule-read.service').ReviewScheduleReadService);
+    const ctrl = new AimResultController(svc, {} as unknown as import('./review-schedule-read.service').ReviewScheduleReadService, {} as unknown as import('./session-state-read.service').SessionStateReadService, {} as unknown as import('./weakness-records-read.service').WeaknessRecordsReadService, {} as unknown as import('./recommendation-read.service').RecommendationReadService);
 
     const result = await ctrl.getSkillStates(STUDENT_ID);
 
@@ -178,7 +178,7 @@ describe('AimResultController.getSkillStates (P5-069)', () => {
 
   it('propagates service errors', async () => {
     const svc = { getSkillStatesForStudent: jest.fn().mockRejectedValue(new Error('db error')) } as unknown as StudentSkillStateReadService;
-    const ctrl = new AimResultController(svc, {} as unknown as import('./review-schedule-read.service').ReviewScheduleReadService);
+    const ctrl = new AimResultController(svc, {} as unknown as import('./review-schedule-read.service').ReviewScheduleReadService, {} as unknown as import('./session-state-read.service').SessionStateReadService, {} as unknown as import('./weakness-records-read.service').WeaknessRecordsReadService, {} as unknown as import('./recommendation-read.service').RecommendationReadService);
 
     await expect(ctrl.getSkillStates(STUDENT_ID)).rejects.toThrow('db error');
   });

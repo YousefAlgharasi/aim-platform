@@ -14,12 +14,14 @@ import {
   WorkflowEntityType,
 } from './content-status-workflow.types';
 import { PublishValidationService } from '../publish-validation/publish-validation.service';
+import { AnalyticsEventIngestionService } from '../../analytics/analytics-event-ingestion.service';
 
 @Injectable()
 export class ContentStatusWorkflowService {
   constructor(
     private readonly db: DatabaseService,
     private readonly publishValidationService: PublishValidationService,
+    private readonly analyticsEventIngestionService: AnalyticsEventIngestionService,
   ) {}
 
   async publish(entityType: WorkflowEntityType, entityId: string): Promise<StatusTransitionResult> {
@@ -72,6 +74,18 @@ export class ContentStatusWorkflowService {
          RETURNING id, status, updated_at`,
       [targetStatus, entityId],
     );
+
+    await this.analyticsEventIngestionService.ingest({
+      eventType: 'curriculum.content_status_changed',
+      actorRole: 'admin',
+      subjectType: entityType,
+      subjectId: entityId,
+      metadata: {
+        entity_type: entityType,
+        previous_status: current.status,
+        current_status: updated.rows[0].status,
+      },
+    });
 
     return {
       id: entityId,

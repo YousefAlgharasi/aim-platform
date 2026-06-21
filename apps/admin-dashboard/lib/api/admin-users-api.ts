@@ -60,17 +60,37 @@ export type AdminUserDetail = {
   readonly updatedAt: string;
 };
 
+export type FetchAdminUsersOptions = {
+  readonly token: string;
+  readonly page: number;
+  readonly limit: number;
+  readonly status?: AdminUserStatus;
+  readonly userType?: AdminUserType;
+  readonly email?: string;
+};
+
 export async function fetchAdminUsers(
-  token: string,
-  page: number,
-  limit: number,
+  tokenOrOptions: string | FetchAdminUsersOptions,
+  page?: number,
+  limit?: number,
 ): Promise<AdminUserListData> {
+  const opts: FetchAdminUsersOptions =
+    typeof tokenOrOptions === 'string'
+      ? { token: tokenOrOptions, page: page ?? 1, limit: limit ?? 20 }
+      : tokenOrOptions;
+
   const envelope = await adminApiClient.get<AdminUserListData>(
     '/admin/users',
     decodeAdminUserListData,
     {
-      headers: { authorization: `Bearer ${token}` },
-      query: { page, limit },
+      headers: { authorization: `Bearer ${opts.token}` },
+      query: {
+        page: opts.page,
+        limit: opts.limit,
+        ...(opts.status ? { status: opts.status } : {}),
+        ...(opts.userType ? { userType: opts.userType } : {}),
+        ...(opts.email ? { email: opts.email } : {}),
+      },
     },
   );
 
@@ -233,6 +253,49 @@ export async function changeAdminUserRole(
   );
 
   return envelope.data;
+}
+
+// ---------------------------------------------------------------------------
+// Status update (P11-017)
+// ---------------------------------------------------------------------------
+
+export type AdminUserStatusUpdateResult = {
+  readonly id: string;
+  readonly email: string | null;
+  readonly userType: AdminUserType;
+  readonly status: AdminUserStatus;
+  readonly updatedAt: string;
+};
+
+export async function updateAdminUserStatus(
+  token: string,
+  userId: string,
+  status: 'active' | 'disabled',
+): Promise<AdminUserStatusUpdateResult> {
+  const envelope = await adminApiClient.patch<AdminUserStatusUpdateResult>(
+    `/admin/users/${encodeURIComponent(userId)}/status`,
+    decodeUserStatusUpdateResult,
+    {
+      headers: { authorization: `Bearer ${token}` },
+      body: { status },
+    },
+  );
+
+  return envelope.data;
+}
+
+function decodeUserStatusUpdateResult(value: unknown): AdminUserStatusUpdateResult {
+  if (!isObject(value) || typeof value.id !== 'string') {
+    throw new Error('Invalid status update response.');
+  }
+
+  return {
+    id: value.id,
+    email: typeof value.email === 'string' ? value.email : null,
+    userType: isAdminUserType(value.userType) ? value.userType : 'student',
+    status: isAdminUserStatus(value.status) ? value.status : 'active',
+    updatedAt: typeof value.updatedAt === 'string' ? value.updatedAt : '',
+  };
 }
 
 function decodeRoleChangeResult(value: unknown): AdminRoleChangeResult {
