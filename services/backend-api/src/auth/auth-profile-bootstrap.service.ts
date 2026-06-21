@@ -24,6 +24,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { UsersService } from '../features/users/users.service';
 import { AuthLoggingService } from './auth-logging.service';
+import { AnalyticsEventIngestionService } from '../features/analytics/analytics-event-ingestion.service';
 import {
   BootstrapProfileInput,
   BootstrapProfileResult,
@@ -49,6 +50,7 @@ export class AuthProfileBootstrapService {
     private readonly db: DatabaseService,
     private readonly users: UsersService,
     private readonly authLogging: AuthLoggingService,
+    private readonly analyticsEventIngestionService: AnalyticsEventIngestionService,
   ) {}
 
   /**
@@ -75,7 +77,25 @@ export class AuthProfileBootstrapService {
         supabaseAuthUid: user.supabaseAuthUid,
         metadata: { userType: user.userType },
       });
+
+      await this.analyticsEventIngestionService.ingest({
+        eventType: 'user.registered',
+        actorRole: 'system',
+        actorId: user.id,
+        subjectType: 'user',
+        subjectId: user.id,
+        metadata: { role: user.userType },
+      });
     }
+
+    await this.analyticsEventIngestionService.ingest({
+      eventType: 'user.login',
+      actorRole: 'system',
+      actorId: user.id,
+      subjectType: 'user',
+      subjectId: user.id,
+      metadata: { role: user.userType },
+    });
 
     // 3. Ensure the correct profile row exists, keyed on user_type from the database.
     let profileCreated = false;

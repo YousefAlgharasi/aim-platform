@@ -51,6 +51,11 @@ const makeLoggingMock = () => ({
   log: jest.fn().mockResolvedValue(undefined),
 });
 
+// Build a mock AnalyticsEventIngestionService.
+const makeAnalyticsMock = () => ({
+  ingest: jest.fn().mockResolvedValue(undefined),
+});
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -62,11 +67,13 @@ describe('AuthProfileBootstrapService', () => {
       const usersMock = makeUsersMock(null, userRecord);   // null → first login
       const dbMock = makeDbMock([{ id: 'sp-uuid', user_id: userRecord.id }]);
       const loggingMock = makeLoggingMock();
+      const analyticsMock = makeAnalyticsMock();
 
       const service = new AuthProfileBootstrapService(
         dbMock as never,
         usersMock as never,
         loggingMock as never,
+        analyticsMock as never,
       );
 
       const result = await service.bootstrap({
@@ -87,11 +94,13 @@ describe('AuthProfileBootstrapService', () => {
       const usersMock = makeUsersMock(null, userRecord);
       const dbMock = makeDbMock();
       const loggingMock = makeLoggingMock();
+      const analyticsMock = makeAnalyticsMock();
 
       const service = new AuthProfileBootstrapService(
         dbMock as never,
         usersMock as never,
         loggingMock as never,
+        analyticsMock as never,
       );
 
       await service.bootstrap({ supabaseAuthUid: 'supa-uid-abc', email: null });
@@ -108,11 +117,13 @@ describe('AuthProfileBootstrapService', () => {
       const usersMock = makeUsersMock(null, userRecord);
       const dbMock = makeDbMock();
       const loggingMock = makeLoggingMock();
+      const analyticsMock = makeAnalyticsMock();
 
       const service = new AuthProfileBootstrapService(
         dbMock as never,
         usersMock as never,
         loggingMock as never,
+        analyticsMock as never,
       );
 
       const uid = 'verified-jwt-uid';
@@ -130,11 +141,13 @@ describe('AuthProfileBootstrapService', () => {
       const usersMock = makeUsersMock(userRecord, userRecord);   // existing user
       const dbMock = makeDbMock([]);   // ON CONFLICT DO NOTHING — no rows returned
       const loggingMock = makeLoggingMock();
+      const analyticsMock = makeAnalyticsMock();
 
       const service = new AuthProfileBootstrapService(
         dbMock as never,
         usersMock as never,
         loggingMock as never,
+        analyticsMock as never,
       );
 
       const result = await service.bootstrap({
@@ -152,11 +165,13 @@ describe('AuthProfileBootstrapService', () => {
       const usersMock = makeUsersMock(userRecord, userRecord);
       const dbMock = makeDbMock([]);
       const loggingMock = makeLoggingMock();
+      const analyticsMock = makeAnalyticsMock();
 
       const service = new AuthProfileBootstrapService(
         dbMock as never,
         usersMock as never,
         loggingMock as never,
+        analyticsMock as never,
       );
 
       await service.bootstrap({ supabaseAuthUid: 'supa-uid-abc', email: null });
@@ -171,11 +186,13 @@ describe('AuthProfileBootstrapService', () => {
       const usersMock = makeUsersMock(null, adminRecord);
       const dbMock = makeDbMock([{ id: 'ap-uuid', user_id: adminRecord.id }]);
       const loggingMock = makeLoggingMock();
+      const analyticsMock = makeAnalyticsMock();
 
       const service = new AuthProfileBootstrapService(
         dbMock as never,
         usersMock as never,
         loggingMock as never,
+        analyticsMock as never,
       );
 
       const result = await service.bootstrap({
@@ -192,11 +209,13 @@ describe('AuthProfileBootstrapService', () => {
       const usersMock = makeUsersMock(adminRecord, adminRecord);
       const dbMock = makeDbMock([]);   // ON CONFLICT DO NOTHING
       const loggingMock = makeLoggingMock();
+      const analyticsMock = makeAnalyticsMock();
 
       const service = new AuthProfileBootstrapService(
         dbMock as never,
         usersMock as never,
         loggingMock as never,
+        analyticsMock as never,
       );
 
       const result = await service.bootstrap({
@@ -217,11 +236,13 @@ describe('AuthProfileBootstrapService', () => {
         const usersMock = makeUsersMock(null, record);
         const dbMock = makeDbMock();
         const loggingMock = makeLoggingMock();
+      const analyticsMock = makeAnalyticsMock();
 
         const service = new AuthProfileBootstrapService(
           dbMock as never,
           usersMock as never,
           loggingMock as never,
+          analyticsMock as never,
         );
 
         const result = await service.bootstrap({
