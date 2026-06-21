@@ -1,0 +1,24 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Semantic · Status" subtitle="Success · Warning · Error · Info — solid + soft" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; font-family: var(--font-en); background: var(--surface); padding: 16px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .item { border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+  .solid { height: 40px; display: flex; align-items: center; padding: 0 12px; color: #fff; font: var(--type-caption); font-weight: 700; }
+  .soft { height: 28px; display: flex; align-items: center; padding: 0 12px; font: var(--type-helper); font-weight: 600; }
+  .lbl { font: var(--type-helper); color: var(--text-muted); font-family: var(--font-mono); padding: 5px 12px 7px; }
+</style>
+</head>
+<body>
+  <div class="grid">
+    <div class="item"><div class="solid" style="background:var(--color-success-500)">Success</div><div class="soft" style="background:var(--success-soft);color:var(--success-soft-fg)">soft</div><div class="lbl">success.500</div></div>
+    <div class="item"><div class="solid" style="background:var(--color-warning-500)">Warning</div><div class="soft" style="background:var(--warning-soft);color:var(--warning-soft-fg)">soft</div><div class="lbl">warning.500</div></div>
+    <div class="item"><div class="solid" style="background:var(--color-error-500)">Error</div><div class="soft" style="background:var(--error-soft);color:var(--error-soft-fg)">soft</div><div class="lbl">error.500</div></div>
+    <div class="item"><div class="solid" style="background:var(--color-info-500)">Info</div><div class="soft" style="background:var(--info-soft);color:var(--info-soft-fg)">soft</div><div class="lbl">info.500</div></div>
+  </div>
+</body>
+</html>

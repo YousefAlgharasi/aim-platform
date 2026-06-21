@@ -6,12 +6,16 @@ const mockDb = { query: mockQuery } as any;
 const mockPublishValidation = {
   validateReadyForPublish: jest.fn(),
 } as any;
+const mockAnalyticsEventIngestion = {
+  ingest: jest.fn().mockResolvedValue(undefined),
+} as any;
 
-const service = new ContentStatusWorkflowService(mockDb, mockPublishValidation);
+const service = new ContentStatusWorkflowService(mockDb, mockPublishValidation, mockAnalyticsEventIngestion);
 
 beforeEach(() => {
   mockQuery.mockReset();
   mockPublishValidation.validateReadyForPublish.mockReset();
+  mockAnalyticsEventIngestion.ingest.mockClear();
 });
 
 function makeStatusRow(status: string) {

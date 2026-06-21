@@ -1,0 +1,29 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Primary · AIM Blue" subtitle="Trust & focus — color.primary.50–900" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; font-family: var(--font-en); background: var(--surface); padding: 16px; }
+  .row { display: flex; gap: 6px; }
+  .sw { flex: 1; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); }
+  .chip { height: 56px; }
+  .meta { padding: 6px 8px; }
+  .step { font: var(--type-caption); color: var(--text-primary); font-weight: 600; }
+  .hex { font: var(--type-helper); font-family: var(--font-mono); color: var(--text-muted); display: block; margin-top: 2px; }
+</style>
+</head>
+<body>
+  <div class="row" id="row"></div>
+  <script>
+    const steps = [50,100,200,300,400,500,600,700,800,900];
+    document.getElementById('row').innerHTML = steps.map(s => {
+      const dark = s >= 400;
+      return `<div class="sw"><div class="chip" style="background:var(--color-primary-${s})"></div>
+        <div class="meta"><span class="step">${s}</span>
+        <span class="hex">${getComputedStyle(document.documentElement).getPropertyValue('--color-primary-'+s).trim()}</span></div></div>`;
+    }).join('');
+  </script>
+</body>
+</html>

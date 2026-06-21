@@ -1,0 +1,77 @@
+<!-- @dsCard group="Components" viewport="700x560" name="Form Controls" subtitle="Input · Select · Textarea · Checkbox · Radio · Switch · OTP" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  body { margin: 0; font-family: var(--font-en); background: var(--background); padding: 24px; color: var(--text-primary); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 28px; }
+  .sec { font: var(--type-label); text-transform: uppercase; color: var(--text-muted); margin: 4px 0 12px; letter-spacing: .04em; }
+  .stack { display: flex; flex-direction: column; gap: 14px; }
+  .row { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="../../_ds_bundle.js"></script>
+  <script type="text/babel">
+    const { Input, Select, Textarea, Checkbox, Radio, Switch, OTPInput } = window.AIMDesignSystem_e594fb;
+    const Search = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>;
+
+    function Demo() {
+      const [pw, setPw] = React.useState('secret12');
+      const [q, setQ] = React.useState('');
+      const [ta, setTa] = React.useState('Great progress today!');
+      const [otp, setOtp] = React.useState('27');
+      const [agree, setAgree] = React.useState(true);
+      const [plan, setPlan] = React.useState('yearly');
+      const [push, setPush] = React.useState(true);
+      return (
+        <div className="grid">
+          <div>
+            <div className="sec">Text inputs</div>
+            <div className="stack">
+              <Input label="Full name" placeholder="Sara Al-Hassan" />
+              <Input label="Password" type="password" value={pw} onChange={e=>setPw(e.target.value)} helper="At least 8 characters" />
+              <Input label="Search" type="search" leftIcon={<Search/>} value={q} onChange={e=>setQ(e.target.value)} placeholder="Search lessons" />
+              <Input label="Email" error="Enter a valid email address" defaultValue="sara@" required />
+            </div>
+          </div>
+          <div>
+            <div className="sec">Select · Textarea</div>
+            <div className="stack">
+              <Select label="Level" placeholder="Choose a level" options={['Beginner','Intermediate','Advanced']} defaultValue="Intermediate" />
+              <Textarea label="Notes for your tutor" value={ta} onChange={e=>setTa(e.target.value)} maxLength={120} />
+              <Input label="Disabled" value="Locked field" disabled />
+            </div>
+          </div>
+          <div>
+            <div className="sec">Choice controls</div>
+            <div className="stack">
+              <Checkbox label="I agree to the terms" checked={agree} onChange={e=>setAgree(e.target.checked)} />
+              <Checkbox label="Select all (mixed)" indeterminate />
+              <div className="row">
+                <Radio name="plan" value="monthly" label="Monthly" checked={plan==='monthly'} onChange={()=>setPlan('monthly')} />
+                <Radio name="plan" value="yearly" label="Yearly" checked={plan==='yearly'} onChange={()=>setPlan('yearly')} />
+              </div>
+              <Switch label="Daily reminders" checked={push} onChange={e=>setPush(e.target.checked)} />
+            </div>
+          </div>
+          <div>
+            <div className="sec">OTP · RTL</div>
+            <div className="stack">
+              <OTPInput length={4} value={otp} onChange={setOtp} />
+              <div dir="rtl"><Input label="الاسم الكامل" placeholder="أدخل اسمك" helper="كما يظهر في الشهادة" /></div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<Demo/>);
+  </script>
+</body>
+</html>

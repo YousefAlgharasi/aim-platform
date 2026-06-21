@@ -1,0 +1,30 @@
+<!-- @dsCard group="Colors" viewport="700x170" name="Surface & Text" subtitle="Semantic aliases — light & dark mode" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; font-family: var(--font-en); padding: 16px; background: var(--color-neutral-100); }
+  .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .mode { border-radius: var(--radius-md); padding: 14px; background: var(--background); border: 1px solid var(--border); }
+  .mode h4 { margin: 0 0 10px; font: var(--type-label); color: var(--text-muted); text-transform: uppercase; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; box-shadow: var(--shadow-card); }
+  .pri { font: var(--type-title); color: var(--text-primary); margin: 0; }
+  .sec { font: var(--type-body-sm); color: var(--text-secondary); margin: 4px 0 0; }
+  .mut { font: var(--type-helper); color: var(--text-muted); margin: 2px 0 0; }
+</style>
+</head>
+<body>
+  <div class="modes">
+    <div class="mode">
+      <h4>Light</h4>
+      <div class="card"><p class="pri">Text primary</p><p class="sec">Text secondary supports the heading.</p><p class="mut">Muted helper / metadata</p></div>
+    </div>
+    <div class="mode" data-theme="dark">
+      <h4>Dark</h4>
+      <div class="card"><p class="pri">Text primary</p><p class="sec">Text secondary supports the heading.</p><p class="mut">Muted helper / metadata</p></div>
+    </div>
+  </div>
+</body>
+</html>
