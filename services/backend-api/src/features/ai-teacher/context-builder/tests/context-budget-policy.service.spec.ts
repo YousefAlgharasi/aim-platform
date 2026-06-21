@@ -1,5 +1,9 @@
 // P8-038: Add Context Token Budget Policy
 // ContextBudgetPolicyService tests.
+//
+// P18-031: Updated for the AI Authority Rule — placementResult, skillState,
+// weakness, recommendation, reviewSchedule, and recentMistakes were removed
+// from AiTeacherContextSnapshot.
 
 import { ContextBudgetPolicyService } from '../context-budget-policy.service';
 import { AiTeacherContextSnapshot } from '../context-builder.types';
@@ -13,12 +17,6 @@ function makeSnapshot(
     studentProfile: null,
     currentLesson: null,
     curriculumSkill: null,
-    placementResult: null,
-    skillState: null,
-    weakness: null,
-    recommendation: null,
-    reviewSchedule: null,
-    recentMistakes: [],
     ...overrides,
   };
 }
@@ -40,48 +38,20 @@ describe('ContextBudgetPolicyService', () => {
 
   it('drops lowest-priority non-truncatable fields first when budget is exceeded', () => {
     const policy = new ContextBudgetPolicyService();
-    const oversizedPlacementResult = { dump: 'x'.repeat(10000) };
+    const oversizedCurriculumSkill = { dump: 'x'.repeat(10000) };
     const snapshot = makeSnapshot({
       currentLesson: { lessonId: 'lesson-1' },
-      placementResult: oversizedPlacementResult,
+      curriculumSkill: oversizedCurriculumSkill,
     });
 
     const result = policy.applyBudget(snapshot);
 
     expect(result.snapshot.currentLesson).toEqual({ lessonId: 'lesson-1' });
-    const placementUsage = result.fieldUsage.find((usage) => usage.field === 'placementResult');
-    expect(placementUsage?.dropped).toBe(true);
-    expect(result.snapshot.placementResult).toBeNull();
-  });
-
-  it('truncates recentMistakes array when it exceeds its field budget', () => {
-    const policy = new ContextBudgetPolicyService();
-    const recentMistakes = Array.from({ length: 50 }, (_, index) => ({
-      questionId: `q-${index}`,
-      detail: 'x'.repeat(50),
-    }));
-    const snapshot = makeSnapshot({ recentMistakes });
-
-    const result = policy.applyBudget(snapshot);
-
-    const usage = result.fieldUsage.find((entry) => entry.field === 'recentMistakes');
-    expect(usage?.truncated).toBe(true);
-    expect((result.snapshot.recentMistakes as unknown[]).length).toBeLessThan(
-      recentMistakes.length,
+    const curriculumSkillUsage = result.fieldUsage.find(
+      (usage) => usage.field === 'curriculumSkill',
     );
-  });
-
-  it('never marks AIM Engine authoritative fields as truncated', () => {
-    const policy = new ContextBudgetPolicyService();
-    const snapshot = makeSnapshot({
-      skillState: { skillId: 'skill-1', state: 'x'.repeat(5000) },
-      weakness: { records: [{ skillId: 'skill-1', severity: 'high' }] },
-    });
-
-    const result = policy.applyBudget(snapshot);
-
-    const skillStateUsage = result.fieldUsage.find((usage) => usage.field === 'skillState');
-    expect(skillStateUsage?.truncated).toBe(false);
+    expect(curriculumSkillUsage?.dropped).toBe(true);
+    expect(result.snapshot.curriculumSkill).toBeNull();
   });
 
   it('never exceeds the configured total token budget', () => {
@@ -89,13 +59,7 @@ describe('ContextBudgetPolicyService', () => {
     const snapshot = makeSnapshot({
       currentLesson: { dump: 'x'.repeat(20000) },
       studentProfile: { dump: 'x'.repeat(20000) },
-      skillState: { dump: 'x'.repeat(20000) },
-      weakness: { dump: 'x'.repeat(20000) },
       curriculumSkill: { dump: 'x'.repeat(20000) },
-      recentMistakes: Array.from({ length: 200 }, (_, i) => ({ id: i, dump: 'x'.repeat(50) })),
-      recommendation: { dump: 'x'.repeat(20000) },
-      reviewSchedule: { dump: 'x'.repeat(20000) },
-      placementResult: { dump: 'x'.repeat(20000) },
     });
 
     const result = policy.applyBudget(snapshot);

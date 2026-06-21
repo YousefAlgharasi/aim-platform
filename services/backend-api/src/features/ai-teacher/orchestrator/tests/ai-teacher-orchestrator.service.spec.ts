@@ -21,12 +21,6 @@ function makeContext(): AiTeacherContextSnapshot {
     studentProfile: { name: 'Test' },
     currentLesson: null,
     curriculumSkill: null,
-    placementResult: null,
-    skillState: null,
-    weakness: null,
-    recommendation: null,
-    reviewSchedule: null,
-    recentMistakes: [],
   };
 }
 

@@ -17,14 +17,11 @@ export const AI_TEACHER_PROMPT_SYSTEM_INSTRUCTIONS = [
   'Keep responses short, encouraging, and appropriate for an A1 learner.',
 ].join(' ');
 
+// P18-031: Removed skillState/weakness/recentMistakes/recommendation/
+// reviewSchedule/placementResult — those keys no longer exist on
+// AiTeacherContextSnapshot per the AI Authority Rule.
 export const AI_TEACHER_PROMPT_SECTION_ORDER = [
   'studentProfile',
   'currentLesson',
   'curriculumSkill',
-  'skillState',
-  'weakness',
-  'recentMistakes',
-  'recommendation',
-  'reviewSchedule',
-  'placementResult',
 ] as const;

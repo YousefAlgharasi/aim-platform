@@ -1,5 +1,8 @@
 // P8-046: Create Hint Generation Prompt Template
 // buildHintGenerationPromptSections tests.
+//
+// P18-031: Updated for the AI Authority Rule — skillState was removed from
+// AiTeacherContextSnapshot.
 
 import {
   buildHintGenerationPromptSections,
@@ -16,12 +19,6 @@ function makeSnapshot(
     studentProfile: null,
     currentLesson: null,
     curriculumSkill: null,
-    placementResult: null,
-    skillState: null,
-    weakness: null,
-    recommendation: null,
-    reviewSchedule: null,
-    recentMistakes: [],
     ...overrides,
   };
 }
@@ -35,12 +32,11 @@ describe('buildHintGenerationPromptSections', () => {
     });
   });
 
-  it('includes currentLesson, curriculumSkill, and skillState sections when present, in order', () => {
+  it('includes currentLesson and curriculumSkill sections when present, in order', () => {
     const sections = buildHintGenerationPromptSections(
       makeSnapshot({
         currentLesson: { lessonId: 'lesson-1' },
         curriculumSkill: { skillId: 'skill-1' },
-        skillState: { skillId: 'skill-1', state: 'learning' },
       }),
     );
 
@@ -48,7 +44,6 @@ describe('buildHintGenerationPromptSections', () => {
       'templateInstructions',
       'currentLesson',
       'curriculumSkill',
-      'skillState',
     ]);
   });
 
@@ -64,7 +59,7 @@ describe('buildHintGenerationPromptSections', () => {
 
   it('never references mastery, level, or difficulty values', () => {
     const sections = buildHintGenerationPromptSections(
-      makeSnapshot({ skillState: { skillId: 'skill-1' } }),
+      makeSnapshot({ curriculumSkill: { skillId: 'skill-1' } }),
     );
     const serialized = JSON.stringify(sections);
     expect(serialized).not.toMatch(/"mastery":\s*\d/);

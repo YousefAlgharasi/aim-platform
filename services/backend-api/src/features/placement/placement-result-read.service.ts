@@ -100,9 +100,12 @@ export class PlacementResultReadService {
   /**
    * P8-032: Fetch the student-safe placement result for the student's most
    * recently completed placement attempt, without requiring the caller to
-   * already know an attemptId. Used by the AI Teacher context builder
-   * (CurriculumSkillContextAdapter's sibling, PlacementResultContextAdapter)
-   * to surface the student's starting level without recalculating it.
+   * already know an attemptId.
+   *
+   * P18-031: No longer consumed by the AI Teacher context builder — the
+   * Phase 18 AI Authority Rule forbids AI Teacher from reading placement
+   * results. This method remains for other student-safe callers (e.g.
+   * the placement results API).
    *
    * @param studentId  Internal student ID — never from client input.
    * @returns          The same student-safe shape as getResult, or null when

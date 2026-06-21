@@ -1,44 +1,29 @@
+// P18-031: Removed PlacementModule import and the placement result, skill
+// state, weakness, recommendation, review schedule, and recent mistakes
+// adapters from this module's providers/exports. The Phase 18 AI Authority
+// Rule forbids AI Teacher from reading those values.
+
 import { Module } from '@nestjs/common';
 
 import { StudentsModule } from '../../students/students.module';
 import { AimModule } from '../../aim/aim.module';
 import { LessonsModule } from '../../curriculum/lessons/lessons.module';
 import { SkillsModule } from '../../curriculum/skills/skills.module';
-import { PlacementModule } from '../../placement/placement.module';
 import { AiChatRepositoriesModule } from '../repositories/ai-chat-repositories.module';
 import { StudentProfileContextAdapter } from './adapters/student-profile-context.adapter';
 import { CurrentLessonContextAdapter } from './adapters/current-lesson-context.adapter';
 import { CurriculumSkillContextAdapter } from './adapters/curriculum-skill-context.adapter';
-import { PlacementResultContextAdapter } from './adapters/placement-result-context.adapter';
-import { SkillStateContextAdapter } from './adapters/skill-state-context.adapter';
-import { WeaknessContextAdapter } from './adapters/weakness-context.adapter';
-import { RecommendationContextAdapter } from './adapters/recommendation-context.adapter';
-import { ReviewScheduleContextAdapter } from './adapters/review-schedule-context.adapter';
-import { RecentMistakesContextAdapter } from './adapters/recent-mistakes-context.adapter';
 import { ContextBuilderService } from './context-builder.service';
 import { ContextBudgetPolicyService } from './context-budget-policy.service';
 
 @Module({
-  imports: [
-    StudentsModule,
-    AimModule,
-    LessonsModule,
-    SkillsModule,
-    PlacementModule,
-    AiChatRepositoriesModule,
-  ],
+  imports: [StudentsModule, AimModule, LessonsModule, SkillsModule, AiChatRepositoriesModule],
   providers: [
     ContextBuilderService,
     ContextBudgetPolicyService,
     StudentProfileContextAdapter,
     CurrentLessonContextAdapter,
     CurriculumSkillContextAdapter,
-    PlacementResultContextAdapter,
-    SkillStateContextAdapter,
-    WeaknessContextAdapter,
-    RecommendationContextAdapter,
-    ReviewScheduleContextAdapter,
-    RecentMistakesContextAdapter,
   ],
   exports: [
     ContextBuilderService,
@@ -46,12 +31,6 @@ import { ContextBudgetPolicyService } from './context-budget-policy.service';
     StudentProfileContextAdapter,
     CurrentLessonContextAdapter,
     CurriculumSkillContextAdapter,
-    PlacementResultContextAdapter,
-    SkillStateContextAdapter,
-    WeaknessContextAdapter,
-    RecommendationContextAdapter,
-    ReviewScheduleContextAdapter,
-    RecentMistakesContextAdapter,
   ],
 })
 export class ContextBuilderModule {}

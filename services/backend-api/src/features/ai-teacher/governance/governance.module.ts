@@ -9,8 +9,10 @@ import { DatabaseModule } from '../../../database/database.module';
 import { AiModelConfigRepository } from './ai-model-config.repository';
 import { AiPromptTemplateRepository } from './ai-prompt-template.repository';
 import { AiTeacherAuditLogRepository } from './ai-teacher-audit-log.repository';
+import { AiTeacherAuditService } from './ai-teacher-audit.service';
 import { AiTeacherSafetyCheckRepository } from './ai-teacher-safety-check.repository';
 import { AiTeacherSafetyService } from './ai-teacher-safety.service';
+import { AiTeacherStreamingService } from './ai-teacher-streaming.service';
 import { AiTeacherProviderGateway } from './ai-teacher-provider.interface';
 import { AiTeacherProviderUnavailableStub } from './ai-teacher-provider-unavailable.stub';
 import { AiUsageCostEventRepository } from './ai-usage-cost-event.repository';
@@ -30,6 +32,8 @@ import { PromptTemplateService } from './prompt-template.service';
     ModelConfigService,
     AiTeacherSafetyService,
     AiCostQuotaService,
+    AiTeacherAuditService,
+    AiTeacherStreamingService,
     { provide: AiTeacherProviderGateway, useClass: AiTeacherProviderUnavailableStub },
   ],
   exports: [
@@ -42,6 +46,8 @@ import { PromptTemplateService } from './prompt-template.service';
     ModelConfigService,
     AiTeacherSafetyService,
     AiCostQuotaService,
+    AiTeacherAuditService,
+    AiTeacherStreamingService,
   ],
 })
 export class AiTeacherGovernanceModule {}
