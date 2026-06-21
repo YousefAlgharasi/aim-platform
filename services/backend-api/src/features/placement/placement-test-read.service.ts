@@ -69,23 +69,23 @@ export class PlacementTestReadService {
    *
    * @returns Student-safe placement test metadata.
    */
-  async getActivePlacementTest(): Promise<PlacementTestActiveResponse> {
-    const rows = await this.db.query<PlacementTestPublishedRow>(
+  async getActiveTest(): Promise<PlacementTestActiveResponse> {
+    const result = await this.db.query<PlacementTestPublishedRow>(
       `SELECT id, title, status, total_sections, estimated_minutes
          FROM placement_tests
         WHERE status = 'published'
         LIMIT 1`,
     );
 
-    if (rows.length === 0) {
-      throw new AppError(
-        'No published placement test found.',
-        HttpStatus.NOT_FOUND,
-        ApiErrorCode.NOT_FOUND,
-      );
+    if ((result.rowCount ?? 0) === 0) {
+      throw new AppError({
+        code: ApiErrorCode.NOT_FOUND,
+        message: 'No published placement test found.',
+        statusCode: HttpStatus.NOT_FOUND,
+      });
     }
 
-    const row = rows[0];
+    const row = result.rows[0];
 
     return {
       id: row.id,

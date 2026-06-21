@@ -2,21 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/routing/routing.dart';
+import '../../../../core/theme/theme.dart';
+import '../../../../core/widgets/widgets.dart';
 import '../../logic/provider/auth_flow_provider.dart';
 import '../../logic/provider/login_provider.dart';
 
-/// Login screen — Phase 2: Auth, Users, Roles.
+/// Login screen — Student Mobile App MVP.
 ///
-/// Allows an authenticated user to sign in through the mobile app flow.
+/// Flow:
+/// 1. Student enters email + password.
+/// 2. [LoginNotifier] validates locally, then calls Supabase Auth.
+/// 3. On success the bearer token is synced with the backend and
+///    [authFlowProvider] transitions to signedIn.
+/// 4. [ref.listen] on [authFlowProvider] navigates to [AppRoutePaths.mainShell].
 ///
-/// - Calls Supabase Auth for the bearer token.
-/// - Syncs and loads the current user from the backend via [AuthContextNotifier].
-/// - Transitions the global [authFlowProvider] to signedIn on success.
+/// Design system: all colours, typography, spacing, and interactive widgets
+/// use AIM Mobile Design System tokens.  No hard-coded values.
 ///
-/// Security rules:
-/// - No service-role keys, JWT secrets, or backend credentials appear here.
-/// - Role and permission checks are backend-enforced; this UI is UX only.
-/// - The form never decides authorization.
+/// RTL/Arabic: no [TextDirection] is hard-coded.  [ListView] and all children
+/// respect the ambient locale direction.  Icons are direction-neutral.
+///
+/// Security:
+/// - No service-role keys, JWT secrets, or backend credentials here.
+/// - Role and permission checks are backend-enforced.
+/// - The form never decides authorisation.
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
@@ -29,7 +38,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _passwordController = TextEditingController();
   final _emailFocus = FocusNode();
   final _passwordFocus = FocusNode();
-  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -40,17 +48,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     super.dispose();
   }
 
-  void _onEmailChanged(String value) {
-    ref.read(loginProvider.notifier).setEmail(value);
-  }
+  void _onEmailChanged(String value) =>
+      ref.read(loginProvider.notifier).setEmail(value);
 
-  void _onPasswordChanged(String value) {
-    ref.read(loginProvider.notifier).setPassword(value);
-  }
-
-  void _togglePasswordVisibility() {
-    setState(() => _obscurePassword = !_obscurePassword);
-  }
+  void _onPasswordChanged(String value) =>
+      ref.read(loginProvider.notifier).setPassword(value);
 
   Future<void> _submit() async {
     _emailFocus.unfocus();
@@ -61,9 +63,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final formState = ref.watch(loginProvider);
-    final authFlow = ref.watch(authFlowProvider);
+    final surfaces = aimSurfacesOf(context);
 
-    // Navigate away once signedIn.
+    // Navigate to main shell once sign-in succeeds.
     ref.listen(authFlowProvider, (_, next) {
       if (next.isSignedIn && mounted) {
         Navigator.of(context).pushNamedAndRemoveUntil(
@@ -74,181 +76,122 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     });
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sign In'),
-        centerTitle: true,
-      ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          children: [
-            const _AimLogo(),
-            const SizedBox(height: 32),
-            const _SectionLabel('Sign in to AIM'),
-            const SizedBox(height: 24),
-
-            // Email field
-            TextField(
-              controller: _emailController,
-              focusNode: _emailFocus,
-              keyboardType: TextInputType.emailAddress,
-              textInputAction: TextInputAction.next,
-              autocorrect: false,
-              onChanged: _onEmailChanged,
-              onSubmitted: (_) => _passwordFocus.requestFocus(),
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                hintText: 'you@example.com',
-                prefixIcon: Icon(Icons.email_outlined),
-                border: OutlineInputBorder(),
-              ),
+        child: AutofillGroup(
+          child: ListView(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AimSpacing.screenPaddingMobile,
+              vertical: AimSpacing.space32,
             ),
-            const SizedBox(height: 16),
+            children: [
+              // ── Branding ──────────────────────────────────────────────
+              const _AimLogo(),
+              const SizedBox(height: AimSpacing.space32),
+              Text(
+                'Sign in to AIM',
+                style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AimSpacing.sectionGap),
 
-            // Password field
-            TextField(
-              controller: _passwordController,
-              focusNode: _passwordFocus,
-              obscureText: _obscurePassword,
-              textInputAction: TextInputAction.done,
-              onChanged: _onPasswordChanged,
-              onSubmitted: (_) => _submit(),
-              decoration: InputDecoration(
-                labelText: 'Password',
-                prefixIcon: const Icon(Icons.lock_outline),
-                border: const OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscurePassword
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined,
-                  ),
-                  onPressed: _togglePasswordVisibility,
-                  tooltip: _obscurePassword ? 'Show password' : 'Hide password',
+              // ── Email ─────────────────────────────────────────────────
+              AIMInput(
+                controller: _emailController,
+                focusNode: _emailFocus,
+                label: 'Email',
+                placeholder: 'you@example.com',
+                type: AIMInputType.email,
+                leadingIcon: const Icon(Icons.email_outlined),
+                onChanged: _onEmailChanged,
+                onSubmitted: (_) => _passwordFocus.requestFocus(),
+                textInputAction: TextInputAction.next,
+                autofillHints: const [AutofillHints.email],
+                semanticLabel: 'Email address',
+              ),
+              const SizedBox(height: AimSpacing.formFieldGap),
+
+              // ── Password ──────────────────────────────────────────────
+              AIMInput(
+                controller: _passwordController,
+                focusNode: _passwordFocus,
+                label: 'Password',
+                type: AIMInputType.password,
+                leadingIcon: const Icon(Icons.lock_outline),
+                onChanged: _onPasswordChanged,
+                onSubmitted: (_) => _submit(),
+                textInputAction: TextInputAction.done,
+                autofillHints: const [AutofillHints.password],
+                semanticLabel: 'Password',
+              ),
+              const SizedBox(height: AimSpacing.sectionGap),
+
+              // ── Error banner ──────────────────────────────────────────
+              if (formState.errorMessage != null) ...[
+                AIMAlertBanner(
+                  tone: AIMAlertTone.error,
+                  child: Text(formState.errorMessage!),
+                ),
+                const SizedBox(height: AimSpacing.formFieldGap),
+              ],
+
+              // ── Submit ────────────────────────────────────────────────
+              AIMButton(
+                onPressed:
+                    (formState.isValid && !formState.isSubmitting) ? _submit : null,
+                fullWidth: true,
+                loading: formState.isSubmitting,
+                semanticLabel: 'Sign in',
+                child: const Text('Sign In'),
+              ),
+              const SizedBox(height: AimSpacing.innerGap),
+
+              // ── Register link ─────────────────────────────────────────
+              // TextAlign.center is direction-neutral (RTL/LTR safe).
+              TextButton(
+                onPressed: () =>
+                    Navigator.of(context).pushNamed(AppRoutePaths.register),
+                child: const Text(
+                  "Don't have an account? Create one",
+                  textAlign: TextAlign.center,
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-
-            // Error message
-            if (formState.errorMessage != null) ...[
-              _ErrorBanner(formState.errorMessage!),
-              const SizedBox(height: 16),
             ],
-
-            // Submit button
-            FilledButton(
-              onPressed: (formState.isValid && !formState.isSubmitting)
-                  ? _submit
-                  : null,
-              child: formState.isSubmitting
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Text('Sign In'),
-            ),
-
-            // Invisible auth flow state — used by ref.listen above.
-            // Show a subtle checking indicator when auth is in checking state.
-            if (authFlow.isChecking)
-              const Padding(
-                padding: EdgeInsets.only(top: 12),
-                child: LinearProgressIndicator(),
-              ),
-
-            const SizedBox(height: 8),
-
-            // Register link
-            TextButton(
-              onPressed: () => Navigator.pushNamed(
-                context,
-                AppRoutePaths.register,
-              ),
-              child: const Text("Don't have an account? Create one"),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
+// ── Supporting widgets ────────────────────────────────────────────────────────
+
 class _AimLogo extends StatelessWidget {
   const _AimLogo();
 
   @override
   Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+
     return Center(
       child: Column(
         children: [
-          Icon(
+          const Icon(
             Icons.school_outlined,
-            size: 64,
-            color: Theme.of(context).colorScheme.primary,
+            size: AimSizes.iconLg * 3,
+            color: AimColors.primary500,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AimSpacing.innerGap),
           Text(
             'AIM',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                ),
+            style: AimTextStyles.h1.copyWith(
+              color: surfaces.textPrimary,
+              letterSpacing: 2,
+            ),
           ),
           Text(
             'Adaptive Intelligence for Mastery',
-            style: Theme.of(context).textTheme.bodySmall,
+            style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
             textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel(this.text);
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: Theme.of(context)
-          .textTheme
-          .titleMedium
-          ?.copyWith(fontWeight: FontWeight.w600),
-      textAlign: TextAlign.center,
-    );
-  }
-}
-
-class _ErrorBanner extends StatelessWidget {
-  const _ErrorBanner(this.message);
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: colorScheme.errorContainer,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.error_outline, color: colorScheme.onErrorContainer),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              message,
-              style: TextStyle(color: colorScheme.onErrorContainer),
-            ),
           ),
         ],
       ),

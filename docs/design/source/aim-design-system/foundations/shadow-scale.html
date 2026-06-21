@@ -1,0 +1,24 @@
+<!-- @dsCard group="Spacing" viewport="700x190" name="Elevation / Shadows" subtitle="Soft, cool-tinted — card → modal" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; font-family: var(--font-en); background: var(--color-neutral-100); padding: 22px 20px; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; }
+  .item { text-align: center; }
+  .box { height: 60px; background: var(--surface); border-radius: var(--radius-md); }
+  .tok { font: var(--type-helper); font-family: var(--font-mono); color: var(--text-secondary); display: block; margin-top: 10px; }
+</style>
+</head>
+<body>
+  <div class="grid">
+    <div class="item"><div class="box" style="box-shadow:var(--shadow-card)"></div><span class="tok">card</span></div>
+    <div class="item"><div class="box" style="box-shadow:var(--shadow-card-hover)"></div><span class="tok">card-hover</span></div>
+    <div class="item"><div class="box" style="box-shadow:var(--shadow-dropdown)"></div><span class="tok">dropdown</span></div>
+    <div class="item"><div class="box" style="box-shadow:var(--shadow-modal)"></div><span class="tok">modal</span></div>
+    <div class="item"><div class="box" style="box-shadow:var(--shadow-fab)"></div><span class="tok">fab</span></div>
+  </div>
+</body>
+</html>

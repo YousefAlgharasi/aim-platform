@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AIM Design System</title>
+<template id="__bundler_thumbnail" data-bg-color="#F7F8FA">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#F7F8FA"/>
+    <rect x="500" y="300" width="200" height="200" rx="44" fill="url(#g)"/>
+    <text x="600" y="470" font-family="Inter, sans-serif" font-size="150" font-weight="800" fill="#fff" text-anchor="middle">A</text>
+    <defs>
+      <linearGradient id="g" x1="500" y1="300" x2="700" y2="500" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#4762EE"/>
+        <stop offset="1" stop-color="#8455E4"/>
+      </linearGradient>
+    </defs>
+  </svg>
+</template>
+<link rel="stylesheet" href="styles.css" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-en); background: var(--background); color: var(--text-primary); }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 56px 24px 80px; }
+
+  .hero { display: flex; flex-direction: column; gap: var(--space-16); margin-bottom: 56px; }
+  .logo { display: inline-flex; align-items: center; gap: 12px; }
+  .logo__mark { width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--gradient-ai);
+    display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 22px; box-shadow: var(--shadow-fab); }
+  .logo__name { font: var(--type-h2); letter-spacing: -.02em; }
+  h1 { font: var(--type-display); font-size: 44px; line-height: 1.05; letter-spacing: -.02em; margin: 8px 0 0; max-width: 18ch; }
+  .lede { font: var(--type-body-lg); color: var(--text-secondary); max-width: 60ch; margin: 0; }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .pill { font: var(--type-caption); font-weight: 600; padding: 5px 12px; border-radius: var(--radius-pill); }
+
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 40px; }
+  .pillar { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-card); }
+  .pillar__sw { width: 36px; height: 36px; border-radius: var(--radius-sm); margin-bottom: 14px; }
+  .pillar h3 { font: var(--type-title); margin: 0 0 6px; }
+  .pillar p { font: var(--type-body-sm); color: var(--text-secondary); margin: 0; }
+
+  .section-label { font: var(--type-label); text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin: 0 0 16px; }
+
+  .cats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 40px; }
+  .cat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px 18px; }
+  .cat__title { font: var(--type-title); margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+  .cat__items { font: var(--type-body-sm); color: var(--text-secondary); margin: 0; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  .swatches { display: flex; gap: 6px; margin-bottom: 8px; }
+  .swatches > div { height: 40px; flex: 1; border-radius: var(--radius-xs); }
+
+  .note { font: var(--type-helper); color: var(--text-muted); border-top: 1px solid var(--divider); padding-top: 20px; margin-top: 8px; }
+  .note b { color: var(--text-secondary); }
+
+  @media (max-width: 760px) { .grid, .cats { grid-template-columns: 1fr; } h1 { font-size: 34px; } }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div class="logo">
+        <span class="logo__mark">A</span>
+        <span class="logo__name">AIM</span>
+      </div>
+      <h1>The design system for AI English learning.</h1>
+      <p class="lede">A mobile-first, fully bilingual (English + العربية) system for AIM — adaptive lessons, quizzes, speaking practice, and a personal AI tutor. Tokens, typography, and 24 components, all RTL-ready.</p>
+      <div class="pills">
+        <span class="pill" style="background:var(--primary-soft);color:var(--primary-soft-fg)">Mobile-first</span>
+        <span class="pill" style="background:var(--secondary-soft);color:var(--secondary-soft-fg)">RTL + LTR</span>
+        <span class="pill" style="background:var(--accent-soft);color:var(--accent-soft-fg)">Light + Dark</span>
+        <span class="pill" style="background:var(--surface-sunken);color:var(--text-secondary)">24 components</span>
+      </div>
+    </div>
+
+    <p class="section-label">Three brand pillars</p>
+    <div class="grid">
+      <div class="pillar">
+        <div class="pillar__sw" style="background:var(--color-primary-500)"></div>
+        <h3>Trust</h3>
+        <p>AIM Blue anchors primary actions, focus, and progress. The dependable backbone of the UI.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar__sw" style="background:var(--gradient-ai)"></div>
+        <h3>Intelligence</h3>
+        <p>Purple and the AI gradient mark anything the tutor generates or adapts — used sparingly, kept precious.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar__sw" style="background:var(--color-accent-500)"></div>
+        <h3>Growth</h3>
+        <p>Teal celebrates streaks, mastery, and every "you improved" moment along the way.</p>
+      </div>
+    </div>
+
+    <p class="section-label">Core palette</p>
+    <div class="swatches">
+      <div style="background:var(--color-primary-300)"></div>
+      <div style="background:var(--color-primary-500)"></div>
+      <div style="background:var(--color-primary-700)"></div>
+      <div style="background:var(--color-secondary-400)"></div>
+      <div style="background:var(--color-secondary-600)"></div>
+      <div style="background:var(--color-accent-400)"></div>
+      <div style="background:var(--color-accent-600)"></div>
+      <div style="background:var(--color-neutral-200)"></div>
+      <div style="background:var(--color-neutral-500)"></div>
+      <div style="background:var(--color-neutral-900)"></div>
+    </div>
+    <div class="swatches" style="margin-bottom:40px">
+      <div style="background:var(--color-success-500)"></div>
+      <div style="background:var(--color-warning-500)"></div>
+      <div style="background:var(--color-error-500)"></div>
+      <div style="background:var(--color-info-500)"></div>
+      <div style="flex:6;background:var(--surface);border:1px dashed var(--border);display:flex;align-items:center;padding-inline:12px;font:var(--type-caption);color:var(--text-muted)">Success · Warning · Error · Info — each with a contrast-paired soft fill</div>
+    </div>
+
+    <p class="section-label">Component library</p>
+    <div class="cats">
+      <div class="cat">
+        <div class="cat__title"><span class="dot" style="background:var(--color-primary-500)"></span>Buttons</div>
+        <p class="cat__items">Button · IconButton · Fab</p>
+      </div>
+      <div class="cat">
+        <div class="cat__title"><span class="dot" style="background:var(--color-secondary-500)"></span>Forms</div>
+        <p class="cat__items">Input · Textarea · Select · Checkbox · Radio · Switch · OTPInput</p>
+      </div>
+      <div class="cat">
+        <div class="cat__title"><span class="dot" style="background:var(--color-warning-500)"></span>Feedback</div>
+        <p class="cat__items">Badge · Chip · AlertBanner · Skeleton</p>
+      </div>
+      <div class="cat">
+        <div class="cat__title"><span class="dot" style="background:var(--color-info-500)"></span>Navigation</div>
+        <p class="cat__items">Tabs · SegmentedControl · TopAppBar · BottomNav</p>
+      </div>
+      <div class="cat" style="grid-column:1/-1">
+        <div class="cat__title"><span class="dot" style="background:var(--color-accent-500)"></span>Learning <span style="font:var(--type-caption);color:var(--text-muted);font-weight:500">— the AI domain layer</span></div>
+        <p class="cat__items">Card · ProgressBar · CircularProgress · AnswerOption · AIFeedbackBubble · RecordButton</p>
+      </div>
+    </div>
+
+    <p class="note">Open the <b>Design System</b> tab to browse live component cards and token specimens. Component contracts live in each <b>.d.ts</b>, usage examples in each <b>.prompt.md</b>, and full guidance in <b>readme.md</b>.</p>
+  </div>
+</body>
+</html>

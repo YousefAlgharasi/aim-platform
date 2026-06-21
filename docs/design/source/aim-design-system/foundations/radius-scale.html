@@ -1,0 +1,27 @@
+<!-- @dsCard group="Spacing" viewport="700x170" name="Radius Scale" subtitle="Soft, AI-friendly rounding — xs → pill" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; font-family: var(--font-en); background: var(--surface); padding: 18px 20px; }
+  .grid { display: flex; gap: 14px; align-items: flex-end; }
+  .item { text-align: center; }
+  .box { width: 76px; height: 60px; background: var(--color-primary-50); border: 1.5px solid var(--color-primary-300); }
+  .tok { font: var(--type-helper); font-family: var(--font-mono); color: var(--text-secondary); display: block; margin-top: 8px; }
+  .px { font: var(--type-helper); color: var(--text-muted); }
+</style>
+</head>
+<body>
+  <div class="grid">
+    <div class="item"><div class="box" style="border-radius:var(--radius-xs)"></div><span class="tok">xs</span><span class="px">6</span></div>
+    <div class="item"><div class="box" style="border-radius:var(--radius-sm)"></div><span class="tok">sm</span><span class="px">8</span></div>
+    <div class="item"><div class="box" style="border-radius:var(--radius-md)"></div><span class="tok">md</span><span class="px">12</span></div>
+    <div class="item"><div class="box" style="border-radius:var(--radius-lg)"></div><span class="tok">lg</span><span class="px">16</span></div>
+    <div class="item"><div class="box" style="border-radius:var(--radius-xl)"></div><span class="tok">xl</span><span class="px">24</span></div>
+    <div class="item"><div class="box" style="border-radius:var(--radius-2xl)"></div><span class="tok">2xl</span><span class="px">32</span></div>
+    <div class="item"><div class="box" style="border-radius:var(--radius-pill)"></div><span class="tok">pill</span><span class="px">999</span></div>
+  </div>
+</body>
+</html>

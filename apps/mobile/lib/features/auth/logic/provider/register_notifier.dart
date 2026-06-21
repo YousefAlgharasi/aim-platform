@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'auth_context_provider.dart';
 import 'auth_flow_provider.dart';
+import 'session_store_provider.dart';
 
 /// Represents the outcome after a successful registration.
 enum RegisterOutcome {
@@ -105,6 +106,12 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
         );
         return;
       }
+
+      // Persist session so the user stays signed in across app restarts.
+      await _ref.read(sessionStoreProvider).save(
+            accessToken: result.accessToken!,
+            email: _email,
+          );
 
       _ref.read(authFlowProvider.notifier).signIn(
             _email,
