@@ -13,6 +13,11 @@ import { AiChatMessageRepository } from '../../repositories/ai-chat-message.repo
 import { AiProviderGateway } from '../../provider-gateway/ai-provider-gateway.interface';
 import { AiTeacherContextSnapshot } from '../../context-builder/context-builder.types';
 import { AiProviderResponse } from '../../provider-gateway/provider-gateway.types';
+import { AiTeacherSafetyService } from '../../governance/ai-teacher-safety.service';
+import { AiCostQuotaService } from '../../governance/ai-cost-quota.service';
+import { ModelConfigService } from '../../governance/model-config.service';
+import { AiInputBlockedError } from '../../governance/ai-input-blocked.error';
+import { AiQuotaExceededError } from '../../governance/ai-quota-exceeded.error';
 
 function makeContext(): AiTeacherContextSnapshot {
   return {
@@ -28,6 +33,8 @@ function makeOrchestrator(overrides: {
   providerResponse?: AiProviderResponse;
   noSecretCheckImpl?: () => void;
   safetyFilterResult?: { text: string; wasFiltered: boolean; reasonCategory: string | null };
+  checkInputResult?: { action: 'allowed' | 'flagged' | 'blocked'; category: string };
+  checkQuotaResult?: { allowed: boolean; periodSpend: number; budget: number };
 } = {}) {
   const contextBuilder = {
     buildContext: jest.fn().mockResolvedValue(makeContext()),
@@ -106,6 +113,34 @@ function makeOrchestrator(overrides: {
       }),
   } as unknown as AiChatMessageRepository;
 
+  const safetyService = {
+    checkInput: jest.fn().mockResolvedValue(
+      overrides.checkInputResult ?? { action: 'allowed', category: 'none' },
+    ),
+  } as unknown as AiTeacherSafetyService;
+
+  const costQuotaService = {
+    checkQuota: jest.fn().mockResolvedValue(
+      overrides.checkQuotaResult ?? { allowed: true, periodSpend: 0, budget: 2.0 },
+    ),
+    recordUsage: jest.fn().mockResolvedValue(undefined),
+  } as unknown as AiCostQuotaService;
+
+  const modelConfigService = {
+    selectByTier: jest.fn().mockResolvedValue({
+      id: 'config-1',
+      name: 'dev-economy-default',
+      provider_key_ref: 'dev-placeholder-economy-key-ref',
+      model_id: 'dev-economy-model',
+      tier: 'economy',
+      status: 'active',
+      limits: {},
+      parameters: {},
+      created_at: 'now',
+      updated_at: 'now',
+    }),
+  } as unknown as ModelConfigService;
+
   const service = new AiTeacherOrchestratorService(
     contextBuilder,
     promptBuilder,
@@ -116,6 +151,9 @@ function makeOrchestrator(overrides: {
     responseSafetyFilter,
     chatMessageRepository,
     { assertNotRateLimited: jest.fn().mockResolvedValue(undefined) } as any,
+    safetyService,
+    costQuotaService,
+    modelConfigService,
     providerGateway,
   );
 
@@ -129,6 +167,9 @@ function makeOrchestrator(overrides: {
     providerLogging,
     responseSafetyFilter,
     chatMessageRepository,
+    safetyService,
+    costQuotaService,
+    modelConfigService,
   };
 }
 
@@ -302,6 +343,65 @@ describe('AiTeacherOrchestratorService', () => {
     expect(serialized).not.toMatch(/difficulty/i);
     expect(serialized).not.toMatch(/recommendation/i);
     expect(serialized).not.toMatch(/reviewSchedule/i);
+  });
+
+  it('checks the cost/quota before building context or calling the provider', async () => {
+    const { service, costQuotaService, contextBuilder, providerGateway } = makeOrchestrator();
+
+    await service.handleTurn(makeInput());
+
+    expect(costQuotaService.checkQuota).toHaveBeenCalledWith('student-1', 'daily', expect.any(Number));
+    expect(contextBuilder.buildContext).toHaveBeenCalled();
+    expect(providerGateway.complete).toHaveBeenCalled();
+  });
+
+  it('throws AiQuotaExceededError and never calls the provider when the daily quota is exceeded', async () => {
+    const { service, providerGateway, contextBuilder } = makeOrchestrator({
+      checkQuotaResult: { allowed: false, periodSpend: 2.0, budget: 2.0 },
+    });
+
+    await expect(service.handleTurn(makeInput())).rejects.toThrow(AiQuotaExceededError);
+    expect(contextBuilder.buildContext).not.toHaveBeenCalled();
+    expect(providerGateway.complete).not.toHaveBeenCalled();
+  });
+
+  it('checks input safety on the persisted student message before calling the provider', async () => {
+    const { service, safetyService, chatMessageRepository, providerGateway } = makeOrchestrator();
+
+    await service.handleTurn(makeInput());
+
+    expect(safetyService.checkInput).toHaveBeenCalledWith(
+      'message',
+      'message-student-1',
+      'How do I add fractions?',
+      'dev-placeholder-economy-key-ref',
+    );
+    expect(chatMessageRepository.create).toHaveBeenCalled();
+    expect(providerGateway.complete).toHaveBeenCalled();
+  });
+
+  it('throws AiInputBlockedError and never calls the provider when input safety blocks the message', async () => {
+    const { service, providerGateway } = makeOrchestrator({
+      checkInputResult: { action: 'blocked', category: 'unsafe_content' },
+    });
+
+    await expect(service.handleTurn(makeInput())).rejects.toThrow(AiInputBlockedError);
+    expect(providerGateway.complete).not.toHaveBeenCalled();
+  });
+
+  it('records usage after a successful provider call', async () => {
+    const { service, costQuotaService } = makeOrchestrator();
+
+    await service.handleTurn(makeInput());
+
+    expect(costQuotaService.recordUsage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        studentId: 'student-1',
+        eventType: 'text_generation',
+        modelConfigId: 'config-1',
+        quotaPeriod: 'daily',
+      }),
+    );
   });
 
   it('never hard-codes a provider API key or reads process.env directly', () => {
