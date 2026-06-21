@@ -48,9 +48,13 @@ function makeDb(opts: { conflict?: boolean } = {}) {
   };
 }
 
+function makeAnalyticsEventIngestion() {
+  return { ingest: jest.fn().mockResolvedValue(undefined) };
+}
+
 describe('AssessmentResultService', () => {
   it('persists result and returns resultId', async () => {
-    const svc = new AssessmentResultService(makeDb() as any);
+    const svc = new AssessmentResultService(makeDb() as any, makeAnalyticsEventIngestion() as any);
     const result = await svc.persistResult(makeGrading());
     expect(result.resultId).toBe('result-1');
     expect(result.passed).toBe(true);
@@ -58,13 +62,13 @@ describe('AssessmentResultService', () => {
   });
 
   it('throws ConflictException on duplicate result', async () => {
-    const svc = new AssessmentResultService(makeDb({ conflict: true }) as any);
+    const svc = new AssessmentResultService(makeDb({ conflict: true }) as any, makeAnalyticsEventIngestion() as any);
     await expect(svc.persistResult(makeGrading())).rejects.toThrow(ConflictException);
   });
 
   it('findByAttemptId returns null when no result', async () => {
     const db = { withClient: jest.fn(), query: jest.fn().mockResolvedValue({ rows: [] }) };
-    const svc = new AssessmentResultService(db as any);
+    const svc = new AssessmentResultService(db as any, makeAnalyticsEventIngestion() as any);
     const result = await svc.findByAttemptId('att-x', 'stu-1');
     expect(result).toBeNull();
   });
@@ -80,7 +84,7 @@ describe('AssessmentResultService', () => {
         }],
       }),
     };
-    const svc = new AssessmentResultService(db as any);
+    const svc = new AssessmentResultService(db as any, makeAnalyticsEventIngestion() as any);
     const result = await svc.findByAttemptId('att-1', 'stu-1');
     expect(result?.resultId).toBe('r-1');
     expect(result?.score).toBe(75);

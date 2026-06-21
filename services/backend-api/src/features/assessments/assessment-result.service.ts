@@ -16,6 +16,7 @@
 
 import { Injectable, ConflictException, Logger } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import { AnalyticsEventIngestionService } from '../analytics/analytics-event-ingestion.service';
 // Inline until P10-027/P10-028 branches merge to main
 export interface AssessmentGradingResult {
   readonly attemptId: string;
@@ -68,7 +69,10 @@ export interface ResultHistoryResponse {
 export class AssessmentResultService {
   private readonly logger = new Logger(AssessmentResultService.name);
 
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly analyticsEventIngestionService: AnalyticsEventIngestionService,
+  ) {}
 
   /**
    * Persist the grading result to assessment_results and
@@ -147,6 +151,20 @@ export class AssessmentResultService {
         this.logger.log(
           `ResultService: persisted result ${resultId} for attempt ${gradingResult.attemptId}`,
         );
+
+        await this.analyticsEventIngestionService.ingest({
+          eventType: 'assessment.scored',
+          actorRole: 'student',
+          actorId: gradingResult.studentId,
+          subjectType: 'assessment',
+          subjectId: gradingResult.assessmentId,
+          occurredAt: gradingResult.gradedAt,
+          metadata: {
+            assessment_id: gradingResult.assessmentId,
+            score: gradingResult.score,
+            passed: gradingResult.passed,
+          },
+        });
 
         return {
           resultId,

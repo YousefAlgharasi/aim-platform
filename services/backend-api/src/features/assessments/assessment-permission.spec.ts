@@ -206,7 +206,7 @@ describe('Assessment Permission Tests (P10-045)', () => {
     it('AssessmentResultService.findByAttemptId scopes by studentId in SQL', async () => {
       const { AssessmentResultService } = await import('./assessment-result.service');
       const db = { query: jest.fn().mockResolvedValue({ rows: [] }) };
-      const svc = new AssessmentResultService(db as any);
+      const svc = new AssessmentResultService(db as any, { ingest: jest.fn() } as any);
       await svc.findByAttemptId('att-1', 'stu-1');
       const sql: string = db.query.mock.calls[0][0];
       expect(sql).toContain('student_id');

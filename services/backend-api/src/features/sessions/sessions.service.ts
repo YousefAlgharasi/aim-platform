@@ -30,6 +30,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AppError } from '../../common/errors/app-error';
 import { ApiErrorCode } from '../../common/errors/api-error-code';
+import { AnalyticsEventIngestionService } from '../analytics/analytics-event-ingestion.service';
 import {
   AIM_SESSION_INPUT_CONTRACT_VERSION,
   LatestPlacementResultRow,
@@ -47,7 +48,10 @@ const VALID_SESSION_TYPES = new Set([
 
 @Injectable()
 export class SessionsService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly analyticsEventIngestionService: AnalyticsEventIngestionService,
+  ) {}
 
   /**
    * Start a new learning session for the given student.
@@ -120,6 +124,16 @@ export class SessionsService {
     );
 
     const session = insertResult.rows[0];
+
+    await this.analyticsEventIngestionService.ingest({
+      eventType: 'session.started',
+      actorRole: 'student',
+      actorId: session.student_id,
+      subjectType: 'learning_session',
+      subjectId: session.id,
+      occurredAt: new Date(session.started_at),
+      metadata: { session_type: session.session_type },
+    });
 
     return {
       id: session.id,
