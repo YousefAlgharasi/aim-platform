@@ -5,13 +5,13 @@ class VoiceMessage {
   final VoiceMessageRole role;
   final String text;
   final String? audioRef;
-  final DateTime timestamp;
+  final String createdAt;
 
   const VoiceMessage({
     required this.id,
     required this.role,
     required this.text,
     this.audioRef,
-    required this.timestamp,
+    required this.createdAt,
   });
 }

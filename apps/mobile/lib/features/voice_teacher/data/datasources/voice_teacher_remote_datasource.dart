@@ -1,13 +1,36 @@
+import '../models/start_voice_session_response_model.dart';
+import '../models/voice_audio_submit_response_model.dart';
+import '../models/voice_feedback_response_model.dart';
 import '../models/voice_message_model.dart';
 import '../models/voice_session_model.dart';
 
 abstract class VoiceTeacherRemoteDatasource {
-  Future<String> startSession({String? contextRef});
-  Future<List<VoiceSessionModel>> listSessions();
-  Future<List<VoiceMessageModel>> getSessionHistory(String sessionId);
-  Future<VoiceMessageModel> submitAudio(String sessionId, List<int> audioBytes, String mimeType);
-  Future<List<int>> getAudioPlayback(String audioRef);
-  Future<void> submitFeedback({
+  Future<StartVoiceSessionResponseModel> startSession({
+    required String bearerToken,
+    required String contextRef,
+  });
+
+  Future<List<VoiceSessionModel>> listSessions({required String bearerToken});
+
+  Future<List<VoiceMessageModel>> getSessionHistory({
+    required String bearerToken,
+    required String sessionId,
+  });
+
+  Future<VoiceAudioSubmitResponseModel> submitAudio({
+    required String bearerToken,
+    required String sessionId,
+    required List<int> audioBytes,
+    required String mimeType,
+  });
+
+  Future<List<int>> getAudioPlayback({
+    required String bearerToken,
+    required String audioRef,
+  });
+
+  Future<VoiceFeedbackResponseModel> submitFeedback({
+    required String bearerToken,
     required String sessionId,
     required String messageId,
     required String rating,

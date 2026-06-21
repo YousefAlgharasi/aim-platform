@@ -217,4 +217,29 @@ class BackendApiPaths {
 
   static const String notificationQuietHours =
       '/api/v1/notifications/quiet-hours';
+
+  // ---------------------------------------------------------------------------
+  // Voice Teacher — Phase 9 / Phase 18 P18-065 P18-066
+  // Backend-only. Flutter never calls an STT/TTS/AI provider directly.
+  // ---------------------------------------------------------------------------
+
+  /// POST /voice-teacher/sessions
+  /// GET  /voice-teacher/sessions
+  static const String voiceTeacherSessions = '/voice-teacher/sessions';
+
+  /// GET /voice-teacher/sessions/:id/messages
+  static String voiceTeacherSessionMessages(String sessionId) =>
+      '/voice-teacher/sessions/$sessionId/messages';
+
+  /// POST /voice-teacher/sessions/:id/audio
+  static String voiceTeacherSessionAudio(String sessionId) =>
+      '/voice-teacher/sessions/$sessionId/audio';
+
+  /// POST /voice-teacher/sessions/:id/feedback
+  static String voiceTeacherSessionFeedback(String sessionId) =>
+      '/voice-teacher/sessions/$sessionId/feedback';
+
+  /// GET /voice-teacher/audio/:audioRef
+  static String voiceTeacherAudio(String audioRef) =>
+      '/voice-teacher/audio/$audioRef';
 }
