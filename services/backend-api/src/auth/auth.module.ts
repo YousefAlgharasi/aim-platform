@@ -1,5 +1,5 @@
 // Phase 2 — P2-025 (AuthProfileBootstrapService and UsersModule added)
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { BackendConfigModule } from '../config/backend-config.module';
 import { DatabaseModule } from '../database/database.module';
 import { UsersModule } from '../features/users/users.module';
@@ -13,7 +13,13 @@ import { SupabaseJwtAuthGuard } from './supabase-jwt-auth.guard';
 import { SupabaseJwtVerifierService } from './supabase-jwt-verifier.service';
 
 @Module({
-  imports: [BackendConfigModule, DatabaseModule, UsersModule, AuthorizationModule, AnalyticsModule],
+  imports: [
+    BackendConfigModule,
+    DatabaseModule,
+    UsersModule,
+    AuthorizationModule,
+    forwardRef(() => AnalyticsModule),
+  ],
   controllers: [AuthController],
   providers: [
     SupabaseJwtAuthGuard,

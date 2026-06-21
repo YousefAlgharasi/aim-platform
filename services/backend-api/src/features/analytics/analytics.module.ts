@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 
 import { DatabaseModule } from '../../database/database.module';
 import { UsersModule } from '../users/users.module';
 import { RolesModule } from '../roles/roles.module';
+import { AuthModule } from '../../auth/auth.module';
 import { AnalyticsRepository } from './analytics.repository';
 import { AnalyticsEventIngestionService } from './analytics-event-ingestion.service';
 import { MetricDefinitionService } from './metric-definition.service';
@@ -15,9 +16,11 @@ import { CohortService } from './cohort.service';
 import { AnalyticsAccessPolicyService } from './analytics-access-policy.service';
 import { AnalyticsAuditService } from './analytics-audit.service';
 import { AnalyticsAccessGuard } from './analytics-access.guard';
+import { AdminAnalyticsDashboardController } from './admin-analytics-dashboard.controller';
 
 @Module({
-  imports: [DatabaseModule, UsersModule, RolesModule],
+  imports: [DatabaseModule, UsersModule, RolesModule, forwardRef(() => AuthModule)],
+  controllers: [AdminAnalyticsDashboardController],
   providers: [
     AnalyticsRepository,
     AnalyticsEventIngestionService,
