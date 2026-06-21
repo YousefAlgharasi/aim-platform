@@ -218,7 +218,10 @@ describe('InAppNotificationService', () => {
       countUnreadByUserId: jest.fn().mockResolvedValue(0),
       updateEventStatus: jest.fn().mockResolvedValue(buildEvent()),
     };
-    service = new InAppNotificationService(mockRepo as NotificationRepository);
+    service = new InAppNotificationService(
+      mockRepo as NotificationRepository,
+      { ingest: jest.fn().mockResolvedValue(undefined) } as never,
+    );
   });
 
   it('lists in-app events scoped to the requesting user only', async () => {
