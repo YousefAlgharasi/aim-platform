@@ -18,6 +18,7 @@ import { ParentInvitationService } from './parent-invitation.service';
 import { ParentNotificationPreferenceService } from './parent-notification-preference.service';
 import { ParentDashboardSummaryService } from './parent-dashboard-summary.service';
 import { ParentAiUsageSummaryService } from './parent-ai-usage-summary.service';
+import { ParentAiSafetySummaryService } from './parent-ai-safety-summary.service';
 import { ParentRepository } from './parent.repository';
 import { ParentChildAccessGuard } from './guards';
 import { ParentsController } from './parents.controller';
@@ -50,6 +51,7 @@ import { ParentsService } from './parents.service';
     ParentInvitationService,
     ParentNotificationPreferenceService,
     ParentAiUsageSummaryService,
+    ParentAiSafetySummaryService,
   ],
   exports: [
     ParentsService,
@@ -66,6 +68,7 @@ import { ParentsService } from './parents.service';
     ParentInvitationService,
     ParentNotificationPreferenceService,
     ParentAiUsageSummaryService,
+    ParentAiSafetySummaryService,
   ],
 })
 export class ParentsModule {}
