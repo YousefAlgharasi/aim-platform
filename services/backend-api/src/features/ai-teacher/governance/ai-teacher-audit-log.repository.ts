@@ -48,4 +48,17 @@ export class AiTeacherAuditLogRepository {
     );
     return result.rows;
   }
+
+  // P18-078: Admin AI Audit UI — recent audit log rows across all
+  // resource types, for the admin traceability viewer.
+  async listRecent(limit: number): Promise<AiTeacherAuditLogRow[]> {
+    const result = await this.db.query<AiTeacherAuditLogRow>(
+      `SELECT id, actor_id, action, resource_type, resource_id, details, created_at
+       FROM ai_teacher_audit_logs
+       ORDER BY created_at DESC
+       LIMIT $1`,
+      [limit],
+    );
+    return result.rows;
+  }
 }

@@ -16,6 +16,7 @@ import { AdminPromptModule } from './admin-prompts/admin-prompt.module';
 import { AdminModelConfigModule } from './admin-model-configs/admin-model-config.module';
 import { AdminUsageCostModule } from './admin-usage-cost/admin-usage-cost.module';
 import { AdminSafetyReviewModule } from './admin-safety-review/admin-safety-review.module';
+import { AdminAuditModule } from './admin-audit/admin-audit.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { AdminSafetyReviewModule } from './admin-safety-review/admin-safety-revi
     AdminModelConfigModule,
     AdminUsageCostModule,
     AdminSafetyReviewModule,
+    AdminAuditModule,
   ],
   providers: [AiTeacherService],
   exports: [AiTeacherService, ContextBuilderModule, AiChatRepositoriesModule, AiTeacherGovernanceModule],
