@@ -39,4 +39,22 @@ export class AiTeacherFeedbackRepository {
 
     return result.rows[0] ?? null;
   }
+
+  // ---------------------------------------------------------------------
+  // P18-051: Admin AI Safety Review API — flagged feedback ('not_helpful')
+  // read-only listing for admins.
+  // ---------------------------------------------------------------------
+
+  async listRecentNotHelpful(limit: number): Promise<AiTeacherFeedbackRow[]> {
+    const result = await this.db.query<AiTeacherFeedbackRow>(
+      `SELECT id, message_id, student_id, rating, created_at
+       FROM ai_teacher_feedback
+       WHERE rating = 'not_helpful'
+       ORDER BY created_at DESC
+       LIMIT $1`,
+      [limit],
+    );
+
+    return result.rows;
+  }
 }

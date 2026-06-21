@@ -41,4 +41,23 @@ export class AiSafetyEventRepository {
 
     return result.rows;
   }
+
+  // ---------------------------------------------------------------------
+  // P18-051: Admin AI Safety Review API — read-only listing for admins.
+  // Only the recorded decision/reason_category is exposed, never the
+  // rejected raw message/response content.
+  // ---------------------------------------------------------------------
+
+  async listRecentRejected(limit: number): Promise<AiSafetyEventRow[]> {
+    const result = await this.db.query<AiSafetyEventRow>(
+      `SELECT id, session_id, direction, decision, reason_category, created_at
+       FROM ai_safety_events
+       WHERE decision = 'rejected'
+       ORDER BY created_at DESC
+       LIMIT $1`,
+      [limit],
+    );
+
+    return result.rows;
+  }
 }
