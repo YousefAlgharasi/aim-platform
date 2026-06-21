@@ -1,0 +1,77 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-12) var(--space-16);
+  border-bottom: 1px solid var(--color-neutral-200, #E2E5EC);
+  background: var(--color-surface, #FFFFFF);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.backLink {
+  font-size: 14px;
+  color: var(--color-primary-500);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.lessonTitle {
+  font-size: var(--type-h3-size, 18px);
+  font-weight: var(--weight-semibold, 600);
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.progressTrack {
+  height: 4px;
+  background: var(--color-neutral-200, #E2E5EC);
+  flex-shrink: 0;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--color-accent-500, #15A898);
+  transition: width 0.3s ease;
+}
+
+.content {
+  flex: 1;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-24, 24px) var(--space-16);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.navBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-12) var(--space-16);
+  border-top: 1px solid var(--color-neutral-200, #E2E5EC);
+  background: var(--color-surface, #FFFFFF);
+  position: sticky;
+  bottom: 0;
+}
+
+@media (min-width: 768px) {
+  .content {
+    padding: var(--space-32, 32px) var(--space-24, 24px);
+  }
+}
