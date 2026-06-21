@@ -74,6 +74,14 @@ export class AnalyticsRepository {
     return result.rows[0] || null;
   }
 
+  async findMetricDefinitionById(id: string): Promise<MetricDefinition | null> {
+    const result = await this.db.query<MetricDefinition>(
+      `SELECT * FROM metric_definitions WHERE id = $1`,
+      [id],
+    );
+    return result.rows[0] || null;
+  }
+
   // --- Metric Aggregates ---
 
   async upsertMetricAggregate(data: {
@@ -130,6 +138,21 @@ export class AnalyticsRepository {
     return result.rows;
   }
 
+  async findLatestMetricAggregate(
+    metricDefinitionId: string,
+    scopeType: string,
+    scopeId: string | null,
+  ): Promise<MetricAggregate | null> {
+    const result = await this.db.query<MetricAggregate>(
+      `SELECT * FROM metric_aggregates
+       WHERE metric_definition_id = $1 AND scope_type = $2
+         AND ($3::uuid IS NULL OR scope_id = $3)
+       ORDER BY period_start DESC LIMIT 1`,
+      [metricDefinitionId, scopeType, scopeId],
+    );
+    return result.rows[0] || null;
+  }
+
   // --- Report Definitions ---
 
   async findActiveReportDefinitions(): Promise<ReportDefinition[]> {
@@ -143,6 +166,14 @@ export class AnalyticsRepository {
     const result = await this.db.query<ReportDefinition>(
       `SELECT * FROM report_definitions WHERE key = $1 AND is_active = true`,
       [key],
+    );
+    return result.rows[0] || null;
+  }
+
+  async findReportDefinitionById(id: string): Promise<ReportDefinition | null> {
+    const result = await this.db.query<ReportDefinition>(
+      `SELECT * FROM report_definitions WHERE id = $1`,
+      [id],
     );
     return result.rows[0] || null;
   }

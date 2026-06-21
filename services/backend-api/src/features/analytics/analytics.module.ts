@@ -7,6 +7,7 @@ import { MetricDefinitionService } from './metric-definition.service';
 import { MetricAggregationService } from './metric-aggregation.service';
 import { ReportDefinitionService } from './report-definition.service';
 import { ReportRunnerService } from './report-runner.service';
+import { DashboardService } from './dashboard.service';
 
 @Module({
   imports: [DatabaseModule],
@@ -17,6 +18,7 @@ import { ReportRunnerService } from './report-runner.service';
     MetricAggregationService,
     ReportDefinitionService,
     ReportRunnerService,
+    DashboardService,
   ],
   exports: [
     AnalyticsRepository,
@@ -25,6 +27,7 @@ import { ReportRunnerService } from './report-runner.service';
     MetricAggregationService,
     ReportDefinitionService,
     ReportRunnerService,
+    DashboardService,
   ],
 })
 export class AnalyticsModule {}
