@@ -120,3 +120,16 @@ export async function listAiUsageForStudent(studentId, limit) {
 export async function getAiLimitStatusForStudent(studentId) {
   return adminAiRequest(`/usage/student/${encodeURIComponent(studentId)}/limit-status`);
 }
+
+// P18-077: Admin AI Safety Review UI — read-only safety event and flagged
+// feedback rollups. This client never exposes rejected raw message/
+// response content, only the recorded decision/reason_category as stored.
+export async function listRejectedSafetyEvents(limit) {
+  const query = limit ? `?limit=${encodeURIComponent(limit)}` : '';
+  return adminAiRequest(`/safety/events${query}`);
+}
+
+export async function listFlaggedFeedback(limit) {
+  const query = limit ? `?limit=${encodeURIComponent(limit)}` : '';
+  return adminAiRequest(`/safety/feedback${query}`);
+}
