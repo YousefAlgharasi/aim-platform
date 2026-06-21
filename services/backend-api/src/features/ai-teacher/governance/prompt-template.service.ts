@@ -36,4 +36,70 @@ export class PromptTemplateService {
   async listActiveTemplates(): Promise<AiPromptTemplateRow[]> {
     return this.promptTemplateRepository.listByStatus('active');
   }
+
+  // ---------------------------------------------------------------------
+  // P18-048: Admin AI Prompt Management API — read/draft/versioning/
+  // publishing. Only an admin caller (enforced by the controller's role
+  // guard) may reach these; prompt authority never moves to the client.
+  // ---------------------------------------------------------------------
+
+  async listAllTemplates(): Promise<AiPromptTemplateRow[]> {
+    return this.promptTemplateRepository.listAll();
+  }
+
+  async getTemplateById(id: string): Promise<AiPromptTemplateRow> {
+    const template = await this.promptTemplateRepository.findById(id);
+
+    if (!template) {
+      throw new NotFoundException(`Prompt template not found: ${id}`);
+    }
+
+    return template;
+  }
+
+  async createDraftTemplate(input: {
+    name: string;
+    locale: string;
+    audience: string;
+    body: string;
+    safetyTags?: Record<string, unknown>;
+  }): Promise<AiPromptTemplateRow> {
+    const version = await this.promptTemplateRepository.findNextVersion(
+      input.name,
+      input.locale,
+      input.audience,
+    );
+
+    return this.promptTemplateRepository.createDraft({ ...input, version });
+  }
+
+  /** Publishes a draft/retired version as the sole active version for its
+   *  (name, locale, audience) triple, retiring any previously active one. */
+  async publishTemplate(id: string): Promise<AiPromptTemplateRow> {
+    const template = await this.getTemplateById(id);
+
+    await this.promptTemplateRepository.retireActiveByNameAndLocale(
+      template.name,
+      template.locale,
+      template.audience,
+    );
+
+    const published = await this.promptTemplateRepository.updateStatus(id, 'active');
+
+    if (!published) {
+      throw new NotFoundException(`Prompt template not found: ${id}`);
+    }
+
+    return published;
+  }
+
+  async retireTemplate(id: string): Promise<AiPromptTemplateRow> {
+    const retired = await this.promptTemplateRepository.updateStatus(id, 'retired');
+
+    if (!retired) {
+      throw new NotFoundException(`Prompt template not found: ${id}`);
+    }
+
+    return retired;
+  }
 }
