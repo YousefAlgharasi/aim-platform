@@ -1,0 +1,37 @@
+/* ============================================================
+   AIM — Spacing System  (8-point grid, with 4px half-steps)
+   Token name = px value:  --space-16  => 16px
+   Usage guidance lives in readme.md → VISUAL FOUNDATIONS.
+   ============================================================ */
+
+:root {
+  --space-0:  0px;
+  --space-2:  2px;   /* hairline / icon nudge */
+  --space-4:  4px;   /* smallest inner gap */
+  --space-8:  8px;   /* inner gap */
+  --space-12: 12px;  /* component gap */
+  --space-16: 16px;  /* card padding · mobile screen padding */
+  --space-20: 20px;  /* roomy card padding */
+  --space-24: 24px;  /* section gap */
+  --space-32: 32px;  /* large section gap */
+  --space-40: 40px;
+  --space-48: 48px;
+  --space-64: 64px;
+
+  /* Semantic spacing aliases */
+  --screen-padding-mobile: var(--space-16);
+  --screen-padding-web:    var(--space-24);
+  --card-padding:          var(--space-16);
+  --card-padding-lg:       var(--space-20);
+  --section-gap:           var(--space-24);
+  --component-gap:         var(--space-12);
+  --inner-gap:             var(--space-8);
+  --list-item-gap:         var(--space-12);
+  --form-field-gap:        var(--space-16);
+
+  /* Layout dimensions */
+  --content-max-web:    1200px;
+  --sidebar-width:      260px;
+  --bottom-nav-height:  64px;
+  --top-bar-height:     56px;
+}

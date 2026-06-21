@@ -1,37 +1,56 @@
-# Backend AIM Feature Boundary
+# Backend AIM Feature
 
-This feature contains the Backend API side of the AIM Engine integration.
+This feature owns all backend-side AIM Engine integration per Phase 5.
 
-## P1-031 scope
+## P5-043 — Phase 5 skeleton
 
-P1-031 adds only an internal backend-to-AIM integration stub.
+Extends the existing feature with the subdirectory structure defined in
+`docs/phase-5/backend-aim-pipeline-map.md`.
 
-It provides:
+### Directory layout
 
-- `AimEngineClientService`
-- `AimService`
-- typed AIM Engine health result models
-
-## Current integration
-
-The only supported call in this task is:
-
-```text
-GET {AIM_ENGINE_URL}/health
+```
+aim/
+├── adapter/                     # AIM Engine HTTP adapter (sole caller)
+│   └── aim-engine-adapter.service.ts
+├── pipeline/                    # Pipeline orchestrator + state assembly
+│   ├── aim-pipeline-orchestrator.service.ts
+│   └── aim-state-assembly.service.ts
+├── persistence/                 # AIM result persistence + audit log
+│   ├── aim-persistence.service.ts
+│   └── aim-audit.service.ts
+├── result/                      # Read-only AIM result APIs
+│   └── aim-result.service.ts
+├── aim-engine-client.service.ts # Health check client (pre-Phase 5)
+├── aim-engine-client.types.ts   # Health result types (pre-Phase 5)
+├── aim.module.ts                # NestJS module (updated P5-043)
+└── aim.service.ts               # Facade service (pre-Phase 5)
 ```
 
-The Backend API reads the AIM Engine base URL from validated backend config.
+### Pipeline stage ownership
 
-## Non-negotiable boundaries
+| Stage | Directory | Task |
+|-------|-----------|------|
+| 2 — Pipeline trigger | `pipeline/` | P5-056 |
+| 3 — State assembly | `pipeline/` | P5-047, P5-052–P5-055 |
+| 4 — AIM Engine call | `adapter/` | P5-045, P5-049–P5-050 |
+| 5 — Response validation | `adapter/` | P5-048 |
+| 6 — Persistence | `persistence/` | P5-057–P5-062 |
+| 7 — Result APIs | `result/` | P5-064 |
+| 8 — Safe fallback | `adapter/` | P5-050 |
+| Audit | `persistence/` | P5-063 |
 
-- Flutter Mobile must not call AIM Engine directly.
-- Admin Dashboard must not call AIM Engine directly.
-- Public clients must call the Backend API only.
-- Backend API is the integration owner for AIM Engine.
-- Do not expose AIM Engine internals directly to clients.
-- Do not add adaptive-learning calculations in this task.
-- Do not log secrets, tokens, learner answers, or provider keys.
+### Non-negotiable boundaries
 
-## Future tasks
-
-Later tasks may add internal endpoints, DTOs, and orchestration calls after the AIM Engine contracts and pipeline boundaries are stable.
+- **Only this module** calls the AIM Engine. No other module, controller,
+  or client may call `POST /aim/v1/analysis` or any AIM Engine endpoint.
+- Flutter, Admin Dashboard, and all clients are prohibited from calling
+  the AIM Engine directly.
+- No AIM-owned value (mastery, level, weakness, difficulty, recommendations,
+  review schedules, retention, frustration) is computed by the Backend.
+  These are exclusively AIM Engine outputs validated and persisted here.
+- No unvalidated AIM response is ever persisted.
+- Speed and response-time signals are forwarded as raw behavioral context
+  only — never used to compute mastery, level, or difficulty.
+- No secrets, service-role keys, database credentials, or AI provider keys
+  are stored, logged, or exposed here.

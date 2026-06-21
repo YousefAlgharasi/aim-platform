@@ -122,6 +122,36 @@ export async function fetchAdminQuestions(
   return envelope.data;
 }
 
+export type AdminQuestionDetail = AdminQuestionSummary & {
+  readonly richStem: unknown | null;
+  readonly explanation: string | null;
+  readonly hint: string | null;
+};
+
+function decodeQuestionDetail(value: unknown): AdminQuestionDetail {
+  if (!isObject(value) || typeof value.id !== 'string' || typeof value.stem !== 'string') {
+    throw new Error('Invalid question detail response shape.');
+  }
+  return {
+    ...decodeQuestionSummary(value),
+    richStem: value.richStem ?? null,
+    explanation: typeof value.explanation === 'string' ? value.explanation : null,
+    hint: typeof value.hint === 'string' ? value.hint : null,
+  };
+}
+
+export async function fetchAdminQuestion(
+  token: string,
+  id: string,
+): Promise<AdminQuestionDetail> {
+  const envelope = await adminApiClient.get<AdminQuestionDetail>(
+    `/curriculum/questions/${encodeURIComponent(id)}`,
+    decodeQuestionDetail,
+    { headers: { authorization: `Bearer ${token}` } },
+  );
+  return envelope.data;
+}
+
 export async function createAdminQuestion(
   token: string,
   payload: CreateQuestionPayload,

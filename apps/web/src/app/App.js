@@ -4,6 +4,9 @@ import WebPilot from '../pages/WebPilot';
 import AlgorithmTester from '../pages/AlgorithmTester';
 import AimDemo from '../pages/AimDemo';
 import AdminDashboard from '../pages/AdminDashboard';
+import ParentDashboard from '../pages/ParentDashboard';
+import AdminNotificationMonitor from '../features/admin-notifications/pages/AdminNotificationMonitor';
+import AdminTemplateMonitor from '../features/admin-notifications/pages/AdminTemplateMonitor';
 
 function App() {
   useEffect(() => {
@@ -28,6 +31,18 @@ function App() {
     pathname === '/admin-dashboard'
   ) {
     return <AdminDashboard />;
+  }
+
+  if (pathname === '/parent' || pathname === '/parent-dashboard') {
+    return <ParentDashboard />;
+  }
+
+  if (pathname === '/admin/notifications') {
+    return <AdminNotificationMonitor />;
+  }
+
+  if (pathname === '/admin/notification-templates') {
+    return <AdminTemplateMonitor />;
   }
 
   // All student-facing routes are handled internally by WebPilot

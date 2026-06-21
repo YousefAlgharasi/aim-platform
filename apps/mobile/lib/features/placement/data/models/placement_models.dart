@@ -1,7 +1,6 @@
-// Phase 4 — P4-061
-// Placement models barrel.
-//
-// Scope: Placement Test phase only.
-// Models are added in P4-062 (Add Flutter Placement Models).
-// Flutter must not define scoring thresholds, level constants,
-// or CEFR mapping logic in model files.
+export 'placement_answer_model.dart';
+export 'placement_attempt_model.dart';
+export 'placement_question_model.dart';
+export 'placement_result_model.dart';
+export 'placement_section_model.dart';
+export 'placement_test_model.dart';
