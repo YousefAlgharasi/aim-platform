@@ -8,3 +8,5 @@ export 'ai_chat_session_summary.dart';
 export 'ai_teacher_chat_state.dart';
 export 'ai_teacher_feedback.dart';
 export 'ai_teacher_reply.dart';
+export 'ai_teacher_safety_status.dart';
+export 'ai_teacher_stream_event.dart';

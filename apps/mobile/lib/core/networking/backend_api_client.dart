@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart' as http_parser;
 
 import '../config/config.dart';
 import 'api_client_exception.dart';
@@ -115,6 +116,103 @@ class BackendApiClient {
     return _parseResponse<T>(response, decodeData: decodeData);
   }
 
+  /// Multipart upload (e.g. voice audio submission). Used only for backend
+  /// endpoints that accept a binary file alongside the bearer token; never
+  /// used to send audio to an AI provider directly.
+  Future<ApiResponseEnvelope<T>> postMultipart<T>(
+    String path, {
+    required ApiJsonDecoder<T> decodeData,
+    required List<int> fileBytes,
+    required String fieldName,
+    required String fileName,
+    String? mimeType,
+    Map<String, String>? fields,
+    Map<String, String>? headers,
+  }) async {
+    final request = http.MultipartRequest('POST', buildUri(path))
+      ..headers.addAll(_authHeadersOnly(headers))
+      ..fields.addAll(fields ?? const {})
+      ..files.add(
+        http.MultipartFile.fromBytes(
+          fieldName,
+          fileBytes,
+          filename: fileName,
+          contentType:
+              mimeType == null ? null : http_parser.MediaType.parse(mimeType),
+        ),
+      );
+
+    final streamedResponse = await _httpClient.send(request);
+    final response = await http.Response.fromStream(streamedResponse);
+
+    return _parseResponse<T>(response, decodeData: decodeData);
+  }
+
+  /// Raw byte fetch (e.g. voice audio playback). Returns the response body
+  /// bytes as-is; this endpoint does not use the JSON envelope.
+  Future<List<int>> getBytes(
+    String path, {
+    Map<String, String>? headers,
+  }) async {
+    final response = await _httpClient.get(
+      buildUri(path),
+      headers: _authHeadersOnly(headers),
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw ApiClientException(
+        code: 'AUDIO_FETCH_FAILED',
+        message: 'Failed to fetch voice audio.',
+        statusCode: response.statusCode,
+      );
+    }
+
+    return response.bodyBytes;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Server-Sent Events — P18-061
+  // Used only for backend SSE endpoints that stream an already
+  // safety-filtered reply (e.g. /ai-teacher/sessions/:id/messages/stream).
+  // Never used for a direct AI provider call.
+  // ---------------------------------------------------------------------------
+
+  Stream<Map<String, dynamic>> streamSse(
+    String path, {
+    Object? body,
+    Map<String, String>? headers,
+  }) async* {
+    final request = http.Request('POST', buildUri(path))
+      ..headers.addAll(_jsonHeaders(headers))
+      ..body = body == null ? '' : jsonEncode(body);
+
+    final streamedResponse = await _httpClient.send(request);
+
+    if (streamedResponse.statusCode < 200 || streamedResponse.statusCode >= 300) {
+      final raw = await streamedResponse.stream.bytesToString();
+      throw ApiClientException(
+        code: 'STREAM_REQUEST_FAILED',
+        message: 'AI Teacher stream request failed.',
+        statusCode: streamedResponse.statusCode,
+        details: raw,
+      );
+    }
+
+    final lines =
+        streamedResponse.stream.transform(utf8.decoder).transform(const LineSplitter());
+
+    await for (final line in lines) {
+      if (!line.startsWith('data:')) continue;
+      final payload = line.substring('data:'.length).trim();
+      if (payload.isEmpty) continue;
+
+      final decoded = jsonDecode(payload);
+      if (decoded is Map<String, dynamic>) {
+        yield decoded;
+      }
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // Response parsing
   // ---------------------------------------------------------------------------
@@ -160,6 +258,17 @@ class BackendApiClient {
     final base = <String, String>{
       'accept': 'application/json',
       'content-type': 'application/json',
+      ...?headers,
+    };
+
+    return _authInterceptor?.apply(base) ?? base;
+  }
+
+  /// Auth-only headers, without the JSON content-type (used for multipart
+  /// uploads and raw byte fetches, which set their own content handling).
+  Map<String, String> _authHeadersOnly(Map<String, String>? headers) {
+    final base = <String, String>{
+      'accept': 'application/json',
       ...?headers,
     };
 

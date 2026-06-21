@@ -17,3 +17,4 @@ export * from './get-parent-report-request.dto';
 export * from './parent-notification-enums';
 export * from './parent-notification-preference.entity';
 export * from './update-parent-notification-preference-request.dto';
+export * from './parent-ai-usage-summary.entity';

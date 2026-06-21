@@ -76,6 +76,13 @@ export async function getChildReports(childId, period = 'weekly') {
   return parentRequest(`/children/${encodeURIComponent(childId)}/reports?period=${encodeURIComponent(period)}`);
 }
 
+// P18-070: Parent AI Read-Only Summary UI — backend-computed AI Teacher/
+// Voice Tutor usage counts only. No conversation/voice content, safety
+// reason-category, or learning-state value is ever requested here.
+export async function getChildAiUsageSummary(childId) {
+  return parentRequest(`/children/${encodeURIComponent(childId)}/ai-summary`);
+}
+
 export async function listInvitations() {
   return parentRequest('/invitations');
 }

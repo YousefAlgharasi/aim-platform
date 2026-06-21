@@ -1,13 +1,13 @@
 class VoiceSession {
   final String sessionId;
-  final DateTime createdAt;
+  final String createdAt;
+  final String? lastActivityAt;
   final int messageCount;
-  final String? contextRef;
 
   const VoiceSession({
     required this.sessionId,
     required this.createdAt,
+    this.lastActivityAt,
     required this.messageCount,
-    this.contextRef,
   });
 }
