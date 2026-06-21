@@ -10,6 +10,10 @@ function makeDatabaseService(
   return { query };
 }
 
+function makeAnalyticsEventIngestionService() {
+  return { ingest: jest.fn().mockResolvedValue(undefined) };
+}
+
 const PLACEMENT_ROW = {
   id: 'placement-result-001',
   estimated_level: 'intermediate',
@@ -39,7 +43,7 @@ describe('SessionsService', () => {
   describe('startSession', () => {
     it('throws VALIDATION_ERROR for an invalid sessionType', async () => {
       const db = makeDatabaseService([]);
-      const service = new SessionsService(db as never);
+      const service = new SessionsService(db as never, makeAnalyticsEventIngestionService() as never);
 
       await expect(
         service.startSession({
@@ -56,7 +60,7 @@ describe('SessionsService', () => {
 
     it('throws NOT_FOUND when the student has no completed placement result', async () => {
       const db = makeDatabaseService([{ rowCount: 0, rows: [] }]);
-      const service = new SessionsService(db as never);
+      const service = new SessionsService(db as never, makeAnalyticsEventIngestionService() as never);
 
       await expect(
         service.startSession({
@@ -74,7 +78,7 @@ describe('SessionsService', () => {
         { rowCount: 1, rows: [PLACEMENT_ROW] },
         { rowCount: 1, rows: [{ ...SESSION_ROW, skill_focus_ids: [] }] },
       ]);
-      const service = new SessionsService(db as never);
+      const service = new SessionsService(db as never, makeAnalyticsEventIngestionService() as never);
 
       const result = await service.startSession({
         studentId: 'student-001',
@@ -109,7 +113,7 @@ describe('SessionsService', () => {
         { rowCount: 1, rows: [{ key: 'grammar.past_simple.forms' }] },
         { rowCount: 1, rows: [SESSION_ROW] },
       ]);
-      const service = new SessionsService(db as never);
+      const service = new SessionsService(db as never, makeAnalyticsEventIngestionService() as never);
 
       await service.startSession({
         studentId: 'student-001',
@@ -132,7 +136,7 @@ describe('SessionsService', () => {
         { rowCount: 1, rows: [PLACEMENT_ROW] },
         { rowCount: 1, rows: [{ ...SESSION_ROW, skill_focus_ids: [] }] },
       ]);
-      const service = new SessionsService(db as never);
+      const service = new SessionsService(db as never, makeAnalyticsEventIngestionService() as never);
 
       await service.startSession({
         studentId: 'student-001',
