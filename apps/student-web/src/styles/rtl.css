@@ -1,0 +1,11 @@
+[dir="rtl"] {
+  text-align: right;
+}
+
+[dir="rtl"] .back-link::before {
+  content: '→';
+}
+
+[dir="ltr"] .back-link::before {
+  content: '←';
+}
