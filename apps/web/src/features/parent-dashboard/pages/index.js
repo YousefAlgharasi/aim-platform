@@ -18,3 +18,4 @@ export { default as ParentBilling } from './ParentBilling';
 export { default as ParentAnalyticsReports } from './ParentAnalyticsReports';
 export { default as ParentProgressReport } from './ParentProgressReport';
 export { default as ParentAssessmentReport } from './ParentAssessmentReport';
+export { default as ParentAiSummary } from './ParentAiSummary';

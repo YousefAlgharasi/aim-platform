@@ -5,14 +5,14 @@ class VoiceMessageModel {
   final String role;
   final String text;
   final String? audioRef;
-  final String timestamp;
+  final String createdAt;
 
   const VoiceMessageModel({
     required this.id,
     required this.role,
     required this.text,
     this.audioRef,
-    required this.timestamp,
+    required this.createdAt,
   });
 
   factory VoiceMessageModel.fromJson(Map<String, dynamic> json) {
@@ -21,8 +21,15 @@ class VoiceMessageModel {
       role: json['role'] as String,
       text: json['text'] as String,
       audioRef: json['audioRef'] as String?,
-      timestamp: json['timestamp'] as String,
+      createdAt: json['createdAt'] as String,
     );
+  }
+
+  static List<VoiceMessageModel> listFromJson(Map<String, dynamic> json) {
+    final list = json['messages'] as List? ?? const [];
+    return list
+        .map((e) => VoiceMessageModel.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   VoiceMessage toEntity() {
@@ -31,7 +38,7 @@ class VoiceMessageModel {
       role: role == 'teacher' ? VoiceMessageRole.teacher : VoiceMessageRole.student,
       text: text,
       audioRef: audioRef,
-      timestamp: DateTime.parse(timestamp),
+      createdAt: createdAt,
     );
   }
 }

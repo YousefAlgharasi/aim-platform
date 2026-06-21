@@ -7,3 +7,5 @@ export 'ai_chat_session_model.dart';
 export 'ai_chat_session_summary_model.dart';
 export 'ai_teacher_feedback_model.dart';
 export 'ai_teacher_reply_model.dart';
+export 'ai_teacher_safety_status_model.dart';
+export 'ai_teacher_stream_event_model.dart';
