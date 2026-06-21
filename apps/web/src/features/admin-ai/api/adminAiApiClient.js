@@ -77,3 +77,28 @@ export async function publishPromptTemplate(id) {
 export async function retirePromptTemplate(id) {
   return adminAiRequest(`/prompts/${encodeURIComponent(id)}/retire`, { method: 'POST' });
 }
+
+// P18-075: Admin AI Model Config UI — provider_key_ref is a non-secret
+// reference string only; this client never reads or writes the
+// underlying provider credential/API key.
+export async function listModelConfigs() {
+  return adminAiRequest('/model-configs');
+}
+
+export async function getModelConfig(id) {
+  return adminAiRequest(`/model-configs/${encodeURIComponent(id)}`);
+}
+
+export async function setModelConfigStatus(id, status) {
+  return adminAiRequest(`/model-configs/${encodeURIComponent(id)}/status`, {
+    method: 'POST',
+    body: { status },
+  });
+}
+
+export async function updateModelConfigLimits(id, limits, parameters) {
+  return adminAiRequest(`/model-configs/${encodeURIComponent(id)}/limits`, {
+    method: 'POST',
+    body: { limits, parameters },
+  });
+}
