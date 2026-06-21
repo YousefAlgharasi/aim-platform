@@ -25,7 +25,7 @@ const makeMockUsersService = (
 });
 
 const makeService = (usersService: Pick<UsersService, 'listAll'>): AdminService =>
-  new AdminService(mockDb, usersService as unknown as UsersService);
+  new AdminService(mockDb, usersService as unknown as UsersService, {} as any);
 
 describe('AdminService', () => {
   describe('listUsers', () => {

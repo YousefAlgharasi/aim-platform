@@ -103,7 +103,8 @@ describe('LessonSkillsService.addSkillToLesson', () => {
 describe('LessonSkillsService.removeSkillFromLesson', () => {
   it('removes a skill link', async () => {
     (mockDb.query as jest.Mock)
-      .mockResolvedValueOnce({ rows: [lessonRow] })
+      .mockResolvedValueOnce({ rows: [lessonRow] }) // lesson exists
+      .mockResolvedValueOnce({ rows: [{ status: 'draft' }] }) // getLessonStatus
       .mockResolvedValueOnce({ rows: [{ lesson_id: LESSON_ID }] }); // deleted
 
     await expect(
@@ -121,7 +122,8 @@ describe('LessonSkillsService.removeSkillFromLesson', () => {
 
   it('throws NOT_FOUND when link does not exist', async () => {
     (mockDb.query as jest.Mock)
-      .mockResolvedValueOnce({ rows: [lessonRow] })
+      .mockResolvedValueOnce({ rows: [lessonRow] }) // lesson exists
+      .mockResolvedValueOnce({ rows: [{ status: 'draft' }] }) // getLessonStatus
       .mockResolvedValueOnce({ rows: [] }); // nothing deleted
 
     await expect(
