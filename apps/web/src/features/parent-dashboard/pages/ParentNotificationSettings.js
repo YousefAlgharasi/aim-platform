@@ -11,7 +11,7 @@ import {
   getQuietHours,
   updateQuietHours,
 } from '../api';
-import { ParentCard, ParentLoadingState, ParentErrorState } from '../components';
+import { ParentCard, ParentLoadingState, ParentEmptyState, ParentErrorState } from '../components';
 import './ParentPages.css';
 
 const CHANNELS = ['in_app', 'push', 'email'];
@@ -120,6 +120,7 @@ function ParentNotificationSettings() {
 
   if (status === 'loading') return <ParentLoadingState />;
   if (status === 'error') return <ParentErrorState message={error} />;
+  if (status === 'empty') return <ParentEmptyState message="لا توجد تفضيلات إشعارات." />;
 
   return (
     <div className="parent-notification-settings">

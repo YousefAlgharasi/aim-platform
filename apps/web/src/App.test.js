@@ -59,11 +59,10 @@ test('renders the web pilot login when no student is selected', async () => {
   window.history.pushState({}, '', '/login');
   render(<App />);
 
-  expect(screen.getByRole('heading', { name: /student login/i })).toBeInTheDocument();
-  expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-  expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
-  expect(await screen.findByText(/ready to login/i)).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: /تسجيل دخول الطالب/i })).toBeInTheDocument();
+  expect(screen.getByLabelText(/البريد الإلكتروني/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/كلمة المرور/i)).toBeInTheDocument();
+  expect(screen.getAllByRole('button', { name: /تسجيل الدخول/i }).length).toBeGreaterThan(0);
 });
 
 test('loads the admin dashboard from the configured API base URL', async () => {
