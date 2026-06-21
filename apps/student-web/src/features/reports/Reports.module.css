@@ -1,0 +1,119 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+}
+
+.heading {
+  font-size: var(--type-h1-size, 28px);
+  font-weight: var(--weight-bold, 700);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: var(--type-h2-size, 22px);
+  font-weight: var(--weight-semibold, 600);
+  margin: 0;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--component-gap);
+}
+
+@media (min-width: 768px) {
+  .statsGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  text-align: center;
+  padding: var(--space-16);
+}
+
+.statValue {
+  font-size: var(--type-h1-size, 28px);
+  font-weight: var(--weight-extrabold, 800);
+  color: var(--color-primary-500);
+}
+
+.statLabel {
+  font-size: 13px;
+  color: var(--color-neutral-500, #7E849A);
+}
+
+.chartSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.barChart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.barRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+.barLabel {
+  font-size: 13px;
+  color: var(--color-neutral-600, #5C6178);
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.barTrack {
+  flex: 1;
+  height: 20px;
+  background: var(--color-neutral-100, #F1F2F6);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: var(--color-primary-500);
+  border-radius: var(--radius-pill);
+  transition: width 0.3s ease;
+}
+
+.barValue {
+  font-size: 13px;
+  font-weight: var(--weight-semibold, 600);
+  min-width: 40px;
+  text-align: end;
+}
+
+.timelineList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.timelineItem {
+  display: flex;
+  gap: var(--space-12);
+  padding: var(--space-8) 0;
+  border-bottom: 1px solid var(--color-neutral-100, #F1F2F6);
+  font-size: 14px;
+}
+
+.timelineDate {
+  color: var(--color-neutral-500, #7E849A);
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.timelineEvent {
+  color: var(--color-neutral-700, #374151);
+}
