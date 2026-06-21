@@ -1032,181 +1032,225 @@ This section satisfies P3-016 when:
 
 ---
 
-# Phase 5 — AIM Engine Integration Error Codes
+# Phase 4 — Placement Test Error Codes
 
 ## Purpose
 
-This section defines the stable backend error code identifiers for failures in the Backend-to-AIM Engine integration. These are the concrete codes that the AIM Integration Error Handling Policy (`docs/phase-5/aim-error-handling-policy.md`, `P5-008`) and the AIM Engine Response Contract (`packages/shared-contracts/api/aim-engine-response-contracts.md`, `P5-011`) both defer to this task to define.
+This section defines Phase 4 error codes for placement test operations, including placement test
+and section retrieval, attempt lifecycle, answer submission, result generation, and initial learning
+path delivery.
 
-This section is documentation-only. It does not implement NestJS exception filters, Python pipeline exception classes, Flutter error models, Admin Dashboard handlers, or runtime retry/circuit-breaker logic. Those behaviors are fixed by `P5-008`; this section only names the codes that behavior emits.
+The goal is to make placement errors consistent across Backend API, Flutter Mobile, and Admin
+Dashboard while keeping messages safe and never exposing scoring logic, internal skill maps, level
+thresholds, or weakness computation to clients.
+
+This section is documentation-only. It does not implement backend exceptions, NestJS filters,
+Flutter error models, Admin Dashboard handlers, database migrations, or runtime behavior.
 
 ---
 
 ## Scope
 
-This section covers:
+This section is limited to Phase 4 — Placement Test.
 
-- error codes for AIM Engine transport and availability failures (timeout, connection failure, transient HTTP, circuit breaker open);
-- error codes for AIM Engine rejection of an outbound request (validation failure, idempotency conflict);
-- error codes for inbound AIM response contract violations;
-- error codes for persistence failures after a validated AIM response;
-- error codes for denied access to a persisted AIM result;
-- two non-error status identifiers used inside success-shaped responses for the two fallback profiles defined in `P5-008`.
+It covers:
 
-This section does not cover:
+- placement test retrieval error codes;
+- placement section retrieval error codes;
+- placement question delivery error codes;
+- placement attempt lifecycle error codes;
+- placement answer submission error codes;
+- placement result retrieval error codes;
+- initial learning path retrieval error codes;
+- admin placement management error codes.
 
-- field-level validation codes for individual AIM response categories. Skill state, weakness record, difficulty decision, recommendation, review schedule, and session summary each validate independently against their own contract (`P5-012`–`P5-017`) before persistence. A category that fails its own validation is dropped from persistence for that call and recorded as a validation event; it does not raise one of the catalog codes below. Those per-category validation-event identifiers remain owned by each category's own contract task, not by this task.
-- the AIM Engine's own safe failure response body shape (owned by `P5-025`).
-- AI Teacher, Student Web App, voice, payments, parent dashboard, or any client-side AIM computation.
+This section does not cover onboarding, learner lesson delivery, practice attempts, sessions,
+AIM Engine runtime, AI Teacher, dashboard recommendations, progress reports, or Student Web App.
 
 ---
 
 ## Source of Truth
 
-| Dependency | Required Output | Status |
-|---|---|---|
-| P5-008 | `docs/phase-5/aim-error-handling-policy.md` | Checked and used as the source of truth for the failure taxonomy, retry/circuit-breaker behavior, and the two fallback profiles. |
-| P5-011 | `packages/shared-contracts/api/aim-engine-response-contracts.md` | Checked; defines the envelope-level triggers (correlation mismatch, unsupported `contractVersion`, malformed envelope) that map to `AIM_RESPONSE_CONTRACT_VIOLATION` below. |
-
-Core rule, unchanged from the rest of this document:
+This section follows:
 
 ```text
-Error responses must be safe for clients and must not expose secrets or privileged internals.
+packages/shared-contracts/api/errors.md
+packages/shared-contracts/api/placement-test-contracts.md       (P4-009)
+packages/shared-contracts/api/placement-section-contracts.md    (P4-010)
+packages/shared-contracts/api/placement-question-contracts.md   (P4-011)
+packages/shared-contracts/api/placement-answer-contracts.md     (P4-012)
+packages/shared-contracts/api/placement-attempt-contracts.md    (P4-013)
+packages/shared-contracts/api/placement-result-contracts.md     (P4-014)
+packages/shared-contracts/api/initial-learning-path-contracts.md (P4-015)
+docs/phase-4/placement-api-map.md                               (P4-006)
+docs/phase-4/placement-test-charter.md
+docs/phase-4/no-client-side-placement-scoring.md
+docs/phase-4/no-aim-runtime-rule.md
 ```
 
 ---
 
 ## Naming Convention
 
-Phase 5 AIM integration error codes use the `AIM_` prefix and the same `UPPER_SNAKE_CASE` convention as the rest of this document.
+Phase 4 placement error codes use uppercase snake case with domain prefixes:
+
+```text
+PLACEMENT_
+PLACEMENT_SECTION_
+PLACEMENT_QUESTION_
+PLACEMENT_ATTEMPT_
+PLACEMENT_ANSWER_
+PLACEMENT_RESULT_
+PLACEMENT_PATH_
+PLACEMENT_ADMIN_
+```
 
 Rules:
 
-- Use one stable code per failure-taxonomy category from `P5-008`, not one code per call site.
-- Do not encode the AIM Engine's own HTTP status, error body, or internal model name into the code.
-- Do not introduce a code for a per-category validation event; those stay inside their own contract (`P5-012`–`P5-017`).
-- Keep codes stable across Backend API, Flutter Mobile, and Admin Dashboard.
+- Use stable codes for client branching and backend logging.
+- Keep client messages safe and non-revealing — never expose score, threshold, or mastery values.
+- Log detailed internal reasons only in backend-safe logs.
+- Do not expose scoring logic, level thresholds, weakness computation, or skill map internals.
 
 ---
 
-## AIM Engine Transport and Availability Error Codes
+## Placement Test Error Codes
 
-| Code | HTTP Status | Outcome (audit log) | Safe Message | When to Use |
-|---|---:|---|---|---|
-| `AIM_ENGINE_UNAVAILABLE` | 503 | `transient` or `breaker_open` | The adaptive learning engine is temporarily unavailable. Please try again shortly. | Outbound call to `POST /aim/v1/analysis` or `GET /health` timed out, failed to connect, received a transient HTTP status (`429`, `500`, `503`, `504`), or was short-circuited by an open circuit breaker. |
-| `AIM_ENGINE_CONFIG_ERROR` | 503 | `non_retryable` | The adaptive learning engine is temporarily unavailable. Please try again shortly. | AIM Engine returned `401` or `403` to an outbound backend call. Treated as a backend configuration or credential issue; never described as such to the client. |
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `PLACEMENT_TEST_NOT_FOUND` | 404 | No active placement test is available | No published placement test exists |
+| `PLACEMENT_TEST_UNAVAILABLE` | 503 | Placement test is temporarily unavailable | Published test exists but cannot be served |
+| `PLACEMENT_TEST_INVALID_STATUS` | 422 | Placement test status is invalid | `status` is not one of the allowed enum values |
+| `PLACEMENT_TEST_ALREADY_PUBLISHED` | 409 | A placement test is already published | Only one test may be active at a time |
+| `PLACEMENT_TEST_TITLE_REQUIRED` | 422 | Placement test title is required | `title` is missing or empty |
 
-## AIM Engine Request Rejection Error Codes
+---
 
-| Code | HTTP Status | Outcome (audit log) | Safe Message | When to Use |
-|---|---:|---|---|---|
-| `AIM_REQUEST_REJECTED` | 503 | `validation_failed` | The adaptive learning engine could not process this update. Please try again shortly. | AIM Engine returned `400` or `422` for an outbound request. This is a backend-constructed payload defect, not a caller-supplied field error, so it is never surfaced as `VALIDATION_ERROR` with field details. |
-| `AIM_REQUEST_CONFLICT` | 503 | `non_retryable` | The adaptive learning engine could not process this update. Please try again shortly. | AIM Engine returned `409` because `backend_request_id` was reused with a different payload digest. Treated as a code defect; the Backend never mints a new `backend_request_id` to silently retry. |
+## Placement Section Error Codes
 
-## AIM Response Contract Violation Error Codes
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `PLACEMENT_SECTION_NOT_FOUND` | 404 | Placement section not found | Section does not exist or is inaccessible |
+| `PLACEMENT_SECTION_TEST_NOT_FOUND` | 404 | Parent placement test not found | Referenced `placement_test_id` does not exist |
+| `PLACEMENT_SECTION_ORDER_CONFLICT` | 409 | Section order conflicts with an existing section | `order` value already taken within the test |
+| `PLACEMENT_SECTION_TITLE_REQUIRED` | 422 | Section title is required | `title` is missing or empty |
+| `PLACEMENT_SECTION_WEIGHT_INVALID` | 422 | Section weight is invalid | `weight` is not a positive number or exceeds allowed range |
 
-| Code | HTTP Status | Outcome (audit log) | Safe Message | When to Use |
-|---|---:|---|---|---|
-| `AIM_RESPONSE_CONTRACT_VIOLATION` | 503 | `contract_violation` | The adaptive learning engine returned an unexpected result. Please try again shortly. | AIM Engine returned `200` but the envelope is malformed, `backendRequestId`/`studentId`/`sessionId` does not match the originating request, or `contractVersion` is unsupported. The entire response is rejected; no category is persisted. |
+---
 
-## AIM Persistence Error Codes
+## Placement Question Error Codes
 
-| Code | HTTP Status | Outcome (audit log) | Safe Message | When to Use |
-|---|---:|---|---|---|
-| `AIM_PERSISTENCE_FAILED` | 500 | `persistence_failed` | We couldn't save your adaptive learning update. Please try again. | A database write failed after a validated AIM response passed all category checks. The transaction is rolled back; no partial AIM-owned state is persisted. |
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `PLACEMENT_QUESTION_NOT_FOUND` | 404 | Placement question not found | Question does not exist or is inaccessible |
+| `PLACEMENT_QUESTION_SECTION_NOT_FOUND` | 404 | Parent placement section not found | Referenced `section_id` does not exist |
+| `PLACEMENT_QUESTION_INVALID_TYPE` | 422 | Question type is invalid | `type` is not one of the allowed enum values |
+| `PLACEMENT_QUESTION_NO_OPTIONS` | 422 | Question must have answer options | No options provided for a multiple-choice question |
+| `PLACEMENT_QUESTION_NO_CORRECT_OPTION` | 422 | Question must have a correct option | No option is marked as correct |
+| `PLACEMENT_QUESTION_MULTIPLE_CORRECT` | 422 | Question has multiple correct options | Only one option may be correct |
+| `PLACEMENT_QUESTION_ORDER_CONFLICT` | 409 | Question order conflicts with an existing question | `order` value already taken within the section |
+| `PLACEMENT_QUESTION_PROMPT_REQUIRED` | 422 | Question prompt is required | `prompt` is missing or empty |
 
-## AIM Result Access Error Codes
+Fields never returned to Flutter on question delivery: `correctOptionId`, `skillId`, `weight`, `difficultyScore`.
 
-| Code | HTTP Status | Outcome (audit log) | Safe Message | When to Use |
-|---|---:|---|---|---|
-| `AIM_RESULT_ACCESS_DENIED` | 403 | `authorization_denied` | You do not have access to this adaptive learning result. | Caller lacks permission to read a persisted AIM result (skill state, weakness record, difficulty decision, recommendation, review schedule, or session summary). |
+---
 
-## AIM Fallback State Identifiers (Non-Error)
+## Placement Attempt Error Codes
 
-These two identifiers are not failure codes. They are stable backend-issued state values carried inside a normal success-shaped response, per the two fallback profiles in `P5-008`. They must never appear in the `error.code` field of the standard error envelope.
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `PLACEMENT_ATTEMPT_NOT_FOUND` | 404 | Placement attempt not found | Attempt does not exist or is inaccessible |
+| `PLACEMENT_ATTEMPT_NOT_OWNED` | 403 | You do not have access to this attempt | Caller does not own the attempt |
+| `PLACEMENT_ATTEMPT_ALREADY_COMPLETED` | 409 | Placement attempt is already completed | Attempt status is already `completed` |
+| `PLACEMENT_ATTEMPT_ALREADY_ABANDONED` | 409 | Placement attempt has been abandoned | Attempt status is `abandoned` and cannot be continued |
+| `PLACEMENT_RETAKE_NOT_ALLOWED` | 409 | You have already completed a placement test | Retake policy prevents a new attempt |
+| `PLACEMENT_ATTEMPT_INVALID_STATUS` | 422 | Attempt status is invalid | Attempt is not in a valid state for this action |
+| `PLACEMENT_ATTEMPT_NO_TEST` | 404 | No active placement test found | No published test exists to start an attempt |
 
-| Identifier | Used In | Meaning |
-|---|---|---|
-| `AIM_ANALYSIS_PENDING` | Profile A — write-side acknowledgement (attempt submission, session event) | The raw input was saved successfully, but adaptive analysis did not complete for this call. The underlying cause is one of the codes above and is recorded in the audit entry; it is not necessarily re-surfaced to the caller. The client renders the raw save as successful and does not compute any AIM-owned value to compensate. |
-| `AIM_RESULT_PENDING` | Profile B — read-side empty state (AIM result API) | No validated AIM result has been persisted yet for the requested resource. The read API never invents, infers, or partially computes the missing value, and never proxies a live call to the AIM Engine to populate it. |
+---
 
-## Failure Category to Error Code Map
+## Placement Answer Error Codes
 
-This table cross-references every row of the failure taxonomy in `P5-008` to the codes above, so the two documents cannot drift.
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `PLACEMENT_ANSWER_ALREADY_SUBMITTED` | 409 | Answer has already been submitted for this question | Duplicate answer for the same question in this attempt |
+| `PLACEMENT_ANSWER_INVALID_ATTEMPT` | 400 | Answer cannot be submitted for this attempt | Attempt is not in `in_progress` status |
+| `PLACEMENT_ANSWER_QUESTION_NOT_IN_ATTEMPT` | 400 | Question does not belong to this attempt | `questionId` is not part of the current attempt's test |
+| `PLACEMENT_ANSWER_OPTION_NOT_FOUND` | 404 | Selected option not found | `selectedOptionId` does not exist for this question |
+| `PLACEMENT_ANSWER_OPTION_NOT_IN_QUESTION` | 400 | Selected option does not belong to this question | `selectedOptionId` is from a different question |
 
-| Failure Taxonomy Category (`P5-008`) | Error Code |
-|---|---|
-| Transport timeout | `AIM_ENGINE_UNAVAILABLE` |
-| Transport connection error | `AIM_ENGINE_UNAVAILABLE` |
-| Transient HTTP (`429`/`500`/`503`/`504`) | `AIM_ENGINE_UNAVAILABLE` |
-| Circuit breaker open (short-circuit) | `AIM_ENGINE_UNAVAILABLE` |
-| Authentication failure (`401`) | `AIM_ENGINE_CONFIG_ERROR` |
-| Authorization failure (`403`, engine call) | `AIM_ENGINE_CONFIG_ERROR` |
-| Validation failure, outbound (`400`/`422`) | `AIM_REQUEST_REJECTED` |
-| Idempotency conflict (`409`) | `AIM_REQUEST_CONFLICT` |
-| Contract violation, inbound | `AIM_RESPONSE_CONTRACT_VIOLATION` |
-| Persistence failure | `AIM_PERSISTENCE_FAILED` |
-| Authorization denial on result read | `AIM_RESULT_ACCESS_DENIED` |
+Fields never returned on answer submission: `isCorrect`, `score`.
+
+---
+
+## Placement Result Error Codes
+
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `PLACEMENT_RESULT_NOT_FOUND` | 404 | Placement result not found | Result does not exist for this attempt |
+| `PLACEMENT_RESULT_NOT_READY` | 400 | Placement result is not yet available | Attempt is complete but result generation is still processing |
+| `PLACEMENT_ATTEMPT_NOT_COMPLETED` | 400 | Placement attempt has not been completed | Result cannot be retrieved until attempt is completed |
+| `PLACEMENT_RESULT_INVALID_ATTEMPT` | 400 | Invalid attempt for result retrieval | Attempt ID is malformed or does not exist |
+
+Fields never returned to Flutter in result: raw `placementScore`, `confidence`, section scores, or threshold values.
+
+---
+
+## Initial Learning Path Error Codes
+
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `PLACEMENT_PATH_NOT_FOUND` | 404 | Initial learning path not found | Path has not been generated for this result |
+| `PLACEMENT_PATH_NOT_READY` | 400 | Initial learning path is not yet available | Path generation is still processing |
+| `PLACEMENT_PATH_RESULT_NOT_FOUND` | 404 | Placement result not found for path retrieval | Referenced `placement_result_id` does not exist |
+
+Fields never returned to Flutter in path entries: `skill_id`, `skill_code`, `skill_key`, `source`, `placement_result_id`.
+
+---
+
+## Admin Placement Error Codes
+
+| Code | HTTP Status | Safe Message | Meaning |
+|---|---:|---|---|
+| `PLACEMENT_ADMIN_ACCESS_DENIED` | 403 | Admin placement access denied | Caller does not have admin placement permissions |
+| `PLACEMENT_ADMIN_TEST_LOCKED` | 409 | Placement test is locked and cannot be modified | Test has active or completed attempts |
+| `PLACEMENT_ADMIN_SECTION_LOCKED` | 409 | Placement section is locked and cannot be modified | Section belongs to a test with active attempts |
+| `PLACEMENT_ADMIN_QUESTION_LOCKED` | 409 | Placement question is locked and cannot be modified | Question belongs to a test with active attempts |
+| `PLACEMENT_ADMIN_SKILL_LINK_NOT_FOUND` | 404 | Placement question skill link not found | The specified question-skill mapping does not exist |
+| `PLACEMENT_ADMIN_SKILL_LINK_ALREADY_EXISTS` | 409 | Placement question skill link already exists | Duplicate question-skill mapping |
+| `PLACEMENT_ADMIN_RESULTS_ACCESS_DENIED` | 403 | Placement results access denied | Caller cannot view placement results |
 
 ---
 
 ## Safe Client Error Shape
 
-AIM integration errors fit the same shared error envelope as the rest of this document:
+Phase 4 placement errors must fit the shared error response envelope:
 
 ```json
 {
   "success": false,
   "data": null,
   "error": {
-    "code": "AIM_ENGINE_UNAVAILABLE",
-    "message": "The adaptive learning engine is temporarily unavailable. Please try again shortly."
+    "code": "PLACEMENT_RETAKE_NOT_ALLOWED",
+    "message": "You have already completed a placement test"
   }
 }
 ```
 
-A write-side fallback acknowledgement (Profile A) is a success response, not an error envelope:
+With optional safe validation details:
 
 ```json
 {
-  "success": true,
-  "data": {
-    "saved": true,
-    "analysisStatus": "AIM_ANALYSIS_PENDING"
-  },
-  "error": null
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "PLACEMENT_ANSWER_INVALID_ATTEMPT",
+    "message": "Answer cannot be submitted for this attempt",
+    "details": [
+      { "field": "attemptId", "message": "Attempt is not in progress" }
+    ]
+  }
 }
-```
-
----
-
-## Backend Logging Boundary
-
-Backend may log safe internal diagnostics for AIM integration failures, but must not expose them to clients.
-
-Safe logging examples:
-
-```text
-errorCode
-outcome (success, transient, non_retryable, validation_failed, contract_violation, breaker_open, persistence_failed, authorization_denied)
-requestId (X-Request-Id)
-backendRequestId
-endpoint (/aim/v1/analysis or /health)
-attemptNumber
-elapsedTime
-createdAt
-```
-
-Unsafe logging examples:
-
-```text
-raw AIM Engine request body
-raw AIM Engine response body
-service tokens
-AI provider keys
-database connection strings
-payload digests
-full stack traces in client-facing responses
 ```
 
 ---
@@ -1215,40 +1259,44 @@ full stack traces in client-facing responses
 
 Flutter Mobile may:
 
-- use `AIM_ENGINE_UNAVAILABLE`, `AIM_ENGINE_CONFIG_ERROR`, `AIM_REQUEST_REJECTED`, `AIM_REQUEST_CONFLICT`, or `AIM_RESPONSE_CONTRACT_VIOLATION` to show a safe "adaptive analysis unavailable" message;
-- use `AIM_ANALYSIS_PENDING` to indicate the student's answer was saved while adaptive feedback catches up;
-- use `AIM_RESULT_PENDING` to show an empty/loading state for a skill, weakness, or recommendation view.
+- use `PLACEMENT_RETAKE_NOT_ALLOWED` to show a safe "already completed" message;
+- use `PLACEMENT_ATTEMPT_NOT_COMPLETED` to gate result display;
+- use `PLACEMENT_RESULT_NOT_READY` or `PLACEMENT_PATH_NOT_READY` to show a loading state and retry;
+- use `PLACEMENT_ANSWER_ALREADY_SUBMITTED` to prevent duplicate submission UI.
 
 Flutter Mobile must not:
 
-- call the AIM Engine directly, with or without these codes;
-- compute or infer mastery, level, weakness, difficulty, recommendation, review schedule, retention, or frustration locally when one of these codes is received;
-- retry the AIM analysis itself; only the Backend adapter retries per `P5-008`.
+- compute or estimate placement score, level, mastery, weakness map, or initial path from error data;
+- expose `isCorrect` or any score signal to the learner under any condition;
+- override backend attempt or result authority based on local state;
+- expose internal error codes or backend diagnostics to the learner.
+
+---
 
 ## Admin Dashboard Handling Rules
 
 Admin Dashboard may:
 
-- surface `AIM_PERSISTENCE_FAILED` or `AIM_RESPONSE_CONTRACT_VIOLATION` in an operator-facing view as a safe, generic message;
-- use `AIM_RESULT_ACCESS_DENIED` to show a safe permission message.
+- use admin placement error codes to show safe management messages;
+- use `PLACEMENT_ADMIN_TEST_LOCKED` to surface a safe "test has active attempts" warning;
+- display `details` items as field-level feedback where present.
 
 Admin Dashboard must not:
 
-- expose circuit breaker state, payload digests, or AIM Engine internals through these codes;
-- call the AIM Engine directly;
-- treat the presence of an `AIM_` code as license to compute or override an AIM-owned value.
+- reveal backend scoring internals, threshold values, or skill map logic;
+- bypass backend placement authority;
+- treat frontend validation as a substitute for backend enforcement.
 
 ---
 
-## Done Test — P5-018
+## Done Test — P4-016
 
-This section satisfies P5-018 when:
+This section satisfies P4-016 when:
 
-- `packages/shared-contracts/api/errors.md` is updated with a Phase 5 AIM integration error code section;
-- every failure-taxonomy category in `docs/phase-5/aim-error-handling-policy.md` (`P5-008`) maps to exactly one error code;
-- the two fallback-profile state identifiers (`AIM_ANALYSIS_PENDING`, `AIM_RESULT_PENDING`) are defined and distinguished from error codes;
-- all codes use the approved `AIM_` naming convention;
-- all messages are safe for learner, parent, and admin surfaces and never expose AIM Engine internals, payload digests, or secrets;
-- no per-category (skill state, weakness, difficulty, recommendation, review schedule, session summary) field-level validation code is introduced, preserving the boundary with `P5-012`–`P5-017`;
-- no client-side AIM logic, AI Teacher, Student Web App, or unrelated Phase 5 feature is introduced;
+- `packages/shared-contracts/api/errors.md` is updated with Phase 4 placement error codes;
+- placement test, section, question, attempt, answer, result, initial path, and admin error codes are defined;
+- all codes use the approved naming convention;
+- all messages are safe and never expose score, threshold, mastery, or weakness computation;
+- Flutter handling rules confirm no client-side placement scoring is permitted;
+- no out-of-scope Phase 5+ feature is introduced;
 - no secrets or privileged credentials are exposed.
