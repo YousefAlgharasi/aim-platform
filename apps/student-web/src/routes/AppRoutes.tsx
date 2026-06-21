@@ -19,6 +19,10 @@ import { CourseCatalog } from '../features/curriculum/CourseCatalog';
 import { CourseDetailPage } from '../features/curriculum/CourseDetailPage';
 import { LessonPlayerShell } from '../features/lessons/LessonPlayerShell';
 import { PracticeShell } from '../features/practice/PracticeShell';
+import { AssessmentListPage } from '../features/assessments/AssessmentListPage';
+import { AssessmentDetailPage } from '../features/assessments/AssessmentDetailPage';
+import { AttemptScreen } from '../features/assessments/AttemptScreen';
+import { AssessmentResultPage } from '../features/assessments/AssessmentResultPage';
 import { NotFoundPage } from '../components/common/NotFoundPage';
 import { ForbiddenPage } from '../components/common/ForbiddenPage';
 
@@ -48,6 +52,10 @@ export function AppRoutes() {
         <Route path="/curriculum/:subjectId" element={<CourseDetailPage />} />
         <Route path="/lessons/:lessonId" element={<LessonPlayerShell />} />
         <Route path="/practice/:sessionId" element={<PracticeShell />} />
+        <Route path="/assessments" element={<AssessmentListPage />} />
+        <Route path="/assessments/:assessmentId" element={<AssessmentDetailPage />} />
+        <Route path="/assessments/:assessmentId/attempt/:attemptId" element={<AttemptScreen />} />
+        <Route path="/assessments/:assessmentId/result/:attemptId" element={<AssessmentResultPage />} />
       </Route>
 
       {/* Error routes */}
