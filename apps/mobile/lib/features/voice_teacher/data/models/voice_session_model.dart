@@ -1,31 +1,40 @@
+import '../../logic/entity/voice_session.dart';
+
 class VoiceSessionModel {
   final String sessionId;
   final String createdAt;
+  final String? lastActivityAt;
   final int messageCount;
-  final String? contextRef;
 
   const VoiceSessionModel({
     required this.sessionId,
     required this.createdAt,
+    this.lastActivityAt,
     required this.messageCount,
-    this.contextRef,
   });
 
   factory VoiceSessionModel.fromJson(Map<String, dynamic> json) {
     return VoiceSessionModel(
       sessionId: json['sessionId'] as String,
       createdAt: json['createdAt'] as String,
+      lastActivityAt: json['lastActivityAt'] as String?,
       messageCount: json['messageCount'] as int? ?? 0,
-      contextRef: json['contextRef'] as String?,
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'sessionId': sessionId,
-      'createdAt': createdAt,
-      'messageCount': messageCount,
-      if (contextRef != null) 'contextRef': contextRef,
-    };
+  static List<VoiceSessionModel> listFromJson(Map<String, dynamic> json) {
+    final list = json['sessions'] as List? ?? const [];
+    return list
+        .map((e) => VoiceSessionModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  VoiceSession toEntity() {
+    return VoiceSession(
+      sessionId: sessionId,
+      createdAt: createdAt,
+      lastActivityAt: lastActivityAt,
+      messageCount: messageCount,
+    );
   }
 }

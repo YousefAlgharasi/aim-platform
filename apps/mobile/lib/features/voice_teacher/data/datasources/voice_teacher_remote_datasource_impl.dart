@@ -1,11 +1,16 @@
-import 'dart:typed_data';
+// Voice Teacher remote datasource — concrete implementation.
+//
+// Every call below targets the backend NestJS API only. No STT/TTS/AI
+// provider SDK, key, or endpoint is referenced anywhere in this file.
 
 import 'package:aim_mobile/core/networking/backend_api_client.dart';
-import 'package:aim_mobile/features/voice_teacher/data/models/start_voice_session_response_model.dart';
-import 'package:aim_mobile/features/voice_teacher/data/models/voice_audio_submit_response_model.dart';
-import 'package:aim_mobile/features/voice_teacher/data/models/voice_message_model.dart';
-import 'package:aim_mobile/features/voice_teacher/data/models/voice_session_model.dart';
+import 'package:aim_mobile/core/networking/backend_api_paths.dart';
 
+import '../models/start_voice_session_response_model.dart';
+import '../models/voice_audio_submit_response_model.dart';
+import '../models/voice_feedback_response_model.dart';
+import '../models/voice_message_model.dart';
+import '../models/voice_session_model.dart';
 import 'voice_teacher_remote_datasource.dart';
 
 class VoiceTeacherRemoteDatasourceImpl implements VoiceTeacherRemoteDatasource {
@@ -17,33 +22,28 @@ class VoiceTeacherRemoteDatasourceImpl implements VoiceTeacherRemoteDatasource {
   @override
   Future<StartVoiceSessionResponseModel> startSession({
     required String bearerToken,
-    String? contextRef,
+    required String contextRef,
   }) async {
-    final body = <String, dynamic>{};
-    if (contextRef != null) body['contextRef'] = contextRef;
-
-    final response = await _apiClient.post(
-      '/voice-teacher/sessions',
-      bearerToken: bearerToken,
-      body: body,
+    final envelope = await _apiClient.post<StartVoiceSessionResponseModel>(
+      BackendApiPaths.voiceTeacherSessions,
+      headers: {'authorization': 'Bearer $bearerToken'},
+      body: {'contextRef': contextRef},
+      decodeData: (json) =>
+          StartVoiceSessionResponseModel.fromJson(_requireMap(json)),
     );
-    return StartVoiceSessionResponseModel.fromJson(
-      response as Map<String, dynamic>,
-    );
+    return envelope.data!;
   }
 
   @override
   Future<List<VoiceSessionModel>> listSessions({
     required String bearerToken,
   }) async {
-    final response = await _apiClient.get(
-      '/voice-teacher/sessions',
-      bearerToken: bearerToken,
+    final envelope = await _apiClient.get<List<VoiceSessionModel>>(
+      BackendApiPaths.voiceTeacherSessions,
+      headers: {'authorization': 'Bearer $bearerToken'},
+      decodeData: (json) => VoiceSessionModel.listFromJson(_requireMap(json)),
     );
-    final list = (response as Map<String, dynamic>)['sessions'] as List;
-    return list
-        .map((e) => VoiceSessionModel.fromJson(e as Map<String, dynamic>))
-        .toList();
+    return envelope.data!;
   }
 
   @override
@@ -51,64 +51,71 @@ class VoiceTeacherRemoteDatasourceImpl implements VoiceTeacherRemoteDatasource {
     required String bearerToken,
     required String sessionId,
   }) async {
-    final response = await _apiClient.get(
-      '/voice-teacher/sessions/$sessionId/messages',
-      bearerToken: bearerToken,
+    final envelope = await _apiClient.get<List<VoiceMessageModel>>(
+      BackendApiPaths.voiceTeacherSessionMessages(sessionId),
+      headers: {'authorization': 'Bearer $bearerToken'},
+      decodeData: (json) => VoiceMessageModel.listFromJson(_requireMap(json)),
     );
-    final list = (response as Map<String, dynamic>)['messages'] as List;
-    return list
-        .map((e) => VoiceMessageModel.fromJson(e as Map<String, dynamic>))
-        .toList();
+    return envelope.data!;
   }
 
   @override
   Future<VoiceAudioSubmitResponseModel> submitAudio({
     required String bearerToken,
     required String sessionId,
-    required Uint8List audioBytes,
+    required List<int> audioBytes,
     required String mimeType,
   }) async {
-    final response = await _apiClient.postMultipart(
-      '/voice-teacher/sessions/$sessionId/audio',
-      bearerToken: bearerToken,
+    final envelope = await _apiClient.postMultipart<VoiceAudioSubmitResponseModel>(
+      BackendApiPaths.voiceTeacherSessionAudio(sessionId),
+      headers: {'authorization': 'Bearer $bearerToken'},
       fileBytes: audioBytes,
+      fieldName: 'audio',
       fileName: 'audio',
       mimeType: mimeType,
+      decodeData: (json) =>
+          VoiceAudioSubmitResponseModel.fromJson(_requireMap(json)),
     );
-    return VoiceAudioSubmitResponseModel.fromJson(
-      response as Map<String, dynamic>,
-    );
+    return envelope.data!;
   }
 
   @override
-  Future<Uint8List> getAudioPlayback({
+  Future<List<int>> getAudioPlayback({
     required String bearerToken,
     required String audioRef,
-  }) async {
-    final response = await _apiClient.getBytes(
-      '/voice-teacher/audio/$audioRef',
-      bearerToken: bearerToken,
+  }) {
+    return _apiClient.getBytes(
+      BackendApiPaths.voiceTeacherAudio(audioRef),
+      headers: {'authorization': 'Bearer $bearerToken'},
     );
-    return response;
   }
 
   @override
-  Future<void> submitFeedback({
+  Future<VoiceFeedbackResponseModel> submitFeedback({
     required String bearerToken,
     required String sessionId,
     required String messageId,
     required String rating,
     String? comment,
   }) async {
-    final body = <String, dynamic>{
-      'messageId': messageId,
-      'rating': rating,
-      if (comment != null) 'comment': comment,
-    };
-    await _apiClient.post(
-      '/voice-teacher/sessions/$sessionId/feedback',
-      bearerToken: bearerToken,
-      body: body,
+    final envelope = await _apiClient.post<VoiceFeedbackResponseModel>(
+      BackendApiPaths.voiceTeacherSessionFeedback(sessionId),
+      headers: {'authorization': 'Bearer $bearerToken'},
+      body: {
+        'messageId': messageId,
+        'rating': rating,
+        if (comment != null) 'comment': comment,
+      },
+      decodeData: (json) =>
+          VoiceFeedbackResponseModel.fromJson(_requireMap(json)),
     );
+    return envelope.data!;
+  }
+
+  Map<String, dynamic> _requireMap(Object? json) {
+    if (json is! Map<String, dynamic>) {
+      throw const FormatException('Unexpected Voice Teacher response shape');
+    }
+    return json;
   }
 }
