@@ -6,6 +6,7 @@ import { AnalyticsEventIngestionService } from './analytics-event-ingestion.serv
 import { MetricDefinitionService } from './metric-definition.service';
 import { MetricAggregationService } from './metric-aggregation.service';
 import { ReportDefinitionService } from './report-definition.service';
+import { ReportRunnerService } from './report-runner.service';
 
 @Module({
   imports: [DatabaseModule],
@@ -15,6 +16,7 @@ import { ReportDefinitionService } from './report-definition.service';
     MetricDefinitionService,
     MetricAggregationService,
     ReportDefinitionService,
+    ReportRunnerService,
   ],
   exports: [
     AnalyticsRepository,
@@ -22,6 +24,7 @@ import { ReportDefinitionService } from './report-definition.service';
     MetricDefinitionService,
     MetricAggregationService,
     ReportDefinitionService,
+    ReportRunnerService,
   ],
 })
 export class AnalyticsModule {}
