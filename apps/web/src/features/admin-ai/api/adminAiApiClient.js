@@ -102,3 +102,21 @@ export async function updateModelConfigLimits(id, limits, parameters) {
     body: { limits, parameters },
   });
 }
+
+// P18-076: Admin AI Usage and Cost UI — read-only usage/cost rollups.
+// Cost/quota checks happen server-side before any provider call; this
+// client never writes usage/cost rows and never computes cost estimates
+// locally.
+export async function listRecentAiUsage(limit) {
+  const query = limit ? `?limit=${encodeURIComponent(limit)}` : '';
+  return adminAiRequest(`/usage${query}`);
+}
+
+export async function listAiUsageForStudent(studentId, limit) {
+  const query = limit ? `?limit=${encodeURIComponent(limit)}` : '';
+  return adminAiRequest(`/usage/student/${encodeURIComponent(studentId)}${query}`);
+}
+
+export async function getAiLimitStatusForStudent(studentId) {
+  return adminAiRequest(`/usage/student/${encodeURIComponent(studentId)}/limit-status`);
+}
