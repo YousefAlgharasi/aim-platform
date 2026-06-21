@@ -108,8 +108,7 @@ export class ContextBudgetPolicyService {
   }
 
   private dropField(snapshot: AiTeacherContextSnapshot, field: ContextFieldKey): void {
-    const fallback = field === 'recentMistakes' ? [] : null;
-    (snapshot as Record<ContextFieldKey, unknown>)[field] = fallback;
+    (snapshot as Record<ContextFieldKey, unknown>)[field] = null;
   }
 
   private truncateField(value: unknown, allowedTokens: number): unknown {
