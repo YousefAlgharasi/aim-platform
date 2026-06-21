@@ -1,0 +1,95 @@
+.questionText {
+  font-size: var(--type-h2-size, 22px);
+  font-weight: var(--weight-semibold, 600);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.options {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-12) var(--space-16);
+  border: 2px solid var(--color-neutral-200, #E2E5EC);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  font-size: 16px;
+}
+
+.option:hover:not(.optionDisabled) {
+  border-color: var(--color-neutral-300, #CDD2DD);
+  background: var(--color-neutral-50, #F7F8FA);
+}
+
+.optionSelected {
+  border-color: var(--color-primary-500);
+  background: var(--color-primary-50, #EDF1FF);
+}
+
+.optionDisabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.optionRadio {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-neutral-300, #CDD2DD);
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.optionSelected .optionRadio {
+  border-color: var(--color-primary-500);
+}
+
+.optionSelected .optionRadio::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  background: var(--color-primary-500);
+  border-radius: 50%;
+}
+
+.textInput {
+  width: 100%;
+  padding: var(--space-12) var(--space-16);
+  border: 2px solid var(--color-neutral-200, #E2E5EC);
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-family: inherit;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.textInput:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+}
+
+.textInput:disabled {
+  background: var(--color-neutral-50, #F7F8FA);
+  opacity: 0.7;
+}
