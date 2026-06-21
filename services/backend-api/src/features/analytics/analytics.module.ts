@@ -10,6 +10,7 @@ import { ReportRunnerService } from './report-runner.service';
 import { DashboardService } from './dashboard.service';
 import { AnalyticsExportService } from './analytics-export.service';
 import { CohortService } from './cohort.service';
+import { AnalyticsAccessPolicyService } from './analytics-access-policy.service';
 
 @Module({
   imports: [DatabaseModule],
@@ -23,6 +24,7 @@ import { CohortService } from './cohort.service';
     DashboardService,
     AnalyticsExportService,
     CohortService,
+    AnalyticsAccessPolicyService,
   ],
   exports: [
     AnalyticsRepository,
@@ -34,6 +36,7 @@ import { CohortService } from './cohort.service';
     DashboardService,
     AnalyticsExportService,
     CohortService,
+    AnalyticsAccessPolicyService,
   ],
 })
 export class AnalyticsModule {}
