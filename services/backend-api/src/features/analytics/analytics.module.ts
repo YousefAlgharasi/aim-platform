@@ -19,6 +19,7 @@ import { AnalyticsAccessGuard } from './analytics-access.guard';
 import { AdminAnalyticsDashboardController } from './admin-analytics-dashboard.controller';
 import { AdminLearningReportsController } from './admin-learning-reports.controller';
 import { AdminAssessmentReportsController } from './admin-assessment-reports.controller';
+import { AdminRevenueReportsController } from './admin-revenue-reports.controller';
 
 @Module({
   imports: [DatabaseModule, UsersModule, RolesModule, forwardRef(() => AuthModule)],
@@ -26,6 +27,7 @@ import { AdminAssessmentReportsController } from './admin-assessment-reports.con
     AdminAnalyticsDashboardController,
     AdminLearningReportsController,
     AdminAssessmentReportsController,
+    AdminRevenueReportsController,
   ],
   providers: [
     AnalyticsRepository,
