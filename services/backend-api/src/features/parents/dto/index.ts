@@ -18,3 +18,4 @@ export * from './parent-notification-enums';
 export * from './parent-notification-preference.entity';
 export * from './update-parent-notification-preference-request.dto';
 export * from './parent-ai-usage-summary.entity';
+export * from './parent-ai-safety-summary.entity';

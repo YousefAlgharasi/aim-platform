@@ -60,4 +60,22 @@ export class AiSafetyEventRepository {
 
     return result.rows;
   }
+
+  // ---------------------------------------------------------------------
+  // P18-071: Parent AI Safety Summary UI — count-only, read-only rollup
+  // for a parent-facing summary. Never returns reason_category or any
+  // rejected raw message/response content to this caller.
+  // ---------------------------------------------------------------------
+
+  async countRejectedByStudentId(studentId: string): Promise<number> {
+    const result = await this.db.query<{ count: string }>(
+      `SELECT COUNT(*) AS count
+       FROM ai_safety_events e
+       JOIN ai_chat_sessions s ON s.id = e.session_id
+       WHERE s.student_id = $1 AND e.decision = 'rejected'`,
+      [studentId],
+    );
+
+    return Number(result.rows[0]?.count ?? 0);
+  }
 }
