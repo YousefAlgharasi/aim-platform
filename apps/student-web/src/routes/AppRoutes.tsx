@@ -23,6 +23,13 @@ import { AssessmentListPage } from '../features/assessments/AssessmentListPage';
 import { AssessmentDetailPage } from '../features/assessments/AssessmentDetailPage';
 import { AttemptScreen } from '../features/assessments/AttemptScreen';
 import { AssessmentResultPage } from '../features/assessments/AssessmentResultPage';
+import { AITeacherEntryPage } from '../features/ai-teacher/AITeacherEntryPage';
+import { AIChatPage } from '../features/ai-teacher/AIChatPage';
+import { AIHistoryPage } from '../features/ai-teacher/AIHistoryPage';
+import { NotificationCenterPage } from '../features/notifications/NotificationCenterPage';
+import { NotificationPreferencesPage } from '../features/notifications/NotificationPreferencesPage';
+import { BillingPage } from '../features/billing/BillingPage';
+import { CheckoutPage } from '../features/billing/CheckoutPage';
 import { NotFoundPage } from '../components/common/NotFoundPage';
 import { ForbiddenPage } from '../components/common/ForbiddenPage';
 
@@ -56,6 +63,13 @@ export function AppRoutes() {
         <Route path="/assessments/:assessmentId" element={<AssessmentDetailPage />} />
         <Route path="/assessments/:assessmentId/attempt/:attemptId" element={<AttemptScreen />} />
         <Route path="/assessments/:assessmentId/result/:attemptId" element={<AssessmentResultPage />} />
+        <Route path="/ai-teacher" element={<AITeacherEntryPage />} />
+        <Route path="/ai-teacher/history" element={<AIHistoryPage />} />
+        <Route path="/ai-teacher/:conversationId" element={<AIChatPage />} />
+        <Route path="/notifications" element={<NotificationCenterPage />} />
+        <Route path="/notifications/preferences" element={<NotificationPreferencesPage />} />
+        <Route path="/billing" element={<BillingPage />} />
+        <Route path="/billing/checkout/:planId" element={<CheckoutPage />} />
       </Route>
 
       {/* Error routes */}
