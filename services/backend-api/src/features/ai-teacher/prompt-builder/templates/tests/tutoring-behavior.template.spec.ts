@@ -16,12 +16,6 @@ function makeSnapshot(
     studentProfile: null,
     currentLesson: null,
     curriculumSkill: null,
-    placementResult: null,
-    skillState: null,
-    weakness: null,
-    recommendation: null,
-    reviewSchedule: null,
-    recentMistakes: [],
     ...overrides,
   };
 }

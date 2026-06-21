@@ -14,12 +14,6 @@ function makeSnapshot(
     studentProfile: null,
     currentLesson: null,
     curriculumSkill: null,
-    placementResult: null,
-    skillState: null,
-    weakness: null,
-    recommendation: null,
-    reviewSchedule: null,
-    recentMistakes: [],
     ...overrides,
   };
 }
@@ -50,14 +44,14 @@ describe('PromptBuilderService', () => {
     const prompt = service.buildPrompt({
       studentMessage: 'Hello',
       context: makeSnapshot({
-        weakness: { skillId: 'skill-1' },
+        curriculumSkill: { skillId: 'skill-1' },
         currentLesson: { lessonId: 'lesson-1' },
       }),
     });
 
     expect(prompt.sections.map((section) => section.key)).toEqual([
       'currentLesson',
-      'weakness',
+      'curriculumSkill',
     ]);
   });
 

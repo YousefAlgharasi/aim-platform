@@ -32,12 +32,6 @@ function makeSnapshot(
     studentProfile: null,
     currentLesson: null,
     curriculumSkill: null,
-    placementResult: null,
-    skillState: null,
-    weakness: null,
-    recommendation: null,
-    reviewSchedule: null,
-    recentMistakes: [],
     ...overrides,
   };
 }
@@ -126,55 +120,49 @@ describe('Prompt safety and AIM Engine authority boundaries', () => {
       },
     );
 
-    it('only restates context values already present, never invented ones, when weakness/skillState are populated', () => {
+    it('never renders a skillState/weakness/recommendation/reviewSchedule/placementResult/recentMistakes section, even when forced via an unsafe cast', () => {
       const prompt = service.renderPrompt({
         studentMessage: 'Why was this wrong?',
-        context: makeSnapshot({
-          weakness: { skillId: 'skill-1' },
-          skillState: { skillId: 'skill-1', mastery: 0.4 },
-        }),
+        context: makeSnapshot() as unknown as AiTeacherContextSnapshot,
         useCase: ANSWER_EXPLANATION_PROMPT_TEMPLATE_KEY,
       });
 
-      expect(prompt.renderedText).toContain('"skillId":"skill-1"');
-      expect(prompt.renderedText).toContain('"mastery":0.4');
-
-      const skillStateSection = prompt.sections.find((section) => section.key === 'skillState');
-      expect(skillStateSection?.content).toBe(JSON.stringify({ skillId: 'skill-1', mastery: 0.4 }));
+      const keys = prompt.sections.map((section) => section.key);
+      expect(keys).not.toContain('skillState');
+      expect(keys).not.toContain('weakness');
+      expect(keys).not.toContain('recommendation');
+      expect(keys).not.toContain('reviewSchedule');
+      expect(keys).not.toContain('placementResult');
+      expect(keys).not.toContain('recentMistakes');
     });
   });
 
   describe('full context rendering for each use-case template', () => {
-    it('mistake_explanation renders recentMistakes and weakness sections from context', () => {
+    it('mistake_explanation never renders recentMistakes or weakness sections (AI Authority Rule)', () => {
       const prompt = service.renderPrompt({
         studentMessage: 'Why is this wrong?',
-        context: makeSnapshot({
-          recentMistakes: [{ questionId: 'q1', skillId: 'skill-1' }],
-          weakness: { skillId: 'skill-1' },
-        }),
+        context: makeSnapshot(),
         useCase: MISTAKE_EXPLANATION_PROMPT_TEMPLATE_KEY,
       });
 
       const keys = prompt.sections.map((section) => section.key);
-      expect(keys).toContain('recentMistakes');
-      expect(keys).toContain('weakness');
+      expect(keys).not.toContain('recentMistakes');
+      expect(keys).not.toContain('weakness');
     });
 
-    it('answer_explanation renders curriculumSkill, skillState, and recentMistakes sections from context', () => {
+    it('answer_explanation renders curriculumSkill but never skillState or recentMistakes (AI Authority Rule)', () => {
       const prompt = service.renderPrompt({
         studentMessage: 'Why was my answer marked wrong?',
         context: makeSnapshot({
           curriculumSkill: { skillId: 'skill-1' },
-          skillState: { skillId: 'skill-1', mastery: 0.6 },
-          recentMistakes: [{ questionId: 'q1', skillId: 'skill-1' }],
         }),
         useCase: ANSWER_EXPLANATION_PROMPT_TEMPLATE_KEY,
       });
 
       const keys = prompt.sections.map((section) => section.key);
       expect(keys).toContain('curriculumSkill');
-      expect(keys).toContain('skillState');
-      expect(keys).toContain('recentMistakes');
+      expect(keys).not.toContain('skillState');
+      expect(keys).not.toContain('recentMistakes');
     });
 
     it('omits all optional sections for every use case when context fields are null/empty', () => {
