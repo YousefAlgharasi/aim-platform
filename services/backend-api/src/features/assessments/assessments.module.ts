@@ -11,6 +11,7 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../../auth/auth.module';
 import { DatabaseModule } from '../../database/database.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
 import { AssessmentGradingService } from './assessment-grading.service';
 import { AssessmentScorePolicyService } from './assessment-score-policy.service';
 import { AssessmentResultService } from './assessment-result.service';
@@ -28,7 +29,7 @@ import { AssessmentResultOwnershipGuard } from './guards/assessment-result-owner
 import { AssessmentAuditService } from './assessment-audit.service';
 
 @Module({
-  imports: [DatabaseModule, AuthModule],
+  imports: [DatabaseModule, AuthModule, AnalyticsModule],
   controllers: [AssessmentController],
   providers: [
     AssessmentRepository,
