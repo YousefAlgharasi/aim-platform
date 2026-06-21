@@ -48,6 +48,18 @@ export class AiChatSessionRepository {
     return result.rows;
   }
 
+  async findByStudentId(studentId: string): Promise<AiChatSessionRow[]> {
+    const result = await this.db.query<AiChatSessionRow>(
+      `SELECT id, student_id, context_ref, status, created_at, updated_at
+       FROM ai_chat_sessions
+       WHERE student_id = $1
+       ORDER BY updated_at DESC`,
+      [studentId],
+    );
+
+    return result.rows;
+  }
+
   async closeSession(sessionId: string): Promise<void> {
     await this.db.query(
       `UPDATE ai_chat_sessions
