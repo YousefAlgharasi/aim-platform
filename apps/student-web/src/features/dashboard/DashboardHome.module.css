@@ -1,0 +1,100 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+}
+
+.heading {
+  font-size: var(--type-h1-size, 28px);
+  font-weight: var(--weight-bold, 700);
+  margin: 0;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--component-gap);
+}
+
+@media (min-width: 768px) {
+  .statsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-8) 0;
+}
+
+.statValue {
+  font-size: var(--type-h1-size, 28px);
+  font-weight: var(--weight-bold, 700);
+  color: var(--color-primary-500);
+}
+
+.statLabel {
+  font-size: 13px;
+  color: var(--color-neutral-500, #7E849A);
+  font-weight: var(--weight-medium, 500);
+}
+
+.sectionTitle {
+  font-size: var(--type-h2-size, 22px);
+  font-weight: var(--weight-semibold, 600);
+  margin: 0 0 var(--space-12) 0;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--component-gap);
+}
+
+.recLink {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  text-decoration: none;
+  color: inherit;
+}
+
+.recType {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-secondary-500, #8455E4);
+  font-weight: var(--weight-semibold, 600);
+}
+
+.recTitle {
+  font-size: 16px;
+  font-weight: var(--weight-medium, 500);
+}
+
+.deadline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dueDate {
+  font-size: 13px;
+  color: var(--color-neutral-500, #7E849A);
+}
+
+.activityItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+.activityDate {
+  font-size: 13px;
+  color: var(--color-neutral-500, #7E849A);
+  white-space: nowrap;
+}
