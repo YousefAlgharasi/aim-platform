@@ -1,0 +1,44 @@
+.topbar {
+  display: flex;
+  align-items: center;
+  padding: var(--space-12) var(--screen-padding-web);
+  background: var(--color-neutral-0);
+  border-bottom: 1px solid var(--color-neutral-200, #E2E5EC);
+  min-height: 56px;
+}
+
+.mobileLogo {
+  font-size: 20px;
+  font-weight: var(--weight-extrabold, 800);
+  color: var(--color-primary-500);
+}
+
+@media (min-width: 768px) {
+  .mobileLogo {
+    display: none;
+  }
+}
+
+.spacer {
+  flex: 1;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+.profile {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-100, #DCE4FF);
+  color: var(--color-primary-700, #2837AC);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--weight-semibold, 600);
+  font-size: 14px;
+  text-decoration: none;
+}
