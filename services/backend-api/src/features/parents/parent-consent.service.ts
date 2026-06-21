@@ -17,10 +17,14 @@ import { ParentConsentEntity } from './dto/parent-consent.entity';
 import { ParentConsentType } from './dto/parent-enums';
 import { ParentConsentRow } from './parent-repository.types';
 import { ParentRepository } from './parent.repository';
+import { AnalyticsEventIngestionService } from '../analytics/analytics-event-ingestion.service';
 
 @Injectable()
 export class ParentConsentService {
-  constructor(private readonly parentRepository: ParentRepository) {}
+  constructor(
+    private readonly parentRepository: ParentRepository,
+    private readonly analyticsEventIngestionService: AnalyticsEventIngestionService,
+  ) {}
 
   async grantConsent(
     parentChildLinkId: string,
@@ -47,6 +51,15 @@ export class ParentConsentService {
     }
 
     const row = await this.parentRepository.grantConsent(parentChildLinkId, consentType, grantedBy);
+
+    await this.analyticsEventIngestionService.ingest({
+      eventType: 'parent.consent_granted',
+      actorRole: 'parent',
+      actorId: grantedBy,
+      subjectType: 'parent_consent',
+      subjectId: row.id,
+      metadata: { consent_type: row.consent_type },
+    });
 
     return this.toEntity(row);
   }

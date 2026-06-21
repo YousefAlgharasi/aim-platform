@@ -16,10 +16,14 @@ import { ParentChildLinkEntity } from './dto/parent-child-link.entity';
 import { ParentRelationshipType } from './dto/parent-enums';
 import { ParentChildLinkRow } from './parent-repository.types';
 import { ParentRepository } from './parent.repository';
+import { AnalyticsEventIngestionService } from '../analytics/analytics-event-ingestion.service';
 
 @Injectable()
 export class ParentChildLinkService {
-  constructor(private readonly parentRepository: ParentRepository) {}
+  constructor(
+    private readonly parentRepository: ParentRepository,
+    private readonly analyticsEventIngestionService: AnalyticsEventIngestionService,
+  ) {}
 
   async createLink(
     parentId: string,
@@ -33,6 +37,15 @@ export class ParentChildLinkService {
     }
 
     const row = await this.parentRepository.createLink(parentId, childId, relationshipType);
+
+    await this.analyticsEventIngestionService.ingest({
+      eventType: 'parent.child_link_created',
+      actorRole: 'parent',
+      actorId: parentId,
+      subjectType: 'parent_child_link',
+      subjectId: row.id,
+      metadata: { relationship_type: row.relationship_type },
+    });
 
     return this.toEntity(row);
   }
@@ -51,6 +64,15 @@ export class ParentChildLinkService {
     await this.parentRepository.activateLink(linkId);
 
     const updatedRow = await this.parentRepository.findLinkById(linkId);
+
+    await this.analyticsEventIngestionService.ingest({
+      eventType: 'parent.child_link_accepted',
+      actorRole: 'parent',
+      actorId: updatedRow?.parent_id ?? null,
+      subjectType: 'parent_child_link',
+      subjectId: linkId,
+      metadata: { relationship_type: updatedRow?.relationship_type },
+    });
 
     return this.toEntity(updatedRow as ParentChildLinkRow);
   }

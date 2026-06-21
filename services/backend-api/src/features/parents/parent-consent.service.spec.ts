@@ -60,7 +60,8 @@ function buildService(overrides: {
     findActiveLink: overrides.findActiveLink ?? jest.fn().mockResolvedValue(buildLinkRow()),
   };
 
-  const service = new ParentConsentService(parentRepository as never);
+  const analyticsEventIngestionService = { ingest: jest.fn().mockResolvedValue(undefined) };
+  const service = new ParentConsentService(parentRepository as never, analyticsEventIngestionService as never);
 
   return { service, parentRepository };
 }

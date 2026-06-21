@@ -4,6 +4,7 @@ import { DatabaseModule } from '../../database/database.module';
 import { AimModule } from '../aim/aim.module';
 import { AssessmentsModule } from '../assessments/assessments.module';
 import { StudentsModule } from '../students/students.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
 import { ParentAccessPolicyService } from './parent-access-policy.service';
 import { ParentChildLinkService } from './parent-child-link.service';
 import { ParentConsentService } from './parent-consent.service';
@@ -20,7 +21,7 @@ import { ParentsController } from './parents.controller';
 import { ParentsService } from './parents.service';
 
 @Module({
-  imports: [AuthModule, DatabaseModule, AimModule, AssessmentsModule, StudentsModule],
+  imports: [AuthModule, DatabaseModule, AimModule, AssessmentsModule, StudentsModule, AnalyticsModule],
   controllers: [ParentsController],
   providers: [
     ParentsService,

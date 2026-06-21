@@ -7,10 +7,14 @@ import {
 import { BillingRepository } from './billing.repository';
 import { Payment } from './billing.entities';
 import { validateUUID, validateAmount, validateCurrency } from './billing.validation';
+import { AnalyticsEventIngestionService } from '../analytics/analytics-event-ingestion.service';
 
 @Injectable()
 export class PaymentService {
-  constructor(private readonly billingRepo: BillingRepository) {}
+  constructor(
+    private readonly billingRepo: BillingRepository,
+    private readonly analyticsEventIngestionService: AnalyticsEventIngestionService,
+  ) {}
 
   async getUserPayments(userId: string): Promise<Payment[]> {
     validateUUID(userId, 'userId');
@@ -85,6 +89,22 @@ export class PaymentService {
     if (!updated) {
       throw new NotFoundException('Payment not found after update');
     }
+
+    if (status === 'succeeded' || status === 'failed') {
+      await this.analyticsEventIngestionService.ingest({
+        eventType: status === 'succeeded' ? 'payment.succeeded' : 'payment.failed',
+        actorRole: 'student',
+        actorId: updated.userId,
+        subjectType: 'payment',
+        subjectId: updated.id,
+        metadata: {
+          amount: updated.amount,
+          currency: updated.currency,
+          status: updated.status,
+        },
+      });
+    }
+
     return updated;
   }
 
