@@ -1,5 +1,8 @@
 // P8-047: Create Answer Explanation Prompt Template
 // buildAnswerExplanationPromptSections tests.
+//
+// P18-031: Updated for the AI Authority Rule — skillState and
+// recentMistakes were removed from AiTeacherContextSnapshot.
 
 import {
   buildAnswerExplanationPromptSections,
@@ -16,12 +19,6 @@ function makeSnapshot(
     studentProfile: null,
     currentLesson: null,
     curriculumSkill: null,
-    placementResult: null,
-    skillState: null,
-    weakness: null,
-    recommendation: null,
-    reviewSchedule: null,
-    recentMistakes: [],
     ...overrides,
   };
 }
@@ -35,20 +32,16 @@ describe('buildAnswerExplanationPromptSections', () => {
     });
   });
 
-  it('includes curriculumSkill, skillState, and recentMistakes sections when present, in order', () => {
+  it('includes the curriculumSkill section when present', () => {
     const sections = buildAnswerExplanationPromptSections(
       makeSnapshot({
         curriculumSkill: { skillId: 'skill-1' },
-        skillState: { skillId: 'skill-1', state: 'learning' },
-        recentMistakes: [{ skillId: 'skill-1', patternType: 'past_tense' }],
       }),
     );
 
     expect(sections.map((section) => section.key)).toEqual([
       'templateInstructions',
       'curriculumSkill',
-      'skillState',
-      'recentMistakes',
     ]);
   });
 
@@ -59,7 +52,7 @@ describe('buildAnswerExplanationPromptSections', () => {
 
   it('never references mastery, level, or difficulty values', () => {
     const sections = buildAnswerExplanationPromptSections(
-      makeSnapshot({ skillState: { skillId: 'skill-1' } }),
+      makeSnapshot({ curriculumSkill: { skillId: 'skill-1' } }),
     );
     const serialized = JSON.stringify(sections);
     expect(serialized).not.toMatch(/"mastery":\s*\d/);

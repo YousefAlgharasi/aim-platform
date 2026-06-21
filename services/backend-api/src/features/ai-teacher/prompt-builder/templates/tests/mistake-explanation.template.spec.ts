@@ -1,5 +1,9 @@
 // P8-045: Create Mistake Explanation Prompt Template
 // buildMistakeExplanationPromptSections tests.
+//
+// P18-031: Updated for the AI Authority Rule — recentMistakes and weakness
+// were removed from AiTeacherContextSnapshot, so this template now only
+// ever renders the fixed instructions section.
 
 import {
   buildMistakeExplanationPromptSections,
@@ -16,12 +20,6 @@ function makeSnapshot(
     studentProfile: null,
     currentLesson: null,
     curriculumSkill: null,
-    placementResult: null,
-    skillState: null,
-    weakness: null,
-    recommendation: null,
-    reviewSchedule: null,
-    recentMistakes: [],
     ...overrides,
   };
 }
@@ -35,40 +33,13 @@ describe('buildMistakeExplanationPromptSections', () => {
     });
   });
 
-  it('includes recentMistakes and weakness sections when present', () => {
-    const sections = buildMistakeExplanationPromptSections(
-      makeSnapshot({
-        recentMistakes: [{ skillId: 'skill-1', patternType: 'past_tense' }],
-        weakness: { skillId: 'skill-1', severity: 'high' },
-      }),
-    );
-
-    expect(sections.map((section) => section.key)).toEqual([
-      'templateInstructions',
-      'recentMistakes',
-      'weakness',
-    ]);
-  });
-
-  it('omits recentMistakes section when the array is empty', () => {
-    const sections = buildMistakeExplanationPromptSections(makeSnapshot({ recentMistakes: [] }));
+  it('renders no other sections, since recentMistakes/weakness no longer exist on context', () => {
+    const sections = buildMistakeExplanationPromptSections(makeSnapshot());
     expect(sections.map((section) => section.key)).toEqual(['templateInstructions']);
   });
 
-  it('omits weakness section when null', () => {
-    const sections = buildMistakeExplanationPromptSections(
-      makeSnapshot({ recentMistakes: [{ skillId: 'skill-1' }], weakness: null }),
-    );
-    expect(sections.map((section) => section.key)).toEqual([
-      'templateInstructions',
-      'recentMistakes',
-    ]);
-  });
-
   it('never references mastery, level, or difficulty values', () => {
-    const sections = buildMistakeExplanationPromptSections(
-      makeSnapshot({ recentMistakes: [{ skillId: 'skill-1' }] }),
-    );
+    const sections = buildMistakeExplanationPromptSections(makeSnapshot());
     const serialized = JSON.stringify(sections);
     expect(serialized).not.toMatch(/"mastery":\s*\d/);
     expect(serialized).not.toMatch(/"difficulty":\s*\d/);
