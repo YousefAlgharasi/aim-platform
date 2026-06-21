@@ -67,6 +67,11 @@ export class AnalyticsAccessGuard implements CanActivate {
       throw new ForbiddenException(decision.reason ?? 'Analytics access denied');
     }
 
+    (request as unknown as { analyticsActor?: { userId: string; role: AnalyticsActorRole } }).analyticsActor = {
+      userId: internalUser.id,
+      role: actorRole,
+    };
+
     return true;
   }
 
