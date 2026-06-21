@@ -48,4 +48,45 @@ export class ModelConfigService {
       limits: config.limits,
     };
   }
+
+  // ---------------------------------------------------------------------
+  // P18-049: Admin AI Model Config API — read/update metadata without
+  // secrets. Only an admin caller (enforced by the controller's role
+  // guard) may reach these.
+  // ---------------------------------------------------------------------
+
+  async listAllConfigs(): Promise<AiModelConfigRow[]> {
+    return this.modelConfigRepository.listAll();
+  }
+
+  async setStatus(
+    id: string,
+    status: 'draft' | 'active' | 'retired',
+  ): Promise<AiModelConfigRow> {
+    const updated = await this.modelConfigRepository.updateStatus(id, status);
+
+    if (!updated) {
+      throw new NotFoundException(`Model config not found: ${id}`);
+    }
+
+    return updated;
+  }
+
+  async updateLimitsAndParameters(
+    id: string,
+    limits: Record<string, unknown>,
+    parameters: Record<string, unknown>,
+  ): Promise<AiModelConfigRow> {
+    const updated = await this.modelConfigRepository.updateLimitsAndParameters(
+      id,
+      limits,
+      parameters,
+    );
+
+    if (!updated) {
+      throw new NotFoundException(`Model config not found: ${id}`);
+    }
+
+    return updated;
+  }
 }
