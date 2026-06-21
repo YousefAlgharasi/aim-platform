@@ -353,4 +353,20 @@ export class AnalyticsRepository {
     );
     return result.rows[0];
   }
+
+  async findAccessAuditLogs(params: {
+    actorUserId?: string | null;
+    targetType?: string;
+    limit?: number;
+  }): Promise<AnalyticsAccessAuditLog[]> {
+    const result = await this.db.query<AnalyticsAccessAuditLog>(
+      `SELECT * FROM analytics_access_audit_logs
+       WHERE ($1::uuid IS NULL OR actor_user_id = $1)
+         AND ($2::text IS NULL OR target_type = $2)
+       ORDER BY created_at DESC
+       LIMIT $3`,
+      [params.actorUserId ?? null, params.targetType ?? null, params.limit ?? 100],
+    );
+    return result.rows;
+  }
 }
