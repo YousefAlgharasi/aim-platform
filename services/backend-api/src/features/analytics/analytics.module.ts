@@ -17,10 +17,11 @@ import { AnalyticsAccessPolicyService } from './analytics-access-policy.service'
 import { AnalyticsAuditService } from './analytics-audit.service';
 import { AnalyticsAccessGuard } from './analytics-access.guard';
 import { AdminAnalyticsDashboardController } from './admin-analytics-dashboard.controller';
+import { AdminLearningReportsController } from './admin-learning-reports.controller';
 
 @Module({
   imports: [DatabaseModule, UsersModule, RolesModule, forwardRef(() => AuthModule)],
-  controllers: [AdminAnalyticsDashboardController],
+  controllers: [AdminAnalyticsDashboardController, AdminLearningReportsController],
   providers: [
     AnalyticsRepository,
     AnalyticsEventIngestionService,
