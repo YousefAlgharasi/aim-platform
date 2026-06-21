@@ -15,3 +15,4 @@ export { default as ParentNotifications } from './ParentNotifications';
 export { default as ParentNotificationSettings } from './ParentNotificationSettings';
 export { default as ParentDeadlineReminders } from './ParentDeadlineReminders';
 export { default as ParentBilling } from './ParentBilling';
+export { default as ParentAnalyticsReports } from './ParentAnalyticsReports';
