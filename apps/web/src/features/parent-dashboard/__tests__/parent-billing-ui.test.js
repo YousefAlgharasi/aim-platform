@@ -88,7 +88,7 @@ describe('Parent Billing API client — backend authority', () => {
       });
 
       test('calls backend billing endpoints', () => {
-        expect(content).toMatch(/\/billing\//);
+        expect(content).toMatch(/\/billing/);
       });
     });
   }

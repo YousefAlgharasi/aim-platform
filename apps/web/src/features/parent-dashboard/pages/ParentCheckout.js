@@ -9,7 +9,7 @@ import './ParentPages.css';
 function ParentCheckout({ priceId, planName, onComplete, onBack }) {
   const [sessionId, setSessionId] = useState(null);
   const [checkoutStatus, setCheckoutStatus] = useState(null);
-  const [phase, setPhase] = useState('creating');
+  const [phase, setPhase] = useState('loading');
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -51,7 +51,7 @@ function ParentCheckout({ priceId, planName, onComplete, onBack }) {
     return () => clearInterval(interval);
   }, [phase, sessionId, pollStatus]);
 
-  if (phase === 'creating') {
+  if (phase === 'loading') {
     return (
       <div className="parent-checkout">
         <ParentCard title="Starting Checkout">
