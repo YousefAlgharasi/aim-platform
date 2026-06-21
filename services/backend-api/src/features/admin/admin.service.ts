@@ -1,4 +1,4 @@
-// Phase 2 — P2-059 (user list) + P2-031/P2-032 (admin profile CRUD)
+// Phase 2 — P2-059 (user list) + P2-031/P2-032 (admin profile CRUD) + P2-061 (user detail)
 // Admin service.
 //
 // Scope: Auth, Users, Roles only.
@@ -6,6 +6,7 @@
 // Responsibility:
 //   Centralise admin-only operations:
 //   - listUsers: paginated safe user list (P2-059)
+//   - getUserDetail: safe single-user detail with roles (P2-061)
 //   - findByUserId / getByUserId / updateByUserId: admin profile CRUD (P2-031/P2-032)
 //
 // Security rules:
@@ -19,6 +20,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AppError } from '../../common/errors/app-error';
 import { ApiErrorCode } from '../../common/errors/api-error-code';
+import { RolesService } from '../roles/roles.service';
 import { UsersService } from '../users/users.service';
 import { UserRecord } from '../users/users.types';
 import {
@@ -26,7 +28,12 @@ import {
   AdminProfileRow,
   UpdateAdminProfileInput,
 } from '../profile/profile.types';
-import { AdminUserListItem, AdminUserListResponse } from './admin.types';
+import {
+  AdminUserDetailResponse,
+  AdminUserListItem,
+  AdminUserListResponse,
+  AdminUserRoleItem,
+} from './admin.types';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
@@ -37,6 +44,7 @@ export class AdminService {
   constructor(
     private readonly db: DatabaseService,
     private readonly usersService: UsersService,
+    private readonly rolesService: RolesService,
   ) {}
 
   // ---------------------------------------------------------------------------
@@ -55,6 +63,32 @@ export class AdminService {
       total,
       page: safePage,
       limit: safeLimit,
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // User detail (P2-061)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Return safe detail for a single user by their internal AIM user ID.
+   *
+   * Callers must have already passed RoleGuard (admin/super_admin).
+   * supabase_auth_uid and raw permission codes are not included in the response.
+   */
+  async getUserDetail(internalUserId: string): Promise<AdminUserDetailResponse> {
+    const user = await this.usersService.getById(internalUserId);
+    const roles = await this.rolesService.getUserRoles(internalUserId);
+
+    return {
+      id: user.id,
+      email: user.email,
+      phone: user.phone,
+      userType: user.userType,
+      status: user.status,
+      roles: roles.map(toAdminUserRoleItem),
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     };
   }
 
@@ -163,5 +197,12 @@ function toAdminUserListItem(user: UserRecord): AdminUserListItem {
     status: user.status,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+  };
+}
+
+function toAdminUserRoleItem(role: { key: string; name: string }): AdminUserRoleItem {
+  return {
+    key: role.key,
+    name: role.name,
   };
 }

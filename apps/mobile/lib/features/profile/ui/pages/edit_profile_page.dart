@@ -1,22 +1,41 @@
-// Phase 2 — P2-055
-// Edit profile page.
+// Phase 6 — P6-114
+// Edit profile page — polished with AIM Mobile Design System.
 //
 // Security boundary:
 // - Only safe, backend-approved fields are editable: displayName, preferredLanguage, timezone.
 // - Roles, permissions, userType, status, and email are NOT editable from this screen.
 // - The backend validates all updates server-side and is the final authority.
 // - No role or permission is sent in the update payload.
+// - No AIM Engine calls. No client-side scoring or authority.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/state/app_async_state.dart';
+import '../../../../core/theme/theme.dart';
+import '../../../../core/widgets/widgets.dart';
 import '../../../auth/data/models/auth_context_model.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
 import '../../data/models/profile_update_payload_models.dart';
 import '../../logic/provider/profile_provider.dart';
 
+/// Edit profile screen — AIM Mobile Design System.
+///
+/// Allows the student to update [displayName], [preferredLanguage], and
+/// [timezone] only. All other fields (email, roles, permissions, userType,
+/// status) are read-only and enforced by the backend.
+///
+/// Design system: all colours, typography, spacing, radius, inputs, and
+/// buttons use AIM Mobile Design System tokens. No hard-coded values.
+///
+/// RTL/Arabic: [EdgeInsetsDirectional] used throughout. [AIMTopAppBar]
+/// mirrors the back icon. No [TextDirection] hard-coded.
+///
+/// Security:
+/// - Reads initial values from authContextProvider (backend-sourced).
+/// - Submits only the three safe fields to the backend via profileProvider.
+/// - No credentials, no scoring, no AIM Engine calls.
 class EditProfilePage extends ConsumerStatefulWidget {
   const EditProfilePage({super.key});
 
@@ -25,12 +44,14 @@ class EditProfilePage extends ConsumerStatefulWidget {
 }
 
 class _EditProfilePageState extends ConsumerState<EditProfilePage> {
-  final _formKey = GlobalKey<FormState>();
   late final TextEditingController _displayNameController;
   late final TextEditingController _preferredLanguageController;
   late final TextEditingController _timezoneController;
 
   bool _dirty = false;
+
+  // Inline validation errors (AIMInput shows these below the field).
+  String? _displayNameError;
 
   @override
   void initState() {
@@ -44,7 +65,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         TextEditingController(text: profile?.displayName ?? '');
     _preferredLanguageController =
         TextEditingController(text: profile?.preferredLanguage ?? '');
-    _timezoneController = TextEditingController(text: profile?.timezone ?? '');
+    _timezoneController =
+        TextEditingController(text: profile?.timezone ?? '');
 
     for (final ctrl in [
       _displayNameController,
@@ -65,10 +87,24 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
   void _markDirty() {
     if (!_dirty) setState(() => _dirty = true);
+    // Clear field error on next edit.
+    if (_displayNameError != null) {
+      setState(() => _displayNameError = null);
+    }
+  }
+
+  bool _validate() {
+    final dn = _displayNameController.text.trim();
+    String? dnErr;
+    if (dn.length > 80) {
+      dnErr = 'Display name must be 80 characters or fewer.';
+    }
+    setState(() => _displayNameError = dnErr);
+    return dnErr == null;
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_validate()) return;
 
     final dn = _displayNameController.text.trim();
     final lang = _preferredLanguageController.text.trim();
@@ -83,11 +119,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     final bearerToken = ref.read(authFlowProvider).accessToken;
 
     if (bearerToken == null || bearerToken.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Your session has expired. Please sign in again.'),
-        ),
-      );
+      if (!mounted) return;
+      _showSnack('Your session has expired. Please sign in again.');
       return;
     }
 
@@ -96,19 +129,23 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         .updateProfile(bearerToken, studentPayload: payload);
 
     if (!mounted) return;
-
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated.')),
-      );
+      _showSnack('Profile updated.');
       Navigator.of(context).pop();
     }
+  }
+
+  void _showSnack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileProvider);
     final isSubmitting = profileState is AppAsyncLoading;
+    final canSave = _dirty && !isSubmitting;
 
     String? submitError;
     if (profileState case AppAsyncFailure(:final message)) {
@@ -116,137 +153,86 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Profile'),
+      appBar: AIMTopAppBar(
+        title: 'Edit Profile',
+        centerTitle: false,
         actions: [
-          TextButton(
-            onPressed: (isSubmitting || !_dirty) ? null : _submit,
-            child: isSubmitting
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Save'),
+          Padding(
+            padding: const EdgeInsetsDirectional.only(
+              end: AimSpacing.space8,
+            ),
+            child: AIMButton(
+              variant: AIMButtonVariant.ghost,
+              size: AIMButtonSize.small,
+              loading: isSubmitting,
+              disabled: !canSave,
+              onPressed: canSave ? _submit : null,
+              child: const Text('Save'),
+            ),
           ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (submitError != null) ...[
-                _ErrorBanner(message: submitError),
-                const SizedBox(height: 16),
-              ],
-              const _FieldLabel('Display Name'),
-              TextFormField(
-                controller: _displayNameController,
-                textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(
-                  hintText: 'Your display name',
-                  border: OutlineInputBorder(),
-                ),
-                maxLength: 80,
-                validator: (v) {
-                  if (v != null && v.trim().length > 80) {
-                    return 'Display name must be 80 characters or fewer.';
-                  }
-                  return null;
-                },
+        padding: const EdgeInsetsDirectional.fromSTEB(
+          AimSpacing.screenPaddingMobile,
+          AimSpacing.space24,
+          AimSpacing.screenPaddingMobile,
+          AimSpacing.space32,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Submit error banner
+            if (submitError != null) ...[
+              AIMAlertBanner(
+                tone: AIMAlertTone.error,
+                child: Text(submitError),
               ),
-              const SizedBox(height: 16),
-              const _FieldLabel('Preferred Language'),
-              TextFormField(
-                controller: _preferredLanguageController,
-                decoration: const InputDecoration(
-                  hintText: 'e.g. en, ar',
-                  border: OutlineInputBorder(),
-                ),
-                maxLength: 10,
-              ),
-              const SizedBox(height: 16),
-              const _FieldLabel('Timezone'),
-              TextFormField(
-                controller: _timezoneController,
-                decoration: const InputDecoration(
-                  hintText: 'e.g. Asia/Riyadh',
-                  border: OutlineInputBorder(),
-                ),
-                maxLength: 60,
-              ),
-              const SizedBox(height: 24),
-              const _SafeFieldsNote(),
+              const SizedBox(height: AimSpacing.componentGap),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
 
-class _FieldLabel extends StatelessWidget {
-  const _FieldLabel(this.label);
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            // Display Name
+            AIMInput(
+              label: 'Display Name',
+              placeholder: 'Your display name',
+              controller: _displayNameController,
+              error: _displayNameError,
+              textInputAction: TextInputAction.next,
+              semanticLabel: 'Display name field',
             ),
-      ),
-    );
-  }
-}
+            const SizedBox(height: AimSpacing.componentGap),
 
-class _ErrorBanner extends StatelessWidget {
-  const _ErrorBanner({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.errorContainer,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        message,
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.onErrorContainer,
-        ),
-      ),
-    );
-  }
-}
-
-class _SafeFieldsNote extends StatelessWidget {
-  const _SafeFieldsNote();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        'Only your display name, preferred language, and timezone can be edited here. '
-        'Email, roles, and account status are managed by the platform.',
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            // Preferred Language
+            AIMInput(
+              label: 'Preferred Language',
+              placeholder: 'e.g. en, ar',
+              controller: _preferredLanguageController,
+              textInputAction: TextInputAction.next,
+              semanticLabel: 'Preferred language field',
             ),
+            const SizedBox(height: AimSpacing.componentGap),
+
+            // Timezone
+            AIMInput(
+              label: 'Timezone',
+              placeholder: 'e.g. Asia/Riyadh',
+              controller: _timezoneController,
+              textInputAction: TextInputAction.done,
+              semanticLabel: 'Timezone field',
+            ),
+            const SizedBox(height: AimSpacing.sectionGap),
+
+            // Safe-fields note
+            AIMAlertBanner(
+              tone: AIMAlertTone.info,
+              child: const Text(
+                'Only your display name, preferred language, and timezone '
+                'can be edited here. Email, roles, and account status are '
+                'managed by the platform.',
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

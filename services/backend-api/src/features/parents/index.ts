@@ -1,0 +1,17 @@
+export { ParentsModule } from './parents.module';
+export { ParentsService } from './parents.service';
+export { ParentRepository } from './parent.repository';
+export * from './parent-repository.types';
+export { ParentChildLinkService } from './parent-child-link.service';
+export { ParentConsentService } from './parent-consent.service';
+export { ParentAccessPolicyService } from './parent-access-policy.service';
+export { ParentDashboardSummaryService } from './parent-dashboard-summary.service';
+export { ParentChildProgressService } from './parent-child-progress.service';
+export { ParentAssessmentSummaryService } from './parent-assessment-summary.service';
+export { ParentActivitySummaryService } from './parent-activity-summary.service';
+export { ParentReportService } from './parent-report.service';
+export type { ParentReportType } from './parent-report.service';
+export { ParentInvitationService } from './parent-invitation.service';
+export { ParentNotificationPreferenceService } from './parent-notification-preference.service';
+export * from './dto';
+export * from './guards';

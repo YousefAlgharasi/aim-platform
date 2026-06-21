@@ -1,9 +1,6 @@
-// Phase 3 — P3-060
-// Admin lesson status workflow page.
-//
-// Critical rule: lesson publish is blocked until ≥1 skill is linked.
-// This page fetches both lesson metadata and skill-link count before rendering.
-// Backend enforces the constraint at publish time — UI surfaces it early.
+// P11-028: Admin lesson status workflow page using AIM design system.
+// Backend is the sole authority for status transitions.
+// Lessons must have at least one skill linked before publishing.
 
 import { cookies } from 'next/headers';
 import Link from 'next/link';
@@ -18,6 +15,8 @@ import {
 } from '../../../../../../lib/api/admin-content-status-api';
 import { fetchLessonSkillLinks } from '../../../../../../lib/api/admin-lesson-skills-api';
 import { ContentStatusWorkflow } from '../../../../../../components/content-status-workflow';
+import { AdminPageHeader } from '../../../../../../components/layout';
+import { AdminApiErrorState } from '../../../../../../components/error-handling';
 
 type Props = { params: Promise<{ lessonId: string }> };
 
@@ -30,7 +29,7 @@ async function fetchLesson(token: string, lessonId: string) {
     const envelope = await adminApiClient.get<{ id: string; title: string; status: string }>(
       `/curriculum/lessons/${encodeURIComponent(lessonId)}`,
       (v) => {
-        if (!isObj(v) || typeof (v as Record<string,unknown>).id !== 'string') throw new Error('bad');
+        if (!isObj(v) || typeof (v as Record<string, unknown>).id !== 'string') throw new Error('bad');
         const r = v as Record<string, unknown>;
         return { id: String(r.id), title: String(r.title ?? ''), status: String(r.status ?? 'draft') };
       },
@@ -75,23 +74,21 @@ export default async function LessonStatusPage({ params }: Props) {
   }
 
   return (
-    <section className="admin-curriculum-page">
+    <section className="aim-status-page">
       <nav className="admin-breadcrumb" aria-label="Breadcrumb">
-        <Link href="/admin/content">Content</Link>
-        <span aria-hidden="true">/</span>
-        <Link href="/admin/content/lessons">Lessons</Link>
-        <span aria-hidden="true">/</span>
-        <Link href={`/admin/content/lessons/${lessonId}/skills`}>Skill Links</Link>
-        <span aria-hidden="true">/</span>
+        <Link href="/admin/content" className="admin-breadcrumb-link">Content</Link>
+        <span aria-hidden="true"> / </span>
+        <Link href="/admin/content/lessons" className="admin-breadcrumb-link">Lessons</Link>
+        <span aria-hidden="true"> / </span>
         <span>Status</span>
       </nav>
-      <header className="admin-page-header">
-        <p className="eyebrow">Admin — Curriculum — Status Workflow</p>
-        <h1>Lesson Status</h1>
-        <p className="admin-page-meta">
-          Lessons must have ≥1 skill linked before they can be published.
-        </p>
-      </header>
+
+      <AdminPageHeader
+        eyebrow="Admin — Curriculum — Status Workflow"
+        title="Lesson Status"
+        description="Lessons must have at least one skill linked before they can be published."
+      />
+
       {lesson ? (
         <ContentStatusWorkflow
           entityId={lessonId}
@@ -102,8 +99,16 @@ export default async function LessonStatusPage({ params }: Props) {
           onTransition={handleTransition}
         />
       ) : (
-        <p className="admin-error-banner" role="alert">Lesson not found or backend unavailable.</p>
+        <AdminApiErrorState message="Lesson not found or backend unavailable." />
       )}
+
+      <style>{`
+        .aim-status-page {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-20);
+        }
+      `}</style>
     </section>
   );
 }

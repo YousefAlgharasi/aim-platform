@@ -1,7 +1,8 @@
-// Phase 4 — P4-061
-// Placement domain entities barrel.
-//
-// Scope: Placement Test phase only.
-// Entities are added in P4-062 (Add Flutter Placement Models).
-// Entities must only hold data received from the Backend API.
-// No scoring, level mapping, or CEFR threshold logic belongs here.
+export 'placement_answer.dart';
+export 'placement_attempt.dart';
+export 'placement_question.dart';
+export 'placement_result.dart';
+export 'placement_section.dart';
+export 'placement_skill_mastery.dart';
+export 'placement_submit_answer_payload.dart';
+export 'placement_test.dart';

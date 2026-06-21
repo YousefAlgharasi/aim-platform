@@ -1,42 +1,120 @@
-// Phase 2 — P2-060
-// Admin users list page.
-//
-// Scope: Auth, Users, Roles only.
-//
-// Security:
-// - Token is read from the HTTP-only cookie server-side; never exposed to the browser.
-// - Auth state enforcement is handled by the parent layout (admin/layout.tsx).
-// - This page only renders data returned by the backend — it makes no authorization decisions.
-// - Role/permission enforcement is the backend's responsibility.
-
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 
 import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../lib/auth';
-import { fetchAdminUsers, type AdminUserListItem } from '../../../lib/api/admin-users-api';
+import {
+  fetchAdminUsers,
+  type AdminUserListItem,
+  type AdminUserStatus,
+  type AdminUserType,
+} from '../../../lib/api/admin-users-api';
 import { AdminApiClientError } from '../../../lib/api';
+import { AdminPageHeader } from '../../../components/layout';
+import {
+  AdminTable,
+  AdminPagination,
+  AdminStatusBadge,
+  AdminBadge,
+  AdminFilterBar,
+  AdminInput,
+  AdminSelect,
+  AdminIdCell,
+  AdminDateCell,
+  type AdminTableColumn,
+} from '../../../components/common';
+import { AdminApiErrorState } from '../../../components/error-handling';
+import { AdminEmptyState } from '../../../components/layout';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
 
+const STATUS_OPTIONS: AdminUserStatus[] = ['active', 'pending', 'disabled', 'deleted'];
+const TYPE_OPTIONS: AdminUserType[] = ['student', 'admin', 'reviewer', 'support', 'system'];
+
 type Props = {
-  searchParams: Promise<{ page?: string; limit?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    limit?: string;
+    status?: string;
+    userType?: string;
+    email?: string;
+  }>;
 };
 
-export default async function AdminUsersPage({ searchParams }: Props) {
-  const { page: pageParam, limit: limitParam } = await searchParams;
+const columns: AdminTableColumn<AdminUserListItem>[] = [
+  {
+    key: 'id',
+    header: 'ID',
+    width: '120px',
+    render: (user) => (
+      <Link href={`/admin/users/${user.id}`} style={{ textDecoration: 'none' }}>
+        <AdminIdCell id={user.id} />
+      </Link>
+    ),
+  },
+  {
+    key: 'email',
+    header: 'Email',
+    render: (user) =>
+      user.email ?? <span style={{ color: 'var(--text-muted)' }}>—</span>,
+  },
+  {
+    key: 'userType',
+    header: 'Type',
+    width: '110px',
+    render: (user) => <AdminBadge variant="primary">{user.userType}</AdminBadge>,
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    width: '110px',
+    render: (user) => <AdminStatusBadge status={user.status} />,
+  },
+  {
+    key: 'createdAt',
+    header: 'Created',
+    width: '130px',
+    render: (user) => <AdminDateCell iso={user.createdAt} />,
+  },
+];
 
-  const page = parseInt(pageParam ?? String(DEFAULT_PAGE), 10) || DEFAULT_PAGE;
-  const limit = parseInt(limitParam ?? String(DEFAULT_LIMIT), 10) || DEFAULT_LIMIT;
+function buildHref(
+  page: number,
+  params: { limit: number; status?: string; userType?: string; email?: string },
+): string {
+  const qs = new URLSearchParams();
+  qs.set('page', String(page));
+  qs.set('limit', String(params.limit));
+  if (params.status) qs.set('status', params.status);
+  if (params.userType) qs.set('userType', params.userType);
+  if (params.email) qs.set('email', params.email);
+  return `/admin/users?${qs.toString()}`;
+}
+
+export default async function AdminUsersPage({ searchParams }: Props) {
+  const sp = await searchParams;
+  const page = Math.max(parseInt(sp.page ?? String(DEFAULT_PAGE), 10) || DEFAULT_PAGE, 1);
+  const limit = Math.min(
+    Math.max(parseInt(sp.limit ?? String(DEFAULT_LIMIT), 10) || DEFAULT_LIMIT, 1),
+    100,
+  );
+  const status = STATUS_OPTIONS.includes(sp.status as AdminUserStatus)
+    ? (sp.status as AdminUserStatus)
+    : undefined;
+  const userType = TYPE_OPTIONS.includes(sp.userType as AdminUserType)
+    ? (sp.userType as AdminUserType)
+    : undefined;
+  const email = sp.email?.trim() || undefined;
 
   const cookieStore = await cookies();
   const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
 
-  let data: { users: AdminUserListItem[]; total: number; page: number; limit: number } | null = null;
+  let data: { users: AdminUserListItem[]; total: number; page: number; limit: number } | null =
+    null;
   let fetchError: string | null = null;
 
   try {
-    data = await fetchAdminUsers(token, page, limit);
+    data = await fetchAdminUsers({ token, page, limit, status, userType, email });
   } catch (error) {
     fetchError =
       error instanceof AdminApiClientError
@@ -47,110 +125,126 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   const totalPages = data ? Math.ceil(data.total / data.limit) : 0;
 
   return (
-    <section className="admin-users-page">
-      <header className="admin-page-header">
-        <p className="eyebrow">Admin — User Management</p>
-        <h1>Users</h1>
-        {data && (
-          <p className="admin-page-meta">
-            {data.total} user{data.total !== 1 ? 's' : ''} total
-          </p>
-        )}
-      </header>
+    <section>
+      <AdminPageHeader
+        eyebrow="User Management"
+        title="Users"
+        description={
+          data
+            ? `${data.total} user${data.total !== 1 ? 's' : ''} total`
+            : undefined
+        }
+      />
 
-      <div className="admin-boundary-note">
-        <strong>Security boundary:</strong> This list is served by the backend
-        API. Role enforcement and data filtering are backend responsibilities.
-        This dashboard renders backend-approved data only.
-      </div>
+      <form action="/admin/users" method="GET">
+        <AdminFilterBar label="Filter users">
+          <AdminInput
+            name="email"
+            placeholder="Search by email…"
+            defaultValue={email ?? ''}
+            aria-label="Search by email"
+            style={{ maxWidth: 240 }}
+          />
+          <AdminSelect
+            name="status"
+            defaultValue={status ?? ''}
+            aria-label="Filter by status"
+            style={{ maxWidth: 160 }}
+          >
+            <option value="">All statuses</option>
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </AdminSelect>
+          <AdminSelect
+            name="userType"
+            defaultValue={userType ?? ''}
+            aria-label="Filter by user type"
+            style={{ maxWidth: 160 }}
+          >
+            <option value="">All types</option>
+            {TYPE_OPTIONS.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </AdminSelect>
+          <input type="hidden" name="limit" value={limit} />
+          <button type="submit" className="aim-filter-submit">
+            Apply
+            <style>{`
+              .aim-filter-submit {
+                display: inline-flex;
+                align-items: center;
+                height: var(--size-input);
+                padding: 0 var(--space-16);
+                border: none;
+                border-radius: var(--radius-sm);
+                background: var(--color-primary-600);
+                color: var(--text-on-primary);
+                font-size: 14px;
+                font-weight: var(--weight-medium);
+                cursor: pointer;
+                transition: background 0.15s;
+              }
+              .aim-filter-submit:hover { background: var(--color-primary-700); }
+              .aim-filter-submit:focus-visible {
+                outline: none;
+                box-shadow: var(--shadow-focus);
+              }
+            `}</style>
+          </button>
+          {(status || userType || email) && (
+            <Link
+              href={`/admin/users?limit=${limit}`}
+              className="aim-filter-clear"
+            >
+              Clear
+              <style>{`
+                .aim-filter-clear {
+                  font-size: 13px;
+                  color: var(--text-link);
+                  text-decoration: none;
+                }
+                .aim-filter-clear:hover { text-decoration: underline; }
+              `}</style>
+            </Link>
+          )}
+        </AdminFilterBar>
+      </form>
 
-      {fetchError && (
-        <div className="admin-error-banner" role="alert">
-          {fetchError}
-        </div>
-      )}
+      {fetchError && <AdminApiErrorState message={fetchError} />}
 
       {data && data.users.length === 0 && !fetchError && (
-        <p className="admin-empty-state">No users found.</p>
+        <AdminEmptyState
+          title="No users found"
+          description={
+            status || userType || email
+              ? 'Try adjusting the filters above.'
+              : 'No users have been created yet.'
+          }
+        />
       )}
 
       {data && data.users.length > 0 && (
         <>
-          <div className="admin-table-wrapper">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th scope="col">ID</th>
-                  <th scope="col">Email</th>
-                  <th scope="col">Type</th>
-                  <th scope="col">Status</th>
-                  <th scope="col">Created</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.users.map((user) => (
-                  <tr key={user.id}>
-                    <td className="admin-table-id" title={user.id}>
-                      {user.id.slice(0, 8)}…
-                    </td>
-                    <td>{user.email ?? <span className="admin-null">—</span>}</td>
-                    <td>
-                      <span className={`admin-badge admin-badge--type-${user.userType}`}>
-                        {user.userType}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`admin-badge admin-badge--status-${user.status}`}>
-                        {user.status}
-                      </span>
-                    </td>
-                    <td className="admin-table-date">
-                      {formatDate(user.createdAt)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <AdminTable<AdminUserListItem>
+            columns={columns}
+            rows={data.users}
+            getRowKey={(u) => u.id}
+            caption={`Users — page ${data.page} of ${totalPages}`}
+          />
 
-          {totalPages > 1 && (
-            <nav className="admin-pagination" aria-label="User list pagination">
-              {page > 1 && (
-                <Link
-                  href={`/admin/users?page=${page - 1}&limit=${limit}`}
-                  className="admin-pagination-link"
-                >
-                  ← Previous
-                </Link>
-              )}
-              <span className="admin-pagination-info">
-                Page {data.page} of {totalPages}
-              </span>
-              {page < totalPages && (
-                <Link
-                  href={`/admin/users?page=${page + 1}&limit=${limit}`}
-                  className="admin-pagination-link"
-                >
-                  Next →
-                </Link>
-              )}
-            </nav>
-          )}
+          <AdminPagination
+            page={data.page}
+            totalPages={totalPages}
+            buildHref={(p) => buildHref(p, { limit, status, userType, email })}
+            label="User list pagination"
+          />
         </>
       )}
     </section>
   );
-}
-
-function formatDate(iso: string): string {
-  if (!iso) return '—';
-  try {
-    return new Intl.DateTimeFormat('en-GB', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
 }

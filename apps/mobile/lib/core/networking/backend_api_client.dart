@@ -5,16 +5,44 @@ import 'package:http/http.dart' as http;
 import '../config/config.dart';
 import 'api_client_exception.dart';
 import 'api_response_envelope.dart';
+import 'auth_interceptor.dart';
+
+// P6-022: BackendApiClient — centralised backend API consumer.
+//
+// Rules:
+// - All network calls go to BackendApiPaths endpoints only.
+// - No AIM Engine or AI provider URLs are ever used here.
+// - Authentication is passed as a Bearer token via authHeader().
+// - Flutter never calculates learning values; it only sends requests and
+//   displays what the backend returns.
 
 class BackendApiClient {
   BackendApiClient({
     required AppConfig config,
     http.Client? httpClient,
+    AuthInterceptor? authInterceptor,
   })  : _config = config,
-        _httpClient = httpClient ?? http.Client();
+        _httpClient = httpClient ?? http.Client(),
+        _authInterceptor = authInterceptor;
 
   final AppConfig _config;
   final http.Client _httpClient;
+  final AuthInterceptor? _authInterceptor;
+
+  // ---------------------------------------------------------------------------
+  // Auth header helper — P6-022
+  // Pass the Supabase access token returned by the auth flow.
+  // Never store or log the token inside this client.
+  // ---------------------------------------------------------------------------
+
+  /// Returns an Authorization header map for authenticated requests.
+  static Map<String, String> authHeader(String accessToken) => {
+        'authorization': 'Bearer $accessToken',
+      };
+
+  // ---------------------------------------------------------------------------
+  // URI builder
+  // ---------------------------------------------------------------------------
 
   Uri buildUri(String path, [Map<String, String>? queryParameters]) {
     final base = Uri.parse(_config.backendApiBaseUrl);
@@ -25,6 +53,10 @@ class BackendApiClient {
       queryParameters: queryParameters,
     );
   }
+
+  // ---------------------------------------------------------------------------
+  // HTTP methods
+  // ---------------------------------------------------------------------------
 
   Future<ApiResponseEnvelope<T>> get<T>(
     String path, {
@@ -70,6 +102,23 @@ class BackendApiClient {
     return _parseResponse<T>(response, decodeData: decodeData);
   }
 
+  Future<ApiResponseEnvelope<T>> delete<T>(
+    String path, {
+    required ApiJsonDecoder<T> decodeData,
+    Map<String, String>? headers,
+  }) async {
+    final response = await _httpClient.delete(
+      buildUri(path),
+      headers: _jsonHeaders(headers),
+    );
+
+    return _parseResponse<T>(response, decodeData: decodeData);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Response parsing
+  // ---------------------------------------------------------------------------
+
   Future<ApiResponseEnvelope<T>> _parseResponse<T>(
     http.Response response, {
     required ApiJsonDecoder<T> decodeData,
@@ -103,21 +152,26 @@ class BackendApiClient {
     return envelope;
   }
 
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
+
   Map<String, String> _jsonHeaders(Map<String, String>? headers) {
-    return <String, String>{
+    final base = <String, String>{
       'accept': 'application/json',
       'content-type': 'application/json',
       ...?headers,
     };
+
+    return _authInterceptor?.apply(base) ?? base;
   }
 
   String _joinPaths(String basePath, String requestPath) {
     final cleanBase = basePath.endsWith('/')
         ? basePath.substring(0, basePath.length - 1)
         : basePath;
-    final cleanRequest = requestPath.startsWith('/')
-        ? requestPath.substring(1)
-        : requestPath;
+    final cleanRequest =
+        requestPath.startsWith('/') ? requestPath.substring(1) : requestPath;
 
     if (cleanBase.isEmpty) return '/$cleanRequest';
     if (cleanRequest.isEmpty) return cleanBase;
