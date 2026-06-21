@@ -18,10 +18,23 @@ import { AnalyticsAuditService } from './analytics-audit.service';
 import { AnalyticsAccessGuard } from './analytics-access.guard';
 import { AdminAnalyticsDashboardController } from './admin-analytics-dashboard.controller';
 import { AdminLearningReportsController } from './admin-learning-reports.controller';
+import { AdminAssessmentReportsController } from './admin-assessment-reports.controller';
+import { AdminRevenueReportsController } from './admin-revenue-reports.controller';
+import { ParentReportsController } from './parent-reports.controller';
+import { StudentAnalyticsSummaryController } from './student-analytics-summary.controller';
+import { AnalyticsExportController } from './analytics-export.controller';
 
 @Module({
   imports: [DatabaseModule, UsersModule, RolesModule, forwardRef(() => AuthModule)],
-  controllers: [AdminAnalyticsDashboardController, AdminLearningReportsController],
+  controllers: [
+    AdminAnalyticsDashboardController,
+    AdminLearningReportsController,
+    AdminAssessmentReportsController,
+    AdminRevenueReportsController,
+    ParentReportsController,
+    StudentAnalyticsSummaryController,
+    AnalyticsExportController,
+  ],
   providers: [
     AnalyticsRepository,
     AnalyticsEventIngestionService,

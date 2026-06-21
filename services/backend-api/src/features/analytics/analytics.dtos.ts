@@ -21,10 +21,10 @@ export class IngestAnalyticsEventDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  eventType: string;
+  eventType!: string;
 
   @IsEnum(['student', 'parent', 'admin', 'system'])
-  actorRole: AnalyticsActorRole;
+  actorRole!: AnalyticsActorRole;
 
   @IsUUID()
   @IsOptional()
@@ -33,7 +33,7 @@ export class IngestAnalyticsEventDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  subjectType: string;
+  subjectType!: string;
 
   @IsUUID()
   @IsOptional()
@@ -50,20 +50,20 @@ export class IngestAnalyticsEventDto {
 
 export class GetMetricAggregateDto {
   @IsEnum(['platform', 'cohort', 'role', 'student', 'parent'])
-  scopeType: MetricScopeType;
+  scopeType!: MetricScopeType;
 
   @IsUUID()
   @IsOptional()
   scopeId?: string;
 
   @IsEnum(['day', 'week', 'month'])
-  periodType: MetricPeriodType;
+  periodType!: MetricPeriodType;
 
   @IsDateString()
-  from: string;
+  from!: string;
 
   @IsDateString()
-  to: string;
+  to!: string;
 }
 
 export class RunReportDto {
@@ -78,7 +78,7 @@ export class RequestExportDto {
   reportRunId?: string;
 
   @IsEnum(['csv', 'json', 'pdf'])
-  exportType: ExportType;
+  exportType!: ExportType;
 
   @IsObject()
   @IsOptional()
@@ -87,5 +87,5 @@ export class RequestExportDto {
 
 export class GetDashboardWidgetsDto {
   @IsEnum(['admin_overview', 'parent_summary', 'student_summary'])
-  dashboardKey: DashboardKey;
+  dashboardKey!: DashboardKey;
 }
