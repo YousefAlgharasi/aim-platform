@@ -38,6 +38,11 @@ export const adminNavigationItems: readonly AdminNavigationItem[] = [
     description: 'Placeholder only',
   },
   {
+    label: 'Analytics',
+    href: '/admin/analytics',
+    description: 'Backend-approved analytics and reports',
+  },
+  {
     label: 'Settings',
     href: '/admin/settings',
     description: 'Placeholder only',
@@ -59,9 +64,10 @@ const studentsItem = adminNavigationItems[1];
 const contentItem = adminNavigationItems[2];
 const reviewsItem = adminNavigationItems[3];
 const reportsItem = adminNavigationItems[4];
-const settingsItem = adminNavigationItems[5];
-const auditLogsItem = adminNavigationItems[6];
-const roleMenuItem = adminNavigationItems[7];
+const analyticsItem = adminNavigationItems[5];
+const settingsItem = adminNavigationItems[6];
+const auditLogsItem = adminNavigationItems[7];
+const roleMenuItem = adminNavigationItems[8];
 
 export const roleBasedMenuGroups: readonly RoleBasedMenuGroup[] = [
   {
@@ -72,6 +78,7 @@ export const roleBasedMenuGroups: readonly RoleBasedMenuGroup[] = [
       contentItem,
       reviewsItem,
       reportsItem,
+      analyticsItem,
       auditLogsItem,
       settingsItem,
       roleMenuItem,
@@ -87,6 +94,6 @@ export const roleBasedMenuGroups: readonly RoleBasedMenuGroup[] = [
   },
   {
     role: 'project_owner',
-    items: [overviewItem, reportsItem, auditLogsItem, settingsItem, roleMenuItem],
+    items: [overviewItem, reportsItem, analyticsItem, auditLogsItem, settingsItem, roleMenuItem],
   },
 ];
