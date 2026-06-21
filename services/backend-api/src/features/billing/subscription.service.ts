@@ -3,12 +3,14 @@ import { BillingRepository } from './billing.repository';
 import { EntitlementService } from './entitlement.service';
 import { Subscription } from './billing.entities';
 import { validateUUID } from './billing.validation';
+import { AnalyticsEventIngestionService } from '../analytics/analytics-event-ingestion.service';
 
 @Injectable()
 export class SubscriptionService {
   constructor(
     private readonly billingRepo: BillingRepository,
     private readonly entitlementService: EntitlementService,
+    private readonly analyticsEventIngestionService: AnalyticsEventIngestionService,
   ) {}
 
   async getUserSubscriptions(userId: string): Promise<Subscription[]> {
@@ -69,6 +71,15 @@ export class SubscriptionService {
       changes: { planId: data.planId, status: subscription.status },
     });
 
+    await this.analyticsEventIngestionService.ingest({
+      eventType: 'subscription.created',
+      actorRole: 'student',
+      actorId: subscription.userId,
+      subjectType: 'subscription',
+      subjectId: subscription.id,
+      metadata: { plan_key: subscription.planId, status: subscription.status },
+    });
+
     return subscription;
   }
 
@@ -91,6 +102,15 @@ export class SubscriptionService {
       actorId: userId,
       actorType: 'user',
       changes: { cancelAtPeriodEnd: true },
+    });
+
+    await this.analyticsEventIngestionService.ingest({
+      eventType: 'subscription.canceled',
+      actorRole: 'student',
+      actorId: userId,
+      subjectType: 'subscription',
+      subjectId: id,
+      metadata: { plan_key: updated!.planId, status: updated!.status },
     });
 
     return updated!;
@@ -139,6 +159,28 @@ export class SubscriptionService {
       actorType: 'provider',
       changes: { previousStatus, newStatus: data.status },
     });
+
+    if (updated) {
+      if (data.status === 'canceled' || data.status === 'expired') {
+        await this.analyticsEventIngestionService.ingest({
+          eventType: 'subscription.canceled',
+          actorRole: 'student',
+          actorId: subscription.userId,
+          subjectType: 'subscription',
+          subjectId: subscription.id,
+          metadata: { plan_key: subscription.planId, status: data.status },
+        });
+      } else if (data.status === 'active' && previousStatus !== 'active') {
+        await this.analyticsEventIngestionService.ingest({
+          eventType: 'subscription.renewed',
+          actorRole: 'student',
+          actorId: subscription.userId,
+          subjectType: 'subscription',
+          subjectId: subscription.id,
+          metadata: { plan_key: subscription.planId, status: data.status },
+        });
+      }
+    }
 
     return updated;
   }

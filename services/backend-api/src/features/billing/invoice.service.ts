@@ -7,10 +7,14 @@ import {
 import { BillingRepository } from './billing.repository';
 import { Invoice, InvoiceItem } from './billing.entities';
 import { validateUUID } from './billing.validation';
+import { AnalyticsEventIngestionService } from '../analytics/analytics-event-ingestion.service';
 
 @Injectable()
 export class InvoiceService {
-  constructor(private readonly billingRepo: BillingRepository) {}
+  constructor(
+    private readonly billingRepo: BillingRepository,
+    private readonly analyticsEventIngestionService: AnalyticsEventIngestionService,
+  ) {}
 
   async getUserInvoices(userId: string): Promise<Invoice[]> {
     validateUUID(userId, 'userId');
@@ -55,7 +59,7 @@ export class InvoiceService {
     validateUUID(data.userId, 'userId');
     if (data.subscriptionId) validateUUID(data.subscriptionId, 'subscriptionId');
 
-    return this.billingRepo.createInvoice({
+    const invoice = await this.billingRepo.createInvoice({
       userId: data.userId,
       subscriptionId: data.subscriptionId || null,
       providerInvoiceId: data.providerInvoiceId || null,
@@ -65,6 +69,22 @@ export class InvoiceService {
       dueDate: data.dueDate || null,
       metadata: {},
     } as Partial<Invoice>);
+
+    await this.analyticsEventIngestionService.ingest({
+      eventType: 'invoice.issued',
+      actorRole: 'system',
+      actorId: invoice.userId,
+      subjectType: 'invoice',
+      subjectId: invoice.id,
+      metadata: {
+        amount: invoice.total,
+        currency: invoice.currency,
+        period_start: invoice.periodStart,
+        period_end: invoice.periodEnd,
+      },
+    });
+
+    return invoice;
   }
 
   async updateInvoiceStatus(id: string, status: Invoice['status']): Promise<Invoice> {
