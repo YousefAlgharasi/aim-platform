@@ -21,6 +21,7 @@ import { AdminLearningReportsController } from './admin-learning-reports.control
 import { AdminAssessmentReportsController } from './admin-assessment-reports.controller';
 import { AdminRevenueReportsController } from './admin-revenue-reports.controller';
 import { ParentReportsController } from './parent-reports.controller';
+import { StudentAnalyticsSummaryController } from './student-analytics-summary.controller';
 
 @Module({
   imports: [DatabaseModule, UsersModule, RolesModule, forwardRef(() => AuthModule)],
@@ -30,6 +31,7 @@ import { ParentReportsController } from './parent-reports.controller';
     AdminAssessmentReportsController,
     AdminRevenueReportsController,
     ParentReportsController,
+    StudentAnalyticsSummaryController,
   ],
   providers: [
     AnalyticsRepository,
