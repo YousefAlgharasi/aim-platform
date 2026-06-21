@@ -16,6 +16,9 @@ import { PlacementEntryPage } from '../features/placement/PlacementEntryPage';
 import { PlacementQuestionUI } from '../features/placement/PlacementQuestionUI';
 import { PlacementResultPage } from '../features/placement/PlacementResultPage';
 import { CourseCatalog } from '../features/curriculum/CourseCatalog';
+import { CourseDetailPage } from '../features/curriculum/CourseDetailPage';
+import { LessonPlayerShell } from '../features/lessons/LessonPlayerShell';
+import { PracticeShell } from '../features/practice/PracticeShell';
 import { NotFoundPage } from '../components/common/NotFoundPage';
 import { ForbiddenPage } from '../components/common/ForbiddenPage';
 
@@ -42,6 +45,9 @@ export function AppRoutes() {
         <Route path="/placement/:id" element={<PlacementQuestionUI />} />
         <Route path="/placement/:id/result" element={<PlacementResultPage />} />
         <Route path="/curriculum" element={<CourseCatalog />} />
+        <Route path="/curriculum/:subjectId" element={<CourseDetailPage />} />
+        <Route path="/lessons/:lessonId" element={<LessonPlayerShell />} />
+        <Route path="/practice/:sessionId" element={<PracticeShell />} />
       </Route>
 
       {/* Error routes */}
