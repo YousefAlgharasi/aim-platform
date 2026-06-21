@@ -1,0 +1,56 @@
+// Phase 6 — P6-066 / P6-067
+// Learning path feature Riverpod providers.
+//
+// Scope: Learning path screen only.
+//
+// Registers:
+//   learningPathRemoteDatasourceProvider — datasource
+//   learningPathRepositoryProvider        — repository
+//   learningPathProvider                  — notifier (use this in UI)
+//
+// Security rules:
+// - Uses authenticatedBackendApiClientProvider so bearer token is injected
+//   automatically; never stored in the datasource.
+// - No AIM Engine runtime, AI Teacher, or AI provider calls from Flutter.
+// - No secrets, service-role keys, or privileged config here.
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:aim_mobile/core/state/app_async_state.dart';
+import 'package:aim_mobile/features/auth/logic/provider/auth_token_interceptor_provider.dart';
+import 'package:aim_mobile/features/learning_path/data/datasources/learning_path_remote_datasource.dart';
+import 'package:aim_mobile/features/learning_path/data/datasources/learning_path_remote_datasource_impl.dart';
+import 'package:aim_mobile/features/learning_path/data/repository/repo_impl/learning_path_repository_impl.dart';
+import 'package:aim_mobile/features/learning_path/logic/entity/learning_path_data.dart';
+import 'package:aim_mobile/features/learning_path/logic/repository/learning_path_repository.dart';
+import 'learning_path_notifier.dart';
+
+/// Provides the concrete [LearningPathRemoteDatasource].
+/// Consumers should depend on [learningPathRepositoryProvider] instead.
+final learningPathRemoteDatasourceProvider =
+    Provider<LearningPathRemoteDatasource>((ref) {
+  return LearningPathRemoteDatasourceImpl(
+    apiClient: ref.watch(authenticatedBackendApiClientProvider),
+  );
+});
+
+/// Provides the [LearningPathRepository] used by notifiers and pages.
+final learningPathRepositoryProvider = Provider<LearningPathRepository>((ref) {
+  return LearningPathRepositoryImpl(
+    datasource: ref.watch(learningPathRemoteDatasourceProvider),
+  );
+});
+
+/// App-level learning path data provider.
+///
+/// Consumers call [LearningPathNotifier.load] after sign-in with the
+/// studentId from [authContextProvider]. Stays alive for the session so the
+/// learning path page does not reload on every navigation event.
+///
+/// Security: studentId must come from authContextProvider (JWT-resolved).
+final learningPathProvider =
+    StateNotifierProvider<LearningPathNotifier, AppAsyncState<LearningPathData>>(
+  (ref) => LearningPathNotifier(
+    repository: ref.watch(learningPathRepositoryProvider),
+  ),
+);

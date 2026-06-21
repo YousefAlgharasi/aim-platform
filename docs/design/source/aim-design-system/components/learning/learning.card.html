@@ -1,0 +1,87 @@
+<!-- @dsCard group="Components" viewport="820x680" name="Learning" subtitle="Card · Progress · Answers · AI feedback · Record" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  body { margin: 0; font-family: var(--font-en); background: var(--background); padding: 24px; color: var(--text-primary); }
+  .sec { font: var(--type-label); text-transform: uppercase; color: var(--text-muted); margin: 0 0 12px; letter-spacing: .04em; }
+  .block { margin-bottom: 26px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid2 { display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; align-items: start; }
+  .answers { display: flex; flex-direction: column; gap: 12px; max-width: 460px; }
+  .center { display: flex; align-items: center; justify-content: center; }
+  h3 { margin: 0 0 4px; font: var(--type-title); }
+  .muted { font: var(--type-body-sm); color: var(--text-secondary); margin: 0; }
+  .streak { font: var(--type-display); margin: 4px 0 0; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="../../_ds_bundle.js"></script>
+  <script type="text/babel">
+    const { Card, ProgressBar, CircularProgress, AnswerOption, AIFeedbackBubble, RecordButton, Badge } = window.AIMDesignSystem_e594fb;
+
+    function Demo() {
+      const [rec, setRec] = React.useState(false);
+      return (
+        <>
+          <div className="block">
+            <div className="sec">Cards &amp; progress</div>
+            <div className="grid3">
+              <Card variant="elevated" interactive>
+                <Badge tone="primary" pill>In progress</Badge>
+                <h3 style={{marginTop:10}}>Past Tense Verbs</h3>
+                <p className="muted">Grammar · 5 min</p>
+                <div style={{marginTop:14}}><ProgressBar value={70} size="md" /></div>
+              </Card>
+              <Card variant="gradient">
+                <p className="muted" style={{color:'rgba(255,255,255,.85)'}}>Current streak</p>
+                <p className="streak">7 🔥</p>
+                <p className="muted" style={{color:'rgba(255,255,255,.85)'}}>Keep it going today!</p>
+              </Card>
+              <Card variant="elevated" className="center">
+                <CircularProgress value={68} tone="gradient" caption="daily goal" />
+              </Card>
+            </div>
+          </div>
+
+          <div className="block">
+            <div className="grid2">
+              <div>
+                <div className="sec">Quiz — answer states</div>
+                <div className="answers">
+                  <AnswerOption optionKey="A" state="reveal">She had lived here for years.</AnswerOption>
+                  <AnswerOption optionKey="B" state="incorrect">She have lived here for years.</AnswerOption>
+                  <AnswerOption optionKey="C" state="default">She living here for years.</AnswerOption>
+                  <AnswerOption optionKey="D" state="selected">She lives here for years.</AnswerOption>
+                </div>
+              </div>
+              <div>
+                <div className="sec">AI tutor feedback</div>
+                <div className="answers">
+                  <AIFeedbackBubble tone="praise">Excellent! Your use of the <b>past perfect</b> is correct.</AIFeedbackBubble>
+                  <AIFeedbackBubble tone="correction">With <b>I</b>, use "have" not "has" — try again.</AIFeedbackBubble>
+                  <AIFeedbackBubble typing />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="block">
+            <div className="sec">Speaking practice</div>
+            <Card variant="ai" className="center" style={{padding:'24px'}}>
+              <RecordButton recording={rec} onToggle={()=>setRec(r=>!r)} caption={rec ? '0:08' : undefined} />
+            </Card>
+          </div>
+        </>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<Demo/>);
+  </script>
+</body>
+</html>

@@ -1,3 +1,12 @@
+// Phase 4 — P4-069 / P4-070
+// PlacementResultModel — data-layer model for PlacementResult.
+//
+// P4-070 fix: PlacementSkillMastery now requires [signal] from the backend.
+// Flutter must NEVER compute signal from masteryScore locally.
+// The backend sends 'signal' ('strong'/'developing'/'emerging') in the
+// skill_mastery_map response. If the backend does not yet include it,
+// we fall back to 'unknown' — never to a locally-computed threshold check.
+
 import '../../logic/entity/placement_result.dart';
 import '../../logic/entity/placement_skill_mastery.dart';
 
@@ -23,10 +32,10 @@ class PlacementResultModel extends PlacementResult {
       placementAttemptId: json['placement_attempt_id'] as String,
       estimatedLevel: json['estimated_level'] as String,
       skillMasteryMap: _parseSkillMasteryMap(
-        json['skill_mastery_map'] as Map<String, dynamic>? ?? {},
+        _asStringMap(json['skill_mastery_map']),
       ),
       weaknesses: _parseWeaknesses(
-        json['weakness_map'] as Map<String, dynamic>? ?? {},
+        _asStringMap(json['weakness_map']),
       ),
       initialPathId: json['initial_path_id'] as String,
       createdAt: json['created_at'] as String,
@@ -43,6 +52,7 @@ class PlacementResultModel extends PlacementResult {
               'total_questions': entry.value.totalQuestions,
               'correct_answers': entry.value.correctAnswers,
               'mastery_score': entry.value.masteryScore,
+              'signal': entry.value.signal,
             }
         },
         'weakness_map': {
@@ -59,17 +69,26 @@ class PlacementResultModel extends PlacementResult {
       };
 }
 
+Map<String, dynamic> _asStringMap(Object? value) {
+  if (value == null) return {};
+  return Map<String, dynamic>.from(value as Map);
+}
+
 Map<String, PlacementSkillMastery> _parseSkillMasteryMap(
   Map<String, dynamic> raw,
 ) {
   final result = <String, PlacementSkillMastery>{};
   for (final entry in raw.entries) {
-    final data = entry.value as Map<String, dynamic>;
+    final data = Map<String, dynamic>.from(entry.value as Map);
+    // P4-070: signal must come from backend — never computed locally.
+    // Fallback to 'unknown' if backend does not yet send the field.
+    final signal = data['signal'] as String? ?? 'unknown';
     result[entry.key] = PlacementSkillMastery(
       skillCode: entry.key,
       totalQuestions: data['total_questions'] as int,
       correctAnswers: data['correct_answers'] as int,
       masteryScore: (data['mastery_score'] as num).toDouble(),
+      signal: signal,
     );
   }
   return result;
@@ -78,7 +97,7 @@ Map<String, PlacementSkillMastery> _parseSkillMasteryMap(
 List<PlacementWeakness> _parseWeaknesses(Map<String, dynamic> raw) {
   final list = raw['weaknesses'] as List<dynamic>? ?? [];
   return list.map((item) {
-    final data = item as Map<String, dynamic>;
+    final data = Map<String, dynamic>.from(item as Map);
     return PlacementWeakness(
       skillCode: data['skill_code'] as String,
       masteryScore: (data['mastery_score'] as num).toDouble(),

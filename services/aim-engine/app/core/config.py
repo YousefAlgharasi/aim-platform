@@ -27,6 +27,12 @@ class AimEngineSettings(BaseSettings):
     port: int = Field(default=8010, ge=1, le=65535)
     log_level: Literal["debug", "info", "warning", "error", "critical"] = "info"
 
+    # Service token for POST /aim/v1/analysis (P5-020).
+    # Provisioned to the backend service only. Never logged, never returned to clients.
+    # In local/test environments the default allows tests to run without a real secret.
+    # In staging/production this MUST be set via AIM_ENGINE_SERVICE_TOKEN env var.
+    service_token: str = Field(default="local-dev-token", min_length=8)
+
     @property
     def enable_docs(self) -> bool:
         """Expose local docs outside production only."""

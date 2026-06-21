@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 from time import monotonic
 
 from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from app.core.service_info import SERVICE_NAME, SERVICE_PHASE, SERVICE_VERSION
@@ -37,22 +38,36 @@ def _utc_now_iso() -> str:
     return datetime.now(UTC).isoformat().replace("+00:00", "Z")
 
 
-@router.get("/health", response_model=AimEngineHealthResponse)
-def get_health(request: Request) -> AimEngineHealthResponse:
-    """Return safe AIM Engine health metadata.
+@router.get(
+    "/health",
+    response_model=AimEngineHealthResponse,
+    responses={503: {"model": AimEngineHealthResponse}},
+)
+def get_health(request: Request) -> JSONResponse:
+    """Return AIM Engine health metadata.
+
+    Returns 200 OK with status=ok when the engine is ready to serve requests.
+    Returns 503 Service Unavailable with status=unavailable when the engine
+    cannot self-attest readiness.
 
     This endpoint must not expose secrets, database URLs, provider credentials,
     learner-internal model fields, or adaptive-learning internals.
     """
     settings = request.app.state.settings
+    ready: bool = getattr(request.app.state, "_ready", True)
 
-    return AimEngineHealthResponse(
+    body = AimEngineHealthResponse(
         service=SERVICE_NAME,
-        status="ok",
+        status="ok" if ready else "unavailable",
         timestamp=_utc_now_iso(),
         uptime_seconds=round(monotonic() - _STARTED_AT_MONOTONIC, 3),
         phase=SERVICE_PHASE,
         environment=settings.env,
+    )
+
+    return JSONResponse(
+        content=body.model_dump(),
+        status_code=200 if ready else 503,
     )
 
 
