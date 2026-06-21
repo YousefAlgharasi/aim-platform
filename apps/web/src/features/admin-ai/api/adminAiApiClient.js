@@ -54,3 +54,26 @@ export async function adminAiRequest(path, options = {}) {
     clearTimeout(timeoutId);
   }
 }
+
+// P18-074: Admin AI Prompt Management UI — prompt template version status
+// stays entirely server-side; this client never decides which version is
+// active and never reads/writes provider secrets or model secrets.
+export async function listPromptTemplates() {
+  return adminAiRequest('/prompts');
+}
+
+export async function getPromptTemplate(id) {
+  return adminAiRequest(`/prompts/${encodeURIComponent(id)}`);
+}
+
+export async function createPromptTemplateDraft(data) {
+  return adminAiRequest('/prompts', { method: 'POST', body: data });
+}
+
+export async function publishPromptTemplate(id) {
+  return adminAiRequest(`/prompts/${encodeURIComponent(id)}/publish`, { method: 'POST' });
+}
+
+export async function retirePromptTemplate(id) {
+  return adminAiRequest(`/prompts/${encodeURIComponent(id)}/retire`, { method: 'POST' });
+}
