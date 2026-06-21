@@ -133,3 +133,11 @@ export async function listFlaggedFeedback(limit) {
   const query = limit ? `?limit=${encodeURIComponent(limit)}` : '';
   return adminAiRequest(`/safety/feedback${query}`);
 }
+
+// P18-078: Admin AI Audit UI — read-only audit log rollups. `details` is
+// the safe metadata JSON recorded server-side; this client never reads
+// or renders raw provider payloads, secrets, or API keys.
+export async function listRecentAuditLogs(limit) {
+  const query = limit ? `?limit=${encodeURIComponent(limit)}` : '';
+  return adminAiRequest(`/audit/logs${query}`);
+}
