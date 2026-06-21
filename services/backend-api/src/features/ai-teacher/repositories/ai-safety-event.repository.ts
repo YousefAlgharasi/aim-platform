@@ -1,0 +1,44 @@
+// P8-026: Add Backend AI Chat Repositories
+// Backend-only persistence abstraction for ai_safety_events.
+// Records that a safety check ran and its outcome only — never the
+// rejected raw message/response content.
+
+import { Injectable } from '@nestjs/common';
+
+import { DatabaseService } from '../../../database/database.service';
+import { AiSafetyEventRow } from './ai-chat-repository.types';
+
+export interface CreateAiSafetyEventInput {
+  readonly sessionId: string;
+  readonly direction: 'input' | 'output';
+  readonly decision: 'allowed' | 'rejected';
+  readonly reasonCategory?: string | null;
+}
+
+@Injectable()
+export class AiSafetyEventRepository {
+  constructor(private readonly db: DatabaseService) {}
+
+  async create(input: CreateAiSafetyEventInput): Promise<AiSafetyEventRow> {
+    const result = await this.db.query<AiSafetyEventRow>(
+      `INSERT INTO ai_safety_events (session_id, direction, decision, reason_category)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, session_id, direction, decision, reason_category, created_at`,
+      [input.sessionId, input.direction, input.decision, input.reasonCategory ?? null],
+    );
+
+    return result.rows[0];
+  }
+
+  async findBySessionId(sessionId: string): Promise<AiSafetyEventRow[]> {
+    const result = await this.db.query<AiSafetyEventRow>(
+      `SELECT id, session_id, direction, decision, reason_category, created_at
+       FROM ai_safety_events
+       WHERE session_id = $1
+       ORDER BY created_at DESC`,
+      [sessionId],
+    );
+
+    return result.rows;
+  }
+}

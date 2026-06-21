@@ -76,18 +76,36 @@ function decodeCourseListData(value: unknown): AdminCourseListData {
   };
 }
 
+export type FetchAdminCoursesOptions = {
+  readonly token: string;
+  readonly page?: number;
+  readonly limit?: number;
+  readonly status?: CourseStatus;
+  readonly q?: string;
+};
+
 export async function fetchAdminCourses(
-  token: string,
+  tokenOrOptions: string | FetchAdminCoursesOptions,
   page = 1,
   limit = 20,
   status?: CourseStatus,
 ): Promise<AdminCourseListData> {
+  const opts: FetchAdminCoursesOptions =
+    typeof tokenOrOptions === 'string'
+      ? { token: tokenOrOptions, page, limit, status }
+      : tokenOrOptions;
+
   const envelope = await adminApiClient.get<AdminCourseListData>(
     '/curriculum/courses',
     decodeCourseListData,
     {
-      headers: { authorization: `Bearer ${token}` },
-      query: { page, limit, ...(status ? { status } : {}) },
+      headers: { authorization: `Bearer ${opts.token}` },
+      query: {
+        page: opts.page ?? 1,
+        limit: opts.limit ?? 20,
+        ...(opts.status ? { status: opts.status } : {}),
+        ...(opts.q ? { q: opts.q } : {}),
+      },
     },
   );
   return envelope.data;
