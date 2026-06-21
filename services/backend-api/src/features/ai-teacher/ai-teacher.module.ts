@@ -12,6 +12,7 @@ import { AiTeacherFeedbackModule } from './feedback/ai-teacher-feedback.module';
 import { AiTeacherGovernanceModule } from './governance/governance.module';
 import { AiTeacherStreamMessageModule } from './streaming-api/ai-teacher-stream-message.module';
 import { AiTeacherSafetyStatusModule } from './safety-status/ai-teacher-safety-status.module';
+import { AdminPromptModule } from './admin-prompts/admin-prompt.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AiTeacherSafetyStatusModule } from './safety-status/ai-teacher-safety-s
     AiTeacherGovernanceModule,
     AiTeacherStreamMessageModule,
     AiTeacherSafetyStatusModule,
+    AdminPromptModule,
   ],
   providers: [AiTeacherService],
   exports: [AiTeacherService, ContextBuilderModule, AiChatRepositoriesModule, AiTeacherGovernanceModule],
