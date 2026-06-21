@@ -63,6 +63,14 @@ class BackendApiPaths {
       '/aim/students/$studentId/recommendations';
 
   // ---------------------------------------------------------------------------
+  // Student Analytics Summary — Phase 15 P15-072
+  // Read-only. Returns backend-approved report definitions visible to the
+  // student role; Flutter never computes mastery/progress figures here.
+  // ---------------------------------------------------------------------------
+
+  static const String studentAnalyticsSummary = '/student/analytics/summary';
+
+  // ---------------------------------------------------------------------------
   // Curriculum — Phase 6 P6-022
   // Read-only list endpoints. Write/admin endpoints are forbidden in Flutter.
   // ---------------------------------------------------------------------------
