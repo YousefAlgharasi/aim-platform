@@ -45,10 +45,13 @@ function buildService(overrides: {
     }),
   };
 
+  const analyticsEventIngestionService = { ingest: jest.fn().mockResolvedValue(undefined) };
+
   const service = new ParentReportService(
     parentAccessPolicyService as never,
     parentChildProgressService as never,
     parentAssessmentSummaryService as never,
+    analyticsEventIngestionService as never,
   );
 
   return {

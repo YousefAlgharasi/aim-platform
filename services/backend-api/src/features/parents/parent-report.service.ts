@@ -15,6 +15,7 @@ import { ParentChildReportEntity } from './dto/parent-child-report.entity';
 import { ParentAccessPolicyService } from './parent-access-policy.service';
 import { ParentChildProgressService } from './parent-child-progress.service';
 import { ParentAssessmentSummaryService } from './parent-assessment-summary.service';
+import { AnalyticsEventIngestionService } from '../analytics/analytics-event-ingestion.service';
 
 export type ParentReportType = 'weekly' | 'monthly';
 
@@ -24,6 +25,7 @@ export class ParentReportService {
     private readonly parentAccessPolicyService: ParentAccessPolicyService,
     private readonly parentChildProgressService: ParentChildProgressService,
     private readonly parentAssessmentSummaryService: ParentAssessmentSummaryService,
+    private readonly analyticsEventIngestionService: AnalyticsEventIngestionService,
   ) {}
 
   async getReportForParent(
@@ -76,6 +78,15 @@ export class ParentReportService {
     report.generatedAt = new Date().toISOString();
     report.summary = summaryParts.join(' ');
     report.dataUrl = null;
+
+    await this.analyticsEventIngestionService.ingest({
+      eventType: 'parent.report_accessed',
+      actorRole: 'parent',
+      actorId: parentId,
+      subjectType: 'parent_report',
+      subjectId: report.id,
+      metadata: { report_type: reportType },
+    });
 
     return report;
   }

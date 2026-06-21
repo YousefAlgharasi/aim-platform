@@ -61,6 +61,13 @@ Every `analytics_events` row uses this shape:
   `status` (no provider payload, no card data).
 - `invoice.issued` — metadata: `amount`, `currency`, `period_start`, `period_end`.
 
+### Parent Dashboard
+
+- `parent.child_link_created` — metadata: `relationship_type`.
+- `parent.child_link_accepted` — metadata: `relationship_type`.
+- `parent.consent_granted` — metadata: `consent_type`.
+- `parent.report_accessed` — metadata: `report_type`.
+
 ### Users
 
 - `user.registered` — metadata: `role`.
