@@ -8,6 +8,7 @@
 
 export 'ui/pages/ai_teacher_placeholder_page.dart';
 export 'ui/pages/ai_teacher_chat_page.dart';
+export 'ui/pages/ai_teacher_session_history_page.dart';
 export 'ui/widgets/ai_teacher_widgets.dart';
 export 'logic/entity/ai_teacher_entities.dart';
 export 'logic/provider/ai_teacher_providers.dart';
