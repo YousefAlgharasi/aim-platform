@@ -9,6 +9,7 @@ import { DatabaseModule } from '../../../database/database.module';
 import { AiModelConfigRepository } from './ai-model-config.repository';
 import { AiPromptTemplateRepository } from './ai-prompt-template.repository';
 import { AiTeacherAuditLogRepository } from './ai-teacher-audit-log.repository';
+import { AiTeacherAuditService } from './ai-teacher-audit.service';
 import { AiTeacherSafetyCheckRepository } from './ai-teacher-safety-check.repository';
 import { AiTeacherSafetyService } from './ai-teacher-safety.service';
 import { AiTeacherProviderGateway } from './ai-teacher-provider.interface';
@@ -30,6 +31,7 @@ import { PromptTemplateService } from './prompt-template.service';
     ModelConfigService,
     AiTeacherSafetyService,
     AiCostQuotaService,
+    AiTeacherAuditService,
     { provide: AiTeacherProviderGateway, useClass: AiTeacherProviderUnavailableStub },
   ],
   exports: [
@@ -42,6 +44,7 @@ import { PromptTemplateService } from './prompt-template.service';
     ModelConfigService,
     AiTeacherSafetyService,
     AiCostQuotaService,
+    AiTeacherAuditService,
   ],
 })
 export class AiTeacherGovernanceModule {}
