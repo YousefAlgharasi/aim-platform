@@ -1,0 +1,23 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-48);
+  text-align: center;
+  gap: var(--space-12);
+}
+
+.title {
+  font-size: var(--type-h3-size, 18px);
+  font-weight: var(--weight-semibold, 600);
+  color: var(--color-neutral-900);
+  margin: 0;
+}
+
+.message {
+  font-size: 14px;
+  color: var(--color-neutral-500, #7E849A);
+  margin: 0;
+  max-width: 320px;
+}
