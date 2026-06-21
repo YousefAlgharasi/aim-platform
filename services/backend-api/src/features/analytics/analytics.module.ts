@@ -11,6 +11,7 @@ import { DashboardService } from './dashboard.service';
 import { AnalyticsExportService } from './analytics-export.service';
 import { CohortService } from './cohort.service';
 import { AnalyticsAccessPolicyService } from './analytics-access-policy.service';
+import { AnalyticsAuditService } from './analytics-audit.service';
 
 @Module({
   imports: [DatabaseModule],
@@ -25,6 +26,7 @@ import { AnalyticsAccessPolicyService } from './analytics-access-policy.service'
     AnalyticsExportService,
     CohortService,
     AnalyticsAccessPolicyService,
+    AnalyticsAuditService,
   ],
   exports: [
     AnalyticsRepository,
@@ -37,6 +39,7 @@ import { AnalyticsAccessPolicyService } from './analytics-access-policy.service'
     AnalyticsExportService,
     CohortService,
     AnalyticsAccessPolicyService,
+    AnalyticsAuditService,
   ],
 })
 export class AnalyticsModule {}
