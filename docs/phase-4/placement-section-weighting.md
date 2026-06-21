@@ -1,131 +1,161 @@
-# Placement Section Weighting Rules
+# Phase 4 — Placement Section Weighting Rules
 
 > Phase 4 — P4-031
-> Scope: Section weighting for placement test scoring only.
+> Scope: Placement Test phase only.
 
 ---
 
-## 1. Overview
+## Purpose
 
-This document defines how each placement test section contributes to the overall placement output. It covers section weights, mastery thresholds, and how backend uses weights to compute the estimated level and weakness map.
+This document defines how each placement test section contributes to the overall placement score. It ensures that the final score reflects a learner's balanced ability across grammar, vocabulary, and listening — with weights calibrated to the AIM platform's pedagogical priorities.
 
-All backend implementations must conform to this document. Flutter must never calculate or apply section weights — this is backend authority only.
-
----
-
-## 2. Section Weights
-
-Each skill section has a fixed weight that determines its contribution to the overall placement score.
-
-| Section | Skill Code | Weight |
-|---|---|---|
-| Grammar | grammar | 30% |
-| Vocabulary | vocabulary | 30% |
-| Reading | reading | 25% |
-| Listening | listening | 15% |
-
-Total weight: 100%
-
-### 2.1 Weight Rules
-
-- Weights are fixed and defined by this document — admin cannot change them at runtime.
-- Weights must always sum to 100%.
-- Backend applies weights when computing the overall placement score after attempt completion.
-- Flutter must never receive, store, or apply weight values.
+All weighting logic runs on the backend only. Flutter and other clients must never compute, replicate, or override section weights locally.
 
 ---
 
-## 3. Mastery Thresholds
+## 1. Section Weights
 
-Each section has a mastery threshold. If a student's mastery score falls below the threshold, the section is flagged as a weakness.
+The Phase 4 placement test contains three sections. Each section contributes to the final placement score (0–100) according to the following weights:
 
-| Section | Skill Code | Weakness Threshold |
-|---|---|---|
-| Grammar | grammar | < 0.60 (60%) |
-| Vocabulary | vocabulary | < 0.60 (60%) |
-| Reading | reading | < 0.55 (55%) |
-| Listening | listening | < 0.55 (55%) |
-
-### 3.1 Threshold Rules
-
-- Thresholds are fixed — admin cannot change them at runtime.
-- A section is flagged as a weakness if mastery_score < threshold.
-- Backend populates the weakness_map with all sections below their threshold.
-- Weakness priority is ordered by the gap between threshold and actual score (largest gap = highest priority).
-
----
-
-## 4. Weighted Score Computation
-
-Backend computes the overall weighted score as follows:
-
-1. For each section: compute mastery_score = correct_answers / total_questions
-2. Multiply mastery_score by the section weight
-3. Sum all weighted scores to get the overall placement score
-
-Example:
-
-| Section | Mastery Score | Weight | Weighted Score |
+| Section | Skill Area | Weight | Max Contribution |
 |---|---|---|---|
-| Grammar | 0.70 | 30% | 0.21 |
-| Vocabulary | 0.50 | 30% | 0.15 |
-| Reading | 0.80 | 25% | 0.20 |
-| Listening | 0.60 | 15% | 0.09 |
-| **Total** | | | **0.65** |
+| Grammar | Grammar & Verb Forms | 40% | 40 points |
+| Vocabulary | Vocabulary & Reading | 35% | 35 points |
+| Listening | Listening Comprehension | 25% | 25 points |
+
+**Total weight: 100%. Total maximum score: 100 points.**
+
+### 1.1 Rationale
+
+- **Grammar (40%)** is weighted highest because grammatical accuracy is the most reliable predictor of CEFR level in the AIM curriculum's A1–B1 range.
+- **Vocabulary (35%)** is the second highest contributor; lexical range and reading comprehension strongly differentiate A2 from B1.
+- **Listening (25%)** is weighted lower because audio comprehension at A1–B1 is strongly correlated with grammar and vocabulary scores, reducing its marginal information value.
 
 ---
 
-## 5. Level Assignment from Weighted Score
+## 2. Section Score Calculation
 
-Backend maps the overall weighted score to an estimated level:
+### 2.1 Raw Section Score
 
-| Score Range | Estimated Level |
+Each section has 10 questions. Each correct answer scores 1 point; each incorrect answer or skip scores 0 points. The raw section score is the count of correct answers: **0–10**.
+
+### 2.2 Weighted Section Contribution
+
+```
+section_contribution = (correct_answers / total_questions) × section_weight × 100
+```
+
+Where:
+- `correct_answers` = number of questions answered correctly in the section (0–10)
+- `total_questions` = 10 (fixed per section — see P4-029)
+- `section_weight` = the decimal weight for the section (e.g. 0.40 for Grammar)
+
+**Examples:**
+
+| Section | Correct | Raw Score | Weight | Contribution |
+|---|---|---|---|---|
+| Grammar | 8/10 | 0.80 | 0.40 | 32.0 pts |
+| Vocabulary | 6/10 | 0.60 | 0.35 | 21.0 pts |
+| Listening | 5/10 | 0.50 | 0.25 | 12.5 pts |
+| **Total** | | | | **65.5 → 66 pts** |
+
+### 2.3 Final Score Rounding
+
+The final placement score is the sum of all weighted section contributions, **rounded to the nearest integer**.
+
+```
+placement_score = round(grammar_contribution + vocabulary_contribution + listening_contribution)
+```
+
+- Rounding uses standard half-up rounding (0.5 rounds up).
+- The result is always an integer in the range 0–100.
+- The backend maps this score to a CEFR level using the thresholds in P4-030.
+
+---
+
+## 3. Skipped Sections
+
+If a student abandons the test mid-way, any incomplete section is treated as follows:
+
+| Situation | Treatment |
 |---|---|
-| 0.00 — 0.39 | beginner |
-| 0.40 — 0.54 | elementary |
-| 0.55 — 0.69 | intermediate |
-| 0.70 — 0.84 | upper_intermediate |
-| 0.85 — 1.00 | advanced |
+| Section started, some questions answered | Score = correct answers in that section only |
+| Section not started at all | Score = 0 for that section |
+| All sections incomplete | Score = 0; confidence = `insufficient` (see P4-030 §3) |
 
-### 5.1 Level Assignment Rules
-
-- Backend is the sole authority for level assignment.
-- Flutter must never compute or infer the estimated level.
-- Level is stored in placement_results.estimated_level after attempt completion.
+- Skipped sections reduce the placement score proportionally but do not invalidate the result.
+- The backend still assigns a CEFR level from the partial score.
+- The result is flagged with the appropriate confidence level (P4-030 §3).
 
 ---
 
-## 6. Backend Authority Rules
+## 4. Weight Configuration Rules
 
-- Backend owns all weight values, thresholds, and score computation.
-- Flutter receives only the final estimated_level, skill_mastery_map, and weakness_map from the result endpoint.
-- No weight or threshold value is ever exposed to Flutter or the student.
-- Changes to weights or thresholds require a backend deployment — they are not stored in the database.
+- Section weights are **backend configuration** — they are defined in this document and implemented as constants in the scoring service (P4-045).
+- Weights must not be stored in the database or exposed via any API endpoint.
+- Weights must not appear in Flutter source code, environment files, or any client-facing config.
+- If weights are revised in a future phase, this document must be updated with a versioned change note, and the scoring service constants updated accordingly.
+
+---
+
+## 5. Pseudocode (Backend Only)
+
+```
+const SECTION_WEIGHTS = {
+  grammar:    0.40,
+  vocabulary: 0.35,
+  listening:  0.25,
+}
+
+function computePlacementScore(sectionResults: SectionResults): int {
+  let total = 0.0
+  for section in [grammar, vocabulary, listening] {
+    const raw = sectionResults[section].correctCount / 10
+    total += raw * SECTION_WEIGHTS[section] * 100
+  }
+  return round(total)
+}
+```
+
+This logic must be implemented server-side only (P4-045). It must not be reproduced in Flutter, the web app, or any client.
+
+---
+
+## 6. Flutter Rules
+
+| Rule | Detail |
+|---|---|
+| No weights in client | Flutter must not contain `SECTION_WEIGHTS` or any equivalent constants |
+| No score computation | Flutter must not compute `section_contribution` or `placement_score` |
+| Display only | Flutter shows the `estimatedLevel` field from the placement result API |
+| No raw scores exposed | Flutter must not receive per-section correct counts or raw contribution values |
 
 ---
 
 ## 7. Out of Scope
 
-The following are explicitly excluded from this document:
+The following must not be defined here or added in Phase 4:
 
-- AIM Engine runtime scoring
-- Lesson or practice section weighting
-- AI Teacher scoring
-- Progress dashboard weighting
-- Student Web App score display
+- Per-question weights or difficulty multipliers (defined in P4-032)
+- Adaptive weight adjustment based on learner history
+- B2, C1, or C2 section weights
+- Speaking or writing section weights (deferred — see P4-036)
+- AIM Engine runtime integration
+- AI Teacher integration
 
 ---
 
 ## 8. References
 
-- docs/phase-4/placement-result-definition.md — Result semantics (P4-007)
-- docs/phase-4/placement-blueprint-rules.md — Blueprint rules (P4-029)
-- packages/shared-contracts/api/placement-result-contracts.md — Result contract (P4-014)
-- docs/phase-4/no-aim-runtime-rule.md — No AIM Engine rule
+- `docs/phase-4/placement-blueprint-rules.md` (P4-029)
+- `docs/phase-4/placement-level-thresholds.md` (P4-030)
+- `docs/phase-4/placement-result-definition.md` (P4-007)
+- P4-032 — Define Skill Scoring Rules
+- P4-045 — Implement Placement Scoring Service
 
 ---
 
-## 9. Metadata
+## Metadata
 
 | Field | Value |
 |---|---|
