@@ -17,6 +17,7 @@ import { ParentChildProgressEntity } from './dto/parent-child-progress.entity';
 import { ParentAssessmentSummaryEntity } from './dto/parent-assessment-summary.entity';
 import { ParentActivitySummaryEntity } from './dto/parent-activity-summary.entity';
 import { ParentAiUsageSummaryEntity } from './dto/parent-ai-usage-summary.entity';
+import { ParentAiSafetySummaryEntity } from './dto/parent-ai-safety-summary.entity';
 import { ParentChildReportEntity } from './dto/parent-child-report.entity';
 import { GetParentReportRequestDto } from './dto/get-parent-report-request.dto';
 import { ParentInvitationEntity } from './dto/parent-invitation.entity';
@@ -33,6 +34,7 @@ import { ParentChildProgressService } from './parent-child-progress.service';
 import { ParentAssessmentSummaryService } from './parent-assessment-summary.service';
 import { ParentActivitySummaryService } from './parent-activity-summary.service';
 import { ParentAiUsageSummaryService } from './parent-ai-usage-summary.service';
+import { ParentAiSafetySummaryService } from './parent-ai-safety-summary.service';
 import { ParentReportService } from './parent-report.service';
 import { ParentInvitationService } from './parent-invitation.service';
 import { ParentConsentService } from './parent-consent.service';
@@ -51,6 +53,7 @@ export class ParentsController {
     private readonly parentAssessmentSummaryService: ParentAssessmentSummaryService,
     private readonly parentActivitySummaryService: ParentActivitySummaryService,
     private readonly parentAiUsageSummaryService: ParentAiUsageSummaryService,
+    private readonly parentAiSafetySummaryService: ParentAiSafetySummaryService,
     private readonly parentReportService: ParentReportService,
     private readonly parentInvitationService: ParentInvitationService,
     private readonly parentConsentService: ParentConsentService,
@@ -144,6 +147,23 @@ export class ParentsController {
     @Param('childId') childId: string,
   ): Promise<ParentAiUsageSummaryEntity> {
     return this.parentAiUsageSummaryService.getAiUsageSummaryForParent(user.id, childId);
+  }
+
+  @Get('children/:childId/ai-safety-summary')
+  @UseGuards(SupabaseJwtAuthGuard, ParentChildAccessGuard)
+  @RequireParentChildAccess({ consentType: 'activity_view' })
+  @ApiOperation({
+    summary:
+      "Return a linked, consented child's read-only AI Teacher/Voice Tutor blocked-interaction count. " +
+      'No rejected raw message/audio/transcript content or internal reason-category taxonomy is included.',
+  })
+  @ApiParam({ name: 'childId' })
+  @ApiOkResponse({ type: ParentAiSafetySummaryEntity })
+  async getChildAiSafetySummary(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('childId') childId: string,
+  ): Promise<ParentAiSafetySummaryEntity> {
+    return this.parentAiSafetySummaryService.getAiSafetySummaryForParent(user.id, childId);
   }
 
   @Get('children/:childId/reports')

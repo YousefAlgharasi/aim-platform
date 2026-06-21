@@ -83,6 +83,13 @@ export async function getChildAiUsageSummary(childId) {
   return parentRequest(`/children/${encodeURIComponent(childId)}/ai-summary`);
 }
 
+// P18-071: Parent AI Safety Summary UI — backend-computed blocked-
+// interaction count only. No rejected raw message/audio/transcript
+// content or internal reason-category taxonomy is ever requested here.
+export async function getChildAiSafetySummary(childId) {
+  return parentRequest(`/children/${encodeURIComponent(childId)}/ai-safety-summary`);
+}
+
 export async function listInvitations() {
   return parentRequest('/invitations');
 }
