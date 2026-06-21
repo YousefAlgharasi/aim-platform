@@ -1,0 +1,128 @@
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+}
+
+.heading {
+  font-size: var(--type-h1-size, 28px);
+  font-weight: var(--weight-bold, 700);
+  margin: 0;
+}
+
+.sessionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.sessionMeta {
+  display: flex;
+  gap: var(--space-16);
+  font-size: 13px;
+  color: var(--color-neutral-500, #7E849A);
+}
+
+.progressHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.questionCount {
+  font-size: 14px;
+  font-weight: var(--weight-medium, 500);
+  color: var(--color-neutral-500, #7E849A);
+}
+
+.progressTrack {
+  height: 6px;
+  background: var(--color-neutral-200, #E2E5EC);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--color-primary-500);
+  border-radius: var(--radius-pill);
+  transition: width 0.3s ease;
+}
+
+.questionArea {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-20);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-12);
+}
+
+.feedbackCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-16);
+  border-radius: var(--radius-md);
+}
+
+.feedbackCorrect {
+  background: var(--color-success-50, #ECFDF5);
+  border: 1px solid var(--color-success-200, #A7F3D0);
+}
+
+.feedbackIncorrect {
+  background: var(--color-danger-50, #FEF2F2);
+  border: 1px solid var(--color-danger-200, #FECACA);
+}
+
+.feedbackTitle {
+  font-size: 16px;
+  font-weight: var(--weight-semibold, 600);
+  margin: 0;
+}
+
+.feedbackExplanation {
+  font-size: 14px;
+  color: var(--color-neutral-600, #5C6178);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.resultContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  text-align: center;
+}
+
+.resultScore {
+  font-size: var(--type-display-size, 34px);
+  font-weight: var(--weight-extrabold, 800);
+  color: var(--color-primary-500);
+}
+
+.resultSummary {
+  font-size: 16px;
+  color: var(--color-neutral-600, #5C6178);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.entryContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.description {
+  font-size: 14px;
+  color: var(--color-neutral-600, #5C6178);
+  margin: 0;
+  line-height: 1.6;
+}
