@@ -1,0 +1,84 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+}
+
+.heading {
+  font-size: var(--type-h1-size, 28px);
+  font-weight: var(--weight-bold, 700);
+  margin: 0;
+}
+
+.sectionTitle {
+  font-size: var(--type-h2-size, 22px);
+  font-weight: var(--weight-semibold, 600);
+  margin: 0 0 var(--space-12) 0;
+}
+
+.skillList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--component-gap);
+}
+
+.skillItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.skillHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.skillName {
+  font-size: 16px;
+  font-weight: var(--weight-medium, 500);
+}
+
+.weaknessBadge {
+  font-size: 12px;
+  font-weight: var(--weight-semibold, 600);
+  color: var(--color-warning, #E5A500);
+  background: var(--color-warning-bg, #FFF7E0);
+  padding: var(--space-2) var(--space-8);
+  border-radius: var(--radius-pill);
+}
+
+.masteryBar {
+  height: 6px;
+  background: var(--color-neutral-200, #E2E5EC);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.masteryFill {
+  height: 100%;
+  background: var(--color-accent-500, #15A898);
+  border-radius: var(--radius-pill);
+  transition: width 0.3s ease;
+}
+
+.masteryFillWeak {
+  height: 100%;
+  background: var(--color-warning, #E5A500);
+  border-radius: var(--radius-pill);
+  transition: width 0.3s ease;
+}
+
+.masteryLabel {
+  font-size: 13px;
+  color: var(--color-neutral-500, #7E849A);
+}
+
+.recommendation {
+  font-size: 13px;
+  color: var(--color-secondary-600, #6F3FD0);
+  margin: 0;
+  padding: var(--space-8);
+  background: var(--color-secondary-50, #F5F1FE);
+  border-radius: var(--radius-sm);
+}

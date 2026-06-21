@@ -10,6 +10,12 @@ import { SessionExpiredPage } from '../features/auth/SessionExpiredPage';
 import { DashboardHome } from '../features/dashboard/DashboardHome';
 import { ProfilePage } from '../features/profile/ProfilePage';
 import { SettingsPage } from '../features/settings/SettingsPage';
+import { ProgressSummary } from '../features/progress/ProgressSummary';
+import { SkillStatePage } from '../features/progress/SkillStatePage';
+import { PlacementEntryPage } from '../features/placement/PlacementEntryPage';
+import { PlacementQuestionUI } from '../features/placement/PlacementQuestionUI';
+import { PlacementResultPage } from '../features/placement/PlacementResultPage';
+import { CourseCatalog } from '../features/curriculum/CourseCatalog';
 import { NotFoundPage } from '../components/common/NotFoundPage';
 import { ForbiddenPage } from '../components/common/ForbiddenPage';
 
@@ -30,6 +36,12 @@ export function AppRoutes() {
         <Route path="/dashboard" element={<DashboardHome />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/progress" element={<ProgressSummary />} />
+        <Route path="/progress/skills" element={<SkillStatePage />} />
+        <Route path="/placement" element={<PlacementEntryPage />} />
+        <Route path="/placement/:id" element={<PlacementQuestionUI />} />
+        <Route path="/placement/:id/result" element={<PlacementResultPage />} />
+        <Route path="/curriculum" element={<CourseCatalog />} />
       </Route>
 
       {/* Error routes */}
