@@ -20,6 +20,7 @@ import { AdminAnalyticsDashboardController } from './admin-analytics-dashboard.c
 import { AdminLearningReportsController } from './admin-learning-reports.controller';
 import { AdminAssessmentReportsController } from './admin-assessment-reports.controller';
 import { AdminRevenueReportsController } from './admin-revenue-reports.controller';
+import { ParentReportsController } from './parent-reports.controller';
 
 @Module({
   imports: [DatabaseModule, UsersModule, RolesModule, forwardRef(() => AuthModule)],
@@ -28,6 +29,7 @@ import { AdminRevenueReportsController } from './admin-revenue-reports.controlle
     AdminLearningReportsController,
     AdminAssessmentReportsController,
     AdminRevenueReportsController,
+    ParentReportsController,
   ],
   providers: [
     AnalyticsRepository,
