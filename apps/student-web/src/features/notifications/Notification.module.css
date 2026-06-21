@@ -1,0 +1,178 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+}
+
+.heading {
+  font-size: var(--type-h1-size, 28px);
+  font-weight: var(--weight-bold, 700);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: var(--type-h2-size, 22px);
+  font-weight: var(--weight-semibold, 600);
+  margin: 0;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.unreadBadge {
+  font-size: 12px;
+  font-weight: var(--weight-semibold, 600);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-500);
+  color: #FFFFFF;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.notifItem {
+  display: flex;
+  gap: var(--space-12);
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-md);
+  transition: background 0.15s;
+  cursor: pointer;
+}
+
+.notifItem:hover {
+  background: var(--color-neutral-50, #F7F8FA);
+}
+
+.notifUnread {
+  background: var(--color-primary-50, #EDF1FF);
+}
+
+.notifDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-primary-500);
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.notifDotRead {
+  background: transparent;
+}
+
+.notifContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.notifTitle {
+  font-size: 14px;
+  font-weight: var(--weight-medium, 500);
+}
+
+.notifBody {
+  font-size: 13px;
+  color: var(--color-neutral-600, #5C6178);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notifTime {
+  font-size: 12px;
+  color: var(--color-neutral-400, #9CA3AF);
+}
+
+.notifActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-shrink: 0;
+}
+
+.dismissBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--color-neutral-400, #9CA3AF);
+  padding: var(--space-4);
+  border-radius: var(--radius-sm, 4px);
+  transition: color 0.15s;
+}
+
+.dismissBtn:hover {
+  color: var(--color-neutral-600, #5C6178);
+}
+
+.prefSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.prefItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-12) 0;
+  border-bottom: 1px solid var(--color-neutral-100, #F1F2F6);
+}
+
+.prefLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.prefName {
+  font-size: 15px;
+  font-weight: var(--weight-medium, 500);
+}
+
+.prefDesc {
+  font-size: 13px;
+  color: var(--color-neutral-500, #7E849A);
+}
+
+.toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  background: var(--color-neutral-300, #CDD2DD);
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.toggleActive {
+  background: var(--color-primary-500);
+}
+
+.toggleKnob {
+  position: absolute;
+  top: 2px;
+  inset-inline-start: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  transition: transform 0.2s;
+}
+
+.toggleActive .toggleKnob {
+  transform: translateX(20px);
+}
