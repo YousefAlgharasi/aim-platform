@@ -11,6 +11,7 @@ import { ChatSessionListReadModule } from './chat-session-list/chat-session-list
 import { AiTeacherFeedbackModule } from './feedback/ai-teacher-feedback.module';
 import { AiTeacherGovernanceModule } from './governance/governance.module';
 import { AiTeacherStreamMessageModule } from './streaming-api/ai-teacher-stream-message.module';
+import { AiTeacherSafetyStatusModule } from './safety-status/ai-teacher-safety-status.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AiTeacherStreamMessageModule } from './streaming-api/ai-teacher-stream-
     AiTeacherFeedbackModule,
     AiTeacherGovernanceModule,
     AiTeacherStreamMessageModule,
+    AiTeacherSafetyStatusModule,
   ],
   providers: [AiTeacherService],
   exports: [AiTeacherService, ContextBuilderModule, AiChatRepositoriesModule, AiTeacherGovernanceModule],
