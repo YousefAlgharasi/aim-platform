@@ -11,6 +11,7 @@
 // - Bearer tokens are passed through per call and never stored here.
 
 import 'package:aim_mobile/features/ai_teacher/data/models/ai_teacher_chat_models.dart';
+import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_stream_event.dart';
 
 abstract class AiTeacherChatRepository {
   Future<AiChatSessionModel> startSession({
@@ -37,5 +38,18 @@ abstract class AiTeacherChatRepository {
     required String bearerToken,
     required String messageId,
     required String rating,
+  });
+
+  /// Streams an already safety-filtered AI Teacher reply (P18-061).
+  Stream<AiTeacherStreamEvent> streamMessage({
+    required String bearerToken,
+    required String sessionId,
+    required String message,
+  });
+
+  /// Reads the student-safe safety status for a session (P18-064).
+  Future<AiTeacherSafetyStatusModel> getSafetyStatus({
+    required String bearerToken,
+    required String sessionId,
   });
 }

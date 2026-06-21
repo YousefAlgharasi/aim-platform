@@ -9,6 +9,7 @@ import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/state/app_state_notifier.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_chat_state.dart';
+import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_stream_event.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/repository/ai_teacher_chat_repository.dart';
 
 class AiTeacherChatNotifier extends AppStateNotifier<AiTeacherChatState> {
@@ -126,6 +127,74 @@ class AiTeacherChatNotifier extends AppStateNotifier<AiTeacherChatState> {
       setFailure(
         message: 'Failed to submit AI Teacher feedback',
         code: 'AI_TEACHER_FEEDBACK_FAILED',
+      );
+    }
+  }
+
+  /// Streams an AI Teacher reply (P18-061), accumulating safety-filtered
+  /// chunks into [AiTeacherChatState.streamingText] and refreshing history
+  /// once the terminal `done` event arrives. Never calls an AI provider
+  /// directly — the backend has already safety-filtered every chunk.
+  Future<void> streamMessage({
+    required String bearerToken,
+    required String sessionId,
+    required String message,
+  }) async {
+    final previous = _currentDataOrEmpty();
+    setSuccess(previous.copyWith(
+      isStreaming: true,
+      clearStreamingText: true,
+    ));
+
+    try {
+      await for (final event in _repository.streamMessage(
+        bearerToken: bearerToken,
+        sessionId: sessionId,
+        message: message,
+      )) {
+        final current = _currentDataOrEmpty();
+        switch (event) {
+          case AiTeacherStreamChunk(text: final text):
+            setSuccess(current.copyWith(
+              streamingText: (current.streamingText ?? '') + text,
+              isStreaming: true,
+            ));
+          case AiTeacherStreamDone():
+            setSuccess(current.copyWith(
+              isStreaming: false,
+              clearStreamingText: true,
+            ));
+            await loadHistory(bearerToken: bearerToken, sessionId: sessionId);
+        }
+      }
+    } on AppException catch (e) {
+      setFailure(message: e.message, code: e.code);
+    } catch (_) {
+      setFailure(
+        message: 'Failed to stream AI Teacher reply',
+        code: 'AI_TEACHER_STREAM_FAILED',
+      );
+    }
+  }
+
+  /// Reads the student-safe safety status for a session (P18-064).
+  Future<void> loadSafetyStatus({
+    required String bearerToken,
+    required String sessionId,
+  }) async {
+    final previous = _currentDataOrEmpty();
+    try {
+      final safetyStatus = await _repository.getSafetyStatus(
+        bearerToken: bearerToken,
+        sessionId: sessionId,
+      );
+      setSuccess(previous.copyWith(safetyStatus: safetyStatus));
+    } on AppException catch (e) {
+      setFailure(message: e.message, code: e.code);
+    } catch (_) {
+      setFailure(
+        message: 'Failed to load AI Teacher safety status',
+        code: 'AI_TEACHER_SAFETY_STATUS_FAILED',
       );
     }
   }
