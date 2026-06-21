@@ -1,9 +1,10 @@
-import { Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './features/auth/AuthContext';
+import { AppRoutes } from './routes/AppRoutes';
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<div>AIM Student Web App</div>} />
-    </Routes>
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
   );
 }

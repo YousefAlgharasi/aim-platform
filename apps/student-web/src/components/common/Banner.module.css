@@ -1,0 +1,25 @@
+.banner {
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.info {
+  background: var(--color-primary-50, #EDF1FF);
+  color: var(--color-primary-700, #2837AC);
+}
+
+.success {
+  background: var(--color-success-bg, #E9F9EE);
+  color: var(--color-success, #30A46C);
+}
+
+.warning {
+  background: var(--color-warning-bg, #FFF7E0);
+  color: var(--color-warning, #E5A500);
+}
+
+.error {
+  background: var(--color-error-bg, #FEECEE);
+  color: var(--color-error, #E5484D);
+}
