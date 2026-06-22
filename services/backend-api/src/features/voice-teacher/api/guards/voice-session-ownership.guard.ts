@@ -8,6 +8,7 @@ import {
 
 import { ApiErrorCode } from '../../../../common/errors/api-error-code';
 import { AppError } from '../../../../common/errors/app-error';
+import { VoiceSessionRepository } from '../../repositories/voice-session.repository';
 
 interface VoiceSessionRequest {
   readonly user?: { id: string };
@@ -18,7 +19,11 @@ interface VoiceSessionRequest {
 export class VoiceSessionOwnershipGuard implements CanActivate {
   private readonly logger = new Logger(VoiceSessionOwnershipGuard.name);
 
-  canActivate(context: ExecutionContext): boolean {
+  constructor(
+    private readonly voiceSessionRepository: VoiceSessionRepository,
+  ) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<VoiceSessionRequest>();
     const user = request.user;
 
@@ -35,17 +40,32 @@ export class VoiceSessionOwnershipGuard implements CanActivate {
       return true;
     }
 
-    // Session ownership is validated by looking up the session in the
-    // database and comparing the student_id column with user.id.
-    // This guard is a placeholder until the voice session repository
-    // (P9-027) is wired via DI. The repository enforces that queries
-    // are always scoped to the authenticated student's ID.
-    //
-    // No mastery/weakness/difficulty/recommendation/review-schedule
-    // values are checked or modified here.
+    const session = await this.voiceSessionRepository.findById(sessionId);
+
+    if (!session) {
+      this.logger.warn(
+        `VoiceSessionOwnershipGuard: session not found sessionId=${sessionId} userId=${user.id}`,
+      );
+      throw new AppError({
+        code: ApiErrorCode.FORBIDDEN,
+        message: 'Voice session not found',
+        statusCode: HttpStatus.FORBIDDEN,
+      });
+    }
+
+    if (session.student_id !== user.id) {
+      this.logger.warn(
+        `VoiceSessionOwnershipGuard: ownership denied userId=${user.id} sessionId=${sessionId}`,
+      );
+      throw new AppError({
+        code: ApiErrorCode.FORBIDDEN,
+        message: 'Access denied: you do not own this voice session',
+        statusCode: HttpStatus.FORBIDDEN,
+      });
+    }
 
     this.logger.debug(
-      `VoiceSessionOwnershipGuard: user=${user.id} session=${sessionId}`,
+      `VoiceSessionOwnershipGuard: ownership confirmed userId=${user.id} sessionId=${sessionId}`,
     );
 
     return true;

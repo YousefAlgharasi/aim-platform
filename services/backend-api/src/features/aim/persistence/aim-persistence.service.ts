@@ -27,39 +27,30 @@
  * - This service accepts input ONLY from the pipeline orchestrator.
  * - It never accepts client-submitted values for any AIM-owned field.
  * - It never persists an unvalidated AIM response.
- * - Persistence is transactional per AIM response — partial writes roll back
- *   (full transaction wrapping owned by P5-065; not yet applied here — each
- *   category currently persists independently, so a failure partway through
- *   can leave a partial write across categories until P5-065 lands).
+ * - Persistence is transactional per AIM response — partial writes roll back.
  * - No secrets, service-role keys, database credentials, or AI provider
  *   keys are stored or logged here.
+ *
+ * Transaction policy (P5-065):
+ *   - All six category writes (skill state, weakness records, difficulty
+ *     decision, recommendations, review schedule, session summary) execute
+ *     within a single explicit PostgreSQL transaction (BEGIN … COMMIT).
+ *   - If any write fails, the transaction is rolled back in its entirety —
+ *     no partial AIM state is left in the database.
+ *   - Each category service is called with a TransactionScopedDb adapter so
+ *     all writes share the same pooled connection and therefore the same
+ *     transaction scope.
+ *   - Audit writes are intentionally excluded from the transaction: they
+ *     are append-only, best-effort, and must not cause a rollback.
+ *   - No two transactions race on the same (studentId, sessionId) pair
+ *     because the pipeline orchestrator is invoked sequentially per attempt.
+ *
+ * Backend authority rules:
+ *   - Receives input ONLY from the pipeline orchestrator — never from a client.
+ *   - Never persists an unvalidated AIM response.
+ *   - No secrets, service-role keys, database credentials, or AI provider
+ *     keys are stored or logged here.
  */
-// Phase 5 — P5-065
-// AimPersistenceService — full wiring with transaction policy.
-//
-// Scope: Stage 6 of the backend AIM pipeline. Persists validated AIM Engine
-//        response categories to the Phase 5 tables, wrapped in a single
-//        PostgreSQL transaction so partial writes roll back atomically.
-//
-// Transaction policy (P5-065):
-//   - All six category writes (skill state, weakness records, difficulty
-//     decision, recommendations, review schedule, session summary) execute
-//     within a single explicit PostgreSQL transaction (BEGIN … COMMIT).
-//   - If any write fails, the transaction is rolled back in its entirety —
-//     no partial AIM state is left in the database.
-//   - Each category service is called with a TransactionScopedDb adapter so
-//     all writes share the same pooled connection and therefore the same
-//     transaction scope.
-//   - Audit writes are intentionally excluded from the transaction: they
-//     are append-only, best-effort, and must not cause a rollback.
-//   - No two transactions race on the same (studentId, sessionId) pair
-//     because the pipeline orchestrator is invoked sequentially per attempt.
-//
-// Backend authority rules:
-//   - Receives input ONLY from the pipeline orchestrator — never from a client.
-//   - Never persists an unvalidated AIM response.
-//   - No secrets, service-role keys, database credentials, or AI provider
-//     keys are stored or logged here.
 
 import { Injectable, Logger } from '@nestjs/common';
 import { PoolClient, QueryResult, QueryResultRow } from 'pg';
@@ -104,15 +95,19 @@ class TransactionScopedDb {
 export class AimPersistenceService {
   private readonly logger = new Logger(AimPersistenceService.name);
 
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly skillStateUpdate: StudentSkillStateUpdateService,
+    private readonly weaknessUpdate: WeaknessUpdateService,
+    private readonly difficultyDecision: DifficultyDecisionService,
+    private readonly recommendationOutput: RecommendationOutputService,
+    private readonly reviewScheduleOutput: ReviewScheduleOutputService,
+    private readonly sessionSummary: SessionSummaryService,
+  ) {}
 
   /**
    * Persist a fully validated AIM Engine response to the Phase 5 tables.
    *
-   * Each category is persisted independently via its own already-tested
-   * service. studentId is taken from the validated response envelope,
-   * which the orchestrator (P5-056) resolved from the authenticated
-   * pipeline context — never from a client payload.
    * All six category writes run within a single PostgreSQL transaction.
    * If any write fails, the entire transaction rolls back atomically.
    *

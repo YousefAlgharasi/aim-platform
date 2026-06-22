@@ -8,6 +8,7 @@ import {
 
 import { ApiErrorCode } from '../../../../common/errors/api-error-code';
 import { AppError } from '../../../../common/errors/app-error';
+import { VoiceAudioAssetRepository } from '../../repositories/voice-audio-asset.repository';
 
 interface VoiceAudioRequest {
   readonly user?: { id: string };
@@ -18,7 +19,11 @@ interface VoiceAudioRequest {
 export class VoiceAudioOwnershipGuard implements CanActivate {
   private readonly logger = new Logger(VoiceAudioOwnershipGuard.name);
 
-  canActivate(context: ExecutionContext): boolean {
+  constructor(
+    private readonly voiceAudioAssetRepository: VoiceAudioAssetRepository,
+  ) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<VoiceAudioRequest>();
     const user = request.user;
 
@@ -35,12 +40,32 @@ export class VoiceAudioOwnershipGuard implements CanActivate {
       return true;
     }
 
-    // Audio ownership is validated via the storage service (P9-064),
-    // which checks that the audioRef belongs to the authenticated student.
-    // Placeholder until wired via DI.
+    const audioAsset = await this.voiceAudioAssetRepository.findById(audioRef);
+
+    if (!audioAsset) {
+      this.logger.warn(
+        `VoiceAudioOwnershipGuard: audio asset not found audioRef=${audioRef} userId=${user.id}`,
+      );
+      throw new AppError({
+        code: ApiErrorCode.FORBIDDEN,
+        message: 'Audio asset not found',
+        statusCode: HttpStatus.FORBIDDEN,
+      });
+    }
+
+    if (audioAsset.student_id !== user.id) {
+      this.logger.warn(
+        `VoiceAudioOwnershipGuard: ownership denied userId=${user.id} audioRef=${audioRef}`,
+      );
+      throw new AppError({
+        code: ApiErrorCode.FORBIDDEN,
+        message: 'Access denied: you do not own this audio asset',
+        statusCode: HttpStatus.FORBIDDEN,
+      });
+    }
 
     this.logger.debug(
-      `VoiceAudioOwnershipGuard: user=${user.id} audioRef=${audioRef}`,
+      `VoiceAudioOwnershipGuard: ownership confirmed userId=${user.id} audioRef=${audioRef}`,
     );
 
     return true;

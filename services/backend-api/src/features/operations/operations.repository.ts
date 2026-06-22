@@ -20,10 +20,11 @@ export class OperationsRepository {
   // --- Support Tickets ---
 
   async findTicketsByRequester(requesterId: string): Promise<SupportTicket[]> {
-    return (await this.db.query<SupportTicket>(
+    const result = await this.db.query<SupportTicket>(
       `SELECT * FROM support_tickets WHERE requester_id = $1 ORDER BY created_at DESC`,
       [requesterId],
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findTicketById(id: string): Promise<SupportTicket | null> {
@@ -63,10 +64,11 @@ export class OperationsRepository {
   // --- Support Ticket Comments ---
 
   async findCommentsByTicket(ticketId: string): Promise<SupportTicketComment[]> {
-    return (await this.db.query<SupportTicketComment>(
+    const result = await this.db.query<SupportTicketComment>(
       `SELECT * FROM support_ticket_comments WHERE ticket_id = $1 ORDER BY created_at ASC`,
       [ticketId],
-    )).rows;
+    );
+    return result.rows;
   }
 
   async createComment(data: Partial<SupportTicketComment>): Promise<SupportTicketComment> {
@@ -82,10 +84,11 @@ export class OperationsRepository {
   // --- User Feedback ---
 
   async findFeedbackByUser(userId: string): Promise<UserFeedback[]> {
-    return (await this.db.query<UserFeedback>(
+    const result = await this.db.query<UserFeedback>(
       `SELECT * FROM user_feedback WHERE user_id = $1 ORDER BY created_at DESC`,
       [userId],
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findFeedbackById(id: string): Promise<UserFeedback | null> {
@@ -117,10 +120,11 @@ export class OperationsRepository {
   // --- Feature Requests ---
 
   async findAllFeatureRequests(limit: number = 50, offset: number = 0): Promise<FeatureRequest[]> {
-    return (await this.db.query<FeatureRequest>(
+    const result = await this.db.query<FeatureRequest>(
       `SELECT * FROM feature_requests ORDER BY vote_count DESC, created_at DESC LIMIT $1 OFFSET $2`,
       [limit, offset],
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findFeatureRequestById(id: string): Promise<FeatureRequest | null> {
@@ -173,10 +177,11 @@ export class OperationsRepository {
   // --- Incident Records ---
 
   async findAllIncidents(limit: number = 50, offset: number = 0): Promise<IncidentRecord[]> {
-    return (await this.db.query<IncidentRecord>(
+    const result = await this.db.query<IncidentRecord>(
       `SELECT * FROM incident_records ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
       [limit, offset],
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findIncidentById(id: string): Promise<IncidentRecord | null> {
@@ -218,10 +223,11 @@ export class OperationsRepository {
   // --- Maintenance Windows ---
 
   async findAllMaintenanceWindows(limit: number = 50, offset: number = 0): Promise<MaintenanceWindow[]> {
-    return (await this.db.query<MaintenanceWindow>(
+    const result = await this.db.query<MaintenanceWindow>(
       `SELECT * FROM maintenance_windows ORDER BY scheduled_start DESC LIMIT $1 OFFSET $2`,
       [limit, offset],
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findMaintenanceWindowById(id: string): Promise<MaintenanceWindow | null> {
@@ -263,17 +269,19 @@ export class OperationsRepository {
   // --- Release Notes ---
 
   async findAllReleaseNotes(limit: number = 50, offset: number = 0): Promise<ReleaseNote[]> {
-    return (await this.db.query<ReleaseNote>(
+    const result = await this.db.query<ReleaseNote>(
       `SELECT * FROM release_notes ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
       [limit, offset],
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findPublishedReleaseNotes(limit: number = 50, offset: number = 0): Promise<ReleaseNote[]> {
-    return (await this.db.query<ReleaseNote>(
+    const result = await this.db.query<ReleaseNote>(
       `SELECT * FROM release_notes WHERE status = 'published' ORDER BY published_at DESC LIMIT $1 OFFSET $2`,
       [limit, offset],
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findReleaseNoteById(id: string): Promise<ReleaseNote | null> {
@@ -305,9 +313,10 @@ export class OperationsRepository {
   // --- Operational Status ---
 
   async findAllOperationalStatuses(): Promise<OperationalStatus[]> {
-    return (await this.db.query<OperationalStatus>(
+    const result = await this.db.query<OperationalStatus>(
       `SELECT * FROM operational_status ORDER BY component ASC`,
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findOperationalStatusByComponent(component: string): Promise<OperationalStatus | null> {
@@ -338,9 +347,10 @@ export class OperationsRepository {
   // --- Feature Flags ---
 
   async findAllFeatureFlags(): Promise<FeatureFlag[]> {
-    return (await this.db.query<FeatureFlag>(
+    const result = await this.db.query<FeatureFlag>(
       `SELECT * FROM feature_flags ORDER BY flag_key ASC`,
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findFeatureFlagByKey(flagKey: string): Promise<FeatureFlag | null> {
@@ -407,16 +417,18 @@ export class OperationsRepository {
   }
 
   async findAuditLogsByResource(resourceType: string, resourceId: string): Promise<OperationsAuditLog[]> {
-    return (await this.db.query<OperationsAuditLog>(
+    const result = await this.db.query<OperationsAuditLog>(
       `SELECT * FROM operations_audit_logs WHERE resource_type = $1 AND resource_id = $2 ORDER BY created_at DESC`,
       [resourceType, resourceId],
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findAuditLogsByActor(actorId: string, limit: number = 50, offset: number = 0): Promise<OperationsAuditLog[]> {
-    return (await this.db.query<OperationsAuditLog>(
+    const result = await this.db.query<OperationsAuditLog>(
       `SELECT * FROM operations_audit_logs WHERE actor_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
       [actorId, limit, offset],
-    )).rows;
+    );
+    return result.rows;
   }
 }

@@ -160,4 +160,10 @@ describe('AimPersistenceService.persist (P5-065 transaction policy)', () => {
     const { svc } = makeSvc(db);
     await expect(svc.persist(makeResponse())).resolves.toBeUndefined();
   });
+
+  it('does not call AIM Engine (scope guard)', async () => {
+    const { db } = makeMocksWithFailure();
+    const { svc } = makeSvc(db);
+    await expect(svc.persist(makeResponse())).resolves.toBeUndefined();
+  });
 });

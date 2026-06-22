@@ -24,9 +24,10 @@ export class BillingRepository {
   // --- Products ---
 
   async findActiveProducts(): Promise<BillingProduct[]> {
-    return (await this.db.query<BillingProduct>(
+    const result = await this.db.query<BillingProduct>(
       `SELECT * FROM billing_products WHERE status = 'active' ORDER BY created_at ASC`,
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findProductById(id: string): Promise<BillingProduct | null> {
@@ -71,9 +72,10 @@ export class BillingRepository {
   // --- Prices ---
 
   async findActivePrices(): Promise<BillingPrice[]> {
-    return (await this.db.query<BillingPrice>(
+    const result = await this.db.query<BillingPrice>(
       `SELECT * FROM billing_prices WHERE status = 'active' ORDER BY amount ASC`,
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findPriceById(id: string): Promise<BillingPrice | null> {
@@ -85,10 +87,11 @@ export class BillingRepository {
   }
 
   async findPricesByProductId(productId: string): Promise<BillingPrice[]> {
-    return (await this.db.query<BillingPrice>(
+    const result = await this.db.query<BillingPrice>(
       `SELECT * FROM billing_prices WHERE product_id = $1 AND status = 'active' ORDER BY amount ASC`,
       [productId],
-    )).rows;
+    );
+    return result.rows;
   }
 
   async createPrice(data: Partial<BillingPrice>): Promise<BillingPrice> {
@@ -104,9 +107,10 @@ export class BillingRepository {
   // --- Plans ---
 
   async findActivePlans(): Promise<BillingPlan[]> {
-    return (await this.db.query<BillingPlan>(
+    const result = await this.db.query<BillingPlan>(
       `SELECT * FROM billing_plans WHERE status = 'active' ORDER BY created_at ASC`,
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findPlanById(id: string): Promise<BillingPlan | null> {
@@ -152,10 +156,11 @@ export class BillingRepository {
   // --- Subscriptions ---
 
   async findSubscriptionsByUserId(userId: string): Promise<Subscription[]> {
-    return (await this.db.query<Subscription>(
+    const result = await this.db.query<Subscription>(
       `SELECT * FROM subscriptions WHERE user_id = $1 ORDER BY created_at DESC`,
       [userId],
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findSubscriptionById(id: string): Promise<Subscription | null> {
@@ -243,27 +248,14 @@ export class BillingRepository {
     return result.rows[0] || null;
   }
 
-  async findPendingCheckoutSessionsByUser(userId: string): Promise<CheckoutSession[]> {
-    return (await this.db.query<CheckoutSession>(
-      `SELECT * FROM checkout_sessions WHERE user_id = $1 AND status = 'pending' ORDER BY created_at DESC`,
-      [userId],
-    )).rows;
-  }
-
-  async findCheckoutSessionsByUser(userId: string): Promise<CheckoutSession[]> {
-    return (await this.db.query<CheckoutSession>(
-      `SELECT * FROM checkout_sessions WHERE user_id = $1 ORDER BY created_at DESC`,
-      [userId],
-    )).rows;
-  }
-
   // --- Payments ---
 
   async findPaymentsByUserId(userId: string): Promise<Payment[]> {
-    return (await this.db.query<Payment>(
+    const result = await this.db.query<Payment>(
       `SELECT * FROM payments WHERE user_id = $1 ORDER BY created_at DESC`,
       [userId],
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findPaymentById(id: string): Promise<Payment | null> {
@@ -300,42 +292,14 @@ export class BillingRepository {
     return result.rows[0] || null;
   }
 
-  async updatePayment(id: string, data: Partial<Payment>): Promise<Payment | null> {
-    const sets: string[] = [];
-    const values: unknown[] = [];
-    let idx = 1;
-
-    if (data.status !== undefined) { sets.push(`status = $${idx++}`); values.push(data.status); }
-    if (data.providerPaymentId !== undefined) { sets.push(`provider_payment_id = $${idx++}`); values.push(data.providerPaymentId); }
-    if (data.paymentMethodType !== undefined) { sets.push(`payment_method_type = $${idx++}`); values.push(data.paymentMethodType); }
-    if (data.metadata !== undefined) { sets.push(`metadata = $${idx++}`); values.push(data.metadata); }
-
-    if (sets.length === 0) return this.findPaymentById(id);
-
-    sets.push(`updated_at = now()`);
-    values.push(id);
-
-    const result = await this.db.query<Payment>(
-      `UPDATE payments SET ${sets.join(', ')} WHERE id = $${idx} RETURNING *`,
-      values,
-    );
-    return result.rows[0] || null;
-  }
-
-  async findPaymentsBySubscriptionId(subscriptionId: string): Promise<Payment[]> {
-    return (await this.db.query<Payment>(
-      `SELECT * FROM payments WHERE subscription_id = $1 ORDER BY created_at DESC`,
-      [subscriptionId],
-    )).rows;
-  }
-
   // --- Invoices ---
 
   async findInvoicesByUserId(userId: string): Promise<Invoice[]> {
-    return (await this.db.query<Invoice>(
+    const result = await this.db.query<Invoice>(
       `SELECT * FROM invoices WHERE user_id = $1 ORDER BY created_at DESC`,
       [userId],
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findInvoiceById(id: string): Promise<Invoice | null> {
@@ -375,7 +339,7 @@ export class BillingRepository {
   }
 
   async findInvoiceItemsByInvoiceId(invoiceId: string): Promise<InvoiceItem[]> {
-    return (await this.db.query<InvoiceItem>(
+    const result = await this.db.query<InvoiceItem>(
       `SELECT * FROM invoice_items WHERE invoice_id = $1 ORDER BY created_at ASC`,
       [invoiceId],
     )).rows;
@@ -400,23 +364,17 @@ export class BillingRepository {
       `UPDATE invoices SET ${sets.join(', ')} WHERE id = $${idx} RETURNING *`,
       values,
     );
-    return result.rows[0] || null;
-  }
-
-  async findInvoicesBySubscriptionId(subscriptionId: string): Promise<Invoice[]> {
-    return (await this.db.query<Invoice>(
-      `SELECT * FROM invoices WHERE subscription_id = $1 ORDER BY created_at DESC`,
-      [subscriptionId],
-    )).rows;
+    return result.rows;
   }
 
   // --- Refunds ---
 
   async findRefundsByUserId(userId: string): Promise<Refund[]> {
-    return (await this.db.query<Refund>(
+    const result = await this.db.query<Refund>(
       `SELECT r.* FROM refunds r JOIN payments p ON r.payment_id = p.id WHERE p.user_id = $1 ORDER BY r.created_at DESC`,
       [userId],
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findRefundById(id: string): Promise<Refund | null> {
@@ -428,10 +386,11 @@ export class BillingRepository {
   }
 
   async findRefundsByPaymentId(paymentId: string): Promise<Refund[]> {
-    return (await this.db.query<Refund>(
+    const result = await this.db.query<Refund>(
       `SELECT * FROM refunds WHERE payment_id = $1 ORDER BY created_at DESC`,
       [paymentId],
-    )).rows;
+    );
+    return result.rows;
   }
 
   async createRefund(data: Partial<Refund>): Promise<Refund> {
@@ -452,42 +411,13 @@ export class BillingRepository {
     return result.rows[0] || null;
   }
 
-  async updateRefund(id: string, data: Partial<Refund>): Promise<Refund | null> {
-    const sets: string[] = [];
-    const values: unknown[] = [];
-    let idx = 1;
-
-    if (data.status !== undefined) { sets.push(`status = $${idx++}`); values.push(data.status); }
-    if (data.approvedBy !== undefined) { sets.push(`approved_by = $${idx++}`); values.push(data.approvedBy); }
-    if (data.providerRefundId !== undefined) { sets.push(`provider_refund_id = $${idx++}`); values.push(data.providerRefundId); }
-    if (data.metadata !== undefined) { sets.push(`metadata = $${idx++}`); values.push(data.metadata); }
-
-    if (sets.length === 0) return this.findRefundById(id);
-
-    sets.push(`updated_at = now()`);
-    values.push(id);
-
-    const result = await this.db.query<Refund>(
-      `UPDATE refunds SET ${sets.join(', ')} WHERE id = $${idx} RETURNING *`,
-      values,
-    );
-    return result.rows[0] || null;
-  }
-
-  async findRefundByProviderRefundId(providerRefundId: string): Promise<Refund | null> {
-    const result = await this.db.query<Refund>(
-      `SELECT * FROM refunds WHERE provider_refund_id = $1`,
-      [providerRefundId],
-    );
-    return result.rows[0] || null;
-  }
-
   // --- Coupons ---
 
   async findActiveCoupons(): Promise<Coupon[]> {
-    return (await this.db.query<Coupon>(
+    const result = await this.db.query<Coupon>(
       `SELECT * FROM coupons WHERE status = 'active' ORDER BY created_at DESC`,
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findCouponById(id: string): Promise<Coupon | null> {
@@ -508,14 +438,6 @@ export class BillingRepository {
     return result.rows[0];
   }
 
-  async incrementCouponRedemptions(id: string): Promise<Coupon | null> {
-    const result = await this.db.query<Coupon>(
-      `UPDATE coupons SET times_redeemed = times_redeemed + 1, updated_at = now() WHERE id = $1 RETURNING *`,
-      [id],
-    );
-    return result.rows[0] || null;
-  }
-
   // --- Promotion Codes ---
 
   async findPromotionCodeByCode(code: string): Promise<PromotionCode | null> {
@@ -526,21 +448,14 @@ export class BillingRepository {
     return result.rows[0] || null;
   }
 
-  async incrementPromotionCodeRedemptions(id: string): Promise<PromotionCode | null> {
-    const result = await this.db.query<PromotionCode>(
-      `UPDATE promotion_codes SET times_redeemed = times_redeemed + 1, updated_at = now() WHERE id = $1 RETURNING *`,
-      [id],
-    );
-    return result.rows[0] || null;
-  }
-
   // --- Entitlements ---
 
   async findEntitlementsByUserId(userId: string): Promise<BillingEntitlement[]> {
-    return (await this.db.query<BillingEntitlement>(
+    const result = await this.db.query<BillingEntitlement>(
       `SELECT * FROM billing_entitlements WHERE user_id = $1 AND status = 'active' ORDER BY created_at DESC`,
       [userId],
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findEntitlementByUserAndFeature(userId: string, featureKey: string): Promise<BillingEntitlement | null> {
@@ -644,56 +559,45 @@ export class BillingRepository {
     return result.rows[0];
   }
 
-  async findAuditLogs(filters?: {
-    entityType?: string;
-    entityId?: string;
-    actorId?: string;
-    limit?: number;
-  }): Promise<BillingAuditLog[]> {
-    const conditions: string[] = [];
-    const values: unknown[] = [];
-    let idx = 1;
-
-    if (filters?.entityType !== undefined) { conditions.push(`entity_type = $${idx++}`); values.push(filters.entityType); }
-    if (filters?.entityId !== undefined) { conditions.push(`entity_id = $${idx++}`); values.push(filters.entityId); }
-    if (filters?.actorId !== undefined) { conditions.push(`actor_id = $${idx++}`); values.push(filters.actorId); }
-
-    const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-    values.push(filters?.limit ?? 50);
-
-    return (await this.db.query<BillingAuditLog>(
-      `SELECT * FROM billing_audit_logs ${where} ORDER BY created_at DESC LIMIT $${idx}`,
-      values,
-    )).rows;
+  async findAuditLogs(limit: number = 50, offset: number = 0): Promise<BillingAuditLog[]> {
+    const result = await this.db.query<BillingAuditLog>(
+      `SELECT * FROM billing_audit_logs ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
+      [limit, offset],
+    );
+    return result.rows;
   }
 
   // --- Admin queries ---
 
   async findAllSubscriptions(limit: number = 50, offset: number = 0): Promise<Subscription[]> {
-    return (await this.db.query<Subscription>(
+    const result = await this.db.query<Subscription>(
       `SELECT * FROM subscriptions ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
       [limit, offset],
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findAllPayments(limit: number = 50, offset: number = 0): Promise<Payment[]> {
-    return (await this.db.query<Payment>(
+    const result = await this.db.query<Payment>(
       `SELECT * FROM payments ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
       [limit, offset],
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findAllInvoices(limit: number = 50, offset: number = 0): Promise<Invoice[]> {
-    return (await this.db.query<Invoice>(
+    const result = await this.db.query<Invoice>(
       `SELECT * FROM invoices ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
       [limit, offset],
-    )).rows;
+    );
+    return result.rows;
   }
 
   async findAllRefunds(limit: number = 50, offset: number = 0): Promise<Refund[]> {
-    return (await this.db.query<Refund>(
+    const result = await this.db.query<Refund>(
       `SELECT * FROM refunds ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
       [limit, offset],
-    )).rows;
+    );
+    return result.rows;
   }
 }
