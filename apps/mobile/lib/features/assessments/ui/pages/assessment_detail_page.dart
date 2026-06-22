@@ -58,7 +58,7 @@ class _AssessmentDetailPageState extends ConsumerState<AssessmentDetailPage> {
     return Scaffold(
       appBar: AIMTopAppBar(title: widget.assessmentTitle),
       body: switch (state) {
-        AppAsyncLoading() => AIMFullScreenLoading(
+        AppAsyncLoading() => const AIMFullScreenLoading(
             semanticLabel: 'Loading assessment',
           ),
         AppAsyncFailure(:final message) => AIMFullScreenError(
@@ -69,7 +69,7 @@ class _AssessmentDetailPageState extends ConsumerState<AssessmentDetailPage> {
             detail: data,
             onStartAttempt: () => _navigateToStartAttempt(data),
           ),
-        AppAsyncIdle() => AIMFullScreenLoading(
+        AppAsyncIdle() => const AIMFullScreenLoading(
             semanticLabel: 'Loading assessment',
           ),
       },

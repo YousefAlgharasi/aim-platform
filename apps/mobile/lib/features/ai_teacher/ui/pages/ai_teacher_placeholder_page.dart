@@ -30,11 +30,11 @@ class AiTeacherPlaceholderPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const AIMTopAppBar(title: 'AI Teacher'),
+    return const Scaffold(
+      appBar: AIMTopAppBar(title: 'AI Teacher'),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsetsDirectional.fromSTEB(
+          padding: EdgeInsetsDirectional.fromSTEB(
             AimSpacing.screenPaddingMobile,
             AimSpacing.sectionGap,
             AimSpacing.screenPaddingMobile,
@@ -44,7 +44,7 @@ class AiTeacherPlaceholderPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // ── Info banner ──────────────────────────────────────────────
-              const AIMAlertBanner(
+              AIMAlertBanner(
                 tone: AIMAlertTone.info,
                 title: 'Coming in a future update',
                 child: Text(
@@ -55,10 +55,10 @@ class AiTeacherPlaceholderPage extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: AimSpacing.sectionGap),
+              SizedBox(height: AimSpacing.sectionGap),
 
               // ── Disabled feature card ────────────────────────────────────
-              const _AiTeacherDisabledCard(),
+              _AiTeacherDisabledCard(),
             ],
           ),
         ),
@@ -102,12 +102,12 @@ class _AiTeacherDisabledCard extends StatelessWidget {
             const SizedBox(height: AimSpacing.componentGap),
 
             // "Coming Soon" badge
-            AIMBadge(
+            const AIMBadge(
               tone: AIMBadgeTone.info,
               variant: AIMBadgeVariant.soft,
               pill: true,
-              icon: const Icon(Icons.schedule_rounded),
-              child: const Text('Coming Soon'),
+              icon: Icon(Icons.schedule_rounded),
+              child: Text('Coming Soon'),
             ),
 
             const SizedBox(height: AimSpacing.componentGap),

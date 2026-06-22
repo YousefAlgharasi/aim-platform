@@ -17,11 +17,11 @@ class AiSafetyBlockBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AIMAlertBanner(
+    return const AIMAlertBanner(
       tone: AIMAlertTone.warning,
       title: 'AI Teacher is limited right now',
       semanticLabel: 'AI Teacher safety limited banner',
-      child: const Text(
+      child: Text(
         "Some responses in this conversation were held back to keep things "
         'safe. You can keep chatting, or start a new conversation.',
       ),
