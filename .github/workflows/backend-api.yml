@@ -43,6 +43,15 @@ jobs:
         env:
           NODE_ENV: test
 
+      - name: Audit dependencies
+        run: npm audit --audit-level=high || true
+
+      - name: Test with coverage
+        run: npx jest --config ./jest.config.js --coverage
+
+      - name: Lint
+        run: npx eslint src --ext .ts || true
+
     # Phase 1 boundary guards
     # No AIM Engine logic in Backend API tests
     # No exposed AI provider keys or Supabase service-role keys
