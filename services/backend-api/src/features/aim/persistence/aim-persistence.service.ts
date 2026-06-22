@@ -68,7 +68,6 @@ import { DatabaseService } from '../../../database/database.service';
 import { AimValidatedResponse } from '../adapter/aim-response-mapper.types';
 import { StudentSkillStateUpdateService } from './student-skill-state-update.service';
 import { WeaknessUpdateService } from './weakness-update.service';
-import { StudentSkillStateUpdateService } from './student-skill-state-update.service';
 import { DifficultyDecisionService } from './difficulty-decision.service';
 import { RecommendationOutputService } from './recommendation-output.service';
 import { ReviewScheduleOutputService } from './review-schedule-output.service';
@@ -105,17 +104,7 @@ class TransactionScopedDb {
 export class AimPersistenceService {
   private readonly logger = new Logger(AimPersistenceService.name);
 
-  constructor(
-    private readonly weaknessUpdate: WeaknessUpdateService,
-    private readonly skillStateUpdate: StudentSkillStateUpdateService,
-    private readonly db: DatabaseService,
-    private readonly skillStateUpdate: StudentSkillStateUpdateService,
-    private readonly weaknessUpdate: WeaknessUpdateService,
-    private readonly difficultyDecision: DifficultyDecisionService,
-    private readonly recommendationOutput: RecommendationOutputService,
-    private readonly reviewScheduleOutput: ReviewScheduleOutputService,
-    private readonly sessionSummary: SessionSummaryService,
-  ) {}
+  constructor(private readonly db: DatabaseService) {}
 
   /**
    * Persist a fully validated AIM Engine response to the Phase 5 tables.
@@ -133,30 +122,6 @@ export class AimPersistenceService {
   async persist(validatedResponse: AimValidatedResponse): Promise<void> {
     const { studentId, categories } = validatedResponse;
 
-    if (categories.skillState.length > 0) {
-      await this.skillStateUpdate.upsertMany(studentId, categories.skillState);
-    }
-
-    if (categories.weaknessRecords.length > 0) {
-      await this.weaknessUpdate.upsertMany(studentId, categories.weaknessRecords);
-    }
-
-    await this.difficultyDecision.persist(studentId, categories.difficultyDecision);
-
-    await this.recommendationOutput.replaceActiveSet(studentId, categories.recommendations);
-
-    await this.reviewScheduleOutput.upsertMany(studentId, categories.reviewSchedule);
-
-    await this.sessionSummary.persist(studentId, categories.sessionSummary);
-
-    this.logger.log('aim_persistence_completed', {
-      studentId,
-      skillStateCount: categories.skillState.length,
-      weaknessRecordCount: categories.weaknessRecords.length,
-      hasDifficultyDecision: categories.difficultyDecision !== null,
-      recommendationCount: categories.recommendations.length,
-      reviewScheduleCount: categories.reviewSchedule.length,
-      hasSessionSummary: categories.sessionSummary !== null,
     await this.db.withClient(async (client) => {
       const txDb = new TransactionScopedDb(client) as unknown as DatabaseService;
 
