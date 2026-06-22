@@ -1,17 +1,18 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 
 import { AnalyticsRepository } from './analytics.repository';
-import { ExportJob, AnalyticsActorRole } from './analytics.entities';
+import {
+  ExportJob,
+  AnalyticsActorRole,
+  ReportRunResultData,
+  ReportSection,
+} from './analytics.entities';
 import { validateExportType } from './analytics.validation';
 
-/**
- * Backend authority for analytics export generation
- * (docs/phase-15/analytics-authority-rules.md). Exports are only ever
- * generated from completed, ownership-verified report runs — clients
- * never assemble export content or choose export scope themselves.
- */
 @Injectable()
 export class AnalyticsExportService {
+  private readonly logger = new Logger(AnalyticsExportService.name);
+
   constructor(private readonly analyticsRepository: AnalyticsRepository) {}
 
   async requestExport(params: {
@@ -84,7 +85,7 @@ export class AnalyticsExportService {
       result: 'allowed',
     });
 
-    return this.process(job.id);
+    return this.process(job.id, reportRun.resultData, params.exportType);
   }
 
   async getExportStatus(id: string): Promise<ExportJob> {
@@ -97,13 +98,14 @@ export class AnalyticsExportService {
     return job;
   }
 
-  /**
-   * Generates the export file reference from the report run's already-
-   * approved result, never from client-supplied data.
-   */
-  private async process(exportJobId: string): Promise<ExportJob> {
+  private async process(
+    exportJobId: string,
+    resultData: ReportRunResultData | null,
+    exportType: string,
+  ): Promise<ExportJob> {
     try {
-      const fileRef = `export-job:${exportJobId}`;
+      const content = this.generateExportContent(resultData, exportType);
+      const fileRef = `export-job:${exportJobId}:${exportType}`;
 
       const completed = await this.analyticsRepository.updateExportJobStatus(exportJobId, {
         status: 'completed',
@@ -111,15 +113,93 @@ export class AnalyticsExportService {
         completedAt: new Date(),
       });
 
+      this.logger.log(`Export job ${exportJobId} completed (${exportType}, ${content.length} bytes)`);
       return completed as ExportJob;
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown export failure';
+      this.logger.warn(`Export job ${exportJobId} failed: ${errorMessage}`);
+
       const failed = await this.analyticsRepository.updateExportJobStatus(exportJobId, {
         status: 'failed',
-        denialReason: error instanceof Error ? error.message : 'Unknown export failure',
+        denialReason: errorMessage,
         completedAt: new Date(),
       });
 
       return failed as ExportJob;
     }
+  }
+
+  private generateExportContent(
+    resultData: ReportRunResultData | null,
+    exportType: string,
+  ): string {
+    if (!resultData) {
+      return exportType === 'json' ? '{"sections":[]}' : '';
+    }
+
+    switch (exportType) {
+      case 'json':
+        return JSON.stringify(resultData, null, 2);
+      case 'csv':
+        return this.generateCsvContent(resultData);
+      case 'pdf':
+        return this.generatePdfPlaceholder(resultData);
+      default:
+        return JSON.stringify(resultData);
+    }
+  }
+
+  private generateCsvContent(resultData: ReportRunResultData): string {
+    const lines: string[] = [];
+
+    lines.push(`Report: ${this.escapeCsv(resultData.reportName)}`);
+    lines.push(`Category: ${this.escapeCsv(resultData.category)}`);
+    lines.push(`Generated: ${resultData.generatedAt}`);
+    lines.push('');
+
+    for (const section of resultData.sections) {
+      lines.push(`--- ${this.escapeCsv(section.title)} ---`);
+
+      if (section.data.length === 0) continue;
+
+      const headers = Object.keys(section.data[0]);
+      lines.push(headers.map((h) => this.escapeCsv(String(h))).join(','));
+
+      for (const row of section.data) {
+        const values = headers.map((h) => {
+          const val = row[h];
+          if (val === null || val === undefined) return '';
+          if (typeof val === 'object') return this.escapeCsv(JSON.stringify(val));
+          return this.escapeCsv(String(val));
+        });
+        lines.push(values.join(','));
+      }
+
+      lines.push('');
+    }
+
+    return lines.join('\n');
+  }
+
+  private escapeCsv(value: string): string {
+    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+      return `"${value.replace(/"/g, '""')}"`;
+    }
+    return value;
+  }
+
+  private generatePdfPlaceholder(resultData: ReportRunResultData): string {
+    const summary = {
+      format: 'pdf-pending',
+      reportName: resultData.reportName,
+      category: resultData.category,
+      generatedAt: resultData.generatedAt,
+      sectionCount: resultData.sections.length,
+      totalDataPoints: resultData.sections.reduce(
+        (sum: number, s: ReportSection) => sum + s.data.length,
+        0,
+      ),
+    };
+    return JSON.stringify(summary);
   }
 }
