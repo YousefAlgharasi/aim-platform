@@ -1,4 +1,5 @@
-import { DeviceTokenPlatform, DeviceTokenStatus } from './notification-enums';
+import { IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { DEVICE_TOKEN_PLATFORMS, DeviceTokenPlatform, DeviceTokenStatus } from './notification-enums';
 
 export class DeviceTokenEntity {
   id!: string;
@@ -12,10 +13,15 @@ export class DeviceTokenEntity {
   updatedAt!: Date;
 }
 
-// Request DTO for registering a device token. `status` is never accepted
-// from the client -- the backend assigns it after validating ownership.
 export class RegisterDeviceTokenRequestDto {
+  @IsIn([...DEVICE_TOKEN_PLATFORMS])
   platform!: DeviceTokenPlatform;
+
+  @IsString()
+  @IsNotEmpty()
   token!: string;
+
+  @IsOptional()
+  @IsString()
   deviceName?: string;
 }
