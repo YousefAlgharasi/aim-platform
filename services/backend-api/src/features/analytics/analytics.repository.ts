@@ -201,6 +201,7 @@ export class AnalyticsRepository {
     data: {
       status: ReportRun['status'];
       resultRef?: string | null;
+      resultData?: ReportRun['resultData'] | null;
       errorMessage?: string | null;
       startedAt?: Date | null;
       completedAt?: Date | null;
@@ -208,7 +209,7 @@ export class AnalyticsRepository {
   ): Promise<ReportRun | null> {
     const result = await this.db.query<ReportRun>(
       `UPDATE report_runs
-       SET status = $2, result_ref = $3, error_message = $4, started_at = $5, completed_at = $6
+       SET status = $2, result_ref = $3, error_message = $4, started_at = $5, completed_at = $6, result_data = $7
        WHERE id = $1
        RETURNING *`,
       [
@@ -218,6 +219,7 @@ export class AnalyticsRepository {
         data.errorMessage ?? null,
         data.startedAt ?? null,
         data.completedAt ?? null,
+        data.resultData ? JSON.stringify(data.resultData) : null,
       ],
     );
     return result.rows[0] || null;

@@ -81,6 +81,21 @@ export interface ReportDefinition {
 
 export type ReportRunStatus = 'queued' | 'running' | 'completed' | 'failed';
 
+export interface ReportRunResultData {
+  reportKey: string;
+  reportName: string;
+  category: ReportCategory;
+  generatedAt: string;
+  parameters: Record<string, unknown>;
+  sections: ReportSection[];
+}
+
+export interface ReportSection {
+  title: string;
+  type: 'metrics' | 'events_summary' | 'table';
+  data: Record<string, unknown>[];
+}
+
 export interface ReportRun {
   id: string;
   reportDefinitionId: string;
@@ -89,6 +104,7 @@ export interface ReportRun {
   parameters: Record<string, unknown>;
   status: ReportRunStatus;
   resultRef: string | null;
+  resultData: ReportRunResultData | null;
   errorMessage: string | null;
   startedAt: Date | null;
   completedAt: Date | null;
