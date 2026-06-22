@@ -1,0 +1,78 @@
+name: Flutter Mobile Build
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'apk'
+        type: choice
+        options:
+          - apk
+          - appbundle
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: apps/mobile
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+
+      - name: Build APK
+        run: |
+          flutter build apk --release \
+            --dart-define=AIM_ENV=production \
+            --dart-define=BACKEND_API_BASE_URL=${{ secrets.BACKEND_API_BASE_URL }} \
+            --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
+            --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+
+      - name: Rename APK
+        run: |
+          VERSION=${GITHUB_REF_NAME:-dev}
+          cp build/app/outputs/flutter-apk/app-release.apk \
+             build/app/outputs/flutter-apk/aim-mobile-${VERSION}.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aim-mobile-apk
+          path: apps/mobile/build/app/outputs/flutter-apk/aim-mobile-*.apk
+          retention-days: 30
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: apps/mobile/build/app/outputs/flutter-apk/aim-mobile-*.apk
+          generate_release_notes: true
+          name: AIM Mobile ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
