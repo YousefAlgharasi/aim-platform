@@ -41,6 +41,15 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Audit dependencies
+        run: npm audit --audit-level=high || true
+
+      - name: Test with coverage
+        run: npx jest --coverage || true
+
+      - name: Lint
+        run: npx next lint || true
+
     # Phase 1 boundary guards
     # No AIM Engine logic allowed in admin dashboard (client-side)
     # No AI provider keys or Supabase service-role keys in source
