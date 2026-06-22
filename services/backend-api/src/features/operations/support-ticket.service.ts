@@ -96,6 +96,9 @@ export class SupportTicketService {
 
     const previousStatus = ticket.status;
     const updated = await this.opsRepo.updateTicketStatus(ticketId, status);
+    if (!updated) {
+      throw new NotFoundException('Support ticket was deleted before update completed');
+    }
 
     await this.opsRepo.createAuditLog({
       actorId: adminId,
@@ -105,7 +108,7 @@ export class SupportTicketService {
       details: { previousStatus, newStatus: status },
     });
 
-    return updated!;
+    return updated;
   }
 
   async adminAssign(
@@ -123,6 +126,9 @@ export class SupportTicketService {
     }
 
     const updated = await this.opsRepo.assignTicketTo(ticketId, assigneeId);
+    if (!updated) {
+      throw new NotFoundException('Support ticket was deleted before assignment completed');
+    }
 
     await this.opsRepo.createAuditLog({
       actorId: adminId,
@@ -132,6 +138,6 @@ export class SupportTicketService {
       details: { assigneeId, previousAssignee: ticket.assignedTo },
     });
 
-    return updated!;
+    return updated;
   }
 }

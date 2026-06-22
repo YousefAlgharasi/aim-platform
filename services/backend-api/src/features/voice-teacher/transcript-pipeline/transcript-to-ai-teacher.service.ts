@@ -9,7 +9,7 @@
  * resolved by the AI Teacher pipeline; this service adds nothing to those
  * decisions and never calls an AI provider directly.
  */
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 
 import { AiTeacherOrchestratorService } from '../../ai-teacher/orchestrator/ai-teacher-orchestrator.service';
 import { DispatchTranscriptInput, DispatchTranscriptResult } from './transcript-to-ai-teacher.types';
@@ -24,15 +24,15 @@ export class TranscriptToAiTeacherService {
     const contextRef = input.contextRef?.trim();
 
     if (!studentId) {
-      throw new Error('Cannot dispatch transcript to AI Teacher: studentId is missing.');
+      throw new BadRequestException('Cannot dispatch transcript to AI Teacher: studentId is missing.');
     }
 
     if (!sessionId) {
-      throw new Error('Cannot dispatch transcript to AI Teacher: sessionId is missing.');
+      throw new BadRequestException('Cannot dispatch transcript to AI Teacher: sessionId is missing.');
     }
 
     if (!contextRef) {
-      throw new Error('Cannot dispatch transcript to AI Teacher: contextRef is missing.');
+      throw new BadRequestException('Cannot dispatch transcript to AI Teacher: contextRef is missing.');
     }
 
     const aiResult = await this.aiTeacherOrchestrator.handleTurn({
