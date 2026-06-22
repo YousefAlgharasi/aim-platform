@@ -95,7 +95,7 @@ void main() {
     test('getLessonDetail returns LessonDetail with lesson and assets verbatim',
         () async {
       const repo = LessonDetailRepositoryImpl(
-        datasource: const _FakeDatasource(),
+        datasource: _FakeDatasource(),
       );
       final detail = await repo.getLessonDetail(
         bearerToken: 'tok',
@@ -110,7 +110,7 @@ void main() {
 
     test('ApiClientException is mapped to AppException', () async {
       const repo = LessonDetailRepositoryImpl(
-        datasource: const _FakeDatasource(shouldFail: true),
+        datasource: _FakeDatasource(shouldFail: true),
       );
       expect(
         () => repo.getLessonDetail(bearerToken: 'tok', lessonId: 'lesson-1'),
@@ -120,7 +120,7 @@ void main() {
 
     test('AppException preserves code', () async {
       const repo = LessonDetailRepositoryImpl(
-        datasource: const _FakeDatasource(shouldFail: true),
+        datasource: _FakeDatasource(shouldFail: true),
       );
       try {
         await repo.getLessonDetail(bearerToken: 'tok', lessonId: 'lesson-1');
@@ -133,7 +133,7 @@ void main() {
     test('empty assets returns LessonDetail with hasNoContent == true',
         () async {
       const repo = LessonDetailRepositoryImpl(
-        datasource: const _FakeDatasource(emptyAssets: true),
+        datasource: _FakeDatasource(emptyAssets: true),
       );
       final detail = await repo.getLessonDetail(
         bearerToken: 'tok',
