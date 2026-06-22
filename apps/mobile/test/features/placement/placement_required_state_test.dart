@@ -23,7 +23,7 @@ class _FakePlacementRepository implements PlacementRepository {
   @override
   Future<PlacementTestModel> getActivePlacementTest(
       String bearerToken) async {
-    if (_error != null) throw _error!;
+    if (_error != null) throw _error;
     return _activeTest!;
   }
 

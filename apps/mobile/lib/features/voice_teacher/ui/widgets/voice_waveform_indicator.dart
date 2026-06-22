@@ -25,7 +25,6 @@ class VoiceWaveformIndicator extends StatefulWidget {
 class _VoiceWaveformIndicatorState extends State<VoiceWaveformIndicator>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  final _random = Random();
 
   @override
   void initState() {

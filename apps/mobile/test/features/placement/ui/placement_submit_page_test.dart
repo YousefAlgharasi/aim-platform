@@ -39,7 +39,7 @@ class _FakePlacementRepository implements PlacementRepository {
   Future<PlacementAttemptModel> completeAttempt(String t,
       {required String attemptId}) async {
     if (_gate != null) return _gate.future;
-    if (_completeError != null) throw _completeError!;
+    if (_completeError != null) throw _completeError;
     return PlacementAttemptModel(
       id: attemptId,
       placementTestId: 'test-1',

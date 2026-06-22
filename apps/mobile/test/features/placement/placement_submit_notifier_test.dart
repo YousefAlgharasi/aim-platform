@@ -36,7 +36,7 @@ class _FakePlacementRepository implements PlacementRepository {
     required String attemptId,
   }) async {
     lastCompletedAttemptId = attemptId;
-    if (_error != null) throw _error!;
+    if (_error != null) throw _error;
     return PlacementAttemptModel(
       id: attemptId,
       placementTestId: 'test-1',

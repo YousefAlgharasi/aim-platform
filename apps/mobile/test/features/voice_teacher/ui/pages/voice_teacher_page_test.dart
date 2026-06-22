@@ -27,7 +27,6 @@ import 'package:aim_mobile/features/voice_teacher/logic/entity/voice_message.dar
 import 'package:aim_mobile/features/voice_teacher/logic/entity/voice_session.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/entity/voice_teacher_session_state.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/entity/voice_turn_result.dart';
-import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_playback_notifier.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_record_submit_notifier.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_teacher_provider.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_teacher_session_notifier.dart';
