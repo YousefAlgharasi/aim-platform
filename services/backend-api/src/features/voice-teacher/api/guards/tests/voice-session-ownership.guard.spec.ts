@@ -1,30 +1,57 @@
 import { VoiceSessionOwnershipGuard } from '../voice-session-ownership.guard';
+import { VoiceSessionRepository } from '../../../repositories/voice-session.repository';
 
-describe('VoiceSessionOwnershipGuard', () => {
-  let guard: VoiceSessionOwnershipGuard;
+function makeRepository(overrides: Partial<jest.Mocked<Pick<VoiceSessionRepository, 'findById'>>> = {}) {
+  return {
+    findById: overrides.findById ?? jest.fn().mockResolvedValue(null),
+  } as unknown as VoiceSessionRepository;
+}
 
-  beforeEach(() => {
-    guard = new VoiceSessionOwnershipGuard();
-  });
-
-  const createContext = (user: any, params: any) => ({
+function createContext(user: any, params: any) {
+  return {
     switchToHttp: () => ({
       getRequest: () => ({ user, params }),
     }),
-  }) as any;
+  } as any;
+}
 
-  it('should allow authenticated user', () => {
-    const ctx = createContext({ id: 'student-1' }, { sessionId: 'session-1' });
-    expect(guard.canActivate(ctx)).toBe(true);
-  });
-
-  it('should throw when user is missing', () => {
+describe('VoiceSessionOwnershipGuard', () => {
+  it('throws when user is missing', async () => {
+    const repo = makeRepository();
+    const guard = new VoiceSessionOwnershipGuard(repo);
     const ctx = createContext(null, { sessionId: 'session-1' });
-    expect(() => guard.canActivate(ctx)).toThrow();
+    await expect(guard.canActivate(ctx)).rejects.toThrow('Authentication required');
   });
 
-  it('should allow when no sessionId param', () => {
+  it('allows when no sessionId param', async () => {
+    const repo = makeRepository();
+    const guard = new VoiceSessionOwnershipGuard(repo);
     const ctx = createContext({ id: 'student-1' }, {});
-    expect(guard.canActivate(ctx)).toBe(true);
+    await expect(guard.canActivate(ctx)).resolves.toBe(true);
+  });
+
+  it('rejects when session is not found', async () => {
+    const repo = makeRepository({ findById: jest.fn().mockResolvedValue(null) });
+    const guard = new VoiceSessionOwnershipGuard(repo);
+    const ctx = createContext({ id: 'student-1' }, { sessionId: 'session-1' });
+    await expect(guard.canActivate(ctx)).rejects.toThrow('Voice session not found');
+  });
+
+  it('rejects when session belongs to a different student', async () => {
+    const repo = makeRepository({
+      findById: jest.fn().mockResolvedValue({ id: 'session-1', student_id: 'other-student' }),
+    });
+    const guard = new VoiceSessionOwnershipGuard(repo);
+    const ctx = createContext({ id: 'student-1' }, { sessionId: 'session-1' });
+    await expect(guard.canActivate(ctx)).rejects.toThrow('Access denied');
+  });
+
+  it('allows when session belongs to the authenticated student', async () => {
+    const repo = makeRepository({
+      findById: jest.fn().mockResolvedValue({ id: 'session-1', student_id: 'student-1' }),
+    });
+    const guard = new VoiceSessionOwnershipGuard(repo);
+    const ctx = createContext({ id: 'student-1' }, { sessionId: 'session-1' });
+    await expect(guard.canActivate(ctx)).resolves.toBe(true);
   });
 });
