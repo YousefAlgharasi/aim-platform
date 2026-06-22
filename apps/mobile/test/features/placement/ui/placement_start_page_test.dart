@@ -46,7 +46,7 @@ class _FakePlacementRepository implements PlacementRepository {
   @override
   Future<PlacementTestModel> getActivePlacementTest(String t) async {
     if (_gate != null) return _gate.future;
-    if (_loadError != null) throw _loadError!;
+    if (_loadError != null) throw _loadError;
     return _testModel;
   }
 

@@ -67,7 +67,7 @@ class _FakePlacementRepository implements PlacementRepository {
     String bearerToken, {
     required String attemptId,
   }) async {
-    if (_error != null) throw _error!;
+    if (_error != null) throw _error;
     return _result!;
   }
 

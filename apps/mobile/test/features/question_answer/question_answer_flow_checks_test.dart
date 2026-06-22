@@ -194,8 +194,6 @@ void main() {
   // QuestionSessionState — canSubmit logic
   // ---------------------------------------------------------------------------
   group('QuestionSessionState — canSubmit', () {
-    const baseQuestion = null; // no question loaded
-
     test('11. canSubmit false when no question loaded', () {
       const state = QuestionSessionState();
       expect(state.canSubmit, isFalse);

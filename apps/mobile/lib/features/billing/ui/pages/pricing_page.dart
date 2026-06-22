@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/plan_card.dart';
 
 class PricingPage extends StatelessWidget {
   const PricingPage({super.key});

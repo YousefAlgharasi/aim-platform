@@ -17,7 +17,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
 import 'package:aim_mobile/features/lessons/logic/content_status_guard.dart';
-import 'package:aim_mobile/features/lessons/logic/entity/lesson_asset.dart';
 
 void main() {
   group('ContentStatusGuard.isPublished', () {

@@ -135,7 +135,6 @@ class _FeaturePreviewItem extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.surfaces,
-    super.key,
   });
 
   final IconData icon;

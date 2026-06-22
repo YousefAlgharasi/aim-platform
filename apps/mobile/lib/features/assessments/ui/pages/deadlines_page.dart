@@ -194,8 +194,6 @@ class _DeadlineTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-
     return AIMCard(
       variant: AIMCardVariant.elevated,
       semanticLabel: 'Deadline: ${item.assessmentTitle}',

@@ -10,7 +10,6 @@ class VoicePlaybackNotifier extends ChangeNotifier {
   double _progress = 0.0;
   String? _duration;
   String? _errorMessage;
-  Uint8List? _audioData;
 
   PlaybackState get state => _state;
   String? get currentAudioRef => _currentAudioRef;
@@ -34,7 +33,7 @@ class VoicePlaybackNotifier extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _audioData = await fetchAudioFn(audioRef);
+      await fetchAudioFn(audioRef);
       _state = PlaybackState.playing;
       notifyListeners();
     } catch (e) {
@@ -85,7 +84,6 @@ class VoicePlaybackNotifier extends ChangeNotifier {
     _currentAudioRef = null;
     _progress = 0.0;
     _duration = null;
-    _audioData = null;
     notifyListeners();
   }
 
