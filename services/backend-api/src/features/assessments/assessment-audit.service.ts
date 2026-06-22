@@ -17,7 +17,7 @@
 //   - No AIM Engine, AI Teacher, payments, parent dashboard, or voice AI.
 //   - No secrets, service-role keys, database credentials, or AI provider keys.
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 
 // ---------------------------------------------------------------------------
@@ -345,7 +345,7 @@ export class AssessmentAuditService {
           `P10-031 audit metadata for [${eventType}] contains forbidden key "${k}". ` +
           'Secrets and sensitive payloads must never be stored in audit logs.';
         this.logger.error(msg);
-        throw new Error(msg);
+        throw new BadRequestException(msg);
       }
     }
   }

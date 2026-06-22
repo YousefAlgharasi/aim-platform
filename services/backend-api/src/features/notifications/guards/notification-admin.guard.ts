@@ -2,6 +2,8 @@ import { CanActivate, ExecutionContext, HttpStatus, Injectable } from '@nestjs/c
 import { AppError } from '../../../common/errors/app-error';
 import { ApiErrorCode } from '../../../common/errors/api-error-code';
 import { AuthenticatedRequest } from '../../../auth/authenticated-user';
+import { resolveAuthorizedRoles } from '../../../auth/authorization/authorized-role.resolver';
+import { AuthorizedRole } from '../../../auth/authorization/authorized-role';
 
 @Injectable()
 export class NotificationAdminGuard implements CanActivate {
@@ -17,7 +19,10 @@ export class NotificationAdminGuard implements CanActivate {
       });
     }
 
-    if (user.role !== 'admin') {
+    const roles = resolveAuthorizedRoles(user);
+    const isAdmin = roles.includes(AuthorizedRole.ADMIN) || roles.includes(AuthorizedRole.SUPER_ADMIN);
+
+    if (!isAdmin) {
       throw new AppError({
         message: 'Admin access required',
         statusCode: HttpStatus.FORBIDDEN,

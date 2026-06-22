@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadGatewayException } from '@nestjs/common';
 
 import { TtsGatewayConfigService } from './tts-gateway.config';
 import { TtsGateway } from './tts-gateway.interface';
@@ -70,7 +70,7 @@ export class TtsAudioGenerationService extends TtsGateway {
       );
 
       if (!response.ok) {
-        throw new Error(`TTS provider returned HTTP ${response.status}`);
+        throw new BadGatewayException(`TTS provider returned HTTP ${response.status}`);
       }
 
       const audioBuffer = Buffer.from(await response.arrayBuffer());

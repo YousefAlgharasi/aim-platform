@@ -6,7 +6,7 @@ export class NoopEmailProviderAdapter implements EmailProviderAdapter {
   private readonly logger = new Logger(NoopEmailProviderAdapter.name);
 
   async send(payload: EmailDeliveryPayload): Promise<EmailDeliveryResult> {
-    this.logger.log(`[NOOP] Email send to=${payload.to}, subject=${payload.subject}`);
+    this.logger.log('[NOOP] Email send dispatched');
     return { success: true, providerMessageId: `noop-email-${Date.now()}` };
   }
 }

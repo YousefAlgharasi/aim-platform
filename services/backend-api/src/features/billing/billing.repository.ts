@@ -222,6 +222,14 @@ export class BillingRepository {
     return result.rows[0] || null;
   }
 
+  async findCheckoutSessionsByUser(userId: string): Promise<CheckoutSession[]> {
+    const result = await this.db.query<CheckoutSession>(
+      `SELECT * FROM checkout_sessions WHERE user_id = $1 ORDER BY created_at DESC`,
+      [userId],
+    );
+    return result.rows;
+  }
+
   async findCheckoutSessionByProviderSessionId(providerSessionId: string): Promise<CheckoutSession | null> {
     const result = await this.db.query<CheckoutSession>(
       `SELECT * FROM checkout_sessions WHERE provider_session_id = $1`,
