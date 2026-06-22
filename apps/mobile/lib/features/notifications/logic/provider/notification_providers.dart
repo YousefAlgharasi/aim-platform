@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/networking/backend_api_client_provider.dart';
@@ -31,6 +33,17 @@ final notificationRepositoryProvider = Provider<NotificationRepository>(
     datasource: ref.watch(notificationRemoteDatasourceProvider),
   ),
 );
+
+/// Resolves the device's push platform identifier ('ios'/'android') for
+/// device token registration. Overridable in tests, since the host running
+/// the test suite is neither iOS nor Android.
+final devicePlatformProvider = Provider<String>((ref) {
+  if (Platform.isIOS) return 'ios';
+  if (Platform.isAndroid) return 'android';
+  throw UnsupportedError(
+    'Push device token registration is only supported on iOS and Android.',
+  );
+});
 
 /// In-app notification inbox screen state.
 final notificationInboxProvider = StateNotifierProvider.autoDispose<

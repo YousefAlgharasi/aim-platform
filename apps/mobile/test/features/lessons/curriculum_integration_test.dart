@@ -24,7 +24,6 @@
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/networking/api_client_exception.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/features/lessons/data/datasources/lesson_detail_remote_datasource.dart';
@@ -85,32 +84,21 @@ class _FakeLessonsDatasource implements LessonsRemoteDatasource {
 class _FakeLessonDetailDatasource implements LessonDetailRemoteDatasource {
   final LessonModel lesson;
   final List<LessonAssetModel> assets;
-  final bool shouldFail;
 
   const _FakeLessonDetailDatasource({
     required this.lesson,
     this.assets = const [],
-    this.shouldFail = false,
   });
-
-  void _maybeThrow() {
-    if (shouldFail) {
-      throw const ApiClientException(
-          code: 'ERR', message: 'fail', statusCode: 500);
-    }
-  }
 
   @override
   Future<LessonModel> getLessonDetail(
       {required String bearerToken, required String lessonId}) async {
-    _maybeThrow();
     return lesson;
   }
 
   @override
   Future<List<LessonAssetModel>> getLessonAssets(
       {required String bearerToken, required String lessonId}) async {
-    _maybeThrow();
     return assets;
   }
 }

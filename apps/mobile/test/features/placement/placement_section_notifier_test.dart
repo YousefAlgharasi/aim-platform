@@ -52,7 +52,7 @@ class _FakePlacementRepository implements PlacementRepository {
   @override
   Future<List<PlacementSectionModel>> getActiveSections(
       String bearerToken) async {
-    if (_error != null) throw _error!;
+    if (_error != null) throw _error;
     return _sections ?? const [];
   }
 

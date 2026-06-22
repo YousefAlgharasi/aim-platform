@@ -55,7 +55,7 @@ class _FakePlacementRepository implements PlacementRepository {
   Future<List<PlacementQuestionModel>> getQuestionsForSection(String t,
       {required String sectionId}) async {
     if (_gate != null) return _gate.future;
-    if (_loadError != null) throw _loadError!;
+    if (_loadError != null) throw _loadError;
     return _questions;
   }
 

@@ -60,14 +60,14 @@ class _AiSpeakingIndicatorState extends State<AiSpeakingIndicator>
 
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: AimSpacing.md,
-        vertical: AimSpacing.sm,
+        horizontal: AimSpacing.space16,
+        vertical: AimSpacing.space8,
       ),
-      margin: EdgeInsets.symmetric(horizontal: AimSpacing.md),
+      margin: EdgeInsets.symmetric(horizontal: AimSpacing.space16),
       decoration: BoxDecoration(
-        color: AimColors.primary.withOpacity(0.06),
+        color: AimColors.primary500.withOpacity(0.06),
         borderRadius: BorderRadius.circular(AimRadius.lg),
-        border: Border.all(color: AimColors.primary.withOpacity(0.15)),
+        border: Border.all(color: AimColors.primary500.withOpacity(0.15)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -77,26 +77,26 @@ class _AiSpeakingIndicatorState extends State<AiSpeakingIndicator>
             height: 32,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AimColors.primary.withOpacity(0.1),
+              color: AimColors.primary500.withOpacity(0.1),
             ),
             child: Icon(
               isSpeaking ? Icons.volume_up : Icons.smart_toy,
               size: 18,
-              color: AimColors.primary,
+              color: AimColors.primary500,
             ),
           ),
-          SizedBox(width: AimSpacing.sm),
+          SizedBox(width: AimSpacing.space8),
           if (isSpeaking)
             _SpeakingBars(controller: _controller)
           else
             _ThinkingDots(controller: _controller),
-          SizedBox(width: AimSpacing.sm),
+          SizedBox(width: AimSpacing.space8),
           Text(
             isSpeaking
                 ? (isRtl ? 'المعلم يتحدث...' : 'Teacher speaking...')
                 : (isRtl ? 'المعلم يفكر...' : 'Teacher thinking...'),
             style: theme.textTheme.bodySmall?.copyWith(
-              color: AimColors.primary,
+              color: AimColors.primary500,
             ),
           ),
         ],
@@ -129,7 +129,7 @@ class _ThinkingDots extends StatelessWidget {
                   height: 6,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AimColors.primary.withOpacity(0.6),
+                    color: AimColors.primary500.withOpacity(0.6),
                   ),
                 ),
               ),
@@ -164,7 +164,7 @@ class _SpeakingBars extends StatelessWidget {
                 width: 3,
                 height: height,
                 decoration: BoxDecoration(
-                  color: AimColors.primary,
+                  color: AimColors.primary500,
                   borderRadius: BorderRadius.circular(1.5),
                 ),
               ),

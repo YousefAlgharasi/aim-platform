@@ -18,7 +18,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
 import 'package:aim_mobile/features/ai_teacher/data/models/ai_teacher_chat_models.dart';
+import 'package:aim_mobile/features/ai_teacher/data/models/ai_teacher_safety_status_model.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_chat_state.dart';
+import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_stream_event.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/provider/ai_teacher_chat_notifier.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/provider/ai_teacher_provider.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/repository/ai_teacher_chat_repository.dart';
@@ -248,5 +250,30 @@ class _FakeAiTeacherChatRepository implements AiTeacherChatRepository {
         messageId: messageId,
         rating: rating,
         createdAt: '2025-01-01T00:00:00Z',
+      );
+
+  @override
+  Stream<AiTeacherStreamEvent> streamMessage({
+    required String bearerToken,
+    required String sessionId,
+    required String message,
+  }) async* {
+    yield const AiTeacherStreamChunk('reply');
+    yield const AiTeacherStreamDone(
+      isFallback: false,
+      provider: 'test',
+      model: 'test',
+    );
+  }
+
+  @override
+  Future<AiTeacherSafetyStatusModel> getSafetyStatus({
+    required String bearerToken,
+    required String sessionId,
+  }) async =>
+      const AiTeacherSafetyStatusModel(
+        sessionId: 'session-1',
+        status: 'clear',
+        lastCheckedAt: '2025-01-01T00:00:00Z',
       );
 }

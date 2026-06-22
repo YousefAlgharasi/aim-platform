@@ -155,6 +155,7 @@ void main() {
             ),
           ),
           notificationRepositoryProvider.overrideWithValue(repository),
+          devicePlatformProvider.overrideWithValue('android'),
         ],
       );
       addTearDown(container.dispose);
@@ -189,6 +190,7 @@ void main() {
               ),
             ),
           ),
+          devicePlatformProvider.overrideWithValue('android'),
         ],
       );
       addTearDown(container.dispose);

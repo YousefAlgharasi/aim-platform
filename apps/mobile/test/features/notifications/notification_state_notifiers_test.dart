@@ -40,7 +40,7 @@ class _FakeNotificationRepository implements NotificationRepository {
   final AppException? _error;
 
   void _maybeThrow() {
-    if (_error != null) throw _error!;
+    if (_error != null) throw _error;
   }
 
   @override

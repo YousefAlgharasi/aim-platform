@@ -115,16 +115,18 @@ void main() {
 }
 
 class _NoopAiTeacherPreferencesStore extends AiTeacherPreferencesStore {
-  const _NoopAiTeacherPreferencesStore();
+  const _NoopAiTeacherPreferencesStore(this.initialState);
+
+  final AiTeacherPreferences initialState;
 
   @override
-  Future<bool> getPreferTextReplies() async => false;
+  Future<bool> getPreferTextReplies() async => initialState.preferTextReplies;
 
   @override
   Future<void> setPreferTextReplies(bool value) async {}
 
   @override
-  Future<bool> getReducedMotion() async => false;
+  Future<bool> getReducedMotion() async => initialState.reducedMotion;
 
   @override
   Future<void> setReducedMotion(bool value) async {}
@@ -132,7 +134,7 @@ class _NoopAiTeacherPreferencesStore extends AiTeacherPreferencesStore {
 
 class _FakeAiTeacherPreferencesNotifier extends AiTeacherPreferencesNotifier {
   _FakeAiTeacherPreferencesNotifier(AiTeacherPreferences initialState)
-      : super(store: const _NoopAiTeacherPreferencesStore()) {
+      : super(store: _NoopAiTeacherPreferencesStore(initialState)) {
     state = initialState;
   }
 
