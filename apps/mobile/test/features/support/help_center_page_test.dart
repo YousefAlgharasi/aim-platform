@@ -21,6 +21,11 @@ void main() {
       expect(find.text('Account & Profile'), findsOneWidget);
       expect(find.text('Billing & Subscription'), findsOneWidget);
       expect(find.text('Technical Issues'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('General Help'),
+        100,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.text('General Help'), findsOneWidget);
     });
 

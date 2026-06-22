@@ -24,8 +24,8 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: TicketListPage.buildEmptyState(
-              tester.element(find.byType(Scaffold)),
+            body: Builder(
+              builder: (context) => TicketListPage.buildEmptyState(context),
             ),
           ),
         ),
@@ -42,14 +42,16 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: TicketListPage.buildTicketTile(
-              context: tester.element(find.byType(Scaffold)),
-              ticketId: 'ticket_001',
-              subject: 'Cannot access lesson',
-              status: 'open',
-              category: 'technical',
-              severity: 'high',
-              createdAt: DateTime(2026, 1, 15),
+            body: Builder(
+              builder: (context) => TicketListPage.buildTicketTile(
+                context: context,
+                ticketId: 'ticket_001',
+                subject: 'Cannot access lesson',
+                status: 'open',
+                category: 'technical',
+                severity: 'high',
+                createdAt: DateTime(2026, 1, 15),
+              ),
             ),
           ),
         ),

@@ -36,9 +36,11 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: SubscriptionPage.buildNoSubscriptionState(
-              tester.element(find.byType(Scaffold)),
-              onViewPlans: () {},
+            body: Builder(
+              builder: (context) => SubscriptionPage.buildNoSubscriptionState(
+                context,
+                onViewPlans: () {},
+              ),
             ),
           ),
         ),
@@ -52,11 +54,13 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: SubscriptionPage.buildEntitlementTile(
-              context: tester.element(find.byType(Scaffold)),
-              featureKey: 'ai_teacher',
-              granted: true,
-              usageText: '50/100 sessions',
+            body: Builder(
+              builder: (context) => SubscriptionPage.buildEntitlementTile(
+                context: context,
+                featureKey: 'ai_teacher',
+                granted: true,
+                usageText: '50/100 sessions',
+              ),
             ),
           ),
         ),
@@ -79,8 +83,8 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: InvoiceHistoryPage.buildEmptyState(
-              tester.element(find.byType(Scaffold)),
+            body: Builder(
+              builder: (context) => InvoiceHistoryPage.buildEmptyState(context),
             ),
           ),
         ),
