@@ -25,6 +25,7 @@ import { ProviderRequestMapperService } from './provider-request.mapper';
 import { ProviderResponseMapperService } from './provider-response.mapper';
 import { ProviderCompletionResponse } from './provider-response-mapper.types';
 import { AI_PROVIDER_COMPLETIONS_URL, AI_PROVIDER_NAME } from './provider-gateway-http-client.constants';
+import { AI_PROVIDER_CALL_TIMEOUT_MS } from './provider-gateway-timeout.constants';
 
 const NETWORK_ERROR_CATEGORY = 'PROVIDER_NETWORK_ERROR';
 const HTTP_ERROR_CATEGORY = 'PROVIDER_HTTP_ERROR';
@@ -52,6 +53,7 @@ export class ProviderGatewayHttpClientService extends AiProviderGateway {
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify(completionRequest),
+        signal: AbortSignal.timeout(AI_PROVIDER_CALL_TIMEOUT_MS),
       });
 
       const latencyMs = Date.now() - start;

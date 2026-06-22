@@ -9,7 +9,7 @@
  * recommendation/review-schedule value
  * (docs/phase-8/no-aim-replacement-rule.md).
  */
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 
 import { AiChatSessionRepository } from '../repositories/ai-chat-session.repository';
 import { AiChatMessageRepository } from '../repositories/ai-chat-message.repository';
@@ -27,11 +27,11 @@ export class ChatHistoryReadService {
     const sessionId = input.sessionId?.trim();
 
     if (!studentId) {
-      throw new Error('Cannot read chat history: studentId is missing.');
+      throw new BadRequestException('Cannot read chat history: studentId is missing.');
     }
 
     if (!sessionId) {
-      throw new Error('Cannot read chat history: sessionId is missing.');
+      throw new BadRequestException('Cannot read chat history: sessionId is missing.');
     }
 
     const session = await this.chatSessionRepository.findById(sessionId);

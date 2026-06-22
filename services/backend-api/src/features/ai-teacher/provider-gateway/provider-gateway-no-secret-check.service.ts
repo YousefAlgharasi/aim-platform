@@ -12,7 +12,7 @@
  * weakness/difficulty/recommendation/review-schedule value
  * (docs/phase-8/no-aim-replacement-rule.md).
  */
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 
 import { ProviderGatewayConfigService } from './provider-gateway.config';
 
@@ -37,19 +37,19 @@ export class ProviderGatewayNoSecretCheckService {
     const { apiKey, model } = this.providerGatewayConfig.getConfig();
 
     if (!this.isNonEmpty(apiKey)) {
-      throw new Error(
+      throw new BadRequestException(
         'AI provider configuration is invalid: AI_PROVIDER_API_KEY is missing.',
       );
     }
 
     if (this.looksLikePlaceholder(apiKey)) {
-      throw new Error(
+      throw new BadRequestException(
         'AI provider configuration is invalid: AI_PROVIDER_API_KEY looks like a placeholder value, not a real secret.',
       );
     }
 
     if (!this.isNonEmpty(model)) {
-      throw new Error('AI provider configuration is invalid: AI_PROVIDER_MODEL is missing.');
+      throw new BadRequestException('AI provider configuration is invalid: AI_PROVIDER_MODEL is missing.');
     }
   }
 

@@ -17,6 +17,17 @@ export class NotificationOwnershipGuard implements CanActivate {
       });
     }
 
+    const params = (request as any).params ?? {};
+    const userId = params.userId as string | undefined;
+
+    if (userId && userId !== user.id) {
+      throw new AppError({
+        message: 'Not authorized to access this notification resource',
+        statusCode: HttpStatus.FORBIDDEN,
+        code: ApiErrorCode.FORBIDDEN,
+      });
+    }
+
     return true;
   }
 }

@@ -6,7 +6,7 @@
  * recommendation/review-schedule value
  * (docs/phase-8/no-aim-replacement-rule.md).
  */
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 
 import { AiChatSessionRepository } from '../repositories/ai-chat-session.repository';
 import { ListChatSessionsInput, ListChatSessionsResult } from './chat-session-list-read.types';
@@ -19,7 +19,7 @@ export class ChatSessionListReadService {
     const studentId = input.studentId?.trim();
 
     if (!studentId) {
-      throw new Error('Cannot list chat sessions: studentId is missing.');
+      throw new BadRequestException('Cannot list chat sessions: studentId is missing.');
     }
 
     const rows = await this.chatSessionRepository.findActiveByStudentId(studentId);

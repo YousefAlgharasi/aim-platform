@@ -22,7 +22,7 @@
  * `AUDIO_STORAGE_ADAPTER` in `audio-storage.module.ts` instead, with
  * no change required in any caller.
  */
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -96,14 +96,14 @@ export class LocalAudioStorageAdapter implements AudioStorageAdapter {
 
   private resolveSafePath(dir: string, storageKey: string): string {
     if (!STORAGE_KEY_PATTERN.test(storageKey)) {
-      throw new Error('Invalid storage key');
+      throw new BadRequestException('Invalid storage key');
     }
 
     const resolvedDir = path.resolve(dir);
     const resolvedFile = path.resolve(resolvedDir, storageKey);
 
     if (!resolvedFile.startsWith(resolvedDir + path.sep)) {
-      throw new Error('Invalid storage key');
+      throw new BadRequestException('Invalid storage key');
     }
 
     return resolvedFile;

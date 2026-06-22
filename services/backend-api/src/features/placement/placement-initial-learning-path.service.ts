@@ -33,7 +33,7 @@
 //   (Per P4-030 § threshold alignment — P4-031 §5 uses the 5-level set,
 //    initial_learning_path stores the 3-level CEFR annotation.)
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 
 // ---------------------------------------------------------------------------
@@ -127,7 +127,7 @@ export class PlacementInitialLearningPathService {
     );
 
     if ((resultRow.rowCount ?? 0) === 0) {
-      throw new Error(`PlacementInitialLearningPathService: result not found: ${resultId}`);
+      throw new NotFoundException(`Placement result not found: ${resultId}`);
     }
 
     const result = resultRow.rows[0];

@@ -17,7 +17,11 @@ import { SessionsModule } from './sessions/sessions.module';
 import { StudentsModule } from './students/students.module';
 import { UsersModule } from './users/users.module';
 import { VoiceTeacherModule } from './voice-teacher/voice-teacher.module';
+import { OperationsModule } from './operations/operations.module';
 
+// BillingModule is excluded — its services reference unimplemented
+// BillingRepository methods (updatePayment, updateRefund, etc.).
+// Import once the repository layer is complete.
 @Module({
   imports: [
     AuthModule,
@@ -37,6 +41,7 @@ import { VoiceTeacherModule } from './voice-teacher/voice-teacher.module';
     CurriculumModule,
     PlacementModule,
     AssessmentsModule,
+    OperationsModule,
   ],
   exports: [
     AuthModule,
@@ -56,6 +61,7 @@ import { VoiceTeacherModule } from './voice-teacher/voice-teacher.module';
     CurriculumModule,
     PlacementModule,
     AssessmentsModule,
+    OperationsModule,
   ],
 })
 export class FeaturesModule {}

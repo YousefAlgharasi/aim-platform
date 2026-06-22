@@ -8,7 +8,7 @@
  * mastery/level/weakness/difficulty/recommendation/review-schedule value
  * (docs/phase-8/no-aim-replacement-rule.md).
  */
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 
 import { AiChatSessionRepository } from '../repositories/ai-chat-session.repository';
 import { StartChatSessionInput, StartChatSessionResult } from './chat-session-start.types';
@@ -22,11 +22,11 @@ export class ChatSessionStartService {
     const contextRef = input.contextRef?.trim();
 
     if (!studentId) {
-      throw new Error('Cannot start an AI chat session: studentId is missing.');
+      throw new BadRequestException('Cannot start an AI chat session: studentId is missing.');
     }
 
     if (!contextRef) {
-      throw new Error('Cannot start an AI chat session: contextRef is missing.');
+      throw new BadRequestException('Cannot start an AI chat session: contextRef is missing.');
     }
 
     const session = await this.chatSessionRepository.create(studentId, contextRef);

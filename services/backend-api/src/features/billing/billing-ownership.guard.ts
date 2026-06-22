@@ -7,6 +7,8 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthenticatedRequest } from '../../auth/authenticated-user';
+import { resolveAuthorizedRoles } from '../../auth/authorization/authorized-role.resolver';
+import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 
 export const BILLING_RESOURCE_KEY = 'billing_resource';
 export const BILLING_ADMIN_KEY = 'billing_admin';
@@ -82,11 +84,10 @@ export class BillingRoleGuard implements CanActivate {
       return true;
     }
 
-    const roles: string[] = (user as any).roles || [];
+    const resolvedRoles = resolveAuthorizedRoles(user);
     const hasAccess =
-      roles.includes('admin') ||
-      roles.includes('super_admin') ||
-      roles.includes(`billing:${resource}`);
+      resolvedRoles.includes(AuthorizedRole.ADMIN) ||
+      resolvedRoles.includes(AuthorizedRole.SUPER_ADMIN);
 
     if (!hasAccess) {
       throw new ForbiddenException(`Insufficient permissions for billing resource: ${resource}`);

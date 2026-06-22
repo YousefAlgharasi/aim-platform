@@ -16,7 +16,7 @@
  * place. Performs no AI provider call and computes no learning-decision
  * value itself.
  */
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 
 import { AiSafetyEventRepository } from '../repositories/ai-safety-event.repository';
 import { FilterAiResponseInput, FilterAiResponseResult } from './response-safety-filter.types';
@@ -39,7 +39,7 @@ export class ResponseSafetyFilterService {
     const sessionId = input.sessionId?.trim();
 
     if (!sessionId) {
-      throw new Error('Cannot filter an AI Teacher response: sessionId is missing.');
+      throw new BadRequestException('Cannot filter an AI Teacher response: sessionId is missing.');
     }
 
     const text = input.text ?? '';

@@ -109,7 +109,7 @@ describe('OperationsAdminGuard', () => {
 
   it('should allow access for users with admin role', async () => {
     const context = createMockContext(
-      { id: 'admin-1', role: 'admin', expiresAt: Date.now() + 3600 },
+      { id: 'admin-1', appMetadata: { role: 'admin' }, expiresAt: Date.now() + 3600 },
       { [OPERATIONS_ADMIN_KEY]: true },
     );
 
@@ -119,7 +119,7 @@ describe('OperationsAdminGuard', () => {
 
   it('should allow access for users with super_admin role', async () => {
     const context = createMockContext(
-      { id: 'admin-1', role: 'super_admin', expiresAt: Date.now() + 3600 },
+      { id: 'admin-1', appMetadata: { role: 'super_admin' }, expiresAt: Date.now() + 3600 },
       { [OPERATIONS_ADMIN_KEY]: true },
     );
 
@@ -129,7 +129,7 @@ describe('OperationsAdminGuard', () => {
 
   it('should allow access for users with admin in roles array', async () => {
     const context = createMockContext(
-      { id: 'admin-1', roles: ['admin'], expiresAt: Date.now() + 3600 },
+      { id: 'admin-1', appMetadata: { roles: ['admin'] }, expiresAt: Date.now() + 3600 },
       { [OPERATIONS_ADMIN_KEY]: true },
     );
 

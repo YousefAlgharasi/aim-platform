@@ -7,6 +7,8 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthenticatedRequest } from '../../auth/authenticated-user';
+import { resolveAuthorizedRoles } from '../../auth/authorization/authorized-role.resolver';
+import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 
 export const OPERATIONS_RESOURCE_KEY = 'operations_resource';
 export const OPERATIONS_ADMIN_KEY = 'operations_admin';
@@ -80,13 +82,10 @@ export class OperationsAdminGuard implements CanActivate {
     );
 
     if (isAdminOnly) {
-      const roles = (user as any).roles || [];
-      const role = user.role;
+      const resolvedRoles = resolveAuthorizedRoles(user);
       const isAdmin =
-        role === 'admin' ||
-        role === 'super_admin' ||
-        roles.includes('admin') ||
-        roles.includes('super_admin');
+        resolvedRoles.includes(AuthorizedRole.ADMIN) ||
+        resolvedRoles.includes(AuthorizedRole.SUPER_ADMIN);
 
       if (!isAdmin) {
         throw new ForbiddenException('Admin access required for operations management');

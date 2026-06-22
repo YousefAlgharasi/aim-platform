@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { DatabaseModule } from '../../database/database.module';
+import { AuthModule } from '../../auth/auth.module';
 import { OperationsRepository } from './operations.repository';
 import { SupportTicketService } from './support-ticket.service';
 import { FeedbackService } from './feedback.service';
@@ -25,7 +26,7 @@ import { AdminFeatureFlagsController } from './admin-feature-flags.controller';
 import { AdminOperationsDashboardController } from './admin-operations-dashboard.controller';
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, AuthModule],
   providers: [
     OperationsRepository,
     SupportTicketService,

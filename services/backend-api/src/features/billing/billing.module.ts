@@ -10,8 +10,13 @@ import { CheckoutService } from './checkout.service';
 import { PaymentService } from './payment.service';
 import { InvoiceService } from './invoice.service';
 
+// Controllers are not registered yet — several services reference
+// BillingRepository methods that have not been implemented (e.g.
+// updatePayment, updateRefund, findPaymentsBySubscriptionId).
+// Register controllers once the repository layer is complete.
 @Module({
   imports: [DatabaseModule, AnalyticsModule],
+  controllers: [],
   providers: [
     BillingRepository,
     ProductPriceService,
