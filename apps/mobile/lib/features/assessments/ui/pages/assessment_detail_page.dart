@@ -192,7 +192,7 @@ class _InfoRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AimSpacing.space12),
       child: Row(
         children: [
-          Icon(icon, size: AimSizes.iconSm, color: surfaces.surfaceSecondary),
+          Icon(icon, size: AimSizes.iconSm, color: surfaces.textSecondary),
           const SizedBox(width: AimSpacing.space8),
           Expanded(
             child: Text(
@@ -305,7 +305,7 @@ class _SectionTile extends StatelessWidget {
     final surfaces = aimSurfacesOf(context);
 
     return AIMCard(
-      variant: AIMCardVariant.outlined,
+      variant: AIMCardVariant.standard,
       child: Row(
         children: [
           DecoratedBox(

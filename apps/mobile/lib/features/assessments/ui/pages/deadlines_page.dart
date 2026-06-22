@@ -166,7 +166,7 @@ class _DeadlineSection extends StatelessWidget {
               const SizedBox(width: AimSpacing.space8),
               Text(
                 '$title (${items.length})',
-                style: AimTextStyles.titleSmall.copyWith(color: color),
+                style: AimTextStyles.title.copyWith(color: color),
               ),
             ],
           ),

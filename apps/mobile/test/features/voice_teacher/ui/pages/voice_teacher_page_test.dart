@@ -24,6 +24,7 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart'
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/entity/voice_feedback_result.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/entity/voice_message.dart';
+import 'package:aim_mobile/features/voice_teacher/logic/entity/voice_session.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/entity/voice_teacher_session_state.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/entity/voice_turn_result.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_playback_notifier.dart';
@@ -266,7 +267,7 @@ class _FakeVoiceTeacherRepository implements VoiceTeacherRepository {
       'session-1';
 
   @override
-  Future<List<dynamic>> listSessions({required String bearerToken}) async =>
+  Future<List<VoiceSession>> listSessions({required String bearerToken}) async =>
       const [];
 
   @override

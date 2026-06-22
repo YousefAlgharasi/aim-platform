@@ -117,7 +117,7 @@ class DeadlineStatusCard extends StatelessWidget {
             Icon(
               Icons.chevron_right,
               size: AimSizes.iconSm,
-              color: surfaces.surfaceSecondary,
+              color: surfaces.textSecondary,
             ),
           ],
         ],

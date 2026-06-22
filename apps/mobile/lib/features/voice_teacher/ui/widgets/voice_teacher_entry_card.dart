@@ -25,16 +25,16 @@ class VoiceTeacherEntryCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AimColors.primary.withOpacity(0.1),
+              color: AimColors.primary500.withOpacity(0.1),
               borderRadius: BorderRadius.circular(AimRadius.md),
             ),
             child: const Icon(
               Icons.mic,
-              color: AimColors.primary,
+              color: AimColors.primary500,
               size: 24,
             ),
           ),
-          SizedBox(width: AimSpacing.md),
+          SizedBox(width: AimSpacing.space16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

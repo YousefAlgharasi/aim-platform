@@ -67,7 +67,7 @@ class _VoiceFeedbackActionsState extends State<VoiceFeedbackActions> {
 
     if (_selection != VoiceFeedbackSelection.none && !_showCommentField) {
       return Padding(
-        padding: EdgeInsets.symmetric(vertical: AimSpacing.xs),
+        padding: EdgeInsets.symmetric(vertical: AimSpacing.space4),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -78,7 +78,7 @@ class _VoiceFeedbackActionsState extends State<VoiceFeedbackActions> {
               size: 14,
               color: theme.colorScheme.onSurfaceVariant,
             ),
-            SizedBox(width: AimSpacing.xs),
+            SizedBox(width: AimSpacing.space4),
             Text(
               _selection == VoiceFeedbackSelection.helpful
                   ? (isRtl ? 'شكراً!' : 'Thanks!')
@@ -105,7 +105,7 @@ class _VoiceFeedbackActionsState extends State<VoiceFeedbackActions> {
               isSelected: _selection == VoiceFeedbackSelection.helpful,
               onTap: () => _onSelect(VoiceFeedbackSelection.helpful),
             ),
-            SizedBox(width: AimSpacing.sm),
+            SizedBox(width: AimSpacing.space8),
             _FeedbackButton(
               icon: Icons.thumb_down_outlined,
               label: isRtl ? 'غير مفيد' : 'Not helpful',
@@ -115,7 +115,7 @@ class _VoiceFeedbackActionsState extends State<VoiceFeedbackActions> {
           ],
         ),
         if (_showCommentField) ...[
-          SizedBox(height: AimSpacing.sm),
+          SizedBox(height: AimSpacing.space8),
           Row(
             children: [
               Expanded(
@@ -137,10 +137,10 @@ class _VoiceFeedbackActionsState extends State<VoiceFeedbackActions> {
                       isRtl ? TextDirection.rtl : TextDirection.ltr,
                 ),
               ),
-              SizedBox(width: AimSpacing.xs),
+              SizedBox(width: AimSpacing.space4),
               IconButton(
                 icon: const Icon(Icons.send, size: 20),
-                color: AimColors.primary,
+                color: AimColors.primary500,
                 onPressed: _submitNotHelpful,
                 tooltip: isRtl ? 'إرسال' : 'Submit',
               ),
@@ -174,27 +174,27 @@ class _FeedbackButton extends StatelessWidget {
       onTap: isSelected ? null : onTap,
       child: Container(
         padding: EdgeInsets.symmetric(
-          horizontal: AimSpacing.sm,
-          vertical: AimSpacing.xs,
+          horizontal: AimSpacing.space8,
+          vertical: AimSpacing.space4,
         ),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AimRadius.sm),
           border: Border.all(
             color: isSelected
-                ? AimColors.primary
+                ? AimColors.primary500
                 : theme.dividerColor,
           ),
-          color: isSelected ? AimColors.primary.withOpacity(0.08) : null,
+          color: isSelected ? AimColors.primary500.withOpacity(0.08) : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: isSelected ? AimColors.primary : null),
-            SizedBox(width: AimSpacing.xs),
+            Icon(icon, size: 16, color: isSelected ? AimColors.primary500 : null),
+            SizedBox(width: AimSpacing.space4),
             Text(
               label,
               style: theme.textTheme.labelSmall?.copyWith(
-                color: isSelected ? AimColors.primary : null,
+                color: isSelected ? AimColors.primary500 : null,
               ),
             ),
           ],

@@ -82,7 +82,7 @@ class _StartAttemptPageState extends ConsumerState<StartAttemptPage> {
           children: [
             Icon(
               Icons.play_circle_outline,
-              size: AimSizes.iconXl,
+              size: AimSizes.avatarLg,
               color: AimColors.primary500,
             ),
             const SizedBox(height: AimSpacing.sectionGap),

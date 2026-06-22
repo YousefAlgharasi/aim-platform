@@ -192,9 +192,9 @@ class _AttemptContent extends StatelessWidget {
           const SizedBox(height: AimSpacing.sectionGap),
           Expanded(
             child: AIMEmptyState(
-              icon: Icons.quiz_outlined,
+              icon: const Icon(Icons.quiz_outlined),
               title: 'Questions',
-              message:
+              subtitle:
                   'Question rendering will be available in a future update.',
             ),
           ),

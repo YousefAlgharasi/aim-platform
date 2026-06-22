@@ -9,24 +9,31 @@ void main() {
         'id': 'plan_001',
         'name': 'Premium',
         'description': 'Full access plan',
-        'isActive': true,
+        'planType': 'premium',
+        'status': 'active',
+        'features': {'ai_teacher': true},
       });
 
       expect(model.id, 'plan_001');
       expect(model.name, 'Premium');
       expect(model.description, 'Full access plan');
-      expect(model.isActive, isTrue);
+      expect(model.planType, 'premium');
+      expect(model.status, 'active');
+      expect(model.features, {'ai_teacher': true});
     });
 
     test('handles missing optional fields', () {
       final model = BillingPlanModel.fromJson(const {
         'id': 'plan_002',
         'name': 'Basic',
-        'isActive': true,
+        'planType': 'basic',
+        'status': 'active',
       });
 
       expect(model.id, 'plan_002');
       expect(model.description, isNull);
+      expect(model.price, isNull);
+      expect(model.features, isEmpty);
     });
   });
 
@@ -34,18 +41,19 @@ void main() {
     test('parses from JSON', () {
       final model = BillingPriceModel.fromJson(const {
         'id': 'price_001',
-        'planId': 'plan_001',
+        'productId': 'plan_001',
         'amount': 999,
         'currency': 'usd',
-        'interval': 'month',
-        'isActive': true,
+        'billingInterval': 'month',
+        'status': 'active',
       });
 
       expect(model.id, 'price_001');
-      expect(model.planId, 'plan_001');
+      expect(model.productId, 'plan_001');
       expect(model.amount, 999);
       expect(model.currency, 'usd');
-      expect(model.interval, 'month');
+      expect(model.billingInterval, 'month');
+      expect(model.formattedAmount, '\$9.99');
     });
   });
 
@@ -53,25 +61,21 @@ void main() {
     test('parses from JSON', () {
       final model = SubscriptionModel.fromJson(const {
         'id': 'sub_001',
-        'userId': 'user_001',
         'planId': 'plan_001',
         'status': 'active',
-        'currentPeriodStart': '2026-06-01T00:00:00Z',
         'currentPeriodEnd': '2026-07-01T00:00:00Z',
       });
 
       expect(model.id, 'sub_001');
-      expect(model.userId, 'user_001');
+      expect(model.planId, 'plan_001');
       expect(model.status, 'active');
     });
 
     test('identifies active subscription', () {
       final model = SubscriptionModel.fromJson(const {
         'id': 'sub_002',
-        'userId': 'user_001',
         'planId': 'plan_001',
         'status': 'active',
-        'currentPeriodStart': '2026-06-01T00:00:00Z',
         'currentPeriodEnd': '2026-07-01T00:00:00Z',
       });
 
@@ -81,10 +85,8 @@ void main() {
     test('identifies cancelled subscription', () {
       final model = SubscriptionModel.fromJson(const {
         'id': 'sub_003',
-        'userId': 'user_001',
         'planId': 'plan_001',
         'status': 'cancelled',
-        'currentPeriodStart': '2026-06-01T00:00:00Z',
         'currentPeriodEnd': '2026-07-01T00:00:00Z',
       });
 
@@ -96,8 +98,6 @@ void main() {
     test('parses from JSON', () {
       final model = CheckoutSessionModel.fromJson(const {
         'id': 'cs_001',
-        'userId': 'user_001',
-        'priceId': 'price_001',
         'status': 'pending',
       });
 
@@ -110,12 +110,10 @@ void main() {
     test('parses from JSON', () {
       final model = InvoiceModel.fromJson(const {
         'id': 'inv_001',
-        'userId': 'user_001',
-        'subscriptionId': 'sub_001',
         'status': 'paid',
         'totalAmount': 999,
         'currency': 'usd',
-        'invoiceDate': '2026-06-01T00:00:00Z',
+        'createdAt': '2026-06-01T00:00:00Z',
       });
 
       expect(model.id, 'inv_001');
@@ -124,16 +122,13 @@ void main() {
     });
 
     test('handles missing optional fields', () {
-      final model = InvoiceModel.fromJson(const {
-        'id': 'inv_002',
-        'userId': 'user_001',
+      final model = CheckoutSessionModel.fromJson(const {
+        'id': 'cs_002',
         'status': 'pending',
-        'totalAmount': 0,
-        'currency': 'usd',
-        'invoiceDate': '2026-06-01T00:00:00Z',
       });
 
       expect(model.subscriptionId, isNull);
+      expect(model.checkoutUrl, isNull);
     });
   });
 
@@ -141,9 +136,9 @@ void main() {
     test('parses from JSON', () {
       final model = EntitlementModel.fromJson(const {
         'id': 'ent_001',
-        'userId': 'user_001',
         'featureKey': 'ai_teacher',
         'granted': true,
+        'status': 'active',
       });
 
       expect(model.id, 'ent_001');
@@ -156,10 +151,8 @@ void main() {
     test('models do not store raw card data', () {
       final json = {
         'id': 'sub_001',
-        'userId': 'user_001',
         'planId': 'plan_001',
         'status': 'active',
-        'currentPeriodStart': '2026-06-01T00:00:00Z',
         'currentPeriodEnd': '2026-07-01T00:00:00Z',
         'cardNumber': '4242424242424242',
         'cvv': '123',

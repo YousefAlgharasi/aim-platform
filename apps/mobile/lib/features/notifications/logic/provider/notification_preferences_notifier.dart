@@ -5,6 +5,7 @@
 
 import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/state/app_state_notifier.dart';
+import 'package:aim_mobile/core/state/app_async_state.dart';
 
 import '../entity/notification_entities.dart';
 import '../repository/notification_repository.dart';

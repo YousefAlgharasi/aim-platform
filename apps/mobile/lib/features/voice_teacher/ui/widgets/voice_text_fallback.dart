@@ -23,15 +23,15 @@ class VoiceTextFallback extends StatelessWidget {
 
     return Container(
       margin: EdgeInsets.symmetric(
-        horizontal: AimSpacing.md,
-        vertical: AimSpacing.xs,
+        horizontal: AimSpacing.space16,
+        vertical: AimSpacing.space4,
       ),
-      padding: EdgeInsets.all(AimSpacing.md),
+      padding: EdgeInsets.all(AimSpacing.space16),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AimRadius.md),
         border: Border.all(
-          color: AimColors.primary.withOpacity(0.12),
+          color: AimColors.primary500.withOpacity(0.12),
         ),
       ),
       child: Column(
@@ -43,20 +43,20 @@ class VoiceTextFallback extends StatelessWidget {
               Icon(
                 Icons.text_fields,
                 size: 16,
-                color: AimColors.primary,
+                color: AimColors.primary500,
               ),
-              SizedBox(width: AimSpacing.xs),
+              SizedBox(width: AimSpacing.space4),
               Text(
                 isRtl ? 'رد نصي من المعلم' : 'Text response from teacher',
                 style: theme.textTheme.labelSmall?.copyWith(
-                  color: AimColors.primary,
+                  color: AimColors.primary500,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
           if (originalAudioError != null) ...[
-            SizedBox(height: AimSpacing.xs),
+            SizedBox(height: AimSpacing.space4),
             Row(
               children: [
                 Icon(
@@ -64,7 +64,7 @@ class VoiceTextFallback extends StatelessWidget {
                   size: 14,
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
-                SizedBox(width: AimSpacing.xs),
+                SizedBox(width: AimSpacing.space4),
                 Expanded(
                   child: Text(
                     isRtl
@@ -79,7 +79,7 @@ class VoiceTextFallback extends StatelessWidget {
               ],
             ),
           ],
-          SizedBox(height: AimSpacing.sm),
+          SizedBox(height: AimSpacing.space8),
           Text(
             fallbackText,
             style: theme.textTheme.bodyMedium,
@@ -87,24 +87,24 @@ class VoiceTextFallback extends StatelessWidget {
             textAlign: isArabicText ? TextAlign.right : TextAlign.left,
           ),
           if (onRetryAudio != null) ...[
-            SizedBox(height: AimSpacing.sm),
+            SizedBox(height: AimSpacing.space8),
             InkWell(
               borderRadius: BorderRadius.circular(AimRadius.sm),
               onTap: onRetryAudio,
               child: Padding(
                 padding: EdgeInsets.symmetric(
-                  horizontal: AimSpacing.sm,
-                  vertical: AimSpacing.xs,
+                  horizontal: AimSpacing.space8,
+                  vertical: AimSpacing.space4,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.refresh, size: 16, color: AimColors.primary),
-                    SizedBox(width: AimSpacing.xs),
+                    Icon(Icons.refresh, size: 16, color: AimColors.primary500),
+                    SizedBox(width: AimSpacing.space4),
                     Text(
                       isRtl ? 'إعادة تحميل الصوت' : 'Retry audio',
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: AimColors.primary,
+                        color: AimColors.primary500,
                       ),
                     ),
                   ],

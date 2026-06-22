@@ -82,7 +82,7 @@ class _SubmitAttemptPageState extends ConsumerState<SubmitAttemptPage> {
           children: [
             Icon(
               Icons.assignment_turned_in_outlined,
-              size: AimSizes.iconXl,
+              size: AimSizes.avatarLg,
               color: AimColors.primary500,
             ),
             const SizedBox(height: AimSpacing.sectionGap),

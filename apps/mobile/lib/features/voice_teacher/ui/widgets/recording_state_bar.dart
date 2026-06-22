@@ -32,8 +32,8 @@ class RecordingStateBar extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: AimSpacing.md,
-        vertical: AimSpacing.sm,
+        horizontal: AimSpacing.space16,
+        vertical: AimSpacing.space8,
       ),
       decoration: BoxDecoration(
         color: state == RecordingState.recording
@@ -45,7 +45,7 @@ class RecordingStateBar extends StatelessWidget {
         children: [
           if (state == RecordingState.recording) ...[
             _PulsingDot(),
-            SizedBox(width: AimSpacing.sm),
+            SizedBox(width: AimSpacing.space8),
             Text(
               duration ?? '0:00',
               style: theme.textTheme.bodyMedium?.copyWith(
@@ -60,7 +60,7 @@ class RecordingStateBar extends StatelessWidget {
               color: theme.colorScheme.onSurfaceVariant,
               onTap: onCancel,
             ),
-            SizedBox(width: AimSpacing.sm),
+            SizedBox(width: AimSpacing.space8),
             _ActionButton(
               icon: Icons.stop,
               label: isRtl ? 'إيقاف' : 'Stop',
@@ -69,14 +69,14 @@ class RecordingStateBar extends StatelessWidget {
             ),
           ],
           if (state == RecordingState.stopped) ...[
-            Icon(Icons.check_circle, color: AimColors.primary, size: 20),
-            SizedBox(width: AimSpacing.sm),
+            Icon(Icons.check_circle, color: AimColors.primary500, size: 20),
+            SizedBox(width: AimSpacing.space8),
             Text(
               isRtl ? 'تم التسجيل' : 'Recorded',
               style: theme.textTheme.bodyMedium,
             ),
             if (duration != null) ...[
-              SizedBox(width: AimSpacing.xs),
+              SizedBox(width: AimSpacing.space4),
               Text(
                 duration!,
                 style: theme.textTheme.bodySmall?.copyWith(
@@ -91,11 +91,11 @@ class RecordingStateBar extends StatelessWidget {
               color: theme.colorScheme.error,
               onTap: onCancel,
             ),
-            SizedBox(width: AimSpacing.sm),
+            SizedBox(width: AimSpacing.space8),
             _ActionButton(
               icon: Icons.send,
               label: isRtl ? 'إرسال' : 'Send',
-              color: AimColors.primary,
+              color: AimColors.primary500,
               onTap: onSend,
             ),
           ],
@@ -125,14 +125,14 @@ class _ActionButton extends StatelessWidget {
       onTap: onTap,
       child: Padding(
         padding: EdgeInsets.symmetric(
-          horizontal: AimSpacing.sm,
-          vertical: AimSpacing.xs,
+          horizontal: AimSpacing.space8,
+          vertical: AimSpacing.space4,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 18, color: color),
-            SizedBox(width: AimSpacing.xs),
+            SizedBox(width: AimSpacing.space4),
             Text(
               label,
               style: TextStyle(color: color, fontSize: 13),

@@ -35,7 +35,7 @@ class TranscriptionPreview extends StatelessWidget {
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
-            SizedBox(width: AimSpacing.sm),
+            SizedBox(width: AimSpacing.space8),
             Text(
               isRtl ? 'جارٍ التحويل...' : 'Transcribing...',
               style: theme.textTheme.bodySmall?.copyWith(
@@ -67,7 +67,7 @@ class TranscriptionPreview extends StatelessWidget {
                 size: 14,
                 color: theme.colorScheme.onSurfaceVariant,
               ),
-              SizedBox(width: AimSpacing.xs),
+              SizedBox(width: AimSpacing.space4),
               Text(
                 isStudent
                     ? (isRtl ? 'ما قلته' : 'What you said')
@@ -78,7 +78,7 @@ class TranscriptionPreview extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: AimSpacing.xs),
+          SizedBox(height: AimSpacing.space4),
           Text(
             transcript!,
             style: theme.textTheme.bodyMedium,
@@ -103,21 +103,21 @@ class TranscriptionPreview extends StatelessWidget {
           : (isRtl ? Alignment.centerRight : Alignment.centerLeft),
       child: Container(
         margin: EdgeInsets.symmetric(
-          horizontal: AimSpacing.md,
-          vertical: AimSpacing.xs,
+          horizontal: AimSpacing.space16,
+          vertical: AimSpacing.space4,
         ),
-        padding: EdgeInsets.all(AimSpacing.sm),
+        padding: EdgeInsets.all(AimSpacing.space8),
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.8,
         ),
         decoration: BoxDecoration(
           color: isStudent
-              ? AimColors.primary.withOpacity(0.06)
+              ? AimColors.primary500.withOpacity(0.06)
               : theme.colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(AimRadius.md),
           border: Border.all(
             color: isStudent
-                ? AimColors.primary.withOpacity(0.15)
+                ? AimColors.primary500.withOpacity(0.15)
                 : theme.dividerColor,
           ),
         ),
