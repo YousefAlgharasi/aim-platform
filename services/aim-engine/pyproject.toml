@@ -33,6 +33,7 @@ include = ["app*"]
 testpaths = ["tests"]
 pythonpath = ["."]
 asyncio_mode = "auto"
+addopts = "--cov=app --cov-fail-under=60"
 
 [tool.ruff]
 line-length = 100
