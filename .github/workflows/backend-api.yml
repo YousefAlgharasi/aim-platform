@@ -55,12 +55,5 @@ jobs:
     steps:
       - name: Trigger Render Deploy
         run: |
-          curl --fail -X POST \
-            "https://api.render.com/v1/services/${{ secrets.RENDER_BACKEND_SERVICE_ID }}/deploys" \
-            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-            -H "Content-Type: application/json" \
-            -d '{"clearCache": false}'
-
-      - name: Wait for deploy
-        run: |
-          echo "Deploy triggered. Check status at https://dashboard.render.com"
+          curl --fail -X GET "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+          echo "Deploy triggered — https://dashboard.render.com"
