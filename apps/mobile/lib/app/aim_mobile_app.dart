@@ -5,7 +5,10 @@ import '../core/localization/localization.dart';
 import '../core/routing/routing.dart';
 import '../core/theme/theme.dart';
 import '../features/auth/logic/provider/auth_context_provider.dart';
+import '../features/auth/logic/provider/auth_deep_link_notifier.dart';
 import '../features/auth/logic/provider/auth_flow_provider.dart';
+
+final _rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
 class AimMobileApp extends ConsumerWidget {
   const AimMobileApp({super.key});
@@ -18,6 +21,17 @@ class AimMobileApp extends ConsumerWidget {
     final authContextState = ref.watch(authContextProvider);
     final themeMode = ref.watch(themeModeProvider);
 
+    // Keeps the email-confirmation deep-link listener alive for the app's
+    // lifetime and surfaces any redirect error (e.g. an expired link).
+    ref.watch(authDeepLinkProvider);
+    ref.listen<String?>(authDeepLinkProvider, (previous, next) {
+      if (next == null) return;
+      _rootScaffoldMessengerKey.currentState?.showSnackBar(
+        SnackBar(content: Text(next)),
+      );
+      ref.read(authDeepLinkProvider.notifier).clearError();
+    });
+
     // RTL/Arabic: active locale drives TextDirection across the entire app.
     // Feature widgets must never hard-code TextDirection.ltr or .rtl.
     final locale = ref.watch(localeProvider);
@@ -25,6 +39,7 @@ class AimMobileApp extends ConsumerWidget {
     return MaterialApp(
       title: appTitle,
       debugShowCheckedModeBanner: false,
+      scaffoldMessengerKey: _rootScaffoldMessengerKey,
 
       // ── Theme ───────────────────────────────────────────────────────────
       theme: AppTheme.light,

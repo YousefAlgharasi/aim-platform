@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../../../core/errors/app_exception.dart';
+import '../../auth_deep_link_constants.dart';
 import 'supabase_auth_datasource.dart';
 
 /// Calls the Supabase Auth REST API using the public anon key.
@@ -91,7 +92,9 @@ class SupabaseAuthDatasourceImpl implements SupabaseAuthDatasource {
     required String email,
     required String password,
   }) async {
-    final uri = Uri.parse('$_supabaseUrl/auth/v1/signup');
+    final uri = Uri.parse('$_supabaseUrl/auth/v1/signup').replace(
+      queryParameters: {'redirect_to': authDeepLinkRedirectUrl},
+    );
 
     final http.Response response;
     try {
