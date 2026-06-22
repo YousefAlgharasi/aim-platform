@@ -177,6 +177,6 @@ export class AssessmentRepository {
        RETURNING id`,
       [attemptId, questionLinkId, responseValue],
     );
-    return res.rows[0].id;
+    return res.rows[0]?.id ?? '';
   }
 }

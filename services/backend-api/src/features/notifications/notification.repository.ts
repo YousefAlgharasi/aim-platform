@@ -177,8 +177,12 @@ export class NotificationRepository {
     userId: string,
     status: string,
   ): Promise<NotificationEventRow | null> {
-    const timestampField =
-      status === 'read' ? 'read_at' : status === 'dismissed' ? 'dismissed_at' : status === 'sent' ? 'sent_at' : null;
+    const timestampColumns: Record<string, string> = {
+      read: 'read_at',
+      dismissed: 'dismissed_at',
+      sent: 'sent_at',
+    };
+    const timestampField = timestampColumns[status];
     const extra = timestampField ? `, ${timestampField} = now()` : '';
     const result = await this.db.query<NotificationEventRow>(
       `UPDATE notification_events SET status = $1, updated_at = now()${extra}
