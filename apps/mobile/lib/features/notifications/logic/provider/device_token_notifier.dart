@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
@@ -20,14 +18,6 @@ class DeviceTokenNotifier extends StateNotifier<AppAsyncState<DeviceTokenModel>>
 
   final Ref ref;
 
-  String get _currentPlatform {
-    if (Platform.isIOS) return 'ios';
-    if (Platform.isAndroid) return 'android';
-    throw UnsupportedError(
-      'Push device token registration is only supported on iOS and Android.',
-    );
-  }
-
   Future<void> registerToken(String token, {String? deviceName}) async {
     state = const AppAsyncState.loading();
 
@@ -44,7 +34,7 @@ class DeviceTokenNotifier extends StateNotifier<AppAsyncState<DeviceTokenModel>>
       final repository = ref.read(notificationRepositoryProvider);
       final registered = await repository.registerDeviceToken(
         session.accessToken,
-        platform: _currentPlatform,
+        platform: ref.read(devicePlatformProvider),
         token: token,
         deviceName: deviceName,
       );
