@@ -22,6 +22,11 @@ void main() {
       expect(find.text('Billing & Payments'), findsOneWidget);
       expect(find.text('Account Management'), findsOneWidget);
       expect(find.text('Privacy & Safety'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('General Help'),
+        100,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.text('General Help'), findsOneWidget);
     });
 
@@ -60,8 +65,9 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ParentTicketListPage.buildEmptyState(
-              tester.element(find.byType(Scaffold)),
+            body: Builder(
+              builder: (context) =>
+                  ParentTicketListPage.buildEmptyState(context),
             ),
           ),
         ),
@@ -78,14 +84,16 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ParentTicketListPage.buildTicketTile(
-              context: tester.element(find.byType(Scaffold)),
-              ticketId: 'ticket_p001',
-              subject: 'Cannot view child progress',
-              status: 'open',
-              category: 'account',
-              severity: 'medium',
-              createdAt: DateTime(2026, 1, 20),
+            body: Builder(
+              builder: (context) => ParentTicketListPage.buildTicketTile(
+                context: context,
+                ticketId: 'ticket_p001',
+                subject: 'Cannot view child progress',
+                status: 'open',
+                category: 'account',
+                severity: 'medium',
+                createdAt: DateTime(2026, 1, 20),
+              ),
             ),
           ),
         ),

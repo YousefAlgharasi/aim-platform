@@ -47,6 +47,7 @@ void main() {
       await tester.scrollUntilVisible(
         find.text('Submit Feedback'),
         100,
+        scrollable: find.byType(Scrollable).first,
       );
       await tester.tap(find.text('Submit Feedback'));
       await tester.pump();
