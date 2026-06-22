@@ -1,4 +1,4 @@
-package com.example.aim_mobile
+package com.aim.ailearn
 
 import io.flutter.embedding.android.FlutterActivity
 
