@@ -1,5 +1,6 @@
 import { Body, Controller, Param, Put, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { CurrentUser, SupabaseJwtAuthGuard } from '../../auth';
 import {
   AuthorizedRole,
@@ -11,8 +12,13 @@ import { OPENAPI_TAGS } from '../../openapi/openapi.tags';
 import { AdminRoleAssignmentService } from './admin-role-assignment.service';
 import { AdminRoleAssignmentResponse } from './admin-role-assignment.types';
 
-interface AssignUserRoleBody {
-  readonly roleKey?: string;
+class AssignUserRoleBody {
+  @IsString()
+  @IsNotEmpty()
+  readonly roleKey!: string;
+
+  @IsOptional()
+  @IsString()
   readonly reason?: string;
 }
 
@@ -37,7 +43,7 @@ export class AdminRoleAssignmentController {
     return this.roleAssignmentService.assignUserRole({
       actorSupabaseAuthUid: actor.id,
       targetUserId: userId,
-      roleKey: body.roleKey ?? '',
+      roleKey: body.roleKey,
       reason: body.reason,
     });
   }
