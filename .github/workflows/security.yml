@@ -20,7 +20,7 @@ jobs:
         working-directory: services/backend-api
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: "20"
       - run: npm ci
@@ -34,7 +34,7 @@ jobs:
         working-directory: apps/admin-dashboard
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: "20"
       - run: npm ci
