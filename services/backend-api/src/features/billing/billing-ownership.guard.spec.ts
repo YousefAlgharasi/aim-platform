@@ -34,13 +34,13 @@ describe('BillingOwnershipGuard', () => {
   });
 
   it('should reject non-admin users for admin-only endpoints', async () => {
-    const context = createMockContext({ id: 'user-1', roles: ['student'] });
+    const context = createMockContext({ id: 'user-1', appMetadata: { role: 'student' } });
     jest.spyOn(reflector, 'get').mockReturnValue(true);
     await expect(guard.canActivate(context)).rejects.toThrow(ForbiddenException);
   });
 
   it('should allow admin users for admin-only endpoints', async () => {
-    const context = createMockContext({ id: 'user-1', roles: ['admin'] });
+    const context = createMockContext({ id: 'user-1', appMetadata: { role: 'admin' } });
     jest.spyOn(reflector, 'get').mockReturnValue(true);
     const result = await guard.canActivate(context);
     expect(result).toBe(true);

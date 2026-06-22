@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { BackendConfigService } from './config/backend-config.service';
 import { setupOpenApi } from './openapi/openapi.config';
@@ -8,6 +9,8 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
   const config = app.get(BackendConfigService);
   const logger = new Logger('Bootstrap');
+
+  app.use(helmet());
 
   app.useGlobalPipes(
     new ValidationPipe({
