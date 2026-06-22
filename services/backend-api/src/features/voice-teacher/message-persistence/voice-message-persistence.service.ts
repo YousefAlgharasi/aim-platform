@@ -11,7 +11,7 @@
  * (docs/phase-9/no-aim-authority-change-rule.md). Never persists raw audio
  * bytes or provider credentials — only mapped, student-safe text.
  */
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 
 import { VoiceMessageRepository } from '../repositories/voice-message.repository';
 import { VoiceTranscriptRepository } from '../repositories/voice-transcript.repository';
@@ -29,11 +29,11 @@ export class VoiceMessagePersistenceService {
     const sessionId = input.sessionId?.trim();
 
     if (!messageId) {
-      throw new Error('Cannot persist voice turn: messageId is missing.');
+      throw new BadRequestException('Cannot persist voice turn: messageId is missing.');
     }
 
     if (!sessionId) {
-      throw new Error('Cannot persist voice turn: sessionId is missing.');
+      throw new BadRequestException('Cannot persist voice turn: sessionId is missing.');
     }
 
     await this.voiceMessageRepository.updateTranscript(messageId, input.transcript ?? '');

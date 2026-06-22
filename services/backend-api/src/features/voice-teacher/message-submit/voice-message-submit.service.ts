@@ -16,7 +16,7 @@
  * difficulty/recommendation/review-schedule value
  * (docs/phase-9/no-aim-authority-change-rule.md).
  */
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 
 import { AudioUploadService } from '../audio-upload/audio-upload.service';
 import { VoiceOrchestratorService } from '../orchestrator/voice-orchestrator.service';
@@ -44,19 +44,19 @@ export class VoiceMessageSubmitService {
     const languageCode = input.languageCode?.trim();
 
     if (!studentId) {
-      throw new Error('Cannot submit a voice message: studentId is missing.');
+      throw new BadRequestException('Cannot submit a voice message: studentId is missing.');
     }
 
     if (!sessionId) {
-      throw new Error('Cannot submit a voice message: sessionId is missing.');
+      throw new BadRequestException('Cannot submit a voice message: sessionId is missing.');
     }
 
     if (!contextRef) {
-      throw new Error('Cannot submit a voice message: contextRef is missing.');
+      throw new BadRequestException('Cannot submit a voice message: contextRef is missing.');
     }
 
     if (!languageCode) {
-      throw new Error('Cannot submit a voice message: languageCode is missing.');
+      throw new BadRequestException('Cannot submit a voice message: languageCode is missing.');
     }
 
     const upload = await this.audioUploadService.upload({

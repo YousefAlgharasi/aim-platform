@@ -6,7 +6,7 @@ export class NoopPushProviderAdapter implements PushProviderAdapter {
   private readonly logger = new Logger(NoopPushProviderAdapter.name);
 
   async send(payload: PushDeliveryPayload): Promise<PushDeliveryResult> {
-    this.logger.log(`[NOOP] Push send to token=${payload.token.substring(0, 8)}...`);
+    this.logger.log('[NOOP] Push send dispatched');
     return { success: true, providerMessageId: `noop-${Date.now()}` };
   }
 

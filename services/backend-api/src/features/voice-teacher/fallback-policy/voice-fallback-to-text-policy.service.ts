@@ -18,7 +18,7 @@
  * - Never drops the safety-filtered reply text; a student never loses a
  *   safe reply just because audio synthesis failed.
  */
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 
 import { ResolveVoiceTurnOutputInput, VoiceTurnOutput } from './voice-fallback-to-text-policy.types';
 
@@ -33,7 +33,7 @@ export class VoiceFallbackToTextPolicyService {
     const replyText = input.replyText?.trim();
 
     if (!replyText) {
-      throw new Error('Cannot resolve voice turn output: replyText is missing.');
+      throw new BadRequestException('Cannot resolve voice turn output: replyText is missing.');
     }
 
     const audioRef = input.audioRef?.trim();

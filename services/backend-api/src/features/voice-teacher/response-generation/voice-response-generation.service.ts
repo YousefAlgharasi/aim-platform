@@ -16,7 +16,7 @@
  * by the Phase 8 AI Teacher Context Builder
  * (docs/phase-9/no-aim-authority-change-rule.md).
  */
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 
 import { TranscriptToAiTeacherService } from '../transcript-pipeline/transcript-to-ai-teacher.service';
 import { VoiceSessionContextLinkService } from '../context-link/voice-session-context-link.service';
@@ -34,11 +34,11 @@ export class VoiceResponseGenerationService {
     const sessionId = input.sessionId?.trim();
 
     if (!studentId) {
-      throw new Error('Cannot generate a voice response: studentId is missing.');
+      throw new BadRequestException('Cannot generate a voice response: studentId is missing.');
     }
 
     if (!sessionId) {
-      throw new Error('Cannot generate a voice response: sessionId is missing.');
+      throw new BadRequestException('Cannot generate a voice response: sessionId is missing.');
     }
 
     const link = await this.contextLink.resolveContext({ studentId, sessionId });
