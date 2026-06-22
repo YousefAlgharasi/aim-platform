@@ -13,6 +13,8 @@ import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swa
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { CurrentUser } from '../../auth/current-user.decorator';
 import { AuthenticatedUser } from '../../auth/authenticated-user';
+import { resolveAuthorizedRoles } from '../../auth/authorization/authorized-role.resolver';
+import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { DeviceTokenService } from './device-token.service';
 import { NotificationPreferenceService } from './notification-preference.service';
 import { InAppNotificationService } from './in-app-notification.service';
@@ -92,7 +94,8 @@ export class NotificationsController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: UpdateNotificationPreferenceRequestDto,
   ) {
-    const userType = user.role === 'parent' ? 'parent' : 'student';
+    const resolvedRoles = resolveAuthorizedRoles(user);
+    const userType = resolvedRoles.includes(AuthorizedRole.PARENT) ? 'parent' : 'student';
     const pref = await this.preferenceService.updatePreference(
       user.id,
       userType,

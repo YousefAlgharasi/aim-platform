@@ -45,8 +45,8 @@ export class BillingOwnershipGuard implements CanActivate {
     );
 
     if (isAdminOnly) {
-      const roles = (user as any).roles || [];
-      const isAdmin = roles.includes('admin') || roles.includes('super_admin');
+      const resolvedRoles = resolveAuthorizedRoles(user);
+      const isAdmin = resolvedRoles.includes(AuthorizedRole.ADMIN) || resolvedRoles.includes(AuthorizedRole.SUPER_ADMIN);
       if (!isAdmin) {
         throw new ForbiddenException('Admin access required');
       }

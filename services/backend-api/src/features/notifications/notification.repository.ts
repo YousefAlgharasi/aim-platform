@@ -35,7 +35,7 @@ export class NotificationRepository {
     channel: string,
   ): Promise<NotificationTemplateRow[]> {
     const result = await this.db.query<NotificationTemplateRow>(
-      `SELECT * FROM notification_templates WHERE category = $1 AND channel = $2 AND status = 'active'`,
+      `SELECT * FROM notification_templates WHERE category = $1 AND channel = $2 AND status = 'active' LIMIT 500`,
       [category, channel],
     );
     return result.rows;
@@ -60,7 +60,7 @@ export class NotificationRepository {
 
   async findPreferencesByUserId(userId: string): Promise<NotificationPreferenceRow[]> {
     const result = await this.db.query<NotificationPreferenceRow>(
-      `SELECT * FROM notification_preferences WHERE user_id = $1`,
+      `SELECT * FROM notification_preferences WHERE user_id = $1 LIMIT 500`,
       [userId],
     );
     return result.rows;
@@ -88,7 +88,7 @@ export class NotificationRepository {
 
   async findActiveTokensByUserId(userId: string): Promise<DeviceTokenRow[]> {
     const result = await this.db.query<DeviceTokenRow>(
-      `SELECT * FROM device_tokens WHERE user_id = $1 AND status = 'active'`,
+      `SELECT * FROM device_tokens WHERE user_id = $1 AND status = 'active' LIMIT 100`,
       [userId],
     );
     return result.rows;
@@ -294,7 +294,7 @@ export class NotificationRepository {
 
   async findAttemptsByEventId(eventId: string): Promise<DeliveryAttemptRow[]> {
     const result = await this.db.query<DeliveryAttemptRow>(
-      `SELECT * FROM notification_delivery_attempts WHERE notification_event_id = $1 ORDER BY attempt_number ASC`,
+      `SELECT * FROM notification_delivery_attempts WHERE notification_event_id = $1 ORDER BY attempt_number ASC LIMIT 100`,
       [eventId],
     );
     return result.rows;
