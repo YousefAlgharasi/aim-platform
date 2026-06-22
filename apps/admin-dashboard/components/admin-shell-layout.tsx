@@ -51,4 +51,3 @@ export function AdminShellLayout({
     </div>
   );
 }
-ENDTSX
