@@ -204,7 +204,7 @@ export class NotificationRepository {
        WHERE user_id = $1 AND channel = 'in_app' AND status NOT IN ('read', 'dismissed')`,
       [userId],
     );
-    return parseInt(result.rows[0].count, 10);
+    return parseInt(result.rows[0]?.count ?? '0', 10);
   }
 
   // --- Reminder Schedules ---

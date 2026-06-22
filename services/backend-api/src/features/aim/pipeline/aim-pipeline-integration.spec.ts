@@ -280,7 +280,15 @@ function buildHarness(): IntegrationHarness {
     .spyOn(stateAssembly, 'assemble')
     .mockResolvedValue(STUB_MAPPING_CONTEXT);
 
-  const persistence = new AimPersistenceService(mockDb);
+  const persistence = new AimPersistenceService(
+    mockDb,
+    { upsertMany: jest.fn() } as never,
+    { upsertMany: jest.fn() } as never,
+    { persist: jest.fn() } as never,
+    { replaceActiveSet: jest.fn() } as never,
+    { upsertMany: jest.fn() } as never,
+    { persist: jest.fn() } as never,
+  );
   const persistenceSpy = jest.spyOn(persistence, 'persist').mockResolvedValue(undefined);
 
   const audit = new AimAuditService(mockDb);

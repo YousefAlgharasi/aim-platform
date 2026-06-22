@@ -44,7 +44,7 @@ export class AnalyticsEventIngestionService {
    * persisting event metadata, per docs/phase-15/analytics-privacy-data-safety-rules.md.
    */
   private stripUnsafeMetadata(metadata: Record<string, unknown>): Record<string, unknown> {
-    const forbiddenKeyPattern = /password|secret|token|api[_-]?key|credential|card[_-]?number/i;
+    const forbiddenKeyPattern = /password|passwd|secret|token|api[_-]?key|credential|card[_-]?number|auth|jwt|bearer|cookie|session[_-]?id|private[_-]?key|access[_-]?key/i;
     const safe: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(metadata)) {

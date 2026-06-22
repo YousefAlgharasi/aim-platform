@@ -76,16 +76,6 @@ function buildController(overrides: {
       jest.fn().mockResolvedValue({ childId: 'child-1', recentSessions: [], lastActiveAt: null }),
   };
 
-  const parentAiUsageSummaryService = {
-    getAiUsageSummaryForParent:
-      jest.fn().mockResolvedValue({ childId: 'child-1', totalSessions: 0, totalMessages: 0 }),
-  };
-
-  const parentAiSafetySummaryService = {
-    getAiSafetySummaryForParent:
-      jest.fn().mockResolvedValue({ childId: 'child-1', flaggedInteractions: [] }),
-  };
-
   const parentReportService = {
     getReportForParent:
       overrides.getReportForParent ??

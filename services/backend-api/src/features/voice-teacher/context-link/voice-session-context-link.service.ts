@@ -11,7 +11,7 @@
  * STT/TTS/AI provider call and computes no mastery/level/weakness/
  * difficulty/recommendation/review-schedule value itself.
  */
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 
 import { VoiceSessionRepository } from '../repositories/voice-session.repository';
 import { ResolveVoiceSessionContextInput, VoiceSessionContextLink } from './voice-session-context-link.types';
@@ -25,21 +25,21 @@ export class VoiceSessionContextLinkService {
     const sessionId = input.sessionId?.trim();
 
     if (!studentId) {
-      throw new Error('Cannot resolve voice session context: studentId is missing.');
+      throw new BadRequestException('Cannot resolve voice session context: studentId is missing.');
     }
 
     if (!sessionId) {
-      throw new Error('Cannot resolve voice session context: sessionId is missing.');
+      throw new BadRequestException('Cannot resolve voice session context: sessionId is missing.');
     }
 
     const session = await this.voiceSessionRepository.findById(sessionId);
 
     if (!session || session.student_id !== studentId) {
-      throw new Error('Cannot resolve voice session context: session not found or not owned by studentId.');
+      throw new NotFoundException('Cannot resolve voice session context: session not found or not owned by studentId.');
     }
 
     if (session.status !== 'active') {
-      throw new Error('Cannot resolve voice session context: session is not active.');
+      throw new BadRequestException('Cannot resolve voice session context: session is not active.');
     }
 
     return {

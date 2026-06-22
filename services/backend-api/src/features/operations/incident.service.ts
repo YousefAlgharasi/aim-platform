@@ -66,6 +66,10 @@ export class IncidentService {
       dto.postmortemUrl || null,
     );
 
+    if (!updated) {
+      throw new NotFoundException('Incident was deleted before update completed');
+    }
+
     await this.opsRepo.createAuditLog({
       actorId: adminId,
       action: 'incident_status_updated',
@@ -79,6 +83,6 @@ export class IncidentService {
       },
     });
 
-    return updated!;
+    return updated;
   }
 }

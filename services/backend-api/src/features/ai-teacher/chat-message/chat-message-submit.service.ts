@@ -7,7 +7,7 @@
  * and computes no mastery/level/weakness/difficulty/recommendation/
  * review-schedule value (docs/phase-8/no-aim-replacement-rule.md).
  */
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 
 import { AiTeacherOrchestratorService } from '../orchestrator/ai-teacher-orchestrator.service';
 import { SubmitStudentMessageInput, SubmitStudentMessageResult } from './chat-message-submit.types';
@@ -23,19 +23,19 @@ export class ChatMessageSubmitService {
     const studentMessage = input.studentMessage?.trim();
 
     if (!studentId) {
-      throw new Error('Cannot submit a student message: studentId is missing.');
+      throw new BadRequestException('Cannot submit a student message: studentId is missing.');
     }
 
     if (!sessionId) {
-      throw new Error('Cannot submit a student message: sessionId is missing.');
+      throw new BadRequestException('Cannot submit a student message: sessionId is missing.');
     }
 
     if (!contextRef) {
-      throw new Error('Cannot submit a student message: contextRef is missing.');
+      throw new BadRequestException('Cannot submit a student message: contextRef is missing.');
     }
 
     if (!studentMessage) {
-      throw new Error('Cannot submit a student message: studentMessage is missing.');
+      throw new BadRequestException('Cannot submit a student message: studentMessage is missing.');
     }
 
     const result = await this.orchestrator.handleTurn({
