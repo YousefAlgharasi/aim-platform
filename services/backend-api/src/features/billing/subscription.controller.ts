@@ -34,8 +34,8 @@ export class SubscriptionController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<UserSubscriptionResponse> {
     const [subscriptions, entitlements] = await Promise.all([
-      this.subscriptionService.getUserSubscriptions(user.internalUserId),
-      this.entitlementService.getUserEntitlements(user.internalUserId),
+      this.subscriptionService.getUserSubscriptions(user.id),
+      this.entitlementService.getUserEntitlements(user.id),
     ]);
 
     return { subscriptions, entitlements };
@@ -49,7 +49,7 @@ export class SubscriptionController {
     @Param('id') id: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<Subscription> {
-    return this.subscriptionService.getSubscriptionById(id, user.internalUserId);
+    return this.subscriptionService.getSubscriptionById(id, user.id);
   }
 
   @Post(':id/cancel')
@@ -60,6 +60,6 @@ export class SubscriptionController {
     @Param('id') id: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<Subscription> {
-    return this.subscriptionService.cancelSubscription(id, user.internalUserId);
+    return this.subscriptionService.cancelSubscription(id, user.id);
   }
 }

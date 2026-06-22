@@ -31,14 +31,14 @@ export class SupportTicketController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateSupportTicketDto,
   ) {
-    return this.ticketService.createTicket(user.internalUserId, dto);
+    return this.ticketService.createTicket(user.id, dto);
   }
 
   @Get()
   @OperationsResource('support_ticket')
   @ApiOperation({ summary: 'List my support tickets' })
   async getMyTickets(@CurrentUser() user: AuthenticatedUser) {
-    return this.ticketService.getMyTickets(user.internalUserId);
+    return this.ticketService.getMyTickets(user.id);
   }
 
   @Get(':id')
@@ -48,7 +48,7 @@ export class SupportTicketController {
     @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
   ) {
-    return this.ticketService.getTicketById(user.internalUserId, id);
+    return this.ticketService.getTicketById(user.id, id);
   }
 
   @Post(':id/comments')
@@ -60,6 +60,6 @@ export class SupportTicketController {
     @Param('id') ticketId: string,
     @Body() dto: CreateTicketCommentDto,
   ) {
-    return this.ticketService.addComment(user.internalUserId, ticketId, dto);
+    return this.ticketService.addComment(user.id, ticketId, dto);
   }
 }

@@ -41,7 +41,7 @@ export class PricingController {
     @Query('productId') productId?: string,
   ): Promise<BillingPrice[]> {
     if (productId) {
-      return this.productPriceService.getPricesByProduct(productId);
+      return this.productPriceService.getPricesByProductId(productId);
     }
     return this.productPriceService.getActivePrices();
   }

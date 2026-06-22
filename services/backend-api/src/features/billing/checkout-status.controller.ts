@@ -3,7 +3,6 @@ import {
   Get,
   Param,
   UseGuards,
-  ForbiddenException,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
@@ -11,6 +10,7 @@ import { CurrentUser } from '../../auth/current-user.decorator';
 import { AuthenticatedUser } from '../../auth/authenticated-user';
 import { CheckoutService } from './checkout.service';
 import { PaymentService } from './payment.service';
+import { CheckoutSession } from './billing.entities';
 
 export interface CheckoutStatusResponse {
   sessionId: string;
@@ -35,13 +35,10 @@ export class CheckoutStatusController {
     @Param('sessionId') sessionId: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<CheckoutStatusResponse> {
-    const session = await this.checkoutService.getCheckoutSessionById(
+    const session = await this.checkoutService.getCheckoutSession(
       sessionId,
+      user.id,
     );
-
-    if (session.userId !== user.internalUserId) {
-      throw new ForbiddenException('Not authorized to access this checkout session');
-    }
 
     const response: CheckoutStatusResponse = {
       sessionId: session.id,
@@ -63,10 +60,10 @@ export class CheckoutStatusController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<CheckoutStatusResponse[]> {
     const sessions = await this.checkoutService.getUserCheckoutSessions(
-      user.internalUserId,
+      user.id,
     );
 
-    return sessions.map((s) => ({
+    return sessions.map((s: CheckoutSession) => ({
       sessionId: s.id,
       status: s.status,
       subscriptionId: s.subscriptionId || undefined,
