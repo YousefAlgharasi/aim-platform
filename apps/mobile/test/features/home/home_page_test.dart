@@ -42,7 +42,7 @@ Widget _wrap(
   );
 }
 
-HomeData _populated() => HomeData(
+HomeData _populated() => const HomeData(
       skillStates: [
         HomeSkillStateModel(
           topic: 'Algebra',
@@ -125,12 +125,12 @@ void main() {
           overrides: [
             homeProvider.overrideWith(
               (ref) => _FakeHomeNotifier(
-                AppAsyncState.success(
+                const AppAsyncState.success(
                   HomeData(
-                    skillStates: const [],
-                    weaknessRecords: const [],
-                    reviewSchedules: const [],
-                    recommendations: const [],
+                    skillStates: [],
+                    weaknessRecords: [],
+                    reviewSchedules: [],
+                    recommendations: [],
                   ),
                 ),
               ),

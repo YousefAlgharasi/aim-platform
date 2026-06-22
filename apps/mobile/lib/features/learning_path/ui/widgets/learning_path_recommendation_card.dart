@@ -34,7 +34,7 @@ class LearningPathRecommendationCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.auto_awesome_outlined,
                 size: AimSizes.iconSm,
                 color: AimColors.primary400,

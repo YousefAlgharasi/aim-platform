@@ -14,7 +14,7 @@ import 'package:aim_mobile/features/auth/ui/pages/register_page.dart';
 Widget _testApp({List<Override> overrides = const []}) {
   return ProviderScope(
     overrides: overrides,
-    child: MaterialApp(
+    child: const MaterialApp(
       initialRoute: AppRoutePaths.register,
       onGenerateRoute: AppRouter.onGenerateRoute,
     ),
@@ -153,9 +153,9 @@ void main() {
   testWidgets('RegisterPage renders without errors under Arabic RTL locale',
       (tester) async {
     await tester.pumpWidget(
-      ProviderScope(
+      const ProviderScope(
         child: MaterialApp(
-          locale: const Locale('ar'),
+          locale: Locale('ar'),
           initialRoute: AppRoutePaths.register,
           onGenerateRoute: AppRouter.onGenerateRoute,
         ),

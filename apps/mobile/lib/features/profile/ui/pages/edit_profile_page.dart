@@ -223,9 +223,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
             const SizedBox(height: AimSpacing.sectionGap),
 
             // Safe-fields note
-            AIMAlertBanner(
+            const AIMAlertBanner(
               tone: AIMAlertTone.info,
-              child: const Text(
+              child: Text(
                 'Only your display name, preferred language, and timezone '
                 'can be edited here. Email, roles, and account status are '
                 'managed by the platform.',

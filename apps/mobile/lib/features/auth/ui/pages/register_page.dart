@@ -95,7 +95,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         _passwordController.text == _confirmController.text;
 
     return Scaffold(
-      appBar: AIMTopAppBar(
+      appBar: const AIMTopAppBar(
         title: 'Create Account',
         centerTitle: true,
       ),
@@ -216,7 +216,7 @@ class _ConfirmationSentView extends StatelessWidget {
     final surfaces = aimSurfacesOf(context);
 
     return Scaffold(
-      appBar: AIMTopAppBar(
+      appBar: const AIMTopAppBar(
         title: 'Check Your Email',
         centerTitle: true,
       ),

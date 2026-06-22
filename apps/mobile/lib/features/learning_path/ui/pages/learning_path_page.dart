@@ -95,9 +95,9 @@ class _LearningPathPageState extends ConsumerState<LearningPathPage> {
     final state = ref.watch(learningPathProvider);
 
     return Scaffold(
-      appBar: AIMTopAppBar(title: 'My Learning Path'),
+      appBar: const AIMTopAppBar(title: 'My Learning Path'),
       body: switch (state) {
-        AppAsyncLoading() => AIMFullScreenLoading(
+        AppAsyncLoading() => const AIMFullScreenLoading(
             semanticLabel: 'Loading learning path data',
           ),
         AppAsyncFailure(:final message) => AIMFullScreenError(
@@ -108,7 +108,7 @@ class _LearningPathPageState extends ConsumerState<LearningPathPage> {
             data: data,
             onRefresh: _refresh,
           ),
-        AppAsyncIdle() => AIMFullScreenLoading(
+        AppAsyncIdle() => const AIMFullScreenLoading(
             semanticLabel: 'Loading learning path data',
           ),
       },
@@ -132,8 +132,8 @@ class _LearningPathContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (data.isEmpty) {
-      return AIMEmptyState(
-        icon: const Icon(Icons.route_outlined),
+      return const AIMEmptyState(
+        icon: Icon(Icons.route_outlined),
         title: 'Your learning path is empty',
         subtitle:
             'Complete your placement test to generate a personalised learning path.',

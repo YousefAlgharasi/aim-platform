@@ -280,7 +280,7 @@ void main() {
   // ---------------------------------------------------------------------------
 
   group('All repository methods handle errors', () {
-    final apiError = const ApiClientException(
+    const apiError = ApiClientException(
       code: 'ATTEMPT_EXPIRED',
       message: 'Attempt attempt-456 has expired.',
       statusCode: 409,
@@ -379,7 +379,7 @@ void main() {
     }
 
     test('failure state for expired attempt shows human-readable text', () {
-      final state = AppAsyncFailure<void>(
+      const state = AppAsyncFailure<void>(
         message: 'Attempt attempt-456 has expired.',
         code: 'ATTEMPT_EXPIRED',
       );
@@ -389,7 +389,7 @@ void main() {
 
     test('failure state for duplicate submission shows human-readable text',
         () {
-      final state = AppAsyncFailure<void>(
+      const state = AppAsyncFailure<void>(
         message: 'Attempt attempt-456 has already been submitted.',
         code: 'ATTEMPT_ALREADY_SUBMITTED',
       );
@@ -400,7 +400,7 @@ void main() {
     test('failure state for unauthorized (not owned) shows not-found message',
         () {
       // Backend returns NOT_FOUND for ownership errors to prevent leaking.
-      final state = AppAsyncFailure<void>(
+      const state = AppAsyncFailure<void>(
         message: 'Assessment attempt not found.',
         code: 'ATTEMPT_NOT_OWNED',
       );
@@ -410,7 +410,7 @@ void main() {
     });
 
     test('failure state for unavailable assessment', () {
-      final state = AppAsyncFailure<void>(
+      const state = AppAsyncFailure<void>(
         message: 'Assessment assessment-123 is not available.',
         code: 'ASSESSMENT_UNAVAILABLE',
       );
@@ -424,7 +424,7 @@ void main() {
 
   group('Error handlers do not compute grading or deadlines', () {
     test('AppException contains no grading fields', () {
-      final exception = AppException(
+      const exception = AppException(
         code: 'ATTEMPT_EXPIRED',
         message: 'Attempt has expired.',
       );
@@ -442,7 +442,7 @@ void main() {
     });
 
     test('AppAsyncFailure contains no grading fields', () {
-      final state = AppAsyncFailure<void>(
+      const state = AppAsyncFailure<void>(
         message: 'The assessment deadline has closed.',
         code: 'DEADLINE_CLOSED',
       );

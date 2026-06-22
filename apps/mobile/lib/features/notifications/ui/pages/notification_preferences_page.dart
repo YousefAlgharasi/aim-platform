@@ -119,14 +119,14 @@ class _NotificationPreferencesPageState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text('Channels', style: AimTextStyles.h2),
+                  const Text('Channels', style: AimTextStyles.h2),
                   const SizedBox(height: AimSpacing.componentGap),
                   _PreferencesTable(
                     preferences: data,
                     onToggle: _onToggle,
                   ),
                   const SizedBox(height: AimSpacing.sectionGap),
-                  Text('Quiet hours', style: AimTextStyles.h2),
+                  const Text('Quiet hours', style: AimTextStyles.h2),
                   const SizedBox(height: AimSpacing.componentGap),
                   _QuietHoursSection(
                     state: quietHoursState,

@@ -18,7 +18,7 @@ class ProgressReviewScheduleCard extends StatelessWidget {
       semanticLabel: '${model.skillId} review due ${model.dueAt}',
       child: Row(
         children: [
-          Icon(Icons.schedule_outlined,
+          const Icon(Icons.schedule_outlined,
               size: AimSizes.iconMd, color: AimColors.primary500),
           const SizedBox(width: AimSpacing.componentGap),
           Expanded(

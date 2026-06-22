@@ -4,10 +4,6 @@
 // action and reason are backend-computed. Flutter never generates or
 // rewrites recommendation content locally.
 
-import 'package:aim_mobile/core/design_tokens/aim_colors.dart';
-import 'package:aim_mobile/core/design_tokens/aim_sizes.dart';
-import 'package:aim_mobile/core/design_tokens/aim_spacing.dart';
-import 'package:aim_mobile/core/design_tokens/aim_typography.dart';
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
