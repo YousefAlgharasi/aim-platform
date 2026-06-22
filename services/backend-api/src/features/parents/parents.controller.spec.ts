@@ -116,6 +116,14 @@ function buildController(overrides: {
       jest.fn().mockResolvedValue({ id: 'pref-1', channel: 'email', category: 'progress_update', enabled: false }),
   };
 
+  const parentAiUsageSummaryService = {
+    getAiUsageSummaryForParent: jest.fn().mockResolvedValue({ childId: 'child-1', totalTurns: 0 }),
+  };
+
+  const parentAiSafetySummaryService = {
+    getAiSafetySummaryForParent: jest.fn().mockResolvedValue({ childId: 'child-1', incidents: [] }),
+  };
+
   const controller = new ParentsController(
     parentChildLinkService as never,
     studentsService as never,
@@ -123,6 +131,8 @@ function buildController(overrides: {
     parentChildProgressService as never,
     parentAssessmentSummaryService as never,
     parentActivitySummaryService as never,
+    parentAiUsageSummaryService as never,
+    parentAiSafetySummaryService as never,
     parentReportService as never,
     parentInvitationService as never,
     parentConsentService as never,

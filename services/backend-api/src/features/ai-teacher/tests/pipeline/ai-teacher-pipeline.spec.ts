@@ -188,6 +188,9 @@ function buildPipeline(overrides: {
     responseSafetyFilter as any,
     chatMessageRepository as any,
     rateLimitPolicy as any,
+    { checkInput: jest.fn().mockResolvedValue({ action: 'allowed', category: 'none', record: {} }), checkOutput: jest.fn().mockResolvedValue({ action: 'allowed', category: 'none', record: {} }) } as any,
+    { checkQuota: jest.fn().mockResolvedValue({ allowed: true }), recordUsage: jest.fn().mockResolvedValue(undefined) } as any,
+    { selectByTier: jest.fn().mockResolvedValue({ id: 'mc-1', provider_key_ref: 'ref-1' }) } as any,
     providerGateway,
   );
 
