@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BillingRepository } from './billing.repository';
-import { PaymentProviderEvent } from './billing.entities';
+import { PaymentProviderEvent, CheckoutSession } from './billing.entities';
 
 export interface IdempotencyCheckResult {
   isDuplicate: boolean;
@@ -41,7 +41,7 @@ export class BillingIdempotencyService {
   ): Promise<{ isDuplicate: boolean; sessionId?: string }> {
     const pendingSessions = await this.billingRepo.findPendingCheckoutSessionsByUser(userId);
     const duplicate = pendingSessions.find(
-      (s) => s.priceId === priceId && s.status === 'pending',
+      (s: CheckoutSession) => s.priceId === priceId && s.status === 'pending',
     );
     if (duplicate) {
       return { isDuplicate: true, sessionId: duplicate.id };
