@@ -2,8 +2,9 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 
 import { ReportRunnerService } from './report-runner.service';
 import { ReportDefinitionService } from './report-definition.service';
+import { MetricDefinitionService } from './metric-definition.service';
 import { AnalyticsRepository } from './analytics.repository';
-import { ReportDefinition, ReportRun } from './analytics.entities';
+import { ReportDefinition, ReportRun, MetricDefinition } from './analytics.entities';
 
 function makeDefinition(overrides: Partial<ReportDefinition> = {}): ReportDefinition {
   return {
@@ -30,6 +31,7 @@ function makeRun(overrides: Partial<ReportRun> = {}): ReportRun {
     parameters: {},
     status: 'queued',
     resultRef: null,
+    resultData: null,
     errorMessage: null,
     startedAt: null,
     completedAt: null,
@@ -38,11 +40,38 @@ function makeRun(overrides: Partial<ReportRun> = {}): ReportRun {
   };
 }
 
+function makeMetricDefinition(overrides: Partial<MetricDefinition> = {}): MetricDefinition {
+  return {
+    id: 'metric-1',
+    key: 'daily_active_students',
+    name: 'Daily Active Students',
+    description: null,
+    domain: 'learning',
+    valueType: 'distinct_count',
+    aggregationMethod: 'distinct_count',
+    sourceEventTypes: ['session.started', 'lesson.started'],
+    isActive: true,
+    version: 1,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
 describe('ReportRunnerService', () => {
   let analyticsRepository: jest.Mocked<
-    Pick<AnalyticsRepository, 'createReportRun' | 'findReportRunById' | 'updateReportRunStatus'>
+    Pick<
+      AnalyticsRepository,
+      | 'createReportRun'
+      | 'findReportRunById'
+      | 'updateReportRunStatus'
+      | 'findMetricAggregates'
+      | 'findLatestMetricAggregate'
+      | 'findEventsByType'
+    >
   >;
   let reportDefinitionService: jest.Mocked<Pick<ReportDefinitionService, 'getByKeyForRole'>>;
+  let metricDefinitionService: jest.Mocked<Pick<MetricDefinitionService, 'getByKey'>>;
   let service: ReportRunnerService;
 
   beforeEach(() => {
@@ -50,22 +79,42 @@ describe('ReportRunnerService', () => {
       createReportRun: jest.fn(),
       findReportRunById: jest.fn(),
       updateReportRunStatus: jest.fn(),
+      findMetricAggregates: jest.fn().mockResolvedValue([]),
+      findLatestMetricAggregate: jest.fn().mockResolvedValue(null),
+      findEventsByType: jest.fn().mockResolvedValue([]),
     };
     reportDefinitionService = { getByKeyForRole: jest.fn() };
+    metricDefinitionService = { getByKey: jest.fn() };
 
     service = new ReportRunnerService(
       analyticsRepository as unknown as AnalyticsRepository,
       reportDefinitionService as unknown as ReportDefinitionService,
+      metricDefinitionService as unknown as MetricDefinitionService,
     );
   });
 
   describe('runReport', () => {
     it('resolves the report definition scoped to the requester role before creating a run', async () => {
-      reportDefinitionService.getByKeyForRole.mockResolvedValue(makeDefinition());
+      const definition = makeDefinition();
+      reportDefinitionService.getByKeyForRole.mockResolvedValue(definition);
+      metricDefinitionService.getByKey.mockResolvedValue(makeMetricDefinition());
       analyticsRepository.createReportRun.mockResolvedValue(makeRun({ status: 'queued' }));
       analyticsRepository.updateReportRunStatus
         .mockResolvedValueOnce(makeRun({ status: 'running' }))
-        .mockResolvedValueOnce(makeRun({ status: 'completed', resultRef: 'report-run:run-1' }));
+        .mockResolvedValueOnce(
+          makeRun({
+            status: 'completed',
+            resultRef: 'report-run:run-1',
+            resultData: {
+              reportKey: 'learning-progress',
+              reportName: 'Learning progress',
+              category: 'learning',
+              generatedAt: new Date().toISOString(),
+              parameters: { from: '2026-01-01', to: '2026-01-31' },
+              sections: [],
+            },
+          }),
+        );
 
       const result = await service.runReport({
         reportKey: 'learning-progress',
@@ -85,6 +134,7 @@ describe('ReportRunnerService', () => {
       );
       expect(result.status).toBe('completed');
       expect(result.resultRef).toBe('report-run:run-1');
+      expect(result.resultData).not.toBeNull();
     });
 
     it('propagates a not-found error for an unknown report key without creating a run', async () => {
@@ -122,7 +172,9 @@ describe('ReportRunnerService', () => {
     });
 
     it('runs successfully with no parameters supplied (empty filter set)', async () => {
-      reportDefinitionService.getByKeyForRole.mockResolvedValue(makeDefinition());
+      const definition = makeDefinition();
+      reportDefinitionService.getByKeyForRole.mockResolvedValue(definition);
+      metricDefinitionService.getByKey.mockResolvedValue(makeMetricDefinition());
       analyticsRepository.createReportRun.mockResolvedValue(makeRun());
       analyticsRepository.updateReportRunStatus
         .mockResolvedValueOnce(makeRun({ status: 'running' }))
@@ -142,17 +194,13 @@ describe('ReportRunnerService', () => {
     });
 
     it('marks the run failed when execution throws, recording the error message', async () => {
-      reportDefinitionService.getByKeyForRole.mockResolvedValue(makeDefinition());
+      const definition = makeDefinition();
+      reportDefinitionService.getByKeyForRole.mockResolvedValue(definition);
+      metricDefinitionService.getByKey.mockRejectedValue(new Error('downstream failure'));
       analyticsRepository.createReportRun.mockResolvedValue(makeRun());
 
-      // First updateReportRunStatus call (to "running") succeeds; the
-      // second call (to "completed") throws inside execute(), which must
-      // be caught and turned into a "failed" status update.
       analyticsRepository.updateReportRunStatus
         .mockResolvedValueOnce(makeRun({ status: 'running' }))
-        .mockImplementationOnce(() => {
-          throw new Error('downstream failure');
-        })
         .mockResolvedValueOnce(makeRun({ status: 'failed', errorMessage: 'downstream failure' }));
 
       const result = await service.runReport({
@@ -164,6 +212,83 @@ describe('ReportRunnerService', () => {
 
       expect(result.status).toBe('failed');
       expect(result.errorMessage).toBe('downstream failure');
+    });
+
+    it('assembles resultData with metrics and events sections from backend-owned data sources', async () => {
+      const definition = makeDefinition({ category: 'learning' });
+      reportDefinitionService.getByKeyForRole.mockResolvedValue(definition);
+      metricDefinitionService.getByKey.mockResolvedValue(makeMetricDefinition());
+      analyticsRepository.findMetricAggregates.mockResolvedValue([
+        {
+          id: 'agg-1',
+          metricDefinitionId: 'metric-1',
+          scopeType: 'platform',
+          scopeId: null,
+          periodType: 'day',
+          periodStart: new Date('2026-01-01'),
+          periodEnd: new Date('2026-01-02'),
+          value: 42,
+          computedAt: new Date(),
+        },
+      ]);
+      analyticsRepository.findLatestMetricAggregate.mockResolvedValue({
+        id: 'agg-1',
+        metricDefinitionId: 'metric-1',
+        scopeType: 'platform',
+        scopeId: null,
+        periodType: 'day',
+        periodStart: new Date('2026-01-01'),
+        periodEnd: new Date('2026-01-02'),
+        value: 42,
+        computedAt: new Date(),
+      });
+      analyticsRepository.findEventsByType.mockResolvedValue([
+        {
+          id: 'evt-1',
+          eventType: 'session.started',
+          actorRole: 'student',
+          actorId: 'student-1',
+          subjectType: 'session',
+          subjectId: 'sess-1',
+          occurredAt: new Date('2026-01-01T10:00:00Z'),
+          metadata: {},
+          createdAt: new Date(),
+        },
+      ]);
+      analyticsRepository.createReportRun.mockResolvedValue(makeRun());
+
+      let capturedResultData: unknown = null;
+      analyticsRepository.updateReportRunStatus.mockImplementation(async (_id, data) => {
+        if (data.resultData) capturedResultData = data.resultData;
+        return makeRun({
+          status: data.status,
+          resultData: data.resultData ?? null,
+          resultRef: data.resultRef ?? null,
+        });
+      });
+
+      await service.runReport({
+        reportKey: 'learning-progress',
+        requestedByUserId: 'user-1',
+        requestedRole: 'admin',
+        parameters: { from: '2026-01-01', to: '2026-01-31' },
+      });
+
+      expect(capturedResultData).not.toBeNull();
+      const resultData = capturedResultData as {
+        reportKey: string;
+        reportName: string;
+        category: string;
+        sections: { title: string; type: string; data: unknown[] }[];
+      };
+      expect(resultData.reportKey).toBe('learning-progress');
+      expect(resultData.reportName).toBe('Learning progress');
+      expect(resultData.category).toBe('learning');
+      expect(resultData.sections.length).toBeGreaterThan(0);
+
+      const metricsSection = resultData.sections.find((s) => s.type === 'metrics');
+      expect(metricsSection).toBeDefined();
+      expect(metricsSection!.data.length).toBeGreaterThan(0);
     });
   });
 

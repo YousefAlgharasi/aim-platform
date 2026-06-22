@@ -14,6 +14,7 @@ function makeRun(overrides: Partial<ReportRun> = {}): ReportRun {
     parameters: {},
     status: 'completed',
     resultRef: 'report-run:run-1',
+    resultData: null,
     errorMessage: null,
     startedAt: new Date(),
     completedAt: new Date(),

@@ -13,6 +13,20 @@ function makeReportRun(overrides: Partial<ReportRun> = {}): ReportRun {
     parameters: {},
     status: 'completed',
     resultRef: 'report-run:run-1',
+    resultData: {
+      reportKey: 'admin_learning_overview',
+      reportName: 'Admin Learning Overview',
+      category: 'learning',
+      generatedAt: new Date().toISOString(),
+      parameters: {},
+      sections: [
+        {
+          title: 'Learning Activity',
+          type: 'metrics',
+          data: [{ metricKey: 'daily_active_students', currentValue: 42 }],
+        },
+      ],
+    },
     errorMessage: null,
     startedAt: new Date(),
     completedAt: new Date(),
