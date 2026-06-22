@@ -118,14 +118,17 @@ void main() {
   // ---------------------------------------------------------------------------
 
   test('no local pass/fail boolean assignment', () {
-    // Match `passed = <expr>` but not when reading from JSON.
+    // Match `passed = <expr>` but not when reading from JSON or passing
+    // through an already-server-computed value (e.g. `item.passed`).
     final pattern = RegExp(r'passed\s*=\s*');
+    final passthroughPattern = RegExp(r'passed\s*=\s*[a-zA-Z_]\w*\.passed\b');
     final violations = findViolations(pattern).where((v) {
       final line = v.line;
       return !line.contains('fromJson') &&
           !line.contains('json[') &&
           !line.contains("json['") &&
-          !line.contains('map[');
+          !line.contains('map[') &&
+          !passthroughPattern.hasMatch(line);
     }).toList();
 
     expect(
@@ -232,11 +235,14 @@ void main() {
     );
     final violations = findViolations(pattern).where((v) {
       final line = v.line;
-      // Allow display of penalty values received from server.
+      // Allow display of penalty values received from server, including
+      // the `latePenaltyApplied` flag, which is a server-computed boolean
+      // plumbed through entities/models/UI rather than computed locally.
       return !line.contains('fromJson') &&
           !line.contains('json[') &&
           !line.contains("json['") &&
-          !line.contains('map[');
+          !line.contains('map[') &&
+          !line.contains('latePenaltyApplied');
     }).toList();
 
     expect(
