@@ -51,8 +51,11 @@ class AuthDeepLinkNotifier extends StateNotifier<String?> {
                 accessToken,
               );
       if (!didLoadContext) {
-        state = 'Your confirmation link signed you in, but we could not '
-            'load your account. Please try signing in again.';
+        final contextState = _ref.read(authContextProvider);
+        state = contextState is AppAsyncFailure<AuthContextModel>
+            ? contextState.message
+            : 'Your confirmation link signed you in, but we could not '
+                'load your account. Please try signing in again.';
         return;
       }
 
