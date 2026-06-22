@@ -25,7 +25,7 @@ class VoiceTeacherEntryCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AimColors.primary500.withOpacity(0.1),
+              color: AimColors.primary500.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AimRadius.md),
             ),
             child: const Icon(
@@ -34,7 +34,7 @@ class VoiceTeacherEntryCard extends StatelessWidget {
               size: 24,
             ),
           ),
-          SizedBox(width: AimSpacing.space16),
+          const SizedBox(width: AimSpacing.space16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

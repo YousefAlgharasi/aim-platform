@@ -84,7 +84,7 @@ class _LessonListPageState extends ConsumerState<LessonListPage> {
     return Scaffold(
       appBar: AIMTopAppBar(title: widget.chapterTitle),
       body: switch (state) {
-        AppAsyncLoading() => AIMFullScreenLoading(
+        AppAsyncLoading() => const AIMFullScreenLoading(
             semanticLabel: 'Loading lessons',
           ),
         AppAsyncFailure(:final message) => AIMFullScreenError(
@@ -95,7 +95,7 @@ class _LessonListPageState extends ConsumerState<LessonListPage> {
             lessons: data,
             onRefresh: _refresh,
           ),
-        AppAsyncIdle() => AIMFullScreenLoading(
+        AppAsyncIdle() => const AIMFullScreenLoading(
             semanticLabel: 'Loading lessons',
           ),
       },
@@ -119,8 +119,8 @@ class _LessonListContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (lessons.isEmpty) {
-      return AIMEmptyState(
-        icon: const Icon(Icons.play_lesson_outlined),
+      return const AIMEmptyState(
+        icon: Icon(Icons.play_lesson_outlined),
         title: 'No lessons available',
         subtitle: 'Published lessons will appear here.',
       );

@@ -24,7 +24,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
-import 'package:aim_mobile/core/theme/app_theme.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/aim_results/data/models/aim_results_models.dart';
 import 'package:aim_mobile/features/aim_results/logic/entity/aim_results_data.dart';

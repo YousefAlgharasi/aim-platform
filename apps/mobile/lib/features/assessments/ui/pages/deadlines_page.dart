@@ -41,9 +41,9 @@ class _DeadlinesPageState extends ConsumerState<DeadlinesPage> {
     final state = ref.watch(deadlinesProvider);
 
     return Scaffold(
-      appBar: AIMTopAppBar(title: 'Deadlines'),
+      appBar: const AIMTopAppBar(title: 'Deadlines'),
       body: switch (state) {
-        AppAsyncLoading() => AIMFullScreenLoading(
+        AppAsyncLoading() => const AIMFullScreenLoading(
             semanticLabel: 'Loading deadlines',
           ),
         AppAsyncFailure(:final message) => AIMFullScreenError(
@@ -54,7 +54,7 @@ class _DeadlinesPageState extends ConsumerState<DeadlinesPage> {
             deadlines: data,
             onRefresh: _refresh,
           ),
-        AppAsyncIdle() => AIMFullScreenLoading(
+        AppAsyncIdle() => const AIMFullScreenLoading(
             semanticLabel: 'Loading deadlines',
           ),
       },
@@ -81,8 +81,8 @@ class _DeadlinesContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (_isEmpty) {
-      return AIMEmptyState(
-        icon: const Icon(Icons.event_available_outlined),
+      return const AIMEmptyState(
+        icon: Icon(Icons.event_available_outlined),
         title: 'No deadlines',
         subtitle: 'Your assessment deadlines will appear here.',
       );
@@ -201,7 +201,7 @@ class _DeadlineTile extends StatelessWidget {
         children: [
           DecoratedBox(
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.12),
+              color: statusColor.withValues(alpha: 0.12),
               borderRadius: AimRadius.borderX2l,
             ),
             child: Padding(
@@ -276,7 +276,7 @@ class _StatusChip extends StatelessWidget {
           vertical: AimSpacing.space2,
         ),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.12),
+          color: color.withValues(alpha: 0.12),
           borderRadius: AimRadius.borderSm,
         ),
         child: Text(

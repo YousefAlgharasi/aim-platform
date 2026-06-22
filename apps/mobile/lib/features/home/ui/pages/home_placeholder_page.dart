@@ -9,12 +9,12 @@ class HomePlaceholderPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       appBar: AIMTopAppBar(
         title: 'Home',
-        actions: const [NotificationBellButton()],
+        actions: [NotificationBellButton()],
       ),
-      body: const MainShellPlaceholderCard(
+      body: MainShellPlaceholderCard(
         title: 'Home',
         description:
             'Learner dashboard placeholder. No feature logic is implemented.',

@@ -157,10 +157,10 @@ class _NotificationDetailPageState
                   child: const Text('Dismiss'),
                 ),
               ] else
-                AIMAlertBanner(
+                const AIMAlertBanner(
                   tone: AIMAlertTone.info,
                   title: 'Dismissed',
-                  child: const Text(
+                  child: Text(
                     'This notification has been dismissed.',
                   ),
                 ),

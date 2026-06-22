@@ -96,7 +96,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
     return Scaffold(
       appBar: AIMTopAppBar(title: widget.courseTitle),
       body: switch (state) {
-        AppAsyncLoading() => AIMFullScreenLoading(
+        AppAsyncLoading() => const AIMFullScreenLoading(
             semanticLabel: 'Loading chapters',
           ),
         AppAsyncFailure(:final message) => AIMFullScreenError(
@@ -108,7 +108,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
             onRefresh: _refresh,
             onTap: _onChapterTap,
           ),
-        AppAsyncIdle() => AIMFullScreenLoading(
+        AppAsyncIdle() => const AIMFullScreenLoading(
             semanticLabel: 'Loading chapters',
           ),
       },
@@ -134,8 +134,8 @@ class _ChapterListContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (chapters.isEmpty) {
-      return AIMEmptyState(
-        icon: const Icon(Icons.layers_outlined),
+      return const AIMEmptyState(
+        icon: Icon(Icons.layers_outlined),
         title: 'No chapters available',
         subtitle: 'Published chapters will appear here.',
       );

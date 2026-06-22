@@ -69,7 +69,7 @@ class _QuestionPageState extends ConsumerState<QuestionPage> {
     final token = ref.watch(authFlowProvider).accessToken ?? '';
 
     return Scaffold(
-      appBar: AIMTopAppBar(title: 'Question'),
+      appBar: const AIMTopAppBar(title: 'Question'),
       body: _buildBody(state),
       bottomNavigationBar: state.hasQuestion && !state.isSubmitted
           ? SafeArea(

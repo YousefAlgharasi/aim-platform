@@ -59,15 +59,15 @@ class _AiSpeakingIndicatorState extends State<AiSpeakingIndicator>
     final isSpeaking = widget.state == AiVoiceState.speaking;
 
     return Container(
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: AimSpacing.space16,
         vertical: AimSpacing.space8,
       ),
-      margin: EdgeInsets.symmetric(horizontal: AimSpacing.space16),
+      margin: const EdgeInsets.symmetric(horizontal: AimSpacing.space16),
       decoration: BoxDecoration(
-        color: AimColors.primary500.withOpacity(0.06),
+        color: AimColors.primary500.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(AimRadius.lg),
-        border: Border.all(color: AimColors.primary500.withOpacity(0.15)),
+        border: Border.all(color: AimColors.primary500.withValues(alpha: 0.15)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -77,7 +77,7 @@ class _AiSpeakingIndicatorState extends State<AiSpeakingIndicator>
             height: 32,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AimColors.primary500.withOpacity(0.1),
+              color: AimColors.primary500.withValues(alpha: 0.1),
             ),
             child: Icon(
               isSpeaking ? Icons.volume_up : Icons.smart_toy,
@@ -85,12 +85,12 @@ class _AiSpeakingIndicatorState extends State<AiSpeakingIndicator>
               color: AimColors.primary500,
             ),
           ),
-          SizedBox(width: AimSpacing.space8),
+          const SizedBox(width: AimSpacing.space8),
           if (isSpeaking)
             _SpeakingBars(controller: _controller)
           else
             _ThinkingDots(controller: _controller),
-          SizedBox(width: AimSpacing.space8),
+          const SizedBox(width: AimSpacing.space8),
           Text(
             isSpeaking
                 ? (isRtl ? 'المعلم يتحدث...' : 'Teacher speaking...')
@@ -129,7 +129,7 @@ class _ThinkingDots extends StatelessWidget {
                   height: 6,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AimColors.primary500.withOpacity(0.6),
+                    color: AimColors.primary500.withValues(alpha: 0.6),
                   ),
                 ),
               ),

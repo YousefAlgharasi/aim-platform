@@ -72,7 +72,7 @@ class ProfilePage extends ConsumerWidget {
         ],
       ),
       body: switch (authContextState) {
-        AppAsyncLoading() => AIMFullScreenLoading(
+        AppAsyncLoading() => const AIMFullScreenLoading(
             semanticLabel: 'Loading profile',
           ),
         AppAsyncFailure(:final message) => AIMFullScreenError(
@@ -90,15 +90,15 @@ class ProfilePage extends ConsumerWidget {
             ),
           ),
       },
-      bottomNavigationBar: SafeArea(
+      bottomNavigationBar: const SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(
+          padding: EdgeInsets.fromLTRB(
             AimSpacing.screenPaddingMobile,
             AimSpacing.innerGap,
             AimSpacing.screenPaddingMobile,
             AimSpacing.space16,
           ),
-          child: const LogoutButton(),
+          child: LogoutButton(),
         ),
       ),
     );

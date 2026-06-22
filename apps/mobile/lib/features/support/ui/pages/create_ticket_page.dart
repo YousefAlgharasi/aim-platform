@@ -63,7 +63,7 @@ class _CreateTicketPageState extends State<CreateTicketPage> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: _category,
+                initialValue: _category,
                 decoration: const InputDecoration(
                   labelText: 'Category',
                   border: OutlineInputBorder(),
@@ -80,7 +80,7 @@ class _CreateTicketPageState extends State<CreateTicketPage> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: _severity,
+                initialValue: _severity,
                 decoration: const InputDecoration(
                   labelText: 'Severity',
                   border: OutlineInputBorder(),

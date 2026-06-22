@@ -31,13 +31,13 @@ class RecordingStateBar extends StatelessWidget {
     }
 
     return Container(
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: AimSpacing.space16,
         vertical: AimSpacing.space8,
       ),
       decoration: BoxDecoration(
         color: state == RecordingState.recording
-            ? Colors.red.withOpacity(0.08)
+            ? Colors.red.withValues(alpha: 0.08)
             : theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AimRadius.lg),
       ),
@@ -45,7 +45,7 @@ class RecordingStateBar extends StatelessWidget {
         children: [
           if (state == RecordingState.recording) ...[
             _PulsingDot(),
-            SizedBox(width: AimSpacing.space8),
+            const SizedBox(width: AimSpacing.space8),
             Text(
               duration ?? '0:00',
               style: theme.textTheme.bodyMedium?.copyWith(
@@ -60,7 +60,7 @@ class RecordingStateBar extends StatelessWidget {
               color: theme.colorScheme.onSurfaceVariant,
               onTap: onCancel,
             ),
-            SizedBox(width: AimSpacing.space8),
+            const SizedBox(width: AimSpacing.space8),
             _ActionButton(
               icon: Icons.stop,
               label: isRtl ? 'إيقاف' : 'Stop',
@@ -69,14 +69,14 @@ class RecordingStateBar extends StatelessWidget {
             ),
           ],
           if (state == RecordingState.stopped) ...[
-            Icon(Icons.check_circle, color: AimColors.primary500, size: 20),
-            SizedBox(width: AimSpacing.space8),
+            const Icon(Icons.check_circle, color: AimColors.primary500, size: 20),
+            const SizedBox(width: AimSpacing.space8),
             Text(
               isRtl ? 'تم التسجيل' : 'Recorded',
               style: theme.textTheme.bodyMedium,
             ),
             if (duration != null) ...[
-              SizedBox(width: AimSpacing.space4),
+              const SizedBox(width: AimSpacing.space4),
               Text(
                 duration!,
                 style: theme.textTheme.bodySmall?.copyWith(
@@ -91,7 +91,7 @@ class RecordingStateBar extends StatelessWidget {
               color: theme.colorScheme.error,
               onTap: onCancel,
             ),
-            SizedBox(width: AimSpacing.space8),
+            const SizedBox(width: AimSpacing.space8),
             _ActionButton(
               icon: Icons.send,
               label: isRtl ? 'إرسال' : 'Send',
@@ -124,7 +124,7 @@ class _ActionButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(AimRadius.sm),
       onTap: onTap,
       child: Padding(
-        padding: EdgeInsets.symmetric(
+        padding: const EdgeInsets.symmetric(
           horizontal: AimSpacing.space8,
           vertical: AimSpacing.space4,
         ),
@@ -132,7 +132,7 @@ class _ActionButton extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 18, color: color),
-            SizedBox(width: AimSpacing.space4),
+            const SizedBox(width: AimSpacing.space4),
             Text(
               label,
               style: TextStyle(color: color, fontSize: 13),

@@ -46,7 +46,7 @@ class QuestionStemCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
+                const Icon(
                   Icons.lightbulb_outline,
                   size: AimSizes.iconSm,
                   color: AimColors.warning500,

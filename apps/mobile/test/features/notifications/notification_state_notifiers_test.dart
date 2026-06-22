@@ -209,7 +209,7 @@ class _FakeNotificationRepository implements NotificationRepository {
 
 // ── Fixtures ───────────────────────────────────────────────────────────────────
 
-final _unreadEvent = NotificationEventModel(
+const _unreadEvent = NotificationEventModel(
   id: 'event-1',
   templateId: 'template-1',
   channel: 'in_app',
@@ -224,7 +224,7 @@ final _unreadEvent = NotificationEventModel(
   createdAt: '2026-06-20T08:00:00Z',
 );
 
-final _quietHoursModel = QuietHoursModel(
+const _quietHoursModel = QuietHoursModel(
   enabled: true,
   startTime: '22:00',
   endTime: '07:00',

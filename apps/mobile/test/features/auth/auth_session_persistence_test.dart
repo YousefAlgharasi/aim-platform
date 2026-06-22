@@ -54,9 +54,8 @@ class _NoOpAuthRepository implements AuthRepository {
 /// AppBootstrapNotifier that resolves immediately without async I/O.
 /// Stores ref locally to avoid accessing private _ref from parent.
 class _ImmediateBootstrapNotifier extends AppBootstrapNotifier {
-  _ImmediateBootstrapNotifier(Ref ref)
-      : _testRef = ref,
-        super(ref);
+  _ImmediateBootstrapNotifier(super.ref)
+      : _testRef = ref;
 
   final Ref _testRef;
 

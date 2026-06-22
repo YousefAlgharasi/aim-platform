@@ -74,9 +74,9 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
     final state = ref.watch(coursesProvider);
 
     return Scaffold(
-      appBar: AIMTopAppBar(title: 'Courses'),
+      appBar: const AIMTopAppBar(title: 'Courses'),
       body: switch (state) {
-        AppAsyncLoading() => AIMFullScreenLoading(
+        AppAsyncLoading() => const AIMFullScreenLoading(
             semanticLabel: 'Loading courses',
           ),
         AppAsyncFailure(:final message) => AIMFullScreenError(
@@ -88,7 +88,7 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
             onRefresh: _refresh,
             onTap: _onCourseTap,
           ),
-        AppAsyncIdle() => AIMFullScreenLoading(
+        AppAsyncIdle() => const AIMFullScreenLoading(
             semanticLabel: 'Loading courses',
           ),
       },
@@ -114,8 +114,8 @@ class _CourseListContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (courses.isEmpty) {
-      return AIMEmptyState(
-        icon: const Icon(Icons.menu_book_outlined),
+      return const AIMEmptyState(
+        icon: Icon(Icons.menu_book_outlined),
         title: 'No courses available',
         subtitle: 'Published courses will appear here.',
       );

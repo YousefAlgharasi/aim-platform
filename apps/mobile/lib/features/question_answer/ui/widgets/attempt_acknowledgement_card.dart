@@ -27,7 +27,7 @@ class AttemptAcknowledgementCard extends StatelessWidget {
       semanticLabel: 'Answer submitted',
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.check_circle_outline,
             size: AimSizes.iconMd,
             color: AimColors.success500,
