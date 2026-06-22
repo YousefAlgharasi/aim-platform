@@ -14,15 +14,15 @@ import {
 export class CreateCheckoutSessionDto {
   @IsUUID()
   @IsNotEmpty()
-  priceId: string;
+  priceId!: string;
 
   @IsUrl()
   @IsNotEmpty()
-  successUrl: string;
+  successUrl!: string;
 
   @IsUrl()
   @IsNotEmpty()
-  cancelUrl: string;
+  cancelUrl!: string;
 
   @IsString()
   @IsOptional()
@@ -33,19 +33,19 @@ export class CreateCheckoutSessionDto {
 export class CreateRefundRequestDto {
   @IsUUID()
   @IsNotEmpty()
-  paymentId: string;
+  paymentId!: string;
 
   @IsString()
   @IsNotEmpty()
   @MaxLength(500)
-  reason: string;
+  reason!: string;
 }
 
 export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
-  name: string;
+  name!: string;
 
   @IsString()
   @IsOptional()
@@ -53,7 +53,7 @@ export class CreateProductDto {
   description?: string;
 
   @IsEnum(['course', 'subscription', 'feature', 'addon'])
-  productType: 'course' | 'subscription' | 'feature' | 'addon';
+  productType!: 'course' | 'subscription' | 'feature' | 'addon';
 }
 
 export class UpdateProductDto {
@@ -75,26 +75,26 @@ export class UpdateProductDto {
 export class CreatePriceDto {
   @IsUUID()
   @IsNotEmpty()
-  productId: string;
+  productId!: string;
 
   @IsInt()
   @Min(0)
-  amount: number;
+  amount!: number;
 
   @IsString()
   @IsNotEmpty()
   @Matches(/^[A-Z]{3}$/)
-  currency: string;
+  currency!: string;
 
   @IsEnum(['month', 'year', 'one_time'])
-  billingInterval: 'month' | 'year' | 'one_time';
+  billingInterval!: 'month' | 'year' | 'one_time';
 }
 
 export class CreatePlanDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
-  name: string;
+  name!: string;
 
   @IsString()
   @IsOptional()
@@ -103,13 +103,13 @@ export class CreatePlanDto {
 
   @IsUUID()
   @IsNotEmpty()
-  priceId: string;
+  priceId!: string;
 
   @IsOptional()
   features?: Record<string, unknown>;
 
   @IsEnum(['free', 'basic', 'premium', 'enterprise'])
-  planType: 'free' | 'basic' | 'premium' | 'enterprise';
+  planType!: 'free' | 'basic' | 'premium' | 'enterprise';
 }
 
 export class UpdatePlanDto {
@@ -135,14 +135,14 @@ export class CreateCouponDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
-  name: string;
+  name!: string;
 
   @IsEnum(['percentage', 'fixed_amount'])
-  discountType: 'percentage' | 'fixed_amount';
+  discountType!: 'percentage' | 'fixed_amount';
 
   @IsInt()
   @Min(1)
-  discountValue: number;
+  discountValue!: number;
 
   @IsString()
   @IsOptional()

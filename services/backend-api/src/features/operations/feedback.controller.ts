@@ -30,13 +30,13 @@ export class FeedbackController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateFeedbackDto,
   ) {
-    return this.feedbackService.submitFeedback(user.internalUserId, dto);
+    return this.feedbackService.submitFeedback(user.id, dto);
   }
 
   @Get('mine')
   @OperationsResource('feedback')
   @ApiOperation({ summary: 'List my feedback submissions' })
   async getMyFeedback(@CurrentUser() user: AuthenticatedUser) {
-    return this.feedbackService.getMyFeedback(user.internalUserId);
+    return this.feedbackService.getMyFeedback(user.id);
   }
 }
