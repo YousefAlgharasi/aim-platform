@@ -11,13 +11,13 @@ void main() {
         'sessionId': 's-1',
         'createdAt': '2026-01-01T00:00:00Z',
         'messageCount': 5,
-        'contextRef': 'lesson-42',
+        'lastActivityAt': '2026-01-02T00:00:00Z',
       });
 
       expect(model.sessionId, 's-1');
       expect(model.createdAt, '2026-01-01T00:00:00Z');
       expect(model.messageCount, 5);
-      expect(model.contextRef, 'lesson-42');
+      expect(model.lastActivityAt, '2026-01-02T00:00:00Z');
     });
 
     test('fromJson defaults messageCount to 0', () {
@@ -27,31 +27,7 @@ void main() {
       });
 
       expect(model.messageCount, 0);
-      expect(model.contextRef, isNull);
-    });
-
-    test('toJson round-trips correctly', () {
-      final json = {
-        'sessionId': 's-1',
-        'createdAt': '2026-01-01T00:00:00Z',
-        'messageCount': 3,
-        'contextRef': 'ref',
-      };
-
-      final output = VoiceSessionModel.fromJson(json).toJson();
-      expect(output['sessionId'], 's-1');
-      expect(output['messageCount'], 3);
-      expect(output['contextRef'], 'ref');
-    });
-
-    test('toJson omits null contextRef', () {
-      final model = VoiceSessionModel(
-        sessionId: 's-1',
-        createdAt: '2026-01-01T00:00:00Z',
-        messageCount: 0,
-      );
-
-      expect(model.toJson().containsKey('contextRef'), isFalse);
+      expect(model.lastActivityAt, isNull);
     });
   });
 
@@ -62,13 +38,14 @@ void main() {
         'role': 'teacher',
         'text': 'Hello',
         'audioRef': 'audio:abc',
-        'timestamp': '2026-01-01T00:00:00Z',
+        'createdAt': '2026-01-01T00:00:00Z',
       });
 
       expect(model.id, 'm-1');
       expect(model.role, 'teacher');
       expect(model.text, 'Hello');
       expect(model.audioRef, 'audio:abc');
+      expect(model.createdAt, '2026-01-01T00:00:00Z');
     });
 
     test('toEntity maps teacher role', () {
@@ -76,7 +53,7 @@ void main() {
         'id': 'm-1',
         'role': 'teacher',
         'text': 'Hi',
-        'timestamp': '2026-01-01T00:00:00Z',
+        'createdAt': '2026-01-01T00:00:00Z',
       }).toEntity();
 
       expect(entity.role, VoiceMessageRole.teacher);
@@ -88,11 +65,11 @@ void main() {
         'id': 'm-2',
         'role': 'student',
         'text': 'Question',
-        'timestamp': '2026-06-01T12:00:00Z',
+        'createdAt': '2026-06-01T12:00:00Z',
       }).toEntity();
 
       expect(entity.role, VoiceMessageRole.student);
-      expect(entity.timestamp, DateTime.utc(2026, 6, 1, 12));
+      expect(entity.createdAt, '2026-06-01T12:00:00Z');
     });
   });
 }

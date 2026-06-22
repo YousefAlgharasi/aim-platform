@@ -116,7 +116,7 @@ class _ResultContent extends StatelessWidget {
             ),
             child: Text(
               statusLabel,
-              style: AimTextStyles.labelLg.copyWith(color: statusColor),
+              style: AimTextStyles.label.copyWith(color: statusColor),
             ),
           ),
         ),
@@ -207,7 +207,7 @@ class _BreakdownCard extends StatelessWidget {
     };
 
     return AIMCard(
-      variant: AIMCardVariant.outlined,
+      variant: AIMCardVariant.standard,
       child: Row(
         children: [
           DecoratedBox(
