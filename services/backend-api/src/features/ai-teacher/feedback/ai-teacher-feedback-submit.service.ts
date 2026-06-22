@@ -9,7 +9,7 @@
  * feedback is advisory only and is never read by the AIM Engine
  * (docs/phase-8/no-aim-replacement-rule.md).
  */
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
 
 import { AiChatMessageRepository } from '../repositories/ai-chat-message.repository';
 import { AiTeacherFeedbackRepository } from '../repositories/ai-teacher-feedback.repository';
@@ -35,31 +35,31 @@ export class AiTeacherFeedbackSubmitService {
     const rating = input.rating;
 
     if (!studentId) {
-      throw new Error('Cannot submit AI Teacher feedback: studentId is missing.');
+      throw new BadRequestException('Cannot submit AI Teacher feedback: studentId is missing.');
     }
 
     if (!messageId) {
-      throw new Error('Cannot submit AI Teacher feedback: messageId is missing.');
+      throw new BadRequestException('Cannot submit AI Teacher feedback: messageId is missing.');
     }
 
     if (!VALID_RATINGS.has(rating)) {
-      throw new Error('Cannot submit AI Teacher feedback: rating must be helpful or not_helpful.');
+      throw new BadRequestException('Cannot submit AI Teacher feedback: rating must be helpful or not_helpful.');
     }
 
     const message = await this.chatMessageRepository.findById(messageId);
 
     if (!message || message.student_id !== studentId) {
-      throw new Error('Cannot submit AI Teacher feedback: message not found.');
+      throw new NotFoundException('Cannot submit AI Teacher feedback: message not found.');
     }
 
     if (message.role !== 'ai_teacher') {
-      throw new Error('Cannot submit AI Teacher feedback: message is not an AI Teacher reply.');
+      throw new BadRequestException('Cannot submit AI Teacher feedback: message is not an AI Teacher reply.');
     }
 
     const existing = await this.feedbackRepository.findByMessageId(messageId);
 
     if (existing) {
-      throw new Error('Cannot submit AI Teacher feedback: feedback already recorded for this message.');
+      throw new ConflictException('Cannot submit AI Teacher feedback: feedback already recorded for this message.');
     }
 
     const feedback = await this.feedbackRepository.create(messageId, studentId, rating);

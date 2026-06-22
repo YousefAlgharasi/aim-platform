@@ -51,16 +51,19 @@ export class FeatureRequestService {
     }
 
     const updated = await this.opsRepo.incrementFeatureRequestVote(id);
+    if (!updated) {
+      throw new NotFoundException('Feature request was deleted before vote completed');
+    }
 
     await this.opsRepo.createAuditLog({
       actorId: userId,
       action: 'feature_request_voted',
       resourceType: 'feature_request',
       resourceId: id,
-      details: { newVoteCount: updated!.voteCount },
+      details: { newVoteCount: updated.voteCount },
     });
 
-    return updated!;
+    return updated;
   }
 
   async adminTriage(
@@ -87,6 +90,10 @@ export class FeatureRequestService {
       adminId,
     );
 
+    if (!updated) {
+      throw new NotFoundException('Feature request was deleted before triage completed');
+    }
+
     await this.opsRepo.createAuditLog({
       actorId: adminId,
       action: 'feature_request_triaged',
@@ -95,6 +102,6 @@ export class FeatureRequestService {
       details: { previousStatus, newStatus: status, priority },
     });
 
-    return updated!;
+    return updated;
   }
 }

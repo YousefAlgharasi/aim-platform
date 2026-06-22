@@ -9,7 +9,7 @@
  * difficulty/recommendation/review-schedule value
  * (docs/phase-9/no-aim-authority-change-rule.md).
  */
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 
 import { VoiceSessionRepository } from './voice-session.repository';
 import { StartVoiceSessionInput, StartVoiceSessionResult } from './voice-session-start.types';
@@ -23,11 +23,11 @@ export class VoiceSessionStartService {
     const contextRef = input.contextRef?.trim();
 
     if (!studentId) {
-      throw new Error('Cannot start a voice session: studentId is missing.');
+      throw new BadRequestException('Cannot start a voice session: studentId is missing.');
     }
 
     if (!contextRef) {
-      throw new Error('Cannot start a voice session: contextRef is missing.');
+      throw new BadRequestException('Cannot start a voice session: contextRef is missing.');
     }
 
     const session = await this.voiceSessionRepository.create(studentId, contextRef);

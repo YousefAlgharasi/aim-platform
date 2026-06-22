@@ -55,6 +55,9 @@ export class FeedbackService {
 
     const previousStatus = feedback.status;
     const updated = await this.opsRepo.updateFeedbackStatus(feedbackId, status);
+    if (!updated) {
+      throw new NotFoundException('Feedback was deleted before update completed');
+    }
 
     await this.opsRepo.createAuditLog({
       actorId: adminId,
@@ -64,6 +67,6 @@ export class FeedbackService {
       details: { previousStatus, newStatus: status },
     });
 
-    return updated!;
+    return updated;
   }
 }

@@ -51,6 +51,12 @@ export class BillingOwnershipGuard implements CanActivate {
       return true;
     }
 
+    const params = (request as any).params ?? {};
+    const resourceUserId = params.userId as string | undefined;
+    if (resourceUserId && resourceUserId !== user.id) {
+      throw new ForbiddenException('Not authorized to access this billing resource');
+    }
+
     return true;
   }
 }
@@ -74,6 +80,16 @@ export class BillingRoleGuard implements CanActivate {
 
     if (!resource) {
       return true;
+    }
+
+    const roles: string[] = (user as any).roles || [];
+    const hasAccess =
+      roles.includes('admin') ||
+      roles.includes('super_admin') ||
+      roles.includes(`billing:${resource}`);
+
+    if (!hasAccess) {
+      throw new ForbiddenException(`Insufficient permissions for billing resource: ${resource}`);
     }
 
     return true;
