@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/features/profile/data/models/profile_me_response_model.dart';
 import 'package:aim_mobile/features/profile/data/models/profile_update_payload_models.dart';
-import 'package:aim_mobile/features/profile/logic/provider/profile_notifier.dart';
 import 'package:aim_mobile/features/profile/logic/provider/profile_provider.dart';
 import 'package:aim_mobile/features/profile/logic/repository/profile_repository.dart';
 
@@ -22,7 +21,7 @@ class _FakeProfileRepository implements ProfileRepository {
 
   @override
   Future<ProfileMeResponseModel> getProfile(String bearerToken) async {
-    if (_error != null) throw _error!;
+    if (_error != null) throw _error;
     return _response!;
   }
 
@@ -32,7 +31,7 @@ class _FakeProfileRepository implements ProfileRepository {
     SafeStudentProfileUpdatePayloadModel? studentPayload,
     SafeAdminProfileUpdatePayloadModel? adminPayload,
   }) async {
-    if (_error != null) throw _error!;
+    if (_error != null) throw _error;
     return _response!;
   }
 }

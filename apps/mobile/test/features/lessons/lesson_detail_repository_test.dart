@@ -17,7 +17,6 @@ import 'package:aim_mobile/core/networking/api_client_exception.dart';
 import 'package:aim_mobile/features/lessons/data/datasources/lesson_detail_remote_datasource.dart';
 import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
 import 'package:aim_mobile/features/lessons/data/repository/repo_impl/lesson_detail_repository_impl.dart';
-import 'package:aim_mobile/features/lessons/logic/entity/lesson_detail.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
 import 'package:aim_mobile/features/lessons/logic/repository/lesson_detail_repository.dart';
 

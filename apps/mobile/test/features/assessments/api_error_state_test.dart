@@ -2,15 +2,91 @@ import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/networking/api_client_exception.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/features/assessments/data/datasources/assessment_remote_datasource.dart';
+import 'package:aim_mobile/features/assessments/data/models/assessment_models.dart';
 import 'package:aim_mobile/features/assessments/data/repository/assessment_data_repository.dart';
-import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
 import 'package:aim_mobile/features/assessments/logic/repository/assessment_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
 
-@GenerateMocks([AssessmentRemoteDatasource])
-import 'api_error_state_test.mocks.dart';
+/// Fake datasource whose methods throw a pre-configured exception when set,
+/// matching the hand-written fake convention used throughout this test suite
+/// (this codebase does not use mockito elsewhere).
+class _FakeAssessmentRemoteDatasource implements AssessmentRemoteDatasource {
+  Object? errorToThrow;
+
+  void _throwIfNeeded() {
+    if (errorToThrow != null) throw errorToThrow!;
+  }
+
+  @override
+  Future<List<AssessmentListItemModel>> getAssessments({
+    required String bearerToken,
+  }) async {
+    _throwIfNeeded();
+    return const [];
+  }
+
+  @override
+  Future<AssessmentDetailModel> getAssessmentDetail({
+    required String bearerToken,
+    required String assessmentId,
+  }) async {
+    _throwIfNeeded();
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<ResultHistoryModel> getResultHistory({
+    required String bearerToken,
+    required String assessmentId,
+  }) async {
+    _throwIfNeeded();
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<StudentDeadlinesModel> getDeadlines({
+    required String bearerToken,
+  }) async {
+    _throwIfNeeded();
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<StartAttemptResultModel> startAttempt({
+    required String bearerToken,
+    required String assessmentId,
+  }) async {
+    _throwIfNeeded();
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<ResumeAttemptResultModel> resumeAttempt({
+    required String bearerToken,
+    required String attemptId,
+  }) async {
+    _throwIfNeeded();
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<SubmitAttemptResultModel> submitAttempt({
+    required String bearerToken,
+    required String attemptId,
+  }) async {
+    _throwIfNeeded();
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AttemptResultDetailModel> getAttemptResult({
+    required String bearerToken,
+    required String attemptId,
+  }) async {
+    _throwIfNeeded();
+    throw UnimplementedError();
+  }
+}
 
 /// P10-066: Mobile API error state tests.
 ///
@@ -20,11 +96,11 @@ import 'api_error_state_test.mocks.dart';
 ///   - No error handler computes grading or deadline logic
 ///   - AppAsyncFailure states carry the correct code and message
 void main() {
-  late MockAssessmentRemoteDatasource mockDatasource;
+  late _FakeAssessmentRemoteDatasource mockDatasource;
   late AssessmentRepository repository;
 
   setUp(() {
-    mockDatasource = MockAssessmentRemoteDatasource();
+    mockDatasource = _FakeAssessmentRemoteDatasource();
     repository = AssessmentRepositoryImpl(datasource: mockDatasource);
   });
 
@@ -145,14 +221,11 @@ void main() {
       test(
           'maps ${scenario.code} ApiClientException to AppException '
           '(${scenario.description})', () async {
-        when(mockDatasource.getAssessmentDetail(
-          bearerToken: bearerToken,
-          assessmentId: assessmentId,
-        )).thenThrow(ApiClientException(
+        mockDatasource.errorToThrow = ApiClientException(
           code: scenario.code,
           message: scenario.message,
           statusCode: scenario.statusCode,
-        ));
+        );
 
         expect(
           () => repository.getAssessmentDetail(
@@ -169,14 +242,11 @@ void main() {
     }
 
     test('preserves error code and message through mapping', () async {
-      when(mockDatasource.startAttempt(
-        bearerToken: bearerToken,
-        assessmentId: assessmentId,
-      )).thenThrow(const ApiClientException(
+      mockDatasource.errorToThrow = const ApiClientException(
         code: 'MAX_ATTEMPTS_REACHED',
         message: 'Maximum number of attempts reached for this assessment.',
         statusCode: 409,
-      ));
+      );
 
       try {
         await repository.startAttempt(
@@ -192,8 +262,7 @@ void main() {
     });
 
     test('does not swallow non-ApiClientException errors', () async {
-      when(mockDatasource.getAssessments(bearerToken: bearerToken))
-          .thenThrow(Exception('network timeout'));
+      mockDatasource.errorToThrow = Exception('network timeout');
 
       expect(
         () => repository.getAssessments(bearerToken: bearerToken),
@@ -218,8 +287,7 @@ void main() {
     );
 
     test('getAssessments throws AppException on API error', () {
-      when(mockDatasource.getAssessments(bearerToken: bearerToken))
-          .thenThrow(apiError);
+      mockDatasource.errorToThrow = apiError;
 
       expect(
         () => repository.getAssessments(bearerToken: bearerToken),
@@ -228,10 +296,7 @@ void main() {
     });
 
     test('getResultHistory throws AppException on API error', () {
-      when(mockDatasource.getResultHistory(
-        bearerToken: bearerToken,
-        assessmentId: assessmentId,
-      )).thenThrow(apiError);
+      mockDatasource.errorToThrow = apiError;
 
       expect(
         () => repository.getResultHistory(
@@ -243,8 +308,7 @@ void main() {
     });
 
     test('getDeadlines throws AppException on API error', () {
-      when(mockDatasource.getDeadlines(bearerToken: bearerToken))
-          .thenThrow(apiError);
+      mockDatasource.errorToThrow = apiError;
 
       expect(
         () => repository.getDeadlines(bearerToken: bearerToken),
@@ -253,10 +317,7 @@ void main() {
     });
 
     test('resumeAttempt throws AppException on API error', () {
-      when(mockDatasource.resumeAttempt(
-        bearerToken: bearerToken,
-        attemptId: attemptId,
-      )).thenThrow(apiError);
+      mockDatasource.errorToThrow = apiError;
 
       expect(
         () => repository.resumeAttempt(
@@ -268,10 +329,7 @@ void main() {
     });
 
     test('submitAttempt throws AppException on API error', () {
-      when(mockDatasource.submitAttempt(
-        bearerToken: bearerToken,
-        attemptId: attemptId,
-      )).thenThrow(apiError);
+      mockDatasource.errorToThrow = apiError;
 
       expect(
         () => repository.submitAttempt(
@@ -283,10 +341,7 @@ void main() {
     });
 
     test('getAttemptResult throws AppException on API error', () {
-      when(mockDatasource.getAttemptResult(
-        bearerToken: bearerToken,
-        attemptId: attemptId,
-      )).thenThrow(apiError);
+      mockDatasource.errorToThrow = apiError;
 
       expect(
         () => repository.getAttemptResult(
@@ -404,10 +459,7 @@ void main() {
         statusCode: 409,
       );
 
-      when(mockDatasource.submitAttempt(
-        bearerToken: bearerToken,
-        attemptId: attemptId,
-      )).thenThrow(apiException);
+      mockDatasource.errorToThrow = apiException;
 
       try {
         await repository.submitAttempt(
@@ -478,14 +530,11 @@ void main() {
 
   group('Specific operation error scenarios', () {
     test('startAttempt with MAX_ATTEMPTS_REACHED', () async {
-      when(mockDatasource.startAttempt(
-        bearerToken: bearerToken,
-        assessmentId: assessmentId,
-      )).thenThrow(const ApiClientException(
+      mockDatasource.errorToThrow = const ApiClientException(
         code: 'MAX_ATTEMPTS_REACHED',
         message: 'Maximum number of attempts reached for this assessment.',
         statusCode: 409,
-      ));
+      );
 
       expect(
         () => repository.startAttempt(
@@ -498,14 +547,11 @@ void main() {
     });
 
     test('submitAttempt with ATTEMPT_ALREADY_SUBMITTED', () async {
-      when(mockDatasource.submitAttempt(
-        bearerToken: bearerToken,
-        attemptId: attemptId,
-      )).thenThrow(const ApiClientException(
+      mockDatasource.errorToThrow = const ApiClientException(
         code: 'ATTEMPT_ALREADY_SUBMITTED',
         message: 'Attempt attempt-456 has already been submitted.',
         statusCode: 409,
-      ));
+      );
 
       expect(
         () => repository.submitAttempt(
@@ -518,14 +564,11 @@ void main() {
     });
 
     test('submitAttempt with ATTEMPT_EXPIRED', () async {
-      when(mockDatasource.submitAttempt(
-        bearerToken: bearerToken,
-        attemptId: attemptId,
-      )).thenThrow(const ApiClientException(
+      mockDatasource.errorToThrow = const ApiClientException(
         code: 'ATTEMPT_EXPIRED',
         message: 'Attempt attempt-456 has expired.',
         statusCode: 409,
-      ));
+      );
 
       expect(
         () => repository.submitAttempt(
@@ -538,14 +581,11 @@ void main() {
     });
 
     test('submitAttempt with DEADLINE_CLOSED', () async {
-      when(mockDatasource.submitAttempt(
-        bearerToken: bearerToken,
-        attemptId: attemptId,
-      )).thenThrow(const ApiClientException(
+      mockDatasource.errorToThrow = const ApiClientException(
         code: 'DEADLINE_CLOSED',
         message: 'The assessment deadline has closed.',
         statusCode: 409,
-      ));
+      );
 
       expect(
         () => repository.submitAttempt(
@@ -558,15 +598,12 @@ void main() {
     });
 
     test('resumeAttempt with ATTEMPT_NOT_RESUMABLE', () async {
-      when(mockDatasource.resumeAttempt(
-        bearerToken: bearerToken,
-        attemptId: attemptId,
-      )).thenThrow(const ApiClientException(
+      mockDatasource.errorToThrow = const ApiClientException(
         code: 'ATTEMPT_NOT_RESUMABLE',
         message:
             'Attempt attempt-456 cannot be resumed in its current state.',
         statusCode: 409,
-      ));
+      );
 
       expect(
         () => repository.resumeAttempt(
@@ -579,14 +616,11 @@ void main() {
     });
 
     test('getAssessmentDetail with ASSESSMENT_UNAVAILABLE', () async {
-      when(mockDatasource.getAssessmentDetail(
-        bearerToken: bearerToken,
-        assessmentId: assessmentId,
-      )).thenThrow(const ApiClientException(
+      mockDatasource.errorToThrow = const ApiClientException(
         code: 'ASSESSMENT_UNAVAILABLE',
         message: 'Assessment assessment-123 is not available.',
         statusCode: 409,
-      ));
+      );
 
       expect(
         () => repository.getAssessmentDetail(
@@ -599,14 +633,11 @@ void main() {
     });
 
     test('startAttempt with DEADLINE_NOT_OPEN', () async {
-      when(mockDatasource.startAttempt(
-        bearerToken: bearerToken,
-        assessmentId: assessmentId,
-      )).thenThrow(const ApiClientException(
+      mockDatasource.errorToThrow = const ApiClientException(
         code: 'DEADLINE_NOT_OPEN',
         message: 'The assessment deadline has not opened yet.',
         statusCode: 409,
-      ));
+      );
 
       expect(
         () => repository.startAttempt(

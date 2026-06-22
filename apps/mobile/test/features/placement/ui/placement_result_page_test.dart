@@ -72,7 +72,7 @@ class _FakePlacementRepository implements PlacementRepository {
   Future<PlacementResultModel> getResult(String t,
       {required String attemptId}) async {
     if (_gate != null) return _gate.future;
-    if (_error != null) throw _error!;
+    if (_error != null) throw _error;
     return _result!;
   }
 

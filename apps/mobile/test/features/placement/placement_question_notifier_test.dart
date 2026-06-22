@@ -71,7 +71,7 @@ class _FakePlacementRepository implements PlacementRepository {
     String bearerToken, {
     required String sectionId,
   }) async {
-    if (_loadError != null) throw _loadError!;
+    if (_loadError != null) throw _loadError;
     return _questions ?? const [];
   }
 
@@ -82,7 +82,7 @@ class _FakePlacementRepository implements PlacementRepository {
     required PlacementSubmitAnswerPayload payload,
   }) async {
     capturedPayloads.add(payload);
-    if (_submitError != null) throw _submitError!;
+    if (_submitError != null) throw _submitError;
     return PlacementAnswerModel(
       id: 'ans-${capturedPayloads.length}',
       placementAttemptId: payload.placementAttemptId,

@@ -166,7 +166,7 @@ class _DeadlineSection extends StatelessWidget {
               const SizedBox(width: AimSpacing.space8),
               Text(
                 '$title (${items.length})',
-                style: AimTextStyles.titleSmall.copyWith(color: color),
+                style: AimTextStyles.title.copyWith(color: color),
               ),
             ],
           ),
@@ -194,8 +194,6 @@ class _DeadlineTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-
     return AIMCard(
       variant: AIMCardVariant.elevated,
       semanticLabel: 'Deadline: ${item.assessmentTitle}',

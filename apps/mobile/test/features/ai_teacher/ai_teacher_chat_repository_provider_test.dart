@@ -9,8 +9,10 @@ import 'package:aim_mobile/core/networking/api_client_exception.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/features/ai_teacher/data/datasources/ai_teacher_remote_datasource.dart';
 import 'package:aim_mobile/features/ai_teacher/data/models/ai_teacher_chat_models.dart';
+import 'package:aim_mobile/features/ai_teacher/data/models/ai_teacher_safety_status_model.dart';
 import 'package:aim_mobile/features/ai_teacher/data/repository/repo_impl/ai_teacher_chat_repository_impl.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_chat_state.dart';
+import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_stream_event.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/provider/ai_teacher_provider.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/repository/ai_teacher_chat_repository.dart';
 
@@ -119,6 +121,35 @@ class _FakeAiTeacherDatasource implements AiTeacherRemoteDatasource {
     _throwIfNeeded();
     return feedback;
   }
+
+  @override
+  Stream<AiTeacherStreamEvent> streamMessage({
+    required String bearerToken,
+    required String sessionId,
+    required String message,
+  }) async* {
+    _throwIfNeeded();
+    yield const AiTeacherStreamChunk('Here is a backend-generated ');
+    yield const AiTeacherStreamChunk('explanation.');
+    yield const AiTeacherStreamDone(
+      isFallback: false,
+      provider: 'backend-gateway',
+      model: 'backend-selected',
+    );
+  }
+
+  @override
+  Future<AiTeacherSafetyStatusModel> getSafetyStatus({
+    required String bearerToken,
+    required String sessionId,
+  }) async {
+    _throwIfNeeded();
+    return const AiTeacherSafetyStatusModel(
+      sessionId: 'session-1',
+      status: 'clear',
+      lastCheckedAt: '2026-06-19T00:00:00.000Z',
+    );
+  }
 }
 
 class _FakeAiTeacherRepository implements AiTeacherChatRepository {
@@ -179,6 +210,35 @@ class _FakeAiTeacherRepository implements AiTeacherChatRepository {
   }) async {
     _throwIfNeeded();
     return _FakeAiTeacherDatasource.feedback;
+  }
+
+  @override
+  Stream<AiTeacherStreamEvent> streamMessage({
+    required String bearerToken,
+    required String sessionId,
+    required String message,
+  }) async* {
+    _throwIfNeeded();
+    yield const AiTeacherStreamChunk('Here is a backend-generated ');
+    yield const AiTeacherStreamChunk('explanation.');
+    yield const AiTeacherStreamDone(
+      isFallback: false,
+      provider: 'backend-gateway',
+      model: 'backend-selected',
+    );
+  }
+
+  @override
+  Future<AiTeacherSafetyStatusModel> getSafetyStatus({
+    required String bearerToken,
+    required String sessionId,
+  }) async {
+    _throwIfNeeded();
+    return const AiTeacherSafetyStatusModel(
+      sessionId: 'session-1',
+      status: 'clear',
+      lastCheckedAt: '2026-06-19T00:00:00.000Z',
+    );
   }
 }
 

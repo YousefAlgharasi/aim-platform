@@ -57,8 +57,9 @@ class AiTeacherSettingsPage extends ConsumerWidget {
               child: Text(
                 'These preferences only change how replies are shown on this '
                 'device. They never change how the AI Teacher is taught, '
-                'filtered, or graded, and never affect your mastery, level, '
-                'or recommendations — those stay fully backend-controlled.',
+                'filtered, or graded, and never affect your learning progress '
+                'or backend-generated suggestions — those stay fully '
+                'backend-controlled.',
               ),
             ),
           ],
