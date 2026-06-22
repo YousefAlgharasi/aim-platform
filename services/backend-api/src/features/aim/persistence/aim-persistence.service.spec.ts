@@ -62,8 +62,24 @@ function makeMocksWithFailure(failSql?: string) {
 }
 
 function makeSvc(db: import('../../../database/database.service').DatabaseService) {
-  const svc = new AimPersistenceService(db);
-  return { svc };
+  const stubs = {
+    skillStateUpdate: { upsertMany: jest.fn().mockResolvedValue(undefined) },
+    weaknessUpdate: { upsertMany: jest.fn().mockResolvedValue(undefined) },
+    difficultyDecision: { persist: jest.fn().mockResolvedValue({ ok: true, action: 'skipped_null' }) },
+    recommendationOutput: { replaceActiveSet: jest.fn().mockResolvedValue({ skippedReason: 'null_or_empty_array' }) },
+    reviewScheduleOutput: { upsertMany: jest.fn().mockResolvedValue({ processedCount: 0, skippedNullOrEmpty: true, actions: [] }) },
+    sessionSummary: { persist: jest.fn().mockResolvedValue({ ok: true, action: 'skipped_null' }) },
+  };
+  const svc = new AimPersistenceService(
+    db,
+    stubs.skillStateUpdate as never,
+    stubs.weaknessUpdate as never,
+    stubs.difficultyDecision as never,
+    stubs.recommendationOutput as never,
+    stubs.reviewScheduleOutput as never,
+    stubs.sessionSummary as never,
+  );
+  return { svc, ...stubs };
 }
 
 describe('AimPersistenceService.persist (P5-065 transaction policy)', () => {
