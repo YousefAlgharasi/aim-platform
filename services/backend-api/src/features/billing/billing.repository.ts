@@ -342,6 +342,27 @@ export class BillingRepository {
     const result = await this.db.query<InvoiceItem>(
       `SELECT * FROM invoice_items WHERE invoice_id = $1 ORDER BY created_at ASC`,
       [invoiceId],
+    )).rows;
+  }
+
+  async updateInvoice(id: string, data: Partial<Invoice>): Promise<Invoice | null> {
+    const sets: string[] = [];
+    const values: unknown[] = [];
+    let idx = 1;
+
+    if (data.status !== undefined) { sets.push(`status = $${idx++}`); values.push(data.status); }
+    if (data.paidAt !== undefined) { sets.push(`paid_at = $${idx++}`); values.push(data.paidAt); }
+    if (data.invoiceUrl !== undefined) { sets.push(`invoice_url = $${idx++}`); values.push(data.invoiceUrl); }
+    if (data.metadata !== undefined) { sets.push(`metadata = $${idx++}`); values.push(data.metadata); }
+
+    if (sets.length === 0) return this.findInvoiceById(id);
+
+    sets.push(`updated_at = now()`);
+    values.push(id);
+
+    const result = await this.db.query<Invoice>(
+      `UPDATE invoices SET ${sets.join(', ')} WHERE id = $${idx} RETURNING *`,
+      values,
     );
     return result.rows;
   }
@@ -487,6 +508,43 @@ export class BillingRepository {
       `UPDATE payment_provider_events SET processing_status = $1, error_message = $2, processed_at = now() WHERE id = $3`,
       [status, errorMessage || null, id],
     );
+  }
+
+  async findProviderEventByIdempotencyKey(idempotencyKey: string): Promise<PaymentProviderEvent | null> {
+    const result = await this.db.query<PaymentProviderEvent>(
+      `SELECT * FROM payment_provider_events WHERE idempotency_key = $1`,
+      [idempotencyKey],
+    );
+    return result.rows[0] || null;
+  }
+
+  async updateProviderEvent(id: string, data: Partial<PaymentProviderEvent>): Promise<PaymentProviderEvent | null> {
+    const sets: string[] = [];
+    const values: unknown[] = [];
+    let idx = 1;
+
+    if (data.processingStatus !== undefined) { sets.push(`processing_status = $${idx++}`); values.push(data.processingStatus); }
+    if (data.errorMessage !== undefined) { sets.push(`error_message = $${idx++}`); values.push(data.errorMessage); }
+    if (data.processedAt !== undefined) { sets.push(`processed_at = $${idx++}`); values.push(data.processedAt); }
+
+    if (sets.length === 0) return this.findProviderEventByEventId(id);
+
+    values.push(id);
+
+    const result = await this.db.query<PaymentProviderEvent>(
+      `UPDATE payment_provider_events SET ${sets.join(', ')} WHERE id = $${idx} RETURNING *`,
+      values,
+    );
+    return result.rows[0] || null;
+  }
+
+  async findProviderEventsByStatus(
+    status: PaymentProviderEvent['processingStatus'],
+  ): Promise<PaymentProviderEvent[]> {
+    return (await this.db.query<PaymentProviderEvent>(
+      `SELECT * FROM payment_provider_events WHERE processing_status = $1 ORDER BY created_at DESC`,
+      [status],
+    )).rows;
   }
 
   // --- Audit Logs ---

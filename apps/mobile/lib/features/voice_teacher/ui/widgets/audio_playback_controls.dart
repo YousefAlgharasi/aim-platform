@@ -31,7 +31,7 @@ class AudioPlaybackControls extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: AimSpacing.space8,
         vertical: AimSpacing.space4,
       ),
@@ -43,7 +43,7 @@ class AudioPlaybackControls extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildMainButton(context),
-          SizedBox(width: AimSpacing.space8),
+          const SizedBox(width: AimSpacing.space8),
           if (state == AudioPlaybackState.playing ||
               state == AudioPlaybackState.paused) ...[
             Expanded(
@@ -56,12 +56,12 @@ class AudioPlaybackControls extends StatelessWidget {
                     child: LinearProgressIndicator(
                       value: progress.clamp(0.0, 1.0),
                       minHeight: 4,
-                      backgroundColor: AimColors.primary500.withOpacity(0.15),
+                      backgroundColor: AimColors.primary500.withValues(alpha: 0.15),
                       valueColor: const AlwaysStoppedAnimation(AimColors.primary500),
                     ),
                   ),
                   if (duration != null) ...[
-                    SizedBox(height: AimSpacing.space4 / 2),
+                    const SizedBox(height: AimSpacing.space4 / 2),
                     Text(
                       duration!,
                       style: theme.textTheme.labelSmall?.copyWith(
@@ -73,7 +73,7 @@ class AudioPlaybackControls extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(width: AimSpacing.space4),
+            const SizedBox(width: AimSpacing.space4),
             IconButton(
               icon: const Icon(Icons.replay, size: 20),
               color: AimColors.primary500,
@@ -84,7 +84,7 @@ class AudioPlaybackControls extends StatelessWidget {
             ),
           ],
           if (state == AudioPlaybackState.error) ...[
-            SizedBox(width: AimSpacing.space4),
+            const SizedBox(width: AimSpacing.space4),
             Text(
               isRtl ? 'فشل التشغيل' : 'Playback failed',
               style: theme.textTheme.bodySmall?.copyWith(
@@ -93,8 +93,8 @@ class AudioPlaybackControls extends StatelessWidget {
             ),
           ],
           if (state == AudioPlaybackState.loading) ...[
-            SizedBox(width: AimSpacing.space4),
-            SizedBox(
+            const SizedBox(width: AimSpacing.space4),
+            const SizedBox(
               width: 16,
               height: 16,
               child: CircularProgressIndicator(

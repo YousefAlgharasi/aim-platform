@@ -53,14 +53,14 @@ export class RefundController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateRefundRequestDto,
   ): Promise<Refund> {
-    await this.paymentService.getPaymentById(dto.paymentId, user.internalUserId);
+    await this.paymentService.getPaymentById(dto.paymentId, user.id);
 
     return this.refundService.requestRefund({
       paymentId: dto.paymentId,
       amount: dto.amount,
       currency: dto.currency,
       reason: dto.reason,
-      requestedBy: user.internalUserId,
+      requestedBy: user.id,
     });
   }
 

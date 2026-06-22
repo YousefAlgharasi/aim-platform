@@ -238,7 +238,7 @@ class _DeadlineCard extends StatelessWidget {
               vertical: AimSpacing.space2,
             ),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               borderRadius: AimRadius.borderSm,
             ),
             child: Text(

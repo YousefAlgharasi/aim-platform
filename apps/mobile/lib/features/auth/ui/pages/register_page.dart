@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/routing/routing.dart';
-import '../../../../core/theme/theme.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../logic/provider/auth_flow_provider.dart';
 import '../../logic/provider/register_notifier.dart';
@@ -95,7 +94,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         _passwordController.text == _confirmController.text;
 
     return Scaffold(
-      appBar: AIMTopAppBar(
+      appBar: const AIMTopAppBar(
         title: 'Create Account',
         centerTitle: true,
       ),
@@ -216,7 +215,7 @@ class _ConfirmationSentView extends StatelessWidget {
     final surfaces = aimSurfacesOf(context);
 
     return Scaffold(
-      appBar: AIMTopAppBar(
+      appBar: const AIMTopAppBar(
         title: 'Check Your Email',
         centerTitle: true,
       ),

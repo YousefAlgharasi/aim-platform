@@ -116,6 +116,31 @@ describe('AiTeacherOrchestratorService — timeout status path', () => {
         }),
     } as unknown as AiChatMessageRepository;
 
+    const safetyService = {
+      checkInput: jest.fn().mockResolvedValue({ action: 'allowed' }),
+      checkOutput: jest.fn().mockResolvedValue({ action: 'allowed' }),
+    } as any;
+
+    const costQuotaService = {
+      checkQuota: jest.fn().mockResolvedValue({ allowed: true, periodSpend: 0, budget: 2.0 }),
+      recordUsage: jest.fn().mockResolvedValue({}),
+    } as any;
+
+    const modelConfigService = {
+      selectByTier: jest.fn().mockResolvedValue({
+        id: 'model-config-1',
+        name: 'economy-model',
+        provider_key_ref: 'provider-key-ref-1',
+        model_id: 'model-1',
+        tier: 'economy',
+        status: 'active',
+        limits: {},
+        parameters: {},
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }),
+    } as any;
+
     const service = new AiTeacherOrchestratorService(
       contextBuilder,
       promptBuilder,

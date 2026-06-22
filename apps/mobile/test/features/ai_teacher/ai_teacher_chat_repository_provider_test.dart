@@ -9,7 +9,6 @@ import 'package:aim_mobile/core/networking/api_client_exception.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/features/ai_teacher/data/datasources/ai_teacher_remote_datasource.dart';
 import 'package:aim_mobile/features/ai_teacher/data/models/ai_teacher_chat_models.dart';
-import 'package:aim_mobile/features/ai_teacher/data/models/ai_teacher_safety_status_model.dart';
 import 'package:aim_mobile/features/ai_teacher/data/repository/repo_impl/ai_teacher_chat_repository_impl.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_chat_state.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_stream_event.dart';

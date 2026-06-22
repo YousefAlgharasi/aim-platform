@@ -64,7 +64,7 @@ class _VoiceWaveformIndicatorState extends State<VoiceWaveformIndicator>
         crossAxisAlignment: CrossAxisAlignment.center,
         children: List.generate(widget.barCount, (index) {
           return Padding(
-            padding: EdgeInsets.symmetric(horizontal: AimSpacing.space4 / 2),
+            padding: const EdgeInsets.symmetric(horizontal: AimSpacing.space4 / 2),
             child: AnimatedBuilder(
               animation: _controller,
               builder: (context, child) {
@@ -80,7 +80,7 @@ class _VoiceWaveformIndicatorState extends State<VoiceWaveformIndicator>
                   width: 4,
                   height: widget.height * fraction,
                   decoration: BoxDecoration(
-                    color: barColor.withOpacity(widget.active ? 1.0 : 0.4),
+                    color: barColor.withValues(alpha: widget.active ? 1.0 : 0.4),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 );

@@ -120,8 +120,8 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           placementRepositoryProvider.overrideWithValue(
-            _FakePlacementRepository(
-              error: const ApiClientException(
+            const _FakePlacementRepository(
+              error: ApiClientException(
                 code: 'NOT_FOUND',
                 message: 'No active placement test (404)',
                 statusCode: 404,

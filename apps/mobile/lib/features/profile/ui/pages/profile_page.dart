@@ -12,7 +12,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'edit_profile_page.dart';
 import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/state/app_async_state.dart';
-import '../../../../core/theme/theme.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../auth/data/models/auth_context_model.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
@@ -72,7 +71,7 @@ class ProfilePage extends ConsumerWidget {
         ],
       ),
       body: switch (authContextState) {
-        AppAsyncLoading() => AIMFullScreenLoading(
+        AppAsyncLoading() => const AIMFullScreenLoading(
             semanticLabel: 'Loading profile',
           ),
         AppAsyncFailure(:final message) => AIMFullScreenError(
@@ -90,15 +89,15 @@ class ProfilePage extends ConsumerWidget {
             ),
           ),
       },
-      bottomNavigationBar: SafeArea(
+      bottomNavigationBar: const SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(
+          padding: EdgeInsets.fromLTRB(
             AimSpacing.screenPaddingMobile,
             AimSpacing.innerGap,
             AimSpacing.screenPaddingMobile,
             AimSpacing.space16,
           ),
-          child: const LogoutButton(),
+          child: LogoutButton(),
         ),
       ),
     );

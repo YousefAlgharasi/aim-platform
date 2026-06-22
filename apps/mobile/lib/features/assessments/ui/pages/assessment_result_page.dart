@@ -49,7 +49,7 @@ class _AssessmentResultPageState extends ConsumerState<AssessmentResultPage> {
     return Scaffold(
       appBar: AIMTopAppBar(title: widget.assessmentTitle),
       body: switch (state) {
-        AppAsyncLoading() => AIMFullScreenLoading(
+        AppAsyncLoading() => const AIMFullScreenLoading(
             semanticLabel: 'Loading result',
           ),
         AppAsyncFailure(:final message) => AIMFullScreenError(
@@ -64,7 +64,7 @@ class _AssessmentResultPageState extends ConsumerState<AssessmentResultPage> {
                   route.isFirst,
             ),
           ),
-        AppAsyncIdle() => AIMFullScreenLoading(
+        AppAsyncIdle() => const AIMFullScreenLoading(
             semanticLabel: 'Loading result',
           ),
       },
@@ -111,7 +111,7 @@ class _ResultContent extends StatelessWidget {
               vertical: AimSpacing.space4,
             ),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.12),
+              color: statusColor.withValues(alpha: 0.12),
               borderRadius: AimRadius.borderSm,
             ),
             child: Text(
@@ -128,7 +128,7 @@ class _ResultContent extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
+                const Icon(
                   Icons.warning_amber_rounded,
                   size: AimSizes.iconSm,
                   color: AimColors.warning500,

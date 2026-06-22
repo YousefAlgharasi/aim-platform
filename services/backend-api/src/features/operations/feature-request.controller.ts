@@ -32,7 +32,7 @@ export class FeatureRequestController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateFeatureRequestDto,
   ) {
-    return this.featureRequestService.createRequest(user.internalUserId, dto);
+    return this.featureRequestService.createRequest(user.id, dto);
   }
 
   @Get()
@@ -63,6 +63,6 @@ export class FeatureRequestController {
     @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
   ) {
-    return this.featureRequestService.vote(id, user.internalUserId);
+    return this.featureRequestService.vote(id, user.id);
   }
 }

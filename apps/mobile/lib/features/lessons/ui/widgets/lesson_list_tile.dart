@@ -42,8 +42,8 @@ class LessonListTile extends StatelessWidget {
               color: surfaces.surfaceSunken,
               borderRadius: AimRadius.borderX2l,
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(AimSpacing.space12),
+            child: const Padding(
+              padding: EdgeInsets.all(AimSpacing.space12),
               child: Icon(
                 Icons.play_lesson_outlined,
                 size: AimSizes.iconMd,

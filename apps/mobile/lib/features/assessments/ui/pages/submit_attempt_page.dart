@@ -80,19 +80,19 @@ class _SubmitAttemptPageState extends ConsumerState<SubmitAttemptPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Icon(
+            const Icon(
               Icons.assignment_turned_in_outlined,
               size: AimSizes.avatarLg,
               color: AimColors.primary500,
             ),
             const SizedBox(height: AimSpacing.sectionGap),
-            Text(
+            const Text(
               'Are you sure you want to submit?',
               style: AimTextStyles.h2,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AimSpacing.componentGap),
-            Text(
+            const Text(
               'Once submitted, you will not be able to change your answers. '
               'Your responses will be sent to the server for grading.',
               style: AimTextStyles.bodyMd,
@@ -102,13 +102,13 @@ class _SubmitAttemptPageState extends ConsumerState<SubmitAttemptPage> {
             // Finality warning
             Container(
               padding: const EdgeInsets.all(AimSpacing.componentGap),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AimColors.error100,
                 borderRadius: AimRadius.borderSm,
               ),
               child: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.warning_amber_rounded,
                     size: AimSizes.iconSm,
                     color: AimColors.error500,
