@@ -4,6 +4,7 @@ import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/state/app_form_state.dart';
 import 'package:aim_mobile/features/auth/data/datasources/supabase_auth_datasource.dart';
+import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
 import 'auth_context_provider.dart';
 import 'auth_flow_provider.dart';
 import 'session_store_provider.dart';
@@ -77,7 +78,7 @@ class LoginNotifier extends StateNotifier<AppFormState> {
 
       if (!didLoadContext) {
         final contextState = _ref.read(authContextProvider);
-        final errorMessage = contextState is AppAsyncFailure
+        final errorMessage = contextState is AppAsyncFailure<AuthContextModel>
             ? contextState.message
             : 'Sign in failed. Please try again.';
         state = state.copyWith(
