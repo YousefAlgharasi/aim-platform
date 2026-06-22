@@ -119,6 +119,11 @@ export class CheckoutService {
     return session;
   }
 
+  async getUserCheckoutSessions(userId: string): Promise<CheckoutSession[]> {
+    validateUUID(userId, 'userId');
+    return this.billingRepo.findCheckoutSessionsByUser(userId);
+  }
+
   async handleCheckoutCompleted(providerSessionId: string): Promise<void> {
     const session = await this.billingRepo.findCheckoutSessionByProviderSessionId(providerSessionId);
     if (!session) return;

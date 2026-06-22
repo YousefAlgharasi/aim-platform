@@ -45,12 +45,6 @@ import { AimAdapterErrorHandlerService } from '../adapter/aim-adapter-error-hand
 import { AimResponseMapperService } from '../adapter/aim-response-mapper.service';
 import { AimPersistenceService } from '../persistence/aim-persistence.service';
 import { AimAuditService } from '../persistence/aim-audit.service';
-import { StudentSkillStateUpdateService } from '../persistence/student-skill-state-update.service';
-import { WeaknessUpdateService } from '../persistence/weakness-update.service';
-import { DifficultyDecisionService } from '../persistence/difficulty-decision.service';
-import { RecommendationOutputService } from '../persistence/recommendation-output.service';
-import { ReviewScheduleOutputService } from '../persistence/review-schedule-output.service';
-import { SessionSummaryService } from '../persistence/session-summary.service';
 import { AimMappingContext } from '../adapter/aim-request-mapper.types';
 import { AimValidatedResponse } from '../adapter/aim-response-mapper.types';
 import { AimAnalysisCallResult } from '../aim-engine-client.types';
@@ -286,22 +280,7 @@ function buildHarness(): IntegrationHarness {
     .spyOn(stateAssembly, 'assemble')
     .mockResolvedValue(STUB_MAPPING_CONTEXT);
 
-  const skillStateService = new StudentSkillStateUpdateService(mockDb);
-  const weaknessService = new WeaknessUpdateService(mockDb);
-  const difficultyService = new DifficultyDecisionService(mockDb);
-  const recommendationService = new RecommendationOutputService(mockDb);
-  const reviewScheduleService = new ReviewScheduleOutputService(mockDb);
-  const sessionSummaryService = new SessionSummaryService(mockDb);
-
-  const persistence = new AimPersistenceService(
-    mockDb,
-    skillStateService,
-    weaknessService,
-    difficultyService,
-    recommendationService,
-    reviewScheduleService,
-    sessionSummaryService,
-  );
+  const persistence = new AimPersistenceService(mockDb);
   const persistenceSpy = jest.spyOn(persistence, 'persist').mockResolvedValue(undefined);
 
   const audit = new AimAuditService(mockDb);

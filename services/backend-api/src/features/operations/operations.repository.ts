@@ -20,125 +20,125 @@ export class OperationsRepository {
   // --- Support Tickets ---
 
   async findTicketsByRequester(requesterId: string): Promise<SupportTicket[]> {
-    return this.db.query(
+    return (await this.db.query<SupportTicket>(
       `SELECT * FROM support_tickets WHERE requester_id = $1 ORDER BY created_at DESC`,
       [requesterId],
-    );
+    )).rows;
   }
 
   async findTicketById(id: string): Promise<SupportTicket | null> {
-    const rows = await this.db.query(
+    const result = await this.db.query<SupportTicket>(
       `SELECT * FROM support_tickets WHERE id = $1`,
       [id],
     );
-    return rows[0] || null;
+    return result.rows[0] || null;
   }
 
   async createTicket(data: Partial<SupportTicket>): Promise<SupportTicket> {
-    const rows = await this.db.query(
+    const result = await this.db.query<SupportTicket>(
       `INSERT INTO support_tickets (requester_id, category, severity, subject, description, metadata)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
       [data.requesterId, data.category, data.severity, data.subject, data.description, data.metadata || {}],
     );
-    return rows[0];
+    return result.rows[0];
   }
 
   async updateTicketStatus(id: string, status: string): Promise<SupportTicket | null> {
-    const rows = await this.db.query(
+    const result = await this.db.query<SupportTicket>(
       `UPDATE support_tickets SET status = $1 WHERE id = $2 RETURNING *`,
       [status, id],
     );
-    return rows[0] || null;
+    return result.rows[0] || null;
   }
 
   async assignTicketTo(id: string, assigneeId: string): Promise<SupportTicket | null> {
-    const rows = await this.db.query(
+    const result = await this.db.query<SupportTicket>(
       `UPDATE support_tickets SET assigned_to = $1 WHERE id = $2 RETURNING *`,
       [assigneeId, id],
     );
-    return rows[0] || null;
+    return result.rows[0] || null;
   }
 
   // --- Support Ticket Comments ---
 
   async findCommentsByTicket(ticketId: string): Promise<SupportTicketComment[]> {
-    return this.db.query(
+    return (await this.db.query<SupportTicketComment>(
       `SELECT * FROM support_ticket_comments WHERE ticket_id = $1 ORDER BY created_at ASC`,
       [ticketId],
-    );
+    )).rows;
   }
 
   async createComment(data: Partial<SupportTicketComment>): Promise<SupportTicketComment> {
-    const rows = await this.db.query(
+    const result = await this.db.query<SupportTicketComment>(
       `INSERT INTO support_ticket_comments (ticket_id, author_id, body, visibility)
        VALUES ($1, $2, $3, $4)
        RETURNING *`,
       [data.ticketId, data.authorId, data.body, data.visibility || 'public'],
     );
-    return rows[0];
+    return result.rows[0];
   }
 
   // --- User Feedback ---
 
   async findFeedbackByUser(userId: string): Promise<UserFeedback[]> {
-    return this.db.query(
+    return (await this.db.query<UserFeedback>(
       `SELECT * FROM user_feedback WHERE user_id = $1 ORDER BY created_at DESC`,
       [userId],
-    );
+    )).rows;
   }
 
   async findFeedbackById(id: string): Promise<UserFeedback | null> {
-    const rows = await this.db.query(
+    const result = await this.db.query<UserFeedback>(
       `SELECT * FROM user_feedback WHERE id = $1`,
       [id],
     );
-    return rows[0] || null;
+    return result.rows[0] || null;
   }
 
   async createFeedback(data: Partial<UserFeedback>): Promise<UserFeedback> {
-    const rows = await this.db.query(
+    const result = await this.db.query<UserFeedback>(
       `INSERT INTO user_feedback (user_id, category, rating, title, body, source_surface, metadata)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
       [data.userId, data.category, data.rating || null, data.title, data.body, data.sourceSurface, data.metadata || {}],
     );
-    return rows[0];
+    return result.rows[0];
   }
 
   async updateFeedbackStatus(id: string, status: string): Promise<UserFeedback | null> {
-    const rows = await this.db.query(
+    const result = await this.db.query<UserFeedback>(
       `UPDATE user_feedback SET status = $1 WHERE id = $2 RETURNING *`,
       [status, id],
     );
-    return rows[0] || null;
+    return result.rows[0] || null;
   }
 
   // --- Feature Requests ---
 
   async findAllFeatureRequests(limit: number = 50, offset: number = 0): Promise<FeatureRequest[]> {
-    return this.db.query(
+    return (await this.db.query<FeatureRequest>(
       `SELECT * FROM feature_requests ORDER BY vote_count DESC, created_at DESC LIMIT $1 OFFSET $2`,
       [limit, offset],
-    );
+    )).rows;
   }
 
   async findFeatureRequestById(id: string): Promise<FeatureRequest | null> {
-    const rows = await this.db.query(
+    const result = await this.db.query<FeatureRequest>(
       `SELECT * FROM feature_requests WHERE id = $1`,
       [id],
     );
-    return rows[0] || null;
+    return result.rows[0] || null;
   }
 
   async createFeatureRequest(data: Partial<FeatureRequest>): Promise<FeatureRequest> {
-    const rows = await this.db.query(
+    const result = await this.db.query<FeatureRequest>(
       `INSERT INTO feature_requests (submitted_by, title, description, metadata)
        VALUES ($1, $2, $3, $4)
        RETURNING *`,
       [data.submittedBy, data.title, data.description, data.metadata || {}],
     );
-    return rows[0];
+    return result.rows[0];
   }
 
   async updateFeatureRequestStatus(
@@ -148,7 +148,7 @@ export class OperationsRepository {
     triageNotes?: string | null,
     triagedBy?: string | null,
   ): Promise<FeatureRequest | null> {
-    const rows = await this.db.query(
+    const result = await this.db.query<FeatureRequest>(
       `UPDATE feature_requests
        SET status = $1,
            priority = COALESCE($2, priority),
@@ -159,42 +159,42 @@ export class OperationsRepository {
        RETURNING *`,
       [status, priority || null, triageNotes || null, triagedBy || null, id],
     );
-    return rows[0] || null;
+    return result.rows[0] || null;
   }
 
   async incrementFeatureRequestVote(id: string): Promise<FeatureRequest | null> {
-    const rows = await this.db.query(
+    const result = await this.db.query<FeatureRequest>(
       `UPDATE feature_requests SET vote_count = vote_count + 1 WHERE id = $1 RETURNING *`,
       [id],
     );
-    return rows[0] || null;
+    return result.rows[0] || null;
   }
 
   // --- Incident Records ---
 
   async findAllIncidents(limit: number = 50, offset: number = 0): Promise<IncidentRecord[]> {
-    return this.db.query(
+    return (await this.db.query<IncidentRecord>(
       `SELECT * FROM incident_records ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
       [limit, offset],
-    );
+    )).rows;
   }
 
   async findIncidentById(id: string): Promise<IncidentRecord | null> {
-    const rows = await this.db.query(
+    const result = await this.db.query<IncidentRecord>(
       `SELECT * FROM incident_records WHERE id = $1`,
       [id],
     );
-    return rows[0] || null;
+    return result.rows[0] || null;
   }
 
   async createIncident(data: Partial<IncidentRecord>): Promise<IncidentRecord> {
-    const rows = await this.db.query(
+    const result = await this.db.query<IncidentRecord>(
       `INSERT INTO incident_records (title, description, severity, started_at, owner_id, metadata)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
       [data.title, data.description, data.severity, data.startedAt, data.ownerId || null, data.metadata || {}],
     );
-    return rows[0];
+    return result.rows[0];
   }
 
   async updateIncidentStatus(
@@ -203,7 +203,7 @@ export class OperationsRepository {
     resolvedAt?: Date | null,
     postmortemUrl?: string | null,
   ): Promise<IncidentRecord | null> {
-    const rows = await this.db.query(
+    const result = await this.db.query<IncidentRecord>(
       `UPDATE incident_records
        SET status = $1,
            resolved_at = COALESCE($2, resolved_at),
@@ -212,34 +212,34 @@ export class OperationsRepository {
        RETURNING *`,
       [status, resolvedAt || null, postmortemUrl || null, id],
     );
-    return rows[0] || null;
+    return result.rows[0] || null;
   }
 
   // --- Maintenance Windows ---
 
   async findAllMaintenanceWindows(limit: number = 50, offset: number = 0): Promise<MaintenanceWindow[]> {
-    return this.db.query(
+    return (await this.db.query<MaintenanceWindow>(
       `SELECT * FROM maintenance_windows ORDER BY scheduled_start DESC LIMIT $1 OFFSET $2`,
       [limit, offset],
-    );
+    )).rows;
   }
 
   async findMaintenanceWindowById(id: string): Promise<MaintenanceWindow | null> {
-    const rows = await this.db.query(
+    const result = await this.db.query<MaintenanceWindow>(
       `SELECT * FROM maintenance_windows WHERE id = $1`,
       [id],
     );
-    return rows[0] || null;
+    return result.rows[0] || null;
   }
 
   async createMaintenanceWindow(data: Partial<MaintenanceWindow>): Promise<MaintenanceWindow> {
-    const rows = await this.db.query(
+    const result = await this.db.query<MaintenanceWindow>(
       `INSERT INTO maintenance_windows (title, description, type, affected_services, scheduled_start, scheduled_end, user_message, created_by, metadata)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
       [data.title, data.description || null, data.type, data.affectedServices || [], data.scheduledStart, data.scheduledEnd, data.userMessage || null, data.createdBy, data.metadata || {}],
     );
-    return rows[0];
+    return result.rows[0];
   }
 
   async updateMaintenanceWindowStatus(
@@ -248,7 +248,7 @@ export class OperationsRepository {
     actualStart?: Date | null,
     actualEnd?: Date | null,
   ): Promise<MaintenanceWindow | null> {
-    const rows = await this.db.query(
+    const result = await this.db.query<MaintenanceWindow>(
       `UPDATE maintenance_windows
        SET status = $1,
            actual_start = COALESCE($2, actual_start),
@@ -257,65 +257,65 @@ export class OperationsRepository {
        RETURNING *`,
       [status, actualStart || null, actualEnd || null, id],
     );
-    return rows[0] || null;
+    return result.rows[0] || null;
   }
 
   // --- Release Notes ---
 
   async findAllReleaseNotes(limit: number = 50, offset: number = 0): Promise<ReleaseNote[]> {
-    return this.db.query(
+    return (await this.db.query<ReleaseNote>(
       `SELECT * FROM release_notes ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
       [limit, offset],
-    );
+    )).rows;
   }
 
   async findPublishedReleaseNotes(limit: number = 50, offset: number = 0): Promise<ReleaseNote[]> {
-    return this.db.query(
+    return (await this.db.query<ReleaseNote>(
       `SELECT * FROM release_notes WHERE status = 'published' ORDER BY published_at DESC LIMIT $1 OFFSET $2`,
       [limit, offset],
-    );
+    )).rows;
   }
 
   async findReleaseNoteById(id: string): Promise<ReleaseNote | null> {
-    const rows = await this.db.query(
+    const result = await this.db.query<ReleaseNote>(
       `SELECT * FROM release_notes WHERE id = $1`,
       [id],
     );
-    return rows[0] || null;
+    return result.rows[0] || null;
   }
 
   async createReleaseNote(data: Partial<ReleaseNote>): Promise<ReleaseNote> {
-    const rows = await this.db.query(
+    const result = await this.db.query<ReleaseNote>(
       `INSERT INTO release_notes (version, title, body, audience, created_by, metadata)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
       [data.version, data.title, data.body || null, data.audience || 'all', data.createdBy, data.metadata || {}],
     );
-    return rows[0];
+    return result.rows[0];
   }
 
   async publishReleaseNote(id: string, publishedBy: string): Promise<ReleaseNote | null> {
-    const rows = await this.db.query(
+    const result = await this.db.query<ReleaseNote>(
       `UPDATE release_notes SET status = 'published', published_at = now(), published_by = $1 WHERE id = $2 RETURNING *`,
       [publishedBy, id],
     );
-    return rows[0] || null;
+    return result.rows[0] || null;
   }
 
   // --- Operational Status ---
 
   async findAllOperationalStatuses(): Promise<OperationalStatus[]> {
-    return this.db.query(
+    return (await this.db.query<OperationalStatus>(
       `SELECT * FROM operational_status ORDER BY component ASC`,
-    );
+    )).rows;
   }
 
   async findOperationalStatusByComponent(component: string): Promise<OperationalStatus | null> {
-    const rows = await this.db.query(
+    const result = await this.db.query<OperationalStatus>(
       `SELECT * FROM operational_status WHERE component = $1`,
       [component],
     );
-    return rows[0] || null;
+    return result.rows[0] || null;
   }
 
   async upsertOperationalStatus(
@@ -324,7 +324,7 @@ export class OperationsRepository {
     description: string | null,
     updatedBy: string,
   ): Promise<OperationalStatus> {
-    const rows = await this.db.query(
+    const result = await this.db.query<OperationalStatus>(
       `INSERT INTO operational_status (component, status, description, updated_by)
        VALUES ($1, $2, $3, $4)
        ON CONFLICT (component)
@@ -332,33 +332,33 @@ export class OperationsRepository {
        RETURNING *`,
       [component, status, description, updatedBy],
     );
-    return rows[0];
+    return result.rows[0];
   }
 
   // --- Feature Flags ---
 
   async findAllFeatureFlags(): Promise<FeatureFlag[]> {
-    return this.db.query(
+    return (await this.db.query<FeatureFlag>(
       `SELECT * FROM feature_flags ORDER BY flag_key ASC`,
-    );
+    )).rows;
   }
 
   async findFeatureFlagByKey(flagKey: string): Promise<FeatureFlag | null> {
-    const rows = await this.db.query(
+    const result = await this.db.query<FeatureFlag>(
       `SELECT * FROM feature_flags WHERE flag_key = $1`,
       [flagKey],
     );
-    return rows[0] || null;
+    return result.rows[0] || null;
   }
 
   async createFeatureFlag(data: Partial<FeatureFlag>): Promise<FeatureFlag> {
-    const rows = await this.db.query(
+    const result = await this.db.query<FeatureFlag>(
       `INSERT INTO feature_flags (flag_key, name, description, owner_id, metadata)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
       [data.flagKey, data.name, data.description || null, data.ownerId || null, data.metadata || {}],
     );
-    return rows[0];
+    return result.rows[0];
   }
 
   async updateFeatureFlag(
@@ -379,44 +379,44 @@ export class OperationsRepository {
 
     values.push(id);
 
-    const rows = await this.db.query(
+    const result = await this.db.query<FeatureFlag>(
       `UPDATE feature_flags SET ${sets.join(', ')} WHERE id = $${idx} RETURNING *`,
       values,
     );
-    return rows[0] || null;
+    return result.rows[0] || null;
   }
 
   private async findFeatureFlagById(id: string): Promise<FeatureFlag | null> {
-    const rows = await this.db.query(
+    const result = await this.db.query<FeatureFlag>(
       `SELECT * FROM feature_flags WHERE id = $1`,
       [id],
     );
-    return rows[0] || null;
+    return result.rows[0] || null;
   }
 
   // --- Operations Audit Logs ---
 
   async createAuditLog(data: Partial<OperationsAuditLog>): Promise<OperationsAuditLog> {
-    const rows = await this.db.query(
+    const result = await this.db.query<OperationsAuditLog>(
       `INSERT INTO operations_audit_logs (actor_id, action, resource_type, resource_id, details)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
       [data.actorId, data.action, data.resourceType, data.resourceId, data.details || {}],
     );
-    return rows[0];
+    return result.rows[0];
   }
 
   async findAuditLogsByResource(resourceType: string, resourceId: string): Promise<OperationsAuditLog[]> {
-    return this.db.query(
+    return (await this.db.query<OperationsAuditLog>(
       `SELECT * FROM operations_audit_logs WHERE resource_type = $1 AND resource_id = $2 ORDER BY created_at DESC`,
       [resourceType, resourceId],
-    );
+    )).rows;
   }
 
   async findAuditLogsByActor(actorId: string, limit: number = 50, offset: number = 0): Promise<OperationsAuditLog[]> {
-    return this.db.query(
+    return (await this.db.query<OperationsAuditLog>(
       `SELECT * FROM operations_audit_logs WHERE actor_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
       [actorId, limit, offset],
-    );
+    )).rows;
   }
 }
