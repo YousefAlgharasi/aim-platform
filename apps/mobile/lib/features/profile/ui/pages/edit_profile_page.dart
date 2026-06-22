@@ -12,7 +12,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/state/app_async_state.dart';
-import '../../../../core/theme/theme.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../auth/data/models/auth_context_model.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
