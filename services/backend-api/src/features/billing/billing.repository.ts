@@ -230,6 +230,14 @@ export class BillingRepository {
     return result.rows;
   }
 
+  async findPendingCheckoutSessionsByUser(userId: string): Promise<CheckoutSession[]> {
+    const result = await this.db.query<CheckoutSession>(
+      `SELECT * FROM checkout_sessions WHERE user_id = $1 AND status = 'pending' ORDER BY created_at DESC`,
+      [userId],
+    );
+    return result.rows;
+  }
+
   async findCheckoutSessionByProviderSessionId(providerSessionId: string): Promise<CheckoutSession | null> {
     const result = await this.db.query<CheckoutSession>(
       `SELECT * FROM checkout_sessions WHERE provider_session_id = $1`,
@@ -300,12 +308,50 @@ export class BillingRepository {
     return result.rows[0] || null;
   }
 
+  async findPaymentsBySubscriptionId(subscriptionId: string): Promise<Payment[]> {
+    const result = await this.db.query<Payment>(
+      `SELECT * FROM payments WHERE subscription_id = $1 ORDER BY created_at DESC`,
+      [subscriptionId],
+    );
+    return result.rows;
+  }
+
+  async updatePayment(id: string, data: Partial<Payment>): Promise<Payment | null> {
+    const sets: string[] = [];
+    const values: unknown[] = [];
+    let idx = 1;
+
+    if (data.status !== undefined) { sets.push(`status = $${idx++}`); values.push(data.status); }
+    if (data.providerPaymentId !== undefined) { sets.push(`provider_payment_id = $${idx++}`); values.push(data.providerPaymentId); }
+    if (data.paymentMethodType !== undefined) { sets.push(`payment_method_type = $${idx++}`); values.push(data.paymentMethodType); }
+    if (data.metadata !== undefined) { sets.push(`metadata = $${idx++}`); values.push(data.metadata); }
+
+    if (sets.length === 0) return this.findPaymentById(id);
+
+    sets.push(`updated_at = now()`);
+    values.push(id);
+
+    const result = await this.db.query<Payment>(
+      `UPDATE payments SET ${sets.join(', ')} WHERE id = $${idx} RETURNING *`,
+      values,
+    );
+    return result.rows[0] || null;
+  }
+
   // --- Invoices ---
 
   async findInvoicesByUserId(userId: string): Promise<Invoice[]> {
     const result = await this.db.query<Invoice>(
       `SELECT * FROM invoices WHERE user_id = $1 ORDER BY created_at DESC`,
       [userId],
+    );
+    return result.rows;
+  }
+
+  async findInvoicesBySubscriptionId(subscriptionId: string): Promise<Invoice[]> {
+    const result = await this.db.query<Invoice>(
+      `SELECT * FROM invoices WHERE subscription_id = $1 ORDER BY created_at DESC`,
+      [subscriptionId],
     );
     return result.rows;
   }
@@ -420,6 +466,36 @@ export class BillingRepository {
     return result.rows[0] || null;
   }
 
+  async findRefundByProviderRefundId(providerRefundId: string): Promise<Refund | null> {
+    const result = await this.db.query<Refund>(
+      `SELECT * FROM refunds WHERE provider_refund_id = $1`,
+      [providerRefundId],
+    );
+    return result.rows[0] || null;
+  }
+
+  async updateRefund(id: string, data: Partial<Refund>): Promise<Refund | null> {
+    const sets: string[] = [];
+    const values: unknown[] = [];
+    let idx = 1;
+
+    if (data.status !== undefined) { sets.push(`status = $${idx++}`); values.push(data.status); }
+    if (data.approvedBy !== undefined) { sets.push(`approved_by = $${idx++}`); values.push(data.approvedBy); }
+    if (data.providerRefundId !== undefined) { sets.push(`provider_refund_id = $${idx++}`); values.push(data.providerRefundId); }
+    if (data.metadata !== undefined) { sets.push(`metadata = $${idx++}`); values.push(data.metadata); }
+
+    if (sets.length === 0) return this.findRefundById(id);
+
+    sets.push(`updated_at = now()`);
+    values.push(id);
+
+    const result = await this.db.query<Refund>(
+      `UPDATE refunds SET ${sets.join(', ')} WHERE id = $${idx} RETURNING *`,
+      values,
+    );
+    return result.rows[0] || null;
+  }
+
   // --- Coupons ---
 
   async findActiveCoupons(): Promise<Coupon[]> {
@@ -447,12 +523,28 @@ export class BillingRepository {
     return result.rows[0];
   }
 
+  async incrementCouponRedemptions(id: string): Promise<Coupon | null> {
+    const result = await this.db.query<Coupon>(
+      `UPDATE coupons SET times_redeemed = times_redeemed + 1, updated_at = now() WHERE id = $1 RETURNING *`,
+      [id],
+    );
+    return result.rows[0] || null;
+  }
+
   // --- Promotion Codes ---
 
   async findPromotionCodeByCode(code: string): Promise<PromotionCode | null> {
     const result = await this.db.query<PromotionCode>(
       `SELECT * FROM promotion_codes WHERE code = $1 AND status = 'active'`,
       [code],
+    );
+    return result.rows[0] || null;
+  }
+
+  async incrementPromotionCodeRedemptions(id: string): Promise<PromotionCode | null> {
+    const result = await this.db.query<PromotionCode>(
+      `UPDATE promotion_codes SET times_redeemed = times_redeemed + 1, updated_at = now() WHERE id = $1 RETURNING *`,
+      [id],
     );
     return result.rows[0] || null;
   }
@@ -568,10 +660,26 @@ export class BillingRepository {
     return result.rows[0];
   }
 
-  async findAuditLogs(limit: number = 50, offset: number = 0): Promise<BillingAuditLog[]> {
+  async findAuditLogs(filters?: {
+    entityType?: string;
+    entityId?: string;
+    actorId?: string;
+    limit?: number;
+  }): Promise<BillingAuditLog[]> {
+    const conditions: string[] = [];
+    const values: unknown[] = [];
+    let idx = 1;
+
+    if (filters?.entityType !== undefined) { conditions.push(`entity_type = $${idx++}`); values.push(filters.entityType); }
+    if (filters?.entityId !== undefined) { conditions.push(`entity_id = $${idx++}`); values.push(filters.entityId); }
+    if (filters?.actorId !== undefined) { conditions.push(`actor_id = $${idx++}`); values.push(filters.actorId); }
+
+    const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    values.push(filters?.limit ?? 50);
+
     const result = await this.db.query<BillingAuditLog>(
-      `SELECT * FROM billing_audit_logs ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
-      [limit, offset],
+      `SELECT * FROM billing_audit_logs ${where} ORDER BY created_at DESC LIMIT $${idx}`,
+      values,
     );
     return result.rows;
   }
