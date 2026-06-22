@@ -23,13 +23,13 @@ class AiStreamingMessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final avatar = DecoratedBox(
-      decoration: const BoxDecoration(
+    const avatar = DecoratedBox(
+      decoration: BoxDecoration(
         color: AimColors.primary50,
         shape: BoxShape.circle,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(AimSpacing.space8),
+        padding: EdgeInsets.all(AimSpacing.space8),
         child: Icon(
           Icons.auto_awesome_rounded,
           size: AimSizes.iconSm,

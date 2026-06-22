@@ -9,7 +9,6 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_token_interceptor_p
 import 'package:aim_mobile/features/assessments/data/datasources/assessment_datasources.dart';
 import 'package:aim_mobile/features/assessments/data/repository/assessment_data_repository.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
-import 'package:aim_mobile/features/assessments/logic/entity/answer_draft.dart';
 import 'package:aim_mobile/features/assessments/logic/repository/assessment_repository.dart';
 import 'assessment_list_notifier.dart';
 import 'assessment_detail_notifier.dart';
