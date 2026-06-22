@@ -24,7 +24,18 @@ function makeRecord(overrides: Partial<AiTeacherSafetyCheckRow> = {}): AiTeacher
 
 function makeRepository() {
   return {
-    create: jest.fn().mockImplementation((input) => Promise.resolve(makeRecord(input))),
+    create: jest.fn().mockImplementation((input) =>
+      Promise.resolve(
+        makeRecord({
+          target_type: input.targetType,
+          target_id: input.targetId,
+          category: input.category,
+          severity: input.severity,
+          action: input.action,
+          metadata: input.metadata ?? {},
+        }),
+      ),
+    ),
   } as unknown as AiTeacherSafetyCheckRepository;
 }
 

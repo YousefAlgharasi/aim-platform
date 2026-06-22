@@ -44,6 +44,12 @@ jobs:
       - name: Test (pytest)
         run: pytest
 
+      - name: Audit dependencies
+        run: pip install pip-audit && pip-audit || true
+
+      - name: Test with coverage
+        run: pytest --cov=aim_engine --cov-report=term-missing || true
+
     # Phase 1 boundary guards
     # AIM Engine logic is Python/backend-owned — must not run in any client
     # No AI provider keys or Supabase service-role keys in source
