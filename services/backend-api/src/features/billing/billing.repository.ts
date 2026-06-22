@@ -342,7 +342,8 @@ export class BillingRepository {
     const result = await this.db.query<InvoiceItem>(
       `SELECT * FROM invoice_items WHERE invoice_id = $1 ORDER BY created_at ASC`,
       [invoiceId],
-    )).rows;
+    );
+    return result.rows;
   }
 
   async updateInvoice(id: string, data: Partial<Invoice>): Promise<Invoice | null> {
@@ -364,7 +365,7 @@ export class BillingRepository {
       `UPDATE invoices SET ${sets.join(', ')} WHERE id = $${idx} RETURNING *`,
       values,
     );
-    return result.rows;
+    return result.rows[0] ?? null;
   }
 
   // --- Refunds ---
