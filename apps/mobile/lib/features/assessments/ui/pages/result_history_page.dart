@@ -57,7 +57,7 @@ class _ResultHistoryPageState extends ConsumerState<ResultHistoryPage> {
     return Scaffold(
       appBar: AIMTopAppBar(title: widget.assessmentTitle),
       body: switch (state) {
-        AppAsyncLoading() => AIMFullScreenLoading(
+        AppAsyncLoading() => const AIMFullScreenLoading(
             semanticLabel: 'Loading result history',
           ),
         AppAsyncFailure(:final message) => AIMFullScreenError(
@@ -68,7 +68,7 @@ class _ResultHistoryPageState extends ConsumerState<ResultHistoryPage> {
             history: data,
             onItemTap: _onItemTap,
           ),
-        AppAsyncIdle() => AIMFullScreenLoading(
+        AppAsyncIdle() => const AIMFullScreenLoading(
             semanticLabel: 'Loading result history',
           ),
       },
@@ -88,8 +88,8 @@ class _ResultHistoryContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (history.results.isEmpty) {
-      return AIMEmptyState(
-        icon: const Icon(Icons.history_outlined),
+      return const AIMEmptyState(
+        icon: Icon(Icons.history_outlined),
         title: 'No results yet',
         subtitle: 'Your past attempt results will appear here.',
       );
@@ -193,7 +193,7 @@ class _ResultHistoryTile extends StatelessWidget {
               color: Theme.of(context)
                   .colorScheme
                   .onSurface
-                  .withOpacity(0.6),
+                  .withValues(alpha: 0.6),
             ),
           ),
         ],

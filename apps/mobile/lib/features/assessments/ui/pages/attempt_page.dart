@@ -92,7 +92,7 @@ class _AttemptPageState extends ConsumerState<AttemptPage> {
     return Scaffold(
       appBar: AIMTopAppBar(title: widget.assessmentTitle),
       body: switch (resumeState) {
-        AppAsyncLoading() => AIMFullScreenLoading(
+        AppAsyncLoading() => const AIMFullScreenLoading(
             semanticLabel: 'Resuming attempt',
           ),
         AppAsyncFailure(:final message) => AIMFullScreenError(
@@ -105,7 +105,7 @@ class _AttemptPageState extends ConsumerState<AttemptPage> {
             submitting: _submitting,
             onSubmit: _submitAttempt,
           ),
-        AppAsyncIdle() => AIMFullScreenLoading(
+        AppAsyncIdle() => const AIMFullScreenLoading(
             semanticLabel: 'Resuming attempt',
           ),
       },
@@ -145,7 +145,7 @@ class _AttemptContent extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.assignment_outlined,
                       size: AimSizes.iconSm,
                       color: AimColors.primary500,
@@ -165,7 +165,7 @@ class _AttemptContent extends StatelessWidget {
                     vertical: AimSpacing.space2,
                   ),
                   decoration: BoxDecoration(
-                    color: AimColors.info500.withOpacity(0.12),
+                    color: AimColors.info500.withValues(alpha: 0.12),
                     borderRadius: AimRadius.borderSm,
                   ),
                   child: Text(
@@ -190,9 +190,9 @@ class _AttemptContent extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AimSpacing.sectionGap),
-          Expanded(
+          const Expanded(
             child: AIMEmptyState(
-              icon: const Icon(Icons.quiz_outlined),
+              icon: Icon(Icons.quiz_outlined),
               title: 'Questions',
               subtitle:
                   'Question rendering will be available in a future update.',

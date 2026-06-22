@@ -82,7 +82,7 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
     return Scaffold(
       appBar: AIMTopAppBar(title: widget.lessonTitle),
       body: switch (state) {
-        AppAsyncLoading() => AIMFullScreenLoading(
+        AppAsyncLoading() => const AIMFullScreenLoading(
             semanticLabel: 'Loading lesson',
           ),
         AppAsyncFailure(:final message) => AIMFullScreenError(
@@ -93,7 +93,7 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
             detail: data,
             onRefresh: _refresh,
           ),
-        AppAsyncIdle() => AIMFullScreenLoading(
+        AppAsyncIdle() => const AIMFullScreenLoading(
             semanticLabel: 'Loading lesson',
           ),
       },
@@ -138,8 +138,8 @@ class _LessonDetailContent extends StatelessWidget {
 
           // Assets section
           if (detail.hasNoContent)
-            AIMEmptyState(
-              icon: const Icon(Icons.play_lesson_outlined),
+            const AIMEmptyState(
+              icon: Icon(Icons.play_lesson_outlined),
               title: 'No content yet',
               subtitle: 'Published lesson content will appear here.',
             )

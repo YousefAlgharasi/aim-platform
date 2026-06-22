@@ -61,31 +61,9 @@ function makeMocksWithFailure(failSql?: string) {
   return { db, mockClient, clientQueries };
 }
 
-// Services injected into the constructor (not used for tx-scoped writes,
-// but required by NestJS DI — pass minimal stubs)
-function makeStubServices() {
-  return {
-    skillStateUpdate: { upsertMany: jest.fn().mockResolvedValue(undefined) },
-    weaknessUpdate: { upsertMany: jest.fn().mockResolvedValue(undefined) },
-    difficultyDecision: { persist: jest.fn().mockResolvedValue({ ok: true, action: 'skipped_null' }) },
-    recommendationOutput: { replaceActiveSet: jest.fn().mockResolvedValue({ skippedReason: 'null_or_empty_array' }) },
-    reviewScheduleOutput: { upsertMany: jest.fn().mockResolvedValue({ processedCount: 0, skippedNullOrEmpty: true, actions: [] }) },
-    sessionSummary: { persist: jest.fn().mockResolvedValue({ ok: true, action: 'skipped_null' }) },
-  };
-}
-
 function makeSvc(db: import('../../../database/database.service').DatabaseService) {
-  const stubs = makeStubServices();
-  const svc = new AimPersistenceService(
-    db,
-    stubs.skillStateUpdate as never,
-    stubs.weaknessUpdate as never,
-    stubs.difficultyDecision as never,
-    stubs.recommendationOutput as never,
-    stubs.reviewScheduleOutput as never,
-    stubs.sessionSummary as never,
-  );
-  return { svc, ...stubs };
+  const svc = new AimPersistenceService(db);
+  return { svc };
 }
 
 describe('AimPersistenceService.persist (P5-065 transaction policy)', () => {

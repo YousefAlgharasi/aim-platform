@@ -85,10 +85,10 @@ void main() {
   testWidgets('LogoutButton renders without errors under Arabic RTL locale',
       (tester) async {
     await tester.pumpWidget(
-      ProviderScope(
+      const ProviderScope(
         child: MaterialApp(
-          locale: const Locale('ar'),
-          home: const Scaffold(body: Center(child: LogoutButton())),
+          locale: Locale('ar'),
+          home: Scaffold(body: Center(child: LogoutButton())),
         ),
       ),
     );

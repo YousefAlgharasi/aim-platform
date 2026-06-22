@@ -23,7 +23,7 @@ export class InvoicesController {
   async getUserInvoices(
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<Invoice[]> {
-    return this.invoiceService.getUserInvoices(user.internalUserId);
+    return this.invoiceService.getUserInvoices(user.id);
   }
 
   @Get(':id')
@@ -34,6 +34,6 @@ export class InvoicesController {
     @Param('id') id: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<{ invoice: Invoice; items: InvoiceItem[] }> {
-    return this.invoiceService.getInvoiceWithItems(id, user.internalUserId);
+    return this.invoiceService.getInvoiceWithItems(id, user.id);
   }
 }

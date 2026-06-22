@@ -203,8 +203,8 @@ void main() {
   group('Curriculum integration — courses pipeline', () {
     test('1. Published courses flow through repository to notifier state',
         () async {
-      final repo = LessonsRepositoryImpl(
-        datasource: const _FakeLessonsDatasource(courses: [_publishedCourse]),
+      const repo = LessonsRepositoryImpl(
+        datasource:  _FakeLessonsDatasource(courses: [_publishedCourse]),
       );
       final notifier = CoursesNotifier(repository: repo);
       await notifier.load(bearerToken: 'tok');
@@ -214,8 +214,8 @@ void main() {
     });
 
     test('2. Draft courses are filtered out by ContentStatusGuard', () async {
-      final repo = LessonsRepositoryImpl(
-        datasource: const _FakeLessonsDatasource(
+      const repo = LessonsRepositoryImpl(
+        datasource: _FakeLessonsDatasource(
             courses: [_publishedCourse, _draftCourse]),
       );
       final notifier = CoursesNotifier(repository: repo);
@@ -227,8 +227,8 @@ void main() {
 
     test('3. Archived courses are filtered out by ContentStatusGuard',
         () async {
-      final repo = LessonsRepositoryImpl(
-        datasource: const _FakeLessonsDatasource(
+      const repo = LessonsRepositoryImpl(
+        datasource:  _FakeLessonsDatasource(
             courses: [_publishedCourse, _archivedCourse]),
       );
       final notifier = CoursesNotifier(repository: repo);
@@ -240,8 +240,8 @@ void main() {
 
   group('Curriculum integration — chapters pipeline', () {
     test('4. Published chapters flow through for a given levelId', () async {
-      final repo = LessonsRepositoryImpl(
-        datasource: const _FakeLessonsDatasource(chapters: [_publishedChapter]),
+      const repo = LessonsRepositoryImpl(
+        datasource:  _FakeLessonsDatasource(chapters: [_publishedChapter]),
       );
       final notifier = ChaptersNotifier(repository: repo);
       await notifier.load(bearerToken: 'tok', levelId: 'lv-1');
@@ -252,8 +252,8 @@ void main() {
 
     test('5. Non-published chapters are filtered before reaching notifier',
         () async {
-      final repo = LessonsRepositoryImpl(
-        datasource: const _FakeLessonsDatasource(
+      const repo = LessonsRepositoryImpl(
+        datasource:  _FakeLessonsDatasource(
             chapters: [_publishedChapter, _draftChapter]),
       );
       final notifier = ChaptersNotifier(repository: repo);
@@ -265,8 +265,8 @@ void main() {
 
   group('Curriculum integration — lessons pipeline', () {
     test('6. Published lessons flow through for a given chapterId', () async {
-      final repo = LessonsRepositoryImpl(
-        datasource: const _FakeLessonsDatasource(lessons: [_publishedLesson]),
+      const repo = LessonsRepositoryImpl(
+        datasource:  _FakeLessonsDatasource(lessons: [_publishedLesson]),
       );
       final notifier = LessonsListNotifier(repository: repo);
       await notifier.load(bearerToken: 'tok', chapterId: 'ch-1');
@@ -277,8 +277,8 @@ void main() {
 
     test('7. Non-published lessons are filtered before reaching notifier',
         () async {
-      final repo = LessonsRepositoryImpl(
-        datasource: const _FakeLessonsDatasource(
+      const repo = LessonsRepositoryImpl(
+        datasource:  _FakeLessonsDatasource(
             lessons: [_publishedLesson, _draftLesson]),
       );
       final notifier = LessonsListNotifier(repository: repo);
@@ -324,8 +324,8 @@ void main() {
 
   group('Curriculum integration — notifier state transitions', () {
     test('10. CoursesNotifier emits loading then success', () async {
-      final repo = LessonsRepositoryImpl(
-        datasource: const _FakeLessonsDatasource(courses: [_publishedCourse]),
+      const repo = LessonsRepositoryImpl(
+        datasource:  _FakeLessonsDatasource(courses: [_publishedCourse]),
       );
       final notifier = CoursesNotifier(repository: repo);
       final emitted = <AppAsyncState<List<CourseModel>>>[];
@@ -336,8 +336,8 @@ void main() {
     });
 
     test('11. ChaptersNotifier emits loading then success', () async {
-      final repo = LessonsRepositoryImpl(
-        datasource: const _FakeLessonsDatasource(chapters: [_publishedChapter]),
+      const repo = LessonsRepositoryImpl(
+        datasource:  _FakeLessonsDatasource(chapters: [_publishedChapter]),
       );
       final notifier = ChaptersNotifier(repository: repo);
       final emitted = <AppAsyncState<List<ChapterModel>>>[];
@@ -348,8 +348,8 @@ void main() {
     });
 
     test('12. LessonsListNotifier emits loading then success', () async {
-      final repo = LessonsRepositoryImpl(
-        datasource: const _FakeLessonsDatasource(lessons: [_publishedLesson]),
+      const repo = LessonsRepositoryImpl(
+        datasource:  _FakeLessonsDatasource(lessons: [_publishedLesson]),
       );
       final notifier = LessonsListNotifier(repository: repo);
       final emitted = <AppAsyncState<List<LessonModel>>>[];
@@ -360,7 +360,7 @@ void main() {
     });
 
     test('13. LessonDetailNotifier emits loading then success', () async {
-      final repo = LessonDetailRepositoryImpl(
+      const repo = LessonDetailRepositoryImpl(
         datasource: _FakeLessonDetailDatasource(lesson: _baseLesson),
       );
       final notifier = LessonDetailNotifier(repository: repo);
@@ -375,8 +375,8 @@ void main() {
   group('Curriculum integration — error propagation', () {
     test('14. ApiClientException propagates as AppException through repository',
         () async {
-      final repo = LessonsRepositoryImpl(
-        datasource: const _FakeLessonsDatasource(shouldFail: true),
+      const repo = LessonsRepositoryImpl(
+        datasource:  _FakeLessonsDatasource(shouldFail: true),
       );
       final notifier = CoursesNotifier(repository: repo);
       await notifier.load(bearerToken: 'tok');

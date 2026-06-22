@@ -80,19 +80,19 @@ class _StartAttemptPageState extends ConsumerState<StartAttemptPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Icon(
+            const Icon(
               Icons.play_circle_outline,
               size: AimSizes.avatarLg,
               color: AimColors.primary500,
             ),
             const SizedBox(height: AimSpacing.sectionGap),
-            Text(
+            const Text(
               'Ready to start?',
               style: AimTextStyles.h2,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AimSpacing.componentGap),
-            Text(
+            const Text(
               'Once you start, the attempt will be recorded. '
               'Make sure you are ready before proceeding.',
               style: AimTextStyles.bodyMd,

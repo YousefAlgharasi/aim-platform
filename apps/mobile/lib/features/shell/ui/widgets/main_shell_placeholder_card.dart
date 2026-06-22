@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/theme.dart';
 import '../../../../core/widgets/widgets.dart';
 
 /// Placeholder card used by stub tab screens inside [MainShellPage].

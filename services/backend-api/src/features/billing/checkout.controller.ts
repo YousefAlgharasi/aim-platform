@@ -46,8 +46,7 @@ export class CheckoutController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateCheckoutSessionDto,
   ): Promise<CheckoutSession> {
-    return this.checkoutService.createCheckoutSession({
-      userId: user.internalUserId,
+    return this.checkoutService.createCheckoutSession(user.id, {
       priceId: dto.priceId,
       successUrl: dto.successUrl,
       cancelUrl: dto.cancelUrl,

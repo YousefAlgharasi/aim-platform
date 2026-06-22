@@ -49,9 +49,9 @@ class _AssessmentListPageState extends ConsumerState<AssessmentListPage> {
     final state = ref.watch(assessmentListProvider);
 
     return Scaffold(
-      appBar: AIMTopAppBar(title: 'Assessments'),
+      appBar: const AIMTopAppBar(title: 'Assessments'),
       body: switch (state) {
-        AppAsyncLoading() => AIMFullScreenLoading(
+        AppAsyncLoading() => const AIMFullScreenLoading(
             semanticLabel: 'Loading assessments',
           ),
         AppAsyncFailure(:final message) => AIMFullScreenError(
@@ -63,7 +63,7 @@ class _AssessmentListPageState extends ConsumerState<AssessmentListPage> {
             onRefresh: _refresh,
             onTap: _onAssessmentTap,
           ),
-        AppAsyncIdle() => AIMFullScreenLoading(
+        AppAsyncIdle() => const AIMFullScreenLoading(
             semanticLabel: 'Loading assessments',
           ),
       },
@@ -85,8 +85,8 @@ class _AssessmentListContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return AIMEmptyState(
-        icon: const Icon(Icons.quiz_outlined),
+      return const AIMEmptyState(
+        icon: Icon(Icons.quiz_outlined),
         title: 'No assessments available',
         subtitle: 'Published quizzes and exams will appear here.',
       );
