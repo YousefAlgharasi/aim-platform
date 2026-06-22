@@ -20,53 +20,55 @@ export class OperationsRepository {
   // --- Support Tickets ---
 
   async findTicketsByRequester(requesterId: string): Promise<SupportTicket[]> {
-    return this.db.query(
+    const result = await this.db.query<SupportTicket>(
       `SELECT * FROM support_tickets WHERE requester_id = $1 ORDER BY created_at DESC`,
       [requesterId],
     );
+    return result.rows;
   }
 
   async findTicketById(id: string): Promise<SupportTicket | null> {
-    const rows = await this.db.query(
+    const result = await this.db.query<SupportTicket>(
       `SELECT * FROM support_tickets WHERE id = $1`,
       [id],
     );
-    return rows[0] || null;
+    return result.rows[0] || null;
   }
 
   async createTicket(data: Partial<SupportTicket>): Promise<SupportTicket> {
-    const rows = await this.db.query(
+    const result = await this.db.query<SupportTicket>(
       `INSERT INTO support_tickets (requester_id, category, severity, subject, description, metadata)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
       [data.requesterId, data.category, data.severity, data.subject, data.description, data.metadata || {}],
     );
-    return rows[0];
+    return result.rows[0];
   }
 
   async updateTicketStatus(id: string, status: string): Promise<SupportTicket | null> {
-    const rows = await this.db.query(
+    const result = await this.db.query<SupportTicket>(
       `UPDATE support_tickets SET status = $1 WHERE id = $2 RETURNING *`,
       [status, id],
     );
-    return rows[0] || null;
+    return result.rows[0] || null;
   }
 
   async assignTicketTo(id: string, assigneeId: string): Promise<SupportTicket | null> {
-    const rows = await this.db.query(
+    const result = await this.db.query<SupportTicket>(
       `UPDATE support_tickets SET assigned_to = $1 WHERE id = $2 RETURNING *`,
       [assigneeId, id],
     );
-    return rows[0] || null;
+    return result.rows[0] || null;
   }
 
   // --- Support Ticket Comments ---
 
   async findCommentsByTicket(ticketId: string): Promise<SupportTicketComment[]> {
-    return this.db.query(
+    const result = await this.db.query<SupportTicketComment>(
       `SELECT * FROM support_ticket_comments WHERE ticket_id = $1 ORDER BY created_at ASC`,
       [ticketId],
     );
+    return result.rows;
   }
 
   async createComment(data: Partial<SupportTicketComment>): Promise<SupportTicketComment> {
