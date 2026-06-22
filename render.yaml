@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: aim-backend-api
+    runtime: docker
+    plan: starter
+    rootDir: services/backend-api
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: false
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_JWT_SECRET
+        sync: false
+      - key: SUPABASE_JWT_ISSUER
+        sync: false
+      - key: SUPABASE_JWT_AUDIENCE
+        value: authenticated
+      - key: DATABASE_URL
+        sync: false
+      - key: AIM_ENGINE_URL
+        sync: false
+      - key: AI_PROVIDER_API_KEY
+        sync: false
+      - key: AI_PROVIDER_MODEL
+        sync: false
+      - key: STT_PROVIDER_API_KEY
+        sync: false
+      - key: STT_PROVIDER_MODEL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
