@@ -1,0 +1,41 @@
+version: 2
+updates:
+  # npm — backend-api
+  - package-ecosystem: "npm"
+    directory: "/services/backend-api"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    target-branch: "main"
+
+  # npm — admin-dashboard
+  - package-ecosystem: "npm"
+    directory: "/apps/admin-dashboard"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    target-branch: "main"
+
+  # npm — web
+  - package-ecosystem: "npm"
+    directory: "/apps/web"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    target-branch: "main"
+
+  # pip — aim-engine
+  - package-ecosystem: "pip"
+    directory: "/services/aim-engine"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    target-branch: "main"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    target-branch: "main"

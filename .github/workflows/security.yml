@@ -1,0 +1,67 @@
+name: Security Scanning
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1" # Weekly on Monday at 06:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  npm-audit-backend-api:
+    name: npm audit — backend-api
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/backend-api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - run: npm audit --audit-level=high
+
+  npm-audit-admin-dashboard:
+    name: npm audit — admin-dashboard
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/admin-dashboard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - run: npm audit --audit-level=high
+
+  pip-audit-aim-engine:
+    name: pip audit — aim-engine
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/aim-engine
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pip-audit
+      - run: pip install -e .
+      - run: pip-audit
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
