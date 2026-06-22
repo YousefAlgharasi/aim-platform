@@ -62,7 +62,7 @@ export class AnalyticsRepository {
 
   async findActiveMetricDefinitions(): Promise<MetricDefinition[]> {
     const result = await this.db.query<MetricDefinition>(
-      `SELECT * FROM metric_definitions WHERE is_active = true ORDER BY domain, key`,
+      `SELECT * FROM metric_definitions WHERE is_active = true ORDER BY domain, key LIMIT 1000`,
     );
     return result.rows;
   }
@@ -158,7 +158,7 @@ export class AnalyticsRepository {
 
   async findActiveReportDefinitions(): Promise<ReportDefinition[]> {
     const result = await this.db.query<ReportDefinition>(
-      `SELECT * FROM report_definitions WHERE is_active = true ORDER BY category, key`,
+      `SELECT * FROM report_definitions WHERE is_active = true ORDER BY category, key LIMIT 1000`,
     );
     return result.rows;
   }
@@ -281,7 +281,7 @@ export class AnalyticsRepository {
 
   async findActiveCohorts(): Promise<AnalyticsCohort[]> {
     const result = await this.db.query<AnalyticsCohort>(
-      `SELECT * FROM analytics_cohorts WHERE is_active = true ORDER BY key`,
+      `SELECT * FROM analytics_cohorts WHERE is_active = true ORDER BY key LIMIT 1000`,
     );
     return result.rows;
   }

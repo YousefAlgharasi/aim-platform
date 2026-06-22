@@ -308,14 +308,6 @@ export class BillingRepository {
     return result.rows[0] || null;
   }
 
-  async findPaymentsBySubscriptionId(subscriptionId: string): Promise<Payment[]> {
-    const result = await this.db.query<Payment>(
-      `SELECT * FROM payments WHERE subscription_id = $1 ORDER BY created_at DESC`,
-      [subscriptionId],
-    );
-    return result.rows;
-  }
-
   async updatePayment(id: string, data: Partial<Payment>): Promise<Payment | null> {
     const sets: string[] = [];
     const values: unknown[] = [];
@@ -335,7 +327,15 @@ export class BillingRepository {
       `UPDATE payments SET ${sets.join(', ')} WHERE id = $${idx} RETURNING *`,
       values,
     );
-    return result.rows[0] || null;
+    return result.rows[0] ?? null;
+  }
+
+  async findPaymentsBySubscriptionId(subscriptionId: string): Promise<Payment[]> {
+    const result = await this.db.query<Payment>(
+      `SELECT * FROM payments WHERE subscription_id = $1 ORDER BY created_at DESC`,
+      [subscriptionId],
+    );
+    return result.rows;
   }
 
   // --- Invoices ---
@@ -523,12 +523,11 @@ export class BillingRepository {
     return result.rows[0];
   }
 
-  async incrementCouponRedemptions(id: string): Promise<Coupon | null> {
-    const result = await this.db.query<Coupon>(
-      `UPDATE coupons SET times_redeemed = times_redeemed + 1, updated_at = now() WHERE id = $1 RETURNING *`,
-      [id],
+  async incrementCouponRedemptions(couponId: string): Promise<void> {
+    await this.db.query(
+      `UPDATE coupons SET times_redeemed = times_redeemed + 1, updated_at = now() WHERE id = $1`,
+      [couponId],
     );
-    return result.rows[0] || null;
   }
 
   // --- Promotion Codes ---
@@ -541,12 +540,11 @@ export class BillingRepository {
     return result.rows[0] || null;
   }
 
-  async incrementPromotionCodeRedemptions(id: string): Promise<PromotionCode | null> {
-    const result = await this.db.query<PromotionCode>(
-      `UPDATE promotion_codes SET times_redeemed = times_redeemed + 1, updated_at = now() WHERE id = $1 RETURNING *`,
-      [id],
+  async incrementPromotionCodeRedemptions(promotionCodeId: string): Promise<void> {
+    await this.db.query(
+      `UPDATE promotion_codes SET times_redeemed = times_redeemed + 1, updated_at = now() WHERE id = $1`,
+      [promotionCodeId],
     );
-    return result.rows[0] || null;
   }
 
   // --- Entitlements ---
