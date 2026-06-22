@@ -61,7 +61,7 @@ jobs:
              build/app/outputs/flutter-apk/aim-mobile-${VERSION}.apk
 
       - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: aim-mobile-apk
           path: apps/mobile/build/app/outputs/flutter-apk/aim-mobile-*.apk
