@@ -43,7 +43,7 @@ export class NotificationRepository {
 
   async findAllTemplates(): Promise<NotificationTemplateRow[]> {
     const result = await this.db.query<NotificationTemplateRow>(
-      `SELECT * FROM notification_templates ORDER BY key, channel, locale`,
+      `SELECT * FROM notification_templates ORDER BY key, channel, locale LIMIT 1000`,
     );
     return result.rows;
   }
