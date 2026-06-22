@@ -49,7 +49,7 @@ export function setupOpenApi(app: INestApplication): void {
   const document = SwaggerModule.createDocument(app, config);
 
   SwaggerModule.setup(OPENAPI_DOCS_PATH, app, document, {
-    jsonDocumentUrl: OPENAPI_JSON_PATH,
+   // jsonDocumentUrl: OPENAPI_JSON_PATH,
     swaggerOptions: {
       persistAuthorization: false,
       displayRequestDuration: true,
