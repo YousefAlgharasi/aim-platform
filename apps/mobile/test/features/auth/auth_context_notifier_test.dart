@@ -5,6 +5,9 @@ import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
 import 'package:aim_mobile/features/auth/data/models/auth_sync_response_model.dart';
+import 'package:aim_mobile/features/auth/data/models/login_result_model.dart';
+import 'package:aim_mobile/features/auth/data/models/refresh_result_model.dart';
+import 'package:aim_mobile/features/auth/data/models/register_result_model.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
@@ -74,6 +77,27 @@ class _FakeAuthRepository implements AuthRepository {
 
   @override
   Future<void> logout(String bearerToken) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<LoginResult> login({
+    required String email,
+    required String password,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<RefreshResult> refresh({required String refreshToken}) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<RegisterResult> register({
+    required String email,
+    required String password,
+  }) {
     throw UnimplementedError();
   }
 }
