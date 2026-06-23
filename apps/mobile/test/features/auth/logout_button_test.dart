@@ -45,6 +45,10 @@ class _NoOpAuthRepository implements AuthRepository {
     required String password,
   }) async =>
       throw UnimplementedError();
+
+  @override
+  Future<LoginResult> loginAsTestUser({required String role}) async =>
+      throw UnimplementedError();
 }
 
 Widget _wrap(Widget child, {List<Override> overrides = const []}) {

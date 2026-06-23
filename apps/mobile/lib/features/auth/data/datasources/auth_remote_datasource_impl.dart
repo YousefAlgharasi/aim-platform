@@ -101,6 +101,19 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     return envelope.data!;
   }
 
+  @override
+  Future<LoginResult> loginAsTestUser({required String role}) async {
+    final envelope = await _apiClient.post<LoginResult>(
+      BackendApiPaths.authTestLogin,
+      body: {'role': role},
+      requiresAuth: false,
+      decodeData: (json) =>
+          LoginResult.fromJson(json as Map<String, dynamic>),
+    );
+
+    return envelope.data!;
+  }
+
   Map<String, String> _authHeaders(String bearerToken) {
     return {'authorization': 'Bearer $bearerToken'};
   }

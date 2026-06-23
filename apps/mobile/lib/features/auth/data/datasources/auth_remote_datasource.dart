@@ -31,4 +31,7 @@ abstract class AuthRemoteDatasource {
     required String email,
     required String password,
   });
+
+  /// POST /auth/test-login — unauthenticated, non-production only.
+  Future<LoginResult> loginAsTestUser({required String role});
 }

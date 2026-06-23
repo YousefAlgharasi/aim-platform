@@ -26,4 +26,9 @@ abstract class AuthRepository {
     required String email,
     required String password,
   });
+
+  /// POST /auth/test-login — non-production only. Signs in as a fixed
+  /// student/admin/parent test account for manual QA. The backend returns
+  /// 404 in production, so this is only ever usable outside production.
+  Future<LoginResult> loginAsTestUser({required String role});
 }
