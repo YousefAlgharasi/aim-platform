@@ -43,12 +43,21 @@ class ProfilePage extends ConsumerWidget {
     final surfaces = aimSurfacesOf(context);
 
     // Navigate to sign-in when sign-out completes.
+    //
+    // Deferred via addPostFrameCallback: this listener fires synchronously
+    // on state change, before the root MaterialApp (which watches
+    // authFlowProvider to build onGenerateRoute) has rebuilt. Pushing
+    // immediately would route against the stale (still-signed-in) closure
+    // and get redirected straight back to the main shell.
     ref.listen(authFlowProvider, (_, next) {
       if (next.isSignedOut && context.mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          AppRoutePaths.signIn,
-          (_) => false,
-        );
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!context.mounted) return;
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            AppRoutePaths.signIn,
+            (_) => false,
+          );
+        });
       }
     });
 
