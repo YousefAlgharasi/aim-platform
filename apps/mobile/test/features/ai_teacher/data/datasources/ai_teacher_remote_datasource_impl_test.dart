@@ -21,8 +21,6 @@ import 'package:aim_mobile/features/ai_teacher/data/datasources/ai_teacher_remot
 const _config = AppConfig(
   environment: 'test',
   backendApiBaseUrl: 'https://backend.test',
-  supabaseUrl: 'https://placeholder.supabase.co',
-  supabaseAnonKey: '',
 );
 
 Map<String, dynamic> _envelope(Object? data) => {

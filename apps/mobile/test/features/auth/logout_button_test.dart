@@ -9,6 +9,9 @@ import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
 import 'package:aim_mobile/features/auth/ui/widgets/logout_button.dart';
 import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
 import 'package:aim_mobile/features/auth/data/models/auth_sync_response_model.dart';
+import 'package:aim_mobile/features/auth/data/models/login_result_model.dart';
+import 'package:aim_mobile/features/auth/data/models/refresh_result_model.dart';
+import 'package:aim_mobile/features/auth/data/models/register_result_model.dart';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -24,6 +27,24 @@ class _NoOpAuthRepository implements AuthRepository {
 
   @override
   Future<void> logout(String token) async {}
+
+  @override
+  Future<LoginResult> login({
+    required String email,
+    required String password,
+  }) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<RefreshResult> refresh({required String refreshToken}) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<RegisterResult> register({
+    required String email,
+    required String password,
+  }) async =>
+      throw UnimplementedError();
 }
 
 Widget _wrap(Widget child, {List<Override> overrides = const []}) {
