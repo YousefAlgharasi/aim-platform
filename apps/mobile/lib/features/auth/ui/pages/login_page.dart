@@ -65,12 +65,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final surfaces = aimSurfacesOf(context);
 
     // Navigate to main shell once sign-in succeeds.
+    //
+    // Deferred via addPostFrameCallback: this listener fires synchronously
+    // on state change, before the root MaterialApp (which watches
+    // authFlowProvider to build onGenerateRoute) has rebuilt. Pushing
+    // immediately would route against the stale (signed-out) closure and
+    // get redirected straight back to sign-in.
     ref.listen(authFlowProvider, (_, next) {
       if (next.isSignedIn && mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          AppRoutePaths.mainShell,
-          (route) => false,
-        );
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            AppRoutePaths.mainShell,
+            (route) => false,
+          );
+        });
       }
     });
 
