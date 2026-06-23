@@ -17,6 +17,12 @@ import 'package:aim_mobile/features/auth/ui/pages/login_page.dart';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+/// The primary sign-in submit button, distinct from the secondary
+/// test-mode buttons rendered alongside it.
+final Finder _submitButtonFinder = find.byWidgetPredicate(
+  (widget) => widget is AIMButton && widget.variant == AIMButtonVariant.primary,
+);
+
 Widget _testApp({List<Override> overrides = const []}) {
   return ProviderScope(
     overrides: overrides,
@@ -99,7 +105,7 @@ void main() {
     await tester.pump();
 
     expect(find.byType(AIMInput), findsNWidgets(2));   // email + password
-    expect(find.byType(AIMButton), findsOneWidget);    // submit
+    expect(find.byType(AIMButton), findsNWidgets(4));  // submit + 3 test-mode buttons
     expect(find.text("Don't have an account? Create one"), findsOneWidget);
   });
 
@@ -109,7 +115,7 @@ void main() {
     await tester.pumpWidget(_testApp());
     await tester.pump();
 
-    final button = tester.widget<AIMButton>(find.byType(AIMButton));
+    final button = tester.widget<AIMButton>(_submitButtonFinder);
     expect(button.onPressed, isNull);
   });
 
@@ -127,7 +133,7 @@ void main() {
     await tester.enterText(fields.last, 'secret123');
     await tester.pump();
 
-    final button = tester.widget<AIMButton>(find.byType(AIMButton));
+    final button = tester.widget<AIMButton>(_submitButtonFinder);
     expect(button.onPressed, isNotNull);
   });
 
