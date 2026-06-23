@@ -12,6 +12,7 @@ htmlcov/
 node_modules/
 dist/
 build/
+*.tsbuildinfo
 
 # Env
 .env
