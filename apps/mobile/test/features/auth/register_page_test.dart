@@ -4,9 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/routing/routing.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
-import 'package:aim_mobile/features/auth/data/datasources/supabase_auth_datasource.dart';
+import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
+import 'package:aim_mobile/features/auth/data/models/auth_sync_response_model.dart';
+import 'package:aim_mobile/features/auth/data/models/login_result_model.dart';
+import 'package:aim_mobile/features/auth/data/models/refresh_result_model.dart';
+import 'package:aim_mobile/features/auth/data/models/register_result_model.dart';
 import 'package:aim_mobile/features/auth/logic/provider/register_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/provider/register_provider.dart';
+import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
 import 'package:aim_mobile/features/auth/ui/pages/register_page.dart';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -21,17 +26,36 @@ Widget _testApp({List<Override> overrides = const []}) {
   );
 }
 
-/// No-op Supabase datasource — tests must not call submit().
-class _FakeSupabase implements SupabaseAuthDatasource {
+/// No-op backend AuthRepository — tests must not call submit().
+class _FakeAuthRepository implements AuthRepository {
   @override
-  Future<String> signInWithEmailPassword({
+  Future<AuthContextModel> getMe(String bearerToken) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<AuthSyncResponseModel> syncUser(
+    String bearerToken, {
+    String? preferredLanguage,
+    String? timezone,
+  }) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> logout(String bearerToken) async => throw UnimplementedError();
+
+  @override
+  Future<LoginResult> login({
     required String email,
     required String password,
   }) async =>
       throw UnimplementedError();
 
   @override
-  Future<SignUpResult> signUpWithEmailPassword({
+  Future<RefreshResult> refresh({required String refreshToken}) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<RegisterResult> register({
     required String email,
     required String password,
   }) async =>
@@ -85,7 +109,7 @@ void main() {
         overrides: [
           registerProvider.overrideWith((ref) {
             final notifier = RegisterNotifier(
-              supabaseDatasource: _FakeSupabase(),
+              repository: _FakeAuthRepository(),
               ref: ref,
             );
             notifier.setEmail('learner@example.com');
@@ -109,7 +133,7 @@ void main() {
         overrides: [
           registerProvider.overrideWith((ref) {
             final notifier = RegisterNotifier(
-              supabaseDatasource: _FakeSupabase(),
+              repository: _FakeAuthRepository(),
               ref: ref,
             );
             notifier.setEmail('learner@example.com');

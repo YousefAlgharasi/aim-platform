@@ -1,13 +1,22 @@
 // Phase 2 — P2-025 (updated to pass AuthProfileBootstrapService mock)
 import { AuthController } from './auth.controller';
 import { AuthProfileBootstrapService } from './auth-profile-bootstrap.service';
+import { AuthLoginService } from './auth-login.service';
 import { AuthenticatedUser } from './authenticated-user';
 
 const makeBootstrapMock = (): jest.Mocked<AuthProfileBootstrapService> =>
   ({ bootstrap: jest.fn() } as unknown as jest.Mocked<AuthProfileBootstrapService>);
 
+const makeAuthLoginMock = (): jest.Mocked<AuthLoginService> =>
+  ({
+    login: jest.fn(),
+    refresh: jest.fn(),
+    register: jest.fn(),
+    logout: jest.fn(),
+  } as unknown as jest.Mocked<AuthLoginService>);
+
 describe('AuthController', () => {
-  const controller = new AuthController(makeBootstrapMock());
+  const controller = new AuthController(makeBootstrapMock(), makeAuthLoginMock());
 
   it('returns a safe current user response from the authenticated request user', () => {
     const user: AuthenticatedUser = {

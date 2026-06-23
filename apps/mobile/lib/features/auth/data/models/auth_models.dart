@@ -4,4 +4,7 @@ export 'client_safe_permission_model.dart';
 export 'client_safe_profile_model.dart';
 export 'client_safe_role_model.dart';
 export 'current_user_model.dart';
+export 'login_result_model.dart';
+export 'refresh_result_model.dart';
+export 'register_result_model.dart';
 export 'session_validation_model.dart';

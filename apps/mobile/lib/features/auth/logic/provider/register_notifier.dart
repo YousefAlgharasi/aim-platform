@@ -1,6 +1,6 @@
 import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/state/app_form_state.dart';
-import 'package:aim_mobile/features/auth/data/datasources/supabase_auth_datasource.dart';
+import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'auth_context_provider.dart';
@@ -20,9 +20,13 @@ enum RegisterOutcome {
 ///
 /// Responsibilities:
 /// - Validate email, password, and confirm-password input.
-/// - Call Supabase Auth to create a new account.
-/// - If auto-confirmed: sync backend and transition [authFlowProvider] to signedIn.
-/// - If email confirmation required: expose [outcome] so the UI can show a message.
+/// - Call the backend's `POST /auth/register` to create a new account — the
+///   backend is the sole auth authority; this client never talks to
+///   Supabase (or any identity provider) directly.
+/// - If auto-confirmed: sync backend (bootstrap + me) and transition
+///   [authFlowProvider] to signedIn.
+/// - If email confirmation required: expose [outcome] so the UI can show a
+///   message.
 ///
 /// Security rules:
 /// - No service-role keys, JWT secrets, or backend credentials appear here.
@@ -30,13 +34,13 @@ enum RegisterOutcome {
 /// - The notifier never decides authorization.
 class RegisterNotifier extends StateNotifier<AppFormState> {
   RegisterNotifier({
-    required SupabaseAuthDatasource supabaseDatasource,
+    required AuthRepository repository,
     required Ref ref,
-  })  : _supabaseDatasource = supabaseDatasource,
+  })  : _repository = repository,
         _ref = ref,
         super(const AppFormState());
 
-  final SupabaseAuthDatasource _supabaseDatasource;
+  final AuthRepository _repository;
   final Ref _ref;
 
   String _email = '';
@@ -73,9 +77,12 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
 
   /// Submits the registration form.
   ///
-  /// 1. Calls Supabase Auth signup.
-  /// 2a. If auto-confirmed: syncs backend + transitions [authFlowProvider] to signedIn.
-  /// 2b. If email confirmation required: sets [outcome] to [RegisterOutcome.awaitingEmailConfirmation].
+  /// 1. Calls the backend's `POST /auth/register`.
+  /// 2a. If auto-confirmed (`requiresEmailConfirmation == false`): syncs
+  ///     backend (bootstrap + me) + transitions [authFlowProvider] to
+  ///     signedIn.
+  /// 2b. If email confirmation required: sets [outcome] to
+  ///     [RegisterOutcome.awaitingEmailConfirmation].
   Future<void> submit() async {
     if (!state.isValid || state.isSubmitting) return;
 
@@ -83,7 +90,7 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
     _outcome = null;
 
     try {
-      final result = await _supabaseDatasource.signUpWithEmailPassword(
+      final result = await _repository.register(
         email: _email,
         password: _password,
       );
@@ -94,10 +101,14 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
         return;
       }
 
+      final accessToken = result.accessToken!;
+      final refreshToken = result.refreshToken ?? '';
+      final expiresAt = result.expiresAt ?? 0;
+
       // Auto-confirmed — sync with backend and sign in.
       final didLoadContext = await _ref
           .read(authContextProvider.notifier)
-          .syncAndLoadUser(result.accessToken!);
+          .syncAndLoadUser(accessToken);
 
       if (!didLoadContext) {
         state = state.copyWith(
@@ -109,13 +120,15 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
 
       // Persist session so the user stays signed in across app restarts.
       await _ref.read(sessionStoreProvider).save(
-            accessToken: result.accessToken!,
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            expiresAt: expiresAt,
             email: _email,
           );
 
       _ref.read(authFlowProvider.notifier).signIn(
             _email,
-            accessToken: result.accessToken!,
+            accessToken: accessToken,
           );
       _outcome = RegisterOutcome.signedIn;
       // isSubmitting stays true — UI navigates away immediately.
