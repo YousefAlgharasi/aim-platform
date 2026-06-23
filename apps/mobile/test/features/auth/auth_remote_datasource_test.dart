@@ -14,8 +14,6 @@ void main() {
         config: const AppConfig(
           environment: 'test',
           backendApiBaseUrl: 'https://api.example.com',
-          supabaseUrl: 'https://example.supabase.co',
-          supabaseAnonKey: 'anon',
         ),
         httpClient: MockClient((request) async {
           expect(request.method, 'POST');

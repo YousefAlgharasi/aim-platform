@@ -11,7 +11,8 @@ import '../../logic/provider/register_provider.dart';
 ///
 /// Flow:
 /// 1. Student enters email, password, and confirm-password.
-/// 2. [RegisterNotifier] validates locally, then calls Supabase Auth signup.
+/// 2. [RegisterNotifier] validates locally, then calls the backend's
+///    `POST /auth/register` (the backend is the sole auth authority).
 /// 3a. Auto-confirmed: backend sync → [authFlowProvider] signedIn → main shell.
 /// 3b. Email confirmation required: [RegisterOutcome.awaitingEmailConfirmation]
 ///     → [_ConfirmationSentView] shown inline.
@@ -212,8 +213,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
 // ── Email confirmation screen ─────────────────────────────────────────────────
 
-/// Shown after successful registration when Supabase requires email
-/// confirmation before the account is active.
+/// Shown after successful registration when the backend reports
+/// `requiresEmailConfirmation: true` — the account is not active yet.
 class _ConfirmationSentView extends StatelessWidget {
   const _ConfirmationSentView({required this.email});
 

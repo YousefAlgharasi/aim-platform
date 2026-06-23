@@ -20,9 +20,16 @@ class FakeSessionStore implements SessionStore {
   @override
   Future<void> save({
     required String accessToken,
+    required String refreshToken,
+    required int expiresAt,
     required String email,
   }) async {
-    _data = SessionData(accessToken: accessToken, email: email);
+    _data = SessionData(
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      expiresAt: expiresAt,
+      email: email,
+    );
   }
 
   @override

@@ -8,6 +8,7 @@ import { AuthController } from './auth.controller';
 import { AuthenticatedRequest, AuthenticatedUser } from './authenticated-user';
 import { IS_PUBLIC_ROUTE_KEY } from './auth.constants';
 import type { AuthProfileBootstrapService } from './auth-profile-bootstrap.service';
+import type { AuthLoginService } from './auth-login.service';
 import { readCurrentUserFromContext } from './current-user.decorator';
 import { SessionValidationService } from './session-validation.service';
 import { SupabaseJwtAuthGuard } from './supabase-jwt-auth.guard';
@@ -54,7 +55,7 @@ describe('backend auth foundation suite', () => {
   });
 
   it('returns /auth/me without unsafe JWT metadata or internal auth fields', () => {
-    const response = new AuthController(createProfileBootstrap()).getMe(verifiedUser);
+    const response = new AuthController(createProfileBootstrap(), createAuthLogin()).getMe(verifiedUser);
 
     expect(response).toEqual({
       user: {
@@ -154,6 +155,15 @@ function createProfileBootstrap(): AuthProfileBootstrapService {
   return {
     bootstrap: jest.fn(),
   } as unknown as AuthProfileBootstrapService;
+}
+
+function createAuthLogin(): AuthLoginService {
+  return {
+    login: jest.fn(),
+    refresh: jest.fn(),
+    register: jest.fn(),
+    logout: jest.fn(),
+  } as unknown as AuthLoginService;
 }
 
 function createReflector(isPublicRoute: boolean): Reflector {

@@ -5,9 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:aim_mobile/core/routing/routing.dart';
 import 'package:aim_mobile/core/state/app_form_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
-import 'package:aim_mobile/features/auth/data/datasources/supabase_auth_datasource.dart';
+import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
+import 'package:aim_mobile/features/auth/data/models/auth_sync_response_model.dart';
+import 'package:aim_mobile/features/auth/data/models/login_result_model.dart';
+import 'package:aim_mobile/features/auth/data/models/refresh_result_model.dart';
+import 'package:aim_mobile/features/auth/data/models/register_result_model.dart';
 import 'package:aim_mobile/features/auth/logic/provider/login_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/provider/login_provider.dart';
+import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
 import 'package:aim_mobile/features/auth/ui/pages/login_page.dart';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -22,27 +27,47 @@ Widget _testApp({List<Override> overrides = const []}) {
   );
 }
 
-/// No-op Supabase datasource for tests that don't call submit().
-class _FakeSupabase implements SupabaseAuthDatasource {
+/// No-op backend AuthRepository for tests that don't call submit().
+class _FakeAuthRepository implements AuthRepository {
   @override
-  Future<String> signInWithEmailPassword({
+  Future<AuthContextModel> getMe(String bearerToken) async =>
+      throw UnimplementedError('not called in UI-only tests');
+
+  @override
+  Future<AuthSyncResponseModel> syncUser(
+    String bearerToken, {
+    String? preferredLanguage,
+    String? timezone,
+  }) async =>
+      throw UnimplementedError('not called in UI-only tests');
+
+  @override
+  Future<void> logout(String bearerToken) async =>
+      throw UnimplementedError('not called in UI-only tests');
+
+  @override
+  Future<LoginResult> login({
     required String email,
     required String password,
   }) async =>
       throw UnimplementedError('not called in UI-only tests');
 
   @override
-  Future<SignUpResult> signUpWithEmailPassword({
+  Future<RefreshResult> refresh({required String refreshToken}) async =>
+      throw UnimplementedError('not called in UI-only tests');
+
+  @override
+  Future<RegisterResult> register({
     required String email,
     required String password,
   }) async =>
-      throw UnimplementedError();
+      throw UnimplementedError('not called in UI-only tests');
 }
 
 /// LoginNotifier subclass that starts with a preset error message.
 class _ErrorLoginNotifier extends LoginNotifier {
   _ErrorLoginNotifier(Ref ref)
-      : super(supabaseDatasource: _FakeSupabase(), ref: ref);
+      : super(repository: _FakeAuthRepository(), ref: ref);
 
   void seedError(String message) {
     // Use the public clearError + internal path to surface an error.

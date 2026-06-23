@@ -7,6 +7,7 @@ import { AnalyticsModule } from '../features/analytics/analytics.module';
 import { AuthorizationModule } from './authorization/authorization.module';
 import { AuthController } from './auth.controller';
 import { AuthLoggingService } from './auth-logging.service';
+import { AuthLoginService } from './auth-login.service';
 import { AuthProfileBootstrapService } from './auth-profile-bootstrap.service';
 import { SessionValidationService } from './session-validation.service';
 import { SupabaseJwtAuthGuard } from './supabase-jwt-auth.guard';
@@ -27,6 +28,7 @@ import { SupabaseJwtVerifierService } from './supabase-jwt-verifier.service';
     SessionValidationService,
     AuthLoggingService,
     AuthProfileBootstrapService,
+    AuthLoginService,
   ],
   exports: [
     SupabaseJwtAuthGuard,
@@ -34,6 +36,7 @@ import { SupabaseJwtVerifierService } from './supabase-jwt-verifier.service';
     SessionValidationService,
     AuthLoggingService,
     AuthProfileBootstrapService,
+    AuthLoginService,
     AuthorizationModule,
   ],
 })
