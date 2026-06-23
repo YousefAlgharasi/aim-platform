@@ -11,6 +11,9 @@ import 'package:aim_mobile/features/auth/logic/provider/session_store_provider.d
 import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
 import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
 import 'package:aim_mobile/features/auth/data/models/auth_sync_response_model.dart';
+import 'package:aim_mobile/features/auth/data/models/login_result_model.dart';
+import 'package:aim_mobile/features/auth/data/models/refresh_result_model.dart';
+import 'package:aim_mobile/features/auth/data/models/register_result_model.dart';
 
 // ── Fake implementations ──────────────────────────────────────────────────────
 
@@ -56,6 +59,24 @@ class _NoOpAuthRepository implements AuthRepository {
 
   @override
   Future<void> logout(String bearerToken) async {}
+
+  @override
+  Future<LoginResult> login({
+    required String email,
+    required String password,
+  }) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<RefreshResult> refresh({required String refreshToken}) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<RegisterResult> register({
+    required String email,
+    required String password,
+  }) async =>
+      throw UnimplementedError();
 }
 
 /// AppBootstrapNotifier that resolves immediately without async I/O.
@@ -95,7 +116,12 @@ void main() {
 
     test('save then read returns the saved data', () async {
       final store = FakeSessionStore();
-      await store.save(accessToken: 'tok-1', email: 'a@b.com');
+      await store.save(
+        accessToken: 'tok-1',
+        refreshToken: 'refresh-1',
+        expiresAt: 9999999999,
+        email: 'a@b.com',
+      );
 
       final result = await store.read();
       expect(result, isNotNull);
@@ -105,7 +131,12 @@ void main() {
 
     test('clear removes stored data', () async {
       final store = FakeSessionStore();
-      await store.save(accessToken: 'tok-1', email: 'a@b.com');
+      await store.save(
+        accessToken: 'tok-1',
+        refreshToken: 'refresh-1',
+        expiresAt: 9999999999,
+        email: 'a@b.com',
+      );
       await store.clear();
 
       expect(await store.read(), isNull);
@@ -117,7 +148,12 @@ void main() {
   group('AppBootstrapNotifier session restore', () {
     test('restores session when store has a valid token', () async {
       final store = FakeSessionStore();
-      await store.save(accessToken: 'tok-abc', email: 'learner@example.com');
+      await store.save(
+        accessToken: 'tok-abc',
+        refreshToken: 'refresh-abc',
+        expiresAt: 9999999999,
+        email: 'learner@example.com',
+      );
 
       final container = ProviderContainer(
         overrides: [
@@ -164,7 +200,12 @@ void main() {
   group('LogoutNotifier session clear', () {
     test('clears the persisted session on logout', () async {
       final store = FakeSessionStore();
-      await store.save(accessToken: 'tok-xyz', email: 'learner@example.com');
+      await store.save(
+        accessToken: 'tok-xyz',
+        refreshToken: 'refresh-xyz',
+        expiresAt: 9999999999,
+        email: 'learner@example.com',
+      );
 
       final container = ProviderContainer(
         overrides: [
@@ -196,7 +237,12 @@ void main() {
 
     test('logout clears auth state even when backend call fails', () async {
       final store = FakeSessionStore();
-      await store.save(accessToken: 'tok-xyz', email: 'learner@example.com');
+      await store.save(
+        accessToken: 'tok-xyz',
+        refreshToken: 'refresh-xyz',
+        expiresAt: 9999999999,
+        email: 'learner@example.com',
+      );
 
       final container = ProviderContainer(
         overrides: [
@@ -240,4 +286,22 @@ class _ThrowingAuthRepository implements AuthRepository {
   @override
   Future<void> logout(String bearerToken) async =>
       throw Exception('Server unavailable');
+
+  @override
+  Future<LoginResult> login({
+    required String email,
+    required String password,
+  }) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<RefreshResult> refresh({required String refreshToken}) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<RegisterResult> register({
+    required String email,
+    required String password,
+  }) async =>
+      throw UnimplementedError();
 }

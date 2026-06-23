@@ -11,6 +11,9 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.da
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
 import 'package:aim_mobile/features/auth/data/models/auth_sync_response_model.dart';
+import 'package:aim_mobile/features/auth/data/models/login_result_model.dart';
+import 'package:aim_mobile/features/auth/data/models/refresh_result_model.dart';
+import 'package:aim_mobile/features/auth/data/models/register_result_model.dart';
 import 'package:aim_mobile/features/auth/ui/widgets/logout_button.dart';
 import 'package:aim_mobile/features/profile/ui/pages/profile_page.dart';
 
@@ -48,6 +51,24 @@ class _StubAuthRepo implements AuthRepository {
       throw UnimplementedError();
   @override
   Future<void> logout(String t) async {}
+
+  @override
+  Future<LoginResult> login({
+    required String email,
+    required String password,
+  }) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<RefreshResult> refresh({required String refreshToken}) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<RegisterResult> register({
+    required String email,
+    required String password,
+  }) async =>
+      throw UnimplementedError();
 }
 
 Widget _wrap(AppAsyncState<AuthContextModel> authState) {
