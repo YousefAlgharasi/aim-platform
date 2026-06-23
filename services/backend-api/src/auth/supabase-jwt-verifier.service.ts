@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from 'crypto';
+import { createHmac, createPublicKey, timingSafeEqual, verify as cryptoVerify, KeyObject } from 'crypto';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { BackendConfigService } from '../config/backend-config.service';
 import { ApiErrorCode } from '../common/errors/api-error-code';
@@ -6,11 +6,29 @@ import { AppError } from '../common/errors/app-error';
 import { AuthenticatedUser } from './authenticated-user';
 import { SupabaseJwtHeader, SupabaseJwtPayload } from './supabase-jwt-payload';
 
-const SUPABASE_HS256_ALGORITHM = 'HS256';
+const SUPPORTED_ALGORITHMS = new Set(['HS256', 'ES256']);
 const JWT_PART_COUNT = 3;
+const JWKS_PATH = '/auth/v1/.well-known/jwks.json';
+const JWKS_CACHE_TTL_MS = 10 * 60 * 1000;
+const JWKS_FETCH_TIMEOUT_MS = 5000;
+
+interface SupabaseJwk {
+  readonly kid: string;
+  readonly kty: string;
+  readonly crv?: string;
+  readonly x?: string;
+  readonly y?: string;
+}
+
+interface JwksCache {
+  readonly keys: ReadonlyMap<string, KeyObject>;
+  readonly fetchedAt: number;
+}
 
 @Injectable()
 export class SupabaseJwtVerifierService {
+  private jwksCache: JwksCache | undefined;
+
   constructor(private readonly config: BackendConfigService) {}
 
   async verify(token: string): Promise<AuthenticatedUser> {
@@ -20,12 +38,18 @@ export class SupabaseJwtVerifierService {
       throwUnauthorized('Invalid bearer token');
     }
 
-    if (jwt.header.alg !== SUPABASE_HS256_ALGORITHM) {
+    const algorithm = jwt.header.alg;
+
+    if (!algorithm || !SUPPORTED_ALGORITHMS.has(algorithm)) {
       throwUnauthorized('Unsupported bearer token algorithm');
     }
 
-    if (!isValidHs256Signature(jwt.signedPart, jwt.signature, this.config.supabase.jwtSecret)) {
-      throwUnauthorized('Invalid bearer token signature');
+    if (algorithm === 'HS256') {
+      if (!isValidHs256Signature(jwt.signedPart, jwt.signature, this.config.supabase.jwtSecret)) {
+        throwUnauthorized('Invalid bearer token signature');
+      }
+    } else {
+      await this.verifyEs256Signature(jwt);
     }
 
     const payload = jwt.payload;
@@ -55,6 +79,97 @@ export class SupabaseJwtVerifierService {
       ...(payload.iat ? { issuedAt: payload.iat } : {}),
       expiresAt,
     };
+  }
+
+  // ---------------------------------------------------------------------------
+  // ES256 (asymmetric signing keys) verification via Supabase's JWKS endpoint.
+  // ---------------------------------------------------------------------------
+
+  private async verifyEs256Signature(jwt: ParsedJwt): Promise<void> {
+    const kid = jwt.header.kid;
+
+    if (!kid) {
+      throwUnauthorized('Bearer token is missing a key id');
+    }
+
+    let key = (await this.getJwks()).get(kid);
+
+    if (!key) {
+      // The signing key may have rotated since our last fetch — refresh once.
+      key = (await this.getJwks({ forceRefresh: true })).get(kid);
+    }
+
+    if (!key) {
+      throwUnauthorized('Bearer token signing key is unknown');
+    }
+
+    const isValid = cryptoVerify(
+      'sha256',
+      Buffer.from(jwt.signedPart),
+      { key, dsaEncoding: 'ieee-p1363' },
+      Buffer.from(jwt.signature, 'base64url'),
+    );
+
+    if (!isValid) {
+      throwUnauthorized('Invalid bearer token signature');
+    }
+  }
+
+  private async getJwks(options?: { readonly forceRefresh?: boolean }): Promise<ReadonlyMap<string, KeyObject>> {
+    const isStale = !this.jwksCache || Date.now() - this.jwksCache.fetchedAt > JWKS_CACHE_TTL_MS;
+
+    if (!options?.forceRefresh && !isStale) {
+      return (this.jwksCache as JwksCache).keys;
+    }
+
+    const keys = await this.fetchJwks();
+    this.jwksCache = { keys, fetchedAt: Date.now() };
+    return keys;
+  }
+
+  private async fetchJwks(): Promise<ReadonlyMap<string, KeyObject>> {
+    const baseUrl = this.config.supabase.url.replace(/\/$/, '');
+    const url = `${baseUrl}${JWKS_PATH}`;
+
+    let response: Response;
+    try {
+      response = await fetch(url, { signal: AbortSignal.timeout(JWKS_FETCH_TIMEOUT_MS) });
+    } catch {
+      throwUnauthorized('Unable to verify bearer token signature');
+    }
+
+    if (!response.ok) {
+      throwUnauthorized('Unable to verify bearer token signature');
+    }
+
+    let body: { keys?: readonly SupabaseJwk[] };
+    try {
+      body = (await response.json()) as { keys?: readonly SupabaseJwk[] };
+    } catch {
+      throwUnauthorized('Unable to verify bearer token signature');
+    }
+
+    const keys = new Map<string, KeyObject>();
+
+    for (const jwk of body.keys ?? []) {
+      if (jwk.kty !== 'EC' || jwk.crv !== 'P-256' || !jwk.x || !jwk.y || !jwk.kid) {
+        continue;
+      }
+
+      try {
+        keys.set(
+          jwk.kid,
+          createPublicKey({
+            key: { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y },
+            format: 'jwk',
+          }),
+        );
+      } catch {
+        // Skip malformed keys rather than failing the whole JWKS fetch.
+      }
+    }
+
+    return keys;
   }
 }
 
