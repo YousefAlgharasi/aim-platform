@@ -11,8 +11,6 @@ void main() {
       config: const AppConfig(
         environment: 'test',
         backendApiBaseUrl: 'https://api.example.com/v1',
-        supabaseUrl: 'https://example.supabase.co',
-        supabaseAnonKey: 'test-anon-key',
       ),
       httpClient: MockClient((request) async {
         return http.Response(
@@ -32,8 +30,6 @@ void main() {
       config: const AppConfig(
         environment: 'test',
         backendApiBaseUrl: 'https://api.example.com',
-        supabaseUrl: 'https://example.supabase.co',
-        supabaseAnonKey: 'test-anon-key',
       ),
       httpClient: MockClient((request) async {
         expect(request.url.toString(), 'https://api.example.com/health');
@@ -60,8 +56,6 @@ void main() {
       config: const AppConfig(
         environment: 'test',
         backendApiBaseUrl: 'https://api.example.com',
-        supabaseUrl: 'https://example.supabase.co',
-        supabaseAnonKey: 'test-anon-key',
       ),
       httpClient: MockClient((request) async {
         return http.Response(
@@ -89,8 +83,6 @@ void main() {
       config: const AppConfig(
         environment: 'test',
         backendApiBaseUrl: 'https://api.example.com',
-        supabaseUrl: 'https://example.supabase.co',
-        supabaseAnonKey: 'test-anon-key',
       ),
       authInterceptor: AuthInterceptor(() => 'token-abc'),
       httpClient: MockClient((request) async {

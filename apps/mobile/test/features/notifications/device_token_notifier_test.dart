@@ -23,8 +23,18 @@ class _FakeSessionStore implements SessionStore {
   SessionData? _data;
 
   @override
-  Future<void> save({required String accessToken, required String email}) async {
-    _data = SessionData(accessToken: accessToken, email: email);
+  Future<void> save({
+    required String accessToken,
+    required String refreshToken,
+    required int expiresAt,
+    required String email,
+  }) async {
+    _data = SessionData(
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      expiresAt: expiresAt,
+      email: email,
+    );
   }
 
   @override

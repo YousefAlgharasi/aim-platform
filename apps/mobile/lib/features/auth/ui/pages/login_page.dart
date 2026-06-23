@@ -10,8 +10,9 @@ import '../../logic/provider/login_provider.dart';
 ///
 /// Flow:
 /// 1. Student enters email + password.
-/// 2. [LoginNotifier] validates locally, then calls Supabase Auth.
-/// 3. On success the bearer token is synced with the backend and
+/// 2. [LoginNotifier] validates locally, then calls the backend's
+///    `POST /auth/login` (the backend is the sole auth authority).
+/// 3. On success the session is synced (bootstrap + me) and
 ///    [authFlowProvider] transitions to signedIn.
 /// 4. [ref.listen] on [authFlowProvider] navigates to [AppRoutePaths.mainShell].
 ///

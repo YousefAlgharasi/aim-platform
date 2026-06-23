@@ -1,5 +1,5 @@
 // Phase 2 — P2-025 (bootstrap endpoint added)
-import { Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { OPENAPI_TAGS } from '../openapi/openapi.tags';
 import { AuthenticatedUser } from './authenticated-user';
@@ -9,13 +9,98 @@ import { BootstrapProfileResult } from './auth-profile-bootstrap.types';
 import { CurrentUser } from './current-user.decorator';
 import { presentAuthMe } from './auth-me.presenter';
 import { SupabaseJwtAuthGuard } from './supabase-jwt-auth.guard';
+import { PublicRoute } from './public-route.decorator';
+import { AuthLoginService } from './auth-login.service';
+import {
+  AuthLoginResult,
+  AuthRegisterResult,
+  AuthTokenResult,
+} from './auth-login.types';
+import { AuthLoginDto, AuthRefreshDto, AuthRegisterDto } from './auth-login.dto';
+import { extractBearerToken } from './bearer-token';
+import { AuthenticatedRequest } from './authenticated-user';
 
 @ApiTags(OPENAPI_TAGS.auth)
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly profileBootstrap: AuthProfileBootstrapService,
+    private readonly authLogin: AuthLoginService,
   ) {}
+
+  /**
+   * POST /auth/login
+   *
+   * Sole client-facing entry point for obtaining a session. Calls Supabase
+   * Auth internally with the service-role key — clients never see Supabase
+   * credentials or talk to Supabase directly.
+   */
+  @Post('login')
+  @PublicRoute()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Log in with email and password.' })
+  @ApiOkResponse({ description: 'Session tokens for the authenticated account.' })
+  async login(@Body() body: AuthLoginDto): Promise<AuthLoginResult> {
+    return this.authLogin.login(body);
+  }
+
+  /**
+   * POST /auth/refresh
+   *
+   * Exchanges a refresh token for a new access/refresh token pair.
+   */
+  @Post('refresh')
+  @PublicRoute()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Exchange a refresh token for a new session.' })
+  @ApiOkResponse({ description: 'New session tokens.' })
+  async refresh(@Body() body: AuthRefreshDto): Promise<AuthTokenResult> {
+    return this.authLogin.refresh(body);
+  }
+
+  /**
+   * POST /auth/register
+   *
+   * Creates a new account via Supabase signUp. If email confirmation is
+   * disabled on the Supabase project, also bootstraps the internal profile
+   * and returns a usable session immediately.
+   */
+  @Post('register')
+  @PublicRoute()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Register a new account with email and password.' })
+  @ApiOkResponse({ description: 'Registration result — session tokens or confirmation pending.' })
+  async register(@Body() body: AuthRegisterDto): Promise<AuthRegisterResult> {
+    const result = await this.authLogin.register(body);
+
+    if (!result.requiresEmailConfirmation && result.user) {
+      await this.profileBootstrap.bootstrap({
+        supabaseAuthUid: result.user.id,
+        email: result.user.email,
+      });
+    }
+
+    return result;
+  }
+
+  /**
+   * POST /auth/logout
+   *
+   * Invalidates the Supabase session server-side. Requires a valid bearer
+   * token; the client discards its locally stored tokens regardless of
+   * outcome.
+   */
+  @Post('logout')
+  @UseGuards(SupabaseJwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Invalidate the current session server-side.' })
+  async logout(@Req() request: AuthenticatedRequest): Promise<void> {
+    const token = extractBearerToken(request);
+    if (token) {
+      await this.authLogin.logout(token);
+    }
+  }
 
   @Get('me')
   @UseGuards(SupabaseJwtAuthGuard)

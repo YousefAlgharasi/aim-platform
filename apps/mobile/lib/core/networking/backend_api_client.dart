@@ -32,8 +32,8 @@ class BackendApiClient {
 
   // ---------------------------------------------------------------------------
   // Auth header helper — P6-022
-  // Pass the Supabase access token returned by the auth flow.
-  // Never store or log the token inside this client.
+  // Pass the backend access token returned by POST /auth/login (or refreshed
+  // via POST /auth/refresh). Never store or log the token inside this client.
   // ---------------------------------------------------------------------------
 
   /// Returns an Authorization header map for authenticated requests.
@@ -65,12 +65,14 @@ class BackendApiClient {
     Map<String, String>? queryParameters,
     Map<String, String>? headers,
   }) async {
-    final response = await _httpClient.get(
-      buildUri(path, queryParameters),
-      headers: _jsonHeaders(headers),
+    return _sendWithRefreshRetry<T>(
+      decodeData: decodeData,
+      send: (effectiveHeaders) => _httpClient.get(
+        buildUri(path, queryParameters),
+        headers: effectiveHeaders,
+      ),
+      buildHeaders: () => _jsonHeaders(headers),
     );
-
-    return _parseResponse<T>(response, decodeData: decodeData);
   }
 
   Future<ApiResponseEnvelope<T>> post<T>(
@@ -78,14 +80,24 @@ class BackendApiClient {
     required ApiJsonDecoder<T> decodeData,
     Object? body,
     Map<String, String>? headers,
+    bool requiresAuth = true,
   }) async {
-    final response = await _httpClient.post(
-      buildUri(path),
-      headers: _jsonHeaders(headers),
-      body: body == null ? null : jsonEncode(body),
-    );
+    final encodedBody = body == null ? null : jsonEncode(body);
 
-    return _parseResponse<T>(response, decodeData: decodeData);
+    return _sendWithRefreshRetry<T>(
+      decodeData: decodeData,
+      send: (effectiveHeaders) => _httpClient.post(
+        buildUri(path),
+        headers: effectiveHeaders,
+        body: encodedBody,
+      ),
+      buildHeaders: () => requiresAuth
+          ? _jsonHeaders(headers)
+          : _jsonHeadersWithoutAuth(headers),
+      // Unauthenticated calls (login/refresh/register) must never trigger
+      // a refresh-retry loop.
+      allowRefreshRetry: requiresAuth,
+    );
   }
 
   Future<ApiResponseEnvelope<T>> patch<T>(
@@ -94,13 +106,17 @@ class BackendApiClient {
     Object? body,
     Map<String, String>? headers,
   }) async {
-    final response = await _httpClient.patch(
-      buildUri(path),
-      headers: _jsonHeaders(headers),
-      body: body == null ? null : jsonEncode(body),
-    );
+    final encodedBody = body == null ? null : jsonEncode(body);
 
-    return _parseResponse<T>(response, decodeData: decodeData);
+    return _sendWithRefreshRetry<T>(
+      decodeData: decodeData,
+      send: (effectiveHeaders) => _httpClient.patch(
+        buildUri(path),
+        headers: effectiveHeaders,
+        body: encodedBody,
+      ),
+      buildHeaders: () => _jsonHeaders(headers),
+    );
   }
 
   Future<ApiResponseEnvelope<T>> delete<T>(
@@ -108,12 +124,14 @@ class BackendApiClient {
     required ApiJsonDecoder<T> decodeData,
     Map<String, String>? headers,
   }) async {
-    final response = await _httpClient.delete(
-      buildUri(path),
-      headers: _jsonHeaders(headers),
+    return _sendWithRefreshRetry<T>(
+      decodeData: decodeData,
+      send: (effectiveHeaders) => _httpClient.delete(
+        buildUri(path),
+        headers: effectiveHeaders,
+      ),
+      buildHeaders: () => _jsonHeaders(headers),
     );
-
-    return _parseResponse<T>(response, decodeData: decodeData);
   }
 
   /// Multipart upload (e.g. voice audio submission). Used only for backend
@@ -214,6 +232,41 @@ class BackendApiClient {
   }
 
   // ---------------------------------------------------------------------------
+  // 401 refresh-and-retry — P? (auth refactor)
+  // On a 401, attempt a single token refresh via the auth interceptor's
+  // [AuthInterceptor.onUnauthorized] hook, then retry the request once with
+  // the new token. If refresh fails (or no hook is configured), the
+  // original 401 is surfaced as an [ApiClientException] as before.
+  // ---------------------------------------------------------------------------
+
+  Future<ApiResponseEnvelope<T>> _sendWithRefreshRetry<T>({
+    required Future<http.Response> Function(Map<String, String> headers) send,
+    required Map<String, String> Function() buildHeaders,
+    required ApiJsonDecoder<T> decodeData,
+    bool allowRefreshRetry = true,
+  }) async {
+    final response = await send(buildHeaders());
+
+    if (response.statusCode != 401 ||
+        !allowRefreshRetry ||
+        _authInterceptor?.onUnauthorized == null) {
+      return _parseResponse<T>(response, decodeData: decodeData);
+    }
+
+    final newToken = await _authInterceptor!.onUnauthorized!();
+    if (newToken == null || newToken.isEmpty) {
+      return _parseResponse<T>(response, decodeData: decodeData);
+    }
+
+    // Retry once with the refreshed token, bypassing the stale token that
+    // would otherwise be re-attached by the interceptor.
+    final retryHeaders = {...buildHeaders(), 'authorization': 'Bearer $newToken'};
+    final retryResponse = await send(retryHeaders);
+
+    return _parseResponse<T>(retryResponse, decodeData: decodeData);
+  }
+
+  // ---------------------------------------------------------------------------
   // Response parsing
   // ---------------------------------------------------------------------------
 
@@ -262,6 +315,18 @@ class BackendApiClient {
     };
 
     return _authInterceptor?.apply(base) ?? base;
+  }
+
+  /// JSON headers without the auth interceptor — used for unauthenticated
+  /// backend calls (login, refresh, register) where no bearer token exists
+  /// yet, or where the caller deliberately must not attach the current
+  /// session's token.
+  Map<String, String> _jsonHeadersWithoutAuth(Map<String, String>? headers) {
+    return <String, String>{
+      'accept': 'application/json',
+      'content-type': 'application/json',
+      ...?headers,
+    };
   }
 
   /// Auth-only headers, without the JSON content-type (used for multipart

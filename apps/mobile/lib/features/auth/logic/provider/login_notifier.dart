@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/state/app_form_state.dart';
-import 'package:aim_mobile/features/auth/data/datasources/supabase_auth_datasource.dart';
 import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
+import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
 import 'auth_context_provider.dart';
 import 'auth_flow_provider.dart';
 import 'session_store_provider.dart';
@@ -13,9 +13,11 @@ import 'session_store_provider.dart';
 ///
 /// Responsibilities:
 /// - Validate email/password input.
-/// - Call Supabase Auth to get a bearer token.
-/// - Sync and load the current user via the backend on success.
-/// - Persist the token via [SessionStore] so the user stays signed in.
+/// - Call the backend's `POST /auth/login` to obtain a session — the
+///   backend is the sole auth authority; this client never talks to
+///   Supabase (or any identity provider) directly.
+/// - Sync (bootstrap) and load the current user via the backend on success.
+/// - Persist the session via [SessionStore] so the user stays signed in.
 /// - Transition the global [authFlowProvider] to signedIn on success.
 ///
 /// Backend is the final authority for identity, roles, and permissions.
@@ -28,13 +30,13 @@ import 'session_store_provider.dart';
 /// - No service-role keys, JWT secrets, or AI provider keys are handled here.
 class LoginNotifier extends StateNotifier<AppFormState> {
   LoginNotifier({
-    required SupabaseAuthDatasource supabaseDatasource,
+    required AuthRepository repository,
     required Ref ref,
-  })  : _supabaseDatasource = supabaseDatasource,
+  })  : _repository = repository,
         _ref = ref,
         super(const AppFormState());
 
-  final SupabaseAuthDatasource _supabaseDatasource;
+  final AuthRepository _repository;
   final Ref _ref;
 
   String _email = '';
@@ -58,9 +60,9 @@ class LoginNotifier extends StateNotifier<AppFormState> {
 
   /// Submits the login form.
   ///
-  /// 1. Signs in with Supabase Auth → gets bearer token.
-  /// 2. Calls backend sync-user + me via [AuthContextNotifier].
-  /// 3. Persists the token to [SessionStore].
+  /// 1. Calls the backend's `POST /auth/login` → access/refresh token pair.
+  /// 2. Calls backend sync-user (bootstrap) + me via [AuthContextNotifier].
+  /// 3. Persists the session to [SessionStore].
   /// 4. Transitions [AuthFlowNotifier] to signedIn.
   Future<void> submit() async {
     if (!state.isValid || state.isSubmitting) return;
@@ -68,13 +70,14 @@ class LoginNotifier extends StateNotifier<AppFormState> {
     state = state.copyWith(isSubmitting: true, clearError: true);
 
     try {
-      final token = await _supabaseDatasource.signInWithEmailPassword(
+      final login = await _repository.login(
         email: _email,
         password: _password,
       );
 
-      final didLoadContext =
-          await _ref.read(authContextProvider.notifier).syncAndLoadUser(token);
+      final didLoadContext = await _ref
+          .read(authContextProvider.notifier)
+          .syncAndLoadUser(login.accessToken);
 
       if (!didLoadContext) {
         final contextState = _ref.read(authContextProvider);
@@ -90,20 +93,24 @@ class LoginNotifier extends StateNotifier<AppFormState> {
 
       // Persist session so the user stays signed in across app restarts.
       await _ref.read(sessionStoreProvider).save(
-            accessToken: token,
+            accessToken: login.accessToken,
+            refreshToken: login.refreshToken,
+            expiresAt: login.expiresAt,
             email: _email,
           );
 
       _ref.read(authFlowProvider.notifier).signIn(
             _email,
-            accessToken: token,
+            accessToken: login.accessToken,
           );
 
       // State stays isSubmitting=true after success; the UI navigates away.
     } on AppException catch (e) {
       state = state.copyWith(
         isSubmitting: false,
-        errorMessage: e.message,
+        errorMessage: _isInvalidCredentials(e)
+            ? 'Incorrect email or password.'
+            : e.message,
       );
     } catch (_) {
       state = state.copyWith(
@@ -111,6 +118,11 @@ class LoginNotifier extends StateNotifier<AppFormState> {
         errorMessage: 'Sign in failed. Please try again.',
       );
     }
+  }
+
+  bool _isInvalidCredentials(AppException e) {
+    return e.code.toUpperCase() == 'AUTH_INVALID_CREDENTIALS' ||
+        e.message.toUpperCase() == 'AUTH_INVALID_CREDENTIALS';
   }
 
   void clearError() {
