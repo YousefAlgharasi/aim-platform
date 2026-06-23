@@ -120,6 +120,56 @@ class LoginNotifier extends StateNotifier<AppFormState> {
     }
   }
 
+  /// Signs in as a fixed student/admin/parent test account via
+  /// `POST /auth/test-login`, then follows the exact same post-login flow
+  /// as [submit] (sync + load context, persist session, transition
+  /// [authFlowProvider]). The backend only serves this route outside
+  /// production, so this is a dead end in production builds.
+  Future<void> submitTestLogin(String role) async {
+    if (state.isSubmitting) return;
+
+    state = state.copyWith(isSubmitting: true, clearError: true);
+
+    try {
+      final login = await _repository.loginAsTestUser(role: role);
+
+      final didLoadContext = await _ref
+          .read(authContextProvider.notifier)
+          .syncAndLoadUser(login.accessToken);
+
+      if (!didLoadContext) {
+        final contextState = _ref.read(authContextProvider);
+        final errorMessage = contextState is AppAsyncFailure<AuthContextModel>
+            ? contextState.message
+            : 'Test login failed. Please try again.';
+        state = state.copyWith(
+          isSubmitting: false,
+          errorMessage: errorMessage,
+        );
+        return;
+      }
+
+      await _ref.read(sessionStoreProvider).save(
+            accessToken: login.accessToken,
+            refreshToken: login.refreshToken,
+            expiresAt: login.expiresAt,
+            email: login.userEmail,
+          );
+
+      _ref.read(authFlowProvider.notifier).signIn(
+            login.userEmail,
+            accessToken: login.accessToken,
+          );
+    } on AppException catch (e) {
+      state = state.copyWith(isSubmitting: false, errorMessage: e.message);
+    } catch (_) {
+      state = state.copyWith(
+        isSubmitting: false,
+        errorMessage: 'Test login failed. Please try again.',
+      );
+    }
+  }
+
   bool _isInvalidCredentials(AppException e) {
     return e.code.toUpperCase() == 'AUTH_INVALID_CREDENTIALS' ||
         e.message.toUpperCase() == 'AUTH_INVALID_CREDENTIALS';

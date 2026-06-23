@@ -62,6 +62,10 @@ class _FakeAuthRepository implements AuthRepository {
     required String password,
   }) async =>
       throw UnimplementedError('not called in UI-only tests');
+
+  @override
+  Future<LoginResult> loginAsTestUser({required String role}) async =>
+      throw UnimplementedError('not called in UI-only tests');
 }
 
 /// LoginNotifier subclass that starts with a preset error message.

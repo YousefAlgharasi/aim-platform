@@ -100,4 +100,9 @@ class _FakeAuthRepository implements AuthRepository {
   }) {
     throw UnimplementedError();
   }
+
+  @override
+  Future<LoginResult> loginAsTestUser({required String role}) {
+    throw UnimplementedError();
+  }
 }

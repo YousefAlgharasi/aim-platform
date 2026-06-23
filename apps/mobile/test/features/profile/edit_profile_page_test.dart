@@ -73,6 +73,10 @@ class _StubAuthRepo implements AuthRepository {
     required String password,
   }) async =>
       throw UnimplementedError();
+
+  @override
+  Future<LoginResult> loginAsTestUser({required String role}) async =>
+      throw UnimplementedError();
 }
 
 class _StubAuthFlowRepo {
