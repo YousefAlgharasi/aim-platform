@@ -160,6 +160,8 @@ void main() {
             _FakeSessionStore(
               initial: const SessionData(
                 accessToken: 'tok-123',
+                refreshToken: 'refresh-123',
+                expiresAt: 9999999999,
                 email: 'student@example.com',
               ),
             ),
@@ -188,6 +190,8 @@ void main() {
             _FakeSessionStore(
               initial: const SessionData(
                 accessToken: 'tok-123',
+                refreshToken: 'refresh-123',
+                expiresAt: 9999999999,
                 email: 'student@example.com',
               ),
             ),
@@ -243,6 +247,8 @@ void main() {
             _FakeSessionStore(
               initial: const SessionData(
                 accessToken: 'tok-123',
+                refreshToken: 'refresh-123',
+                expiresAt: 9999999999,
                 email: 'student@example.com',
               ),
             ),
