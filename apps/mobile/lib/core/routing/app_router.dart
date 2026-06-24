@@ -14,6 +14,11 @@ import '../../features/placement/ui/pages/placement_result_page.dart';
 import '../../features/placement/ui/pages/placement_section_page.dart';
 import '../../features/placement/ui/pages/placement_start_page.dart';
 import '../../features/placement/ui/pages/placement_submit_page.dart';
+import '../../features/assessments/ui/pages/assessment_detail_page.dart';
+import '../../features/assessments/ui/pages/assessment_list_page.dart';
+import '../../features/assessments/ui/pages/assessment_result_page.dart';
+import '../../features/assessments/ui/pages/attempt_page.dart';
+import '../../features/assessments/ui/pages/start_attempt_page.dart';
 import '../../features/shell/ui/pages/main_shell_page.dart';
 import 'app_route_paths.dart';
 
@@ -65,6 +70,16 @@ class AppRouter {
             return _buildLessonListPage(settings.arguments);
           case AppRoutePaths.lessonDetail:
             return _buildLessonDetailPage(settings.arguments);
+          case AppRoutePaths.assessments:
+            return const AssessmentListPage();
+          case AppRoutePaths.assessmentDetail:
+            return _buildAssessmentDetail(settings.arguments);
+          case AppRoutePaths.assessmentStart:
+            return _buildAssessmentStart(settings.arguments);
+          case AppRoutePaths.assessmentAttempt:
+            return _buildAssessmentAttempt(settings.arguments);
+          case AppRoutePaths.assessmentResult:
+            return _buildAssessmentResult(settings.arguments);
           default:
             return const SplashPage();
         }
@@ -160,6 +175,63 @@ class AppRouter {
     return ChapterListPage(levelId: levelId, courseTitle: courseTitle);
   }
 
+  static Map<String, dynamic> _assessmentArgs(Object? arguments) {
+    return arguments is Map<String, dynamic> ? arguments : const {};
+  }
+
+  static Widget _buildAssessmentDetail(Object? arguments) {
+    final args = _assessmentArgs(arguments);
+    final assessmentId = args['assessmentId'];
+    final assessmentTitle = args['assessmentTitle'];
+    if (assessmentId is! String || assessmentTitle is! String) {
+      return const SplashPage();
+    }
+    return AssessmentDetailPage(
+      assessmentId: assessmentId,
+      assessmentTitle: assessmentTitle,
+    );
+  }
+
+  static Widget _buildAssessmentStart(Object? arguments) {
+    final args = _assessmentArgs(arguments);
+    final assessmentId = args['assessmentId'];
+    final assessmentTitle = args['assessmentTitle'];
+    if (assessmentId is! String || assessmentTitle is! String) {
+      return const SplashPage();
+    }
+    return StartAttemptPage(
+      assessmentId: assessmentId,
+      assessmentTitle: assessmentTitle,
+    );
+  }
+
+  static Widget _buildAssessmentAttempt(Object? arguments) {
+    final args = _assessmentArgs(arguments);
+    final attemptId = args['attemptId'];
+    final assessmentTitle = args['assessmentTitle'];
+    if (attemptId is! String || assessmentTitle is! String) {
+      return const SplashPage();
+    }
+    return AttemptPage(
+      attemptId: attemptId,
+      assessmentTitle: assessmentTitle,
+      expiresAt: args['expiresAt'] as String?,
+    );
+  }
+
+  static Widget _buildAssessmentResult(Object? arguments) {
+    final args = _assessmentArgs(arguments);
+    final attemptId = args['attemptId'];
+    final assessmentTitle = args['assessmentTitle'];
+    if (attemptId is! String || assessmentTitle is! String) {
+      return const SplashPage();
+    }
+    return AssessmentResultPage(
+      attemptId: attemptId,
+      assessmentTitle: assessmentTitle,
+    );
+  }
+
   static Map<String, dynamic> _placementArgs(Object? arguments) {
     return arguments is Map<String, dynamic> ? arguments : const {};
   }
@@ -211,5 +283,10 @@ class AppRouter {
     AppRoutePaths.placementQuestion,
     AppRoutePaths.placementSubmit,
     AppRoutePaths.placementResult,
+    AppRoutePaths.assessments,
+    AppRoutePaths.assessmentDetail,
+    AppRoutePaths.assessmentStart,
+    AppRoutePaths.assessmentAttempt,
+    AppRoutePaths.assessmentResult,
   };
 }

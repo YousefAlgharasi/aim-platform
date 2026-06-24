@@ -23,4 +23,11 @@ class AppRoutePaths {
   // P4-066: submit route (navigated from section page after last section)
   static const String placementSubmit = '/placement/submit';
   static const String placementResult = '/placement/result';
+
+  // TASK-1: Assessment flow routes
+  static const String assessments = '/student/assessments';
+  static const String assessmentDetail = '/student/assessments/detail';
+  static const String assessmentStart = '/student/assessments/start';
+  static const String assessmentAttempt = '/student/assessments/attempt';
+  static const String assessmentResult = '/student/assessments/result';
 }
