@@ -9,7 +9,7 @@ interface ProgressEvent {
 
 export function useLessonProgress(lessonId: string) {
   const lastSyncedRef = useRef(0);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const syncProgress = useCallback((event: ProgressEvent) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);

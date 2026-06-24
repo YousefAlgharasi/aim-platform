@@ -107,7 +107,7 @@ export function SupportPage() {
     <div className={styles.container}>
       <h1 className={styles.heading}>Help & Support</h1>
 
-      {success && <Banner variant="success" message={success} onDismiss={() => setSuccess('')} />}
+      {success && <Banner variant="success">{success}</Banner>}
 
       <div className={styles.grid}>
         <Card>
