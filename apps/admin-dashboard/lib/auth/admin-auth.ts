@@ -12,6 +12,7 @@ export type BackendAuthorizedRole =
   | 'parent'
   | 'teacher'
   | 'content_editor'
+  | 'reviewer'
   | 'admin'
   | 'super_admin';
 

@@ -24,21 +24,21 @@
 
 import Link from 'next/link';
 import { cookies } from 'next/headers';
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../../../../../../../../lib/auth';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../../../../../../lib/auth';
 import {
   fetchPlacementQuestionSkillLinks,
   addPlacementQuestionSkillLink,
   removePlacementQuestionSkillLink,
   setPrimaryPlacementQuestionSkillLink,
   AdminApiClientError,
-} from '../../../../../../../../../../../../lib/api/admin-placement-question-skills-api';
+} from '../../../../../../../../../../lib/api/admin-placement-question-skills-api';
 import {
   fetchAdminSkillsForPicker,
   type AdminSkillSummary,
-} from '../../../../../../../../../../../../lib/api/admin-skills-api';
-import { fetchAdminPlacementQuestions } from '../../../../../../../../../../../../lib/api/admin-placement-questions-api';
+} from '../../../../../../../../../../lib/api/admin-skills-api';
+import { fetchAdminPlacementQuestions } from '../../../../../../../../../../lib/api/admin-placement-questions-api';
 import { PlacementQuestionSkillLinker } from './placement-question-skill-linker';
-import type { PlacementQuestionSkillLinksData } from '../../../../../../../../../../../../lib/api/admin-placement-question-skills-api';
+import type { PlacementQuestionSkillLinksData } from '../../../../../../../../../../lib/api/admin-placement-question-skills-api';
 
 type Props = {
   params: Promise<{ testId: string; sectionId: string; questionId: string }>;
