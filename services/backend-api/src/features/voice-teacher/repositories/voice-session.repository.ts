@@ -15,7 +15,7 @@ export class VoiceSessionRepository {
       [studentId, contextRef],
     );
 
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findById(sessionId: string): Promise<VoiceSessionRow | null> {

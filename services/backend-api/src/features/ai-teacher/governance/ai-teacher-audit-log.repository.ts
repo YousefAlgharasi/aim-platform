@@ -32,7 +32,7 @@ export class AiTeacherAuditLogRepository {
         JSON.stringify(input.details ?? {}),
       ],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findByResource(

@@ -21,7 +21,7 @@ export class VoiceAudioAssetRepository {
       [messageId, studentId, storageKey, contentType, durationMs],
     );
 
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findById(assetId: string): Promise<VoiceAudioAssetRow | null> {

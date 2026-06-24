@@ -54,7 +54,7 @@ export class ParentRepository {
       [parentId, childId, relationshipType],
     );
 
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findLinkById(linkId: string): Promise<ParentChildLinkRow | null> {
@@ -143,7 +143,7 @@ export class ParentRepository {
       [parentId, childEmail, childId, invitationCode, relationshipType, expiresAt],
     );
 
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findInvitationById(invitationId: string): Promise<ParentInvitationRow | null> {
@@ -219,7 +219,7 @@ export class ParentRepository {
       [parentChildLinkId, consentType, grantedBy],
     );
 
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findConsentById(consentId: string): Promise<ParentConsentRow | null> {
@@ -290,7 +290,7 @@ export class ParentRepository {
       [parentId, childId, action, resourceType, ipAddress, userAgent],
     );
 
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findAuditLogsByParent(parentId: string): Promise<ParentAccessAuditLogRow[]> {
@@ -350,6 +350,6 @@ export class ParentRepository {
       [parentId, channel, category, enabled],
     );
 
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 }

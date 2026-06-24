@@ -7,6 +7,7 @@ const SUPABASE_CONFIG_ERROR =
   'Missing Supabase environment variables. Add REACT_APP_SUPABASE_URL and REACT_APP_SUPABASE_PUBLISHABLE_KEY to frontend/.env';
 
 function createMissingSupabaseClient() {
+  console.error(SUPABASE_CONFIG_ERROR);
   const error = new Error(SUPABASE_CONFIG_ERROR);
 
   return {
