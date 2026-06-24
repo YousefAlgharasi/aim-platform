@@ -6,43 +6,49 @@ import '../core/routing/routing.dart';
 import '../core/theme/theme.dart';
 import '../features/auth/logic/provider/auth_context_provider.dart';
 import '../features/auth/logic/provider/auth_flow_provider.dart';
+import '../features/auth/logic/provider/deep_link_handler.dart';
 
 final _rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
-class AimMobileApp extends ConsumerWidget {
+class AimMobileApp extends ConsumerStatefulWidget {
   const AimMobileApp({super.key});
 
   static const String appTitle = 'AIM Mobile';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AimMobileApp> createState() => _AimMobileAppState();
+}
+
+class _AimMobileAppState extends ConsumerState<AimMobileApp> {
+  @override
+  void initState() {
+    super.initState();
+    ref.read(deepLinkHandlerProvider).init(_rootNavigatorKey);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authFlowProvider);
     final authContextState = ref.watch(authContextProvider);
     final themeMode = ref.watch(themeModeProvider);
 
-    // RTL/Arabic: active locale drives TextDirection across the entire app.
-    // Feature widgets must never hard-code TextDirection.ltr or .rtl.
     final locale = ref.watch(localeProvider);
 
     return MaterialApp(
-      title: appTitle,
+      title: AimMobileApp.appTitle,
       debugShowCheckedModeBanner: false,
       scaffoldMessengerKey: _rootScaffoldMessengerKey,
+      navigatorKey: _rootNavigatorKey,
 
-      // ── Theme ───────────────────────────────────────────────────────────
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
 
-      // ── Localization & RTL ───────────────────────────────────────────────
-      // locale drives TextDirection automatically:
-      //   Locale('en') → TextDirection.ltr
-      //   Locale('ar') → TextDirection.rtl
       locale: locale,
       supportedLocales: AppLocale.supportedLocales,
       localizationsDelegates: AppLocale.delegates,
 
-      // ── Routing ─────────────────────────────────────────────────────────
       initialRoute: AppRoutePaths.splash,
       onGenerateRoute: (settings) => AppRouter.onGenerateRoute(
         settings,
