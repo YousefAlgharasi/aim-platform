@@ -1,10 +1,12 @@
 """Application entrypoint for the AIM Engine service skeleton."""
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 from app.api.router import api_router
 from app.core.config import AimEngineSettings, get_settings
 from app.core.service_info import SERVICE_PHASE, SERVICE_VERSION
+from app.errors.aim_safe_failure import AimSafeFailureBuilder  # P5-025
 from app.pipeline.aim_analysis_pipeline import AimAnalysisPipelineEntrypoint  # P5-023
 
 
@@ -34,8 +36,25 @@ def create_app(settings: AimEngineSettings | None = None) -> FastAPI:
     # can delegate to it via app.state.aim_pipeline.
     app.state.aim_pipeline = AimAnalysisPipelineEntrypoint()
     app.include_router(api_router)
+    app.add_exception_handler(Exception, _unhandled_exception_handler)
 
     return app
+
+
+async def _unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Convert any unhandled exception into the P5-025 safe failure envelope.
+
+    Never echoes the exception message, type, or a stack trace to the caller.
+    """
+    del exc  # never inspected — its contents must never reach the response
+    response, http_status = AimSafeFailureBuilder().internal_error(
+        request_id=request.headers.get("x-request-id"),
+    )
+    return JSONResponse(
+        content=response.model_dump(mode="json"),
+        status_code=http_status,
+        headers={"Cache-Control": "no-store"},
+    )
 
 
 app = create_app()

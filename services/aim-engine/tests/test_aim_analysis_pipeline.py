@@ -179,9 +179,7 @@ async def test_pipeline_response_contains_no_secrets() -> None:
     body = response.model_dump_json()
 
     for forbidden in ("secret", "password", "database", "token"):
-        assert forbidden not in body.lower(), (
-            f"Pipeline response must not contain '{forbidden}'"
-        )
+        assert forbidden not in body.lower(), f"Pipeline response must not contain '{forbidden}'"
 
 
 # ---------------------------------------------------------------------------

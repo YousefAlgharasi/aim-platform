@@ -96,9 +96,7 @@ def test_invalid_request_options_count_wrong_for_format_rejected() -> None:
 
 
 def test_invalid_request_unsupported_contract_version_passes_schema() -> None:
-    parsed = AimAnalysisRequest.model_validate(
-        INVALID_REQUEST_UNSUPPORTED_CONTRACT_VERSION
-    )
+    parsed = AimAnalysisRequest.model_validate(INVALID_REQUEST_UNSUPPORTED_CONTRACT_VERSION)
     assert parsed.session.contract_version == "9.9"
 
 
@@ -135,9 +133,7 @@ def test_invalid_response_difficulty_step_violation_rejected() -> None:
 
 def test_invalid_response_resolved_without_timestamp_rejected() -> None:
     with pytest.raises(ValidationError) as exc:
-        AimAnalysisResponse.model_validate(
-            INVALID_RESPONSE_RESOLVED_WEAKNESS_WITHOUT_TIMESTAMP
-        )
+        AimAnalysisResponse.model_validate(INVALID_RESPONSE_RESOLVED_WEAKNESS_WITHOUT_TIMESTAMP)
     assert "resolved" in str(exc.value).lower()
 
 
@@ -184,10 +180,7 @@ def test_fixtures_contain_no_secret_markers() -> None:
         "SUPABASE_SERVICE",
         "DATABASE_URL",
     )
-    payloads = [
-        json.dumps(f, default=str)
-        for f in (*all_valid_requests(), *all_valid_responses())
-    ]
+    payloads = [json.dumps(f, default=str) for f in (*all_valid_requests(), *all_valid_responses())]
     for blob in payloads:
         for marker in forbidden_markers:
             assert marker not in blob, (

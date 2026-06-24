@@ -14,11 +14,11 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.errors.aim_safe_failure import (
+    _HTTP_STATUS,
+    _RETRYABLE,
     AimFailureCategory,
     AimSafeFailureBuilder,
     AimSafeFailureResponse,
-    _RETRYABLE,
-    _HTTP_STATUS,
 )
 from app.main import create_app
 
@@ -139,26 +139,32 @@ def test_builder_produces_response_for_every_category(category: AimFailureCatego
     assert http_status == _HTTP_STATUS[category]
 
 
-@pytest.mark.parametrize("category", [
-    AimFailureCategory.TRANSPORT_TIMEOUT,
-    AimFailureCategory.TRANSPORT_CONNECTION_ERROR,
-    AimFailureCategory.TRANSIENT_HTTP,
-])
+@pytest.mark.parametrize(
+    "category",
+    [
+        AimFailureCategory.TRANSPORT_TIMEOUT,
+        AimFailureCategory.TRANSPORT_CONNECTION_ERROR,
+        AimFailureCategory.TRANSIENT_HTTP,
+    ],
+)
 def test_retryable_categories_are_retryable(category: AimFailureCategory) -> None:
     builder = AimSafeFailureBuilder()
     response, _ = builder.from_category(category=category)
     assert response.retryable is True
 
 
-@pytest.mark.parametrize("category", [
-    AimFailureCategory.AUTHENTICATION_FAILURE,
-    AimFailureCategory.AUTHORIZATION_FAILURE,
-    AimFailureCategory.VALIDATION_FAILURE,
-    AimFailureCategory.IDEMPOTENCY_CONFLICT,
-    AimFailureCategory.CONTRACT_VIOLATION,
-    AimFailureCategory.PERSISTENCE_FAILURE,
-    AimFailureCategory.INTERNAL_ERROR,
-])
+@pytest.mark.parametrize(
+    "category",
+    [
+        AimFailureCategory.AUTHENTICATION_FAILURE,
+        AimFailureCategory.AUTHORIZATION_FAILURE,
+        AimFailureCategory.VALIDATION_FAILURE,
+        AimFailureCategory.IDEMPOTENCY_CONFLICT,
+        AimFailureCategory.CONTRACT_VIOLATION,
+        AimFailureCategory.PERSISTENCE_FAILURE,
+        AimFailureCategory.INTERNAL_ERROR,
+    ],
+)
 def test_non_retryable_categories_are_not_retryable(category: AimFailureCategory) -> None:
     builder = AimSafeFailureBuilder()
     response, _ = builder.from_category(category=category)

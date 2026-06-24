@@ -28,6 +28,8 @@ services:
         sync: false
       - key: AIM_ENGINE_URL
         sync: false
+      - key: AIM_ENGINE_SERVICE_TOKEN
+        sync: false
       - key: AI_PROVIDER_API_KEY
         sync: false
       - key: AI_PROVIDER_MODEL
@@ -37,4 +39,20 @@ services:
       - key: STT_PROVIDER_MODEL
         sync: false
       - key: CORS_ORIGINS
+        sync: false
+
+  - type: web
+    name: aim-engine
+    runtime: docker
+    plan: starter
+    rootDir: services/aim-engine
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: false
+    envVars:
+      - key: AIM_ENGINE_ENV
+        value: production
+      - key: AIM_ENGINE_LOG_LEVEL
+        value: info
+      - key: AIM_ENGINE_SERVICE_TOKEN
         sync: false

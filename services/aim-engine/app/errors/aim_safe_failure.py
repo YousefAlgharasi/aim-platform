@@ -25,18 +25,16 @@ referenced here.
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from enum import Enum
-from typing import Optional
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
-
 
 # ---------------------------------------------------------------------------
 # Failure taxonomy (from P5-008 § Failure Taxonomy)
 # ---------------------------------------------------------------------------
 
 
-class AimFailureCategory(str, Enum):
+class AimFailureCategory(StrEnum):
     """Failure categories from the P5-008 taxonomy.
 
     These map to the Backend's retryable / non-retryable classification.
@@ -90,7 +88,9 @@ _SAFE_MESSAGES: dict[AimFailureCategory, str] = {
     AimFailureCategory.AUTHENTICATION_FAILURE: "Authentication is required.",
     AimFailureCategory.AUTHORIZATION_FAILURE: "You do not have permission to perform this action.",
     AimFailureCategory.VALIDATION_FAILURE: "One or more fields are invalid.",
-    AimFailureCategory.IDEMPOTENCY_CONFLICT: "The request conflicts with the current resource state.",
+    AimFailureCategory.IDEMPOTENCY_CONFLICT: (
+        "The request conflicts with the current resource state."
+    ),
     AimFailureCategory.CONTRACT_VIOLATION: "The analysis response was malformed.",
     AimFailureCategory.PERSISTENCE_FAILURE: "The analysis result could not be saved.",
     AimFailureCategory.INTERNAL_ERROR: "An unexpected error occurred.",
@@ -128,7 +128,7 @@ class AimSafeFailureResponse(BaseModel):
         ...,
         description="Short, user-safe message. No engine internals.",
     )
-    request_id: Optional[str] = Field(
+    request_id: str | None = Field(
         None,
         description="Backend correlation id (X-Request-Id), echoed for tracing.",
     )
@@ -136,11 +136,11 @@ class AimSafeFailureResponse(BaseModel):
         ...,
         description="ISO-8601 UTC timestamp of when this failure response was produced.",
     )
-    category: Optional[AimFailureCategory] = Field(
+    category: AimFailureCategory | None = Field(
         None,
         description="Failure category from the P5-008 taxonomy.",
     )
-    retryable: Optional[bool] = Field(
+    retryable: bool | None = Field(
         None,
         description=(
             "Whether the Backend may retry the upstream caller action. "
@@ -172,9 +172,9 @@ class AimSafeFailureBuilder:
     def from_category(
         self,
         category: AimFailureCategory,
-        request_id: Optional[str] = None,
-        code: Optional[str] = None,
-        message: Optional[str] = None,
+        request_id: str | None = None,
+        code: str | None = None,
+        message: str | None = None,
     ) -> tuple[AimSafeFailureResponse, int]:
         """Build a safe failure response and its HTTP status code.
 
@@ -206,7 +206,7 @@ class AimSafeFailureBuilder:
 
     def internal_error(
         self,
-        request_id: Optional[str] = None,
+        request_id: str | None = None,
     ) -> tuple[AimSafeFailureResponse, int]:
         """Convenience method for unexpected engine faults (500).
 
