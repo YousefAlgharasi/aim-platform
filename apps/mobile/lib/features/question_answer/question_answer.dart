@@ -8,6 +8,5 @@ export 'logic/entity/question_answer_entities.dart';
 export 'logic/provider/question_answer_notifier.dart';
 export 'logic/provider/question_answer_provider.dart';
 export 'logic/repository/question_answer_repository.dart';
-export 'ui/pages/question_answer_placeholder_page.dart';
 export 'ui/pages/question_page.dart';
 export 'ui/widgets/question_answer_widgets.dart';

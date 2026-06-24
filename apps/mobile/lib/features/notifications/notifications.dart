@@ -14,7 +14,6 @@
 // backend — obtaining the token from a push messaging SDK is out of
 // scope here.
 
-export 'ui/pages/notifications_placeholder_page.dart';
 export 'ui/pages/notification_inbox_page.dart';
 export 'ui/pages/notification_detail_page.dart';
 export 'ui/pages/notification_preferences_page.dart';
