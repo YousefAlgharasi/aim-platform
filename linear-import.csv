@@ -1,0 +1,46 @@
+title,description,priority,label
+"TASK-1: Mobile Assessment Routes Are Not Defined","Problem: The assessment feature navigates to 6 routes (/student/assessments/attempt, /start, /detail, /result, etc.) not defined in AppRoutePaths or AppRouter.onGenerateRoute. The default case sends users to SplashPage, so the entire assessment flow silently fails.
+
+Location: apps/mobile/lib/core/routing/app_route_paths.dart, apps/mobile/lib/core/routing/app_router.dart:37-68, apps/mobile/lib/features/assessments/ui/pages/*.dart
+
+What to do: 1) Add all assessment route paths to AppRoutePaths 2) Add cases to AppRouter.onGenerateRoute switch for each assessment page 3) Add routes to _protectedRoutes set",1,bug
+"TASK-2: Admin Dashboard Links to Nonexistent Pages","Problem: Homepage links to /admin/deadlines and /admin/assessment-results but neither page directory exists under app/admin/. Users get 404.
+
+Location: apps/admin-dashboard/app/admin/page.tsx:47 (/admin/deadlines), apps/admin-dashboard/app/admin/page.tsx:55 (/admin/assessment-results)
+
+What to do: 1) Create apps/admin-dashboard/app/admin/deadlines/page.tsx 2) Create apps/admin-dashboard/app/admin/assessment-results/page.tsx 3) Or remove links from QUICK_LINK_GROUPS until pages are built",1,bug
+"TASK-3: Student-Web API Path Mismatch With Backend","Problem: Student-web prefixes all API calls with /api/ (e.g. /api/auth/login, /api/profile) but NestJS backend has no global prefix. Auth controller is @Controller('auth') not @Controller('api/auth'). Every API call from student-web will 404.
+
+Location: apps/student-web/src/features/auth/AuthContext.tsx:20,27, services/backend-api/src/main.ts (no setGlobalPrefix), services/backend-api/src/auth/auth.controller.ts:24
+
+What to do: Either add app.setGlobalPrefix('api') in backend main.ts, or remove /api prefix from all student-web endpoint paths",1,bug
+"TASK-4: Student-Web Auth Has No Token Persistence","Problem: ApiClient stores accessToken in memory only. On page refresh the token is lost and users are logged out. setAccessToken() exists but is never called after login.
+
+Location: apps/student-web/src/api/client.ts:6,12-14, apps/student-web/src/features/auth/AuthContext.tsx:26-29
+
+What to do: 1) Call apiClient.setAccessToken(token) in login flow 2) Persist token to localStorage in setAccessToken 3) Load token from localStorage on ApiClient init 4) Clear on logout",1,bug
+"TASK-5: AIM Engine Pipeline Methods Are All Stubs","Problem: All 6 analysis methods in the pipeline return None and discard inputs with del session, attempts. The /aim/v1/analysis endpoint logs start/complete but produces no output. Engine is non-functional.
+
+Location: services/aim-engine/app/pipeline/aim_analysis_pipeline.py:193-289 (_analyze_skill_state, _analyze_weakness_records, _decide_difficulty, _generate_recommendations, _compute_review_schedule, _summarize_session)
+
+What to do: Wire each stub to domain services in services/api/src/aim/domain/services/: skill_state->mastery_calculator, weakness->weakness_detector, difficulty->difficulty_adapter, recommendations->recommendation_engine, review->retention_tracker, session->emotional_state_detector. Depends on TASK-6.",2,improvement
+"TASK-6: packages/ai_core Has Broken Import Paths and Is Never Used","Problem: __init__.py adds Path(__file__).parents[1] / 'src' to sys.path which resolves to a nonexistent directory. Actual implementations are in services/api/src/aim/domain/services/. No file in the codebase imports from ai_core or packages.ml. Same issue in packages/ml/.
+
+Location: packages/ai_core/__init__.py:7-10, packages/ml/__init__.py:7-10, all 15 files in packages/ai_core/ and 4 in packages/ml/
+
+What to do: Fix import path to point to services/api/src/, or delete these packages and import domain services directly in aim-engine",2,improvement
+"TASK-7: Web App Admin/Parent Routes Have No Auth Protection","Problem: Route selection in apps/web uses window.location.pathname with no auth check. Anyone can visit /admin, /debug, /admin-dashboard, /parent without logging in.
+
+Location: apps/web/src/app/App.js:29-35 (admin routes), apps/web/src/app/App.js:37-39 (parent routes)
+
+What to do: 1) Check auth state before rendering admin/parent components 2) Redirect unauthenticated users to login 3) Verify admin role for admin routes",1,bug
+"TASK-8: Web App Parent Dashboard Is a Hardcoded Empty Stub","Problem: ParentDashboard hardcodes status to 'empty' via useState('empty') and never fetches any data. Always renders empty state.
+
+Location: apps/web/src/pages/ParentDashboard.jsx:6
+
+What to do: 1) Fetch real parent dashboard data from backend API on mount 2) Update status based on API response 3) Render actual child progress data when available",2,improvement
+"TASK-9: Minor Code Quality Fixes","Problem: Collection of non-breaking issues: ~60 repository methods in services/backend-api/src/features/ access result.rows[0] after INSERT without null check. Hardcoded algorithm parameters in mastery_calculator.py:160-164, difficulty_adapter.py:81-107, weakness_detector.py:217-239, retention_tracker.py:20-23. Deprecated auth methods in mobile auth_flow_notifier.dart:21-25. Mock Supabase client silently fails in apps/web supabase/client.js:9-26. Inconsistent API base URL defaults across apps.
+
+Location: Various (see description)
+
+What to do: Address each item individually as incremental improvements",4,quality
