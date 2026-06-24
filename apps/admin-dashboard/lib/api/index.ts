@@ -13,7 +13,6 @@ export type {
 export { parseApiResponseEnvelope } from './api-response-envelope';
 
 // P11-010: Phase 11 additions
-export { getAdminToken } from './admin-token';
 export type { AdminPaginatedResponse } from './admin-paginated-response';
 export { decodePaginatedResponse } from './admin-paginated-response';
 export * from './admin-assessments-api';
