@@ -89,7 +89,7 @@ export class AiPromptTemplateRepository {
        RETURNING id, name, version, locale, audience, status, body, safety_tags, created_at, updated_at`,
       [input.name, input.version, input.locale, input.audience, input.body, JSON.stringify(input.safetyTags ?? {})],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async retireActiveByNameAndLocale(name: string, locale: string, audience: string): Promise<void> {

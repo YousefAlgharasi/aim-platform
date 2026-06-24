@@ -83,7 +83,7 @@ export class QuestionSkillsService {
         );
 
         await client.query('COMMIT');
-        return result.rows[0];
+        return result.rows[0] ?? null;
       } catch (error) {
         await client.query('ROLLBACK');
         throw error;
@@ -130,7 +130,7 @@ export class QuestionSkillsService {
         );
 
         await client.query('COMMIT');
-        return result.rows[0];
+        return result.rows[0] ?? null;
       } catch (error) {
         await client.query('ROLLBACK');
         throw error;

@@ -27,7 +27,7 @@ export class AiSafetyEventRepository {
       [input.sessionId, input.direction, input.decision, input.reasonCategory ?? null],
     );
 
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findBySessionId(sessionId: string): Promise<AiSafetyEventRow[]> {

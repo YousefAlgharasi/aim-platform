@@ -114,7 +114,7 @@ export class ContentStatusWorkflowService {
       });
     }
 
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   private assertValidEntityType(value: string): asserts value is WorkflowEntityType {

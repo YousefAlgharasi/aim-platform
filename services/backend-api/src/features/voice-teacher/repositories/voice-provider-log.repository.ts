@@ -23,7 +23,7 @@ export class VoiceProviderLogRepository {
       [messageId, providerType, provider, model, status, errorCategory, latencyMs],
     );
 
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findByMessageId(messageId: string): Promise<VoiceProviderLogRow[]> {

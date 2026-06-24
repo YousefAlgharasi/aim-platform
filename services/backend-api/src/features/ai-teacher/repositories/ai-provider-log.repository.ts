@@ -36,7 +36,7 @@ export class AiProviderLogRepository {
       ],
     );
 
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findBySessionId(sessionId: string): Promise<AiProviderLogRow[]> {

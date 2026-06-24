@@ -23,7 +23,7 @@ export class VoiceTranscriptRepository {
       [messageId, sessionId, transcriptText, languageCode, confidence, segments ? JSON.stringify(segments) : null, providerRef],
     );
 
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findByMessageId(messageId: string): Promise<VoiceTranscriptRow | null> {

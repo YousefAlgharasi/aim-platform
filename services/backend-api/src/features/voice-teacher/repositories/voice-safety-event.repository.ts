@@ -21,7 +21,7 @@ export class VoiceSafetyEventRepository {
       [sessionId, messageId, direction, decision, reasonCategory],
     );
 
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findBySessionId(sessionId: string): Promise<VoiceSafetyEventRow[]> {

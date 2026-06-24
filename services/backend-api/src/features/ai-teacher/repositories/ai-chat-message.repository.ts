@@ -25,7 +25,7 @@ export class AiChatMessageRepository {
       [sessionId, studentId, role, text],
     );
 
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findById(messageId: string): Promise<AiChatMessageRow | null> {
