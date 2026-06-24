@@ -149,7 +149,7 @@ async def test_pipeline_response_has_categories() -> None:
 
 @pytest.mark.asyncio
 async def test_pipeline_categories_are_populated() -> None:
-    """Domain services are wired — categories should be populated for valid input."""
+    """Domain services are wired — categories should be populated."""
     pipeline = AimAnalysisPipelineEntrypoint()
     request = AimAnalysisRequest(**VALID_BODY)
 

@@ -37,10 +37,11 @@ referenced in this module.
 from __future__ import annotations
 
 import logging
+import math
 import os
 import sys
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Protocol, runtime_checkable
 
 # Add the API domain services to the import path so aim.domain.services is importable.
@@ -90,6 +91,15 @@ from app.validation.aim_request_validator import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _ensure_domain_services_importable() -> None:
+    """Add the API domain services source tree to sys.path once."""
+    api_src = os.path.normpath(
+        os.path.join(os.path.dirname(__file__), "..", "..", "..", "api", "src")
+    )
+    if api_src not in sys.path:
+        sys.path.insert(0, api_src)
 
 
 # ---------------------------------------------------------------------------
@@ -142,6 +152,19 @@ class AimAnalysisPipelineEntrypoint:
 
     def __init__(self) -> None:
         self._validator = AimRequestValidator()
+        self._weakness_detector = WeaknessDetector()
+        self._difficulty_adapter = DifficultyAdapter()
+        self._emotional_detector = EmotionalStateDetector()
+
+        _ensure_domain_services_importable()
+        from aim.domain.services.difficulty_adapter import (
+            DifficultyAdapter,
+        )
+        from aim.domain.services.emotional_state_detector import (
+            EmotionalStateDetector,
+        )
+        from aim.domain.services.weakness_detector import WeaknessDetector
+
         self._weakness_detector = WeaknessDetector()
         self._difficulty_adapter = DifficultyAdapter()
         self._emotional_detector = EmotionalStateDetector()
@@ -223,8 +246,7 @@ class AimAnalysisPipelineEntrypoint:
         )
 
     # -----------------------------------------------------------------------
-    # Category stage stubs
-    # Each returns None (no decision) until wired to a real domain service.
+    # Category stages — wired to domain services
     # Speed and response-time fields must never feed mastery or difficulty here.
     # -----------------------------------------------------------------------
 
@@ -251,8 +273,9 @@ class AimAnalysisPipelineEntrypoint:
         results: list[AimSkillStateOutput] = []
         for skill_id, skill_atts in skill_attempts.items():
             valid = [a for a in skill_atts if not a.behavioral_context.abandoned_first_then_retried]
-            total = len(valid) if valid else len(skill_atts)
-            correct = sum(1 for a in (valid or skill_atts) if a.is_correct)
+            source = valid if valid else skill_atts
+            total = len(source)
+            correct = sum(1 for a in source if a.is_correct)
             accuracy = correct / total if total > 0 else 0.0
 
             confidence = min(1.0, total / 10.0)
@@ -287,6 +310,8 @@ class AimAnalysisPipelineEntrypoint:
         """
         if not attempts:
             return None
+
+        from aim.domain.services.weakness_detector import WeaknessAttempt
 
         now = datetime.now(UTC)
         weakness_attempts = [
@@ -353,6 +378,8 @@ class AimAnalysisPipelineEntrypoint:
         if not attempts:
             return None
 
+        from aim.domain.services.difficulty_adapter import DifficultyAction
+
         now = datetime.now(UTC)
         valid = [a for a in attempts if not a.behavioral_context.abandoned_first_then_retried]
         if not valid:
@@ -365,7 +392,6 @@ class AimAnalysisPipelineEntrypoint:
         current_diff = valid[-1].presented_difficulty.value
         reliability = min(1.0, total / 10.0)
 
-        hint_count = sum(1 for a in valid if a.behavioral_context.used_hint)
         weakness_score = (1.0 - correct / total) * 100.0 if total > 0 else 0.0
         frustration_score = min(100.0, session.behavioral_context.consecutive_incorrect * 20.0)
 
@@ -422,10 +448,6 @@ class AimAnalysisPipelineEntrypoint:
         if not skills_touched:
             return None
 
-        total = len(attempts)
-        correct = sum(1 for a in attempts if a.is_correct)
-        accuracy = correct / total if total > 0 else 0.0
-
         results: list[AimRecommendationOutput] = []
         for rank, skill_id in enumerate(skills_touched, start=1):
             skill_atts = [a for a in attempts if skill_id in a.skill_ids]
@@ -469,9 +491,6 @@ class AimAnalysisPipelineEntrypoint:
         """
         if not attempts:
             return None
-
-        import math
-        from datetime import timedelta
 
         now = datetime.now(UTC)
         skills_touched = list({sid for a in attempts for sid in a.skill_ids})
@@ -517,6 +536,8 @@ class AimAnalysisPipelineEntrypoint:
         """
         if not attempts:
             return None
+
+        from aim.domain.services.emotional_state_detector import EmotionalAttempt
 
         now = datetime.now(UTC)
         emotional_attempts = [
