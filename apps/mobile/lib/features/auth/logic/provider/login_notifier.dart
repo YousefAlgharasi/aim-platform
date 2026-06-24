@@ -106,12 +106,7 @@ class LoginNotifier extends StateNotifier<AppFormState> {
 
       // State stays isSubmitting=true after success; the UI navigates away.
     } on AppException catch (e) {
-      state = state.copyWith(
-        isSubmitting: false,
-        errorMessage: _isInvalidCredentials(e)
-            ? 'Incorrect email or password.'
-            : e.message,
-      );
+      state = state.copyWith(isSubmitting: false, errorMessage: e.message);
     } catch (_) {
       state = state.copyWith(
         isSubmitting: false,
@@ -168,11 +163,6 @@ class LoginNotifier extends StateNotifier<AppFormState> {
         errorMessage: 'Test login failed. Please try again.',
       );
     }
-  }
-
-  bool _isInvalidCredentials(AppException e) {
-    return e.code.toUpperCase() == 'AUTH_INVALID_CREDENTIALS' ||
-        e.message.toUpperCase() == 'AUTH_INVALID_CREDENTIALS';
   }
 
   void clearError() {
