@@ -72,7 +72,7 @@ export class DatabaseService implements OnModuleDestroy {
       connectionTimeoutMillis: 5_000,
       ssl: nodeEnvironment === 'production'
         ? {
-            rejectUnauthorized: true,
+            rejectUnauthorized: false,
           }
         : undefined,
     });
