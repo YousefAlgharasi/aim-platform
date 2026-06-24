@@ -27,7 +27,7 @@ export function SkillStatePage() {
   function fetchSkills() {
     setLoading(true);
     setError('');
-    apiClient.get<SkillData>('/api/students/me/skills')
+    apiClient.get<SkillData>('/students/me/skills')
       .then(setData)
       .catch((err: ApiError) => setError(err.message || 'Failed to load skills'))
       .finally(() => setLoading(false));

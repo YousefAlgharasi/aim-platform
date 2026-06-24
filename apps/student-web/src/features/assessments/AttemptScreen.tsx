@@ -44,7 +44,7 @@ export function AttemptScreen() {
   function fetchAttempt() {
     setLoading(true);
     setError('');
-    apiClient.get<AttemptData>(`/api/assessments/${assessmentId}/attempts/${attemptId}`)
+    apiClient.get<AttemptData>(`/assessments/${assessmentId}/attempts/${attemptId}`)
       .then(data => {
         setAttempt(data);
         setTimeRemaining(data.timeRemainingSeconds);
@@ -73,7 +73,7 @@ export function AttemptScreen() {
   const handleSubmit = useCallback(() => {
     if (!attempt) return;
     setSubmitting(true);
-    apiClient.post(`/api/assessments/${assessmentId}/attempts/${attemptId}/submit`, { answers })
+    apiClient.post(`/assessments/${assessmentId}/attempts/${attemptId}/submit`, { answers })
       .then(() => navigate(`/assessments/${assessmentId}/result/${attemptId}`))
       .catch((err: ApiError) => setError(err.message || 'Failed to submit attempt'))
       .finally(() => setSubmitting(false));

@@ -28,7 +28,7 @@ export function PlacementResultPage() {
   function fetchResult() {
     setLoading(true);
     setError('');
-    apiClient.get<PlacementResult>(`/api/placement/${id}/result`)
+    apiClient.get<PlacementResult>(`/placement/${id}/result`)
       .then(setResult)
       .catch((err: ApiError) => setError(err.message || 'Failed to load result'))
       .finally(() => setLoading(false));

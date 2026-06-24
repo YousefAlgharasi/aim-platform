@@ -21,7 +21,7 @@ export function NotificationPreferencesPage() {
   function fetchPrefs() {
     setLoading(true);
     setError('');
-    apiClient.get<{ preferences: NotificationPref[] }>('/api/notifications/preferences')
+    apiClient.get<{ preferences: NotificationPref[] }>('/notifications/preferences')
       .then(({ preferences }) => setPrefs(preferences))
       .catch((err: ApiError) => setError(err.message || 'Failed to load preferences'))
       .finally(() => setLoading(false));
@@ -31,7 +31,7 @@ export function NotificationPreferencesPage() {
 
   function togglePref(key: string, enabled: boolean) {
     setPrefs(prev => prev.map(p => p.key === key ? { ...p, enabled } : p));
-    apiClient.patch(`/api/notifications/preferences/${key}`, { enabled })
+    apiClient.patch(`/notifications/preferences/${key}`, { enabled })
       .catch(() => {
         setPrefs(prev => prev.map(p => p.key === key ? { ...p, enabled: !enabled } : p));
       });

@@ -35,7 +35,7 @@ export function ReportsSummaryPage() {
   function fetchReport() {
     setLoading(true);
     setError('');
-    apiClient.get<ReportData>('/api/reports/summary')
+    apiClient.get<ReportData>('/reports/summary')
       .then(setData)
       .catch((err: ApiError) => setError(err.message || 'Failed to load reports'))
       .finally(() => setLoading(false));
