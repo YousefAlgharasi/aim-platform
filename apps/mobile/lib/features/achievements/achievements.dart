@@ -4,4 +4,4 @@
 // Backend authority: achievement unlocking, badge criteria, XP, streaks,
 // and milestone tracking are never computed in Flutter.
 
-export 'ui/pages/achievements_placeholder_page.dart';
+export 'ui/pages/achievements_page.dart';

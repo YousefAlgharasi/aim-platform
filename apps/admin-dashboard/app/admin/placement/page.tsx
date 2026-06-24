@@ -1,47 +1,184 @@
-// Phase 4 — P4-053 (base) + P4-059 (results link)
-// Admin placement management page.
-//
-// Scope: Placement Test phase only.
-// Full placement management UI implemented in P4-054 (list) and P4-058 (status UI).
-// P4-059 adds the admin placement results view at /admin/placement/results.
-//
-// Security rules:
-// - Only pilot_admin and content_manager roles can access this section.
-// - Role enforcement is handled by the backend API, not by this page.
-// - No placement scoring, CEFR thresholds, or skill maps are displayed here.
-// - No AIM Engine runtime, AI Teacher, or lesson delivery features are included.
-
+import { cookies } from 'next/headers';
 import Link from 'next/link';
-import { AdminPlaceholderPage } from '../../../components/admin-placeholder-page';
 
-export default function AdminPlacementPage() {
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../lib/auth';
+import {
+  fetchAdminPlacementTests,
+  type AdminPlacementTestSummary,
+  type PlacementTestStatus,
+  AdminApiClientError,
+} from '../../../lib/api/admin-placement-tests-api';
+import { AdminPageHeader } from '../../../components/layout';
+import {
+  AdminTable,
+  AdminPagination,
+  AdminStatusBadge,
+  AdminIdCell,
+  AdminDateCell,
+  type AdminTableColumn,
+} from '../../../components/common';
+import { AdminApiErrorState } from '../../../components/error-handling';
+import { AdminEmptyState } from '../../../components/layout';
+
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 20;
+
+type Props = {
+  searchParams: Promise<{
+    page?: string;
+    limit?: string;
+  }>;
+};
+
+const columns: AdminTableColumn<AdminPlacementTestSummary>[] = [
+  {
+    key: 'id',
+    header: 'ID',
+    width: '120px',
+    render: (test) => <AdminIdCell id={test.id} />,
+  },
+  {
+    key: 'title',
+    header: 'Title',
+    render: (test) => (
+      <span style={{ fontWeight: 'var(--weight-medium)' as unknown as number }}>
+        {test.title}
+      </span>
+    ),
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    width: '110px',
+    render: (test) => <AdminStatusBadge status={test.status} />,
+  },
+  {
+    key: 'totalSections',
+    header: 'Sections',
+    width: '90px',
+    render: (test) => String(test.totalSections),
+  },
+  {
+    key: 'estimatedMinutes',
+    header: 'Est. Time',
+    width: '100px',
+    render: (test) => `${test.estimatedMinutes} min`,
+  },
+  {
+    key: 'createdAt',
+    header: 'Created',
+    width: '130px',
+    render: (test) => <AdminDateCell iso={test.createdAt} />,
+  },
+];
+
+function buildHref(page: number, limit: number): string {
+  const qs = new URLSearchParams();
+  qs.set('page', String(page));
+  qs.set('limit', String(limit));
+  return `/admin/placement?${qs.toString()}`;
+}
+
+export default async function AdminPlacementPage({ searchParams }: Props) {
+  const sp = await searchParams;
+  const page = Math.max(parseInt(sp.page ?? String(DEFAULT_PAGE), 10) || DEFAULT_PAGE, 1);
+  const limit = Math.min(
+    Math.max(parseInt(sp.limit ?? String(DEFAULT_LIMIT), 10) || DEFAULT_LIMIT, 1),
+    100,
+  );
+
+  const cookieStore = await cookies();
+  const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+
+  let data: { tests: AdminPlacementTestSummary[]; total: number; page: number; limit: number } | null =
+    null;
+  let fetchError: string | null = null;
+
+  try {
+    data = await fetchAdminPlacementTests(token, page, limit);
+  } catch (error) {
+    fetchError =
+      error instanceof AdminApiClientError
+        ? `Backend error ${error.status}: ${error.message}`
+        : 'Failed to load placement tests. Check backend connectivity.';
+  }
+
+  const totalPages = data ? Math.ceil(data.total / data.limit) : 0;
+
   return (
-    <>
-      <AdminPlaceholderPage
-        title="Placement"
-        description="Placement test management. Admins can create, publish, and archive placement tests. Full management UI is implemented in P4-054 and P4-058."
-        checklist={[
-          'Access must be restricted to pilot_admin and content_manager roles.',
-          'Placement test status transitions (draft → published → archived) are enforced by the Backend API.',
-          'Only one placement test may be published at a time — enforced by the backend.',
-          'Placement scoring, CEFR level assignment, and skill maps are computed by the backend only.',
-          'No AIM Engine runtime, AI Teacher, or lesson delivery features are included.',
-        ]}
+    <section>
+      <AdminPageHeader
+        eyebrow="Assessment"
+        title="Placement Tests"
+        description={
+          data
+            ? `${data.total} placement test${data.total !== 1 ? 's' : ''} total`
+            : undefined
+        }
       />
 
-      {/* Phase 4 — P4-054: link to admin placement tests list */}
-      <nav style={{ marginTop: '1.5rem' }}>
-        <Link href="/admin/placement/tests" className="btn-secondary">
-          View Placement Tests →
+      <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 'var(--space-16)' }}>
+        Placement test status transitions and CEFR level assignment are enforced by the backend.
+        Only one test may be published at a time.
+      </p>
+
+      <nav style={{
+        display: 'flex',
+        gap: 'var(--space-12)',
+        marginBottom: 'var(--space-24)',
+      }}>
+        <Link href="/admin/placement/tests" className="aim-nav-link">
+          Manage Tests
+          <style>{`
+            .aim-nav-link {
+              display: inline-flex;
+              align-items: center;
+              padding: var(--space-8) var(--space-16);
+              border: 1px solid var(--border);
+              border-radius: var(--radius-sm);
+              font-size: 14px;
+              font-weight: var(--weight-medium);
+              color: var(--text-primary);
+              text-decoration: none;
+              transition: border-color 0.15s, background 0.15s;
+            }
+            .aim-nav-link:hover {
+              border-color: var(--color-primary-600);
+              background: var(--state-hover);
+            }
+          `}</style>
+        </Link>
+        <Link href="/admin/placement/results" className="aim-nav-link">
+          View Results
         </Link>
       </nav>
 
-      {/* Phase 4 — P4-059: link to admin placement results view */}
-      <nav style={{ marginTop: '1.5rem' }}>
-        <Link href="/admin/placement/results" className="btn-secondary">
-          View Placement Results →
-        </Link>
-      </nav>
-    </>
+      {fetchError && <AdminApiErrorState message={fetchError} />}
+
+      {data && data.tests.length === 0 && !fetchError && (
+        <AdminEmptyState
+          title="No placement tests"
+          description="Create a placement test to get started."
+        />
+      )}
+
+      {data && data.tests.length > 0 && (
+        <>
+          <AdminTable<AdminPlacementTestSummary>
+            columns={columns}
+            rows={data.tests}
+            getRowKey={(t) => t.id}
+            caption={`Placement tests — page ${data.page} of ${totalPages}`}
+          />
+
+          <AdminPagination
+            page={data.page}
+            totalPages={totalPages}
+            buildHref={(p) => buildHref(p, limit)}
+            label="Placement test list pagination"
+          />
+        </>
+      )}
+    </section>
   );
 }

@@ -18,5 +18,4 @@ export 'ui/pages/chapter_list_page.dart';
 export 'ui/pages/course_list_page.dart';
 export 'ui/pages/lesson_detail_page.dart';
 export 'ui/pages/lesson_list_page.dart';
-export 'ui/pages/lessons_placeholder_page.dart';
 export 'ui/widgets/lessons_widgets.dart';
