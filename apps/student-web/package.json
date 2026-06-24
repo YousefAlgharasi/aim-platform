@@ -6,6 +6,7 @@
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.6.3",
+    "ajv": "^8.17.1",
     "react-scripts": "5.0.1"
   },
   "devDependencies": {
