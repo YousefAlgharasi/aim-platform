@@ -8,7 +8,7 @@ import '../../features/auth/ui/pages/login_page.dart';
 import '../../features/lessons/ui/pages/chapter_list_page.dart';
 import '../../features/lessons/ui/pages/lesson_detail_page.dart';
 import '../../features/lessons/ui/pages/lesson_list_page.dart';
-import '../../features/onboarding/ui/pages/splash_placeholder_page.dart';
+import '../../features/onboarding/ui/pages/splash_page.dart';
 import '../../features/placement/ui/pages/placement_question_page.dart';
 import '../../features/placement/ui/pages/placement_result_page.dart';
 import '../../features/placement/ui/pages/placement_section_page.dart';
@@ -36,7 +36,7 @@ class AppRouter {
       builder: (context) {
         switch (routeName) {
           case AppRoutePaths.splash:
-            return const SplashPlaceholderPage();
+            return const SplashPage();
           case AppRoutePaths.signIn:
             return const LoginPage();
           case AppRoutePaths.register:
@@ -66,7 +66,7 @@ class AppRouter {
           case AppRoutePaths.lessonDetail:
             return _buildLessonDetailPage(settings.arguments);
           default:
-            return const SplashPlaceholderPage();
+            return const SplashPage();
         }
       },
     );
@@ -76,7 +76,7 @@ class AppRouter {
     final args = _placementArgs(arguments);
     final attemptId = args['attemptId'];
 
-    if (attemptId is! String) return const SplashPlaceholderPage();
+    if (attemptId is! String) return const SplashPage();
 
     return PlacementSectionPage(attemptId: attemptId);
   }
@@ -94,7 +94,7 @@ class AppRouter {
         sectionTitle is! String ||
         sectionIndex is! int ||
         totalSections is! int) {
-      return const SplashPlaceholderPage();
+      return const SplashPage();
     }
 
     return PlacementQuestionPage(
@@ -110,7 +110,7 @@ class AppRouter {
     final args = _placementArgs(arguments);
     final attemptId = args['attemptId'];
 
-    if (attemptId is! String) return const SplashPlaceholderPage();
+    if (attemptId is! String) return const SplashPage();
 
     return PlacementSubmitPage(attemptId: attemptId);
   }
@@ -119,7 +119,7 @@ class AppRouter {
     final args = _placementArgs(arguments);
     final attemptId = args['attemptId'];
 
-    if (attemptId is! String) return const SplashPlaceholderPage();
+    if (attemptId is! String) return const SplashPage();
 
     return PlacementResultPage(attemptId: attemptId);
   }
@@ -131,7 +131,7 @@ class AppRouter {
     final lessonId = args['lessonId'];
     final lessonTitle = args['lessonTitle'];
     if (lessonId is! String || lessonTitle is! String) {
-      return const SplashPlaceholderPage();
+      return const SplashPage();
     }
     return LessonDetailPage(lessonId: lessonId, lessonTitle: lessonTitle);
   }
@@ -143,7 +143,7 @@ class AppRouter {
     final chapterId = args['chapterId'];
     final chapterTitle = args['chapterTitle'];
     if (chapterId is! String || chapterTitle is! String) {
-      return const SplashPlaceholderPage();
+      return const SplashPage();
     }
     return LessonListPage(chapterId: chapterId, chapterTitle: chapterTitle);
   }
@@ -155,7 +155,7 @@ class AppRouter {
     final levelId = args['levelId'];
     final courseTitle = args['courseTitle'];
     if (levelId is! String || courseTitle is! String) {
-      return const SplashPlaceholderPage();
+      return const SplashPage();
     }
     return ChapterListPage(levelId: levelId, courseTitle: courseTitle);
   }

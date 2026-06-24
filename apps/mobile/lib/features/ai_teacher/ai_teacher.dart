@@ -6,7 +6,6 @@
 // - No AIM Engine calls from Flutter.
 // - P8-085 adds the real text chat screen (AiTeacherChatPage).
 
-export 'ui/pages/ai_teacher_placeholder_page.dart';
 export 'ui/pages/ai_teacher_chat_page.dart';
 export 'ui/pages/ai_teacher_session_history_page.dart';
 export 'ui/pages/ai_teacher_settings_page.dart';
