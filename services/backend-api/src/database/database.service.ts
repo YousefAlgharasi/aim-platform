@@ -62,8 +62,8 @@ export class DatabaseService implements OnModuleDestroy {
       return this.pool;
     }
 
-    const connectionString = this.readRequiredConfigValue('databaseUrl', 'DATABASE_URL');
-    const nodeEnvironment = this.readOptionalConfigValue('nodeEnv', 'NODE_ENV') ?? 'development';
+    const connectionString = this.backendConfig.database.url;
+    const nodeEnvironment = this.backendConfig.nodeEnv;
 
     this.pool = new Pool({
       connectionString,
@@ -78,44 +78,6 @@ export class DatabaseService implements OnModuleDestroy {
     });
 
     return this.pool;
-  }
-
-  private readRequiredConfigValue(
-    camelCaseKey: string,
-    envKey: string,
-  ): string {
-    const value = this.readOptionalConfigValue(camelCaseKey, envKey);
-
-    if (!value) {
-      throw new Error(`${envKey} is required for database connection`);
-    }
-
-    return value;
-  }
-
-  private readOptionalConfigValue(
-    camelCaseKey: string,
-    envKey: string,
-  ): string | undefined {
-    const config = this.backendConfig as unknown as Record<string, unknown>;
-
-    const directValue = config[camelCaseKey];
-
-    if (typeof directValue === 'string' && directValue.length > 0) {
-      return directValue;
-    }
-
-    const getter = config.get;
-
-    if (typeof getter === 'function') {
-      const value = getter.call(this.backendConfig, envKey);
-
-      if (typeof value === 'string' && value.length > 0) {
-        return value;
-      }
-    }
-
-    return undefined;
   }
 
   private toSafeErrorCode(error: unknown): string {
