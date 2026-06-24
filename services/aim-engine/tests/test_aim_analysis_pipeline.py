@@ -148,21 +148,19 @@ async def test_pipeline_response_has_categories() -> None:
 
 
 @pytest.mark.asyncio
-async def test_pipeline_empty_categories_is_valid() -> None:
-    """All category fields are optional — empty categories is a valid response."""
+async def test_pipeline_categories_are_populated() -> None:
+    """Domain services are wired — categories should be populated for valid input."""
     pipeline = AimAnalysisPipelineEntrypoint()
     request = AimAnalysisRequest(**VALID_BODY)
 
     response = await pipeline.run(request)
 
-    # In the stub phase all categories are None (no domain services wired yet)
     cats = response.categories
-    assert cats.skill_state is None
-    assert cats.weakness_records is None
-    assert cats.difficulty_decision is None
-    assert cats.recommendations is None
-    assert cats.review_schedule is None
-    assert cats.session_summary is None
+    assert cats.skill_state is not None
+    assert cats.difficulty_decision is not None
+    assert cats.recommendations is not None
+    assert cats.review_schedule is not None
+    assert cats.session_summary is not None
 
 
 # ---------------------------------------------------------------------------
