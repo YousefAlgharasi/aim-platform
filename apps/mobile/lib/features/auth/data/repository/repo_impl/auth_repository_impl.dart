@@ -82,4 +82,13 @@ class AuthRepositoryImpl implements AuthRepository {
       throw AppException(code: e.code, message: e.message);
     }
   }
+
+  @override
+  Future<LoginResult> loginAsTestUser({required String role}) async {
+    try {
+      return await _datasource.loginAsTestUser(role: role);
+    } on ApiClientException catch (e) {
+      throw AppException(code: e.code, message: e.message);
+    }
+  }
 }

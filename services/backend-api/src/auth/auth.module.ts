@@ -12,6 +12,8 @@ import { AuthProfileBootstrapService } from './auth-profile-bootstrap.service';
 import { SessionValidationService } from './session-validation.service';
 import { SupabaseJwtAuthGuard } from './supabase-jwt-auth.guard';
 import { SupabaseJwtVerifierService } from './supabase-jwt-verifier.service';
+import { TestLoginController } from './test-login.controller';
+import { TestLoginService } from './test-login.service';
 
 @Module({
   imports: [
@@ -21,7 +23,7 @@ import { SupabaseJwtVerifierService } from './supabase-jwt-verifier.service';
     AuthorizationModule,
     forwardRef(() => AnalyticsModule),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, TestLoginController],
   providers: [
     SupabaseJwtAuthGuard,
     SupabaseJwtVerifierService,
@@ -29,6 +31,7 @@ import { SupabaseJwtVerifierService } from './supabase-jwt-verifier.service';
     AuthLoggingService,
     AuthProfileBootstrapService,
     AuthLoginService,
+    TestLoginService,
   ],
   exports: [
     SupabaseJwtAuthGuard,
