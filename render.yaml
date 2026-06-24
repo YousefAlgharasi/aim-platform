@@ -28,6 +28,8 @@ services:
         sync: false
       - key: AIM_ENGINE_URL
         sync: false
+      - key: AIM_ENGINE_SERVICE_TOKEN
+        sync: false
       - key: AI_PROVIDER_API_KEY
         sync: false
       - key: AI_PROVIDER_MODEL
