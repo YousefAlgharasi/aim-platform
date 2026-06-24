@@ -116,7 +116,10 @@ void main() {
       ),
     );
 
-    await tester.pumpAndSettle();
+    // pump() instead of pumpAndSettle() because MainShellPage renders
+    // AIMSkeleton loaders with a repeating animation that never settles.
+    await tester.pump();
+    await tester.pump();
 
     expect(find.byType(AIMBottomNav<int>), findsOneWidget);
   });
