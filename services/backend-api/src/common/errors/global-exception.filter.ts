@@ -4,6 +4,7 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { createApiResponseMeta, RequestLike } from '../api/api-response-meta';
 import { ApiErrorResponse } from '../api/api-response.types';
@@ -24,11 +25,20 @@ interface NormalizedException {
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(GlobalExceptionFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost): void {
     const context = host.switchToHttp();
     const request = context.getRequest<RequestLike>();
     const response = context.getResponse<ResponseLike>();
     const normalized = normalizeException(exception);
+
+    if (!(exception instanceof AppError) && !(exception instanceof HttpException)) {
+      this.logger.error(
+        `Unhandled exception on ${request.method} ${request.url}`,
+        exception instanceof Error ? exception.stack : String(exception),
+      );
+    }
 
     const body: ApiErrorResponse = {
       success: false,
