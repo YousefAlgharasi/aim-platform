@@ -54,7 +54,7 @@ export function PracticeShell() {
   function fetchSession() {
     setLoading(true);
     setError('');
-    apiClient.get<PracticeSession>(`/api/practice/${sessionId}`)
+    apiClient.get<PracticeSession>(`/practice/${sessionId}`)
       .then(s => { setSession(s); setFeedback(null); setDraftAnswer(''); })
       .catch((err: ApiError) => setError(err.message || 'Failed to load practice session'))
       .finally(() => setLoading(false));
@@ -66,7 +66,7 @@ export function PracticeShell() {
     if (!session || !draftAnswer) return;
     setSubmitting(true);
     apiClient.post<{ feedback?: Feedback; result?: PracticeResult }>(
-      `/api/practice/${sessionId}/answer`,
+      `/practice/${sessionId}/answer`,
       { questionId: session.question.id, answer: draftAnswer }
     )
       .then(res => {

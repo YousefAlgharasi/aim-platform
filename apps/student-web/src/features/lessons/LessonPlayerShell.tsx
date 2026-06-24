@@ -36,7 +36,7 @@ export function LessonPlayerShell() {
   function fetchLesson() {
     setLoading(true);
     setError('');
-    apiClient.get<LessonData>(`/api/lessons/${lessonId}`)
+    apiClient.get<LessonData>(`/lessons/${lessonId}`)
       .then(setLesson)
       .catch((err: ApiError) => setError(err.message || 'Failed to load lesson'))
       .finally(() => setLoading(false));

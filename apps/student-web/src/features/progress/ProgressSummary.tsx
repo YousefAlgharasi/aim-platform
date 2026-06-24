@@ -29,7 +29,7 @@ export function ProgressSummary() {
   function fetchProgress() {
     setLoading(true);
     setError('');
-    apiClient.get<ProgressData>('/api/students/me/progress')
+    apiClient.get<ProgressData>('/students/me/progress')
       .then(setData)
       .catch((err: ApiError) => setError(err.message || 'Failed to load progress'))
       .finally(() => setLoading(false));

@@ -28,7 +28,7 @@ export function AssessmentListPage() {
   function fetchAssessments() {
     setLoading(true);
     setError('');
-    apiClient.get<{ assessments: Assessment[] }>('/api/assessments')
+    apiClient.get<{ assessments: Assessment[] }>('/assessments')
       .then(({ assessments: a }) => setAssessments(a))
       .catch((err: ApiError) => setError(err.message || 'Failed to load assessments'))
       .finally(() => setLoading(false));

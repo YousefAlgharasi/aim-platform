@@ -24,7 +24,7 @@ export function PlacementEntryPage() {
   function fetchStatus() {
     setLoading(true);
     setError('');
-    apiClient.get<PlacementStatus>('/api/placement/status')
+    apiClient.get<PlacementStatus>('/placement/status')
       .then(setStatus)
       .catch((err: ApiError) => setError(err.message || 'Failed to load placement status'))
       .finally(() => setLoading(false));
@@ -36,7 +36,7 @@ export function PlacementEntryPage() {
     setStarting(true);
     setError('');
     try {
-      const { sessionId } = await apiClient.post<{ sessionId: string }>('/api/placement/start', {});
+      const { sessionId } = await apiClient.post<{ sessionId: string }>('/placement/start', {});
       navigate(`/placement/${sessionId}`);
     } catch (err) {
       setError((err as ApiError).message || 'Failed to start placement');

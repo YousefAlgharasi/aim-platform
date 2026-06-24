@@ -46,7 +46,7 @@ export function BillingPage() {
   function fetchBilling() {
     setLoading(true);
     setError('');
-    apiClient.get<BillingData>('/api/billing')
+    apiClient.get<BillingData>('/billing')
       .then(setData)
       .catch((err: ApiError) => setError(err.message || 'Failed to load billing'))
       .finally(() => setLoading(false));
