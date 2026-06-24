@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/widgets/widgets.dart';
-import '../../../home/ui/pages/home_placeholder_page.dart';
-import '../../../lessons/ui/pages/learn_placeholder_page.dart';
+import '../../../home/ui/pages/home_page.dart';
+import '../../../lessons/ui/pages/course_list_page.dart';
 import '../../../profile/ui/pages/profile_page.dart';
-import '../../../progress/ui/pages/progress_placeholder_page.dart';
-import '../../../reviews/ui/pages/review_placeholder_page.dart';
+import '../../../progress/ui/pages/progress_page.dart';
+import '../../../reviews/ui/pages/review_page.dart';
 
 /// Main shell page — holds the bottom-navigation [IndexedStack].
 ///
@@ -22,10 +22,10 @@ class _MainShellPageState extends State<MainShellPage> {
   int _selectedIndex = 0;
 
   static const List<Widget> _screens = [
-    HomePlaceholderPage(),
-    LearnPlaceholderPage(),
-    ReviewPlaceholderPage(),
-    ProgressPlaceholderPage(),
+    HomePage(),
+    CourseListPage(),
+    ReviewPage(),
+    ProgressPage(),
     ProfilePage(),
   ];
 
