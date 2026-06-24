@@ -40,7 +40,7 @@ export function AssessmentDetailPage() {
   function fetchDetail() {
     setLoading(true);
     setError('');
-    apiClient.get<AssessmentDetail>(`/api/assessments/${assessmentId}`)
+    apiClient.get<AssessmentDetail>(`/assessments/${assessmentId}`)
       .then(setDetail)
       .catch((err: ApiError) => setError(err.message || 'Failed to load assessment'))
       .finally(() => setLoading(false));
@@ -50,7 +50,7 @@ export function AssessmentDetailPage() {
 
   function handleStart() {
     setStarting(true);
-    apiClient.post<{ attemptId: string }>(`/api/assessments/${assessmentId}/attempts`, {})
+    apiClient.post<{ attemptId: string }>(`/assessments/${assessmentId}/attempts`, {})
       .then(({ attemptId }) => navigate(`/assessments/${assessmentId}/attempt/${attemptId}`))
       .catch((err: ApiError) => setError(err.message || 'Failed to start attempt'))
       .finally(() => setStarting(false));

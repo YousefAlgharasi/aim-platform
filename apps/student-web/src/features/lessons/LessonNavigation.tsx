@@ -18,7 +18,7 @@ export function LessonNavigation({ lesson, onStatusChange }: LessonNavigationPro
   function handleComplete() {
     setSubmitting(true);
     setError('');
-    apiClient.post(`/api/lessons/${lesson.id}/complete`, {})
+    apiClient.post(`/lessons/${lesson.id}/complete`, {})
       .then(() => {
         onStatusChange();
         if (lesson.nextLessonId) {

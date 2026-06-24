@@ -17,24 +17,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    apiClient.get<{ user: User }>('/api/profile')
+    apiClient.get<{ user: User }>('/profile')
       .then(({ user: u }) => setUser(u))
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const { user: u } = await apiClient.post<{ user: User }>('/api/auth/login', { email, password });
+    const { user: u } = await apiClient.post<{ user: User }>('/auth/login', { email, password });
     setUser(u);
   }, []);
 
   const register = useCallback(async (email: string, password: string, name: string) => {
-    const { user: u } = await apiClient.post<{ user: User }>('/api/auth/register', { email, password, name });
+    const { user: u } = await apiClient.post<{ user: User }>('/auth/register', { email, password, name });
     setUser(u);
   }, []);
 
   const logout = useCallback(async () => {
-    await apiClient.post('/api/auth/logout', {});
+    await apiClient.post('/auth/logout', {});
     setUser(null);
   }, []);
 

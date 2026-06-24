@@ -29,7 +29,7 @@ export function PlacementQuestionUI() {
     setLoading(true);
     setError('');
     setSelected(null);
-    apiClient.get<PlacementQuestion>(`/api/placement/${id}/next`)
+    apiClient.get<PlacementQuestion>(`/placement/${id}/next`)
       .then(setQuestion)
       .catch((err: ApiError) => {
         if (err.statusCode === 404) {
@@ -48,7 +48,7 @@ export function PlacementQuestionUI() {
     setSubmitting(true);
     setError('');
     try {
-      await apiClient.post(`/api/placement/${id}/answer`, {
+      await apiClient.post(`/placement/${id}/answer`, {
         questionId: question.id,
         answerId: selected,
       });

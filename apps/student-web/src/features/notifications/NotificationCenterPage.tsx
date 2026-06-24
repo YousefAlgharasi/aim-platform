@@ -25,7 +25,7 @@ export function NotificationCenterPage() {
   function fetchNotifications() {
     setLoading(true);
     setError('');
-    apiClient.get<{ notifications: Notification[] }>('/api/notifications')
+    apiClient.get<{ notifications: Notification[] }>('/notifications')
       .then(({ notifications: n }) => setNotifications(n))
       .catch((err: ApiError) => setError(err.message || 'Failed to load notifications'))
       .finally(() => setLoading(false));
@@ -34,7 +34,7 @@ export function NotificationCenterPage() {
   useEffect(() => { fetchNotifications(); }, []);
 
   function markRead(id: string) {
-    apiClient.post(`/api/notifications/${id}/read`, {})
+    apiClient.post(`/notifications/${id}/read`, {})
       .then(() => {
         setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
       })
@@ -42,7 +42,7 @@ export function NotificationCenterPage() {
   }
 
   function dismiss(id: string) {
-    apiClient.post(`/api/notifications/${id}/dismiss`, {})
+    apiClient.post(`/notifications/${id}/dismiss`, {})
       .then(() => {
         setNotifications(prev => prev.filter(n => n.id !== id));
       })
@@ -50,7 +50,7 @@ export function NotificationCenterPage() {
   }
 
   function markAllRead() {
-    apiClient.post('/api/notifications/read-all', {})
+    apiClient.post('/notifications/read-all', {})
       .then(() => {
         setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       })

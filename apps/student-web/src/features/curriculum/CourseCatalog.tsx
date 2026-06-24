@@ -25,7 +25,7 @@ export function CourseCatalog() {
   function fetchSubjects() {
     setLoading(true);
     setError('');
-    apiClient.get<{ subjects: Subject[] }>('/api/curriculum/subjects')
+    apiClient.get<{ subjects: Subject[] }>('/curriculum/subjects')
       .then(({ subjects: s }) => setSubjects(s))
       .catch((err: ApiError) => setError(err.message || 'Failed to load courses'))
       .finally(() => setLoading(false));

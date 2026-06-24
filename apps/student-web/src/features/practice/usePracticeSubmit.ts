@@ -28,7 +28,7 @@ export function usePracticeSubmit(sessionId: string) {
   const submitAnswer = useCallback((questionId: string, answer: string) => {
     setSubmitting(true);
     setError('');
-    return apiClient.post<SubmitResponse>(`/api/practice/${sessionId}/answer`, {
+    return apiClient.post<SubmitResponse>(`/practice/${sessionId}/answer`, {
       questionId,
       answer,
     })

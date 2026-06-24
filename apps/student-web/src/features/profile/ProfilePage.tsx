@@ -32,7 +32,7 @@ export function ProfilePage() {
     setSuccess('');
     setSaving(true);
     try {
-      await apiClient.patch<{ user: User }>('/api/profile', { name, locale });
+      await apiClient.patch<{ user: User }>('/profile', { name, locale });
       setSuccess('Profile updated');
     } catch (err) {
       setError((err as ApiError).message || 'Update failed');

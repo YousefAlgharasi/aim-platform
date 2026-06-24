@@ -9,7 +9,7 @@ interface ProgressEvent {
 
 export function useLessonProgress(lessonId: string) {
   const lastSyncedRef = useRef(0);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const syncProgress = useCallback((event: ProgressEvent) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -17,7 +17,7 @@ export function useLessonProgress(lessonId: string) {
     debounceRef.current = setTimeout(() => {
       if (event.percent <= lastSyncedRef.current) return;
 
-      apiClient.post(`/api/lessons/${lessonId}/progress`, {
+      apiClient.post(`/lessons/${lessonId}/progress`, {
         blockId: event.blockId,
         percent: event.percent,
       }).then(() => {
@@ -29,7 +29,7 @@ export function useLessonProgress(lessonId: string) {
   }, [lessonId]);
 
   const markComplete = useCallback(() => {
-    return apiClient.post(`/api/lessons/${lessonId}/complete`, {});
+    return apiClient.post(`/lessons/${lessonId}/complete`, {});
   }, [lessonId]);
 
   return { syncProgress, markComplete };

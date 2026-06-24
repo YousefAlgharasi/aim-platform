@@ -35,7 +35,7 @@ export function AssessmentResultPage() {
   function fetchResult() {
     setLoading(true);
     setError('');
-    apiClient.get<AssessmentResult>(`/api/assessments/${assessmentId}/attempts/${attemptId}/result`)
+    apiClient.get<AssessmentResult>(`/assessments/${assessmentId}/attempts/${attemptId}/result`)
       .then(setResult)
       .catch((err: ApiError) => setError(err.message || 'Failed to load result'))
       .finally(() => setLoading(false));

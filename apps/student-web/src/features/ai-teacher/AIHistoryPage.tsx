@@ -26,7 +26,7 @@ export function AIHistoryPage() {
   function fetchHistory() {
     setLoading(true);
     setError('');
-    apiClient.get<{ conversations: ConversationSummary[] }>('/api/ai-teacher/conversations')
+    apiClient.get<{ conversations: ConversationSummary[] }>('/ai-teacher/conversations')
       .then(({ conversations: c }) => setConversations(c))
       .catch((err: ApiError) => setError(err.message || 'Failed to load history'))
       .finally(() => setLoading(false));
@@ -35,7 +35,7 @@ export function AIHistoryPage() {
   useEffect(() => { fetchHistory(); }, []);
 
   function submitFeedback(conversationId: string, rating: 'positive' | 'negative') {
-    apiClient.post(`/api/ai-teacher/conversations/${conversationId}/feedback`, { rating })
+    apiClient.post(`/ai-teacher/conversations/${conversationId}/feedback`, { rating })
       .then(() => {
         setConversations(prev => prev.map(c =>
           c.id === conversationId ? { ...c, rating } : c

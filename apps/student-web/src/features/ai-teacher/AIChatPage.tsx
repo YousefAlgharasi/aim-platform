@@ -32,7 +32,7 @@ export function AIChatPage() {
   function fetchConversation() {
     setLoading(true);
     setError('');
-    apiClient.get<Conversation>(`/api/ai-teacher/conversations/${conversationId}`)
+    apiClient.get<Conversation>(`/ai-teacher/conversations/${conversationId}`)
       .then(setConversation)
       .catch((err: ApiError) => setError(err.message || 'Failed to load conversation'))
       .finally(() => setLoading(false));
@@ -62,7 +62,7 @@ export function AIChatPage() {
       });
     }
 
-    apiClient.post<{ message: Message }>(`/api/ai-teacher/conversations/${conversationId}/messages`, {
+    apiClient.post<{ message: Message }>(`/ai-teacher/conversations/${conversationId}/messages`, {
       content: userMessage,
     })
       .then(({ message }) => {
