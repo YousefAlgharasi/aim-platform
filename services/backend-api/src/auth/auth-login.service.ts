@@ -22,6 +22,8 @@ import {
   SupabaseSignUpResponse,
 } from './auth-login.types';
 
+type AuthOperation = 'login' | 'refresh' | 'register';
+
 const SUPABASE_TOKEN_PATH = '/auth/v1/token';
 const SUPABASE_SIGNUP_PATH = '/auth/v1/signup';
 const SUPABASE_LOGOUT_PATH = '/auth/v1/logout';
@@ -37,6 +39,7 @@ export class AuthLoginService {
     const response = await this.callSupabase(
       `${SUPABASE_TOKEN_PATH}?grant_type=password`,
       { email: input.email, password: input.password },
+      'login',
     );
 
     const tokens = this.toTokenResult(response);
@@ -54,6 +57,7 @@ export class AuthLoginService {
     const response = await this.callSupabase(
       `${SUPABASE_TOKEN_PATH}?grant_type=refresh_token`,
       { refresh_token: input.refreshToken },
+      'refresh',
     );
 
     return this.toTokenResult(response);
@@ -80,7 +84,7 @@ export class AuthLoginService {
     }
 
     if (!response.ok) {
-      await this.throwMappedError(response);
+      await this.throwMappedError(response, 'register');
     }
 
     const body = (await response.json()) as SupabaseSignUpResponse;
@@ -126,6 +130,7 @@ export class AuthLoginService {
   private async callSupabase(
     path: string,
     body: Record<string, string>,
+    operation: AuthOperation,
   ): Promise<SupabaseAuthTokenResponse> {
     const url = this.buildSupabaseUrl(path);
 
@@ -147,7 +152,7 @@ export class AuthLoginService {
     }
 
     if (!response.ok) {
-      await this.throwMappedError(response);
+      await this.throwMappedError(response, operation);
     }
 
     return (await response.json()) as SupabaseAuthTokenResponse;
@@ -170,7 +175,7 @@ export class AuthLoginService {
     return nowSeconds + (expiresIn ?? 3600);
   }
 
-  private async throwMappedError(response: Response): Promise<never> {
+  private async throwMappedError(response: Response, operation: AuthOperation): Promise<never> {
     let errorBody: SupabaseAuthErrorResponse = {};
     try {
       errorBody = (await response.json()) as SupabaseAuthErrorResponse;
@@ -178,12 +183,70 @@ export class AuthLoginService {
       // Ignore parse failures — fall back to status-based mapping below.
     }
 
-    if (response.status === 400 || response.status === 401) {
+    const reason = [
+      errorBody.error_code,
+      errorBody.msg,
+      errorBody.error_description,
+      errorBody.message,
+    ]
+      .filter((value): value is string => typeof value === 'string')
+      .join(' ')
+      .toLowerCase()
+      .replace(/_/g, ' ');
+
+    if (operation === 'register') {
+      if (response.status === 422 || reason.includes('already registered') || reason.includes('already exists')) {
+        throw new AppError({
+          code: ApiErrorCode.CONFLICT,
+          message: 'An account with this email already exists. Try signing in instead.',
+          statusCode: HttpStatus.CONFLICT,
+        });
+      }
+
+      if (reason.includes('password') && (reason.includes('weak') || reason.includes('short') || reason.includes('characters'))) {
+        throw new AppError({
+          code: ApiErrorCode.BAD_REQUEST,
+          message: 'Please choose a stronger password (at least 6 characters).',
+          statusCode: HttpStatus.BAD_REQUEST,
+        });
+      }
+
+      if (reason.includes('email') && (reason.includes('invalid') || reason.includes('format'))) {
+        throw new AppError({
+          code: ApiErrorCode.BAD_REQUEST,
+          message: 'Please enter a valid email address.',
+          statusCode: HttpStatus.BAD_REQUEST,
+        });
+      }
+    }
+
+    if (operation === 'login' && reason.includes('email') && reason.includes('not confirmed')) {
       throw new AppError({
-        code: ApiErrorCode.UNAUTHORIZED,
-        message: 'AUTH_INVALID_CREDENTIALS',
-        statusCode: HttpStatus.UNAUTHORIZED,
+        code: ApiErrorCode.FORBIDDEN,
+        message: 'Please confirm your email address before signing in.',
+        statusCode: HttpStatus.FORBIDDEN,
       });
+    }
+
+    if (response.status === 429 || reason.includes('rate limit')) {
+      throw new AppError({
+        code: ApiErrorCode.TOO_MANY_REQUESTS,
+        message: 'Too many attempts. Please wait a moment and try again.',
+        statusCode: HttpStatus.TOO_MANY_REQUESTS,
+      });
+    }
+
+    if (operation === 'login' || operation === 'refresh') {
+      if (response.status === 400 || response.status === 401) {
+        throw new AppError({
+          code: ApiErrorCode.UNAUTHORIZED,
+          message:
+            operation === 'refresh'
+              ? 'Your session has expired. Please sign in again.'
+              : 'Incorrect email or password.',
+          statusCode: HttpStatus.UNAUTHORIZED,
+        });
+      }
     }
 
     this.logger.warn(
