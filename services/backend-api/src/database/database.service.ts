@@ -62,7 +62,7 @@ export class DatabaseService implements OnModuleDestroy {
       return this.pool;
     }
 
-    const connectionString = this.backendConfig.database.url;
+    const connectionString = this.stripSslMode(this.backendConfig.database.url);
     const nodeEnvironment = this.backendConfig.nodeEnv;
 
     this.pool = new Pool({
@@ -78,6 +78,19 @@ export class DatabaseService implements OnModuleDestroy {
     });
 
     return this.pool;
+  }
+
+  // pg's ConnectionParameters does `Object.assign({}, config, parse(connectionString))`,
+  // so a `sslmode` query param in the connection string silently overrides the `ssl`
+  // option passed to the Pool constructor above. Strip it so our explicit ssl config wins.
+  private stripSslMode(connectionString: string): string {
+    try {
+      const url = new URL(connectionString);
+      url.searchParams.delete('sslmode');
+      return url.toString();
+    } catch {
+      return connectionString;
+    }
   }
 
   private toSafeErrorCode(error: unknown): string {
