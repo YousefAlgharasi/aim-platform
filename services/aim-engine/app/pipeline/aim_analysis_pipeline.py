@@ -44,6 +44,20 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Protocol, runtime_checkable
 
+# Add the API domain services to the import path so aim.domain.services is importable.
+_API_SRC = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "..", "api", "src")
+)
+if _API_SRC not in sys.path:
+    sys.path.insert(0, _API_SRC)
+
+from aim.domain.services.difficulty_adapter import DifficultyAdapter, DifficultyAction
+from aim.domain.services.emotional_state_detector import (
+    EmotionalAttempt,
+    EmotionalStateDetector,
+)
+from aim.domain.services.weakness_detector import WeaknessAttempt, WeaknessDetector
+
 from app.schemas.aim_analysis_request import (
     AimAnalysisRequest,
     AimAttemptInput,
@@ -138,6 +152,9 @@ class AimAnalysisPipelineEntrypoint:
 
     def __init__(self) -> None:
         self._validator = AimRequestValidator()
+        self._weakness_detector = WeaknessDetector()
+        self._difficulty_adapter = DifficultyAdapter()
+        self._emotional_detector = EmotionalStateDetector()
 
         _ensure_domain_services_importable()
         from aim.domain.services.difficulty_adapter import (

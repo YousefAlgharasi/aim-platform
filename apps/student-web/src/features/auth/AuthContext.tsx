@@ -24,17 +24,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const { user: u } = await apiClient.post<{ user: User }>('/auth/login', { email, password });
+    const { user: u, accessToken } = await apiClient.post<{ user: User; accessToken: string }>('/auth/login', { email, password });
+    apiClient.setAccessToken(accessToken);
     setUser(u);
   }, []);
 
   const register = useCallback(async (email: string, password: string, name: string) => {
-    const { user: u } = await apiClient.post<{ user: User }>('/auth/register', { email, password, name });
+    const { user: u, accessToken } = await apiClient.post<{ user: User; accessToken: string }>('/auth/register', { email, password, name });
+    apiClient.setAccessToken(accessToken);
     setUser(u);
   }, []);
 
   const logout = useCallback(async () => {
     await apiClient.post('/auth/logout', {});
+    apiClient.setAccessToken(null);
     setUser(null);
   }, []);
 

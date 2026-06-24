@@ -4,13 +4,20 @@ import type { ApiError } from '../types';
 class ApiClient {
   private baseUrl: string;
   private accessToken: string | null = null;
+  private static TOKEN_KEY = 'aim_access_token';
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
+    this.accessToken = localStorage.getItem(ApiClient.TOKEN_KEY);
   }
 
   setAccessToken(token: string | null) {
     this.accessToken = token;
+    if (token) {
+      localStorage.setItem(ApiClient.TOKEN_KEY, token);
+    } else {
+      localStorage.removeItem(ApiClient.TOKEN_KEY);
+    }
   }
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
