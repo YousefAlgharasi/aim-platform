@@ -34,7 +34,7 @@ export class AiTeacherSafetyCheckRepository {
         JSON.stringify(input.metadata ?? {}),
       ],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findByTarget(

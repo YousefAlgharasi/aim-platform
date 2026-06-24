@@ -85,7 +85,7 @@ export class SttTranscriptPersistenceService {
     );
 
     if (result.rows.length > 0) {
-      return result.rows[0];
+      return result.rows[0] ?? null;
     }
 
     // ON CONFLICT DO NOTHING returned zero rows — a transcript already

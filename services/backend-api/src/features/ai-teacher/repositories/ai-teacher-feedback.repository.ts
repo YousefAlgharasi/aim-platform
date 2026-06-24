@@ -25,7 +25,7 @@ export class AiTeacherFeedbackRepository {
       [messageId, studentId, rating],
     );
 
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findByMessageId(messageId: string): Promise<AiTeacherFeedbackRow | null> {

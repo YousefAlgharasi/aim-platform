@@ -15,7 +15,7 @@ export class VoiceMessageRepository {
       [sessionId, studentId],
     );
 
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findById(messageId: string): Promise<VoiceMessageRow | null> {
