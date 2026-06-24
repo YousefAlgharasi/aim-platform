@@ -3,10 +3,11 @@ import type { ReactNode } from 'react';
 
 type Props = {
   readonly resource?: string;
+  readonly message?: string;
   readonly backAction?: ReactNode;
 };
 
-export function AdminNotFoundState({ resource = 'Resource', backAction }: Props) {
+export function AdminNotFoundState({ resource = 'Resource', message, backAction }: Props) {
   return (
     <div className="aim-not-found" role="status" aria-label={`${resource} not found`}>
       <div className="aim-not-found-icon" aria-hidden="true">
@@ -21,7 +22,7 @@ export function AdminNotFoundState({ resource = 'Resource', backAction }: Props)
       </div>
       <h2 className="aim-not-found-title">{resource} Not Found</h2>
       <p className="aim-not-found-desc">
-        The {resource.toLowerCase()} you are looking for does not exist or has been removed.
+        {message ?? `The ${resource.toLowerCase()} you are looking for does not exist or has been removed.`}
       </p>
       {backAction && <div className="aim-not-found-action">{backAction}</div>}
       <style>{`

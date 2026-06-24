@@ -10,6 +10,7 @@ const NOW = '2026-01-15T12:00:00Z';
 
 const makeChapter = (overrides: Partial<AdminChapterSummary> = {}): AdminChapterSummary => ({
   id: 'chapter-1',
+  levelId: 'level-1',
   slug: 'greetings',
   title: 'Greetings',
   description: 'Chapter about greetings',

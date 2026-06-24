@@ -15,7 +15,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import type { PlacementTestStatus } from '../../../../../../../../../lib/api/admin-placement-tests-api';
+import type { PlacementTestStatus } from '../../../../../../lib/api/admin-placement-tests-api';
 
 type PlacementTestStatusControlProps = {
   readonly testId: string;
