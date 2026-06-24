@@ -34,8 +34,7 @@ Scope rules:
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
-from typing import Optional
+from enum import Enum, StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from pydantic.alias_generators import to_camel
@@ -63,6 +62,7 @@ from pydantic.alias_generators import to_camel
 class AimCamelCaseModel(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
+
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
@@ -70,7 +70,8 @@ class AimCamelCaseModel(BaseModel):
 
 # --- Skill state (P5-012) ---
 
-class AimMasteryTrend(str, Enum):
+
+class AimMasteryTrend(StrEnum):
     """Directional mastery trend since the prior persisted skill state."""
 
     IMPROVING = "improving"
@@ -81,7 +82,8 @@ class AimMasteryTrend(str, Enum):
 
 # --- Weakness records (P5-013) ---
 
-class AimWeaknessSeverity(str, Enum):
+
+class AimWeaknessSeverity(StrEnum):
     """Weakness severity tier.
 
     ``critical`` is Phase 5-only and extends the Phase 4
@@ -93,7 +95,7 @@ class AimWeaknessSeverity(str, Enum):
     CRITICAL = "critical"
 
 
-class AimWeaknessStatus(str, Enum):
+class AimWeaknessStatus(StrEnum):
     """Lifecycle status of a weakness instance."""
 
     OPEN = "open"
@@ -102,6 +104,7 @@ class AimWeaknessStatus(str, Enum):
 
 
 # --- Difficulty decision (P5-014) ---
+
 
 class AimDifficultyLevel(int, Enum):
     """Phase 0/1 locked 1–4 difficulty scale (shared with P5-010/P5-021)."""
@@ -112,7 +115,7 @@ class AimDifficultyLevel(int, Enum):
     LEVEL_4 = 4
 
 
-class AimDifficultyRationale(str, Enum):
+class AimDifficultyRationale(StrEnum):
     """Coarse enum describing why a difficulty decision was made.
 
     Never a free-text explanation; fixed to avoid leaking algorithm internals.
@@ -127,7 +130,8 @@ class AimDifficultyRationale(str, Enum):
 
 # --- Recommendations (P5-015) ---
 
-class AimRecommendationKind(str, Enum):
+
+class AimRecommendationKind(StrEnum):
     """Category of action being recommended."""
 
     LESSON = "lesson"
@@ -135,7 +139,7 @@ class AimRecommendationKind(str, Enum):
     REVIEW_SESSION = "review_session"
 
 
-class AimRecommendationReason(str, Enum):
+class AimRecommendationReason(StrEnum):
     """Coarse enum describing why a recommendation was produced."""
 
     ADDRESSES_WEAKNESS = "addresses_weakness"
@@ -146,7 +150,8 @@ class AimRecommendationReason(str, Enum):
 
 # --- Session summary (P5-017) ---
 
-class AimMasteryShiftDirection(str, Enum):
+
+class AimMasteryShiftDirection(StrEnum):
     """Coarse directional summary of mastery change across the session."""
 
     POSITIVE = "positive"
@@ -155,7 +160,7 @@ class AimMasteryShiftDirection(str, Enum):
     MIXED = "mixed"
 
 
-class AimFrustrationLevel(str, Enum):
+class AimFrustrationLevel(StrEnum):
     """Educational-only frustration signal.
 
     Not a clinical or psychological assessment.  Must never be presented,
@@ -168,7 +173,7 @@ class AimFrustrationLevel(str, Enum):
     ELEVATED = "elevated"
 
 
-class AimEngagementLevel(str, Enum):
+class AimEngagementLevel(StrEnum):
     """Educational-only engagement signal."""
 
     LOW = "low"
@@ -176,7 +181,7 @@ class AimEngagementLevel(str, Enum):
     HIGH = "high"
 
 
-class AimSignalBasis(str, Enum):
+class AimSignalBasis(StrEnum):
     """Coarse evidence category contributing to behavioral signal levels.
 
     Fixed enum to avoid leaking algorithm internals or implying a diagnostic
@@ -212,8 +217,7 @@ class AimSkillStateOutput(AimCamelCaseModel):
         ge=0.0,
         le=1.0,
         description=(
-            "AIM Engine mastery estimate (0.00–1.00). "
-            "Sole authority; never computed elsewhere."
+            "AIM Engine mastery estimate (0.00–1.00). Sole authority; never computed elsewhere."
         ),
     )
     mastery_confidence: float = Field(
@@ -232,7 +236,9 @@ class AimSkillStateOutput(AimCamelCaseModel):
     attempts_considered_count: int = Field(
         ...,
         ge=0,
-        description="Attempts considered for this evaluation (evidence window, not lifetime total).",
+        description=(
+            "Attempts considered for this evaluation (evidence window, not lifetime total)."
+        ),
     )
     last_attempt_id: str = Field(
         ...,
@@ -275,21 +281,22 @@ class AimWeaknessRecordOutput(AimCamelCaseModel):
     )
     detected_at: datetime = Field(
         ...,
-        description="ISO-8601 UTC timestamp of when this weakness was first detected. Stable across updates.",
+        description=(
+            "ISO-8601 UTC timestamp of when this weakness was first detected. "
+            "Stable across updates."
+        ),
     )
-    resolved_at: Optional[datetime] = Field(
+    resolved_at: datetime | None = Field(
         None,
         description="Set when status transitions to resolved. None while open or improving.",
     )
 
     @model_validator(mode="after")
-    def resolved_at_only_when_resolved(self) -> "AimWeaknessRecordOutput":
+    def resolved_at_only_when_resolved(self) -> AimWeaknessRecordOutput:
         if self.status == AimWeaknessStatus.RESOLVED and self.resolved_at is None:
             raise ValueError("resolved_at must be set when status is 'resolved'")
         if self.status != AimWeaknessStatus.RESOLVED and self.resolved_at is not None:
-            raise ValueError(
-                "resolved_at must be None when status is not 'resolved'"
-            )
+            raise ValueError("resolved_at must be None when status is not 'resolved'")
         return self
 
 
@@ -318,7 +325,9 @@ class AimDifficultyDecisionOutput(AimCamelCaseModel):
     )
     previous_difficulty: AimDifficultyLevel = Field(
         ...,
-        description="Difficulty level in effect immediately before this decision, for traceability.",
+        description=(
+            "Difficulty level in effect immediately before this decision, for traceability."
+        ),
     )
     rationale: AimDifficultyRationale = Field(
         ...,
@@ -338,7 +347,7 @@ class AimDifficultyDecisionOutput(AimCamelCaseModel):
     )
 
     @model_validator(mode="after")
-    def step_constraint(self) -> "AimDifficultyDecisionOutput":
+    def step_constraint(self) -> AimDifficultyDecisionOutput:
         """Enforce the one-step change constraint at the schema level.
 
         |next_difficulty - previous_difficulty| <= 1
@@ -375,7 +384,7 @@ class AimRecommendationOutput(AimCamelCaseModel):
         ...,
         description="Skill the recommendation targets.",
     )
-    target_lesson_id: Optional[str] = Field(
+    target_lesson_id: str | None = Field(
         None,
         description=(
             "Specific lesson UUID when kind=lesson. "
@@ -391,44 +400,40 @@ class AimRecommendationOutput(AimCamelCaseModel):
         ...,
         description="Coarse category describing why this recommendation was produced.",
     )
-    based_on_weakness_id: Optional[str] = Field(
+    based_on_weakness_id: str | None = Field(
         None,
         description=(
-            "References a weakness_records id when reason=addresses_weakness. "
-            "None otherwise."
+            "References a weakness_records id when reason=addresses_weakness. None otherwise."
         ),
     )
     generated_at: datetime = Field(
         ...,
         description="ISO-8601 UTC timestamp of when the AIM Engine generated this recommendation.",
     )
-    expires_at: Optional[datetime] = Field(
+    expires_at: datetime | None = Field(
         None,
         description=(
-            "When this recommendation is no longer current. "
-            "None means no explicit expiry."
+            "When this recommendation is no longer current. None means no explicit expiry."
         ),
     )
 
     @model_validator(mode="after")
-    def lesson_id_required_for_lesson_kind(self) -> "AimRecommendationOutput":
+    def lesson_id_required_for_lesson_kind(self) -> AimRecommendationOutput:
         if self.kind == AimRecommendationKind.LESSON and self.target_lesson_id is None:
             raise ValueError("target_lesson_id is required when kind is 'lesson'")
         return self
 
     @model_validator(mode="after")
-    def weakness_id_required_for_addresses_weakness(self) -> "AimRecommendationOutput":
+    def weakness_id_required_for_addresses_weakness(self) -> AimRecommendationOutput:
         if (
             self.reason == AimRecommendationReason.ADDRESSES_WEAKNESS
             and self.based_on_weakness_id is None
         ):
-            raise ValueError(
-                "based_on_weakness_id is required when reason is 'addresses_weakness'"
-            )
+            raise ValueError("based_on_weakness_id is required when reason is 'addresses_weakness'")
         return self
 
     @model_validator(mode="after")
-    def expires_at_after_generated_at(self) -> "AimRecommendationOutput":
+    def expires_at_after_generated_at(self) -> AimRecommendationOutput:
         if self.expires_at is not None and self.expires_at <= self.generated_at:
             raise ValueError("expires_at must be after generated_at")
         return self
@@ -553,15 +558,16 @@ class AimSessionSummaryOutput(AimCamelCaseModel):
     )
     closed_out_at: datetime = Field(
         ...,
-        description="ISO-8601 UTC timestamp of when the AIM Engine determined the session reached a close-out point.",
+        description=(
+            "ISO-8601 UTC timestamp of when the AIM Engine determined the session "
+            "reached a close-out point."
+        ),
     )
 
     @model_validator(mode="after")
-    def items_correct_le_attempted(self) -> "AimSessionSummaryOutput":
+    def items_correct_le_attempted(self) -> AimSessionSummaryOutput:
         if self.items_correct > self.items_attempted:
-            raise ValueError(
-                "items_correct must be <= items_attempted"
-            )
+            raise ValueError("items_correct must be <= items_attempted")
         return self
 
 
@@ -578,42 +584,38 @@ class AimResponseCategories(AimCamelCaseModel):
     A missing category means "unchanged," not "reset."
     """
 
-    skill_state: Optional[list[AimSkillStateOutput]] = Field(
+    skill_state: list[AimSkillStateOutput] | None = Field(
         None,
         description=(
-            "Per-skill mastery updates (P5-012). "
-            "Array; one entry per skill updated in this call."
+            "Per-skill mastery updates (P5-012). Array; one entry per skill updated in this call."
         ),
     )
-    weakness_records: Optional[list[AimWeaknessRecordOutput]] = Field(
+    weakness_records: list[AimWeaknessRecordOutput] | None = Field(
         None,
         description=(
             "Weakness instance updates (P5-013). "
             "Array; may surface, update, or resolve multiple weaknesses."
         ),
     )
-    difficulty_decision: Optional[AimDifficultyDecisionOutput] = Field(
+    difficulty_decision: AimDifficultyDecisionOutput | None = Field(
         None,
-        description=(
-            "Next-item difficulty decision (P5-014). "
-            "Singular; at most one per call."
-        ),
+        description=("Next-item difficulty decision (P5-014). Singular; at most one per call."),
     )
-    recommendations: Optional[list[AimRecommendationOutput]] = Field(
+    recommendations: list[AimRecommendationOutput] | None = Field(
         None,
         description=(
             "Ranked recommendations (P5-015). "
             "Treated as the complete current set; replaces prior active set on persistence."
         ),
     )
-    review_schedule: Optional[list[AimReviewScheduleOutput]] = Field(
+    review_schedule: list[AimReviewScheduleOutput] | None = Field(
         None,
         description=(
             "Spaced-repetition schedule updates (P5-016). "
             "Array; may schedule reviews for multiple skills."
         ),
     )
-    session_summary: Optional[AimSessionSummaryOutput] = Field(
+    session_summary: AimSessionSummaryOutput | None = Field(
         None,
         description=(
             "Session close-out snapshot (P5-017). "
@@ -622,7 +624,7 @@ class AimResponseCategories(AimCamelCaseModel):
     )
 
     @model_validator(mode="after")
-    def recommendation_ranks_unique(self) -> "AimResponseCategories":
+    def recommendation_ranks_unique(self) -> AimResponseCategories:
         """Ranks within a single response's recommendations array must be unique."""
         if self.recommendations:
             ranks = [r.rank for r in self.recommendations]

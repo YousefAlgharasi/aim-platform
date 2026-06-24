@@ -46,6 +46,7 @@ from app.core.config import AimEngineSettings, get_settings
 # aim-engine package; the canonical contracts are in packages/shared-contracts).
 from app.schemas.aim_analysis_request import AimAnalysisRequest
 from app.schemas.aim_analysis_response import AimAnalysisResponse, AimResponseCategories
+from app.validation.aim_request_validator import AimRequestValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -60,8 +61,8 @@ router = APIRouter(prefix="/aim/v1", tags=["aim-analysis"])
 
 
 def _verify_service_token(
-    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
-    settings: AimEngineSettings = Depends(get_settings),
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),  # noqa: B008
+    settings: AimEngineSettings = Depends(get_settings),  # noqa: B008
 ) -> None:
     """Verify the backend service token.
 
@@ -125,7 +126,7 @@ async def post_analysis(
     x_request_id: str | None = Header(default=None, alias="X-Request-Id"),
     x_backend_version: str | None = Header(default=None, alias="X-Backend-Version"),
     x_contract_version: str | None = Header(default=None, alias="X-Contract-Version"),
-    settings: AimEngineSettings = Depends(get_settings),
+    settings: AimEngineSettings = Depends(get_settings),  # noqa: B008
 ) -> JSONResponse:
     """Process a backend AIM analysis request.
 
@@ -164,7 +165,16 @@ async def post_analysis(
 
     if pipeline is not None:
         # P5-023 has injected a real pipeline — delegate to it.
-        response: AimAnalysisResponse = await pipeline.run(body)
+        try:
+            response: AimAnalysisResponse = await pipeline.run(body)
+        except AimRequestValidationError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=[
+                    {"code": v.code, "message": v.message, "field": v.field}
+                    for v in exc.result.violations
+                ],
+            ) from exc
     else:
         # Stub: empty categories, correct envelope correlation.
         response = AimAnalysisResponse(
