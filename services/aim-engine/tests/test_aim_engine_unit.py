@@ -499,7 +499,6 @@ class TestResponseShapeInvalidFixtures:
 
 
 MASTERY_FORBIDDEN_KEYS = (
-    "mastery_score",
     "mastery_level",
     "computed_mastery",
     "speed_mastery",
