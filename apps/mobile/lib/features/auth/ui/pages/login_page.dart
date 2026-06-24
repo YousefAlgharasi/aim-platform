@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/config/app_config_provider.dart';
 import '../../../../core/routing/routing.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../logic/provider/auth_flow_provider.dart';
@@ -60,10 +61,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     await ref.read(loginProvider.notifier).submit();
   }
 
+  Future<void> _submitTestLogin(String role) async {
+    _emailFocus.unfocus();
+    _passwordFocus.unfocus();
+    await ref.read(loginProvider.notifier).submitTestLogin(role);
+  }
+
   @override
   Widget build(BuildContext context) {
     final formState = ref.watch(loginProvider);
     final surfaces = aimSurfacesOf(context);
+    final isTestModeAvailable = !ref.watch(appConfigProvider).isProduction;
 
     // Navigate to main shell once sign-in succeeds.
     //
@@ -164,6 +172,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   textAlign: TextAlign.center,
                 ),
               ),
+
+              // ── Test mode (non-production builds only) ─────────────────
+              // Lets a developer/tester sign in as a fixed student/admin/
+              // parent test account without a real password. The backend
+              // returns 404 for this route in production, so this button
+              // never appears (and would be a dead end if it did).
+              if (isTestModeAvailable) ...[
+                const SizedBox(height: AimSpacing.sectionGap),
+                const _TestModeDivider(),
+                const SizedBox(height: AimSpacing.formFieldGap),
+                _TestModeButtonRow(
+                  isSubmitting: formState.isSubmitting,
+                  onSelectRole: _submitTestLogin,
+                ),
+              ],
             ],
           ),
         ),
@@ -173,6 +196,80 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 }
 
 // ── Supporting widgets ────────────────────────────────────────────────────────
+
+/// Visual separator between real sign-in and the test-mode shortcut, so
+/// testers can't mistake it for part of the real auth flow.
+class _TestModeDivider extends StatelessWidget {
+  const _TestModeDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+
+    return Row(
+      children: [
+        Expanded(child: Divider(color: surfaces.textSecondary)),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AimSpacing.innerGap,
+          ),
+          child: Text(
+            'Test mode',
+            style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
+          ),
+        ),
+        Expanded(child: Divider(color: surfaces.textSecondary)),
+      ],
+    );
+  }
+}
+
+/// Three buttons that sign in as a fixed student/admin/parent test account,
+/// bypassing the real password form entirely. Only ever shown outside
+/// production (see [isTestModeAvailable] in [LoginPage]).
+class _TestModeButtonRow extends StatelessWidget {
+  const _TestModeButtonRow({
+    required this.isSubmitting,
+    required this.onSelectRole,
+  });
+
+  final bool isSubmitting;
+  final void Function(String role) onSelectRole;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: AIMButton(
+            onPressed: isSubmitting ? null : () => onSelectRole('student'),
+            variant: AIMButtonVariant.secondary,
+            semanticLabel: 'Enter as test student',
+            child: const Text('Student'),
+          ),
+        ),
+        const SizedBox(width: AimSpacing.innerGap),
+        Expanded(
+          child: AIMButton(
+            onPressed: isSubmitting ? null : () => onSelectRole('parent'),
+            variant: AIMButtonVariant.secondary,
+            semanticLabel: 'Enter as test parent',
+            child: const Text('Parent'),
+          ),
+        ),
+        const SizedBox(width: AimSpacing.innerGap),
+        Expanded(
+          child: AIMButton(
+            onPressed: isSubmitting ? null : () => onSelectRole('admin'),
+            variant: AIMButtonVariant.secondary,
+            semanticLabel: 'Enter as test admin',
+            child: const Text('Admin'),
+          ),
+        ),
+      ],
+    );
+  }
+}
 
 class _AimLogo extends StatelessWidget {
   const _AimLogo();
