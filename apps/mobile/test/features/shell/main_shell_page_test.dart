@@ -17,19 +17,19 @@ void main() {
     expect(find.text('Profile'), findsWidgets);
 
     await tester.tap(find.text('Learn').last);
-    await tester.pumpAndSettle();
+    await tester.pump();
     expect(find.text('Learn'), findsWidgets);
 
     await tester.tap(find.text('Review').last);
-    await tester.pumpAndSettle();
+    await tester.pump();
     expect(find.text('Review'), findsWidgets);
 
     await tester.tap(find.text('Progress').last);
-    await tester.pumpAndSettle();
+    await tester.pump();
     expect(find.text('Progress'), findsWidgets);
 
     await tester.tap(find.text('Profile').last);
-    await tester.pumpAndSettle();
+    await tester.pump();
     expect(find.text('No profile loaded.'), findsOneWidget);
   });
 }
