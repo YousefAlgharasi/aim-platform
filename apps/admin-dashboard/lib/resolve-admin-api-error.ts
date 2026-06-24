@@ -1,6 +1,6 @@
 // P11-011: Utility to resolve a clean, safe error message from AdminApiClientError
 // Never exposes backend internals, stack traces, or credentials to the UI.
-import { AdminApiClientError } from '../api/admin-api-client-error';
+import { AdminApiClientError } from './api/admin-api-client-error';
 
 export type AdminApiErrorInfo = {
   readonly status: number | undefined;
@@ -25,7 +25,7 @@ export function resolveAdminApiError(err: unknown): AdminApiErrorInfo {
   if (err instanceof AdminApiClientError) {
     return {
       status:        err.status,
-      message:       safeMessage(err.status, err.message),
+      message:       err.status != null ? safeMessage(err.status, err.message) : err.message,
       isForbidden:   err.status === 403,
       isNotFound:    err.status === 404,
       isUnavailable: err.status === 503 || err.status === 502,
