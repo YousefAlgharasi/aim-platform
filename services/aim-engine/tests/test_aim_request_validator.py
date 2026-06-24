@@ -18,7 +18,6 @@ AimRequestValidationError before any category dispatch.
 from __future__ import annotations
 
 import copy
-from datetime import datetime, timezone
 
 import pytest
 from fastapi.testclient import TestClient
@@ -27,7 +26,6 @@ from app.main import create_app
 from app.validation.aim_request_validator import (
     AimRequestValidationError,
     AimRequestValidator,
-    ValidationResult,
     _is_uuid,
 )
 
@@ -140,8 +138,9 @@ def test_valid_request_passes_all_rules() -> None:
 
 
 def test_V_S_01_invalid_session_id() -> None:
-    from app.schemas.aim_analysis_request import AimAnalysisRequest
     import copy
+
+    from app.schemas.aim_analysis_request import AimAnalysisRequest
 
     # Set BOTH session.session_id AND attempt.session_id to the same non-UUID
     # so Pydantic's cross-field check passes, but our UUID validator fires.
@@ -163,8 +162,9 @@ def test_V_S_01_invalid_session_id() -> None:
 
 
 def test_V_S_02_invalid_student_id() -> None:
-    from app.schemas.aim_analysis_request import AimAnalysisRequest
     import copy
+
+    from app.schemas.aim_analysis_request import AimAnalysisRequest
 
     body = copy.deepcopy(VALID_BODY)
     body["session"]["student_id"] = "bad-student-id"
@@ -182,9 +182,11 @@ def test_V_S_02_invalid_student_id() -> None:
 
 
 def test_V_S_04_started_at_after_last_activity() -> None:
-    from app.schemas.aim_analysis_request import AimAnalysisRequest
-    from pydantic import ValidationError
     import copy
+
+    from pydantic import ValidationError
+
+    from app.schemas.aim_analysis_request import AimAnalysisRequest
 
     body = copy.deepcopy(VALID_BODY)
     body["session"]["started_at"] = "2026-06-17T11:00:00Z"
@@ -196,8 +198,9 @@ def test_V_S_04_started_at_after_last_activity() -> None:
 
 
 def test_V_S_04_equal_timestamps_are_valid() -> None:
-    from app.schemas.aim_analysis_request import AimAnalysisRequest
     import copy
+
+    from app.schemas.aim_analysis_request import AimAnalysisRequest
 
     body = copy.deepcopy(VALID_BODY)
     body["session"]["started_at"] = "2026-06-17T10:00:00Z"
@@ -215,17 +218,17 @@ def test_V_S_04_equal_timestamps_are_valid() -> None:
 
 
 def test_V_S_05_signal_strength_out_of_range() -> None:
-    from app.schemas.aim_analysis_request import AimAnalysisRequest
-    from pydantic import ValidationError
     import copy
+
+    from pydantic import ValidationError
+
+    from app.schemas.aim_analysis_request import AimAnalysisRequest
 
     body = copy.deepcopy(VALID_BODY)
     body["session"]["placement_context"] = {
         "placement_result_id": "aa0e8400-e29b-41d4-a716-446655440099",
         "placement_completed_at": "2026-06-16T08:00:00Z",
-        "initial_skill_signals": [
-            {"skill_id": "skill:arabic:p1:vocab", "signal_strength": 1.5}
-        ],
+        "initial_skill_signals": [{"skill_id": "skill:arabic:p1:vocab", "signal_strength": 1.5}],
     }
     # Pydantic enforces ge=0.0, le=1.0 on signal_strength
     with pytest.raises(ValidationError):
@@ -233,16 +236,15 @@ def test_V_S_05_signal_strength_out_of_range() -> None:
 
 
 def test_V_S_05_valid_signal_strength_passes() -> None:
-    from app.schemas.aim_analysis_request import AimAnalysisRequest
     import copy
+
+    from app.schemas.aim_analysis_request import AimAnalysisRequest
 
     body = copy.deepcopy(VALID_BODY)
     body["session"]["placement_context"] = {
         "placement_result_id": "aa0e8400-e29b-41d4-a716-446655440099",
         "placement_completed_at": "2026-06-16T08:00:00Z",
-        "initial_skill_signals": [
-            {"skill_id": "skill:arabic:p1:vocab", "signal_strength": 0.75}
-        ],
+        "initial_skill_signals": [{"skill_id": "skill:arabic:p1:vocab", "signal_strength": 0.75}],
     }
     request = AimAnalysisRequest(**body)
 
@@ -257,8 +259,9 @@ def test_V_S_05_valid_signal_strength_passes() -> None:
 
 
 def test_V_S_07_unsupported_contract_version() -> None:
-    from app.schemas.aim_analysis_request import AimAnalysisRequest
     import copy
+
+    from app.schemas.aim_analysis_request import AimAnalysisRequest
 
     body = copy.deepcopy(VALID_BODY)
     body["session"]["contract_version"] = "99.0"
@@ -282,8 +285,9 @@ def test_V_S_07_supported_version_passes() -> None:
 
 
 def test_V_A_01_invalid_attempt_id() -> None:
-    from app.schemas.aim_analysis_request import AimAnalysisRequest
     import copy
+
+    from app.schemas.aim_analysis_request import AimAnalysisRequest
 
     body = copy.deepcopy(VALID_BODY)
     body["attempts"][0]["attempt_id"] = "not-a-uuid"
@@ -301,9 +305,11 @@ def test_V_A_01_invalid_attempt_id() -> None:
 
 
 def test_V_A_02_attempt_session_id_mismatch() -> None:
-    from app.schemas.aim_analysis_request import AimAnalysisRequest
-    from pydantic import ValidationError
     import copy
+
+    from pydantic import ValidationError
+
+    from app.schemas.aim_analysis_request import AimAnalysisRequest
 
     body = copy.deepcopy(VALID_BODY)
     body["attempts"][0]["session_id"] = "aaaaaaaa-e29b-41d4-a716-446655440000"
@@ -319,8 +325,9 @@ def test_V_A_02_attempt_session_id_mismatch() -> None:
 
 
 def test_V_A_03_invalid_item_id() -> None:
-    from app.schemas.aim_analysis_request import AimAnalysisRequest
     import copy
+
+    from app.schemas.aim_analysis_request import AimAnalysisRequest
 
     body = copy.deepcopy(VALID_BODY)
     body["attempts"][0]["item_id"] = "bad-item-id"
@@ -338,9 +345,11 @@ def test_V_A_03_invalid_item_id() -> None:
 
 
 def test_V_A_06_attempt_started_after_submitted() -> None:
-    from app.schemas.aim_analysis_request import AimAnalysisRequest
-    from pydantic import ValidationError
     import copy
+
+    from pydantic import ValidationError
+
+    from app.schemas.aim_analysis_request import AimAnalysisRequest
 
     body = copy.deepcopy(VALID_BODY)
     body["attempts"][0]["started_at"] = "2026-06-17T10:10:00Z"
@@ -357,8 +366,9 @@ def test_V_A_06_attempt_started_after_submitted() -> None:
 
 
 def test_multiple_violations_all_reported() -> None:
-    from app.schemas.aim_analysis_request import AimAnalysisRequest
     import copy
+
+    from app.schemas.aim_analysis_request import AimAnalysisRequest
 
     body = copy.deepcopy(VALID_BODY)
     body["session"]["session_id"] = "not-a-uuid"
@@ -389,8 +399,9 @@ def test_multiple_violations_all_reported() -> None:
 
 
 def test_validation_error_carries_result() -> None:
-    from app.schemas.aim_analysis_request import AimAnalysisRequest
     import copy
+
+    from app.schemas.aim_analysis_request import AimAnalysisRequest
 
     body = copy.deepcopy(VALID_BODY)
     body["session"]["contract_version"] = "99.0"

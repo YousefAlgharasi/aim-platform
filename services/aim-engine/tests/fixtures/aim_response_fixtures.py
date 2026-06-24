@@ -90,7 +90,9 @@ def build_weakness_output(
         "skill_id": skill_id,
         "severity": severity,
         "status": status,
-        "trigger_attempt_ids": list(trigger_attempt_ids) if trigger_attempt_ids else [_ATTEMPT_ID_1],
+        "trigger_attempt_ids": list(trigger_attempt_ids)
+        if trigger_attempt_ids
+        else [_ATTEMPT_ID_1],
         "detected_at": detected_at,
         "resolved_at": resolved_at,
     }
@@ -114,7 +116,9 @@ def build_difficulty_decision_output(
         "next_difficulty": next_difficulty,
         "previous_difficulty": previous_difficulty,
         "rationale": rationale,
-        "based_on_attempt_ids": list(based_on_attempt_ids) if based_on_attempt_ids else [_ATTEMPT_ID_1],
+        "based_on_attempt_ids": list(based_on_attempt_ids)
+        if based_on_attempt_ids
+        else [_ATTEMPT_ID_1],
         "decided_at": decided_at,
     }
 
@@ -187,7 +191,9 @@ def build_session_summary_output(
         "session_id": session_id,
         "items_attempted": items_attempted,
         "items_correct": items_correct,
-        "skills_touched": list(skills_touched) if skills_touched else [_SKILL_VOCAB, _SKILL_LISTENING],
+        "skills_touched": list(skills_touched)
+        if skills_touched
+        else [_SKILL_VOCAB, _SKILL_LISTENING],
         "overall_mastery_shift": overall_mastery_shift,
         "behavioral_signal": {
             "frustration_level": frustration_level,

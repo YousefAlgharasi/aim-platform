@@ -23,9 +23,11 @@ referenced here.
 from __future__ import annotations
 
 import copy
+from datetime import UTC
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 
 from app.main import create_app
 from app.pipeline.aim_analysis_pipeline import AimAnalysisPipelineEntrypoint
@@ -38,14 +40,10 @@ from app.validation.aim_request_validator import (
 )
 from tests.fixtures.aim_request_fixtures import (
     INVALID_REQUEST_ATTEMPT_SESSION_MISMATCH,
-    INVALID_REQUEST_NEGATIVE_BEHAVIORAL_COUNT,
-    INVALID_REQUEST_OPTIONS_COUNT_WRONG_FOR_FORMAT,
-    INVALID_REQUEST_SESSION_TIMESTAMPS_REVERSED,
     INVALID_REQUEST_UNSUPPORTED_CONTRACT_VERSION,
     VALID_REQUEST_LESSON_PRACTICE_SINGLE_ATTEMPT,
     VALID_REQUEST_PLACEMENT_FOLLOWUP_WITH_BOOTSTRAP,
     VALID_REQUEST_REVIEW_PRACTICE_MULTI_ATTEMPT,
-    all_invalid_requests,
     all_valid_requests,
     parse_valid_request,
 )
@@ -121,12 +119,12 @@ class TestValidatorRuleViolations:
         assert "V-A-02" in codes
 
     def test_reversed_session_timestamps_triggers_V_S_04(self):
-        from datetime import datetime, timezone
+        from datetime import datetime
 
         request = parse_valid_request(VALID_REQUEST_LESSON_PRACTICE_SINGLE_ATTEMPT)
         # started_at > last_activity_at
-        request.session.started_at = datetime(2026, 6, 17, 12, 0, tzinfo=timezone.utc)
-        request.session.last_activity_at = datetime(2026, 6, 17, 10, 0, tzinfo=timezone.utc)
+        request.session.started_at = datetime(2026, 6, 17, 12, 0, tzinfo=UTC)
+        request.session.last_activity_at = datetime(2026, 6, 17, 10, 0, tzinfo=UTC)
         result = self.validator.validate(request)
         codes = [v.code for v in result.violations]
         assert "V-S-04" in codes
@@ -168,11 +166,11 @@ class TestValidatorRuleViolations:
         assert "V-A-03" in codes
 
     def test_reversed_attempt_timestamps_triggers_V_A_06(self):
-        from datetime import datetime, timezone
+        from datetime import datetime
 
         request = parse_valid_request(VALID_REQUEST_LESSON_PRACTICE_SINGLE_ATTEMPT)
-        request.attempts[0].started_at = datetime(2026, 6, 17, 11, 0, tzinfo=timezone.utc)
-        request.attempts[0].submitted_at = datetime(2026, 6, 17, 10, 0, tzinfo=timezone.utc)
+        request.attempts[0].started_at = datetime(2026, 6, 17, 11, 0, tzinfo=UTC)
+        request.attempts[0].submitted_at = datetime(2026, 6, 17, 10, 0, tzinfo=UTC)
         result = self.validator.validate(request)
         codes = [v.code for v in result.violations]
         assert "V-A-06" in codes
@@ -312,11 +310,11 @@ class TestPipelineRejectsInvalidRequests:
         assert "V-S-07" in codes
 
     def test_reversed_session_timestamps_raises_validation_error(self):
-        from datetime import datetime, timezone
+        from datetime import datetime
 
         request = parse_valid_request(VALID_REQUEST_LESSON_PRACTICE_SINGLE_ATTEMPT)
-        request.session.started_at = datetime(2026, 6, 17, 12, 0, tzinfo=timezone.utc)
-        request.session.last_activity_at = datetime(2026, 6, 17, 10, 0, tzinfo=timezone.utc)
+        request.session.started_at = datetime(2026, 6, 17, 12, 0, tzinfo=UTC)
+        request.session.last_activity_at = datetime(2026, 6, 17, 10, 0, tzinfo=UTC)
         result = self.validator.validate(request)
         assert not result.is_valid
 
@@ -483,15 +481,15 @@ class TestResponseShapeInvalidFixtures:
     """Invalid P5-026 response fixtures must be rejected by AimAnalysisResponse."""
 
     def test_difficulty_step_violation_is_rejected(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             AimAnalysisResponse(**INVALID_RESPONSE_DIFFICULTY_STEP_VIOLATION)
 
     def test_resolved_weakness_without_timestamp_is_rejected(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             AimAnalysisResponse(**INVALID_RESPONSE_RESOLVED_WEAKNESS_WITHOUT_TIMESTAMP)
 
     def test_duplicate_recommendation_rank_is_rejected(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             AimAnalysisResponse(**INVALID_RESPONSE_DUPLICATE_RECOMMENDATION_RANK)
 
 
@@ -519,9 +517,7 @@ class TestScopeGuards:
         response = await pipeline.run(request)
         body = response.model_dump_json().lower()
         for key in MASTERY_FORBIDDEN_KEYS:
-            assert key not in body, (
-                f"Forbidden mastery field '{key}' found in pipeline response"
-            )
+            assert key not in body, f"Forbidden mastery field '{key}' found in pipeline response"
 
     @pytest.mark.asyncio
     async def test_no_secrets_in_pipeline_response(self):
@@ -544,6 +540,4 @@ class TestScopeGuards:
         assert response.status_code == 200
         body = response.text.lower()
         for key in MASTERY_FORBIDDEN_KEYS:
-            assert key not in body, (
-                f"Forbidden mastery field '{key}' found in HTTP response body"
-            )
+            assert key not in body, f"Forbidden mastery field '{key}' found in HTTP response body"

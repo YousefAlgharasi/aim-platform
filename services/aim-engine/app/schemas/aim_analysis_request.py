@@ -29,8 +29,7 @@ referenced in this module.
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
-from typing import Optional
+from enum import Enum, StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from pydantic.alias_generators import to_camel
@@ -58,6 +57,7 @@ from pydantic.alias_generators import to_camel
 class AimCamelCaseModel(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
+
 # ---------------------------------------------------------------------------
 # Enumerations — locked to contract versions defined in P5-009 and P5-010
 # ---------------------------------------------------------------------------
@@ -65,7 +65,7 @@ class AimCamelCaseModel(BaseModel):
 CONTRACT_VERSION = "1.0"
 
 
-class AimSessionType(str, Enum):
+class AimSessionType(StrEnum):
     """Backend-classified session type (P5-009).
 
     The Backend, not the client, assigns this value.
@@ -77,14 +77,14 @@ class AimSessionType(str, Enum):
     ADAPTIVE_DRILL = "adaptive_drill"
 
 
-class AimLevelSource(str, Enum):
+class AimLevelSource(StrEnum):
     """Where the student's current level was set."""
 
     PLACEMENT = "placement"
     AIM_ENGINE = "aim_engine"
 
 
-class AimItemType(str, Enum):
+class AimItemType(StrEnum):
     """Backend-classified item type (P5-010).
 
     Must be consistent with the accompanying ``session_type``.
@@ -109,7 +109,7 @@ class AimDifficultyLevel(int, Enum):
     LEVEL_4 = 4
 
 
-class AimAnswerFormat(str, Enum):
+class AimAnswerFormat(StrEnum):
     """Backend-classified answer format (P5-010)."""
 
     MULTIPLE_CHOICE = "multiple_choice"
@@ -210,7 +210,7 @@ class AimSessionBehavioralContext(AimCamelCaseModel):
         ge=0,
         description="Backend-counted current streak of correct attempts in the session.",
     )
-    average_response_time_ms: Optional[float] = Field(
+    average_response_time_ms: float | None = Field(
         None,
         ge=0.0,
         description=(
@@ -277,7 +277,7 @@ class AimSessionInput(AimCamelCaseModel):
         ...,
         description="Student's current backend-persisted level context.",
     )
-    placement_context: Optional[AimPlacementContext] = Field(
+    placement_context: AimPlacementContext | None = Field(
         None,
         description=(
             "Phase 4 placement reference. Present only for earliest post-placement sessions. "
@@ -294,11 +294,9 @@ class AimSessionInput(AimCamelCaseModel):
     )
 
     @model_validator(mode="after")
-    def started_at_before_last_activity(self) -> "AimSessionInput":
+    def started_at_before_last_activity(self) -> AimSessionInput:
         if self.started_at > self.last_activity_at:
-            raise ValueError(
-                "started_at must be less than or equal to last_activity_at"
-            )
+            raise ValueError("started_at must be less than or equal to last_activity_at")
         return self
 
 
@@ -323,7 +321,7 @@ class AimStudentAnswer(AimCamelCaseModel):
         ...,
         description="Student's normalized answer value.",
     )
-    options_presented_count: Optional[int] = Field(
+    options_presented_count: int | None = Field(
         None,
         ge=1,
         description=(
@@ -333,7 +331,7 @@ class AimStudentAnswer(AimCamelCaseModel):
     )
 
     @model_validator(mode="after")
-    def options_count_only_for_option_formats(self) -> "AimStudentAnswer":
+    def options_count_only_for_option_formats(self) -> AimStudentAnswer:
         option_formats = {
             AimAnswerFormat.MULTIPLE_CHOICE,
             AimAnswerFormat.TRUE_FALSE,
@@ -363,7 +361,7 @@ class AimAttemptBehavioralContext(AimCamelCaseModel):
         ge=0,
         description="Backend-counted answer changes before submission.",
     )
-    hesitation_before_submit_ms: Optional[float] = Field(
+    hesitation_before_submit_ms: float | None = Field(
         None,
         ge=0.0,
         description=(
@@ -458,7 +456,7 @@ class AimAttemptInput(AimCamelCaseModel):
     )
 
     @model_validator(mode="after")
-    def started_at_before_submitted_at(self) -> "AimAttemptInput":
+    def started_at_before_submitted_at(self) -> AimAttemptInput:
         if self.started_at > self.submitted_at:
             raise ValueError("started_at must be less than or equal to submitted_at")
         return self

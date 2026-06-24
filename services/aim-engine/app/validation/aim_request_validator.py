@@ -137,9 +137,7 @@ class AimRequestValidator:
     # Session-level rules
     # -----------------------------------------------------------------------
 
-    def _validate_session(
-        self, request: AimAnalysisRequest, result: ValidationResult
-    ) -> None:
+    def _validate_session(self, request: AimAnalysisRequest, result: ValidationResult) -> None:
         session = request.session
 
         # V-S-01: session_id must be a valid UUID
@@ -196,9 +194,7 @@ class AimRequestValidator:
     # Attempt-level rules
     # -----------------------------------------------------------------------
 
-    def _validate_attempts(
-        self, request: AimAnalysisRequest, result: ValidationResult
-    ) -> None:
+    def _validate_attempts(self, request: AimAnalysisRequest, result: ValidationResult) -> None:
         session_id = request.session.session_id
 
         for i, attempt in enumerate(request.attempts):
