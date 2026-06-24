@@ -45,25 +45,23 @@ from datetime import UTC, datetime, timedelta
 from typing import Protocol, runtime_checkable
 
 # Add the API domain services to the import path so aim.domain.services is importable.
-_API_SRC = os.path.normpath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "..", "api", "src")
-)
+_API_SRC = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "api", "src"))
 if _API_SRC not in sys.path:
     sys.path.insert(0, _API_SRC)
 
-from aim.domain.services.difficulty_adapter import DifficultyAdapter, DifficultyAction
-from aim.domain.services.emotional_state_detector import (
+from aim.domain.services.difficulty_adapter import DifficultyAction, DifficultyAdapter  # noqa: E402
+from aim.domain.services.emotional_state_detector import (  # noqa: E402
     EmotionalAttempt,
     EmotionalStateDetector,
 )
-from aim.domain.services.weakness_detector import WeaknessAttempt, WeaknessDetector
+from aim.domain.services.weakness_detector import WeaknessAttempt, WeaknessDetector  # noqa: E402
 
-from app.schemas.aim_analysis_request import (
+from app.schemas.aim_analysis_request import (  # noqa: E402
     AimAnalysisRequest,
     AimAttemptInput,
     AimSessionInput,
 )
-from app.schemas.aim_analysis_response import (
+from app.schemas.aim_analysis_response import (  # noqa: E402
     AimAnalysisResponse,
     AimDifficultyDecisionOutput,
     AimDifficultyLevel,
@@ -85,7 +83,7 @@ from app.schemas.aim_analysis_response import (
     AimWeaknessSeverity,
     AimWeaknessStatus,
 )
-from app.validation.aim_request_validator import (
+from app.validation.aim_request_validator import (  # noqa: E402
     AimRequestValidationError,
     AimRequestValidator,
 )
@@ -152,19 +150,6 @@ class AimAnalysisPipelineEntrypoint:
 
     def __init__(self) -> None:
         self._validator = AimRequestValidator()
-        self._weakness_detector = WeaknessDetector()
-        self._difficulty_adapter = DifficultyAdapter()
-        self._emotional_detector = EmotionalStateDetector()
-
-        _ensure_domain_services_importable()
-        from aim.domain.services.difficulty_adapter import (
-            DifficultyAdapter,
-        )
-        from aim.domain.services.emotional_state_detector import (
-            EmotionalStateDetector,
-        )
-        from aim.domain.services.weakness_detector import WeaknessDetector
-
         self._weakness_detector = WeaknessDetector()
         self._difficulty_adapter = DifficultyAdapter()
         self._emotional_detector = EmotionalStateDetector()
@@ -280,21 +265,25 @@ class AimAnalysisPipelineEntrypoint:
 
             confidence = min(1.0, total / 10.0)
             if total >= 3:
-                trend = AimMasteryTrend.IMPROVING if accuracy >= 0.7 else (
-                    AimMasteryTrend.DECLINING if accuracy < 0.4 else AimMasteryTrend.STABLE
+                trend = (
+                    AimMasteryTrend.IMPROVING
+                    if accuracy >= 0.7
+                    else (AimMasteryTrend.DECLINING if accuracy < 0.4 else AimMasteryTrend.STABLE)
                 )
             else:
                 trend = AimMasteryTrend.INSUFFICIENT_DATA
 
-            results.append(AimSkillStateOutput(
-                skill_id=skill_id,
-                mastery_score=round(accuracy, 2),
-                mastery_confidence=round(confidence, 2),
-                mastery_trend=trend,
-                attempts_considered_count=total,
-                last_attempt_id=skill_atts[-1].attempt_id,
-                evaluated_at=now,
-            ))
+            results.append(
+                AimSkillStateOutput(
+                    skill_id=skill_id,
+                    mastery_score=round(accuracy, 2),
+                    mastery_confidence=round(confidence, 2),
+                    mastery_trend=trend,
+                    attempts_considered_count=total,
+                    last_attempt_id=skill_atts[-1].attempt_id,
+                    evaluated_at=now,
+                )
+            )
 
         return results if results else None
 
@@ -310,8 +299,6 @@ class AimAnalysisPipelineEntrypoint:
         """
         if not attempts:
             return None
-
-        from aim.domain.services.weakness_detector import WeaknessAttempt
 
         now = datetime.now(UTC)
         weakness_attempts = [
@@ -350,15 +337,17 @@ class AimAnalysisPipelineEntrypoint:
             trigger_ids = attempt_ids_by_skill.get(sw.skill_id, [])
             if not trigger_ids:
                 continue
-            results.append(AimWeaknessRecordOutput(
-                weakness_id=str(uuid.uuid4()),
-                skill_id=sw.skill_id,
-                severity=severity_map.get(sw.severity, AimWeaknessSeverity.EMERGING),
-                status=AimWeaknessStatus.OPEN,
-                trigger_attempt_ids=trigger_ids,
-                detected_at=now,
-                resolved_at=None,
-            ))
+            results.append(
+                AimWeaknessRecordOutput(
+                    weakness_id=str(uuid.uuid4()),
+                    skill_id=sw.skill_id,
+                    severity=severity_map.get(sw.severity, AimWeaknessSeverity.EMERGING),
+                    status=AimWeaknessStatus.OPEN,
+                    trigger_attempt_ids=trigger_ids,
+                    detected_at=now,
+                    resolved_at=None,
+                )
+            )
 
         return results if results else None
 
@@ -377,8 +366,6 @@ class AimAnalysisPipelineEntrypoint:
         """
         if not attempts:
             return None
-
-        from aim.domain.services.difficulty_adapter import DifficultyAction
 
         now = datetime.now(UTC)
         valid = [a for a in attempts if not a.behavioral_context.abandoned_first_then_retried]
@@ -464,17 +451,19 @@ class AimAnalysisPipelineEntrypoint:
                 kind = AimRecommendationKind.TARGETED_PRACTICE
                 reason = AimRecommendationReason.NEXT_IN_SEQUENCE
 
-            results.append(AimRecommendationOutput(
-                recommendation_id=str(uuid.uuid4()),
-                kind=kind,
-                target_skill_id=skill_id,
-                target_lesson_id=None,
-                rank=rank,
-                reason=reason,
-                based_on_weakness_id=None,
-                generated_at=now,
-                expires_at=None,
-            ))
+            results.append(
+                AimRecommendationOutput(
+                    recommendation_id=str(uuid.uuid4()),
+                    kind=kind,
+                    target_skill_id=skill_id,
+                    target_lesson_id=None,
+                    rank=rank,
+                    reason=reason,
+                    based_on_weakness_id=None,
+                    generated_at=now,
+                    expires_at=None,
+                )
+            )
 
         return results if results else None
 
@@ -510,15 +499,17 @@ class AimAnalysisPipelineEntrypoint:
             interval_days = max(0.5, round(days_until_due, 2))
             due_at = now + timedelta(days=interval_days)
 
-            results.append(AimReviewScheduleOutput(
-                schedule_id=str(uuid.uuid4()),
-                skill_id=skill_id,
-                due_at=due_at,
-                interval_days=interval_days,
-                repetition_count=0,
-                based_on_attempt_id=skill_atts[-1].attempt_id,
-                scheduled_at=now,
-            ))
+            results.append(
+                AimReviewScheduleOutput(
+                    schedule_id=str(uuid.uuid4()),
+                    skill_id=skill_id,
+                    due_at=due_at,
+                    interval_days=interval_days,
+                    repetition_count=0,
+                    based_on_attempt_id=skill_atts[-1].attempt_id,
+                    scheduled_at=now,
+                )
+            )
 
         return results if results else None
 
@@ -536,8 +527,6 @@ class AimAnalysisPipelineEntrypoint:
         """
         if not attempts:
             return None
-
-        from aim.domain.services.emotional_state_detector import EmotionalAttempt
 
         now = datetime.now(UTC)
         emotional_attempts = [
