@@ -17,7 +17,7 @@ export function useLessonProgress(lessonId: string) {
     debounceRef.current = setTimeout(() => {
       if (event.percent <= lastSyncedRef.current) return;
 
-      apiClient.post(`/api/lessons/${lessonId}/progress`, {
+      apiClient.post(`/lessons/${lessonId}/progress`, {
         blockId: event.blockId,
         percent: event.percent,
       }).then(() => {
@@ -29,7 +29,7 @@ export function useLessonProgress(lessonId: string) {
   }, [lessonId]);
 
   const markComplete = useCallback(() => {
-    return apiClient.post(`/api/lessons/${lessonId}/complete`, {});
+    return apiClient.post(`/lessons/${lessonId}/complete`, {});
   }, [lessonId]);
 
   return { syncProgress, markComplete };

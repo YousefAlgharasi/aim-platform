@@ -28,7 +28,7 @@ export function CheckoutPage() {
   function fetchCheckout() {
     setLoading(true);
     setError('');
-    apiClient.get<CheckoutData>(`/api/billing/checkout/${planId}`)
+    apiClient.get<CheckoutData>(`/billing/checkout/${planId}`)
       .then(setCheckout)
       .catch((err: ApiError) => setError(err.message || 'Failed to load checkout'))
       .finally(() => setLoading(false));
@@ -39,7 +39,7 @@ export function CheckoutPage() {
   function handleCheckout() {
     setProcessing(true);
     setError('');
-    apiClient.post<{ redirectUrl?: string; status: string }>(`/api/billing/checkout/${planId}/confirm`, {})
+    apiClient.post<{ redirectUrl?: string; status: string }>(`/billing/checkout/${planId}/confirm`, {})
       .then(res => {
         if (res.redirectUrl) {
           window.location.href = res.redirectUrl;

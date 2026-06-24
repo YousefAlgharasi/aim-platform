@@ -28,7 +28,7 @@ export function AITeacherEntryPage() {
   function fetchConfig() {
     setLoading(true);
     setError('');
-    apiClient.get<AITeacherConfig>('/api/ai-teacher')
+    apiClient.get<AITeacherConfig>('/ai-teacher')
       .then(setConfig)
       .catch((err: ApiError) => setError(err.message || 'Failed to load AI Teacher'))
       .finally(() => setLoading(false));
@@ -38,7 +38,7 @@ export function AITeacherEntryPage() {
 
   function startConversation(topic?: string) {
     setStarting(true);
-    apiClient.post<{ conversationId: string }>('/api/ai-teacher/conversations', { topic })
+    apiClient.post<{ conversationId: string }>('/ai-teacher/conversations', { topic })
       .then(({ conversationId }) => navigate(`/ai-teacher/${conversationId}`))
       .catch((err: ApiError) => setError(err.message || 'Failed to start conversation'))
       .finally(() => setStarting(false));

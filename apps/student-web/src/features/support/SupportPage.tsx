@@ -50,7 +50,7 @@ export function SupportPage() {
   function fetchData() {
     setLoading(true);
     setError('');
-    apiClient.get<SupportData>('/api/support')
+    apiClient.get<SupportData>('/support')
       .then(setData)
       .catch((err: ApiError) => setError(err.message || 'Failed to load support'))
       .finally(() => setLoading(false));
@@ -62,7 +62,7 @@ export function SupportPage() {
     e.preventDefault();
     setSubmitting(true);
     setError('');
-    apiClient.post('/api/support/tickets', { category, subject, message })
+    apiClient.post('/support/tickets', { category, subject, message })
       .then(() => {
         setSuccess('Ticket submitted successfully');
         setShowForm(false);
@@ -77,7 +77,7 @@ export function SupportPage() {
   function handleSubmitFeedback(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
-    apiClient.post('/api/support/feedback', { message })
+    apiClient.post('/support/feedback', { message })
       .then(() => { setSuccess('Feedback sent. Thank you!'); setMessage(''); })
       .catch((err: ApiError) => setError(err.message || 'Failed to send feedback'))
       .finally(() => setSubmitting(false));

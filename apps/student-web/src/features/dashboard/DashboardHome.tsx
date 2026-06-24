@@ -39,7 +39,7 @@ export function DashboardHome() {
   function fetchDashboard() {
     setLoading(true);
     setError('');
-    apiClient.get<DashboardData>('/api/students/me/dashboard')
+    apiClient.get<DashboardData>('/students/me/dashboard')
       .then(setData)
       .catch((err: ApiError) => setError(err.message || 'Failed to load dashboard'))
       .finally(() => setLoading(false));

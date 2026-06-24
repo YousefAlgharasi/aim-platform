@@ -25,7 +25,7 @@ export function SettingsPage() {
   const [fetchError, setFetchError] = useState('');
 
   useEffect(() => {
-    apiClient.get<{ preferences: Preferences }>('/api/settings')
+    apiClient.get<{ preferences: Preferences }>('/settings')
       .then(({ preferences }) => setPrefs(preferences))
       .catch((err: ApiError) => setFetchError(err.message || 'Failed to load settings'))
       .finally(() => setLoading(false));
@@ -37,7 +37,7 @@ export function SettingsPage() {
     setSuccess('');
     setSaving(true);
     try {
-      await apiClient.put('/api/settings', { preferences: prefs });
+      await apiClient.put('/settings', { preferences: prefs });
       setSuccess('Settings saved');
     } catch (err) {
       setError((err as ApiError).message || 'Save failed');

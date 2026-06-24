@@ -41,7 +41,7 @@ export function CourseDetailPage() {
   function fetchCourse() {
     setLoading(true);
     setError('');
-    apiClient.get<CourseDetail>(`/api/curriculum/subjects/${subjectId}`)
+    apiClient.get<CourseDetail>(`/curriculum/subjects/${subjectId}`)
       .then(setCourse)
       .catch((err: ApiError) => setError(err.message || 'Failed to load course'))
       .finally(() => setLoading(false));
