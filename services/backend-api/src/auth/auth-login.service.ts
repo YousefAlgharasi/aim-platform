@@ -28,6 +28,7 @@ const SUPABASE_TOKEN_PATH = '/auth/v1/token';
 const SUPABASE_SIGNUP_PATH = '/auth/v1/signup';
 const SUPABASE_LOGOUT_PATH = '/auth/v1/logout';
 const SUPABASE_REQUEST_TIMEOUT_MS = 8000;
+const MOBILE_EMAIL_CONFIRMATION_REDIRECT_URL = 'aimapp://login-callback';
 
 @Injectable()
 export class AuthLoginService {
@@ -64,7 +65,9 @@ export class AuthLoginService {
   }
 
   async register(input: AuthRegisterInput): Promise<AuthRegisterResult> {
-    const url = this.buildSupabaseUrl(SUPABASE_SIGNUP_PATH);
+    const url = `${this.buildSupabaseUrl(SUPABASE_SIGNUP_PATH)}?redirect_to=${encodeURIComponent(
+      MOBILE_EMAIL_CONFIRMATION_REDIRECT_URL,
+    )}`;
 
     let response: Response;
     try {
