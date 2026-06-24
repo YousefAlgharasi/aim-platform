@@ -4,23 +4,27 @@
 import { useEffect, useRef } from 'react';
 
 type Props = {
-  readonly open: boolean;
+  readonly open?: boolean;
   readonly title: string;
-  readonly description: string;
+  readonly description?: string;
+  readonly message?: string;
   readonly confirmLabel?: string;
   readonly cancelLabel?: string;
   readonly variant?: 'default' | 'destructive';
+  readonly error?: string;
   readonly onConfirm: () => void;
   readonly onCancel: () => void;
 };
 
 export function AdminConfirmDialog({
-  open,
+  open = true,
   title,
   description,
+  message,
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   variant = 'default',
+  error,
   onConfirm,
   onCancel,
 }: Props) {
@@ -58,7 +62,7 @@ export function AdminConfirmDialog({
       >
         <div className="aim-dialog-content" onClick={(e) => e.stopPropagation()}>
           <h2 id="aim-dialog-title" className="aim-dialog-title">{title}</h2>
-          <p id="aim-dialog-desc" className="aim-dialog-description">{description}</p>
+          <p id="aim-dialog-desc" className="aim-dialog-description">{description ?? message}</p>
           <div className="aim-dialog-actions">
             <button
               type="button"

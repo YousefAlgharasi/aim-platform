@@ -1,16 +1,17 @@
 // P11-009: Formatted date cell for admin tables
-type Props = { readonly iso: string | null | undefined };
+type Props = { readonly iso?: string | null | undefined; readonly date?: string | null | undefined };
 
-export function AdminDateCell({ iso }: Props) {
-  if (!iso) return <span style={{ color: 'var(--text-muted)' }}>—</span>;
+export function AdminDateCell({ iso, date }: Props) {
+  const value = iso ?? date;
+  if (!value) return <span style={{ color: 'var(--text-muted)' }}>—</span>;
   try {
     const formatted = new Intl.DateTimeFormat('en-GB', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
-    }).format(new Date(iso));
+    }).format(new Date(value));
     return (
-      <time dateTime={iso} className="aim-date-cell">
+      <time dateTime={value} className="aim-date-cell">
         {formatted}
         <style>{`
           .aim-date-cell { font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
@@ -18,6 +19,6 @@ export function AdminDateCell({ iso }: Props) {
       </time>
     );
   } catch {
-    return <span>{iso}</span>;
+    return <span>{value}</span>;
   }
 }

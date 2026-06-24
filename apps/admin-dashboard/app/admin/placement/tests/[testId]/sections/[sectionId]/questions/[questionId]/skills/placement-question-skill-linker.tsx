@@ -16,8 +16,8 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import type { PlacementQuestionSkillLink } from '../../../../../../../../../../../lib/api/admin-placement-question-skills-api';
-import type { AdminSkillSummary } from '../../../../../../../../../../../lib/api/admin-skills-api';
+import type { PlacementQuestionSkillLink } from '../../../../../../../../../../lib/api/admin-placement-question-skills-api';
+import type { AdminSkillSummary } from '../../../../../../../../../../lib/api/admin-skills-api';
 
 type PlacementQuestionSkillLinkerProps = {
   readonly questionId: string;
