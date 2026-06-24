@@ -49,6 +49,10 @@ from app.schemas.aim_analysis_response import (
     AimAnalysisResponse,
     AimResponseCategories,
 )
+from app.validation.aim_request_validator import (
+    AimRequestValidationError,
+    AimRequestValidator,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -101,13 +105,23 @@ class AimAnalysisPipelineEntrypoint:
     rule: a missing category means "no new decision this call," not an error.
     """
 
+    def __init__(self) -> None:
+        self._validator = AimRequestValidator()
+
     async def run(self, request: AimAnalysisRequest) -> AimAnalysisResponse:
         """Execute all pipeline stages and return the assembled response.
+
+        Raises ``AimRequestValidationError`` (P5-024) before any category
+        dispatch when the request fails AIM Engine-side semantic validation.
 
         Audit metadata (never raw bodies or secrets) is logged at start and
         end, consistent with the audit-surface rules in aim-engine-api-map.md.
         """
         generated_at = datetime.now(UTC)
+
+        validation_result = self._validator.validate(request)
+        if not validation_result.is_valid:
+            raise AimRequestValidationError(validation_result)
 
         logger.info(
             "aim_pipeline_started",
@@ -148,9 +162,7 @@ class AimAnalysisPipelineEntrypoint:
     # Stage: category dispatch
     # -----------------------------------------------------------------------
 
-    async def _dispatch_categories(
-        self, request: AimAnalysisRequest
-    ) -> AimResponseCategories:
+    async def _dispatch_categories(self, request: AimAnalysisRequest) -> AimResponseCategories:
         """Dispatch each response category to its analysis stage.
 
         Each category method is independent.  A None return means "no decision
@@ -162,24 +174,14 @@ class AimAnalysisPipelineEntrypoint:
         (P5-056 through P5-063 for the actual adaptive logic).
         """
         return AimResponseCategories(
-            skill_state=await self._analyze_skill_state(
-                request.session, request.attempts
-            ),
+            skill_state=await self._analyze_skill_state(request.session, request.attempts),
             weakness_records=await self._analyze_weakness_records(
                 request.session, request.attempts
             ),
-            difficulty_decision=await self._decide_difficulty(
-                request.session, request.attempts
-            ),
-            recommendations=await self._generate_recommendations(
-                request.session, request.attempts
-            ),
-            review_schedule=await self._compute_review_schedule(
-                request.session, request.attempts
-            ),
-            session_summary=await self._summarize_session(
-                request.session, request.attempts
-            ),
+            difficulty_decision=await self._decide_difficulty(request.session, request.attempts),
+            recommendations=await self._generate_recommendations(request.session, request.attempts),
+            review_schedule=await self._compute_review_schedule(request.session, request.attempts),
+            session_summary=await self._summarize_session(request.session, request.attempts),
         )
 
     # -----------------------------------------------------------------------
