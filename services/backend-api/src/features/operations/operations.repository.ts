@@ -42,7 +42,7 @@ export class OperationsRepository {
        RETURNING *`,
       [data.requesterId, data.category, data.severity, data.subject, data.description, data.metadata || {}],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async updateTicketStatus(id: string, status: string): Promise<SupportTicket | null> {
@@ -78,7 +78,7 @@ export class OperationsRepository {
        RETURNING *`,
       [data.ticketId, data.authorId, data.body, data.visibility || 'public'],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   // --- User Feedback ---
@@ -106,7 +106,7 @@ export class OperationsRepository {
        RETURNING *`,
       [data.userId, data.category, data.rating || null, data.title, data.body, data.sourceSurface, data.metadata || {}],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async updateFeedbackStatus(id: string, status: string): Promise<UserFeedback | null> {
@@ -142,7 +142,7 @@ export class OperationsRepository {
        RETURNING *`,
       [data.submittedBy, data.title, data.description, data.metadata || {}],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async updateFeatureRequestStatus(
@@ -199,7 +199,7 @@ export class OperationsRepository {
        RETURNING *`,
       [data.title, data.description, data.severity, data.startedAt, data.ownerId || null, data.metadata || {}],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async updateIncidentStatus(
@@ -245,7 +245,7 @@ export class OperationsRepository {
        RETURNING *`,
       [data.title, data.description || null, data.type, data.affectedServices || [], data.scheduledStart, data.scheduledEnd, data.userMessage || null, data.createdBy, data.metadata || {}],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async updateMaintenanceWindowStatus(
@@ -299,7 +299,7 @@ export class OperationsRepository {
        RETURNING *`,
       [data.version, data.title, data.body || null, data.audience || 'all', data.createdBy, data.metadata || {}],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async publishReleaseNote(id: string, publishedBy: string): Promise<ReleaseNote | null> {
@@ -341,7 +341,7 @@ export class OperationsRepository {
        RETURNING *`,
       [component, status, description, updatedBy],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   // --- Feature Flags ---
@@ -368,7 +368,7 @@ export class OperationsRepository {
        RETURNING *`,
       [data.flagKey, data.name, data.description || null, data.ownerId || null, data.metadata || {}],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async updateFeatureFlag(
@@ -413,7 +413,7 @@ export class OperationsRepository {
        RETURNING *`,
       [data.actorId, data.action, data.resourceType, data.resourceId, data.details || {}],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findAuditLogsByResource(resourceType: string, resourceId: string): Promise<OperationsAuditLog[]> {

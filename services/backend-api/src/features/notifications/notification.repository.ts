@@ -81,7 +81,7 @@ export class NotificationRepository {
        RETURNING *`,
       [userId, userType, channel, category, enabled],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   // --- Device Tokens ---
@@ -108,7 +108,7 @@ export class NotificationRepository {
        RETURNING *`,
       [userId, platform, token, deviceName],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async disableDeviceToken(tokenId: string, userId: string): Promise<void> {
@@ -146,7 +146,7 @@ export class NotificationRepository {
        RETURNING *`,
       [userId, templateId, channel, category, status, title, body, scheduledAt],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findEventsByUserId(
@@ -227,7 +227,7 @@ export class NotificationRepository {
        RETURNING *`,
       [userId, reminderType, cronExpression, referenceId, nextFireAt, endsAt],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findActiveSchedulesByUserId(userId: string): Promise<ReminderScheduleRow[]> {
@@ -289,7 +289,7 @@ export class NotificationRepository {
        RETURNING *`,
       [notificationEventId, channel, status, attemptNumber, errorCode, errorMessage],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findAttemptsByEventId(eventId: string): Promise<DeliveryAttemptRow[]> {
@@ -314,7 +314,7 @@ export class NotificationRepository {
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
       [userId, frequency, periodStart, periodEnd, eventCount],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async updateDigestStatus(digestId: string, status: string): Promise<void> {
@@ -350,7 +350,7 @@ export class NotificationRepository {
        RETURNING *`,
       [userId, enabled, startTime, endTime, timezone],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   // --- Audit Logs ---
@@ -367,7 +367,7 @@ export class NotificationRepository {
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
       [userId, eventType, resourceId, resourceType, metadata ? JSON.stringify(metadata) : null],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findAuditLogsByUserId(

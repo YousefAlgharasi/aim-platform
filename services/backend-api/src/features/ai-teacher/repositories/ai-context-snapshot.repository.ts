@@ -26,7 +26,7 @@ export class AiContextSnapshotRepository {
       [sessionId, messageId, studentId, JSON.stringify(contextData)],
     );
 
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findByMessageId(messageId: string): Promise<AiContextSnapshotRow | null> {

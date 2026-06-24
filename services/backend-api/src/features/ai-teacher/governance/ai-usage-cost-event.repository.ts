@@ -43,7 +43,7 @@ export class AiUsageCostEventRepository {
         JSON.stringify(input.metadata ?? {}),
       ],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async sumCostSince(studentId: string, windowStart: Date): Promise<number> {

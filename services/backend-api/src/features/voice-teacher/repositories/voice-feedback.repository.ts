@@ -20,7 +20,7 @@ export class VoiceFeedbackRepository {
       [messageId, sessionId, studentId, rating],
     );
 
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findByMessageId(messageId: string): Promise<VoiceFeedbackRow | null> {

@@ -45,7 +45,7 @@ export class AnalyticsRepository {
         data.metadata ?? {},
       ],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findEventsByType(eventType: string, from: Date, to: Date): Promise<AnalyticsEvent[]> {
@@ -110,7 +110,7 @@ export class AnalyticsRepository {
         data.value,
       ],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findMetricAggregates(params: {
@@ -193,7 +193,7 @@ export class AnalyticsRepository {
        RETURNING *`,
       [data.reportDefinitionId, data.requestedByUserId, data.requestedRole, data.parameters],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async updateReportRunStatus(
@@ -255,7 +255,7 @@ export class AnalyticsRepository {
        RETURNING *`,
       [data.requestedByUserId, data.requestedRole, data.reportRunId ?? null, data.exportType, data.scope],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async updateExportJobStatus(
@@ -310,7 +310,7 @@ export class AnalyticsRepository {
        RETURNING *`,
       [cohortId, userId],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async removeCohortMember(cohortId: string, userId: string): Promise<void> {
@@ -353,7 +353,7 @@ export class AnalyticsRepository {
         data.result,
       ],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findAccessAuditLogs(params: {

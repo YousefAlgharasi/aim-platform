@@ -45,7 +45,7 @@ export class BillingRepository {
        RETURNING *`,
       [data.name, data.description, data.productType, data.providerProductId, data.status || 'active', data.metadata || {}],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async updateProduct(id: string, data: Partial<BillingProduct>): Promise<BillingProduct | null> {
@@ -101,7 +101,7 @@ export class BillingRepository {
        RETURNING *`,
       [data.productId, data.amount, data.currency, data.billingInterval, data.providerPriceId, data.status || 'active', data.metadata || {}],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   // --- Plans ---
@@ -128,7 +128,7 @@ export class BillingRepository {
        RETURNING *`,
       [data.name, data.description, data.priceId, data.features || {}, data.planType, data.status || 'active', data.metadata || {}],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async updatePlan(id: string, data: Partial<BillingPlan>): Promise<BillingPlan | null> {
@@ -186,7 +186,7 @@ export class BillingRepository {
        RETURNING *`,
       [data.userId, data.planId, data.providerSubscriptionId, data.status || 'active', data.currentPeriodStart, data.currentPeriodEnd, data.cancelAtPeriodEnd || false, data.metadata || {}],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async updateSubscription(id: string, data: Partial<Subscription>): Promise<Subscription | null> {
@@ -253,7 +253,7 @@ export class BillingRepository {
        RETURNING *`,
       [data.userId, data.priceId, data.providerSessionId, data.status || 'pending', data.checkoutUrl, data.successUrl, data.cancelUrl, data.expiresAt, data.metadata || {}],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async updateCheckoutSessionStatus(id: string, status: string): Promise<CheckoutSession | null> {
@@ -297,7 +297,7 @@ export class BillingRepository {
        RETURNING *`,
       [data.userId, data.checkoutSessionId, data.subscriptionId, data.amount, data.currency, data.status || 'pending', data.providerPaymentId, data.paymentMethodType, data.metadata || {}],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async updatePaymentStatus(id: string, status: string): Promise<Payment | null> {
@@ -371,7 +371,7 @@ export class BillingRepository {
        RETURNING *`,
       [data.userId, data.subscriptionId, data.providerInvoiceId, data.status || 'draft', data.subtotal || 0, data.tax || 0, data.total || 0, data.currency, data.invoiceUrl, data.periodStart, data.periodEnd, data.dueDate, data.metadata || {}],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async updateInvoiceStatus(id: string, status: string, paidAt?: Date): Promise<Invoice | null> {
@@ -389,7 +389,7 @@ export class BillingRepository {
        RETURNING *`,
       [data.invoiceId, data.priceId, data.description, data.quantity || 1, data.unitAmount, data.amount, data.currency],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findInvoiceItemsByInvoiceId(invoiceId: string): Promise<InvoiceItem[]> {
@@ -455,7 +455,7 @@ export class BillingRepository {
        RETURNING *`,
       [data.paymentId, data.amount, data.currency, data.reason, data.status || 'pending', data.providerRefundId, data.requestedBy, data.approvedBy, data.metadata || {}],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async updateRefundStatus(id: string, status: string, approvedBy?: string): Promise<Refund | null> {
@@ -520,7 +520,7 @@ export class BillingRepository {
        RETURNING *`,
       [data.name, data.discountType, data.discountValue, data.currency, data.maxRedemptions, data.status || 'active', data.metadata || {}],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async incrementCouponRedemptions(couponId: string): Promise<void> {
@@ -572,7 +572,7 @@ export class BillingRepository {
        RETURNING *`,
       [data.userId, data.planId, data.subscriptionId, data.featureKey, data.granted ?? true, data.usageLimit, data.usageCount || 0, data.expiresAt, data.source, data.status || 'active'],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async revokeEntitlementsBySubscriptionId(subscriptionId: string): Promise<void> {
@@ -599,7 +599,7 @@ export class BillingRepository {
        RETURNING *`,
       [data.providerEventId, data.eventType, data.provider, data.processingStatus || 'pending', data.idempotencyKey, data.payloadSummary || {}],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async updateProviderEventStatus(id: string, status: string, errorMessage?: string): Promise<void> {
@@ -655,7 +655,7 @@ export class BillingRepository {
        RETURNING *`,
       [data.action, data.entityType, data.entityId, data.actorId, data.actorType, data.changes || {}, data.metadata || {}],
     );
-    return result.rows[0];
+    return result.rows[0] ?? null;
   }
 
   async findAuditLogs(filters?: {
