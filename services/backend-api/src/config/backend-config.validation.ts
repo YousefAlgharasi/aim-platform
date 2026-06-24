@@ -21,7 +21,12 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
   const supabaseAnonKey = readRequiredString(env, 'SUPABASE_ANON_KEY', issues);
   const supabaseServiceRoleKey = readRequiredString(env, 'SUPABASE_SERVICE_ROLE_KEY', issues);
   const supabaseJwtSecret = readRequiredString(env, 'SUPABASE_JWT_SECRET', issues);
-  const supabaseJwtIssuer = readOptionalUrl(env, 'SUPABASE_JWT_ISSUER', supabaseUrl, issues);
+  const supabaseJwtIssuer = readOptionalUrl(
+    env,
+    'SUPABASE_JWT_ISSUER',
+    supabaseUrl === '' ? supabaseUrl : `${supabaseUrl.replace(/\/+$/, '')}/auth/v1`,
+    issues,
+  );
   const supabaseJwtAudience = readRequiredString(env, 'SUPABASE_JWT_AUDIENCE', issues);
   const databaseUrl = readRequiredUrl(env, 'DATABASE_URL', issues);
   const aimEngineUrl = readRequiredUrl(env, 'AIM_ENGINE_URL', issues);

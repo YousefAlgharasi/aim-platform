@@ -169,4 +169,21 @@ describe('BackendConfig — AIM Engine Phase 5 settings (P5-044)', () => {
     const config = validateBackendConfig({ ...BASE_ENV });
     expect(config.aimEngine.url).toBe('http://aim-engine:8010');
   });
+
+  // -------------------------------------------------------------------------
+  // Supabase JWT issuer default — must match Supabase's actual `iss` claim
+  // -------------------------------------------------------------------------
+
+  it('defaults jwtIssuer to SUPABASE_URL + /auth/v1 when SUPABASE_JWT_ISSUER is absent', () => {
+    const config = validateBackendConfig({ ...BASE_ENV });
+    expect(config.supabase.jwtIssuer).toBe('https://abc.supabase.co/auth/v1');
+  });
+
+  it('uses an explicit SUPABASE_JWT_ISSUER override when provided', () => {
+    const config = validateBackendConfig({
+      ...BASE_ENV,
+      SUPABASE_JWT_ISSUER: 'https://custom-issuer.example.com',
+    });
+    expect(config.supabase.jwtIssuer).toBe('https://custom-issuer.example.com');
+  });
 });
