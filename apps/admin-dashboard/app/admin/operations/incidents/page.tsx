@@ -103,7 +103,12 @@ export default function IncidentsPage() {
     try {
       const res = await backendFetch('/admin/incidents', {
         method: 'POST',
-        body: JSON.stringify({ title: newTitle.trim(), severity: newSeverity }),
+        body: JSON.stringify({
+          title: newTitle.trim(),
+          description: newTitle.trim(),
+          severity: newSeverity,
+          startedAt: new Date().toISOString(),
+        }),
       });
       if (!res.ok) throw new Error(`Failed to create incident: ${res.statusText}`);
       setNewTitle('');
