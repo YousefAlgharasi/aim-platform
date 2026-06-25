@@ -90,6 +90,13 @@ export class OperationsRepository {
 
   // --- User Feedback ---
 
+  async findAllFeedback(): Promise<UserFeedback[]> {
+    const result = await this.db.query<UserFeedback>(
+      `SELECT * FROM user_feedback ORDER BY created_at DESC`,
+    );
+    return result.rows;
+  }
+
   async findFeedbackByUser(userId: string): Promise<UserFeedback[]> {
     const result = await this.db.query<UserFeedback>(
       `SELECT * FROM user_feedback WHERE user_id = $1 ORDER BY created_at DESC`,
