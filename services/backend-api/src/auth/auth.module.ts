@@ -3,7 +3,7 @@ import { Module, forwardRef } from '@nestjs/common';
 import { BackendConfigModule } from '../config/backend-config.module';
 import { DatabaseModule } from '../database/database.module';
 import { UsersModule } from '../features/users/users.module';
-import { StudentsModule } from '../features/students/students.module';
+import { RolesModule } from '../features/roles/roles.module';
 import { AnalyticsModule } from '../features/analytics/analytics.module';
 import { AuthorizationModule } from './authorization/authorization.module';
 import { AuthController } from './auth.controller';
@@ -21,7 +21,7 @@ import { TestLoginService } from './test-login.service';
     BackendConfigModule,
     DatabaseModule,
     UsersModule,
-    StudentsModule,
+    RolesModule,
     AuthorizationModule,
     forwardRef(() => AnalyticsModule),
   ],
