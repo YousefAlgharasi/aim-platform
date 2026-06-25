@@ -6,6 +6,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 
+import { backendFetch } from '../../../../lib/api/client-api-helpers';
+
 import { OperationsLoadingSpinner } from '../../../../components/operations/operations-loading-spinner';
 import { OperationsEmptyState } from '../../../../components/operations/operations-empty-state';
 import { OperationsErrorCard } from '../../../../components/operations/operations-error-card';
@@ -60,13 +62,14 @@ export default function ReleaseNotesPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/operations/release-notes?page=${p}&limit=20`, { credentials: 'include' });
+      const res = await backendFetch('/admin/release-notes');
       if (!res.ok) throw new Error(`Backend error ${res.status}: ${res.statusText}`);
-      const data: ReleaseNotesResponse = await res.json();
-      setNotes(data.data);
-      setTotal(data.total);
-      setPage(data.page);
-      setTotalPages(Math.ceil(data.total / data.limit));
+      const json = await res.json();
+      const items: ReleaseNote[] = Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
+      setNotes(items);
+      setTotal(items.length);
+      setPage(1);
+      setTotalPages(1);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load release notes.');
     } finally {
@@ -81,10 +84,8 @@ export default function ReleaseNotesPage() {
   async function handleStatusAction(noteId: string, newStatus: string) {
     setActionLoading(noteId);
     try {
-      const res = await fetch(`/api/admin/operations/release-notes/${noteId}/status`, {
+      const res = await backendFetch(`/admin/release-notes/${noteId}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ status: newStatus }),
       });
       if (!res.ok) throw new Error(`Failed to update status: ${res.statusText}`);
@@ -101,10 +102,8 @@ export default function ReleaseNotesPage() {
     if (!newVersion.trim() || !newTitle.trim()) return;
     setCreateLoading(true);
     try {
-      const res = await fetch('/api/admin/operations/release-notes', {
+      const res = await backendFetch('/admin/release-notes', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           version: newVersion.trim(),
           title: newTitle.trim(),
