@@ -40,7 +40,9 @@ export default function AdminDashboardPage() {
       const res = await backendFetch('/admin/stats');
       if (!res.ok) throw new Error(`Backend error ${res.status}`);
       const json = await res.json();
-      setStats(json?.data ?? json);
+      const raw = json?.data ?? json;
+      const defaultBilling = { activeSubscriptions: 0, trialingSubscriptions: 0, canceledSubscriptions: 0, totalSubscriptions: 0, totalRevenue: 0, revenueThisMonth: 0, currency: 'USD', paidInvoices: 0, overdueInvoices: 0 };
+      setStats({ ...raw, billing: { ...defaultBilling, ...raw.billing } });
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load stats');
