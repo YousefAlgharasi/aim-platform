@@ -1,4 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { OperationsRepository } from './operations.repository';
 import { OperationsAuditService } from './operations-audit.service';
 import { OperationalStatus } from './operations.entities';
 
@@ -11,20 +12,23 @@ export interface UpdateComponentStatusDto {
 export class OperationalStatusService {
   private readonly logger = new Logger(OperationalStatusService.name);
 
-  constructor(private readonly auditService: OperationsAuditService) {}
+  constructor(
+    private readonly opsRepo: OperationsRepository,
+    private readonly auditService: OperationsAuditService,
+  ) {}
 
   async getStatus(): Promise<OperationalStatus[]> {
     this.logger.debug('Fetching all component statuses');
-
-    // TODO: Query from database when operations repository is implemented
-    return [];
+    return this.opsRepo.findAllOperationalStatuses();
   }
 
   async getComponentStatus(component: string): Promise<OperationalStatus> {
     this.logger.debug(`Fetching status for component: ${component}`);
-
-    // TODO: Query from database when operations repository is implemented
-    throw new NotFoundException(`Component '${component}' not found`);
+    const status = await this.opsRepo.findOperationalStatusByComponent(component);
+    if (!status) {
+      throw new NotFoundException(`Component '${component}' not found`);
+    }
+    return status;
   }
 
   async updateComponentStatus(
@@ -32,19 +36,16 @@ export class OperationalStatusService {
     dto: UpdateComponentStatusDto,
     adminId: string,
   ): Promise<OperationalStatus> {
+    const updated = await this.opsRepo.upsertOperationalStatus(
+      component,
+      dto.status,
+      dto.description || null,
+      adminId,
+    );
+
     this.logger.log(
       `Component '${component}' status updated to '${dto.status}' by admin ${adminId}`,
     );
-
-    const updated: OperationalStatus = {
-      id: crypto.randomUUID(),
-      component,
-      status: dto.status,
-      description: dto.description || null,
-      updatedBy: adminId,
-      metadata: {},
-      updatedAt: new Date(),
-    };
 
     await this.auditService.logAction(
       adminId,
@@ -54,7 +55,6 @@ export class OperationalStatusService {
       { status: dto.status, description: dto.description },
     );
 
-    // TODO: Persist to database when operations repository is implemented
     return updated;
   }
 }
