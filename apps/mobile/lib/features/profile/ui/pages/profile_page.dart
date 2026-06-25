@@ -256,6 +256,14 @@ class _ProfileBody extends StatelessWidget {
                 AppRoutePaths.analyticsSummary,
               ),
             ),
+            _ProfileNavItem(
+              icon: Icons.api_outlined,
+              label: 'API Endpoint Tester (Dev)',
+              surfaces: surfaces,
+              onTap: () => Navigator.of(context).pushNamed(
+                AppRoutePaths.endpointTester,
+              ),
+            ),
           ],
         ),
 
