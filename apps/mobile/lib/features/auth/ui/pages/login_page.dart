@@ -186,6 +186,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   isSubmitting: formState.isSubmitting,
                   onSelectRole: _submitTestLogin,
                 ),
+                const SizedBox(height: AimSpacing.formFieldGap),
+                AIMButton(
+                  onPressed: () => Navigator.of(context).pushNamed(AppRoutePaths.endpointTester),
+                  variant: AIMButtonVariant.outline,
+                  fullWidth: true,
+                  child: const Text('Open API Endpoint Tester'),
+                ),
               ],
             ],
           ),
