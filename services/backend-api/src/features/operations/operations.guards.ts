@@ -30,7 +30,10 @@ export function OperationsAdminOnly() {
 
 @Injectable()
 export class OperationsOwnershipGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly usersService: UsersService,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
@@ -39,6 +42,12 @@ export class OperationsOwnershipGuard implements CanActivate {
     if (!user) {
       throw new UnauthorizedException('Authentication required');
     }
+
+    const internalUser = await this.usersService.findBySupabaseUid(user.id);
+    if (!internalUser) {
+      throw new ForbiddenException('User not found');
+    }
+    request.internalUserId = internalUser.id;
 
     const resource = this.reflector.get<string>(
       OPERATIONS_RESOURCE_KEY,
@@ -49,8 +58,6 @@ export class OperationsOwnershipGuard implements CanActivate {
       return true;
     }
 
-    // Ownership is validated at the service layer for ticket/feedback resources
-    // The guard ensures the user is authenticated and the resource type is recognized
     const validResources = [
       'support_ticket',
       'feedback',
@@ -86,11 +93,14 @@ export class OperationsAdminGuard implements CanActivate {
       context.getHandler(),
     );
 
+    const internalUser = await this.usersService.findBySupabaseUid(user.id);
+    if (!internalUser) {
+      throw new ForbiddenException('User not found');
+    }
+
+    request.internalUserId = internalUser.id;
+
     if (isAdminOnly) {
-      const internalUser = await this.usersService.findBySupabaseUid(user.id);
-      if (!internalUser) {
-        throw new ForbiddenException('User not found');
-      }
       const actualRoles = (await this.rolesService.getUserRoles(internalUser.id))
         .map((role) => role.key)
         .filter(isAuthorizedRole);

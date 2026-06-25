@@ -4,14 +4,14 @@ import {
   Get,
   Param,
   Body,
+  Req,
   UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
-import { CurrentUser } from '../../auth/current-user.decorator';
-import { AuthenticatedUser } from '../../auth/authenticated-user';
+import { AuthenticatedRequest } from '../../auth/authenticated-user';
 import { ReleaseNotesService } from './release-notes.service';
 import { CreateReleaseNoteDto } from './operations.dtos';
 import { OperationsAdminGuard, OperationsAdminOnly } from './operations.guards';
@@ -28,7 +28,7 @@ export class AdminReleaseNotesController {
   @OperationsAdminOnly()
   @ApiOperation({ summary: 'Create a release note draft (admin)' })
   async createDraft(
-    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: AuthenticatedRequest,
     @Body() dto: CreateReleaseNoteDto,
   ) {
     return this.releaseNotesService.createDraft(
@@ -38,7 +38,7 @@ export class AdminReleaseNotesController {
         version: dto.version,
         audience: dto.audience,
       },
-      user.id,
+      req.internalUserId!,
     );
   }
 
@@ -47,10 +47,10 @@ export class AdminReleaseNotesController {
   @OperationsAdminOnly()
   @ApiOperation({ summary: 'Publish a release note (admin)' })
   async publish(
-    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
   ) {
-    return this.releaseNotesService.publish(id, user.id);
+    return this.releaseNotesService.publish(id, req.internalUserId!);
   }
 
   @Post(':id/archive')
@@ -58,16 +58,16 @@ export class AdminReleaseNotesController {
   @OperationsAdminOnly()
   @ApiOperation({ summary: 'Archive a release note (admin)' })
   async archive(
-    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
   ) {
-    return this.releaseNotesService.archive(id, user.id);
+    return this.releaseNotesService.archive(id, req.internalUserId!);
   }
 
   @Get()
   @OperationsAdminOnly()
   @ApiOperation({ summary: 'List all release notes including drafts (admin)' })
-  async listAll(@CurrentUser() user: AuthenticatedUser) {
-    return this.releaseNotesService.getDrafts(user.id);
+  async listAll(@Req() req: AuthenticatedRequest) {
+    return this.releaseNotesService.getDrafts(req.internalUserId!);
   }
 }

@@ -37,10 +37,12 @@ function createMockContext(user: Record<string, unknown> | null, handlerMetadata
 describe('OperationsOwnershipGuard', () => {
   let guard: OperationsOwnershipGuard;
   let reflector: Reflector;
+  let mockUsersService: { findBySupabaseUid: jest.Mock };
 
   beforeEach(() => {
     reflector = new Reflector();
-    guard = new OperationsOwnershipGuard(reflector);
+    mockUsersService = { findBySupabaseUid: jest.fn().mockResolvedValue({ id: 'internal-1' }) };
+    guard = new OperationsOwnershipGuard(reflector, mockUsersService as any);
   });
 
   it('should throw UnauthorizedException if no user is present', async () => {
@@ -105,6 +107,7 @@ describe('OperationsAdminGuard', () => {
   });
 
   it('should allow access when admin-only is not set', async () => {
+    mockUsersService.findBySupabaseUid.mockResolvedValue({ id: 'internal-1' });
     const context = createMockContext({ id: 'user-1', expiresAt: Date.now() + 3600 });
 
     const result = await guard.canActivate(context);

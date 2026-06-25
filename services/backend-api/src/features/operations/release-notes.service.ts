@@ -88,12 +88,10 @@ export class ReleaseNotesService {
   async archive(id: string, adminId: string): Promise<ReleaseNote> {
     const note = await this.getById(id);
 
-    // Use a direct query for archiving since we don't have a dedicated repo method
-    const archived: ReleaseNote = {
-      ...note,
-      status: 'archived',
-      updatedAt: new Date(),
-    };
+    const archived = await this.opsRepo.archiveReleaseNote(id);
+    if (!archived) {
+      throw new NotFoundException(`Release note ${id} not found`);
+    }
 
     this.logger.log(`Release note ${id} archived by admin ${adminId}`);
 

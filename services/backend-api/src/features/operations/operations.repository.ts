@@ -324,6 +324,14 @@ export class OperationsRepository {
     return result.rows[0] || null;
   }
 
+  async archiveReleaseNote(id: string): Promise<ReleaseNote | null> {
+    const result = await this.db.query<ReleaseNote>(
+      `UPDATE release_notes SET status = 'archived', updated_at = now() WHERE id = $1 RETURNING *`,
+      [id],
+    );
+    return result.rows[0] || null;
+  }
+
   // --- Operational Status ---
 
   async findAllOperationalStatuses(): Promise<OperationalStatus[]> {
