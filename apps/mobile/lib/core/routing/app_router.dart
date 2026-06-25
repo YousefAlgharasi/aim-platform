@@ -19,6 +19,13 @@ import '../../features/assessments/ui/pages/assessment_list_page.dart';
 import '../../features/assessments/ui/pages/assessment_result_page.dart';
 import '../../features/assessments/ui/pages/attempt_page.dart';
 import '../../features/assessments/ui/pages/start_attempt_page.dart';
+import '../../features/billing/ui/pages/subscription_page.dart';
+import '../../features/billing/ui/pages/pricing_page.dart';
+import '../../features/billing/ui/pages/invoice_history_page.dart';
+import '../../features/ai_teacher/ui/pages/ai_teacher_chat_page.dart';
+import '../../features/notifications/ui/pages/notification_inbox_page.dart';
+import '../../features/analytics_summary/ui/pages/analytics_summary_page.dart';
+import '../../features/achievements/ui/pages/achievements_page.dart';
 import '../../features/shell/ui/pages/main_shell_page.dart';
 import 'app_route_paths.dart';
 
@@ -80,6 +87,20 @@ class AppRouter {
             return _buildAssessmentAttempt(settings.arguments);
           case AppRoutePaths.assessmentResult:
             return _buildAssessmentResult(settings.arguments);
+          case AppRoutePaths.subscription:
+            return const SubscriptionPage();
+          case AppRoutePaths.pricing:
+            return const PricingPage();
+          case AppRoutePaths.invoiceHistory:
+            return const InvoiceHistoryPage();
+          case AppRoutePaths.aiTeacherChat:
+            return _buildAiTeacherChat(settings.arguments);
+          case AppRoutePaths.notificationInbox:
+            return const NotificationInboxPage();
+          case AppRoutePaths.analyticsSummary:
+            return const AnalyticsSummaryPage();
+          case AppRoutePaths.achievements:
+            return const AchievementsPage();
           default:
             return const SplashPage();
         }
@@ -167,7 +188,7 @@ class AppRouter {
     final args = arguments is Map<String, dynamic>
         ? arguments
         : const <String, dynamic>{};
-    final levelId = args['levelId'];
+    final levelId = args['levelId'] ?? args['courseId'];
     final courseTitle = args['courseTitle'];
     if (levelId is! String || courseTitle is! String) {
       return const SplashPage();
@@ -232,6 +253,17 @@ class AppRouter {
     );
   }
 
+  static Widget _buildAiTeacherChat(Object? arguments) {
+    final args = arguments is Map<String, dynamic> ? arguments : const <String, dynamic>{};
+    final contextRef = args['contextRef'] as String? ?? 'general';
+    return AiTeacherChatPage(
+      contextRef: contextRef,
+      sessionId: args['sessionId'] as String?,
+      lessonTitle: args['lessonTitle'] as String?,
+      contextLabel: args['contextLabel'] as String?,
+    );
+  }
+
   static Map<String, dynamic> _placementArgs(Object? arguments) {
     return arguments is Map<String, dynamic> ? arguments : const {};
   }
@@ -288,5 +320,12 @@ class AppRouter {
     AppRoutePaths.assessmentStart,
     AppRoutePaths.assessmentAttempt,
     AppRoutePaths.assessmentResult,
+    AppRoutePaths.subscription,
+    AppRoutePaths.pricing,
+    AppRoutePaths.invoiceHistory,
+    AppRoutePaths.aiTeacherChat,
+    AppRoutePaths.notificationInbox,
+    AppRoutePaths.analyticsSummary,
+    AppRoutePaths.achievements,
   };
 }
