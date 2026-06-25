@@ -14,6 +14,7 @@ import { ReleaseNotesService } from './release-notes.service';
 import { OperationalStatusService } from './operational-status.service';
 import { FeatureFlagService } from './feature-flag.service';
 import { OperationsAuditService } from './operations-audit.service';
+import { OperationsAdminGuard, OperationsOwnershipGuard } from './operations.guards';
 import { SupportTicketController } from './support-ticket.controller';
 import { FeedbackController } from './feedback.controller';
 import { FeatureRequestController } from './feature-request.controller';
@@ -40,6 +41,8 @@ import { AdminOperationsDashboardController } from './admin-operations-dashboard
     OperationalStatusService,
     FeatureFlagService,
     OperationsAuditService,
+    OperationsAdminGuard,
+    OperationsOwnershipGuard,
   ],
   controllers: [
     SupportTicketController,
