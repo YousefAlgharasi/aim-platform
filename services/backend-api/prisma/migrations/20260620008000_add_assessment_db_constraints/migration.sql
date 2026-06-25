@@ -17,13 +17,8 @@
 -- 1. assessment_sections — section weight sum guard (per assessment)
 -- ============================================================
 
--- Partial index: only published assessments must have at least one section.
--- (Enforced at application layer; index here supports the validation query.)
-CREATE INDEX IF NOT EXISTS assessment_sections_published_assessment_idx
-    ON assessment_sections (assessment_id)
-    WHERE assessment_id IN (
-        SELECT id FROM assessments WHERE status = 'published'
-    );
+-- Partial index removed: PostgreSQL does not allow subqueries in index predicates.
+-- Published-assessment validation is enforced at the application layer.
 
 -- Composite: section lookup by assessment + title (admin dedup queries)
 CREATE INDEX IF NOT EXISTS assessment_sections_assessment_title_idx
