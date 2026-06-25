@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/errors/app_exception.dart';
@@ -106,8 +108,13 @@ class LoginNotifier extends StateNotifier<AppFormState> {
 
       // State stays isSubmitting=true after success; the UI navigates away.
     } on AppException catch (e) {
-      state = state.copyWith(isSubmitting: false, errorMessage: e.message);
-    } catch (_) {
+      log('Login failed: ${e.message}');
+      state = state.copyWith(
+        isSubmitting: false,
+        errorMessage: e.message,
+      );
+    } catch (e) {
+      log('Login failed: Unknown error');
       state = state.copyWith(
         isSubmitting: false,
         errorMessage: 'Sign in failed. Please try again.',
