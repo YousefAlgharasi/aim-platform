@@ -108,7 +108,7 @@ export default function ReleaseNotesPage() {
           version: newVersion.trim(),
           title: newTitle.trim(),
           audience: newAudience,
-          content: newContent.trim(),
+          body: newContent.trim(),
         }),
       });
       if (!res.ok) throw new Error(`Failed to create release note: ${res.statusText}`);

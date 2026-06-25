@@ -113,10 +113,9 @@ export default function FeatureFlagsPage() {
       const res = await backendFetch('/admin/feature-flags', {
         method: 'POST',
         body: JSON.stringify({
-          key: newKey.trim(),
+          flagKey: newKey.trim(),
           name: newName.trim(),
-          owner: newOwner.trim(),
-          rolloutPercentage: newRollout,
+          description: newOwner.trim() || undefined,
         }),
       });
       if (!res.ok) throw new Error(`Failed to create feature flag: ${res.statusText}`);
@@ -200,14 +199,14 @@ export default function FeatureFlagsPage() {
               />
             </div>
             <div className="ops-form-field">
-              <label htmlFor="ff-owner" className="ops-form-label">Owner</label>
+              <label htmlFor="ff-owner" className="ops-form-label">Description</label>
               <input
                 id="ff-owner"
                 className="ops-form-input"
                 type="text"
                 value={newOwner}
                 onChange={(e) => setNewOwner(e.target.value)}
-                placeholder="Owner name or team"
+                placeholder="Flag description"
                 disabled={createLoading}
               />
             </div>
