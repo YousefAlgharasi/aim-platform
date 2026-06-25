@@ -9,6 +9,7 @@ type DashboardStats = {
   content: { courses: number; lessons: number; questions: number; skills: number };
   assessments: { total: number; attempts: number; avgScore: number | null };
   activity: { aiSessions: number; voiceSessions: number; learningSessionsToday: number };
+  billing: { activeSubscriptions: number; trialingSubscriptions: number; canceledSubscriptions: number; totalSubscriptions: number; totalRevenue: number; revenueThisMonth: number; currency: string; paidInvoices: number; overdueInvoices: number };
   operations: { openTickets: number; activeIncidents: number; pendingFeedback: number };
 };
 
@@ -125,6 +126,23 @@ export default function AdminDashboardPage() {
             </div>
           </section>
 
+          {/* Billing & Revenue */}
+          <section className="dash-section">
+            <SectionTitle>Billing & Revenue</SectionTitle>
+            <div className="dash-grid dash-grid--4">
+              <StatCard label="Total Revenue" value={`$${(stats.billing.totalRevenue / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}`} accent="success" />
+              <StatCard label="Revenue This Month" value={`$${(stats.billing.revenueThisMonth / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}`} accent="primary" />
+              <StatCard label="Active Subscriptions" value={stats.billing.activeSubscriptions.toLocaleString()} sub={`${stats.billing.totalSubscriptions > 0 ? Math.round((stats.billing.activeSubscriptions / stats.billing.totalSubscriptions) * 100) : 0}% of total`} accent="success" />
+              <StatCard label="Trialing" value={stats.billing.trialingSubscriptions.toLocaleString()} accent="info" />
+            </div>
+            <div className="dash-grid dash-grid--4">
+              <StatCard label="Total Subscriptions" value={stats.billing.totalSubscriptions.toLocaleString()} accent="primary" />
+              <StatCard label="Canceled" value={stats.billing.canceledSubscriptions.toLocaleString()} accent={stats.billing.canceledSubscriptions > 0 ? 'warning' : 'success'} />
+              <StatCard label="Paid Invoices" value={stats.billing.paidInvoices.toLocaleString()} accent="success" />
+              <StatCard label="Overdue Invoices" value={stats.billing.overdueInvoices.toLocaleString()} accent={stats.billing.overdueInvoices > 0 ? 'error' : 'success'} />
+            </div>
+          </section>
+
           {/* Operations */}
           <section className="dash-section">
             <SectionTitle>Operations</SectionTitle>
@@ -143,6 +161,7 @@ export default function AdminDashboardPage() {
                 { label: 'Users', href: '/admin/users', icon: 'U' },
                 { label: 'Courses', href: '/admin/content/courses', icon: 'C' },
                 { label: 'Assessments', href: '/admin/assessments', icon: 'A' },
+                { label: 'Billing', href: '/admin/billing', icon: 'B' },
                 { label: 'Reports', href: '/admin/reports', icon: 'R' },
                 { label: 'Audit Logs', href: '/admin/audit-logs', icon: 'L' },
                 { label: 'Operations', href: '/admin/operations', icon: 'O' },
