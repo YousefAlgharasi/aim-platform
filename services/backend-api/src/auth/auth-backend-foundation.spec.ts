@@ -9,6 +9,7 @@ import { AuthenticatedRequest, AuthenticatedUser } from './authenticated-user';
 import { IS_PUBLIC_ROUTE_KEY } from './auth.constants';
 import type { AuthProfileBootstrapService } from './auth-profile-bootstrap.service';
 import type { AuthLoginService } from './auth-login.service';
+import type { StudentsService } from '../features/students/students.service';
 import { readCurrentUserFromContext } from './current-user.decorator';
 import { SessionValidationService } from './session-validation.service';
 import { SupabaseJwtAuthGuard } from './supabase-jwt-auth.guard';
@@ -54,8 +55,13 @@ describe('backend auth foundation suite', () => {
     expect(verifier.verify).not.toHaveBeenCalled();
   });
 
-  it('returns /auth/me without unsafe JWT metadata or internal auth fields', () => {
-    const response = new AuthController(createProfileBootstrap(), createAuthLogin()).getMe(verifiedUser);
+  it('returns /auth/me without unsafe JWT metadata or internal auth fields', async () => {
+    const response = await new AuthController(
+      createProfileBootstrap(),
+      createAuthLogin(),
+      createUsersService(),
+      createStudentsService(),
+    ).getMe(verifiedUser);
 
     expect(response).toEqual({
       user: {
@@ -176,6 +182,18 @@ function createReflector(isPublicRoute: boolean): Reflector {
       return undefined;
     }),
   } as unknown as Reflector;
+}
+
+function createUsersService(): UsersService {
+  return {
+    findBySupabaseUid: jest.fn().mockResolvedValue(null),
+  } as unknown as UsersService;
+}
+
+function createStudentsService(): StudentsService {
+  return {
+    findByUserId: jest.fn().mockResolvedValue(null),
+  } as unknown as StudentsService;
 }
 
 function createHttpContext(request: AuthenticatedRequest): ExecutionContext {
