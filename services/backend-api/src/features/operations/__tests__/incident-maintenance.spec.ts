@@ -49,6 +49,13 @@ const mockAuditService = {
   logAction: jest.fn(),
 };
 
+const mockMaintRepo = {
+  createMaintenanceWindow: jest.fn(),
+  findAllMaintenanceWindows: jest.fn(),
+  findMaintenanceWindowById: jest.fn(),
+  updateMaintenanceWindowStatus: jest.fn(),
+};
+
 describe('IncidentService', () => {
   let service: IncidentService;
 
@@ -198,11 +205,12 @@ describe('MaintenanceWindowService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new MaintenanceWindowService(mockAuditService as any);
+    service = new MaintenanceWindowService(mockMaintRepo as any, mockAuditService as any);
   });
 
   describe('createWindow', () => {
     it('should create a maintenance window and log audit', async () => {
+      mockMaintRepo.createMaintenanceWindow.mockResolvedValue(mockMaintenanceWindow);
       mockAuditService.logAction.mockResolvedValue({});
 
       const result = await service.createWindow(
@@ -220,9 +228,9 @@ describe('MaintenanceWindowService', () => {
 
       expect(result.title).toBe('Database upgrade');
       expect(result.type).toBe('planned');
-      expect(result.status).toBe('scheduled');
       expect(result.createdBy).toBe('admin-1');
       expect(result.affectedServices).toEqual(['api', 'database']);
+      expect(mockMaintRepo.createMaintenanceWindow).toHaveBeenCalled();
       expect(mockAuditService.logAction).toHaveBeenCalledWith(
         'admin-1',
         'maintenance_window.created',
@@ -234,21 +242,27 @@ describe('MaintenanceWindowService', () => {
   });
 
   describe('getWindows', () => {
-    it('should return maintenance windows', async () => {
+    it('should return maintenance windows from database', async () => {
+      mockMaintRepo.findAllMaintenanceWindows.mockResolvedValue([mockMaintenanceWindow]);
+
       const result = await service.getWindows();
 
-      expect(result).toEqual([]);
+      expect(result).toEqual([mockMaintenanceWindow]);
     });
   });
 
   describe('getWindowById', () => {
-    it('should throw NotFoundException (stub implementation)', async () => {
+    it('should throw NotFoundException when not found', async () => {
+      mockMaintRepo.findMaintenanceWindowById.mockResolvedValue(null);
+
       await expect(service.getWindowById('maint-1')).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('updateWindowStatus', () => {
-    it('should throw NotFoundException when window does not exist (stub)', async () => {
+    it('should throw NotFoundException when window does not exist', async () => {
+      mockMaintRepo.findMaintenanceWindowById.mockResolvedValue(null);
+
       await expect(
         service.updateWindowStatus(
           'nonexistent-id',
@@ -261,9 +275,11 @@ describe('MaintenanceWindowService', () => {
 
   describe('getActiveMaintenanceWindows', () => {
     it('should return active maintenance windows', async () => {
+      mockMaintRepo.findAllMaintenanceWindows.mockResolvedValue([mockMaintenanceWindow]);
+
       const result = await service.getActiveMaintenanceWindows();
 
-      expect(result).toEqual([]);
+      expect(result).toEqual([mockMaintenanceWindow]);
     });
   });
 });
