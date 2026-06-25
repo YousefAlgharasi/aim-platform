@@ -30,6 +30,10 @@ export class SupportTicketService {
     return ticket;
   }
 
+  async getAllTickets(): Promise<SupportTicket[]> {
+    return this.opsRepo.findAllTickets();
+  }
+
   async getMyTickets(userId: string): Promise<SupportTicket[]> {
     validateUUID(userId, 'userId');
     return this.opsRepo.findTicketsByRequester(userId);
