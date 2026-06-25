@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+
+import { backendFetch } from '../../lib/api/client-api-helpers';
 
 type BillingTab = 'overview' | 'subscriptions' | 'payments' | 'invoices' | 'events' | 'audit';
 
@@ -38,11 +40,11 @@ export function AdminBillingMonitor() {
 
       <div className="admin-billing-monitor__content">
         {activeTab === 'overview' && <BillingOverviewPanel />}
-        {activeTab === 'subscriptions' && <BillingListPanel type="subscriptions" />}
-        {activeTab === 'payments' && <BillingListPanel type="payments" />}
-        {activeTab === 'invoices' && <BillingListPanel type="invoices" />}
-        {activeTab === 'events' && <BillingListPanel type="provider-events" />}
-        {activeTab === 'audit' && <BillingListPanel type="audit-logs" />}
+        {activeTab === 'events' && <BillingListPanel endpoint="/admin/billing/provider-events?status=pending" type="Provider Events" />}
+        {activeTab === 'audit' && <BillingListPanel endpoint="/admin/billing/audit-logs" type="Audit Logs" />}
+        {activeTab === 'subscriptions' && <BillingPlaceholderPanel type="Subscriptions" hint="Requires a user ID — use the Users page to view a specific user's subscriptions." />}
+        {activeTab === 'payments' && <BillingPlaceholderPanel type="Payments" hint="Requires a user ID — use the Users page to view a specific user's payments." />}
+        {activeTab === 'invoices' && <BillingPlaceholderPanel type="Invoices" hint="Requires a user ID — use the Users page to view a specific user's invoices." />}
       </div>
 
       <div className="boundary-note">
@@ -82,28 +84,77 @@ function StatCard({ label, value }: { readonly label: string; readonly value: st
   );
 }
 
-function BillingListPanel({ type }: { readonly type: string }) {
+type ListRow = Record<string, unknown>;
+
+function BillingListPanel({ endpoint, type }: { readonly endpoint: string; readonly type: string }) {
+  const [rows, setRows] = useState<ListRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await backendFetch(endpoint);
+      if (!res.ok) throw new Error(`Backend error ${res.status}: ${res.statusText}`);
+      const json = await res.json();
+      const items = Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
+      setRows(items);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : `Failed to load ${type}.`);
+    } finally {
+      setLoading(false);
+    }
+  }, [endpoint, type]);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  const columns = rows.length > 0 ? Object.keys(rows[0]).slice(0, 5) : ['ID', 'Status', 'Created'];
+
   return (
     <div className="admin-billing-monitor__panel">
-      <h2>{type.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</h2>
-      <p>Data will be loaded from GET /admin/billing/{type}.</p>
+      <h2>{type}</h2>
+
+      {error && (
+        <div style={{ padding: '1rem', background: 'var(--error-soft)', borderRadius: 'var(--radius-md)', color: 'var(--color-error-700)', fontSize: 13, marginBottom: 'var(--space-16)' }}>
+          {error}
+          <button onClick={fetchData} style={{ marginLeft: 8, textDecoration: 'underline', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', font: 'inherit' }}>Retry</button>
+        </div>
+      )}
+
       <table className="admin-billing-monitor__table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Status</th>
-            <th>Created</th>
-            <th>Details</th>
+            {columns.map((col) => (
+              <th key={col}>{col.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td colSpan={4} style={{ textAlign: 'center', padding: '2rem' }}>
-              Loading...
-            </td>
-          </tr>
+          {loading && (
+            <tr><td colSpan={columns.length} style={{ textAlign: 'center', padding: '2rem' }}>Loading...</td></tr>
+          )}
+          {!loading && !error && rows.length === 0 && (
+            <tr><td colSpan={columns.length} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>No {type.toLowerCase()} found.</td></tr>
+          )}
+          {!loading && rows.map((row, i) => (
+            <tr key={String(row.id ?? i)}>
+              {columns.map((col) => (
+                <td key={col}>{row[col] != null ? String(row[col]) : '—'}</td>
+              ))}
+            </tr>
+          ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function BillingPlaceholderPanel({ type, hint }: { readonly type: string; readonly hint: string }) {
+  return (
+    <div className="admin-billing-monitor__panel">
+      <h2>{type}</h2>
+      <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>{hint}</p>
     </div>
   );
 }
