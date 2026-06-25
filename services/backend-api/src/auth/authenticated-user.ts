@@ -10,4 +10,5 @@ export interface AuthenticatedUser {
 export interface AuthenticatedRequest {
   headers?: Record<string, string | string[] | undefined>;
   user?: AuthenticatedUser;
+  internalUserId?: string;
 }

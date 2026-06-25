@@ -6,14 +6,14 @@ import {
   Param,
   Body,
   Query,
+  Req,
   UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
-import { CurrentUser } from '../../auth/current-user.decorator';
-import { AuthenticatedUser } from '../../auth/authenticated-user';
+import { AuthenticatedRequest } from '../../auth/authenticated-user';
 import { IncidentService } from './incident.service';
 import { CreateIncidentDto, UpdateIncidentStatusDto } from './operations.dtos';
 import { OperationsAdminGuard, OperationsAdminOnly } from './operations.guards';
@@ -30,10 +30,10 @@ export class AdminIncidentController {
   @OperationsAdminOnly()
   @ApiOperation({ summary: 'Create an incident (admin)' })
   async createIncident(
-    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: AuthenticatedRequest,
     @Body() dto: CreateIncidentDto,
   ) {
-    return this.incidentService.createIncident(user.id, dto);
+    return this.incidentService.createIncident(req.internalUserId!, dto);
   }
 
   @Get()
@@ -53,10 +53,10 @@ export class AdminIncidentController {
   @OperationsAdminOnly()
   @ApiOperation({ summary: 'Update incident status (admin)' })
   async updateStatus(
-    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Body() dto: UpdateIncidentStatusDto,
   ) {
-    return this.incidentService.updateStatus(id, user.id, dto);
+    return this.incidentService.updateStatus(id, req.internalUserId!, dto);
   }
 }
