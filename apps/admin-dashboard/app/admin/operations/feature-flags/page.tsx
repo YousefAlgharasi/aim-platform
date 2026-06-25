@@ -6,6 +6,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 
+import { backendFetch } from '../../../../lib/api/client-api-helpers';
+
 import { OperationsLoadingSpinner } from '../../../../components/operations/operations-loading-spinner';
 import { OperationsEmptyState } from '../../../../components/operations/operations-empty-state';
 import { OperationsErrorCard } from '../../../../components/operations/operations-error-card';
@@ -51,13 +53,14 @@ export default function FeatureFlagsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/operations/feature-flags?page=${p}&limit=20`, { credentials: 'include' });
+      const res = await backendFetch('/admin/feature-flags');
       if (!res.ok) throw new Error(`Backend error ${res.status}: ${res.statusText}`);
-      const data: FeatureFlagsResponse = await res.json();
-      setFlags(data.data);
-      setTotal(data.total);
-      setPage(data.page);
-      setTotalPages(Math.ceil(data.total / data.limit));
+      const json = await res.json();
+      const items: FeatureFlag[] = Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
+      setFlags(items);
+      setTotal(items.length);
+      setPage(1);
+      setTotalPages(1);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load feature flags.');
     } finally {
@@ -72,10 +75,8 @@ export default function FeatureFlagsPage() {
   async function handleToggleEnabled(flagId: string, currentEnabled: boolean) {
     setActionLoading(flagId);
     try {
-      const res = await fetch(`/api/admin/operations/feature-flags/${flagId}`, {
+      const res = await backendFetch(`/admin/feature-flags/${flagId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ enabled: !currentEnabled }),
       });
       if (!res.ok) throw new Error(`Failed to toggle flag: ${res.statusText}`);
@@ -90,10 +91,8 @@ export default function FeatureFlagsPage() {
   async function handleUpdateRollout(flagId: string) {
     setActionLoading(flagId);
     try {
-      const res = await fetch(`/api/admin/operations/feature-flags/${flagId}`, {
+      const res = await backendFetch(`/admin/feature-flags/${flagId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ rolloutPercentage: editRolloutValue }),
       });
       if (!res.ok) throw new Error(`Failed to update rollout: ${res.statusText}`);
@@ -111,10 +110,8 @@ export default function FeatureFlagsPage() {
     if (!newKey.trim() || !newName.trim()) return;
     setCreateLoading(true);
     try {
-      const res = await fetch('/api/admin/operations/feature-flags', {
+      const res = await backendFetch('/admin/feature-flags', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           key: newKey.trim(),
           name: newName.trim(),
