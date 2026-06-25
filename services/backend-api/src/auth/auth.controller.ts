@@ -19,6 +19,9 @@ import {
 import { AuthLoginDto, AuthRefreshDto, AuthRegisterDto } from './auth-login.dto';
 import { extractBearerToken } from './bearer-token';
 import { AuthenticatedRequest } from './authenticated-user';
+import { RolesService } from '../features/roles/roles.service';
+import { UsersService } from '../features/users/users.service';
+import { isAuthorizedRole } from './authorization';
 
 @ApiTags(OPENAPI_TAGS.auth)
 @Controller('auth')
@@ -26,6 +29,8 @@ export class AuthController {
   constructor(
     private readonly profileBootstrap: AuthProfileBootstrapService,
     private readonly authLogin: AuthLoginService,
+    private readonly rolesService: RolesService,
+    private readonly usersService: UsersService,
   ) {}
 
   /**
@@ -107,8 +112,21 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Return the safe current authenticated user context.' })
   @ApiOkResponse({ description: 'Safe current authenticated user context.' })
-  getMe(@CurrentUser() user: AuthenticatedUser): AuthMeResponse {
-    return presentAuthMe(user);
+  async getMe(@CurrentUser() user: AuthenticatedUser): Promise<AuthMeResponse> {
+    const baseResponse = presentAuthMe(user);
+
+    const internalUser = await this.usersService.findBySupabaseUid(user.id);
+    if (!internalUser) {
+      return baseResponse;
+    }
+
+    const dbRoles = (await this.rolesService.getUserRoles(internalUser.id))
+      .map((role) => role.key)
+      .filter(isAuthorizedRole);
+
+    const mergedRoles = [...new Set([...baseResponse.roles, ...dbRoles])];
+
+    return { ...baseResponse, roles: mergedRoles };
   }
 
   /**
