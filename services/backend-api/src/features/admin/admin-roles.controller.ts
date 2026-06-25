@@ -24,7 +24,7 @@ export class AdminRolesController {
   @ApiOkResponse({ description: 'List of all role records.' })
   async listRoles() {
     const roles = await this.rolesService.getRoles();
-    return { success: true, data: { roles } };
+    return { roles };
   }
 
   @Get(':key')
@@ -32,6 +32,6 @@ export class AdminRolesController {
   @ApiOkResponse({ description: 'Role record with associated permissions.' })
   async getRoleDetail(@Param('key') key: string) {
     const result = await this.rolesService.getRoleByKey(key);
-    return { success: true, data: result };
+    return result;
   }
 }
