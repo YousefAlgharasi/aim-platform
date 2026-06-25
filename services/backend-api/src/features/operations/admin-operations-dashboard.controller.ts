@@ -6,6 +6,7 @@ import {
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { SupportTicketService } from './support-ticket.service';
+import { FeedbackService } from './feedback.service';
 import { IncidentService } from './incident.service';
 import { MaintenanceWindowService } from './maintenance-window.service';
 import { ReleaseNotesService } from './release-notes.service';
@@ -20,6 +21,7 @@ import { OperationsAdminGuard, OperationsAdminOnly } from './operations.guards';
 export class AdminOperationsDashboardController {
   constructor(
     private readonly ticketService: SupportTicketService,
+    private readonly feedbackService: FeedbackService,
     private readonly incidentService: IncidentService,
     private readonly maintenanceWindowService: MaintenanceWindowService,
     private readonly releaseNotesService: ReleaseNotesService,
@@ -32,22 +34,24 @@ export class AdminOperationsDashboardController {
   @ApiOperation({ summary: 'Get operations dashboard summary (admin)' })
   async getDashboard() {
     const [
-      openTickets,
-      activeIncidents,
+      allTickets,
+      allFeedback,
+      allIncidents,
       upcomingMaintenance,
       componentStatuses,
     ] = await Promise.all([
       this.ticketService.getAllTickets(),
+      this.feedbackService.adminGetAllFeedback(),
       this.incidentService.listIncidents(100, 0),
       this.maintenanceWindowService.getActiveMaintenanceWindows(),
       this.operationalStatusService.getStatus(),
     ]);
 
-    const openTicketCount = openTickets.filter(
+    const openTicketCount = allTickets.filter(
       (t) => t.status === 'open' || t.status === 'in_progress',
     ).length;
 
-    const activeIncidentCount = activeIncidents.filter(
+    const activeIncidentCount = allIncidents.filter(
       (i) =>
         i.status === 'investigating' ||
         i.status === 'identified' ||
@@ -58,18 +62,22 @@ export class AdminOperationsDashboardController {
       openTickets: openTicketCount,
       activeIncidents: activeIncidentCount,
       upcomingMaintenance: upcomingMaintenance.length,
+      recentFeedback: allFeedback.length,
       componentStatuses: componentStatuses.length,
       summary: {
         tickets: {
-          total: openTickets.length,
+          total: allTickets.length,
           open: openTicketCount,
         },
         incidents: {
-          total: activeIncidents.length,
+          total: allIncidents.length,
           active: activeIncidentCount,
         },
         maintenance: {
           upcoming: upcomingMaintenance.length,
+        },
+        feedback: {
+          total: allFeedback.length,
         },
         components: {
           total: componentStatuses.length,
