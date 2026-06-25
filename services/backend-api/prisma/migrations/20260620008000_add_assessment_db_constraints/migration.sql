@@ -66,9 +66,16 @@ CREATE INDEX IF NOT EXISTS assessment_deadlines_assessment_student_active_idx
 -- ============================================================
 
 -- Add constraint: expires_at must be after started_at when set
-ALTER TABLE assessment_attempts
-    ADD CONSTRAINT IF NOT EXISTS assessment_attempts_expires_after_start_check
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'assessment_attempts_expires_after_start_check'
+  ) THEN
+    ALTER TABLE assessment_attempts
+      ADD CONSTRAINT assessment_attempts_expires_after_start_check
         CHECK (expires_at IS NULL OR expires_at > started_at);
+  END IF;
+END $$;
 
 -- Composite: active in-progress attempts per student (resume lookup)
 CREATE INDEX IF NOT EXISTS assessment_attempts_student_status_idx
