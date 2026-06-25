@@ -37,7 +37,7 @@ export class AdminOperationsDashboardController {
       upcomingMaintenance,
       componentStatuses,
     ] = await Promise.all([
-      this.ticketService.getMyTickets('__all__'),
+      this.ticketService.getAllTickets(),
       this.incidentService.listIncidents(100, 0),
       this.maintenanceWindowService.getActiveMaintenanceWindows(),
       this.operationalStatusService.getStatus(),

@@ -19,6 +19,13 @@ export class OperationsRepository {
 
   // --- Support Tickets ---
 
+  async findAllTickets(): Promise<SupportTicket[]> {
+    const result = await this.db.query<SupportTicket>(
+      `SELECT * FROM support_tickets ORDER BY created_at DESC`,
+    );
+    return result.rows;
+  }
+
   async findTicketsByRequester(requesterId: string): Promise<SupportTicket[]> {
     const result = await this.db.query<SupportTicket>(
       `SELECT * FROM support_tickets WHERE requester_id = $1 ORDER BY created_at DESC`,

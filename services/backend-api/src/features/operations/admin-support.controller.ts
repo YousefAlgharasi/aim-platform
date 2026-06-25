@@ -24,7 +24,7 @@ export class AdminSupportController {
   @OperationsAdminOnly()
   @ApiOperation({ summary: 'List all support tickets (admin)' })
   async listAllTickets() {
-    return this.ticketService.getMyTickets('__all__');
+    return this.ticketService.getAllTickets();
   }
 
   @Patch(':id/status')
