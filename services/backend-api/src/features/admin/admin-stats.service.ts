@@ -25,6 +25,17 @@ export interface DashboardStats {
     voiceSessions: number;
     learningSessionsToday: number;
   };
+  billing: {
+    activeSubscriptions: number;
+    trialingSubscriptions: number;
+    canceledSubscriptions: number;
+    totalSubscriptions: number;
+    totalRevenue: number;
+    revenueThisMonth: number;
+    currency: string;
+    paidInvoices: number;
+    overdueInvoices: number;
+  };
   operations: {
     openTickets: number;
     activeIncidents: number;
@@ -44,6 +55,7 @@ export class AdminStatsService {
       content,
       assessments,
       activity,
+      billing,
       operations,
     ] = await Promise.all([
       this.getUserStats().catch((e) => {
@@ -53,10 +65,11 @@ export class AdminStatsService {
       this.getContentStats(),
       this.getAssessmentStats(),
       this.getActivityStats(),
+      this.getBillingStats(),
       this.getOperationsStats(),
     ]);
 
-    return { users, content, assessments, activity, operations };
+    return { users, content, assessments, activity, billing, operations };
   }
 
   private async getUserStats() {
@@ -142,6 +155,82 @@ export class AdminStatsService {
     }
 
     return { aiSessions, voiceSessions, learningSessionsToday };
+  }
+
+  private async getBillingStats() {
+    let activeSubscriptions = 0;
+    let trialingSubscriptions = 0;
+    let canceledSubscriptions = 0;
+    let totalSubscriptions = 0;
+    let totalRevenue = 0;
+    let revenueThisMonth = 0;
+    const currency = 'USD';
+    let paidInvoices = 0;
+    let overdueInvoices = 0;
+
+    try {
+      const result = await this.db.query<{
+        total: string;
+        active: string;
+        trialing: string;
+        canceled: string;
+      }>(`
+        SELECT
+          COUNT(*)::text AS total,
+          COUNT(*) FILTER (WHERE status = 'active')::text AS active,
+          COUNT(*) FILTER (WHERE status = 'trialing')::text AS trialing,
+          COUNT(*) FILTER (WHERE status = 'canceled')::text AS canceled
+        FROM subscriptions
+      `);
+      const row = result.rows[0];
+      totalSubscriptions = parseInt(row.total, 10);
+      activeSubscriptions = parseInt(row.active, 10);
+      trialingSubscriptions = parseInt(row.trialing, 10);
+      canceledSubscriptions = parseInt(row.canceled, 10);
+    } catch {
+      this.logger.debug('subscriptions table not available');
+    }
+
+    try {
+      const result = await this.db.query<{ total: string; this_month: string }>(`
+        SELECT
+          COALESCE(SUM(amount), 0)::text AS total,
+          COALESCE(SUM(amount) FILTER (WHERE created_at >= date_trunc('month', CURRENT_DATE)), 0)::text AS this_month
+        FROM payments
+        WHERE status = 'succeeded'
+      `);
+      const row = result.rows[0];
+      totalRevenue = parseInt(row.total, 10);
+      revenueThisMonth = parseInt(row.this_month, 10);
+    } catch {
+      this.logger.debug('payments table not available');
+    }
+
+    try {
+      const result = await this.db.query<{ paid: string; overdue: string }>(`
+        SELECT
+          COUNT(*) FILTER (WHERE status = 'paid')::text AS paid,
+          COUNT(*) FILTER (WHERE status = 'open' AND due_date < CURRENT_DATE)::text AS overdue
+        FROM invoices
+      `);
+      const row = result.rows[0];
+      paidInvoices = parseInt(row.paid, 10);
+      overdueInvoices = parseInt(row.overdue, 10);
+    } catch {
+      this.logger.debug('invoices table not available');
+    }
+
+    return {
+      activeSubscriptions,
+      trialingSubscriptions,
+      canceledSubscriptions,
+      totalSubscriptions,
+      totalRevenue,
+      revenueThisMonth,
+      currency,
+      paidInvoices,
+      overdueInvoices,
+    };
   }
 
   private async getOperationsStats() {
