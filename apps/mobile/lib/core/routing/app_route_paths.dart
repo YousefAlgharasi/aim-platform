@@ -30,4 +30,21 @@ class AppRoutePaths {
   static const String assessmentStart = '/student/assessments/start';
   static const String assessmentAttempt = '/student/assessments/attempt';
   static const String assessmentResult = '/student/assessments/result';
+
+  // Billing routes
+  static const String subscription = '/billing/subscription';
+  static const String pricing = '/billing/pricing';
+  static const String invoiceHistory = '/billing/invoices';
+
+  // AI Teacher routes
+  static const String aiTeacherChat = '/ai-teacher/chat';
+
+  // Notification routes
+  static const String notificationInbox = '/notifications/inbox';
+
+  // Analytics summary
+  static const String analyticsSummary = '/analytics/summary';
+
+  // Achievements
+  static const String achievements = '/achievements';
 }

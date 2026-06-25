@@ -218,6 +218,48 @@ class _ProfileBody extends StatelessWidget {
         ],
 
         const SizedBox(height: AimSpacing.sectionGap),
+
+        // Quick links section
+        _ProfileSection(
+          title: 'QUICK LINKS',
+          surfaces: surfaces,
+          children: [
+            _ProfileNavItem(
+              icon: Icons.credit_card_outlined,
+              label: 'Subscription & Billing',
+              surfaces: surfaces,
+              onTap: () => Navigator.of(context).pushNamed(
+                AppRoutePaths.subscription,
+              ),
+            ),
+            _ProfileNavItem(
+              icon: Icons.receipt_long_outlined,
+              label: 'Invoice History',
+              surfaces: surfaces,
+              onTap: () => Navigator.of(context).pushNamed(
+                AppRoutePaths.invoiceHistory,
+              ),
+            ),
+            _ProfileNavItem(
+              icon: Icons.emoji_events_outlined,
+              label: 'Achievements',
+              surfaces: surfaces,
+              onTap: () => Navigator.of(context).pushNamed(
+                AppRoutePaths.achievements,
+              ),
+            ),
+            _ProfileNavItem(
+              icon: Icons.bar_chart_outlined,
+              label: 'Analytics Summary',
+              surfaces: surfaces,
+              onTap: () => Navigator.of(context).pushNamed(
+                AppRoutePaths.analyticsSummary,
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: AimSpacing.sectionGap),
       ],
     );
   }
@@ -354,6 +396,49 @@ class _InfoRow extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ProfileNavItem extends StatelessWidget {
+  const _ProfileNavItem({
+    required this.icon,
+    required this.label,
+    required this.surfaces,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final AimSurfaceTheme surfaces;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: AimRadius.borderMd,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AimSpacing.space8),
+        child: Row(
+          children: [
+            Icon(icon, size: AimSizes.iconSm, color: AimColors.primary600),
+            const SizedBox(width: AimSpacing.componentGap),
+            Expanded(
+              child: Text(
+                label,
+                style: AimTextStyles.bodyMd
+                    .copyWith(color: surfaces.textPrimary),
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              size: AimSizes.iconSm,
+              color: surfaces.textMuted,
+            ),
+          ],
+        ),
       ),
     );
   }
