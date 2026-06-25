@@ -1,29 +1,25 @@
-const BACKEND_BASE_URL =
-  typeof window !== 'undefined'
-    ? (process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL ?? 'http://localhost:3000')
-    : 'http://localhost:3000';
+/**
+ * Client-side helper that routes requests through the Next.js API proxy
+ * at /api/admin/proxy/[...path] to avoid CORS issues.
+ *
+ * Example: backendFetch('/admin/feature-flags') → GET /api/admin/proxy/feature-flags
+ */
 
-export function backendUrl(path: string): string {
-  const base = BACKEND_BASE_URL.endsWith('/') ? BACKEND_BASE_URL.slice(0, -1) : BACKEND_BASE_URL;
-  const normalized = path.startsWith('/') ? path : `/${path}`;
-  return `${base}${normalized}`;
-}
-
-export function getAuthHeaders(): HeadersInit {
-  const token = document.cookie
-    .split('; ')
-    .find((c) => c.startsWith('aim_admin_access_token='))
-    ?.split('=')
-    .slice(1)
-    .join('=');
-  return token
-    ? { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
-    : { 'Content-Type': 'application/json' };
+function toProxyPath(backendPath: string): string {
+  const normalized = backendPath.startsWith('/') ? backendPath : `/${backendPath}`;
+  const withoutAdmin = normalized.replace(/^\/admin\//, '/');
+  return `/api/admin/proxy${withoutAdmin}`;
 }
 
 export async function backendFetch(path: string, init?: RequestInit): Promise<Response> {
-  const headers = { ...getAuthHeaders(), ...(init?.headers ?? {}) };
-  return fetch(backendUrl(path), { ...init, headers, credentials: 'omit' });
+  return fetch(toProxyPath(path), {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(init?.headers ?? {}),
+    },
+    credentials: 'include',
+  });
 }
 
 export async function backendGet<T>(path: string): Promise<T> {
