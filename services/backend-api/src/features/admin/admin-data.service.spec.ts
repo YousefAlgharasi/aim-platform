@@ -1,9 +1,10 @@
 import { AdminDataService } from './admin-data.service';
 
 function createDb(results: Array<{ rows: Record<string, unknown>[] }>) {
+  const queue = [...results];
   return {
     query: jest.fn().mockImplementation(() => {
-      const result = results.shift() ?? { rows: [] };
+      const result = queue.shift() ?? { rows: [] };
       return Promise.resolve({
         rowCount: result.rows.length,
         rows: result.rows,
@@ -49,6 +50,21 @@ describe('AdminDataService', () => {
       page: 1,
       limit: 20,
     });
+    expect(db.query).toHaveBeenCalledTimes(2);
+  });
+
+  it('listAssessments with type filter uses correct parameter indices', async () => {
+    const db = createDb([
+      { rows: [{ count: '0' }] },
+      { rows: [] },
+    ]);
+    const service = new AdminDataService(db as never);
+    await service.listAssessments(1, 20, 'quiz');
+
+    expect(db.query.mock.calls[0][0]).toContain('$1');
+    expect(db.query.mock.calls[0][1]).toEqual(['quiz']);
+    expect(db.query.mock.calls[1][0]).toContain('LIMIT $2 OFFSET $3');
+    expect(db.query.mock.calls[1][1]).toEqual(['quiz', 20, 0]);
   });
 
   it('listAuditLogs maps actor_id to userId and event_type to action', async () => {
@@ -108,5 +124,49 @@ describe('AdminDataService', () => {
 
     expect(result.page).toBe(1);
     expect(result.limit).toBe(100);
+  });
+
+  it('listAssessmentResults with filters uses separate param arrays for count and data', async () => {
+    const db = createDb([
+      { rows: [{ count: '0' }] },
+      { rows: [] },
+    ]);
+    const service = new AdminDataService(db as never);
+    await service.listAssessmentResults(1, 20, { studentId: 's1' });
+
+    expect(db.query.mock.calls[0][1]).toEqual(['s1']);
+    expect(db.query.mock.calls[1][1]).toEqual(['s1', 20, 0]);
+    expect(db.query.mock.calls[1][0]).toContain('LIMIT $2 OFFSET $3');
+  });
+
+  it('listDeadlines returns correct camelCase mapping', async () => {
+    const db = createDb([
+      { rows: [{ count: '1' }] },
+      {
+        rows: [
+          {
+            id: 'd1',
+            assessment_id: 'a1',
+            due_at: '2026-06-01',
+            course_id: null,
+            chapter_id: null,
+            created_at: '2026-01-01',
+            updated_at: '2026-01-02',
+          },
+        ],
+      },
+    ]);
+    const service = new AdminDataService(db as never);
+    const result = await service.listDeadlines(1, 20);
+
+    expect(result.data[0]).toEqual({
+      id: 'd1',
+      assessmentId: 'a1',
+      dueAt: '2026-06-01',
+      courseId: null,
+      chapterId: null,
+      createdAt: '2026-01-01',
+      updatedAt: '2026-01-02',
+    });
   });
 });

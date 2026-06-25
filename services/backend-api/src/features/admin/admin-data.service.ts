@@ -18,27 +18,39 @@ export class AdminDataService {
 
   async listAssessments(page: number, limit: number, type?: string) {
     const { safePage, safeLimit, offset } = safePagination(page, limit);
-    const params: unknown[] = [safeLimit, offset];
-    let whereClause = '';
+
+    const countParams: unknown[] = [];
+    let countWhere = '';
     if (type) {
-      whereClause = 'WHERE a.type = $3';
-      params.push(type);
+      countWhere = 'WHERE a.type = $1';
+      countParams.push(type);
     }
 
     const countResult = await this.db.query<{ count: string }>(
-      `SELECT COUNT(*)::text AS count FROM assessments a ${whereClause}`,
-      type ? [type] : [],
+      `SELECT COUNT(*)::text AS count FROM assessments a ${countWhere}`,
+      countParams,
     );
     const total = parseInt(countResult.rows[0]?.count ?? '0', 10);
+
+    const dataParams: unknown[] = [];
+    let dataWhere = '';
+    let idx = 1;
+    if (type) {
+      dataWhere = `WHERE a.type = $${idx++}`;
+      dataParams.push(type);
+    }
+    const limitIdx = idx++;
+    const offsetIdx = idx;
+    dataParams.push(safeLimit, offset);
 
     const result = await this.db.query<Record<string, unknown>>(
       `SELECT a.id, a.title, a.type, a.status,
               (SELECT COUNT(*)::int FROM assessment_questions aq WHERE aq.assessment_id = a.id) AS question_count,
               a.created_at, a.updated_at
-       FROM assessments a ${whereClause}
+       FROM assessments a ${dataWhere}
        ORDER BY a.created_at DESC
-       LIMIT $1 OFFSET $2`,
-      params,
+       LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
+      dataParams,
     );
 
     return {
@@ -93,33 +105,36 @@ export class AdminDataService {
   async listAssessmentResults(page: number, limit: number, filters?: { studentId?: string; assessmentId?: string }) {
     const { safePage, safeLimit, offset } = safePagination(page, limit);
     const conditions: string[] = [];
-    const params: unknown[] = [];
-    let paramIdx = 1;
+    const filterParams: unknown[] = [];
+    let idx = 1;
 
     if (filters?.studentId) {
-      conditions.push(`student_id = $${paramIdx++}`);
-      params.push(filters.studentId);
+      conditions.push(`student_id = $${idx++}`);
+      filterParams.push(filters.studentId);
     }
     if (filters?.assessmentId) {
-      conditions.push(`assessment_id = $${paramIdx++}`);
-      params.push(filters.assessmentId);
+      conditions.push(`assessment_id = $${idx++}`);
+      filterParams.push(filters.assessmentId);
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const countResult = await this.db.query<{ count: string }>(
       `SELECT COUNT(*)::text AS count FROM assessment_results ${whereClause}`,
-      params,
+      [...filterParams],
     );
     const total = parseInt(countResult.rows[0]?.count ?? '0', 10);
 
-    params.push(safeLimit, offset);
+    const limitIdx = idx++;
+    const offsetIdx = idx;
+    const dataParams = [...filterParams, safeLimit, offset];
+
     const result = await this.db.query<Record<string, unknown>>(
       `SELECT id, student_id, assessment_id, score, passed, created_at AS attempted_at, graded_at AS completed_at
        FROM assessment_results ${whereClause}
        ORDER BY created_at DESC
-       LIMIT $${paramIdx++} OFFSET $${paramIdx}`,
-      params,
+       LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
+      dataParams,
     );
 
     return {
@@ -174,29 +189,32 @@ export class AdminDataService {
   async listSessionSummaries(page: number, limit: number, studentId?: string) {
     const { safePage, safeLimit, offset } = safePagination(page, limit);
     const conditions: string[] = [];
-    const params: unknown[] = [];
-    let paramIdx = 1;
+    const filterParams: unknown[] = [];
+    let idx = 1;
 
     if (studentId) {
-      conditions.push(`student_id = $${paramIdx++}`);
-      params.push(studentId);
+      conditions.push(`student_id = $${idx++}`);
+      filterParams.push(studentId);
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const countResult = await this.db.query<{ count: string }>(
       `SELECT COUNT(*)::text AS count FROM session_summaries ${whereClause}`,
-      params,
+      [...filterParams],
     );
     const total = parseInt(countResult.rows[0]?.count ?? '0', 10);
 
-    params.push(safeLimit, offset);
+    const limitIdx = idx++;
+    const offsetIdx = idx;
+    const dataParams = [...filterParams, safeLimit, offset];
+
     const result = await this.db.query<Record<string, unknown>>(
       `SELECT id, student_id, created_at AS started_at, closed_out_at AS ended_at, signal_basis AS feedback_summary
        FROM session_summaries ${whereClause}
        ORDER BY created_at DESC
-       LIMIT $${paramIdx++} OFFSET $${paramIdx}`,
-      params,
+       LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
+      dataParams,
     );
 
     return {
@@ -216,41 +234,44 @@ export class AdminDataService {
   async listAuditLogs(page: number, limit: number, filters?: { userId?: string; action?: string; from?: string; to?: string }) {
     const { safePage, safeLimit, offset } = safePagination(page, limit);
     const conditions: string[] = [];
-    const params: unknown[] = [];
-    let paramIdx = 1;
+    const filterParams: unknown[] = [];
+    let idx = 1;
 
     if (filters?.userId) {
-      conditions.push(`actor_id = $${paramIdx++}`);
-      params.push(filters.userId);
+      conditions.push(`actor_id = $${idx++}`);
+      filterParams.push(filters.userId);
     }
     if (filters?.action) {
-      conditions.push(`event_type = $${paramIdx++}`);
-      params.push(filters.action);
+      conditions.push(`event_type = $${idx++}`);
+      filterParams.push(filters.action);
     }
     if (filters?.from) {
-      conditions.push(`created_at >= $${paramIdx++}`);
-      params.push(filters.from);
+      conditions.push(`created_at >= $${idx++}`);
+      filterParams.push(filters.from);
     }
     if (filters?.to) {
-      conditions.push(`created_at <= $${paramIdx++}`);
-      params.push(filters.to);
+      conditions.push(`created_at <= $${idx++}`);
+      filterParams.push(filters.to);
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const countResult = await this.db.query<{ count: string }>(
       `SELECT COUNT(*)::text AS count FROM assessment_audit_logs ${whereClause}`,
-      params,
+      [...filterParams],
     );
     const total = parseInt(countResult.rows[0]?.count ?? '0', 10);
 
-    params.push(safeLimit, offset);
+    const limitIdx = idx++;
+    const offsetIdx = idx;
+    const dataParams = [...filterParams, safeLimit, offset];
+
     const result = await this.db.query<Record<string, unknown>>(
       `SELECT id, actor_id AS user_id, event_type AS action, entity_type, entity_id, created_at
        FROM assessment_audit_logs ${whereClause}
        ORDER BY created_at DESC
-       LIMIT $${paramIdx++} OFFSET $${paramIdx}`,
-      params,
+       LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
+      dataParams,
     );
 
     return {
@@ -271,41 +292,44 @@ export class AdminDataService {
   async listActivityLogs(page: number, limit: number, filters?: { userId?: string; eventType?: string; from?: string; to?: string }) {
     const { safePage, safeLimit, offset } = safePagination(page, limit);
     const conditions: string[] = [];
-    const params: unknown[] = [];
-    let paramIdx = 1;
+    const filterParams: unknown[] = [];
+    let idx = 1;
 
     if (filters?.userId) {
-      conditions.push(`actor_id = $${paramIdx++}`);
-      params.push(filters.userId);
+      conditions.push(`actor_id = $${idx++}`);
+      filterParams.push(filters.userId);
     }
     if (filters?.eventType) {
-      conditions.push(`action = $${paramIdx++}`);
-      params.push(filters.eventType);
+      conditions.push(`action = $${idx++}`);
+      filterParams.push(filters.eventType);
     }
     if (filters?.from) {
-      conditions.push(`created_at >= $${paramIdx++}`);
-      params.push(filters.from);
+      conditions.push(`created_at >= $${idx++}`);
+      filterParams.push(filters.from);
     }
     if (filters?.to) {
-      conditions.push(`created_at <= $${paramIdx++}`);
-      params.push(filters.to);
+      conditions.push(`created_at <= $${idx++}`);
+      filterParams.push(filters.to);
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const countResult = await this.db.query<{ count: string }>(
       `SELECT COUNT(*)::text AS count FROM operations_audit_logs ${whereClause}`,
-      params,
+      [...filterParams],
     );
     const total = parseInt(countResult.rows[0]?.count ?? '0', 10);
 
-    params.push(safeLimit, offset);
+    const limitIdx = idx++;
+    const offsetIdx = idx;
+    const dataParams = [...filterParams, safeLimit, offset];
+
     const result = await this.db.query<Record<string, unknown>>(
       `SELECT id, actor_id AS user_id, action AS event_type, created_at
        FROM operations_audit_logs ${whereClause}
        ORDER BY created_at DESC
-       LIMIT $${paramIdx++} OFFSET $${paramIdx}`,
-      params,
+       LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
+      dataParams,
     );
 
     return {
@@ -324,14 +348,14 @@ export class AdminDataService {
   async getEnrollmentReport(from?: string, to?: string) {
     const conditions: string[] = [];
     const params: unknown[] = [];
-    let paramIdx = 1;
+    let idx = 1;
 
     if (from) {
-      conditions.push(`created_at >= $${paramIdx++}`);
+      conditions.push(`created_at >= $${idx++}`);
       params.push(from);
     }
     if (to) {
-      conditions.push(`created_at <= $${paramIdx++}`);
+      conditions.push(`created_at <= $${idx++}`);
       params.push(to);
     }
 
@@ -355,14 +379,14 @@ export class AdminDataService {
   async getAssessmentReport(from?: string, to?: string) {
     const conditions: string[] = [];
     const params: unknown[] = [];
-    let paramIdx = 1;
+    let idx = 1;
 
     if (from) {
-      conditions.push(`created_at >= $${paramIdx++}`);
+      conditions.push(`created_at >= $${idx++}`);
       params.push(from);
     }
     if (to) {
-      conditions.push(`created_at <= $${paramIdx++}`);
+      conditions.push(`created_at <= $${idx++}`);
       params.push(to);
     }
 
