@@ -20,3 +20,17 @@ export const CurrentUser = createParamDecorator<
 
   return user?.[property];
 });
+
+export function readResolvedInternalUserId(
+  context: ExecutionContext,
+): string | undefined {
+  const request = context.switchToHttp().getRequest<{ resolvedInternalUserId?: string }>();
+  return request.resolvedInternalUserId;
+}
+
+export const ResolvedInternalUserId = createParamDecorator<
+  undefined,
+  string | undefined
+>((_, context) => {
+  return readResolvedInternalUserId(context);
+});
