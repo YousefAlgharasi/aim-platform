@@ -14,11 +14,12 @@ import { OperationsErrorCard } from '../../../../components/operations/operation
 
 type FeatureFlag = {
   readonly id: string;
-  readonly key: string;
+  readonly flagKey: string;
   readonly name: string;
   readonly enabled: boolean;
   readonly rolloutPercentage: number;
-  readonly owner: string;
+  readonly ownerId: string | null;
+  readonly description: string | null;
 };
 
 type FeatureFlagsResponse = {
@@ -255,7 +256,7 @@ export default function FeatureFlagsPage() {
               {flags.map((flag) => (
                 <tr key={flag.id} className="ops-table-row">
                   <td className="ops-table-td">
-                    <code className="ops-flag-key">{flag.key}</code>
+                    <code className="ops-flag-key">{flag.flagKey}</code>
                   </td>
                   <td className="ops-table-td ops-table-td--primary">{flag.name}</td>
                   <td className="ops-table-td">
@@ -304,7 +305,7 @@ export default function FeatureFlagsPage() {
                       </button>
                     )}
                   </td>
-                  <td className="ops-table-td">{flag.owner || '—'}</td>
+                  <td className="ops-table-td">{flag.ownerId || '—'}</td>
                   <td className="ops-table-td">
                     <button
                       className={`ops-toggle-btn ${flag.enabled ? 'ops-toggle-btn--on' : 'ops-toggle-btn--off'}`}
