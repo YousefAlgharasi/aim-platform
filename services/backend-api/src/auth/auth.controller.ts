@@ -19,6 +19,8 @@ import {
 import { AuthLoginDto, AuthRefreshDto, AuthRegisterDto } from './auth-login.dto';
 import { extractBearerToken } from './bearer-token';
 import { AuthenticatedRequest } from './authenticated-user';
+import { UsersService } from '../features/users/users.service';
+import { StudentsService } from '../features/students/students.service';
 
 @ApiTags(OPENAPI_TAGS.auth)
 @Controller('auth')
@@ -26,6 +28,8 @@ export class AuthController {
   constructor(
     private readonly profileBootstrap: AuthProfileBootstrapService,
     private readonly authLogin: AuthLoginService,
+    private readonly usersService: UsersService,
+    private readonly studentsService: StudentsService,
   ) {}
 
   /**
@@ -107,8 +111,33 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Return the safe current authenticated user context.' })
   @ApiOkResponse({ description: 'Safe current authenticated user context.' })
-  getMe(@CurrentUser() user: AuthenticatedUser): AuthMeResponse {
-    return presentAuthMe(user);
+  async getMe(@CurrentUser() user: AuthenticatedUser): Promise<AuthMeResponse> {
+    const internalUser = await this.usersService.findBySupabaseUid(user.id);
+
+    if (!internalUser) {
+      return presentAuthMe(user);
+    }
+
+    let profile = null;
+    if (internalUser.userType === 'student') {
+      const studentProfile = await this.studentsService.findByUserId(internalUser.id);
+      if (studentProfile) {
+        profile = {
+          id: studentProfile.id,
+          profileType: 'student_profile',
+          displayName: studentProfile.displayName,
+          avatarUrl: studentProfile.avatarUrl,
+          preferredLanguage: studentProfile.preferredLanguage,
+          timezone: studentProfile.timezone,
+        };
+      }
+    }
+
+    return presentAuthMe(user, {
+      userType: internalUser.userType,
+      status: internalUser.status,
+      profile,
+    });
   }
 
   /**
