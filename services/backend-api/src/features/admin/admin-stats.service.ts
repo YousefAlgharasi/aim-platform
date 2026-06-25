@@ -46,7 +46,10 @@ export class AdminStatsService {
       activity,
       operations,
     ] = await Promise.all([
-      this.getUserStats(),
+      this.getUserStats().catch((e) => {
+        this.logger.error('Failed to fetch user stats', e);
+        return { total: 0, students: 0, admins: 0, active: 0, newThisMonth: 0 };
+      }),
       this.getContentStats(),
       this.getAssessmentStats(),
       this.getActivityStats(),
