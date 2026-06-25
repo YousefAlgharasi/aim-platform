@@ -5,14 +5,14 @@ import {
   Patch,
   Param,
   Body,
+  Req,
   UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
-import { CurrentUser } from '../../auth/current-user.decorator';
-import { AuthenticatedUser } from '../../auth/authenticated-user';
+import { AuthenticatedRequest } from '../../auth/authenticated-user';
 import { FeatureFlagService } from './feature-flag.service';
 import {
   CreateFeatureFlagDto,
@@ -32,7 +32,7 @@ export class AdminFeatureFlagsController {
   @OperationsAdminOnly()
   @ApiOperation({ summary: 'Create a feature flag (admin)' })
   async createFlag(
-    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: AuthenticatedRequest,
     @Body() dto: CreateFeatureFlagDto,
   ) {
     return this.featureFlagService.createFlag(
@@ -43,25 +43,25 @@ export class AdminFeatureFlagsController {
         enabled: false,
         rolloutPercentage: 0,
       },
-      user.id,
+      req.internalUserId!,
     );
   }
 
   @Get()
   @OperationsAdminOnly()
   @ApiOperation({ summary: 'List all feature flags (admin)' })
-  async listFlags(@CurrentUser() user: AuthenticatedUser) {
-    return this.featureFlagService.getFlags(user.id);
+  async listFlags(@Req() req: AuthenticatedRequest) {
+    return this.featureFlagService.getFlags(req.internalUserId!);
   }
 
   @Patch(':id')
   @OperationsAdminOnly()
   @ApiOperation({ summary: 'Update a feature flag (admin)' })
   async updateFlag(
-    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Body() dto: UpdateFeatureFlagDto,
   ) {
-    return this.featureFlagService.updateFlag(id, dto, user.id);
+    return this.featureFlagService.updateFlag(id, dto, req.internalUserId!);
   }
 }

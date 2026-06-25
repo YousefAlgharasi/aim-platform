@@ -4,12 +4,12 @@ import {
   Patch,
   Param,
   Body,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
-import { CurrentUser } from '../../auth/current-user.decorator';
-import { AuthenticatedUser } from '../../auth/authenticated-user';
+import { AuthenticatedRequest } from '../../auth/authenticated-user';
 import { FeedbackService } from './feedback.service';
 import { OperationsAdminGuard, OperationsAdminOnly } from './operations.guards';
 
@@ -31,10 +31,10 @@ export class AdminFeedbackController {
   @OperationsAdminOnly()
   @ApiOperation({ summary: 'Triage feedback status (admin)' })
   async triageFeedback(
-    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Body('status') status: string,
   ) {
-    return this.feedbackService.adminTriageFeedback(id, status, user.id);
+    return this.feedbackService.adminTriageFeedback(id, status, req.internalUserId!);
   }
 }
