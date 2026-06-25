@@ -84,9 +84,9 @@ export default function ReleaseNotesPage() {
   async function handleStatusAction(noteId: string, newStatus: string) {
     setActionLoading(noteId);
     try {
-      const res = await backendFetch(`/admin/release-notes/${noteId}/status`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status: newStatus }),
+      const action = newStatus === 'published' ? 'publish' : 'archive';
+      const res = await backendFetch(`/admin/release-notes/${noteId}/${action}`, {
+        method: 'POST',
       });
       if (!res.ok) throw new Error(`Failed to update status: ${res.statusText}`);
       await fetchNotes(page);
