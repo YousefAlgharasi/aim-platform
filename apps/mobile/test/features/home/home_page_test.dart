@@ -140,7 +140,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('Your dashboard is empty'), findsOneWidget);
+      expect(find.text('Welcome to AIM'), findsOneWidget);
     });
 
     testWidgets('shows all four sections when data is populated',

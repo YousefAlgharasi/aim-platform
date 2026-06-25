@@ -3,6 +3,8 @@ import { AuthController } from './auth.controller';
 import { AuthProfileBootstrapService } from './auth-profile-bootstrap.service';
 import { AuthLoginService } from './auth-login.service';
 import { AuthenticatedUser } from './authenticated-user';
+import { UsersService } from '../features/users/users.service';
+import { StudentsService } from '../features/students/students.service';
 
 const makeBootstrapMock = (): jest.Mocked<AuthProfileBootstrapService> =>
   ({ bootstrap: jest.fn() } as unknown as jest.Mocked<AuthProfileBootstrapService>);
@@ -15,10 +17,16 @@ const makeAuthLoginMock = (): jest.Mocked<AuthLoginService> =>
     logout: jest.fn(),
   } as unknown as jest.Mocked<AuthLoginService>);
 
-describe('AuthController', () => {
-  const controller = new AuthController(makeBootstrapMock(), makeAuthLoginMock());
+const makeUsersMock = (): jest.Mocked<UsersService> =>
+  ({ findBySupabaseUid: jest.fn().mockResolvedValue(null) } as unknown as jest.Mocked<UsersService>);
 
-  it('returns a safe current user response from the authenticated request user', () => {
+const makeStudentsMock = (): jest.Mocked<StudentsService> =>
+  ({ findByUserId: jest.fn().mockResolvedValue(null) } as unknown as jest.Mocked<StudentsService>);
+
+describe('AuthController', () => {
+  const controller = new AuthController(makeBootstrapMock(), makeAuthLoginMock(), makeUsersMock(), makeStudentsMock());
+
+  it('returns a safe current user response from the authenticated request user', async () => {
     const user: AuthenticatedUser = {
       id: '9c63ef31-463c-45a4-b6c4-6c5d5d53e541',
       email: 'student@example.com',
@@ -30,7 +38,7 @@ describe('AuthController', () => {
       expiresAt: 1_900_000_000,
     };
 
-    expect(controller.getMe(user)).toEqual({
+    await expect(controller.getMe(user)).resolves.toEqual({
       user: {
         id: '9c63ef31-463c-45a4-b6c4-6c5d5d53e541',
         email: 'student@example.com',
