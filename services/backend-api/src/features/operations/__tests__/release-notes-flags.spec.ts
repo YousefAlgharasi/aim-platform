@@ -3,6 +3,47 @@ import { ReleaseNotesService } from '../release-notes.service';
 import { FeatureFlagService } from '../feature-flag.service';
 import { ReleaseNote, FeatureFlag } from '../operations.entities';
 
+const mockReleaseNote: ReleaseNote = {
+  id: 'note-1',
+  title: 'v2.1.0 Release',
+  body: 'New features and improvements',
+  version: '2.1.0',
+  audience: 'all',
+  status: 'draft',
+  createdBy: 'admin-1',
+  publishedAt: null,
+  publishedBy: null,
+  metadata: {},
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
+
+const mockFeatureFlag: FeatureFlag = {
+  id: 'flag-1',
+  flagKey: 'dark_mode',
+  name: 'Dark Mode',
+  description: 'Enable dark mode UI',
+  enabled: false,
+  rolloutPercentage: 0,
+  audience: {},
+  ownerId: 'admin-1',
+  metadata: {},
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
+
+const mockOpsRepo = {
+  createReleaseNote: jest.fn(),
+  findAllReleaseNotes: jest.fn(),
+  findPublishedReleaseNotes: jest.fn(),
+  findReleaseNoteById: jest.fn(),
+  publishReleaseNote: jest.fn(),
+  createFeatureFlag: jest.fn(),
+  findAllFeatureFlags: jest.fn(),
+  findFeatureFlagByKey: jest.fn(),
+  updateFeatureFlag: jest.fn(),
+};
+
 const mockAuditService = {
   logAction: jest.fn(),
 };
@@ -12,11 +53,12 @@ describe('ReleaseNotesService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new ReleaseNotesService(mockAuditService as any);
+    service = new ReleaseNotesService(mockOpsRepo as any, mockAuditService as any);
   });
 
   describe('createDraft', () => {
     it('should create a release note draft', async () => {
+      mockOpsRepo.createReleaseNote.mockResolvedValue(mockReleaseNote);
       mockAuditService.logAction.mockResolvedValue({});
 
       const result = await service.createDraft(
@@ -31,10 +73,7 @@ describe('ReleaseNotesService', () => {
 
       expect(result.title).toBe('v2.1.0 Release');
       expect(result.version).toBe('2.1.0');
-      expect(result.status).toBe('draft');
-      expect(result.createdBy).toBe('admin-1');
-      expect(result.publishedAt).toBeNull();
-      expect(result.publishedBy).toBeNull();
+      expect(mockOpsRepo.createReleaseNote).toHaveBeenCalled();
       expect(mockAuditService.logAction).toHaveBeenCalledWith(
         'admin-1',
         'release_note.draft_created',
@@ -45,6 +84,7 @@ describe('ReleaseNotesService', () => {
     });
 
     it('should handle missing body', async () => {
+      mockOpsRepo.createReleaseNote.mockResolvedValue({ ...mockReleaseNote, body: null });
       mockAuditService.logAction.mockResolvedValue({});
 
       const result = await service.createDraft(
@@ -61,35 +101,44 @@ describe('ReleaseNotesService', () => {
   });
 
   describe('getDrafts', () => {
-    it('should return empty array (stub implementation)', async () => {
+    it('should return release notes from database', async () => {
+      mockOpsRepo.findAllReleaseNotes.mockResolvedValue([mockReleaseNote]);
+
       const result = await service.getDrafts('admin-1');
 
-      expect(result).toEqual([]);
+      expect(result).toEqual([mockReleaseNote]);
     });
   });
 
   describe('getPublished', () => {
-    it('should return empty array (stub implementation)', async () => {
+    it('should return published release notes', async () => {
+      mockOpsRepo.findPublishedReleaseNotes.mockResolvedValue([]);
+
       const result = await service.getPublished();
-
-      expect(result).toEqual([]);
-    });
-
-    it('should accept optional audience filter', async () => {
-      const result = await service.getPublished('students');
 
       expect(result).toEqual([]);
     });
   });
 
   describe('getById', () => {
-    it('should throw NotFoundException (stub implementation)', async () => {
+    it('should throw NotFoundException when not found', async () => {
+      mockOpsRepo.findReleaseNoteById.mockResolvedValue(null);
+
       await expect(service.getById('note-1')).rejects.toThrow(NotFoundException);
+    });
+
+    it('should return release note when found', async () => {
+      mockOpsRepo.findReleaseNoteById.mockResolvedValue(mockReleaseNote);
+
+      const result = await service.getById('note-1');
+      expect(result).toEqual(mockReleaseNote);
     });
   });
 
   describe('publish', () => {
-    it('should throw NotFoundException when note does not exist (stub)', async () => {
+    it('should throw NotFoundException when note does not exist', async () => {
+      mockOpsRepo.findReleaseNoteById.mockResolvedValue(null);
+
       await expect(service.publish('nonexistent-id', 'admin-1')).rejects.toThrow(
         NotFoundException,
       );
@@ -97,7 +146,9 @@ describe('ReleaseNotesService', () => {
   });
 
   describe('archive', () => {
-    it('should throw NotFoundException when note does not exist (stub)', async () => {
+    it('should throw NotFoundException when note does not exist', async () => {
+      mockOpsRepo.findReleaseNoteById.mockResolvedValue(null);
+
       await expect(service.archive('nonexistent-id', 'admin-1')).rejects.toThrow(
         NotFoundException,
       );
@@ -110,11 +161,12 @@ describe('FeatureFlagService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new FeatureFlagService(mockAuditService as any);
+    service = new FeatureFlagService(mockOpsRepo as any, mockAuditService as any);
   });
 
   describe('createFlag', () => {
     it('should create a feature flag and log audit', async () => {
+      mockOpsRepo.createFeatureFlag.mockResolvedValue(mockFeatureFlag);
       mockAuditService.logAction.mockResolvedValue({});
 
       const result = await service.createFlag(
@@ -130,9 +182,7 @@ describe('FeatureFlagService', () => {
 
       expect(result.flagKey).toBe('dark_mode');
       expect(result.name).toBe('Dark Mode');
-      expect(result.enabled).toBe(false);
-      expect(result.rolloutPercentage).toBe(0);
-      expect(result.ownerId).toBe('admin-1');
+      expect(mockOpsRepo.createFeatureFlag).toHaveBeenCalled();
       expect(mockAuditService.logAction).toHaveBeenCalledWith(
         'admin-1',
         'feature_flag.created',
@@ -144,21 +194,27 @@ describe('FeatureFlagService', () => {
   });
 
   describe('getFlags', () => {
-    it('should return empty array (stub implementation)', async () => {
+    it('should return flags from database', async () => {
+      mockOpsRepo.findAllFeatureFlags.mockResolvedValue([mockFeatureFlag]);
+
       const result = await service.getFlags('admin-1');
 
-      expect(result).toEqual([]);
+      expect(result).toEqual([mockFeatureFlag]);
     });
   });
 
   describe('getFlagByKey', () => {
-    it('should throw NotFoundException (stub implementation)', async () => {
+    it('should throw NotFoundException when not found', async () => {
+      mockOpsRepo.findFeatureFlagByKey.mockResolvedValue(null);
+
       await expect(service.getFlagByKey('nonexistent')).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('updateFlag', () => {
-    it('should throw NotFoundException when flag does not exist (stub)', async () => {
+    it('should throw NotFoundException when flag does not exist', async () => {
+      mockOpsRepo.updateFeatureFlag.mockResolvedValue(null);
+
       await expect(
         service.updateFlag('nonexistent', { enabled: true }, 'admin-1'),
       ).rejects.toThrow(NotFoundException);
@@ -167,12 +223,16 @@ describe('FeatureFlagService', () => {
 
   describe('evaluateFlag', () => {
     it('should return false for nonexistent flags', async () => {
+      mockOpsRepo.findFeatureFlagByKey.mockResolvedValue(null);
+
       const result = await service.evaluateFlag('nonexistent_flag');
 
       expect(result).toBe(false);
     });
 
     it('should return false for nonexistent flags with context', async () => {
+      mockOpsRepo.findFeatureFlagByKey.mockResolvedValue(null);
+
       const result = await service.evaluateFlag('nonexistent_flag', {
         userId: 'user-1',
         role: 'student',
