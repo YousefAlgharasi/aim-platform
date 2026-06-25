@@ -2,9 +2,9 @@
 import { AuthController } from './auth.controller';
 import { AuthProfileBootstrapService } from './auth-profile-bootstrap.service';
 import { AuthLoginService } from './auth-login.service';
-import { AuthenticatedUser } from './authenticated-user';
+import { RolesService } from '../features/roles/roles.service';
 import { UsersService } from '../features/users/users.service';
-import { StudentsService } from '../features/students/students.service';
+import { AuthenticatedUser } from './authenticated-user';
 
 const makeBootstrapMock = (): jest.Mocked<AuthProfileBootstrapService> =>
   ({ bootstrap: jest.fn() } as unknown as jest.Mocked<AuthProfileBootstrapService>);
@@ -17,14 +17,14 @@ const makeAuthLoginMock = (): jest.Mocked<AuthLoginService> =>
     logout: jest.fn(),
   } as unknown as jest.Mocked<AuthLoginService>);
 
+const makeRolesMock = (): jest.Mocked<RolesService> =>
+  ({ getUserRoles: jest.fn().mockResolvedValue([]) } as unknown as jest.Mocked<RolesService>);
+
 const makeUsersMock = (): jest.Mocked<UsersService> =>
   ({ findBySupabaseUid: jest.fn().mockResolvedValue(null) } as unknown as jest.Mocked<UsersService>);
 
-const makeStudentsMock = (): jest.Mocked<StudentsService> =>
-  ({ findByUserId: jest.fn().mockResolvedValue(null) } as unknown as jest.Mocked<StudentsService>);
-
 describe('AuthController', () => {
-  const controller = new AuthController(makeBootstrapMock(), makeAuthLoginMock(), makeUsersMock(), makeStudentsMock());
+  const controller = new AuthController(makeBootstrapMock(), makeAuthLoginMock(), makeRolesMock(), makeUsersMock());
 
   it('returns a safe current user response from the authenticated request user', async () => {
     const user: AuthenticatedUser = {

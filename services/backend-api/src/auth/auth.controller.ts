@@ -19,8 +19,9 @@ import {
 import { AuthLoginDto, AuthRefreshDto, AuthRegisterDto } from './auth-login.dto';
 import { extractBearerToken } from './bearer-token';
 import { AuthenticatedRequest } from './authenticated-user';
+import { RolesService } from '../features/roles/roles.service';
 import { UsersService } from '../features/users/users.service';
-import { StudentsService } from '../features/students/students.service';
+import { isAuthorizedRole } from './authorization';
 
 @ApiTags(OPENAPI_TAGS.auth)
 @Controller('auth')
@@ -28,8 +29,8 @@ export class AuthController {
   constructor(
     private readonly profileBootstrap: AuthProfileBootstrapService,
     private readonly authLogin: AuthLoginService,
+    private readonly rolesService: RolesService,
     private readonly usersService: UsersService,
-    private readonly studentsService: StudentsService,
   ) {}
 
   /**
@@ -112,32 +113,20 @@ export class AuthController {
   @ApiOperation({ summary: 'Return the safe current authenticated user context.' })
   @ApiOkResponse({ description: 'Safe current authenticated user context.' })
   async getMe(@CurrentUser() user: AuthenticatedUser): Promise<AuthMeResponse> {
+    const baseResponse = presentAuthMe(user);
+
     const internalUser = await this.usersService.findBySupabaseUid(user.id);
-
     if (!internalUser) {
-      return presentAuthMe(user);
+      return baseResponse;
     }
 
-    let profile = null;
-    if (internalUser.userType === 'student') {
-      const studentProfile = await this.studentsService.findByUserId(internalUser.id);
-      if (studentProfile) {
-        profile = {
-          id: studentProfile.id,
-          profileType: 'student_profile',
-          displayName: studentProfile.displayName,
-          avatarUrl: studentProfile.avatarUrl,
-          preferredLanguage: studentProfile.preferredLanguage,
-          timezone: studentProfile.timezone,
-        };
-      }
-    }
+    const dbRoles = (await this.rolesService.getUserRoles(internalUser.id))
+      .map((role) => role.key)
+      .filter(isAuthorizedRole);
 
-    return presentAuthMe(user, {
-      userType: internalUser.userType,
-      status: internalUser.status,
-      profile,
-    });
+    const mergedRoles = [...new Set([...baseResponse.roles, ...dbRoles])];
+
+    return { ...baseResponse, roles: mergedRoles };
   }
 
   /**
