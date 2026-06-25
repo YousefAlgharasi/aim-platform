@@ -26,6 +26,7 @@ import { AdminIncidentController } from './admin-incident.controller';
 import { AdminMaintenanceController } from './admin-maintenance.controller';
 import { AdminReleaseNotesController } from './admin-release-notes.controller';
 import { AdminFeatureFlagsController } from './admin-feature-flags.controller';
+import { AdminFeedbackController } from './admin-feedback.controller';
 import { AdminOperationsDashboardController } from './admin-operations-dashboard.controller';
 
 @Module({
@@ -52,6 +53,7 @@ import { AdminOperationsDashboardController } from './admin-operations-dashboard
     OperationalStatusController,
     MaintenanceWindowController,
     AdminSupportController,
+    AdminFeedbackController,
     AdminIncidentController,
     AdminMaintenanceController,
     AdminReleaseNotesController,

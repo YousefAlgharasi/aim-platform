@@ -110,6 +110,7 @@ export default function MaintenancePage() {
           type: newType,
           scheduledStart: newStart,
           scheduledEnd: newEnd,
+          affectedServices: [],
         }),
       });
       if (!res.ok) throw new Error(`Failed to create maintenance window: ${res.statusText}`);
