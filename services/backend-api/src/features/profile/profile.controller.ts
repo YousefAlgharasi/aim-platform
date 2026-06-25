@@ -35,7 +35,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AuthenticatedUser } from '../../auth/authenticated-user';
-import { CurrentUser } from '../../auth/current-user.decorator';
+import { CurrentUser, ResolvedInternalUserId } from '../../auth/current-user.decorator';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { ProfileOwnershipGuard } from '../../auth/authorization/profile-ownership.guard';
 import { RequireProfileOwnership } from '../../auth/authorization/require-profile-ownership.decorator';
@@ -68,8 +68,9 @@ export class ProfileController {
   @ApiOkResponse({ description: 'Safe profile data for the authenticated user.' })
   async getMe(
     @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() internalUserId: string,
   ): Promise<ProfileMeResponse> {
-    return this.profileService.getProfileForUser(user.id);
+    return this.profileService.getProfileForUser(internalUserId);
   }
 
   /**
@@ -92,8 +93,9 @@ export class ProfileController {
   @ApiOkResponse({ description: 'Updated safe profile data.' })
   async updateMe(
     @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() internalUserId: string,
     @Body() input: UpdateProfileMeInput,
   ): Promise<ProfileMeResponse> {
-    return this.profileService.updateProfileForUser(user.id, input);
+    return this.profileService.updateProfileForUser(internalUserId, input);
   }
 }

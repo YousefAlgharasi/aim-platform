@@ -25,6 +25,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
@@ -132,12 +133,7 @@ class _HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (data.isEmpty) {
-      return const AIMEmptyState(
-        icon:  Icon(Icons.home_outlined),
-        title: 'Your dashboard is empty',
-        subtitle:
-            'Complete your placement test to see personalised recommendations.',
-      );
+      return _HomeGettingStarted(onRefresh: onRefresh);
     }
 
     return RefreshIndicator(
@@ -192,6 +188,178 @@ class _HomeContent extends StatelessWidget {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class _HomeGettingStarted extends StatelessWidget {
+  const _HomeGettingStarted({required this.onRefresh});
+
+  final Future<void> Function() onRefresh;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: ListView(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AimSpacing.screenPaddingMobile,
+          vertical: AimSpacing.sectionGap,
+        ),
+        children: [
+          const SizedBox(height: AimSpacing.sectionGap),
+          Icon(
+            Icons.school_outlined,
+            size: 64,
+            color: surfaces.textMuted,
+          ),
+          const SizedBox(height: AimSpacing.componentGap),
+          Text(
+            'Welcome to AIM',
+            style: AimTextStyles.h2.copyWith(color: surfaces.textPrimary),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AimSpacing.space8),
+          Text(
+            'Get started by taking a placement test or browsing courses.',
+            style: AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AimSpacing.sectionGap),
+
+          AIMCard(
+            variant: AIMCardVariant.elevated,
+            onTap: () => Navigator.of(context).pushNamed(
+              AppRoutePaths.placementStart,
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.assignment_outlined,
+                  color: AimColors.primary600,
+                  size: AimSizes.iconMd,
+                ),
+                const SizedBox(width: AimSpacing.componentGap),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Placement Test',
+                        style: AimTextStyles.title.copyWith(
+                          color: surfaces.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: AimSpacing.space4),
+                      Text(
+                        'Find your level and get personalised recommendations.',
+                        style: AimTextStyles.bodySm.copyWith(
+                          color: surfaces.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: surfaces.textMuted,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AimSpacing.componentGap),
+
+          AIMCard(
+            variant: AIMCardVariant.elevated,
+            onTap: () {
+              // Switch to Learn tab (index 1) via the shell
+              final shellState = context.findAncestorStateOfType<State>();
+              if (shellState != null && shellState.mounted) {
+                // Navigate by switching tab — the MainShellPage uses IndexedStack
+                // so we push to the learn route which the shell handles
+              }
+            },
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.menu_book_outlined,
+                  color: AimColors.primary600,
+                  size: AimSizes.iconMd,
+                ),
+                const SizedBox(width: AimSpacing.componentGap),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Browse Courses',
+                        style: AimTextStyles.title.copyWith(
+                          color: surfaces.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: AimSpacing.space4),
+                      Text(
+                        'Explore available courses and start learning.',
+                        style: AimTextStyles.bodySm.copyWith(
+                          color: surfaces.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: surfaces.textMuted,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AimSpacing.componentGap),
+
+          AIMCard(
+            variant: AIMCardVariant.elevated,
+            onTap: () => Navigator.of(context).pushNamed(
+              AppRoutePaths.assessments,
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.quiz_outlined,
+                  color: AimColors.primary600,
+                  size: AimSizes.iconMd,
+                ),
+                const SizedBox(width: AimSpacing.componentGap),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Assessments',
+                        style: AimTextStyles.title.copyWith(
+                          color: surfaces.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: AimSpacing.space4),
+                      Text(
+                        'View and take available assessments.',
+                        style: AimTextStyles.bodySm.copyWith(
+                          color: surfaces.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: surfaces.textMuted,
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
