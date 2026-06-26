@@ -43,6 +43,7 @@ class PlacementWeakness {
     required this.skillCode,
     required this.masteryScore,
     required this.priority,
+    this.signal,
   });
 
   /// One of: grammar, vocabulary, reading, listening.
@@ -53,4 +54,7 @@ class PlacementWeakness {
 
   /// Priority rank (1 = highest priority weakness).
   final int priority;
+
+  /// 'developing' or 'emerging'. Backend-computed — never derived locally.
+  final String? signal;
 }

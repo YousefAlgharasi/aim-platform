@@ -358,11 +358,11 @@ class _WeaknessRow extends StatelessWidget {
 class _InitialPathBanner extends StatelessWidget {
   const _InitialPathBanner({required this.initialPathId});
 
-  final String initialPathId;
+  final String? initialPathId;
 
   @override
   Widget build(BuildContext context) {
-    final isReady = initialPathId.isNotEmpty;
+    final isReady = initialPathId != null && initialPathId!.isNotEmpty;
 
     return AIMAlertBanner(
       tone: isReady ? AIMAlertTone.success : AIMAlertTone.info,
