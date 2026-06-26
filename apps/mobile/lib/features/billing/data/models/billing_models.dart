@@ -70,15 +70,23 @@ class SubscriptionModel {
   final String id;
   final String planId;
   final String status;
+  final DateTime? currentPeriodStart;
   final DateTime? currentPeriodEnd;
   final bool cancelAtPeriodEnd;
+  final DateTime? canceledAt;
+  final DateTime? trialStart;
+  final DateTime? trialEnd;
 
   const SubscriptionModel({
     required this.id,
     required this.planId,
     required this.status,
+    this.currentPeriodStart,
     this.currentPeriodEnd,
     this.cancelAtPeriodEnd = false,
+    this.canceledAt,
+    this.trialStart,
+    this.trialEnd,
   });
 
   factory SubscriptionModel.fromJson(Map<String, dynamic> json) {
@@ -86,10 +94,22 @@ class SubscriptionModel {
       id: json['id'] as String,
       planId: json['planId'] as String,
       status: json['status'] as String,
+      currentPeriodStart: json['currentPeriodStart'] != null
+          ? DateTime.parse(json['currentPeriodStart'] as String)
+          : null,
       currentPeriodEnd: json['currentPeriodEnd'] != null
           ? DateTime.parse(json['currentPeriodEnd'] as String)
           : null,
       cancelAtPeriodEnd: json['cancelAtPeriodEnd'] as bool? ?? false,
+      canceledAt: json['canceledAt'] != null
+          ? DateTime.parse(json['canceledAt'] as String)
+          : null,
+      trialStart: json['trialStart'] != null
+          ? DateTime.parse(json['trialStart'] as String)
+          : null,
+      trialEnd: json['trialEnd'] != null
+          ? DateTime.parse(json['trialEnd'] as String)
+          : null,
     );
   }
 
@@ -100,21 +120,23 @@ class CheckoutSessionModel {
   final String id;
   final String status;
   final String? checkoutUrl;
-  final String? subscriptionId;
+  final DateTime? expiresAt;
 
   const CheckoutSessionModel({
     required this.id,
     required this.status,
     this.checkoutUrl,
-    this.subscriptionId,
+    this.expiresAt,
   });
 
   factory CheckoutSessionModel.fromJson(Map<String, dynamic> json) {
     return CheckoutSessionModel(
-      id: json['id'] as String? ?? json['sessionId'] as String,
+      id: json['id'] as String,
       status: json['status'] as String,
       checkoutUrl: json['checkoutUrl'] as String?,
-      subscriptionId: json['subscriptionId'] as String?,
+      expiresAt: json['expiresAt'] != null
+          ? DateTime.parse(json['expiresAt'] as String)
+          : null,
     );
   }
 }
@@ -122,15 +144,17 @@ class CheckoutSessionModel {
 class InvoiceModel {
   final String id;
   final String status;
-  final int totalAmount;
+  final int total;
   final String currency;
+  final String? invoiceUrl;
   final DateTime createdAt;
 
   const InvoiceModel({
     required this.id,
     required this.status,
-    required this.totalAmount,
+    required this.total,
     required this.currency,
+    this.invoiceUrl,
     required this.createdAt,
   });
 
@@ -138,8 +162,9 @@ class InvoiceModel {
     return InvoiceModel(
       id: json['id'] as String,
       status: json['status'] as String,
-      totalAmount: json['totalAmount'] as int,
+      total: json['total'] as int,
       currency: json['currency'] as String,
+      invoiceUrl: json['invoiceUrl'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
@@ -149,12 +174,20 @@ class EntitlementModel {
   final String id;
   final String featureKey;
   final bool granted;
+  final int? usageLimit;
+  final int usageCount;
+  final DateTime? expiresAt;
+  final String source;
   final String status;
 
   const EntitlementModel({
     required this.id,
     required this.featureKey,
     required this.granted,
+    this.usageLimit,
+    required this.usageCount,
+    this.expiresAt,
+    required this.source,
     required this.status,
   });
 
@@ -163,6 +196,12 @@ class EntitlementModel {
       id: json['id'] as String,
       featureKey: json['featureKey'] as String,
       granted: json['granted'] as bool,
+      usageLimit: json['usageLimit'] as int?,
+      usageCount: json['usageCount'] as int? ?? 0,
+      expiresAt: json['expiresAt'] != null
+          ? DateTime.parse(json['expiresAt'] as String)
+          : null,
+      source: json['source'] as String? ?? 'subscription',
       status: json['status'] as String,
     );
   }

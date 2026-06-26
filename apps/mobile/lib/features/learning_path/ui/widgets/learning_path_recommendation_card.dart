@@ -1,20 +1,14 @@
 // Phase 6 — P6-067
 // LearningPathRecommendationCard — renders a single AIM recommendation.
 //
-// action and reason are backend-computed. Flutter never generates or
+// All recommendation content is backend-computed. Flutter never generates or
 // rewrites recommendation content locally.
-//
-// RTL/Arabic: Column/Row use directionality-aware layout.
 
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/learning_path/data/models/learning_path_models.dart';
 
-/// Card for a single backend-computed AIM learning path recommendation.
-///
-/// All content (action, reason) is backend-supplied verbatim.
-/// Uses the AI card variant to signal AIM-sourced content.
 class LearningPathRecommendationCard extends StatelessWidget {
   const LearningPathRecommendationCard({
     required this.model,
@@ -28,7 +22,7 @@ class LearningPathRecommendationCard extends StatelessWidget {
     return AIMCard(
       variant: AIMCardVariant.ai,
       semanticLabel:
-          'AIM recommendation: ${model.action} for ${model.topic}',
+          'AIM recommendation: ${model.kind} for ${model.targetSkillId}',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -41,7 +35,7 @@ class LearningPathRecommendationCard extends StatelessWidget {
               ),
               const SizedBox(width: AimSpacing.space4),
               Text(
-                model.topic,
+                model.targetSkillId,
                 style:
                     AimTextStyles.label.copyWith(color: AimColors.primary500),
                 maxLines: 1,
@@ -51,7 +45,7 @@ class LearningPathRecommendationCard extends StatelessWidget {
           ),
           const SizedBox(height: AimSpacing.space8),
           Text(
-            model.action,
+            model.kind,
             style: AimTextStyles.title.copyWith(color: AimColors.neutral900),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,

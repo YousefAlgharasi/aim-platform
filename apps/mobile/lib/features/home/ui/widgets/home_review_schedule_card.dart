@@ -1,7 +1,7 @@
 // Phase 6 — P6-062
 // HomeReviewScheduleCard — renders a single AIM review schedule reminder.
 //
-// dueAt and priority are backend-computed.
+// dueAt and status are backend-computed.
 // Flutter displays them verbatim — no local reordering or priority inference.
 
 import 'package:flutter/material.dart';
@@ -9,9 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/home/data/models/home_models.dart';
 
-/// Card for a single backend-computed review schedule reminder.
-///
-/// [priority] tone is mapped for display only; no priority logic runs in Flutter.
 class HomeReviewScheduleCard extends StatelessWidget {
   const HomeReviewScheduleCard({
     required this.model,
@@ -20,10 +17,10 @@ class HomeReviewScheduleCard extends StatelessWidget {
 
   final HomeReviewScheduleModel model;
 
-  AIMBadgeTone get _priorityTone {
-    return switch (model.priority.toLowerCase()) {
-      'high' => AIMBadgeTone.error,
-      'medium' => AIMBadgeTone.warning,
+  AIMBadgeTone get _statusTone {
+    return switch (model.status.toLowerCase()) {
+      'overdue' => AIMBadgeTone.error,
+      'due_soon' => AIMBadgeTone.warning,
       _ => AIMBadgeTone.accent,
     };
   }
@@ -33,7 +30,7 @@ class HomeReviewScheduleCard extends StatelessWidget {
     final surfaces = aimSurfacesOf(context);
 
     return AIMCard(
-      semanticLabel: 'Review ${model.topic} due ${model.dueAt}',
+      semanticLabel: 'Review ${model.skillId} due ${model.dueAt}',
       child: Row(
         children: [
           const Icon(
@@ -47,7 +44,7 @@ class HomeReviewScheduleCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  model.topic,
+                  model.skillId,
                   style: AimTextStyles.label
                       .copyWith(color: surfaces.textPrimary),
                   maxLines: 1,
@@ -66,10 +63,10 @@ class HomeReviewScheduleCard extends StatelessWidget {
           ),
           const SizedBox(width: AimSpacing.innerGap),
           AIMBadge(
-            tone: _priorityTone,
+            tone: _statusTone,
             variant: AIMBadgeVariant.soft,
             pill: true,
-            child: Text(model.priority),
+            child: Text(model.status),
           ),
         ],
       ),
