@@ -2,34 +2,39 @@
 // LearningPathWeaknessRecordModel — data-layer model for
 // LearningPathWeaknessRecord.
 //
-// Parses the full API response from
-// GET /aim/students/:studentId/weakness-records (learning plan variant).
+// Parses WeaknessRecordEntry items from WeaknessRecordsReadResponse
+// (GET /aim/students/:studentId/weakness-records).
 //
-// [severity] and [recommendedFocus] are backend-computed AIM outputs.
-// Flutter must never compute or infer these fields locally.
+// [severity] is backend-computed. Flutter must never compute or infer it.
 
 import '../../logic/entity/learning_path_weakness_record.dart';
 
-/// Data-layer model for [LearningPathWeaknessRecord].
 class LearningPathWeaknessRecordModel extends LearningPathWeaknessRecord {
   const LearningPathWeaknessRecordModel({
-    required super.topic,
+    required super.weaknessId,
+    required super.skillId,
     required super.severity,
-    required super.recommendedFocus,
+    required super.status,
+    required super.triggerAttemptIds,
+    required super.detectedAt,
+    super.resolvedAt,
+    required super.updatedAt,
   });
 
   factory LearningPathWeaknessRecordModel.fromJson(
       Map<String, dynamic> json) {
     return LearningPathWeaknessRecordModel(
-      topic: json['topic'] as String,
+      weaknessId: json['weaknessId'] as String,
+      skillId: json['skillId'] as String,
       severity: json['severity'] as String,
-      recommendedFocus: json['recommendedFocus'] as String,
+      status: json['status'] as String,
+      triggerAttemptIds: (json['triggerAttemptIds'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+      detectedAt: json['detectedAt'] as String,
+      resolvedAt: json['resolvedAt'] as String?,
+      updatedAt: json['updatedAt'] as String,
     );
   }
-
-  Map<String, dynamic> toJson() => {
-        'topic': topic,
-        'severity': severity,
-        'recommendedFocus': recommendedFocus,
-      };
 }

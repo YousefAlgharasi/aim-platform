@@ -2,34 +2,43 @@
 // LearningPathRecommendationModel — data-layer model for
 // LearningPathRecommendation.
 //
-// Parses the API response from
-// GET /aim/students/:studentId/recommendations.
+// Parses RecommendationEntry items from RecommendationReadResponse
+// (GET /aim/students/:studentId/recommendations).
 //
-// All recommendation content ([action], [reason]) is backend-computed.
+// All recommendation content is backend-computed.
 // Flutter must never generate or rewrite recommendation content locally.
 
 import '../../logic/entity/learning_path_recommendation.dart';
 
-/// Data-layer model for [LearningPathRecommendation].
 class LearningPathRecommendationModel extends LearningPathRecommendation {
   const LearningPathRecommendationModel({
-    required super.topic,
-    required super.action,
+    required super.id,
+    required super.kind,
+    required super.targetSkillId,
+    super.targetLessonId,
+    required super.rank,
     required super.reason,
+    super.basedOnWeaknessId,
+    required super.generatedAt,
+    super.expiresAt,
+    required super.status,
+    required super.updatedAt,
   });
 
   factory LearningPathRecommendationModel.fromJson(
       Map<String, dynamic> json) {
     return LearningPathRecommendationModel(
-      topic: json['topic'] as String,
-      action: json['action'] as String,
+      id: json['id'] as String,
+      kind: json['kind'] as String,
+      targetSkillId: json['targetSkillId'] as String,
+      targetLessonId: json['targetLessonId'] as String?,
+      rank: (json['rank'] as num).toInt(),
       reason: json['reason'] as String,
+      basedOnWeaknessId: json['basedOnWeaknessId'] as String?,
+      generatedAt: json['generatedAt'] as String,
+      expiresAt: json['expiresAt'] as String?,
+      status: json['status'] as String,
+      updatedAt: json['updatedAt'] as String,
     );
   }
-
-  Map<String, dynamic> toJson() => {
-        'topic': topic,
-        'action': action,
-        'reason': reason,
-      };
 }
