@@ -3,9 +3,9 @@ import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 export class SubmitPlacementAnswerDto {
   @IsUUID()
   @IsNotEmpty()
-  readonly placementQuestionId!: string;
+  readonly placement_question_id!: string;
 
   @IsString()
   @IsNotEmpty()
-  readonly answerValue!: string;
+  readonly answer_value!: string;
 }

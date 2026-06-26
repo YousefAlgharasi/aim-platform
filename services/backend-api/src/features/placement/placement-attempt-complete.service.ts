@@ -163,10 +163,11 @@ export class PlacementAttemptCompleteService {
     // -----------------------------------------------------------------------
     return {
       id: updated.id,
+      placement_test_id: updated.placement_test_id,
       status: 'submitted',
-      submittedAt: updated.submitted_at as string,
-      totalQuestions,
-      totalAnswered,
+      started_at: updated.started_at as string,
+      submitted_at: updated.submitted_at as string,
+      completed_at: null,
     };
   }
 }

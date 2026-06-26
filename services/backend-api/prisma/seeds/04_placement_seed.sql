@@ -36,6 +36,8 @@ INSERT INTO placement_tests (
   id,
   title,
   status,
+  estimated_minutes,
+  total_sections,
   created_at,
   updated_at
 )
@@ -43,6 +45,8 @@ VALUES (
   'f4000000-0000-0000-0000-000000000001',
   'AIM Phase 4 Placement Test',
   'published',
+  20,
+  3,
   now(),
   now()
 )

@@ -55,7 +55,7 @@ import { PlacementAttemptCompleteService } from './placement-attempt-complete.se
 import { PlacementResultReadService, PlacementResultResponse } from './placement-result-read.service';
 import { PlacementResultService } from './placement-result.service';
 import { PlacementInitialLearningPathService } from './placement-initial-learning-path.service';
-import { PlacementSectionsService, PlacementSectionsResponse } from './placement-sections.service';
+import { PlacementSectionsService, PlacementSectionSafeResponse } from './placement-sections.service';
 import { SubmitPlacementAnswerDto } from './submit-placement-answer.dto';
 import {
   PlacementQuestionDeliveryResponse,
@@ -96,6 +96,22 @@ export class PlacementController {
   }
 
   /**
+   * GET /placement/active/sections
+   * List sections of the active placement test in order.
+   * Alias for /placement/sections — used by the Flutter mobile app.
+   */
+  @Get('active/sections')
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List sections of the active placement test (student-safe).' })
+  @ApiOkResponse({ description: 'Ordered section list.' })
+  async getActiveSections(): Promise<PlacementSectionSafeResponse[]> {
+    return this.sections.getSections();
+  }
+
+  /**
    * POST /placement/attempts
    * Start a new placement attempt for the authenticated student.
    * Enforces retake policy (P4-049). P4-006 endpoint #4. Response: P4-013 §3.
@@ -128,7 +144,7 @@ export class PlacementController {
   @ApiOkResponse({
     description: 'Ordered section list. Fields excluded: placement_test_id, created_at, updated_at.',
   })
-  async getSections(): Promise<PlacementSectionsResponse> {
+  async getSections(): Promise<PlacementSectionSafeResponse[]> {
     return this.sections.getSections();
   }
 
@@ -200,7 +216,7 @@ export class PlacementController {
   /**
    * GET /placement/attempts/:id/result
    * Fetch the student-safe placement result — only available after status = completed.
-   * Returns estimatedLevel, skillSummary (signal only — no raw scores), initialPathReady.
+   * Returns estimated_level, skill_mastery_map (with signal), weakness_map, initial_path_id.
    * P4-006 endpoint #7. Response: P4-014 §5–6.
    */
   @Get('attempts/:id/result')
