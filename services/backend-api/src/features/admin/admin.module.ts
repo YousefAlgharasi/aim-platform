@@ -21,11 +21,13 @@ import { AdminStatsService } from './admin-stats.service';
 import { AdminService } from './admin.service';
 import { AdminUsersController } from './users/admin-users.controller';
 import { AdminUsersService } from './users/admin-users.service';
+import { AdminStudentProgressController } from './users/admin-student-progress.controller';
+import { AdminStudentProgressService } from './users/admin-student-progress.service';
 
 @Module({
   imports: [AuthModule, DatabaseModule, RolesModule, UsersModule],
-  controllers: [AdminController, AdminDataController, AdminParentsController, AdminRoleAssignmentController, AdminRolesController, AdminUsersController, AdminStatsController],
-  providers: [AdminService, AdminDataService, AdminParentsService, AdminRoleAssignmentService, AdminUsersService, AdminProfileService, AdminStatsService],
+  controllers: [AdminController, AdminDataController, AdminParentsController, AdminRoleAssignmentController, AdminRolesController, AdminUsersController, AdminStudentProgressController, AdminStatsController],
+  providers: [AdminService, AdminDataService, AdminParentsService, AdminRoleAssignmentService, AdminUsersService, AdminStudentProgressService, AdminProfileService, AdminStatsService],
   exports: [AdminService, AdminDataService, AdminRoleAssignmentService, AdminProfileService],
 })
 export class AdminModule {}

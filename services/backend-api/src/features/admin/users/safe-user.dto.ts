@@ -30,4 +30,16 @@ export class SafeUserDto {
 
   @ApiProperty()
   updatedAt!: string;
+
+  @ApiProperty({ nullable: true, description: 'Backend-computed lesson completion count. Null for non-student users.' })
+  completedLessons!: number | null;
+
+  @ApiProperty({ nullable: true, description: 'Backend-computed count of published lessons. Null for non-student users.' })
+  totalLessons!: number | null;
+
+  @ApiProperty({ nullable: true, description: 'Backend-computed completion percent. Null for non-student users.' })
+  completionPct!: number | null;
+
+  @ApiProperty({ nullable: true, description: 'Backend-computed last lesson-progress activity timestamp.' })
+  lastActiveAt!: string | null;
 }
