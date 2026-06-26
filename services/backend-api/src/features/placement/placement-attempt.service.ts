@@ -26,14 +26,12 @@ import {
   PlacementAttemptStartResponse,
   PlacementTestRow,
 } from './placement.types';
-import { PlacementRetakePolicyService } from './placement-retake-policy.service';
 import { PlacementAuditService } from './placement-audit.service';
 
 @Injectable()
 export class PlacementAttemptService {
   constructor(
     private readonly db: DatabaseService,
-    private readonly retakePolicy: PlacementRetakePolicyService,
     private readonly audit: PlacementAuditService,
   ) {}
 
@@ -69,9 +67,15 @@ export class PlacementAttemptService {
 
     const test = testResult.rows[0];
 
-    // 2. Enforce retake policy (P4-049).
-    //    Throws AppError if blocked by active attempt or 24-hour cooldown.
-    await this.retakePolicy.enforceRetakePolicy(studentId, test.id);
+    // 2. Abandon any existing active/submitted attempts so the student can restart freely.
+    await this.db.query(
+      `UPDATE placement_attempts
+       SET status = 'abandoned', updated_at = now()
+       WHERE student_id = $1
+         AND placement_test_id = $2
+         AND status IN ('active', 'submitted')`,
+      [studentId, test.id],
+    );
 
     // 3. Insert a new attempt — backend sets all fields.
     const insertResult = await this.db.query<PlacementAttemptRow>(
@@ -86,8 +90,7 @@ export class PlacementAttemptService {
 
     void this.audit.logAttemptStarted(studentId, attempt.id, test.id);
 
-    // 4. Return student-safe fields only (P4-013 §4).
-    //    student_id and created_at are intentionally excluded.
+    // 4. Return student-safe fields only.
     return {
       id: attempt.id,
       placement_test_id: attempt.placement_test_id,
