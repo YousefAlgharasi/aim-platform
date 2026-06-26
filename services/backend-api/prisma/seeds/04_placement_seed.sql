@@ -1,561 +1,453 @@
--- Phase 4 — P4-027
--- Seed data for placement test, sections, and sample questions.
+-- =============================================================================
+-- AIM Platform — Full Placement Test Content Seed
+-- =============================================================================
+-- Scope: Placement Test system (Phase 4)
+-- Levels: A1 (Beginner) → A2 (Elementary) → B1 (Intermediate) → B2 (Upper-Int)
+-- Sections: Grammar (15), Vocabulary (15), Listening (15) = 45 questions
+-- All questions: multiple_choice, 4 options (A/B/C/D), progressive difficulty
 --
--- Scope:
--- Placement Test system only.
---
--- Security rules:
--- - No secrets, service-role keys, database credentials, JWT secrets, or AI provider keys are stored here.
--- - correct_answer values are stored server-side only; this seed file must never be exposed to clients.
--- - This seed must be executed only by backend-controlled tooling (e.g. prisma db seed or psql pipeline).
--- - Backend remains the final authority for placement scoring, level assignment, and result generation.
--- - Do not seed AIM Engine runtime data, lesson delivery, practice attempts, session state,
---   progress dashboard, AI Teacher, or Student Web App data here.
---
--- Usage:
--- Run after P4-017 (placement_tests), P4-018 (placement_sections), P4-019 (placement_questions),
--- and P4-020 (placement_question_skills) migrations are applied.
--- Safe to run multiple times — all inserts use ON CONFLICT DO NOTHING.
---
--- Blueprint conformance:
--- Seeded per docs/phase-4/placement-blueprint-rules.md (P4-029):
---   - 3 sections: Grammar (10q), Vocabulary (10q), Listening (10q)
---   - All questions are multiple_choice with 4 options per P4-029 §3.1–3.3
---   - Listening questions include audio prompt reference in prompt field per P4-029 §3.3
---   - correct_answer values are backend-only; never exposed to students
---
--- Dependencies:
--- P4-019 (placement_questions migration)
--- P4-020 (placement_question_skills migration)
+-- Security: correct_answer values are backend-only; never exposed to students.
+-- Safe to run multiple times — cleans old data first, then inserts fresh content.
+-- =============================================================================
 
 -- -----------------------------------------------------------------------
--- 1. Placement Test
+-- 0. Clean existing placeholder data (cascade deletes questions & skills map)
 -- -----------------------------------------------------------------------
 
-INSERT INTO placement_tests (
-  id,
-  title,
-  status,
-  estimated_minutes,
-  total_sections,
-  created_at,
-  updated_at
-)
-VALUES (
-  'f4000000-0000-0000-0000-000000000001',
-  'AIM Phase 4 Placement Test',
-  'published',
-  20,
-  3,
-  now(),
-  now()
-)
-ON CONFLICT (id) DO NOTHING;
-
--- -----------------------------------------------------------------------
--- 2. Placement Sections
--- Blueprint: 3 sections in fixed order — Grammar, Vocabulary, Listening
--- -----------------------------------------------------------------------
-
-INSERT INTO placement_sections (
-  id,
-  placement_test_id,
-  title,
-  skill_code,
-  order_index,
-  total_questions,
-  created_at,
-  updated_at
-)
-VALUES
-  (
-    'f4000000-0000-0000-0001-000000000001',
-    'f4000000-0000-0000-0000-000000000001',
-    'Grammar',
-    'grammar',
-    1,
-    10,
-    now(),
-    now()
-  ),
-  (
-    'f4000000-0000-0000-0001-000000000002',
-    'f4000000-0000-0000-0000-000000000001',
-    'Vocabulary',
-    'vocabulary',
-    2,
-    10,
-    now(),
-    now()
-  ),
-  (
-    'f4000000-0000-0000-0001-000000000003',
-    'f4000000-0000-0000-0000-000000000001',
-    'Listening',
-    'listening',
-    3,
-    10,
-    now(),
-    now()
+DELETE FROM placement_question_skills
+WHERE placement_question_id IN (
+  SELECT id FROM placement_questions
+  WHERE placement_section_id IN (
+    SELECT id FROM placement_sections
+    WHERE placement_test_id = 'f4000000-0000-0000-0000-000000000001'
   )
+);
+
+DELETE FROM placement_questions
+WHERE placement_section_id IN (
+  SELECT id FROM placement_sections
+  WHERE placement_test_id = 'f4000000-0000-0000-0000-000000000001'
+);
+
+DELETE FROM placement_sections
+WHERE placement_test_id = 'f4000000-0000-0000-0000-000000000001';
+
+-- -----------------------------------------------------------------------
+-- 1. Placement Test (upsert — keep existing row)
+-- -----------------------------------------------------------------------
+
+UPDATE placement_tests
+SET title = 'AIM English Placement Test',
+    description = 'Comprehensive placement test covering Grammar, Vocabulary, and Listening from A1 to B2 level. Approximately 25 minutes.',
+    estimated_minutes = 25,
+    total_sections = 3,
+    updated_at = now()
+WHERE id = 'f4000000-0000-0000-0000-000000000001';
+
+-- -----------------------------------------------------------------------
+-- 2. Sections (3 sections, fixed order)
+-- -----------------------------------------------------------------------
+
+INSERT INTO placement_sections (id, placement_test_id, title, skill_code, order_index, total_questions)
+VALUES
+  ('f4000000-0000-0000-0001-000000000001', 'f4000000-0000-0000-0000-000000000001', 'Grammar',    'grammar',    1, 15),
+  ('f4000000-0000-0000-0001-000000000002', 'f4000000-0000-0000-0000-000000000001', 'Vocabulary',  'vocabulary', 2, 15),
+  ('f4000000-0000-0000-0001-000000000003', 'f4000000-0000-0000-0000-000000000001', 'Listening',   'listening',  3, 15)
 ON CONFLICT (id) DO NOTHING;
 
 -- -----------------------------------------------------------------------
--- 3. Grammar Questions (10 questions)
--- Blueprint §3.1: verb forms (3), subject-verb agreement (2),
---   articles & prepositions (2), sentence structure & negation (2), question forms (1)
--- All multiple_choice, 4 options, correct_answer is backend-only
+-- 3. Placement Skills (for question-skill mapping)
 -- -----------------------------------------------------------------------
 
-INSERT INTO placement_questions (
-  id,
-  placement_section_id,
-  question_type,
-  prompt,
-  media_url,
-  order_index,
-  correct_answer,
-  created_at,
-  updated_at
-)
+INSERT INTO skills (id, key, title, description, domain, status)
 VALUES
-  -- Verb forms (Q1–Q3)
-  (
-    'f4000000-0000-0000-0002-000000000001',
-    'f4000000-0000-0000-0001-000000000001',
-    'multiple_choice',
-    'She ___ to school every day. (A) go (B) goes (C) going (D) gone',
-    NULL,
-    1,
-    'B',
-    now(), now()
-  ),
-  (
-    'f4000000-0000-0000-0002-000000000002',
-    'f4000000-0000-0000-0001-000000000001',
-    'multiple_choice',
-    'They ___ football last Saturday. (A) play (B) plays (C) played (D) playing',
-    NULL,
-    2,
-    'C',
-    now(), now()
-  ),
-  (
-    'f4000000-0000-0000-0002-000000000003',
-    'f4000000-0000-0000-0001-000000000001',
-    'multiple_choice',
-    'By next year, she ___ here for ten years. (A) will work (B) has worked (C) will have worked (D) was working',
-    NULL,
-    3,
-    'C',
-    now(), now()
-  ),
-  -- Subject-verb agreement (Q4–Q5)
-  (
-    'f4000000-0000-0000-0002-000000000004',
-    'f4000000-0000-0000-0001-000000000001',
-    'multiple_choice',
-    'The students ___ very tired after the exam. (A) is (B) are (C) was (D) be',
-    NULL,
-    4,
-    'B',
-    now(), now()
-  ),
-  (
-    'f4000000-0000-0000-0002-000000000005',
-    'f4000000-0000-0000-0001-000000000001',
-    'multiple_choice',
-    'Neither the teacher nor the students ___ ready. (A) is (B) are (C) was (D) were',
-    NULL,
-    5,
-    'B',
-    now(), now()
-  ),
-  -- Articles and prepositions (Q6–Q7)
-  (
-    'f4000000-0000-0000-0002-000000000006',
-    'f4000000-0000-0000-0001-000000000001',
-    'multiple_choice',
-    'I saw ___ interesting film last night. (A) a (B) an (C) the (D) —',
-    NULL,
-    6,
-    'B',
-    now(), now()
-  ),
-  (
-    'f4000000-0000-0000-0002-000000000007',
-    'f4000000-0000-0000-0001-000000000001',
-    'multiple_choice',
-    'She is good ___ mathematics. (A) in (B) on (C) at (D) for',
-    NULL,
-    7,
-    'C',
-    now(), now()
-  ),
-  -- Sentence structure and negation (Q8–Q9)
-  (
-    'f4000000-0000-0000-0002-000000000008',
-    'f4000000-0000-0000-0001-000000000001',
-    'multiple_choice',
-    'He ___ come to the party last night. (A) did not (B) does not (C) is not (D) was not',
-    NULL,
-    8,
-    'A',
-    now(), now()
-  ),
-  (
-    'f4000000-0000-0000-0002-000000000009',
-    'f4000000-0000-0000-0001-000000000001',
-    'multiple_choice',
-    'Which sentence is correct? (A) She not like coffee. (B) She does not likes coffee. (C) She does not like coffee. (D) She do not like coffee.',
-    NULL,
-    9,
-    'C',
-    now(), now()
-  ),
-  -- Question forms (Q10)
-  (
-    'f4000000-0000-0000-0002-000000000010',
-    'f4000000-0000-0000-0001-000000000001',
-    'multiple_choice',
-    '___ does the class start? (A) What (B) When (C) Where (D) Which',
-    NULL,
-    10,
-    'B',
-    now(), now()
-  )
+  -- Grammar skills
+  ('d4000000-0000-0000-0001-000000000001', 'placement.grammar.verb_tenses',       'Verb Tenses',                'Correct use of present, past, future, and perfect tenses.',                  'grammar', 'published'),
+  ('d4000000-0000-0000-0001-000000000002', 'placement.grammar.subject_verb',      'Subject-Verb Agreement',     'Matching subjects with correct verb forms.',                                 'grammar', 'published'),
+  ('d4000000-0000-0000-0001-000000000003', 'placement.grammar.articles_preps',    'Articles & Prepositions',    'Correct use of a/an/the and common prepositions.',                           'grammar', 'published'),
+  ('d4000000-0000-0000-0001-000000000004', 'placement.grammar.sentence_structure','Sentence Structure',         'Word order, negation, question formation, and clause construction.',         'grammar', 'published'),
+  ('d4000000-0000-0000-0001-000000000005', 'placement.grammar.modals_conditionals','Modals & Conditionals',     'Use of can/could/should/would/must and conditional structures.',             'grammar', 'published'),
+
+  -- Vocabulary skills
+  ('d4000000-0000-0000-0002-000000000001', 'placement.vocabulary.word_meaning',   'Word Meaning & Synonyms',    'Understanding definitions, synonyms, and antonyms.',                         'vocabulary', 'published'),
+  ('d4000000-0000-0000-0002-000000000002', 'placement.vocabulary.word_in_context','Word in Context',            'Choosing the correct word to complete a sentence meaningfully.',              'vocabulary', 'published'),
+  ('d4000000-0000-0000-0002-000000000003', 'placement.vocabulary.collocations',   'Collocations & Phrases',     'Common word partnerships and fixed expressions.',                            'vocabulary', 'published'),
+  ('d4000000-0000-0000-0002-000000000004', 'placement.vocabulary.reading_comp',   'Reading Comprehension',      'Understanding main ideas, details, and inferences from short passages.',     'vocabulary', 'published'),
+
+  -- Listening skills
+  ('d4000000-0000-0000-0003-000000000001', 'placement.listening.instructions',    'Spoken Instructions',        'Understanding simple to complex spoken instructions and requests.',          'listening', 'published'),
+  ('d4000000-0000-0000-0003-000000000002', 'placement.listening.dialogue',        'Dialogue Comprehension',     'Understanding conversations between two or more speakers.',                  'listening', 'published'),
+  ('d4000000-0000-0000-0003-000000000003', 'placement.listening.numbers_time',    'Numbers, Time & Data',       'Recognising numbers, times, prices, and factual data from spoken input.',    'listening', 'published'),
+  ('d4000000-0000-0000-0003-000000000004', 'placement.listening.main_idea',       'Main Idea & Inference',      'Identifying the main point, purpose, or implied meaning of spoken passages.','listening', 'published')
+ON CONFLICT (key) DO NOTHING;
+
+
+-- =======================================================================
+-- SECTION 1: GRAMMAR — 15 Questions (A1 → B2)
+-- =======================================================================
+
+INSERT INTO placement_questions (id, placement_section_id, question_type, prompt, media_url, order_index, correct_answer)
+VALUES
+
+-- ── A1 Level (Q1–Q3): Basic verb forms, pronouns, simple present ──
+
+('e4000000-0000-0001-0001-000000000001',
+ 'f4000000-0000-0000-0001-000000000001', 'multiple_choice',
+ 'She ___ a student at this school. (A) am (B) is (C) are (D) be',
+ NULL, 1, 'B'),
+
+('e4000000-0000-0001-0001-000000000002',
+ 'f4000000-0000-0000-0001-000000000001', 'multiple_choice',
+ 'They ___ breakfast every morning at seven o''clock. (A) has (B) having (C) have (D) is having',
+ NULL, 2, 'C'),
+
+('e4000000-0000-0001-0001-000000000003',
+ 'f4000000-0000-0000-0001-000000000001', 'multiple_choice',
+ 'I ___ from Egypt. Where are you from? (A) is (B) am (C) are (D) be',
+ NULL, 3, 'B'),
+
+-- ── A2 Level (Q4–Q6): Past simple, present continuous, comparatives ──
+
+('e4000000-0000-0001-0001-000000000004',
+ 'f4000000-0000-0000-0001-000000000001', 'multiple_choice',
+ 'We ___ to the cinema last Friday, but the film was not very good. (A) go (B) goes (C) went (D) going',
+ NULL, 4, 'C'),
+
+('e4000000-0000-0001-0001-000000000005',
+ 'f4000000-0000-0000-0001-000000000001', 'multiple_choice',
+ 'Look! The children ___ in the garden right now. (A) play (B) plays (C) played (D) are playing',
+ NULL, 5, 'D'),
+
+('e4000000-0000-0001-0001-000000000006',
+ 'f4000000-0000-0000-0001-000000000001', 'multiple_choice',
+ 'This exercise is ___ than the last one. (A) more difficult (B) difficulter (C) most difficult (D) the difficult',
+ NULL, 6, 'A'),
+
+-- ── A2+ Level (Q7–Q9): Present perfect, prepositions, articles ──
+
+('e4000000-0000-0001-0001-000000000007',
+ 'f4000000-0000-0000-0001-000000000001', 'multiple_choice',
+ 'I have never ___ to London, but I would love to visit. (A) be (B) been (C) being (D) was',
+ NULL, 7, 'B'),
+
+('e4000000-0000-0001-0001-000000000008',
+ 'f4000000-0000-0000-0001-000000000001', 'multiple_choice',
+ 'She is interested ___ learning new languages. (A) on (B) for (C) in (D) at',
+ NULL, 8, 'C'),
+
+('e4000000-0000-0001-0001-000000000009',
+ 'f4000000-0000-0000-0001-000000000001', 'multiple_choice',
+ 'My brother is ___ engineer. He works at ___ airport. (A) a / an (B) an / the (C) the / a (D) an / an',
+ NULL, 9, 'B'),
+
+-- ── B1 Level (Q10–Q12): Modals, passive voice, reported speech ──
+
+('e4000000-0000-0001-0001-000000000010',
+ 'f4000000-0000-0000-0001-000000000001', 'multiple_choice',
+ 'You ___ wear a uniform at this school. It is the rule. (A) must (B) might (C) could (D) would',
+ NULL, 10, 'A'),
+
+('e4000000-0000-0001-0001-000000000011',
+ 'f4000000-0000-0000-0001-000000000001', 'multiple_choice',
+ 'This bridge ___ in 1889 and it is still used today. (A) built (B) was built (C) has built (D) is building',
+ NULL, 11, 'B'),
+
+('e4000000-0000-0001-0001-000000000012',
+ 'f4000000-0000-0000-0001-000000000001', 'multiple_choice',
+ 'She told me that she ___ the exam the day before. (A) passes (B) has passed (C) had passed (D) will pass',
+ NULL, 12, 'C'),
+
+-- ── B2 Level (Q13–Q15): Conditionals, relative clauses, advanced tenses ──
+
+('e4000000-0000-0001-0001-000000000013',
+ 'f4000000-0000-0000-0001-000000000001', 'multiple_choice',
+ 'If I ___ about the meeting, I would have attended it. (A) know (B) knew (C) had known (D) have known',
+ NULL, 13, 'C'),
+
+('e4000000-0000-0001-0001-000000000014',
+ 'f4000000-0000-0000-0001-000000000001', 'multiple_choice',
+ 'The author, ___ latest novel became a bestseller, will give a talk tomorrow. (A) who (B) which (C) whose (D) whom',
+ NULL, 14, 'C'),
+
+('e4000000-0000-0001-0001-000000000015',
+ 'f4000000-0000-0000-0001-000000000001', 'multiple_choice',
+ 'By the time we arrive at the station, the train ___. (A) left (B) has left (C) will have left (D) leaves',
+ NULL, 15, 'C')
+
 ON CONFLICT (id) DO NOTHING;
 
--- -----------------------------------------------------------------------
--- 4. Vocabulary Questions (10 questions)
--- Blueprint §3.2: word meaning & synonyms (3), word in context fill-in (3),
---   reading comprehension (4)
--- All multiple_choice, 4 options
--- -----------------------------------------------------------------------
 
-INSERT INTO placement_questions (
-  id,
-  placement_section_id,
-  question_type,
-  prompt,
-  media_url,
-  order_index,
-  correct_answer,
-  created_at,
-  updated_at
-)
+-- =======================================================================
+-- SECTION 2: VOCABULARY — 15 Questions (A1 → B2)
+-- =======================================================================
+
+INSERT INTO placement_questions (id, placement_section_id, question_type, prompt, media_url, order_index, correct_answer)
 VALUES
-  -- Word meaning and synonyms (Q1–Q3)
-  (
-    'f4000000-0000-0000-0003-000000000001',
-    'f4000000-0000-0000-0001-000000000002',
-    'multiple_choice',
-    'What is the best synonym for "happy"? (A) sad (B) joyful (C) angry (D) tired',
-    NULL,
-    1,
-    'B',
-    now(), now()
-  ),
-  (
-    'f4000000-0000-0000-0003-000000000002',
-    'f4000000-0000-0000-0001-000000000002',
-    'multiple_choice',
-    'What does "enormous" mean? (A) very small (B) very fast (C) very large (D) very quiet',
-    NULL,
-    2,
-    'C',
-    now(), now()
-  ),
-  (
-    'f4000000-0000-0000-0003-000000000003',
-    'f4000000-0000-0000-0001-000000000002',
-    'multiple_choice',
-    'Which word means "to begin"? (A) end (B) start (C) pause (D) stop',
-    NULL,
-    3,
-    'B',
-    now(), now()
-  ),
-  -- Word in context / fill-in (Q4–Q6)
-  (
-    'f4000000-0000-0000-0003-000000000004',
-    'f4000000-0000-0000-0001-000000000002',
-    'multiple_choice',
-    'Please ___ the door when you leave. (A) open (B) close (C) break (D) paint',
-    NULL,
-    4,
-    'B',
-    now(), now()
-  ),
-  (
-    'f4000000-0000-0000-0003-000000000005',
-    'f4000000-0000-0000-0001-000000000002',
-    'multiple_choice',
-    'The weather is very ___ today — you should bring an umbrella. (A) sunny (B) warm (C) rainy (D) cold',
-    NULL,
-    5,
-    'C',
-    now(), now()
-  ),
-  (
-    'f4000000-0000-0000-0003-000000000006',
-    'f4000000-0000-0000-0001-000000000002',
-    'multiple_choice',
-    'She ___ her keys and could not enter the house. (A) found (B) lost (C) bought (D) made',
-    NULL,
-    6,
-    'B',
-    now(), now()
-  ),
-  -- Reading comprehension (Q7–Q10)
-  -- Passage: "Tom works at a library. He arrives at 9 am and leaves at 5 pm.
-  --           He helps people find books and uses a computer to manage records."
-  (
-    'f4000000-0000-0000-0003-000000000007',
-    'f4000000-0000-0000-0001-000000000002',
-    'multiple_choice',
-    'Passage: "Tom works at a library. He arrives at 9 am and leaves at 5 pm. He helps people find books and uses a computer to manage records." — Where does Tom work? (A) a school (B) a hospital (C) a library (D) a shop',
-    NULL,
-    7,
-    'C',
-    now(), now()
-  ),
-  (
-    'f4000000-0000-0000-0003-000000000008',
-    'f4000000-0000-0000-0001-000000000002',
-    'multiple_choice',
-    'Passage (same as above) — What time does Tom arrive? (A) 8 am (B) 9 am (C) 10 am (D) 5 pm',
-    NULL,
-    8,
-    'B',
-    now(), now()
-  ),
-  (
-    'f4000000-0000-0000-0003-000000000009',
-    'f4000000-0000-0000-0001-000000000002',
-    'multiple_choice',
-    'Passage (same as above) — What does Tom use to manage records? (A) a typewriter (B) books (C) a phone (D) a computer',
-    NULL,
-    9,
-    'D',
-    now(), now()
-  ),
-  (
-    'f4000000-0000-0000-0003-000000000010',
-    'f4000000-0000-0000-0001-000000000002',
-    'multiple_choice',
-    'Passage (same as above) — How many hours does Tom work per day? (A) 6 (B) 7 (C) 8 (D) 9',
-    NULL,
-    10,
-    'C',
-    now(), now()
-  )
+
+-- ── A1 Level (Q1–Q3): Basic everyday words ──
+
+('e4000000-0000-0002-0001-000000000001',
+ 'f4000000-0000-0000-0001-000000000002', 'multiple_choice',
+ 'What is the opposite of "hot"? (A) warm (B) cold (C) fast (D) heavy',
+ NULL, 1, 'B'),
+
+('e4000000-0000-0002-0001-000000000002',
+ 'f4000000-0000-0000-0001-000000000002', 'multiple_choice',
+ 'A person who teaches students at school is called a ___. (A) doctor (B) driver (C) teacher (D) farmer',
+ NULL, 2, 'C'),
+
+('e4000000-0000-0002-0001-000000000003',
+ 'f4000000-0000-0000-0001-000000000002', 'multiple_choice',
+ 'You sleep in a ___. (A) kitchen (B) bathroom (C) bedroom (D) garden',
+ NULL, 3, 'C'),
+
+-- ── A2 Level (Q4–Q6): Word in context, common verbs ──
+
+('e4000000-0000-0002-0001-000000000004',
+ 'f4000000-0000-0000-0001-000000000002', 'multiple_choice',
+ 'Can you ___ me your pen? I forgot mine at home. (A) borrow (B) lend (C) give back (D) take',
+ NULL, 4, 'B'),
+
+('e4000000-0000-0002-0001-000000000005',
+ 'f4000000-0000-0000-0001-000000000002', 'multiple_choice',
+ 'The weather is terrible — it has been ___ all day. (A) shining (B) snowing (C) raining (D) blowing',
+ NULL, 5, 'C'),
+
+('e4000000-0000-0002-0001-000000000006',
+ 'f4000000-0000-0000-0001-000000000002', 'multiple_choice',
+ 'I need to ___ an appointment with the dentist. (A) do (B) make (C) take (D) get',
+ NULL, 6, 'B'),
+
+-- ── A2+ Level (Q7–Q9): Collocations, phrasal meaning ──
+
+('e4000000-0000-0002-0001-000000000007',
+ 'f4000000-0000-0000-0001-000000000002', 'multiple_choice',
+ 'Which word means "to arrive at a place"? (A) reach (B) leave (C) pass (D) miss',
+ NULL, 7, 'A'),
+
+('e4000000-0000-0002-0001-000000000008',
+ 'f4000000-0000-0000-0001-000000000002', 'multiple_choice',
+ 'She decided to ___ up a new hobby during the summer holidays. (A) give (B) take (C) put (D) set',
+ NULL, 8, 'B'),
+
+('e4000000-0000-0002-0001-000000000009',
+ 'f4000000-0000-0000-0001-000000000002', 'multiple_choice',
+ 'We ran out ___ milk, so I went to the shop to buy some. (A) from (B) with (C) of (D) for',
+ NULL, 9, 'C'),
+
+-- ── B1 Level (Q10–Q12): Reading passage comprehension ──
+
+('e4000000-0000-0002-0001-000000000010',
+ 'f4000000-0000-0000-0001-000000000002', 'multiple_choice',
+ 'Passage: "Sara works as a journalist for a daily newspaper. Every morning she checks her emails, attends an editorial meeting, and then spends the rest of the day interviewing people or writing articles. She enjoys her job because no two days are the same." — What does Sara do for a living? (A) She is a teacher. (B) She is a journalist. (C) She is a secretary. (D) She is an editor.',
+ NULL, 10, 'B'),
+
+('e4000000-0000-0002-0001-000000000011',
+ 'f4000000-0000-0000-0001-000000000002', 'multiple_choice',
+ 'Passage (same as above) — Why does Sara enjoy her job? (A) She earns a lot of money. (B) She works short hours. (C) Every day is different. (D) She works from home.',
+ NULL, 11, 'C'),
+
+('e4000000-0000-0002-0001-000000000012',
+ 'f4000000-0000-0000-0001-000000000002', 'multiple_choice',
+ 'The word "reluctant" means ___. (A) eager and excited (B) unwilling or hesitant (C) confused and lost (D) loud and angry',
+ NULL, 12, 'B'),
+
+-- ── B2 Level (Q13–Q15): Advanced vocabulary, nuance, inference ──
+
+('e4000000-0000-0002-0001-000000000013',
+ 'f4000000-0000-0000-0001-000000000002', 'multiple_choice',
+ 'The project was delayed due to ___ circumstances beyond our control. (A) unforeseen (B) unrelated (C) uncertain (D) uncomfortable',
+ NULL, 13, 'A'),
+
+('e4000000-0000-0002-0001-000000000014',
+ 'f4000000-0000-0000-0001-000000000002', 'multiple_choice',
+ 'Passage: "Despite receiving numerous complaints, the council decided to go ahead with the construction of the new car park. Residents argued that the noise would be unbearable and that the area already had sufficient parking. The council, however, maintained that the development was essential for the town''s growth." — What is the main point of this passage? (A) Residents support the new car park. (B) The council cancelled the project. (C) There is a disagreement between residents and the council. (D) The town does not need more parking.',
+ NULL, 14, 'C'),
+
+('e4000000-0000-0002-0001-000000000015',
+ 'f4000000-0000-0000-0001-000000000002', 'multiple_choice',
+ 'She has a ___ for remembering names — she never forgets anyone she has met. (A) talent (B) knack (C) skill (D) habit',
+ NULL, 15, 'B')
+
 ON CONFLICT (id) DO NOTHING;
 
--- -----------------------------------------------------------------------
--- 5. Listening Questions (10 questions)
--- Blueprint §3.3: spoken instruction comprehension (3), dialogue comprehension (4),
---   time and number comprehension (3)
--- All multiple_choice, 4 options
--- Audio prompt reference included in prompt field per P4-029 §3.3
--- media_url set to placeholder path — replace with real CDN URLs before production
--- -----------------------------------------------------------------------
 
-INSERT INTO placement_questions (
-  id,
-  placement_section_id,
-  question_type,
-  prompt,
-  media_url,
-  order_index,
-  correct_answer,
-  created_at,
-  updated_at
-)
+-- =======================================================================
+-- SECTION 3: LISTENING — 15 Questions (A1 → B2)
+-- Audio references are placeholders — replace with real CDN URLs before production
+-- =======================================================================
+
+INSERT INTO placement_questions (id, placement_section_id, question_type, prompt, media_url, order_index, correct_answer)
 VALUES
-  -- Spoken instruction comprehension (Q1–Q3)
-  (
-    'f4000000-0000-0000-0004-000000000001',
-    'f4000000-0000-0000-0001-000000000003',
-    'multiple_choice',
-    '[Audio: listen-q1-instruction.mp3] Listen and choose what the speaker is asking you to do. (A) Open the window (B) Close the door (C) Turn off the light (D) Sit down',
-    'audio/placement/listen-q1-instruction.mp3',
-    1,
-    'B',
-    now(), now()
-  ),
-  (
-    'f4000000-0000-0000-0004-000000000002',
-    'f4000000-0000-0000-0001-000000000003',
-    'multiple_choice',
-    '[Audio: listen-q2-instruction.mp3] Listen and choose what the speaker wants you to bring. (A) a pen (B) a book (C) a bag (D) a chair',
-    'audio/placement/listen-q2-instruction.mp3',
-    2,
-    'A',
-    now(), now()
-  ),
-  (
-    'f4000000-0000-0000-0004-000000000003',
-    'f4000000-0000-0000-0001-000000000003',
-    'multiple_choice',
-    '[Audio: listen-q3-instruction.mp3] Listen and choose where the speaker is directing you to go. (A) upstairs (B) downstairs (C) outside (D) the kitchen',
-    'audio/placement/listen-q3-instruction.mp3',
-    3,
-    'C',
-    now(), now()
-  ),
-  -- Dialogue comprehension (Q4–Q7)
-  (
-    'f4000000-0000-0000-0004-000000000004',
-    'f4000000-0000-0000-0001-000000000003',
-    'multiple_choice',
-    '[Audio: listen-q4-dialogue.mp3] Listen to the dialogue. Why is the woman calling? (A) to order food (B) to book a table (C) to cancel a reservation (D) to ask for directions',
-    'audio/placement/listen-q4-dialogue.mp3',
-    4,
-    'B',
-    now(), now()
-  ),
-  (
-    'f4000000-0000-0000-0004-000000000005',
-    'f4000000-0000-0000-0001-000000000003',
-    'multiple_choice',
-    '[Audio: listen-q5-dialogue.mp3] Listen to the dialogue. What does the man decide to do? (A) go home (B) go to the gym (C) go shopping (D) go to the cinema',
-    'audio/placement/listen-q5-dialogue.mp3',
-    5,
-    'D',
-    now(), now()
-  ),
-  (
-    'f4000000-0000-0000-0004-000000000006',
-    'f4000000-0000-0000-0001-000000000003',
-    'multiple_choice',
-    '[Audio: listen-q6-dialogue.mp3] Listen to the dialogue. How does the woman feel? (A) happy (B) nervous (C) angry (D) confused',
-    'audio/placement/listen-q6-dialogue.mp3',
-    6,
-    'B',
-    now(), now()
-  ),
-  (
-    'f4000000-0000-0000-0004-000000000007',
-    'f4000000-0000-0000-0001-000000000003',
-    'multiple_choice',
-    '[Audio: listen-q7-dialogue.mp3] Listen to the dialogue. Where are they talking? (A) at a bank (B) at a hotel (C) at an airport (D) at a school',
-    'audio/placement/listen-q7-dialogue.mp3',
-    7,
-    'C',
-    now(), now()
-  ),
-  -- Time and number comprehension (Q8–Q10)
-  (
-    'f4000000-0000-0000-0004-000000000008',
-    'f4000000-0000-0000-0001-000000000003',
-    'multiple_choice',
-    '[Audio: listen-q8-time.mp3] Listen and choose the time you hear. (A) 3:15 (B) 3:50 (C) 4:15 (D) 4:50',
-    'audio/placement/listen-q8-time.mp3',
-    8,
-    'A',
-    now(), now()
-  ),
-  (
-    'f4000000-0000-0000-0004-000000000009',
-    'f4000000-0000-0000-0001-000000000003',
-    'multiple_choice',
-    '[Audio: listen-q9-number.mp3] Listen and choose the phone number you hear. (A) 555-1234 (B) 555-1243 (C) 555-1324 (D) 555-1342',
-    'audio/placement/listen-q9-number.mp3',
-    9,
-    'C',
-    now(), now()
-  ),
-  (
-    'f4000000-0000-0000-0004-000000000010',
-    'f4000000-0000-0000-0001-000000000003',
-    'multiple_choice',
-    '[Audio: listen-q10-price.mp3] Listen and choose the price you hear. (A) $12.50 (B) $12.15 (C) $21.50 (D) $21.15',
-    'audio/placement/listen-q10-price.mp3',
-    10,
-    'A',
-    now(), now()
-  )
+
+-- ── A1 Level (Q1–Q3): Simple instructions and greetings ──
+
+('e4000000-0000-0003-0001-000000000001',
+ 'f4000000-0000-0000-0001-000000000003', 'multiple_choice',
+ '[Audio] You hear: "Please open your book to page twelve." What should you do? (A) Close your book (B) Open your book to page 12 (C) Write on page 20 (D) Put your book away',
+ 'audio/placement/a1-listen-01-instruction.mp3', 1, 'B'),
+
+('e4000000-0000-0003-0001-000000000002',
+ 'f4000000-0000-0000-0001-000000000003', 'multiple_choice',
+ '[Audio] You hear a woman say: "Hello, my name is Fatima. I come from Morocco and I am twenty-three years old." How old is Fatima? (A) 13 (B) 20 (C) 23 (D) 30',
+ 'audio/placement/a1-listen-02-intro.mp3', 2, 'C'),
+
+('e4000000-0000-0003-0001-000000000003',
+ 'f4000000-0000-0000-0001-000000000003', 'multiple_choice',
+ '[Audio] You hear: "The train to London leaves at half past nine from platform four." What platform does the train leave from? (A) Platform 2 (B) Platform 3 (C) Platform 4 (D) Platform 9',
+ 'audio/placement/a1-listen-03-announcement.mp3', 3, 'C'),
+
+-- ── A2 Level (Q4–Q6): Short dialogues, everyday situations ──
+
+('e4000000-0000-0003-0001-000000000004',
+ 'f4000000-0000-0000-0001-000000000003', 'multiple_choice',
+ '[Audio] Dialogue — Man: "Excuse me, how much is this shirt?" Woman: "It''s fifteen pounds, but we have a sale today — everything is half price." How much will the man pay? (A) £5.00 (B) £7.50 (C) £10.00 (D) £15.00',
+ 'audio/placement/a2-listen-04-shopping.mp3', 4, 'B'),
+
+('e4000000-0000-0003-0001-000000000005',
+ 'f4000000-0000-0000-0001-000000000003', 'multiple_choice',
+ '[Audio] Dialogue — Woman: "Would you like tea or coffee?" Man: "Coffee, please, with milk but no sugar." What does the man want? (A) Tea with sugar (B) Coffee with sugar (C) Coffee with milk, no sugar (D) Tea with milk',
+ 'audio/placement/a2-listen-05-cafe.mp3', 5, 'C'),
+
+('e4000000-0000-0003-0001-000000000006',
+ 'f4000000-0000-0000-0001-000000000003', 'multiple_choice',
+ '[Audio] You hear a voicemail: "Hi, this is Dr. Rahman''s office. Your appointment has been moved from Tuesday to Thursday at 3 p.m. Please call us to confirm." When is the new appointment? (A) Tuesday at 3 p.m. (B) Thursday at 3 p.m. (C) Tuesday at 4 p.m. (D) Thursday at 4 p.m.',
+ 'audio/placement/a2-listen-06-voicemail.mp3', 6, 'B'),
+
+-- ── A2+ Level (Q7–Q9): Longer dialogues, understanding purpose ──
+
+('e4000000-0000-0003-0001-000000000007',
+ 'f4000000-0000-0000-0001-000000000003', 'multiple_choice',
+ '[Audio] Dialogue — Student: "I''d like to join the library. What do I need?" Librarian: "You need a photo ID and proof of your address. The membership is free for students." What does the student need to join? (A) A library card and money (B) A photo ID and proof of address (C) A student card only (D) A letter from their teacher',
+ 'audio/placement/a2p-listen-07-library.mp3', 7, 'B'),
+
+('e4000000-0000-0003-0001-000000000008',
+ 'f4000000-0000-0000-0001-000000000003', 'multiple_choice',
+ '[Audio] Dialogue — Woman: "I booked a table for two at eight, but could we change it to four people at half past seven?" Man: "Let me check… Yes, that''s fine." What changed? (A) The time only (B) The number of people only (C) Both the time and the number of people (D) The restaurant location',
+ 'audio/placement/a2p-listen-08-restaurant.mp3', 8, 'C'),
+
+('e4000000-0000-0003-0001-000000000009',
+ 'f4000000-0000-0000-0001-000000000003', 'multiple_choice',
+ '[Audio] Announcement: "Attention passengers: Flight AIM-204 to Istanbul has been delayed by approximately 45 minutes. The new departure time is 14:15. We apologise for the inconvenience." What was the original departure time? (A) 13:15 (B) 13:30 (C) 14:00 (D) 14:15',
+ 'audio/placement/a2p-listen-09-airport.mp3', 9, 'B'),
+
+-- ── B1 Level (Q10–Q12): Understanding opinions, longer speech ──
+
+('e4000000-0000-0003-0001-000000000010',
+ 'f4000000-0000-0000-0001-000000000003', 'multiple_choice',
+ '[Audio] You hear a teacher talking to a class: "I know many of you find grammar boring, but understanding the rules will help you write more clearly and confidently. Today, we will look at how to use relative clauses." What is the teacher''s main point? (A) Grammar is not important. (B) Students should stop studying grammar. (C) Learning grammar rules improves writing. (D) Relative clauses are too difficult.',
+ 'audio/placement/b1-listen-10-classroom.mp3', 10, 'C'),
+
+('e4000000-0000-0003-0001-000000000011',
+ 'f4000000-0000-0000-0001-000000000003', 'multiple_choice',
+ '[Audio] Dialogue — Man: "I think we should take the train instead of driving. It''s cheaper and better for the environment." Woman: "I agree, but the train takes an hour longer." What disadvantage does the woman mention? (A) It is more expensive. (B) It is not comfortable. (C) It takes more time. (D) It is bad for the environment.',
+ 'audio/placement/b1-listen-11-travel.mp3', 11, 'C'),
+
+('e4000000-0000-0003-0001-000000000012',
+ 'f4000000-0000-0000-0001-000000000003', 'multiple_choice',
+ '[Audio] Radio report: "A new study shows that people who read for at least thirty minutes a day have lower stress levels and better concentration. Researchers suggest that reading fiction, in particular, helps the brain relax." According to the report, what type of reading is especially helpful? (A) News articles (B) Academic papers (C) Fiction (D) Social media posts',
+ 'audio/placement/b1-listen-12-radio.mp3', 12, 'C'),
+
+-- ── B2 Level (Q13–Q15): Inference, attitude, complex information ──
+
+('e4000000-0000-0003-0001-000000000013',
+ 'f4000000-0000-0000-0001-000000000003', 'multiple_choice',
+ '[Audio] Lecture excerpt: "While many people assume that multitasking increases productivity, research consistently shows the opposite. Switching between tasks actually reduces efficiency by up to forty percent because the brain needs time to refocus each time." What does the speaker imply? (A) Multitasking is an effective strategy. (B) People should focus on one task at a time. (C) Forty percent of workers multitask. (D) The brain can handle many tasks at once.',
+ 'audio/placement/b2-listen-13-lecture.mp3', 13, 'B'),
+
+('e4000000-0000-0003-0001-000000000014',
+ 'f4000000-0000-0000-0001-000000000003', 'multiple_choice',
+ '[Audio] Interview — Journalist: "Your company recently decided to let all employees work from home permanently. Has that been successful?" Manager: "Mostly, yes. Productivity has gone up, and staff satisfaction is much higher. The only challenge has been maintaining team cohesion — some people feel disconnected from their colleagues." What is the main challenge the manager mentions? (A) Lower productivity (B) Higher costs (C) Employees feeling disconnected (D) Difficulty hiring new staff',
+ 'audio/placement/b2-listen-14-interview.mp3', 14, 'C'),
+
+('e4000000-0000-0003-0001-000000000015',
+ 'f4000000-0000-0000-0001-000000000003', 'multiple_choice',
+ '[Audio] Panel discussion: "The issue isn''t whether technology in classrooms is good or bad — it''s about how we use it. A tablet in the hands of a well-trained teacher is a powerful tool; the same tablet without guidance can be a distraction." What is the speaker''s view? (A) Technology should be removed from classrooms. (B) Tablets are always a distraction. (C) The effectiveness of technology depends on how it is used. (D) Teachers do not need training on technology.',
+ 'audio/placement/b2-listen-15-panel.mp3', 15, 'C')
+
 ON CONFLICT (id) DO NOTHING;
 
--- -----------------------------------------------------------------------
--- 6. Placement Question Skills Mapping (sample — primary skill per question)
--- Maps each question to a skill from the Phase 3 skills table.
--- Skill keys follow P3-006 dot-delimited convention.
--- Only primary skill links are seeded here; secondary links can be added via admin UI (P4-057).
--- NOTE: skill UUIDs below must match rows in the skills table.
---       Update to real skill IDs before production; these are placeholder UUIDs for dev/test only.
--- -----------------------------------------------------------------------
 
--- Grammar skill UUIDs (placeholder dev UUIDs — replace with real IDs)
--- grammar.verb_forms   => 'b3000000-0000-0000-0001-000000000001'
--- grammar.agreement    => 'b3000000-0000-0000-0001-000000000002'
--- grammar.articles     => 'b3000000-0000-0000-0001-000000000003'
--- grammar.negation     => 'b3000000-0000-0000-0001-000000000004'
--- grammar.questions    => 'b3000000-0000-0000-0001-000000000005'
+-- =======================================================================
+-- 4. PLACEMENT QUESTION-SKILL MAPPINGS
+-- Every question gets exactly one primary skill link.
+-- =======================================================================
 
--- Vocabulary skill UUIDs (placeholder)
--- vocabulary.synonyms  => 'b3000000-0000-0000-0002-000000000001'
--- vocabulary.context   => 'b3000000-0000-0000-0002-000000000002'
--- vocabulary.reading   => 'b3000000-0000-0000-0002-000000000003'
-
--- Listening skill UUIDs (placeholder)
--- listening.instruction => 'b3000000-0000-0000-0003-000000000001'
--- listening.dialogue    => 'b3000000-0000-0000-0003-000000000002'
--- listening.numbers     => 'b3000000-0000-0000-0003-000000000003'
-
--- IMPORTANT: The INSERT below is commented out because skill UUIDs must be
--- confirmed against the skills table before execution.
--- Uncomment and replace placeholder UUIDs with real skill IDs from the skills table.
-
-/*
-INSERT INTO placement_question_skills (
-  placement_question_id,
-  skill_id,
-  is_primary,
-  created_at
-)
+INSERT INTO placement_question_skills (placement_question_id, skill_id, is_primary)
 VALUES
-  -- Grammar Q1–Q3: verb forms
-  ('f4000000-0000-0000-0002-000000000001', 'b3000000-0000-0000-0001-000000000001', true, now()),
-  ('f4000000-0000-0000-0002-000000000002', 'b3000000-0000-0000-0001-000000000001', true, now()),
-  ('f4000000-0000-0000-0002-000000000003', 'b3000000-0000-0000-0001-000000000001', true, now()),
-  -- Grammar Q4–Q5: subject-verb agreement
-  ('f4000000-0000-0000-0002-000000000004', 'b3000000-0000-0000-0001-000000000002', true, now()),
-  ('f4000000-0000-0000-0002-000000000005', 'b3000000-0000-0000-0001-000000000002', true, now()),
-  -- Grammar Q6–Q7: articles
-  ('f4000000-0000-0000-0002-000000000006', 'b3000000-0000-0000-0001-000000000003', true, now()),
-  ('f4000000-0000-0000-0002-000000000007', 'b3000000-0000-0000-0001-000000000003', true, now()),
-  -- Grammar Q8–Q9: negation
-  ('f4000000-0000-0000-0002-000000000008', 'b3000000-0000-0000-0001-000000000004', true, now()),
-  ('f4000000-0000-0000-0002-000000000009', 'b3000000-0000-0000-0001-000000000004', true, now()),
-  -- Grammar Q10: question forms
-  ('f4000000-0000-0000-0002-000000000010', 'b3000000-0000-0000-0001-000000000005', true, now()),
-  -- Vocabulary Q1–Q3: synonyms
-  ('f4000000-0000-0000-0003-000000000001', 'b3000000-0000-0000-0002-000000000001', true, now()),
-  ('f4000000-0000-0000-0003-000000000002', 'b3000000-0000-0000-0002-000000000001', true, now()),
-  ('f4000000-0000-0000-0003-000000000003', 'b3000000-0000-0000-0002-000000000001', true, now()),
-  -- Vocabulary Q4–Q6: context/fill-in
-  ('f4000000-0000-0000-0003-000000000004', 'b3000000-0000-0000-0002-000000000002', true, now()),
-  ('f4000000-0000-0000-0003-000000000005', 'b3000000-0000-0000-0002-000000000002', true, now()),
-  ('f4000000-0000-0000-0003-000000000006', 'b3000000-0000-0000-0002-000000000002', true, now()),
-  -- Vocabulary Q7–Q10: reading comprehension
-  ('f4000000-0000-0000-0003-000000000007', 'b3000000-0000-0000-0002-000000000003', true, now()),
-  ('f4000000-0000-0000-0003-000000000008', 'b3000000-0000-0000-0002-000000000003', true, now()),
-  ('f4000000-0000-0000-0003-000000000009', 'b3000000-0000-0000-0002-000000000003', true, now()),
-  ('f4000000-0000-0000-0003-000000000010', 'b3000000-0000-0000-0002-000000000003', true, now()),
-  -- Listening Q1–Q3: instruction
-  ('f4000000-0000-0000-0004-000000000001', 'b3000000-0000-0000-0003-000000000001', true, now()),
-  ('f4000000-0000-0000-0004-000000000002', 'b3000000-0000-0000-0003-000000000001', true, now()),
-  ('f4000000-0000-0000-0004-000000000003', 'b3000000-0000-0000-0003-000000000001', true, now()),
-  -- Listening Q4–Q7: dialogue
-  ('f4000000-0000-0000-0004-000000000004', 'b3000000-0000-0000-0003-000000000002', true, now()),
-  ('f4000000-0000-0000-0004-000000000005', 'b3000000-0000-0000-0003-000000000002', true, now()),
-  ('f4000000-0000-0000-0004-000000000006', 'b3000000-0000-0000-0003-000000000002', true, now()),
-  ('f4000000-0000-0000-0004-000000000007', 'b3000000-0000-0000-0003-000000000002', true, now()),
-  -- Listening Q8–Q10: time/numbers
-  ('f4000000-0000-0000-0004-000000000008', 'b3000000-0000-0000-0003-000000000003', true, now()),
-  ('f4000000-0000-0000-0004-000000000009', 'b3000000-0000-0000-0003-000000000003', true, now()),
-  ('f4000000-0000-0000-0004-000000000010', 'b3000000-0000-0000-0003-000000000003', true, now())
+  -- Grammar Q1–Q3 (A1): Verb Tenses / Subject-Verb
+  ('e4000000-0000-0001-0001-000000000001', 'd4000000-0000-0000-0001-000000000002', true),  -- subject-verb (be)
+  ('e4000000-0000-0001-0001-000000000002', 'd4000000-0000-0000-0001-000000000001', true),  -- verb tenses (simple present)
+  ('e4000000-0000-0001-0001-000000000003', 'd4000000-0000-0000-0001-000000000002', true),  -- subject-verb (be)
+
+  -- Grammar Q4–Q6 (A2): Verb Tenses / Sentence Structure
+  ('e4000000-0000-0001-0001-000000000004', 'd4000000-0000-0000-0001-000000000001', true),  -- verb tenses (past simple)
+  ('e4000000-0000-0001-0001-000000000005', 'd4000000-0000-0000-0001-000000000001', true),  -- verb tenses (present continuous)
+  ('e4000000-0000-0001-0001-000000000006', 'd4000000-0000-0000-0001-000000000004', true),  -- sentence structure (comparatives)
+
+  -- Grammar Q7–Q9 (A2+): Verb Tenses / Articles & Prepositions
+  ('e4000000-0000-0001-0001-000000000007', 'd4000000-0000-0000-0001-000000000001', true),  -- verb tenses (present perfect)
+  ('e4000000-0000-0001-0001-000000000008', 'd4000000-0000-0000-0001-000000000003', true),  -- articles & prepositions
+  ('e4000000-0000-0001-0001-000000000009', 'd4000000-0000-0000-0001-000000000003', true),  -- articles & prepositions
+
+  -- Grammar Q10–Q12 (B1): Modals / Sentence Structure
+  ('e4000000-0000-0001-0001-000000000010', 'd4000000-0000-0000-0001-000000000005', true),  -- modals & conditionals
+  ('e4000000-0000-0001-0001-000000000011', 'd4000000-0000-0000-0001-000000000004', true),  -- sentence structure (passive)
+  ('e4000000-0000-0001-0001-000000000012', 'd4000000-0000-0000-0001-000000000004', true),  -- sentence structure (reported speech)
+
+  -- Grammar Q13–Q15 (B2): Conditionals / Sentence Structure / Verb Tenses
+  ('e4000000-0000-0001-0001-000000000013', 'd4000000-0000-0000-0001-000000000005', true),  -- modals & conditionals (3rd conditional)
+  ('e4000000-0000-0001-0001-000000000014', 'd4000000-0000-0000-0001-000000000004', true),  -- sentence structure (relative clauses)
+  ('e4000000-0000-0001-0001-000000000015', 'd4000000-0000-0000-0001-000000000001', true),  -- verb tenses (future perfect)
+
+  -- Vocabulary Q1–Q3 (A1): Word Meaning
+  ('e4000000-0000-0002-0001-000000000001', 'd4000000-0000-0000-0002-000000000001', true),  -- word meaning (antonyms)
+  ('e4000000-0000-0002-0001-000000000002', 'd4000000-0000-0000-0002-000000000001', true),  -- word meaning (definitions)
+  ('e4000000-0000-0002-0001-000000000003', 'd4000000-0000-0000-0002-000000000001', true),  -- word meaning (rooms)
+
+  -- Vocabulary Q4–Q6 (A2): Word in Context / Collocations
+  ('e4000000-0000-0002-0001-000000000004', 'd4000000-0000-0000-0002-000000000002', true),  -- word in context (lend/borrow)
+  ('e4000000-0000-0002-0001-000000000005', 'd4000000-0000-0000-0002-000000000002', true),  -- word in context (weather)
+  ('e4000000-0000-0002-0001-000000000006', 'd4000000-0000-0000-0002-000000000003', true),  -- collocations (make an appointment)
+
+  -- Vocabulary Q7–Q9 (A2+): Word Meaning / Collocations
+  ('e4000000-0000-0002-0001-000000000007', 'd4000000-0000-0000-0002-000000000001', true),  -- word meaning (reach)
+  ('e4000000-0000-0002-0001-000000000008', 'd4000000-0000-0000-0002-000000000003', true),  -- collocations (take up)
+  ('e4000000-0000-0002-0001-000000000009', 'd4000000-0000-0000-0002-000000000003', true),  -- collocations (run out of)
+
+  -- Vocabulary Q10–Q12 (B1): Reading Comprehension / Word Meaning
+  ('e4000000-0000-0002-0001-000000000010', 'd4000000-0000-0000-0002-000000000004', true),  -- reading comprehension
+  ('e4000000-0000-0002-0001-000000000011', 'd4000000-0000-0000-0002-000000000004', true),  -- reading comprehension
+  ('e4000000-0000-0002-0001-000000000012', 'd4000000-0000-0000-0002-000000000001', true),  -- word meaning (reluctant)
+
+  -- Vocabulary Q13–Q15 (B2): Word in Context / Reading Comprehension / Collocations
+  ('e4000000-0000-0002-0001-000000000013', 'd4000000-0000-0000-0002-000000000002', true),  -- word in context (unforeseen)
+  ('e4000000-0000-0002-0001-000000000014', 'd4000000-0000-0000-0002-000000000004', true),  -- reading comprehension
+  ('e4000000-0000-0002-0001-000000000015', 'd4000000-0000-0000-0002-000000000003', true),  -- collocations (have a knack)
+
+  -- Listening Q1–Q3 (A1): Instructions / Numbers & Time
+  ('e4000000-0000-0003-0001-000000000001', 'd4000000-0000-0000-0003-000000000001', true),  -- spoken instructions
+  ('e4000000-0000-0003-0001-000000000002', 'd4000000-0000-0000-0003-000000000003', true),  -- numbers & time (age)
+  ('e4000000-0000-0003-0001-000000000003', 'd4000000-0000-0000-0003-000000000003', true),  -- numbers & time (platform/time)
+
+  -- Listening Q4–Q6 (A2): Dialogue / Numbers & Time
+  ('e4000000-0000-0003-0001-000000000004', 'd4000000-0000-0000-0003-000000000003', true),  -- numbers & time (price)
+  ('e4000000-0000-0003-0001-000000000005', 'd4000000-0000-0000-0003-000000000002', true),  -- dialogue comprehension
+  ('e4000000-0000-0003-0001-000000000006', 'd4000000-0000-0000-0003-000000000003', true),  -- numbers & time (appointment)
+
+  -- Listening Q7–Q9 (A2+): Dialogue / Numbers & Time
+  ('e4000000-0000-0003-0001-000000000007', 'd4000000-0000-0000-0003-000000000002', true),  -- dialogue comprehension
+  ('e4000000-0000-0003-0001-000000000008', 'd4000000-0000-0000-0003-000000000002', true),  -- dialogue comprehension
+  ('e4000000-0000-0003-0001-000000000009', 'd4000000-0000-0000-0003-000000000003', true),  -- numbers & time (flight time)
+
+  -- Listening Q10–Q12 (B1): Main Idea / Dialogue
+  ('e4000000-0000-0003-0001-000000000010', 'd4000000-0000-0000-0003-000000000004', true),  -- main idea & inference
+  ('e4000000-0000-0003-0001-000000000011', 'd4000000-0000-0000-0003-000000000002', true),  -- dialogue comprehension
+  ('e4000000-0000-0003-0001-000000000012', 'd4000000-0000-0000-0003-000000000004', true),  -- main idea & inference
+
+  -- Listening Q13–Q15 (B2): Main Idea & Inference
+  ('e4000000-0000-0003-0001-000000000013', 'd4000000-0000-0000-0003-000000000004', true),  -- main idea & inference
+  ('e4000000-0000-0003-0001-000000000014', 'd4000000-0000-0000-0003-000000000002', true),  -- dialogue comprehension
+  ('e4000000-0000-0003-0001-000000000015', 'd4000000-0000-0000-0003-000000000004', true)   -- main idea & inference
+
 ON CONFLICT (placement_question_id, skill_id) DO NOTHING;
-*/
