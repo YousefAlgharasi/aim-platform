@@ -6,6 +6,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 
+import { backendFetch } from '../../../../lib/api/client-api-helpers';
+
 import { OperationsLoadingSpinner } from '../../../../components/operations/operations-loading-spinner';
 import { OperationsEmptyState } from '../../../../components/operations/operations-empty-state';
 import { OperationsErrorCard } from '../../../../components/operations/operations-error-card';
@@ -59,13 +61,14 @@ export default function IncidentsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/operations/incidents?page=${p}&limit=20`, { credentials: 'include' });
+      const res = await backendFetch('/admin/incidents');
       if (!res.ok) throw new Error(`Backend error ${res.status}: ${res.statusText}`);
-      const data: IncidentsResponse = await res.json();
-      setIncidents(data.data);
-      setTotal(data.total);
-      setPage(data.page);
-      setTotalPages(Math.ceil(data.total / data.limit));
+      const json = await res.json();
+      const items: Incident[] = Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
+      setIncidents(items);
+      setTotal(items.length);
+      setPage(1);
+      setTotalPages(1);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load incidents.');
     } finally {
@@ -80,10 +83,8 @@ export default function IncidentsPage() {
   async function handleUpdateStatus(incidentId: string, newStatus: string) {
     setActionLoading(incidentId);
     try {
-      const res = await fetch(`/api/admin/operations/incidents/${incidentId}/status`, {
+      const res = await backendFetch(`/admin/incidents/${incidentId}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ status: newStatus }),
       });
       if (!res.ok) throw new Error(`Failed to update status: ${res.statusText}`);
@@ -100,11 +101,14 @@ export default function IncidentsPage() {
     if (!newTitle.trim()) return;
     setCreateLoading(true);
     try {
-      const res = await fetch('/api/admin/operations/incidents', {
+      const res = await backendFetch('/admin/incidents', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ title: newTitle.trim(), severity: newSeverity }),
+        body: JSON.stringify({
+          title: newTitle.trim(),
+          description: newTitle.trim(),
+          severity: newSeverity,
+          startedAt: new Date().toISOString(),
+        }),
       });
       if (!res.ok) throw new Error(`Failed to create incident: ${res.statusText}`);
       setNewTitle('');

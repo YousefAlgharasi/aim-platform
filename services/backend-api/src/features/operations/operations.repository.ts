@@ -13,18 +13,38 @@ import {
   OperationsAuditLog,
 } from './operations.entities';
 
+function mapRow<T>(row: Record<string, unknown>): T {
+  const mapped: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(row)) {
+    const camel = key.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+    mapped[camel] = value;
+  }
+  return mapped as T;
+}
+
+function mapRows<T>(rows: Record<string, unknown>[]): T[] {
+  return rows.map((r) => mapRow<T>(r));
+}
+
 @Injectable()
 export class OperationsRepository {
   constructor(private readonly db: DatabaseService) {}
 
   // --- Support Tickets ---
 
+  async findAllTickets(): Promise<SupportTicket[]> {
+    const result = await this.db.query<SupportTicket>(
+      `SELECT * FROM support_tickets ORDER BY created_at DESC`,
+    );
+    return mapRows(result.rows as any);
+  }
+
   async findTicketsByRequester(requesterId: string): Promise<SupportTicket[]> {
     const result = await this.db.query<SupportTicket>(
       `SELECT * FROM support_tickets WHERE requester_id = $1 ORDER BY created_at DESC`,
       [requesterId],
     );
-    return result.rows;
+    return mapRows(result.rows as any);
   }
 
   async findTicketById(id: string): Promise<SupportTicket | null> {
@@ -32,7 +52,7 @@ export class OperationsRepository {
       `SELECT * FROM support_tickets WHERE id = $1`,
       [id],
     );
-    return result.rows[0] || null;
+    return result.rows[0] ? mapRow(result.rows[0] as any) : null;
   }
 
   async createTicket(data: Partial<SupportTicket>): Promise<SupportTicket> {
@@ -42,7 +62,7 @@ export class OperationsRepository {
        RETURNING *`,
       [data.requesterId, data.category, data.severity, data.subject, data.description, data.metadata || {}],
     );
-    return result.rows[0] ?? null;
+    return mapRow(result.rows[0] as any);
   }
 
   async updateTicketStatus(id: string, status: string): Promise<SupportTicket | null> {
@@ -50,7 +70,7 @@ export class OperationsRepository {
       `UPDATE support_tickets SET status = $1 WHERE id = $2 RETURNING *`,
       [status, id],
     );
-    return result.rows[0] || null;
+    return result.rows[0] ? mapRow(result.rows[0] as any) : null;
   }
 
   async assignTicketTo(id: string, assigneeId: string): Promise<SupportTicket | null> {
@@ -58,7 +78,7 @@ export class OperationsRepository {
       `UPDATE support_tickets SET assigned_to = $1 WHERE id = $2 RETURNING *`,
       [assigneeId, id],
     );
-    return result.rows[0] || null;
+    return result.rows[0] ? mapRow(result.rows[0] as any) : null;
   }
 
   // --- Support Ticket Comments ---
@@ -68,7 +88,7 @@ export class OperationsRepository {
       `SELECT * FROM support_ticket_comments WHERE ticket_id = $1 ORDER BY created_at ASC`,
       [ticketId],
     );
-    return result.rows;
+    return mapRows(result.rows as any);
   }
 
   async createComment(data: Partial<SupportTicketComment>): Promise<SupportTicketComment> {
@@ -78,17 +98,24 @@ export class OperationsRepository {
        RETURNING *`,
       [data.ticketId, data.authorId, data.body, data.visibility || 'public'],
     );
-    return result.rows[0] ?? null;
+    return mapRow(result.rows[0] as any);
   }
 
   // --- User Feedback ---
+
+  async findAllFeedback(): Promise<UserFeedback[]> {
+    const result = await this.db.query<UserFeedback>(
+      `SELECT * FROM user_feedback ORDER BY created_at DESC`,
+    );
+    return mapRows(result.rows as any);
+  }
 
   async findFeedbackByUser(userId: string): Promise<UserFeedback[]> {
     const result = await this.db.query<UserFeedback>(
       `SELECT * FROM user_feedback WHERE user_id = $1 ORDER BY created_at DESC`,
       [userId],
     );
-    return result.rows;
+    return mapRows(result.rows as any);
   }
 
   async findFeedbackById(id: string): Promise<UserFeedback | null> {
@@ -96,7 +123,7 @@ export class OperationsRepository {
       `SELECT * FROM user_feedback WHERE id = $1`,
       [id],
     );
-    return result.rows[0] || null;
+    return result.rows[0] ? mapRow(result.rows[0] as any) : null;
   }
 
   async createFeedback(data: Partial<UserFeedback>): Promise<UserFeedback> {
@@ -106,7 +133,7 @@ export class OperationsRepository {
        RETURNING *`,
       [data.userId, data.category, data.rating || null, data.title, data.body, data.sourceSurface, data.metadata || {}],
     );
-    return result.rows[0] ?? null;
+    return mapRow(result.rows[0] as any);
   }
 
   async updateFeedbackStatus(id: string, status: string): Promise<UserFeedback | null> {
@@ -114,7 +141,7 @@ export class OperationsRepository {
       `UPDATE user_feedback SET status = $1 WHERE id = $2 RETURNING *`,
       [status, id],
     );
-    return result.rows[0] || null;
+    return result.rows[0] ? mapRow(result.rows[0] as any) : null;
   }
 
   // --- Feature Requests ---
@@ -124,7 +151,7 @@ export class OperationsRepository {
       `SELECT * FROM feature_requests ORDER BY vote_count DESC, created_at DESC LIMIT $1 OFFSET $2`,
       [limit, offset],
     );
-    return result.rows;
+    return mapRows(result.rows as any);
   }
 
   async findFeatureRequestById(id: string): Promise<FeatureRequest | null> {
@@ -132,7 +159,7 @@ export class OperationsRepository {
       `SELECT * FROM feature_requests WHERE id = $1`,
       [id],
     );
-    return result.rows[0] || null;
+    return result.rows[0] ? mapRow(result.rows[0] as any) : null;
   }
 
   async createFeatureRequest(data: Partial<FeatureRequest>): Promise<FeatureRequest> {
@@ -142,7 +169,7 @@ export class OperationsRepository {
        RETURNING *`,
       [data.submittedBy, data.title, data.description, data.metadata || {}],
     );
-    return result.rows[0] ?? null;
+    return mapRow(result.rows[0] as any);
   }
 
   async updateFeatureRequestStatus(
@@ -163,7 +190,7 @@ export class OperationsRepository {
        RETURNING *`,
       [status, priority || null, triageNotes || null, triagedBy || null, id],
     );
-    return result.rows[0] || null;
+    return result.rows[0] ? mapRow(result.rows[0] as any) : null;
   }
 
   async incrementFeatureRequestVote(id: string): Promise<FeatureRequest | null> {
@@ -171,7 +198,7 @@ export class OperationsRepository {
       `UPDATE feature_requests SET vote_count = vote_count + 1 WHERE id = $1 RETURNING *`,
       [id],
     );
-    return result.rows[0] || null;
+    return result.rows[0] ? mapRow(result.rows[0] as any) : null;
   }
 
   // --- Incident Records ---
@@ -181,7 +208,7 @@ export class OperationsRepository {
       `SELECT * FROM incident_records ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
       [limit, offset],
     );
-    return result.rows;
+    return mapRows(result.rows as any);
   }
 
   async findIncidentById(id: string): Promise<IncidentRecord | null> {
@@ -189,7 +216,7 @@ export class OperationsRepository {
       `SELECT * FROM incident_records WHERE id = $1`,
       [id],
     );
-    return result.rows[0] || null;
+    return result.rows[0] ? mapRow(result.rows[0] as any) : null;
   }
 
   async createIncident(data: Partial<IncidentRecord>): Promise<IncidentRecord> {
@@ -199,7 +226,7 @@ export class OperationsRepository {
        RETURNING *`,
       [data.title, data.description, data.severity, data.startedAt, data.ownerId || null, data.metadata || {}],
     );
-    return result.rows[0] ?? null;
+    return mapRow(result.rows[0] as any);
   }
 
   async updateIncidentStatus(
@@ -217,7 +244,7 @@ export class OperationsRepository {
        RETURNING *`,
       [status, resolvedAt || null, postmortemUrl || null, id],
     );
-    return result.rows[0] || null;
+    return result.rows[0] ? mapRow(result.rows[0] as any) : null;
   }
 
   // --- Maintenance Windows ---
@@ -227,7 +254,7 @@ export class OperationsRepository {
       `SELECT * FROM maintenance_windows ORDER BY scheduled_start DESC LIMIT $1 OFFSET $2`,
       [limit, offset],
     );
-    return result.rows;
+    return mapRows(result.rows as any);
   }
 
   async findMaintenanceWindowById(id: string): Promise<MaintenanceWindow | null> {
@@ -235,7 +262,7 @@ export class OperationsRepository {
       `SELECT * FROM maintenance_windows WHERE id = $1`,
       [id],
     );
-    return result.rows[0] || null;
+    return result.rows[0] ? mapRow(result.rows[0] as any) : null;
   }
 
   async createMaintenanceWindow(data: Partial<MaintenanceWindow>): Promise<MaintenanceWindow> {
@@ -245,7 +272,7 @@ export class OperationsRepository {
        RETURNING *`,
       [data.title, data.description || null, data.type, data.affectedServices || [], data.scheduledStart, data.scheduledEnd, data.userMessage || null, data.createdBy, data.metadata || {}],
     );
-    return result.rows[0] ?? null;
+    return mapRow(result.rows[0] as any);
   }
 
   async updateMaintenanceWindowStatus(
@@ -263,7 +290,7 @@ export class OperationsRepository {
        RETURNING *`,
       [status, actualStart || null, actualEnd || null, id],
     );
-    return result.rows[0] || null;
+    return result.rows[0] ? mapRow(result.rows[0] as any) : null;
   }
 
   // --- Release Notes ---
@@ -273,7 +300,7 @@ export class OperationsRepository {
       `SELECT * FROM release_notes ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
       [limit, offset],
     );
-    return result.rows;
+    return mapRows(result.rows as any);
   }
 
   async findPublishedReleaseNotes(limit: number = 50, offset: number = 0): Promise<ReleaseNote[]> {
@@ -281,7 +308,7 @@ export class OperationsRepository {
       `SELECT * FROM release_notes WHERE status = 'published' ORDER BY published_at DESC LIMIT $1 OFFSET $2`,
       [limit, offset],
     );
-    return result.rows;
+    return mapRows(result.rows as any);
   }
 
   async findReleaseNoteById(id: string): Promise<ReleaseNote | null> {
@@ -289,7 +316,7 @@ export class OperationsRepository {
       `SELECT * FROM release_notes WHERE id = $1`,
       [id],
     );
-    return result.rows[0] || null;
+    return result.rows[0] ? mapRow(result.rows[0] as any) : null;
   }
 
   async createReleaseNote(data: Partial<ReleaseNote>): Promise<ReleaseNote> {
@@ -299,7 +326,7 @@ export class OperationsRepository {
        RETURNING *`,
       [data.version, data.title, data.body || null, data.audience || 'all', data.createdBy, data.metadata || {}],
     );
-    return result.rows[0] ?? null;
+    return mapRow(result.rows[0] as any);
   }
 
   async publishReleaseNote(id: string, publishedBy: string): Promise<ReleaseNote | null> {
@@ -307,7 +334,15 @@ export class OperationsRepository {
       `UPDATE release_notes SET status = 'published', published_at = now(), published_by = $1 WHERE id = $2 RETURNING *`,
       [publishedBy, id],
     );
-    return result.rows[0] || null;
+    return result.rows[0] ? mapRow(result.rows[0] as any) : null;
+  }
+
+  async archiveReleaseNote(id: string): Promise<ReleaseNote | null> {
+    const result = await this.db.query<ReleaseNote>(
+      `UPDATE release_notes SET status = 'archived', updated_at = now() WHERE id = $1 RETURNING *`,
+      [id],
+    );
+    return result.rows[0] ? mapRow(result.rows[0] as any) : null;
   }
 
   // --- Operational Status ---
@@ -316,7 +351,7 @@ export class OperationsRepository {
     const result = await this.db.query<OperationalStatus>(
       `SELECT * FROM operational_status ORDER BY component ASC`,
     );
-    return result.rows;
+    return mapRows(result.rows as any);
   }
 
   async findOperationalStatusByComponent(component: string): Promise<OperationalStatus | null> {
@@ -324,7 +359,7 @@ export class OperationsRepository {
       `SELECT * FROM operational_status WHERE component = $1`,
       [component],
     );
-    return result.rows[0] || null;
+    return result.rows[0] ? mapRow(result.rows[0] as any) : null;
   }
 
   async upsertOperationalStatus(
@@ -341,7 +376,7 @@ export class OperationsRepository {
        RETURNING *`,
       [component, status, description, updatedBy],
     );
-    return result.rows[0] ?? null;
+    return mapRow(result.rows[0] as any);
   }
 
   // --- Feature Flags ---
@@ -350,7 +385,7 @@ export class OperationsRepository {
     const result = await this.db.query<FeatureFlag>(
       `SELECT * FROM feature_flags ORDER BY flag_key ASC`,
     );
-    return result.rows;
+    return mapRows(result.rows as any);
   }
 
   async findFeatureFlagByKey(flagKey: string): Promise<FeatureFlag | null> {
@@ -358,7 +393,7 @@ export class OperationsRepository {
       `SELECT * FROM feature_flags WHERE flag_key = $1`,
       [flagKey],
     );
-    return result.rows[0] || null;
+    return result.rows[0] ? mapRow(result.rows[0] as any) : null;
   }
 
   async createFeatureFlag(data: Partial<FeatureFlag>): Promise<FeatureFlag> {
@@ -368,7 +403,7 @@ export class OperationsRepository {
        RETURNING *`,
       [data.flagKey, data.name, data.description || null, data.ownerId || null, data.metadata || {}],
     );
-    return result.rows[0] ?? null;
+    return mapRow(result.rows[0] as any);
   }
 
   async updateFeatureFlag(
@@ -393,7 +428,7 @@ export class OperationsRepository {
       `UPDATE feature_flags SET ${sets.join(', ')} WHERE id = $${idx} RETURNING *`,
       values,
     );
-    return result.rows[0] || null;
+    return result.rows[0] ? mapRow(result.rows[0] as any) : null;
   }
 
   private async findFeatureFlagById(id: string): Promise<FeatureFlag | null> {
@@ -401,7 +436,7 @@ export class OperationsRepository {
       `SELECT * FROM feature_flags WHERE id = $1`,
       [id],
     );
-    return result.rows[0] || null;
+    return result.rows[0] ? mapRow(result.rows[0] as any) : null;
   }
 
   // --- Operations Audit Logs ---
@@ -413,7 +448,7 @@ export class OperationsRepository {
        RETURNING *`,
       [data.actorId, data.action, data.resourceType, data.resourceId, data.details || {}],
     );
-    return result.rows[0] ?? null;
+    return mapRow(result.rows[0] as any);
   }
 
   async findAuditLogsByResource(resourceType: string, resourceId: string): Promise<OperationsAuditLog[]> {
@@ -421,7 +456,7 @@ export class OperationsRepository {
       `SELECT * FROM operations_audit_logs WHERE resource_type = $1 AND resource_id = $2 ORDER BY created_at DESC`,
       [resourceType, resourceId],
     );
-    return result.rows;
+    return mapRows(result.rows as any);
   }
 
   async findAuditLogsByActor(actorId: string, limit: number = 50, offset: number = 0): Promise<OperationsAuditLog[]> {
@@ -429,6 +464,6 @@ export class OperationsRepository {
       `SELECT * FROM operations_audit_logs WHERE actor_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
       [actorId, limit, offset],
     );
-    return result.rows;
+    return mapRows(result.rows as any);
   }
 }

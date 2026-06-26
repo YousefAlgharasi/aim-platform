@@ -6,17 +6,20 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 
+import { backendFetch } from '../../../../lib/api/client-api-helpers';
+
 import { OperationsLoadingSpinner } from '../../../../components/operations/operations-loading-spinner';
 import { OperationsEmptyState } from '../../../../components/operations/operations-empty-state';
 import { OperationsErrorCard } from '../../../../components/operations/operations-error-card';
 
 type FeatureFlag = {
   readonly id: string;
-  readonly key: string;
+  readonly flagKey: string;
   readonly name: string;
   readonly enabled: boolean;
   readonly rolloutPercentage: number;
-  readonly owner: string;
+  readonly ownerId: string | null;
+  readonly description: string | null;
 };
 
 type FeatureFlagsResponse = {
@@ -51,13 +54,14 @@ export default function FeatureFlagsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/operations/feature-flags?page=${p}&limit=20`, { credentials: 'include' });
+      const res = await backendFetch('/admin/feature-flags');
       if (!res.ok) throw new Error(`Backend error ${res.status}: ${res.statusText}`);
-      const data: FeatureFlagsResponse = await res.json();
-      setFlags(data.data);
-      setTotal(data.total);
-      setPage(data.page);
-      setTotalPages(Math.ceil(data.total / data.limit));
+      const json = await res.json();
+      const items: FeatureFlag[] = Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
+      setFlags(items);
+      setTotal(items.length);
+      setPage(1);
+      setTotalPages(1);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load feature flags.');
     } finally {
@@ -72,10 +76,8 @@ export default function FeatureFlagsPage() {
   async function handleToggleEnabled(flagId: string, currentEnabled: boolean) {
     setActionLoading(flagId);
     try {
-      const res = await fetch(`/api/admin/operations/feature-flags/${flagId}`, {
+      const res = await backendFetch(`/admin/feature-flags/${flagId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ enabled: !currentEnabled }),
       });
       if (!res.ok) throw new Error(`Failed to toggle flag: ${res.statusText}`);
@@ -90,10 +92,8 @@ export default function FeatureFlagsPage() {
   async function handleUpdateRollout(flagId: string) {
     setActionLoading(flagId);
     try {
-      const res = await fetch(`/api/admin/operations/feature-flags/${flagId}`, {
+      const res = await backendFetch(`/admin/feature-flags/${flagId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ rolloutPercentage: editRolloutValue }),
       });
       if (!res.ok) throw new Error(`Failed to update rollout: ${res.statusText}`);
@@ -111,15 +111,12 @@ export default function FeatureFlagsPage() {
     if (!newKey.trim() || !newName.trim()) return;
     setCreateLoading(true);
     try {
-      const res = await fetch('/api/admin/operations/feature-flags', {
+      const res = await backendFetch('/admin/feature-flags', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
-          key: newKey.trim(),
+          flagKey: newKey.trim(),
           name: newName.trim(),
-          owner: newOwner.trim(),
-          rolloutPercentage: newRollout,
+          description: newOwner.trim() || undefined,
         }),
       });
       if (!res.ok) throw new Error(`Failed to create feature flag: ${res.statusText}`);
@@ -203,14 +200,14 @@ export default function FeatureFlagsPage() {
               />
             </div>
             <div className="ops-form-field">
-              <label htmlFor="ff-owner" className="ops-form-label">Owner</label>
+              <label htmlFor="ff-owner" className="ops-form-label">Description</label>
               <input
                 id="ff-owner"
                 className="ops-form-input"
                 type="text"
                 value={newOwner}
                 onChange={(e) => setNewOwner(e.target.value)}
-                placeholder="Owner name or team"
+                placeholder="Flag description"
                 disabled={createLoading}
               />
             </div>
@@ -259,7 +256,7 @@ export default function FeatureFlagsPage() {
               {flags.map((flag) => (
                 <tr key={flag.id} className="ops-table-row">
                   <td className="ops-table-td">
-                    <code className="ops-flag-key">{flag.key}</code>
+                    <code className="ops-flag-key">{flag.flagKey}</code>
                   </td>
                   <td className="ops-table-td ops-table-td--primary">{flag.name}</td>
                   <td className="ops-table-td">
@@ -308,7 +305,7 @@ export default function FeatureFlagsPage() {
                       </button>
                     )}
                   </td>
-                  <td className="ops-table-td">{flag.owner || '—'}</td>
+                  <td className="ops-table-td">{flag.ownerId || '—'}</td>
                   <td className="ops-table-td">
                     <button
                       className={`ops-toggle-btn ${flag.enabled ? 'ops-toggle-btn--on' : 'ops-toggle-btn--off'}`}

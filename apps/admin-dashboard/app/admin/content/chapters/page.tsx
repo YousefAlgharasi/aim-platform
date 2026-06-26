@@ -1,7 +1,3 @@
-// P11-023: Admin chapters page with AIM design system.
-// Nested under courses: select course → select level → view/manage chapters.
-// Backend is final authority for chapter data and status transitions.
-
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 
@@ -10,9 +6,7 @@ import {
   fetchAdminChapters,
   createAdminChapter,
   updateAdminChapter,
-  type AdminChapterSummary,
   type AdminChapterListData,
-  type ChapterStatus,
 } from '../../../../lib/api/admin-chapters-api';
 import {
   fetchAdminCourses,
@@ -23,28 +17,10 @@ import {
   type AdminLevelSummary,
 } from '../../../../lib/api/admin-levels-api';
 import { AdminApiClientError } from '../../../../lib/api';
-import {
-  AdminTable,
-  AdminPagination,
-  AdminBadge,
-  AdminIdCell,
-  AdminDateCell,
-  type AdminTableColumn,
-} from '../../../../components/common';
-import { AdminPageHeader, AdminEmptyState } from '../../../../components/layout';
-import { AdminApiErrorState } from '../../../../components/error-handling';
 import { ChaptersList } from './chapters-list';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
-
-const STATUS_VARIANT: Record<string, 'success' | 'warning' | 'error' | 'info' | 'neutral'> = {
-  draft: 'neutral',
-  in_review: 'warning',
-  approved: 'info',
-  published: 'success',
-  archived: 'error',
-};
 
 type Props = {
   searchParams: Promise<{
@@ -52,62 +28,11 @@ type Props = {
     levelId?: string;
     page?: string;
     limit?: string;
-    status?: string;
-    q?: string;
   }>;
 };
 
-const chapterColumns: AdminTableColumn<AdminChapterSummary>[] = [
-  {
-    key: 'id',
-    header: 'ID',
-    width: '120px',
-    render: (ch) => (
-      <Link href={`/admin/content/chapters/${ch.id}/status`} style={{ textDecoration: 'none' }}>
-        <AdminIdCell id={ch.id} />
-      </Link>
-    ),
-  },
-  {
-    key: 'title',
-    header: 'Title',
-    render: (ch) => ch.title,
-  },
-  {
-    key: 'slug',
-    header: 'Slug',
-    render: (ch) =>
-      ch.slug ? (
-        <code style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{ch.slug}</code>
-      ) : (
-        <span style={{ color: 'var(--text-muted)' }}>—</span>
-      ),
-  },
-  {
-    key: 'status',
-    header: 'Status',
-    render: (ch) => (
-      <AdminBadge variant={STATUS_VARIANT[ch.status] ?? 'neutral'}>
-        {ch.status.replace('_', ' ')}
-      </AdminBadge>
-    ),
-  },
-  {
-    key: 'sortOrder',
-    header: 'Order',
-    width: '80px',
-    render: (ch) => String(ch.sortOrder),
-  },
-  {
-    key: 'updatedAt',
-    header: 'Updated',
-    render: (ch) => <AdminDateCell iso={ch.updatedAt} />,
-  },
-];
-
 export default async function AdminChaptersPage({ searchParams }: Props) {
   const { courseId, levelId, page: pageParam, limit: limitParam } = await searchParams;
-
   const page = parseInt(pageParam ?? String(DEFAULT_PAGE), 10) || DEFAULT_PAGE;
   const limit = parseInt(limitParam ?? String(DEFAULT_LIMIT), 10) || DEFAULT_LIMIT;
 
@@ -120,49 +45,39 @@ export default async function AdminChaptersPage({ searchParams }: Props) {
     const data = await fetchAdminCourses(token, 1, 100);
     courses = data.courses;
   } catch (err) {
-    coursesError =
-      err instanceof AdminApiClientError
-        ? `Backend error ${err.status}: ${err.message}`
-        : 'Failed to load courses.';
+    coursesError = err instanceof AdminApiClientError
+      ? `Backend error ${err.status}: ${err.message}` : 'Failed to load courses.';
   }
 
   let levels: AdminLevelSummary[] = [];
   let levelsError: string | null = null;
   const selectedCourse = courseId ? courses.find((c) => c.id === courseId) : undefined;
-
   if (courseId && !coursesError) {
     try {
       const data = await fetchAdminLevels(token, courseId, 1, 100);
       levels = data.levels;
     } catch (err) {
-      levelsError =
-        err instanceof AdminApiClientError
-          ? `Backend error ${err.status}: ${err.message}`
-          : 'Failed to load levels.';
+      levelsError = err instanceof AdminApiClientError
+        ? `Backend error ${err.status}: ${err.message}` : 'Failed to load levels.';
     }
   }
 
   let chaptersData: AdminChapterListData | null = null;
   let chaptersError: string | null = null;
   const selectedLevel = levelId ? levels.find((l) => l.id === levelId) : undefined;
-
   if (levelId && courseId && !levelsError) {
     try {
       chaptersData = await fetchAdminChapters(token, levelId, page, limit);
     } catch (err) {
-      chaptersError =
-        err instanceof AdminApiClientError
-          ? `Backend error ${err.status}: ${err.message}`
-          : 'Failed to load chapters.';
+      chaptersError = err instanceof AdminApiClientError
+        ? `Backend error ${err.status}: ${err.message}` : 'Failed to load chapters.';
     }
   }
 
   const totalPages = chaptersData ? Math.ceil(chaptersData.total / chaptersData.limit) : 0;
 
   async function handleCreate(formData: {
-    title: string;
-    slug: string | null;
-    description: string | null;
+    title: string; slug: string | null; description: string | null;
   }): Promise<{ error?: string }> {
     'use server';
     if (!levelId) return { error: 'No level selected.' };
@@ -172,18 +87,13 @@ export default async function AdminChaptersPage({ searchParams }: Props) {
       await createAdminChapter(token, { levelId, ...formData });
       return {};
     } catch (err) {
-      return {
-        error:
-          err instanceof AdminApiClientError
-            ? `Backend error ${err.status}: ${err.message}`
-            : 'Failed to create chapter.',
-      };
+      return { error: err instanceof AdminApiClientError
+        ? `Backend error ${err.status}: ${err.message}` : 'Failed to create chapter.' };
     }
   }
 
   async function handleUpdate(
-    id: string,
-    formData: { title: string; slug: string | null; description: string | null },
+    id: string, formData: { title: string; slug: string | null; description: string | null },
   ): Promise<{ error?: string }> {
     'use server';
     const cookieStore = await cookies();
@@ -192,100 +102,76 @@ export default async function AdminChaptersPage({ searchParams }: Props) {
       await updateAdminChapter(token, id, formData);
       return {};
     } catch (err) {
-      return {
-        error:
-          err instanceof AdminApiClientError
-            ? `Backend error ${err.status}: ${err.message}`
-            : 'Failed to update chapter.',
-      };
+      return { error: err instanceof AdminApiClientError
+        ? `Backend error ${err.status}: ${err.message}` : 'Failed to update chapter.' };
     }
   }
 
+  const step = !courseId ? 0 : !levelId ? 1 : 2;
+
   return (
-    <section className="aim-chapters-page">
-      <nav className="admin-breadcrumb" aria-label="Breadcrumb">
-        <Link href="/admin/content" className="admin-breadcrumb-link">Content</Link>
-        <span aria-hidden="true"> / </span>
-        <span>Chapters</span>
+    <section className="cp-page">
+      <nav className="cp-breadcrumb">
+        <Link href="/admin/content" className="cp-breadcrumb-link">Content</Link>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 5l7 7-7 7"/></svg>
+        <span className="cp-breadcrumb-current">Chapters</span>
       </nav>
 
-      <AdminPageHeader
-        eyebrow="Admin — Curriculum"
-        title="Chapters"
-        description={
-          chaptersData
-            ? `${chaptersData.total} chapter${chaptersData.total !== 1 ? 's' : ''} in ${selectedLevel?.title ?? levelId}`
-            : undefined
-        }
-      />
-
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Chapter records, status, and ordering are
-        controlled by backend curriculum APIs.
+      <div className="cp-header">
+        <div>
+          <p className="cp-eyebrow">Curriculum</p>
+          <h1 className="cp-title">Chapters</h1>
+          {chaptersData && (
+            <p className="cp-subtitle">
+              {chaptersData.total} chapter{chaptersData.total !== 1 ? 's' : ''} in {selectedLevel?.title ?? 'selected level'}
+            </p>
+          )}
+        </div>
       </div>
 
-      {/* Step 1 — Course selector */}
-      <div className="aim-selector-section">
-        <p className="aim-selector-label">1. Select a course:</p>
-        {coursesError ? (
-          <AdminApiErrorState message={coursesError} />
-        ) : courses.length === 0 ? (
-          <AdminEmptyState
-            title="No courses found"
-            description="Create one via the Courses page."
-            action={<Link href="/admin/content/courses" className="admin-breadcrumb-link">Go to Courses</Link>}
-          />
-        ) : (
-          <div className="aim-selector-grid">
-            {courses.map((course) => (
-              <a
-                key={course.id}
-                href={`?courseId=${encodeURIComponent(course.id)}`}
-                className={`aim-selector-card${courseId === course.id ? ' aim-selector-card--active' : ''}`}
-              >
-                <span className="aim-selector-card-title">{course.title}</span>
-                <AdminBadge variant={STATUS_VARIANT[course.status] ?? 'neutral'}>
-                  {course.status}
-                </AdminBadge>
+      {/* Step indicators */}
+      <div className="cp-steps">
+        <span className={`cp-step${step >= 0 ? ' cp-step--active' : ''}`}>1. Course</span>
+        <span className={`cp-step${step >= 1 ? ' cp-step--active' : ''}`}>2. Level</span>
+        <span className={`cp-step${step >= 2 ? ' cp-step--active' : ''}`}>3. Chapters</span>
+      </div>
+
+      {/* Step 1: Course selector */}
+      <div className="cp-selector">
+        <p className="cp-selector-label">Select a course</p>
+        {coursesError && <div className="admin-error-banner" role="alert">{coursesError}</div>}
+        {!coursesError && courses.length === 0 && (
+          <p className="cp-empty-hint">No courses found. <Link href="/admin/content/courses" className="cp-link">Create one</Link>.</p>
+        )}
+        {!coursesError && courses.length > 0 && (
+          <div className="cp-selector-grid">
+            {courses.map((c) => (
+              <a key={c.id} href={`?courseId=${encodeURIComponent(c.id)}`}
+                className={`cp-selector-card${courseId === c.id ? ' cp-selector-card--active' : ''}`}>
+                <span className="cp-selector-card-title">{c.title}</span>
+                <span className={`cp-dot cp-dot--${c.status === 'published' ? 'published' : c.status === 'archived' ? 'archived' : 'draft'}`} />
               </a>
             ))}
           </div>
         )}
       </div>
 
-      {/* Step 2 — Level selector */}
+      {/* Step 2: Level selector */}
       {courseId && !coursesError && (
-        <div className="aim-selector-section">
-          <p className="aim-selector-label">
-            2. Select a level in <strong>{selectedCourse?.title ?? courseId}</strong>:
-          </p>
-          {levelsError ? (
-            <AdminApiErrorState message={levelsError} />
-          ) : levels.length === 0 ? (
-            <AdminEmptyState
-              title="No levels found"
-              description="Create one via the Levels page."
-              action={
-                <Link
-                  href={`/admin/content/levels?courseId=${encodeURIComponent(courseId)}`}
-                  className="admin-breadcrumb-link"
-                >
-                  Go to Levels
-                </Link>
-              }
-            />
-          ) : (
-            <div className="aim-selector-grid">
-              {levels.map((level) => (
-                <a
-                  key={level.id}
-                  href={`?courseId=${encodeURIComponent(courseId)}&levelId=${encodeURIComponent(level.id)}`}
-                  className={`aim-selector-card${levelId === level.id ? ' aim-selector-card--active' : ''}`}
-                >
-                  <span className="aim-selector-card-title">{level.title}</span>
-                  <AdminBadge variant={STATUS_VARIANT[level.status] ?? 'neutral'}>
-                    {level.status}
-                  </AdminBadge>
+        <div className="cp-selector">
+          <p className="cp-selector-label">Select a level in <strong>{selectedCourse?.title ?? 'course'}</strong></p>
+          {levelsError && <div className="admin-error-banner" role="alert">{levelsError}</div>}
+          {!levelsError && levels.length === 0 && (
+            <p className="cp-empty-hint">No levels found. <Link href={`/admin/content/levels?courseId=${encodeURIComponent(courseId)}`} className="cp-link">Create one</Link>.</p>
+          )}
+          {!levelsError && levels.length > 0 && (
+            <div className="cp-selector-grid">
+              {levels.map((l) => (
+                <a key={l.id} href={`?courseId=${encodeURIComponent(courseId)}&levelId=${encodeURIComponent(l.id)}`}
+                  className={`cp-selector-card${levelId === l.id ? ' cp-selector-card--active' : ''}`}>
+                  <span className="cp-selector-card-title">{l.title}</span>
+                  {l.code && <code className="cp-code-badge">{l.code}</code>}
+                  <span className={`cp-dot cp-dot--${l.status === 'published' ? 'published' : l.status === 'archived' ? 'archived' : 'draft'}`} />
                 </a>
               ))}
             </div>
@@ -293,105 +179,74 @@ export default async function AdminChaptersPage({ searchParams }: Props) {
         </div>
       )}
 
-      {/* Step 3 — Chapters table */}
-      {courseId && levelId && (
-        <>
-          {chaptersError && <AdminApiErrorState message={chaptersError} />}
+      {/* Step 3: Chapters */}
+      {courseId && levelId && chaptersError && <div className="admin-error-banner" role="alert">{chaptersError}</div>}
 
-          {chaptersData && chaptersData.chapters.length === 0 && (
-            <AdminEmptyState
-              title="No chapters yet"
-              description="Create the first chapter for this level."
-            />
-          )}
-
-          {chaptersData && chaptersData.chapters.length > 0 && (
-            <>
-              <AdminTable
-                columns={chapterColumns}
-                rows={chaptersData.chapters}
-                getRowKey={(ch) => ch.id}
-                caption="Chapters"
-              />
-
-              <AdminPagination
-                page={chaptersData.page}
-                totalPages={totalPages}
-                buildHref={(p) =>
-                  `?courseId=${encodeURIComponent(courseId)}&levelId=${encodeURIComponent(levelId)}&page=${p}`
-                }
-              />
-            </>
-          )}
-
-          {chaptersData && (
-            <ChaptersList
-              chapters={chaptersData.chapters}
-              total={chaptersData.total}
-              page={chaptersData.page}
-              totalPages={totalPages}
-              levelId={levelId}
-              courseId={courseId}
-              onCreateChapter={handleCreate}
-              onUpdateChapter={handleUpdate}
-            />
-          )}
-        </>
-      )}
-
-      {!courseId && !coursesError && courses.length > 0 && (
-        <AdminEmptyState
-          title="Select a course"
-          description="Choose a course above to view and manage its chapters."
+      {courseId && levelId && chaptersData && (
+        <ChaptersList
+          chapters={chaptersData.chapters}
+          total={chaptersData.total}
+          page={chaptersData.page}
+          totalPages={totalPages}
+          levelId={levelId}
+          courseId={courseId}
+          onCreateChapter={handleCreate}
+          onUpdateChapter={handleUpdate}
         />
       )}
 
+      {!courseId && !coursesError && courses.length > 0 && (
+        <div className="cp-empty">
+          <p className="cp-empty-title">Select a course</p>
+          <p className="cp-empty-desc">Choose a course above, then a level, to manage chapters.</p>
+        </div>
+      )}
+
       <style>{`
-        .aim-chapters-page {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-20);
+        .cp-page { display: flex; flex-direction: column; gap: 20px; }
+        .cp-breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); }
+        .cp-breadcrumb-link { color: var(--text-link); text-decoration: none; }
+        .cp-breadcrumb-link:hover { text-decoration: underline; }
+        .cp-breadcrumb-current { color: var(--text-secondary); font-weight: 500; }
+        .cp-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .cp-eyebrow { margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary-500); }
+        .cp-title { margin: 0; font-size: 26px; font-weight: 700; color: var(--text-primary); }
+        .cp-subtitle { margin: 0; font-size: 14px; color: var(--text-secondary); }
+
+        .cp-steps { display: flex; gap: 4px; }
+        .cp-step {
+          font-size: 12px; font-weight: 600; color: var(--text-muted);
+          padding: 4px 12px; border-radius: 16px;
+          background: var(--surface-sunken);
         }
-        .aim-selector-section {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-12);
+        .cp-step--active { color: var(--color-primary-600, #4f46e5); background: color-mix(in srgb, var(--color-primary-500) 10%, transparent); }
+
+        .cp-selector { display: flex; flex-direction: column; gap: 8px; }
+        .cp-selector-label { margin: 0; font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+        .cp-selector-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+        .cp-selector-card {
+          display: inline-flex; align-items: center; gap: 8px;
+          padding: 8px 14px; border: 1px solid var(--border); border-radius: var(--radius-md);
+          background: var(--surface); text-decoration: none; color: var(--text-primary);
+          font-size: 13px; transition: border-color 0.15s, background 0.15s;
         }
-        .aim-selector-label {
-          font-size: 14px;
-          font-weight: var(--weight-semibold);
-          color: var(--text-secondary);
-          margin: 0;
-        }
-        .aim-selector-grid {
-          display: flex;
-          flex-wrap: wrap;
-          gap: var(--space-8);
-        }
-        .aim-selector-card {
-          display: inline-flex;
-          align-items: center;
-          gap: var(--space-8);
-          padding: var(--space-8) var(--space-16);
-          border: 1px solid var(--border);
-          border-radius: var(--radius-md);
-          background: var(--surface);
-          text-decoration: none;
-          color: var(--text-primary);
-          font-size: 14px;
-          transition: border-color var(--duration-fast) var(--ease-standard),
-                      background var(--duration-fast) var(--ease-standard);
-        }
-        .aim-selector-card:hover {
-          border-color: var(--color-primary-500);
-          background: var(--state-hover);
-        }
-        .aim-selector-card--active {
-          border-color: var(--color-primary-500);
-          background: var(--primary-soft);
-        }
-        .aim-selector-card-title {
-          font-weight: var(--weight-medium);
+        .cp-selector-card:hover { border-color: var(--color-primary-500); background: var(--state-hover, #f5f5f5); }
+        .cp-selector-card--active { border-color: var(--color-primary-500); background: color-mix(in srgb, var(--color-primary-500) 8%, transparent); }
+        .cp-selector-card-title { font-weight: 500; }
+        .cp-code-badge { font-size: 11px; background: var(--surface-sunken); padding: 1px 5px; border-radius: 4px; color: var(--text-secondary); }
+        .cp-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .cp-dot--draft { background: var(--text-muted); }
+        .cp-dot--published { background: var(--color-success-500); }
+        .cp-dot--archived { background: var(--text-muted); opacity: 0.5; }
+        .cp-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 60px 20px; text-align: center; }
+        .cp-empty-title { margin: 0; font-size: 16px; font-weight: 600; color: var(--text-primary); }
+        .cp-empty-desc { margin: 0; font-size: 13px; color: var(--text-muted); }
+        .cp-empty-hint { margin: 0; font-size: 13px; color: var(--text-muted); }
+        .cp-link { color: var(--text-link); text-decoration: none; }
+        .cp-link:hover { text-decoration: underline; }
+        @media (max-width: 640px) {
+          .cp-selector-grid { flex-direction: column; }
+          .cp-selector-card { width: 100%; }
         }
       `}</style>
     </section>

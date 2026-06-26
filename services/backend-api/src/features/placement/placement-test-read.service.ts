@@ -48,8 +48,8 @@ export interface PlacementTestActiveResponse {
   readonly id: string;
   readonly title: string;
   readonly status: 'published';
-  readonly totalSections: number;
-  readonly estimatedMinutes: number;
+  readonly total_sections: number;
+  readonly estimated_minutes: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -91,8 +91,8 @@ export class PlacementTestReadService {
       id: row.id,
       title: row.title,
       status: 'published',
-      totalSections: row.total_sections,
-      estimatedMinutes: row.estimated_minutes,
+      total_sections: row.total_sections,
+      estimated_minutes: row.estimated_minutes,
     };
   }
 }

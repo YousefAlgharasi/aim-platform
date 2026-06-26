@@ -70,7 +70,7 @@ export interface MaintenanceWindow {
   id: string;
   title: string;
   description: string | null;
-  type: 'planned' | 'emergency';
+  type: 'planned' | 'emergency' | 'routine' | 'upgrade';
   status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
   affectedServices: string[];
   scheduledStart: Date;

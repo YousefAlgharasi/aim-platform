@@ -43,7 +43,7 @@ const columns: AdminTableColumn<AdminUserListItem>[] = [
     header: 'ID',
     width: '120px',
     render: (user) => (
-      <Link href={`/admin/users/${user.id}`} style={{ textDecoration: 'none' }}>
+      <Link href={`/admin/students/${user.id}/progress`} style={{ textDecoration: 'none' }}>
         <AdminIdCell id={user.id} />
       </Link>
     ),
@@ -61,16 +61,52 @@ const columns: AdminTableColumn<AdminUserListItem>[] = [
     render: (user) => <AdminStatusBadge status={user.status} />,
   },
   {
+    key: 'progress',
+    header: 'Progress',
+    width: '160px',
+    render: (user) =>
+      user.totalLessons === null ? (
+        <span style={{ color: 'var(--text-muted)' }}>—</span>
+      ) : (
+        <div
+          style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-8)' }}
+          aria-label={`${user.completedLessons ?? 0} of ${user.totalLessons} lessons completed`}
+        >
+          <div
+            style={{
+              flex: '0 0 64px',
+              height: 6,
+              borderRadius: 3,
+              background: 'var(--surface-sunken)',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                height: '100%',
+                width: `${user.completionPct ?? 0}%`,
+                background: 'var(--color-primary-600)',
+                borderRadius: 3,
+              }}
+            />
+          </div>
+          <span style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+            {user.completedLessons ?? 0}/{user.totalLessons} ({user.completionPct ?? 0}%)
+          </span>
+        </div>
+      ),
+  },
+  {
+    key: 'lastActiveAt',
+    header: 'Last Active',
+    width: '130px',
+    render: (user) => <AdminDateCell iso={user.lastActiveAt} />,
+  },
+  {
     key: 'createdAt',
     header: 'Enrolled',
     width: '130px',
     render: (user) => <AdminDateCell iso={user.createdAt} />,
-  },
-  {
-    key: 'updatedAt',
-    header: 'Last Updated',
-    width: '130px',
-    render: (user) => <AdminDateCell iso={user.updatedAt} />,
   },
 ];
 
@@ -129,7 +165,9 @@ export default async function AdminStudentsPage({ searchParams }: Props) {
       />
 
       <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 'var(--space-16)' }}>
-        All student records are sourced from the Backend API. Role enforcement is handled server-side.
+        Lesson progress is backend-computed from published lessons and per-student completion
+        records — this view never recalculates it. Click a student to see their full progress
+        breakdown.
       </p>
 
       <form action="/admin/students" method="GET">

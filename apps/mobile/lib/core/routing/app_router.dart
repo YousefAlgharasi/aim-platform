@@ -27,6 +27,7 @@ import '../../features/notifications/ui/pages/notification_inbox_page.dart';
 import '../../features/analytics_summary/ui/pages/analytics_summary_page.dart';
 import '../../features/achievements/ui/pages/achievements_page.dart';
 import '../../features/shell/ui/pages/main_shell_page.dart';
+import '../../features/dev_tools/ui/pages/endpoint_tester_page.dart';
 import 'app_route_paths.dart';
 
 class AppRouter {
@@ -101,6 +102,8 @@ class AppRouter {
             return const AnalyticsSummaryPage();
           case AppRoutePaths.achievements:
             return const AchievementsPage();
+          case AppRoutePaths.endpointTester:
+            return const EndpointTesterPage();
           default:
             return const SplashPage();
         }

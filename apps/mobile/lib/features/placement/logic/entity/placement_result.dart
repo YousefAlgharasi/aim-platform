@@ -35,8 +35,8 @@ class PlacementResult {
   final List<PlacementWeakness> weaknesses;
 
   /// Assigned by backend based on estimatedLevel and weaknesses.
-  /// Flutter must not select or override this.
-  final String initialPathId;
+  /// Flutter must not select or override this. Null when no path assigned yet.
+  final String? initialPathId;
 
   /// Set by backend on result creation.
   final String createdAt;

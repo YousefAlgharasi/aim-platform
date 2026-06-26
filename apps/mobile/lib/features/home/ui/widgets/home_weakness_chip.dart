@@ -9,10 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/home/data/models/home_models.dart';
 
-/// Chip for a single backend-computed weakness record.
-///
-/// [severity] is mapped to a badge tone purely for visual rendering.
-/// The backend remains the sole authority for what severity the record has.
 class HomeWeaknessChip extends StatelessWidget {
   const HomeWeaknessChip({
     required this.model,
@@ -35,8 +31,8 @@ class HomeWeaknessChip extends StatelessWidget {
       tone: _tone,
       variant: AIMBadgeVariant.soft,
       pill: true,
-      semanticLabel: '${model.topic} weakness: ${model.severity}',
-      child: Text(model.topic),
+      semanticLabel: '${model.skillId} weakness: ${model.severity}',
+      child: Text(model.skillId),
     );
   }
 }

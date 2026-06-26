@@ -1,7 +1,7 @@
 // Phase 6 — P6-062
 // HomeRecommendationCard — renders a single AIM recommendation.
 //
-// action and reason are backend-computed. Flutter never generates or
+// All recommendation content is backend-computed. Flutter never generates or
 // rewrites recommendation content locally.
 
 import 'package:flutter/material.dart';
@@ -9,10 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/home/data/models/home_models.dart';
 
-/// Card for a single backend-computed AIM recommendation.
-///
-/// All content (action, reason) is backend-supplied verbatim.
-/// Uses the AI card variant to signal AIM-sourced content.
 class HomeRecommendationCard extends StatelessWidget {
   const HomeRecommendationCard({
     required this.model,
@@ -25,7 +21,7 @@ class HomeRecommendationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return AIMCard(
       variant: AIMCardVariant.ai,
-      semanticLabel: 'AIM recommendation: ${model.action} ${model.topic}',
+      semanticLabel: 'AIM recommendation: ${model.kind} ${model.targetSkillId}',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -38,7 +34,7 @@ class HomeRecommendationCard extends StatelessWidget {
               ),
               const SizedBox(width: AimSpacing.space4),
               Text(
-                model.topic,
+                model.targetSkillId,
                 style:
                     AimTextStyles.label.copyWith(color: AimColors.primary500),
                 maxLines: 1,
@@ -48,7 +44,7 @@ class HomeRecommendationCard extends StatelessWidget {
           ),
           const SizedBox(height: AimSpacing.space8),
           Text(
-            model.action,
+            model.kind,
             style: AimTextStyles.title.copyWith(color: AimColors.neutral900),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,

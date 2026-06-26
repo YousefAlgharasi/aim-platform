@@ -5,6 +5,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 
+import { backendFetch } from '../../../../lib/api/client-api-helpers';
+
 import { OperationsLoadingSpinner } from '../../../../components/operations/operations-loading-spinner';
 import { OperationsEmptyState } from '../../../../components/operations/operations-empty-state';
 import { OperationsErrorCard } from '../../../../components/operations/operations-error-card';
@@ -48,12 +50,12 @@ export default function OperationsDashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/admin/operations/dashboard', { credentials: 'include' });
+      const res = await backendFetch('/admin/operations/dashboard');
       if (!res.ok) {
         throw new Error(`Backend error ${res.status}: ${res.statusText}`);
       }
-      const data = await res.json();
-      setSummary(data);
+      const json = await res.json();
+      setSummary(json?.data ?? json);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load operations dashboard.');
     } finally {

@@ -62,21 +62,23 @@ export interface PlacementQuestionWithSkillRow {
  *
  * NEVER includes: correct_answer, skill_id, skill_code, weight, difficultyScore.
  * Defined by P4-011 §4 (student-safe fields).
+ *
+ * Field names use snake_case to match the Flutter PlacementQuestionModel.fromJson() contract.
  */
 export interface PlacementQuestionSafeResponse {
   readonly id: string;
-  readonly questionType: string;
-  readonly prompt: string;
-  readonly mediaUrl: string | null;
-  readonly orderIndex: number;
+  readonly section_id: string;
+  readonly text: string;
+  readonly options: Array<{ id: string; text: string }>;
+  readonly type: string;
+  readonly media_url: string | null;
+  readonly ordinal: number;
   // Note: skill_code intentionally excluded — internal scoring field.
   // Note: correct_answer intentionally excluded — must never be sent to students.
 }
 
-/** Response envelope for GET /placement/questions. */
-export interface PlacementQuestionDeliveryResponse {
-  readonly questions: PlacementQuestionSafeResponse[];
-}
+/** Response type for GET /placement/questions — raw array, no envelope. */
+export type PlacementQuestionDeliveryResponse = PlacementQuestionSafeResponse[];
 
 // ---------------------------------------------------------------------------
 // Placement test DB row (internal — never sent to clients in full)
@@ -118,9 +120,11 @@ export interface PlacementAttemptRow {
  */
 export interface PlacementAttemptStartResponse {
   readonly id: string;
-  readonly placementTestId: string;
+  readonly placement_test_id: string;
   readonly status: 'active';
-  readonly startedAt: string;
+  readonly started_at: string;
+  readonly submitted_at: null;
+  readonly completed_at: null;
 }
 
 /**
@@ -131,10 +135,11 @@ export interface PlacementAttemptStartResponse {
  */
 export interface PlacementAttemptCompleteResponse {
   readonly id: string;
+  readonly placement_test_id: string;
   readonly status: 'submitted';
-  readonly submittedAt: string;
-  readonly totalQuestions: number;
-  readonly totalAnswered: number;
+  readonly started_at: string;
+  readonly submitted_at: string;
+  readonly completed_at: null;
 }
 
 // ---------------------------------------------------------------------------
@@ -158,8 +163,8 @@ export interface PlacementAnswerRow {
  * Defined by P4-012 §3.1.
  */
 export interface SubmitPlacementAnswerRequest {
-  readonly placementQuestionId: string;
-  readonly answerValue: string;
+  readonly placement_question_id: string;
+  readonly answer_value: string;
 }
 
 /**
@@ -169,8 +174,8 @@ export interface SubmitPlacementAnswerRequest {
  */
 export interface SubmitPlacementAnswerResponse {
   readonly id: string;
-  readonly placementAttemptId: string;
-  readonly placementQuestionId: string;
-  readonly answerValue: string;
-  readonly createdAt: string;
+  readonly placement_attempt_id: string;
+  readonly placement_question_id: string;
+  readonly answer_value: string;
+  readonly created_at: string;
 }

@@ -1,9 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { OperationsRepository } from './operations.repository';
 import { OperationsAuditLog } from './operations.entities';
 
 @Injectable()
 export class OperationsAuditService {
   private readonly logger = new Logger(OperationsAuditService.name);
+
+  constructor(private readonly opsRepo: OperationsRepository) {}
 
   async logAction(
     actorId: string,
@@ -12,22 +15,17 @@ export class OperationsAuditService {
     resourceId: string,
     details?: Record<string, unknown>,
   ): Promise<OperationsAuditLog> {
-    const entry: OperationsAuditLog = {
-      id: crypto.randomUUID(),
+    this.logger.log(
+      `Audit: actor=${actorId} action=${action} resource=${resourceType}:${resourceId}`,
+    );
+
+    return this.opsRepo.createAuditLog({
       actorId,
       action,
       resourceType,
       resourceId,
       details: details || {},
-      createdAt: new Date(),
-    };
-
-    this.logger.log(
-      `Audit: actor=${actorId} action=${action} resource=${resourceType}:${resourceId}`,
-    );
-
-    // TODO: Persist to database when operations repository is implemented
-    return entry;
+    });
   }
 
   async getByResource(
@@ -37,9 +35,7 @@ export class OperationsAuditService {
     this.logger.debug(
       `Fetching audit logs for resource=${resourceType}:${resourceId}`,
     );
-
-    // TODO: Query from database when operations repository is implemented
-    return [];
+    return this.opsRepo.findAuditLogsByResource(resourceType, resourceId);
   }
 
   async getByActor(
@@ -52,8 +48,6 @@ export class OperationsAuditService {
     this.logger.debug(
       `Fetching audit logs for actor=${actorId} limit=${limit} offset=${offset}`,
     );
-
-    // TODO: Query from database when operations repository is implemented
-    return [];
+    return this.opsRepo.findAuditLogsByActor(actorId, limit, offset);
   }
 }

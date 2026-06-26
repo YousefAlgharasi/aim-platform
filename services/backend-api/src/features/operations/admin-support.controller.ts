@@ -4,12 +4,12 @@ import {
   Patch,
   Param,
   Body,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
-import { CurrentUser } from '../../auth/current-user.decorator';
-import { AuthenticatedUser } from '../../auth/authenticated-user';
+import { AuthenticatedRequest } from '../../auth/authenticated-user';
 import { SupportTicketService } from './support-ticket.service';
 import { OperationsAdminGuard, OperationsAdminOnly } from './operations.guards';
 
@@ -24,28 +24,28 @@ export class AdminSupportController {
   @OperationsAdminOnly()
   @ApiOperation({ summary: 'List all support tickets (admin)' })
   async listAllTickets() {
-    return this.ticketService.getMyTickets('__all__');
+    return this.ticketService.getAllTickets();
   }
 
   @Patch(':id/status')
   @OperationsAdminOnly()
   @ApiOperation({ summary: 'Update support ticket status (admin)' })
   async updateStatus(
-    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Body('status') status: string,
   ) {
-    return this.ticketService.adminUpdateStatus(id, status, user.id);
+    return this.ticketService.adminUpdateStatus(id, status, req.internalUserId!);
   }
 
   @Patch(':id/assign')
   @OperationsAdminOnly()
   @ApiOperation({ summary: 'Assign support ticket (admin)' })
   async assignTicket(
-    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Body('assigneeId') assigneeId: string,
   ) {
-    return this.ticketService.adminAssign(id, assigneeId, user.id);
+    return this.ticketService.adminAssign(id, assigneeId, req.internalUserId!);
   }
 }

@@ -47,4 +47,7 @@ class AppRoutePaths {
 
   // Achievements
   static const String achievements = '/achievements';
+
+  // Dev Tools
+  static const String endpointTester = '/dev-tools/endpoint-tester';
 }

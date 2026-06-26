@@ -32,6 +32,7 @@ import {
   SubmitPlacementAnswerRequest,
   SubmitPlacementAnswerResponse,
 } from './placement.types';
+import { PlacementAuditService } from './placement-audit.service';
 
 /** Allowed answer_value formats per question type (P4-012 §2.3). */
 const VALID_OPTION_LETTERS = new Set(['A', 'B', 'C', 'D']);
@@ -39,7 +40,10 @@ const VALID_TRUE_FALSE_VALUES = new Set(['true', 'false']);
 
 @Injectable()
 export class PlacementAnswerSubmitService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly audit: PlacementAuditService,
+  ) {}
 
   /**
    * Submit a single answer to a question within an active placement attempt.
@@ -55,7 +59,7 @@ export class PlacementAnswerSubmitService {
    *
    * @param attemptId  UUID of the target placement_attempt (from URL path).
    * @param studentId  Internal student ID — always from the verified JWT.
-   * @param input      Student-supplied placementQuestionId and answerValue.
+   * @param input      Student-supplied placement_question_id and answer_value.
    */
   async submitAnswer(
     attemptId: string,
@@ -103,15 +107,13 @@ export class PlacementAnswerSubmitService {
       question_type: string;
       skill_code: string | null;
     }>(
-      `SELECT pq.id, pq.question_type, pqs.skill_code
+      `SELECT pq.id, pq.question_type, ps.skill_code
        FROM placement_questions pq
        JOIN placement_sections ps ON ps.id = pq.placement_section_id
-       LEFT JOIN placement_question_skills pqs
-         ON pqs.placement_question_id = pq.id AND pqs.is_primary = true
        WHERE pq.id = $1
          AND ps.placement_test_id = $2
        LIMIT 1`,
-      [input.placementQuestionId, attempt.placement_test_id],
+      [input.placement_question_id, attempt.placement_test_id],
     );
 
     if ((questionResult.rowCount ?? 0) === 0) {
@@ -135,7 +137,7 @@ export class PlacementAnswerSubmitService {
        WHERE placement_attempt_id = $1
          AND placement_question_id = $2
        LIMIT 1`,
-      [attemptId, input.placementQuestionId],
+      [attemptId, input.placement_question_id],
     );
 
     if ((duplicateResult.rowCount ?? 0) > 0) {
@@ -149,7 +151,7 @@ export class PlacementAnswerSubmitService {
     // -----------------------------------------------------------------------
     // 4. Validate answer_value format against the question type (P4-012 §2.3).
     // -----------------------------------------------------------------------
-    this.validateAnswerValue(input.answerValue, question.question_type);
+    this.validateAnswerValue(input.answer_value, question.question_type);
 
     // -----------------------------------------------------------------------
     // 5. Inherit skill_code from the primary skill link on the question.
@@ -170,10 +172,18 @@ export class PlacementAnswerSubmitService {
        VALUES ($1, $2, $3, NULL, $4)
        RETURNING id, placement_attempt_id, placement_question_id,
                  answer_value, is_correct, skill_code, created_at`,
-      [attemptId, input.placementQuestionId, input.answerValue, skillCode],
+      [attemptId, input.placement_question_id, input.answer_value, skillCode],
     );
 
     const answer = insertResult.rows[0];
+
+    void this.audit.logAnswerSubmitted(
+      studentId,
+      attemptId,
+      answer.placement_question_id,
+      question.question_type,
+      answer.answer_value,
+    );
 
     // -----------------------------------------------------------------------
     // 7. Return student-safe fields only (P4-012 §4).
@@ -183,10 +193,10 @@ export class PlacementAnswerSubmitService {
     // -----------------------------------------------------------------------
     return {
       id: answer.id,
-      placementAttemptId: answer.placement_attempt_id,
-      placementQuestionId: answer.placement_question_id,
-      answerValue: answer.answer_value,
-      createdAt: answer.created_at,
+      placement_attempt_id: answer.placement_attempt_id,
+      placement_question_id: answer.placement_question_id,
+      answer_value: answer.answer_value,
+      created_at: answer.created_at,
     };
   }
 

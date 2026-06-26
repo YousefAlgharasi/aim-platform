@@ -36,8 +36,8 @@ export class FeedbackService {
     return this.opsRepo.findFeedbackByUser(userId);
   }
 
-  async adminGetAllFeedback(limit: number = 50, offset: number = 0): Promise<UserFeedback[]> {
-    return this.opsRepo.findFeedbackByUser('__all__');
+  async adminGetAllFeedback(): Promise<UserFeedback[]> {
+    return this.opsRepo.findAllFeedback();
   }
 
   async adminTriageFeedback(

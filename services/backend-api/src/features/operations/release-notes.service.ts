@@ -1,4 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { OperationsRepository } from './operations.repository';
 import { OperationsAuditService } from './operations-audit.service';
 import { ReleaseNote } from './operations.entities';
 
@@ -13,26 +14,23 @@ export interface CreateReleaseNoteDraftDto {
 export class ReleaseNotesService {
   private readonly logger = new Logger(ReleaseNotesService.name);
 
-  constructor(private readonly auditService: OperationsAuditService) {}
+  constructor(
+    private readonly opsRepo: OperationsRepository,
+    private readonly auditService: OperationsAuditService,
+  ) {}
 
   async createDraft(
     dto: CreateReleaseNoteDraftDto,
     adminId: string,
   ): Promise<ReleaseNote> {
-    const note: ReleaseNote = {
-      id: crypto.randomUUID(),
+    const note = await this.opsRepo.createReleaseNote({
       title: dto.title,
       body: dto.body || null,
       version: dto.version,
       audience: dto.audience,
-      status: 'draft',
       createdBy: adminId,
-      publishedAt: null,
-      publishedBy: null,
       metadata: {},
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    });
 
     this.logger.log(`Release note draft created: ${note.id} by admin ${adminId}`);
 
@@ -44,41 +42,35 @@ export class ReleaseNotesService {
       { title: dto.title, version: dto.version },
     );
 
-    // TODO: Persist to database when operations repository is implemented
     return note;
   }
 
   async getDrafts(adminId: string): Promise<ReleaseNote[]> {
     this.logger.debug(`Fetching release note drafts for admin ${adminId}`);
-
-    // TODO: Query from database filtering status='draft'
-    return [];
+    return this.opsRepo.findAllReleaseNotes(50, 0);
   }
 
   async getPublished(audience?: string): Promise<ReleaseNote[]> {
     this.logger.debug(`Fetching published release notes for audience=${audience || 'all'}`);
-
-    // TODO: Query from database filtering status='published' and optional audience
-    return [];
+    return this.opsRepo.findPublishedReleaseNotes(50, 0);
   }
 
   async getById(id: string): Promise<ReleaseNote> {
     this.logger.debug(`Fetching release note: ${id}`);
-
-    // TODO: Query from database when operations repository is implemented
-    throw new NotFoundException(`Release note ${id} not found`);
+    const note = await this.opsRepo.findReleaseNoteById(id);
+    if (!note) {
+      throw new NotFoundException(`Release note ${id} not found`);
+    }
+    return note;
   }
 
   async publish(id: string, adminId: string): Promise<ReleaseNote> {
     const note = await this.getById(id);
 
-    const published: ReleaseNote = {
-      ...note,
-      status: 'published',
-      publishedAt: new Date(),
-      publishedBy: adminId,
-      updatedAt: new Date(),
-    };
+    const published = await this.opsRepo.publishReleaseNote(id, adminId);
+    if (!published) {
+      throw new NotFoundException(`Release note ${id} not found`);
+    }
 
     this.logger.log(`Release note ${id} published by admin ${adminId}`);
 
@@ -90,18 +82,16 @@ export class ReleaseNotesService {
       { title: note.title, version: note.version },
     );
 
-    // TODO: Persist to database when operations repository is implemented
     return published;
   }
 
   async archive(id: string, adminId: string): Promise<ReleaseNote> {
     const note = await this.getById(id);
 
-    const archived: ReleaseNote = {
-      ...note,
-      status: 'archived',
-      updatedAt: new Date(),
-    };
+    const archived = await this.opsRepo.archiveReleaseNote(id);
+    if (!archived) {
+      throw new NotFoundException(`Release note ${id} not found`);
+    }
 
     this.logger.log(`Release note ${id} archived by admin ${adminId}`);
 
@@ -113,7 +103,6 @@ export class ReleaseNotesService {
       { title: note.title, version: note.version },
     );
 
-    // TODO: Persist to database when operations repository is implemented
     return archived;
   }
 }
