@@ -7,7 +7,11 @@
 //   GET /admin/placement/tests — paginated list of all placement tests.
 //
 // Security rules:
-//   - Guarded by SupabaseJwtAuthGuard and PlacementPermissionGuard.
+//   - Guarded by SupabaseJwtAuthGuard and RoleGuard — admin roles are assigned via
+//     the DB roles table (RolesService), not JWT app_metadata, so this controller
+//     uses the same RoleGuard as the other admin/* controllers rather than
+//     PlacementPermissionGuard (which only checks JWT app_metadata roles and is
+//     reserved for the student-facing placement endpoints).
 //   - Requires AuthorizedRole.ADMIN or AuthorizedRole.SUPER_ADMIN.
 //   - Read-only — no placement scoring, CEFR thresholds, or status transitions here.
 //   - Status transitions are implemented in P4-058.
@@ -19,7 +23,7 @@ import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../auth/authorization/required-roles.decorator';
-import { PlacementPermissionGuard } from './placement-permission.guard';
+import { RoleGuard } from '../../auth/authorization/role.guard';
 import {
   PlacementAdminTestReadService,
   AdminPlacementTestListResponse,
@@ -27,7 +31,7 @@ import {
 
 @ApiTags('admin-placement')
 @Controller('admin/placement')
-@UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+@UseGuards(SupabaseJwtAuthGuard, RoleGuard)
 @RequireRoles(AuthorizedRole.ADMIN, AuthorizedRole.SUPER_ADMIN)
 @ApiBearerAuth()
 export class PlacementAdminController {
