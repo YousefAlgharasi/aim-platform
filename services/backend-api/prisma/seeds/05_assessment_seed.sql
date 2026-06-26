@@ -1,177 +1,197 @@
--- Phase 10 — P10-018
--- Seed data for development/testing: sample quiz and exam with sections,
--- questions, settings, and a deadline window.
+-- 05_assessment_seed.sql
+-- Seed data for assessments: quizzes and exams with sections, settings,
+-- question links, and global deadlines.
 --
--- Scope: Assessment system (Phase 10) only.
---
--- Security rules:
---   - No secrets, service-role keys, database credentials, JWT secrets,
---     or AI provider keys are present here.
---   - Correct answer values (is_correct on question_choices) are NOT seeded
---     here — they belong to the question bank (Phase 3) and remain
---     backend-only. This seed file never exposes correct answers.
---   - pass_threshold and late_penalty_percent in assessment_settings are
---     backend-owned configuration — they are seeded here for dev testing
---     only and must never be returned to Flutter clients.
---   - This file must only be executed by backend-controlled tooling
---     (prisma db seed or psql pipeline). Never expose to clients.
---   - Backend remains the final authority for grading, scoring, pass/fail,
---     deadline status, and attempt eligibility.
---
--- Dependencies:
---   P10-006 (assessments), P10-007 (sections), P10-008 (question links),
---   P10-009 (settings), P10-010 (deadlines), P10-017 (constraints)
---
--- Usage: Safe to run multiple times — all inserts use ON CONFLICT DO NOTHING.
+-- All inserts use ON CONFLICT DO NOTHING for idempotent re-runs.
 
--- ============================================================
--- Fixed UUIDs (dev environment only — never production secrets)
--- ============================================================
-
--- Assessment IDs
--- p10-quiz-001  : Unit 3 Grammar Quiz (quiz, published)
--- p10-exam-001  : Midterm Exam        (exam, published)
-
--- Section IDs
--- p10-section-quiz-grammar   : Grammar section of quiz
--- p10-section-exam-listening : Listening section of exam
--- p10-section-exam-grammar   : Grammar section of exam
-
--- ============================================================
+-- -----------------------------------------------------------------------
 -- 1. Assessments
--- ============================================================
+-- -----------------------------------------------------------------------
 
-INSERT INTO assessments (id, type, title, description, status, created_by)
+INSERT INTO assessments (id, type, title, description, status, created_by, created_at, updated_at)
 VALUES
   (
-    'p1000000-0000-0000-0000-000000000001',
+    'as000000-0000-0000-0000-000000000001',
     'quiz',
-    'Unit 3 Grammar Quiz',
-    'A short grammar check covering Unit 3 material.',
+    'A1 Grammar & Vocabulary Quiz',
+    'A short quiz covering A1-level grammar and vocabulary.',
     'published',
-    '00000000-0000-0000-0000-000000000001'  -- dev admin placeholder
+    '00000000-0000-0000-0000-000000000001',
+    NOW(), NOW()
   ),
   (
-    'p1000000-0000-0000-0000-000000000002',
+    'as000000-0000-0000-0000-000000000002',
+    'quiz',
+    'A2 Grammar & Vocabulary Quiz',
+    'A short quiz covering A2-level grammar and vocabulary.',
+    'published',
+    '00000000-0000-0000-0000-000000000001',
+    NOW(), NOW()
+  ),
+  (
+    'as000000-0000-0000-0000-000000000003',
+    'quiz',
+    'A3 Grammar & Vocabulary Quiz',
+    'A short quiz covering A3-level grammar and vocabulary.',
+    'published',
+    '00000000-0000-0000-0000-000000000001',
+    NOW(), NOW()
+  ),
+  (
+    'as000000-0000-0000-0000-000000000004',
     'exam',
-    'Midterm Exam',
-    'Covers Units 1–5: listening, grammar, and vocabulary.',
+    'A1 Final Exam',
+    'Comprehensive A1-level final exam covering grammar and vocabulary.',
     'published',
-    '00000000-0000-0000-0000-000000000001'
+    '00000000-0000-0000-0000-000000000001',
+    NOW(), NOW()
   )
 ON CONFLICT (id) DO NOTHING;
 
--- ============================================================
+-- -----------------------------------------------------------------------
 -- 2. Assessment Sections
--- ============================================================
+-- -----------------------------------------------------------------------
 
-INSERT INTO assessment_sections (id, assessment_id, title, "order", weight)
+-- A1 Quiz: 1 section
+INSERT INTO assessment_sections (id, assessment_id, title, "order", weight, created_at, updated_at)
 VALUES
-  -- Quiz: single section
   (
-    'p1000000-0000-0001-0000-000000000001',
-    'p1000000-0000-0000-0000-000000000001',
-    'Grammar',
-    1,
-    1.000
+    'ax000000-0000-0000-0001-000000000001',
+    'as000000-0000-0000-0000-000000000001',
+    'Grammar & Vocabulary',
+    1, 1.000, NOW(), NOW()
   ),
-  -- Exam: two sections
+  -- A2 Quiz: 1 section
   (
-    'p1000000-0000-0001-0000-000000000002',
-    'p1000000-0000-0000-0000-000000000002',
-    'Listening',
-    1,
-    0.400
+    'ax000000-0000-0000-0002-000000000001',
+    'as000000-0000-0000-0000-000000000002',
+    'Grammar & Vocabulary',
+    1, 1.000, NOW(), NOW()
+  ),
+  -- A3 Quiz: 1 section
+  (
+    'ax000000-0000-0000-0003-000000000001',
+    'as000000-0000-0000-0000-000000000003',
+    'Grammar & Vocabulary',
+    1, 1.000, NOW(), NOW()
+  ),
+  -- A1 Exam: 2 sections
+  (
+    'ax000000-0000-0000-0004-000000000001',
+    'as000000-0000-0000-0000-000000000004',
+    'Grammar',
+    1, 1.000, NOW(), NOW()
   ),
   (
-    'p1000000-0000-0001-0000-000000000003',
-    'p1000000-0000-0000-0000-000000000002',
-    'Grammar',
-    2,
-    0.600
+    'ax000000-0000-0000-0004-000000000002',
+    'as000000-0000-0000-0000-000000000004',
+    'Vocabulary',
+    2, 1.000, NOW(), NOW()
   )
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (assessment_id, "order") DO NOTHING;
 
--- ============================================================
+-- -----------------------------------------------------------------------
 -- 3. Assessment Settings
--- (pass_threshold and late_penalty_percent: backend-only — never to Flutter)
--- ============================================================
+-- -----------------------------------------------------------------------
 
-INSERT INTO assessment_settings (
-  id, assessment_id, time_limit_seconds, max_attempts, allow_retake,
-  randomize_questions, randomize_options,
-  grading_mode, pass_threshold,
-  late_submission_window_seconds, late_penalty_percent,
-  result_visibility, feedback_policy
-)
+INSERT INTO assessment_settings (id, assessment_id, time_limit_seconds, max_attempts, allow_retake, randomize_questions, randomize_options, grading_mode, pass_threshold, created_at, updated_at)
 VALUES
-  -- Quiz settings
   (
-    'p1000000-0000-0002-0000-000000000001',
-    'p1000000-0000-0000-0000-000000000001',
-    900,      -- 15 minutes
-    2,        -- 2 attempts allowed
-    FALSE,
-    FALSE, FALSE,
-    'auto',
-    60.00,    -- 60% pass threshold — NEVER returned to Flutter
-    3600,     -- 1h late window
-    10.00,    -- 10% late penalty — NEVER returned to Flutter
-    'immediate',
-    'after_submission'
+    'at000000-0000-0000-0000-000000000001',
+    'as000000-0000-0000-0000-000000000001',
+    600, 3, true, false, false, 'auto', 60.00, NOW(), NOW()
   ),
-  -- Exam settings
   (
-    'p1000000-0000-0002-0000-000000000002',
-    'p1000000-0000-0000-0000-000000000002',
-    3600,     -- 60 minutes
-    1,        -- 1 attempt only
-    FALSE,
-    TRUE, FALSE,
-    'auto',
-    70.00,    -- 70% pass threshold — NEVER returned to Flutter
-    NULL,     -- no late submissions
-    0.00,
-    'after_deadline',
-    'after_deadline'
+    'at000000-0000-0000-0000-000000000002',
+    'as000000-0000-0000-0000-000000000002',
+    600, 3, true, false, false, 'auto', 60.00, NOW(), NOW()
+  ),
+  (
+    'at000000-0000-0000-0000-000000000003',
+    'as000000-0000-0000-0000-000000000003',
+    600, 3, true, false, false, 'auto', 60.00, NOW(), NOW()
+  ),
+  (
+    'at000000-0000-0000-0000-000000000004',
+    'as000000-0000-0000-0000-000000000004',
+    1800, 1, false, false, false, 'auto', 60.00, NOW(), NOW()
   )
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (assessment_id) DO NOTHING;
 
--- ============================================================
--- 4. Assessment Deadlines
--- (opens/closes relative to seed time for dev flexibility)
--- ============================================================
+-- -----------------------------------------------------------------------
+-- 4. Assessment Questions (links to questions table)
+-- -----------------------------------------------------------------------
 
-INSERT INTO assessment_deadlines (
-  id, assessment_id, student_id, timezone,
-  opens_at, closes_at, extended_closes_at,
-  late_window_seconds, late_penalty_percent, is_active
-)
+-- A1 Quiz: 5 questions from level 1
+INSERT INTO assessment_questions (id, assessment_id, section_id, question_id, "order", points, created_at, updated_at)
 VALUES
-  -- Quiz: open now, closes in 7 days
+  ('aq000000-0000-0000-0001-000000000001', 'as000000-0000-0000-0000-000000000001', 'ax000000-0000-0000-0001-000000000001', 'q0000000-0000-0000-0001-000000000001', 1, 1.00, NOW(), NOW()),
+  ('aq000000-0000-0000-0001-000000000002', 'as000000-0000-0000-0000-000000000001', 'ax000000-0000-0000-0001-000000000001', 'q0000000-0000-0000-0001-000000000002', 2, 1.00, NOW(), NOW()),
+  ('aq000000-0000-0000-0001-000000000003', 'as000000-0000-0000-0000-000000000001', 'ax000000-0000-0000-0001-000000000001', 'q0000000-0000-0000-0001-000000000003', 3, 1.00, NOW(), NOW()),
+  ('aq000000-0000-0000-0001-000000000004', 'as000000-0000-0000-0000-000000000001', 'ax000000-0000-0000-0001-000000000001', 'q0000000-0000-0000-0001-000000000004', 4, 1.00, NOW(), NOW()),
+  ('aq000000-0000-0000-0001-000000000005', 'as000000-0000-0000-0000-000000000001', 'ax000000-0000-0000-0001-000000000001', 'q0000000-0000-0000-0001-000000000005', 5, 1.00, NOW(), NOW()),
+
+  -- A2 Quiz: 5 questions from level 2
+  ('aq000000-0000-0000-0002-000000000001', 'as000000-0000-0000-0000-000000000002', 'ax000000-0000-0000-0002-000000000001', 'q0000000-0000-0000-0002-000000000001', 1, 1.00, NOW(), NOW()),
+  ('aq000000-0000-0000-0002-000000000002', 'as000000-0000-0000-0000-000000000002', 'ax000000-0000-0000-0002-000000000001', 'q0000000-0000-0000-0002-000000000002', 2, 1.00, NOW(), NOW()),
+  ('aq000000-0000-0000-0002-000000000003', 'as000000-0000-0000-0000-000000000002', 'ax000000-0000-0000-0002-000000000001', 'q0000000-0000-0000-0002-000000000003', 3, 1.00, NOW(), NOW()),
+  ('aq000000-0000-0000-0002-000000000004', 'as000000-0000-0000-0000-000000000002', 'ax000000-0000-0000-0002-000000000001', 'q0000000-0000-0000-0002-000000000004', 4, 1.00, NOW(), NOW()),
+  ('aq000000-0000-0000-0002-000000000005', 'as000000-0000-0000-0000-000000000002', 'ax000000-0000-0000-0002-000000000001', 'q0000000-0000-0000-0002-000000000005', 5, 1.00, NOW(), NOW()),
+
+  -- A3 Quiz: 5 questions from level 3
+  ('aq000000-0000-0000-0003-000000000001', 'as000000-0000-0000-0000-000000000003', 'ax000000-0000-0000-0003-000000000001', 'q0000000-0000-0000-0003-000000000001', 1, 1.00, NOW(), NOW()),
+  ('aq000000-0000-0000-0003-000000000002', 'as000000-0000-0000-0000-000000000003', 'ax000000-0000-0000-0003-000000000001', 'q0000000-0000-0000-0003-000000000002', 2, 1.00, NOW(), NOW()),
+  ('aq000000-0000-0000-0003-000000000003', 'as000000-0000-0000-0000-000000000003', 'ax000000-0000-0000-0003-000000000001', 'q0000000-0000-0000-0003-000000000003', 3, 1.00, NOW(), NOW()),
+  ('aq000000-0000-0000-0003-000000000004', 'as000000-0000-0000-0000-000000000003', 'ax000000-0000-0000-0003-000000000001', 'q0000000-0000-0000-0003-000000000004', 4, 1.00, NOW(), NOW()),
+  ('aq000000-0000-0000-0003-000000000005', 'as000000-0000-0000-0000-000000000003', 'ax000000-0000-0000-0003-000000000001', 'q0000000-0000-0000-0003-000000000005', 5, 1.00, NOW(), NOW()),
+
+  -- A1 Exam: Section 1 (Grammar) — 5 questions from level 1
+  ('aq000000-0000-0000-0004-000000000001', 'as000000-0000-0000-0000-000000000004', 'ax000000-0000-0000-0004-000000000001', 'q0000000-0000-0000-0001-000000000006', 1, 1.00, NOW(), NOW()),
+  ('aq000000-0000-0000-0004-000000000002', 'as000000-0000-0000-0000-000000000004', 'ax000000-0000-0000-0004-000000000001', 'q0000000-0000-0000-0001-000000000007', 2, 1.00, NOW(), NOW()),
+  ('aq000000-0000-0000-0004-000000000003', 'as000000-0000-0000-0000-000000000004', 'ax000000-0000-0000-0004-000000000001', 'q0000000-0000-0000-0001-000000000008', 3, 1.00, NOW(), NOW()),
+  ('aq000000-0000-0000-0004-000000000004', 'as000000-0000-0000-0000-000000000004', 'ax000000-0000-0000-0004-000000000001', 'q0000000-0000-0000-0001-000000000009', 4, 1.00, NOW(), NOW()),
+  ('aq000000-0000-0000-0004-000000000005', 'as000000-0000-0000-0000-000000000004', 'ax000000-0000-0000-0004-000000000001', 'q0000000-0000-0000-0001-000000000010', 5, 1.00, NOW(), NOW()),
+
+  -- A1 Exam: Section 2 (Vocabulary) — 5 questions from level 1
+  ('aq000000-0000-0000-0004-000000000006', 'as000000-0000-0000-0000-000000000004', 'ax000000-0000-0000-0004-000000000002', 'q0000000-0000-0000-0001-000000000011', 6, 1.00, NOW(), NOW()),
+  ('aq000000-0000-0000-0004-000000000007', 'as000000-0000-0000-0000-000000000004', 'ax000000-0000-0000-0004-000000000002', 'q0000000-0000-0000-0001-000000000012', 7, 1.00, NOW(), NOW()),
+  ('aq000000-0000-0000-0004-000000000008', 'as000000-0000-0000-0000-000000000004', 'ax000000-0000-0000-0004-000000000002', 'q0000000-0000-0000-0001-000000000013', 8, 1.00, NOW(), NOW()),
+  ('aq000000-0000-0000-0004-000000000009', 'as000000-0000-0000-0000-000000000004', 'ax000000-0000-0000-0004-000000000002', 'q0000000-0000-0000-0001-000000000014', 9, 1.00, NOW(), NOW()),
+  ('aq000000-0000-0000-0004-000000000010', 'as000000-0000-0000-0000-000000000004', 'ax000000-0000-0000-0004-000000000002', 'q0000000-0000-0000-0001-000000000015', 10, 1.00, NOW(), NOW())
+ON CONFLICT (assessment_id, "order") DO NOTHING;
+
+-- -----------------------------------------------------------------------
+-- 5. Assessment Deadlines (global per assessment)
+-- -----------------------------------------------------------------------
+
+INSERT INTO assessment_deadlines (id, assessment_id, student_id, timezone, opens_at, closes_at, is_active, created_at, updated_at)
+VALUES
   (
-    'p1000000-0000-0003-0000-000000000001',
-    'p1000000-0000-0000-0000-000000000001',
-    NULL,   -- global deadline
-    'UTC',
-    NOW() - INTERVAL '1 hour',
-    NOW() + INTERVAL '7 days',
-    NULL,
-    3600,
-    10.00,
-    TRUE
+    'ad000000-0000-0000-0000-000000000001',
+    'as000000-0000-0000-0000-000000000001',
+    NULL, 'UTC',
+    '2026-01-01T00:00:00Z', '2026-12-31T23:59:59Z',
+    TRUE, NOW(), NOW()
   ),
-  -- Exam: open now, closes in 14 days
   (
-    'p1000000-0000-0003-0000-000000000002',
-    'p1000000-0000-0000-0000-000000000002',
-    NULL,
-    'UTC',
-    NOW() - INTERVAL '1 hour',
-    NOW() + INTERVAL '14 days',
-    NULL,
-    NULL,
-    0.00,
-    TRUE
+    'ad000000-0000-0000-0000-000000000002',
+    'as000000-0000-0000-0000-000000000002',
+    NULL, 'UTC',
+    '2026-01-01T00:00:00Z', '2026-12-31T23:59:59Z',
+    TRUE, NOW(), NOW()
+  ),
+  (
+    'ad000000-0000-0000-0000-000000000003',
+    'as000000-0000-0000-0000-000000000003',
+    NULL, 'UTC',
+    '2026-01-01T00:00:00Z', '2026-12-31T23:59:59Z',
+    TRUE, NOW(), NOW()
+  ),
+  (
+    'ad000000-0000-0000-0000-000000000004',
+    'as000000-0000-0000-0000-000000000004',
+    NULL, 'UTC',
+    '2026-01-01T00:00:00Z', '2026-12-31T23:59:59Z',
+    TRUE, NOW(), NOW()
   )
 ON CONFLICT (id) DO NOTHING;
