@@ -53,11 +53,13 @@ import { PlacementQuestionDeliveryService } from './placement-question-delivery.
 import { PlacementAnswerSubmitService } from './placement-answer-submit.service';
 import { PlacementAttemptCompleteService } from './placement-attempt-complete.service';
 import { PlacementResultReadService, PlacementResultResponse } from './placement-result-read.service';
+import { PlacementResultService } from './placement-result.service';
+import { PlacementInitialLearningPathService } from './placement-initial-learning-path.service';
 import { PlacementSectionsService, PlacementSectionsResponse } from './placement-sections.service';
+import { SubmitPlacementAnswerDto } from './submit-placement-answer.dto';
 import {
   PlacementQuestionDeliveryResponse,
   PlacementAttemptStartResponse,
-  SubmitPlacementAnswerRequest,
   SubmitPlacementAnswerResponse,
   PlacementAttemptCompleteResponse,
 } from './placement.types';
@@ -73,6 +75,8 @@ export class PlacementController {
     private readonly answerSubmit: PlacementAnswerSubmitService,
     private readonly attemptComplete: PlacementAttemptCompleteService,
     private readonly resultRead: PlacementResultReadService,
+    private readonly resultCreate: PlacementResultService,
+    private readonly initialPath: PlacementInitialLearningPathService,
   ) {}
 
   /**
@@ -163,7 +167,7 @@ export class PlacementController {
   async submitAnswer(
     @Param('id') attemptId: string,
     @CurrentUser() user: AuthenticatedUser,
-    @Body() body: SubmitPlacementAnswerRequest,
+    @Body() body: SubmitPlacementAnswerDto,
   ): Promise<SubmitPlacementAnswerResponse> {
     return this.answerSubmit.submitAnswer(attemptId, user.id, body);
   }
@@ -185,7 +189,12 @@ export class PlacementController {
     @Param('id') attemptId: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<PlacementAttemptCompleteResponse> {
-    return this.attemptComplete.completeAttempt(attemptId, user.id);
+    const response = await this.attemptComplete.completeAttempt(attemptId, user.id);
+
+    const resultSummary = await this.resultCreate.createResult(attemptId);
+    await this.initialPath.createInitialPath(resultSummary.resultId);
+
+    return response;
   }
 
   /**

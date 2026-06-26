@@ -72,12 +72,10 @@ export class PlacementQuestionDeliveryService {
          pq.correct_answer,
          pq.created_at,
          pq.updated_at,
-         s.skill_code
+         ps.skill_code
        FROM placement_questions pq
-       LEFT JOIN placement_question_skills pqs
-         ON pqs.placement_question_id = pq.id AND pqs.is_primary = true
-       LEFT JOIN skills s
-         ON s.id = pqs.skill_id
+       JOIN placement_sections ps
+         ON ps.id = pq.placement_section_id
        WHERE pq.placement_section_id = $1
        ORDER BY pq.order_index ASC`,
       [sectionId],
