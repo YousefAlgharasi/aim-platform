@@ -1,18 +1,9 @@
 'use client';
-// P11-022: Admin course editor form using AIM design system.
-// Backend is final authority for course data and status transitions.
 
 import { useState, useTransition } from 'react';
 import type { AdminCourseSummary } from '../../../../lib/api/admin-courses-api';
-import {
-  AdminInput,
-  AdminTextarea,
-  AdminButton,
-  AdminFormField,
-  AdminCard,
-} from '../../../../components/common';
 
-type CourseFormProps = {
+type Props = {
   readonly mode: 'create' | 'edit';
   readonly initial?: AdminCourseSummary;
   readonly onSubmit: (data: {
@@ -23,7 +14,7 @@ type CourseFormProps = {
   readonly onCancel: () => void;
 };
 
-export function CourseForm({ mode, initial, onSubmit, onCancel }: CourseFormProps) {
+export function CourseForm({ mode, initial, onSubmit, onCancel }: Props) {
   const [title, setTitle] = useState(initial?.title ?? '');
   const [slug, setSlug] = useState(initial?.slug ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
@@ -33,17 +24,16 @@ export function CourseForm({ mode, initial, onSubmit, onCancel }: CourseFormProp
 
   function validate(): boolean {
     const errors: Record<string, string> = {};
-    if (!title.trim()) {
-      errors.title = 'Title is required.';
-    }
+    if (!title.trim()) errors.title = 'Title is required.';
     if (slug.trim() && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug.trim())) {
-      errors.slug = 'Slug must be lowercase letters, numbers, and hyphens only.';
+      errors.slug = 'Lowercase letters, numbers, and hyphens only.';
     }
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   }
 
-  function handleSubmit() {
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
     if (!validate()) return;
     setError(null);
     startTransition(async () => {
@@ -52,110 +42,112 @@ export function CourseForm({ mode, initial, onSubmit, onCancel }: CourseFormProp
         slug: slug.trim() || null,
         description: description.trim() || null,
       });
-      if (result.error) {
-        setError(result.error);
-      }
+      if (result.error) setError(result.error);
     });
   }
 
   return (
-    <AdminCard
-      title={mode === 'create' ? 'New Course' : 'Edit Course'}
-    >
-      {error && (
-        <div className="admin-error-banner" role="alert" style={{ marginBlockEnd: 'var(--space-16)' }}>
-          {error}
-        </div>
-      )}
+    <div className="cf-card">
+      <div className="cf-header">
+        <h2 className="cf-title">{mode === 'create' ? 'New Course' : 'Edit Course'}</h2>
+        <button type="button" className="cf-close" onClick={onCancel} aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
 
-      <div className="aim-course-form-fields">
-        <AdminFormField
-          id="course-title"
-          label="Title"
-          required
-          error={fieldErrors.title}
-        >
-          <AdminInput
-            id="course-title"
-            type="text"
-            value={title}
+      {error && <div className="admin-error-banner" role="alert">{error}</div>}
+
+      <form onSubmit={handleSubmit} className="cf-form">
+        <div className="cf-field">
+          <label htmlFor="cf-title" className="cf-label">Title <span className="cf-req">*</span></label>
+          <input
+            id="cf-title" type="text" value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. English for Beginners"
-            disabled={isPending}
-            maxLength={255}
-            hasError={!!fieldErrors.title}
-            aria-required="true"
+            disabled={isPending} maxLength={255}
+            className={`cf-input ${fieldErrors.title ? 'cf-input--error' : ''}`}
           />
-        </AdminFormField>
+          {fieldErrors.title && <span className="cf-error">{fieldErrors.title}</span>}
+        </div>
 
-        <AdminFormField
-          id="course-slug"
-          label="Slug"
-          hint="Optional. Lowercase letters, numbers, and hyphens. Must be unique."
-          error={fieldErrors.slug}
-        >
-          <AdminInput
-            id="course-slug"
-            type="text"
-            value={slug}
+        <div className="cf-field">
+          <label htmlFor="cf-slug" className="cf-label">Slug</label>
+          <input
+            id="cf-slug" type="text" value={slug}
             onChange={(e) => setSlug(e.target.value)}
             placeholder="e.g. english-for-beginners"
-            disabled={isPending}
-            maxLength={255}
-            hasError={!!fieldErrors.slug}
+            disabled={isPending} maxLength={255}
+            className={`cf-input ${fieldErrors.slug ? 'cf-input--error' : ''}`}
           />
-        </AdminFormField>
+          <span className="cf-hint">Optional. Lowercase, hyphens only. Must be unique.</span>
+          {fieldErrors.slug && <span className="cf-error">{fieldErrors.slug}</span>}
+        </div>
 
-        <AdminFormField
-          id="course-description"
-          label="Description"
-        >
-          <AdminTextarea
-            id="course-description"
-            value={description}
+        <div className="cf-field">
+          <label htmlFor="cf-desc" className="cf-label">Description</label>
+          <textarea
+            id="cf-desc" value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Brief summary of this course."
-            disabled={isPending}
-            rows={3}
-            maxLength={2000}
+            disabled={isPending} rows={3} maxLength={2000}
+            className="cf-textarea"
           />
-        </AdminFormField>
-      </div>
+        </div>
 
-      <div className="admin-boundary-note" style={{ marginBlock: 'var(--space-16)' }}>
-        <strong>Backend authority:</strong> Status changes (publish, archive) are
-        controlled by backend APIs only and cannot be set here.
-      </div>
-
-      <div className="aim-course-form-actions">
-        <AdminButton
-          variant="primary"
-          onClick={handleSubmit}
-          disabled={isPending}
-          loading={isPending}
-        >
-          {mode === 'create' ? 'Create Course' : 'Save Changes'}
-        </AdminButton>
-        <AdminButton
-          variant="secondary"
-          onClick={onCancel}
-          disabled={isPending}
-        >
-          Cancel
-        </AdminButton>
-      </div>
+        <div className="cf-actions">
+          <button type="submit" disabled={isPending} className="cf-submit">
+            {isPending ? 'Saving…' : mode === 'create' ? 'Create Course' : 'Save Changes'}
+          </button>
+          <button type="button" onClick={onCancel} disabled={isPending} className="cf-cancel">Cancel</button>
+        </div>
+      </form>
 
       <style>{`
-        .aim-course-form-fields {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-16);
+        .cf-card {
+          background: var(--surface); border: 1px solid var(--border);
+          border-radius: var(--radius-lg); padding: 24px; max-width: 560px;
         }
-        .aim-course-form-actions {
-          display: flex;
-          gap: var(--space-12);
+        .cf-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .cf-title { margin: 0; font-size: 18px; font-weight: 700; color: var(--text-primary); }
+        .cf-close {
+          background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px;
+          border-radius: var(--radius-sm);
         }
+        .cf-close:hover { color: var(--text-primary); }
+        .cf-form { display: flex; flex-direction: column; gap: 16px; }
+        .cf-field { display: flex; flex-direction: column; gap: 4px; }
+        .cf-label { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+        .cf-req { color: var(--color-error-500); }
+        .cf-input, .cf-textarea {
+          padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+          background: var(--surface); color: var(--text-primary);
+          font-size: 14px; font-family: inherit;
+        }
+        .cf-input { height: 38px; }
+        .cf-textarea { resize: vertical; min-height: 72px; }
+        .cf-input:focus, .cf-textarea:focus {
+          outline: none; border-color: var(--color-primary-500);
+          box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary-500) 15%, transparent);
+        }
+        .cf-input--error { border-color: var(--color-error-500); }
+        .cf-hint { font-size: 12px; color: var(--text-muted); }
+        .cf-error { font-size: 12px; color: var(--color-error-500); font-weight: 500; }
+        .cf-actions { display: flex; gap: 8px; margin-top: 4px; }
+        .cf-submit {
+          height: 38px; padding: 0 18px; border: none; border-radius: var(--radius-md);
+          background: var(--color-primary-500); color: white;
+          font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
+        }
+        .cf-submit:hover:not(:disabled) { background: var(--color-primary-600); }
+        .cf-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+        .cf-cancel {
+          height: 38px; padding: 0 18px; border: 1px solid var(--border);
+          border-radius: var(--radius-md); background: var(--surface);
+          color: var(--text-secondary); font-size: 13px; font-weight: 500;
+          font-family: inherit; cursor: pointer;
+        }
+        .cf-cancel:hover { background: var(--surface-sunken); }
       `}</style>
-    </AdminCard>
+    </div>
   );
 }

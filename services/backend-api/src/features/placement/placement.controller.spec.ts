@@ -7,6 +7,8 @@ import { PlacementQuestionDeliveryService } from './placement-question-delivery.
 import { PlacementAnswerSubmitService } from './placement-answer-submit.service';
 import { PlacementAttemptCompleteService } from './placement-attempt-complete.service';
 import { PlacementResultReadService } from './placement-result-read.service';
+import { PlacementResultService } from './placement-result.service';
+import { PlacementInitialLearningPathService } from './placement-initial-learning-path.service';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { PlacementPermissionGuard } from './placement-permission.guard';
 
@@ -25,16 +27,20 @@ describe('PlacementController', () => {
   let answerSubmit: jest.Mocked<PlacementAnswerSubmitService>;
   let attemptComplete: jest.Mocked<PlacementAttemptCompleteService>;
   let resultRead: jest.Mocked<PlacementResultReadService>;
+  let resultCreate: jest.Mocked<PlacementResultService>;
+  let initialPath: jest.Mocked<PlacementInitialLearningPathService>;
 
   beforeEach(async () => {
     const mocks = {
-      testRead: { getActiveTest: jest.fn().mockResolvedValue({ id: 'test-1', title: 'Placement', totalSections: 4 }) },
+      testRead: { getActiveTest: jest.fn().mockResolvedValue({ id: 'test-1', title: 'Placement', total_sections: 4 }) },
       attemptStart: { startAttempt: jest.fn().mockResolvedValue({ attemptId: 'att-1', status: 'active' }) },
-      sections: { getSections: jest.fn().mockResolvedValue({ sections: [], total: 0 }) },
-      questionDelivery: { getQuestionsForSection: jest.fn().mockResolvedValue({ questions: [] }) },
+      sections: { getSections: jest.fn().mockResolvedValue([]) },
+      questionDelivery: { getQuestionsForSection: jest.fn().mockResolvedValue([]) },
       answerSubmit: { submitAnswer: jest.fn().mockResolvedValue({ answerId: 'ans-1' }) },
       attemptComplete: { completeAttempt: jest.fn().mockResolvedValue({ status: 'submitted' }) },
-      resultRead: { getResult: jest.fn().mockResolvedValue({ estimatedLevel: 'A1' }) },
+      resultRead: { getResult: jest.fn().mockResolvedValue({ id: 'res-1', placement_attempt_id: 'att-1', estimated_level: 'A1', skill_mastery_map: {}, weakness_map: { weaknesses: [] }, initial_path_id: null, created_at: '2026-06-01T00:00:00Z' }) },
+      resultCreate: { createResult: jest.fn().mockResolvedValue({ resultId: 'res-1', estimatedLevel: 'intermediate', attemptId: 'att-1' }) },
+      initialPath: { createInitialPath: jest.fn().mockResolvedValue({ resultId: 'res-1', pathEntryCount: 2, source: 'weakness_map' }) },
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -47,6 +53,8 @@ describe('PlacementController', () => {
         { provide: PlacementAnswerSubmitService, useValue: mocks.answerSubmit },
         { provide: PlacementAttemptCompleteService, useValue: mocks.attemptComplete },
         { provide: PlacementResultReadService, useValue: mocks.resultRead },
+        { provide: PlacementResultService, useValue: mocks.resultCreate },
+        { provide: PlacementInitialLearningPathService, useValue: mocks.initialPath },
       ],
     })
       .overrideGuard(SupabaseJwtAuthGuard).useValue({ canActivate: () => true })
@@ -61,6 +69,8 @@ describe('PlacementController', () => {
     answerSubmit = module.get(PlacementAnswerSubmitService) as any;
     attemptComplete = module.get(PlacementAttemptCompleteService) as any;
     resultRead = module.get(PlacementResultReadService) as any;
+    resultCreate = module.get(PlacementResultService) as any;
+    initialPath = module.get(PlacementInitialLearningPathService) as any;
   });
 
   describe('getActiveTest (P4-038)', () => {
@@ -113,6 +123,13 @@ describe('PlacementController', () => {
       const user = { id: 'student-1' } as any;
       await controller.completeAttempt('att-1', user);
       expect(attemptComplete.completeAttempt).toHaveBeenCalledWith('att-1', 'student-1');
+    });
+
+    it('triggers scoring pipeline after submission', async () => {
+      const user = { id: 'student-1' } as any;
+      await controller.completeAttempt('att-1', user);
+      expect(resultCreate.createResult).toHaveBeenCalledWith('att-1');
+      expect(initialPath.createInitialPath).toHaveBeenCalledWith('res-1');
     });
   });
 

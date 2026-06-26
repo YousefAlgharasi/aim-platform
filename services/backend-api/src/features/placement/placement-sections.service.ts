@@ -51,13 +51,9 @@ interface PlacementSectionRow {
 export interface PlacementSectionSafeResponse {
   readonly id: string;
   readonly title: string;
-  readonly skillCode: string;
-  readonly order: number;
-  readonly questionCount: number;
-}
-
-export interface PlacementSectionsResponse {
-  readonly sections: PlacementSectionSafeResponse[];
+  readonly skill_code: string;
+  readonly order_index: number;
+  readonly total_questions: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -77,7 +73,7 @@ export class PlacementSectionsService {
    *
    * @returns Ordered student-safe section list.
    */
-  async getSections(): Promise<PlacementSectionsResponse> {
+  async getSections(): Promise<PlacementSectionSafeResponse[]> {
     const testResult = await this.db.query<PublishedTestIdRow>(
       `SELECT id FROM placement_tests WHERE status = 'published' LIMIT 1`,
     );
@@ -100,14 +96,12 @@ export class PlacementSectionsService {
       [testId],
     );
 
-    return {
-      sections: sectionResult.rows.map((row) => ({
-        id: row.id,
-        title: row.title,
-        skillCode: row.skill_code,
-        order: row.order_index,
-        questionCount: row.total_questions,
-      })),
-    };
+    return sectionResult.rows.map((row) => ({
+      id: row.id,
+      title: row.title,
+      skill_code: row.skill_code,
+      order_index: row.order_index,
+      total_questions: row.total_questions,
+    }));
   }
 }

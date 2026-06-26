@@ -5,14 +5,14 @@ import {
   Param,
   Body,
   Query,
+  Req,
   UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
-import { CurrentUser } from '../../auth/current-user.decorator';
-import { AuthenticatedUser } from '../../auth/authenticated-user';
+import { AuthenticatedRequest } from '../../auth/authenticated-user';
 import { FeatureRequestService } from './feature-request.service';
 import { CreateFeatureRequestDto } from './operations.dtos';
 import { OperationsOwnershipGuard, OperationsResource } from './operations.guards';
@@ -29,10 +29,10 @@ export class FeatureRequestController {
   @OperationsResource('feature_request')
   @ApiOperation({ summary: 'Submit a feature request' })
   async createRequest(
-    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: AuthenticatedRequest,
     @Body() dto: CreateFeatureRequestDto,
   ) {
-    return this.featureRequestService.createRequest(user.id, dto);
+    return this.featureRequestService.createRequest(req.internalUserId!, dto);
   }
 
   @Get()
@@ -60,9 +60,9 @@ export class FeatureRequestController {
   @OperationsResource('feature_request')
   @ApiOperation({ summary: 'Vote on a feature request' })
   async vote(
-    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
   ) {
-    return this.featureRequestService.vote(id, user.id);
+    return this.featureRequestService.vote(id, req.internalUserId!);
   }
 }

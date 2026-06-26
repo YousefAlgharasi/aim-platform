@@ -3,14 +3,14 @@ import {
   Post,
   Get,
   Body,
+  Req,
   UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
-import { CurrentUser } from '../../auth/current-user.decorator';
-import { AuthenticatedUser } from '../../auth/authenticated-user';
+import { AuthenticatedRequest } from '../../auth/authenticated-user';
 import { FeedbackService } from './feedback.service';
 import { CreateFeedbackDto } from './operations.dtos';
 import { OperationsOwnershipGuard, OperationsResource } from './operations.guards';
@@ -27,16 +27,16 @@ export class FeedbackController {
   @OperationsResource('feedback')
   @ApiOperation({ summary: 'Submit user feedback' })
   async submitFeedback(
-    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: AuthenticatedRequest,
     @Body() dto: CreateFeedbackDto,
   ) {
-    return this.feedbackService.submitFeedback(user.id, dto);
+    return this.feedbackService.submitFeedback(req.internalUserId!, dto);
   }
 
   @Get('mine')
   @OperationsResource('feedback')
   @ApiOperation({ summary: 'List my feedback submissions' })
-  async getMyFeedback(@CurrentUser() user: AuthenticatedUser) {
-    return this.feedbackService.getMyFeedback(user.id);
+  async getMyFeedback(@Req() req: AuthenticatedRequest) {
+    return this.feedbackService.getMyFeedback(req.internalUserId!);
   }
 }

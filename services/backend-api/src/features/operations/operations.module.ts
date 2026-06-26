@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 
 import { DatabaseModule } from '../../database/database.module';
 import { AuthModule } from '../../auth/auth.module';
+import { UsersModule } from '../users/users.module';
+import { RolesModule } from '../roles/roles.module';
 import { OperationsRepository } from './operations.repository';
 import { SupportTicketService } from './support-ticket.service';
 import { FeedbackService } from './feedback.service';
@@ -12,6 +14,7 @@ import { ReleaseNotesService } from './release-notes.service';
 import { OperationalStatusService } from './operational-status.service';
 import { FeatureFlagService } from './feature-flag.service';
 import { OperationsAuditService } from './operations-audit.service';
+import { OperationsAdminGuard, OperationsOwnershipGuard } from './operations.guards';
 import { SupportTicketController } from './support-ticket.controller';
 import { FeedbackController } from './feedback.controller';
 import { FeatureRequestController } from './feature-request.controller';
@@ -23,10 +26,11 @@ import { AdminIncidentController } from './admin-incident.controller';
 import { AdminMaintenanceController } from './admin-maintenance.controller';
 import { AdminReleaseNotesController } from './admin-release-notes.controller';
 import { AdminFeatureFlagsController } from './admin-feature-flags.controller';
+import { AdminFeedbackController } from './admin-feedback.controller';
 import { AdminOperationsDashboardController } from './admin-operations-dashboard.controller';
 
 @Module({
-  imports: [DatabaseModule, AuthModule],
+  imports: [DatabaseModule, AuthModule, UsersModule, RolesModule],
   providers: [
     OperationsRepository,
     SupportTicketService,
@@ -38,6 +42,8 @@ import { AdminOperationsDashboardController } from './admin-operations-dashboard
     OperationalStatusService,
     FeatureFlagService,
     OperationsAuditService,
+    OperationsAdminGuard,
+    OperationsOwnershipGuard,
   ],
   controllers: [
     SupportTicketController,
@@ -47,6 +53,7 @@ import { AdminOperationsDashboardController } from './admin-operations-dashboard
     OperationalStatusController,
     MaintenanceWindowController,
     AdminSupportController,
+    AdminFeedbackController,
     AdminIncidentController,
     AdminMaintenanceController,
     AdminReleaseNotesController,

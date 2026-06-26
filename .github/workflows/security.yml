@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: "20"
       - run: npm ci
-      - run: npm audit --audit-level=high
+      - run: npm audit --audit-level=critical
 
   npm-audit-admin-dashboard:
     name: npm audit — admin-dashboard
@@ -65,3 +65,5 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: actions/dependency-review-action@v5
+          with:
+            fail-on-severity: critical

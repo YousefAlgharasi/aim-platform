@@ -53,11 +53,13 @@ import { PlacementQuestionDeliveryService } from './placement-question-delivery.
 import { PlacementAnswerSubmitService } from './placement-answer-submit.service';
 import { PlacementAttemptCompleteService } from './placement-attempt-complete.service';
 import { PlacementResultReadService, PlacementResultResponse } from './placement-result-read.service';
-import { PlacementSectionsService, PlacementSectionsResponse } from './placement-sections.service';
+import { PlacementResultService } from './placement-result.service';
+import { PlacementInitialLearningPathService } from './placement-initial-learning-path.service';
+import { PlacementSectionsService, PlacementSectionSafeResponse } from './placement-sections.service';
+import { SubmitPlacementAnswerDto } from './submit-placement-answer.dto';
 import {
   PlacementQuestionDeliveryResponse,
   PlacementAttemptStartResponse,
-  SubmitPlacementAnswerRequest,
   SubmitPlacementAnswerResponse,
   PlacementAttemptCompleteResponse,
 } from './placement.types';
@@ -73,6 +75,8 @@ export class PlacementController {
     private readonly answerSubmit: PlacementAnswerSubmitService,
     private readonly attemptComplete: PlacementAttemptCompleteService,
     private readonly resultRead: PlacementResultReadService,
+    private readonly resultCreate: PlacementResultService,
+    private readonly initialPath: PlacementInitialLearningPathService,
   ) {}
 
   /**
@@ -89,6 +93,22 @@ export class PlacementController {
   @ApiOkResponse({ description: 'Active placement test summary. Internal fields excluded.' })
   async getActiveTest(): Promise<PlacementTestActiveResponse> {
     return this.testRead.getActiveTest();
+  }
+
+  /**
+   * GET /placement/active/sections
+   * List sections of the active placement test in order.
+   * Alias for /placement/sections — used by the Flutter mobile app.
+   */
+  @Get('active/sections')
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List sections of the active placement test (student-safe).' })
+  @ApiOkResponse({ description: 'Ordered section list.' })
+  async getActiveSections(): Promise<PlacementSectionSafeResponse[]> {
+    return this.sections.getSections();
   }
 
   /**
@@ -124,7 +144,7 @@ export class PlacementController {
   @ApiOkResponse({
     description: 'Ordered section list. Fields excluded: placement_test_id, created_at, updated_at.',
   })
-  async getSections(): Promise<PlacementSectionsResponse> {
+  async getSections(): Promise<PlacementSectionSafeResponse[]> {
     return this.sections.getSections();
   }
 
@@ -163,7 +183,7 @@ export class PlacementController {
   async submitAnswer(
     @Param('id') attemptId: string,
     @CurrentUser() user: AuthenticatedUser,
-    @Body() body: SubmitPlacementAnswerRequest,
+    @Body() body: SubmitPlacementAnswerDto,
   ): Promise<SubmitPlacementAnswerResponse> {
     return this.answerSubmit.submitAnswer(attemptId, user.id, body);
   }
@@ -185,13 +205,18 @@ export class PlacementController {
     @Param('id') attemptId: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<PlacementAttemptCompleteResponse> {
-    return this.attemptComplete.completeAttempt(attemptId, user.id);
+    const response = await this.attemptComplete.completeAttempt(attemptId, user.id);
+
+    const resultSummary = await this.resultCreate.createResult(attemptId);
+    await this.initialPath.createInitialPath(resultSummary.resultId);
+
+    return response;
   }
 
   /**
    * GET /placement/attempts/:id/result
    * Fetch the student-safe placement result — only available after status = completed.
-   * Returns estimatedLevel, skillSummary (signal only — no raw scores), initialPathReady.
+   * Returns estimated_level, skill_mastery_map (with signal), weakness_map, initial_path_id.
    * P4-006 endpoint #7. Response: P4-014 §5–6.
    */
   @Get('attempts/:id/result')

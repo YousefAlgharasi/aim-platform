@@ -37,10 +37,12 @@ function createMockContext(user: Record<string, unknown> | null, handlerMetadata
 describe('OperationsOwnershipGuard', () => {
   let guard: OperationsOwnershipGuard;
   let reflector: Reflector;
+  let mockUsersService: { findBySupabaseUid: jest.Mock };
 
   beforeEach(() => {
     reflector = new Reflector();
-    guard = new OperationsOwnershipGuard(reflector);
+    mockUsersService = { findBySupabaseUid: jest.fn().mockResolvedValue({ id: 'internal-1' }) };
+    guard = new OperationsOwnershipGuard(reflector, mockUsersService as any);
   });
 
   it('should throw UnauthorizedException if no user is present', async () => {
@@ -86,10 +88,14 @@ describe('OperationsOwnershipGuard', () => {
 describe('OperationsAdminGuard', () => {
   let guard: OperationsAdminGuard;
   let reflector: Reflector;
+  let mockUsersService: { findBySupabaseUid: jest.Mock };
+  let mockRolesService: { getUserRoles: jest.Mock };
 
   beforeEach(() => {
     reflector = new Reflector();
-    guard = new OperationsAdminGuard(reflector);
+    mockUsersService = { findBySupabaseUid: jest.fn() };
+    mockRolesService = { getUserRoles: jest.fn() };
+    guard = new OperationsAdminGuard(reflector, mockUsersService as any, mockRolesService as any);
   });
 
   it('should throw UnauthorizedException if no user is present', async () => {
@@ -101,6 +107,7 @@ describe('OperationsAdminGuard', () => {
   });
 
   it('should allow access when admin-only is not set', async () => {
+    mockUsersService.findBySupabaseUid.mockResolvedValue({ id: 'internal-1' });
     const context = createMockContext({ id: 'user-1', expiresAt: Date.now() + 3600 });
 
     const result = await guard.canActivate(context);
@@ -108,8 +115,10 @@ describe('OperationsAdminGuard', () => {
   });
 
   it('should allow access for users with admin role', async () => {
+    mockUsersService.findBySupabaseUid.mockResolvedValue({ id: 1 });
+    mockRolesService.getUserRoles.mockResolvedValue([{ key: 'admin' }]);
     const context = createMockContext(
-      { id: 'admin-1', appMetadata: { role: 'admin' }, expiresAt: Date.now() + 3600 },
+      { id: 'admin-1', expiresAt: Date.now() + 3600 },
       { [OPERATIONS_ADMIN_KEY]: true },
     );
 
@@ -118,18 +127,10 @@ describe('OperationsAdminGuard', () => {
   });
 
   it('should allow access for users with super_admin role', async () => {
+    mockUsersService.findBySupabaseUid.mockResolvedValue({ id: 1 });
+    mockRolesService.getUserRoles.mockResolvedValue([{ key: 'super_admin' }]);
     const context = createMockContext(
-      { id: 'admin-1', appMetadata: { role: 'super_admin' }, expiresAt: Date.now() + 3600 },
-      { [OPERATIONS_ADMIN_KEY]: true },
-    );
-
-    const result = await guard.canActivate(context);
-    expect(result).toBe(true);
-  });
-
-  it('should allow access for users with admin in roles array', async () => {
-    const context = createMockContext(
-      { id: 'admin-1', appMetadata: { roles: ['admin'] }, expiresAt: Date.now() + 3600 },
+      { id: 'admin-1', expiresAt: Date.now() + 3600 },
       { [OPERATIONS_ADMIN_KEY]: true },
     );
 
@@ -138,8 +139,10 @@ describe('OperationsAdminGuard', () => {
   });
 
   it('should throw ForbiddenException for non-admin users on admin-only endpoints', async () => {
+    mockUsersService.findBySupabaseUid.mockResolvedValue({ id: 1 });
+    mockRolesService.getUserRoles.mockResolvedValue([{ key: 'student' }]);
     const context = createMockContext(
-      { id: 'user-1', role: 'student', expiresAt: Date.now() + 3600 },
+      { id: 'user-1', expiresAt: Date.now() + 3600 },
       { [OPERATIONS_ADMIN_KEY]: true },
     );
 
@@ -147,7 +150,8 @@ describe('OperationsAdminGuard', () => {
     await expect(guard.canActivate(context)).rejects.toThrow('Admin access required for operations management');
   });
 
-  it('should throw ForbiddenException for users with no role on admin-only endpoints', async () => {
+  it('should throw ForbiddenException for users not found in database', async () => {
+    mockUsersService.findBySupabaseUid.mockResolvedValue(null);
     const context = createMockContext(
       { id: 'user-1', expiresAt: Date.now() + 3600 },
       { [OPERATIONS_ADMIN_KEY]: true },

@@ -5,14 +5,14 @@ import {
   Patch,
   Param,
   Body,
+  Req,
   UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
-import { CurrentUser } from '../../auth/current-user.decorator';
-import { AuthenticatedUser } from '../../auth/authenticated-user';
+import { AuthenticatedRequest } from '../../auth/authenticated-user';
 import { MaintenanceWindowService } from './maintenance-window.service';
 import { CreateMaintenanceWindowDto, UpdateMaintenanceStatusDto } from './operations.dtos';
 import { OperationsAdminGuard, OperationsAdminOnly } from './operations.guards';
@@ -31,7 +31,7 @@ export class AdminMaintenanceController {
   @OperationsAdminOnly()
   @ApiOperation({ summary: 'Create a maintenance window (admin)' })
   async createWindow(
-    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: AuthenticatedRequest,
     @Body() dto: CreateMaintenanceWindowDto,
   ) {
     return this.maintenanceWindowService.createWindow(
@@ -44,7 +44,7 @@ export class AdminMaintenanceController {
         scheduledEnd: new Date(dto.scheduledEnd),
         userMessage: dto.userMessage,
       },
-      user.id,
+      req.internalUserId!,
     );
   }
 
@@ -59,14 +59,14 @@ export class AdminMaintenanceController {
   @OperationsAdminOnly()
   @ApiOperation({ summary: 'Update maintenance window status (admin)' })
   async updateStatus(
-    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Body() dto: UpdateMaintenanceStatusDto,
   ) {
     return this.maintenanceWindowService.updateWindowStatus(
       id,
       { status: dto.status },
-      user.id,
+      req.internalUserId!,
     );
   }
 }

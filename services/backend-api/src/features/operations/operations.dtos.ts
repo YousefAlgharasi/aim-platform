@@ -114,8 +114,8 @@ export class CreateMaintenanceWindowDto {
   @IsOptional()
   description?: string;
 
-  @IsEnum(['planned', 'emergency'])
-  type!: 'planned' | 'emergency';
+  @IsEnum(['planned', 'emergency', 'routine', 'upgrade'])
+  type!: 'planned' | 'emergency' | 'routine' | 'upgrade';
 
   @IsDateString()
   scheduledStart!: string;
@@ -157,8 +157,8 @@ export class CreateReleaseNoteDto {
   title!: string;
 
   @IsString()
-  @IsNotEmpty()
-  body!: string;
+  @IsOptional()
+  body?: string;
 
   @IsEnum(['all', 'students', 'parents', 'admins', 'internal'])
   audience!: 'all' | 'students' | 'parents' | 'admins' | 'internal';

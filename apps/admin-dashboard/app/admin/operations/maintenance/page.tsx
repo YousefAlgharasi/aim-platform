@@ -6,6 +6,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 
+import { backendFetch } from '../../../../lib/api/client-api-helpers';
+
 import { OperationsLoadingSpinner } from '../../../../components/operations/operations-loading-spinner';
 import { OperationsEmptyState } from '../../../../components/operations/operations-empty-state';
 import { OperationsErrorCard } from '../../../../components/operations/operations-error-card';
@@ -61,13 +63,14 @@ export default function MaintenancePage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/operations/maintenance?page=${p}&limit=20`, { credentials: 'include' });
+      const res = await backendFetch('/admin/maintenance-windows');
       if (!res.ok) throw new Error(`Backend error ${res.status}: ${res.statusText}`);
-      const data: MaintenanceResponse = await res.json();
-      setWindows(data.data);
-      setTotal(data.total);
-      setPage(data.page);
-      setTotalPages(Math.ceil(data.total / data.limit));
+      const json = await res.json();
+      const items: MaintenanceWindow[] = Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
+      setWindows(items);
+      setTotal(items.length);
+      setPage(1);
+      setTotalPages(1);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load maintenance windows.');
     } finally {
@@ -82,10 +85,8 @@ export default function MaintenancePage() {
   async function handleUpdateStatus(windowId: string, newStatus: string) {
     setActionLoading(windowId);
     try {
-      const res = await fetch(`/api/admin/operations/maintenance/${windowId}/status`, {
+      const res = await backendFetch(`/admin/maintenance-windows/${windowId}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ status: newStatus }),
       });
       if (!res.ok) throw new Error(`Failed to update status: ${res.statusText}`);
@@ -102,15 +103,14 @@ export default function MaintenancePage() {
     if (!newTitle.trim() || !newStart || !newEnd) return;
     setCreateLoading(true);
     try {
-      const res = await fetch('/api/admin/operations/maintenance', {
+      const res = await backendFetch('/admin/maintenance-windows', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           title: newTitle.trim(),
           type: newType,
           scheduledStart: newStart,
           scheduledEnd: newEnd,
+          affectedServices: [],
         }),
       });
       if (!res.ok) throw new Error(`Failed to create maintenance window: ${res.statusText}`);

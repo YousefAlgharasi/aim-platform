@@ -49,6 +49,11 @@ interface CountRow {
   count: string;
 }
 
+interface ProgressRow {
+  completed_lessons: string;
+  last_active_at: string | null;
+}
+
 export type AdminUsersListOptions = {
   page?: number;
   limit?: number;
@@ -92,9 +97,9 @@ export class AdminUsersService {
 
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-    const [dataResult, countResult] = await Promise.all([
+    const [dataResult, countResult, totalLessonsResult] = await Promise.all([
       this.db.query<UserRow>(
-        `SELECT id, email, phone, user_type, status, created_at, updated_at
+        `SELECT id, supabase_auth_uid, email, phone, user_type, status, created_at, updated_at
          FROM users
          ${where}
          ORDER BY created_at DESC
@@ -105,14 +110,46 @@ export class AdminUsersService {
         `SELECT COUNT(*) AS count FROM users ${where}`,
         params,
       ),
+      this.db.query<CountRow>(
+        `SELECT COUNT(*) AS count FROM lessons WHERE status = 'published'`,
+      ),
     ]);
 
+    const totalLessons = parseInt(totalLessonsResult.rows[0]?.count ?? '0', 10);
+    const studentUids = dataResult.rows
+      .filter((row) => row.user_type === 'student')
+      .map((row) => row.supabase_auth_uid);
+
+    const progressByUid = await this.fetchProgressByUid(studentUids);
+
     return {
-      data:  dataResult.rows.map((row) => this.toSafeDto(row)),
+      data: dataResult.rows.map((row) =>
+        this.toSafeDto(row, totalLessons, progressByUid.get(row.supabase_auth_uid)),
+      ),
       total: parseInt(countResult.rows[0]?.count ?? '0', 10),
       page,
       limit,
     };
+  }
+
+  private async fetchProgressByUid(
+    studentUids: readonly string[],
+  ): Promise<Map<string, ProgressRow>> {
+    if (studentUids.length === 0) {
+      return new Map();
+    }
+
+    const result = await this.db.query<ProgressRow & { student_id: string }>(
+      `SELECT student_id,
+              COUNT(*) FILTER (WHERE completed) AS completed_lessons,
+              MAX(last_active_at) AS last_active_at
+         FROM lesson_progress
+        WHERE student_id = ANY($1::uuid[])
+        GROUP BY student_id`,
+      [studentUids],
+    );
+
+    return new Map(result.rows.map((row) => [row.student_id, row]));
   }
 
   async getUserDetail(userId: string): Promise<AdminUserDetailDto> {
@@ -241,7 +278,11 @@ export class AdminUsersService {
     return this.toSafeDto(result.rows[0]);
   }
 
-  private toSafeDto(row: UserRow): SafeUserDto {
+  private toSafeDto(
+    row: UserRow,
+    totalLessons: number | null = null,
+    progress?: ProgressRow,
+  ): SafeUserDto {
     const dto = new SafeUserDto();
     dto.id        = row.id;
     dto.email     = row.email;
@@ -250,6 +291,21 @@ export class AdminUsersService {
     dto.status    = row.status;
     dto.createdAt = row.created_at;
     dto.updatedAt = row.updated_at;
+
+    if (row.user_type === 'student' && totalLessons !== null) {
+      const completedLessons = parseInt(progress?.completed_lessons ?? '0', 10);
+      dto.completedLessons = completedLessons;
+      dto.totalLessons     = totalLessons;
+      dto.completionPct    =
+        totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+      dto.lastActiveAt     = progress?.last_active_at ?? null;
+    } else {
+      dto.completedLessons = null;
+      dto.totalLessons     = null;
+      dto.completionPct    = null;
+      dto.lastActiveAt     = null;
+    }
+
     return dto;
   }
 }

@@ -60,7 +60,9 @@ describe('PlacementResultReadService.getLatestResultForStudent', () => {
 
     expect(calls[0].params).toEqual([STUDENT_ID]);
     expect(result).not.toBeNull();
-    expect(result?.estimatedLevel).toBe('B1');
-    expect(result?.skillSummary).toEqual([{ skillCode: 'grammar', skillName: 'Grammar', signal: 'strong' }]);
+    expect(result?.estimated_level).toBe('B1');
+    expect(result?.skill_mastery_map).toEqual({
+      grammar: { total_questions: 10, correct_answers: 8, mastery_score: 0.8, signal: 'strong' },
+    });
   });
 });

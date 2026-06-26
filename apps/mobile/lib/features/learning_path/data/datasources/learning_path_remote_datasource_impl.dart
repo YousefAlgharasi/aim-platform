@@ -7,9 +7,7 @@
 // - studentId passed as URL path parameter; never constructed from user input.
 //   It must come from authContextProvider (JWT-resolved by backend).
 // - Bearer token injected from provider layer; never stored here.
-// - All AIM values (band, masteryLevel, coveragePercent, severity,
-//   recommendedFocus, action, reason) parsed verbatim from response —
-//   no local computation.
+// - All AIM values parsed verbatim from response — no local computation.
 // - No AIM Engine runtime, AI provider URLs, or secrets here.
 
 import 'package:aim_mobile/core/networking/backend_api_client.dart';
@@ -34,10 +32,14 @@ class LearningPathRemoteDatasourceImpl
         await _apiClient.get<List<LearningPathSkillStateModel>>(
       BackendApiPaths.aimSkillStates(studentId),
       headers: _auth(bearerToken),
-      decodeData: (json) => _decodeList(
-        json,
-        LearningPathSkillStateModel.fromJson,
-      ),
+      decodeData: (json) {
+        final data = _requireMap(json);
+        final items = data['skillStates'] as List<dynamic>? ?? [];
+        return items
+            .whereType<Map<String, dynamic>>()
+            .map(LearningPathSkillStateModel.fromJson)
+            .toList();
+      },
     );
     return envelope.data ?? const [];
   }
@@ -51,10 +53,14 @@ class LearningPathRemoteDatasourceImpl
         await _apiClient.get<List<LearningPathWeaknessRecordModel>>(
       BackendApiPaths.aimWeaknessRecords(studentId),
       headers: _auth(bearerToken),
-      decodeData: (json) => _decodeList(
-        json,
-        LearningPathWeaknessRecordModel.fromJson,
-      ),
+      decodeData: (json) {
+        final data = _requireMap(json);
+        final items = data['weaknessRecords'] as List<dynamic>? ?? [];
+        return items
+            .whereType<Map<String, dynamic>>()
+            .map(LearningPathWeaknessRecordModel.fromJson)
+            .toList();
+      },
     );
     return envelope.data ?? const [];
   }
@@ -68,10 +74,14 @@ class LearningPathRemoteDatasourceImpl
         await _apiClient.get<List<LearningPathRecommendationModel>>(
       BackendApiPaths.aimRecommendations(studentId),
       headers: _auth(bearerToken),
-      decodeData: (json) => _decodeList(
-        json,
-        LearningPathRecommendationModel.fromJson,
-      ),
+      decodeData: (json) {
+        final data = _requireMap(json);
+        final items = data['recommendations'] as List<dynamic>? ?? [];
+        return items
+            .whereType<Map<String, dynamic>>()
+            .map(LearningPathRecommendationModel.fromJson)
+            .toList();
+      },
     );
     return envelope.data ?? const [];
   }
@@ -81,14 +91,10 @@ class LearningPathRemoteDatasourceImpl
   Map<String, String> _auth(String bearerToken) =>
       {'authorization': 'Bearer $bearerToken'};
 
-  List<T> _decodeList<T>(
-    Object? json,
-    T Function(Map<String, dynamic>) fromJson,
-  ) {
-    if (json is! List<dynamic>) return const [];
-    return json
-        .whereType<Map<String, dynamic>>()
-        .map(fromJson)
-        .toList();
+  Map<String, dynamic> _requireMap(Object? json) {
+    if (json is! Map<String, dynamic>) {
+      throw const FormatException('Unexpected AIM result response shape');
+    }
+    return json;
   }
 }

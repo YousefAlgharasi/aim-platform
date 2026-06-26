@@ -4,7 +4,7 @@
 -- Depends on: 03_curriculum_content.sql (skills)
 
 -- -----------------------------------------------------------------------
--- 1. Placement Test
+-- 0. Clean existing placeholder data (cascade deletes questions & skills map)
 -- -----------------------------------------------------------------------
 
 INSERT INTO placement_tests (id, title, description, status, estimated_minutes, total_sections, version, published_at)

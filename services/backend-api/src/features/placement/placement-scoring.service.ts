@@ -142,7 +142,7 @@ export class PlacementScoringService {
       `SELECT
          pqs.skill_id,
          s.key     AS skill_key,
-         s.name    AS skill_name,
+         s.title   AS skill_name,
          pa.is_correct
        FROM placement_answers pa
        JOIN placement_question_skills pqs ON pqs.placement_question_id = pa.placement_question_id

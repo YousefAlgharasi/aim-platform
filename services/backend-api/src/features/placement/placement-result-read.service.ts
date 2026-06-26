@@ -4,20 +4,14 @@
 // Scope: Placement result read API only.
 //
 // Responsibility:
-//   Fetch the completed placement result for a given attempt and return a
-//   student-safe response shape per P4-014 §5–6 and the API map endpoint #7.
+//   Fetch the completed placement result for a given attempt and return the
+//   response shape expected by Flutter PlacementResultModel.fromJson().
 //
-//   Student-safe fields returned:
-//     - resultId, attemptId, estimatedLevel, completedAt, initialPathReady
-//     - skillSummary: [{ skillCode, skillName, signal }] — derived from
-//       skill_mastery_map stored in placement_results
-//
-//   Fields NEVER returned to Flutter:
-//     - student_id (internal)
-//     - overallScore / raw mastery numbers (internal scoring)
-//     - correct_count, correctnessRatio, lowCoverage (internal)
-//     - skill_key, skill_id from weakness map (internal)
-//     - raw weakness_map structure (students see initialPathReady only)
+//   Fields returned:
+//     - id, placement_attempt_id, estimated_level, created_at
+//     - skill_mastery_map: { [skill]: { total_questions, correct_answers, mastery_score, signal } }
+//     - weakness_map: { weaknesses: [{ skill_code, mastery_score, priority }] }
+//     - initial_path_id: UUID or null
 //
 // Security rules:
 //   - Requires a valid Supabase JWT (student must own the attempt).
@@ -58,36 +52,30 @@ interface ResultRow {
 }
 
 // ---------------------------------------------------------------------------
-// Flutter-safe response shape (P4-014 §5–6, API map endpoint #7)
+// Flutter-safe response shape (matches PlacementResultModel.fromJson())
 // ---------------------------------------------------------------------------
 
-export interface SkillSummaryEntry {
-  /** Section skill code used as stable identifier: grammar | vocabulary | reading | listening */
-  readonly skillCode: string;
-  readonly skillName: string;
-  /** strong / developing / emerging — computed from mastery_score. Never raw ratio. */
-  readonly signal: 'strong' | 'developing' | 'emerging';
-}
-
 export interface PlacementResultResponse {
-  readonly resultId: string;
-  readonly attemptId: string;
-  /** Backend-assigned CEFR level. Flutter displays as-is — never recalculates. */
-  readonly estimatedLevel: string;
-  /** Per-section skill summary. No raw scores, no correctness ratios, no internal keys. */
-  readonly skillSummary: SkillSummaryEntry[];
-  /** True when initial_path_id is set (i.e. P4-047 ran successfully). */
-  readonly initialPathReady: boolean;
-  readonly completedAt: string;
+  readonly id: string;
+  readonly placement_attempt_id: string;
+  readonly estimated_level: string;
+  readonly skill_mastery_map: Record<string, {
+    total_questions: number;
+    correct_answers: number;
+    mastery_score: number;
+    signal: string;
+  }>;
+  readonly weakness_map: {
+    weaknesses: Array<{
+      skill_code: string;
+      mastery_score: number;
+      priority: number;
+      signal: string;
+    }>;
+  };
+  readonly initial_path_id: string | null;
+  readonly created_at: string;
 }
-
-// Section display names for student-facing skill summary
-const SECTION_DISPLAY_NAMES: Record<string, string> = {
-  grammar: 'Grammar',
-  vocabulary: 'Vocabulary',
-  reading: 'Reading',
-  listening: 'Listening',
-};
 
 // Signal thresholds — must match P4-045 constants (backend config, never exposed)
 const STRONG = 0.75;
@@ -193,51 +181,35 @@ export class PlacementResultReadService {
     const result = resultQuery.rows[0];
 
     // -----------------------------------------------------------------------
-    // 4. Build student-safe skill summary from skill_mastery_map.
-    //    Only signal (not ratio, count, or coverage) is returned to Flutter.
-    // -----------------------------------------------------------------------
-    const skillSummary = this.buildSkillSummary(result.skill_mastery_map);
-
-    // -----------------------------------------------------------------------
-    // 5. Return student-safe response shape.
-    //    student_id, overallScore, raw mastery numbers, skill_key, and
-    //    raw weakness_map internals are intentionally excluded.
+    // 4. Return response shape matching Flutter PlacementResultModel.fromJson().
     // -----------------------------------------------------------------------
     return {
-      resultId: result.id,
-      attemptId: result.placement_attempt_id,
-      estimatedLevel: result.estimated_level,
-      skillSummary,
-      initialPathReady: result.initial_path_id !== null,
-      completedAt: attempt.completed_at as string,
+      id: result.id,
+      placement_attempt_id: result.placement_attempt_id,
+      estimated_level: result.estimated_level,
+      skill_mastery_map: this.enrichSkillMasteryWithSignal(result.skill_mastery_map),
+      weakness_map: result.weakness_map as any,
+      initial_path_id: result.initial_path_id,
+      created_at: result.created_at,
     };
   }
 
   // -------------------------------------------------------------------------
-  // Private: build skill summary from skill_mastery_map JSONB
+  // Private: enrich skill_mastery_map entries with computed signal
   // -------------------------------------------------------------------------
 
-  private buildSkillSummary(
-    skillMasteryMap: Record<
-      string,
-      { total_questions: number; correct_answers: number; mastery_score: number }
-    >,
-  ): SkillSummaryEntry[] {
-    if (!skillMasteryMap) return [];
-
-    const order = ['grammar', 'vocabulary', 'reading', 'listening'];
-
-    return order
-      .filter((code) => code in skillMasteryMap)
-      .map((code) => {
-        const section = skillMasteryMap[code];
-        const signal = this.masteryToSignal(section.mastery_score);
-        return {
-          skillCode: code,
-          skillName: SECTION_DISPLAY_NAMES[code] ?? code,
-          signal,
-        };
-      });
+  private enrichSkillMasteryWithSignal(
+    map: Record<string, { total_questions: number; correct_answers: number; mastery_score: number }>,
+  ): Record<string, { total_questions: number; correct_answers: number; mastery_score: number; signal: string }> {
+    if (!map) return {};
+    const result: Record<string, any> = {};
+    for (const [key, value] of Object.entries(map)) {
+      result[key] = {
+        ...value,
+        signal: this.masteryToSignal(value.mastery_score),
+      };
+    }
+    return result;
   }
 
   private masteryToSignal(mastery: number): 'strong' | 'developing' | 'emerging' {
