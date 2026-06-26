@@ -1,25 +1,26 @@
 // Phase 6 — P6-059
-// HomeWeaknessRecord — domain entity for a student's weakness strip entry.
+// HomeWeaknessRecord — domain entity for a student's weakness entry.
 //
-// [severity] is backend-computed. Flutter must never compute or infer it.
+// All values are backend-computed. Flutter must never compute or infer them.
 
-/// Domain entity representing a single weakness-record entry
-/// returned by GET /aim/students/:studentId/weakness-records.
-///
-/// Backend is the sole authority for [severity].
 class HomeWeaknessRecord {
   const HomeWeaknessRecord({
-    required this.topic,
+    required this.weaknessId,
+    required this.skillId,
     required this.severity,
-    required this.lastUpdated,
+    required this.status,
+    required this.triggerAttemptIds,
+    required this.detectedAt,
+    this.resolvedAt,
+    required this.updatedAt,
   });
 
-  /// Subject / curriculum topic identifier.
-  final String topic;
-
-  /// AIM weakness severity (e.g. "high", "medium", "low"). Backend-computed.
+  final String weaknessId;
+  final String skillId;
   final String severity;
-
-  /// ISO-8601 timestamp of the last weakness update. Backend-supplied.
-  final String lastUpdated;
+  final String status;
+  final List<String> triggerAttemptIds;
+  final String detectedAt;
+  final String? resolvedAt;
+  final String updatedAt;
 }

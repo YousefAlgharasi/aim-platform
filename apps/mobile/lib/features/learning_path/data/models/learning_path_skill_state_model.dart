@@ -1,36 +1,37 @@
 // Phase 6 — P6-064
 // LearningPathSkillStateModel — data-layer model for LearningPathSkillState.
 //
-// Parses the full API response from
-// GET /aim/students/:studentId/skill-states (learning plan variant).
+// Parses SkillStateEntry items from StudentSkillStateReadResponse
+// (GET /aim/students/:studentId/skill-states).
 //
-// Backend is the sole authority for [band], [masteryLevel], and
-// [coveragePercent]. Flutter must never compute these fields locally.
+// Backend is the sole authority for mastery values.
+// Flutter must never compute these fields locally.
 
 import '../../logic/entity/learning_path_skill_state.dart';
 
-/// Data-layer model for [LearningPathSkillState].
 class LearningPathSkillStateModel extends LearningPathSkillState {
   const LearningPathSkillStateModel({
-    required super.topic,
-    required super.band,
-    required super.masteryLevel,
-    required super.coveragePercent,
+    required super.skillId,
+    required super.masteryScore,
+    required super.masteryConfidence,
+    required super.masteryTrend,
+    super.previousMasteryScore,
+    required super.lastAttemptId,
+    required super.lastEvaluatedAt,
+    required super.updatedAt,
   });
 
   factory LearningPathSkillStateModel.fromJson(Map<String, dynamic> json) {
     return LearningPathSkillStateModel(
-      topic: json['topic'] as String,
-      band: json['band'] as String,
-      masteryLevel: json['masteryLevel'] as String,
-      coveragePercent: (json['coveragePercent'] as num).toDouble(),
+      skillId: json['skillId'] as String,
+      masteryScore: (json['masteryScore'] as num).toDouble(),
+      masteryConfidence: (json['masteryConfidence'] as num).toDouble(),
+      masteryTrend: json['masteryTrend'] as String,
+      previousMasteryScore:
+          (json['previousMasteryScore'] as num?)?.toDouble(),
+      lastAttemptId: json['lastAttemptId'] as String,
+      lastEvaluatedAt: json['lastEvaluatedAt'] as String,
+      updatedAt: json['updatedAt'] as String,
     );
   }
-
-  Map<String, dynamic> toJson() => {
-        'topic': topic,
-        'band': band,
-        'masteryLevel': masteryLevel,
-        'coveragePercent': coveragePercent,
-      };
 }

@@ -1,27 +1,28 @@
 // Phase 6 — P6-059
-// HomeReviewSchedule — domain entity for a review reminder entry on the
-// home screen.
+// HomeReviewSchedule — domain entity for a review schedule entry.
 //
-// [priority] is backend-computed via the AIM review-schedule algorithm.
-// Flutter must never compute or reorder items by locally-derived priority.
+// All values are backend-computed. Flutter must never compute or reorder them.
 
-/// Domain entity representing a single review-schedule reminder
-/// returned by GET /aim/students/:studentId/review-schedules.
-///
-/// Backend is the sole authority for [dueAt] and [priority].
 class HomeReviewSchedule {
   const HomeReviewSchedule({
-    required this.topic,
+    required this.scheduleId,
+    required this.skillId,
     required this.dueAt,
-    required this.priority,
+    required this.intervalDays,
+    required this.repetitionCount,
+    required this.status,
+    required this.basedOnAttemptId,
+    required this.scheduledAt,
+    required this.updatedAt,
   });
 
-  /// Subject / curriculum topic identifier.
-  final String topic;
-
-  /// ISO-8601 datetime at which the review is due. Backend-supplied.
+  final String scheduleId;
+  final String skillId;
   final String dueAt;
-
-  /// AIM-computed review priority value. Backend-computed.
-  final String priority;
+  final int intervalDays;
+  final int repetitionCount;
+  final String status;
+  final String basedOnAttemptId;
+  final String scheduledAt;
+  final String updatedAt;
 }
