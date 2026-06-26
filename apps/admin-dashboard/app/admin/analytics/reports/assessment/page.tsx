@@ -1,14 +1,11 @@
-export default function AdminAnalyticsAssessmentReportsPlaceholder() {
+import { ReportPlaceholder } from '../../_components/report-placeholder';
+
+export default function AdminAssessmentReportsPage() {
   return (
-    <section className="admin-curriculum-page">
-      <header className="admin-page-header">
-        <p className="eyebrow">Admin — Analytics</p>
-        <h1>Assessment Reports</h1>
-      </header>
-      <div className="admin-boundary-note">
-        <strong>Coming soon:</strong> This route is reserved by the admin analytics
-        feature shell. Implementation lands in task P15-062.
-      </div>
-    </section>
+    <ReportPlaceholder
+      title="Assessment Reports"
+      description="Quizzes, exams, attempts, deadlines, and results."
+      taskId="P15-062"
+    />
   );
 }
