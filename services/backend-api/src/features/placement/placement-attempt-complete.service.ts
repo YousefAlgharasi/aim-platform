@@ -34,10 +34,14 @@ import {
   PlacementAttemptRow,
   PlacementAttemptCompleteResponse,
 } from './placement.types';
+import { PlacementAuditService } from './placement-audit.service';
 
 @Injectable()
 export class PlacementAttemptCompleteService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly audit: PlacementAuditService,
+  ) {}
 
   /**
    * Complete (submit) an active placement attempt.
@@ -144,6 +148,13 @@ export class PlacementAttemptCompleteService {
     );
 
     const updated = updateResult.rows[0];
+
+    void this.audit.logAttemptSubmitted(
+      studentId,
+      attemptId,
+      totalQuestions,
+      totalAnswered,
+    );
 
     // -----------------------------------------------------------------------
     // 5. Return student-safe response (P4-013 §3.2).

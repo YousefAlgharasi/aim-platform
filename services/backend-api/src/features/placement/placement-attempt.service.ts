@@ -27,12 +27,14 @@ import {
   PlacementTestRow,
 } from './placement.types';
 import { PlacementRetakePolicyService } from './placement-retake-policy.service';
+import { PlacementAuditService } from './placement-audit.service';
 
 @Injectable()
 export class PlacementAttemptService {
   constructor(
     private readonly db: DatabaseService,
     private readonly retakePolicy: PlacementRetakePolicyService,
+    private readonly audit: PlacementAuditService,
   ) {}
 
   /**
@@ -81,6 +83,8 @@ export class PlacementAttemptService {
     );
 
     const attempt = insertResult.rows[0];
+
+    void this.audit.logAttemptStarted(studentId, attempt.id, test.id);
 
     // 4. Return student-safe fields only (P4-013 §4).
     //    student_id and created_at are intentionally excluded.

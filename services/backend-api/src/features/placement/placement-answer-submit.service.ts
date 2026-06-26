@@ -32,6 +32,7 @@ import {
   SubmitPlacementAnswerRequest,
   SubmitPlacementAnswerResponse,
 } from './placement.types';
+import { PlacementAuditService } from './placement-audit.service';
 
 /** Allowed answer_value formats per question type (P4-012 §2.3). */
 const VALID_OPTION_LETTERS = new Set(['A', 'B', 'C', 'D']);
@@ -39,7 +40,10 @@ const VALID_TRUE_FALSE_VALUES = new Set(['true', 'false']);
 
 @Injectable()
 export class PlacementAnswerSubmitService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly audit: PlacementAuditService,
+  ) {}
 
   /**
    * Submit a single answer to a question within an active placement attempt.
@@ -103,11 +107,9 @@ export class PlacementAnswerSubmitService {
       question_type: string;
       skill_code: string | null;
     }>(
-      `SELECT pq.id, pq.question_type, pqs.skill_code
+      `SELECT pq.id, pq.question_type, ps.skill_code
        FROM placement_questions pq
        JOIN placement_sections ps ON ps.id = pq.placement_section_id
-       LEFT JOIN placement_question_skills pqs
-         ON pqs.placement_question_id = pq.id AND pqs.is_primary = true
        WHERE pq.id = $1
          AND ps.placement_test_id = $2
        LIMIT 1`,
@@ -174,6 +176,14 @@ export class PlacementAnswerSubmitService {
     );
 
     const answer = insertResult.rows[0];
+
+    void this.audit.logAnswerSubmitted(
+      studentId,
+      attemptId,
+      answer.placement_question_id,
+      question.question_type,
+      answer.answer_value,
+    );
 
     // -----------------------------------------------------------------------
     // 7. Return student-safe fields only (P4-012 §4).
