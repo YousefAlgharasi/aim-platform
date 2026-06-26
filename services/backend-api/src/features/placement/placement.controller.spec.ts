@@ -32,13 +32,13 @@ describe('PlacementController', () => {
 
   beforeEach(async () => {
     const mocks = {
-      testRead: { getActiveTest: jest.fn().mockResolvedValue({ id: 'test-1', title: 'Placement', totalSections: 4 }) },
+      testRead: { getActiveTest: jest.fn().mockResolvedValue({ id: 'test-1', title: 'Placement', total_sections: 4 }) },
       attemptStart: { startAttempt: jest.fn().mockResolvedValue({ attemptId: 'att-1', status: 'active' }) },
-      sections: { getSections: jest.fn().mockResolvedValue({ sections: [], total: 0 }) },
-      questionDelivery: { getQuestionsForSection: jest.fn().mockResolvedValue({ questions: [] }) },
+      sections: { getSections: jest.fn().mockResolvedValue([]) },
+      questionDelivery: { getQuestionsForSection: jest.fn().mockResolvedValue([]) },
       answerSubmit: { submitAnswer: jest.fn().mockResolvedValue({ answerId: 'ans-1' }) },
       attemptComplete: { completeAttempt: jest.fn().mockResolvedValue({ status: 'submitted' }) },
-      resultRead: { getResult: jest.fn().mockResolvedValue({ estimatedLevel: 'A1' }) },
+      resultRead: { getResult: jest.fn().mockResolvedValue({ id: 'res-1', placement_attempt_id: 'att-1', estimated_level: 'A1', skill_mastery_map: {}, weakness_map: { weaknesses: [] }, initial_path_id: null, created_at: '2026-06-01T00:00:00Z' }) },
       resultCreate: { createResult: jest.fn().mockResolvedValue({ resultId: 'res-1', estimatedLevel: 'intermediate', attemptId: 'att-1' }) },
       initialPath: { createInitialPath: jest.fn().mockResolvedValue({ resultId: 'res-1', pathEntryCount: 2, source: 'weakness_map' }) },
     };

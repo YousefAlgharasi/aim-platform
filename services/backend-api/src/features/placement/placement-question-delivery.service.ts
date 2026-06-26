@@ -20,7 +20,6 @@ import { DatabaseService } from '../../database/database.service';
 import { AppError } from '../../common/errors/app-error';
 import { ApiErrorCode } from '../../common/errors/api-error-code';
 import {
-  PlacementQuestionDeliveryResponse,
   PlacementQuestionSafeResponse,
   PlacementQuestionWithSkillRow,
 } from './placement.types';
@@ -41,7 +40,7 @@ export class PlacementQuestionDeliveryService {
    */
   async getQuestionsForSection(
     sectionId: string,
-  ): Promise<PlacementQuestionDeliveryResponse> {
+  ): Promise<PlacementQuestionSafeResponse[]> {
     // Verify section exists.
     const sectionCheck = await this.db.query<{ id: string }>(
       `SELECT id FROM placement_sections WHERE id = $1 LIMIT 1`,
@@ -81,11 +80,31 @@ export class PlacementQuestionDeliveryService {
       [sectionId],
     );
 
-    const questions: PlacementQuestionSafeResponse[] = result.rows.map(
-      (row) => this.toSafeResponse(row),
-    );
+    return result.rows.map((row) => this.toSafeResponse(row));
+  }
 
-    return { questions };
+  /**
+   * Parse a prompt string into a question stem and options array.
+   *
+   * Seed data format: "She ___ to school every day. (A) go (B) goes (C) going (D) gone"
+   * Extracts options marked with (A)–(D) and returns the stem text separately.
+   * If no option markers are found (e.g., fill_blank or true_false), returns
+   * the full prompt as text with an empty options array.
+   */
+  private parsePrompt(prompt: string): { text: string; options: Array<{ id: string; text: string }> } {
+    const optionRegex = /\(([A-D])\)\s*([^(]*)/g;
+    const options: Array<{ id: string; text: string }> = [];
+    let match: RegExpExecArray | null;
+
+    while ((match = optionRegex.exec(prompt)) !== null) {
+      options.push({ id: match[1], text: match[2].trim() });
+    }
+
+    // Extract stem (everything before the first option marker)
+    const stemEnd = prompt.search(/\([A-D]\)/);
+    const text = stemEnd > 0 ? prompt.substring(0, stemEnd).trim() : prompt.trim();
+
+    return { text, options };
   }
 
   /**
@@ -93,16 +112,21 @@ export class PlacementQuestionDeliveryService {
    *
    * SECURITY: correct_answer and skill_code are intentionally excluded here.
    * This is the enforcement point — correct_answer must never leave the backend.
+   *
+   * Field names use snake_case to match the Flutter PlacementQuestionModel.fromJson() contract.
    */
   private toSafeResponse(
     row: PlacementQuestionWithSkillRow,
   ): PlacementQuestionSafeResponse {
+    const parsed = this.parsePrompt(row.prompt);
     return {
       id: row.id,
-      questionType: row.question_type,
-      prompt: row.prompt,
-      mediaUrl: row.media_url,
-      orderIndex: row.order_index,
+      section_id: row.placement_section_id,
+      text: parsed.text,
+      options: parsed.options,
+      type: row.question_type,
+      media_url: row.media_url,
+      ordinal: row.order_index,
       // correct_answer: intentionally omitted
       // skill_code: intentionally omitted
     };

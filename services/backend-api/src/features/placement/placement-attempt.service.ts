@@ -90,9 +90,11 @@ export class PlacementAttemptService {
     //    student_id and created_at are intentionally excluded.
     return {
       id: attempt.id,
-      placementTestId: attempt.placement_test_id,
+      placement_test_id: attempt.placement_test_id,
       status: 'active',
-      startedAt: attempt.started_at,
+      started_at: attempt.started_at,
+      submitted_at: null,
+      completed_at: null,
     };
   }
 }

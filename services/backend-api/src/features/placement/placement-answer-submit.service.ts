@@ -59,7 +59,7 @@ export class PlacementAnswerSubmitService {
    *
    * @param attemptId  UUID of the target placement_attempt (from URL path).
    * @param studentId  Internal student ID — always from the verified JWT.
-   * @param input      Student-supplied placementQuestionId and answerValue.
+   * @param input      Student-supplied placement_question_id and answer_value.
    */
   async submitAnswer(
     attemptId: string,
@@ -113,7 +113,7 @@ export class PlacementAnswerSubmitService {
        WHERE pq.id = $1
          AND ps.placement_test_id = $2
        LIMIT 1`,
-      [input.placementQuestionId, attempt.placement_test_id],
+      [input.placement_question_id, attempt.placement_test_id],
     );
 
     if ((questionResult.rowCount ?? 0) === 0) {
@@ -137,7 +137,7 @@ export class PlacementAnswerSubmitService {
        WHERE placement_attempt_id = $1
          AND placement_question_id = $2
        LIMIT 1`,
-      [attemptId, input.placementQuestionId],
+      [attemptId, input.placement_question_id],
     );
 
     if ((duplicateResult.rowCount ?? 0) > 0) {
@@ -151,7 +151,7 @@ export class PlacementAnswerSubmitService {
     // -----------------------------------------------------------------------
     // 4. Validate answer_value format against the question type (P4-012 §2.3).
     // -----------------------------------------------------------------------
-    this.validateAnswerValue(input.answerValue, question.question_type);
+    this.validateAnswerValue(input.answer_value, question.question_type);
 
     // -----------------------------------------------------------------------
     // 5. Inherit skill_code from the primary skill link on the question.
@@ -172,7 +172,7 @@ export class PlacementAnswerSubmitService {
        VALUES ($1, $2, $3, NULL, $4)
        RETURNING id, placement_attempt_id, placement_question_id,
                  answer_value, is_correct, skill_code, created_at`,
-      [attemptId, input.placementQuestionId, input.answerValue, skillCode],
+      [attemptId, input.placement_question_id, input.answer_value, skillCode],
     );
 
     const answer = insertResult.rows[0];
@@ -193,10 +193,10 @@ export class PlacementAnswerSubmitService {
     // -----------------------------------------------------------------------
     return {
       id: answer.id,
-      placementAttemptId: answer.placement_attempt_id,
-      placementQuestionId: answer.placement_question_id,
-      answerValue: answer.answer_value,
-      createdAt: answer.created_at,
+      placement_attempt_id: answer.placement_attempt_id,
+      placement_question_id: answer.placement_question_id,
+      answer_value: answer.answer_value,
+      created_at: answer.created_at,
     };
   }
 
