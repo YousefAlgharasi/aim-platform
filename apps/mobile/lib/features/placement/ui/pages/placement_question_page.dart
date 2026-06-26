@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/widgets/widgets.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
+import '../../data/models/placement_question_model.dart';
 import '../../logic/provider/placement_provider.dart';
 import '../../logic/provider/placement_question_notifier.dart';
 
@@ -181,6 +182,7 @@ class _QuestionBody extends StatelessWidget {
               child: _AnswerInput(
                 key: ValueKey(question.id),
                 questionType: question.type,
+                options: question.options,
                 selectedAnswer: state.selectedAnswer,
                 onSelect: onSelectAnswer,
                 isSubmitting: state.isSubmitting,
@@ -218,6 +220,7 @@ class _QuestionBody extends StatelessWidget {
 class _AnswerInput extends StatelessWidget {
   const _AnswerInput({
     required this.questionType,
+    required this.options,
     required this.selectedAnswer,
     required this.onSelect,
     required this.isSubmitting,
@@ -225,6 +228,7 @@ class _AnswerInput extends StatelessWidget {
   });
 
   final String questionType;
+  final List<PlacementOptionModel> options;
   final String? selectedAnswer;
   final ValueChanged<String> onSelect;
   final bool isSubmitting;
@@ -235,6 +239,7 @@ class _AnswerInput extends StatelessWidget {
 
     return switch (questionType) {
       'multiple_choice' || 'listening_choice' => _MultipleChoiceInput(
+          options: options,
           selectedAnswer: selectedAnswer,
           onSelect: onSelect,
           isSubmitting: isSubmitting,
@@ -263,32 +268,32 @@ class _AnswerInput extends StatelessWidget {
 
 class _MultipleChoiceInput extends StatelessWidget {
   const _MultipleChoiceInput({
+    required this.options,
     required this.selectedAnswer,
     required this.onSelect,
     required this.isSubmitting,
   });
 
+  final List<PlacementOptionModel> options;
   final String? selectedAnswer;
   final ValueChanged<String> onSelect;
   final bool isSubmitting;
-
-  static const _options = ['A', 'B', 'C', 'D'];
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        for (final option in _options) ...[
+        for (final (i, option) in options.indexed) ...[
           AIMAnswerOption(
-            optionKey: option,
-            state: selectedAnswer == option
+            optionKey: option.id,
+            state: selectedAnswer == option.id
                 ? AIMAnswerOptionState.selected
                 : AIMAnswerOptionState.defaultState,
-            onTap: isSubmitting ? null : () => onSelect(option),
-            semanticLabel: 'Option $option',
-            child: Text(option),
+            onTap: isSubmitting ? null : () => onSelect(option.id),
+            semanticLabel: 'Option ${option.id}: ${option.text}',
+            child: Text(option.text),
           ),
-          if (option != _options.last)
+          if (i != options.length - 1)
             const SizedBox(height: AimSpacing.componentGap),
         ],
       ],
