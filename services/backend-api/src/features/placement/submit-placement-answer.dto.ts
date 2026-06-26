@@ -1,6 +1,10 @@
-import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class SubmitPlacementAnswerDto {
+  @IsUUID()
+  @IsOptional()
+  readonly placement_attempt_id?: string;
+
   @IsUUID()
   @IsNotEmpty()
   readonly placement_question_id!: string;
