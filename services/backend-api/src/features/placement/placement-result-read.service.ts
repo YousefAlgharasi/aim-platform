@@ -70,6 +70,7 @@ export interface PlacementResultResponse {
       skill_code: string;
       mastery_score: number;
       priority: number;
+      signal: string;
     }>;
   };
   readonly initial_path_id: string | null;
