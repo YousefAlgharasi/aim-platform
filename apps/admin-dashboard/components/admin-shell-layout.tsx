@@ -1,4 +1,3 @@
-// P11-008: aligned with AIM design system
 import type { ReactNode } from 'react';
 
 import type { AdminAuthContext } from '../lib/auth';
@@ -37,7 +36,7 @@ export function AdminShellLayout({
         }
         .aim-admin-main {
           flex: 1;
-          padding: var(--space-32) var(--space-24);
+          padding: var(--space-32, 32px) var(--space-24, 24px);
           max-width: var(--content-max-web);
           width: 100%;
           margin-inline: auto;
@@ -45,7 +44,9 @@ export function AdminShellLayout({
         }
         @media (max-width: 768px) {
           .aim-admin-shell { flex-direction: column; }
-          .aim-admin-main { padding: var(--space-16); }
+          .aim-admin-main {
+            padding: 60px var(--space-16, 16px) var(--space-16, 16px);
+          }
         }
       `}</style>
     </div>

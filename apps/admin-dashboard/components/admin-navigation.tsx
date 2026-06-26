@@ -1,12 +1,14 @@
-// Admin sidebar navigation with grouped categories and SVG icons
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 import type { AdminAuthContext, BackendAuthorizedRole } from '../lib/auth';
 
 type NavItem = { label: string; href: string; icon: string };
 type NavGroup = { label: string; items: NavItem[] };
 
-// SVG path data for each icon (24x24 viewBox, stroke-based)
 const ICONS: Record<string, string> = {
   dashboard: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4',
   users: 'M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z',
@@ -33,6 +35,10 @@ const ICONS: Record<string, string> = {
   report: 'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25M9 16.5v.75m3-3v3.75m3-6v6.75M5.625 2.25H9.75a2.25 2.25 0 012.25 2.25v.894m-4.875-3.144A2.25 2.25 0 005.625 4.5v15A2.25 2.25 0 007.875 21.75h8.25a2.25 2.25 0 002.25-2.25V11.25a9 9 0 00-9-9z',
   cog: 'M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z M15 12a3 3 0 11-6 0 3 3 0 016 0z',
   logout: 'M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9',
+  menu: 'M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5',
+  chevronLeft: 'M15.75 19.5L8.25 12l7.5-7.5',
+  chevronRight: 'M8.25 4.5l7.5 7.5-7.5 7.5',
+  close: 'M6 18L18 6M6 6l12 12',
 };
 
 function NavIcon({ name }: { name: string }) {
@@ -48,9 +54,7 @@ function NavIcon({ name }: { name: string }) {
 const ALL_NAV_GROUPS: NavGroup[] = [
   {
     label: '',
-    items: [
-      { label: 'Dashboard', href: '/admin', icon: 'dashboard' },
-    ],
+    items: [{ label: 'Dashboard', href: '/admin', icon: 'dashboard' }],
   },
   {
     label: 'Users & Access',
@@ -162,173 +166,342 @@ function getNavGroups(roles: readonly BackendAuthorizedRole[]): NavGroup[] {
   return [{ label: '', items: [{ label: 'Dashboard', href: '/admin', icon: 'dashboard' }] }];
 }
 
+function isActive(pathname: string, href: string): boolean {
+  if (href === '/admin') return pathname === '/admin';
+  return pathname.startsWith(href);
+}
+
+const STORAGE_KEY = 'aim-nav-collapsed';
+
 export function AdminNavigation({
   authContext,
 }: Readonly<{
   authContext: AdminAuthContext;
 }>) {
+  const pathname = usePathname();
   const groups = getNavGroups(authContext.roles);
   const roleLabel = authContext.roles.join(', ') || 'unknown';
 
-  return (
-    <nav className="aim-admin-nav" aria-label="Admin navigation">
-      {/* Brand */}
-      <Link className="aim-admin-brand" href="/admin" aria-label="AIM Admin home">
-        <span className="aim-admin-brand-mark" aria-hidden="true">AIM</span>
-        <span className="aim-admin-brand-label">Admin</span>
-      </Link>
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-      {/* User info */}
-      <div className="aim-admin-user" aria-label="Signed in user">
-        <div className="aim-admin-user-avatar">
-          {(authContext.user.email ?? 'U')[0].toUpperCase()}
-        </div>
-        <div className="aim-admin-user-info">
-          <span className="aim-admin-user-email">
-            {authContext.user.email ?? authContext.user.id}
-          </span>
-          <span className="aim-admin-user-role">{roleLabel}</span>
-        </div>
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved === 'true') setCollapsed(true);
+    } catch {}
+  }, []);
+
+  const toggleCollapse = useCallback(() => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      try { localStorage.setItem(STORAGE_KEY, String(next)); } catch {}
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }
+  }, [mobileOpen]);
+
+  const navContent = (
+    <>
+      {/* Brand */}
+      <div className="sn-brand-row">
+        <Link className="sn-brand" href="/admin" aria-label="AIM Admin home">
+          <span className="sn-brand-mark" aria-hidden="true">AIM</span>
+          {!collapsed && <span className="sn-brand-label">Admin</span>}
+        </Link>
+        {/* Collapse toggle - desktop only */}
+        <button
+          type="button"
+          className="sn-collapse-btn sn-desktop-only"
+          onClick={toggleCollapse}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          title={collapsed ? 'Expand' : 'Collapse'}
+        >
+          <NavIcon name={collapsed ? 'chevronRight' : 'chevronLeft'} />
+        </button>
+        {/* Close button - mobile only */}
+        <button
+          type="button"
+          className="sn-collapse-btn sn-mobile-only"
+          onClick={() => setMobileOpen(false)}
+          aria-label="Close menu"
+        >
+          <NavIcon name="close" />
+        </button>
       </div>
 
-      <hr className="aim-admin-divider" aria-hidden="true" />
+      {/* User info */}
+      {!collapsed && (
+        <div className="sn-user">
+          <div className="sn-user-avatar">
+            {(authContext.user.email ?? 'U')[0].toUpperCase()}
+          </div>
+          <div className="sn-user-info">
+            <span className="sn-user-email">{authContext.user.email ?? authContext.user.id}</span>
+            <span className="sn-user-role">{roleLabel}</span>
+          </div>
+        </div>
+      )}
+      {collapsed && (
+        <div className="sn-user-collapsed" title={authContext.user.email ?? authContext.user.id}>
+          <div className="sn-user-avatar">
+            {(authContext.user.email ?? 'U')[0].toUpperCase()}
+          </div>
+        </div>
+      )}
 
-      {/* Navigation groups */}
-      <div className="aim-admin-nav-groups">
+      <hr className="sn-divider" aria-hidden="true" />
+
+      {/* Nav groups */}
+      <div className="sn-groups">
         {groups.map((group, gi) => (
-          <div key={gi} className="aim-admin-nav-group">
-            {group.label && (
-              <span className="aim-admin-group-label">{group.label}</span>
+          <div key={gi} className="sn-group">
+            {group.label && !collapsed && (
+              <span className="sn-group-label">{group.label}</span>
             )}
-            <ul className="aim-admin-nav-list" role="list">
-              {group.items.map((item) => (
-                <li key={item.href}>
-                  <Link className="aim-admin-nav-link" href={item.href}>
-                    <NavIcon name={item.icon} />
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
+            {group.label && collapsed && (
+              <hr className="sn-group-sep" aria-hidden="true" />
+            )}
+            <ul className="sn-list" role="list">
+              {group.items.map((item) => {
+                const active = isActive(pathname, item.href);
+                return (
+                  <li key={item.href}>
+                    <Link
+                      className={`sn-link${active ? ' sn-link--active' : ''}`}
+                      href={item.href}
+                      title={collapsed ? item.label : undefined}
+                    >
+                      <NavIcon name={item.icon} />
+                      {!collapsed && <span className="sn-link-text">{item.label}</span>}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         ))}
       </div>
 
-      {/* Logout */}
-      <div className="aim-admin-nav-footer">
-        <hr className="aim-admin-divider" aria-hidden="true" />
+      {/* Footer */}
+      <div className="sn-footer">
+        <hr className="sn-divider" aria-hidden="true" />
         <form action="/api/auth/logout" method="POST">
-          <button type="submit" className="aim-admin-nav-link aim-admin-logout-btn">
+          <button
+            type="submit"
+            className="sn-link sn-logout"
+            title={collapsed ? 'Logout' : undefined}
+          >
             <NavIcon name="logout" />
-            Logout
+            {!collapsed && <span className="sn-link-text">Logout</span>}
           </button>
         </form>
       </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile hamburger button */}
+      <button
+        type="button"
+        className="sn-hamburger"
+        onClick={() => setMobileOpen(true)}
+        aria-label="Open menu"
+      >
+        <NavIcon name="menu" />
+      </button>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div className="sn-overlay" onClick={() => setMobileOpen(false)} aria-hidden="true" />
+      )}
+
+      {/* Sidebar */}
+      <nav
+        className={`sn-sidebar${collapsed ? ' sn-sidebar--collapsed' : ''}${mobileOpen ? ' sn-sidebar--mobile-open' : ''}`}
+        aria-label="Admin navigation"
+      >
+        {navContent}
+      </nav>
 
       <style>{`
-        .aim-admin-nav {
-          width: var(--sidebar-width);
+        .sn-hamburger {
+          display: none;
+          position: fixed;
+          top: 12px;
+          left: 12px;
+          z-index: 1001;
+          width: 40px;
+          height: 40px;
+          border: 1px solid var(--border);
+          border-radius: var(--radius-md, 8px);
+          background: var(--surface);
+          color: var(--text-primary);
+          cursor: pointer;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .sn-overlay {
+          display: none;
+          position: fixed;
+          inset: 0;
+          z-index: 1099;
+          background: rgba(0,0,0,0.4);
+          backdrop-filter: blur(2px);
+        }
+
+        .sn-sidebar {
+          width: 240px;
           min-height: 100vh;
           background: var(--surface);
           border-inline-end: 1px solid var(--border);
           display: flex;
           flex-direction: column;
-          gap: 0;
-          padding: var(--space-16, 16px) 0 var(--space-16, 16px);
+          padding: 12px 0;
           flex-shrink: 0;
           position: sticky;
-          inset-block-start: 0;
+          top: 0;
           height: 100vh;
           overflow-y: auto;
+          overflow-x: hidden;
+          transition: width 0.2s ease;
         }
-        .aim-admin-brand {
+        .sn-sidebar--collapsed {
+          width: 64px;
+        }
+
+        .sn-brand-row {
           display: flex;
           align-items: center;
-          gap: var(--space-8, 8px);
-          padding: var(--space-4, 4px) var(--space-16, 16px) var(--space-12, 12px);
+          justify-content: space-between;
+          padding: 4px 10px 8px;
+          min-height: 40px;
+        }
+        .sn-brand {
+          display: flex;
+          align-items: center;
+          gap: 8px;
           text-decoration: none;
           color: var(--text-primary);
-          min-height: var(--touch-target);
         }
-        .aim-admin-brand:focus-visible { box-shadow: var(--shadow-focus); }
-        .aim-admin-brand-mark {
+        .sn-brand-mark {
           background: var(--color-primary-500);
-          color: var(--text-on-primary, #fff);
-          font-size: 13px;
-          font-weight: var(--weight-bold, 700);
+          color: #fff;
+          font-size: 12px;
+          font-weight: 700;
           letter-spacing: 0.04em;
           padding: 3px 7px;
           border-radius: var(--radius-sm, 6px);
           line-height: 1;
+          flex-shrink: 0;
         }
-        .aim-admin-brand-label {
+        .sn-brand-label {
           font-size: 15px;
-          font-weight: var(--weight-semibold, 600);
+          font-weight: 600;
+          color: var(--text-primary);
+          white-space: nowrap;
+        }
+
+        .sn-collapse-btn {
+          width: 28px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: none;
+          background: none;
+          color: var(--text-muted);
+          cursor: pointer;
+          border-radius: var(--radius-sm, 6px);
+          flex-shrink: 0;
+        }
+        .sn-collapse-btn:hover {
+          background: var(--state-hover, #f5f5f5);
           color: var(--text-primary);
         }
 
-        .aim-admin-user {
-          padding: var(--space-8, 8px) var(--space-16, 16px);
+        .sn-desktop-only { display: flex; }
+        .sn-mobile-only { display: none; }
+
+        .sn-user {
+          padding: 6px 12px;
           display: flex;
           align-items: center;
-          gap: var(--space-8, 8px);
+          gap: 8px;
         }
-        .aim-admin-user-avatar {
-          width: 32px; height: 32px; border-radius: 50%;
+        .sn-user-collapsed {
+          padding: 6px 0;
+          display: flex;
+          justify-content: center;
+        }
+        .sn-user-avatar {
+          width: 30px; height: 30px; border-radius: 50%;
           background: var(--color-primary-100, #e0e7ff);
           color: var(--color-primary-700, #4338ca);
           display: flex; align-items: center; justify-content: center;
-          font-size: 13px; font-weight: 700; flex-shrink: 0;
+          font-size: 12px; font-weight: 700; flex-shrink: 0;
         }
-        .aim-admin-user-info {
-          display: flex; flex-direction: column; gap: 1px;
-          min-width: 0;
+        .sn-user-info {
+          display: flex; flex-direction: column; gap: 1px; min-width: 0;
         }
-        .aim-admin-user-email {
-          font-size: 13px;
-          font-weight: var(--weight-medium, 500);
-          color: var(--text-primary);
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
+        .sn-user-email {
+          font-size: 12px; font-weight: 500; color: var(--text-primary);
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
-        .aim-admin-user-role {
-          font-size: 11px;
-          color: var(--text-muted);
-          text-transform: capitalize;
+        .sn-user-role {
+          font-size: 11px; color: var(--text-muted); text-transform: capitalize;
         }
 
-        .aim-admin-divider {
+        .sn-divider {
           border: none;
-          border-block-end: 1px solid var(--divider, #e5e5e5);
-          margin: var(--space-8, 8px) var(--space-16, 16px);
+          border-bottom: 1px solid var(--divider, #e5e5e5);
+          margin: 6px 12px;
         }
 
-        .aim-admin-nav-groups {
+        .sn-groups {
           flex: 1;
           overflow-y: auto;
           display: flex;
           flex-direction: column;
-          gap: var(--space-4, 4px);
-          padding: 0;
+          gap: 2px;
         }
-        .aim-admin-nav-group {
+        .sn-group {
           display: flex;
           flex-direction: column;
-          gap: var(--space-2, 2px);
+          gap: 1px;
         }
-        .aim-admin-group-label {
-          font-size: 11px;
+        .sn-group-label {
+          font-size: 10px;
           font-weight: 700;
-          letter-spacing: 0.05em;
+          letter-spacing: 0.06em;
           text-transform: uppercase;
           color: var(--text-muted, #999);
-          padding: var(--space-12, 12px) var(--space-16, 16px) var(--space-4, 4px);
+          padding: 10px 16px 3px;
+          white-space: nowrap;
+          overflow: hidden;
         }
-        .aim-admin-nav-list {
+        .sn-group-sep {
+          border: none;
+          border-bottom: 1px solid var(--divider, #e5e5e5);
+          margin: 4px 12px;
+        }
+        .sn-list {
           list-style: none;
           margin: 0;
-          padding: 0 var(--space-8, 8px);
+          padding: 0 6px;
           display: flex;
           flex-direction: column;
           gap: 1px;
@@ -338,71 +511,125 @@ export function AdminNavigation({
           width: 18px; height: 18px; flex-shrink: 0;
         }
 
-        .aim-admin-nav-link {
+        .sn-link {
           display: flex;
           align-items: center;
-          gap: var(--space-8, 8px);
-          min-height: 36px;
-          padding: 6px var(--space-12, 12px);
+          gap: 8px;
+          min-height: 34px;
+          padding: 5px 10px;
           border-radius: var(--radius-sm, 6px);
           font-size: 13px;
-          font-weight: var(--weight-medium, 500);
+          font-weight: 500;
           color: var(--text-secondary, #666);
           text-decoration: none;
-          transition: background 0.12s ease, color 0.12s ease;
           border: none;
           background: none;
           width: 100%;
           cursor: pointer;
           font-family: inherit;
+          white-space: nowrap;
+          overflow: hidden;
+          transition: background 0.12s, color 0.12s;
         }
-        .aim-admin-nav-link:hover {
+        .sn-sidebar--collapsed .sn-link {
+          justify-content: center;
+          padding: 5px 0;
+        }
+        .sn-link:hover {
           background: var(--state-hover, #f5f5f5);
           color: var(--text-primary);
         }
-        .aim-admin-nav-link:focus-visible {
+        .sn-link--active {
+          background: color-mix(in srgb, var(--color-primary-500) 10%, transparent);
+          color: var(--color-primary-600, #4f46e5);
+          font-weight: 600;
+        }
+        .sn-link--active:hover {
+          background: color-mix(in srgb, var(--color-primary-500) 15%, transparent);
+        }
+        .sn-link:focus-visible {
           outline: none;
           box-shadow: var(--shadow-focus);
-          color: var(--text-primary);
+        }
+        .sn-link-text {
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
-        .aim-admin-nav-footer {
+        .sn-footer {
           margin-top: auto;
-          padding: 0 var(--space-8, 8px) 0;
+          padding: 0 0 4px;
         }
-        .aim-admin-logout-btn {
+        .sn-logout {
           color: var(--color-error-600, #dc2626);
         }
-        .aim-admin-logout-btn:hover {
+        .sn-logout:hover {
           background: var(--error-soft, #fef2f2);
           color: var(--color-error-700, #b91c1c);
         }
 
+        /* Tooltip for collapsed items */
+        .sn-sidebar--collapsed .sn-link[title] {
+          position: relative;
+        }
+
+        /* ---- Mobile ---- */
         @media (max-width: 768px) {
-          .aim-admin-nav {
-            width: 100%;
-            min-height: unset;
-            height: auto;
-            position: static;
-            border-inline-end: none;
-            border-block-end: 1px solid var(--border);
-            padding: var(--space-8, 8px) var(--space-16, 16px);
+          .sn-hamburger {
+            display: flex;
           }
-          .aim-admin-nav-groups {
-            overflow-y: visible;
+          .sn-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1100;
+            height: 100vh;
+            width: 260px;
+            transform: translateX(-100%);
+            transition: transform 0.25s ease;
+            box-shadow: none;
           }
-          .aim-admin-nav-list {
-            flex-direction: row;
-            flex-wrap: wrap;
-            gap: var(--space-4, 4px);
-            padding: 0;
+          .sn-sidebar--collapsed {
+            width: 260px;
           }
-          .aim-admin-group-label { display: none; }
-          .aim-admin-user { display: none; }
-          .aim-admin-divider { display: none; }
-          .aim-admin-nav-footer { display: none; }
+          .sn-sidebar--mobile-open {
+            transform: translateX(0);
+            box-shadow: 4px 0 24px rgba(0,0,0,0.12);
+          }
+          .sn-overlay {
+            display: block;
+          }
+          /* Always show labels on mobile (override collapsed state) */
+          .sn-sidebar--collapsed.sn-sidebar--mobile-open .sn-link {
+            justify-content: flex-start;
+            padding: 5px 10px;
+          }
+          .sn-sidebar--collapsed.sn-sidebar--mobile-open .sn-link-text,
+          .sn-sidebar--collapsed.sn-sidebar--mobile-open .sn-brand-label,
+          .sn-sidebar--collapsed.sn-sidebar--mobile-open .sn-user-info,
+          .sn-sidebar--collapsed.sn-sidebar--mobile-open .sn-group-label {
+            display: flex !important;
+          }
+          .sn-sidebar--collapsed.sn-sidebar--mobile-open .sn-user-collapsed {
+            display: none !important;
+          }
+          .sn-sidebar--collapsed.sn-sidebar--mobile-open .sn-user {
+            display: flex !important;
+          }
+          .sn-sidebar--collapsed.sn-sidebar--mobile-open .sn-group-sep {
+            display: none;
+          }
+          .sn-desktop-only { display: none; }
+          .sn-mobile-only { display: flex; }
+        }
+
+        /* ---- Tablet ---- */
+        @media (min-width: 769px) and (max-width: 1024px) {
+          .sn-sidebar:not(.sn-sidebar--collapsed) {
+            width: 200px;
+          }
         }
       `}</style>
-    </nav>
+    </>
   );
 }
