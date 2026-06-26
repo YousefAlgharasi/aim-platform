@@ -1,14 +1,11 @@
-export default function AdminAnalyticsCurriculumReportsPlaceholder() {
+import { ReportPlaceholder } from '../../_components/report-placeholder';
+
+export default function AdminCurriculumReportsPage() {
   return (
-    <section className="admin-curriculum-page">
-      <header className="admin-page-header">
-        <p className="eyebrow">Admin — Analytics</p>
-        <h1>Curriculum Reports</h1>
-      </header>
-      <div className="admin-boundary-note">
-        <strong>Coming soon:</strong> This route is reserved by the admin analytics
-        feature shell. Implementation lands in task P15-061.
-      </div>
-    </section>
+    <ReportPlaceholder
+      title="Curriculum Reports"
+      description="Curriculum coverage and content usage reports."
+      taskId="P15-061"
+    />
   );
 }

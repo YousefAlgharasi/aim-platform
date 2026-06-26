@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { getAdminToken } from '../../../lib/api/admin-token';
 import { AdminApiClientError } from '../../../lib/api';
 import {
@@ -25,29 +26,25 @@ export default async function AdminReportsPage() {
       fetchActiveUsersReport(token),
     ]);
   } catch (error) {
-    fetchError =
-      error instanceof AdminApiClientError
-        ? `Backend error ${error.status}: ${error.message}`
-        : 'Failed to load reports.';
+    fetchError = error instanceof AdminApiClientError
+      ? `Backend error ${error.status}: ${error.message}` : 'Failed to load reports.';
   }
 
   return (
-    <section className="admin-curriculum-page">
-      <header className="admin-page-header">
-        <p className="eyebrow">Admin — Reports</p>
-        <h1>Operational Reports</h1>
-      </header>
+    <section className="rp-page">
+      <nav className="rp-breadcrumb">
+        <span className="rp-breadcrumb-current">Reports</span>
+      </nav>
 
-      {/* admin-boundary-note */}
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> All report metrics (counts, averages, active users)
-        are computed by the backend only. This view displays backend-approved summaries.
-        Full analytics dashboards are planned for Phase 15.
+      <div className="rp-header">
+        <div>
+          <p className="rp-eyebrow">Reports</p>
+          <h1 className="rp-title">Operational Reports</h1>
+          <p className="rp-subtitle">Backend-computed enrollment, assessment, and user activity summaries.</p>
+        </div>
       </div>
 
-      {fetchError && (
-        <p className="admin-error-banner" role="alert">{fetchError}</p>
-      )}
+      {fetchError && <div className="admin-error-banner" role="alert">{fetchError}</div>}
 
       {enrollment && assessment && activeUsers && (
         <ReportsClient
@@ -56,6 +53,16 @@ export default async function AdminReportsPage() {
           activeUsers={activeUsers}
         />
       )}
+
+      <style>{`
+        .rp-page { display: flex; flex-direction: column; gap: 20px; }
+        .rp-breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); }
+        .rp-breadcrumb-current { color: var(--text-secondary); font-weight: 500; }
+        .rp-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .rp-eyebrow { margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary-500); }
+        .rp-title { margin: 0; font-size: 26px; font-weight: 700; color: var(--text-primary); }
+        .rp-subtitle { margin: 0; font-size: 14px; color: var(--text-secondary); }
+      `}</style>
     </section>
   );
 }

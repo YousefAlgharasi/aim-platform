@@ -1,6 +1,5 @@
 'use client';
 
-import { AdminCard } from '../../../components/common';
 import type {
   AdminEnrollmentReport,
   AdminAssessmentReport,
@@ -15,76 +14,76 @@ type Props = {
 
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="aim-stat-card">
-      <span className="aim-stat-label">{label}</span>
-      <span className="aim-stat-value">{value}</span>
-      {sub && <span className="aim-stat-sub">{sub}</span>}
+    <div className="rc-stat">
+      <p className="rc-stat-label">{label}</p>
+      <p className="rc-stat-value">{value}</p>
+      {sub && <p className="rc-stat-sub">{sub}</p>}
     </div>
   );
 }
 
 export function ReportsClient({ enrollment, assessment, activeUsers }: Props) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-16)' }}>
-      {/* Enrollment */}
-      <AdminCard title="Enrollments" description={enrollment.period || 'All time'}>
-        <div className="aim-stat-grid">
-          <StatCard label="Total Enrollments" value={enrollment.totalEnrollments} />
-          <StatCard label="New Enrollments" value={enrollment.newEnrollments} />
-          <StatCard label="Active Courses" value={enrollment.activeCourses} />
+    <div className="rc-root">
+      <div className="rc-section">
+        <div className="rc-section-header">
+          <h2 className="rc-section-title">Enrollments</h2>
+          {enrollment.period && <span className="rc-section-period">{enrollment.period}</span>}
         </div>
-      </AdminCard>
+        <div className="rc-stat-grid">
+          <StatCard label="Total Enrollments" value={enrollment.totalEnrollments.toLocaleString()} />
+          <StatCard label="New Enrollments" value={enrollment.newEnrollments.toLocaleString()} />
+          <StatCard label="Active Courses" value={enrollment.activeCourses.toLocaleString()} />
+        </div>
+      </div>
 
-      {/* Assessments */}
-      <AdminCard title="Assessments" description={assessment.period || 'All time'}>
-        <div className="aim-stat-grid">
-          <StatCard label="Total Attempts" value={assessment.totalAttempts} />
-          <StatCard label="Passed" value={assessment.passed} />
-          <StatCard label="Failed" value={assessment.failed} />
+      <div className="rc-section">
+        <div className="rc-section-header">
+          <h2 className="rc-section-title">Assessments</h2>
+          {assessment.period && <span className="rc-section-period">{assessment.period}</span>}
+        </div>
+        <div className="rc-stat-grid">
+          <StatCard label="Total Attempts" value={assessment.totalAttempts.toLocaleString()} />
+          <StatCard label="Passed" value={assessment.passed.toLocaleString()} />
+          <StatCard label="Failed" value={assessment.failed.toLocaleString()} />
           <StatCard label="Avg Score" value={`${assessment.avgScore}%`} sub="Backend-computed" />
         </div>
-      </AdminCard>
+      </div>
 
-      {/* Active Users */}
-      <AdminCard title="Active Users" description={activeUsers.period || 'Current'}>
-        <div className="aim-stat-grid">
-          <StatCard label="Daily Active" value={activeUsers.dailyActiveUsers} />
-          <StatCard label="Weekly Active" value={activeUsers.weeklyActiveUsers} />
-          <StatCard label="Monthly Active" value={activeUsers.monthlyActiveUsers} />
+      <div className="rc-section">
+        <div className="rc-section-header">
+          <h2 className="rc-section-title">Active Users</h2>
+          {activeUsers.period && <span className="rc-section-period">{activeUsers.period}</span>}
         </div>
-      </AdminCard>
+        <div className="rc-stat-grid">
+          <StatCard label="Daily Active" value={activeUsers.dailyActiveUsers.toLocaleString()} />
+          <StatCard label="Weekly Active" value={activeUsers.weeklyActiveUsers.toLocaleString()} />
+          <StatCard label="Monthly Active" value={activeUsers.monthlyActiveUsers.toLocaleString()} />
+        </div>
+      </div>
 
       <style>{`
-        .aim-stat-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-          gap: var(--space-16);
+        .rc-root { display: flex; flex-direction: column; gap: 16px; }
+        .rc-section {
+          background: var(--surface); border: 1px solid var(--border);
+          border-radius: var(--radius-lg); padding: 20px;
         }
-        .aim-stat-card {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-4);
-          padding: var(--space-16);
-          border-radius: var(--radius-md);
-          background: var(--surface-sunken);
+        .rc-section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+        .rc-section-title { margin: 0; font-size: 16px; font-weight: 600; color: var(--text-primary); }
+        .rc-section-period { font-size: 12px; color: var(--text-muted); padding: 2px 8px; background: var(--surface-sunken); border-radius: var(--radius-sm); }
+        .rc-stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+        .rc-stat {
+          display: flex; flex-direction: column; gap: 4px; padding: 16px;
+          background: var(--surface-sunken); border-radius: var(--radius-md);
         }
-        .aim-stat-label {
-          font-size: 12px;
-          font-weight: var(--weight-semibold);
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: var(--text-muted);
+        .rc-stat-label {
+          margin: 0; font-size: 11px; font-weight: 600; text-transform: uppercase;
+          letter-spacing: 0.04em; color: var(--text-muted);
         }
-        .aim-stat-value {
-          font-size: 28px;
-          font-weight: var(--weight-bold);
-          color: var(--text-primary);
-          line-height: 1.2;
-        }
-        .aim-stat-sub {
-          font-size: 11px;
-          color: var(--text-muted);
-          font-style: italic;
+        .rc-stat-value { margin: 0; font-size: 26px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
+        .rc-stat-sub { margin: 0; font-size: 11px; color: var(--text-muted); font-style: italic; }
+        @media (max-width: 640px) {
+          .rc-stat-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
         }
       `}</style>
     </div>
