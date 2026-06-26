@@ -10,6 +10,8 @@ import { UsersModule } from '../users';
 import { AdminController } from './admin.controller';
 import { AdminDataController } from './admin-data.controller';
 import { AdminDataService } from './admin-data.service';
+import { AdminParentsController } from './admin-parents.controller';
+import { AdminParentsService } from './admin-parents.service';
 import { AdminProfileService } from './admin-profile.service';
 import { AdminRoleAssignmentController } from './admin-role-assignment.controller';
 import { AdminRoleAssignmentService } from './admin-role-assignment.service';
@@ -22,8 +24,8 @@ import { AdminUsersService } from './users/admin-users.service';
 
 @Module({
   imports: [AuthModule, DatabaseModule, RolesModule, UsersModule],
-  controllers: [AdminController, AdminDataController, AdminRoleAssignmentController, AdminRolesController, AdminUsersController, AdminStatsController],
-  providers: [AdminService, AdminDataService, AdminRoleAssignmentService, AdminUsersService, AdminProfileService, AdminStatsService],
+  controllers: [AdminController, AdminDataController, AdminParentsController, AdminRoleAssignmentController, AdminRolesController, AdminUsersController, AdminStatsController],
+  providers: [AdminService, AdminDataService, AdminParentsService, AdminRoleAssignmentService, AdminUsersService, AdminProfileService, AdminStatsService],
   exports: [AdminService, AdminDataService, AdminRoleAssignmentService, AdminProfileService],
 })
 export class AdminModule {}
