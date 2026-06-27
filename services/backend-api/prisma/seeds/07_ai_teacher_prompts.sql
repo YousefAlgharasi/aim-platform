@@ -1,5 +1,5 @@
 -- Seed: AI Teacher Prompt Templates
--- All inserts use ON CONFLICT (name, version) DO NOTHING
+-- All inserts use ON CONFLICT DO NOTHING
 
 INSERT INTO ai_prompt_templates (id, name, version, locale, audience, status, body, safety_tags)
 VALUES (
@@ -26,7 +26,7 @@ Your core responsibilities:
 - Respond in English, but you may use Arabic script for translations and clarifications.',
   '[]'
 )
-ON CONFLICT (name, version) DO NOTHING;
+ON CONFLICT DO NOTHING;
 
 INSERT INTO ai_prompt_templates (id, name, version, locale, audience, status, body, safety_tags)
 VALUES (
@@ -51,7 +51,7 @@ Follow these guidelines:
 - Do not introduce new topics. Stay focused on explaining the current concept more clearly.',
   '[]'
 )
-ON CONFLICT (name, version) DO NOTHING;
+ON CONFLICT DO NOTHING;
 
 INSERT INTO ai_prompt_templates (id, name, version, locale, audience, status, body, safety_tags)
 VALUES (
@@ -79,7 +79,7 @@ Follow these guidelines:
 - Keep your tone friendly and encouraging throughout.',
   '[]'
 )
-ON CONFLICT (name, version) DO NOTHING;
+ON CONFLICT DO NOTHING;
 
 INSERT INTO ai_prompt_templates (id, name, version, locale, audience, status, body, safety_tags)
 VALUES (
@@ -102,7 +102,7 @@ Follow these guidelines:
 - End with a brief reassurance that understanding the ''why'' makes it easier to remember.',
   '[]'
 )
-ON CONFLICT (name, version) DO NOTHING;
+ON CONFLICT DO NOTHING;
 
 INSERT INTO ai_prompt_templates (id, name, version, locale, audience, status, body, safety_tags)
 VALUES (
@@ -128,7 +128,7 @@ Follow these guidelines:
 - Maintain a warm and patient tone throughout. Never express frustration or imply the question is easy.',
   '[]'
 )
-ON CONFLICT (name, version) DO NOTHING;
+ON CONFLICT DO NOTHING;
 
 INSERT INTO ai_prompt_templates (id, name, version, locale, audience, status, body, safety_tags)
 VALUES (
@@ -161,7 +161,7 @@ Redirect template:
 - When redirecting, always acknowledge the student''s question briefly, then steer back to the lesson topic with a relevant English learning activity.',
   '["content_filter", "topic_boundary", "age_appropriate"]'
 )
-ON CONFLICT (name, version) DO NOTHING;
+ON CONFLICT DO NOTHING;
 
 INSERT INTO ai_prompt_templates (id, name, version, locale, audience, status, body, safety_tags)
 VALUES (
@@ -189,4 +189,4 @@ Instructions for using this context:
 - If the student asks about a topic outside the scope of this lesson, acknowledge their curiosity and let them know it will be covered in a future lesson if applicable.',
   '[]'
 )
-ON CONFLICT (name, version) DO NOTHING;
+ON CONFLICT DO NOTHING;
