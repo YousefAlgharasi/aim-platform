@@ -5,39 +5,50 @@ import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/ErrorState';
-import { Banner } from '../../components/common/Banner';
 import type { ApiError } from '../../types';
 import styles from './Placement.module.css';
 
-interface PlacementStatus {
-  status: 'not_started' | 'in_progress' | 'completed';
-  sessionId?: string;
+interface ActivePlacementTest {
+  id: string;
+  title: string;
+  status: 'published';
+  total_sections: number;
+  estimated_minutes: number;
+}
+
+interface PlacementAttemptStartResponse {
+  id: string;
+  placement_test_id: string;
+  status: 'active';
+  started_at: string;
+  submitted_at: null;
+  completed_at: null;
 }
 
 export function PlacementEntryPage() {
-  const [status, setStatus] = useState<PlacementStatus | null>(null);
+  const [test, setTest] = useState<ActivePlacementTest | null>(null);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  function fetchStatus() {
+  function fetchActiveTest() {
     setLoading(true);
     setError('');
-    apiClient.get<PlacementStatus>('/placement/status')
-      .then(setStatus)
-      .catch((err: ApiError) => setError(err.message || 'Failed to load placement status'))
+    apiClient.get<ActivePlacementTest>('/placement/active')
+      .then(setTest)
+      .catch((err: ApiError) => setError(err.message || 'Failed to load placement test'))
       .finally(() => setLoading(false));
   }
 
-  useEffect(() => { fetchStatus(); }, []);
+  useEffect(() => { fetchActiveTest(); }, []);
 
   async function handleStart() {
     setStarting(true);
     setError('');
     try {
-      const { sessionId } = await apiClient.post<{ sessionId: string }>('/placement/start', {});
-      navigate(`/placement/${sessionId}`);
+      const attempt = await apiClient.post<PlacementAttemptStartResponse>('/placement/attempts', {});
+      navigate(`/placement/${attempt.id}`);
     } catch (err) {
       setError((err as ApiError).message || 'Failed to start placement');
     } finally {
@@ -46,51 +57,25 @@ export function PlacementEntryPage() {
   }
 
   if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorState message={error} onRetry={fetchStatus} />;
-  if (!status) return null;
+  if (error) return <ErrorState message={error} onRetry={fetchActiveTest} />;
+  if (!test) return null;
 
   return (
     <div className={styles.container}>
       <h1 className={styles.heading}>Placement Test</h1>
 
-      {status.status === 'completed' && (
-        <Banner variant="success">
-          You have already completed the placement test.
-        </Banner>
-      )}
-
-      {status.status === 'in_progress' && status.sessionId && (
-        <Card>
-          <div className={styles.entryContent}>
-            <h2 className={styles.subtitle}>Resume your test</h2>
-            <p className={styles.description}>You have an in-progress placement test.</p>
-            <Button onClick={() => navigate(`/placement/${status.sessionId}`)}>
-              Resume
-            </Button>
-          </div>
-        </Card>
-      )}
-
-      {status.status === 'not_started' && (
-        <Card>
-          <div className={styles.entryContent}>
-            <h2 className={styles.subtitle}>Ready to begin?</h2>
-            <p className={styles.description}>
-              The placement test helps us understand your current level so we can personalize your learning path.
-              Answer the questions to the best of your ability — the backend will evaluate your responses.
-            </p>
-            <Button onClick={handleStart} disabled={starting}>
-              {starting ? 'Starting...' : 'Start placement test'}
-            </Button>
-          </div>
-        </Card>
-      )}
-
-      {status.status === 'completed' && status.sessionId && (
-        <Button variant="secondary" onClick={() => navigate(`/placement/${status.sessionId}/result`)}>
-          View result
-        </Button>
-      )}
+      <Card>
+        <div className={styles.entryContent}>
+          <h2 className={styles.subtitle}>Ready to begin?</h2>
+          <p className={styles.description}>
+            {test.title} — {test.total_sections} sections, approximately {test.estimated_minutes} minutes.
+            Answer the questions to the best of your ability — the backend will evaluate your responses.
+          </p>
+          <Button onClick={handleStart} disabled={starting}>
+            {starting ? 'Starting...' : 'Start placement test'}
+          </Button>
+        </div>
+      </Card>
     </div>
   );
 }
