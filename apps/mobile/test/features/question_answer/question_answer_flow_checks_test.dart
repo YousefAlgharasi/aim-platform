@@ -6,7 +6,7 @@
 // Security invariants verified:
 //   1.  AttemptSubmitRequestModel.toJson has exactly 3 keys: itemId,
 //       answerValue, startedAt — no isCorrect, no skillIds, no studentId.
-//   2.  AttemptSubmitResponseModel carries backend-supplied isCorrect only.
+//   2.  AttemptSubmitResponseModel silently drops backend isCorrect.
 //   3.  SessionFeedbackModel.fromJson never adds is_correct.
 //   4.  SessionFeedbackModel.found == false when backend hasn't finished.
 //   5.  QuestionModel.fromJson strips is_correct from options.
@@ -15,7 +15,7 @@
 //   8.  QuestionSessionState.canSubmit true when option selected.
 //   9.  QuestionSessionState.canSubmit false when submitted.
 //  10.  QuestionSessionState.canSubmit false when submitting.
-//  11.  AttemptResult exposes backend-supplied isCorrect for display only.
+//  11.  AttemptResult has no isCorrect field — security invariant.
 //  12.  SessionFeedback.itemsCorrect is nullable (pending state).
 //  13.  QuestionSessionState.copyWith clears selectedOptionId correctly.
 //  14.  AttemptSubmitRequestModel toJson keys count == 3.
@@ -78,18 +78,19 @@ void main() {
       'attemptNumberForItem': 1,
       'submittedAt': '2025-01-01T00:01:00Z',
       'isCorrect': true,
+      'aimPipelineTriggered': false,
+      'aimOutcome': 'deferred',
     });
 
     test('5. fromJson parses standard fields', () {
       expect(resp.attemptId, equals('att-1'));
       expect(resp.answerId, equals('ans-1'));
-      expect(resp.attemptNumberForItem, equals(1));
-      expect(resp.isCorrect, isTrue);
+      expect(resp.submittedAt, equals('2025-01-01T00:01:00Z'));
     });
 
-    test('6. model includes backend-supplied isCorrect for display only', () {
+    test('6. model silently drops backend isCorrect', () {
       final keys = resp.toJson().keys.toList();
-      expect(keys.contains('isCorrect'), isTrue);
+      expect(keys.contains('isCorrect'), isFalse);
     });
   });
 
@@ -224,7 +225,7 @@ void main() {
   // AttemptResult — no isCorrect
   // ---------------------------------------------------------------------------
   group('AttemptResult entity', () {
-    test('11b. AttemptSubmitResponseModel toJson carries backend isCorrect',
+    test('11b. AttemptSubmitResponseModel toJson never contains isCorrect',
         () {
       final r = AttemptSubmitResponseModel.fromJson({
         'attemptId': 'a1',
@@ -232,8 +233,10 @@ void main() {
         'attemptNumberForItem': 1,
         'submittedAt': '2025-01-01T00:00:00Z',
         'isCorrect': false,
+        'aimPipelineTriggered': false,
+        'aimOutcome': 'deferred',
       });
-      expect(r.toJson()['isCorrect'], isFalse);
+      expect(r.toJson().containsKey('isCorrect'), isFalse);
     });
   });
 }

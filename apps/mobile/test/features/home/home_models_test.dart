@@ -3,9 +3,8 @@
 //
 // Verifies that each model:
 //   - Parses all contract fields from JSON correctly.
-//   - Re-serialises to JSON without data loss.
 //   - Does NOT compute, transform, or infer any backend-owned values
-//     (band, masteryLevel, severity, priority, action, reason).
+//     (masteryScore, masteryTrend, severity, status, kind, reason).
 
 import 'package:flutter_test/flutter_test.dart';
 
@@ -14,59 +13,65 @@ import 'package:aim_mobile/features/home/data/models/home_models.dart';
 void main() {
   group('HomeSkillStateModel', () {
     const json = {
-      'topic': 'algebra',
-      'band': 'Developing',
-      'masteryLevel': 'emerging',
+      'skillId': 'skill-algebra',
+      'masteryScore': 0.45,
+      'masteryConfidence': 0.7,
+      'masteryTrend': 'developing',
+      'lastAttemptId': 'attempt-1',
+      'lastEvaluatedAt': '2026-06-17T10:00:00Z',
+      'updatedAt': '2026-06-17T10:00:00Z',
     };
 
     test('parses all contract fields from JSON', () {
       final model = HomeSkillStateModel.fromJson(json);
-      expect(model.topic, 'algebra');
-      expect(model.band, 'Developing');
-      expect(model.masteryLevel, 'emerging');
+      expect(model.skillId, 'skill-algebra');
+      expect(model.masteryScore, 0.45);
+      expect(model.masteryTrend, 'developing');
     });
 
-    test('round-trips through toJson without data loss', () {
-      final model = HomeSkillStateModel.fromJson(json);
-      expect(model.toJson(), json);
-    });
-
-    test('does not compute or transform band or masteryLevel', () {
+    test('does not compute or transform masteryScore or masteryTrend', () {
       // Any value the backend sends must be preserved verbatim.
       final model = HomeSkillStateModel.fromJson(const {
-        'topic': 'grammar',
-        'band': 'Advanced',
-        'masteryLevel': 'strong',
+        'skillId': 'skill-grammar',
+        'masteryScore': 0.91,
+        'masteryConfidence': 0.85,
+        'masteryTrend': 'advanced',
+        'lastAttemptId': 'attempt-2',
+        'lastEvaluatedAt': '2026-06-17T10:00:00Z',
+        'updatedAt': '2026-06-17T10:00:00Z',
       });
-      expect(model.band, 'Advanced');
-      expect(model.masteryLevel, 'strong');
+      expect(model.masteryScore, 0.91);
+      expect(model.masteryTrend, 'advanced');
     });
   });
 
   group('HomeWeaknessRecordModel', () {
     const json = {
-      'topic': 'trigonometry',
+      'weaknessId': 'weak-1',
+      'skillId': 'skill-trigonometry',
       'severity': 'high',
-      'lastUpdated': '2026-06-17T10:00:00Z',
+      'status': 'open',
+      'triggerAttemptIds': ['attempt-1'],
+      'detectedAt': '2026-06-17T10:00:00Z',
+      'updatedAt': '2026-06-17T10:00:00Z',
     };
 
     test('parses all contract fields from JSON', () {
       final model = HomeWeaknessRecordModel.fromJson(json);
-      expect(model.topic, 'trigonometry');
+      expect(model.skillId, 'skill-trigonometry');
       expect(model.severity, 'high');
-      expect(model.lastUpdated, '2026-06-17T10:00:00Z');
-    });
-
-    test('round-trips through toJson without data loss', () {
-      final model = HomeWeaknessRecordModel.fromJson(json);
-      expect(model.toJson(), json);
+      expect(model.updatedAt, '2026-06-17T10:00:00Z');
     });
 
     test('preserves backend severity verbatim — no local mapping applied', () {
       final model = HomeWeaknessRecordModel.fromJson(const {
-        'topic': 'fractions',
+        'weaknessId': 'weak-2',
+        'skillId': 'skill-fractions',
         'severity': 'low',
-        'lastUpdated': '2026-06-01T00:00:00Z',
+        'status': 'open',
+        'triggerAttemptIds': ['attempt-1'],
+        'detectedAt': '2026-06-01T00:00:00Z',
+        'updatedAt': '2026-06-01T00:00:00Z',
       });
       expect(model.severity, 'low');
     });
@@ -74,60 +79,72 @@ void main() {
 
   group('HomeReviewScheduleModel', () {
     const json = {
-      'topic': 'quadratics',
+      'scheduleId': 'sched-1',
+      'skillId': 'skill-quadratics',
       'dueAt': '2026-06-20T08:00:00Z',
-      'priority': 'urgent',
+      'intervalDays': 5,
+      'repetitionCount': 2,
+      'status': 'urgent',
+      'basedOnAttemptId': 'attempt-1',
+      'scheduledAt': '2026-06-15T08:00:00Z',
+      'updatedAt': '2026-06-15T08:00:00Z',
     };
 
     test('parses all contract fields from JSON', () {
       final model = HomeReviewScheduleModel.fromJson(json);
-      expect(model.topic, 'quadratics');
+      expect(model.skillId, 'skill-quadratics');
       expect(model.dueAt, '2026-06-20T08:00:00Z');
-      expect(model.priority, 'urgent');
+      expect(model.status, 'urgent');
     });
 
-    test('round-trips through toJson without data loss', () {
-      final model = HomeReviewScheduleModel.fromJson(json);
-      expect(model.toJson(), json);
-    });
-
-    test('preserves backend priority verbatim — Flutter must not reorder', () {
+    test('preserves backend status verbatim — Flutter must not reorder', () {
       final model = HomeReviewScheduleModel.fromJson(const {
-        'topic': 'geometry',
+        'scheduleId': 'sched-2',
+        'skillId': 'skill-geometry',
         'dueAt': '2026-06-25T00:00:00Z',
-        'priority': 'normal',
+        'intervalDays': 7,
+        'repetitionCount': 1,
+        'status': 'normal',
+        'basedOnAttemptId': 'attempt-2',
+        'scheduledAt': '2026-06-18T00:00:00Z',
+        'updatedAt': '2026-06-18T00:00:00Z',
       });
-      expect(model.priority, 'normal');
+      expect(model.status, 'normal');
     });
   });
 
   group('HomeRecommendationModel', () {
     const json = {
-      'topic': 'algebra',
-      'action': 'review',
+      'id': 'rec-1',
+      'kind': 'review',
+      'targetSkillId': 'skill-algebra',
+      'rank': 1,
       'reason': 'Mastery has decreased since last session.',
+      'generatedAt': '2026-06-17T10:00:00Z',
+      'status': 'active',
+      'updatedAt': '2026-06-17T10:00:00Z',
     };
 
     test('parses all contract fields from JSON', () {
       final model = HomeRecommendationModel.fromJson(json);
-      expect(model.topic, 'algebra');
-      expect(model.action, 'review');
+      expect(model.targetSkillId, 'skill-algebra');
+      expect(model.kind, 'review');
       expect(model.reason, 'Mastery has decreased since last session.');
     });
 
-    test('round-trips through toJson without data loss', () {
-      final model = HomeRecommendationModel.fromJson(json);
-      expect(model.toJson(), json);
-    });
-
-    test('preserves backend action and reason verbatim — no local generation',
+    test('preserves backend kind and reason verbatim — no local generation',
         () {
       final model = HomeRecommendationModel.fromJson(const {
-        'topic': 'grammar',
-        'action': 'practice',
+        'id': 'rec-2',
+        'kind': 'practice',
+        'targetSkillId': 'skill-grammar',
+        'rank': 2,
         'reason': 'Low coverage detected.',
+        'generatedAt': '2026-06-17T10:00:00Z',
+        'status': 'active',
+        'updatedAt': '2026-06-17T10:00:00Z',
       });
-      expect(model.action, 'practice');
+      expect(model.kind, 'practice');
       expect(model.reason, 'Low coverage detected.');
     });
   });

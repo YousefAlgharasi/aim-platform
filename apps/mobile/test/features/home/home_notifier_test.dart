@@ -21,33 +21,52 @@ class _FakeHomeRepository implements HomeRepository {
 
   static const _skillStates = [
     HomeSkillStateModel(
-      topic: 'grammar',
-      band: 'Proficient',
-      masteryLevel: 'intermediate',
+      skillId: 'skill-grammar',
+      masteryScore: 0.6,
+      masteryConfidence: 0.8,
+      masteryTrend: 'improving',
+      lastAttemptId: 'attempt-1',
+      lastEvaluatedAt: '2026-06-17T00:00:00Z',
+      updatedAt: '2026-06-18T00:00:00Z',
     ),
   ];
 
   static const _weaknesses = [
     HomeWeaknessRecordModel(
-      topic: 'reading',
+      weaknessId: 'weakness-reading',
+      skillId: 'skill-reading',
       severity: 'high',
-      lastUpdated: '2026-06-18T00:00:00Z',
+      status: 'open',
+      triggerAttemptIds: ['attempt-2'],
+      detectedAt: '2026-06-17T00:00:00Z',
+      updatedAt: '2026-06-18T00:00:00Z',
     ),
   ];
 
   static const _schedules = [
     HomeReviewScheduleModel(
-      topic: 'vocabulary',
+      scheduleId: 'schedule-vocabulary',
+      skillId: 'skill-vocabulary',
       dueAt: '2026-06-19T08:00:00Z',
-      priority: 'medium',
+      intervalDays: 3,
+      repetitionCount: 1,
+      status: 'pending',
+      basedOnAttemptId: 'attempt-3',
+      scheduledAt: '2026-06-16T08:00:00Z',
+      updatedAt: '2026-06-18T00:00:00Z',
     ),
   ];
 
   static const _recommendations = [
     HomeRecommendationModel(
-      topic: 'grammar',
-      action: 'practice',
+      id: 'rec-grammar',
+      kind: 'practice',
+      targetSkillId: 'skill-grammar',
+      rank: 1,
       reason: 'Two missed sessions',
+      generatedAt: '2026-06-18T00:00:00Z',
+      status: 'active',
+      updatedAt: '2026-06-18T00:00:00Z',
     ),
   ];
 
@@ -126,10 +145,10 @@ void main() {
       expect(state, isA<AppAsyncSuccess<HomeData>>());
       final data = (state as AppAsyncSuccess<HomeData>).data;
       expect(data.skillStates.length, 1);
-      expect(data.skillStates.first.band, 'Proficient');
+      expect(data.skillStates.first.masteryTrend, 'improving');
       expect(data.weaknessRecords.first.severity, 'high');
-      expect(data.reviewSchedules.first.priority, 'medium');
-      expect(data.recommendations.first.action, 'practice');
+      expect(data.reviewSchedules.first.status, 'pending');
+      expect(data.recommendations.first.kind, 'practice');
     });
 
     test('load → failure on repository error', () async {
@@ -220,7 +239,7 @@ void main() {
           (c.read(homeProvider) as AppAsyncSuccess<HomeData>).data;
 
       // These backend-authoritative values must reach HomeData unchanged.
-      expect(data.skillStates.first.masteryLevel, 'intermediate');
+      expect(data.skillStates.first.masteryScore, 0.6);
       expect(data.recommendations.first.reason, 'Two missed sessions');
     });
   });

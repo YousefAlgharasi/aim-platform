@@ -45,30 +45,49 @@ Widget _wrap(
 HomeData _populated() => const HomeData(
       skillStates: [
         HomeSkillStateModel(
-          topic: 'Algebra',
-          band: 'Developing',
-          masteryLevel: '42%',
+          skillId: 'skill-algebra',
+          masteryScore: 0.42,
+          masteryConfidence: 0.7,
+          masteryTrend: 'improving',
+          lastAttemptId: 'attempt-1',
+          lastEvaluatedAt: '2025-05-30T00:00:00Z',
+          updatedAt: '2025-06-01T00:00:00Z',
         ),
       ],
       weaknessRecords: [
         HomeWeaknessRecordModel(
-          topic: 'Fractions',
+          weaknessId: 'weakness-fractions',
+          skillId: 'skill-fractions',
           severity: 'high',
-          lastUpdated: '2025-06-01T00:00:00Z',
+          status: 'open',
+          triggerAttemptIds: ['attempt-2'],
+          detectedAt: '2025-05-28T00:00:00Z',
+          updatedAt: '2025-06-01T00:00:00Z',
         ),
       ],
       reviewSchedules: [
         HomeReviewScheduleModel(
-          topic: 'Geometry',
+          scheduleId: 'schedule-geometry',
+          skillId: 'skill-geometry',
           dueAt: '2025-06-10T09:00:00Z',
-          priority: 'medium',
+          intervalDays: 5,
+          repetitionCount: 2,
+          status: 'pending',
+          basedOnAttemptId: 'attempt-3',
+          scheduledAt: '2025-06-05T09:00:00Z',
+          updatedAt: '2025-06-05T09:00:00Z',
         ),
       ],
       recommendations: [
         HomeRecommendationModel(
-          topic: 'Algebra',
-          action: 'Practice factoring',
+          id: 'rec-algebra',
+          kind: 'practice',
+          targetSkillId: 'skill-algebra',
+          rank: 1,
           reason: 'Backend-identified weakness in factoring.',
+          generatedAt: '2025-06-01T00:00:00Z',
+          status: 'active',
+          updatedAt: '2025-06-01T00:00:00Z',
         ),
       ],
     );
