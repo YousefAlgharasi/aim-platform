@@ -9,7 +9,9 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
-import { BillingSuperAdminGuard } from './billing-super-admin.guard';
+import { RoleGuard } from '../../auth/authorization/role.guard';
+import { RequireRoles } from '../../auth/authorization/required-roles.decorator';
+import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { ProductPriceService } from './product-price.service';
 import { SubscriptionService } from './subscription.service';
 import { InvoiceService } from './invoice.service';
@@ -18,7 +20,8 @@ import { CouponService } from './coupon.service';
 
 @ApiTags('Super Admin Billing')
 @Controller('admin/billing/manage')
-@UseGuards(SupabaseJwtAuthGuard, BillingSuperAdminGuard)
+@UseGuards(SupabaseJwtAuthGuard, RoleGuard)
+@RequireRoles(AuthorizedRole.SUPER_ADMIN)
 @ApiBearerAuth()
 export class SuperAdminBillingController {
   constructor(
