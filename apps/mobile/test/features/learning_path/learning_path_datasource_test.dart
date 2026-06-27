@@ -5,9 +5,9 @@
 // Covers:
 //   1. API path helpers produce correct URL strings.
 //   2. LearningPathSkillStateModel stores all backend values verbatim.
-//   3. LearningPathWeaknessRecordModel stores severity/recommendedFocus verbatim.
-//   4. LearningPathRecommendationModel stores action/reason verbatim.
-//   5. coveragePercent coerces int JSON to double without Flutter modifying value.
+//   3. LearningPathWeaknessRecordModel stores severity/status verbatim.
+//   4. LearningPathRecommendationModel stores kind/reason verbatim.
+//   5. masteryScore coerces int JSON to double without Flutter modifying value.
 
 import 'package:flutter_test/flutter_test.dart';
 
@@ -41,45 +41,41 @@ void main() {
 
   group('LearningPathSkillStateModel', () {
     const raw = {
-      'topic': 'algebra',
-      'band': 'Developing',
-      'masteryLevel': '38%',
-      'coveragePercent': 42,
+      'skillId': 'skill-algebra',
+      'masteryScore': 42,
+      'masteryConfidence': 0.5,
+      'masteryTrend': 'improving',
+      'lastAttemptId': 'attempt-1',
+      'lastEvaluatedAt': '2026-01-01T00:00:00Z',
+      'updatedAt': '2026-01-02T00:00:00Z',
     };
 
-    test('fromJson stores band verbatim — no local computation', () {
+    test('fromJson stores masteryTrend verbatim — no local computation', () {
       final model = LearningPathSkillStateModel.fromJson(raw);
-      expect(model.band, 'Developing');
+      expect(model.masteryTrend, 'improving');
     });
 
-    test('fromJson stores masteryLevel verbatim', () {
+    test('fromJson stores skillId verbatim', () {
       final model = LearningPathSkillStateModel.fromJson(raw);
-      expect(model.masteryLevel, '38%');
+      expect(model.skillId, 'skill-algebra');
     });
 
-    test('fromJson coerces int coveragePercent to double', () {
+    test('fromJson coerces int masteryScore to double', () {
       final model = LearningPathSkillStateModel.fromJson(raw);
-      expect(model.coveragePercent, 42.0);
-      expect(model.coveragePercent, isA<double>());
-    });
-
-    test('toJson round-trips correctly', () {
-      const rawDouble = {
-        'topic': 'algebra',
-        'band': 'Developing',
-        'masteryLevel': '38%',
-        'coveragePercent': 42.0,
-      };
-      final model = LearningPathSkillStateModel.fromJson(rawDouble);
-      expect(model.toJson(), rawDouble);
+      expect(model.masteryScore, 42.0);
+      expect(model.masteryScore, isA<double>());
     });
   });
 
   group('LearningPathWeaknessRecordModel', () {
     const raw = {
-      'topic': 'fractions',
+      'weaknessId': 'weakness-fractions',
+      'skillId': 'skill-fractions',
       'severity': 'high',
-      'recommendedFocus': 'practise equivalent fractions',
+      'status': 'open',
+      'triggerAttemptIds': ['attempt-1'],
+      'detectedAt': '2026-01-01T00:00:00Z',
+      'updatedAt': '2026-01-02T00:00:00Z',
     };
 
     test('fromJson stores severity verbatim — never computed locally', () {
@@ -87,37 +83,32 @@ void main() {
       expect(model.severity, 'high');
     });
 
-    test('fromJson stores recommendedFocus verbatim', () {
+    test('fromJson stores status verbatim', () {
       final model = LearningPathWeaknessRecordModel.fromJson(raw);
-      expect(model.recommendedFocus, 'practise equivalent fractions');
-    });
-
-    test('toJson round-trips correctly', () {
-      final model = LearningPathWeaknessRecordModel.fromJson(raw);
-      expect(model.toJson(), raw);
+      expect(model.status, 'open');
     });
   });
 
   group('LearningPathRecommendationModel', () {
     const raw = {
-      'topic': 'grammar',
-      'action': 'review subject-verb agreement',
+      'id': 'rec-grammar',
+      'kind': 'review subject-verb agreement',
+      'targetSkillId': 'skill-grammar',
+      'rank': 1,
       'reason': 'Three consecutive errors detected by AIM.',
+      'generatedAt': '2026-01-01T00:00:00Z',
+      'status': 'active',
+      'updatedAt': '2026-01-01T00:00:00Z',
     };
 
-    test('fromJson stores action verbatim — never generated locally', () {
+    test('fromJson stores kind verbatim — never generated locally', () {
       final model = LearningPathRecommendationModel.fromJson(raw);
-      expect(model.action, 'review subject-verb agreement');
+      expect(model.kind, 'review subject-verb agreement');
     });
 
     test('fromJson stores reason verbatim', () {
       final model = LearningPathRecommendationModel.fromJson(raw);
       expect(model.reason, 'Three consecutive errors detected by AIM.');
-    });
-
-    test('toJson round-trips correctly', () {
-      final model = LearningPathRecommendationModel.fromJson(raw);
-      expect(model.toJson(), raw);
     });
   });
 

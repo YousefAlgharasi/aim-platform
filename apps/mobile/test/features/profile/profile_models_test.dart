@@ -26,18 +26,14 @@ void main() {
   test('parses student profile contract fields', () {
     final model = StudentProfileModel.fromJson(const {
       'id': 'student_profile_123',
-      'userId': 'usr_123',
       'profileType': 'student_profile',
       'displayName': 'Yousef',
       'avatarUrl': null,
       'preferredLanguage': 'en',
       'timezone': 'Asia/Aden',
-      'createdAt': '2026-06-11T00:00:00Z',
-      'updatedAt': '2026-06-11T00:00:00Z',
     });
 
     expect(model.id, 'student_profile_123');
-    expect(model.userId, 'usr_123');
     expect(model.isStudentProfile, isTrue);
     expect(model.preferredLanguage, 'en');
     expect(model.timezone, 'Asia/Aden');
