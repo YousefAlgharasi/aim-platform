@@ -15,6 +15,7 @@ import { UsersModule } from '../users/users.module';
 import { PlacementController } from './placement.controller';
 import { PlacementAdminController } from './placement-admin.controller';
 import { PlacementAdminTestReadService } from './placement-admin-test-read.service';
+import { PlacementAdminWriteService } from './placement-admin-write.service';
 import { PlacementQuestionDeliveryService } from './placement-question-delivery.service';
 import { PlacementAttemptService } from './placement-attempt.service';
 import { PlacementAnswerSubmitService } from './placement-answer-submit.service';
@@ -36,6 +37,7 @@ import { PlacementTestReadService } from './placement-test-read.service';
   providers: [
     PlacementTestReadService,
     PlacementAdminTestReadService,
+    PlacementAdminWriteService,
     PlacementSectionsService,
     PlacementQuestionDeliveryService,
     PlacementAttemptService,
