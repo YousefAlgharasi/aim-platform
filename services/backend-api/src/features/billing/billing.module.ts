@@ -25,7 +25,6 @@ import { RefundController } from './refund.controller';
 import { SubscriptionController } from './subscription.controller';
 import { WebhookController } from './webhook.controller';
 import { SuperAdminBillingController } from './super-admin-billing.controller';
-import { BillingSuperAdminGuard } from './billing-super-admin.guard';
 
 @Module({
   imports: [DatabaseModule, AuthModule, AnalyticsModule],
@@ -57,7 +56,6 @@ import { BillingSuperAdminGuard } from './billing-super-admin.guard';
     BillingAuditService,
     BillingIdempotencyService,
     CouponService,
-    BillingSuperAdminGuard,
   ],
   exports: [
     BillingRepository,
