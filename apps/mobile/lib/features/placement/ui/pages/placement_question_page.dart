@@ -107,10 +107,12 @@ class _PlacementQuestionPageState
       await ref
           .read(placementQuestionProvider.notifier)
           .submitCurrentAnswer(token);
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
         setState(() {
-          _submitError = 'Failed to submit answer. Please try again.';
+          _submitError = e is Exception
+              ? 'Failed to submit answer: ${e.toString().replaceFirst('Exception: ', '')}'
+              : 'Failed to submit answer. Please try again.';
         });
       }
     }
@@ -182,7 +184,7 @@ class _QuestionBody extends StatelessWidget {
               child: _AnswerInput(
                 key: ValueKey(question.id),
                 questionType: question.type,
-                options: question.options,
+                questionOptions: question.options,
                 selectedAnswer: state.selectedAnswer,
                 onSelect: onSelectAnswer,
                 isSubmitting: state.isSubmitting,
@@ -220,7 +222,7 @@ class _QuestionBody extends StatelessWidget {
 class _AnswerInput extends StatelessWidget {
   const _AnswerInput({
     required this.questionType,
-    required this.options,
+    required this.questionOptions,
     required this.selectedAnswer,
     required this.onSelect,
     required this.isSubmitting,
@@ -228,7 +230,7 @@ class _AnswerInput extends StatelessWidget {
   });
 
   final String questionType;
-  final List<PlacementOptionModel> options;
+  final List<PlacementOptionModel> questionOptions;
   final String? selectedAnswer;
   final ValueChanged<String> onSelect;
   final bool isSubmitting;
@@ -239,7 +241,7 @@ class _AnswerInput extends StatelessWidget {
 
     return switch (questionType) {
       'multiple_choice' || 'listening_choice' => _MultipleChoiceInput(
-          options: options,
+          questionOptions: questionOptions,
           selectedAnswer: selectedAnswer,
           onSelect: onSelect,
           isSubmitting: isSubmitting,
@@ -268,32 +270,45 @@ class _AnswerInput extends StatelessWidget {
 
 class _MultipleChoiceInput extends StatelessWidget {
   const _MultipleChoiceInput({
-    required this.options,
+    required this.questionOptions,
     required this.selectedAnswer,
     required this.onSelect,
     required this.isSubmitting,
   });
 
-  final List<PlacementOptionModel> options;
+  final List<PlacementOptionModel> questionOptions;
   final String? selectedAnswer;
   final ValueChanged<String> onSelect;
   final bool isSubmitting;
 
+  static const _fallbackOptions = ['A', 'B', 'C', 'D'];
+
   @override
   Widget build(BuildContext context) {
+    final hasOptionText = questionOptions.isNotEmpty;
+    final options = hasOptionText
+        ? questionOptions.map((o) => o.id).toList()
+        : _fallbackOptions;
+
     return Column(
       children: [
-        for (final (i, option) in options.indexed) ...[
+        for (var i = 0; i < options.length; i++) ...[
           AIMAnswerOption(
-            optionKey: option.id,
-            state: selectedAnswer == option.id
+            optionKey: options[i],
+            state: selectedAnswer == options[i]
                 ? AIMAnswerOptionState.selected
                 : AIMAnswerOptionState.defaultState,
-            onTap: isSubmitting ? null : () => onSelect(option.id),
-            semanticLabel: 'Option ${option.id}: ${option.text}',
-            child: Text(option.text),
+            onTap: isSubmitting ? null : () => onSelect(options[i]),
+            semanticLabel: hasOptionText
+                ? 'Option ${options[i]}: ${questionOptions[i].text}'
+                : 'Option ${options[i]}',
+            child: Text(
+              hasOptionText
+                  ? '${options[i]}) ${questionOptions[i].text}'
+                  : options[i],
+            ),
           ),
-          if (i != options.length - 1)
+          if (i < options.length - 1)
             const SizedBox(height: AimSpacing.componentGap),
         ],
       ],
