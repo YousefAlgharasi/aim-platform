@@ -35,48 +35,67 @@ void main() {
   });
 
   group('HomeSkillStateModel security', () {
-    test('band and masteryLevel stored verbatim from backend — no local computation', () {
+    test('masteryScore and masteryTrend stored verbatim from backend — no local computation', () {
       final model = HomeSkillStateModel.fromJson(const {
-        'topic': 'grammar',
-        'band': 'Proficient',
-        'masteryLevel': 'intermediate',
+        'skillId': 'skill-grammar',
+        'masteryScore': 0.62,
+        'masteryConfidence': 0.8,
+        'masteryTrend': 'improving',
+        'lastAttemptId': 'attempt-1',
+        'lastEvaluatedAt': '2026-06-18T00:00:00Z',
+        'updatedAt': '2026-06-18T00:00:00Z',
       });
-      expect(model.band, 'Proficient');
-      expect(model.masteryLevel, 'intermediate');
+      expect(model.masteryScore, 0.62);
+      expect(model.masteryTrend, 'improving');
     });
   });
 
   group('HomeWeaknessRecordModel security', () {
     test('severity stored verbatim from backend', () {
       final model = HomeWeaknessRecordModel.fromJson(const {
-        'topic': 'reading',
+        'weaknessId': 'weak-1',
+        'skillId': 'skill-reading',
         'severity': 'high',
-        'lastUpdated': '2026-06-18T00:00:00Z',
+        'status': 'open',
+        'triggerAttemptIds': ['attempt-1'],
+        'detectedAt': '2026-06-18T00:00:00Z',
+        'updatedAt': '2026-06-18T00:00:00Z',
       });
       expect(model.severity, 'high');
     });
   });
 
   group('HomeRecommendationModel security', () {
-    test('action and reason stored verbatim from backend — never generated locally', () {
+    test('kind and reason stored verbatim from backend — never generated locally', () {
       final model = HomeRecommendationModel.fromJson(const {
-        'topic': 'vocabulary',
-        'action': 'review',
+        'id': 'rec-1',
+        'kind': 'review',
+        'targetSkillId': 'skill-vocabulary',
+        'rank': 1,
         'reason': 'Three missed reviews',
+        'generatedAt': '2026-06-18T00:00:00Z',
+        'status': 'active',
+        'updatedAt': '2026-06-18T00:00:00Z',
       });
-      expect(model.action, 'review');
+      expect(model.kind, 'review');
       expect(model.reason, 'Three missed reviews');
     });
   });
 
   group('HomeReviewScheduleModel', () {
-    test('priority and dueAt stored verbatim', () {
+    test('status and dueAt stored verbatim', () {
       final model = HomeReviewScheduleModel.fromJson(const {
-        'topic': 'grammar',
+        'scheduleId': 'sched-1',
+        'skillId': 'skill-grammar',
         'dueAt': '2026-06-19T08:00:00Z',
-        'priority': 'high',
+        'intervalDays': 3,
+        'repetitionCount': 1,
+        'status': 'high',
+        'basedOnAttemptId': 'attempt-1',
+        'scheduledAt': '2026-06-16T08:00:00Z',
+        'updatedAt': '2026-06-16T08:00:00Z',
       });
-      expect(model.priority, 'high');
+      expect(model.status, 'high');
       expect(model.dueAt, '2026-06-19T08:00:00Z');
     });
   });
