@@ -10,7 +10,11 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../../auth/auth.module';
 import { DatabaseModule } from '../../database/database.module';
+import { RolesModule } from '../roles/roles.module';
+import { UsersModule } from '../users/users.module';
 import { PlacementController } from './placement.controller';
+import { PlacementAdminController } from './placement-admin.controller';
+import { PlacementAdminTestReadService } from './placement-admin-test-read.service';
 import { PlacementQuestionDeliveryService } from './placement-question-delivery.service';
 import { PlacementAttemptService } from './placement-attempt.service';
 import { PlacementAnswerSubmitService } from './placement-answer-submit.service';
@@ -27,10 +31,11 @@ import { PlacementSectionsService } from './placement-sections.service';
 import { PlacementTestReadService } from './placement-test-read.service';
 
 @Module({
-  imports: [DatabaseModule, AuthModule],
-  controllers: [PlacementController],
+  imports: [DatabaseModule, AuthModule, RolesModule, UsersModule],
+  controllers: [PlacementController, PlacementAdminController],
   providers: [
     PlacementTestReadService,
+    PlacementAdminTestReadService,
     PlacementSectionsService,
     PlacementQuestionDeliveryService,
     PlacementAttemptService,

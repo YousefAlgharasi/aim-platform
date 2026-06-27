@@ -21,6 +21,11 @@ export type AdminUserListItem = {
   readonly status: AdminUserStatus;
   readonly createdAt: string;
   readonly updatedAt: string;
+  // Backend-computed lesson progress — null for non-student users.
+  readonly completedLessons: number | null;
+  readonly totalLessons: number | null;
+  readonly completionPct: number | null;
+  readonly lastActiveAt: string | null;
 };
 
 export type AdminUserListData = {
@@ -186,6 +191,10 @@ function decodeAdminUserListItem(value: unknown): AdminUserListItem {
     status: isAdminUserStatus(value.status) ? value.status : 'active',
     createdAt: typeof value.createdAt === 'string' ? value.createdAt : '',
     updatedAt: typeof value.updatedAt === 'string' ? value.updatedAt : '',
+    completedLessons: typeof value.completedLessons === 'number' ? value.completedLessons : null,
+    totalLessons: typeof value.totalLessons === 'number' ? value.totalLessons : null,
+    completionPct: typeof value.completionPct === 'number' ? value.completionPct : null,
+    lastActiveAt: typeof value.lastActiveAt === 'string' ? value.lastActiveAt : null,
   };
 }
 

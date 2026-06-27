@@ -1,14 +1,3 @@
-// Phase 3 — P3-053
-// Admin levels page.
-//
-// Scope: Curriculum & Content System — levels only.
-//
-// Security:
-// - Token is read from the HTTP-only cookie server-side; never exposed to the browser.
-// - Auth state enforcement is handled by the parent layout (admin/layout.tsx).
-// - This page renders data from backend only — it makes no authorization decisions.
-// - Status transitions (publish, archive) are intentionally absent; backend controls those.
-
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 
@@ -17,7 +6,6 @@ import {
   fetchAdminLevels,
   createAdminLevel,
   updateAdminLevel,
-  type AdminLevelSummary,
   type AdminLevelListData,
 } from '../../../../lib/api/admin-levels-api';
 import {
@@ -35,22 +23,15 @@ type Props = {
 };
 
 export default async function AdminLevelsPage({ searchParams }: Props) {
-  const {
-    courseId,
-    page: pageParam,
-    limit: limitParam,
-  } = await searchParams;
-
+  const { courseId, page: pageParam, limit: limitParam } = await searchParams;
   const page = parseInt(pageParam ?? String(DEFAULT_PAGE), 10) || DEFAULT_PAGE;
   const limit = parseInt(limitParam ?? String(DEFAULT_LIMIT), 10) || DEFAULT_LIMIT;
 
   const cookieStore = await cookies();
   const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
 
-  // Always fetch the courses list for the course selector (up to 100).
   let courses: AdminCourseSummary[] = [];
   let coursesError: string | null = null;
-
   try {
     const coursesData = await fetchAdminCourses(token, 1, 100);
     courses = coursesData.courses;
@@ -61,7 +42,6 @@ export default async function AdminLevelsPage({ searchParams }: Props) {
         : 'Failed to load courses. Check backend connectivity.';
   }
 
-  // Fetch levels only when a courseId is selected.
   let data: AdminLevelListData | null = null;
   let fetchError: string | null = null;
   const selectedCourse = courseId ? courses.find((c) => c.id === courseId) : undefined;
@@ -93,11 +73,11 @@ export default async function AdminLevelsPage({ searchParams }: Props) {
       await createAdminLevel(token, courseId, formData);
       return {};
     } catch (err) {
-      const msg =
-        err instanceof AdminApiClientError
+      return {
+        error: err instanceof AdminApiClientError
           ? `Backend error ${err.status}: ${err.message}`
-          : 'Failed to create level.';
-      return { error: msg };
+          : 'Failed to create level.',
+      };
     }
   }
 
@@ -118,108 +98,113 @@ export default async function AdminLevelsPage({ searchParams }: Props) {
       await updateAdminLevel(token, courseId, id, formData);
       return {};
     } catch (err) {
-      const msg =
-        err instanceof AdminApiClientError
+      return {
+        error: err instanceof AdminApiClientError
           ? `Backend error ${err.status}: ${err.message}`
-          : 'Failed to update level.';
-      return { error: msg };
+          : 'Failed to update level.',
+      };
     }
   }
 
   return (
-    <section className="admin-curriculum-page">
-      <nav className="admin-breadcrumb" aria-label="Breadcrumb">
-        <Link href="/admin/content">Content</Link>
-        <span aria-hidden="true">/</span>
-        <span>Levels</span>
+    <section className="cp-page">
+      <nav className="cp-breadcrumb">
+        <Link href="/admin/content" className="cp-breadcrumb-link">Content</Link>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 5l7 7-7 7"/></svg>
+        <span className="cp-breadcrumb-current">Levels</span>
       </nav>
 
-      <header className="admin-page-header">
-        <p className="eyebrow">Admin — Curriculum</p>
-        <h1>Levels</h1>
-        {data && (
-          <p className="admin-page-meta">
-            {data.total} level{data.total !== 1 ? 's' : ''} in{' '}
-            {selectedCourse?.title ?? courseId}
-          </p>
-        )}
-      </header>
-
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Level records, status, and ordering are
-        controlled by backend curriculum APIs. Publish and archive actions require
-        backend permission checks not exposed here.
+      <div className="cp-header">
+        <div>
+          <p className="cp-eyebrow">Curriculum</p>
+          <h1 className="cp-title">Levels</h1>
+          {data && (
+            <p className="cp-subtitle">
+              {data.total} level{data.total !== 1 ? 's' : ''} in {selectedCourse?.title ?? 'selected course'}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Course selector */}
-      <div className="admin-course-selector">
-        <p className="admin-course-selector-label">Select a course to view its levels:</p>
-
-        {coursesError ? (
-          <p className="admin-error-banner" role="alert">
-            {coursesError}
-          </p>
-        ) : courses.length === 0 ? (
-          <p className="courses-empty">
-            No courses found. Create a course first via{' '}
-            <Link href="/admin/content/courses">Courses</Link>.
-          </p>
-        ) : (
-          <div className="admin-course-selector-links">
+      <div className="cp-selector">
+        <p className="cp-selector-label">Select a course</p>
+        {coursesError && <div className="admin-error-banner" role="alert">{coursesError}</div>}
+        {!coursesError && courses.length === 0 && (
+          <p className="cp-empty-hint">No courses found. <Link href="/admin/content/courses" className="cp-link">Create one</Link>.</p>
+        )}
+        {!coursesError && courses.length > 0 && (
+          <div className="cp-selector-grid">
             {courses.map((course) => (
               <a
                 key={course.id}
                 href={`?courseId=${encodeURIComponent(course.id)}`}
-                className={`admin-course-selector-item${
-                  courseId === course.id ? ' active' : ''
-                }`}
+                className={`cp-selector-card${courseId === course.id ? ' cp-selector-card--active' : ''}`}
               >
-                <span className="selector-item-title">{course.title}</span>
-                <span
-                  className={`status-badge ${
-                    course.status === 'published'
-                      ? 'status-published'
-                      : course.status === 'archived'
-                      ? 'status-archived'
-                      : 'status-draft'
-                  }`}
-                >
-                  {course.status}
-                </span>
+                <span className="cp-selector-card-title">{course.title}</span>
+                <span className={`cp-dot cp-dot--${course.status === 'published' ? 'published' : course.status === 'archived' ? 'archived' : 'draft'}`} />
               </a>
             ))}
           </div>
         )}
       </div>
 
-      {/* Levels table — rendered only when a course is selected */}
-      {courseId && (
-        <>
-          {fetchError && (
-            <p className="admin-error-banner" role="alert">
-              {fetchError}
-            </p>
-          )}
+      {/* Levels table */}
+      {courseId && fetchError && <div className="admin-error-banner" role="alert">{fetchError}</div>}
 
-          {data && (
-            <LevelsList
-              levels={data.levels}
-              total={data.total}
-              page={data.page}
-              totalPages={totalPages}
-              courseId={courseId}
-              onCreateLevel={handleCreate}
-              onUpdateLevel={handleUpdate}
-            />
-          )}
-        </>
+      {courseId && data && (
+        <LevelsList
+          levels={data.levels}
+          total={data.total}
+          page={data.page}
+          totalPages={totalPages}
+          courseId={courseId}
+          onCreateLevel={handleCreate}
+          onUpdateLevel={handleUpdate}
+        />
       )}
 
       {!courseId && !coursesError && courses.length > 0 && (
-        <p className="courses-empty">
-          Select a course above to view and manage its levels.
-        </p>
+        <div className="cp-empty">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6.429 9.75L2.25 12l4.179 2.25m0-4.5l5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L12 12.75 6.429 9.75m11.142 0l4.179 2.25L12 17.25 2.25 12l4.179-2.25"/></svg>
+          <p className="cp-empty-title">Select a course</p>
+          <p className="cp-empty-desc">Choose a course above to view and manage its levels.</p>
+        </div>
       )}
+
+      <style>{`
+        .cp-page { display: flex; flex-direction: column; gap: 20px; }
+        .cp-breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); }
+        .cp-breadcrumb-link { color: var(--text-link); text-decoration: none; }
+        .cp-breadcrumb-link:hover { text-decoration: underline; }
+        .cp-breadcrumb-current { color: var(--text-secondary); font-weight: 500; }
+        .cp-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .cp-eyebrow { margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary-500); }
+        .cp-title { margin: 0; font-size: 26px; font-weight: 700; color: var(--text-primary); }
+        .cp-subtitle { margin: 0; font-size: 14px; color: var(--text-secondary); }
+        .cp-selector { display: flex; flex-direction: column; gap: 8px; }
+        .cp-selector-label { margin: 0; font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+        .cp-selector-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+        .cp-selector-card {
+          display: inline-flex; align-items: center; gap: 8px;
+          padding: 8px 14px; border: 1px solid var(--border); border-radius: var(--radius-md);
+          background: var(--surface); text-decoration: none; color: var(--text-primary);
+          font-size: 13px; transition: border-color 0.15s, background 0.15s;
+        }
+        .cp-selector-card:hover { border-color: var(--color-primary-500); background: var(--state-hover, #f5f5f5); }
+        .cp-selector-card--active { border-color: var(--color-primary-500); background: color-mix(in srgb, var(--color-primary-500) 8%, transparent); }
+        .cp-selector-card-title { font-weight: 500; }
+        .cp-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .cp-dot--draft { background: var(--text-muted); }
+        .cp-dot--published { background: var(--color-success-500); }
+        .cp-dot--archived { background: var(--text-muted); opacity: 0.5; }
+        .cp-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 60px 20px; text-align: center; }
+        .cp-empty-title { margin: 0; font-size: 16px; font-weight: 600; color: var(--text-primary); }
+        .cp-empty-desc { margin: 0; font-size: 13px; color: var(--text-muted); }
+        .cp-empty-hint { margin: 0; font-size: 13px; color: var(--text-muted); }
+        .cp-link { color: var(--text-link); text-decoration: none; }
+        .cp-link:hover { text-decoration: underline; }
+      `}</style>
     </section>
   );
 }
