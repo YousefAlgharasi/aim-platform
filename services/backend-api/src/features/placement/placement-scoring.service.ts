@@ -31,6 +31,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import { PlacementScoringConfig } from './placement-scoring.config';
 import {
   PlacementScoringResult,
   SectionScore,
@@ -42,36 +43,18 @@ import {
 // ---------------------------------------------------------------------------
 // Backend config constants — NOT stored in DB, NOT exposed via any API
 // (P4-031 §2, P4-031 §3, P4-031 §5, P4-032 §4.2)
+// Sourced from placement-scoring.config.ts (P19-002).
 // ---------------------------------------------------------------------------
 
-/** Section weights per P4-031 §2. Must sum to 1.0. */
-const SECTION_WEIGHTS: Record<string, number> = {
-  grammar: 0.30,
-  vocabulary: 0.30,
-  reading: 0.25,
-  listening: 0.15,
-};
-
-/** Section weakness thresholds per P4-031 §3. */
-const SECTION_WEAKNESS_THRESHOLDS: Record<string, number> = {
-  grammar: 0.60,
-  vocabulary: 0.60,
-  reading: 0.55,
-  listening: 0.55,
-};
-
-/** Skill signal thresholds per P4-032 §4.2. */
-const SIGNAL_STRONG_THRESHOLD = 0.75;
-const SIGNAL_DEVELOPING_THRESHOLD = 0.40;
-
-/** Level thresholds per P4-031 §5. Evaluated highest-first. */
-const LEVEL_THRESHOLDS: Array<{ min: number; level: PlacementScoringResult['estimatedLevel'] }> = [
-  { min: 0.85, level: 'advanced' },
-  { min: 0.70, level: 'upper_intermediate' },
-  { min: 0.55, level: 'intermediate' },
-  { min: 0.40, level: 'elementary' },
-  { min: 0.00, level: 'beginner' },
-];
+const SECTION_WEIGHTS = PlacementScoringConfig.sectionWeights;
+const SECTION_WEAKNESS_THRESHOLDS = PlacementScoringConfig.sectionWeaknessThresholds;
+const SIGNAL_STRONG_THRESHOLD = PlacementScoringConfig.signalThresholds.strong;
+const SIGNAL_DEVELOPING_THRESHOLD = PlacementScoringConfig.signalThresholds.developing;
+const LEVEL_THRESHOLDS: Array<{ min: number; level: PlacementScoringResult['estimatedLevel'] }> =
+  PlacementScoringConfig.levelThresholds.map(({ min, level }) => ({
+    min,
+    level: level as PlacementScoringResult['estimatedLevel'],
+  }));
 
 // ---------------------------------------------------------------------------
 // DB row types (internal)

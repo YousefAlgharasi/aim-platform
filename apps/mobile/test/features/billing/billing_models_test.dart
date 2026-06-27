@@ -111,14 +111,14 @@ void main() {
       final model = InvoiceModel.fromJson(const {
         'id': 'inv_001',
         'status': 'paid',
-        'totalAmount': 999,
+        'total': 999,
         'currency': 'usd',
         'createdAt': '2026-06-01T00:00:00Z',
       });
 
       expect(model.id, 'inv_001');
       expect(model.status, 'paid');
-      expect(model.totalAmount, 999);
+      expect(model.total, 999);
     });
 
     test('handles missing optional fields', () {
@@ -127,7 +127,6 @@ void main() {
         'status': 'pending',
       });
 
-      expect(model.subscriptionId, isNull);
       expect(model.checkoutUrl, isNull);
     });
   });

@@ -21,18 +21,21 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AppError } from '../../common/errors/app-error';
+import { PlacementErrorCode } from './placement-error-codes';
 import {
   PlacementAttemptRow,
   PlacementAttemptStartResponse,
   PlacementTestRow,
 } from './placement.types';
 import { PlacementAuditService } from './placement-audit.service';
+import { PlacementAnalyticsService } from './placement-analytics.service';
 
 @Injectable()
 export class PlacementAttemptService {
   constructor(
     private readonly db: DatabaseService,
     private readonly audit: PlacementAuditService,
+    private readonly analytics: PlacementAnalyticsService,
   ) {}
 
   /**
@@ -59,7 +62,7 @@ export class PlacementAttemptService {
 
     if (testResult.rowCount === 0) {
       throw new AppError({
-        code: 'NO_ACTIVE_TEST',
+        code: PlacementErrorCode.NO_ACTIVE_TEST,
         message: 'No placement test is currently published.',
         statusCode: HttpStatus.NOT_FOUND,
       });
@@ -68,14 +71,19 @@ export class PlacementAttemptService {
     const test = testResult.rows[0];
 
     // 2. Abandon any existing active/submitted attempts so the student can restart freely.
-    await this.db.query(
+    const abandonedResult = await this.db.query<{ id: string }>(
       `UPDATE placement_attempts
        SET status = 'abandoned', updated_at = now()
        WHERE student_id = $1
          AND placement_test_id = $2
-         AND status IN ('active', 'submitted')`,
+         AND status IN ('active', 'submitted')
+       RETURNING id`,
       [studentId, test.id],
     );
+
+    for (const abandoned of abandonedResult.rows) {
+      void this.analytics.recordAttemptAbandoned(studentId, abandoned.id, test.id);
+    }
 
     // 3. Insert a new attempt — backend sets all fields.
     const insertResult = await this.db.query<PlacementAttemptRow>(
@@ -89,6 +97,7 @@ export class PlacementAttemptService {
     const attempt = insertResult.rows[0];
 
     void this.audit.logAttemptStarted(studentId, attempt.id, test.id);
+    void this.analytics.recordAttemptStarted(studentId, attempt.id, test.id);
 
     // 4. Return student-safe fields only.
     return {

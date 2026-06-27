@@ -68,6 +68,13 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
   const ttsProviderApiKey = readRequiredString(env, 'TTS_PROVIDER_API_KEY', issues);
   const ttsProviderModel = readRequiredString(env, 'TTS_PROVIDER_MODEL', issues);
   const corsOriginsValue = readRequiredString(env, 'CORS_ORIGINS', issues);
+  // P19-006 — Placement retake cooldown, configurable per environment.
+  const placementRetakeCooldownHours = readOptionalPositiveInt(
+    env,
+    'PLACEMENT_RETAKE_COOLDOWN_HOURS',
+    24,
+    issues,
+  );
 
   const parsedNodeEnv = parseNodeEnv(nodeEnv, issues);
   const port = parsePort(portValue, issues);
@@ -113,6 +120,9 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
     },
     cors: {
       origins: corsOrigins,
+    },
+    placement: {
+      retakeCooldownHours: placementRetakeCooldownHours,
     },
   };
 }

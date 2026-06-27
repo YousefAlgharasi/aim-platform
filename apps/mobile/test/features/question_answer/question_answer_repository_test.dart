@@ -12,7 +12,7 @@
 //   8.  submitAnswer transitions to QAResultReceived on success.
 //   9.  submitAnswer transitions to QAError on failure.
 //  10.  reset returns notifier to QAIdle.
-//  11.  isCorrect in AttemptResult is backend-supplied — display only.
+//  11.  AttemptResult has no isCorrect field — security invariant.
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:aim_mobile/core/errors/app_exception.dart';
@@ -67,7 +67,9 @@ class _FakeAttemptDatasource implements AttemptRemoteDatasource {
       'answerId': 'ans-1',
       'attemptNumberForItem': 1,
       'isCorrect': true,
-      'submittedAt': '2025-06-01T10:00:10Z'
+      'submittedAt': '2025-06-01T10:00:10Z',
+      'aimPipelineTriggered': false,
+      'aimOutcome': 'deferred',
     });
   }
 }
@@ -111,7 +113,7 @@ void main() {
       final r = await _repo()
           .submitAttempt(bearerToken: 'tok', sessionId: 's', request: _req);
       expect(r.attemptId, 'att-1');
-      expect(r.isCorrect, isTrue);
+      expect(r.aimOutcome, 'deferred');
     });
     test('3. ApiClientException → AppException in getQuestion', () {
       expect(
@@ -172,14 +174,14 @@ void main() {
       expect(n.state.hasQuestion, isFalse);
       expect(n.state.submitStatus, QuestionSubmitStatus.idle);
     });
-    test('11. isCorrect is backend-supplied — display only', () async {
+    test('11. AttemptResult has no isCorrect field — security invariant', () async {
       final n = _notifier();
       await n.loadQuestion(
           bearerToken: 'tok', questionId: 'q-1', itemShownAt: _itemShownAt);
       n.selectOption('opt-2');
       await n.submitAnswer(bearerToken: 'tok', sessionId: 's');
       final result = n.state.attemptResult!;
-      expect(result.isCorrect, isTrue);
+      expect(result.aimOutcome, 'deferred');
     });
   });
 }

@@ -41,9 +41,8 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AppError } from '../../common/errors/app-error';
-
-/** Cooldown in hours after a completed attempt before a retake is allowed. */
-const RETAKE_COOLDOWN_HOURS = 24;
+import { PlacementErrorCode } from './placement-error-codes';
+import { BackendConfigService } from '../../config/backend-config.service';
 
 /** Statuses that block starting a new attempt. */
 const BLOCKING_STATUSES = ['active', 'submitted'] as const;
@@ -67,7 +66,10 @@ export interface RetakeEligibilityResult {
 export class PlacementRetakePolicyService {
   private readonly logger = new Logger(PlacementRetakePolicyService.name);
 
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly config: BackendConfigService,
+  ) {}
 
   /**
    * Check whether a student is eligible to start a new placement attempt.
@@ -93,7 +95,7 @@ export class PlacementRetakePolicyService {
           : '';
 
       throw new AppError({
-        code: eligibility.errorCode ?? 'PLACEMENT_RETAKE_NOT_ALLOWED',
+        code: eligibility.errorCode ?? PlacementErrorCode.RETAKE_COOLDOWN_ACTIVE,
         message: `You are not eligible to start a new placement attempt.${detail}`,
         statusCode: HttpStatus.CONFLICT,
       });
@@ -142,8 +144,8 @@ export class PlacementRetakePolicyService {
         allowed: false,
         errorCode:
           latest.status === 'active'
-            ? 'ACTIVE_ATTEMPT_EXISTS'
-            : 'SUBMISSION_PENDING',
+            ? PlacementErrorCode.ACTIVE_ATTEMPT_EXISTS
+            : PlacementErrorCode.SUBMISSION_PENDING,
       };
     }
 
@@ -154,7 +156,8 @@ export class PlacementRetakePolicyService {
     if (latest.status === 'completed' && latest.completed_at) {
       const completedAt = new Date(latest.completed_at);
       const cooldownEnd = new Date(
-        completedAt.getTime() + RETAKE_COOLDOWN_HOURS * 60 * 60 * 1000,
+        completedAt.getTime() +
+          this.config.placement.retakeCooldownHours * 60 * 60 * 1000,
       );
       const now = new Date();
 
@@ -165,7 +168,7 @@ export class PlacementRetakePolicyService {
         return {
           allowed: false,
           nextEligibleAt: cooldownEnd.toISOString(),
-          errorCode: 'PLACEMENT_RETAKE_NOT_ALLOWED',
+          errorCode: PlacementErrorCode.RETAKE_COOLDOWN_ACTIVE,
         };
       }
     }

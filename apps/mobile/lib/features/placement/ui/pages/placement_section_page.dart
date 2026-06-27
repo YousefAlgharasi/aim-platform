@@ -22,6 +22,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_provider.dart';
@@ -139,7 +140,7 @@ class _SectionBody extends StatelessWidget {
     final section = state.currentSection;
 
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(AimSpacing.space24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -148,46 +149,46 @@ class _SectionBody extends StatelessWidget {
             current: state.displayIndex,
             total: state.totalSections,
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: AimSpacing.space32),
 
           // Section header
           Text(
             'Section ${state.displayIndex} of ${state.totalSections}',
-            style: theme.textTheme.bodyMedium?.copyWith(
+            style: AimTextStyles.bodyMd.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AimSpacing.space8),
           Text(
             section.title,
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: AimTextStyles.h2.copyWith(color: theme.colorScheme.onSurface),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AimSpacing.space16),
 
           // Skill area badge
           _SkillBadge(skillCode: section.skillCode),
-          const SizedBox(height: 24),
+          const SizedBox(height: AimSpacing.space24),
 
           // Question count info
           Row(
             children: [
-              const Icon(Icons.quiz_outlined, size: 20),
-              const SizedBox(width: 8),
+              Icon(Icons.quiz_outlined, size: AimSizes.iconMd),
+              const SizedBox(width: AimSpacing.space8),
               Text(
                 '${section.totalQuestions} questions',
-                style: theme.textTheme.bodyLarge,
+                style: AimTextStyles.bodyLg.copyWith(
+                  color: theme.colorScheme.onSurface,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AimSpacing.space8),
 
           // Backend authority note — important for security compliance
           Text(
             'Your answers are submitted to the backend for evaluation. '
             'All scoring is performed by the server.',
-            style: theme.textTheme.bodySmall?.copyWith(
+            style: AimTextStyles.bodySm.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           ),
@@ -198,16 +199,16 @@ class _SectionBody extends StatelessWidget {
           FilledButton(
             onPressed: onStartSection,
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              padding: const EdgeInsets.symmetric(vertical: AimSpacing.space4),
               child: Text(
                 state.isLastSection
                     ? 'Start Final Section'
                     : 'Start Section',
-                style: const TextStyle(fontSize: 16),
+                style: AimTextStyles.bodyMd,
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AimSpacing.space16),
         ],
       ),
     );
@@ -237,23 +238,26 @@ class _SectionProgressBar extends StatelessWidget {
           children: [
             Text(
               'Section progress',
-              style: theme.textTheme.labelMedium,
+              style: AimTextStyles.label.copyWith(
+                color: theme.colorScheme.onSurface,
+              ),
             ),
             Text(
               '$current / $total',
-              style: theme.textTheme.labelMedium?.copyWith(
-                fontWeight: FontWeight.w600,
+              style: AimTextStyles.label.copyWith(
+                color: theme.colorScheme.onSurface,
+                fontWeight: AimFontWeights.semibold,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: AimSpacing.space8),
         LinearProgressIndicator(
           value: progress,
           backgroundColor:
               theme.colorScheme.onSurface.withValues(alpha: 0.12),
-          minHeight: 6,
-          borderRadius: BorderRadius.circular(3),
+          minHeight: AimSpacing.space8,
+          borderRadius: AimRadius.borderXs,
         ),
       ],
     );
@@ -277,30 +281,32 @@ class _SkillBadge extends StatelessWidget {
   };
 
   static const _colors = {
-    'grammar': Color(0xFF4A90D9),
-    'vocabulary': Color(0xFF27AE60),
-    'reading': Color(0xFF8E44AD),
-    'listening': Color(0xFFE67E22),
+    'grammar': AimColors.primary500,
+    'vocabulary': AimColors.success500,
+    'reading': AimColors.secondary500,
+    'listening': AimColors.warning500,
   };
 
   @override
   Widget build(BuildContext context) {
     final label = _labels[skillCode] ?? skillCode;
-    final color = _colors[skillCode] ?? Colors.grey;
+    final color = _colors[skillCode] ?? AimColors.neutral400;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AimSpacing.space12,
+        vertical: AimSpacing.space4,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: AimRadius.borderPill,
         border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Text(
         label,
-        style: TextStyle(
+        style: AimTextStyles.label.copyWith(
           color: color,
-          fontWeight: FontWeight.w600,
-          fontSize: 13,
+          fontWeight: AimFontWeights.semibold,
         ),
       ),
     );
@@ -321,18 +327,20 @@ class _ErrorBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(AimSpacing.space24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 16),
+            const Icon(Icons.error_outline, size: 48, color: AimColors.error500),
+            const SizedBox(height: AimSpacing.space16),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: AimTextStyles.bodyMd.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AimSpacing.space24),
             OutlinedButton(
               onPressed: onRetry,
               child: const Text('Retry'),

@@ -34,26 +34,38 @@ class _FakeLearningPathRepository implements LearningPathRepository {
 
   static const _skillStates = [
     LearningPathSkillStateModel(
-      topic: 'Grammar',
-      band: 'Developing',
-      masteryLevel: 'beginner',
-      coveragePercent: 35.0,
+      skillId: 'skill-grammar',
+      masteryScore: 0.35,
+      masteryConfidence: 0.5,
+      masteryTrend: 'improving',
+      lastAttemptId: 'attempt-1',
+      lastEvaluatedAt: '2026-06-17T00:00:00Z',
+      updatedAt: '2026-06-18T00:00:00Z',
     ),
   ];
 
   static const _weaknesses = [
     LearningPathWeaknessRecordModel(
-      topic: 'Reading Comprehension',
+      weaknessId: 'weakness-reading',
+      skillId: 'skill-reading-comprehension',
       severity: 'high',
-      recommendedFocus: 'Inference skills',
+      status: 'open',
+      triggerAttemptIds: ['attempt-2'],
+      detectedAt: '2026-06-17T00:00:00Z',
+      updatedAt: '2026-06-18T00:00:00Z',
     ),
   ];
 
   static const _recommendations = [
     LearningPathRecommendationModel(
-      topic: 'Grammar',
-      action: 'Complete subject-verb agreement exercises',
+      id: 'rec-grammar',
+      kind: 'practice',
+      targetSkillId: 'skill-grammar',
+      rank: 1,
       reason: 'Backend-identified recurring error pattern.',
+      generatedAt: '2026-06-18T00:00:00Z',
+      status: 'active',
+      updatedAt: '2026-06-18T00:00:00Z',
     ),
   ];
 
@@ -223,13 +235,11 @@ void main() {
               .data;
 
       // Backend-authoritative values must reach LearningPathData unchanged.
-      expect(data.skillStates.first.band, 'Developing');
-      expect(data.skillStates.first.masteryLevel, 'beginner');
-      expect(data.skillStates.first.coveragePercent, 35.0);
+      expect(data.skillStates.first.masteryTrend, 'improving');
+      expect(data.skillStates.first.masteryScore, 0.35);
       expect(data.weaknessRecords.first.severity, 'high');
-      expect(data.weaknessRecords.first.recommendedFocus, 'Inference skills');
-      expect(data.recommendations.first.action,
-          'Complete subject-verb agreement exercises');
+      expect(data.weaknessRecords.first.status, 'open');
+      expect(data.recommendations.first.kind, 'practice');
       expect(data.recommendations.first.reason,
           'Backend-identified recurring error pattern.');
     });

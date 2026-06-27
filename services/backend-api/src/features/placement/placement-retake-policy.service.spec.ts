@@ -16,7 +16,10 @@ import { HttpStatus } from '@nestjs/common';
 import { QueryResult } from 'pg';
 import { DatabaseService } from '../../database/database.service';
 import { AppError } from '../../common/errors/app-error';
+import { BackendConfigService } from '../../config/backend-config.service';
 import { PlacementRetakePolicyService } from './placement-retake-policy.service';
+
+const config = { placement: { retakeCooldownHours: 24 } };
 
 // ---------------------------------------------------------------------------
 // Test helpers
@@ -52,14 +55,14 @@ describe('PlacementRetakePolicyService', () => {
   describe('checkEligibility', () => {
     it('returns allowed=true when no prior attempt exists', async () => {
       const db = makeDb([]);
-      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService);
+      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService, config as unknown as BackendConfigService);
       const result = await svc.checkEligibility(STUDENT_ID, TEST_ID);
       expect(result.allowed).toBe(true);
     });
 
     it('returns allowed=false with ACTIVE_ATTEMPT_EXISTS when latest attempt is active', async () => {
       const db = makeDb([{ id: 'att-1', status: 'active', completed_at: null }]);
-      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService);
+      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService, config as unknown as BackendConfigService);
       const result = await svc.checkEligibility(STUDENT_ID, TEST_ID);
       expect(result.allowed).toBe(false);
       expect(result.errorCode).toBe('ACTIVE_ATTEMPT_EXISTS');
@@ -67,7 +70,7 @@ describe('PlacementRetakePolicyService', () => {
 
     it('returns allowed=false with SUBMISSION_PENDING when latest attempt is submitted', async () => {
       const db = makeDb([{ id: 'att-2', status: 'submitted', completed_at: null }]);
-      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService);
+      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService, config as unknown as BackendConfigService);
       const result = await svc.checkEligibility(STUDENT_ID, TEST_ID);
       expect(result.allowed).toBe(false);
       expect(result.errorCode).toBe('SUBMISSION_PENDING');
@@ -76,7 +79,7 @@ describe('PlacementRetakePolicyService', () => {
     it('returns allowed=false with cooldown error when completed within 24 hours', async () => {
       const completedAt = hoursAgo(12); // 12 hours ago — within 24h cooldown
       const db = makeDb([{ id: 'att-3', status: 'completed', completed_at: completedAt }]);
-      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService);
+      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService, config as unknown as BackendConfigService);
       const result = await svc.checkEligibility(STUDENT_ID, TEST_ID);
       expect(result.allowed).toBe(false);
       expect(result.errorCode).toBe('PLACEMENT_RETAKE_NOT_ALLOWED');
@@ -85,7 +88,7 @@ describe('PlacementRetakePolicyService', () => {
     it('includes nextEligibleAt in result when blocked by cooldown', async () => {
       const completedAt = hoursAgo(12);
       const db = makeDb([{ id: 'att-4', status: 'completed', completed_at: completedAt }]);
-      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService);
+      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService, config as unknown as BackendConfigService);
       const result = await svc.checkEligibility(STUDENT_ID, TEST_ID);
       expect(result.nextEligibleAt).toBeDefined();
       const nextEligible = new Date(result.nextEligibleAt!);
@@ -95,7 +98,7 @@ describe('PlacementRetakePolicyService', () => {
     it('returns allowed=true when completed more than 24 hours ago', async () => {
       const completedAt = hoursAgo(25); // 25 hours ago — cooldown elapsed
       const db = makeDb([{ id: 'att-5', status: 'completed', completed_at: completedAt }]);
-      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService);
+      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService, config as unknown as BackendConfigService);
       const result = await svc.checkEligibility(STUDENT_ID, TEST_ID);
       expect(result.allowed).toBe(true);
     });
@@ -105,7 +108,7 @@ describe('PlacementRetakePolicyService', () => {
       // Note: abandoned is excluded by the query (status != 'abandoned'),
       // so the DB returns 0 rows — same as no prior attempt.
       const db = makeDb([]); // query excludes abandoned
-      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService);
+      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService, config as unknown as BackendConfigService);
       const result = await svc.checkEligibility(STUDENT_ID, TEST_ID);
       expect(result.allowed).toBe(true);
     });
@@ -118,13 +121,13 @@ describe('PlacementRetakePolicyService', () => {
   describe('enforceRetakePolicy', () => {
     it('resolves without error when student is eligible', async () => {
       const db = makeDb([]); // no prior attempt
-      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService);
+      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService, config as unknown as BackendConfigService);
       await expect(svc.enforceRetakePolicy(STUDENT_ID, TEST_ID)).resolves.toBeUndefined();
     });
 
     it('throws AppError when student has an active attempt', async () => {
       const db = makeDb([{ id: 'att-6', status: 'active', completed_at: null }]);
-      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService);
+      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService, config as unknown as BackendConfigService);
       await expect(svc.enforceRetakePolicy(STUDENT_ID, TEST_ID)).rejects.toMatchObject({
         statusCode: HttpStatus.CONFLICT,
       } satisfies Partial<AppError>);
@@ -132,7 +135,7 @@ describe('PlacementRetakePolicyService', () => {
 
     it('throws AppError with CONFLICT status when blocked by cooldown', async () => {
       const db = makeDb([{ id: 'att-7', status: 'completed', completed_at: hoursAgo(2) }]);
-      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService);
+      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService, config as unknown as BackendConfigService);
       await expect(svc.enforceRetakePolicy(STUDENT_ID, TEST_ID)).rejects.toMatchObject({
         statusCode: HttpStatus.CONFLICT,
       } satisfies Partial<AppError>);
@@ -140,7 +143,7 @@ describe('PlacementRetakePolicyService', () => {
 
     it('does not throw when completed attempt is outside cooldown', async () => {
       const db = makeDb([{ id: 'att-8', status: 'completed', completed_at: hoursAgo(26) }]);
-      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService);
+      const svc = new PlacementRetakePolicyService(db as unknown as DatabaseService, config as unknown as BackendConfigService);
       await expect(svc.enforceRetakePolicy(STUDENT_ID, TEST_ID)).resolves.toBeUndefined();
     });
   });
