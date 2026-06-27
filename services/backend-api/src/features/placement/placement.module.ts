@@ -27,6 +27,7 @@ import { PlacementInitialLearningPathService } from './placement-initial-learnin
 import { PlacementResultReadService } from './placement-result-read.service';
 import { PlacementRetakePolicyService } from './placement-retake-policy.service';
 import { PlacementAuditService } from './placement-audit.service';
+import { PlacementAnalyticsService } from './placement-analytics.service';
 import { PlacementPermissionGuard } from './placement-permission.guard';
 import { PlacementSectionsService } from './placement-sections.service';
 import { PlacementTestReadService } from './placement-test-read.service';
@@ -50,6 +51,7 @@ import { PlacementTestReadService } from './placement-test-read.service';
     PlacementInitialLearningPathService,
     PlacementResultReadService,
     PlacementAuditService,
+    PlacementAnalyticsService,
     PlacementPermissionGuard,
   ],
   exports: [

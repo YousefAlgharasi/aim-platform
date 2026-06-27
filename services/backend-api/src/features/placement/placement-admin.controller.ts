@@ -18,6 +18,7 @@
 //   DELETE /admin/placement/questions/:id                        — remove a question (no answers).
 //   POST   /admin/placement/questions/:questionId/skills          — link a skill to a question.
 //   DELETE /admin/placement/questions/:questionId/skills/:skillId — unlink a skill.
+//   GET    /admin/placement/analytics                             — aggregate analytics summary (P19-008).
 //
 // Security rules:
 //   - Guarded by SupabaseJwtAuthGuard and RoleGuard — admin roles are assigned via
@@ -70,6 +71,7 @@ import {
   UpdatePlacementSectionDto,
   UpdatePlacementTestDto,
 } from './placement-admin-write.dto';
+import { PlacementAnalyticsService, PlacementAnalyticsSummary } from './placement-analytics.service';
 
 @ApiTags('admin-placement')
 @Controller('admin/placement')
@@ -80,7 +82,21 @@ export class PlacementAdminController {
   constructor(
     private readonly testRead: PlacementAdminTestReadService,
     private readonly write: PlacementAdminWriteService,
+    private readonly analytics: PlacementAnalyticsService,
   ) {}
+
+  /**
+   * GET /admin/placement/analytics
+   * Aggregate completion rate, band distribution, per-section accuracy,
+   * and drop-off count across all placement attempts (P19-008).
+   */
+  @Get('analytics')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get aggregate placement analytics (admin-only).' })
+  @ApiOkResponse({ description: 'Completion rate, band distribution, section accuracy, drop-off count.' })
+  async getAnalytics(): Promise<PlacementAnalyticsSummary> {
+    return this.analytics.getSummary();
+  }
 
   /**
    * GET /admin/placement/tests

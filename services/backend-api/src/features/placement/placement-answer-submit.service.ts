@@ -34,6 +34,7 @@ import {
   SubmitPlacementAnswerResponse,
 } from './placement.types';
 import { PlacementAuditService } from './placement-audit.service';
+import { PlacementAnalyticsService } from './placement-analytics.service';
 
 /** Allowed answer_value formats per question type (P4-012 §2.3). */
 const VALID_OPTION_LETTERS = new Set(['A', 'B', 'C', 'D']);
@@ -44,6 +45,7 @@ export class PlacementAnswerSubmitService {
   constructor(
     private readonly db: DatabaseService,
     private readonly audit: PlacementAuditService,
+    private readonly analytics: PlacementAnalyticsService,
   ) {}
 
   /**
@@ -72,7 +74,7 @@ export class PlacementAnswerSubmitService {
     //    Ownership is enforced by requiring student_id = $2 in the query.
     // -----------------------------------------------------------------------
     const attemptResult = await this.db.query<PlacementAttemptRow>(
-      `SELECT id, student_id, placement_test_id, status
+      `SELECT id, student_id, placement_test_id, status, started_at
        FROM placement_attempts
        WHERE id = $1 AND student_id = $2
        LIMIT 1`,
@@ -107,8 +109,9 @@ export class PlacementAnswerSubmitService {
       id: string;
       question_type: string;
       skill_code: string | null;
+      placement_section_id: string;
     }>(
-      `SELECT pq.id, pq.question_type, ps.skill_code
+      `SELECT pq.id, pq.question_type, ps.skill_code, pq.placement_section_id
        FROM placement_questions pq
        JOIN placement_sections ps ON ps.id = pq.placement_section_id
        WHERE pq.id = $1
@@ -186,6 +189,13 @@ export class PlacementAnswerSubmitService {
       answer.answer_value,
     );
 
+    void this.maybeRecordSectionCompleted(
+      studentId,
+      attemptId,
+      attempt.started_at,
+      question.placement_section_id,
+    );
+
     // -----------------------------------------------------------------------
     // 7. Return student-safe fields only (P4-012 §4).
     //    is_correct is intentionally excluded — must not be revealed during
@@ -204,6 +214,76 @@ export class PlacementAnswerSubmitService {
   // -------------------------------------------------------------------------
   // Private helpers
   // -------------------------------------------------------------------------
+
+  /**
+   * Detect whether the just-submitted answer completes its section (i.e. the
+   * student has now answered every question in that section for this
+   * attempt) and, if so, record a fire-and-forget `section_completed`
+   * analytics event (P19-008).
+   *
+   * Accuracy is computed here by comparing answer_value against each
+   * question's correct_answer directly — placement_answers.is_correct is
+   * not populated until backend scoring runs after the whole attempt is
+   * submitted (P4-044/P4-045), so it is not available yet at this point.
+   * This is read-only and does not write is_correct or affect scoring.
+   */
+  private async maybeRecordSectionCompleted(
+    studentId: string,
+    attemptId: string,
+    attemptStartedAt: string,
+    sectionId: string,
+  ): Promise<void> {
+    const progressResult = await this.db.query<{
+      total_questions: string;
+      answered_questions: string;
+    }>(
+      `SELECT
+         (SELECT COUNT(*) FROM placement_questions WHERE placement_section_id = $1)::text AS total_questions,
+         (SELECT COUNT(*)
+            FROM placement_answers pa
+            JOIN placement_questions pq ON pq.id = pa.placement_question_id
+           WHERE pq.placement_section_id = $1
+             AND pa.placement_attempt_id = $2)::text AS answered_questions`,
+      [sectionId, attemptId],
+    );
+
+    const totalQuestions = parseInt(progressResult.rows[0]?.total_questions ?? '0', 10);
+    const answeredQuestions = parseInt(progressResult.rows[0]?.answered_questions ?? '0', 10);
+
+    if (totalQuestions === 0 || answeredQuestions < totalQuestions) {
+      return;
+    }
+
+    const accuracyResult = await this.db.query<{ correct: string; total: string }>(
+      `SELECT
+         COUNT(*) FILTER (
+           WHERE lower(trim(pa.answer_value)) = lower(trim(pq.correct_answer))
+         )::text AS correct,
+         COUNT(*)::text AS total
+       FROM placement_answers pa
+       JOIN placement_questions pq ON pq.id = pa.placement_question_id
+       WHERE pq.placement_section_id = $1
+         AND pa.placement_attempt_id = $2`,
+      [sectionId, attemptId],
+    );
+
+    const correct = parseInt(accuracyResult.rows[0]?.correct ?? '0', 10);
+    const total = parseInt(accuracyResult.rows[0]?.total ?? '0', 10);
+    const accuracy = total > 0 ? parseFloat((correct / total).toFixed(4)) : 0;
+
+    const timeSpentSeconds = Math.max(
+      0,
+      Math.round((Date.now() - new Date(attemptStartedAt).getTime()) / 1000),
+    );
+
+    void this.analytics.recordSectionCompleted(
+      studentId,
+      attemptId,
+      sectionId,
+      accuracy,
+      timeSpentSeconds,
+    );
+  }
 
   /**
    * Validate the student's answer_value against the expected format for
