@@ -142,10 +142,7 @@ void main() {
   test('StudentProfile entity isStudentProfile helper', () {
     const entity = StudentProfile(
       id: 'sp_1',
-      userId: 'u_1',
       profileType: 'student_profile',
-      createdAt: '2026-01-01T00:00:00Z',
-      updatedAt: '2026-01-01T00:00:00Z',
     );
     expect(entity.isStudentProfile, isTrue);
   });
