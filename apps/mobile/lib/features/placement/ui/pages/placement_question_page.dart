@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/widgets/widgets.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
+import '../../data/models/placement_question_model.dart';
 import '../../logic/provider/placement_provider.dart';
 import '../../logic/provider/placement_question_notifier.dart';
 
@@ -106,10 +107,12 @@ class _PlacementQuestionPageState
       await ref
           .read(placementQuestionProvider.notifier)
           .submitCurrentAnswer(token);
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
         setState(() {
-          _submitError = 'Failed to submit answer. Please try again.';
+          _submitError = e is Exception
+              ? 'Failed to submit answer: ${e.toString().replaceFirst('Exception: ', '')}'
+              : 'Failed to submit answer. Please try again.';
         });
       }
     }
@@ -181,6 +184,7 @@ class _QuestionBody extends StatelessWidget {
               child: _AnswerInput(
                 key: ValueKey(question.id),
                 questionType: question.type,
+                questionOptions: question.options,
                 selectedAnswer: state.selectedAnswer,
                 onSelect: onSelectAnswer,
                 isSubmitting: state.isSubmitting,
@@ -218,6 +222,7 @@ class _QuestionBody extends StatelessWidget {
 class _AnswerInput extends StatelessWidget {
   const _AnswerInput({
     required this.questionType,
+    required this.questionOptions,
     required this.selectedAnswer,
     required this.onSelect,
     required this.isSubmitting,
@@ -225,6 +230,7 @@ class _AnswerInput extends StatelessWidget {
   });
 
   final String questionType;
+  final List<PlacementOptionModel> questionOptions;
   final String? selectedAnswer;
   final ValueChanged<String> onSelect;
   final bool isSubmitting;
@@ -235,6 +241,7 @@ class _AnswerInput extends StatelessWidget {
 
     return switch (questionType) {
       'multiple_choice' || 'listening_choice' => _MultipleChoiceInput(
+          questionOptions: questionOptions,
           selectedAnswer: selectedAnswer,
           onSelect: onSelect,
           isSubmitting: isSubmitting,
@@ -263,32 +270,45 @@ class _AnswerInput extends StatelessWidget {
 
 class _MultipleChoiceInput extends StatelessWidget {
   const _MultipleChoiceInput({
+    required this.questionOptions,
     required this.selectedAnswer,
     required this.onSelect,
     required this.isSubmitting,
   });
 
+  final List<PlacementOptionModel> questionOptions;
   final String? selectedAnswer;
   final ValueChanged<String> onSelect;
   final bool isSubmitting;
 
-  static const _options = ['A', 'B', 'C', 'D'];
+  static const _fallbackOptions = ['A', 'B', 'C', 'D'];
 
   @override
   Widget build(BuildContext context) {
+    final hasOptionText = questionOptions.isNotEmpty;
+    final options = hasOptionText
+        ? questionOptions.map((o) => o.id).toList()
+        : _fallbackOptions;
+
     return Column(
       children: [
-        for (final option in _options) ...[
+        for (var i = 0; i < options.length; i++) ...[
           AIMAnswerOption(
-            optionKey: option,
-            state: selectedAnswer == option
+            optionKey: options[i],
+            state: selectedAnswer == options[i]
                 ? AIMAnswerOptionState.selected
                 : AIMAnswerOptionState.defaultState,
-            onTap: isSubmitting ? null : () => onSelect(option),
-            semanticLabel: 'Option $option',
-            child: Text(option),
+            onTap: isSubmitting ? null : () => onSelect(options[i]),
+            semanticLabel: hasOptionText
+                ? 'Option ${options[i]}: ${questionOptions[i].text}'
+                : 'Option ${options[i]}',
+            child: Text(
+              hasOptionText
+                  ? '${options[i]}) ${questionOptions[i].text}'
+                  : options[i],
+            ),
           ),
-          if (option != _options.last)
+          if (i < options.length - 1)
             const SizedBox(height: AimSpacing.componentGap),
         ],
       ],
