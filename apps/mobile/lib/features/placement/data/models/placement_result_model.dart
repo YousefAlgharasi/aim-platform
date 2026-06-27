@@ -37,7 +37,7 @@ class PlacementResultModel extends PlacementResult {
       weaknesses: _parseWeaknesses(
         _asStringMap(json['weakness_map']),
       ),
-      initialPathId: json['initial_path_id'] as String,
+      initialPathId: json['initial_path_id'] as String?,
       createdAt: json['created_at'] as String,
     );
   }
@@ -61,6 +61,7 @@ class PlacementResultModel extends PlacementResult {
                     'skill_code': w.skillCode,
                     'mastery_score': w.masteryScore,
                     'priority': w.priority,
+                    if (w.signal != null) 'signal': w.signal,
                   })
               .toList(),
         },
@@ -102,6 +103,7 @@ List<PlacementWeakness> _parseWeaknesses(Map<String, dynamic> raw) {
       skillCode: data['skill_code'] as String,
       masteryScore: (data['mastery_score'] as num).toDouble(),
       priority: data['priority'] as int,
+      signal: data['signal'] as String?,
     );
   }).toList();
 }

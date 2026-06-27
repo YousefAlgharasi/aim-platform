@@ -20,6 +20,8 @@ import { AdminAnalyticsDashboardController } from './admin-analytics-dashboard.c
 import { AdminLearningReportsController } from './admin-learning-reports.controller';
 import { AdminAssessmentReportsController } from './admin-assessment-reports.controller';
 import { AdminRevenueReportsController } from './admin-revenue-reports.controller';
+import { AdminCurriculumReportsController } from './admin-curriculum-reports.controller';
+import { AdminUserReportsController } from './admin-user-reports.controller';
 import { ParentReportsController } from './parent-reports.controller';
 import { StudentAnalyticsSummaryController } from './student-analytics-summary.controller';
 import { AnalyticsExportController } from './analytics-export.controller';
@@ -31,6 +33,8 @@ import { AnalyticsExportController } from './analytics-export.controller';
     AdminLearningReportsController,
     AdminAssessmentReportsController,
     AdminRevenueReportsController,
+    AdminCurriculumReportsController,
+    AdminUserReportsController,
     ParentReportsController,
     StudentAnalyticsSummaryController,
     AnalyticsExportController,
