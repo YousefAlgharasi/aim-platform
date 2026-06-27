@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 
 import { DatabaseModule } from '../../database/database.module';
 import { AuthModule } from '../../auth/auth.module';
+import { RolesModule } from '../roles';
+import { UsersModule } from '../users';
 import { AnalyticsModule } from '../analytics/analytics.module';
 import { BillingRepository } from './billing.repository';
 import { ProductPriceService } from './product-price.service';
@@ -25,10 +27,9 @@ import { RefundController } from './refund.controller';
 import { SubscriptionController } from './subscription.controller';
 import { WebhookController } from './webhook.controller';
 import { SuperAdminBillingController } from './super-admin-billing.controller';
-import { BillingSuperAdminGuard } from './billing-super-admin.guard';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, AnalyticsModule],
+  imports: [DatabaseModule, AuthModule, RolesModule, UsersModule, AnalyticsModule],
   controllers: [
     AdminBillingController,
     SuperAdminBillingController,
@@ -57,7 +58,6 @@ import { BillingSuperAdminGuard } from './billing-super-admin.guard';
     BillingAuditService,
     BillingIdempotencyService,
     CouponService,
-    BillingSuperAdminGuard,
   ],
   exports: [
     BillingRepository,
