@@ -1,84 +1,164 @@
-import Link from 'next/link';
+import { getAdminToken } from '../../../lib/api/admin-token';
+import {
+  fetchAdminOverviewDashboard,
+  AdminApiClientError,
+  type AdminDashboardWidget,
+} from '../../../lib/api/admin-analytics-dashboard-api';
+import { fetchAdminStats, type DashboardStats } from '../../../lib/api/admin-stats-api';
 
-import { adminAnalyticsNavigationItems } from '../../../lib/admin-analytics-navigation';
+export default async function AdminAnalyticsOverviewPage() {
+  const token = await getAdminToken();
 
-const CATEGORY_ICONS: Record<string, string> = {
-  'Platform Overview': 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4',
-  'Learning Reports': 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
-  'Curriculum Reports': 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01',
-  'Assessment Reports': 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
-  'Notification Reports': 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9',
-  'Revenue Reports': 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
-  'User Reports': 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z',
-  'Exports': 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4',
-};
+  let widgets: readonly AdminDashboardWidget[] = [];
+  let stats: DashboardStats | null = null;
+  let fetchError: string | null = null;
 
-export default function AdminAnalyticsPage() {
+  try {
+    [widgets, stats] = await Promise.all([
+      fetchAdminOverviewDashboard(token).catch(() => [] as AdminDashboardWidget[]),
+      fetchAdminStats(token),
+    ]);
+  } catch (error) {
+    fetchError = error instanceof AdminApiClientError
+      ? `Backend error ${error.status ?? ''}: ${error.message}`
+      : 'Failed to load dashboard data.';
+  }
+
+  const kpis = widgets.filter((w) => w.widgetType === 'kpi' && w.metric);
+  const charts = widgets.filter((w) => w.widgetType === 'chart');
+
   return (
-    <section className="an-page">
-      <nav className="an-breadcrumb">
-        <span className="an-breadcrumb-current">Analytics</span>
-      </nav>
-
-      <div className="an-header">
+    <section className="ov-page">
+      <div className="ov-header">
         <div>
-          <p className="an-eyebrow">Analytics</p>
-          <h1 className="an-title">Analytics & Reports</h1>
-          <p className="an-subtitle">Platform dashboards, report categories, and export tracking.</p>
+          <p className="ov-eyebrow">Analytics</p>
+          <h1 className="ov-title">Platform Overview</h1>
+          <p className="ov-subtitle">Live platform statistics and dashboard widgets.</p>
         </div>
       </div>
 
-      <div className="an-grid">
-        {adminAnalyticsNavigationItems.map((item) => (
-          <Link key={item.href} href={item.href} className="an-card">
-            <div className="an-card-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d={CATEGORY_ICONS[item.label] ?? 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'} />
-              </svg>
-            </div>
-            <div className="an-card-body">
-              <p className="an-card-label">{item.label}</p>
-              <p className="an-card-desc">{item.description}</p>
-            </div>
-            <svg className="an-card-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 5l7 7-7 7"/></svg>
-          </Link>
-        ))}
-      </div>
+      {fetchError && <div className="admin-error-banner" role="alert">{fetchError}</div>}
+
+      {stats && (
+        <>
+          <h2 className="ov-section-title">Users</h2>
+          <div className="ov-kpi-grid">
+            <StatCard label="Total Users" value={stats.users.total} />
+            <StatCard label="Students" value={stats.users.students} />
+            <StatCard label="Admins" value={stats.users.admins} />
+            <StatCard label="Active" value={stats.users.active} accent />
+            <StatCard label="New This Month" value={stats.users.newThisMonth} />
+          </div>
+
+          <h2 className="ov-section-title">Content</h2>
+          <div className="ov-kpi-grid">
+            <StatCard label="Courses" value={stats.content.courses} />
+            <StatCard label="Lessons" value={stats.content.lessons} />
+            <StatCard label="Questions" value={stats.content.questions} />
+            <StatCard label="Skills" value={stats.content.skills} />
+          </div>
+
+          <h2 className="ov-section-title">Assessments</h2>
+          <div className="ov-kpi-grid">
+            <StatCard label="Total Assessments" value={stats.assessments.total} />
+            <StatCard label="Attempts" value={stats.assessments.attempts} />
+            <StatCard label="Avg Score" value={stats.assessments.avgScore !== null ? `${stats.assessments.avgScore}%` : '--'} />
+          </div>
+
+          <h2 className="ov-section-title">Activity</h2>
+          <div className="ov-kpi-grid">
+            <StatCard label="AI Sessions" value={stats.activity.aiSessions} />
+            <StatCard label="Voice Sessions" value={stats.activity.voiceSessions} />
+            <StatCard label="Learning Today" value={stats.activity.learningSessionsToday} accent />
+          </div>
+
+          <h2 className="ov-section-title">Billing</h2>
+          <div className="ov-kpi-grid">
+            <StatCard label="Active Subs" value={stats.billing.activeSubscriptions} accent />
+            <StatCard label="Trialing" value={stats.billing.trialingSubscriptions} />
+            <StatCard label="Canceled" value={stats.billing.canceledSubscriptions} />
+            <StatCard label="Total Revenue" value={`${stats.billing.currency} ${stats.billing.totalRevenue.toLocaleString()}`} />
+            <StatCard label="Revenue This Month" value={`${stats.billing.currency} ${stats.billing.revenueThisMonth.toLocaleString()}`} accent />
+            <StatCard label="Paid Invoices" value={stats.billing.paidInvoices} />
+            <StatCard label="Overdue Invoices" value={stats.billing.overdueInvoices} warn={stats.billing.overdueInvoices > 0} />
+          </div>
+
+          <h2 className="ov-section-title">Operations</h2>
+          <div className="ov-kpi-grid">
+            <StatCard label="Open Tickets" value={stats.operations.openTickets} warn={stats.operations.openTickets > 0} />
+            <StatCard label="Active Incidents" value={stats.operations.activeIncidents} warn={stats.operations.activeIncidents > 0} />
+            <StatCard label="Pending Feedback" value={stats.operations.pendingFeedback} />
+          </div>
+        </>
+      )}
+
+      {kpis.length > 0 && (
+        <>
+          <h2 className="ov-section-title">Dashboard Widgets</h2>
+          <div className="ov-kpi-grid">
+            {kpis.map((w) => (
+              <StatCard
+                key={w.id}
+                label={String(w.config.label ?? w.report?.name ?? 'Metric')}
+                value={String(w.metric?.value ?? '--')}
+                sub={w.metric ? `${w.metric.periodType} period` : undefined}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      {charts.map((w) => (
+        <div key={w.id} className="ov-chart-card">
+          <h3 className="ov-chart-title">{String(w.config.title ?? w.report?.name ?? 'Chart')}</h3>
+          {w.report?.description && <p className="ov-chart-desc">{w.report.description}</p>}
+          <div className="ov-chart-body">
+            {w.metric ? <p className="ov-chart-value">{w.metric.value}</p> : <p className="ov-chart-empty">No chart data yet.</p>}
+          </div>
+        </div>
+      ))}
 
       <style>{`
-        .an-page { display: flex; flex-direction: column; gap: 20px; }
-        .an-breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); }
-        .an-breadcrumb-current { color: var(--text-secondary); font-weight: 500; }
-        .an-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .an-eyebrow { margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary-500); }
-        .an-title { margin: 0; font-size: 26px; font-weight: 700; color: var(--text-primary); }
-        .an-subtitle { margin: 0; font-size: 14px; color: var(--text-secondary); }
-        .an-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
-        .an-card {
-          display: flex; align-items: center; gap: 14px; padding: 18px 20px;
-          background: var(--surface); border: 1px solid var(--border);
-          border-radius: var(--radius-lg); text-decoration: none;
-          transition: border-color 0.15s, box-shadow 0.15s;
+        .ov-page { display: flex; flex-direction: column; gap: 20px; }
+        .ov-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .ov-eyebrow { margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary-500); }
+        .ov-title { margin: 0; font-size: 26px; font-weight: 700; color: var(--text-primary); }
+        .ov-subtitle { margin: 0; font-size: 14px; color: var(--text-secondary); }
+        .ov-section-title { margin: 0; font-size: 15px; font-weight: 600; color: var(--text-primary); }
+        .ov-kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+        .ov-stat {
+          display: flex; flex-direction: column; gap: 4px; padding: 16px 18px;
+          background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
         }
-        .an-card:hover {
-          border-color: var(--color-primary-500);
-          box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary-500) 8%, transparent);
+        .ov-stat--accent { border-left: 3px solid var(--color-primary-500); }
+        .ov-stat--warn { border-left: 3px solid var(--color-error-500); }
+        .ov-stat-label { margin: 0; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
+        .ov-stat-value { margin: 0; font-size: 24px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
+        .ov-stat-sub { margin: 0; font-size: 11px; color: var(--text-secondary); }
+        .ov-chart-card {
+          background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+          padding: 20px;
         }
-        .an-card-icon {
-          display: flex; align-items: center; justify-content: center;
-          width: 40px; height: 40px; flex-shrink: 0;
-          border-radius: var(--radius-md); background: color-mix(in srgb, var(--color-primary-500) 8%, transparent);
-          color: var(--color-primary-500);
-        }
-        .an-card-body { flex: 1; min-width: 0; }
-        .an-card-label { margin: 0; font-size: 15px; font-weight: 600; color: var(--text-primary); }
-        .an-card-desc { margin: 2px 0 0; font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
-        .an-card-arrow { flex-shrink: 0; color: var(--text-muted); transition: transform 0.15s; }
-        .an-card:hover .an-card-arrow { transform: translateX(2px); color: var(--color-primary-500); }
+        .ov-chart-title { margin: 0 0 4px; font-size: 16px; font-weight: 600; color: var(--text-primary); }
+        .ov-chart-desc { margin: 0 0 12px; font-size: 13px; color: var(--text-secondary); }
+        .ov-chart-body { min-height: 100px; display: flex; align-items: center; justify-content: center; }
+        .ov-chart-value { margin: 0; font-size: 24px; font-weight: 700; color: var(--text-primary); }
+        .ov-chart-empty { margin: 0; font-size: 14px; color: var(--text-muted); }
         @media (max-width: 640px) {
-          .an-grid { grid-template-columns: 1fr; }
+          .ov-kpi-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
         }
       `}</style>
     </section>
+  );
+}
+
+function StatCard({ label, value, sub, accent, warn }: { label: string; value: string | number; sub?: string; accent?: boolean; warn?: boolean }) {
+  const cls = `ov-stat${accent ? ' ov-stat--accent' : ''}${warn ? ' ov-stat--warn' : ''}`;
+  return (
+    <div className={cls}>
+      <p className="ov-stat-label">{label}</p>
+      <p className="ov-stat-value">{typeof value === 'number' ? value.toLocaleString() : value}</p>
+      {sub && <p className="ov-stat-sub">{sub}</p>}
+    </div>
   );
 }
