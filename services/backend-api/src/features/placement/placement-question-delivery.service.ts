@@ -86,25 +86,46 @@ export class PlacementQuestionDeliveryService {
   /**
    * Parse a prompt string into a question stem and options array.
    *
-   * Seed data format: "She ___ to school every day. (A) go (B) goes (C) going (D) gone"
-   * Extracts options marked with (A)–(D) and returns the stem text separately.
-   * If no option markers are found (e.g., fill_blank or true_false), returns
-   * the full prompt as text with an empty options array.
+   * Handles two option formats found in seed/DB data:
+   *   1. "(A) go (B) goes (C) going (D) gone"
+   *   2. "A) am\nB) is\nC) are\nD) be"
+   *
+   * Also normalises literal two-char "\n" sequences into real newlines
+   * before parsing, so prompts stored with escaped newlines work correctly.
    */
   private parsePrompt(prompt: string): { text: string; options: Array<{ id: string; text: string }> } {
-    const optionRegex = /\(([A-D])\)\s*([^(]*)/g;
+    // Normalise literal "\n" (two chars) into real newlines.
+    const normalised = prompt.replace(/\\n/g, '\n');
+
+    // Try format 1: (A) text (B) text ...
+    const parenRegex = /\(([A-D])\)\s*([^(]*)/g;
     const options: Array<{ id: string; text: string }> = [];
     let match: RegExpExecArray | null;
 
-    while ((match = optionRegex.exec(prompt)) !== null) {
+    while ((match = parenRegex.exec(normalised)) !== null) {
       options.push({ id: match[1], text: match[2].trim() });
     }
 
-    // Extract stem (everything before the first option marker)
-    const stemEnd = prompt.search(/\([A-D]\)/);
-    const text = stemEnd > 0 ? prompt.substring(0, stemEnd).trim() : prompt.trim();
+    if (options.length > 0) {
+      const stemEnd = normalised.search(/\([A-D]\)/);
+      const text = stemEnd > 0 ? normalised.substring(0, stemEnd).trim() : normalised.trim();
+      return { text, options };
+    }
 
-    return { text, options };
+    // Try format 2: A) text (newline-separated or inline)
+    // Each option runs to end-of-line or to the next option marker.
+    const bareRegex = /(?:^|[\n])([A-D])\)\s*(.+?)(?=\n[A-D]\)|$)/gs;
+    while ((match = bareRegex.exec(normalised)) !== null) {
+      options.push({ id: match[1], text: match[2].trim() });
+    }
+
+    if (options.length > 0) {
+      const stemEnd = normalised.search(/(?:^|\n)[A-D]\)/m);
+      const text = stemEnd > 0 ? normalised.substring(0, stemEnd).trim() : normalised.trim();
+      return { text, options };
+    }
+
+    return { text: normalised.trim(), options };
   }
 
   /**
