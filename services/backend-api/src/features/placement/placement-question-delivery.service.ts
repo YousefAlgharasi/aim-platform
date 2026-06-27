@@ -18,6 +18,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AppError } from '../../common/errors/app-error';
+import { PlacementErrorCode } from './placement-error-codes';
 import { ApiErrorCode } from '../../common/errors/api-error-code';
 import {
   PlacementQuestionSafeResponse,
@@ -49,7 +50,7 @@ export class PlacementQuestionDeliveryService {
 
     if (sectionCheck.rowCount === 0) {
       throw new AppError({
-        code: 'SECTION_NOT_FOUND',
+        code: PlacementErrorCode.SECTION_NOT_FOUND,
         message: `Placement section not found: ${sectionId}`,
         statusCode: HttpStatus.NOT_FOUND,
       });

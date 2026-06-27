@@ -26,6 +26,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AppError } from '../../common/errors/app-error';
+import { PlacementErrorCode } from './placement-error-codes';
 import {
   PlacementAnswerRow,
   PlacementAttemptRow,
@@ -80,7 +81,7 @@ export class PlacementAnswerSubmitService {
 
     if ((attemptResult.rowCount ?? 0) === 0) {
       throw new AppError({
-        code: 'ATTEMPT_NOT_FOUND',
+        code: PlacementErrorCode.ATTEMPT_NOT_FOUND,
         message: 'Placement attempt not found or does not belong to you.',
         statusCode: HttpStatus.NOT_FOUND,
       });
@@ -90,7 +91,7 @@ export class PlacementAnswerSubmitService {
 
     if (attempt.status !== 'active') {
       throw new AppError({
-        code: 'ATTEMPT_NOT_ACTIVE',
+        code: PlacementErrorCode.ATTEMPT_NOT_ACTIVE,
         message: `Placement attempt is not active (status: ${attempt.status}). Answers can only be submitted to active attempts.`,
         statusCode: HttpStatus.CONFLICT,
       });
@@ -118,7 +119,7 @@ export class PlacementAnswerSubmitService {
 
     if ((questionResult.rowCount ?? 0) === 0) {
       throw new AppError({
-        code: 'QUESTION_NOT_FOUND',
+        code: PlacementErrorCode.QUESTION_NOT_FOUND,
         message:
           'Question not found in this placement test.',
         statusCode: HttpStatus.NOT_FOUND,
@@ -142,7 +143,7 @@ export class PlacementAnswerSubmitService {
 
     if ((duplicateResult.rowCount ?? 0) > 0) {
       throw new AppError({
-        code: 'DUPLICATE_ANSWER',
+        code: PlacementErrorCode.DUPLICATE_ANSWER,
         message: 'An answer for this question has already been submitted in this attempt.',
         statusCode: HttpStatus.CONFLICT,
       });
@@ -215,7 +216,7 @@ export class PlacementAnswerSubmitService {
 
     if (trimmed.length === 0) {
       throw new AppError({
-        code: 'INVALID_ANSWER_VALUE',
+        code: PlacementErrorCode.INVALID_ANSWER_VALUE,
         message: 'answer_value must be a non-empty string.',
         statusCode: HttpStatus.BAD_REQUEST,
       });
@@ -227,7 +228,7 @@ export class PlacementAnswerSubmitService {
         // Must be exactly one of: A, B, C, D
         if (!VALID_OPTION_LETTERS.has(trimmed.toUpperCase())) {
           throw new AppError({
-            code: 'INVALID_ANSWER_VALUE',
+            code: PlacementErrorCode.INVALID_ANSWER_VALUE,
             message: `answer_value for ${questionType} must be one of: A, B, C, D. Received: "${trimmed}".`,
             statusCode: HttpStatus.BAD_REQUEST,
           });
@@ -238,7 +239,7 @@ export class PlacementAnswerSubmitService {
         // Must be exactly "true" or "false" (lowercase)
         if (!VALID_TRUE_FALSE_VALUES.has(trimmed.toLowerCase())) {
           throw new AppError({
-            code: 'INVALID_ANSWER_VALUE',
+            code: PlacementErrorCode.INVALID_ANSWER_VALUE,
             message: `answer_value for true_false must be "true" or "false". Received: "${trimmed}".`,
             statusCode: HttpStatus.BAD_REQUEST,
           });
@@ -251,7 +252,7 @@ export class PlacementAnswerSubmitService {
 
       default:
         throw new AppError({
-          code: 'INVALID_ANSWER_VALUE',
+          code: PlacementErrorCode.INVALID_ANSWER_VALUE,
           message: `Unknown question type: "${questionType}". Cannot validate answer_value.`,
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         });
