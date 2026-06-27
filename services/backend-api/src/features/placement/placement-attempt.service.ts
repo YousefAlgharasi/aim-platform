@@ -21,6 +21,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AppError } from '../../common/errors/app-error';
+import { PlacementErrorCode } from './placement-error-codes';
 import {
   PlacementAttemptRow,
   PlacementAttemptStartResponse,
@@ -59,7 +60,7 @@ export class PlacementAttemptService {
 
     if (testResult.rowCount === 0) {
       throw new AppError({
-        code: 'NO_ACTIVE_TEST',
+        code: PlacementErrorCode.NO_ACTIVE_TEST,
         message: 'No placement test is currently published.',
         statusCode: HttpStatus.NOT_FOUND,
       });

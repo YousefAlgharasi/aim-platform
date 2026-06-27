@@ -41,6 +41,7 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AppError } from '../../common/errors/app-error';
+import { PlacementErrorCode } from './placement-error-codes';
 import { BackendConfigService } from '../../config/backend-config.service';
 
 /** Statuses that block starting a new attempt. */
@@ -94,7 +95,7 @@ export class PlacementRetakePolicyService {
           : '';
 
       throw new AppError({
-        code: eligibility.errorCode ?? 'PLACEMENT_RETAKE_NOT_ALLOWED',
+        code: eligibility.errorCode ?? PlacementErrorCode.RETAKE_COOLDOWN_ACTIVE,
         message: `You are not eligible to start a new placement attempt.${detail}`,
         statusCode: HttpStatus.CONFLICT,
       });
@@ -143,8 +144,8 @@ export class PlacementRetakePolicyService {
         allowed: false,
         errorCode:
           latest.status === 'active'
-            ? 'ACTIVE_ATTEMPT_EXISTS'
-            : 'SUBMISSION_PENDING',
+            ? PlacementErrorCode.ACTIVE_ATTEMPT_EXISTS
+            : PlacementErrorCode.SUBMISSION_PENDING,
       };
     }
 
@@ -167,7 +168,7 @@ export class PlacementRetakePolicyService {
         return {
           allowed: false,
           nextEligibleAt: cooldownEnd.toISOString(),
-          errorCode: 'PLACEMENT_RETAKE_NOT_ALLOWED',
+          errorCode: PlacementErrorCode.RETAKE_COOLDOWN_ACTIVE,
         };
       }
     }

@@ -30,6 +30,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AppError } from '../../common/errors/app-error';
+import { PlacementErrorCode } from './placement-error-codes';
 import {
   PlacementAttemptRow,
   PlacementAttemptCompleteResponse,
@@ -78,7 +79,7 @@ export class PlacementAttemptCompleteService {
 
     if ((attemptResult.rowCount ?? 0) === 0) {
       throw new AppError({
-        code: 'ATTEMPT_NOT_FOUND',
+        code: PlacementErrorCode.ATTEMPT_NOT_FOUND,
         message: 'Placement attempt not found or does not belong to you.',
         statusCode: HttpStatus.NOT_FOUND,
       });
@@ -91,7 +92,7 @@ export class PlacementAttemptCompleteService {
     // -----------------------------------------------------------------------
     if (attempt.status === 'submitted' || attempt.status === 'completed') {
       throw new AppError({
-        code: 'ATTEMPT_ALREADY_SUBMITTED',
+        code: PlacementErrorCode.ATTEMPT_ALREADY_SUBMITTED,
         message: `Placement attempt has already been submitted (status: ${attempt.status}).`,
         statusCode: HttpStatus.CONFLICT,
       });
@@ -99,7 +100,7 @@ export class PlacementAttemptCompleteService {
 
     if (attempt.status !== 'active') {
       throw new AppError({
-        code: 'ATTEMPT_NOT_ACTIVE',
+        code: PlacementErrorCode.ATTEMPT_NOT_ACTIVE,
         message: `Placement attempt cannot be submitted (status: ${attempt.status}).`,
         statusCode: HttpStatus.CONFLICT,
       });
