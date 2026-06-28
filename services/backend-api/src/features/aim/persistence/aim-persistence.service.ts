@@ -63,6 +63,7 @@ import { DifficultyDecisionService } from './difficulty-decision.service';
 import { RecommendationOutputService } from './recommendation-output.service';
 import { ReviewScheduleOutputService } from './review-schedule-output.service';
 import { SessionSummaryService } from './session-summary.service';
+import { LearningReminderIntegration } from '../../notifications/learning-reminder.integration';
 
 // ---------------------------------------------------------------------------
 // TransactionScopedDb
@@ -103,6 +104,7 @@ export class AimPersistenceService {
     private readonly recommendationOutput: RecommendationOutputService,
     private readonly reviewScheduleOutput: ReviewScheduleOutputService,
     private readonly sessionSummary: SessionSummaryService,
+    private readonly learningReminderIntegration: LearningReminderIntegration,
   ) {}
 
   /**
@@ -125,7 +127,10 @@ export class AimPersistenceService {
       const txWeakness = new WeaknessUpdateService(txDb);
       const txDifficulty = new DifficultyDecisionService(txDb);
       const txRecommendations = new RecommendationOutputService(txDb);
-      const txReviewSchedule = new ReviewScheduleOutputService(txDb);
+      const txReviewSchedule = new ReviewScheduleOutputService(
+        txDb,
+        this.learningReminderIntegration,
+      );
       const txSessionSummary = new SessionSummaryService(txDb);
 
       await client.query('BEGIN');

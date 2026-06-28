@@ -11,14 +11,12 @@ describe('ReminderScheduleService', () => {
     mockRepo = {
       createReminderSchedule: jest.fn().mockResolvedValue({
         id: 'sched-1',
-        user_id: 'user-1',
-        reminder_type: 'learning_plan',
+        owner_id: 'user-1',
+        owner_type: 'student',
+        kind: 'learning_plan',
         status: 'active',
-        cron_expression: '0 9 * * *',
-        reference_id: 'plan-1',
-        next_fire_at: null,
-        last_fired_at: null,
-        ends_at: null,
+        cadence: '0 9 * * *',
+        next_run_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }),
@@ -34,20 +32,21 @@ describe('ReminderScheduleService', () => {
   });
 
   it('creates a valid schedule', async () => {
-    const result = await service.createSchedule('user-1', 'learning_plan', '0 9 * * *', 'plan-1', null, null);
-    expect(result.reminder_type).toBe('learning_plan');
+    const nextRunAt = new Date().toISOString();
+    const result = await service.createSchedule('user-1', 'student', 'learning_plan', '0 9 * * *', nextRunAt);
+    expect(result.kind).toBe('learning_plan');
     expect(mockRepo.createReminderSchedule).toHaveBeenCalledWith(
-      'user-1', 'learning_plan', '0 9 * * *', 'plan-1', null, null,
+      'user-1', 'student', 'learning_plan', '0 9 * * *', nextRunAt,
     );
   });
 
   it('rejects invalid reminder type', async () => {
-    await expect(service.createSchedule('user-1', 'invalid_type', '0 9 * * *', null, null, null))
+    await expect(service.createSchedule('user-1', 'student', 'invalid_type', '0 9 * * *', null as unknown as string))
       .rejects.toThrow('Invalid reminder type');
   });
 
   it('rejects invalid cron expression', async () => {
-    await expect(service.createSchedule('user-1', 'learning_plan', '* *', null, null, null))
+    await expect(service.createSchedule('user-1', 'student', 'learning_plan', '* *', null as unknown as string))
       .rejects.toThrow('Invalid cron expression');
   });
 
@@ -94,7 +93,6 @@ describe('NotificationEligibilityService', () => {
 
   it('rejects during quiet hours', async () => {
     (mockRepo.findQuietHoursByUserId as jest.Mock).mockResolvedValue({
-      enabled: true,
       start_time: '00:00',
       end_time: '23:59',
       timezone: 'UTC',
@@ -104,13 +102,8 @@ describe('NotificationEligibilityService', () => {
     expect(result.reason).toBe('quiet_hours');
   });
 
-  it('allows when quiet hours disabled', async () => {
-    (mockRepo.findQuietHoursByUserId as jest.Mock).mockResolvedValue({
-      enabled: false,
-      start_time: '22:00',
-      end_time: '07:00',
-      timezone: 'UTC',
-    });
+  it('allows when no quiet hours row exists', async () => {
+    (mockRepo.findQuietHoursByUserId as jest.Mock).mockResolvedValue(null);
     const result = await service.checkEligibility('user-1', 'push', 'learning_reminder');
     expect(result.eligible).toBe(true);
   });

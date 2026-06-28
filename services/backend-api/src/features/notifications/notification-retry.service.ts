@@ -44,7 +44,7 @@ export class NotificationRetryService {
     const delayMs = this.getNextRetryDelayMs(failedCount);
     const scheduledAt = new Date(Date.now() + delayMs).toISOString();
 
-    await this.repo.updateEventStatus(event.id, event.user_id, 'queued');
+    await this.repo.updateEventStatus(event.id, event.recipient_id, 'queued');
     this.logger.log(`Requeued event=${event.id}, next attempt in ${delayMs}ms`);
     return true;
   }

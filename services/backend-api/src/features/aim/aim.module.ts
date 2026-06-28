@@ -22,6 +22,7 @@ import { Module } from '@nestjs/common';
 
 import { DatabaseModule } from '../../database/database.module';
 import { AuthModule } from '../../auth/auth.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { AimEngineClientService } from './aim-engine-client.service';
 import { AimService } from './aim.service';
 
@@ -54,7 +55,7 @@ import { ErrorPatternsReadService } from './result/error-patterns-read.service';
 import { AimResultController } from './result/aim-result.controller';
 
 @Module({
-  imports: [DatabaseModule, AuthModule],
+  imports: [DatabaseModule, AuthModule, NotificationsModule],
   controllers: [AimResultController],
   providers: [
     // Existing (pre-Phase 5)

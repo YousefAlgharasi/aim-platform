@@ -16,13 +16,13 @@ export class StreakReminderIntegration {
     cronExpression = '0 18 * * *',
     locale = 'en',
   ): Promise<void> {
+    const nextRunAt = new Date().toISOString();
     await this.scheduleService.createSchedule(
       userId,
+      'student',
       'streak',
       cronExpression,
-      null,
-      null,
-      null,
+      nextRunAt,
     );
     this.logger.log(`Streak reminder created for user=${userId}`);
   }
@@ -34,6 +34,7 @@ export class StreakReminderIntegration {
   ): Promise<void> {
     await this.queueService.enqueue({
       userId,
+      recipientType: 'student',
       templateKey: 'streak_reminder',
       channel: 'push',
       category: 'learning_reminder',
@@ -43,6 +44,7 @@ export class StreakReminderIntegration {
 
     await this.queueService.enqueue({
       userId,
+      recipientType: 'student',
       templateKey: 'streak_reminder',
       channel: 'in_app',
       category: 'learning_reminder',
