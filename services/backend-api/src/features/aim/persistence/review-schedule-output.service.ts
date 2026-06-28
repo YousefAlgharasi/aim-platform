@@ -38,6 +38,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '../../../database/database.service';
 import { AimValidatedReviewSchedule } from '../adapter/aim-response-mapper.types';
+import { LearningReminderIntegration } from '../../notifications/learning-reminder.integration';
 
 // ---------------------------------------------------------------------------
 // Internal row shape
@@ -75,7 +76,10 @@ export interface ReviewScheduleOutputPersistResult {
 export class ReviewScheduleOutputService {
   private readonly logger = new Logger(ReviewScheduleOutputService.name);
 
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly learningReminderIntegration: LearningReminderIntegration,
+  ) {}
 
   /**
    * Persist a validated review schedule set from the AIM Engine.
@@ -184,6 +188,12 @@ export class ReviewScheduleOutputService {
         status: computedStatus,
       });
 
+      await this.learningReminderIntegration.createReviewReminder(
+        studentId,
+        schedule.scheduleId,
+        toOneShotCronExpression(schedule.dueAt),
+      );
+
       return 'inserted';
     }
 
@@ -231,6 +241,12 @@ export class ReviewScheduleOutputService {
         status: computedStatus,
       });
 
+      await this.learningReminderIntegration.createReviewReminder(
+        studentId,
+        schedule.scheduleId,
+        toOneShotCronExpression(schedule.dueAt),
+      );
+
       return 'updated_new_cycle';
     }
 
@@ -261,6 +277,12 @@ export class ReviewScheduleOutputService {
         status: computedStatus,
       });
 
+      await this.learningReminderIntegration.createReviewReminder(
+        studentId,
+        schedule.scheduleId,
+        toOneShotCronExpression(schedule.dueAt),
+      );
+
       return 'updated_rescheduled';
     }
 
@@ -280,4 +302,12 @@ export class ReviewScheduleOutputService {
   private computeStatus(dueAt: string): 'pending' | 'due' {
     return new Date(dueAt) <= new Date() ? 'due' : 'pending';
   }
+}
+
+// One-shot cron expression (minute hour day month *) firing at dueAt's
+// minute/hour/day/month each year; the reminder scheduler cancels the
+// schedule after it fires once, so the yearly recurrence never matters.
+function toOneShotCronExpression(dueAt: string): string {
+  const date = new Date(dueAt);
+  return `${date.getUTCMinutes()} ${date.getUTCHours()} ${date.getUTCDate()} ${date.getUTCMonth() + 1} *`;
 }
