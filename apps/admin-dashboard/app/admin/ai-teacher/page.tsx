@@ -107,12 +107,6 @@ export default async function AdminAITeacherPage({ searchParams }: Props) {
         <p className="admin-page-meta">{rows.length} {section.replace(/-/g, ' ')} entr{rows.length !== 1 ? 'ies' : 'y'}</p>
       </header>
 
-      <div className="admin-boundary-note">
-        <strong>Mostly read-only:</strong> Model configuration, safety reviews, usage/cost tracking,
-        and audit logs are written server-side by the backend API and cannot be edited here.
-        Prompt templates can be drafted, published, and retired from the Prompt Templates tab.
-      </div>
-
       {fetchError && (
         <p className="admin-error-banner" role="alert">{fetchError}</p>
       )}
