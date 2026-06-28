@@ -159,18 +159,72 @@ export function AiTeacherClient({ section, rows, onCreateDraft, onPublish, onRet
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-16)' }}>
-      <div style={{ display: 'flex', gap: 'var(--space-8)', flexWrap: 'wrap' }}>
-        {TABS.map((tab) => (
-          <AdminButton
-            key={tab.key}
-            onClick={() => goToSection(tab.key)}
-            variant={tab.key === section ? 'primary' : 'secondary'}
-            size="sm"
-          >
-            {tab.label}
-          </AdminButton>
-        ))}
-      </div>
+      <nav className="ait-nav" aria-label="AI Teacher navigation">
+        <ul className="ait-nav-list" role="list">
+          {TABS.map((tab) => (
+            <li key={tab.key}>
+              <button
+                type="button"
+                onClick={() => goToSection(tab.key)}
+                className={`ait-nav-link${tab.key === section ? ' ait-nav-link--active' : ''}`}
+                aria-current={tab.key === section ? 'page' : undefined}
+              >
+                {tab.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <style>{`
+        .ait-nav {
+          border-bottom: 1px solid var(--border);
+          padding-bottom: var(--space-8);
+          overflow-x: auto;
+        }
+        .ait-nav-list {
+          list-style: none;
+          margin: 0;
+          padding: 0;
+          display: flex;
+          gap: var(--space-4);
+          flex-wrap: nowrap;
+        }
+        .ait-nav-link {
+          display: inline-flex;
+          align-items: center;
+          min-height: var(--touch-target);
+          padding: var(--space-8) var(--space-12);
+          border-radius: var(--radius-sm);
+          border: none;
+          background: transparent;
+          font-size: 13px;
+          font-family: inherit;
+          font-weight: var(--weight-medium);
+          color: var(--text-secondary);
+          text-decoration: none;
+          white-space: nowrap;
+          cursor: pointer;
+          transition: background var(--duration-fast) var(--ease-standard),
+                      color var(--duration-fast) var(--ease-standard);
+        }
+        .ait-nav-link:hover {
+          background: var(--state-hover);
+          color: var(--text-primary);
+        }
+        .ait-nav-link:focus-visible {
+          outline: none;
+          box-shadow: var(--shadow-focus);
+        }
+        .ait-nav-link--active {
+          color: var(--text-primary);
+          font-weight: var(--weight-semibold);
+          background: var(--state-hover);
+        }
+        @media (max-width: 640px) {
+          .ait-nav { padding-inline-start: var(--space-4); }
+        }
+      `}</style>
 
       {section === 'prompts' && (
         <div>
