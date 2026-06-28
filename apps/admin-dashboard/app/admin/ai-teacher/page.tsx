@@ -101,12 +101,6 @@ export default async function AdminAITeacherPage({ searchParams }: Props) {
 
   return (
     <section className="admin-curriculum-page">
-      <header className="admin-page-header">
-        <p className="eyebrow">Admin — AI Management</p>
-        <h1>AI Teacher</h1>
-        <p className="admin-page-meta">{rows.length} {section.replace(/-/g, ' ')} entr{rows.length !== 1 ? 'ies' : 'y'}</p>
-      </header>
-
       {fetchError && (
         <p className="admin-error-banner" role="alert">{fetchError}</p>
       )}
