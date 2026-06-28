@@ -22,6 +22,7 @@ async function bootstrap(): Promise<void> {
 
   app.enableCors({
     origin: [...config.corsOrigins],
+    credentials: true,
   });
 
   app.enableShutdownHooks();
