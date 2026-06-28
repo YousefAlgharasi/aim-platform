@@ -288,6 +288,7 @@ function buildHarness(): IntegrationHarness {
     { replaceActiveSet: jest.fn() } as never,
     { upsertMany: jest.fn() } as never,
     { persist: jest.fn() } as never,
+    { createReviewReminder: jest.fn() } as never,
   );
   const persistenceSpy = jest.spyOn(persistence, 'persist').mockResolvedValue(undefined);
 
