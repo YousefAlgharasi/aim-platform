@@ -105,6 +105,15 @@ export class ParentRepository {
     return result.rows;
   }
 
+  async findActiveParentIds(): Promise<string[]> {
+    const result = await this.db.query<{ parent_id: string }>(
+      `SELECT DISTINCT parent_id FROM parent_child_links WHERE status = 'active'`,
+      [],
+    );
+
+    return result.rows.map((row) => row.parent_id);
+  }
+
   async activateLink(linkId: string): Promise<void> {
     await this.db.query(
       `UPDATE parent_child_links

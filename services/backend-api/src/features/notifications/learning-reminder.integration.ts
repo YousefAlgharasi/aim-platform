@@ -17,13 +17,13 @@ export class LearningReminderIntegration {
     cronExpression: string,
     locale = 'en',
   ): Promise<void> {
+    const nextRunAt = new Date().toISOString();
     await this.scheduleService.createSchedule(
       userId,
+      'student',
       'learning_plan',
       cronExpression,
-      learningPlanId,
-      null,
-      null,
+      nextRunAt,
     );
     this.logger.log(`Learning plan reminder created for user=${userId}, plan=${learningPlanId}`);
   }
@@ -34,13 +34,13 @@ export class LearningReminderIntegration {
     cronExpression: string,
     locale = 'en',
   ): Promise<void> {
+    const nextRunAt = new Date().toISOString();
     await this.scheduleService.createSchedule(
       userId,
-      'review_schedule',
+      'student',
+      'review',
       cronExpression,
-      reviewScheduleId,
-      null,
-      null,
+      nextRunAt,
     );
     this.logger.log(`Review reminder created for user=${userId}, schedule=${reviewScheduleId}`);
   }
@@ -48,6 +48,7 @@ export class LearningReminderIntegration {
   async fireLearningReminder(userId: string, locale = 'en'): Promise<void> {
     await this.queueService.enqueue({
       userId,
+      recipientType: 'student',
       templateKey: 'learning_reminder_due',
       channel: 'push',
       category: 'learning_reminder',
@@ -57,6 +58,7 @@ export class LearningReminderIntegration {
 
     await this.queueService.enqueue({
       userId,
+      recipientType: 'student',
       templateKey: 'learning_reminder_due',
       channel: 'in_app',
       category: 'learning_reminder',

@@ -40,7 +40,7 @@ export class NotificationRateLimitService {
   private async getCountSince(userId: string, channel: string, interval: string): Promise<number> {
     const result = await this.db.query<{ count: string }>(
       `SELECT COUNT(*) as count FROM notification_events
-       WHERE user_id = $1 AND channel = $2 AND status IN ('sent', 'queued')
+       WHERE recipient_id = $1 AND channel = $2 AND state IN ('sent', 'queued')
        AND created_at >= now() - INTERVAL '${interval}'`,
       [userId, channel],
     );

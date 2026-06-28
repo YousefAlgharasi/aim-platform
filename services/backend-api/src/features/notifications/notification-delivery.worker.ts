@@ -42,18 +42,20 @@ export class NotificationDeliveryWorker {
 
   private async deliverEvent(event: NotificationEventRow): Promise<void> {
     const attemptNumber = 1;
+    const title = String(event.payload.title ?? '');
+    const body = String(event.payload.body ?? '');
 
     if (event.channel === 'in_app') {
-      await this.repo.updateEventStatus(event.id, event.user_id, 'sent');
-      await this.repo.createDeliveryAttempt(event.id, 'in_app', 'success', attemptNumber, null, null);
+      await this.repo.updateEventStatus(event.id, event.recipient_id, 'sent');
+      await this.repo.createDeliveryAttempt(event.id, 'in_app', 'internal', 'success', attemptNumber, null);
       return;
     }
 
     if (event.channel === 'push') {
-      const tokens = await this.repo.findActiveTokensByUserId(event.user_id);
+      const tokens = await this.repo.findActiveTokensByUserId(event.recipient_id);
       if (tokens.length === 0) {
-        await this.repo.createDeliveryAttempt(event.id, 'push', 'failed', attemptNumber, 'NO_TOKENS', 'No active device tokens');
-        await this.repo.updateEventStatus(event.id, event.user_id, 'failed');
+        await this.repo.createDeliveryAttempt(event.id, 'push', 'fcm', 'failed', attemptNumber, 'NO_TOKENS');
+        await this.repo.updateEventStatus(event.id, event.recipient_id, 'failed');
         return;
       }
 
@@ -61,8 +63,8 @@ export class NotificationDeliveryWorker {
       for (const token of tokens) {
         const result: PushDeliveryResult = await this.pushProvider.send({
           token: token.token,
-          title: event.title,
-          body: event.body,
+          title,
+          body,
         });
 
         if (result.success) {
@@ -71,44 +73,44 @@ export class NotificationDeliveryWorker {
           await this.repo.createDeliveryAttempt(
             event.id,
             'push',
+            'fcm',
             'failed',
             attemptNumber,
             result.errorCode ?? null,
-            result.errorMessage ?? null,
           );
         }
       }
 
       if (anySuccess) {
-        await this.repo.createDeliveryAttempt(event.id, 'push', 'success', attemptNumber, null, null);
-        await this.repo.updateEventStatus(event.id, event.user_id, 'sent');
+        await this.repo.createDeliveryAttempt(event.id, 'push', 'fcm', 'success', attemptNumber, null);
+        await this.repo.updateEventStatus(event.id, event.recipient_id, 'sent');
       } else {
-        await this.repo.updateEventStatus(event.id, event.user_id, 'failed');
+        await this.repo.updateEventStatus(event.id, event.recipient_id, 'failed');
       }
       return;
     }
 
     if (event.channel === 'email') {
       const result = await this.emailProvider.send({
-        to: event.user_id,
-        subject: event.title,
-        bodyHtml: event.body,
-        bodyText: event.body,
+        to: event.recipient_id,
+        subject: title,
+        bodyHtml: body,
+        bodyText: body,
       });
 
       if (result.success) {
-        await this.repo.createDeliveryAttempt(event.id, 'email', 'success', attemptNumber, null, null);
-        await this.repo.updateEventStatus(event.id, event.user_id, 'sent');
+        await this.repo.createDeliveryAttempt(event.id, 'email', 'smtp', 'success', attemptNumber, null);
+        await this.repo.updateEventStatus(event.id, event.recipient_id, 'sent');
       } else {
         await this.repo.createDeliveryAttempt(
           event.id,
           'email',
+          'smtp',
           'failed',
           attemptNumber,
           result.errorCode ?? null,
-          result.errorMessage ?? null,
         );
-        await this.repo.updateEventStatus(event.id, event.user_id, 'failed');
+        await this.repo.updateEventStatus(event.id, event.recipient_id, 'failed');
       }
     }
   }

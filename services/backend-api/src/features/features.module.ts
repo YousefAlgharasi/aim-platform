@@ -8,6 +8,7 @@ import { AimModule } from './aim/aim.module';
 import { CurriculumModule } from './curriculum/curriculum.module';
 import { LessonsModule } from './lessons/lessons.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { NotificationSchedulerModule } from './notifications/notification-scheduler.module';
 import { ParentsModule } from './parents/parents.module';
 import { PlacementModule } from './placement/placement.module';
 import { ProfileModule } from './profile/profile.module';
@@ -25,6 +26,7 @@ import { OperationsModule } from './operations/operations.module';
     AuthModule,
     UsersModule,
     RolesModule,
+    NotificationSchedulerModule,
     StudentsModule,
     LessonsModule,
     SessionsModule,

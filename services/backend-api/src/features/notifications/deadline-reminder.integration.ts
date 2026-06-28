@@ -23,11 +23,10 @@ export class DeadlineReminderIntegration {
 
     await this.scheduleService.createSchedule(
       userId,
+      'student',
       'deadline',
       cronExpression,
-      deadlineId,
       oneDayBefore.toISOString(),
-      deadline.toISOString(),
     );
     this.logger.log(`Deadline reminder created for user=${userId}, deadline=${deadlineId}`);
   }
@@ -39,6 +38,7 @@ export class DeadlineReminderIntegration {
   ): Promise<void> {
     await this.queueService.enqueue({
       userId,
+      recipientType: 'student',
       templateKey: 'deadline_reminder',
       channel: 'push',
       category: 'deadline_reminder',
@@ -48,6 +48,7 @@ export class DeadlineReminderIntegration {
 
     await this.queueService.enqueue({
       userId,
+      recipientType: 'student',
       templateKey: 'deadline_reminder',
       channel: 'in_app',
       category: 'deadline_reminder',

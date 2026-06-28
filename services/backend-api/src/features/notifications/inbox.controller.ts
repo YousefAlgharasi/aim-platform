@@ -3,9 +3,15 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { CurrentUser } from '../../auth/current-user.decorator';
 import { AuthenticatedUser } from '../../auth/authenticated-user';
+import { resolveAuthorizedRoles } from '../../auth/authorization/authorized-role.resolver';
+import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { InAppNotificationService } from './in-app-notification.service';
 import { NotificationAuditService } from './notification-audit.service';
 import { NotificationOwnershipGuard } from './guards';
+
+function resolveUserType(user: AuthenticatedUser): string {
+  return resolveAuthorizedRoles(user).includes(AuthorizedRole.PARENT) ? 'parent' : 'student';
+}
 
 @ApiTags('Notifications')
 @ApiBearerAuth()
@@ -47,7 +53,7 @@ export class InboxController {
     @Param('eventId') eventId: string,
   ) {
     const updated = await this.inAppService.markAsRead(eventId, user.id);
-    await this.auditService.log(user.id, 'notification_read', eventId, 'notification_event', null);
+    await this.auditService.log(user.id, resolveUserType(user), 'notification_read', 'notification_event', eventId, null);
     return updated;
   }
 
@@ -59,7 +65,7 @@ export class InboxController {
     @Param('eventId') eventId: string,
   ) {
     const updated = await this.inAppService.dismiss(eventId, user.id);
-    await this.auditService.log(user.id, 'notification_dismissed', eventId, 'notification_event', null);
+    await this.auditService.log(user.id, resolveUserType(user), 'notification_dismissed', 'notification_event', eventId, null);
     return updated;
   }
 }

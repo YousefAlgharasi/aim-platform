@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { NotificationRepository } from './notification.repository';
 import { NotificationEligibilityService } from './notification-eligibility.service';
-import { NotificationDigestRow, NotificationEventRow } from './notification-repository.types';
+import { NotificationDigestRow } from './notification-repository.types';
 
 @Injectable()
 export class NotificationDigestService {
@@ -12,17 +12,18 @@ export class NotificationDigestService {
     private readonly eligibility: NotificationEligibilityService,
   ) {}
 
-  async createDailyDigest(userId: string): Promise<NotificationDigestRow | null> {
-    return this.createDigest(userId, 'daily', 1);
+  async createDailyDigest(userId: string, recipientType: string): Promise<NotificationDigestRow | null> {
+    return this.createDigest(userId, recipientType, 'daily', 1);
   }
 
-  async createWeeklyDigest(userId: string): Promise<NotificationDigestRow | null> {
-    return this.createDigest(userId, 'weekly', 7);
+  async createWeeklyDigest(userId: string, recipientType: string): Promise<NotificationDigestRow | null> {
+    return this.createDigest(userId, recipientType, 'weekly', 7);
   }
 
   private async createDigest(
     userId: string,
-    frequency: string,
+    recipientType: string,
+    period: string,
     daysBack: number,
   ): Promise<NotificationDigestRow | null> {
     const check = await this.eligibility.checkEligibility(userId, 'in_app', 'parent_summary');
@@ -46,18 +47,19 @@ export class NotificationDigestService {
 
     return this.repo.createDigest(
       userId,
-      frequency,
+      recipientType,
+      period,
       periodStart.toISOString(),
       periodEnd.toISOString(),
-      eligibleEvents.length,
+      eligibleEvents.map((e) => e.id),
     );
   }
 
   async markDigestSent(digestId: string): Promise<void> {
-    await this.repo.updateDigestStatus(digestId, 'sent');
+    await this.repo.updateDigestState(digestId, 'sent');
   }
 
   async markDigestFailed(digestId: string): Promise<void> {
-    await this.repo.updateDigestStatus(digestId, 'failed');
+    this.logger.warn(`Digest ${digestId} failed to send; leaving state as pending for retry`);
   }
 }

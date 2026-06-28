@@ -48,6 +48,17 @@ export class NotificationRepository {
     return result.rows;
   }
 
+  async findTemplatesPage(limit: number, offset: number): Promise<{ rows: NotificationTemplateRow[]; total: number }> {
+    const [dataResult, countResult] = await Promise.all([
+      this.db.query<NotificationTemplateRow>(
+        `SELECT * FROM notification_templates ORDER BY key, channel, locale LIMIT $1 OFFSET $2`,
+        [limit, offset],
+      ),
+      this.db.query<{ count: string }>(`SELECT COUNT(*) AS count FROM notification_templates`),
+    ]);
+    return { rows: dataResult.rows, total: parseInt(countResult.rows[0]?.count ?? '0', 10) };
+  }
+
   async findTemplateById(id: string): Promise<NotificationTemplateRow | null> {
     const result = await this.db.query<NotificationTemplateRow>(
       `SELECT * FROM notification_templates WHERE id = $1 LIMIT 1`,
@@ -66,6 +77,17 @@ export class NotificationRepository {
     return result.rows;
   }
 
+  async findAllPreferences(limit: number, offset: number): Promise<{ rows: NotificationPreferenceRow[]; total: number }> {
+    const [dataResult, countResult] = await Promise.all([
+      this.db.query<NotificationPreferenceRow>(
+        `SELECT * FROM notification_preferences ORDER BY updated_at DESC LIMIT $1 OFFSET $2`,
+        [limit, offset],
+      ),
+      this.db.query<{ count: string }>(`SELECT COUNT(*) AS count FROM notification_preferences`),
+    ]);
+    return { rows: dataResult.rows, total: parseInt(countResult.rows[0]?.count ?? '0', 10) };
+  }
+
   async upsertPreference(
     userId: string,
     userType: string,
@@ -81,7 +103,7 @@ export class NotificationRepository {
        RETURNING *`,
       [userId, userType, channel, category, enabled],
     );
-    return result.rows[0] ?? null;
+    return result.rows[0];
   }
 
   // --- Device Tokens ---
@@ -98,29 +120,29 @@ export class NotificationRepository {
     userId: string,
     platform: string,
     token: string,
-    deviceName: string | null,
+    deviceLabel: string | null,
   ): Promise<DeviceTokenRow> {
     const result = await this.db.query<DeviceTokenRow>(
-      `INSERT INTO device_tokens (user_id, platform, token, device_name, last_seen_at)
+      `INSERT INTO device_tokens (user_id, platform, token, device_label, last_seen_at)
        VALUES ($1, $2, $3, $4, now())
-       ON CONFLICT (user_id, token)
-       DO UPDATE SET platform = $2, device_name = $4, status = 'active', last_seen_at = now(), updated_at = now()
+       ON CONFLICT (token)
+       DO UPDATE SET platform = $2, device_label = $4, status = 'active', last_seen_at = now(), updated_at = now()
        RETURNING *`,
-      [userId, platform, token, deviceName],
+      [userId, platform, token, deviceLabel],
     );
-    return result.rows[0] ?? null;
+    return result.rows[0];
   }
 
   async disableDeviceToken(tokenId: string, userId: string): Promise<void> {
     await this.db.query(
-      `UPDATE device_tokens SET status = 'disabled', updated_at = now() WHERE id = $1 AND user_id = $2`,
+      `UPDATE device_tokens SET status = 'revoked', updated_at = now() WHERE id = $1 AND user_id = $2`,
       [tokenId, userId],
     );
   }
 
   async cleanupExpiredTokens(daysOld: number): Promise<number> {
     const result = await this.db.query(
-      `UPDATE device_tokens SET status = 'expired', updated_at = now()
+      `UPDATE device_tokens SET status = 'stale', updated_at = now()
        WHERE status = 'active' AND last_seen_at < now() - INTERVAL '1 day' * $1
        RETURNING id`,
       [daysOld],
@@ -131,63 +153,61 @@ export class NotificationRepository {
   // --- Notification Events ---
 
   async createEvent(
-    userId: string,
+    recipientId: string,
+    recipientType: string,
     templateId: string,
     channel: string,
     category: string,
-    status: string,
-    title: string,
-    body: string,
-    scheduledAt: string | null,
+    state: string,
+    payload: Record<string, unknown>,
   ): Promise<NotificationEventRow> {
     const result = await this.db.query<NotificationEventRow>(
-      `INSERT INTO notification_events (user_id, template_id, channel, category, status, title, body, scheduled_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO notification_events (recipient_id, recipient_type, template_id, channel, category, payload, state)
+       VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7)
        RETURNING *`,
-      [userId, templateId, channel, category, status, title, body, scheduledAt],
+      [recipientId, recipientType, templateId, channel, category, JSON.stringify(payload), state],
     );
-    return result.rows[0] ?? null;
+    return result.rows[0];
   }
 
   async findEventsByUserId(
-    userId: string,
+    recipientId: string,
     channel: string,
     limit: number,
     offset: number,
   ): Promise<NotificationEventRow[]> {
     const result = await this.db.query<NotificationEventRow>(
       `SELECT * FROM notification_events
-       WHERE user_id = $1 AND channel = $2
+       WHERE recipient_id = $1 AND channel = $2
        ORDER BY created_at DESC LIMIT $3 OFFSET $4`,
-      [userId, channel, limit, offset],
+      [recipientId, channel, limit, offset],
     );
     return result.rows;
   }
 
   async findInAppEventsByUserId(
-    userId: string,
+    recipientId: string,
     limit: number,
     offset: number,
   ): Promise<NotificationEventRow[]> {
-    return this.findEventsByUserId(userId, 'in_app', limit, offset);
+    return this.findEventsByUserId(recipientId, 'in_app', limit, offset);
   }
 
   async updateEventStatus(
     eventId: string,
-    userId: string,
-    status: string,
+    recipientId: string,
+    state: string,
   ): Promise<NotificationEventRow | null> {
     const timestampColumns: Record<string, string> = {
       read: 'read_at',
       dismissed: 'dismissed_at',
-      sent: 'sent_at',
     };
-    const timestampField = timestampColumns[status];
+    const timestampField = timestampColumns[state];
     const extra = timestampField ? `, ${timestampField} = now()` : '';
     const result = await this.db.query<NotificationEventRow>(
-      `UPDATE notification_events SET status = $1, updated_at = now()${extra}
-       WHERE id = $2 AND user_id = $3 RETURNING *`,
-      [status, eventId, userId],
+      `UPDATE notification_events SET state = $1, updated_at = now()${extra}
+       WHERE id = $2 AND recipient_id = $3 RETURNING *`,
+      [state, eventId, recipientId],
     );
     return result.rows[0] ?? null;
   }
@@ -195,18 +215,32 @@ export class NotificationRepository {
   async findQueuedEvents(limit: number): Promise<NotificationEventRow[]> {
     const result = await this.db.query<NotificationEventRow>(
       `SELECT * FROM notification_events
-       WHERE status = 'queued' AND (scheduled_at IS NULL OR scheduled_at <= now())
+       WHERE state = 'queued'
        ORDER BY created_at ASC LIMIT $1`,
       [limit],
     );
     return result.rows;
   }
 
-  async countUnreadByUserId(userId: string): Promise<number> {
+  async findQueuedEventsPage(limit: number, offset: number): Promise<{ rows: NotificationEventRow[]; total: number }> {
+    const [dataResult, countResult] = await Promise.all([
+      this.db.query<NotificationEventRow>(
+        `SELECT * FROM notification_events WHERE state IN ('scheduled', 'queued')
+         ORDER BY created_at ASC LIMIT $1 OFFSET $2`,
+        [limit, offset],
+      ),
+      this.db.query<{ count: string }>(
+        `SELECT COUNT(*) AS count FROM notification_events WHERE state IN ('scheduled', 'queued')`,
+      ),
+    ]);
+    return { rows: dataResult.rows, total: parseInt(countResult.rows[0]?.count ?? '0', 10) };
+  }
+
+  async countUnreadByUserId(recipientId: string): Promise<number> {
     const result = await this.db.query<{ count: string }>(
       `SELECT COUNT(*) as count FROM notification_events
-       WHERE user_id = $1 AND channel = 'in_app' AND status NOT IN ('read', 'dismissed')`,
-      [userId],
+       WHERE recipient_id = $1 AND channel = 'in_app' AND state NOT IN ('read', 'dismissed')`,
+      [recipientId],
     );
     return parseInt(result.rows[0]?.count ?? '0', 10);
   }
@@ -214,35 +248,55 @@ export class NotificationRepository {
   // --- Reminder Schedules ---
 
   async createReminderSchedule(
-    userId: string,
-    reminderType: string,
-    cronExpression: string,
-    referenceId: string | null,
-    nextFireAt: string | null,
-    endsAt: string | null,
+    ownerId: string,
+    ownerType: string,
+    kind: string,
+    cadence: string,
+    nextRunAt: string,
   ): Promise<ReminderScheduleRow> {
     const result = await this.db.query<ReminderScheduleRow>(
-      `INSERT INTO reminder_schedules (user_id, reminder_type, cron_expression, reference_id, next_fire_at, ends_at)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO reminder_schedules (owner_id, owner_type, kind, cadence, next_run_at)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      [userId, reminderType, cronExpression, referenceId, nextFireAt, endsAt],
+      [ownerId, ownerType, kind, cadence, nextRunAt],
     );
-    return result.rows[0] ?? null;
+    return result.rows[0];
   }
 
-  async findActiveSchedulesByUserId(userId: string): Promise<ReminderScheduleRow[]> {
+  async findActiveSchedulesByUserId(ownerId: string): Promise<ReminderScheduleRow[]> {
     const result = await this.db.query<ReminderScheduleRow>(
-      `SELECT * FROM reminder_schedules WHERE user_id = $1 AND status = 'active' ORDER BY next_fire_at ASC`,
-      [userId],
+      `SELECT * FROM reminder_schedules WHERE owner_id = $1 AND status = 'active' ORDER BY next_run_at ASC`,
+      [ownerId],
     );
     return result.rows;
+  }
+
+  async findSchedulesPage(
+    limit: number,
+    offset: number,
+    status?: string,
+  ): Promise<{ rows: ReminderScheduleRow[]; total: number }> {
+    const where = status ? `WHERE status = $3` : '';
+    const dataParams = status ? [limit, offset, status] : [limit, offset];
+    const countParams = status ? [status] : [];
+    const [dataResult, countResult] = await Promise.all([
+      this.db.query<ReminderScheduleRow>(
+        `SELECT * FROM reminder_schedules ${where} ORDER BY next_run_at ASC LIMIT $1 OFFSET $2`,
+        dataParams,
+      ),
+      this.db.query<{ count: string }>(
+        `SELECT COUNT(*) AS count FROM reminder_schedules ${status ? 'WHERE status = $1' : ''}`,
+        countParams,
+      ),
+    ]);
+    return { rows: dataResult.rows, total: parseInt(countResult.rows[0]?.count ?? '0', 10) };
   }
 
   async findDueSchedules(limit: number): Promise<ReminderScheduleRow[]> {
     const result = await this.db.query<ReminderScheduleRow>(
       `SELECT * FROM reminder_schedules
-       WHERE status = 'active' AND next_fire_at <= now()
-       ORDER BY next_fire_at ASC LIMIT $1`,
+       WHERE status = 'active' AND next_run_at <= now()
+       ORDER BY next_run_at ASC LIMIT $1`,
       [limit],
     );
     return result.rows;
@@ -250,26 +304,22 @@ export class NotificationRepository {
 
   async updateScheduleStatus(
     scheduleId: string,
-    userId: string,
+    ownerId: string,
     status: string,
   ): Promise<ReminderScheduleRow | null> {
     const result = await this.db.query<ReminderScheduleRow>(
       `UPDATE reminder_schedules SET status = $1, updated_at = now()
-       WHERE id = $2 AND user_id = $3 RETURNING *`,
-      [status, scheduleId, userId],
+       WHERE id = $2 AND owner_id = $3 RETURNING *`,
+      [status, scheduleId, ownerId],
     );
     return result.rows[0] ?? null;
   }
 
-  async updateScheduleNextFire(
-    scheduleId: string,
-    nextFireAt: string,
-    lastFiredAt: string,
-  ): Promise<void> {
+  async updateScheduleNextRun(scheduleId: string, nextRunAt: string): Promise<void> {
     await this.db.query(
-      `UPDATE reminder_schedules SET next_fire_at = $1, last_fired_at = $2, updated_at = now()
-       WHERE id = $3`,
-      [nextFireAt, lastFiredAt, scheduleId],
+      `UPDATE reminder_schedules SET next_run_at = $1, updated_at = now()
+       WHERE id = $2`,
+      [nextRunAt, scheduleId],
     );
   }
 
@@ -278,18 +328,18 @@ export class NotificationRepository {
   async createDeliveryAttempt(
     notificationEventId: string,
     channel: string,
+    provider: string,
     status: string,
     attemptNumber: number,
     errorCode: string | null,
-    errorMessage: string | null,
   ): Promise<DeliveryAttemptRow> {
     const result = await this.db.query<DeliveryAttemptRow>(
-      `INSERT INTO notification_delivery_attempts (notification_event_id, channel, status, attempt_number, error_code, error_message, attempted_at)
-       VALUES ($1, $2, $3, $4, $5, $6, now())
+      `INSERT INTO notification_delivery_attempts (notification_event_id, channel, provider, status, attempt_number, error_code)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [notificationEventId, channel, status, attemptNumber, errorCode, errorMessage],
+      [notificationEventId, channel, provider, status, attemptNumber, errorCode],
     );
-    return result.rows[0] ?? null;
+    return result.rows[0];
   }
 
   async findAttemptsByEventId(eventId: string): Promise<DeliveryAttemptRow[]> {
@@ -303,25 +353,25 @@ export class NotificationRepository {
   // --- Digests ---
 
   async createDigest(
-    userId: string,
-    frequency: string,
+    recipientId: string,
+    recipientType: string,
+    period: string,
     periodStart: string,
     periodEnd: string,
-    eventCount: number,
+    eventIds: string[],
   ): Promise<NotificationDigestRow> {
     const result = await this.db.query<NotificationDigestRow>(
-      `INSERT INTO notification_digests (user_id, frequency, period_start, period_end, event_count)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [userId, frequency, periodStart, periodEnd, eventCount],
+      `INSERT INTO notification_digests (recipient_id, recipient_type, period, period_start, period_end, event_ids)
+       VALUES ($1, $2, $3, $4, $5, $6::uuid[]) RETURNING *`,
+      [recipientId, recipientType, period, periodStart, periodEnd, eventIds],
     );
-    return result.rows[0] ?? null;
+    return result.rows[0];
   }
 
-  async updateDigestStatus(digestId: string, status: string): Promise<void> {
-    const extra = status === 'sent' ? ', sent_at = now()' : '';
+  async updateDigestState(digestId: string, state: string): Promise<void> {
     await this.db.query(
-      `UPDATE notification_digests SET status = $1, updated_at = now()${extra} WHERE id = $2`,
-      [status, digestId],
+      `UPDATE notification_digests SET state = $1 WHERE id = $2`,
+      [state, digestId],
     );
   }
 
@@ -335,62 +385,81 @@ export class NotificationRepository {
     return result.rows[0] ?? null;
   }
 
+  // A row's mere existence means quiet hours are enabled (the table has no
+  // `enabled` column) -- disabling deletes the row.
   async upsertQuietHours(
     userId: string,
+    userType: string,
     enabled: boolean,
     startTime: string,
     endTime: string,
     timezone: string,
-  ): Promise<QuietHoursRow> {
+  ): Promise<QuietHoursRow | null> {
+    if (!enabled) {
+      await this.db.query(`DELETE FROM notification_quiet_hours WHERE user_id = $1`, [userId]);
+      return null;
+    }
     const result = await this.db.query<QuietHoursRow>(
-      `INSERT INTO notification_quiet_hours (user_id, enabled, start_time, end_time, timezone)
+      `INSERT INTO notification_quiet_hours (user_id, user_type, start_time, end_time, timezone)
        VALUES ($1, $2, $3, $4, $5)
        ON CONFLICT (user_id)
-       DO UPDATE SET enabled = $2, start_time = $3, end_time = $4, timezone = $5, updated_at = now()
+       DO UPDATE SET start_time = $3, end_time = $4, timezone = $5, updated_at = now()
        RETURNING *`,
-      [userId, enabled, startTime, endTime, timezone],
+      [userId, userType, startTime, endTime, timezone],
     );
-    return result.rows[0] ?? null;
+    return result.rows[0];
   }
 
   // --- Audit Logs ---
 
   async createAuditLog(
-    userId: string,
-    eventType: string,
-    resourceId: string | null,
-    resourceType: string | null,
+    actorId: string | null,
+    actorType: string,
+    action: string,
+    entityType: string,
+    entityId: string,
     metadata: Record<string, unknown> | null,
   ): Promise<NotificationAuditLogRow> {
     const result = await this.db.query<NotificationAuditLogRow>(
-      `INSERT INTO notification_audit_logs (user_id, event_type, resource_id, resource_type, metadata)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [userId, eventType, resourceId, resourceType, metadata ? JSON.stringify(metadata) : null],
+      `INSERT INTO notification_audit_logs (actor_id, actor_type, action, entity_type, entity_id, metadata)
+       VALUES ($1, $2, $3, $4, $5, $6::jsonb) RETURNING *`,
+      [actorId, actorType, action, entityType, entityId, JSON.stringify(metadata ?? {})],
     );
-    return result.rows[0] ?? null;
+    return result.rows[0];
   }
 
   async findAuditLogsByUserId(
-    userId: string,
+    actorId: string,
     limit: number,
     offset: number,
   ): Promise<NotificationAuditLogRow[]> {
     const result = await this.db.query<NotificationAuditLogRow>(
-      `SELECT * FROM notification_audit_logs WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
-      [userId, limit, offset],
+      `SELECT * FROM notification_audit_logs WHERE actor_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
+      [actorId, limit, offset],
     );
     return result.rows;
   }
 
   async findAuditLogsByEventType(
-    eventType: string,
+    action: string,
     limit: number,
     offset: number,
   ): Promise<NotificationAuditLogRow[]> {
     const result = await this.db.query<NotificationAuditLogRow>(
-      `SELECT * FROM notification_audit_logs WHERE event_type = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
-      [eventType, limit, offset],
+      `SELECT * FROM notification_audit_logs WHERE action = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
+      [action, limit, offset],
     );
     return result.rows;
+  }
+
+  async findAllAuditLogsPage(limit: number, offset: number): Promise<{ rows: NotificationAuditLogRow[]; total: number }> {
+    const [dataResult, countResult] = await Promise.all([
+      this.db.query<NotificationAuditLogRow>(
+        `SELECT * FROM notification_audit_logs ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
+        [limit, offset],
+      ),
+      this.db.query<{ count: string }>(`SELECT COUNT(*) AS count FROM notification_audit_logs`),
+    ]);
+    return { rows: dataResult.rows, total: parseInt(countResult.rows[0]?.count ?? '0', 10) };
   }
 }

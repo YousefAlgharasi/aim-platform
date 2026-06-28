@@ -42,12 +42,21 @@ export class InAppNotificationService {
 
   async createInAppEvent(
     userId: string,
+    recipientType: string,
     templateId: string,
     category: string,
     title: string,
     body: string,
   ): Promise<NotificationEventRow> {
-    const event = await this.repo.createEvent(userId, templateId, 'in_app', category, 'sent', title, body, null);
+    const event = await this.repo.createEvent(
+      userId,
+      recipientType,
+      templateId,
+      'in_app',
+      category,
+      'sent',
+      { title, body },
+    );
 
     await this.analyticsEventIngestionService.ingest({
       eventType: 'notification.delivered',

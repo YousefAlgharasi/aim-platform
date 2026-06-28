@@ -8,15 +8,13 @@ import { NotificationEventRow } from './notification-repository.types';
 function buildEvent(overrides: Partial<NotificationEventRow> = {}): NotificationEventRow {
   return {
     id: 'event-1',
-    user_id: 'user-1',
+    recipient_id: 'user-1',
+    recipient_type: 'student',
     template_id: 'template-1',
     channel: 'in_app',
     category: 'learning_reminder',
-    status: 'queued',
-    title: 'Title',
-    body: 'Body',
-    scheduled_at: null,
-    sent_at: null,
+    payload: { title: 'Title', body: 'Body' },
+    state: 'queued',
     read_at: null,
     dismissed_at: null,
     created_at: new Date().toISOString(),
@@ -63,7 +61,7 @@ describe('NotificationDeliveryWorker', () => {
     const processed = await worker.processQueue(10);
 
     expect(processed).toBe(1);
-    expect(mockRepo.createDeliveryAttempt).toHaveBeenCalledWith('event-1', 'in_app', 'success', 1, null, null);
+    expect(mockRepo.createDeliveryAttempt).toHaveBeenCalledWith('event-1', 'in_app', 'internal', 'success', 1, null);
     expect(mockRepo.updateEventStatus).toHaveBeenCalledWith('event-1', 'user-1', 'sent');
   });
 
@@ -74,7 +72,7 @@ describe('NotificationDeliveryWorker', () => {
     await worker.processQueue(10);
 
     expect(mockRepo.createDeliveryAttempt).toHaveBeenCalledWith(
-      'event-1', 'push', 'failed', 1, 'NO_TOKENS', 'No active device tokens',
+      'event-1', 'push', 'fcm', 'failed', 1, 'NO_TOKENS',
     );
     expect(mockRepo.updateEventStatus).toHaveBeenCalledWith('event-1', 'user-1', 'failed');
     expect(mockPushProvider.send).not.toHaveBeenCalled();
@@ -94,9 +92,9 @@ describe('NotificationDeliveryWorker', () => {
 
     expect(mockPushProvider.send).toHaveBeenCalledTimes(2);
     expect(mockRepo.createDeliveryAttempt).toHaveBeenCalledWith(
-      'event-1', 'push', 'failed', 1, 'INVALID_TOKEN', 'stale',
+      'event-1', 'push', 'fcm', 'failed', 1, 'INVALID_TOKEN',
     );
-    expect(mockRepo.createDeliveryAttempt).toHaveBeenCalledWith('event-1', 'push', 'success', 1, null, null);
+    expect(mockRepo.createDeliveryAttempt).toHaveBeenCalledWith('event-1', 'push', 'fcm', 'success', 1, null);
     expect(mockRepo.updateEventStatus).toHaveBeenCalledWith('event-1', 'user-1', 'sent');
   });
 
@@ -108,7 +106,7 @@ describe('NotificationDeliveryWorker', () => {
     await worker.processQueue(10);
 
     expect(mockRepo.updateEventStatus).toHaveBeenCalledWith('event-1', 'user-1', 'failed');
-    expect(mockRepo.createDeliveryAttempt).not.toHaveBeenCalledWith('event-1', 'push', 'success', 1, null, null);
+    expect(mockRepo.createDeliveryAttempt).not.toHaveBeenCalledWith('event-1', 'push', 'fcm', 'success', 1, null);
   });
 
   it('delivers email successfully via the email provider', async () => {
@@ -117,7 +115,7 @@ describe('NotificationDeliveryWorker', () => {
     await worker.processQueue(10);
 
     expect(mockEmailProvider.send).toHaveBeenCalled();
-    expect(mockRepo.createDeliveryAttempt).toHaveBeenCalledWith('event-1', 'email', 'success', 1, null, null);
+    expect(mockRepo.createDeliveryAttempt).toHaveBeenCalledWith('event-1', 'email', 'smtp', 'success', 1, null);
     expect(mockRepo.updateEventStatus).toHaveBeenCalledWith('event-1', 'user-1', 'sent');
   });
 
@@ -128,7 +126,7 @@ describe('NotificationDeliveryWorker', () => {
     await worker.processQueue(10);
 
     expect(mockRepo.createDeliveryAttempt).toHaveBeenCalledWith(
-      'event-1', 'email', 'failed', 1, 'BOUNCED', 'invalid address',
+      'event-1', 'email', 'smtp', 'failed', 1, 'BOUNCED',
     );
     expect(mockRepo.updateEventStatus).toHaveBeenCalledWith('event-1', 'user-1', 'failed');
   });

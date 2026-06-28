@@ -69,6 +69,7 @@ function makeSvc(db: import('../../../database/database.service').DatabaseServic
     recommendationOutput: { replaceActiveSet: jest.fn().mockResolvedValue({ skippedReason: 'null_or_empty_array' }) },
     reviewScheduleOutput: { upsertMany: jest.fn().mockResolvedValue({ processedCount: 0, skippedNullOrEmpty: true, actions: [] }) },
     sessionSummary: { persist: jest.fn().mockResolvedValue({ ok: true, action: 'skipped_null' }) },
+    learningReminderIntegration: { createReviewReminder: jest.fn().mockResolvedValue(undefined) },
   };
   const svc = new AimPersistenceService(
     db,
@@ -78,6 +79,7 @@ function makeSvc(db: import('../../../database/database.service').DatabaseServic
     stubs.recommendationOutput as never,
     stubs.reviewScheduleOutput as never,
     stubs.sessionSummary as never,
+    stubs.learningReminderIntegration as never,
   );
   return { svc, ...stubs };
 }
