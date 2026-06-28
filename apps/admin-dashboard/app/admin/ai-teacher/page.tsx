@@ -6,6 +6,10 @@ import {
   fetchAdminAiSafetyEvents,
   fetchAdminAiUsageCost,
   fetchAdminAiAuditLogs,
+  createAdminAiPromptDraft,
+  publishAdminAiPromptTemplate,
+  retireAdminAiPromptTemplate,
+  type CreatePromptTemplateDraftPayload,
 } from '../../../lib/api/admin-ai-teacher-api';
 import { AiTeacherClient, type AiTeacherSection } from './ai-teacher-client';
 
@@ -50,6 +54,51 @@ export default async function AdminAITeacherPage({ searchParams }: Props) {
         : 'Failed to load AI Teacher data.';
   }
 
+  async function handleCreateDraft(payload: CreatePromptTemplateDraftPayload): Promise<{ error?: string }> {
+    'use server';
+    const draftToken = await getAdminToken();
+    try {
+      await createAdminAiPromptDraft(draftToken, payload);
+      return {};
+    } catch (error) {
+      return {
+        error: error instanceof AdminApiClientError
+          ? `Backend error ${error.status}: ${error.message}`
+          : 'Failed to create prompt template draft.',
+      };
+    }
+  }
+
+  async function handlePublish(id: string): Promise<{ error?: string }> {
+    'use server';
+    const publishToken = await getAdminToken();
+    try {
+      await publishAdminAiPromptTemplate(publishToken, id);
+      return {};
+    } catch (error) {
+      return {
+        error: error instanceof AdminApiClientError
+          ? `Backend error ${error.status}: ${error.message}`
+          : 'Failed to publish prompt template.',
+      };
+    }
+  }
+
+  async function handleRetire(id: string): Promise<{ error?: string }> {
+    'use server';
+    const retireToken = await getAdminToken();
+    try {
+      await retireAdminAiPromptTemplate(retireToken, id);
+      return {};
+    } catch (error) {
+      return {
+        error: error instanceof AdminApiClientError
+          ? `Backend error ${error.status}: ${error.message}`
+          : 'Failed to retire prompt template.',
+      };
+    }
+  }
+
   return (
     <section className="admin-curriculum-page">
       <header className="admin-page-header">
@@ -59,16 +108,22 @@ export default async function AdminAITeacherPage({ searchParams }: Props) {
       </header>
 
       <div className="admin-boundary-note">
-        <strong>Read-only:</strong> AI Teacher prompt templates, model configuration, safety reviews,
-        usage/cost tracking, and audit logs are written server-side by the backend API.
-        No data can be edited from this surface.
+        <strong>Mostly read-only:</strong> Model configuration, safety reviews, usage/cost tracking,
+        and audit logs are written server-side by the backend API and cannot be edited here.
+        Prompt templates can be drafted, published, and retired from the Prompt Templates tab.
       </div>
 
       {fetchError && (
         <p className="admin-error-banner" role="alert">{fetchError}</p>
       )}
 
-      <AiTeacherClient section={section} rows={rows} />
+      <AiTeacherClient
+        section={section}
+        rows={rows}
+        onCreateDraft={handleCreateDraft}
+        onPublish={handlePublish}
+        onRetire={handleRetire}
+      />
     </section>
   );
 }

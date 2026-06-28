@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   AdminTable,
@@ -15,7 +16,9 @@ import type {
   AdminAiSafetyEventItem,
   AdminAiUsageCostItem,
   AdminAiAuditLogItem,
+  CreatePromptTemplateDraftPayload,
 } from '../../../lib/api/admin-ai-teacher-api';
+import { PromptDraftForm } from './prompt-draft-form';
 
 export type AiTeacherSection = 'prompts' | 'model-configs' | 'safety' | 'usage' | 'audit-logs';
 
@@ -30,16 +33,43 @@ const TABS: { key: AiTeacherSection; label: string }[] = [
 type Props = {
   readonly section: AiTeacherSection;
   readonly rows: readonly unknown[];
+  readonly onCreateDraft: (payload: CreatePromptTemplateDraftPayload) => Promise<{ error?: string }>;
+  readonly onPublish: (id: string) => Promise<{ error?: string }>;
+  readonly onRetire: (id: string) => Promise<{ error?: string }>;
 };
 
-const promptColumns: AdminTableColumn<AdminAiPromptTemplateItem>[] = [
-  { key: 'name', header: 'Name', render: (row) => <span style={{ fontSize: '13px' }}>{row.name}</span> },
-  { key: 'version', header: 'Version', render: (row) => <span>{row.version}</span> },
-  { key: 'locale', header: 'Locale', render: (row) => <span>{row.locale}</span> },
-  { key: 'audience', header: 'Audience', render: (row) => <span>{row.audience}</span> },
-  { key: 'status', header: 'Status', render: (row) => <AdminBadge variant={row.status === 'active' ? 'success' : 'default'}>{row.status}</AdminBadge> },
-  { key: 'updatedAt', header: 'Updated', render: (row) => <AdminDateCell date={row.updatedAt} /> },
-];
+function buildPromptColumns(
+  onPublish: (row: AdminAiPromptTemplateItem) => void,
+  onRetire: (row: AdminAiPromptTemplateItem) => void,
+  pendingId: string | null,
+): AdminTableColumn<AdminAiPromptTemplateItem>[] {
+  return [
+    { key: 'name', header: 'Name', render: (row) => <span style={{ fontSize: '13px' }}>{row.name}</span> },
+    { key: 'version', header: 'Version', render: (row) => <span>{row.version}</span> },
+    { key: 'locale', header: 'Locale', render: (row) => <span>{row.locale}</span> },
+    { key: 'audience', header: 'Audience', render: (row) => <span>{row.audience}</span> },
+    { key: 'status', header: 'Status', render: (row) => <AdminBadge variant={row.status === 'active' ? 'success' : 'default'}>{row.status}</AdminBadge> },
+    { key: 'updatedAt', header: 'Updated', render: (row) => <AdminDateCell date={row.updatedAt} /> },
+    {
+      key: 'actions',
+      header: 'Actions',
+      render: (row) => (
+        <div style={{ display: 'flex', gap: 'var(--space-8)' }}>
+          {row.status === 'draft' && (
+            <AdminButton size="sm" variant="primary" disabled={pendingId === row.id} onClick={() => onPublish(row)}>
+              Publish
+            </AdminButton>
+          )}
+          {row.status === 'active' && (
+            <AdminButton size="sm" variant="destructive" disabled={pendingId === row.id} onClick={() => onRetire(row)}>
+              Retire
+            </AdminButton>
+          )}
+        </div>
+      ),
+    },
+  ];
+}
 
 const modelConfigColumns: AdminTableColumn<AdminAiModelConfigItem>[] = [
   { key: 'name', header: 'Name', render: (row) => <span style={{ fontSize: '13px' }}>{row.name}</span> },
@@ -78,12 +108,54 @@ const auditColumns: AdminTableColumn<AdminAiAuditLogItem>[] = [
   { key: 'createdAt', header: 'Time', render: (row) => <AdminDateCell date={row.createdAt} /> },
 ];
 
-export function AiTeacherClient({ section, rows }: Props) {
+export function AiTeacherClient({ section, rows, onCreateDraft, onPublish, onRetire }: Props) {
   const router = useRouter();
+  const [showCreate, setShowCreate] = useState(false);
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
 
   function goToSection(next: AiTeacherSection) {
+    setShowCreate(false);
+    setActionError(null);
     router.push(`?section=${next}`);
   }
+
+  function refresh() {
+    startTransition(() => router.refresh());
+  }
+
+  async function handleCreateDraft(payload: CreatePromptTemplateDraftPayload) {
+    const result = await onCreateDraft(payload);
+    if (!result.error) refresh();
+    return result;
+  }
+
+  async function handlePublish(row: AdminAiPromptTemplateItem) {
+    setActionError(null);
+    setPendingId(row.id);
+    const result = await onPublish(row.id);
+    setPendingId(null);
+    if (result.error) {
+      setActionError(result.error);
+    } else {
+      refresh();
+    }
+  }
+
+  async function handleRetire(row: AdminAiPromptTemplateItem) {
+    setActionError(null);
+    setPendingId(row.id);
+    const result = await onRetire(row.id);
+    setPendingId(null);
+    if (result.error) {
+      setActionError(result.error);
+    } else {
+      refresh();
+    }
+  }
+
+  const promptColumns = buildPromptColumns(handlePublish, handleRetire, pendingId);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-16)' }}>
@@ -99,6 +171,24 @@ export function AiTeacherClient({ section, rows }: Props) {
           </AdminButton>
         ))}
       </div>
+
+      {section === 'prompts' && (
+        <div>
+          {!showCreate && (
+            <AdminButton size="sm" variant="primary" onClick={() => setShowCreate(true)}>
+              New Prompt Draft
+            </AdminButton>
+          )}
+        </div>
+      )}
+
+      {section === 'prompts' && showCreate && (
+        <PromptDraftForm onSubmit={handleCreateDraft} onDone={() => setShowCreate(false)} />
+      )}
+
+      {actionError && (
+        <p className="admin-error-banner" role="alert">{actionError}</p>
+      )}
 
       {rows.length === 0 ? (
         <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No entries to display for this section.</p>
