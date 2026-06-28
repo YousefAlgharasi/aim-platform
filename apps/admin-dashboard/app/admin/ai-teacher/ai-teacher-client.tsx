@@ -113,11 +113,13 @@ export function AiTeacherClient({ section, rows, onCreateDraft, onPublish, onRet
   const [showCreate, setShowCreate] = useState(false);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [, startTransition] = useTransition();
 
   function goToSection(next: AiTeacherSection) {
     setShowCreate(false);
     setActionError(null);
+    setSearchQuery('');
     router.push(`?section=${next}`);
   }
 
@@ -156,9 +158,33 @@ export function AiTeacherClient({ section, rows, onCreateDraft, onPublish, onRet
   }
 
   const promptColumns = buildPromptColumns(handlePublish, handleRetire, pendingId);
+  const currentTab = TABS.find((tab) => tab.key === section);
+
+  const statusCounts = section === 'prompts' || section === 'model-configs'
+    ? countByStatus(rows as { status: string }[])
+    : null;
+
+  const filteredRows = section === 'prompts' && searchQuery.trim()
+    ? (rows as AdminAiPromptTemplateItem[]).filter((row) =>
+        row.name.toLowerCase().includes(searchQuery.trim().toLowerCase()))
+    : rows;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-16)' }}>
+      <div className="ait-uh">
+        <div className="ait-uh-left">
+          <p className="ait-uh-eyebrow">Admin — AI Management</p>
+          <h1 className="ait-uh-title">AI Teacher</h1>
+          <p className="ait-uh-sub">{rows.length} {currentTab?.label.toLowerCase()} entr{rows.length !== 1 ? 'ies' : 'y'}</p>
+        </div>
+        {section === 'prompts' && !showCreate && (
+          <button type="button" className="ait-add-btn" onClick={() => setShowCreate(true)}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14m-7-7h14"/></svg>
+            New Prompt Draft
+          </button>
+        )}
+      </div>
+
       <nav className="ait-nav" aria-label="AI Teacher navigation">
         <ul className="ait-nav-list" role="list">
           {TABS.map((tab) => (
@@ -176,7 +202,99 @@ export function AiTeacherClient({ section, rows, onCreateDraft, onPublish, onRet
         </ul>
       </nav>
 
+      {statusCounts && (
+        <div className="ait-stats">
+          {Object.entries(statusCounts).map(([status, count]) => (
+            <div key={status} className={`ait-sp ait-sp--${status === 'active' ? 'active' : status === 'draft' ? 'pending' : 'disabled'}`}>
+              <span className="ait-sp-dot" />
+              {count} {status}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {section === 'prompts' && !showCreate && (
+        <div className="ait-search">
+          <svg className="ait-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by name…"
+            className="ait-search-input"
+          />
+        </div>
+      )}
+
+      {section === 'prompts' && showCreate && (
+        <PromptDraftForm onSubmit={handleCreateDraft} onDone={() => setShowCreate(false)} />
+      )}
+
+      {actionError && (
+        <p className="admin-error-banner" role="alert">{actionError}</p>
+      )}
+
+      {filteredRows.length === 0 ? (
+        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No entries to display for this section.</p>
+      ) : (
+        <>
+          {section === 'prompts' && (
+            <AdminTable
+              columns={promptColumns}
+              rows={filteredRows as AdminAiPromptTemplateItem[]}
+              getRowKey={(row) => row.id}
+              caption={`${filteredRows.length} prompt template versions`}
+            />
+          )}
+          {section === 'model-configs' && (
+            <AdminTable
+              columns={modelConfigColumns}
+              rows={rows as AdminAiModelConfigItem[]}
+              getRowKey={(row) => row.id}
+              caption={`${rows.length} model configs`}
+            />
+          )}
+          {section === 'safety' && (
+            <AdminTable
+              columns={safetyColumns}
+              rows={rows as AdminAiSafetyEventItem[]}
+              getRowKey={(row) => row.id}
+              caption={`${rows.length} rejected safety events`}
+            />
+          )}
+          {section === 'usage' && (
+            <AdminTable
+              columns={usageColumns}
+              rows={rows as AdminAiUsageCostItem[]}
+              getRowKey={(row) => row.id}
+              caption={`${rows.length} usage/cost events`}
+            />
+          )}
+          {section === 'audit-logs' && (
+            <AdminTable
+              columns={auditColumns}
+              rows={rows as AdminAiAuditLogItem[]}
+              getRowKey={(row) => row.id}
+              caption={`${rows.length} audit log entries`}
+            />
+          )}
+        </>
+      )}
+
       <style>{`
+        .ait-uh { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-12); }
+        .ait-uh-left { display: flex; flex-direction: column; gap: 2px; }
+        .ait-uh-eyebrow { margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary-500); }
+        .ait-uh-title { margin: 0; font-size: 26px; font-weight: 700; color: var(--text-primary); }
+        .ait-uh-sub { margin: 0; font-size: 14px; color: var(--text-secondary); }
+        .ait-add-btn {
+          display: inline-flex; align-items: center; gap: 8px; height: 40px;
+          padding: 0 20px; border: none; border-radius: var(--radius-md);
+          background: var(--color-primary-500); color: white;
+          font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer;
+        }
+        .ait-add-btn:hover { background: var(--color-primary-600); }
+
         .ait-nav {
           border-bottom: 1px solid var(--border);
           padding-bottom: var(--space-8);
@@ -221,75 +339,50 @@ export function AiTeacherClient({ section, rows, onCreateDraft, onPublish, onRet
           font-weight: var(--weight-semibold);
           background: var(--state-hover);
         }
+
+        .ait-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+        .ait-sp {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
+          text-transform: capitalize;
+        }
+        .ait-sp--active { background: color-mix(in srgb, var(--color-success-500) 12%, transparent); color: var(--color-success-600); }
+        .ait-sp--active .ait-sp-dot { background: var(--color-success-500); }
+        .ait-sp--pending { background: color-mix(in srgb, var(--color-warning-500, #f59e0b) 12%, transparent); color: var(--color-warning-600, #d97706); }
+        .ait-sp--pending .ait-sp-dot { background: var(--color-warning-500, #f59e0b); }
+        .ait-sp--disabled { background: var(--surface-sunken); color: var(--text-secondary); }
+        .ait-sp--disabled .ait-sp-dot { background: var(--text-muted); }
+        .ait-sp-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+        .ait-search { position: relative; max-width: 340px; }
+        .ait-search-icon {
+          position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+          color: var(--text-muted); pointer-events: none;
+        }
+        .ait-search-input {
+          width: 100%; height: 40px; padding: 0 12px 0 36px;
+          border: 1px solid var(--border); border-radius: var(--radius-md);
+          background: var(--surface); color: var(--text-primary);
+          font-size: 14px; font-family: inherit;
+        }
+        .ait-search-input:focus {
+          outline: none; border-color: var(--color-primary-500);
+          box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary-500) 15%, transparent);
+        }
+        .ait-search-input::placeholder { color: var(--text-muted); }
+
         @media (max-width: 640px) {
           .ait-nav { padding-inline-start: var(--space-4); }
+          .ait-search { max-width: none; }
         }
       `}</style>
-
-      {section === 'prompts' && (
-        <div>
-          {!showCreate && (
-            <AdminButton size="sm" variant="primary" onClick={() => setShowCreate(true)}>
-              New Prompt Draft
-            </AdminButton>
-          )}
-        </div>
-      )}
-
-      {section === 'prompts' && showCreate && (
-        <PromptDraftForm onSubmit={handleCreateDraft} onDone={() => setShowCreate(false)} />
-      )}
-
-      {actionError && (
-        <p className="admin-error-banner" role="alert">{actionError}</p>
-      )}
-
-      {rows.length === 0 ? (
-        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No entries to display for this section.</p>
-      ) : (
-        <>
-          {section === 'prompts' && (
-            <AdminTable
-              columns={promptColumns}
-              rows={rows as AdminAiPromptTemplateItem[]}
-              getRowKey={(row) => row.id}
-              caption={`${rows.length} prompt template versions`}
-            />
-          )}
-          {section === 'model-configs' && (
-            <AdminTable
-              columns={modelConfigColumns}
-              rows={rows as AdminAiModelConfigItem[]}
-              getRowKey={(row) => row.id}
-              caption={`${rows.length} model configs`}
-            />
-          )}
-          {section === 'safety' && (
-            <AdminTable
-              columns={safetyColumns}
-              rows={rows as AdminAiSafetyEventItem[]}
-              getRowKey={(row) => row.id}
-              caption={`${rows.length} rejected safety events`}
-            />
-          )}
-          {section === 'usage' && (
-            <AdminTable
-              columns={usageColumns}
-              rows={rows as AdminAiUsageCostItem[]}
-              getRowKey={(row) => row.id}
-              caption={`${rows.length} usage/cost events`}
-            />
-          )}
-          {section === 'audit-logs' && (
-            <AdminTable
-              columns={auditColumns}
-              rows={rows as AdminAiAuditLogItem[]}
-              getRowKey={(row) => row.id}
-              caption={`${rows.length} audit log entries`}
-            />
-          )}
-        </>
-      )}
     </div>
   );
+}
+
+function countByStatus(rows: readonly { status: string }[]): Record<string, number> {
+  return rows.reduce<Record<string, number>>((acc, row) => {
+    acc[row.status] = (acc[row.status] ?? 0) + 1;
+    return acc;
+  }, {});
 }
