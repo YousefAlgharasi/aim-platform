@@ -45,4 +45,9 @@ export interface BackendConfig {
   readonly cors: {
     readonly origins: readonly string[];
   };
+  /** P19-006 — Placement retake cooldown, configurable per environment. */
+  readonly placement: {
+    /** Hours a student must wait after a completed attempt before retaking. Default 24. */
+    readonly retakeCooldownHours: number;
+  };
 }

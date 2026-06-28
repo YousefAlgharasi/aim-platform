@@ -24,6 +24,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AppError } from '../../common/errors/app-error';
+import { PlacementErrorCode } from './placement-error-codes';
 
 // ---------------------------------------------------------------------------
 // Internal DB row types
@@ -139,7 +140,7 @@ export class PlacementResultReadService {
 
     if ((attemptResult.rowCount ?? 0) === 0) {
       throw new AppError({
-        code: 'ATTEMPT_NOT_FOUND',
+        code: PlacementErrorCode.ATTEMPT_NOT_FOUND,
         message: 'Placement attempt not found or does not belong to you.',
         statusCode: HttpStatus.NOT_FOUND,
       });
@@ -152,7 +153,7 @@ export class PlacementResultReadService {
     // -----------------------------------------------------------------------
     if (attempt.status !== 'completed') {
       throw new AppError({
-        code: 'ATTEMPT_NOT_COMPLETED',
+        code: PlacementErrorCode.ATTEMPT_NOT_COMPLETED,
         message: `Placement result is not available yet (attempt status: ${attempt.status}).`,
         statusCode: HttpStatus.CONFLICT,
       });
@@ -172,7 +173,7 @@ export class PlacementResultReadService {
 
     if ((resultQuery.rowCount ?? 0) === 0) {
       throw new AppError({
-        code: 'RESULT_NOT_FOUND',
+        code: PlacementErrorCode.RESULT_NOT_FOUND,
         message: 'Placement result not found for this attempt.',
         statusCode: HttpStatus.NOT_FOUND,
       });

@@ -168,12 +168,13 @@ void main() {
       await tester.pump();
 
       expect(find.text('Choose the correct option.'), findsOneWidget);
-      // Each option letter renders twice: once in the key badge, once as
-      // the child label (PlacementQuestionPage always shows A/B/C/D for
-      // multiple_choice regardless of the model's option text).
-      expect(find.text('A'), findsNWidgets(2));
-      expect(find.text('B'), findsNWidgets(2));
-      expect(find.byType(AIMAnswerOption), findsNWidgets(4));
+      // Each option's letter renders once in the key badge; the child label
+      // combines the letter with the option's own text (e.g. "A) Alpha").
+      expect(find.text('A'), findsOneWidget);
+      expect(find.text('B'), findsOneWidget);
+      expect(find.text('A) Alpha'), findsOneWidget);
+      expect(find.text('B) Beta'), findsOneWidget);
+      expect(find.byType(AIMAnswerOption), findsNWidgets(2));
       expect(find.byType(AIMButton), findsOneWidget);
     });
 

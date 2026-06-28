@@ -15,6 +15,7 @@ import { UsersModule } from '../users/users.module';
 import { PlacementController } from './placement.controller';
 import { PlacementAdminController } from './placement-admin.controller';
 import { PlacementAdminTestReadService } from './placement-admin-test-read.service';
+import { PlacementAdminWriteService } from './placement-admin-write.service';
 import { PlacementQuestionDeliveryService } from './placement-question-delivery.service';
 import { PlacementAttemptService } from './placement-attempt.service';
 import { PlacementAnswerSubmitService } from './placement-answer-submit.service';
@@ -26,6 +27,7 @@ import { PlacementInitialLearningPathService } from './placement-initial-learnin
 import { PlacementResultReadService } from './placement-result-read.service';
 import { PlacementRetakePolicyService } from './placement-retake-policy.service';
 import { PlacementAuditService } from './placement-audit.service';
+import { PlacementAnalyticsService } from './placement-analytics.service';
 import { PlacementPermissionGuard } from './placement-permission.guard';
 import { PlacementSectionsService } from './placement-sections.service';
 import { PlacementTestReadService } from './placement-test-read.service';
@@ -36,6 +38,7 @@ import { PlacementTestReadService } from './placement-test-read.service';
   providers: [
     PlacementTestReadService,
     PlacementAdminTestReadService,
+    PlacementAdminWriteService,
     PlacementSectionsService,
     PlacementQuestionDeliveryService,
     PlacementAttemptService,
@@ -48,6 +51,7 @@ import { PlacementTestReadService } from './placement-test-read.service';
     PlacementInitialLearningPathService,
     PlacementResultReadService,
     PlacementAuditService,
+    PlacementAnalyticsService,
     PlacementPermissionGuard,
   ],
   exports: [

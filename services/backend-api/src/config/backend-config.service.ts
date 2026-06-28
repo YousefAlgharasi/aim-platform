@@ -42,6 +42,10 @@ export class BackendConfigService {
     return this.config.ttsProvider;
   }
 
+  get placement(): BackendConfig['placement'] {
+    return this.config.placement;
+  }
+
   snapshot(): BackendConfig {
     return this.config;
   }

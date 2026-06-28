@@ -3,10 +3,8 @@
 //
 // Verifies that each model:
 //   - Parses all contract fields from JSON correctly.
-//   - Re-serialises to JSON without data loss.
 //   - Does NOT compute, transform, or infer any backend-owned AIM values
-//     (band, masteryLevel, coveragePercent, severity, recommendedFocus,
-//      action, reason).
+//     (masteryScore, masteryTrend, severity, status, reason, kind).
 
 import 'package:flutter_test/flutter_test.dart';
 
@@ -15,106 +13,119 @@ import 'package:aim_mobile/features/learning_path/data/models/learning_path_mode
 void main() {
   group('LearningPathSkillStateModel', () {
     const json = {
-      'topic': 'algebra',
-      'band': 'Proficient',
-      'masteryLevel': 'strong',
-      'coveragePercent': 72.5,
+      'skillId': 'skill-algebra',
+      'masteryScore': 0.72,
+      'masteryConfidence': 0.8,
+      'masteryTrend': 'improving',
+      'lastAttemptId': 'attempt-1',
+      'lastEvaluatedAt': '2026-01-01T00:00:00Z',
+      'updatedAt': '2026-01-02T00:00:00Z',
     };
 
     test('parses all contract fields from JSON', () {
       final model = LearningPathSkillStateModel.fromJson(json);
-      expect(model.topic, 'algebra');
-      expect(model.band, 'Proficient');
-      expect(model.masteryLevel, 'strong');
-      expect(model.coveragePercent, 72.5);
+      expect(model.skillId, 'skill-algebra');
+      expect(model.masteryScore, 0.72);
+      expect(model.masteryConfidence, 0.8);
+      expect(model.masteryTrend, 'improving');
     });
 
-    test('round-trips through toJson without data loss', () {
-      final model = LearningPathSkillStateModel.fromJson(json);
-      expect(model.toJson(), json);
-    });
-
-    test('parses coveragePercent from int JSON value (num coercion)', () {
+    test('parses masteryScore from int JSON value (num coercion)', () {
       final model = LearningPathSkillStateModel.fromJson(const {
-        'topic': 'grammar',
-        'band': 'Developing',
-        'masteryLevel': 'emerging',
-        'coveragePercent': 50,
+        'skillId': 'skill-grammar',
+        'masteryScore': 1,
+        'masteryConfidence': 1,
+        'masteryTrend': 'stable',
+        'lastAttemptId': 'attempt-2',
+        'lastEvaluatedAt': '2026-01-01T00:00:00Z',
+        'updatedAt': '2026-01-02T00:00:00Z',
       });
-      expect(model.coveragePercent, 50.0);
-      expect(model.coveragePercent, isA<double>());
+      expect(model.masteryScore, 1.0);
+      expect(model.masteryScore, isA<double>());
     });
 
-    test('preserves backend band and masteryLevel verbatim — no local mapping',
+    test('preserves backend skillId and masteryTrend verbatim — no local mapping',
         () {
       final model = LearningPathSkillStateModel.fromJson(const {
-        'topic': 'trigonometry',
-        'band': 'Advanced',
-        'masteryLevel': 'proficient',
-        'coveragePercent': 90.0,
+        'skillId': 'skill-trigonometry',
+        'masteryScore': 0.9,
+        'masteryConfidence': 0.85,
+        'masteryTrend': 'declining',
+        'lastAttemptId': 'attempt-3',
+        'lastEvaluatedAt': '2026-01-01T00:00:00Z',
+        'updatedAt': '2026-01-02T00:00:00Z',
       });
-      expect(model.band, 'Advanced');
-      expect(model.masteryLevel, 'proficient');
+      expect(model.skillId, 'skill-trigonometry');
+      expect(model.masteryTrend, 'declining');
     });
   });
 
   group('LearningPathWeaknessRecordModel', () {
     const json = {
-      'topic': 'fractions',
+      'weaknessId': 'weakness-fractions',
+      'skillId': 'skill-fractions',
       'severity': 'high',
-      'recommendedFocus': 'equivalent fractions',
+      'status': 'open',
+      'triggerAttemptIds': ['attempt-1'],
+      'detectedAt': '2026-01-01T00:00:00Z',
+      'updatedAt': '2026-01-02T00:00:00Z',
     };
 
     test('parses all contract fields from JSON', () {
       final model = LearningPathWeaknessRecordModel.fromJson(json);
-      expect(model.topic, 'fractions');
+      expect(model.skillId, 'skill-fractions');
       expect(model.severity, 'high');
-      expect(model.recommendedFocus, 'equivalent fractions');
+      expect(model.status, 'open');
     });
 
-    test('round-trips through toJson without data loss', () {
-      final model = LearningPathWeaknessRecordModel.fromJson(json);
-      expect(model.toJson(), json);
-    });
-
-    test('preserves backend severity and recommendedFocus verbatim', () {
+    test('preserves backend severity and status verbatim', () {
       final model = LearningPathWeaknessRecordModel.fromJson(const {
-        'topic': 'geometry',
+        'weaknessId': 'weakness-geometry',
+        'skillId': 'skill-geometry',
         'severity': 'medium',
-        'recommendedFocus': 'area of polygons',
+        'status': 'resolved',
+        'triggerAttemptIds': ['attempt-2'],
+        'detectedAt': '2026-01-01T00:00:00Z',
+        'resolvedAt': '2026-01-03T00:00:00Z',
+        'updatedAt': '2026-01-03T00:00:00Z',
       });
       expect(model.severity, 'medium');
-      expect(model.recommendedFocus, 'area of polygons');
+      expect(model.status, 'resolved');
     });
   });
 
   group('LearningPathRecommendationModel', () {
     const json = {
-      'topic': 'algebra',
-      'action': 'practice',
+      'id': 'rec-algebra',
+      'kind': 'practice',
+      'targetSkillId': 'skill-algebra',
+      'rank': 1,
       'reason': 'Coverage below threshold.',
+      'generatedAt': '2026-01-01T00:00:00Z',
+      'status': 'active',
+      'updatedAt': '2026-01-01T00:00:00Z',
     };
 
     test('parses all contract fields from JSON', () {
       final model = LearningPathRecommendationModel.fromJson(json);
-      expect(model.topic, 'algebra');
-      expect(model.action, 'practice');
+      expect(model.targetSkillId, 'skill-algebra');
+      expect(model.kind, 'practice');
       expect(model.reason, 'Coverage below threshold.');
     });
 
-    test('round-trips through toJson without data loss', () {
-      final model = LearningPathRecommendationModel.fromJson(json);
-      expect(model.toJson(), json);
-    });
-
-    test('preserves backend action and reason verbatim — no local generation',
+    test('preserves backend kind and reason verbatim — no local generation',
         () {
       final model = LearningPathRecommendationModel.fromJson(const {
-        'topic': 'grammar',
-        'action': 'review',
+        'id': 'rec-grammar',
+        'kind': 'review',
+        'targetSkillId': 'skill-grammar',
+        'rank': 2,
         'reason': 'Mastery dropped since last session.',
+        'generatedAt': '2026-01-01T00:00:00Z',
+        'status': 'active',
+        'updatedAt': '2026-01-01T00:00:00Z',
       });
-      expect(model.action, 'review');
+      expect(model.kind, 'review');
       expect(model.reason, 'Mastery dropped since last session.');
     });
   });

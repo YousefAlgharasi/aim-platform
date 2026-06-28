@@ -18,6 +18,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/placement/data/models/placement_test_model.dart';
@@ -110,7 +111,7 @@ class _ReadyBody extends StatelessWidget {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AimSpacing.space24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -121,48 +122,46 @@ class _ReadyBody extends StatelessWidget {
               size: 72,
               color: colorScheme.primary,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AimSpacing.space24),
             // Title
             Text(
               test.title,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: AimTextStyles.h2.copyWith(color: colorScheme.onSurface),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AimSpacing.space8),
             Text(
               'Determine your English level',
-              style: theme.textTheme.bodyMedium?.copyWith(
+              style: AimTextStyles.bodyMd.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: AimSpacing.space32),
             // Info cards
             _InfoRow(
               icon: Icons.layers_outlined,
               label: 'Sections',
               value: '${test.totalSections}',
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AimSpacing.space12),
             _InfoRow(
               icon: Icons.timer_outlined,
               label: 'Estimated time',
               value: '${test.estimatedMinutes} min',
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: AimSpacing.space32),
             // Boundary note — backend authority
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(AimSpacing.space12),
               decoration: BoxDecoration(
                 color: colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: AimRadius.borderSm,
               ),
               child: Text(
                 'Your level is determined by the backend after completion. '
                 'Results are never calculated on your device.',
-                style: theme.textTheme.bodySmall?.copyWith(
+                style: AimTextStyles.bodySm.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),
                 textAlign: TextAlign.center,
@@ -172,11 +171,13 @@ class _ReadyBody extends StatelessWidget {
             FilledButton(
               onPressed: onStart,
               style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: AimSpacing.space16,
+                ),
               ),
               child: const Text('Start Placement Test'),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AimSpacing.space12),
             TextButton(
               onPressed: () => Navigator.of(context).maybePop(),
               child: const Text('Not now'),
@@ -202,7 +203,7 @@ class _ErrorBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AimSpacing.space24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -211,21 +212,23 @@ class _ErrorBody extends StatelessWidget {
               size: 48,
               color: Theme.of(context).colorScheme.error,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AimSpacing.space16),
             Text(
               'Could not load placement test',
-              style: Theme.of(context).textTheme.titleMedium,
+              style: AimTextStyles.title.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AimSpacing.space8),
             Text(
               message,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+              style: AimTextStyles.bodySm.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AimSpacing.space24),
             FilledButton.tonal(
               onPressed: onRetry,
               child: const Text('Retry'),
@@ -257,19 +260,19 @@ class _InfoRow extends StatelessWidget {
     final theme = Theme.of(context);
     return Row(
       children: [
-        Icon(icon, size: 20, color: theme.colorScheme.primary),
-        const SizedBox(width: 12),
+        Icon(icon, size: AimSizes.iconMd, color: theme.colorScheme.primary),
+        const SizedBox(width: AimSpacing.space12),
         Text(
           label,
-          style: theme.textTheme.bodyMedium?.copyWith(
+          style: AimTextStyles.bodyMd.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
         const Spacer(),
         Text(
           value,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w600,
+          style: AimTextStyles.bodyMd.copyWith(
+            fontWeight: AimFontWeights.semibold,
           ),
         ),
       ],

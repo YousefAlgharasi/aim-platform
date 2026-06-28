@@ -23,6 +23,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_provider.dart';
@@ -68,7 +69,7 @@ class _PlacementSubmitPageState extends ConsumerState<PlacementSubmitPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 CircularProgressIndicator(),
-                SizedBox(height: 20),
+                SizedBox(height: AimSpacing.space20),
                 Text('Submitting your answers…'),
               ],
             ),
@@ -110,25 +111,27 @@ class _ConfirmBody extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.all(32.0),
+      padding: const EdgeInsets.all(AimSpacing.space32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const Spacer(),
 
           // Completion icon
-          const Icon(Icons.check_circle_outline, size: 80, color: Color(0xFF27AE60)),
-          const SizedBox(height: 28),
+          const Icon(
+            Icons.check_circle_outline,
+            size: 80,
+            color: AimColors.success500,
+          ),
+          const SizedBox(height: AimSpacing.space24),
 
           // Headline
           Text(
             'All sections complete!',
             textAlign: TextAlign.center,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: AimTextStyles.h2.copyWith(color: theme.colorScheme.onSurface),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AimSpacing.space16),
 
           // Subtext — sets expectations, no scores shown here
           Text(
@@ -136,26 +139,25 @@ class _ConfirmBody extends StatelessWidget {
             'the backend will evaluate your results and determine '
             'your starting level.',
             textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(
+            style: AimTextStyles.bodyMd.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
-              height: 1.5,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AimSpacing.space12),
 
           // Backend authority note — security compliance
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(AimSpacing.space12),
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: AimRadius.borderSm,
             ),
             child: Text(
               'Scoring is performed by the server. '
               'Your estimated level and study plan will be available '
               'on the result page.',
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodySmall?.copyWith(
+              style: AimTextStyles.bodySm.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
               ),
             ),
@@ -166,12 +168,12 @@ class _ConfirmBody extends StatelessWidget {
           // Submit button
           FilledButton(
             onPressed: onSubmit,
-            child: const Padding(
-              padding: EdgeInsets.symmetric(vertical: 4.0),
-              child: Text('Submit Placement Test', style: TextStyle(fontSize: 16)),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: AimSpacing.space4),
+              child: Text('Submit Placement Test', style: AimTextStyles.bodyMd),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AimSpacing.space16),
         ],
       ),
     );
@@ -192,18 +194,20 @@ class _ErrorBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(AimSpacing.space24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 16),
+            const Icon(Icons.error_outline, size: 48, color: AimColors.error500),
+            const SizedBox(height: AimSpacing.space16),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: AimTextStyles.bodyMd.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AimSpacing.space24),
             OutlinedButton(onPressed: onRetry, child: const Text('Try Again')),
           ],
         ),

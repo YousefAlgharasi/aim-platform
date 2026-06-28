@@ -45,24 +45,36 @@ Widget _wrap(
 LearningPathData _populated() => const LearningPathData(
       skillStates: [
         LearningPathSkillStateModel(
-          topic: 'Algebra',
-          band: 'Developing',
-          masteryLevel: 'beginner',
-          coveragePercent: 42.0,
+          skillId: 'skill-algebra',
+          masteryScore: 0.42,
+          masteryConfidence: 0.6,
+          masteryTrend: 'improving',
+          lastAttemptId: 'attempt-1',
+          lastEvaluatedAt: '2025-05-30T00:00:00Z',
+          updatedAt: '2025-06-01T00:00:00Z',
         ),
       ],
       weaknessRecords: [
         LearningPathWeaknessRecordModel(
-          topic: 'Fractions',
+          weaknessId: 'weakness-fractions',
+          skillId: 'skill-fractions',
           severity: 'high',
-          recommendedFocus: 'Division of fractions',
+          status: 'open',
+          triggerAttemptIds: ['attempt-2'],
+          detectedAt: '2025-05-28T00:00:00Z',
+          updatedAt: '2025-06-01T00:00:00Z',
         ),
       ],
       recommendations: [
         LearningPathRecommendationModel(
-          topic: 'Algebra',
-          action: 'Practice factoring',
+          id: 'rec-algebra',
+          kind: 'practice',
+          targetSkillId: 'skill-algebra',
+          rank: 1,
           reason: 'Backend-identified weakness in factoring.',
+          generatedAt: '2025-06-01T00:00:00Z',
+          status: 'active',
+          updatedAt: '2025-06-01T00:00:00Z',
         ),
       ],
     );

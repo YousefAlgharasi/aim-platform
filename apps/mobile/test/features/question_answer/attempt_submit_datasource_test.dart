@@ -9,7 +9,7 @@
 //   5.  AttemptSubmitRequestModel.toJson never contains isCorrect.
 //   6.  AttemptSubmitRequestModel.toJson never contains skillIds.
 //   7.  AttemptSubmitRequestModel.toJson has exactly 3 keys.
-//   8.  AttemptSubmitResponseModel.fromJson parses isCorrect verbatim.
+//   8.  AttemptSubmitResponseModel.fromJson silently drops isCorrect.
 //   9.  AttemptSubmitResponseModel.fromJson parses attemptId and answerId.
 //  10.  Interface contract: submitAttempt accepts backend-supplied sessionId.
 
@@ -71,13 +71,17 @@ void main() {
       'attemptNumberForItem': 1,
       'isCorrect': true,
       'submittedAt': '2025-06-01T10:00:10Z',
+      'aimPipelineTriggered': false,
+      'aimOutcome': 'deferred',
     };
 
-    test('8. fromJson parses isCorrect verbatim from backend', () {
-      expect(AttemptSubmitResponseModel.fromJson(json).isCorrect, isTrue);
+    test('8. fromJson silently drops isCorrect from backend', () {
+      expect(AttemptSubmitResponseModel.fromJson(json).toJson().containsKey('isCorrect'),
+          isFalse);
       expect(
         AttemptSubmitResponseModel.fromJson({...json, 'isCorrect': false})
-            .isCorrect,
+            .toJson()
+            .containsKey('isCorrect'),
         isFalse,
       );
     });
@@ -122,5 +126,7 @@ class _FakeDatasource implements AttemptRemoteDatasource {
         'attemptNumberForItem': 1,
         'isCorrect': false,
         'submittedAt': '2025-06-01T10:00:10Z',
+        'aimPipelineTriggered': false,
+        'aimOutcome': 'deferred',
       });
 }

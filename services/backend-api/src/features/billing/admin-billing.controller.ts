@@ -7,7 +7,9 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
-import { BillingOwnershipGuard, BillingAdminOnly } from './billing-ownership.guard';
+import { RoleGuard } from '../../auth/authorization/role.guard';
+import { RequireRoles } from '../../auth/authorization/required-roles.decorator';
+import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { SubscriptionService } from './subscription.service';
 import { PaymentService } from './payment.service';
 import { InvoiceService } from './invoice.service';
@@ -17,7 +19,9 @@ import { BillingAuditService } from './billing-audit.service';
 
 @ApiTags('Admin Billing')
 @Controller('admin/billing')
-@UseGuards(SupabaseJwtAuthGuard, BillingOwnershipGuard)
+@UseGuards(SupabaseJwtAuthGuard, RoleGuard)
+@RequireRoles(AuthorizedRole.ADMIN, AuthorizedRole.SUPER_ADMIN)
+@ApiBearerAuth()
 export class AdminBillingController {
   constructor(
     private readonly subscriptionService: SubscriptionService,
@@ -29,40 +33,30 @@ export class AdminBillingController {
   ) {}
 
   @Get('subscriptions/:userId')
-  @BillingAdminOnly()
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get subscriptions for a user (admin)' })
   async getUserSubscriptions(@Param('userId') userId: string) {
     return this.subscriptionService.getUserSubscriptions(userId);
   }
 
   @Get('payments/:userId')
-  @BillingAdminOnly()
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get payments for a user (admin)' })
   async getUserPayments(@Param('userId') userId: string) {
     return this.paymentService.getUserPayments(userId);
   }
 
   @Get('invoices/:userId')
-  @BillingAdminOnly()
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get invoices for a user (admin)' })
   async getUserInvoices(@Param('userId') userId: string) {
     return this.invoiceService.getUserInvoices(userId);
   }
 
   @Get('refunds/:paymentId')
-  @BillingAdminOnly()
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get refunds for a payment (admin)' })
   async getPaymentRefunds(@Param('paymentId') paymentId: string) {
     return this.refundService.getRefundsByPayment(paymentId);
   }
 
   @Get('provider-events')
-  @BillingAdminOnly()
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get provider events by status (admin)' })
   async getProviderEvents(
     @Query('status') status: 'pending' | 'processed' | 'failed' | 'skipped' = 'pending',
@@ -71,8 +65,6 @@ export class AdminBillingController {
   }
 
   @Get('audit-logs')
-  @BillingAdminOnly()
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get billing audit logs (admin)' })
   async getAuditLogs(
     @Query('entityType') entityType?: string,
