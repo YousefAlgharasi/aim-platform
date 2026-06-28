@@ -44,7 +44,7 @@ export class PreferencesController {
       dto.category,
       dto.enabled,
     );
-    await this.auditService.log(user.id, 'preference_updated', pref.id, 'notification_preference', {
+    await this.auditService.log(user.id, userType, 'preference_updated', 'notification_preference', pref.id, {
       channel: dto.channel,
       category: dto.category,
       enabled: dto.enabled,
@@ -66,16 +66,24 @@ export class PreferencesController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: UpdateQuietHoursRequestDto,
   ) {
+    const resolvedRoles = resolveAuthorizedRoles(user);
+    const userType = resolvedRoles.includes(AuthorizedRole.PARENT) ? 'parent' : 'student';
     const quietHours = await this.repo.upsertQuietHours(
       user.id,
+      userType,
       dto.enabled,
       dto.startTime,
       dto.endTime,
       dto.timezone,
     );
-    await this.auditService.log(user.id, 'quiet_hours_updated', quietHours.id, 'quiet_hours', {
-      enabled: dto.enabled,
-    });
+    await this.auditService.log(
+      user.id,
+      userType,
+      'quiet_hours_updated',
+      'notification_quiet_hours',
+      quietHours?.id ?? user.id,
+      { enabled: dto.enabled },
+    );
     return quietHours;
   }
 }

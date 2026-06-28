@@ -3,9 +3,15 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { CurrentUser } from '../../auth/current-user.decorator';
 import { AuthenticatedUser } from '../../auth/authenticated-user';
+import { resolveAuthorizedRoles } from '../../auth/authorization/authorized-role.resolver';
+import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { ReminderScheduleService } from './reminder-schedule.service';
 import { NotificationAuditService } from './notification-audit.service';
 import { NotificationOwnershipGuard } from './guards';
+
+function resolveUserType(user: AuthenticatedUser): string {
+  return resolveAuthorizedRoles(user).includes(AuthorizedRole.PARENT) ? 'parent' : 'student';
+}
 
 @ApiTags('Notifications')
 @ApiBearerAuth()
@@ -31,7 +37,7 @@ export class RemindersController {
     @Param('scheduleId') scheduleId: string,
   ) {
     const updated = await this.scheduleService.pauseSchedule(scheduleId, user.id);
-    await this.auditService.log(user.id, 'schedule_paused', scheduleId, 'reminder_schedule', null);
+    await this.auditService.log(user.id, resolveUserType(user), 'schedule_paused', 'reminder_schedule', scheduleId, null);
     return updated;
   }
 
@@ -53,7 +59,7 @@ export class RemindersController {
     @Param('scheduleId') scheduleId: string,
   ) {
     const updated = await this.scheduleService.cancelSchedule(scheduleId, user.id);
-    await this.auditService.log(user.id, 'schedule_cancelled', scheduleId, 'reminder_schedule', null);
+    await this.auditService.log(user.id, resolveUserType(user), 'schedule_cancelled', 'reminder_schedule', scheduleId, null);
     return updated;
   }
 }

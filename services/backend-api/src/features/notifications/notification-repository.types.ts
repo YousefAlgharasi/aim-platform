@@ -1,3 +1,7 @@
+// Row types must match the real Phase 13 migrations exactly (see
+// prisma/migrations/20260620009000..018000_*). These mirror the already
+// camelCase dto/*.entity.ts shapes, but as raw snake_case DB rows.
+
 export interface NotificationTemplateRow {
   id: string;
   key: string;
@@ -28,7 +32,7 @@ export interface DeviceTokenRow {
   platform: string;
   token: string;
   status: string;
-  device_name: string | null;
+  device_label: string | null;
   last_seen_at: string;
   created_at: string;
   updated_at: string;
@@ -36,15 +40,13 @@ export interface DeviceTokenRow {
 
 export interface NotificationEventRow {
   id: string;
-  user_id: string;
+  recipient_id: string;
+  recipient_type: string;
   template_id: string;
-  channel: string;
   category: string;
-  status: string;
-  title: string;
-  body: string;
-  scheduled_at: string | null;
-  sent_at: string | null;
+  channel: string;
+  payload: Record<string, unknown>;
+  state: string;
   read_at: string | null;
   dismissed_at: string | null;
   created_at: string;
@@ -53,14 +55,12 @@ export interface NotificationEventRow {
 
 export interface ReminderScheduleRow {
   id: string;
-  user_id: string;
-  reminder_type: string;
+  owner_id: string;
+  owner_type: string;
+  kind: string;
+  cadence: string;
+  next_run_at: string;
   status: string;
-  reference_id: string | null;
-  cron_expression: string;
-  next_fire_at: string | null;
-  last_fired_at: string | null;
-  ends_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -69,31 +69,29 @@ export interface DeliveryAttemptRow {
   id: string;
   notification_event_id: string;
   channel: string;
-  status: string;
+  provider: string;
   attempt_number: number;
+  status: string;
   error_code: string | null;
-  error_message: string | null;
-  attempted_at: string;
   created_at: string;
 }
 
 export interface NotificationDigestRow {
   id: string;
-  user_id: string;
-  frequency: string;
-  status: string;
+  recipient_id: string;
+  recipient_type: string;
+  period: string;
   period_start: string;
   period_end: string;
-  event_count: number;
-  sent_at: string | null;
+  event_ids: string[];
+  state: string;
   created_at: string;
-  updated_at: string;
 }
 
 export interface QuietHoursRow {
   id: string;
   user_id: string;
-  enabled: boolean;
+  user_type: string;
   start_time: string;
   end_time: string;
   timezone: string;
@@ -103,10 +101,11 @@ export interface QuietHoursRow {
 
 export interface NotificationAuditLogRow {
   id: string;
-  user_id: string;
-  event_type: string;
-  resource_id: string | null;
-  resource_type: string | null;
-  metadata: Record<string, unknown> | null;
+  actor_id: string | null;
+  actor_type: string;
+  action: string;
+  entity_type: string;
+  entity_id: string;
+  metadata: Record<string, unknown>;
   created_at: string;
 }

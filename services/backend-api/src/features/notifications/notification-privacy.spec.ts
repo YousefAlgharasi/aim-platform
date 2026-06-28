@@ -109,16 +109,18 @@ describe('NotificationQueueService payload safety', () => {
 
   beforeEach(() => {
     mockRepo = {
-      createEvent: jest.fn().mockImplementation((userId, templateId, channel, category, status, title, body) => ({
-        id: 'event-1',
-        user_id: userId,
-        template_id: templateId,
-        channel,
-        category,
-        status,
-        title,
-        body,
-      })),
+      createEvent: jest
+        .fn()
+        .mockImplementation((recipientId, recipientType, templateId, channel, category, state, payload) => ({
+          id: 'event-1',
+          recipient_id: recipientId,
+          recipient_type: recipientType,
+          template_id: templateId,
+          channel,
+          category,
+          state,
+          payload,
+        })),
     };
     mockEligibility = {
       checkEligibility: jest.fn().mockResolvedValue({ eligible: true }),
@@ -147,6 +149,7 @@ describe('NotificationQueueService payload safety', () => {
 
     const event = await service.enqueue({
       userId: 'user-1',
+      recipientType: 'student',
       templateKey: 'deadline_reminder',
       channel: 'push',
       category: 'deadline_reminder',
@@ -154,7 +157,7 @@ describe('NotificationQueueService payload safety', () => {
       variables: {},
     });
 
-    expect(containsSensitiveData({ title: event!.title, body: event!.body })).toBe(true);
+    expect(containsSensitiveData(event!.payload)).toBe(true);
     // This test documents the contract: template authors are responsible for
     // never approving a template/body containing sensitive markers, since
     // the queue does not currently scrub rendered content automatically.
@@ -168,6 +171,7 @@ describe('NotificationQueueService payload safety', () => {
 
     const event = await service.enqueue({
       userId: 'user-1',
+      recipientType: 'student',
       templateKey: 'deadline_reminder',
       channel: 'push',
       category: 'deadline_reminder',
@@ -192,29 +196,29 @@ describe('NotificationAuditService metadata sanitization', () => {
   });
 
   it('strips metadata containing sensitive markers before persisting', async () => {
-    await service.log('user-1', 'token_registered', 'token-1', 'device_token', {
+    await service.log('user-1', 'student', 'token_registered', 'device_token', 'token-1', {
       provider_api_key: 'sk-live-abc',
     });
 
     expect(mockRepo.createAuditLog).toHaveBeenCalledWith(
-      'user-1', 'token_registered', 'token-1', 'device_token', null,
+      'user-1', 'student', 'token_registered', 'device_token', 'token-1', null,
     );
   });
 
   it('persists safe metadata unchanged', async () => {
-    await service.log('user-1', 'preference_updated', 'pref-1', 'notification_preference', {
+    await service.log('user-1', 'student', 'preference_updated', 'notification_preference', 'pref-1', {
       channel: 'push',
       enabled: true,
     });
 
     expect(mockRepo.createAuditLog).toHaveBeenCalledWith(
-      'user-1', 'preference_updated', 'pref-1', 'notification_preference',
+      'user-1', 'student', 'preference_updated', 'notification_preference', 'pref-1',
       { channel: 'push', enabled: true },
     );
   });
 
   it('never stores notification body content or provider credentials in audit metadata', async () => {
-    await service.log('user-1', 'notification_sent', 'event-1', 'notification_event', {
+    await service.log('user-1', 'student', 'notification_sent', 'notification_event', 'event-1', {
       body: 'Your assessment answer was incorrect because...',
     });
 
@@ -222,7 +226,7 @@ describe('NotificationAuditService metadata sanitization', () => {
     // documents the contract at the call-site level: callers across the
     // notifications feature must never pass body/answer content as metadata.
     expect(mockRepo.createAuditLog).toHaveBeenCalled();
-    const [, , , , metadata] = (mockRepo.createAuditLog as jest.Mock).mock.calls[0];
+    const [, , , , , metadata] = (mockRepo.createAuditLog as jest.Mock).mock.calls[0];
     expect(metadata).not.toHaveProperty('answer');
     expect(metadata).not.toHaveProperty('aiOutput');
   });

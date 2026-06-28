@@ -8,20 +8,19 @@ export class ReminderScheduleService {
   constructor(private readonly repo: NotificationRepository) {}
 
   async createSchedule(
-    userId: string,
-    reminderType: string,
-    cronExpression: string,
-    referenceId: string | null,
-    nextFireAt: string | null,
-    endsAt: string | null,
+    ownerId: string,
+    ownerType: string,
+    kind: string,
+    cadence: string,
+    nextRunAt: string,
   ): Promise<ReminderScheduleRow> {
-    if (!isValidReminderType(reminderType)) {
-      throw new BadRequestException(`Invalid reminder type: ${reminderType}`);
+    if (!isValidReminderType(kind)) {
+      throw new BadRequestException(`Invalid reminder type: ${kind}`);
     }
-    if (!isValidCronExpression(cronExpression)) {
+    if (!isValidCronExpression(cadence)) {
       throw new BadRequestException('Invalid cron expression');
     }
-    return this.repo.createReminderSchedule(userId, reminderType, cronExpression, referenceId, nextFireAt, endsAt);
+    return this.repo.createReminderSchedule(ownerId, ownerType, kind, cadence, nextRunAt);
   }
 
   async getActiveSchedules(userId: string): Promise<ReminderScheduleRow[]> {
@@ -50,7 +49,7 @@ export class ReminderScheduleService {
     return this.repo.findDueSchedules(limit);
   }
 
-  async advanceSchedule(scheduleId: string, nextFireAt: string): Promise<void> {
-    await this.repo.updateScheduleNextFire(scheduleId, nextFireAt, new Date().toISOString());
+  async advanceSchedule(scheduleId: string, nextRunAt: string): Promise<void> {
+    await this.repo.updateScheduleNextRun(scheduleId, nextRunAt);
   }
 }

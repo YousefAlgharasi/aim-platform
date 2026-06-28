@@ -12,7 +12,7 @@ export class ParentSummaryReminderIntegration {
   ) {}
 
   async createWeeklyParentSummary(parentId: string, locale = 'en'): Promise<void> {
-    const digest = await this.digestService.createWeeklyDigest(parentId);
+    const digest = await this.digestService.createWeeklyDigest(parentId, 'parent');
     if (!digest) {
       this.logger.log(`No digest created for parent=${parentId}`);
       return;
@@ -20,37 +20,40 @@ export class ParentSummaryReminderIntegration {
 
     await this.queueService.enqueue({
       userId: parentId,
+      recipientType: 'parent',
       templateKey: 'parent_weekly_summary',
       channel: 'in_app',
       category: 'parent_summary',
       locale,
-      variables: { event_count: String(digest.event_count) },
+      variables: { event_count: String(digest.event_ids.length) },
     });
 
     await this.queueService.enqueue({
       userId: parentId,
+      recipientType: 'parent',
       templateKey: 'parent_weekly_summary',
       channel: 'push',
       category: 'parent_summary',
       locale,
-      variables: { event_count: String(digest.event_count) },
+      variables: { event_count: String(digest.event_ids.length) },
     });
 
     await this.digestService.markDigestSent(digest.id);
-    this.logger.log(`Parent summary sent for parent=${parentId}, events=${digest.event_count}`);
+    this.logger.log(`Parent summary sent for parent=${parentId}, events=${digest.event_ids.length}`);
   }
 
   async createDailyParentSummary(parentId: string, locale = 'en'): Promise<void> {
-    const digest = await this.digestService.createDailyDigest(parentId);
+    const digest = await this.digestService.createDailyDigest(parentId, 'parent');
     if (!digest) return;
 
     await this.queueService.enqueue({
       userId: parentId,
+      recipientType: 'parent',
       templateKey: 'parent_daily_summary',
       channel: 'in_app',
       category: 'parent_summary',
       locale,
-      variables: { event_count: String(digest.event_count) },
+      variables: { event_count: String(digest.event_ids.length) },
     });
 
     await this.digestService.markDigestSent(digest.id);

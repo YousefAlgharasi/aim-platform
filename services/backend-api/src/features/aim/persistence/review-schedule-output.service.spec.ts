@@ -33,6 +33,10 @@ function makeMockDb(handler: QueryHandler) {
   return { query: handler } as unknown as import('../../../database/database.service').DatabaseService;
 }
 
+const mockLearningReminderIntegration = {
+  createReviewReminder: jest.fn().mockResolvedValue(undefined),
+} as unknown as import('../../notifications/learning-reminder.integration').LearningReminderIntegration;
+
 // ---------------------------------------------------------------------------
 // Fixtures
 // ---------------------------------------------------------------------------
@@ -67,7 +71,7 @@ describe('ReviewScheduleOutputService.upsertMany', () => {
 
   it('returns skippedNullOrEmpty=true when schedules is null', async () => {
     const db = makeMockDb(async () => ({ rows: [], rowCount: 0 }));
-    const svc = new ReviewScheduleOutputService(db);
+    const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     const result = await svc.upsertMany(STUDENT_ID, null);
     expect(result.skippedNullOrEmpty).toBe(true);
     expect(result.processedCount).toBe(0);
@@ -75,14 +79,14 @@ describe('ReviewScheduleOutputService.upsertMany', () => {
 
   it('returns skippedNullOrEmpty=true when schedules is undefined', async () => {
     const db = makeMockDb(async () => ({ rows: [], rowCount: 0 }));
-    const svc = new ReviewScheduleOutputService(db);
+    const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     const result = await svc.upsertMany(STUDENT_ID, undefined);
     expect(result.skippedNullOrEmpty).toBe(true);
   });
 
   it('returns skippedNullOrEmpty=true when schedules is empty array', async () => {
     const db = makeMockDb(async () => ({ rows: [], rowCount: 0 }));
-    const svc = new ReviewScheduleOutputService(db);
+    const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     const result = await svc.upsertMany(STUDENT_ID, []);
     expect(result.skippedNullOrEmpty).toBe(true);
   });
@@ -90,7 +94,7 @@ describe('ReviewScheduleOutputService.upsertMany', () => {
   it('makes no DB calls when schedules is null', async () => {
     const calls: string[] = [];
     const db = makeMockDb(async (sql) => { calls.push(sql); return { rows: [], rowCount: 0 }; });
-    const svc = new ReviewScheduleOutputService(db);
+    const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     await svc.upsertMany(STUDENT_ID, null);
     expect(calls).toHaveLength(0);
   });
@@ -105,7 +109,7 @@ describe('ReviewScheduleOutputService.upsertMany', () => {
       if (sql.includes('INSERT') || sql.includes('UPDATE')) insertCalls.push(sql);
       return { rows: [], rowCount: 0 };
     });
-    const svc = new ReviewScheduleOutputService(db);
+    const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     const result = await svc.upsertMany(STUDENT_ID, [makeSched({ scheduleId: '' })]);
     expect(insertCalls).toHaveLength(0);
     expect(result.actions[0]).toBe('skipped_empty_id');
@@ -113,14 +117,14 @@ describe('ReviewScheduleOutputService.upsertMany', () => {
 
   it('skips entry with whitespace-only scheduleId', async () => {
     const db = makeMockDb(async () => ({ rows: [], rowCount: 0 }));
-    const svc = new ReviewScheduleOutputService(db);
+    const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     const result = await svc.upsertMany(STUDENT_ID, [makeSched({ scheduleId: '   ' })]);
     expect(result.actions[0]).toBe('skipped_empty_id');
   });
 
   it('skips entry with empty skillId', async () => {
     const db = makeMockDb(async () => ({ rows: [], rowCount: 0 }));
-    const svc = new ReviewScheduleOutputService(db);
+    const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     const result = await svc.upsertMany(STUDENT_ID, [makeSched({ skillId: '' })]);
     expect(result.actions[0]).toBe('skipped_empty_skill_id');
   });
@@ -134,7 +138,7 @@ describe('ReviewScheduleOutputService.upsertMany', () => {
       if (sql.includes('SELECT')) return { rows: [], rowCount: 0 };
       return { rows: [], rowCount: 0 };
     });
-    const svc = new ReviewScheduleOutputService(db);
+    const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     const result = await svc.upsertMany(STUDENT_ID, [makeSched()]);
     expect(result.actions[0]).toBe('inserted');
   });
@@ -142,7 +146,7 @@ describe('ReviewScheduleOutputService.upsertMany', () => {
   it('inserts into review_schedules table', async () => {
     const sqls: string[] = [];
     const db = makeMockDb(async (sql) => { sqls.push(sql); return { rows: [], rowCount: 0 }; });
-    const svc = new ReviewScheduleOutputService(db);
+    const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     await svc.upsertMany(STUDENT_ID, [makeSched()]);
     expect(sqls.some(s => s.includes('INSERT INTO review_schedules'))).toBe(true);
   });
@@ -154,7 +158,7 @@ describe('ReviewScheduleOutputService.upsertMany', () => {
       if (sql.includes('INSERT')) insertParams.push(params);
       return { rows: [], rowCount: 0 };
     });
-    const svc = new ReviewScheduleOutputService(db);
+    const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     const sched = makeSched({
       scheduleId: 'sch-test-001',
       skillId: 'skill:arabic:p1:grammar',
@@ -175,7 +179,7 @@ describe('ReviewScheduleOutputService.upsertMany', () => {
       if (sql.includes('INSERT')) insertParams.push(params);
       return { rows: [], rowCount: 0 };
     });
-    const svc = new ReviewScheduleOutputService(db);
+    const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     const sched = makeSched({
       intervalDays: 7,
       repetitionCount: 2,
@@ -201,7 +205,7 @@ describe('ReviewScheduleOutputService.upsertMany', () => {
       if (sql.includes('INSERT')) insertParams.push(params);
       return { rows: [], rowCount: 0 };
     });
-    const svc = new ReviewScheduleOutputService(db);
+    const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     await svc.upsertMany(STUDENT_ID, [makeSched({ dueAt: PAST_DUE_AT })]);
     expect(insertParams[0]?.[8]).toBe('due'); // status ($9)
   });
@@ -213,7 +217,7 @@ describe('ReviewScheduleOutputService.upsertMany', () => {
       if (sql.includes('INSERT')) insertParams.push(params);
       return { rows: [], rowCount: 0 };
     });
-    const svc = new ReviewScheduleOutputService(db);
+    const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     await svc.upsertMany(STUDENT_ID, [makeSched({ dueAt: FUTURE_DUE_AT })]);
     expect(insertParams[0]?.[8]).toBe('pending'); // status ($9)
   });
@@ -229,7 +233,7 @@ describe('ReviewScheduleOutputService.upsertMany', () => {
       }
       return { rows: [], rowCount: 0 };
     });
-    const svc = new ReviewScheduleOutputService(db);
+    const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     const result = await svc.upsertMany(STUDENT_ID, [makeSched({ repetitionCount: 2 })]);
     expect(result.actions[0]).toBe('updated_new_cycle');
   });
@@ -243,7 +247,7 @@ describe('ReviewScheduleOutputService.upsertMany', () => {
       }
       return { rows: [], rowCount: 0 };
     });
-    const svc = new ReviewScheduleOutputService(db);
+    const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     await svc.upsertMany(STUDENT_ID, [makeSched({ repetitionCount: 1 })]);
     expect(sqls.some(s => s.includes('UPDATE review_schedules'))).toBe(true);
     expect(sqls.some(s => s.includes('INSERT'))).toBe(false);
@@ -260,7 +264,7 @@ describe('ReviewScheduleOutputService.upsertMany', () => {
       }
       return { rows: [], rowCount: 0 };
     });
-    const svc = new ReviewScheduleOutputService(db);
+    const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     const result = await svc.upsertMany(STUDENT_ID, [
       makeSched({ repetitionCount: 1, dueAt: FUTURE_DUE_AT }),
     ]);
@@ -278,7 +282,7 @@ describe('ReviewScheduleOutputService.upsertMany', () => {
       }
       return { rows: [], rowCount: 0 };
     });
-    const svc = new ReviewScheduleOutputService(db);
+    const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     const result = await svc.upsertMany(STUDENT_ID, [makeSched({ repetitionCount: 2 })]);
     expect(result.actions[0]).toBe('skipped_repetition_regression');
   });
@@ -292,7 +296,7 @@ describe('ReviewScheduleOutputService.upsertMany', () => {
       if (sql.includes('UPDATE') || sql.includes('INSERT')) writeCalls.push(sql);
       return { rows: [], rowCount: 0 };
     });
-    const svc = new ReviewScheduleOutputService(db);
+    const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     await svc.upsertMany(STUDENT_ID, [makeSched({ repetitionCount: 2 })]);
     expect(writeCalls).toHaveLength(0);
   });
@@ -308,7 +312,7 @@ describe('ReviewScheduleOutputService.upsertMany', () => {
       }
       return { rows: [], rowCount: 0 };
     });
-    const svc = new ReviewScheduleOutputService(db);
+    const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     const result = await svc.upsertMany(STUDENT_ID, [
       makeSched({ repetitionCount: 1, dueAt: FUTURE_DUE_AT }),
     ]);
@@ -330,7 +334,7 @@ describe('ReviewScheduleOutputService.upsertMany', () => {
       }
       return { rows: [], rowCount: 0 };
     });
-    const svc = new ReviewScheduleOutputService(db);
+    const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     const result = await svc.upsertMany(STUDENT_ID, [
       makeSched({ scheduleId: 'sch-a', repetitionCount: 1 }),
       makeSched({ scheduleId: 'sch-b', repetitionCount: 0 }),
@@ -345,7 +349,7 @@ describe('ReviewScheduleOutputService.upsertMany', () => {
 
   it('does not make AIM Engine calls (scope guard: only uses db.query)', async () => {
     const db = makeMockDb(async () => ({ rows: [], rowCount: 0 }));
-    const svc = new ReviewScheduleOutputService(db);
+    const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     await expect(svc.upsertMany(STUDENT_ID, [makeSched()])).resolves.toBeDefined();
   });
 });

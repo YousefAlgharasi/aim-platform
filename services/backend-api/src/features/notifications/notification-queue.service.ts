@@ -6,6 +6,7 @@ import { NotificationEventRow, NotificationTemplateRow } from './notification-re
 
 export interface QueueNotificationRequest {
   userId: string;
+  recipientType: string;
   templateKey: string;
   channel: string;
   category: string;
@@ -50,13 +51,12 @@ export class NotificationQueueService {
 
     return this.repo.createEvent(
       request.userId,
+      request.recipientType,
       template.id,
       request.channel,
       request.category,
       status,
-      title,
-      body,
-      request.scheduledAt ?? null,
+      { title, body, ...request.variables },
     );
   }
 

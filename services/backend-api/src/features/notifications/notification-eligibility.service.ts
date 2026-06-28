@@ -34,7 +34,7 @@ export class NotificationEligibilityService {
 
   async isInQuietHours(userId: string): Promise<boolean> {
     const quietHours = await this.repo.findQuietHoursByUserId(userId);
-    if (!quietHours || !quietHours.enabled) return false;
+    if (!quietHours) return false;
 
     const now = new Date();
     const formatter = new Intl.DateTimeFormat('en-GB', {

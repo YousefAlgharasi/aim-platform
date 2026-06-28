@@ -8,25 +8,26 @@ export class NotificationAuditService {
   constructor(private readonly repo: NotificationRepository) {}
 
   async log(
-    userId: string,
-    eventType: string,
-    resourceId: string | null,
-    resourceType: string | null,
+    actorId: string | null,
+    actorType: string,
+    action: string,
+    entityType: string,
+    entityId: string,
     metadata: Record<string, unknown> | null,
   ): Promise<NotificationAuditLogRow> {
     const safeMetadata = metadata && !containsSensitiveData(metadata) ? metadata : null;
-    return this.repo.createAuditLog(userId, eventType, resourceId, resourceType, safeMetadata);
+    return this.repo.createAuditLog(actorId, actorType, action, entityType, entityId, safeMetadata);
   }
 
-  async getByUser(userId: string, limit = 50, offset = 0): Promise<NotificationAuditLogRow[]> {
-    return this.repo.findAuditLogsByUserId(userId, limit, offset);
+  async getByUser(actorId: string, limit = 50, offset = 0): Promise<NotificationAuditLogRow[]> {
+    return this.repo.findAuditLogsByUserId(actorId, limit, offset);
   }
 
   async getByEventType(
-    eventType: string,
+    action: string,
     limit = 50,
     offset = 0,
   ): Promise<NotificationAuditLogRow[]> {
-    return this.repo.findAuditLogsByEventType(eventType, limit, offset);
+    return this.repo.findAuditLogsByEventType(action, limit, offset);
   }
 }
