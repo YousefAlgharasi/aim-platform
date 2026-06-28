@@ -7,16 +7,17 @@
 //   3.  AttemptSubmitRequestModel.toJson NEVER contains skillIds.
 //   4.  AttemptSubmitRequestModel.toJson NEVER contains studentId.
 //   5.  AttemptSubmitResponseModel.fromJson parses all fields.
-//   6.  AttemptSubmitResponseModel isCorrect stored verbatim from backend.
-//   7.  AttemptSubmitResponseModel attemptNumberForItem stored as int.
-//   8.  AttemptSubmitResponseModel.toJson round-trips correctly.
-//   9.  AttemptResult.isCorrect is backend-supplied — Flutter uses for display only.
+//   6.  AttemptSubmitResponseModel.fromJson silently drops isCorrect — never returned during an active session.
+//   7.  AttemptSubmitResponseModel.fromJson silently drops attemptNumberForItem.
+//   8.  AttemptSubmitResponseModel.toJson round-trips correctly and never contains isCorrect.
+//   9.  AttemptResult has no isCorrect field — security invariant.
 //  10.  AttemptSubmitRequestModel only contains student-supplied fields.
 
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/features/question_answer/data/models/attempt_submit_request_model.dart';
 import 'package:aim_mobile/features/question_answer/data/models/attempt_submit_response_model.dart';
+import 'package:aim_mobile/features/question_answer/logic/entity/attempt_result.dart';
 
 void main() {
   group('AttemptSubmitRequestModel', () {
@@ -66,49 +67,44 @@ void main() {
       'attemptNumberForItem': 1,
       'isCorrect': true,
       'submittedAt': '2025-06-01T10:00:10Z',
+      'aimPipelineTriggered': false,
+      'aimOutcome': 'deferred',
     };
 
     test('5. fromJson parses all fields', () {
       final m = AttemptSubmitResponseModel.fromJson(responseJson);
       expect(m.attemptId, 'attempt-uuid-1');
       expect(m.answerId, 'answer-uuid-1');
-      expect(m.attemptNumberForItem, 1);
-      expect(m.isCorrect, isTrue);
       expect(m.submittedAt, '2025-06-01T10:00:10Z');
+      expect(m.aimPipelineTriggered, isFalse);
+      expect(m.aimOutcome, 'deferred');
     });
 
-    test('6. isCorrect stored verbatim from backend', () {
-      final correct =
-          AttemptSubmitResponseModel.fromJson(responseJson);
+    test('6. fromJson silently drops isCorrect — never returned during an active session', () {
+      final correct = AttemptSubmitResponseModel.fromJson(responseJson);
       final incorrect = AttemptSubmitResponseModel.fromJson(
           {...responseJson, 'isCorrect': false});
-      expect(correct.isCorrect, isTrue);
-      expect(incorrect.isCorrect, isFalse);
+      expect(correct.toJson().containsKey('isCorrect'), isFalse);
+      expect(incorrect.toJson().containsKey('isCorrect'), isFalse);
     });
 
-    test('7. attemptNumberForItem stored as int', () {
+    test('7. fromJson silently drops attemptNumberForItem', () {
       final m = AttemptSubmitResponseModel.fromJson(
           {...responseJson, 'attemptNumberForItem': 3});
-      expect(m.attemptNumberForItem, 3);
+      expect(m.toJson().containsKey('attemptNumberForItem'), isFalse);
     });
 
-    test('8. toJson round-trips correctly', () {
+    test('8. toJson round-trips correctly and never contains isCorrect', () {
       final m = AttemptSubmitResponseModel.fromJson(responseJson);
       final out = m.toJson();
       expect(out['attemptId'], 'attempt-uuid-1');
-      expect(out['isCorrect'], isTrue);
-      expect(out['attemptNumberForItem'], 1);
+      expect(out.containsKey('isCorrect'), isFalse);
+      expect(out.containsKey('attemptNumberForItem'), isFalse);
     });
 
-    test('9. isCorrect is backend-supplied — used for display only', () {
-      // Flutter receives isCorrect verbatim and shows a feedback widget.
-      // This test confirms the value is preserved without modification.
-      final m =
-          AttemptSubmitResponseModel.fromJson(responseJson);
-      expect(m.isCorrect, isTrue); // received true → display "correct" feedback
-      final m2 = AttemptSubmitResponseModel.fromJson(
-          {...responseJson, 'isCorrect': false});
-      expect(m2.isCorrect, isFalse); // received false → display "incorrect" feedback
+    test('9. AttemptResult has no isCorrect field — security invariant', () {
+      final m = AttemptSubmitResponseModel.fromJson(responseJson);
+      expect(m, isA<AttemptResult>());
     });
   });
 }

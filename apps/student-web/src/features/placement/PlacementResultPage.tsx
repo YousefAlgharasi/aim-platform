@@ -8,15 +8,21 @@ import { ErrorState } from '../../components/common/ErrorState';
 import type { ApiError } from '../../types';
 import styles from './Placement.module.css';
 
+interface SkillSignal {
+  skill_code: string;
+  signal: string;
+}
+
 interface PlacementResult {
-  level: string;
-  score: number;
-  summary: string;
-  recommendations: Array<{
-    id: string;
-    title: string;
-    type: string;
-  }>;
+  id: string;
+  placement_attempt_id: string;
+  estimated_level: string;
+  skill_mastery_map: Record<string, { signal: string }>;
+  weakness_map: {
+    weaknesses: Array<{ skill_code: string; signal: string }>;
+  };
+  initial_path_id: string | null;
+  created_at: string;
 }
 
 export function PlacementResultPage() {
@@ -28,7 +34,7 @@ export function PlacementResultPage() {
   function fetchResult() {
     setLoading(true);
     setError('');
-    apiClient.get<PlacementResult>(`/placement/${id}/result`)
+    apiClient.get<PlacementResult>(`/placement/attempts/${id}/result`)
       .then(setResult)
       .catch((err: ApiError) => setError(err.message || 'Failed to load result'))
       .finally(() => setLoading(false));
@@ -40,6 +46,10 @@ export function PlacementResultPage() {
   if (error) return <ErrorState message={error} onRetry={fetchResult} />;
   if (!result) return null;
 
+  const skillSignals: SkillSignal[] = Object.entries(result.skill_mastery_map).map(
+    ([skill_code, value]) => ({ skill_code, signal: value.signal }),
+  );
+
   return (
     <div className={styles.container}>
       <h1 className={styles.heading}>Placement Result</h1>
@@ -48,22 +58,19 @@ export function PlacementResultPage() {
         <div className={styles.resultContent}>
           <div className={styles.resultLevel}>
             <span className={styles.resultLabel}>Your level</span>
-            <span className={styles.resultValue}>{result.level}</span>
+            <span className={styles.resultValue}>{result.estimated_level}</span>
           </div>
-          <p className={styles.resultSummary}>{result.summary}</p>
         </div>
       </Card>
 
-      {result.recommendations.length > 0 && (
+      {skillSignals.length > 0 && (
         <section>
-          <h2 className={styles.subtitle}>Recommended next steps</h2>
+          <h2 className={styles.subtitle}>Skill summary</h2>
           <div className={styles.recList}>
-            {result.recommendations.map(rec => (
-              <Card key={rec.id}>
-                <Link to={`/lessons/${rec.id}`} className={styles.recLink}>
-                  <span className={styles.recType}>{rec.type}</span>
-                  <span className={styles.recTitle}>{rec.title}</span>
-                </Link>
+            {skillSignals.map(skill => (
+              <Card key={skill.skill_code}>
+                <span className={styles.recType}>{skill.skill_code}</span>
+                <span className={styles.recTitle}>{skill.signal}</span>
               </Card>
             ))}
           </div>

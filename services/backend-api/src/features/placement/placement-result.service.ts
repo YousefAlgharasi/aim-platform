@@ -31,9 +31,11 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AppError } from '../../common/errors/app-error';
+import { PlacementErrorCode } from './placement-error-codes';
 import { PlacementAnswerValidationService } from './placement-answer-validation.service';
 import { PlacementScoringService } from './placement-scoring.service';
 import { PlacementAttemptRow } from './placement.types';
+import { PlacementAnalyticsService } from './placement-analytics.service';
 
 /** Student-safe result row shape returned by createResult. */
 export interface PlacementResultRow {
@@ -62,6 +64,7 @@ export class PlacementResultService {
     private readonly db: DatabaseService,
     private readonly answerValidation: PlacementAnswerValidationService,
     private readonly scoring: PlacementScoringService,
+    private readonly analytics: PlacementAnalyticsService,
   ) {}
 
   /**
@@ -85,7 +88,7 @@ export class PlacementResultService {
     // 1. Verify the attempt is in 'submitted' status.
     // -----------------------------------------------------------------------
     const attemptResult = await this.db.query<PlacementAttemptRow>(
-      `SELECT id, student_id, placement_test_id, status
+      `SELECT id, student_id, placement_test_id, status, started_at
        FROM placement_attempts
        WHERE id = $1
        LIMIT 1`,
@@ -94,7 +97,7 @@ export class PlacementResultService {
 
     if ((attemptResult.rowCount ?? 0) === 0) {
       throw new AppError({
-        code: 'ATTEMPT_NOT_FOUND',
+        code: PlacementErrorCode.ATTEMPT_NOT_FOUND,
         message: `Placement attempt not found: ${attemptId}`,
         statusCode: HttpStatus.NOT_FOUND,
       });
@@ -121,7 +124,7 @@ export class PlacementResultService {
 
     if (attempt.status !== 'submitted') {
       throw new AppError({
-        code: 'ATTEMPT_NOT_SUBMITTED',
+        code: PlacementErrorCode.ATTEMPT_NOT_SUBMITTED,
         message: `Placement attempt must be in 'submitted' status to generate a result (current: ${attempt.status}).`,
         statusCode: HttpStatus.CONFLICT,
       });
@@ -200,6 +203,18 @@ export class PlacementResultService {
     this.logger.log(
       `PlacementResultService: result ${result.id} created for attempt ${attemptId} — ` +
         `level=${scoringResult.estimatedLevel}, attempt now completed`,
+    );
+
+    const totalTimeSeconds = attempt.started_at
+      ? Math.max(0, Math.round((Date.now() - new Date(attempt.started_at).getTime()) / 1000))
+      : 0;
+
+    void this.analytics.recordAttemptCompleted(
+      attempt.student_id,
+      attemptId,
+      attempt.placement_test_id,
+      scoringResult.estimatedLevel,
+      totalTimeSeconds,
     );
 
     return {
