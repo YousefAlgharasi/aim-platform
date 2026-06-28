@@ -1,60 +1,74 @@
-import { AdminPageHeader } from '../../../components/layout';
-import { AdminCard } from '../../../components/common';
+import { getAdminToken } from '../../../lib/api/admin-token';
+import { AdminApiClientError } from '../../../lib/api';
+import {
+  fetchAdminAiPromptTemplates,
+  fetchAdminAiModelConfigs,
+  fetchAdminAiSafetyEvents,
+  fetchAdminAiUsageCost,
+  fetchAdminAiAuditLogs,
+} from '../../../lib/api/admin-ai-teacher-api';
+import { AiTeacherClient, type AiTeacherSection } from './ai-teacher-client';
 
-const sections = [
-  {
-    title: 'Prompt Templates',
-    description: 'Create, publish, and retire prompt templates used by the AI Teacher.',
-  },
-  {
-    title: 'Model Configuration',
-    description: 'Configure AI model providers, parameters, and per-student usage limits.',
-  },
-  {
-    title: 'Safety & Content Filtering',
-    description: 'Review flagged content, safety events, and moderation decisions.',
-  },
-  {
-    title: 'Usage & Cost Tracking',
-    description: 'Monitor AI usage metrics, token consumption, and costs per student.',
-  },
-  {
-    title: 'AI Audit Logs',
-    description: 'View audit trail of AI interactions, prompt changes, and governance events.',
-  },
-];
+const SECTIONS: AiTeacherSection[] = ['prompts', 'model-configs', 'safety', 'usage', 'audit-logs'];
 
-export default function AdminAITeacherPage() {
+type Props = {
+  searchParams: Promise<{ section?: string }>;
+};
+
+export default async function AdminAITeacherPage({ searchParams }: Props) {
+  const { section: sectionParam } = await searchParams;
+  const section: AiTeacherSection = SECTIONS.includes(sectionParam as AiTeacherSection)
+    ? (sectionParam as AiTeacherSection)
+    : 'prompts';
+  const token = await getAdminToken();
+
+  let fetchError: string | null = null;
+  let rows: unknown[] = [];
+
+  try {
+    switch (section) {
+      case 'prompts':
+        rows = await fetchAdminAiPromptTemplates(token);
+        break;
+      case 'model-configs':
+        rows = await fetchAdminAiModelConfigs(token);
+        break;
+      case 'safety':
+        rows = await fetchAdminAiSafetyEvents(token);
+        break;
+      case 'usage':
+        rows = await fetchAdminAiUsageCost(token);
+        break;
+      case 'audit-logs':
+        rows = await fetchAdminAiAuditLogs(token);
+        break;
+    }
+  } catch (error) {
+    fetchError =
+      error instanceof AdminApiClientError
+        ? `Backend error ${error.status}: ${error.message}`
+        : 'Failed to load AI Teacher data.';
+  }
+
   return (
-    <section>
-      <AdminPageHeader
-        eyebrow="AI Management"
-        title="AI Teacher"
-        description="Manage prompt templates, model configuration, safety reviews, and usage tracking."
-      />
+    <section className="admin-curriculum-page">
+      <header className="admin-page-header">
+        <p className="eyebrow">Admin — AI Management</p>
+        <h1>AI Teacher</h1>
+        <p className="admin-page-meta">{rows.length} {section.replace(/-/g, ' ')} entr{rows.length !== 1 ? 'ies' : 'y'}</p>
+      </header>
 
-      <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 'var(--space-24)' }}>
-        AI Teacher configuration and safety controls are enforced by the Backend API.
-        All changes are audited.
-      </p>
-
-      <div style={{ display: 'grid', gap: 'var(--space-16)' }}>
-        {sections.map((s) => (
-          <AdminCard key={s.title}>
-            <h3 style={{
-              fontSize: 15,
-              fontWeight: 'var(--weight-semibold)' as unknown as number,
-              color: 'var(--text-primary)',
-              marginBottom: 'var(--space-4)',
-            }}>
-              {s.title}
-            </h3>
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>
-              {s.description}
-            </p>
-          </AdminCard>
-        ))}
+      <div className="admin-boundary-note">
+        <strong>Read-only:</strong> AI Teacher prompt templates, model configuration, safety reviews,
+        usage/cost tracking, and audit logs are written server-side by the backend API.
+        No data can be edited from this surface.
       </div>
+
+      {fetchError && (
+        <p className="admin-error-banner" role="alert">{fetchError}</p>
+      )}
+
+      <AiTeacherClient section={section} rows={rows} />
     </section>
   );
 }
