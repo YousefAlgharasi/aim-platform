@@ -43,6 +43,44 @@ export async function fetchAdminAiPromptTemplates(token: string): Promise<AdminA
   return envelope.data;
 }
 
+export type CreatePromptTemplateDraftPayload = {
+  readonly name: string;
+  readonly locale: string;
+  readonly audience: string;
+  readonly body: string;
+  readonly safetyTags?: Record<string, unknown>;
+};
+
+export async function createAdminAiPromptDraft(
+  token: string,
+  payload: CreatePromptTemplateDraftPayload,
+): Promise<AdminAiPromptTemplateItem> {
+  const envelope = await adminApiClient.post(
+    '/admin/ai/prompts',
+    decodePromptTemplate,
+    { headers: { authorization: `Bearer ${token}` }, body: payload },
+  );
+  return envelope.data;
+}
+
+export async function publishAdminAiPromptTemplate(token: string, id: string): Promise<AdminAiPromptTemplateItem> {
+  const envelope = await adminApiClient.post(
+    `/admin/ai/prompts/${encodeURIComponent(id)}/publish`,
+    decodePromptTemplate,
+    { headers: { authorization: `Bearer ${token}` }, body: {} },
+  );
+  return envelope.data;
+}
+
+export async function retireAdminAiPromptTemplate(token: string, id: string): Promise<AdminAiPromptTemplateItem> {
+  const envelope = await adminApiClient.post(
+    `/admin/ai/prompts/${encodeURIComponent(id)}/retire`,
+    decodePromptTemplate,
+    { headers: { authorization: `Bearer ${token}` }, body: {} },
+  );
+  return envelope.data;
+}
+
 /* ---- Model Configs ---- */
 
 export type AdminAiModelConfigItem = {
