@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
+import 'package:aim_mobile/features/home/data/datasources/home_remote_datasource.dart'
+    show HomeEngagementSummary;
 import 'package:aim_mobile/features/home/data/models/home_models.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_data.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_provider.dart';
@@ -104,6 +106,28 @@ class _FakeHomeRepository implements HomeRepository {
   }) async {
     if (shouldFail) throw const AppException(code: 'SERVER_ERROR', message: 'Error');
     return returnEmpty ? [] : _recommendations;
+  }
+
+  @override
+  Future<HomeEngagementSummary> getEngagementSummary({
+    required String bearerToken,
+  }) async {
+    if (shouldFail) throw const AppException(code: 'SERVER_ERROR', message: 'Error');
+    return const HomeEngagementSummary(
+      goal: HomeEngagementGoalModel(
+        targetLessons: 1,
+        completedToday: 0,
+        streakDays: 0,
+      ),
+    );
+  }
+
+  @override
+  Future<HomeContinueLearningModel?> getContinueLearning({
+    required String bearerToken,
+  }) async {
+    if (shouldFail) throw const AppException(code: 'SERVER_ERROR', message: 'Error');
+    return null;
   }
 }
 

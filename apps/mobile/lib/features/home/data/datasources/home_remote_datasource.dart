@@ -52,4 +52,29 @@ abstract class HomeRemoteDatasource {
     required String bearerToken,
     required String studentId,
   });
+
+  /// GET /student/engagement/summary
+  ///
+  /// Returns the backend-computed daily goal, streak, and today's daily
+  /// challenge. [streakDays] and challenge progress are never calculated
+  /// locally.
+  Future<HomeEngagementSummary> getEngagementSummary({
+    required String bearerToken,
+  });
+
+  /// GET /lessons/continue
+  ///
+  /// Returns the most recently active, incomplete lesson, or null if the
+  /// student has not started any lesson yet.
+  Future<HomeContinueLearningModel?> getContinueLearning({
+    required String bearerToken,
+  });
+}
+
+/// Bundles the goal + daily challenge payload from a single backend call.
+class HomeEngagementSummary {
+  const HomeEngagementSummary({required this.goal, this.dailyChallenge});
+
+  final HomeEngagementGoalModel goal;
+  final HomeDailyChallengeModel? dailyChallenge;
 }

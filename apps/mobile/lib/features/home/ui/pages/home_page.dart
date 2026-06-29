@@ -32,6 +32,7 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.da
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_data.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_provider.dart';
+import 'package:aim_mobile/features/shell/logic/main_shell_tab_provider.dart';
 import '../widgets/home_widgets.dart';
 
 /// Student home screen MVP.
@@ -144,6 +145,24 @@ class _HomeContent extends StatelessWidget {
           vertical: AimSpacing.sectionGap,
         ),
         children: [
+          if (data.continueLearning != null) ...[
+            const HomeSectionHeader(title: 'Continue Learning'),
+            const SizedBox(height: AimSpacing.componentGap),
+            HomeContinueLearningCard(lesson: data.continueLearning!),
+            const SizedBox(height: AimSpacing.sectionGap),
+          ],
+          if (data.goal != null) ...[
+            const HomeSectionHeader(title: 'Goal'),
+            const SizedBox(height: AimSpacing.componentGap),
+            HomeGoalCard(goal: data.goal!),
+            const SizedBox(height: AimSpacing.sectionGap),
+          ],
+          if (data.dailyChallenge != null) ...[
+            const HomeSectionHeader(title: 'Daily Challenge'),
+            const SizedBox(height: AimSpacing.componentGap),
+            HomeDailyChallengeCard(challenge: data.dailyChallenge!),
+            const SizedBox(height: AimSpacing.sectionGap),
+          ],
           if (data.skillStates.isNotEmpty) ...[
             const HomeSectionHeader(title: 'Skill States'),
             const SizedBox(height: AimSpacing.componentGap),
@@ -194,13 +213,13 @@ class _HomeContent extends StatelessWidget {
   }
 }
 
-class _HomeGettingStarted extends StatelessWidget {
+class _HomeGettingStarted extends ConsumerWidget {
   const _HomeGettingStarted({required this.onRefresh});
 
   final Future<void> Function() onRefresh;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final surfaces = aimSurfacesOf(context);
 
     return RefreshIndicator(
@@ -275,14 +294,8 @@ class _HomeGettingStarted extends StatelessWidget {
 
           AIMCard(
             variant: AIMCardVariant.elevated,
-            onTap: () {
-              // Switch to Learn tab (index 1) via the shell
-              final shellState = context.findAncestorStateOfType<State>();
-              if (shellState != null && shellState.mounted) {
-                // Navigate by switching tab — the MainShellPage uses IndexedStack
-                // so we push to the learn route which the shell handles
-              }
-            },
+            onTap: () =>
+                ref.read(mainShellTabIndexProvider.notifier).state = 1,
             child: Row(
               children: [
                 const Icon(
