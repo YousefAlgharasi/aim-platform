@@ -122,7 +122,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 // Main content — only rendered on success state.
 // ---------------------------------------------------------------------------
 
-class _HomeContent extends StatelessWidget {
+class _HomeContent extends ConsumerWidget {
   const _HomeContent({
     required this.data,
     required this.onRefresh,
@@ -132,11 +132,7 @@ class _HomeContent extends StatelessWidget {
   final Future<void> Function() onRefresh;
 
   @override
-  Widget build(BuildContext context) {
-    if (data.isEmpty) {
-      return _HomeGettingStarted(onRefresh: onRefresh);
-    }
-
+  Widget build(BuildContext context, WidgetRef ref) {
     return RefreshIndicator(
       onRefresh: onRefresh,
       child: ListView(
@@ -163,6 +159,7 @@ class _HomeContent extends StatelessWidget {
             HomeDailyChallengeCard(challenge: data.dailyChallenge!),
             const SizedBox(height: AimSpacing.sectionGap),
           ],
+          if (data.isEmpty) ..._gettingStartedCards(context, ref),
           if (data.skillStates.isNotEmpty) ...[
             const HomeSectionHeader(title: 'Skill States'),
             const SizedBox(height: AimSpacing.componentGap),
@@ -213,168 +210,152 @@ class _HomeContent extends StatelessWidget {
   }
 }
 
-class _HomeGettingStarted extends ConsumerWidget {
-  const _HomeGettingStarted({required this.onRefresh});
+/// Promo cards shown in place of the four core AIM sections when the
+/// student has no skill/weakness/schedule/recommendation/continue-learning
+/// data yet. Rendered inline within [_HomeContent] so Goal/Daily Challenge
+/// above are never hidden behind this state.
+List<Widget> _gettingStartedCards(BuildContext context, WidgetRef ref) {
+  final surfaces = aimSurfacesOf(context);
 
-  final Future<void> Function() onRefresh;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final surfaces = aimSurfacesOf(context);
-
-    return RefreshIndicator(
-      onRefresh: onRefresh,
-      child: ListView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AimSpacing.screenPaddingMobile,
-          vertical: AimSpacing.sectionGap,
-        ),
+  return [
+    const SizedBox(height: AimSpacing.sectionGap),
+    Icon(
+      Icons.school_outlined,
+      size: 64,
+      color: surfaces.textMuted,
+    ),
+    const SizedBox(height: AimSpacing.componentGap),
+    Text(
+      'Welcome to AIM',
+      style: AimTextStyles.h2.copyWith(color: surfaces.textPrimary),
+      textAlign: TextAlign.center,
+    ),
+    const SizedBox(height: AimSpacing.space8),
+    Text(
+      'Get started by taking a placement test or browsing courses.',
+      style: AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
+      textAlign: TextAlign.center,
+    ),
+    const SizedBox(height: AimSpacing.sectionGap),
+    AIMCard(
+      variant: AIMCardVariant.elevated,
+      onTap: () => Navigator.of(context).pushNamed(
+        AppRoutePaths.placementStart,
+      ),
+      child: Row(
         children: [
-          const SizedBox(height: AimSpacing.sectionGap),
+          const Icon(
+            Icons.assignment_outlined,
+            color: AimColors.primary600,
+            size: AimSizes.iconMd,
+          ),
+          const SizedBox(width: AimSpacing.componentGap),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Placement Test',
+                  style: AimTextStyles.title.copyWith(
+                    color: surfaces.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: AimSpacing.space4),
+                Text(
+                  'Find your level and get personalised recommendations.',
+                  style: AimTextStyles.bodySm.copyWith(
+                    color: surfaces.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
           Icon(
-            Icons.school_outlined,
-            size: 64,
+            Icons.chevron_right,
             color: surfaces.textMuted,
-          ),
-          const SizedBox(height: AimSpacing.componentGap),
-          Text(
-            'Welcome to AIM',
-            style: AimTextStyles.h2.copyWith(color: surfaces.textPrimary),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AimSpacing.space8),
-          Text(
-            'Get started by taking a placement test or browsing courses.',
-            style: AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AimSpacing.sectionGap),
-
-          AIMCard(
-            variant: AIMCardVariant.elevated,
-            onTap: () => Navigator.of(context).pushNamed(
-              AppRoutePaths.placementStart,
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.assignment_outlined,
-                  color: AimColors.primary600,
-                  size: AimSizes.iconMd,
-                ),
-                const SizedBox(width: AimSpacing.componentGap),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Placement Test',
-                        style: AimTextStyles.title.copyWith(
-                          color: surfaces.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: AimSpacing.space4),
-                      Text(
-                        'Find your level and get personalised recommendations.',
-                        style: AimTextStyles.bodySm.copyWith(
-                          color: surfaces.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.chevron_right,
-                  color: surfaces.textMuted,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: AimSpacing.componentGap),
-
-          AIMCard(
-            variant: AIMCardVariant.elevated,
-            onTap: () =>
-                ref.read(mainShellTabIndexProvider.notifier).state = 1,
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.menu_book_outlined,
-                  color: AimColors.primary600,
-                  size: AimSizes.iconMd,
-                ),
-                const SizedBox(width: AimSpacing.componentGap),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Browse Courses',
-                        style: AimTextStyles.title.copyWith(
-                          color: surfaces.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: AimSpacing.space4),
-                      Text(
-                        'Explore available courses and start learning.',
-                        style: AimTextStyles.bodySm.copyWith(
-                          color: surfaces.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.chevron_right,
-                  color: surfaces.textMuted,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: AimSpacing.componentGap),
-
-          AIMCard(
-            variant: AIMCardVariant.elevated,
-            onTap: () => Navigator.of(context).pushNamed(
-              AppRoutePaths.assessments,
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.quiz_outlined,
-                  color: AimColors.primary600,
-                  size: AimSizes.iconMd,
-                ),
-                const SizedBox(width: AimSpacing.componentGap),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Assessments',
-                        style: AimTextStyles.title.copyWith(
-                          color: surfaces.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: AimSpacing.space4),
-                      Text(
-                        'View and take available assessments.',
-                        style: AimTextStyles.bodySm.copyWith(
-                          color: surfaces.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.chevron_right,
-                  color: surfaces.textMuted,
-                ),
-              ],
-            ),
           ),
         ],
       ),
-    );
-  }
+    ),
+    const SizedBox(height: AimSpacing.componentGap),
+    AIMCard(
+      variant: AIMCardVariant.elevated,
+      onTap: () => ref.read(mainShellTabIndexProvider.notifier).state = 1,
+      child: Row(
+        children: [
+          const Icon(
+            Icons.menu_book_outlined,
+            color: AimColors.primary600,
+            size: AimSizes.iconMd,
+          ),
+          const SizedBox(width: AimSpacing.componentGap),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Browse Courses',
+                  style: AimTextStyles.title.copyWith(
+                    color: surfaces.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: AimSpacing.space4),
+                Text(
+                  'Explore available courses and start learning.',
+                  style: AimTextStyles.bodySm.copyWith(
+                    color: surfaces.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.chevron_right,
+            color: surfaces.textMuted,
+          ),
+        ],
+      ),
+    ),
+    const SizedBox(height: AimSpacing.componentGap),
+    AIMCard(
+      variant: AIMCardVariant.elevated,
+      onTap: () => Navigator.of(context).pushNamed(
+        AppRoutePaths.assessments,
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.quiz_outlined,
+            color: AimColors.primary600,
+            size: AimSizes.iconMd,
+          ),
+          const SizedBox(width: AimSpacing.componentGap),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Assessments',
+                  style: AimTextStyles.title.copyWith(
+                    color: surfaces.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: AimSpacing.space4),
+                Text(
+                  'View and take available assessments.',
+                  style: AimTextStyles.bodySm.copyWith(
+                    color: surfaces.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.chevron_right,
+            color: surfaces.textMuted,
+          ),
+        ],
+      ),
+    ),
+  ];
 }
