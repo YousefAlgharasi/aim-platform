@@ -222,9 +222,11 @@ export class BillingRepository {
 
   // --- Checkout Sessions ---
 
+  private readonly CHECKOUT_SESSION_COLUMNS = `id, user_id AS "userId", price_id AS "priceId", subscription_id AS "subscriptionId", provider_session_id AS "providerSessionId", status, checkout_url AS "checkoutUrl", success_url AS "successUrl", cancel_url AS "cancelUrl", expires_at AS "expiresAt", metadata, created_at AS "createdAt", updated_at AS "updatedAt"`;
+
   async findCheckoutSessionById(id: string): Promise<CheckoutSession | null> {
     const result = await this.db.query<CheckoutSession>(
-      `SELECT * FROM checkout_sessions WHERE id = $1`,
+      `SELECT ${this.CHECKOUT_SESSION_COLUMNS} FROM checkout_sessions WHERE id = $1`,
       [id],
     );
     return result.rows[0] || null;
@@ -232,7 +234,7 @@ export class BillingRepository {
 
   async findCheckoutSessionsByUser(userId: string): Promise<CheckoutSession[]> {
     const result = await this.db.query<CheckoutSession>(
-      `SELECT * FROM checkout_sessions WHERE user_id = $1 ORDER BY created_at DESC`,
+      `SELECT ${this.CHECKOUT_SESSION_COLUMNS} FROM checkout_sessions WHERE user_id = $1 ORDER BY created_at DESC`,
       [userId],
     );
     return result.rows;
@@ -240,7 +242,7 @@ export class BillingRepository {
 
   async findPendingCheckoutSessionsByUser(userId: string): Promise<CheckoutSession[]> {
     const result = await this.db.query<CheckoutSession>(
-      `SELECT * FROM checkout_sessions WHERE user_id = $1 AND status = 'pending' ORDER BY created_at DESC`,
+      `SELECT ${this.CHECKOUT_SESSION_COLUMNS} FROM checkout_sessions WHERE user_id = $1 AND status = 'pending' ORDER BY created_at DESC`,
       [userId],
     );
     return result.rows;
@@ -248,7 +250,7 @@ export class BillingRepository {
 
   async findCheckoutSessionByProviderSessionId(providerSessionId: string): Promise<CheckoutSession | null> {
     const result = await this.db.query<CheckoutSession>(
-      `SELECT * FROM checkout_sessions WHERE provider_session_id = $1`,
+      `SELECT ${this.CHECKOUT_SESSION_COLUMNS} FROM checkout_sessions WHERE provider_session_id = $1`,
       [providerSessionId],
     );
     return result.rows[0] || null;
@@ -258,7 +260,7 @@ export class BillingRepository {
     const result = await this.db.query<CheckoutSession>(
       `INSERT INTO checkout_sessions (user_id, price_id, provider_session_id, status, checkout_url, success_url, cancel_url, expires_at, metadata)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-       RETURNING *`,
+       RETURNING ${this.CHECKOUT_SESSION_COLUMNS}`,
       [data.userId, data.priceId, data.providerSessionId, data.status || 'pending', data.checkoutUrl, data.successUrl, data.cancelUrl, data.expiresAt, data.metadata || {}],
     );
     return result.rows[0] ?? null;
@@ -266,7 +268,7 @@ export class BillingRepository {
 
   async updateCheckoutSessionStatus(id: string, status: string): Promise<CheckoutSession | null> {
     const result = await this.db.query<CheckoutSession>(
-      `UPDATE checkout_sessions SET status = $1, updated_at = now() WHERE id = $2 RETURNING *`,
+      `UPDATE checkout_sessions SET status = $1, updated_at = now() WHERE id = $2 RETURNING ${this.CHECKOUT_SESSION_COLUMNS}`,
       [status, id],
     );
     return result.rows[0] || null;

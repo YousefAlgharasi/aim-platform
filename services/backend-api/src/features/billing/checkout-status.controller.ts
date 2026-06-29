@@ -14,8 +14,11 @@ import { PaymentService } from './payment.service';
 import { CheckoutSession } from './billing.entities';
 
 export interface CheckoutStatusResponse {
+  id: string;
   sessionId: string;
   status: string;
+  checkoutUrl?: string;
+  expiresAt?: string;
   paymentStatus?: string;
   subscriptionId?: string;
 }
@@ -44,9 +47,18 @@ export class CheckoutStatusController {
     );
 
     const response: CheckoutStatusResponse = {
+      id: session.id,
       sessionId: session.id,
       status: session.status,
     };
+
+    if (session.checkoutUrl) {
+      response.checkoutUrl = session.checkoutUrl;
+    }
+
+    if (session.expiresAt) {
+      response.expiresAt = new Date(session.expiresAt).toISOString();
+    }
 
     if (session.subscriptionId) {
       response.subscriptionId = session.subscriptionId;
@@ -68,8 +80,11 @@ export class CheckoutStatusController {
     );
 
     return sessions.map((s: CheckoutSession) => ({
+      id: s.id,
       sessionId: s.id,
       status: s.status,
+      checkoutUrl: s.checkoutUrl || undefined,
+      expiresAt: s.expiresAt ? new Date(s.expiresAt).toISOString() : undefined,
       subscriptionId: s.subscriptionId || undefined,
     }));
   }
