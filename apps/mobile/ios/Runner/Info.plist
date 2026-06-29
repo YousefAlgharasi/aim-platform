@@ -57,6 +57,14 @@
 			<key>CFBundleURLName</key>
 			<string>com.aim.mobile</string>
 		</dict>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>aim</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>com.aim.mobile.billing</string>
+		</dict>
 	</array>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/features/billing/logic/provider/billing_provider.dart';
@@ -50,6 +51,21 @@ class _CheckoutStartPageState extends ConsumerState<CheckoutStartPage> {
             ? null
             : _promoController.text.trim(),
       );
+
+      final checkoutUrl = session.checkoutUrl;
+      if (checkoutUrl != null && checkoutUrl.isNotEmpty) {
+        final launched = await launchUrl(
+          Uri.parse(checkoutUrl),
+          mode: LaunchMode.externalApplication,
+        );
+        if (!launched) {
+          if (!mounted) return;
+          setState(() {
+            _errorMessage = 'Could not open the payment page. Please try again.';
+          });
+          return;
+        }
+      }
 
       if (!mounted) return;
       Navigator.of(context).pushReplacement(

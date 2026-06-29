@@ -62,3 +62,8 @@ final invoiceProvider =
     repository: ref.watch(billingRepositoryProvider),
   ),
 );
+
+/// Bumped by [DeepLinkHandler] when the app is resumed via the
+/// `aim://billing/checkout/...` redirect from the payment provider, so
+/// [CheckoutStatusPage] knows to re-check the session status.
+final checkoutReturnSignalProvider = StateProvider<int>((ref) => 0);
