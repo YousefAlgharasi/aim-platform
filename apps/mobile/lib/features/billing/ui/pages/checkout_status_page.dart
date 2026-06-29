@@ -103,6 +103,7 @@ class _CheckoutStatusPageState extends ConsumerState<CheckoutStatusPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkStatus());
+    ref.listenManual(checkoutReturnSignalProvider, (_, __) => _checkStatus());
   }
 
   Future<void> _checkStatus() async {
