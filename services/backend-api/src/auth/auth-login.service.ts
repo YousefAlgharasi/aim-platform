@@ -65,8 +65,9 @@ export class AuthLoginService {
   }
 
   async register(input: AuthRegisterInput): Promise<AuthRegisterResult> {
+    const redirectTo = this.resolveEmailConfirmationRedirect(input.redirectUrl);
     const url = `${this.buildSupabaseUrl(SUPABASE_SIGNUP_PATH)}?redirect_to=${encodeURIComponent(
-      MOBILE_EMAIL_CONFIRMATION_REDIRECT_URL,
+      redirectTo,
     )}`;
 
     let response: Response;
@@ -129,6 +130,20 @@ export class AuthLoginService {
   // ---------------------------------------------------------------------------
   // Private helpers
   // ---------------------------------------------------------------------------
+
+  // Web clients pass their own origin so the confirmation email lands back on
+  // the site the user registered from, instead of always opening the mobile
+  // app's deep link. Only origins in the CORS allow-list are trusted.
+  private resolveEmailConfirmationRedirect(redirectUrl: string | undefined): string {
+    if (!redirectUrl) {
+      return MOBILE_EMAIL_CONFIRMATION_REDIRECT_URL;
+    }
+
+    const requestedOrigin = new URL(redirectUrl).origin;
+    const isAllowedOrigin = this.config.corsOrigins.some((origin) => origin === requestedOrigin);
+
+    return isAllowedOrigin ? redirectUrl : MOBILE_EMAIL_CONFIRMATION_REDIRECT_URL;
+  }
 
   private async callSupabase(
     path: string,

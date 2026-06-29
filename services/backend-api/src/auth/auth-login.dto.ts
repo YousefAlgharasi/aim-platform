@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsOptional, IsString, IsUrl, MinLength } from 'class-validator';
 
 export class AuthLoginDto {
   @ApiProperty()
@@ -21,6 +21,11 @@ export class AuthRegisterDto {
   @IsString()
   @MinLength(8)
   password!: string;
+
+  @ApiProperty({ required: false, description: 'Web origin to redirect to after email confirmation. Must match an allowed CORS origin.' })
+  @IsOptional()
+  @IsUrl({ require_tld: false })
+  redirectUrl?: string;
 }
 
 export class AuthRefreshDto {
