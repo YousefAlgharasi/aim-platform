@@ -249,4 +249,40 @@ class BackendApiPaths {
   /// GET /voice-teacher/audio/:audioRef
   static String voiceTeacherAudio(String audioRef) =>
       '/voice-teacher/audio/$audioRef';
+
+  // ---------------------------------------------------------------------------
+  // Billing — subscriptions, pricing, invoices
+  // Backend is the final authority for plan/price/entitlement state. Flutter
+  // only displays and requests changes (checkout, cancel).
+  // ---------------------------------------------------------------------------
+
+  /// GET /billing/pricing/plans
+  static const String billingPlans = '/billing/pricing/plans';
+
+  /// GET /billing/pricing/prices
+  static const String billingPrices = '/billing/pricing/prices';
+
+  /// POST /billing/checkout
+  static const String billingCheckout = '/billing/checkout';
+
+  /// GET /billing/checkout/:sessionId/status
+  static String billingCheckoutStatus(String sessionId) =>
+      '/billing/checkout/$sessionId/status';
+
+  /// GET /billing/subscriptions
+  static const String billingSubscriptions = '/billing/subscriptions';
+
+  /// GET /billing/subscriptions/:id
+  static String billingSubscription(String id) =>
+      '/billing/subscriptions/$id';
+
+  /// POST /billing/subscriptions/:id/cancel
+  static String billingSubscriptionCancel(String id) =>
+      '/billing/subscriptions/$id/cancel';
+
+  /// GET /billing/invoices
+  static const String billingInvoices = '/billing/invoices';
+
+  /// GET /billing/invoices/:id
+  static String billingInvoice(String id) => '/billing/invoices/$id';
 }

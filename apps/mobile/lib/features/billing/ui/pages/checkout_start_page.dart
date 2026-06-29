@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CheckoutStartPage extends StatefulWidget {
+import 'package:aim_mobile/core/errors/app_exception.dart';
+import 'package:aim_mobile/features/billing/logic/provider/billing_provider.dart';
+import 'checkout_status_page.dart';
+
+class CheckoutStartPage extends ConsumerStatefulWidget {
   final String planName;
   final String priceId;
   final String formattedPrice;
@@ -15,10 +20,10 @@ class CheckoutStartPage extends StatefulWidget {
   });
 
   @override
-  State<CheckoutStartPage> createState() => _CheckoutStartPageState();
+  ConsumerState<CheckoutStartPage> createState() => _CheckoutStartPageState();
 }
 
-class _CheckoutStartPageState extends State<CheckoutStartPage> {
+class _CheckoutStartPageState extends ConsumerState<CheckoutStartPage> {
   final _promoController = TextEditingController();
   bool _isLoading = false;
   String? _errorMessage;
@@ -36,17 +41,36 @@ class _CheckoutStartPageState extends State<CheckoutStartPage> {
     });
 
     try {
-      // Call backend checkout API via BillingRepository
-      // On success, redirect to provider checkout URL or open in-app browser
-      // Backend is the authority — UI only initiates the request
+      final repository = ref.read(billingRepositoryProvider);
+      final session = await repository.createCheckoutSession(
+        priceId: widget.priceId,
+        successUrl: 'aim://billing/checkout/success',
+        cancelUrl: 'aim://billing/checkout/cancel',
+        promotionCode: _promoController.text.trim().isEmpty
+            ? null
+            : _promoController.text.trim(),
+      );
+
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(
+          builder: (_) => CheckoutStatusPage(sessionId: session.id),
+        ),
+      );
+    } on AppException catch (e) {
+      setState(() {
+        _errorMessage = e.message;
+      });
     } catch (e) {
       setState(() {
         _errorMessage = 'Failed to start checkout. Please try again.';
       });
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
