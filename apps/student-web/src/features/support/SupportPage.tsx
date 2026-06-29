@@ -13,35 +13,21 @@ import styles from './Support.module.css';
 
 interface Ticket {
   id: string;
+  requesterId: string;
+  category: 'bug_report' | 'account_issue' | 'learning_issue' | 'billing_issue' | 'general' | 'other';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  status: 'open' | 'in_progress' | 'waiting_on_user' | 'resolved' | 'closed';
   subject: string;
-  status: 'open' | 'resolved' | 'closed';
+  description: string;
   createdAt: string;
-  category: string;
-}
-
-interface ReleaseNote {
-  version: string;
-  date: string;
-  notes: string;
-}
-
-interface ServiceStatus {
-  name: string;
-  status: 'operational' | 'degraded' | 'down';
-}
-
-interface SupportData {
-  tickets: Ticket[];
-  releaseNotes: ReleaseNote[];
-  serviceStatuses: ServiceStatus[];
 }
 
 export function SupportPage() {
-  const [data, setData] = useState<SupportData | null>(null);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [category, setCategory] = useState('general');
+  const [category, setCategory] = useState<Ticket['category']>('general');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -50,8 +36,8 @@ export function SupportPage() {
   function fetchData() {
     setLoading(true);
     setError('');
-    apiClient.get<SupportData>('/support')
-      .then(setData)
+    apiClient.get<Ticket[]>('/support-tickets')
+      .then(setTickets)
       .catch((err: ApiError) => setError(err.message || 'Failed to load support'))
       .finally(() => setLoading(false));
   }
@@ -62,7 +48,7 @@ export function SupportPage() {
     e.preventDefault();
     setSubmitting(true);
     setError('');
-    apiClient.post('/support/tickets', { category, subject, message })
+    apiClient.post('/support-tickets', { category, severity: 'medium', subject, description: message })
       .then(() => {
         setSuccess('Ticket submitted successfully');
         setShowForm(false);
@@ -74,32 +60,15 @@ export function SupportPage() {
       .finally(() => setSubmitting(false));
   }
 
-  function handleSubmitFeedback(e: React.FormEvent) {
-    e.preventDefault();
-    setSubmitting(true);
-    apiClient.post('/support/feedback', { message })
-      .then(() => { setSuccess('Feedback sent. Thank you!'); setMessage(''); })
-      .catch((err: ApiError) => setError(err.message || 'Failed to send feedback'))
-      .finally(() => setSubmitting(false));
-  }
-
   if (loading) return <LoadingSpinner />;
-  if (error && !data) return <ErrorState message={error} onRetry={fetchData} />;
-  if (!data) return null;
-
-  function getStatusClass(status: ServiceStatus['status']) {
-    switch (status) {
-      case 'operational': return styles.serviceUp;
-      case 'degraded': return styles.serviceDegraded;
-      case 'down': return styles.serviceDown;
-    }
-  }
+  if (error && tickets.length === 0) return <ErrorState message={error} onRetry={fetchData} />;
 
   function getTicketStatusClass(status: Ticket['status']) {
     switch (status) {
       case 'open': return styles.statusOpen;
       case 'resolved': return styles.statusResolved;
       case 'closed': return styles.statusClosed;
+      default: return styles.statusOpen;
     }
   }
 
@@ -132,12 +101,13 @@ export function SupportPage() {
             <h2 className={styles.subtitle}>New Support Ticket</h2>
             <div className={styles.formField}>
               <label className={styles.formLabel} htmlFor="ticket-category">Category</label>
-              <select id="ticket-category" className={styles.formSelect} value={category} onChange={e => setCategory(e.target.value)}>
+              <select id="ticket-category" className={styles.formSelect} value={category} onChange={e => setCategory(e.target.value as Ticket['category'])}>
                 <option value="general">General</option>
-                <option value="bug">Bug Report</option>
-                <option value="account">Account Issue</option>
-                <option value="billing">Billing</option>
-                <option value="feature">Feature Request</option>
+                <option value="bug_report">Bug Report</option>
+                <option value="account_issue">Account Issue</option>
+                <option value="billing_issue">Billing</option>
+                <option value="learning_issue">Learning Issue</option>
+                <option value="other">Other</option>
               </select>
             </div>
             <Input label="Subject" value={subject} onChange={e => setSubject(e.target.value)} required />
@@ -152,11 +122,11 @@ export function SupportPage() {
         </Card>
       )}
 
-      {data.tickets.length > 0 && (
+      {tickets.length > 0 && (
         <section>
           <h2 className={styles.subtitle}>My Tickets</h2>
           <div className={styles.ticketList}>
-            {data.tickets.map(ticket => (
+            {tickets.map(ticket => (
               <Card key={ticket.id}>
                 <div className={styles.ticketCard}>
                   <span className={styles.ticketTitle}>{ticket.subject}</span>
@@ -172,39 +142,8 @@ export function SupportPage() {
         </section>
       )}
 
-      <section>
-        <h2 className={styles.subtitle}>System Status</h2>
-        <Card>
-          <div className={styles.statusPage}>
-            {data.serviceStatuses.map((svc, i) => (
-              <div key={i} className={styles.statusItem}>
-                <span className={styles.serviceName}>{svc.name}</span>
-                <span className={`${styles.serviceStatus} ${getStatusClass(svc.status)}`}>
-                  {svc.status === 'operational' ? 'Operational' : svc.status === 'degraded' ? 'Degraded' : 'Down'}
-                </span>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </section>
-
-      {data.releaseNotes.length > 0 && (
-        <section>
-          <h2 className={styles.subtitle}>Release Notes</h2>
-          <div className={styles.releaseList}>
-            {data.releaseNotes.map((rn, i) => (
-              <Card key={i}>
-                <div className={styles.releaseCard}>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--space-8)' }}>
-                    <h3 className={styles.releaseVersion}>{rn.version}</h3>
-                    <span className={styles.releaseDate}>{new Date(rn.date).toLocaleDateString()}</span>
-                  </div>
-                  <p className={styles.releaseNotes}>{rn.notes}</p>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </section>
+      {tickets.length === 0 && (
+        <EmptyState title="No tickets yet" message="Submit a ticket above if you need help." />
       )}
     </div>
   );

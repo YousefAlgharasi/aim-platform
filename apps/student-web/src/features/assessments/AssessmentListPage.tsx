@@ -11,13 +11,9 @@ import styles from './Assessment.module.css';
 interface Assessment {
   id: string;
   title: string;
-  type: 'quiz' | 'exam';
-  status: 'available' | 'completed' | 'upcoming';
-  deadline: string | null;
-  questionCount: number;
-  duration: string;
-  attemptsUsed: number;
-  attemptsAllowed: number;
+  type: string;
+  description: string | null;
+  deadlineStatus: string | null;
 }
 
 export function AssessmentListPage() {
@@ -28,8 +24,8 @@ export function AssessmentListPage() {
   function fetchAssessments() {
     setLoading(true);
     setError('');
-    apiClient.get<{ assessments: Assessment[] }>('/assessments')
-      .then(({ assessments: a }) => setAssessments(a))
+    apiClient.get<Assessment[]>('/student/assessments')
+      .then(a => setAssessments(a))
       .catch((err: ApiError) => setError(err.message || 'Failed to load assessments'))
       .finally(() => setLoading(false));
   }
@@ -42,11 +38,12 @@ export function AssessmentListPage() {
     return <EmptyState title="No assessments" message="Assessments will appear here when available." />;
   }
 
-  function getStatusClass(status: Assessment['status']) {
+  function getStatusClass(status: Assessment['deadlineStatus']) {
     switch (status) {
-      case 'available': return styles.statusAvailable;
-      case 'completed': return styles.statusCompleted;
+      case 'active': return styles.statusAvailable;
+      case 'closed': return styles.statusCompleted;
       case 'upcoming': return styles.statusUpcoming;
+      default: return styles.statusAvailable;
     }
   }
 
@@ -62,20 +59,17 @@ export function AssessmentListPage() {
                   <span className={`${styles.typeBadge} ${a.type === 'quiz' ? styles.typeQuiz : styles.typeExam}`}>
                     {a.type}
                   </span>
-                  <span className={`${styles.statusBadge} ${getStatusClass(a.status)}`}>
-                    {a.status}
-                  </span>
+                  {a.deadlineStatus && (
+                    <span className={`${styles.statusBadge} ${getStatusClass(a.deadlineStatus)}`}>
+                      {a.deadlineStatus}
+                    </span>
+                  )}
                 </div>
                 <h2 className={styles.cardTitle}>{a.title}</h2>
-                <div className={styles.cardMeta}>
-                  <span>{a.questionCount} questions</span>
-                  <span>{a.duration}</span>
-                  <span>{a.attemptsUsed}/{a.attemptsAllowed} attempts</span>
-                </div>
-                {a.deadline && (
-                  <span className={styles.deadlineText}>
-                    Due: {new Date(a.deadline).toLocaleDateString()}
-                  </span>
+                {a.description && (
+                  <div className={styles.cardMeta}>
+                    <span>{a.description}</span>
+                  </div>
                 )}
               </div>
             </Card>

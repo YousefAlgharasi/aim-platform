@@ -8,19 +8,31 @@ import { ErrorState } from '../../components/common/ErrorState';
 import type { ApiError } from '../../types';
 import styles from './Billing.module.css';
 
-interface CheckoutData {
-  planName: string;
-  price: string;
-  period: string;
-  features: string[];
-  tax: string;
-  total: string;
+interface BillingPlan {
+  id: string;
+  name: string;
+  description: string | null;
+  priceId: string;
+}
+
+interface BillingPrice {
+  id: string;
+  amount: number;
+  currency: string;
+  billingInterval: 'month' | 'year' | 'one_time';
+}
+
+interface CheckoutSession {
+  id: string;
+  status: 'pending' | 'completed' | 'expired' | 'failed';
+  checkoutUrl: string | null;
 }
 
 export function CheckoutPage() {
   const { planId } = useParams<{ planId: string }>();
   const navigate = useNavigate();
-  const [checkout, setCheckout] = useState<CheckoutData | null>(null);
+  const [plan, setPlan] = useState<BillingPlan | null>(null);
+  const [price, setPrice] = useState<BillingPrice | null>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
@@ -28,8 +40,12 @@ export function CheckoutPage() {
   function fetchCheckout() {
     setLoading(true);
     setError('');
-    apiClient.get<CheckoutData>(`/billing/checkout/${planId}`)
-      .then(setCheckout)
+    apiClient.get<{ products: unknown[]; prices: BillingPrice[]; plans: BillingPlan[] }>('/billing/pricing')
+      .then(pricing => {
+        const foundPlan = pricing.plans.find(p => p.id === planId) || null;
+        setPlan(foundPlan);
+        setPrice(foundPlan ? pricing.prices.find(p => p.id === foundPlan.priceId) || null : null);
+      })
       .catch((err: ApiError) => setError(err.message || 'Failed to load checkout'))
       .finally(() => setLoading(false));
   }
@@ -37,12 +53,17 @@ export function CheckoutPage() {
   useEffect(() => { fetchCheckout(); }, [planId]);
 
   function handleCheckout() {
+    if (!price) return;
     setProcessing(true);
     setError('');
-    apiClient.post<{ redirectUrl?: string; status: string }>(`/billing/checkout/${planId}/confirm`, {})
-      .then(res => {
-        if (res.redirectUrl) {
-          window.location.href = res.redirectUrl;
+    apiClient.post<CheckoutSession>('/billing/checkout', {
+      priceId: price.id,
+      successUrl: `${window.location.origin}/billing`,
+      cancelUrl: `${window.location.origin}/billing/checkout/${planId}`,
+    })
+      .then(session => {
+        if (session.checkoutUrl) {
+          window.location.href = session.checkoutUrl;
         } else {
           navigate('/billing');
         }
@@ -52,8 +73,8 @@ export function CheckoutPage() {
   }
 
   if (loading) return <LoadingSpinner />;
-  if (error && !checkout) return <ErrorState message={error} onRetry={fetchCheckout} />;
-  if (!checkout) return null;
+  if (error && !plan) return <ErrorState message={error} onRetry={fetchCheckout} />;
+  if (!plan) return null;
 
   return (
     <div className={styles.checkoutContainer}>
@@ -61,27 +82,14 @@ export function CheckoutPage() {
 
       <Card>
         <div className={styles.orderSummary}>
-          <h2 className={styles.subtitle}>{checkout.planName}</h2>
-          <ul className={styles.planFeatures}>
-            {checkout.features.map((f, i) => (
-              <li key={i} className={styles.planFeature}>
-                <span className={styles.featureCheck} aria-hidden="true">✓</span>
-                <span>{f}</span>
-              </li>
-            ))}
-          </ul>
-          <div className={styles.orderRow}>
-            <span>Plan ({checkout.period})</span>
-            <span>{checkout.price}</span>
-          </div>
-          <div className={styles.orderRow}>
-            <span>Tax</span>
-            <span>{checkout.tax}</span>
-          </div>
-          <div className={`${styles.orderRow} ${styles.orderTotal}`}>
-            <span>Total</span>
-            <span>{checkout.total}</span>
-          </div>
+          <h2 className={styles.subtitle}>{plan.name}</h2>
+          {plan.description && <p>{plan.description}</p>}
+          {price && (
+            <div className={`${styles.orderRow} ${styles.orderTotal}`}>
+              <span>Plan ({price.billingInterval})</span>
+              <span>{(price.amount / 100).toFixed(2)} {price.currency.toUpperCase()}</span>
+            </div>
+          )}
         </div>
       </Card>
 
@@ -89,8 +97,8 @@ export function CheckoutPage() {
         <p style={{ color: 'var(--color-danger-500)', fontSize: '14px', margin: 0 }}>{error}</p>
       )}
 
-      <Button variant="primary" fullWidth onClick={handleCheckout} disabled={processing}>
-        {processing ? 'Processing…' : `Pay ${checkout.total}`}
+      <Button variant="primary" fullWidth onClick={handleCheckout} disabled={processing || !price}>
+        {processing ? 'Processing…' : 'Continue to Payment'}
       </Button>
 
       <p className={styles.description} style={{ textAlign: 'center' }}>

@@ -9,20 +9,22 @@ import type { ApiError } from '../../types';
 import styles from './Assessment.module.css';
 
 interface BreakdownItem {
-  label: string;
-  score: number;
-  total: number;
+  assessmentQuestionLinkId: string;
+  sectionId: string | null;
+  pointsAwarded: number;
+  pointsPossible: number;
+  isCorrect?: boolean;
 }
 
 interface AssessmentResult {
-  assessmentTitle: string;
-  type: 'quiz' | 'exam';
+  resultId: string;
+  attemptId: string;
   score: number;
-  total: number;
-  percentage: number;
+  maxScore: number;
   passed: boolean;
-  grade: string;
-  summary: string;
+  latePenaltyApplied: boolean;
+  gradedAt: string;
+  feedbackAllowed: boolean;
   breakdown: BreakdownItem[];
 }
 
@@ -35,7 +37,7 @@ export function AssessmentResultPage() {
   function fetchResult() {
     setLoading(true);
     setError('');
-    apiClient.get<AssessmentResult>(`/assessments/${assessmentId}/attempts/${attemptId}/result`)
+    apiClient.get<AssessmentResult>(`/student/assessments/attempts/${attemptId}/result`)
       .then(setResult)
       .catch((err: ApiError) => setError(err.message || 'Failed to load result'))
       .finally(() => setLoading(false));
@@ -49,29 +51,33 @@ export function AssessmentResultPage() {
 
   return (
     <div className={styles.detailContainer}>
-      <h1 className={styles.heading}>{result.assessmentTitle} — Result</h1>
+      <h1 className={styles.heading}>Result</h1>
 
       <Card>
         <div className={styles.resultContent}>
           <span className={styles.resultLabel}>Score</span>
-          <span className={styles.resultScore}>{result.score}/{result.total}</span>
-          <span className={styles.resultLabel}>{result.percentage}%</span>
+          <span className={styles.resultScore}>{result.score}/{result.maxScore}</span>
+          <span className={styles.resultLabel}>{Math.round((result.score / result.maxScore) * 100)}%</span>
           <span className={`${styles.resultGrade} ${result.passed ? styles.gradePassed : styles.gradeFailed}`}>
-            {result.grade}
+            {result.passed ? 'Passed' : 'Failed'}
           </span>
-          <p className={styles.resultSummary}>{result.summary}</p>
+          {result.latePenaltyApplied && (
+            <p className={styles.resultSummary}>A late penalty was applied to this attempt.</p>
+          )}
         </div>
       </Card>
 
-      {result.breakdown.length > 0 && (
+      {result.feedbackAllowed && result.breakdown.length > 0 && (
         <Card>
           <div>
             <h2 className={styles.subtitle}>Score Breakdown</h2>
             <div className={styles.breakdownList}>
-              {result.breakdown.map((item, i) => (
-                <div key={i} className={styles.breakdownItem}>
-                  <span className={styles.breakdownLabel}>{item.label}</span>
-                  <span className={styles.breakdownValue}>{item.score}/{item.total}</span>
+              {result.breakdown.map((item) => (
+                <div key={item.assessmentQuestionLinkId} className={styles.breakdownItem}>
+                  <span className={styles.breakdownLabel}>
+                    {item.isCorrect === undefined ? '' : item.isCorrect ? 'Correct' : 'Incorrect'}
+                  </span>
+                  <span className={styles.breakdownValue}>{item.pointsAwarded}/{item.pointsPossible}</span>
                 </div>
               ))}
             </div>
