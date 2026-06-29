@@ -3,6 +3,7 @@ import styles from './Sidebar.module.css';
 
 const navItems = [
   { to: '/', label: 'Dashboard' },
+  { to: '/placement', label: 'Placement Test' },
   { to: '/progress', label: 'Progress' },
   { to: '/curriculum', label: 'Curriculum' },
   { to: '/practice', label: 'Practice' },
