@@ -40,7 +40,7 @@ export class LessonsController {
   ) {}
 
   @Get()
-  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_PUBLISHED)
   @ApiOperation({ summary: 'List lessons. Requires curriculum.read permission.' })
   @ApiQuery({ name: 'chapterId', required: false, type: String })
   @ApiQuery({ name: 'page', required: false, type: Number })
@@ -69,7 +69,7 @@ export class LessonsController {
   }
 
   @Get(':id')
-  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_PUBLISHED)
   @ApiOperation({ summary: 'Get lesson by ID. Requires curriculum.read permission.' })
   @ApiOkResponse({ description: 'Lesson detail.' })
   @ApiNotFoundResponse({ description: 'Lesson not found.' })
