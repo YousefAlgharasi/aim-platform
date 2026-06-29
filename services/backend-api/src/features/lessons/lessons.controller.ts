@@ -12,7 +12,7 @@
 //   - studentId always resolved from the JWT — never from client input.
 //   - No AIM Engine runtime, mastery, difficulty, or skill-map logic here.
 
-import { Body, Controller, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { CurrentUser } from '../../auth/current-user.decorator';
@@ -21,7 +21,7 @@ import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../auth/authorization/required-roles.decorator';
 import { RoleGuard } from '../../auth/authorization/role.guard';
 import { LessonProgressService } from './lesson-progress.service';
-import { LessonProgressAckResponse } from './lesson-progress.types';
+import { ContinueLearningLesson, LessonProgressAckResponse } from './lesson-progress.types';
 
 interface RecordProgressBody {
   readonly percent: number;
@@ -50,6 +50,15 @@ export class LessonsController {
       lessonId,
       percent: body.percent,
     });
+  }
+
+  @Get('continue')
+  @ApiOperation({ summary: 'Get the most recently active, incomplete lesson for the student (for "Continue Learning").' })
+  @ApiOkResponse({ description: 'The continue-learning lesson, or null if none exists.' })
+  async getContinueLearningLesson(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ContinueLearningLesson | null> {
+    return this.lessonProgress.findContinueLearningLesson(user.id);
   }
 
   @Post(':id/complete')

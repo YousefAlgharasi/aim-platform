@@ -6,6 +6,7 @@ import { AdminModule } from './admin/admin.module';
 import { AiTeacherModule } from './ai-teacher/ai-teacher.module';
 import { AimModule } from './aim/aim.module';
 import { CurriculumModule } from './curriculum/curriculum.module';
+import { EngagementModule } from './engagement/engagement.module';
 import { LessonsModule } from './lessons/lessons.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { NotificationSchedulerModule } from './notifications/notification-scheduler.module';
@@ -43,6 +44,7 @@ import { OperationsModule } from './operations/operations.module';
     AssessmentsModule,
     BillingModule,
     OperationsModule,
+    EngagementModule,
   ],
   exports: [
     AuthModule,
@@ -64,6 +66,7 @@ import { OperationsModule } from './operations/operations.module';
     AssessmentsModule,
     BillingModule,
     OperationsModule,
+    EngagementModule,
   ],
 })
 export class FeaturesModule {}

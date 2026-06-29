@@ -11,6 +11,8 @@
 // - Bearer token is passed from the provider layer; never stored here.
 // - No AIM Engine runtime, AI Teacher, or AI provider calls from Flutter.
 
+import 'package:aim_mobile/features/home/data/datasources/home_remote_datasource.dart'
+    show HomeEngagementSummary;
 import 'package:aim_mobile/features/home/data/models/home_models.dart';
 
 abstract class HomeRepository {
@@ -40,5 +42,15 @@ abstract class HomeRepository {
   Future<List<HomeRecommendationModel>> getRecommendations({
     required String bearerToken,
     required String studentId,
+  });
+
+  /// Fetch the backend-computed daily goal, streak, and today's challenge.
+  Future<HomeEngagementSummary> getEngagementSummary({
+    required String bearerToken,
+  });
+
+  /// Fetch the most recently active, incomplete lesson, if any.
+  Future<HomeContinueLearningModel?> getContinueLearning({
+    required String bearerToken,
   });
 }
