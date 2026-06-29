@@ -30,7 +30,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const register = useCallback(async (email: string, password: string, name: string) => {
-    const result = await apiClient.post<{ requiresEmailConfirmation: boolean; user?: User; accessToken?: string }>('/auth/register', { email, password });
+    const result = await apiClient.post<{ requiresEmailConfirmation: boolean; user?: User; accessToken?: string }>('/auth/register', {
+      email,
+      password,
+      redirectUrl: `${window.location.origin}/login`,
+    });
     if (result.requiresEmailConfirmation || !result.accessToken || !result.user) {
       return { requiresEmailConfirmation: true };
     }

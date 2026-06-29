@@ -23,6 +23,7 @@ export interface AuthRefreshInput {
 export interface AuthRegisterInput {
   readonly email: string;
   readonly password: string;
+  readonly redirectUrl?: string;
 }
 
 export interface AuthRegisterResult {
