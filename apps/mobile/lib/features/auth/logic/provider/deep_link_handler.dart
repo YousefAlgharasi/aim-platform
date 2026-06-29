@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
+import 'package:aim_mobile/features/billing/logic/provider/billing_provider.dart';
 import 'auth_context_provider.dart';
 import 'auth_flow_provider.dart';
 import 'session_store_provider.dart';
@@ -31,6 +32,11 @@ class DeepLinkHandler {
   }
 
   Future<void> _handleUri(Uri uri) async {
+    if (uri.scheme == 'aim' && uri.host == 'billing') {
+      _ref.read(checkoutReturnSignalProvider.notifier).state++;
+      return;
+    }
+
     if (uri.scheme != 'aimapp' || uri.host != 'login-callback') return;
     if (_processing) return;
     _processing = true;
