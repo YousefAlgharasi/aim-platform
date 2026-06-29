@@ -8,33 +8,47 @@ import { ErrorState } from '../../components/common/ErrorState';
 import type { ApiError } from '../../types';
 import styles from './Billing.module.css';
 
-interface Plan {
+interface BillingPlan {
   id: string;
   name: string;
-  price: string;
-  period: string;
-  features: string[];
-  current: boolean;
+  description: string | null;
+  priceId: string;
+  features: Record<string, unknown>;
+  planType: 'free' | 'basic' | 'premium' | 'enterprise';
+  status: string;
+}
+
+interface BillingPrice {
+  id: string;
+  productId: string;
+  amount: number;
+  currency: string;
+  billingInterval: 'month' | 'year' | 'one_time';
+  status: string;
 }
 
 interface Subscription {
-  planName: string;
+  id: string;
+  userId: string;
+  planId: string;
   status: string;
-  renewsAt: string | null;
-  cancelAt: string | null;
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
 }
 
 interface Invoice {
   id: string;
-  date: string;
-  amount: string;
-  status: 'paid' | 'pending';
-  downloadUrl: string;
+  status: 'draft' | 'open' | 'paid' | 'void' | 'uncollectible';
+  total: number;
+  currency: string;
+  periodEnd: string | null;
+  invoiceUrl: string | null;
 }
 
 interface BillingData {
-  plans: Plan[];
-  subscription: Subscription | null;
+  plans: BillingPlan[];
+  prices: BillingPrice[];
+  subscriptions: Subscription[];
   invoices: Invoice[];
 }
 
@@ -46,8 +60,19 @@ export function BillingPage() {
   function fetchBilling() {
     setLoading(true);
     setError('');
-    apiClient.get<BillingData>('/billing')
-      .then(setData)
+    Promise.all([
+      apiClient.get<{ products: unknown[]; prices: BillingPrice[]; plans: BillingPlan[] }>('/billing/pricing'),
+      apiClient.get<{ subscriptions: Subscription[]; entitlements: unknown[] }>('/billing/subscriptions'),
+      apiClient.get<Invoice[]>('/billing/invoices'),
+    ])
+      .then(([pricing, subs, invoices]) => {
+        setData({
+          plans: pricing.plans,
+          prices: pricing.prices,
+          subscriptions: subs.subscriptions,
+          invoices,
+        });
+      })
       .catch((err: ApiError) => setError(err.message || 'Failed to load billing'))
       .finally(() => setLoading(false));
   }
@@ -58,26 +83,28 @@ export function BillingPage() {
   if (error) return <ErrorState message={error} onRetry={fetchBilling} />;
   if (!data) return null;
 
+  const activeSubscription = data.subscriptions.find(s => s.status === 'active' || s.status === 'trialing');
+
+  function priceForPlan(plan: BillingPlan) {
+    return data?.prices.find(p => p.id === plan.priceId);
+  }
+
   return (
     <div className={styles.container}>
       <h1 className={styles.heading}>Billing</h1>
 
-      {data.subscription && (
+      {activeSubscription && (
         <Card>
           <div className={styles.subscriptionInfo}>
             <h2 className={styles.subtitle}>Current Subscription</h2>
             <div className={styles.subDetail}>
-              <span className={styles.subLabel}>Plan</span>
-              <span className={styles.subValue}>{data.subscription.planName}</span>
-            </div>
-            <div className={styles.subDetail}>
               <span className={styles.subLabel}>Status</span>
-              <span className={styles.subValue}>{data.subscription.status}</span>
+              <span className={styles.subValue}>{activeSubscription.status}</span>
             </div>
-            {data.subscription.renewsAt && (
+            {activeSubscription.currentPeriodEnd && (
               <div className={styles.subDetail}>
                 <span className={styles.subLabel}>Renews</span>
-                <span className={styles.subValue}>{new Date(data.subscription.renewsAt).toLocaleDateString()}</span>
+                <span className={styles.subValue}>{new Date(activeSubscription.currentPeriodEnd).toLocaleDateString()}</span>
               </div>
             )}
           </div>
@@ -87,31 +114,30 @@ export function BillingPage() {
       <section>
         <h2 className={styles.subtitle}>Plans</h2>
         <div className={styles.planGrid}>
-          {data.plans.map(plan => (
-            <Card key={plan.id}>
-              <div className={`${styles.planCard} ${plan.current ? styles.planCurrent : ''}`}>
-                {plan.current && <span className={styles.currentBadge}>Current</span>}
-                <h3 className={styles.planName}>{plan.name}</h3>
-                <div>
-                  <span className={styles.planPrice}>{plan.price}</span>
-                  <span className={styles.planPeriod}>/{plan.period}</span>
+          {data.plans.map(plan => {
+            const isCurrent = activeSubscription?.planId === plan.id;
+            const price = priceForPlan(plan);
+            return (
+              <Card key={plan.id}>
+                <div className={`${styles.planCard} ${isCurrent ? styles.planCurrent : ''}`}>
+                  {isCurrent && <span className={styles.currentBadge}>Current</span>}
+                  <h3 className={styles.planName}>{plan.name}</h3>
+                  {price && (
+                    <div>
+                      <span className={styles.planPrice}>{(price.amount / 100).toFixed(2)} {price.currency.toUpperCase()}</span>
+                      <span className={styles.planPeriod}>/{price.billingInterval}</span>
+                    </div>
+                  )}
+                  {plan.description && <p>{plan.description}</p>}
+                  {!isCurrent && (
+                    <Link to={`/billing/checkout/${plan.id}`}>
+                      <Button variant="primary" fullWidth>Choose Plan</Button>
+                    </Link>
+                  )}
                 </div>
-                <ul className={styles.planFeatures}>
-                  {plan.features.map((f, i) => (
-                    <li key={i} className={styles.planFeature}>
-                      <span className={styles.featureCheck} aria-hidden="true">✓</span>
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                {!plan.current && (
-                  <Link to={`/billing/checkout/${plan.id}`}>
-                    <Button variant="primary" fullWidth>Choose Plan</Button>
-                  </Link>
-                )}
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       </section>
 
@@ -122,9 +148,9 @@ export function BillingPage() {
             <div className={styles.invoiceList}>
               {data.invoices.map(inv => (
                 <div key={inv.id} className={styles.invoiceItem}>
-                  <span>{new Date(inv.date).toLocaleDateString()}</span>
+                  <span>{inv.periodEnd ? new Date(inv.periodEnd).toLocaleDateString() : '—'}</span>
                   <div className={styles.invoiceMeta}>
-                    <span className={styles.invoiceAmount}>{inv.amount}</span>
+                    <span className={styles.invoiceAmount}>{(inv.total / 100).toFixed(2)} {inv.currency.toUpperCase()}</span>
                     <span className={inv.status === 'paid' ? styles.statusPaid : styles.statusPending}>
                       {inv.status}
                     </span>

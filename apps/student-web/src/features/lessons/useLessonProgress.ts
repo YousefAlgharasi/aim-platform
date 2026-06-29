@@ -18,7 +18,6 @@ export function useLessonProgress(lessonId: string) {
       if (event.percent <= lastSyncedRef.current) return;
 
       apiClient.post(`/lessons/${lessonId}/progress`, {
-        blockId: event.blockId,
         percent: event.percent,
       }).then(() => {
         lastSyncedRef.current = event.percent;
