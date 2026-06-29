@@ -32,3 +32,10 @@ export interface StudentLessonProgressListResponse {
   readonly page: number;
   readonly limit: number;
 }
+
+export interface ContinueLearningLesson {
+  readonly lessonId: string;
+  readonly lessonTitle: string;
+  readonly percent: number;
+  readonly lastActiveAt: string;
+}

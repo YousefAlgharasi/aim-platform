@@ -17,6 +17,9 @@ class HomeData {
     required this.weaknessRecords,
     required this.reviewSchedules,
     required this.recommendations,
+    this.goal,
+    this.dailyChallenge,
+    this.continueLearning,
   });
 
   /// Backend-computed skill state summary cards.
@@ -32,10 +35,24 @@ class HomeData {
   /// Never generated or rewritten by Flutter.
   final List<HomeRecommendationModel> recommendations;
 
-  /// True when all four lists are empty (backend returned no data yet).
+  /// Backend-computed daily goal + streak. Null only if the engagement
+  /// summary call failed to load (handled separately from the four
+  /// required lists above, which fail the whole page on error).
+  final HomeEngagementGoalModel? goal;
+
+  /// Backend-selected daily challenge, or null if none is configured.
+  final HomeDailyChallengeModel? dailyChallenge;
+
+  /// Most recently active, incomplete lesson, or null if the student has
+  /// not started any lesson yet.
+  final HomeContinueLearningModel? continueLearning;
+
+  /// True when all four core lists are empty (backend returned no data
+  /// yet) — drives the "getting started" empty state.
   bool get isEmpty =>
       skillStates.isEmpty &&
       weaknessRecords.isEmpty &&
       reviewSchedules.isEmpty &&
-      recommendations.isEmpty;
+      recommendations.isEmpty &&
+      continueLearning == null;
 }

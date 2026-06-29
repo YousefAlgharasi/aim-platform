@@ -78,6 +78,22 @@ class BackendApiPaths {
   static const String studentAnalyticsSummary = '/student/analytics/summary';
 
   // ---------------------------------------------------------------------------
+  // Engagement — daily goal, streak, and daily challenge.
+  // Read-only summary; goal target is the only client-writable field.
+  // Streak and challenge progress are always backend-computed.
+  // ---------------------------------------------------------------------------
+
+  static const String engagementSummary = '/student/engagement/summary';
+  static const String engagementGoal = '/student/engagement/goal';
+
+  // ---------------------------------------------------------------------------
+  // Lessons — student-facing progress endpoints.
+  // ---------------------------------------------------------------------------
+
+  /// GET /lessons/continue — most recently active, incomplete lesson.
+  static const String lessonsContinue = '/lessons/continue';
+
+  // ---------------------------------------------------------------------------
   // Curriculum — Phase 6 P6-022
   // Read-only list endpoints. Write/admin endpoints are forbidden in Flutter.
   // ---------------------------------------------------------------------------

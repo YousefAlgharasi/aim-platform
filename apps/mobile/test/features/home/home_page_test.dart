@@ -17,6 +17,8 @@ import 'package:aim_mobile/features/home/data/models/home_models.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_data.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_notifier.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_provider.dart';
+import 'package:aim_mobile/features/home/data/datasources/home_remote_datasource.dart'
+    show HomeEngagementSummary;
 import 'package:aim_mobile/features/home/logic/repository/home_repository.dart';
 import 'package:aim_mobile/features/home/ui/pages/home_page.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
@@ -261,4 +263,22 @@ class _FakeHomeRepository implements HomeRepository {
     required String studentId,
   }) async =>
       const [];
+
+  @override
+  Future<HomeEngagementSummary> getEngagementSummary({
+    required String bearerToken,
+  }) async =>
+      const HomeEngagementSummary(
+        goal: HomeEngagementGoalModel(
+          targetLessons: 1,
+          completedToday: 0,
+          streakDays: 0,
+        ),
+      );
+
+  @override
+  Future<HomeContinueLearningModel?> getContinueLearning({
+    required String bearerToken,
+  }) async =>
+      null;
 }

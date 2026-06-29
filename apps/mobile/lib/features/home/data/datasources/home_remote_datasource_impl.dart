@@ -101,6 +101,60 @@ class HomeRemoteDatasourceImpl implements HomeRemoteDatasource {
     return envelope.data ?? const [];
   }
 
+  @override
+  Future<HomeEngagementSummary> getEngagementSummary({
+    required String bearerToken,
+  }) async {
+    final envelope = await _apiClient.get<HomeEngagementSummary>(
+      BackendApiPaths.engagementSummary,
+      headers: _auth(bearerToken),
+      decodeData: (json) {
+        final data = _requireMap(json);
+        final goalJson = data['goal'] as Map<String, dynamic>?;
+        final challengeJson = data['challenge'] as Map<String, dynamic>?;
+        return HomeEngagementSummary(
+          goal: goalJson != null
+              ? HomeEngagementGoalModel.fromJson(goalJson)
+              : const HomeEngagementGoalModel(
+                  targetLessons: 1,
+                  completedToday: 0,
+                  streakDays: 0,
+                ),
+          dailyChallenge: challengeJson != null
+              ? HomeDailyChallengeModel.fromJson(challengeJson)
+              : null,
+        );
+      },
+    );
+    return envelope.data ??
+        const HomeEngagementSummary(
+          goal: HomeEngagementGoalModel(
+            targetLessons: 1,
+            completedToday: 0,
+            streakDays: 0,
+          ),
+        );
+  }
+
+  @override
+  Future<HomeContinueLearningModel?> getContinueLearning({
+    required String bearerToken,
+  }) async {
+    final envelope = await _apiClient.get<HomeContinueLearningModel?>(
+      BackendApiPaths.lessonsContinue,
+      headers: _auth(bearerToken),
+      decodeData: (json) {
+        if (json == null) {
+          return null;
+        }
+        return HomeContinueLearningModel.fromJson(
+          json as Map<String, dynamic>,
+        );
+      },
+    );
+    return envelope.data;
+  }
+
   // ── Helpers ──────────────────────────────────────────────────────────────
 
   Map<String, String> _auth(String bearerToken) =>
