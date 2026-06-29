@@ -18,7 +18,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     apiClient.get<{ user: User }>('/auth/me')
-      .then(({ user: u }) => setUser(u))
+      .then(async ({ user: u }) => {
+        await apiClient.post('/auth/bootstrap', {});
+        setUser(u);
+      })
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
@@ -26,6 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string) => {
     const { user: u, accessToken } = await apiClient.post<{ user: User; accessToken: string }>('/auth/login', { email, password });
     apiClient.setAccessToken(accessToken);
+    await apiClient.post('/auth/bootstrap', {});
     setUser(u);
   }, []);
 
@@ -39,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { requiresEmailConfirmation: true };
     }
     apiClient.setAccessToken(result.accessToken);
+    await apiClient.post('/auth/bootstrap', {});
     if (name) {
       await apiClient.patch('/profile/me', { displayName: name });
     }
