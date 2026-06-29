@@ -35,19 +35,24 @@ async function request(method, path, body, auth) {
     const res = await fetch(url, opts);
     const status = res.status;
     const text = await res.text();
-    let data = null;
+    let raw = null;
 
     try {
-      data = JSON.parse(text);
+      raw = JSON.parse(text);
     } catch (e) {
-      data = text || '(empty)';
+      raw = text || '(empty)';
     }
 
     console.log('<-- ' + status);
-    if (typeof data === 'object' && data !== null) {
-      console.log('    Response: ' + JSON.stringify(data, null, 2));
+    if (typeof raw === 'object' && raw !== null) {
+      console.log('    Response: ' + JSON.stringify(raw, null, 2));
     } else {
-      console.log('    Response: ' + data);
+      console.log('    Response: ' + raw);
+    }
+
+    var data = raw;
+    if (data && data.success && data.data) {
+      data = data.data;
     }
 
     return { status: status, data: data };
