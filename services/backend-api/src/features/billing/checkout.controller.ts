@@ -14,17 +14,23 @@ import { CheckoutService } from './checkout.service';
 import { CheckoutSession } from './billing.entities';
 import { IsNotEmpty, IsString, IsOptional, IsUrl } from 'class-validator';
 
+const URL_VALIDATION_OPTIONS = {
+  require_tld: false,
+  protocols: ['http', 'https', 'aim'],
+  require_protocol: true,
+};
+
 export class CreateCheckoutSessionDto {
   @IsNotEmpty()
   @IsString()
   priceId!: string;
 
   @IsNotEmpty()
-  @IsUrl()
+  @IsUrl(URL_VALIDATION_OPTIONS)
   successUrl!: string;
 
   @IsNotEmpty()
-  @IsUrl()
+  @IsUrl(URL_VALIDATION_OPTIONS)
   cancelUrl!: string;
 
   @IsOptional()
