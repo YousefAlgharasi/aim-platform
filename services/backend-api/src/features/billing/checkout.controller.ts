@@ -10,6 +10,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { CurrentUser } from '../../auth/current-user.decorator';
 import { AuthenticatedUser } from '../../auth/authenticated-user';
+import { UsersService } from '../users/users.service';
 import { CheckoutService } from './checkout.service';
 import { CheckoutSession } from './billing.entities';
 import { IsNotEmpty, IsString, IsOptional, IsUrl } from 'class-validator';
@@ -41,7 +42,10 @@ export class CreateCheckoutSessionDto {
 @ApiTags('Billing')
 @Controller('billing/checkout')
 export class CheckoutController {
-  constructor(private readonly checkoutService: CheckoutService) {}
+  constructor(
+    private readonly checkoutService: CheckoutService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @Post()
   @UseGuards(SupabaseJwtAuthGuard)
@@ -52,7 +56,8 @@ export class CheckoutController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateCheckoutSessionDto,
   ): Promise<CheckoutSession> {
-    return this.checkoutService.createCheckoutSession(user.id, {
+    const internalUser = await this.usersService.getBySupabaseUid(user.id);
+    return this.checkoutService.createCheckoutSession(internalUser.id, {
       priceId: dto.priceId,
       successUrl: dto.successUrl,
       cancelUrl: dto.cancelUrl,

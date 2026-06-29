@@ -12,6 +12,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { CurrentUser } from '../../auth/current-user.decorator';
 import { AuthenticatedUser } from '../../auth/authenticated-user';
+import { UsersService } from '../users/users.service';
 import { RefundService } from './refund.service';
 import { PaymentService } from './payment.service';
 import { Refund } from './billing.entities';
@@ -42,6 +43,7 @@ export class RefundController {
   constructor(
     private readonly refundService: RefundService,
     private readonly paymentService: PaymentService,
+    private readonly usersService: UsersService,
   ) {}
 
   @Post()
@@ -53,14 +55,15 @@ export class RefundController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateRefundRequestDto,
   ): Promise<Refund> {
-    await this.paymentService.getPaymentById(dto.paymentId, user.id);
+    const internalUser = await this.usersService.getBySupabaseUid(user.id);
+    await this.paymentService.getPaymentById(dto.paymentId, internalUser.id);
 
     return this.refundService.requestRefund({
       paymentId: dto.paymentId,
       amount: dto.amount,
       currency: dto.currency,
       reason: dto.reason,
-      requestedBy: user.id,
+      requestedBy: internalUser.id,
     });
   }
 

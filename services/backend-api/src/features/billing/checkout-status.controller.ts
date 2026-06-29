@@ -8,6 +8,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { CurrentUser } from '../../auth/current-user.decorator';
 import { AuthenticatedUser } from '../../auth/authenticated-user';
+import { UsersService } from '../users/users.service';
 import { CheckoutService } from './checkout.service';
 import { PaymentService } from './payment.service';
 import { CheckoutSession } from './billing.entities';
@@ -25,6 +26,7 @@ export class CheckoutStatusController {
   constructor(
     private readonly checkoutService: CheckoutService,
     private readonly paymentService: PaymentService,
+    private readonly usersService: UsersService,
   ) {}
 
   @Get(':sessionId/status')
@@ -35,9 +37,10 @@ export class CheckoutStatusController {
     @Param('sessionId') sessionId: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<CheckoutStatusResponse> {
+    const internalUser = await this.usersService.getBySupabaseUid(user.id);
     const session = await this.checkoutService.getCheckoutSession(
       sessionId,
-      user.id,
+      internalUser.id,
     );
 
     const response: CheckoutStatusResponse = {
@@ -59,8 +62,9 @@ export class CheckoutStatusController {
   async getRecentCheckouts(
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<CheckoutStatusResponse[]> {
+    const internalUser = await this.usersService.getBySupabaseUid(user.id);
     const sessions = await this.checkoutService.getUserCheckoutSessions(
-      user.id,
+      internalUser.id,
     );
 
     return sessions.map((s: CheckoutSession) => ({
