@@ -60,9 +60,9 @@ describe('LessonsController', () => {
       expect(service.listLessons).toHaveBeenCalled();
     });
 
-    it('requires CONTENT_READ_DRAFT permission', () => {
+    it('requires CONTENT_READ_PUBLISHED permission', () => {
       const perms = getMethodPermissions(controller, 'listLessons');
-      expect(perms).toContain(CurriculumPermission.CONTENT_READ_DRAFT);
+      expect(perms).toContain(CurriculumPermission.CONTENT_READ_PUBLISHED);
     });
   });
 

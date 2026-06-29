@@ -35,7 +35,7 @@ export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
   @Get()
-  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_PUBLISHED)
   @ApiOperation({ summary: 'List courses. Requires curriculum.read permission.' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
@@ -61,7 +61,7 @@ export class CoursesController {
   }
 
   @Get(':id')
-  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_PUBLISHED)
   @ApiOperation({ summary: 'Get course by ID. Requires curriculum.read permission.' })
   @ApiOkResponse({ description: 'Course detail.' })
   @ApiNotFoundResponse({ description: 'Course not found.' })

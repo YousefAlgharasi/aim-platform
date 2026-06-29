@@ -35,7 +35,7 @@ export class ChaptersController {
   constructor(private readonly chaptersService: ChaptersService) {}
 
   @Get()
-  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_PUBLISHED)
   @ApiOperation({ summary: 'List chapters. Requires curriculum.read permission.' })
   @ApiQuery({ name: 'levelId', required: false, type: String })
   @ApiQuery({ name: 'page', required: false, type: Number })
@@ -64,7 +64,7 @@ export class ChaptersController {
   }
 
   @Get(':id')
-  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_PUBLISHED)
   @ApiOperation({ summary: 'Get chapter by ID. Requires curriculum.read permission.' })
   @ApiOkResponse({ description: 'Chapter detail.' })
   @ApiNotFoundResponse({ description: 'Chapter not found.' })
