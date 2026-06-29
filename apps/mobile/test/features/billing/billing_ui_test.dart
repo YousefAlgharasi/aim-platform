@@ -95,6 +95,43 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Premium'), findsOneWidget);
     });
+
+    testWidgets('renders price from prices list', (tester) async {
+      await tester.pumpWidget(_wrap(
+        const PricingPage(),
+        repository: _FakeBillingRepository(
+          plans: const [
+            BillingPlanModel(
+              id: 'plan_1',
+              name: 'Premium',
+              planType: 'premium',
+              status: 'active',
+              features: {'ai_teacher': true},
+              price: BillingPriceModel(
+                id: 'price_1',
+                productId: 'plan_1',
+                amount: 1999,
+                currency: 'usd',
+                billingInterval: 'month',
+                status: 'active',
+              ),
+            ),
+          ],
+          prices: const [
+            BillingPriceModel(
+              id: 'price_1',
+              productId: 'plan_1',
+              amount: 1999,
+              currency: 'usd',
+              billingInterval: 'month',
+              status: 'active',
+            ),
+          ],
+        ),
+      ));
+      await tester.pumpAndSettle();
+      expect(find.text('\$19.99'), findsOneWidget);
+    });
   });
 
   group('SubscriptionPage', () {
@@ -104,6 +141,35 @@ void main() {
         repository: _FakeBillingRepository(),
       ));
       expect(find.text('My Subscription'), findsOneWidget);
+    });
+
+    testWidgets('shows entitlement usage once loaded', (tester) async {
+      await tester.pumpWidget(_wrap(
+        const SubscriptionPage(),
+        repository: _FakeBillingRepository(
+          subscriptions: [
+            SubscriptionModel(
+              id: 'sub_1',
+              planId: 'plan_1',
+              status: 'active',
+            ),
+          ],
+          entitlements: const [
+            EntitlementModel(
+              id: 'ent_1',
+              featureKey: 'ai_teacher',
+              granted: true,
+              usageLimit: 100,
+              usageCount: 50,
+              source: 'subscription',
+              status: 'active',
+            ),
+          ],
+        ),
+      ));
+      await tester.pumpAndSettle();
+      expect(find.text('ai_teacher'), findsOneWidget);
+      expect(find.text('50 / 100'), findsOneWidget);
     });
 
     testWidgets('shows current plan card once loaded', (tester) async {
@@ -190,6 +256,26 @@ void main() {
       ));
       await tester.pumpAndSettle();
       expect(find.text('No Invoices Yet'), findsOneWidget);
+    });
+
+    testWidgets('renders invoice tile once loaded', (tester) async {
+      await tester.pumpWidget(_wrap(
+        const InvoiceHistoryPage(),
+        repository: _FakeBillingRepository(
+          invoices: [
+            InvoiceModel(
+              id: 'inv_1',
+              status: 'paid',
+              total: 1999,
+              currency: 'usd',
+              createdAt: DateTime(2026, 1, 15),
+            ),
+          ],
+        ),
+      ));
+      await tester.pumpAndSettle();
+      expect(find.text('\$19.99 USD'), findsOneWidget);
+      expect(find.text('paid'), findsOneWidget);
     });
 
     testWidgets('buildEmptyState shows no invoices message', (tester) async {
