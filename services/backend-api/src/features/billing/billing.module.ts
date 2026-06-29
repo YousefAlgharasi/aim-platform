@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 
 import { DatabaseModule } from '../../database/database.module';
 import { AuthModule } from '../../auth/auth.module';
@@ -29,7 +29,7 @@ import { WebhookController } from './webhook.controller';
 import { SuperAdminBillingController } from './super-admin-billing.controller';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, RolesModule, UsersModule, AnalyticsModule],
+  imports: [DatabaseModule, forwardRef(() => AuthModule), RolesModule, UsersModule, AnalyticsModule],
   controllers: [
     AdminBillingController,
     SuperAdminBillingController,

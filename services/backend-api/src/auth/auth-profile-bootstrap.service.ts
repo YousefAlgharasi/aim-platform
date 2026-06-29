@@ -25,6 +25,8 @@ import { DatabaseService } from '../database/database.service';
 import { UsersService } from '../features/users/users.service';
 import { AuthLoggingService } from './auth-logging.service';
 import { AnalyticsEventIngestionService } from '../features/analytics/analytics-event-ingestion.service';
+import { BillingRepository } from '../features/billing/billing.repository';
+import { SubscriptionService } from '../features/billing/subscription.service';
 import {
   BootstrapProfileInput,
   BootstrapProfileResult,
@@ -51,6 +53,8 @@ export class AuthProfileBootstrapService {
     private readonly users: UsersService,
     private readonly authLogging: AuthLoggingService,
     private readonly analyticsEventIngestionService: AnalyticsEventIngestionService,
+    private readonly billingRepo: BillingRepository,
+    private readonly subscriptionService: SubscriptionService,
   ) {}
 
   /**
@@ -105,6 +109,7 @@ export class AuthProfileBootstrapService {
       profileCreated = await this.ensureStudentProfile(user.id);
       profileType = 'student_profile';
       await this.ensureRoleAssigned(user.id, 'student');
+      await this.ensureFreeSubscription(user.id);
     } else if (user.userType === 'admin') {
       profileCreated = await this.ensureAdminProfile(user.id);
       profileType = 'admin_profile';
@@ -157,6 +162,33 @@ export class AuthProfileBootstrapService {
        ON CONFLICT (user_id, role_id) DO NOTHING`,
       [internalUserId, roleKey],
     );
+  }
+
+  /**
+   * Provision the free plan subscription for a student who has no subscription
+   * yet, so the Plans/Subscription UI can show "Current Plan: Free" instead of
+   * treating the user as having no plan at all. No-op if a subscription
+   * already exists. Safe to call on every login.
+   */
+  private async ensureFreeSubscription(internalUserId: string): Promise<void> {
+    const existing = await this.subscriptionService.getUserSubscriptions(internalUserId);
+    if (existing.length > 0) {
+      return;
+    }
+
+    const freePlan = await this.billingRepo.findPlanByType('free');
+    if (!freePlan) {
+      this.logger.warn(
+        `Bootstrap: no active "free" billing plan found; skipping subscription provisioning (userId=${internalUserId})`,
+      );
+      return;
+    }
+
+    await this.subscriptionService.createSubscription({
+      userId: internalUserId,
+      planId: freePlan.id,
+      status: 'active',
+    });
   }
 
   /**

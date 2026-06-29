@@ -173,6 +173,17 @@ class _SubscriptionContent extends ConsumerWidget {
     WidgetRef ref,
     SubscriptionModel subscription,
   ) {
+    final pricingState = ref.watch(pricingProvider);
+    BillingPlanModel? plan;
+    if (pricingState is AppAsyncSuccess<PricingData>) {
+      for (final p in pricingState.data.plans) {
+        if (p.id == subscription.planId) {
+          plan = p;
+          break;
+        }
+      }
+    }
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -182,7 +193,10 @@ class _SubscriptionContent extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Current Plan', style: theme.textTheme.titleMedium),
+                Text(
+                  plan != null ? 'Current Plan: ${plan.name}' : 'Current Plan',
+                  style: theme.textTheme.titleMedium,
+                ),
                 Container(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 8, vertical: 4),
