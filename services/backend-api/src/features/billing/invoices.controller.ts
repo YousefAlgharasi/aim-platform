@@ -8,13 +8,17 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { CurrentUser } from '../../auth/current-user.decorator';
 import { AuthenticatedUser } from '../../auth/authenticated-user';
+import { UsersService } from '../users/users.service';
 import { InvoiceService } from './invoice.service';
 import { Invoice, InvoiceItem } from './billing.entities';
 
 @ApiTags('Billing')
 @Controller('billing/invoices')
 export class InvoicesController {
-  constructor(private readonly invoiceService: InvoiceService) {}
+  constructor(
+    private readonly invoiceService: InvoiceService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @Get()
   @UseGuards(SupabaseJwtAuthGuard)
@@ -23,7 +27,8 @@ export class InvoicesController {
   async getUserInvoices(
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<Invoice[]> {
-    return this.invoiceService.getUserInvoices(user.id);
+    const internalUser = await this.usersService.getBySupabaseUid(user.id);
+    return this.invoiceService.getUserInvoices(internalUser.id);
   }
 
   @Get(':id')
@@ -34,6 +39,7 @@ export class InvoicesController {
     @Param('id') id: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<{ invoice: Invoice; items: InvoiceItem[] }> {
-    return this.invoiceService.getInvoiceWithItems(id, user.id);
+    const internalUser = await this.usersService.getBySupabaseUid(user.id);
+    return this.invoiceService.getInvoiceWithItems(id, internalUser.id);
   }
 }
