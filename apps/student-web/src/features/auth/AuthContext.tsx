@@ -17,7 +17,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    apiClient.get<{ user: User }>('/profile')
+    apiClient.get<{ user: User }>('/auth/me')
       .then(({ user: u }) => setUser(u))
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
