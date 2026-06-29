@@ -127,6 +127,14 @@ export class BillingRepository {
     return result.rows[0] || null;
   }
 
+  async findPlanByType(planType: string): Promise<BillingPlan | null> {
+    const result = await this.db.query<BillingPlan>(
+      `SELECT ${this.PLAN_COLUMNS} FROM billing_plans WHERE plan_type = $1 AND status = 'active' ORDER BY created_at ASC LIMIT 1`,
+      [planType],
+    );
+    return result.rows[0] || null;
+  }
+
   async createPlan(data: Partial<BillingPlan>): Promise<BillingPlan> {
     const result = await this.db.query<BillingPlan>(
       `INSERT INTO billing_plans (name, description, price_id, features, plan_type, status, metadata)
