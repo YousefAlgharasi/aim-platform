@@ -104,6 +104,7 @@ export class AuthProfileBootstrapService {
     if (user.userType === 'student') {
       profileCreated = await this.ensureStudentProfile(user.id);
       profileType = 'student_profile';
+      await this.ensureRoleAssigned(user.id, 'student');
     } else if (user.userType === 'admin') {
       profileCreated = await this.ensureAdminProfile(user.id);
       profileType = 'admin_profile';
@@ -143,6 +144,19 @@ export class AuthProfileBootstrapService {
     );
 
     return result.rows.length > 0;
+  }
+
+  /**
+   * Ensure the user is a member of the given role (by key). System-assigned,
+   * so assigned_by is left null. Safe to call on every login.
+   */
+  private async ensureRoleAssigned(internalUserId: string, roleKey: string): Promise<void> {
+    await this.db.query(
+      `INSERT INTO user_roles (user_id, role_id)
+       SELECT $1, r.id FROM roles r WHERE r.key = $2
+       ON CONFLICT (user_id, role_id) DO NOTHING`,
+      [internalUserId, roleKey],
+    );
   }
 
   /**
