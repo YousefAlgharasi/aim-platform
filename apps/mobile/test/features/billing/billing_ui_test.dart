@@ -132,6 +132,41 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('\$19.99'), findsOneWidget);
     });
+
+    testWidgets('resolves price by priceId when not embedded on plan',
+        (tester) async {
+      await tester.pumpWidget(_wrap(
+        const PricingPage(),
+        repository: _FakeBillingRepository(
+          plans: const [
+            BillingPlanModel(
+              id: 'plan_1',
+              name: 'Premium',
+              planType: 'premium',
+              status: 'active',
+              features: {'ai_teacher': true},
+              priceId: 'price_1',
+            ),
+          ],
+          prices: const [
+            BillingPriceModel(
+              id: 'price_1',
+              productId: 'plan_1',
+              amount: 1999,
+              currency: 'usd',
+              billingInterval: 'month',
+              status: 'active',
+            ),
+          ],
+        ),
+      ));
+      await tester.pumpAndSettle();
+      expect(find.text('\$19.99'), findsOneWidget);
+      final selectButton = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, 'Select Plan'),
+      );
+      expect(selectButton.onPressed, isNotNull);
+    });
   });
 
   group('SubscriptionPage', () {
