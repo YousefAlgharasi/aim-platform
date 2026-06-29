@@ -20,7 +20,7 @@ class HomeDailyChallengeCard extends StatelessWidget {
     final surfaces = aimSurfacesOf(context);
 
     return AIMCard(
-      variant: AIMCardVariant.ai,
+      variant: AIMCardVariant.elevated,
       semanticLabel:
           'Daily challenge: ${challenge.title}, ${challenge.progressCount} of ${challenge.targetCount}',
       child: Row(
