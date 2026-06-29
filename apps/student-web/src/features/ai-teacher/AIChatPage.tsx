@@ -7,72 +7,77 @@ import { ErrorState } from '../../components/common/ErrorState';
 import type { ApiError } from '../../types';
 import styles from './AITeacher.module.css';
 
-interface Message {
+interface ChatHistoryMessage {
   id: string;
-  role: 'user' | 'ai';
-  content: string;
-  timestamp: string;
+  role: 'student' | 'ai_teacher';
+  text: string;
+  createdAt: string;
 }
 
-interface Conversation {
-  id: string;
-  topic: string;
-  messages: Message[];
+interface GetChatHistoryResult {
+  sessionId: string;
+  messages: ChatHistoryMessage[];
+}
+
+interface SubmitStudentMessageResult {
+  text: string;
+  isFallback: boolean;
+  provider: string;
+  model: string;
+  latencyMs: number;
 }
 
 export function AIChatPage() {
-  const { conversationId } = useParams<{ conversationId: string }>();
-  const [conversation, setConversation] = useState<Conversation | null>(null);
+  const { conversationId: sessionId } = useParams<{ conversationId: string }>();
+  const [messages, setMessages] = useState<ChatHistoryMessage[] | null>(null);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [feedbackGiven, setFeedbackGiven] = useState<Record<string, 'helpful' | 'not_helpful'>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  function fetchConversation() {
+  function submitFeedback(messageId: string, rating: 'helpful' | 'not_helpful') {
+    apiClient.post(`/ai-teacher/messages/${messageId}/feedback`, { rating })
+      .then(() => setFeedbackGiven(prev => ({ ...prev, [messageId]: rating })))
+      .catch(() => {});
+  }
+
+  function fetchHistory() {
     setLoading(true);
     setError('');
-    apiClient.get<Conversation>(`/ai-teacher/conversations/${conversationId}`)
-      .then(setConversation)
-      .catch((err: ApiError) => setError(err.message || 'Failed to load conversation'))
+    apiClient.get<GetChatHistoryResult>(`/ai-teacher/sessions/${sessionId}/messages`)
+      .then((res) => setMessages(res.messages))
+      .catch((err: ApiError) => setError(err.message || 'Failed to load session'))
       .finally(() => setLoading(false));
   }
 
-  useEffect(() => { fetchConversation(); }, [conversationId]);
+  useEffect(() => { fetchHistory(); }, [sessionId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [conversation?.messages.length]);
+  }, [messages?.length]);
 
   function handleSend() {
-    if (!input.trim() || sending) return;
-    const userMessage = input.trim();
+    if (!input.trim() || sending || !messages) return;
+    const studentMessage = input.trim();
     setInput('');
     setSending(true);
 
-    if (conversation) {
-      setConversation({
-        ...conversation,
-        messages: [...conversation.messages, {
-          id: `temp-${Date.now()}`,
-          role: 'user',
-          content: userMessage,
-          timestamp: new Date().toISOString(),
-        }],
-      });
-    }
+    const tempMessage: ChatHistoryMessage = {
+      id: `temp-${Date.now()}`,
+      role: 'student',
+      text: studentMessage,
+      createdAt: new Date().toISOString(),
+    };
+    setMessages([...messages, tempMessage]);
 
-    apiClient.post<{ message: Message }>(`/ai-teacher/conversations/${conversationId}/messages`, {
-      content: userMessage,
+    apiClient.post<SubmitStudentMessageResult>(`/ai-teacher/sessions/${sessionId}/messages`, {
+      message: studentMessage,
     })
-      .then(({ message }) => {
-        setConversation(prev => prev ? {
-          ...prev,
-          messages: [...prev.messages.filter(m => !m.id.startsWith('temp-')),
-            { id: `user-${Date.now()}`, role: 'user', content: userMessage, timestamp: new Date().toISOString() },
-            message,
-          ],
-        } : null);
+      .then(() => {
+        return apiClient.get<GetChatHistoryResult>(`/ai-teacher/sessions/${sessionId}/messages`)
+          .then((res) => setMessages(res.messages));
       })
       .catch((err: ApiError) => setError(err.message || 'Failed to send message'))
       .finally(() => setSending(false));
@@ -86,8 +91,8 @@ export function AIChatPage() {
   }
 
   if (loading) return <LoadingSpinner />;
-  if (error && !conversation) return <ErrorState message={error} onRetry={fetchConversation} />;
-  if (!conversation) return null;
+  if (error && !messages) return <ErrorState message={error} onRetry={fetchHistory} />;
+  if (!messages) return null;
 
   return (
     <div className={styles.chatContainer}>
@@ -95,19 +100,41 @@ export function AIChatPage() {
         <Link to="/ai-teacher" className={styles.historyItem} style={{ textDecoration: 'none' }}>
           ←
         </Link>
-        <h1 className={styles.chatTitle}>{conversation.topic}</h1>
+        <h1 className={styles.chatTitle}>AI Teacher</h1>
       </div>
 
       <div className={styles.messageList} role="log" aria-label="Chat messages">
-        {conversation.messages.map(msg => (
+        {messages.map(msg => (
           <div
             key={msg.id}
-            className={`${styles.message} ${msg.role === 'user' ? styles.messageUser : styles.messageAI}`}
+            className={`${styles.message} ${msg.role === 'student' ? styles.messageUser : styles.messageAI}`}
           >
-            {msg.content}
+            {msg.text}
             <div className={styles.messageTime}>
-              {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </div>
+            {msg.role === 'ai_teacher' && !msg.id.startsWith('temp-') && (
+              <div className={styles.feedbackButtons}>
+                <button
+                  type="button"
+                  className={`${styles.feedbackBtn} ${feedbackGiven[msg.id] === 'helpful' ? styles.feedbackBtnActive : ''}`}
+                  onClick={() => submitFeedback(msg.id, 'helpful')}
+                  disabled={!!feedbackGiven[msg.id]}
+                  aria-label="Helpful"
+                >
+                  👍
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.feedbackBtn} ${feedbackGiven[msg.id] === 'not_helpful' ? styles.feedbackBtnActive : ''}`}
+                  onClick={() => submitFeedback(msg.id, 'not_helpful')}
+                  disabled={!!feedbackGiven[msg.id]}
+                  aria-label="Not helpful"
+                >
+                  👎
+                </button>
+              </div>
+            )}
           </div>
         ))}
         {sending && (

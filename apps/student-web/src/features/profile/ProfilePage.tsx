@@ -6,25 +6,61 @@ import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
-import type { ApiError, User } from '../../types';
+import { ErrorState } from '../../components/common/ErrorState';
+import type { ApiError } from '../../types';
 import styles from './ProfilePage.module.css';
+
+interface StudentProfileResponse {
+  id: string;
+  profileType: 'student_profile';
+  displayName: string | null;
+  avatarUrl: string | null;
+  preferredLanguage: string | null;
+  timezone: string | null;
+}
+
+interface ProfileMeResponse {
+  internalUserId: string;
+  userType: string;
+  studentProfile: StudentProfileResponse | null;
+  adminProfile: {
+    id: string;
+    profileType: 'admin_profile';
+    displayName: string | null;
+    avatarUrl: string | null;
+    department: string | null;
+  } | null;
+}
 
 export function ProfilePage() {
   const { user } = useAuth();
-  const [name, setName] = useState('');
-  const [locale, setLocale] = useState<'en' | 'ar'>('en');
+  const [displayName, setDisplayName] = useState('');
+  const [preferredLanguage, setPreferredLanguage] = useState<'en' | 'ar'>('en');
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (user) {
-      setName(user.name);
-      setLocale(user.locale || 'en');
-    }
-  }, [user]);
+  function fetchProfile() {
+    setLoading(true);
+    setFetchError('');
+    apiClient.get<ProfileMeResponse>('/profile/me')
+      .then(profile => {
+        const p = profile.studentProfile ?? profile.adminProfile;
+        setDisplayName(p?.displayName ?? '');
+        if (profile.studentProfile?.preferredLanguage === 'ar' || profile.studentProfile?.preferredLanguage === 'en') {
+          setPreferredLanguage(profile.studentProfile.preferredLanguage);
+        }
+      })
+      .catch((err: ApiError) => setFetchError(err.message || 'Failed to load profile'))
+      .finally(() => setLoading(false));
+  }
 
-  if (!user) return <LoadingSpinner />;
+  useEffect(() => { fetchProfile(); }, []);
+
+  if (!user || loading) return <LoadingSpinner />;
+  if (fetchError) return <ErrorState message={fetchError} onRetry={fetchProfile} />;
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -32,7 +68,10 @@ export function ProfilePage() {
     setSuccess('');
     setSaving(true);
     try {
-      await apiClient.patch<{ user: User }>('/profile', { name, locale });
+      await apiClient.patch<ProfileMeResponse>('/profile/me', {
+        displayName,
+        preferredLanguage,
+      });
       setSuccess('Profile updated');
     } catch (err) {
       setError((err as ApiError).message || 'Update failed');
@@ -57,8 +96,8 @@ export function ProfilePage() {
           <Input
             label="Name"
             type="text"
-            value={name}
-            onChange={e => setName(e.target.value)}
+            value={displayName}
+            onChange={e => setDisplayName(e.target.value)}
             required
           />
 
@@ -67,8 +106,8 @@ export function ProfilePage() {
             <select
               id="locale"
               className={styles.select}
-              value={locale}
-              onChange={e => setLocale(e.target.value as 'en' | 'ar')}
+              value={preferredLanguage}
+              onChange={e => setPreferredLanguage(e.target.value as 'en' | 'ar')}
             >
               <option value="en">English</option>
               <option value="ar">العربية</option>

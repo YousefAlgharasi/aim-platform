@@ -7,10 +7,14 @@ import type { ApiError } from '../../types';
 import styles from './Notification.module.css';
 
 interface NotificationPref {
-  key: string;
-  name: string;
-  description: string;
+  id: string;
+  user_id: string;
+  user_type: string;
+  channel: string;
+  category: string;
   enabled: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export function NotificationPreferencesPage() {
@@ -21,19 +25,19 @@ export function NotificationPreferencesPage() {
   function fetchPrefs() {
     setLoading(true);
     setError('');
-    apiClient.get<{ preferences: NotificationPref[] }>('/notifications/preferences')
-      .then(({ preferences }) => setPrefs(preferences))
+    apiClient.get<NotificationPref[]>('/api/v1/notifications/preferences')
+      .then(preferences => setPrefs(preferences))
       .catch((err: ApiError) => setError(err.message || 'Failed to load preferences'))
       .finally(() => setLoading(false));
   }
 
   useEffect(() => { fetchPrefs(); }, []);
 
-  function togglePref(key: string, enabled: boolean) {
-    setPrefs(prev => prev.map(p => p.key === key ? { ...p, enabled } : p));
-    apiClient.patch(`/notifications/preferences/${key}`, { enabled })
+  function togglePref(channel: string, category: string, enabled: boolean) {
+    setPrefs(prev => prev.map(p => (p.channel === channel && p.category === category) ? { ...p, enabled } : p));
+    apiClient.patch('/api/v1/notifications/preferences', { channel, category, enabled })
       .catch(() => {
-        setPrefs(prev => prev.map(p => p.key === key ? { ...p, enabled: !enabled } : p));
+        setPrefs(prev => prev.map(p => (p.channel === channel && p.category === category) ? { ...p, enabled: !enabled } : p));
       });
   }
 
@@ -47,17 +51,17 @@ export function NotificationPreferencesPage() {
       <Card>
         <div className={styles.prefSection}>
           {prefs.map(pref => (
-            <div key={pref.key} className={styles.prefItem}>
+            <div key={pref.id} className={styles.prefItem}>
               <div className={styles.prefLabel}>
-                <span className={styles.prefName}>{pref.name}</span>
-                <span className={styles.prefDesc}>{pref.description}</span>
+                <span className={styles.prefName}>{pref.category}</span>
+                <span className={styles.prefDesc}>{pref.channel}</span>
               </div>
               <button
                 className={`${styles.toggle} ${pref.enabled ? styles.toggleActive : ''}`}
-                onClick={() => togglePref(pref.key, !pref.enabled)}
+                onClick={() => togglePref(pref.channel, pref.category, !pref.enabled)}
                 role="switch"
                 aria-checked={pref.enabled}
-                aria-label={pref.name}
+                aria-label={`${pref.category} (${pref.channel})`}
               >
                 <span className={styles.toggleKnob} />
               </button>

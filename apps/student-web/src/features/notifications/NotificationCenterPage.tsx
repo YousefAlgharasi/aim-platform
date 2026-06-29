@@ -10,11 +10,17 @@ import styles from './Notification.module.css';
 
 interface Notification {
   id: string;
-  title: string;
-  body: string;
-  read: boolean;
-  createdAt: string;
-  type: string;
+  recipient_id: string;
+  recipient_type: string;
+  template_id: string;
+  category: string;
+  channel: string;
+  payload: { title?: string; body?: string; [key: string]: unknown };
+  state: string;
+  read_at: string | null;
+  dismissed_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export function NotificationCenterPage() {
@@ -25,34 +31,35 @@ export function NotificationCenterPage() {
   function fetchNotifications() {
     setLoading(true);
     setError('');
-    apiClient.get<{ notifications: Notification[] }>('/notifications')
-      .then(({ notifications: n }) => setNotifications(n))
+    apiClient.get<Notification[]>('/api/v1/notifications/inbox')
+      .then(n => setNotifications(n))
       .catch((err: ApiError) => setError(err.message || 'Failed to load notifications'))
       .finally(() => setLoading(false));
   }
 
   useEffect(() => { fetchNotifications(); }, []);
 
-  function markRead(id: string) {
-    apiClient.post(`/notifications/${id}/read`, {})
+  function markRead(eventId: string) {
+    apiClient.patch(`/api/v1/notifications/inbox/${eventId}/read`, {})
       .then(() => {
-        setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+        setNotifications(prev => prev.map(n => n.id === eventId ? { ...n, state: 'read', read_at: new Date().toISOString() } : n));
       })
       .catch(() => {});
   }
 
-  function dismiss(id: string) {
-    apiClient.post(`/notifications/${id}/dismiss`, {})
+  function dismiss(eventId: string) {
+    apiClient.patch(`/api/v1/notifications/inbox/${eventId}/dismiss`, {})
       .then(() => {
-        setNotifications(prev => prev.filter(n => n.id !== id));
+        setNotifications(prev => prev.filter(n => n.id !== eventId));
       })
       .catch(() => {});
   }
 
   function markAllRead() {
-    apiClient.post('/notifications/read-all', {})
+    const unread = notifications.filter(n => !n.read_at);
+    Promise.all(unread.map(n => apiClient.patch(`/api/v1/notifications/inbox/${n.id}/read`, {})))
       .then(() => {
-        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+        setNotifications(prev => prev.map(n => ({ ...n, state: 'read', read_at: n.read_at ?? new Date().toISOString() })));
       })
       .catch(() => {});
   }
@@ -63,7 +70,7 @@ export function NotificationCenterPage() {
     return <EmptyState title="No notifications" message="You're all caught up!" />;
   }
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter(n => !n.read_at).length;
 
   return (
     <div className={styles.container}>
@@ -80,32 +87,37 @@ export function NotificationCenterPage() {
       </div>
 
       <div className={styles.list}>
-        {notifications.map(notif => (
-          <div
-            key={notif.id}
-            className={`${styles.notifItem} ${!notif.read ? styles.notifUnread : ''}`}
-            onClick={() => !notif.read && markRead(notif.id)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={e => e.key === 'Enter' && !notif.read && markRead(notif.id)}
-          >
-            <span className={`${styles.notifDot} ${notif.read ? styles.notifDotRead : ''}`} aria-hidden="true" />
-            <div className={styles.notifContent}>
-              <span className={styles.notifTitle}>{notif.title}</span>
-              <span className={styles.notifBody}>{notif.body}</span>
-              <span className={styles.notifTime}>{new Date(notif.createdAt).toLocaleString()}</span>
+        {notifications.map(notif => {
+          const isRead = !!notif.read_at;
+          const title = notif.payload?.title ?? notif.category;
+          const body = notif.payload?.body ?? '';
+          return (
+            <div
+              key={notif.id}
+              className={`${styles.notifItem} ${!isRead ? styles.notifUnread : ''}`}
+              onClick={() => !isRead && markRead(notif.id)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={e => e.key === 'Enter' && !isRead && markRead(notif.id)}
+            >
+              <span className={`${styles.notifDot} ${isRead ? styles.notifDotRead : ''}`} aria-hidden="true" />
+              <div className={styles.notifContent}>
+                <span className={styles.notifTitle}>{title}</span>
+                <span className={styles.notifBody}>{body}</span>
+                <span className={styles.notifTime}>{new Date(notif.created_at).toLocaleString()}</span>
+              </div>
+              <div className={styles.notifActions}>
+                <button
+                  className={styles.dismissBtn}
+                  onClick={e => { e.stopPropagation(); dismiss(notif.id); }}
+                  aria-label={`Dismiss ${title}`}
+                >
+                  ×
+                </button>
+              </div>
             </div>
-            <div className={styles.notifActions}>
-              <button
-                className={styles.dismissBtn}
-                onClick={e => { e.stopPropagation(); dismiss(notif.id); }}
-                aria-label={`Dismiss ${notif.title}`}
-              >
-                ×
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
