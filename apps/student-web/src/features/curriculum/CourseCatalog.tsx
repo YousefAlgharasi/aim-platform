@@ -8,34 +8,40 @@ import { EmptyState } from '../../components/common/EmptyState';
 import type { ApiError } from '../../types';
 import styles from './CourseCatalog.module.css';
 
-interface Subject {
+interface CourseSummary {
   id: string;
-  name: string;
-  description: string;
-  unitCount: number;
-  lessonCount: number;
-  completionPercent: number;
+  slug: string | null;
+  title: string;
+  description: string | null;
+  status: string;
+}
+
+interface CourseListResponse {
+  courses: CourseSummary[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
 export function CourseCatalog() {
-  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [courses, setCourses] = useState<CourseSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  function fetchSubjects() {
+  function fetchCourses() {
     setLoading(true);
     setError('');
-    apiClient.get<{ subjects: Subject[] }>('/curriculum/subjects')
-      .then(({ subjects: s }) => setSubjects(s))
+    apiClient.get<CourseListResponse>('/curriculum/courses')
+      .then((res) => setCourses(res.courses))
       .catch((err: ApiError) => setError(err.message || 'Failed to load courses'))
       .finally(() => setLoading(false));
   }
 
-  useEffect(() => { fetchSubjects(); }, []);
+  useEffect(() => { fetchCourses(); }, []);
 
   if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorState message={error} onRetry={fetchSubjects} />;
-  if (subjects.length === 0) {
+  if (error) return <ErrorState message={error} onRetry={fetchCourses} />;
+  if (courses.length === 0) {
     return <EmptyState title="No courses available" message="Courses will appear here once they are published." />;
   }
 
@@ -43,28 +49,12 @@ export function CourseCatalog() {
     <div className={styles.container}>
       <h1 className={styles.heading}>Courses</h1>
       <div className={styles.grid}>
-        {subjects.map(subject => (
-          <Link key={subject.id} to={`/curriculum/${subject.id}`} className={styles.cardLink}>
+        {courses.map(course => (
+          <Link key={course.id} to={`/curriculum/${course.id}`} className={styles.cardLink}>
             <Card>
               <div className={styles.courseCard}>
-                <h2 className={styles.courseName}>{subject.name}</h2>
-                <p className={styles.courseDesc}>{subject.description}</p>
-                <div className={styles.courseMeta}>
-                  <span>{subject.unitCount} units</span>
-                  <span>{subject.lessonCount} lessons</span>
-                </div>
-                <div className={styles.progressBar}>
-                  <div
-                    className={styles.progressFill}
-                    style={{ width: `${subject.completionPercent}%` }}
-                    role="progressbar"
-                    aria-valuenow={subject.completionPercent}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-label={`${subject.name} progress`}
-                  />
-                </div>
-                <span className={styles.progressLabel}>{subject.completionPercent}% complete</span>
+                <h2 className={styles.courseName}>{course.title}</h2>
+                {course.description && <p className={styles.courseDesc}>{course.description}</p>}
               </div>
             </Card>
           </Link>

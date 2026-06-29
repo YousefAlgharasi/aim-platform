@@ -8,31 +8,52 @@ import { ErrorState } from '../../components/common/ErrorState';
 import type { ApiError } from '../../types';
 import styles from './Assessment.module.css';
 
-interface AssessmentDetail {
+interface AssessmentSection {
   id: string;
   title: string;
-  type: 'quiz' | 'exam';
-  description: string;
+  order: number;
   questionCount: number;
-  duration: string;
-  deadline: string | null;
-  attemptsUsed: number;
-  attemptsAllowed: number;
-  eligible: boolean;
-  rules: string[];
-  pastAttempts: Array<{
-    id: string;
-    date: string;
-    score: number;
-    total: number;
-    passed: boolean;
-  }>;
+}
+
+interface DeadlineStatusResult {
+  deadlineId: string;
+  opensAt: string;
+  closesAt: string;
+  extendedClosesAt: string | null;
+  status: string;
+}
+
+interface AssessmentDetail {
+  id: string;
+  type: 'quiz' | 'exam' | string;
+  title: string;
+  description: string | null;
+  sections: AssessmentSection[];
+  maxAttempts: number;
+  timeLimitSeconds: number | null;
+  deadline: DeadlineStatusResult | null;
+}
+
+interface ResultHistoryItem {
+  attemptId: string;
+  attemptNumber: number;
+  score: number;
+  maxScore: number;
+  passed: boolean;
+  gradedAt: string;
+}
+
+interface ResultHistoryResponse {
+  assessmentId: string;
+  totalAttempts: number;
+  results: ResultHistoryItem[];
 }
 
 export function AssessmentDetailPage() {
   const { assessmentId } = useParams<{ assessmentId: string }>();
   const navigate = useNavigate();
   const [detail, setDetail] = useState<AssessmentDetail | null>(null);
+  const [history, setHistory] = useState<ResultHistoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState('');
@@ -40,8 +61,14 @@ export function AssessmentDetailPage() {
   function fetchDetail() {
     setLoading(true);
     setError('');
-    apiClient.get<AssessmentDetail>(`/assessments/${assessmentId}`)
-      .then(setDetail)
+    Promise.all([
+      apiClient.get<AssessmentDetail>(`/student/assessments/${assessmentId}`),
+      apiClient.get<ResultHistoryResponse>(`/student/assessments/${assessmentId}/history`),
+    ])
+      .then(([d, h]) => {
+        setDetail(d);
+        setHistory(h);
+      })
       .catch((err: ApiError) => setError(err.message || 'Failed to load assessment'))
       .finally(() => setLoading(false));
   }
@@ -50,7 +77,7 @@ export function AssessmentDetailPage() {
 
   function handleStart() {
     setStarting(true);
-    apiClient.post<{ attemptId: string }>(`/assessments/${assessmentId}/attempts`, {})
+    apiClient.post<{ attemptId: string }>(`/student/assessments/${assessmentId}/attempts`, {})
       .then(({ attemptId }) => navigate(`/assessments/${assessmentId}/attempt/${attemptId}`))
       .catch((err: ApiError) => setError(err.message || 'Failed to start attempt'))
       .finally(() => setStarting(false));
@@ -73,60 +100,36 @@ export function AssessmentDetailPage() {
 
       <Card>
         <div className={styles.detailContent}>
-          <p className={styles.description}>{detail.description}</p>
+          {detail.description && <p className={styles.description}>{detail.description}</p>}
 
           <div className={styles.attemptInfo}>
-            <span>{detail.questionCount} questions</span>
-            <span>{detail.duration}</span>
-            <span>{detail.attemptsUsed}/{detail.attemptsAllowed} attempts used</span>
+            <span>{detail.sections.reduce((sum, s) => sum + s.questionCount, 0)} questions</span>
+            {detail.timeLimitSeconds && <span>{Math.round(detail.timeLimitSeconds / 60)} min</span>}
+            <span>{history?.totalAttempts ?? 0}/{detail.maxAttempts} attempts used</span>
           </div>
 
           {detail.deadline && (
             <span className={styles.deadlineText}>
-              Deadline: {new Date(detail.deadline).toLocaleString()}
+              Deadline: {new Date(detail.deadline.closesAt).toLocaleString()} ({detail.deadline.status})
             </span>
-          )}
-
-          {detail.rules.length > 0 && (
-            <div>
-              <h2 className={styles.subtitle}>Rules</h2>
-              <ul className={styles.rulesList}>
-                {detail.rules.map((rule, i) => (
-                  <li key={i} className={styles.ruleItem}>
-                    <span className={styles.ruleIcon} aria-hidden="true">•</span>
-                    <span>{rule}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
           )}
         </div>
       </Card>
 
-      {detail.eligible && (
-        <Button variant="primary" fullWidth onClick={handleStart} disabled={starting}>
-          {starting ? 'Starting…' : 'Start Attempt'}
-        </Button>
-      )}
+      <Button variant="primary" fullWidth onClick={handleStart} disabled={starting}>
+        {starting ? 'Starting…' : 'Start Attempt'}
+      </Button>
 
-      {!detail.eligible && (
-        <Card>
-          <p className={styles.description} style={{ textAlign: 'center' }}>
-            You are not currently eligible to take this assessment.
-          </p>
-        </Card>
-      )}
-
-      {detail.pastAttempts.length > 0 && (
+      {history && history.results.length > 0 && (
         <section>
           <h2 className={styles.subtitle}>Past Attempts</h2>
           <div className={styles.list}>
-            {detail.pastAttempts.map(attempt => (
-              <Card key={attempt.id}>
+            {history.results.map(attempt => (
+              <Card key={attempt.attemptId}>
                 <div className={styles.assessmentCard}>
                   <div className={styles.cardMeta}>
-                    <span>{new Date(attempt.date).toLocaleDateString()}</span>
-                    <span>{attempt.score}/{attempt.total}</span>
+                    <span>{new Date(attempt.gradedAt).toLocaleDateString()}</span>
+                    <span>{attempt.score}/{attempt.maxScore}</span>
                     <span className={`${styles.statusBadge} ${attempt.passed ? styles.statusAvailable : styles.statusCompleted}`}>
                       {attempt.passed ? 'Passed' : 'Failed'}
                     </span>

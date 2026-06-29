@@ -3,50 +3,62 @@ import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../api/client';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
+import { Input } from '../../components/common/Input';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/ErrorState';
 import type { ApiError } from '../../types';
 import styles from './AITeacher.module.css';
 
-interface AITeacherConfig {
-  suggestedTopics: string[];
-  recentConversations: Array<{
-    id: string;
-    topic: string;
-    lastMessage: string;
-    updatedAt: string;
-  }>;
+interface ChatSessionListItem {
+  sessionId: string;
+  contextRef: string;
+  status: 'active' | 'closed';
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ListChatSessionsResult {
+  sessions: ChatSessionListItem[];
+}
+
+interface StartChatSessionResult {
+  sessionId: string;
+  studentId: string;
+  contextRef: string;
+  status: 'active' | 'closed';
+  createdAt: string;
 }
 
 export function AITeacherEntryPage() {
   const navigate = useNavigate();
-  const [config, setConfig] = useState<AITeacherConfig | null>(null);
+  const [sessions, setSessions] = useState<ChatSessionListItem[]>([]);
+  const [contextRef, setContextRef] = useState('');
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState('');
 
-  function fetchConfig() {
+  function fetchSessions() {
     setLoading(true);
     setError('');
-    apiClient.get<AITeacherConfig>('/ai-teacher')
-      .then(setConfig)
+    apiClient.get<ListChatSessionsResult>('/ai-teacher/sessions')
+      .then((res) => setSessions(res.sessions))
       .catch((err: ApiError) => setError(err.message || 'Failed to load AI Teacher'))
       .finally(() => setLoading(false));
   }
 
-  useEffect(() => { fetchConfig(); }, []);
+  useEffect(() => { fetchSessions(); }, []);
 
-  function startConversation(topic?: string) {
+  function startSession() {
+    if (!contextRef.trim()) return;
     setStarting(true);
-    apiClient.post<{ conversationId: string }>('/ai-teacher/conversations', { topic })
-      .then(({ conversationId }) => navigate(`/ai-teacher/${conversationId}`))
-      .catch((err: ApiError) => setError(err.message || 'Failed to start conversation'))
+    apiClient.post<StartChatSessionResult>('/ai-teacher/sessions', { contextRef: contextRef.trim() })
+      .then((session) => navigate(`/ai-teacher/${session.sessionId}`))
+      .catch((err: ApiError) => setError(err.message || 'Failed to start session'))
       .finally(() => setStarting(false));
   }
 
   if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorState message={error} onRetry={fetchConfig} />;
-  if (!config) return null;
+  if (error) return <ErrorState message={error} onRetry={fetchSessions} />;
 
   return (
     <div className={styles.container}>
@@ -58,44 +70,32 @@ export function AITeacherEntryPage() {
           <p className={styles.description}>
             Ask questions, get explanations, and receive personalized help from your AI teacher.
           </p>
-          <Button variant="primary" onClick={() => startConversation()} disabled={starting}>
-            {starting ? 'Starting…' : 'Start New Conversation'}
+          <Input
+            label="What would you like help with?"
+            value={contextRef}
+            onChange={e => setContextRef(e.target.value)}
+            placeholder="e.g. lesson-123 or a topic reference"
+          />
+          <Button variant="primary" onClick={startSession} disabled={starting || !contextRef.trim()}>
+            {starting ? 'Starting…' : 'Start New Session'}
           </Button>
         </div>
       </Card>
 
-      {config.suggestedTopics.length > 0 && (
+      {sessions.length > 0 && (
         <section>
-          <h2 className={styles.subtitle}>Suggested Topics</h2>
-          <div className={styles.topicList}>
-            {config.suggestedTopics.map(topic => (
-              <button
-                key={topic}
-                className={styles.topicChip}
-                onClick={() => startConversation(topic)}
-                disabled={starting}
-              >
-                {topic}
-              </button>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {config.recentConversations.length > 0 && (
-        <section>
-          <h2 className={styles.subtitle}>Recent Conversations</h2>
+          <h2 className={styles.subtitle}>Recent Sessions</h2>
           <div className={styles.historyList}>
-            {config.recentConversations.map(conv => (
-              <Card key={conv.id}>
+            {sessions.map(session => (
+              <Card key={session.sessionId}>
                 <a
-                  href={`/ai-teacher/${conv.id}`}
+                  href={`/ai-teacher/${session.sessionId}`}
                   className={styles.historyItem}
-                  onClick={e => { e.preventDefault(); navigate(`/ai-teacher/${conv.id}`); }}
+                  onClick={e => { e.preventDefault(); navigate(`/ai-teacher/${session.sessionId}`); }}
                 >
-                  <span className={styles.historyTopic}>{conv.topic}</span>
+                  <span className={styles.historyTopic}>{session.contextRef}</span>
                   <span className={styles.historyMeta}>
-                    {conv.lastMessage} · {new Date(conv.updatedAt).toLocaleDateString()}
+                    {new Date(session.updatedAt).toLocaleDateString()}
                   </span>
                 </a>
               </Card>
