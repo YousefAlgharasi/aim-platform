@@ -36,20 +36,22 @@ class ApiClient {
       credentials: 'include',
     });
 
-    if (!response.ok) {
-      const error: ApiError = await response.json().catch(() => ({
-        statusCode: response.status,
-        error: response.statusText,
-        message: 'Request failed',
-      }));
-      throw error;
-    }
-
     if (response.status === 204) {
       return undefined as T;
     }
 
-    return response.json();
+    const responseBody = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      const error: ApiError = responseBody?.error ?? {
+        statusCode: response.status,
+        error: response.statusText,
+        message: 'Request failed',
+      };
+      throw error;
+    }
+
+    return responseBody?.data as T;
   }
 
   get<T>(path: string): Promise<T> {
