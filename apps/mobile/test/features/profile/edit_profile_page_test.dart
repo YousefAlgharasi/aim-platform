@@ -126,12 +126,14 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('EditProfilePage shows AIMInput fields', (tester) async {
+  testWidgets('EditProfilePage shows AIMInput and AIMSelect fields',
+      (tester) async {
     await tester
         .pumpWidget(_wrap(const AppAsyncState.success(_studentContext)));
     await tester.pump();
 
-    expect(find.byType(AIMInput), findsNWidgets(3));
+    expect(find.byType(AIMInput), findsNWidgets(1));
+    expect(find.byType(AIMSelect), findsNWidgets(2));
   });
 
   testWidgets('EditProfilePage pre-populates fields from auth context',
@@ -141,8 +143,8 @@ void main() {
     await tester.pump();
 
     expect(find.text('Yousef'), findsOneWidget);
-    expect(find.text('ar'), findsOneWidget);
-    expect(find.text('Asia/Riyadh'), findsOneWidget);
+    expect(find.text('Arabic'), findsOneWidget);
+    expect(find.text('Riyadh (Asia/Riyadh)'), findsOneWidget);
   });
 
   testWidgets('EditProfilePage shows safe-fields info banner', (tester) async {
