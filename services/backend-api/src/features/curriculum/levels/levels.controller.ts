@@ -35,7 +35,7 @@ export class LevelsController {
   constructor(private readonly levelsService: LevelsService) {}
 
   @Get()
-  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_PUBLISHED)
   @ApiOperation({ summary: 'List levels for a course. Requires curriculum.read permission.' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
@@ -63,7 +63,7 @@ export class LevelsController {
   }
 
   @Get(':id')
-  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_PUBLISHED)
   @ApiOperation({ summary: 'Get level by ID. Requires curriculum.read permission.' })
   @ApiOkResponse({ description: 'Level detail.' })
   @ApiNotFoundResponse({ description: 'Level not found.' })

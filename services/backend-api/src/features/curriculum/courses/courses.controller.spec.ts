@@ -53,9 +53,9 @@ describe('CoursesController', () => {
       expect(service.listCourses).toHaveBeenCalledWith(2, 10, undefined, undefined);
     });
 
-    it('requires CONTENT_READ_DRAFT permission', () => {
+    it('requires CONTENT_READ_PUBLISHED permission', () => {
       const perms = getMethodPermissions(controller, 'listCourses');
-      expect(perms).toContain(CurriculumPermission.CONTENT_READ_DRAFT);
+      expect(perms).toContain(CurriculumPermission.CONTENT_READ_PUBLISHED);
     });
   });
 
