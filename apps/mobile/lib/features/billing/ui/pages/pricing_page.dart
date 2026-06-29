@@ -1,14 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class PricingPage extends StatelessWidget {
+import 'package:aim_mobile/core/state/app_async_state.dart';
+import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/features/billing/logic/entity/billing_data.dart';
+import 'package:aim_mobile/features/billing/logic/provider/billing_provider.dart';
+import '../widgets/plan_card.dart';
+import 'checkout_start_page.dart';
+
+class PricingPage extends ConsumerStatefulWidget {
   const PricingPage({super.key});
 
   @override
+  ConsumerState<PricingPage> createState() => _PricingPageState();
+}
+
+class _PricingPageState extends ConsumerState<PricingPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+  }
+
+  void _load() => ref.read(pricingProvider.notifier).load();
+
+  @override
   Widget build(BuildContext context) {
+    final state = ref.watch(pricingProvider);
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Plans & Pricing'),
-      ),
+      appBar: AppBar(title: const Text('Plans & Pricing')),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -30,7 +51,17 @@ class PricingPage extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Expanded(
-                child: _buildPlansList(context),
+                child: switch (state) {
+                  AppAsyncLoading() || AppAsyncIdle() =>
+                    const AIMFullScreenLoading(
+                      semanticLabel: 'Loading plans',
+                    ),
+                  AppAsyncFailure(:final message) => AIMFullScreenError(
+                      message: message,
+                      onRetry: _load,
+                    ),
+                  AppAsyncSuccess(:final data) => _PlansList(data: data),
+                },
               ),
             ],
           ),
@@ -38,12 +69,45 @@ class PricingPage extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildPlansList(BuildContext context) {
-    // Plans will be loaded from backend via BillingRepository
-    // Placeholder showing loading state
-    return const Center(
-      child: CircularProgressIndicator(),
+class _PlansList extends StatelessWidget {
+  const _PlansList({required this.data});
+
+  final PricingData data;
+
+  @override
+  Widget build(BuildContext context) {
+    if (data.plans.isEmpty) {
+      return const Center(child: Text('No plans are available right now.'));
+    }
+
+    return ListView.separated(
+      itemCount: data.plans.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 16),
+      itemBuilder: (context, index) {
+        final plan = data.plans[index];
+        final price = plan.price;
+        return PlanCard(
+          planName: plan.name,
+          description: plan.description,
+          price: price?.formattedAmount ?? '\$0.00',
+          interval: price?.billingInterval ?? 'month',
+          features: plan.features.keys.toList(),
+          onSelect: price == null
+              ? null
+              : () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => CheckoutStartPage(
+                        planName: plan.name,
+                        priceId: price.id,
+                        formattedPrice: price.formattedAmount,
+                        interval: price.billingInterval,
+                      ),
+                    ),
+                  ),
+        );
+      },
     );
   }
 }

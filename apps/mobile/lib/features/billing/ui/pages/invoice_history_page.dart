@@ -1,28 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class InvoiceHistoryPage extends StatelessWidget {
+import 'package:aim_mobile/core/state/app_async_state.dart';
+import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/features/billing/data/models/billing_models.dart';
+import 'package:aim_mobile/features/billing/logic/provider/billing_provider.dart';
+
+class InvoiceHistoryPage extends ConsumerStatefulWidget {
   const InvoiceHistoryPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Invoice History'),
-      ),
-      body: SafeArea(
-        child: _buildInvoiceList(context, theme),
-      ),
-    );
-  }
-
-  Widget _buildInvoiceList(BuildContext context, ThemeData theme) {
-    // Invoices loaded from GET /billing/invoices — backend is authority
-    return const Center(
-      child: CircularProgressIndicator(),
-    );
-  }
+  ConsumerState<InvoiceHistoryPage> createState() =>
+      _InvoiceHistoryPageState();
 
   static Widget buildInvoiceTile({
     required BuildContext context,
@@ -115,6 +104,83 @@ class InvoiceHistoryPage extends StatelessWidget {
       ),
     );
   }
+}
+
+class _InvoiceHistoryPageState extends ConsumerState<InvoiceHistoryPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+  }
+
+  void _load() => ref.read(invoiceProvider.notifier).load();
+
+  Future<void> _refresh() => ref.read(invoiceProvider.notifier).refresh();
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(invoiceProvider);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Invoice History')),
+      body: SafeArea(
+        child: switch (state) {
+          AppAsyncLoading() || AppAsyncIdle() => const AIMFullScreenLoading(
+              semanticLabel: 'Loading invoices',
+            ),
+          AppAsyncFailure(:final message) => AIMFullScreenError(
+              message: message,
+              onRetry: _load,
+            ),
+          AppAsyncSuccess(:final data) => data.isEmpty
+              ? RefreshIndicator(
+                  onRefresh: _refresh,
+                  child: ListView(
+                    children: [
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.7,
+                        child: InvoiceHistoryPage.buildEmptyState(context),
+                      ),
+                    ],
+                  ),
+                )
+              : _InvoiceList(invoices: data, onRefresh: _refresh),
+        },
+      ),
+    );
+  }
+
+}
+
+class _InvoiceList extends StatelessWidget {
+  const _InvoiceList({required this.invoices, required this.onRefresh});
+
+  final List<InvoiceModel> invoices;
+  final Future<void> Function() onRefresh;
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: ListView.builder(
+        itemCount: invoices.length,
+        itemBuilder: (context, index) {
+          final invoice = invoices[index];
+          return InvoiceHistoryPage.buildInvoiceTile(
+            context: context,
+            invoiceId: invoice.id,
+            status: invoice.status,
+            amountFormatted:
+                '\$${(invoice.total / 100).toStringAsFixed(2)} ${invoice.currency.toUpperCase()}',
+            dateFormatted: _formatDate(invoice.createdAt),
+          );
+        },
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) =>
+      '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 }
 
 class InvoiceDetailPage extends StatelessWidget {
