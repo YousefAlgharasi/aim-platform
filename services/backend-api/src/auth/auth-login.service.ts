@@ -27,8 +27,10 @@ type AuthOperation = 'login' | 'refresh' | 'register';
 const SUPABASE_TOKEN_PATH = '/auth/v1/token';
 const SUPABASE_SIGNUP_PATH = '/auth/v1/signup';
 const SUPABASE_LOGOUT_PATH = '/auth/v1/logout';
+const SUPABASE_ADMIN_USERS_PATH = '/auth/v1/admin/users';
 const SUPABASE_REQUEST_TIMEOUT_MS = 8000;
 const MOBILE_EMAIL_CONFIRMATION_REDIRECT_URL = 'aimapp://login-callback';
+const DEFAULT_USER_ROLE = 'student';
 
 @Injectable()
 export class AuthLoginService {
@@ -37,11 +39,23 @@ export class AuthLoginService {
   constructor(private readonly config: BackendConfigService) {}
 
   async login(input: AuthLoginInput): Promise<AuthLoginResult> {
-    const response = await this.callSupabase(
+    let response = await this.callSupabase(
       `${SUPABASE_TOKEN_PATH}?grant_type=password`,
       { email: input.email, password: input.password },
       'login',
     );
+
+    // Self-heal accounts created before role auto-assignment existed (e.g.
+    // accounts provisioned directly via the Supabase Admin API). The JWT
+    // already issued above predates the metadata update, so we re-mint it.
+    if (response.user?.id && !response.user.app_metadata?.role) {
+      await this.assignDefaultRole(response.user.id);
+      response = await this.callSupabase(
+        `${SUPABASE_TOKEN_PATH}?grant_type=password`,
+        { email: input.email, password: input.password },
+        'login',
+      );
+    }
 
     const tokens = this.toTokenResult(response);
 
@@ -92,19 +106,32 @@ export class AuthLoginService {
     }
 
     const body = (await response.json()) as SupabaseSignUpResponse;
+    const newUserId = body.user?.id ?? body.id;
+
+    if (newUserId) {
+      await this.assignDefaultRole(newUserId);
+    }
 
     if (!body.access_token || !body.refresh_token) {
       return { requiresEmailConfirmation: true };
     }
 
+    // The tokens above were minted before the role assignment, so re-mint
+    // them to get a JWT whose app_metadata reflects the assigned role.
+    const freshTokens = await this.callSupabase(
+      `${SUPABASE_TOKEN_PATH}?grant_type=password`,
+      { email: input.email, password: input.password },
+      'register',
+    );
+
     return {
       requiresEmailConfirmation: false,
-      accessToken: body.access_token,
-      refreshToken: body.refresh_token,
-      expiresAt: this.resolveExpiresAt(body.expires_at, body.expires_in),
+      accessToken: freshTokens.access_token,
+      refreshToken: freshTokens.refresh_token,
+      expiresAt: this.resolveExpiresAt(freshTokens.expires_at, freshTokens.expires_in),
       user: {
-        id: body.user?.id ?? body.id ?? '',
-        email: body.user?.email ?? body.email ?? input.email,
+        id: freshTokens.user?.id ?? newUserId ?? '',
+        email: freshTokens.user?.email ?? body.email ?? input.email,
       },
     };
   }
@@ -143,6 +170,25 @@ export class AuthLoginService {
     const isAllowedOrigin = this.config.corsOrigins.some((origin) => origin === requestedOrigin);
 
     return isAllowedOrigin ? redirectUrl : MOBILE_EMAIL_CONFIRMATION_REDIRECT_URL;
+  }
+
+  // Grants the default application role via Supabase's Admin API so the
+  // role is embedded in app_metadata before any JWT is issued to the
+  // client. Best-effort: a failure here must not block registration/login,
+  // since the account is still usable — just without the default role yet.
+  private async assignDefaultRole(userId: string): Promise<void> {
+    const url = `${this.buildSupabaseUrl(SUPABASE_ADMIN_USERS_PATH)}/${userId}`;
+
+    try {
+      await fetch(url, {
+        method: 'PUT',
+        headers: this.buildHeaders(),
+        body: JSON.stringify({ app_metadata: { role: DEFAULT_USER_ROLE } }),
+        signal: AbortSignal.timeout(SUPABASE_REQUEST_TIMEOUT_MS),
+      });
+    } catch (error) {
+      this.logger.warn(`Failed to assign default role: ${this.toSafeErrorMessage(error)}`);
+    }
   }
 
   private async callSupabase(
