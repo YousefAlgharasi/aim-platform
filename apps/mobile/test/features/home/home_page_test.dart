@@ -161,7 +161,8 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('Welcome to AIM'), findsOneWidget);
+      expect(find.text('Get Started'), findsOneWidget);
+      expect(find.text('Placement Test'), findsOneWidget);
     });
 
     testWidgets('shows all four sections when data is populated',
