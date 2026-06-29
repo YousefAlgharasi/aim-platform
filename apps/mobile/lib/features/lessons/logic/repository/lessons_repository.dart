@@ -21,6 +21,14 @@ abstract class LessonsRepository {
     required String bearerToken,
   });
 
+  /// Fetch the list of levels for a backend-supplied [courseId].
+  /// [courseId] must come from a prior [getCourses] response; never from
+  /// user input.
+  Future<List<LevelModel>> getLevels({
+    required String bearerToken,
+    required String courseId,
+  });
+
   /// Fetch chapters for a backend-supplied [levelId].
   /// [levelId] must come from a prior [getCourses] response; never from
   /// user input.

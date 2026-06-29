@@ -42,6 +42,10 @@ class ContentStatusGuard {
   static List<CourseModel> filterCourses(List<CourseModel> courses) =>
       courses.where((c) => isPublished(c.status)).toList();
 
+  /// Filters a list of [LevelModel] to include only published items.
+  static List<LevelModel> filterLevels(List<LevelModel> levels) =>
+      levels.where((l) => isPublished(l.status)).toList();
+
   /// Filters a list of [ChapterModel] to include only published items.
   static List<ChapterModel> filterChapters(List<ChapterModel> chapters) =>
       chapters.where((c) => isPublished(c.status)).toList();
