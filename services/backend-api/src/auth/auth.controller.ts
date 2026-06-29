@@ -21,7 +21,9 @@ import { extractBearerToken } from './bearer-token';
 import { AuthenticatedRequest } from './authenticated-user';
 import { RolesService } from '../features/roles/roles.service';
 import { UsersService } from '../features/users/users.service';
+import { StudentsService } from '../features/students/students.service';
 import { isAuthorizedRole } from './authorization';
+import { AuthMeProfile } from './auth-me.types';
 
 @ApiTags(OPENAPI_TAGS.auth)
 @Controller('auth')
@@ -31,6 +33,7 @@ export class AuthController {
     private readonly authLogin: AuthLoginService,
     private readonly rolesService: RolesService,
     private readonly usersService: UsersService,
+    private readonly studentsService: StudentsService,
   ) {}
 
   /**
@@ -113,12 +116,31 @@ export class AuthController {
   @ApiOperation({ summary: 'Return the safe current authenticated user context.' })
   @ApiOkResponse({ description: 'Safe current authenticated user context.' })
   async getMe(@CurrentUser() user: AuthenticatedUser): Promise<AuthMeResponse> {
-    const baseResponse = presentAuthMe(user);
-
     const internalUser = await this.usersService.findBySupabaseUid(user.id);
     if (!internalUser) {
-      return baseResponse;
+      return presentAuthMe(user);
     }
+
+    let profile: AuthMeProfile | null = null;
+    if (internalUser.userType === 'student') {
+      const studentProfile = await this.studentsService.findByUserId(internalUser.id);
+      if (studentProfile) {
+        profile = {
+          id: studentProfile.id,
+          profileType: 'student_profile',
+          displayName: studentProfile.displayName ?? undefined,
+          avatarUrl: studentProfile.avatarUrl ?? undefined,
+          preferredLanguage: studentProfile.preferredLanguage ?? undefined,
+          timezone: studentProfile.timezone ?? undefined,
+        };
+      }
+    }
+
+    const baseResponse = presentAuthMe(user, {
+      userType: internalUser.userType,
+      status: internalUser.status,
+      profile,
+    });
 
     const dbRoles = (await this.rolesService.getUserRoles(internalUser.id))
       .map((role) => role.key)

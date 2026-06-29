@@ -4,6 +4,7 @@ import { AuthProfileBootstrapService } from './auth-profile-bootstrap.service';
 import { AuthLoginService } from './auth-login.service';
 import { RolesService } from '../features/roles/roles.service';
 import { UsersService } from '../features/users/users.service';
+import { StudentsService } from '../features/students/students.service';
 import { AuthenticatedUser } from './authenticated-user';
 
 const makeBootstrapMock = (): jest.Mocked<AuthProfileBootstrapService> =>
@@ -23,8 +24,17 @@ const makeRolesMock = (): jest.Mocked<RolesService> =>
 const makeUsersMock = (): jest.Mocked<UsersService> =>
   ({ findBySupabaseUid: jest.fn().mockResolvedValue(null) } as unknown as jest.Mocked<UsersService>);
 
+const makeStudentsMock = (): jest.Mocked<StudentsService> =>
+  ({ findByUserId: jest.fn().mockResolvedValue(null) } as unknown as jest.Mocked<StudentsService>);
+
 describe('AuthController', () => {
-  const controller = new AuthController(makeBootstrapMock(), makeAuthLoginMock(), makeRolesMock(), makeUsersMock());
+  const controller = new AuthController(
+    makeBootstrapMock(),
+    makeAuthLoginMock(),
+    makeRolesMock(),
+    makeUsersMock(),
+    makeStudentsMock(),
+  );
 
   it('returns a safe current user response from the authenticated request user', async () => {
     const user: AuthenticatedUser = {
