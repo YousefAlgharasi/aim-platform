@@ -218,25 +218,8 @@ List<Widget> _gettingStartedCards(BuildContext context, WidgetRef ref) {
   final surfaces = aimSurfacesOf(context);
 
   return [
-    const SizedBox(height: AimSpacing.sectionGap),
-    Icon(
-      Icons.school_outlined,
-      size: 64,
-      color: surfaces.textMuted,
-    ),
+    const HomeSectionHeader(title: 'Get Started'),
     const SizedBox(height: AimSpacing.componentGap),
-    Text(
-      'Welcome to AIM',
-      style: AimTextStyles.h2.copyWith(color: surfaces.textPrimary),
-      textAlign: TextAlign.center,
-    ),
-    const SizedBox(height: AimSpacing.space8),
-    Text(
-      'Get started by taking a placement test or browsing courses.',
-      style: AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
-      textAlign: TextAlign.center,
-    ),
-    const SizedBox(height: AimSpacing.sectionGap),
     AIMCard(
       variant: AIMCardVariant.elevated,
       onTap: () => Navigator.of(context).pushNamed(
