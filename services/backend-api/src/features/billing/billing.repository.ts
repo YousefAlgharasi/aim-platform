@@ -575,9 +575,11 @@ export class BillingRepository {
 
   // --- Entitlements ---
 
+  private readonly ENTITLEMENT_COLUMNS = `id, user_id AS "userId", plan_id AS "planId", subscription_id AS "subscriptionId", feature_key AS "featureKey", granted, usage_limit AS "usageLimit", usage_count AS "usageCount", expires_at AS "expiresAt", source, status, created_at AS "createdAt", updated_at AS "updatedAt"`;
+
   async findEntitlementsByUserId(userId: string): Promise<BillingEntitlement[]> {
     const result = await this.db.query<BillingEntitlement>(
-      `SELECT * FROM billing_entitlements WHERE user_id = $1 AND status = 'active' ORDER BY created_at DESC`,
+      `SELECT ${this.ENTITLEMENT_COLUMNS} FROM billing_entitlements WHERE user_id = $1 AND status = 'active' ORDER BY created_at DESC`,
       [userId],
     );
     return result.rows;
@@ -585,7 +587,7 @@ export class BillingRepository {
 
   async findEntitlementByUserAndFeature(userId: string, featureKey: string): Promise<BillingEntitlement | null> {
     const result = await this.db.query<BillingEntitlement>(
-      `SELECT * FROM billing_entitlements WHERE user_id = $1 AND feature_key = $2 AND status = 'active'`,
+      `SELECT ${this.ENTITLEMENT_COLUMNS} FROM billing_entitlements WHERE user_id = $1 AND feature_key = $2 AND status = 'active'`,
       [userId, featureKey],
     );
     return result.rows[0] || null;
@@ -595,7 +597,7 @@ export class BillingRepository {
     const result = await this.db.query<BillingEntitlement>(
       `INSERT INTO billing_entitlements (user_id, plan_id, subscription_id, feature_key, granted, usage_limit, usage_count, expires_at, source, status)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-       RETURNING *`,
+       RETURNING ${this.ENTITLEMENT_COLUMNS}`,
       [data.userId, data.planId, data.subscriptionId, data.featureKey, data.granted ?? true, data.usageLimit, data.usageCount || 0, data.expiresAt, data.source, data.status || 'active'],
     );
     return result.rows[0] ?? null;
