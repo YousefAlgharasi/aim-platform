@@ -24,6 +24,16 @@ abstract class LessonsRemoteDatasource {
     required String bearerToken,
   });
 
+  /// GET /curriculum/courses/:courseId/levels
+  ///
+  /// Returns the list of levels for the given backend-supplied [courseId].
+  /// [courseId] must come from a prior [getCourses] response; never from
+  /// user input.
+  Future<List<LevelModel>> getLevels({
+    required String bearerToken,
+    required String courseId,
+  });
+
   /// GET /curriculum/chapters?levelId=:levelId
   ///
   /// Returns chapters for the given backend-supplied [levelId].

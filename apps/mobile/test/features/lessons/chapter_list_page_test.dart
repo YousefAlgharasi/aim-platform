@@ -37,7 +37,7 @@ Widget _wrap(
     );
 
 const _page = ChapterListPage(
-  levelId: 'level-1',
+  courseId: 'course-1',
   courseTitle: 'English B1',
 );
 
@@ -171,11 +171,24 @@ class _FakeChaptersNotifier extends ChaptersNotifier {
     required String bearerToken,
     required String levelId,
   }) async {}
+
+  @override
+  Future<void> loadForCourse({
+    required String bearerToken,
+    required String courseId,
+  }) async {}
 }
 
 class _FakeLessonsRepository implements LessonsRepository {
   @override
   Future<List<CourseModel>> getCourses({required String bearerToken}) async =>
+      const [];
+
+  @override
+  Future<List<LevelModel>> getLevels({
+    required String bearerToken,
+    required String courseId,
+  }) async =>
       const [];
 
   @override

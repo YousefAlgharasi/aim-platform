@@ -36,6 +36,19 @@ class LessonsRepositoryImpl implements LessonsRepository {
 
   @override
   @override
+  Future<List<LevelModel>> getLevels({
+    required String bearerToken,
+    required String courseId,
+  }) async {
+    final results = await _wrap(() => _datasource.getLevels(
+          bearerToken: bearerToken,
+          courseId: courseId,
+        ));
+    return ContentStatusGuard.filterLevels(results);
+  }
+
+  @override
+  @override
   Future<List<ChapterModel>> getChapters({
     required String bearerToken,
     required String levelId,

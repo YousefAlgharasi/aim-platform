@@ -191,12 +191,12 @@ class AppRouter {
     final args = arguments is Map<String, dynamic>
         ? arguments
         : const <String, dynamic>{};
-    final levelId = args['levelId'] ?? args['courseId'];
+    final courseId = args['courseId'];
     final courseTitle = args['courseTitle'];
-    if (levelId is! String || courseTitle is! String) {
+    if (courseId is! String || courseTitle is! String) {
       return const SplashPage();
     }
-    return ChapterListPage(levelId: levelId, courseTitle: courseTitle);
+    return ChapterListPage(courseId: courseId, courseTitle: courseTitle);
   }
 
   static Map<String, dynamic> _assessmentArgs(Object? arguments) {
