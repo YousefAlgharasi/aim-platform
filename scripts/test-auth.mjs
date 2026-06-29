@@ -17,82 +17,55 @@ function ask(question) {
   return new Promise((resolve) => rl.question(question, resolve));
 }
 
-function askHidden(question) {
-  return new Promise((resolve) => {
-    process.stdout.write(question);
-    const stdin = process.stdin;
-    const wasRaw = stdin.isRaw;
-    if (stdin.isTTY) stdin.setRawMode(true);
-
-    let input = '';
-    const onData = (ch) => {
-      const c = ch.toString();
-      if (c === '\n' || c === '\r') {
-        stdin.removeListener('data', onData);
-        if (stdin.isTTY) stdin.setRawMode(wasRaw);
-        process.stdout.write('\n');
-        resolve(input);
-      } else if (c === '') {
-        process.exit();
-      } else if (c === '' || c === '\b') {
-        input = input.slice(0, -1);
-        process.stdout.write('\r' + question + '*'.repeat(input.length) + ' \b');
-      } else {
-        input += c;
-        process.stdout.write('*');
-      }
-    };
-    stdin.on('data', onData);
-  });
-}
-
-async function request(method, path, body = null, auth = false) {
-  const url = `${BASE_URL}${path}`;
+async function request(method, path, body, auth) {
+  const url = BASE_URL + path;
   const headers = { 'Content-Type': 'application/json' };
   if (auth && accessToken) {
-    headers['Authorization'] = `Bearer ${accessToken}`;
+    headers['Authorization'] = 'Bearer ' + accessToken;
   }
 
-  const opts = { method, headers };
+  const opts = { method: method, headers: headers };
   if (body) opts.body = JSON.stringify(body);
 
-  console.log(`\n--> ${method} ${url}`);
-  if (body) console.log('    Body:', JSON.stringify(body, null, 2));
+  console.log('');
+  console.log('--> ' + method + ' ' + url);
+  if (body) console.log('    Body: ' + JSON.stringify(body, null, 2));
 
   try {
     const res = await fetch(url, opts);
     const status = res.status;
+    const text = await res.text();
     let data = null;
 
-    const text = await res.text();
     try {
       data = JSON.parse(text);
-    } catch {
+    } catch (e) {
       data = text || '(empty)';
     }
 
-    console.log(`<-- ${status}`);
+    console.log('<-- ' + status);
     if (typeof data === 'object' && data !== null) {
-      console.log('    Response:', JSON.stringify(data, null, 2));
+      console.log('    Response: ' + JSON.stringify(data, null, 2));
     } else {
-      console.log('    Response:', data);
+      console.log('    Response: ' + data);
     }
 
-    return { status, data };
+    return { status: status, data: data };
   } catch (err) {
-    console.log(`<-- ERROR: ${err.message}`);
+    console.log('<-- ERROR: ' + err.message);
     return { status: 0, data: null };
   }
 }
 
 function printTokens() {
-  console.log('\n--- Current Session ---');
+  console.log('');
+  console.log('--- Current Session ---');
   if (accessToken) {
-    console.log(`  Access Token:  ${accessToken.substring(0, 30)}...`);
-    console.log(`  Refresh Token: ${refreshToken ? refreshToken.substring(0, 30) + '...' : 'none'}`);
+    console.log('  Access Token:  ' + accessToken.substring(0, 30) + '...');
+    console.log('  Refresh Token: ' + (refreshToken ? refreshToken.substring(0, 30) + '...' : 'none'));
     if (currentUser) {
-      console.log(`  User ID:       ${currentUser.id}`);
-      console.log(`  Email:         ${currentUser.email || 'n/a'}`);
+      console.log('  User ID:       ' + currentUser.id);
+      console.log('  Email:         ' + (currentUser.email || 'n/a'));
     }
   } else {
     console.log('  Not authenticated.');
@@ -100,17 +73,15 @@ function printTokens() {
   console.log('------------------------');
 }
 
-// ── Auth Actions ──
-
 async function doLogin() {
   const email = await ask('  Email: ');
-  const password = await askHidden('  Password: ');
-  const { status, data } = await request('POST', '/auth/login', { email, password });
+  const password = await ask('  Password: ');
+  const r = await request('POST', '/auth/login', { email: email, password: password }, false);
 
-  if (status === 200 && data?.accessToken) {
-    accessToken = data.accessToken;
-    refreshToken = data.refreshToken;
-    currentUser = data.user;
+  if (r.status === 200 && r.data && r.data.accessToken) {
+    accessToken = r.data.accessToken;
+    refreshToken = r.data.refreshToken;
+    currentUser = r.data.user;
     console.log('\n  Login successful!');
   } else {
     console.log('\n  Login failed.');
@@ -119,16 +90,16 @@ async function doLogin() {
 
 async function doRegister() {
   const email = await ask('  Email: ');
-  const password = await askHidden('  Password (min 8 chars): ');
-  const { status, data } = await request('POST', '/auth/register', { email, password });
+  const password = await ask('  Password (min 8 chars): ');
+  const r = await request('POST', '/auth/register', { email: email, password: password }, false);
 
-  if (status === 200 && data?.accessToken) {
-    accessToken = data.accessToken;
-    refreshToken = data.refreshToken;
-    currentUser = data.user;
+  if (r.status === 200 && r.data && r.data.accessToken) {
+    accessToken = r.data.accessToken;
+    refreshToken = r.data.refreshToken;
+    currentUser = r.data.user;
     console.log('\n  Registered and logged in!');
-  } else if (status === 200 && data?.requiresEmailConfirmation) {
-    console.log('\n  Registration successful — check your email to confirm.');
+  } else if (r.status === 200 && r.data && r.data.requiresEmailConfirmation) {
+    console.log('\n  Registration successful - check your email to confirm.');
   } else {
     console.log('\n  Registration failed.');
   }
@@ -139,11 +110,11 @@ async function doRefreshToken() {
     console.log('\n  No refresh token available. Login first.');
     return;
   }
-  const { status, data } = await request('POST', '/auth/refresh', { refreshToken });
+  const r = await request('POST', '/auth/refresh', { refreshToken: refreshToken }, false);
 
-  if (status === 200 && data?.accessToken) {
-    accessToken = data.accessToken;
-    refreshToken = data.refreshToken;
+  if (r.status === 200 && r.data && r.data.accessToken) {
+    accessToken = r.data.accessToken;
+    refreshToken = r.data.refreshToken;
     console.log('\n  Tokens refreshed!');
   } else {
     console.log('\n  Refresh failed.');
@@ -155,11 +126,7 @@ async function doGetMe() {
     console.log('\n  Not authenticated. Login first.');
     return;
   }
-  const { status, data } = await request('GET', '/auth/me', null, true);
-
-  if (status === 200) {
-    console.log('\n  Current user loaded.');
-  }
+  await request('GET', '/auth/me', null, true);
 }
 
 async function doBootstrap() {
@@ -175,52 +142,43 @@ async function doLogout() {
     console.log('\n  Not authenticated. Nothing to logout.');
     return;
   }
-  const { status } = await request('POST', '/auth/logout', {}, true);
+  var r = await request('POST', '/auth/logout', {}, true);
 
-  if (status === 204 || status === 200) {
-    accessToken = null;
-    refreshToken = null;
-    currentUser = null;
-    console.log('\n  Logged out successfully.');
-  } else {
-    console.log('\n  Logout request sent (clearing local tokens anyway).');
-    accessToken = null;
-    refreshToken = null;
-    currentUser = null;
-  }
+  accessToken = null;
+  refreshToken = null;
+  currentUser = null;
+  console.log('\n  Logged out. Local tokens cleared.');
 }
 
 async function doTestLogin() {
   console.log('  Available roles: student, admin, parent');
   const role = await ask('  Role: ');
-  if (!['student', 'admin', 'parent'].includes(role)) {
+  if (role !== 'student' && role !== 'admin' && role !== 'parent') {
     console.log('\n  Invalid role.');
     return;
   }
-  const { status, data } = await request('POST', '/auth/test-login', { role });
+  const r = await request('POST', '/auth/test-login', { role: role }, false);
 
-  if (status === 200 && data?.accessToken) {
-    accessToken = data.accessToken;
-    refreshToken = data.refreshToken;
-    currentUser = data.user;
-    console.log(`\n  Test login as ${role} successful!`);
+  if (r.status === 200 && r.data && r.data.accessToken) {
+    accessToken = r.data.accessToken;
+    refreshToken = r.data.refreshToken;
+    currentUser = r.data.user;
+    console.log('\n  Test login as ' + role + ' successful!');
   } else {
     console.log('\n  Test login failed (disabled in production).');
   }
 }
 
-// ── Main Menu ──
-
-async function mainMenu() {
-  console.log('\n========================================');
-  console.log('  AIM Platform — Auth Endpoint Tester');
-  console.log(`  Server: ${BASE_URL}`);
+async function main() {
+  console.log('========================================');
+  console.log('  AIM Platform - Auth Endpoint Tester');
+  console.log('  Server: ' + BASE_URL);
   console.log('========================================');
 
   while (true) {
     printTokens();
 
-    console.log('\n  Choose an action:\n');
+    console.log('');
     console.log('  1) Login              POST /auth/login');
     console.log('  2) Register           POST /auth/register');
     console.log('  3) Refresh Token      POST /auth/refresh');
@@ -231,26 +189,23 @@ async function mainMenu() {
     console.log('  0) Exit');
     console.log('');
 
-    const choice = await ask('  > ');
+    const choice = (await ask('  > ')).trim();
 
-    switch (choice.trim()) {
-      case '1': await doLogin(); break;
-      case '2': await doRegister(); break;
-      case '3': await doRefreshToken(); break;
-      case '4': await doGetMe(); break;
-      case '5': await doBootstrap(); break;
-      case '6': await doLogout(); break;
-      case '7': await doTestLogin(); break;
-      case '0':
-      case 'q':
-      case 'exit':
-        console.log('\n  Bye!\n');
-        rl.close();
-        process.exit(0);
-      default:
-        console.log('\n  Invalid choice.');
+    if (choice === '1') await doLogin();
+    else if (choice === '2') await doRegister();
+    else if (choice === '3') await doRefreshToken();
+    else if (choice === '4') await doGetMe();
+    else if (choice === '5') await doBootstrap();
+    else if (choice === '6') await doLogout();
+    else if (choice === '7') await doTestLogin();
+    else if (choice === '0' || choice === 'q' || choice === 'exit') {
+      console.log('\n  Bye!\n');
+      rl.close();
+      process.exit(0);
+    } else {
+      console.log('\n  Invalid choice.');
     }
   }
 }
 
-mainMenu();
+main();
