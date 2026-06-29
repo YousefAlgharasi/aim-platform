@@ -91,6 +91,10 @@ class BackendApiPaths {
   static String curriculumCourseSessions(String courseId) =>
       '/curriculum/courses/$courseId/sessions';
 
+  /// GET /curriculum/courses/:courseId/levels
+  static String curriculumCourseLevels(String courseId) =>
+      '/curriculum/courses/$courseId/levels';
+
   /// GET /curriculum/lessons/:lessonId
   static String curriculumLessonDetail(String lessonId) =>
       '/curriculum/lessons/$lessonId';

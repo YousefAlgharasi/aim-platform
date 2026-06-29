@@ -37,6 +37,20 @@ class LessonsRemoteDatasourceImpl implements LessonsRemoteDatasource {
   }
 
   @override
+  Future<List<LevelModel>> getLevels({
+    required String bearerToken,
+    required String courseId,
+  }) async {
+    final envelope = await _apiClient.get<List<LevelModel>>(
+      BackendApiPaths.curriculumCourseLevels(courseId),
+      queryParameters: const {'status': 'published'},
+      headers: _auth(bearerToken),
+      decodeData: (json) => _decodeListFromKey(json, 'levels', LevelModel.fromJson),
+    );
+    return envelope.data ?? const [];
+  }
+
+  @override
   Future<List<ChapterModel>> getChapters({
     required String bearerToken,
     required String levelId,

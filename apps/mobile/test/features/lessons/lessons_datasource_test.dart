@@ -148,6 +148,13 @@ class _FakeDatasource implements LessonsRemoteDatasource {
       const [];
 
   @override
+  Future<List<LevelModel>> getLevels({
+    required String bearerToken,
+    required String courseId,
+  }) async =>
+      const [];
+
+  @override
   Future<List<ChapterModel>> getChapters({
     required String bearerToken,
     required String levelId,
