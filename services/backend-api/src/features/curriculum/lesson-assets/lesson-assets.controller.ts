@@ -35,7 +35,7 @@ export class LessonAssetsController {
   constructor(private readonly lessonAssetsService: LessonAssetsService) {}
 
   @Get()
-  @RequirePermissions(CurriculumPermission.CONTENT_READ_DRAFT)
+  @RequirePermissions(CurriculumPermission.CONTENT_READ_PUBLISHED)
   @ApiOperation({ summary: 'List lesson assets. Requires curriculum.read permission.' })
   @ApiQuery({ name: 'lessonId', required: false, type: String })
   @ApiQuery({ name: 'page', required: false, type: Number })
