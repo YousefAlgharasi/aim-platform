@@ -1,13 +1,16 @@
 // Phase 6 — P6-074
-// ChapterListPage — displays chapters for a backend-supplied course level.
+// ChapterListPage — displays chapters for a backend-supplied course.
 //
-// Receives [levelId] and [courseTitle] from route arguments (set by
-// CourseListPage). Loads via [chaptersProvider.autoDispose] on first build.
+// Receives [courseId] and [courseTitle] from route arguments (set by
+// CourseListPage). A course's chapters live under its levels, so this page
+// first resolves the course's (first) level via [getLevels], then loads
+// chapters for that resolved levelId via [chaptersProvider.autoDispose].
 // Tapping a chapter navigates to the lesson list (P6-075).
 //
 // Security rules:
-// - levelId is always the backend-supplied value from CourseModel; never
-//   from user input or local computation.
+// - courseId is always the backend-supplied value from CourseModel; never
+//   from user input or local computation. The resolved levelId is always
+//   backend-supplied from a prior LevelModel response.
 // - chapterId passed to the next screen is always from ChapterModel.
 // - Flutter never computes status, sortOrder, or hierarchy values.
 // - Bearer token from authFlowProvider; never stored here.
@@ -31,19 +34,19 @@ import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
 import '../widgets/lessons_widgets.dart';
 
-/// Chapter list screen for a single course level.
+/// Chapter list screen for a single course.
 ///
-/// Expects route arguments: `{'levelId': String, 'courseTitle': String}`.
-/// [levelId] must be backend-supplied; never constructed from user input.
+/// Expects route arguments: `{'courseId': String, 'courseTitle': String}`.
+/// [courseId] must be backend-supplied; never constructed from user input.
 class ChapterListPage extends ConsumerStatefulWidget {
   const ChapterListPage({
-    required this.levelId,
+    required this.courseId,
     required this.courseTitle,
     super.key,
   });
 
-  /// Backend-supplied level UUID from the prior CourseModel response.
-  final String levelId;
+  /// Backend-supplied course UUID from the prior CourseModel response.
+  final String courseId;
 
   /// Display title of the parent course (for the AppBar).
   final String courseTitle;
@@ -62,18 +65,18 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
   void _load() {
     final token = ref.read(authFlowProvider).accessToken;
     if (token == null || token.isEmpty) return;
-    ref.read(chaptersProvider.notifier).load(
+    ref.read(chaptersProvider.notifier).loadForCourse(
           bearerToken: token,
-          levelId: widget.levelId,
+          courseId: widget.courseId,
         );
   }
 
   Future<void> _refresh() async {
     final token = ref.read(authFlowProvider).accessToken;
     if (token == null || token.isEmpty) return;
-    await ref.read(chaptersProvider.notifier).refresh(
+    await ref.read(chaptersProvider.notifier).loadForCourse(
           bearerToken: token,
-          levelId: widget.levelId,
+          courseId: widget.courseId,
         );
   }
 

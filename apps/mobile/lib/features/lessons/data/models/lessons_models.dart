@@ -5,3 +5,4 @@ export 'chapter_model.dart';
 export 'course_model.dart';
 export 'lesson_asset_model.dart';
 export 'lesson_model.dart';
+export 'level_model.dart';
