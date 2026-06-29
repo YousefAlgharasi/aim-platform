@@ -6,7 +6,7 @@ interface AuthState {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<void>;
+  register: (email: string, password: string, name: string) => Promise<{ requiresEmailConfirmation: boolean }>;
   logout: () => Promise<void>;
 }
 
@@ -30,12 +30,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const register = useCallback(async (email: string, password: string, name: string) => {
-    const { user: u, accessToken } = await apiClient.post<{ user: User; accessToken: string }>('/auth/register', { email, password });
-    apiClient.setAccessToken(accessToken);
+    const result = await apiClient.post<{ requiresEmailConfirmation: boolean; user?: User; accessToken?: string }>('/auth/register', { email, password });
+    if (result.requiresEmailConfirmation || !result.accessToken || !result.user) {
+      return { requiresEmailConfirmation: true };
+    }
+    apiClient.setAccessToken(result.accessToken);
     if (name) {
       await apiClient.patch('/profile/me', { displayName: name });
     }
-    setUser(u);
+    setUser(result.user);
+    return { requiresEmailConfirmation: false };
   }, []);
 
   const logout = useCallback(async () => {
