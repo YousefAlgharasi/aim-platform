@@ -65,6 +65,55 @@ describe('AuthLoginService', () => {
         message: 'The authentication service returned an unexpected error.',
       });
     });
+
+    it('self-heals accounts missing a role by assigning one and re-minting the token', async () => {
+      const tokenWithoutRole = {
+        access_token: 'stale-token',
+        refresh_token: 'stale-refresh',
+        expires_in: 3600,
+        user: { id: 'user-1', email: 'a@b.com', app_metadata: {} },
+      };
+      const tokenWithRole = {
+        access_token: 'fresh-token',
+        refresh_token: 'fresh-refresh',
+        expires_in: 3600,
+        user: { id: 'user-1', email: 'a@b.com', app_metadata: { role: 'student' } },
+      };
+
+      const fetchMock = jest
+        .fn()
+        .mockResolvedValueOnce(jsonResponse(200, tokenWithoutRole))
+        .mockResolvedValueOnce(jsonResponse(200, {}))
+        .mockResolvedValueOnce(jsonResponse(200, tokenWithRole));
+      global.fetch = fetchMock as unknown as typeof fetch;
+
+      const result = await service.login({ email: 'a@b.com', password: 'pw' });
+
+      expect(result.accessToken).toBe('fresh-token');
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+      expect(fetchMock.mock.calls[1][0]).toContain('/auth/v1/admin/users/user-1');
+      expect(fetchMock.mock.calls[1][1]).toMatchObject({
+        method: 'PUT',
+        body: JSON.stringify({ app_metadata: { role: 'student' } }),
+      });
+    });
+
+    it('does not re-mint the token when the role is already present', async () => {
+      const tokenWithRole = {
+        access_token: 'token-1',
+        refresh_token: 'refresh-1',
+        expires_in: 3600,
+        user: { id: 'user-1', email: 'a@b.com', app_metadata: { role: 'student' } },
+      };
+
+      const fetchMock = jest.fn().mockResolvedValueOnce(jsonResponse(200, tokenWithRole));
+      global.fetch = fetchMock as unknown as typeof fetch;
+
+      const result = await service.login({ email: 'a@b.com', password: 'pw' });
+
+      expect(result.accessToken).toBe('token-1');
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('refresh', () => {
@@ -129,15 +178,67 @@ describe('AuthLoginService', () => {
         message: 'The authentication service returned an unexpected error.',
       });
     });
+
+    it('assigns the default role and re-mints the token when no email confirmation is required', async () => {
+      const signUpBody = {
+        access_token: 'signup-token',
+        refresh_token: 'signup-refresh',
+        expires_in: 3600,
+        user: { id: 'new-user-1', email: 'a@b.com' },
+      };
+      const freshToken = {
+        access_token: 'fresh-token',
+        refresh_token: 'fresh-refresh',
+        expires_in: 3600,
+        user: { id: 'new-user-1', email: 'a@b.com', app_metadata: { role: 'student' } },
+      };
+
+      const fetchMock = jest
+        .fn()
+        .mockResolvedValueOnce(jsonResponse(200, signUpBody))
+        .mockResolvedValueOnce(jsonResponse(200, {}))
+        .mockResolvedValueOnce(jsonResponse(200, freshToken));
+      global.fetch = fetchMock as unknown as typeof fetch;
+
+      const result = await service.register({ email: 'a@b.com', password: 'password123' });
+
+      expect(result).toMatchObject({ requiresEmailConfirmation: false, accessToken: 'fresh-token' });
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+      expect(fetchMock.mock.calls[1][0]).toContain('/auth/v1/admin/users/new-user-1');
+      expect(fetchMock.mock.calls[1][1]).toMatchObject({
+        method: 'PUT',
+        body: JSON.stringify({ app_metadata: { role: 'student' } }),
+      });
+    });
+
+    it('assigns the default role even when email confirmation is required', async () => {
+      const signUpBody = { id: 'new-user-2', email: 'a@b.com' };
+
+      const fetchMock = jest
+        .fn()
+        .mockResolvedValueOnce(jsonResponse(200, signUpBody))
+        .mockResolvedValueOnce(jsonResponse(200, {}));
+      global.fetch = fetchMock as unknown as typeof fetch;
+
+      const result = await service.register({ email: 'a@b.com', password: 'password123' });
+
+      expect(result).toEqual({ requiresEmailConfirmation: true });
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(fetchMock.mock.calls[1][0]).toContain('/auth/v1/admin/users/new-user-2');
+    });
   });
 });
 
 function mockFetch(status: number, body: Record<string, unknown>): void {
-  global.fetch = jest.fn().mockResolvedValue({
+  global.fetch = jest.fn().mockResolvedValue(jsonResponse(status, body)) as unknown as typeof fetch;
+}
+
+function jsonResponse(status: number, body: Record<string, unknown>): Response {
+  return {
     ok: status >= 200 && status < 300,
     status,
     json: async () => body,
-  }) as unknown as typeof fetch;
+  } as unknown as Response;
 }
 
 function createConfig(): BackendConfigService {

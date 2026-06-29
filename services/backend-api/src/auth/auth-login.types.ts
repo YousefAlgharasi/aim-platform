@@ -46,6 +46,7 @@ export interface SupabaseAuthTokenResponse {
   readonly user?: {
     readonly id: string;
     readonly email?: string | null;
+    readonly app_metadata?: { readonly role?: string };
   };
 }
 
