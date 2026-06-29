@@ -47,8 +47,12 @@ class HomeData {
   /// not started any lesson yet.
   final HomeContinueLearningModel? continueLearning;
 
-  /// True when all four core lists are empty (backend returned no data
-  /// yet) — drives the "getting started" empty state.
+  /// True when the four core AIM lists and continue-learning are all empty
+  /// (backend returned no progress data yet) — drives whether the "getting
+  /// started" promo cards are shown in place of those sections. Goal and
+  /// daily challenge are intentionally excluded: they always have a value
+  /// (with sane defaults) for any student and are rendered independently of
+  /// this flag, so a brand-new student still sees their goal/streak.
   bool get isEmpty =>
       skillStates.isEmpty &&
       weaknessRecords.isEmpty &&
