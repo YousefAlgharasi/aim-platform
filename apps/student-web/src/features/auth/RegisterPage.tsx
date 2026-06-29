@@ -13,6 +13,7 @@ export function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -20,10 +21,15 @@ export function RegisterPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError('');
+    setInfo('');
     setLoading(true);
     try {
-      await register(email, password, name);
-      navigate('/', { replace: true });
+      const { requiresEmailConfirmation } = await register(email, password, name);
+      if (requiresEmailConfirmation) {
+        setInfo('Check your email to confirm your account before signing in.');
+      } else {
+        navigate('/', { replace: true });
+      }
     } catch (err) {
       setError((err as ApiError).message || 'Registration failed');
     } finally {
@@ -36,6 +42,7 @@ export function RegisterPage() {
       <form onSubmit={handleSubmit} className={styles.form}>
         <h1 className={styles.title}>Create account</h1>
         {error && <Banner variant="error">{error}</Banner>}
+        {info && <Banner variant="success">{info}</Banner>}
         <Input
           label="Full name"
           type="text"
