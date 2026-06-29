@@ -19,6 +19,8 @@
 
 import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/state/app_state_notifier.dart';
+import 'package:aim_mobile/features/home/data/datasources/home_remote_datasource.dart'
+    show HomeEngagementSummary;
 import 'package:aim_mobile/features/home/data/models/home_models.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_data.dart';
 import 'package:aim_mobile/features/home/logic/repository/home_repository.dart';
@@ -67,11 +69,24 @@ class HomeNotifier extends AppStateNotifier<HomeData> {
         recommendFuture,
       ]);
 
+      // Goal, daily challenge, and continue-learning are supplementary —
+      // a failure here must not take down the whole home page.
+      final engagementResult = await _repository
+          .getEngagementSummary(bearerToken: bearerToken)
+          .then<HomeEngagementSummary?>((value) => value)
+          .catchError((_) => null);
+      final continueLearningResult = await _repository
+          .getContinueLearning(bearerToken: bearerToken)
+          .catchError((_) => null);
+
       setSuccess(HomeData(
         skillStates: results[0] as List<HomeSkillStateModel>,
         weaknessRecords: results[1] as List<HomeWeaknessRecordModel>,
         reviewSchedules: results[2] as List<HomeReviewScheduleModel>,
         recommendations: results[3] as List<HomeRecommendationModel>,
+        goal: engagementResult?.goal,
+        dailyChallenge: engagementResult?.dailyChallenge,
+        continueLearning: continueLearningResult,
       ));
     } on AppException catch (e) {
       setFailure(message: e.message, code: e.code);

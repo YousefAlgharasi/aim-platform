@@ -12,6 +12,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import {
+  ContinueLearningLesson,
   LessonProgressAckResponse,
   RecordLessonProgressInput,
 } from './lesson-progress.types';
@@ -25,6 +26,13 @@ interface LessonProgressRow {
 
 interface LessonRow {
   readonly id: string;
+}
+
+interface ContinueLearningRow {
+  readonly lesson_id: string;
+  readonly lesson_title: string;
+  readonly percent: number;
+  readonly last_active_at: string;
 }
 
 @Injectable()
@@ -69,6 +77,30 @@ export class LessonProgressService {
     );
 
     return this.toAck(result.rows[0]);
+  }
+
+  async findContinueLearningLesson(studentId: string): Promise<ContinueLearningLesson | null> {
+    const result = await this.db.query<ContinueLearningRow>(
+      `SELECT lp.lesson_id, l.title AS lesson_title, lp.percent, lp.last_active_at
+       FROM lesson_progress lp
+       JOIN lessons l ON l.id = lp.lesson_id
+       WHERE lp.student_id = $1 AND lp.completed = false
+       ORDER BY lp.last_active_at DESC
+       LIMIT 1`,
+      [studentId],
+    );
+
+    const row = result.rows[0];
+    if (!row) {
+      return null;
+    }
+
+    return {
+      lessonId: row.lesson_id,
+      lessonTitle: row.lesson_title,
+      percent: row.percent,
+      lastActiveAt: row.last_active_at,
+    };
   }
 
   private async assertLessonExists(lessonId: string): Promise<void> {
