@@ -9,6 +9,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { CurrentUser } from '../../auth/current-user.decorator';
 import { AuthenticatedUser } from '../../auth/authenticated-user';
+import { UsersService } from '../users/users.service';
 import { SubscriptionService } from './subscription.service';
 import { EntitlementService } from './entitlement.service';
 import { Subscription, BillingEntitlement } from './billing.entities';
@@ -24,6 +25,7 @@ export class SubscriptionController {
   constructor(
     private readonly subscriptionService: SubscriptionService,
     private readonly entitlementService: EntitlementService,
+    private readonly usersService: UsersService,
   ) {}
 
   @Get()
@@ -33,9 +35,10 @@ export class SubscriptionController {
   async getUserSubscriptions(
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<UserSubscriptionResponse> {
+    const internalUser = await this.usersService.getBySupabaseUid(user.id);
     const [subscriptions, entitlements] = await Promise.all([
-      this.subscriptionService.getUserSubscriptions(user.id),
-      this.entitlementService.getUserEntitlements(user.id),
+      this.subscriptionService.getUserSubscriptions(internalUser.id),
+      this.entitlementService.getUserEntitlements(internalUser.id),
     ]);
 
     return { subscriptions, entitlements };
@@ -49,7 +52,8 @@ export class SubscriptionController {
     @Param('id') id: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<Subscription> {
-    return this.subscriptionService.getSubscriptionById(id, user.id);
+    const internalUser = await this.usersService.getBySupabaseUid(user.id);
+    return this.subscriptionService.getSubscriptionById(id, internalUser.id);
   }
 
   @Post(':id/cancel')
@@ -60,6 +64,7 @@ export class SubscriptionController {
     @Param('id') id: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<Subscription> {
-    return this.subscriptionService.cancelSubscription(id, user.id);
+    const internalUser = await this.usersService.getBySupabaseUid(user.id);
+    return this.subscriptionService.cancelSubscription(id, internalUser.id);
   }
 }
