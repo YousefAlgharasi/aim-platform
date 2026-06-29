@@ -1,3 +1,6 @@
+import 'package:aim_mobile/core/errors/app_exception.dart';
+import 'package:aim_mobile/core/networking/api_client_exception.dart';
+
 import '../datasources/billing_datasource.dart';
 import '../models/billing_models.dart';
 import '../../logic/repository/billing_repository.dart';
@@ -8,10 +11,10 @@ class BillingRepositoryImpl implements BillingRepository {
   const BillingRepositoryImpl(this._datasource);
 
   @override
-  Future<List<BillingPlanModel>> getPlans() => _datasource.getPlans();
+  Future<List<BillingPlanModel>> getPlans() => _wrap(_datasource.getPlans);
 
   @override
-  Future<List<BillingPriceModel>> getPrices() => _datasource.getPrices();
+  Future<List<BillingPriceModel>> getPrices() => _wrap(_datasource.getPrices);
 
   @override
   Future<CheckoutSessionModel> createCheckoutSession({
@@ -20,29 +23,37 @@ class BillingRepositoryImpl implements BillingRepository {
     required String cancelUrl,
     String? promotionCode,
   }) =>
-      _datasource.createCheckoutSession(
-        priceId: priceId,
-        successUrl: successUrl,
-        cancelUrl: cancelUrl,
-        promotionCode: promotionCode,
-      );
+      _wrap(() => _datasource.createCheckoutSession(
+            priceId: priceId,
+            successUrl: successUrl,
+            cancelUrl: cancelUrl,
+            promotionCode: promotionCode,
+          ));
 
   @override
   Future<CheckoutSessionModel> getCheckoutStatus(String sessionId) =>
-      _datasource.getCheckoutStatus(sessionId);
+      _wrap(() => _datasource.getCheckoutStatus(sessionId));
 
   @override
   Future<List<SubscriptionModel>> getSubscriptions() =>
-      _datasource.getSubscriptions();
+      _wrap(_datasource.getSubscriptions);
 
   @override
   Future<SubscriptionModel> cancelSubscription(String subscriptionId) =>
-      _datasource.cancelSubscription(subscriptionId);
+      _wrap(() => _datasource.cancelSubscription(subscriptionId));
 
   @override
-  Future<List<InvoiceModel>> getInvoices() => _datasource.getInvoices();
+  Future<List<InvoiceModel>> getInvoices() => _wrap(_datasource.getInvoices);
 
   @override
   Future<List<EntitlementModel>> getEntitlements() =>
-      _datasource.getEntitlements();
+      _wrap(_datasource.getEntitlements);
+
+  Future<T> _wrap<T>(Future<T> Function() call) async {
+    try {
+      return await call();
+    } on ApiClientException catch (e) {
+      throw AppException(code: e.code, message: e.message);
+    }
+  }
 }
