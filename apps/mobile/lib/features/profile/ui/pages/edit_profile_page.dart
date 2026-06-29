@@ -42,10 +42,32 @@ class EditProfilePage extends ConsumerStatefulWidget {
   ConsumerState<EditProfilePage> createState() => _EditProfilePageState();
 }
 
+/// Selectable preferred-language options shown in the Edit Profile dropdown.
+const List<AIMSelectOption> _kLanguageOptions = [
+  AIMSelectOption(value: 'en', label: 'English'),
+  AIMSelectOption(value: 'ar', label: 'Arabic'),
+];
+
+/// Curated IANA timezone options relevant to the platform's user base, plus UTC.
+const List<AIMSelectOption> _kTimezoneOptions = [
+  AIMSelectOption(value: 'UTC', label: 'UTC'),
+  AIMSelectOption(value: 'Asia/Riyadh', label: 'Riyadh (Asia/Riyadh)'),
+  AIMSelectOption(value: 'Asia/Dubai', label: 'Dubai (Asia/Dubai)'),
+  AIMSelectOption(value: 'Asia/Kuwait', label: 'Kuwait (Asia/Kuwait)'),
+  AIMSelectOption(value: 'Asia/Qatar', label: 'Qatar (Asia/Qatar)'),
+  AIMSelectOption(value: 'Asia/Bahrain', label: 'Bahrain (Asia/Bahrain)'),
+  AIMSelectOption(value: 'Africa/Cairo', label: 'Cairo (Africa/Cairo)'),
+  AIMSelectOption(value: 'Asia/Amman', label: 'Amman (Asia/Amman)'),
+  AIMSelectOption(value: 'Asia/Beirut', label: 'Beirut (Asia/Beirut)'),
+  AIMSelectOption(value: 'Europe/London', label: 'London (Europe/London)'),
+  AIMSelectOption(value: 'Europe/Paris', label: 'Paris (Europe/Paris)'),
+  AIMSelectOption(value: 'America/New_York', label: 'New York (America/New_York)'),
+];
+
 class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   late final TextEditingController _displayNameController;
-  late final TextEditingController _preferredLanguageController;
-  late final TextEditingController _timezoneController;
+  String? _preferredLanguage;
+  String? _timezone;
 
   bool _dirty = false;
 
@@ -62,25 +84,15 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
     _displayNameController =
         TextEditingController(text: profile?.displayName ?? '');
-    _preferredLanguageController =
-        TextEditingController(text: profile?.preferredLanguage ?? '');
-    _timezoneController =
-        TextEditingController(text: profile?.timezone ?? '');
+    _preferredLanguage = profile?.preferredLanguage;
+    _timezone = profile?.timezone;
 
-    for (final ctrl in [
-      _displayNameController,
-      _preferredLanguageController,
-      _timezoneController,
-    ]) {
-      ctrl.addListener(_markDirty);
-    }
+    _displayNameController.addListener(_markDirty);
   }
 
   @override
   void dispose() {
     _displayNameController.dispose();
-    _preferredLanguageController.dispose();
-    _timezoneController.dispose();
     super.dispose();
   }
 
@@ -106,13 +118,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     if (!_validate()) return;
 
     final dn = _displayNameController.text.trim();
-    final lang = _preferredLanguageController.text.trim();
-    final tz = _timezoneController.text.trim();
 
     final payload = SafeStudentProfileUpdatePayloadModel(
       displayName: dn.isEmpty ? null : dn,
-      preferredLanguage: lang.isEmpty ? null : lang,
-      timezone: tz.isEmpty ? null : tz,
+      preferredLanguage: _preferredLanguage,
+      timezone: _timezone,
     );
 
     final bearerToken = ref.read(authFlowProvider).accessToken;
@@ -202,21 +212,33 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
             const SizedBox(height: AimSpacing.componentGap),
 
             // Preferred Language
-            AIMInput(
+            AIMSelect(
               label: 'Preferred Language',
-              placeholder: 'e.g. en, ar',
-              controller: _preferredLanguageController,
-              textInputAction: TextInputAction.next,
+              placeholder: 'Select a language',
+              options: _kLanguageOptions,
+              value: _preferredLanguage,
+              onChanged: (value) {
+                setState(() {
+                  _preferredLanguage = value;
+                  _dirty = true;
+                });
+              },
               semanticLabel: 'Preferred language field',
             ),
             const SizedBox(height: AimSpacing.componentGap),
 
             // Timezone
-            AIMInput(
+            AIMSelect(
               label: 'Timezone',
-              placeholder: 'e.g. Asia/Riyadh',
-              controller: _timezoneController,
-              textInputAction: TextInputAction.done,
+              placeholder: 'Select a timezone',
+              options: _kTimezoneOptions,
+              value: _timezone,
+              onChanged: (value) {
+                setState(() {
+                  _timezone = value;
+                  _dirty = true;
+                });
+              },
               semanticLabel: 'Timezone field',
             ),
             const SizedBox(height: AimSpacing.sectionGap),

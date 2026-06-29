@@ -10,6 +10,7 @@ import { IS_PUBLIC_ROUTE_KEY } from './auth.constants';
 import type { AuthProfileBootstrapService } from './auth-profile-bootstrap.service';
 import type { AuthLoginService } from './auth-login.service';
 import type { RolesService } from '../features/roles/roles.service';
+import type { StudentsService } from '../features/students/students.service';
 import { readCurrentUserFromContext } from './current-user.decorator';
 import { SessionValidationService } from './session-validation.service';
 import { SupabaseJwtAuthGuard } from './supabase-jwt-auth.guard';
@@ -61,6 +62,7 @@ describe('backend auth foundation suite', () => {
       createAuthLogin(),
       createRolesService(),
       createUsersService(),
+      createStudentsService(),
     ).getMe(verifiedUser);
 
     expect(response).toEqual({
@@ -194,6 +196,12 @@ function createRolesService(): RolesService {
   return {
     getUserRoles: jest.fn().mockResolvedValue([]),
   } as unknown as RolesService;
+}
+
+function createStudentsService(): StudentsService {
+  return {
+    findByUserId: jest.fn().mockResolvedValue(null),
+  } as unknown as StudentsService;
 }
 
 function createHttpContext(request: AuthenticatedRequest): ExecutionContext {

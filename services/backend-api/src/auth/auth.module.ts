@@ -7,6 +7,7 @@ import { RolesModule } from '../features/roles/roles.module';
 import { AnalyticsModule } from '../features/analytics/analytics.module';
 import { AuthorizationModule } from './authorization/authorization.module';
 import { BillingModule } from '../features/billing/billing.module';
+import { StudentsModule } from '../features/students/students.module';
 import { AuthController } from './auth.controller';
 import { AuthLoggingService } from './auth-logging.service';
 import { AuthLoginService } from './auth-login.service';
@@ -26,6 +27,7 @@ import { TestLoginService } from './test-login.service';
     AuthorizationModule,
     forwardRef(() => AnalyticsModule),
     forwardRef(() => BillingModule),
+    StudentsModule,
   ],
   controllers: [AuthController, TestLoginController],
   providers: [
