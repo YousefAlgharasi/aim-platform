@@ -16,6 +16,15 @@ import {
   AnalyticsActorRole,
 } from './analytics.entities';
 
+const REPORT_DEFINITION_COLUMNS = `
+  id, key, name, description, category,
+  allowed_roles AS "allowedRoles",
+  parameters_schema AS "parametersSchema",
+  is_active AS "isActive",
+  created_at AS "createdAt",
+  updated_at AS "updatedAt"
+`;
+
 @Injectable()
 export class AnalyticsRepository {
   constructor(private readonly db: DatabaseService) {}
@@ -158,14 +167,16 @@ export class AnalyticsRepository {
 
   async findActiveReportDefinitions(): Promise<ReportDefinition[]> {
     const result = await this.db.query<ReportDefinition>(
-      `SELECT * FROM report_definitions WHERE is_active = true ORDER BY category, key LIMIT 1000`,
+      `SELECT ${REPORT_DEFINITION_COLUMNS} FROM report_definitions
+       WHERE is_active = true ORDER BY category, key LIMIT 1000`,
     );
     return result.rows;
   }
 
   async findReportDefinitionByKey(key: string): Promise<ReportDefinition | null> {
     const result = await this.db.query<ReportDefinition>(
-      `SELECT * FROM report_definitions WHERE key = $1 AND is_active = true`,
+      `SELECT ${REPORT_DEFINITION_COLUMNS} FROM report_definitions
+       WHERE key = $1 AND is_active = true`,
       [key],
     );
     return result.rows[0] || null;
@@ -173,7 +184,7 @@ export class AnalyticsRepository {
 
   async findReportDefinitionById(id: string): Promise<ReportDefinition | null> {
     const result = await this.db.query<ReportDefinition>(
-      `SELECT * FROM report_definitions WHERE id = $1`,
+      `SELECT ${REPORT_DEFINITION_COLUMNS} FROM report_definitions WHERE id = $1`,
       [id],
     );
     return result.rows[0] || null;
