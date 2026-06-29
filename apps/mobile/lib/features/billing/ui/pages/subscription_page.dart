@@ -7,6 +7,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/billing/data/models/billing_models.dart';
 import 'package:aim_mobile/features/billing/logic/entity/billing_data.dart';
 import 'package:aim_mobile/features/billing/logic/provider/billing_provider.dart';
+import 'pricing_page.dart';
 
 class SubscriptionPage extends ConsumerStatefulWidget {
   const SubscriptionPage({super.key});
@@ -30,40 +31,6 @@ class SubscriptionPage extends ConsumerStatefulWidget {
       subtitle: usageText != null ? Text(usageText) : null,
     );
   }
-
-  static Widget buildNoSubscriptionState(
-    BuildContext context, {
-    VoidCallback? onViewPlans,
-  }) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.card_membership,
-            size: 64,
-            color: theme.colorScheme.outline,
-          ),
-          const SizedBox(height: 16),
-          Text('No Active Subscription', style: theme.textTheme.titleMedium),
-          const SizedBox(height: 8),
-          Text(
-            'Subscribe to unlock premium features.',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 24),
-          if (onViewPlans != null)
-            FilledButton(
-              onPressed: onViewPlans,
-              child: const Text('View Plans'),
-            ),
-        ],
-      ),
-    );
-  }
 }
 
 class _SubscriptionPageState extends ConsumerState<SubscriptionPage> {
@@ -73,7 +40,10 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
-  void _load() => ref.read(subscriptionProvider.notifier).load();
+  void _load() {
+    ref.read(subscriptionProvider.notifier).load();
+    ref.read(pricingProvider.notifier).load();
+  }
 
   Future<void> _refresh() => ref.read(subscriptionProvider.notifier).refresh();
 
@@ -114,19 +84,43 @@ class _SubscriptionContent extends ConsumerWidget {
     final subscription = data.currentSubscription;
 
     if (subscription == null) {
+      final pricingState = ref.watch(pricingProvider);
       return RefreshIndicator(
         onRefresh: onRefresh,
-        child: ListView(
-          children: [
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.7,
-              child: SubscriptionPage.buildNoSubscriptionState(
-                context,
-                onViewPlans: () => Navigator.of(context)
-                    .pushNamed(AppRoutePaths.pricing),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Choose Your Plan',
+                style: theme.textTheme.headlineMedium,
+                textAlign: TextAlign.center,
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                'Select the plan that works best for you',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              Expanded(
+                child: switch (pricingState) {
+                  AppAsyncLoading() || AppAsyncIdle() =>
+                    const AIMFullScreenLoading(
+                      semanticLabel: 'Loading plans',
+                    ),
+                  AppAsyncFailure(:final message) => AIMFullScreenError(
+                      message: message,
+                      onRetry: () => ref.read(pricingProvider.notifier).load(),
+                    ),
+                  AppAsyncSuccess(:final data) => PlansList(data: data),
+                },
+              ),
+            ],
+          ),
         ),
       );
     }

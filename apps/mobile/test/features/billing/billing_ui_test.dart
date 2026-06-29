@@ -226,32 +226,37 @@ void main() {
       expect(find.text('Cancel'), findsOneWidget);
     });
 
-    testWidgets('shows empty state when no active subscription', (tester) async {
+    testWidgets('shows plans directly when no active subscription', (tester) async {
       await tester.pumpWidget(_wrap(
         const SubscriptionPage(),
-        repository: _FakeBillingRepository(),
+        repository: _FakeBillingRepository(
+          plans: const [
+            BillingPlanModel(
+              id: 'plan_1',
+              name: 'Free Plan',
+              planType: 'free',
+              status: 'active',
+              features: {},
+              priceId: 'price_1',
+            ),
+          ],
+          prices: const [
+            BillingPriceModel(
+              id: 'price_1',
+              productId: 'plan_1',
+              amount: 0,
+              currency: 'usd',
+              billingInterval: 'month',
+              status: 'active',
+            ),
+          ],
+        ),
       ));
       await tester.pumpAndSettle();
-      expect(find.text('No Active Subscription'), findsOneWidget);
-      expect(find.text('View Plans'), findsOneWidget);
-    });
-
-    testWidgets('buildNoSubscriptionState shows empty state', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => SubscriptionPage.buildNoSubscriptionState(
-                context,
-                onViewPlans: () {},
-              ),
-            ),
-          ),
-        ),
-      );
-      await tester.pump();
-      expect(find.text('No Active Subscription'), findsOneWidget);
-      expect(find.text('View Plans'), findsOneWidget);
+      expect(find.text('Choose Your Plan'), findsOneWidget);
+      expect(find.text('Free Plan'), findsOneWidget);
+      expect(find.text('No Active Subscription'), findsNothing);
+      expect(find.text('View Plans'), findsNothing);
     });
 
     testWidgets('buildEntitlementTile renders granted state', (tester) async {

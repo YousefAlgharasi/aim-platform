@@ -60,7 +60,7 @@ class _PricingPageState extends ConsumerState<PricingPage> {
                       message: message,
                       onRetry: _load,
                     ),
-                  AppAsyncSuccess(:final data) => _PlansList(data: data),
+                  AppAsyncSuccess(:final data) => PlansList(data: data),
                 },
               ),
             ],
@@ -71,8 +71,11 @@ class _PricingPageState extends ConsumerState<PricingPage> {
   }
 }
 
-class _PlansList extends StatelessWidget {
-  const _PlansList({required this.data});
+/// Renders the list of selectable billing plans. Shared by [PricingPage]
+/// and [SubscriptionPage] (when the user has no active subscription) so
+/// the plans are shown directly without an extra "View Plans" hop.
+class PlansList extends StatelessWidget {
+  const PlansList({super.key, required this.data});
 
   final PricingData data;
 
