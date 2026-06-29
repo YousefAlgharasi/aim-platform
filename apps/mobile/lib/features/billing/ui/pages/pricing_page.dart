@@ -87,7 +87,10 @@ class _PlansList extends StatelessWidget {
       separatorBuilder: (_, __) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
         final plan = data.plans[index];
-        final price = plan.price;
+        final matchingPrices =
+            data.prices.where((p) => p.id == plan.priceId);
+        final price =
+            plan.price ?? (matchingPrices.isEmpty ? null : matchingPrices.first);
         return PlanCard(
           planName: plan.name,
           description: plan.description,

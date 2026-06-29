@@ -5,6 +5,7 @@ class BillingPlanModel {
   final String planType;
   final String status;
   final Map<String, dynamic> features;
+  final String? priceId;
   final BillingPriceModel? price;
 
   const BillingPlanModel({
@@ -14,6 +15,7 @@ class BillingPlanModel {
     required this.planType,
     required this.status,
     required this.features,
+    this.priceId,
     this.price,
   });
 
@@ -25,6 +27,7 @@ class BillingPlanModel {
       planType: json['planType'] as String,
       status: json['status'] as String,
       features: json['features'] as Map<String, dynamic>? ?? {},
+      priceId: json['priceId'] as String?,
       price: json['price'] != null
           ? BillingPriceModel.fromJson(json['price'] as Map<String, dynamic>)
           : null,
