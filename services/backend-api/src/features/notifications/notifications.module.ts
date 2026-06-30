@@ -42,6 +42,7 @@ import { RemindersController } from './reminders.controller';
 import { InboxController } from './inbox.controller';
 import { DeviceTokenController } from './device-token.controller';
 import { NotificationsAdminController } from './notifications-admin.controller';
+import { AdminBroadcastService } from './admin-broadcast.service';
 
 @Module({
   imports: [AuthModule, DatabaseModule, AnalyticsModule, UsersModule, RolesModule],
@@ -72,6 +73,7 @@ import { NotificationsAdminController } from './notifications-admin.controller';
     ParentSummaryReminderIntegration,
     NotificationAdminGuard,
     NotificationOwnershipGuard,
+    AdminBroadcastService,
     { provide: PUSH_PROVIDER_ADAPTER, useClass: NoopPushProviderAdapter },
     { provide: EMAIL_PROVIDER_ADAPTER, useClass: NoopEmailProviderAdapter },
   ],
@@ -83,6 +85,7 @@ import { NotificationsAdminController } from './notifications-admin.controller';
     LearningReminderIntegration,
     StreakReminderIntegration,
     ParentSummaryReminderIntegration,
+    AdminBroadcastService,
   ],
 })
 export class NotificationsModule {}
