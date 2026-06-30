@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 
 import { AuthModule } from '../auth/auth.module';
 import { AssessmentsModule } from './assessments/assessments.module';
+import { AchievementsModule } from './achievements/achievements.module';
 import { AdminModule } from './admin/admin.module';
 import { AiTeacherModule } from './ai-teacher/ai-teacher.module';
 import { AimModule } from './aim/aim.module';
@@ -45,6 +46,7 @@ import { OperationsModule } from './operations/operations.module';
     BillingModule,
     OperationsModule,
     EngagementModule,
+    AchievementsModule,
   ],
   exports: [
     AuthModule,
@@ -67,6 +69,7 @@ import { OperationsModule } from './operations/operations.module';
     BillingModule,
     OperationsModule,
     EngagementModule,
+    AchievementsModule,
   ],
 })
 export class FeaturesModule {}
