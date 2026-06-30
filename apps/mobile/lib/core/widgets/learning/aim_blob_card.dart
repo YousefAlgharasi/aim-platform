@@ -61,7 +61,7 @@ class AIMBlobCard extends StatelessWidget {
     final content = ConstrainedBox(
       constraints: const BoxConstraints(minHeight: AimSizes.touchTarget),
       child: Padding(
-        padding: const EdgeInsets.all(AimSpacing.cardLg),
+        padding: AimSpacing.cardLg,
         child: Row(
           children: [
             IconTheme(
