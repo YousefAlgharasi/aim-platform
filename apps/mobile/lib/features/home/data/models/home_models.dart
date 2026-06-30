@@ -2,6 +2,8 @@
 // Barrel export for all home data-layer models.
 
 export 'home_continue_learning_model.dart';
+export 'home_quick_start_lesson_model.dart';
+export 'home_recommended_course_model.dart';
 export 'home_engagement_model.dart';
 export 'home_recommendation_model.dart';
 export 'home_review_schedule_model.dart';
