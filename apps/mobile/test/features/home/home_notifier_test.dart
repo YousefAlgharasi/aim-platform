@@ -129,6 +129,22 @@ class _FakeHomeRepository implements HomeRepository {
     if (shouldFail) throw const AppException(code: 'SERVER_ERROR', message: 'Error');
     return null;
   }
+
+  @override
+  Future<HomeQuickStartLessonModel?> getQuickStartLesson({
+    required String bearerToken,
+  }) async {
+    if (shouldFail) throw const AppException(code: 'SERVER_ERROR', message: 'Error');
+    return null;
+  }
+
+  @override
+  Future<HomeRecommendedCourseModel?> getRecommendedCourse({
+    required String bearerToken,
+  }) async {
+    if (shouldFail) throw const AppException(code: 'SERVER_ERROR', message: 'Error');
+    return null;
+  }
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────

@@ -74,6 +74,18 @@ class HomeRepositoryImpl implements HomeRepository {
   }) =>
       _wrap(() => _datasource.getContinueLearning(bearerToken: bearerToken));
 
+  @override
+  Future<HomeQuickStartLessonModel?> getQuickStartLesson({
+    required String bearerToken,
+  }) =>
+      _wrap(() => _datasource.getQuickStartLesson(bearerToken: bearerToken));
+
+  @override
+  Future<HomeRecommendedCourseModel?> getRecommendedCourse({
+    required String bearerToken,
+  }) =>
+      _wrap(() => _datasource.getRecommendedCourse(bearerToken: bearerToken));
+
   Future<T> _wrap<T>(Future<T> Function() call) async {
     try {
       return await call();

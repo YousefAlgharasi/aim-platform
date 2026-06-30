@@ -93,6 +93,12 @@ class BackendApiPaths {
   /// GET /lessons/continue — most recently active, incomplete lesson.
   static const String lessonsContinue = '/lessons/continue';
 
+  /// GET /lessons/quick-start — next lesson to start, derived from placement result.
+  static const String lessonsQuickStart = '/lessons/quick-start';
+
+  /// GET /lessons/recommended-course — course recommended from placement result.
+  static const String lessonsRecommendedCourse = '/lessons/recommended-course';
+
   // ---------------------------------------------------------------------------
   // Curriculum — Phase 6 P6-022
   // Read-only list endpoints. Write/admin endpoints are forbidden in Flutter.
