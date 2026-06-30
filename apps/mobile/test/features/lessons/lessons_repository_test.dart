@@ -55,7 +55,7 @@ class _FakeDatasource implements LessonsRemoteDatasource {
       title: 'Lesson 1',
       description: 'Intro.',
       status: 'published',
-      sortOrder: 1,
+      sortOrder: 1, xpValue: 0,
       createdAt: '2025-01-03T00:00:00Z',
       updatedAt: '2025-06-03T00:00:00Z',
     ),

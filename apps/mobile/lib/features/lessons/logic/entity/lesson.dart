@@ -12,6 +12,7 @@ class Lesson {
     required this.description,
     required this.status,
     required this.sortOrder,
+    required this.xpValue,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -28,6 +29,11 @@ class Lesson {
   final String status;
 
   final int sortOrder;
+
+  /// Gamification points awarded on completion. Backend-computed/display-only
+  /// — never used by Flutter for mastery, scoring, or AIM Engine logic.
+  final int xpValue;
+
   final String createdAt;
   final String updatedAt;
 }

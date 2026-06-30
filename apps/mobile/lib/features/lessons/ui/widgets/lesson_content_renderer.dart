@@ -8,6 +8,9 @@
 //   audio           → non-playback info card (no audio package available)
 //   video           → non-playback info card (no video package available)
 //   document        → description card with optional external link indicator
+//   text            → description card
+//   vocabulary      → description card with word-count subtitle
+//   exercise        → description card with item-count subtitle
 //   external_reference → link-out info card
 //   unknown         → unsupported asset fallback card
 //
@@ -50,6 +53,9 @@ class LessonContentRenderer extends StatelessWidget {
       'audio' => _AudioInfoCard(asset: asset),
       'video' => _VideoInfoCard(asset: asset),
       'document' => _DocumentCard(asset: asset),
+      'text' => _TextCard(asset: asset),
+      'vocabulary' => _VocabularyCard(asset: asset),
+      'exercise' => _ExerciseCard(asset: asset),
       'external_reference' => _ExternalReferenceCard(asset: asset),
       _ => _UnsupportedAssetCard(asset: asset),
     };
@@ -182,6 +188,58 @@ class _DocumentCard extends StatelessWidget {
     return _MediaInfoCard(
       icon: Icons.description_outlined,
       asset: asset,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Text card
+// ---------------------------------------------------------------------------
+
+class _TextCard extends StatelessWidget {
+  const _TextCard({required this.asset});
+  final LessonAsset asset;
+
+  @override
+  Widget build(BuildContext context) {
+    return _MediaInfoCard(icon: Icons.notes_outlined, asset: asset);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Vocabulary card
+// ---------------------------------------------------------------------------
+
+class _VocabularyCard extends StatelessWidget {
+  const _VocabularyCard({required this.asset});
+  final LessonAsset asset;
+
+  @override
+  Widget build(BuildContext context) {
+    final wordCount = asset.metadata?['wordCount'];
+    return _MediaInfoCard(
+      icon: Icons.menu_book_outlined,
+      asset: asset,
+      subtitleSuffix: wordCount is num ? '$wordCount new words' : null,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Exercise card
+// ---------------------------------------------------------------------------
+
+class _ExerciseCard extends StatelessWidget {
+  const _ExerciseCard({required this.asset});
+  final LessonAsset asset;
+
+  @override
+  Widget build(BuildContext context) {
+    final itemCount = asset.metadata?['itemCount'];
+    return _MediaInfoCard(
+      icon: Icons.check_circle_outline,
+      asset: asset,
+      subtitleSuffix: itemCount is num ? '$itemCount items' : null,
     );
   }
 }
