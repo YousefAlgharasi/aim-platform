@@ -1,6 +1,9 @@
 export 'aim_ai_feedback_bubble.dart';
 export 'aim_answer_option.dart';
+export 'aim_blob_card.dart';
 export 'aim_card.dart';
 export 'aim_circular_progress.dart';
 export 'aim_progress_bar.dart';
 export 'aim_record_button.dart';
+export 'aim_skill_blob.dart';
+export 'aim_stat_tile.dart';

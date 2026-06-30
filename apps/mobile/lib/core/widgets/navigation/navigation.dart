@@ -1,3 +1,4 @@
+export 'aim_app_drawer.dart';
 export 'aim_bottom_nav.dart';
 export 'aim_segmented_control.dart';
 export 'aim_tabs.dart';
