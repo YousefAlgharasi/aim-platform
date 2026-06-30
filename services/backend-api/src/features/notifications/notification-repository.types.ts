@@ -109,3 +109,24 @@ export interface NotificationAuditLogRow {
   metadata: Record<string, unknown>;
   created_at: string;
 }
+
+export interface AdminBroadcastScheduleRow {
+  id: string;
+  title: string;
+  body: string;
+  channel: string;
+  audience: string;
+  schedule: string;
+  status: string;
+  last_run_at: string | null;
+  next_run_at: string | null;
+  sent_count: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BroadcastUserRow {
+  id: string;
+  user_type: string;
+}

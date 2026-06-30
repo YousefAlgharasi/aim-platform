@@ -4,6 +4,7 @@ import { ReminderScheduleService } from './reminder-schedule.service';
 import { LearningReminderIntegration } from './learning-reminder.integration';
 import { ParentSummaryReminderIntegration } from './parent-summary-reminder.integration';
 import { ParentRepository } from '../parents/parent.repository';
+import { AdminBroadcastService } from './admin-broadcast.service';
 
 @Injectable()
 export class NotificationReminderScheduler {
@@ -14,6 +15,7 @@ export class NotificationReminderScheduler {
     private readonly learningReminderIntegration: LearningReminderIntegration,
     private readonly parentSummaryReminderIntegration: ParentSummaryReminderIntegration,
     private readonly parentRepo: ParentRepository,
+    private readonly broadcastService: AdminBroadcastService,
   ) {}
 
   // Deadline and streak schedules aren't created by anything yet (no
@@ -58,6 +60,15 @@ export class NotificationReminderScheduler {
       } catch (error) {
         this.logger.error(`Failed to create weekly parent summary for parent=${parentId}`, error as Error);
       }
+    }
+  }
+
+  @Cron(CronExpression.EVERY_HOUR)
+  async fireDueBroadcasts(): Promise<void> {
+    try {
+      await this.broadcastService.processDue();
+    } catch (error) {
+      this.logger.error('Failed to process due admin broadcasts', error as Error);
     }
   }
 }

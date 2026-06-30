@@ -1,4 +1,4 @@
-// Admin notifications API client (read-only)
+// Admin notifications API client
 import { adminApiClient } from './admin-api-client';
 import { decodePaginatedResponse, type AdminPaginatedResponse } from './admin-paginated-response';
 
@@ -212,4 +212,107 @@ export async function fetchAdminNotificationAuditLogs(
     { headers: { authorization: `Bearer ${token}` }, query: { page, limit, ...filters } },
   );
   return envelope.data;
+}
+
+/* ---- Admin Broadcasts ---- */
+
+export type AdminBroadcastItem = {
+  readonly id: string;
+  readonly title: string;
+  readonly body: string;
+  readonly channel: string;
+  readonly audience: string;
+  readonly schedule: string;
+  readonly status: string;
+  readonly lastRunAt: string | null;
+  readonly nextRunAt: string | null;
+  readonly sentCount: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+};
+
+export type CreateBroadcastPayload = {
+  readonly title: string;
+  readonly body: string;
+  readonly channel: 'in_app' | 'push' | 'email';
+  readonly audience: 'all' | 'free' | 'students' | 'parents';
+  readonly schedule: 'once' | 'daily' | 'weekly' | 'monthly';
+};
+
+function decodeBroadcast(v: unknown): AdminBroadcastItem {
+  const o = v as Record<string, unknown>;
+  return {
+    id:         String(o.id ?? ''),
+    title:      String(o.title ?? ''),
+    body:       String(o.body ?? ''),
+    channel:    String(o.channel ?? ''),
+    audience:   String(o.audience ?? ''),
+    schedule:   String(o.schedule ?? ''),
+    status:     String(o.status ?? ''),
+    lastRunAt:  typeof o.lastRunAt === 'string' ? o.lastRunAt : null,
+    nextRunAt:  typeof o.nextRunAt === 'string' ? o.nextRunAt : null,
+    sentCount:  Number(o.sentCount ?? 0),
+    createdAt:  String(o.createdAt ?? ''),
+    updatedAt:  String(o.updatedAt ?? ''),
+  };
+}
+
+export async function fetchAdminBroadcasts(
+  token: string,
+  page = 1,
+  limit = 20,
+): Promise<AdminPaginatedResponse<AdminBroadcastItem>> {
+  const envelope = await adminApiClient.get(
+    '/admin/notifications/broadcasts',
+    (v) => decodePaginatedResponse(v, decodeBroadcast),
+    { headers: { authorization: `Bearer ${token}` }, query: { page, limit } },
+  );
+  return envelope.data;
+}
+
+export async function createAdminBroadcast(
+  token: string,
+  payload: CreateBroadcastPayload,
+): Promise<AdminBroadcastItem> {
+  const envelope = await adminApiClient.post(
+    '/admin/notifications/broadcasts',
+    decodeBroadcast,
+    { headers: { authorization: `Bearer ${token}` }, body: payload },
+  );
+  return envelope.data;
+}
+
+export async function runAdminBroadcastNow(token: string, id: string): Promise<{ sent: number }> {
+  const envelope = await adminApiClient.post(
+    `/admin/notifications/broadcasts/${encodeURIComponent(id)}/run`,
+    (v) => v as { sent: number },
+    { headers: { authorization: `Bearer ${token}` }, body: {} },
+  );
+  return envelope.data;
+}
+
+export async function disableAdminBroadcast(token: string, id: string): Promise<AdminBroadcastItem> {
+  const envelope = await adminApiClient.patch(
+    `/admin/notifications/broadcasts/${encodeURIComponent(id)}/disable`,
+    decodeBroadcast,
+    { headers: { authorization: `Bearer ${token}` }, body: {} },
+  );
+  return envelope.data;
+}
+
+export async function enableAdminBroadcast(token: string, id: string): Promise<AdminBroadcastItem> {
+  const envelope = await adminApiClient.patch(
+    `/admin/notifications/broadcasts/${encodeURIComponent(id)}/enable`,
+    decodeBroadcast,
+    { headers: { authorization: `Bearer ${token}` }, body: {} },
+  );
+  return envelope.data;
+}
+
+export async function deleteAdminBroadcast(token: string, id: string): Promise<void> {
+  await adminApiClient.delete(
+    `/admin/notifications/broadcasts/${encodeURIComponent(id)}`,
+    (v) => v as { deleted: boolean },
+    { headers: { authorization: `Bearer ${token}` } },
+  );
 }
