@@ -49,7 +49,7 @@ const _lesson = Lesson(
   title: 'Lesson 1: Introduction',
   description: 'An introduction to basic grammar concepts.',
   status: 'published',
-  sortOrder: 1,
+  sortOrder: 1, xpValue: 0,
   createdAt: '2025-01-01T00:00:00Z',
   updatedAt: '2025-06-01T00:00:00Z',
 );

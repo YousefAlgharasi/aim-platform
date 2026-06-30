@@ -87,11 +87,11 @@ void main() {
   group('ContentStatusGuard.filterLessons', () {
     const published = LessonModel(
       id: 'l-1', chapterId: 'ch-1', title: 'A', description: '',
-      status: 'published', sortOrder: 1, createdAt: '', updatedAt: '',
+      status: 'published', sortOrder: 1, xpValue: 0, createdAt: '', updatedAt: '',
     );
     const draft = LessonModel(
       id: 'l-2', chapterId: 'ch-1', title: 'B', description: '',
-      status: 'draft', sortOrder: 2, createdAt: '', updatedAt: '',
+      status: 'draft', sortOrder: 2, xpValue: 0, createdAt: '', updatedAt: '',
     );
 
     test('removes non-published lessons', () {

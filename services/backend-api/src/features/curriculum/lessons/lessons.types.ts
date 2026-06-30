@@ -12,6 +12,7 @@ export interface LessonRow {
   description: string;
   sort_order: number;
   status: CurriculumContentStatus;
+  xp_value: number;
   created_at: string;
   updated_at: string;
 }
@@ -23,6 +24,8 @@ export interface LessonSummary {
   description: string;
   status: CurriculumContentStatus;
   sortOrder: number;
+  /** Gamification points awarded on completion. Display-only — never read by the AIM Engine. */
+  xpValue: number;
   createdAt: string;
   updatedAt: string;
 }
