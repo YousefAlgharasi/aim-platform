@@ -1,0 +1,70 @@
+<!-- @dsCard group="Components" viewport="700x430" name="Buttons" subtitle="Variants · sizes · states · icons · RTL" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  body { margin: 0; font-family: var(--font-en); background: var(--background); padding: 22px; color: var(--text-primary); }
+  .sec { font: var(--type-label); text-transform: uppercase; color: var(--text-muted); margin: 0 0 10px; letter-spacing: .04em; }
+  .group { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 22px; }
+  .group:last-child { margin-bottom: 0; }
+  .ic { width: 18px; height: 18px; display: block; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="../../_ds_bundle.js"></script>
+  <script type="text/babel">
+    const { Button, IconButton, Fab } = window.AIMDesignSystem_e594fb;
+    const Play = () => <svg className="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>;
+    const Plus = () => <svg className="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>;
+    const Sparkles = () => <svg className="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9.5 13.9 11.4 12 16l-1.9-4.6L5.5 9.5l4.6-1.9z"/></svg>;
+    const Mic = () => <svg className="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4"/></svg>;
+
+    function Demo() {
+      return (
+        <>
+          <div className="sec">Variants</div>
+          <div className="group">
+            <Button variant="primary">Primary</Button>
+            <Button variant="secondary">Secondary</Button>
+            <Button variant="outline">Outline</Button>
+            <Button variant="ghost">Ghost</Button>
+            <Button variant="destructive">Destructive</Button>
+          </div>
+
+          <div className="sec">Sizes</div>
+          <div className="group">
+            <Button size="sm">Small</Button>
+            <Button size="md">Medium</Button>
+            <Button size="lg">Large</Button>
+          </div>
+
+          <div className="sec">States &amp; icons</div>
+          <div className="group">
+            <Button leftIcon={<Play/>}>Continue</Button>
+            <Button variant="outline" rightIcon={<Plus/>}>Add</Button>
+            <Button loading>Saving</Button>
+            <Button disabled>Disabled</Button>
+          </div>
+
+          <div className="sec">Icon buttons · FAB · RTL</div>
+          <div className="group">
+            <IconButton ariaLabel="Add" variant="soft"><Plus/></IconButton>
+            <IconButton ariaLabel="Play" variant="outline"><Play/></IconButton>
+            <IconButton ariaLabel="Play" variant="solid" round><Play/></IconButton>
+            <Fab ariaLabel="Ask AI" icon={<Sparkles/>} />
+            <Fab extended icon={<Mic/>}>Practice</Fab>
+            <div dir="rtl"><Button variant="primary" leftIcon={<Play/>}>ابدأ الدرس</Button></div>
+          </div>
+        </>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<Demo/>);
+  </script>
+</body>
+</html>

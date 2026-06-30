@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="styles.css">
+<style>
+*{box-sizing:border-box}
+.gz-scroll::-webkit-scrollbar{width:0;height:0}
+.gz-hbar::-webkit-scrollbar{height:0}
+@keyframes gz-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@keyframes gz-float-s{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes gz-flame{0%,100%{transform:rotate(-5deg) scale(1)}25%{transform:rotate(4deg) scale(1.12)}50%{transform:rotate(-3deg) scale(.94)}75%{transform:rotate(5deg) scale(1.07)}}
+@keyframes gz-shimmer{0%{transform:translateX(-140%)}60%,100%{transform:translateX(420%)}}
+@keyframes gz-pulse{0%,100%{box-shadow:0 0 0 0 rgba(108,99,255,.55)}50%{box-shadow:0 0 0 16px rgba(108,99,255,0)}}
+@keyframes gz-pop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+@keyframes gz-blob{0%,100%{border-radius:46% 54% 60% 40%/48% 44% 56% 52%}50%{border-radius:58% 42% 38% 62%/56% 60% 40% 44%}}
+@keyframes gz-drift{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(18px,-22px) scale(1.08)}}
+@keyframes gz-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</helmet>
+<div style="min-height:100vh;background:#0a0c12;display:flex;flex-direction:column;font-family:Inter,system-ui,sans-serif;color:#e6e9f0">
+
+  <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px 20px;background:#11141c;border-bottom:1px solid #232838">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#8B5CF6,#5AC8FA);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px">A</div>
+      <div style="font-weight:700;font-size:15px">AIM · Gen Z Home</div>
+      <div style="font-size:12px;color:#7a8499">redesign concept</div>
+    </div>
+    <div style="flex:1"></div>
+    <button onClick="{{ toggleTheme }}" style="display:flex;align-items:center;gap:8px;padding:7px 14px;border:1px solid #2b3140;border-radius:10px;background:#181c26;color:#e6e9f0;cursor:pointer;font-size:13px;font-weight:600"><sc-if value="{{ isDark }}" hint-placeholder-val="{{ false }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></sc-if><sc-if value="{{ isLight }}" hint-placeholder-val="{{ true }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg></sc-if>{{ themeText }}</button>
+  </div>
+
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:28px 20px">
+    <x-import component="AndroidDevice" from="./android-frame.jsx" dark="{{ isDark }}" hint-size="412px,892px">
+      <div data-theme="{{ theme }}" data-screen-label="Gen Z Home" style="position:relative;height:100%;min-height:100%;display:flex;flex-direction:column;overflow:hidden;background:var(--background);color:var(--text-primary);font-family:var(--font-sans);--gz-purple:#6C63FF;--gz-violet:#8B5CF6;--gz-lime:#C8FF3D;--gz-coral:#FF6B8A;--gz-sky:#5AC8FA;--gz-orange:#FF9F45;--gz-yellow:#FFE45A;--gz-hero:linear-gradient(142deg,#8B5CF6 0%,#6C63FF 46%,#5AC8FA 100%);--gz-fire:linear-gradient(135deg,#FFB14E,#FF6B8A);--gz-limeg:linear-gradient(135deg,#C8FF3D,#74E08A);--gz-coralg:linear-gradient(135deg,#FF6B8A,#FF9F45)">
+
+        <div aria-hidden="true" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0">
+          <div style="position:absolute;top:-60px;inset-inline-end:-50px;width:230px;height:230px;background:radial-gradient(circle at 30% 30%,rgba(108,99,255,.5),transparent 70%);filter:blur(18px);animation:gz-drift 11s ease-in-out infinite"></div>
+          <div style="position:absolute;top:240px;inset-inline-start:-70px;width:200px;height:200px;background:radial-gradient(circle at 50% 50%,rgba(90,200,250,.42),transparent 70%);filter:blur(20px);animation:gz-drift 14s ease-in-out infinite reverse"></div>
+          <div style="position:absolute;bottom:120px;inset-inline-end:-60px;width:200px;height:200px;background:radial-gradient(circle at 50% 50%,rgba(255,107,138,.35),transparent 70%);filter:blur(22px);animation:gz-drift 13s ease-in-out 1s infinite"></div>
+        </div>
+
+        <div class="gz-scroll" style="position:relative;z-index:1;flex:1;min-height:0;overflow:auto">
+
+          <div style="position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:16px 18px 14px;background:var(--gz-headerbg, color-mix(in srgb, var(--background) 78%, transparent));backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)">
+            <div style="position:relative">
+              <div style="width:46px;height:46px;border-radius:50%;background:var(--gz-hero);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px;box-shadow:0 6px 16px rgba(108,99,255,.4)">L</div>
+              <span style="position:absolute;bottom:-2px;inset-inline-end:-2px;width:16px;height:16px;border-radius:50%;background:var(--gz-lime);border:2.5px solid var(--background)"></span>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font:var(--type-caption);color:var(--text-muted);letter-spacing:.02em">Sunday · let's go</div>
+              <div style="display:flex;align-items:center;gap:6px;font-weight:800;font-size:19px;letter-spacing:-.01em;color:var(--text-primary)">Hey Layla <svg width="17" height="17" viewBox="0 0 24 24" fill="var(--gz-coral)" stroke="none"><path d="m12 2 1.9 5.8a2 2 0 0 0 1.3 1.3L21 11l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 20l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 11l5.8-1.9a2 2 0 0 0 1.3-1.3z"/></svg></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:var(--radius-pill);background:var(--gz-fire);color:#fff;font-weight:800;font-size:15px;box-shadow:0 6px 16px rgba(255,107,138,.4)">
+              <span style="display:inline-flex;animation:gz-flame 1.4s ease-in-out infinite"><svg width="17" height="17" viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span>{{ streak }}
+            </div>
+            <button aria-label="Notifications" style="position:relative;width:44px;height:44px;border:none;border-radius:14px;background:var(--surface);color:var(--text-primary);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-card)"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span style="position:absolute;top:9px;inset-inline-end:10px;width:9px;height:9px;border-radius:50%;background:var(--gz-coral);border:2px solid var(--surface)"></span></button>
+          </div>
+
+          <div style="padding:6px 18px 26px;display:flex;flex-direction:column;gap:26px">
+
+            <!-- HERO -->
+            <div style="position:relative;border-radius:var(--radius-2xl);padding:22px;background:var(--gz-hero);overflow:hidden;box-shadow:0 18px 40px -12px rgba(108,99,255,.6)">
+              <div aria-hidden="true" style="position:absolute;top:-40px;inset-inline-end:-30px;width:150px;height:150px;background:rgba(255,255,255,.16);border-radius:50%;animation:gz-blob 9s ease-in-out infinite"></div>
+              <div aria-hidden="true" style="position:absolute;bottom:-50px;inset-inline-start:30px;width:120px;height:120px;background:rgba(200,255,61,.22);border-radius:50%;filter:blur(6px);animation:gz-float 7s ease-in-out infinite"></div>
+              <div style="position:relative;display:flex;flex-direction:column;gap:16px;color:#fff">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+                  <div>
+                    <div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;opacity:.9;letter-spacing:.02em">You're crushing your goals <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></div>
+                    <div style="display:flex;align-items:baseline;gap:8px;margin-top:6px">
+                      <span style="font-size:13px;font-weight:700;opacity:.85">LEVEL</span>
+                      <span style="font-weight:800;font-size:54px;line-height:.9;letter-spacing:-.03em">{{ level }}</span>
+                    </div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 14px;border-radius:var(--radius-lg);background:rgba(255,255,255,.16);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.22)">
+                    <span style="font-weight:800;font-size:26px;line-height:1">{{ xpDisplay }}</span>
+                    <span style="font-size:11px;font-weight:600;opacity:.9;letter-spacing:.04em">XP TODAY</span>
+                  </div>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;opacity:.92;margin-bottom:7px"><span>{{ xpTotal }} / 3,000 XP</span><span>Level {{ nextLevel }} →</span></div>
+                  <div style="position:relative;height:14px;border-radius:var(--radius-pill);background:rgba(255,255,255,.22);overflow:hidden">
+                    <div style="position:absolute;inset-block:0;inset-inline-start:0;width:{{ xpPct }};background:var(--gz-limeg);border-radius:var(--radius-pill);box-shadow:0 0 12px rgba(200,255,61,.7)"></div>
+                    <div style="position:absolute;inset-block:0;inset-inline-start:0;width:40%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent);animation:gz-shimmer 2.4s ease-in-out infinite"></div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:2px">
+                  <div style="display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:var(--radius-pill);background:rgba(255,255,255,.18);font-size:12px;font-weight:700"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>12 badges</div>
+                  <div style="display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:var(--radius-pill);background:rgba(255,255,255,.18);font-size:12px;font-weight:700"><svg width="14" height="14" viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="m12 2 2.9 6.26 6.1.53-4.6 4.04 1.36 6.17L12 16.9l-5.76 3.1L7.6 12.83 3 8.79l6.1-.53z"/></svg>Top 5%</div>
+                  <div style="display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:var(--radius-pill);background:rgba(255,255,255,.18);font-size:12px;font-weight:700"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg>89%</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- CONTINUE LEARNING -->
+            <div style="display:flex;flex-direction:column;gap:13px">
+              <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-weight:800;font-size:18px;letter-spacing:-.01em;color:var(--text-primary)">Continue learning</span><span style="font:var(--type-button);color:var(--gz-purple)">Library</span></div>
+              <div style="position:relative;border-radius:var(--radius-2xl);padding:20px;background:var(--surface);box-shadow:var(--shadow-card-hover),0 16px 36px -18px rgba(108,99,255,.5);border:1px solid var(--border);overflow:hidden">
+                <div aria-hidden="true" style="position:absolute;top:-30px;inset-inline-end:-20px;width:120px;height:120px;background:var(--gz-hero);opacity:.12;border-radius:50%;animation:gz-blob 10s ease-in-out infinite"></div>
+                <div style="position:relative;display:flex;gap:18px;align-items:center">
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:10px">
+                    <span style="align-self:flex-start;font-size:11px;font-weight:800;letter-spacing:.05em;color:var(--gz-purple);background:var(--primary-soft);padding:4px 10px;border-radius:var(--radius-pill)">GRAMMAR · B1</span>
+                    <div style="font-weight:800;font-size:20px;line-height:1.15;letter-spacing:-.01em;color:var(--text-primary)">Present Perfect Mastery</div>
+                    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);font-weight:500"><span style="display:inline-flex;align-items:center;gap:5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>12 min left</span><span style="width:4px;height:4px;border-radius:50%;background:var(--text-muted)"></span><span>Lesson 3 of 5</span></div>
+                    <button onClick="{{ noop }}" style="align-self:flex-start;margin-top:4px;display:flex;align-items:center;gap:8px;height:44px;padding:0 20px 0 16px;border:none;border-radius:var(--radius-pill);background:var(--gz-hero);color:#fff;font-weight:800;font-size:15px;cursor:pointer;box-shadow:0 8px 18px -4px rgba(108,99,255,.6);animation:gz-pulse 2.6s ease-in-out infinite">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>Resume
+                    </button>
+                  </div>
+                  <div style="position:relative;width:96px;height:96px;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+                    <svg width="96" height="96" viewBox="0 0 96 96" style="transform:rotate(-90deg)">
+                      <circle cx="48" cy="48" r="42" fill="none" stroke="var(--surface-sunken)" stroke-width="9"/>
+                      <circle cx="48" cy="48" r="42" fill="none" stroke="url(#gzring)" stroke-width="9" stroke-linecap="round" stroke-dasharray="263.9" stroke-dashoffset="{{ ringOffset }}" style="transition:stroke-dashoffset 1.3s cubic-bezier(.4,0,.2,1)"/>
+                      <defs><linearGradient id="gzring" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8B5CF6"/><stop offset="1" stop-color="#5AC8FA"/></linearGradient></defs>
+                    </svg>
+                    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="font-weight:800;font-size:22px;color:var(--text-primary);line-height:1">78<span style="font-size:12px">%</span></span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gz-purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top:2px"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- DAILY CHALLENGES -->
+            <div style="display:flex;flex-direction:column;gap:13px">
+              <div style="display:flex;align-items:center;gap:9px"><span style="display:inline-flex;animation:gz-flame 1.6s ease-in-out infinite"><svg width="21" height="21" viewBox="0 0 24 24" fill="var(--gz-orange)" stroke="none"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span><span style="font-weight:800;font-size:18px;letter-spacing:-.01em;color:var(--text-primary)">Daily challenges</span><span style="margin-inline-start:auto;font-size:12px;font-weight:700;color:var(--text-muted)">1 / 3 done</span></div>
+
+              <div style="display:flex;align-items:center;gap:14px;padding:15px;border-radius:var(--radius-xl);background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-card)">
+                <div style="width:48px;height:48px;border-radius:16px;background:var(--gz-coralg);display:flex;align-items:center;justify-content:center;font-size:23px;flex-shrink:0;box-shadow:0 8px 16px -4px rgba(255,107,138,.5)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+                <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px;color:var(--text-primary)">Learn 5 phrasal verbs</div><div style="font-size:12.5px;color:var(--text-secondary);font-weight:500;margin-top:2px">+50 XP reward</div></div>
+                <sc-if value="{{ c1done }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:800;color:var(--color-success-600)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Done</span></sc-if>
+                <sc-if value="{{ c1open }}" hint-placeholder-val="{{ true }}"><button onClick="{{ claim1 }}" style="border:none;border-radius:var(--radius-pill);background:var(--gz-lime);color:#0a0c12;font-weight:800;font-size:13px;padding:9px 16px;cursor:pointer;box-shadow:0 6px 14px -3px rgba(200,255,61,.6)">Claim</button></sc-if>
+              </div>
+
+              <div style="display:flex;align-items:center;gap:14px;padding:15px;border-radius:var(--radius-xl);background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-card)">
+                <div style="width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,#5AC8FA,#6C63FF);display:flex;align-items:center;justify-content:center;font-size:23px;flex-shrink:0;box-shadow:0 8px 16px -4px rgba(90,200,250,.5)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></div>
+                <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px;color:var(--text-primary)">1 speaking exercise</div><div style="font-size:12.5px;color:var(--text-secondary);font-weight:500;margin-top:2px">+40 XP reward</div></div>
+                <sc-if value="{{ c2done }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:800;color:var(--color-success-600)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Done</span></sc-if>
+                <sc-if value="{{ c2open }}" hint-placeholder-val="{{ true }}"><button onClick="{{ claim2 }}" style="border:none;border-radius:var(--radius-pill);background:var(--gz-lime);color:#0a0c12;font-weight:800;font-size:13px;padding:9px 16px;cursor:pointer;box-shadow:0 6px 14px -3px rgba(200,255,61,.6)">Start</button></sc-if>
+              </div>
+
+              <div style="display:flex;align-items:center;gap:14px;padding:15px;border-radius:var(--radius-xl);background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-card);opacity:{{ c3opacity }}">
+                <div style="width:48px;height:48px;border-radius:16px;background:var(--gz-limeg);display:flex;align-items:center;justify-content:center;font-size:23px;flex-shrink:0;box-shadow:0 8px 16px -4px rgba(116,224,138,.5)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+                <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px;color:var(--text-primary)">Practice 10 minutes</div><div style="font-size:12.5px;color:var(--text-secondary);font-weight:500;margin-top:2px">+30 XP · already crushed</div></div>
+                <span style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:800;color:var(--color-success-600)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Done</span>
+              </div>
+            </div>
+
+            <!-- SKILLS BLOBS -->
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-weight:800;font-size:18px;letter-spacing:-.01em;color:var(--text-primary)">Your skills</span><span style="font:var(--type-button);color:var(--gz-purple)">See all</span></div>
+              <div class="gz-hbar" style="display:flex;gap:14px;overflow-x:auto;margin:0 -18px;padding:8px 18px 6px">
+
+                <div style="flex-shrink:0;width:128px;display:flex;flex-direction:column;align-items:center;gap:10px;animation:gz-float 6s ease-in-out infinite">
+                  <div style="position:relative;width:108px;height:108px">
+                    <div style="position:absolute;inset:0;background:var(--gz-limeg);animation:gz-blob 8s ease-in-out infinite;box-shadow:0 14px 28px -8px rgba(116,224,138,.6)"></div>
+                    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#0a3a16"><span style="font-weight:800;font-size:30px;line-height:1">82<span style="font-size:14px">%</span></span><span style="font-size:11px;font-weight:700;opacity:.7">mastery</span></div>
+                  </div>
+                  <div style="text-align:center"><div style="font-weight:700;font-size:14px;color:var(--text-primary)">Past Simple</div><div style="font-size:11px;font-weight:700;color:var(--color-success-600)">↗ Strong</div></div>
+                </div>
+
+                <div style="flex-shrink:0;width:128px;display:flex;flex-direction:column;align-items:center;gap:10px;animation:gz-float 6s ease-in-out .8s infinite">
+                  <div style="position:relative;width:108px;height:108px">
+                    <div style="position:absolute;inset:0;background:linear-gradient(135deg,#6C63FF,#8B5CF6);animation:gz-blob 9s ease-in-out .5s infinite;box-shadow:0 14px 28px -8px rgba(108,99,255,.6)"></div>
+                    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff"><span style="font-weight:800;font-size:30px;line-height:1">64<span style="font-size:14px">%</span></span><span style="font-size:11px;font-weight:700;opacity:.85">mastery</span></div>
+                  </div>
+                  <div style="text-align:center"><div style="font-weight:700;font-size:14px;color:var(--text-primary)">Present Perfect</div><div style="font-size:11px;font-weight:700;color:var(--gz-purple)">→ Developing</div></div>
+                </div>
+
+                <div style="flex-shrink:0;width:128px;display:flex;flex-direction:column;align-items:center;gap:10px;animation:gz-float 6s ease-in-out 1.4s infinite">
+                  <div style="position:relative;width:108px;height:108px">
+                    <div style="position:absolute;inset:0;background:var(--gz-coralg);animation:gz-blob 8.5s ease-in-out .9s infinite;box-shadow:0 14px 28px -8px rgba(255,107,138,.6)"></div>
+                    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff"><span style="font-weight:800;font-size:30px;line-height:1">45<span style="font-size:14px">%</span></span><span style="font-size:11px;font-weight:700;opacity:.85">mastery</span></div>
+                  </div>
+                  <div style="text-align:center"><div style="font-weight:700;font-size:14px;color:var(--text-primary)">Phrasal Verbs</div><div style="font-size:11px;font-weight:700;color:var(--gz-coral)">↘ Focus</div></div>
+                </div>
+
+                <div style="flex-shrink:0;width:128px;display:flex;flex-direction:column;align-items:center;gap:10px;animation:gz-float 6s ease-in-out 2s infinite">
+                  <div style="position:relative;width:108px;height:108px">
+                    <div style="position:absolute;inset:0;background:linear-gradient(135deg,#5AC8FA,#74E08A);animation:gz-blob 9.5s ease-in-out 1.3s infinite;box-shadow:0 14px 28px -8px rgba(90,200,250,.6)"></div>
+                    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#063a3a"><span style="font-weight:800;font-size:30px;line-height:1">90<span style="font-size:14px">%</span></span><span style="font-size:11px;font-weight:700;opacity:.7">mastery</span></div>
+                  </div>
+                  <div style="text-align:center"><div style="font-weight:700;font-size:14px;color:var(--text-primary)">Reading</div><div style="font-size:11px;font-weight:700;color:var(--color-success-600)">↗ Strong</div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- WEEKLY SQUAD / LEADERBOARD -->
+            <div style="display:flex;flex-direction:column;gap:13px">
+              <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-weight:800;font-size:18px;letter-spacing:-.01em;color:var(--text-primary)">Weekly squad <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--gz-orange)" stroke="none" style="vertical-align:-2px"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg></span><span style="font:var(--type-button);color:var(--gz-purple)">Full board</span></div>
+              <div style="border-radius:var(--radius-2xl);padding:8px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-card);display:flex;flex-direction:column">
+
+                <div style="display:flex;align-items:center;gap:13px;padding:11px 13px;border-radius:var(--radius-lg)">
+                  <span style="width:24px;display:inline-flex;align-items:center;justify-content:center;color:var(--gz-orange)"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M3 7l4.5 3.6L12 4l4.5 6.6L21 7l-1.7 11H4.7z"/></svg></span>
+                  <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#FFB14E,#FF6B8A);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff">O</div>
+                  <span style="flex:1;font-weight:700;font-size:15px;color:var(--text-primary)">Omar</span>
+                  <span style="font-weight:800;font-size:14px;color:var(--text-secondary)">3,120 XP</span>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:13px;padding:13px;border-radius:var(--radius-lg);background:var(--gz-hero);box-shadow:0 10px 24px -10px rgba(108,99,255,.6)">
+                  <span style="width:24px;text-align:center;font-weight:800;font-size:15px;color:#fff">2</span>
+                  <div style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;border:1.5px solid rgba(255,255,255,.5)">L</div>
+                  <span style="flex:1;font-weight:800;font-size:15px;color:#fff">You</span>
+                  <span style="font-weight:800;font-size:14px;color:#fff">2,480 XP</span>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:13px;padding:11px 13px;border-radius:var(--radius-lg)">
+                  <span style="width:24px;text-align:center;font-weight:800;font-size:15px;color:var(--text-muted)">3</span>
+                  <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#5AC8FA,#C8FF3D);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#0a2540">S</div>
+                  <span style="flex:1;font-weight:700;font-size:15px;color:var(--text-primary)">Sara</span>
+                  <span style="font-weight:800;font-size:14px;color:var(--text-secondary)">2,090 XP</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- ACHIEVEMENTS -->
+            <div style="display:flex;flex-direction:column;gap:13px">
+              <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-weight:800;font-size:18px;letter-spacing:-.01em;color:var(--text-primary)">Achievements</span><span style="font:var(--type-button);color:var(--gz-purple)">12 earned</span></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px">
+
+                <div style="position:relative;border-radius:var(--radius-xl);padding:16px 14px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-card);display:flex;flex-direction:column;align-items:center;gap:9px;text-align:center;overflow:hidden">
+                  <div aria-hidden="true" style="position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(108,99,255,.14),transparent 65%)"></div>
+                  <div style="position:relative;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,#6C63FF);display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 10px 20px -6px rgba(108,99,255,.6);animation:gz-pop .5s ease-out"><svg width="30" height="30" viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="m12 2 1.9 5.8a2 2 0 0 0 1.3 1.3L21 11l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 20l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 11l5.8-1.9a2 2 0 0 0 1.3-1.3z"/></svg></div>
+                  <div style="position:relative"><div style="font-weight:800;font-size:14px;color:var(--text-primary)">Grammar Wizard</div><div style="font-size:11px;font-weight:700;color:var(--gz-purple);margin-top:2px">EPIC</div></div>
+                </div>
+
+                <div style="position:relative;border-radius:var(--radius-xl);padding:16px 14px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-card);display:flex;flex-direction:column;align-items:center;gap:9px;text-align:center;overflow:hidden">
+                  <div aria-hidden="true" style="position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(255,159,69,.18),transparent 65%)"></div>
+                  <div style="position:relative;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#FFB14E,#FF6B8A);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 20px -6px rgba(255,107,138,.6)"><svg width="28" height="28" viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg></div>
+                  <div style="position:relative"><div style="font-weight:800;font-size:14px;color:var(--text-primary)">Fast Learner</div><div style="font-size:11px;font-weight:700;color:var(--gz-coral);margin-top:2px">RARE</div></div>
+                </div>
+
+                <div style="position:relative;border-radius:var(--radius-xl);padding:16px 14px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-card);display:flex;flex-direction:column;align-items:center;gap:9px;text-align:center;overflow:hidden">
+                  <div aria-hidden="true" style="position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(255,107,138,.16),transparent 65%)"></div>
+                  <div style="position:relative;width:58px;height:58px;border-radius:50%;background:var(--gz-fire);display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 10px 20px -6px rgba(255,107,138,.6)"><span style="display:inline-flex;animation:gz-flame 1.5s ease-in-out infinite"><svg width="28" height="28" viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span></div>
+                  <div style="position:relative"><div style="font-weight:800;font-size:14px;color:var(--text-primary)">7-Day Streak</div><div style="font-size:11px;font-weight:700;color:var(--gz-orange);margin-top:2px">UNLOCKED</div></div>
+                </div>
+
+                <div style="position:relative;border-radius:var(--radius-xl);padding:16px 14px;background:var(--surface-sunken);border:1px dashed var(--border-strong);display:flex;flex-direction:column;align-items:center;gap:9px;text-align:center">
+                  <div style="width:58px;height:58px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;opacity:.55"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg></div>
+                  <div><div style="font-weight:800;font-size:14px;color:var(--text-muted)">Perfect Quiz</div><div style="display:flex;align-items:center;justify-content:center;gap:4px;font-size:11px;font-weight:700;color:var(--text-muted);margin-top:2px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>LOCKED</div></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="height:4px"></div>
+          </div>
+        </div>
+
+        <!-- FLOATING BOTTOM NAV -->
+        <div style="position:relative;z-index:20;padding:10px 18px 16px;background:linear-gradient(to top,var(--background) 60%,transparent)">
+          <div style="display:flex;align-items:center;justify-content:space-between;height:62px;padding:0 10px;border-radius:var(--radius-pill);background:var(--gz-navbg, color-mix(in srgb, var(--surface) 90%, transparent));backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border);box-shadow:0 12px 30px -8px rgba(24,28,38,.3)">
+            <button aria-label="Home" style="display:flex;align-items:center;gap:8px;height:46px;padding:0 16px;border:none;border-radius:var(--radius-pill);background:var(--gz-hero);color:#fff;cursor:pointer;box-shadow:0 8px 18px -5px rgba(108,99,255,.7)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span style="font-weight:800;font-size:14px">Home</span></button>
+            <button aria-label="Learn" style="width:46px;height:46px;border:none;border-radius:50%;background:transparent;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v13"/><path d="M3 5h5a3 3 0 0 1 3 3v11a2.5 2.5 0 0 0-2.5-2.5H3z"/><path d="M21 5h-5a3 3 0 0 0-3 3v11a2.5 2.5 0 0 1 2.5-2.5H21z"/></svg></button>
+            <button aria-label="Practice" style="width:50px;height:50px;border:none;border-radius:50%;background:var(--gz-limeg);color:#0a3a16;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px -4px rgba(116,224,138,.7)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg></button>
+            <button aria-label="Squad" style="width:46px;height:46px;border:none;border-radius:50%;background:transparent;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 5.5a3 3 0 0 1 0 5.8M21 20a6 6 0 0 0-4-5.6"/></svg></button>
+            <button aria-label="Profile" style="width:46px;height:46px;border:none;border-radius:50%;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0"><span style="width:32px;height:32px;border-radius:50%;background:var(--gz-hero);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px">L</span></button>
+          </div>
+        </div>
+      </div>
+    </x-import>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { theme:'light', xp:0, ringOffset:263.9, c1:'open', c2:'open' };
+
+  componentDidMount(){
+    // dopamine: tick XP up + draw the ring on entry
+    const target = 480, dur = 1100, t0 = Date.now();
+    this._iv = setInterval(() => {
+      const p = Math.min(1, (Date.now() - t0) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      this.setState({ xp: Math.round(target * eased) });
+      if (p >= 1) clearInterval(this._iv);
+    }, 32);
+    this._ring = setTimeout(() => this.setState({ ringOffset: 263.9 * (1 - 0.78) }), 180);
+  }
+  componentWillUnmount(){ clearInterval(this._iv); clearTimeout(this._ring); }
+
+  renderVals(){
+    const s = this.state;
+    return {
+      theme: s.theme,
+      isDark: s.theme === 'dark',
+      isLight: s.theme !== 'dark',
+      themeText: s.theme === 'dark' ? 'Dark' : 'Light',
+      toggleTheme: () => this.setState(st => ({ theme: st.theme === 'light' ? 'dark' : 'light' })),
+      level: 14,
+      nextLevel: 15,
+      streak: 7,
+      xpDisplay: '+' + s.xp.toLocaleString(),
+      xpTotal: '2,480',
+      xpPct: '82%',
+      ringOffset: s.ringOffset,
+      noop: () => {},
+      c1open: s.c1 === 'open', c1done: s.c1 === 'done',
+      c2open: s.c2 === 'open', c2done: s.c2 === 'done',
+      claim1: () => this.setState({ c1:'done' }),
+      claim2: () => this.setState({ c2:'done' }),
+      c3opacity: 0.92,
+    };
+  }
+}
+</script>
+</body>
+</html>
