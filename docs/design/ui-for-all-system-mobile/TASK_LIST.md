@@ -2,14 +2,14 @@
 
 Generated from an audit of `docs/design/ui-for-all-system-mobile/` (design reference) against
 `apps/mobile/lib/` (existing Flutter app). See sections 1–3 below for the underlying audit data,
-then TASK-00 through TASK-19 for the executable Claude Code prompts.
+then TASK-00 through TASK-27 for the executable Claude Code prompts.
 
 **Coverage:** TASK-00–13 cover the 13 screens flagged ⚠️/❌ (content/data work). TASK-14 covers
 routing wiring for the 24 screens whose pages exist but have no named route. TASK-15 covers the
 menu drawer + notifications bottom sheet (not part of the 59-screen list, but required by
-`screenshots/menu/`). TASK-16–19 are batched verification tasks for the remaining 23 screens that
-already match the design with no known route/content gaps — together TASK-00–19 touch all 59
-screens plus the menu.
+`screenshots/menu/`). TASK-16–27 are verification tasks (2 screens per task, one task with a single
+leftover screen) for the remaining 23 screens that already match the design with no known
+route/content gaps — together TASK-00–27 touch all 59 screens plus the menu.
 
 ---
 
@@ -144,10 +144,10 @@ invent a new named route.
 
 ## Summary
 
-**Total tasks generated: 20** (TASK-00 + TASK-01–13 screen content tasks + TASK-14 routing +
-TASK-15 menu + TASK-16–19 batched verification, covering all 59 screens plus the menu drawer and
-notifications sheet)
-**Recommended run order:** TASK-00 → merge → TASK-01–13, TASK-15, TASK-16–19 in parallel → TASK-14
+**Total tasks generated: 28** (TASK-00 + TASK-01–13 screen content tasks + TASK-14 routing +
+TASK-15 menu + TASK-16–27 verification tasks at 2 screens each, covering all 59 screens plus the
+menu drawer and notifications sheet)
+**Recommended run order:** TASK-00 → merge → TASK-01–13, TASK-15, TASK-16–27 in parallel → TASK-14
 last (touches `app_router.dart`/`app_route_paths.dart`, the one shared file every other task's
 screen might also reference for navigation, so merge it after the screen-level branches to avoid
 rebase churn)
@@ -1139,54 +1139,43 @@ git push -u origin ui/menu-integration
 ---
 
 ════════════════════════════════════════════════════════
-## TASK-16 — Verification: Auth, Shell, Home, Lessons
-Branch: `ui/verify-auth-shell-home-lessons`
-Screens covered: 01 splash, 04 mainShell, 05 home, 06 courseList, 07 chapterList
-Status: ✅ Match per audit — this task confirms it, fixes only what's actually wrong
+## TASK-16 — Verification: Splash, Main Shell
+Branch: `ui/verify-splash-shell`
+Screens covered: 01 splash, 04 mainShell
+Status: ✅ Match per audit
 Depends on: TASK-00 must be merged
 ════════════════════════════════════════════════════════
 
 ### CLAUDE CODE PROMPT
 
-You are working on the Flutter mobile app in `apps/mobile/`. These 5 screens were already audited
+You are working on the Flutter mobile app in `apps/mobile/`. These 2 screens were already audited
 as matching the design (✅), so your job is **verification, not a rebuild**: confirm each screen
 against its screenshots in both themes, and fix only concrete discrepancies you find — do not
-restructure working code, do not add features not shown in the screenshots.
+restructure working code, do not add features not shown in the screenshots. BACKEND IS READ-ONLY.
 
 **Screens and files:**
 | Screen | File | Screenshots |
 |---|---|---|
-| splash | `features/onboarding/ui/pages/splash_page.dart` | `light/01-screen.png`, `dark/01-screen.png` |
-| mainShell | `features/shell/ui/pages/main_shell_page.dart` | `light/04-screen.png`, `dark/04-screen.png` |
-| home | `features/home/ui/pages/home_page.dart` | `light/05-screen.png`, `dark/05-screen.png` |
-| courseList | `features/lessons/ui/pages/course_list_page.dart` | `light/06-screen.png`, `dark/06-screen.png` |
-| chapterList | `features/lessons/ui/pages/chapter_list_page.dart` | `light/07-screen.png`, `dark/07-screen.png` |
-
-**Note:** `home_page.dart` is a good candidate to adopt `AIMGradientHeroHeader`, `AIMStatTile`, and
-`AIMBlobCard` from TASK-00 if its current layout uses ad hoc local widgets that visually approximate
-but don't exactly match those new universal widgets — check `features/home/ui/widgets/` for
-`home_section_header.dart`, `home_goal_card.dart`, etc. and replace with the TASK-00 universal
-widgets where they're a drop-in visual match, to reduce the duplication the audit flagged across
-home/progress/learning_path. Don't force the swap if it would change the visual result — screenshots
-are ground truth, not the new widgets.
+| splash | `apps/mobile/lib/features/onboarding/ui/pages/splash_page.dart` | `screenshots/light/01-screen.png`, `screenshots/dark/01-screen.png` |
+| mainShell | `apps/mobile/lib/features/shell/ui/pages/main_shell_page.dart` | `screenshots/light/04-screen.png`, `screenshots/dark/04-screen.png` |
 
 **Steps per screen:**
 1. Open the light and dark screenshot side by side with the running screen.
 2. Check: layout/spacing match `AimSpacing` tokens, colors match `AimColors`/`AimColorTheme` (no
    hardcoded hex), dark mode renders correctly, RTL mirrors correctly, no overflow at 360px/414px,
-   44px touch targets, loading/empty/error states present and using `AIMSkeleton`/`AIMEmptyState`/
-   `AIMFullScreenError`.
+   44px touch targets.
 3. If you find a real mismatch, fix it minimally. If everything matches, make no change to that
    file.
-4. Where `home_page.dart`'s local widgets are a clean swap for TASK-00's universal widgets, make the
-   swap and delete the now-unused local widget file if nothing else references it.
+4. If TASK-15 (menu drawer/notifications sheet integration) has already merged, confirm
+   `main_shell_page.dart`'s drawer/bell wiring still matches `screenshots/menu/01-view.png` — do not
+   redo that work, just verify it.
 
 **Commit and push (only if you made changes):**
 ```
-git checkout -b ui/verify-auth-shell-home-lessons
-git add apps/mobile/lib/features/onboarding apps/mobile/lib/features/shell apps/mobile/lib/features/home apps/mobile/lib/features/lessons
-git commit -m "fix(ui): verification pass on splash/shell/home/courseList/chapterList"
-git push -u origin ui/verify-auth-shell-home-lessons
+git checkout -b ui/verify-splash-shell
+git add apps/mobile/lib/features/onboarding apps/mobile/lib/features/shell
+git commit -m "fix(ui): verification pass on splash and main shell screens"
+git push -u origin ui/verify-splash-shell
 ```
 If no changes were needed, report that explicitly instead of pushing an empty branch.
 
@@ -1195,44 +1184,40 @@ If no changes were needed, report that explicitly instead of pushing an empty br
 ---
 
 ════════════════════════════════════════════════════════
-## TASK-17 — Verification: Progress, Profile, Reviews
-Branch: `ui/verify-progress-profile`
-Screens covered: 11 progress, 13 weakness, 14 recommendations, 15 reviewSchedule, 16 profile
+## TASK-17 — Verification: Home, Course List
+Branch: `ui/verify-home-courselist`
+Screens covered: 05 home, 06 courseList
 Status: ✅ Match per audit
-Depends on: TASK-00 must be merged (provides `AIMSkillBlob`, `AIMStatTile` for potential reuse)
+Depends on: TASK-00 must be merged
 ════════════════════════════════════════════════════════
 
 ### CLAUDE CODE PROMPT
 
 Same verification-only mandate as TASK-16 — confirm against screenshots, fix only real
-discrepancies, no rebuilds.
+discrepancies, no rebuilds. BACKEND IS READ-ONLY.
 
 **Screens and files:**
 | Screen | File | Screenshots |
 |---|---|---|
-| progress | `features/progress/ui/pages/progress_page.dart` | `light/11-screen.png`, `dark/11-screen.png` |
-| weakness | `features/progress/ui/pages/weakness_summary_page.dart` | `light/13-screen.png`, `dark/13-screen.png` |
-| recommendations | `features/progress/ui/pages/recommendations_page.dart` | `light/14-screen.png`, `dark/14-screen.png` |
-| reviewSchedule | `features/progress/ui/pages/review_schedule_page.dart` | `light/15-screen.png`, `dark/15-screen.png` |
-| profile | `features/profile/ui/pages/profile_page.dart` | `light/16-screen.png`, `dark/16-screen.png` |
+| home | `apps/mobile/lib/features/home/ui/pages/home_page.dart` | `screenshots/light/05-screen.png`, `screenshots/dark/05-screen.png` |
+| courseList | `apps/mobile/lib/features/lessons/ui/pages/course_list_page.dart` | `screenshots/light/06-screen.png`, `screenshots/dark/06-screen.png` |
 
-**Note:** `progress_recommendation_card.dart`, `progress_weakness_chip.dart`,
-`progress_section_header.dart` here duplicate near-identical widgets in `features/learning_path/ui/
-widgets/`. If you find both sets are simple visual matches for shared widgets, consolidate by
-promoting one shared implementation into `core/widgets/` and pointing both features at it — but only
-if TASK-18 (which covers `learningPath`) hasn't already done so; check for that branch/PR first to
-avoid duplicate work, and if in doubt leave the consolidation for a separate cleanup task rather than
-risk conflicting with TASK-18.
+**Note:** `home_page.dart` is a good candidate to adopt `AIMGradientHeroHeader`, `AIMStatTile`, and
+`AIMBlobCard` from TASK-00 if its current layout uses ad hoc local widgets (check
+`features/home/ui/widgets/home_section_header.dart`, `home_goal_card.dart`, etc.) that visually
+approximate but don't exactly match those new universal widgets. Replace with the TASK-00 universal
+widgets only where it's a clean drop-in visual match — screenshots are ground truth, not the new
+widgets, so don't force the swap if it changes the result.
 
-**Steps:** same checklist as TASK-16 (theme tokens, dark mode, RTL, 360/414px, touch targets, 4
-states).
+**Steps:** same checklist as TASK-16, applied to both screens. Where the home-page swap to
+universal widgets is made, delete the now-unused local widget file if nothing else references it.
 
 **Commit and push (only if changes were made):**
 ```
-git checkout -b ui/verify-progress-profile
-git add apps/mobile/lib/features/progress apps/mobile/lib/features/profile
-git commit -m "fix(ui): verification pass on progress/weakness/recommendations/reviewSchedule/profile"
-git push -u origin ui/verify-progress-profile
+git checkout -b ui/verify-home-courselist
+git add apps/mobile/lib/features/home apps/mobile/lib/features/lessons/ui/pages/course_list_page.dart
+git commit -m "fix(ui): verification pass on home and course list screens"
+git push -u origin ui/verify-home-courselist
 ```
 
 ── END OF TASK-17 PROMPT ──
@@ -1240,44 +1225,31 @@ git push -u origin ui/verify-progress-profile
 ---
 
 ════════════════════════════════════════════════════════
-## TASK-18 — Verification: Placement, Assessments
-Branch: `ui/verify-placement-assessments`
-Screens covered: 19 placementStart, 20 placementSection, 22 placementSubmit, 23 placementResult,
-                 24 assessmentList, 25 assessmentDetail, 26 startAttempt, 29 assessmentResult
+## TASK-18 — Verification: Chapter List, Progress
+Branch: `ui/verify-chapterlist-progress`
+Screens covered: 07 chapterList, 11 progress
 Status: ✅ Match per audit
 Depends on: TASK-00 must be merged
 ════════════════════════════════════════════════════════
 
 ### CLAUDE CODE PROMPT
 
-Same verification-only mandate as TASK-16.
+Same verification-only mandate as TASK-16. BACKEND IS READ-ONLY.
 
 **Screens and files:**
 | Screen | File | Screenshots |
 |---|---|---|
-| placementStart | `features/placement/ui/pages/placement_start_page.dart` | `light/19-screen.png`, `dark/19-screen.png` |
-| placementSection | `features/placement/ui/pages/placement_section_page.dart` | `light/20-screen.png`, `dark/20-screen.png` |
-| placementSubmit | `features/placement/ui/pages/placement_submit_page.dart` | `light/22-screen.png`, `dark/22-screen.png` |
-| placementResult | `features/placement/ui/pages/placement_result_page.dart` | `light/23-screen.png`, `dark/23-screen.png` |
-| assessmentList | `features/assessments/ui/pages/assessment_list_page.dart` | `light/24-screen.png`, `dark/24-screen.png` |
-| assessmentDetail | `features/assessments/ui/pages/assessment_detail_page.dart` | `light/25-screen.png`, `dark/25-screen.png` |
-| startAttempt | `features/assessments/ui/pages/start_attempt_page.dart` | `light/26-screen.png`, `dark/26-screen.png` |
-| assessmentResult | `features/assessments/ui/pages/assessment_result_page.dart` | `light/29-screen.png`, `dark/29-screen.png` |
+| chapterList | `apps/mobile/lib/features/lessons/ui/pages/chapter_list_page.dart` | `screenshots/light/07-screen.png`, `screenshots/dark/07-screen.png` |
+| progress | `apps/mobile/lib/features/progress/ui/pages/progress_page.dart` | `screenshots/light/11-screen.png`, `screenshots/dark/11-screen.png` |
 
-**Note:** `assessment_list_tile.dart` has an internal `_DeadlineStatusChip` that duplicates
-`deadline_status_widgets.dart`'s `DeadlineStatusBadge`/`DeadlineStatusCard` (used by the `deadlines`
-screen, TASK-14 routing target). If you find this duplication causes a visible inconsistency between
-`assessmentList`'s deadline chip and the dedicated `deadlines` screen's badge, consolidate on one
-implementation; otherwise leave both, this isn't required for visual match.
-
-**Steps:** same checklist as TASK-16, applied to all 8 screens.
+**Steps:** same checklist as TASK-16, applied to both screens.
 
 **Commit and push (only if changes were made):**
 ```
-git checkout -b ui/verify-placement-assessments
-git add apps/mobile/lib/features/placement apps/mobile/lib/features/assessments
-git commit -m "fix(ui): verification pass on placement and assessment screens"
-git push -u origin ui/verify-placement-assessments
+git checkout -b ui/verify-chapterlist-progress
+git add apps/mobile/lib/features/lessons/ui/pages/chapter_list_page.dart apps/mobile/lib/features/progress/ui/pages/progress_page.dart
+git commit -m "fix(ui): verification pass on chapter list and progress screens"
+git push -u origin ui/verify-chapterlist-progress
 ```
 
 ── END OF TASK-18 PROMPT ──
@@ -1285,40 +1257,322 @@ git push -u origin ui/verify-placement-assessments
 ---
 
 ════════════════════════════════════════════════════════
-## TASK-19 — Verification: AI Teacher, Analytics, Notifications, Billing
-Branch: `ui/verify-ai-notifications-billing`
-Screens covered: 38 analytics, 39 notifInbox, 43 pricing, 44 subscription, 47 invoiceHistory
+## TASK-19 — Verification: Weakness, Recommendations
+Branch: `ui/verify-weakness-recommendations`
+Screens covered: 13 weakness, 14 recommendations
 Status: ✅ Match per audit
 Depends on: TASK-00 must be merged
 ════════════════════════════════════════════════════════
 
 ### CLAUDE CODE PROMPT
 
-Same verification-only mandate as TASK-16.
+Same verification-only mandate as TASK-16. BACKEND IS READ-ONLY.
 
 **Screens and files:**
 | Screen | File | Screenshots |
 |---|---|---|
-| analytics | `features/analytics_summary/ui/pages/analytics_summary_page.dart` | `light/38-screen.png`, `dark/38-screen.png` |
-| notifInbox | `features/notifications/ui/pages/notification_inbox_page.dart` | `light/39-screen.png`, `dark/39-screen.png` |
-| pricing | `features/billing/ui/pages/pricing_page.dart` | `light/43-screen.png`, `dark/43-screen.png` |
-| subscription | `features/billing/ui/pages/subscription_page.dart` | `light/44-screen.png`, `dark/44-screen.png` |
-| invoiceHistory | `features/billing/ui/pages/invoice_history_page.dart` | `light/47-screen.png`, `dark/47-screen.png` |
+| weakness | `apps/mobile/lib/features/progress/ui/pages/weakness_summary_page.dart` | `screenshots/light/13-screen.png`, `screenshots/dark/13-screen.png` |
+| recommendations | `apps/mobile/lib/features/progress/ui/pages/recommendations_page.dart` | `screenshots/light/14-screen.png`, `screenshots/dark/14-screen.png` |
 
-**Note on billing:** `docs/mobile-app-api-endpoints.md` marks most `/billing/*` endpoints as
-"Planned / Not Yet Active." These 3 billing screens already have concrete datasource
-implementations per the audit, but verify they degrade gracefully (clear error/empty state, not a
-crash) if the backend endpoint isn't actually live yet in this environment — that's an acceptable,
-expected state, not a bug to "fix" by inventing fake data.
+**Note:** `progress_recommendation_card.dart` and `progress_weakness_chip.dart` here duplicate
+near-identical widgets in `features/learning_path/ui/widgets/` and `features/home/ui/widgets/`. If
+both are simple visual matches for a shared widget, consolidate into `core/widgets/` — but check
+whether TASK-17 (home) or the learningPath content task (TASK-09 in the original numbering, now
+covered by TASK-14's routing + its own content) has already done so, to avoid conflicting work; if
+in doubt, leave consolidation for a separate cleanup task.
 
-**Steps:** same checklist as TASK-16, applied to all 5 screens.
+**Steps:** same checklist as TASK-16, applied to both screens.
 
 **Commit and push (only if changes were made):**
 ```
-git checkout -b ui/verify-ai-notifications-billing
-git add apps/mobile/lib/features/analytics_summary apps/mobile/lib/features/notifications apps/mobile/lib/features/billing
-git commit -m "fix(ui): verification pass on analytics, notification inbox, and billing screens"
-git push -u origin ui/verify-ai-notifications-billing
+git checkout -b ui/verify-weakness-recommendations
+git add apps/mobile/lib/features/progress/ui/pages/weakness_summary_page.dart apps/mobile/lib/features/progress/ui/pages/recommendations_page.dart
+git commit -m "fix(ui): verification pass on weakness and recommendations screens"
+git push -u origin ui/verify-weakness-recommendations
 ```
 
 ── END OF TASK-19 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-20 — Verification: Review Schedule, Profile
+Branch: `ui/verify-reviewschedule-profile`
+Screens covered: 15 reviewSchedule, 16 profile
+Status: ✅ Match per audit
+Depends on: TASK-00 must be merged
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-16. BACKEND IS READ-ONLY.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| reviewSchedule | `apps/mobile/lib/features/progress/ui/pages/review_schedule_page.dart` | `screenshots/light/15-screen.png`, `screenshots/dark/15-screen.png` |
+| profile | `apps/mobile/lib/features/profile/ui/pages/profile_page.dart` | `screenshots/light/16-screen.png`, `screenshots/dark/16-screen.png` |
+
+**Note:** if TASK-05 (Skill State, which introduces `AIMSkillBlob`) has merged, check whether
+`profile_page.dart` should also adopt `AIMSkillBlob` for any mastery visualization shown in
+`screenshots/light/16-screen.png` — only if the screenshot actually shows that pattern on profile.
+
+**Steps:** same checklist as TASK-16, applied to both screens.
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-reviewschedule-profile
+git add apps/mobile/lib/features/progress/ui/pages/review_schedule_page.dart apps/mobile/lib/features/profile/ui/pages/profile_page.dart
+git commit -m "fix(ui): verification pass on review schedule and profile screens"
+git push -u origin ui/verify-reviewschedule-profile
+```
+
+── END OF TASK-20 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-21 — Verification: Placement Start, Placement Section
+Branch: `ui/verify-placementstart-section`
+Screens covered: 19 placementStart, 20 placementSection
+Status: ✅ Match per audit
+Depends on: TASK-00 must be merged
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-16. BACKEND IS READ-ONLY.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| placementStart | `apps/mobile/lib/features/placement/ui/pages/placement_start_page.dart` | `screenshots/light/19-screen.png`, `screenshots/dark/19-screen.png` |
+| placementSection | `apps/mobile/lib/features/placement/ui/pages/placement_section_page.dart` | `screenshots/light/20-screen.png`, `screenshots/dark/20-screen.png` |
+
+**Note:** if TASK-07 (Placement Intro) and TASK-14 (routing) have merged, confirm the
+`placementIntro` → `placementStart` navigation flow is intact and the visual style is consistent
+across the handoff.
+
+**Steps:** same checklist as TASK-16, applied to both screens.
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-placementstart-section
+git add apps/mobile/lib/features/placement/ui/pages/placement_start_page.dart apps/mobile/lib/features/placement/ui/pages/placement_section_page.dart
+git commit -m "fix(ui): verification pass on placement start and section screens"
+git push -u origin ui/verify-placementstart-section
+```
+
+── END OF TASK-21 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-22 — Verification: Placement Submit, Placement Result
+Branch: `ui/verify-placementsubmit-result`
+Screens covered: 22 placementSubmit, 23 placementResult
+Status: ✅ Match per audit
+Depends on: TASK-00 must be merged
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-16. BACKEND IS READ-ONLY.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| placementSubmit | `apps/mobile/lib/features/placement/ui/pages/placement_submit_page.dart` | `screenshots/light/22-screen.png`, `screenshots/dark/22-screen.png` |
+| placementResult | `apps/mobile/lib/features/placement/ui/pages/placement_result_page.dart` | `screenshots/light/23-screen.png`, `screenshots/dark/23-screen.png` |
+
+**Note:** `placementResult` is a good candidate for `AIMGradientHeroHeader` from TASK-00 (celebratory
+result banner) — check `screenshots/light/23-screen.png` to confirm before adopting it.
+
+**Steps:** same checklist as TASK-16, applied to both screens.
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-placementsubmit-result
+git add apps/mobile/lib/features/placement/ui/pages/placement_submit_page.dart apps/mobile/lib/features/placement/ui/pages/placement_result_page.dart
+git commit -m "fix(ui): verification pass on placement submit and result screens"
+git push -u origin ui/verify-placementsubmit-result
+```
+
+── END OF TASK-22 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-23 — Verification: Assessment List, Assessment Detail
+Branch: `ui/verify-assessmentlist-detail`
+Screens covered: 24 assessmentList, 25 assessmentDetail
+Status: ✅ Match per audit
+Depends on: TASK-00 must be merged
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-16. BACKEND IS READ-ONLY.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| assessmentList | `apps/mobile/lib/features/assessments/ui/pages/assessment_list_page.dart` | `screenshots/light/24-screen.png`, `screenshots/dark/24-screen.png` |
+| assessmentDetail | `apps/mobile/lib/features/assessments/ui/pages/assessment_detail_page.dart` | `screenshots/light/25-screen.png`, `screenshots/dark/25-screen.png` |
+
+**Note:** `assessment_list_tile.dart` has an internal `_DeadlineStatusChip` that duplicates
+`deadline_status_widgets.dart`'s `DeadlineStatusBadge`/`DeadlineStatusCard` (used by the `deadlines`
+screen). If this causes a visible inconsistency, consolidate on one implementation; otherwise leave
+both — not required for visual match.
+
+**Steps:** same checklist as TASK-16, applied to both screens.
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-assessmentlist-detail
+git add apps/mobile/lib/features/assessments/ui/pages/assessment_list_page.dart apps/mobile/lib/features/assessments/ui/pages/assessment_detail_page.dart
+git commit -m "fix(ui): verification pass on assessment list and detail screens"
+git push -u origin ui/verify-assessmentlist-detail
+```
+
+── END OF TASK-23 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-24 — Verification: Start Attempt, Assessment Result
+Branch: `ui/verify-startattempt-result`
+Screens covered: 26 startAttempt, 29 assessmentResult
+Status: ✅ Match per audit
+Depends on: TASK-00 must be merged
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-16. BACKEND IS READ-ONLY.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| startAttempt | `apps/mobile/lib/features/assessments/ui/pages/start_attempt_page.dart` | `screenshots/light/26-screen.png`, `screenshots/dark/26-screen.png` |
+| assessmentResult | `apps/mobile/lib/features/assessments/ui/pages/assessment_result_page.dart` | `screenshots/light/29-screen.png`, `screenshots/dark/29-screen.png` |
+
+**Steps:** same checklist as TASK-16, applied to both screens.
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-startattempt-result
+git add apps/mobile/lib/features/assessments/ui/pages/start_attempt_page.dart apps/mobile/lib/features/assessments/ui/pages/assessment_result_page.dart
+git commit -m "fix(ui): verification pass on start attempt and assessment result screens"
+git push -u origin ui/verify-startattempt-result
+```
+
+── END OF TASK-24 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-25 — Verification: Analytics, Notification Inbox
+Branch: `ui/verify-analytics-notifinbox`
+Screens covered: 38 analytics, 39 notifInbox
+Status: ✅ Match per audit
+Depends on: TASK-00 must be merged
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-16. BACKEND IS READ-ONLY.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| analytics | `apps/mobile/lib/features/analytics_summary/ui/pages/analytics_summary_page.dart` | `screenshots/light/38-screen.png`, `screenshots/dark/38-screen.png` |
+| notifInbox | `apps/mobile/lib/features/notifications/ui/pages/notification_inbox_page.dart` | `screenshots/light/39-screen.png`, `screenshots/dark/39-screen.png` |
+
+**Note:** if TASK-15 (menu integration) has merged, confirm `notification_bell_button.dart`'s
+behavior is still consistent with how `notifInbox` itself is reached (the bell should offer a path
+to this full inbox, even if it also opens the quick `AIMNotificationsSheet` first).
+
+**Steps:** same checklist as TASK-16, applied to both screens.
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-analytics-notifinbox
+git add apps/mobile/lib/features/analytics_summary apps/mobile/lib/features/notifications/ui/pages/notification_inbox_page.dart
+git commit -m "fix(ui): verification pass on analytics and notification inbox screens"
+git push -u origin ui/verify-analytics-notifinbox
+```
+
+── END OF TASK-25 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-26 — Verification: Pricing, Subscription
+Branch: `ui/verify-pricing-subscription`
+Screens covered: 43 pricing, 44 subscription
+Status: ✅ Match per audit
+Depends on: TASK-00 must be merged
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-16. BACKEND IS READ-ONLY.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| pricing | `apps/mobile/lib/features/billing/ui/pages/pricing_page.dart` | `screenshots/light/43-screen.png`, `screenshots/dark/43-screen.png` |
+| subscription | `apps/mobile/lib/features/billing/ui/pages/subscription_page.dart` | `screenshots/light/44-screen.png`, `screenshots/dark/44-screen.png` |
+
+**Note on billing:** `docs/mobile-app-api-endpoints.md` marks most `/billing/*` endpoints as
+"Planned / Not Yet Active." Verify both screens degrade gracefully (clear error/empty state, not a
+crash) if the backend endpoint isn't actually live in this environment — that's expected, not a bug
+to "fix" by inventing fake data.
+
+**Steps:** same checklist as TASK-16, applied to both screens.
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-pricing-subscription
+git add apps/mobile/lib/features/billing/ui/pages/pricing_page.dart apps/mobile/lib/features/billing/ui/pages/subscription_page.dart
+git commit -m "fix(ui): verification pass on pricing and subscription screens"
+git push -u origin ui/verify-pricing-subscription
+```
+
+── END OF TASK-26 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-27 — Verification: Invoice History
+Branch: `ui/verify-invoicehistory`
+Screens covered: 47 invoiceHistory
+Status: ✅ Match per audit
+Depends on: TASK-00 must be merged
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-16 (single screen, no pairing left over). BACKEND IS
+READ-ONLY.
+
+**Screen and file:**
+| Screen | File | Screenshots |
+|---|---|---|
+| invoiceHistory | `apps/mobile/lib/features/billing/ui/pages/invoice_history_page.dart` | `screenshots/light/47-screen.png`, `screenshots/dark/47-screen.png` |
+
+**Note on billing:** see TASK-26's note — `/billing/invoices` may also be "Planned / Not Yet
+Active"; verify graceful degradation rather than inventing data.
+
+**Steps:** same checklist as TASK-16.
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-invoicehistory
+git add apps/mobile/lib/features/billing/ui/pages/invoice_history_page.dart
+git commit -m "fix(ui): verification pass on invoice history screen"
+git push -u origin ui/verify-invoicehistory
+```
+
+── END OF TASK-27 PROMPT ──
