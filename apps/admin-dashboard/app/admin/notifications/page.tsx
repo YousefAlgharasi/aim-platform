@@ -6,10 +6,17 @@ import {
   fetchAdminReminderSchedules,
   fetchAdminNotificationPreferences,
   fetchAdminNotificationAuditLogs,
+  fetchAdminBroadcasts,
+  createAdminBroadcast,
+  runAdminBroadcastNow,
+  disableAdminBroadcast,
+  enableAdminBroadcast,
+  deleteAdminBroadcast,
+  type CreateBroadcastPayload,
 } from '../../../lib/api/admin-notifications-api';
 import { NotificationsClient, type NotificationsSection } from './notifications-client';
 
-const SECTIONS: NotificationsSection[] = ['templates', 'queue', 'schedules', 'preferences', 'audit-logs'];
+const SECTIONS: NotificationsSection[] = ['broadcasts', 'templates', 'queue', 'schedules', 'preferences', 'audit-logs'];
 
 type Props = {
   searchParams: Promise<{ section?: string; page?: string; status?: string; actorId?: string; action?: string }>;
@@ -19,7 +26,7 @@ export default async function AdminNotificationsPage({ searchParams }: Props) {
   const { section: sectionParam, page: pageParam, status, actorId, action } = await searchParams;
   const section: NotificationsSection = SECTIONS.includes(sectionParam as NotificationsSection)
     ? (sectionParam as NotificationsSection)
-    : 'templates';
+    : 'broadcasts';
   const page = parseInt(pageParam ?? '1', 10) || 1;
   const token = await getAdminToken();
 
@@ -30,6 +37,13 @@ export default async function AdminNotificationsPage({ searchParams }: Props) {
 
   try {
     switch (section) {
+      case 'broadcasts': {
+        const result = await fetchAdminBroadcasts(token, page, 20);
+        rows = result.data as unknown[];
+        total = result.total;
+        limit = result.limit;
+        break;
+      }
       case 'templates': {
         const result = await fetchAdminNotificationTemplates(token, page, 50);
         rows = result.data as unknown[];
@@ -76,19 +90,83 @@ export default async function AdminNotificationsPage({ searchParams }: Props) {
         : 'Failed to load notifications data.';
   }
 
+  async function handleCreateBroadcast(payload: CreateBroadcastPayload): Promise<{ error?: string }> {
+    'use server';
+    const t = await getAdminToken();
+    try {
+      await createAdminBroadcast(t, payload);
+      return {};
+    } catch (error) {
+      return {
+        error: error instanceof AdminApiClientError
+          ? `Backend error ${error.status}: ${error.message}`
+          : 'Failed to create broadcast.',
+      };
+    }
+  }
+
+  async function handleRunBroadcast(id: string): Promise<{ error?: string }> {
+    'use server';
+    const t = await getAdminToken();
+    try {
+      await runAdminBroadcastNow(t, id);
+      return {};
+    } catch (error) {
+      return {
+        error: error instanceof AdminApiClientError
+          ? `Backend error ${error.status}: ${error.message}`
+          : 'Failed to run broadcast.',
+      };
+    }
+  }
+
+  async function handleDisableBroadcast(id: string): Promise<{ error?: string }> {
+    'use server';
+    const t = await getAdminToken();
+    try {
+      await disableAdminBroadcast(t, id);
+      return {};
+    } catch (error) {
+      return {
+        error: error instanceof AdminApiClientError
+          ? `Backend error ${error.status}: ${error.message}`
+          : 'Failed to disable broadcast.',
+      };
+    }
+  }
+
+  async function handleEnableBroadcast(id: string): Promise<{ error?: string }> {
+    'use server';
+    const t = await getAdminToken();
+    try {
+      await enableAdminBroadcast(t, id);
+      return {};
+    } catch (error) {
+      return {
+        error: error instanceof AdminApiClientError
+          ? `Backend error ${error.status}: ${error.message}`
+          : 'Failed to enable broadcast.',
+      };
+    }
+  }
+
+  async function handleDeleteBroadcast(id: string): Promise<{ error?: string }> {
+    'use server';
+    const t = await getAdminToken();
+    try {
+      await deleteAdminBroadcast(t, id);
+      return {};
+    } catch (error) {
+      return {
+        error: error instanceof AdminApiClientError
+          ? `Backend error ${error.status}: ${error.message}`
+          : 'Failed to delete broadcast.',
+      };
+    }
+  }
+
   return (
     <section className="admin-curriculum-page">
-      <header className="admin-page-header">
-        <p className="eyebrow">Admin — Communication</p>
-        <h1>Notifications</h1>
-        <p className="admin-page-meta">{total} {section.replace(/-/g, ' ')} entr{total !== 1 ? 'ies' : 'y'}</p>
-      </header>
-
-      <div className="admin-boundary-note">
-        <strong>Read-only:</strong> Notification templates, delivery, schedules, preferences,
-        and audit logs are written server-side by the backend API. No data can be edited from this surface.
-      </div>
-
       {fetchError && (
         <p className="admin-error-banner" role="alert">{fetchError}</p>
       )}
@@ -102,6 +180,11 @@ export default async function AdminNotificationsPage({ searchParams }: Props) {
         filterStatus={status ?? ''}
         filterActorId={actorId ?? ''}
         filterAction={action ?? ''}
+        onCreateBroadcast={handleCreateBroadcast}
+        onRunBroadcast={handleRunBroadcast}
+        onDisableBroadcast={handleDisableBroadcast}
+        onEnableBroadcast={handleEnableBroadcast}
+        onDeleteBroadcast={handleDeleteBroadcast}
       />
     </section>
   );

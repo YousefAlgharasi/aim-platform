@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { AuthorizedRole } from '../../auth/authorization/authorized-role';
@@ -7,6 +7,7 @@ import { RequireRoles } from '../../auth/authorization/required-roles.decorator'
 import { OPENAPI_TAGS } from '../../openapi/openapi.tags';
 import { NotificationAuditService } from './notification-audit.service';
 import { NotificationRepository } from './notification.repository';
+import { AdminBroadcastService, CreateBroadcastPayload } from './admin-broadcast.service';
 import {
   NotificationTemplateRow,
   NotificationPreferenceRow,
@@ -14,6 +15,7 @@ import {
   ReminderScheduleRow,
   DeliveryAttemptRow,
   NotificationAuditLogRow,
+  AdminBroadcastScheduleRow,
 } from './notification-repository.types';
 
 function paginate<T>(rows: T[], total: number, page: number, limit: number) {
@@ -92,6 +94,23 @@ function mapDeliveryAttempt(r: DeliveryAttemptRow) {
   };
 }
 
+function mapBroadcast(r: AdminBroadcastScheduleRow) {
+  return {
+    id: r.id,
+    title: r.title,
+    body: r.body,
+    channel: r.channel,
+    audience: r.audience,
+    schedule: r.schedule,
+    status: r.status,
+    lastRunAt: r.last_run_at,
+    nextRunAt: r.next_run_at,
+    sentCount: r.sent_count,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  };
+}
+
 function mapAuditLog(r: NotificationAuditLogRow) {
   return {
     id: r.id,
@@ -114,6 +133,7 @@ export class NotificationsAdminController {
   constructor(
     private readonly auditService: NotificationAuditService,
     private readonly repo: NotificationRepository,
+    private readonly broadcastService: AdminBroadcastService,
   ) {}
 
   @Get('audit-logs')
@@ -209,5 +229,51 @@ export class NotificationsAdminController {
   async getTemplate(@Param('templateId') templateId: string) {
     const row = await this.repo.findTemplateById(templateId);
     return row ? mapTemplate(row) : null;
+  }
+
+  // --- Broadcasts ---
+
+  @Post('broadcasts')
+  @ApiOperation({ summary: 'Create and send an admin broadcast notification' })
+  async createBroadcast(@Body() body: CreateBroadcastPayload & { createdBy?: string }, @Req() req: { user?: { sub?: string } }) {
+    const createdBy = (req.user?.sub as string | undefined) ?? null;
+    const broadcast = await this.broadcastService.createAndSend({ ...body, createdBy });
+    return mapBroadcast(broadcast);
+  }
+
+  @Get('broadcasts')
+  @ApiOperation({ summary: 'List admin broadcast schedules' })
+  async getBroadcasts(@Query('page') page = '1', @Query('limit') limit = '20') {
+    const lim = parseInt(limit, 10) || 20;
+    const pg = parseInt(page, 10) || 1;
+    const { rows, total } = await this.broadcastService.list(pg, lim);
+    return paginate(rows.map(mapBroadcast), total, pg, lim);
+  }
+
+  @Post('broadcasts/:id/run')
+  @ApiOperation({ summary: 'Manually fire a broadcast now' })
+  async runBroadcast(@Param('id') id: string) {
+    return this.broadcastService.fireBroadcastById(id);
+  }
+
+  @Patch('broadcasts/:id/disable')
+  @ApiOperation({ summary: 'Disable an admin broadcast schedule' })
+  async disableBroadcast(@Param('id') id: string) {
+    const row = await this.broadcastService.disable(id);
+    return row ? mapBroadcast(row) : null;
+  }
+
+  @Patch('broadcasts/:id/enable')
+  @ApiOperation({ summary: 'Enable an admin broadcast schedule' })
+  async enableBroadcast(@Param('id') id: string) {
+    const row = await this.broadcastService.enable(id);
+    return row ? mapBroadcast(row) : null;
+  }
+
+  @Delete('broadcasts/:id')
+  @ApiOperation({ summary: 'Delete an admin broadcast schedule' })
+  async deleteBroadcast(@Param('id') id: string) {
+    await this.broadcastService.delete(id);
+    return { deleted: true };
   }
 }

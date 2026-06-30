@@ -10,6 +10,8 @@ import {
   NotificationDigestRow,
   QuietHoursRow,
   NotificationAuditLogRow,
+  AdminBroadcastScheduleRow,
+  BroadcastUserRow,
 } from './notification-repository.types';
 
 @Injectable()
@@ -461,5 +463,99 @@ export class NotificationRepository {
       this.db.query<{ count: string }>(`SELECT COUNT(*) AS count FROM notification_audit_logs`),
     ]);
     return { rows: dataResult.rows, total: parseInt(countResult.rows[0]?.count ?? '0', 10) };
+  }
+
+  // --- Admin Broadcast Schedules ---
+
+  async createBroadcastSchedule(data: {
+    title: string;
+    body: string;
+    channel: string;
+    audience: string;
+    schedule: string;
+    nextRunAt: string | null;
+    createdBy: string | null;
+  }): Promise<AdminBroadcastScheduleRow> {
+    const result = await this.db.query<AdminBroadcastScheduleRow>(
+      `INSERT INTO admin_broadcast_schedules (title, body, channel, audience, schedule, next_run_at, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [data.title, data.body, data.channel, data.audience, data.schedule, data.nextRunAt, data.createdBy],
+    );
+    return result.rows[0];
+  }
+
+  async findBroadcastSchedulesPage(limit: number, offset: number): Promise<{ rows: AdminBroadcastScheduleRow[]; total: number }> {
+    const [dataResult, countResult] = await Promise.all([
+      this.db.query<AdminBroadcastScheduleRow>(
+        `SELECT * FROM admin_broadcast_schedules ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
+        [limit, offset],
+      ),
+      this.db.query<{ count: string }>(`SELECT COUNT(*) AS count FROM admin_broadcast_schedules`),
+    ]);
+    return { rows: dataResult.rows, total: parseInt(countResult.rows[0]?.count ?? '0', 10) };
+  }
+
+  async findDueBroadcastSchedules(): Promise<AdminBroadcastScheduleRow[]> {
+    const result = await this.db.query<AdminBroadcastScheduleRow>(
+      `SELECT * FROM admin_broadcast_schedules
+       WHERE status = 'active' AND schedule != 'once' AND next_run_at IS NOT NULL AND next_run_at <= now()
+       ORDER BY next_run_at ASC LIMIT 50`,
+    );
+    return result.rows;
+  }
+
+  async updateBroadcastAfterRun(id: string, sentCount: number, nextRunAt: string | null): Promise<void> {
+    await this.db.query(
+      `UPDATE admin_broadcast_schedules
+       SET last_run_at = now(), sent_count = sent_count + $2, next_run_at = $3,
+           status = CASE WHEN $3 IS NULL THEN 'sent' ELSE status END,
+           updated_at = now()
+       WHERE id = $1`,
+      [id, sentCount, nextRunAt],
+    );
+  }
+
+  async setBroadcastStatus(id: string, status: string): Promise<AdminBroadcastScheduleRow | null> {
+    const result = await this.db.query<AdminBroadcastScheduleRow>(
+      `UPDATE admin_broadcast_schedules SET status = $1, updated_at = now() WHERE id = $2 RETURNING *`,
+      [status, id],
+    );
+    return result.rows[0] ?? null;
+  }
+
+  async deleteBroadcastSchedule(id: string): Promise<void> {
+    await this.db.query(`DELETE FROM admin_broadcast_schedules WHERE id = $1`, [id]);
+  }
+
+  async findUsersByAudience(audience: 'all' | 'free' | 'students' | 'parents'): Promise<BroadcastUserRow[]> {
+    if (audience === 'students') {
+      const r = await this.db.query<BroadcastUserRow>(
+        `SELECT id, user_type FROM users WHERE status = 'active' AND user_type = 'student' LIMIT 10000`,
+      );
+      return r.rows;
+    }
+    if (audience === 'parents') {
+      const r = await this.db.query<BroadcastUserRow>(
+        `SELECT id, user_type FROM users WHERE status = 'active' AND user_type = 'parent' LIMIT 10000`,
+      );
+      return r.rows;
+    }
+    if (audience === 'free') {
+      const r = await this.db.query<BroadcastUserRow>(
+        `SELECT u.id, u.user_type FROM users u
+         WHERE u.status = 'active' AND u.user_type IN ('student', 'parent')
+           AND NOT EXISTS (
+             SELECT 1 FROM subscriptions s
+             JOIN billing_plans bp ON bp.id = s.plan_id
+             WHERE s.user_id = u.id AND s.status = 'active' AND bp.plan_type != 'free'
+           )
+         LIMIT 10000`,
+      );
+      return r.rows;
+    }
+    const r = await this.db.query<BroadcastUserRow>(
+      `SELECT id, user_type FROM users WHERE status = 'active' AND user_type IN ('student', 'parent') LIMIT 10000`,
+    );
+    return r.rows;
   }
 }
