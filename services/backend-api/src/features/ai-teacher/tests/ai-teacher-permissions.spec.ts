@@ -95,7 +95,7 @@ describe('AI Teacher cross-student ownership rejection', () => {
     );
 
     await expect(
-      controller.sendMessage({ id: 'student-me' } as any, 'session-1', { message: 'hi' }),
+      controller.sendMessage('student-me', 'session-1', { message: 'hi' }),
     ).rejects.toThrow(AppError);
     expect(chatMessageSubmitService.submitMessage).not.toHaveBeenCalled();
   });
@@ -106,7 +106,7 @@ describe('AI Teacher cross-student ownership rejection', () => {
     const streamMessageService = { streamTurn: jest.fn() };
     const controller = new AiTeacherStreamMessageController(streamMessageService as any, chatSessionRepository as any);
 
-    const observable = controller.streamMessage({ id: 'student-me' } as any, 'session-1', { message: 'hi' });
+    const observable = controller.streamMessage('student-me', 'session-1', { message: 'hi' });
     expect(observable).toBeInstanceOf(Observable);
 
     const events: unknown[] = [];
@@ -129,7 +129,7 @@ describe('AI Teacher cross-student ownership rejection', () => {
     const safetyStatusService = { getStatus: jest.fn() };
     const controller = new AiTeacherSafetyStatusController(safetyStatusService as any, chatSessionRepository as any);
 
-    await expect(controller.getSafetyStatus({ id: 'student-me' } as any, 'session-1')).rejects.toThrow(AppError);
+    await expect(controller.getSafetyStatus('student-me', 'session-1')).rejects.toThrow(AppError);
     expect(safetyStatusService.getStatus).not.toHaveBeenCalled();
   });
 
@@ -137,7 +137,7 @@ describe('AI Teacher cross-student ownership rejection', () => {
     const chatHistoryReadService = { getHistory: jest.fn().mockResolvedValue(null) };
     const controller = new ChatHistoryReadController(chatHistoryReadService as any);
 
-    await expect(controller.getHistory({ id: 'student-me' } as any, 'session-1')).rejects.toThrow(AppError);
+    await expect(controller.getHistory('student-me', 'session-1')).rejects.toThrow(AppError);
     expect(chatHistoryReadService.getHistory).toHaveBeenCalledWith({
       studentId: 'student-me',
       sessionId: 'session-1',
@@ -151,7 +151,7 @@ describe('AI Teacher cross-student ownership rejection', () => {
     const controller = new AiTeacherFeedbackSubmitController(feedbackSubmitService as any);
 
     await expect(
-      controller.submitFeedback({ id: 'student-me' } as any, 'message-1', { rating: 'helpful' }),
+      controller.submitFeedback('student-me', 'message-1', { rating: 'helpful' }),
     ).rejects.toMatchObject({ code: ApiErrorCode.NOT_FOUND });
   });
 });

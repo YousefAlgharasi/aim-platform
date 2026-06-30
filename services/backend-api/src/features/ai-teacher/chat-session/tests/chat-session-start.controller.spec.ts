@@ -60,7 +60,7 @@ describe('ChatSessionStartController', () => {
     const { controller, service } = makeController();
     const user = makeUser({ id: 'student-1' });
 
-    await controller.startSession(user, {
+    await controller.startSession(user.id, {
       contextRef: 'lesson:fractions',
       studentId: 'attacker-supplied-id',
     });
@@ -76,14 +76,14 @@ describe('ChatSessionStartController', () => {
     const { controller } = makeController(result);
 
     await expect(
-      controller.startSession(makeUser(), { contextRef: 'lesson:fractions' }),
+      controller.startSession(makeUser().id, { contextRef: 'lesson:fractions' }),
     ).resolves.toEqual(result);
   });
 
   it('rejects before calling the service when contextRef is missing', async () => {
     const { controller, service } = makeController();
 
-    await expect(controller.startSession(makeUser(), {})).rejects.toThrow(AppError);
+    await expect(controller.startSession(makeUser().id, {})).rejects.toThrow(AppError);
     expect(service.startSession).not.toHaveBeenCalled();
   });
 });

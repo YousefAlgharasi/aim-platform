@@ -37,7 +37,7 @@ describe('ChatSessionListReadController', () => {
   it('resolves studentId from the authenticated user', async () => {
     const { controller, service } = makeController();
 
-    await controller.listSessions(makeUser({ id: 'student-1' }));
+    await controller.listSessions(makeUser({ id: 'student-1' }).id);
 
     expect(service.listSessions).toHaveBeenCalledWith({ studentId: 'student-1' });
   });
@@ -46,6 +46,6 @@ describe('ChatSessionListReadController', () => {
     const result = makeResult({ sessions: [] });
     const { controller } = makeController(result);
 
-    await expect(controller.listSessions(makeUser())).resolves.toEqual(result);
+    await expect(controller.listSessions(makeUser().id)).resolves.toEqual(result);
   });
 });

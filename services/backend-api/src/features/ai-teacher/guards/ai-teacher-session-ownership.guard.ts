@@ -19,17 +19,22 @@ import { CanActivate, ExecutionContext, HttpStatus, Injectable } from '@nestjs/c
 import { AppError } from '../../../common/errors/app-error';
 import { ApiErrorCode } from '../../../common/errors/api-error-code';
 import { AuthenticatedRequest } from '../../../auth/authenticated-user';
+import { UsersService } from '../../users/users.service';
 import { AiChatSessionRepository } from '../repositories/ai-chat-session.repository';
 
 interface SessionOwnershipRequest extends AuthenticatedRequest {
   readonly params?: Record<string, string | undefined>;
   /** Attached by this guard so downstream handlers can use the loaded session. */
   aiChatSession?: Awaited<ReturnType<AiChatSessionRepository['findById']>>;
+  resolvedInternalUserId?: string;
 }
 
 @Injectable()
 export class AiTeacherSessionOwnershipGuard implements CanActivate {
-  constructor(private readonly chatSessionRepository: AiChatSessionRepository) {}
+  constructor(
+    private readonly chatSessionRepository: AiChatSessionRepository,
+    private readonly usersService: UsersService,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<SessionOwnershipRequest>();
@@ -39,6 +44,19 @@ export class AiTeacherSessionOwnershipGuard implements CanActivate {
       throw new AppError({
         code: ApiErrorCode.UNAUTHORIZED,
         message: 'Authenticated user is required.',
+        statusCode: HttpStatus.UNAUTHORIZED,
+      });
+    }
+
+    // ai_chat_sessions.student_id is a foreign key to users.id (the internal
+    // primary key) — not the Supabase Auth UID found in user.id. Resolve it
+    // before comparing against session.student_id.
+    const internalUser = await this.usersService.findBySupabaseUid(user.id);
+
+    if (!internalUser) {
+      throw new AppError({
+        code: ApiErrorCode.UNAUTHORIZED,
+        message: 'Authenticated user has no internal AIM account.',
         statusCode: HttpStatus.UNAUTHORIZED,
       });
     }
@@ -55,7 +73,7 @@ export class AiTeacherSessionOwnershipGuard implements CanActivate {
 
     const session = await this.chatSessionRepository.findById(sessionId);
 
-    if (!session || session.student_id !== user.id) {
+    if (!session || session.student_id !== internalUser.id) {
       // Return 404 in both cases: no existence leak.
       throw new AppError({
         code: ApiErrorCode.NOT_FOUND,
@@ -66,6 +84,7 @@ export class AiTeacherSessionOwnershipGuard implements CanActivate {
 
     // Attach so downstream controller handlers can read it without re-querying.
     (request as SessionOwnershipRequest & { aiChatSession: typeof session }).aiChatSession = session;
+    request.resolvedInternalUserId = internalUser.id;
 
     return true;
   }
