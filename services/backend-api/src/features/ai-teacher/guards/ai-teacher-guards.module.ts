@@ -5,11 +5,12 @@
  */
 import { Module } from '@nestjs/common';
 
+import { UsersModule } from '../../users';
 import { AiChatRepositoriesModule } from '../repositories/ai-chat-repositories.module';
 import { AiTeacherSessionOwnershipGuard } from './ai-teacher-session-ownership.guard';
 
 @Module({
-  imports: [AiChatRepositoriesModule],
+  imports: [AiChatRepositoriesModule, UsersModule],
   providers: [AiTeacherSessionOwnershipGuard],
   exports: [AiTeacherSessionOwnershipGuard],
 })

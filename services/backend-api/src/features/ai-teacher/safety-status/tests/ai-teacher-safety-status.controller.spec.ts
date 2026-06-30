@@ -43,7 +43,7 @@ describe('AiTeacherSafetyStatusController', () => {
   it('resolves the session via the route param and checks ownership against the JWT user', async () => {
     const { controller, service, repository } = makeController();
 
-    await controller.getSafetyStatus(makeUser({ id: 'student-1' }), 'session-1');
+    await controller.getSafetyStatus(makeUser({ id: 'student-1' }).id, 'session-1');
 
     expect(repository.findById).toHaveBeenCalledWith('session-1');
     expect(service.getStatus).toHaveBeenCalledWith('session-1');
@@ -53,7 +53,7 @@ describe('AiTeacherSafetyStatusController', () => {
     const { controller, service } = makeController(null);
 
     await expect(
-      controller.getSafetyStatus(makeUser(), 'missing-session'),
+      controller.getSafetyStatus(makeUser().id, 'missing-session'),
     ).rejects.toThrow(AppError);
     expect(service.getStatus).not.toHaveBeenCalled();
   });
@@ -62,7 +62,7 @@ describe('AiTeacherSafetyStatusController', () => {
     const { controller, service } = makeController(makeSessionRow({ student_id: 'other-student' }));
 
     await expect(
-      controller.getSafetyStatus(makeUser({ id: 'student-1' }), 'session-1'),
+      controller.getSafetyStatus(makeUser({ id: 'student-1' }).id, 'session-1'),
     ).rejects.toThrow(AppError);
     expect(service.getStatus).not.toHaveBeenCalled();
   });

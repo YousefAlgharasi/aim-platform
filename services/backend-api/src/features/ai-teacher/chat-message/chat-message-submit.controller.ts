@@ -37,8 +37,8 @@ import { ApiBearerAuth, ApiCreatedResponse, ApiOperation, ApiParam, ApiTags } fr
 
 import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
 import { RoleGuard } from '../../../auth/authorization/role.guard';
-import { CurrentUser } from '../../../auth/current-user.decorator';
-import { AuthenticatedUser } from '../../../auth/authenticated-user';
+import { ResolveInternalUserIdGuard } from '../../../auth/authorization/resolve-internal-user-id.guard';
+import { ResolvedInternalUserId } from '../../../auth/current-user.decorator';
 import { AuthorizedRole } from '../../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../../auth/authorization/required-roles.decorator';
 import { OPENAPI_TAGS } from '../../../openapi/openapi.tags';
@@ -67,7 +67,7 @@ export class ChatMessageSubmitController {
    * always read from the session row — never from the body.
    */
   @Post('sessions/:id/messages')
-  @UseGuards(SupabaseJwtAuthGuard, RoleGuard)
+  @UseGuards(SupabaseJwtAuthGuard, RoleGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()
@@ -81,14 +81,14 @@ export class ChatMessageSubmitController {
   @ApiParam({ name: 'id', description: 'UUID of the AI Teacher chat session.' })
   @ApiCreatedResponse({ description: 'AI Teacher response generated.' })
   async sendMessage(
-    @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() studentId: string,
     @Param('id') sessionId: string,
     @Body() body: unknown,
   ): Promise<SubmitStudentMessageResult> {
     const dto = SendChatMessageRequestDto.fromBody(body);
     const session = await this.chatSessionRepository.findById(sessionId);
 
-    if (!session || session.student_id !== user.id) {
+    if (!session || session.student_id !== studentId) {
       throw new AppError({
         code: ApiErrorCode.NOT_FOUND,
         message: 'Chat session not found.',
@@ -97,7 +97,7 @@ export class ChatMessageSubmitController {
     }
 
     return this.chatMessageSubmitService.submitMessage({
-      studentId: user.id,
+      studentId,
       sessionId: session.id,
       contextRef: session.context_ref,
       studentMessage: dto.message,

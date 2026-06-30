@@ -40,8 +40,8 @@ import {
 
 import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
 import { RoleGuard } from '../../../auth/authorization/role.guard';
-import { CurrentUser } from '../../../auth/current-user.decorator';
-import { AuthenticatedUser } from '../../../auth/authenticated-user';
+import { ResolveInternalUserIdGuard } from '../../../auth/authorization/resolve-internal-user-id.guard';
+import { ResolvedInternalUserId } from '../../../auth/current-user.decorator';
 import { AuthorizedRole } from '../../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../../auth/authorization/required-roles.decorator';
 import { AppError } from '../../../common/errors/app-error';
@@ -66,7 +66,7 @@ export class AiTeacherFeedbackSubmitController {
    * studentId is always resolved from the verified JWT — never from the body.
    */
   @Post('messages/:messageId/feedback')
-  @UseGuards(SupabaseJwtAuthGuard, RoleGuard)
+  @UseGuards(SupabaseJwtAuthGuard, RoleGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()
@@ -79,7 +79,7 @@ export class AiTeacherFeedbackSubmitController {
   @ApiParam({ name: 'messageId', description: 'UUID of the AI Teacher reply message.' })
   @ApiCreatedResponse({ description: 'Feedback recorded.' })
   async submitFeedback(
-    @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() studentId: string,
     @Param('messageId') messageId: string,
     @Body() body: unknown,
   ): Promise<SubmitTeacherFeedbackResult> {
@@ -87,7 +87,7 @@ export class AiTeacherFeedbackSubmitController {
 
     try {
       return await this.feedbackSubmitService.submitFeedback({
-        studentId: user.id,
+        studentId,
         messageId,
         rating: dto.rating,
       });

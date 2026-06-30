@@ -31,7 +31,7 @@ describe('ChatHistoryReadController', () => {
   it('resolves studentId from the authenticated user, never from the route', async () => {
     const { controller, service } = makeController();
 
-    await controller.getHistory(makeUser({ id: 'student-1' }), 'session-1');
+    await controller.getHistory(makeUser({ id: 'student-1' }).id, 'session-1');
 
     expect(service.getHistory).toHaveBeenCalledWith({
       studentId: 'student-1',
@@ -43,13 +43,13 @@ describe('ChatHistoryReadController', () => {
     const result = makeResult({ sessionId: 'session-42' });
     const { controller } = makeController(result);
 
-    await expect(controller.getHistory(makeUser(), 'session-42')).resolves.toEqual(result);
+    await expect(controller.getHistory(makeUser().id, 'session-42')).resolves.toEqual(result);
   });
 
   it('throws NOT_FOUND when the service returns null', async () => {
     const { controller, service } = makeController(null);
 
-    await expect(controller.getHistory(makeUser(), 'missing-session')).rejects.toThrow(AppError);
+    await expect(controller.getHistory(makeUser().id, 'missing-session')).rejects.toThrow(AppError);
     expect(service.getHistory).toHaveBeenCalledWith({
       studentId: 'student-1',
       sessionId: 'missing-session',
