@@ -2,14 +2,17 @@
 
 Generated from an audit of `docs/design/ui-for-all-system-mobile/` (design reference) against
 `apps/mobile/lib/` (existing Flutter app). See sections 1–3 below for the underlying audit data,
-then TASK-00 through TASK-27 for the executable Claude Code prompts.
+then TASK-00 through TASK-39 for the executable Claude Code prompts.
 
 **Coverage:** TASK-00–13 cover the 13 screens flagged ⚠️/❌ (content/data work). TASK-14 covers
 routing wiring for the 24 screens whose pages exist but have no named route. TASK-15 covers the
 menu drawer + notifications bottom sheet (not part of the 59-screen list, but required by
-`screenshots/menu/`). TASK-16–27 are verification tasks (2 screens per task, one task with a single
-leftover screen) for the remaining 23 screens that already match the design with no known
-route/content gaps — together TASK-00–27 touch all 59 screens plus the menu.
+`screenshots/menu/`). TASK-16–27 are verification tasks (2 screens per task, one with a single
+leftover screen) for the 23 screens that were already ✅ Match with a working route. TASK-28–39 are
+verification tasks (same 2-screens-per-task pattern, one with a single leftover screen) for the
+remaining 23 screens that were functionally complete but unreachable until TASK-14 wires their
+route — together TASK-00–39 touch all 59 screens plus the menu, with every screen getting either a
+content-fix task or a visual-verification task.
 
 ---
 
@@ -144,13 +147,15 @@ invent a new named route.
 
 ## Summary
 
-**Total tasks generated: 28** (TASK-00 + TASK-01–13 screen content tasks + TASK-14 routing +
-TASK-15 menu + TASK-16–27 verification tasks at 2 screens each, covering all 59 screens plus the
-menu drawer and notifications sheet)
+**Total tasks generated: 40** (TASK-00 + TASK-01–13 screen content tasks + TASK-14 routing +
+TASK-15 menu + TASK-16–27 verification tasks for the 23 already-routed ✅ screens + TASK-28–39
+verification tasks for the 23 screens that needed TASK-14's routing fix first — all at 2 screens
+per task except two single-screen tasks (TASK-27, TASK-39) — covering all 59 screens plus the menu
+drawer and notifications sheet)
 **Recommended run order:** TASK-00 → merge → TASK-01–13, TASK-15, TASK-16–27 in parallel → TASK-14
-last (touches `app_router.dart`/`app_route_paths.dart`, the one shared file every other task's
-screen might also reference for navigation, so merge it after the screen-level branches to avoid
-rebase churn)
+→ merge → TASK-28–39 in parallel (these need TASK-14's routes to test against, per their "Depends
+on" line; they can run before TASK-14 merges using the temporary debug-push workaround noted in
+TASK-28, but real route-based testing should happen after TASK-14 lands)
 **Blocked screens:** none — all 13 ⚠️/❌ screens have a real backend endpoint already documented
 (achievements and placementIntro have no endpoint wired yet; their tasks are scoped to UI-only with
 the existing empty state, since wiring a new endpoint is a backend change out of scope per the
@@ -1576,3 +1581,469 @@ git push -u origin ui/verify-invoicehistory
 ```
 
 ── END OF TASK-27 PROMPT ──
+
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-28 — Verification: Review, Submit Attempt
+Branch: `ui/verify-review-submitattempt`
+Screens covered: 10 review, 28 submitAttempt
+Status: page complete, route missing (covered by TASK-14) — this task verifies visual correctness
+Depends on: TASK-00 must be merged. TASK-14 should be merged first so the screen is reachable by
+its real route for manual testing; if TASK-14 hasn't merged yet, test by temporarily pushing the
+page directly (`Navigator.push(MaterialPageRoute(builder: (_) => const ReviewPage()))` from a debug
+entry point) and remove the temporary code before committing.
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+You are working on the Flutter mobile app in `apps/mobile/`. These 2 screens were found to be
+functionally complete but unreachable via routing (now fixed by TASK-14). Your job is
+**verification, not a rebuild**: confirm each screen against its screenshots in both themes, and
+fix only concrete discrepancies you find. BACKEND IS READ-ONLY.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| review | `apps/mobile/lib/features/reviews/ui/pages/review_page.dart` | `screenshots/light/10-screen.png`, `screenshots/dark/10-screen.png` |
+| submitAttempt | `apps/mobile/lib/features/assessments/ui/pages/submit_attempt_page.dart` | `screenshots/light/28-screen.png`, `screenshots/dark/28-screen.png` |
+
+**Steps per screen:**
+1. Reach the screen via its real route (post-TASK-14) or a temporary debug push.
+2. Compare against the light/dark screenshots: layout/spacing match `AimSpacing`, colors match
+   `AimColors`/`AimColorTheme` (no hardcoded hex), dark mode correct, RTL mirrors correctly, no
+   overflow at 360px/414px, 44px touch targets, loading/empty/error states present using
+   `AIMSkeleton`/`AIMEmptyState`/`AIMFullScreenError`.
+3. Fix only real mismatches. If everything matches, make no change to that file.
+4. Confirm the submit/next-step navigation on each screen lands where the design implies (e.g.
+   `review` → review item detail; `submitAttempt` → `assessmentResult`).
+
+**Commit and push (only if you made changes):**
+```
+git checkout -b ui/verify-review-submitattempt
+git add apps/mobile/lib/features/reviews/ui/pages/review_page.dart apps/mobile/lib/features/assessments/ui/pages/submit_attempt_page.dart
+git commit -m "fix(ui): verification pass on review and submit attempt screens"
+git push -u origin ui/verify-review-submitattempt
+```
+If no changes were needed, report that explicitly instead of pushing an empty branch.
+
+── END OF TASK-28 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-29 — Verification: Result History, Deadlines
+Branch: `ui/verify-resulthistory-deadlines`
+Screens covered: 30 resultHistory, 31 deadlines
+Status: page complete, route missing (covered by TASK-14)
+Depends on: TASK-00 must be merged; TASK-14 should be merged first (see TASK-28 note on temporary
+reach if not)
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-28. BACKEND IS READ-ONLY.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| resultHistory | `apps/mobile/lib/features/assessments/ui/pages/result_history_page.dart` | `screenshots/light/30-screen.png`, `screenshots/dark/30-screen.png` |
+| deadlines | `apps/mobile/lib/features/assessments/ui/pages/deadlines_page.dart` | `screenshots/light/31-screen.png`, `screenshots/dark/31-screen.png` |
+
+**Note:** `deadlines_page.dart` uses `deadline_status_widgets.dart` (`DeadlineStatusBadge`/
+`DeadlineStatusCard`), which duplicates `assessment_list_tile.dart`'s internal
+`_DeadlineStatusChip`. If TASK-23 (assessmentList/Detail) already consolidated these, just confirm
+`deadlines` uses the same consolidated widget; otherwise leave as-is unless you find a visible
+inconsistency.
+
+**Steps:** same checklist as TASK-28, applied to both screens.
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-resulthistory-deadlines
+git add apps/mobile/lib/features/assessments/ui/pages/result_history_page.dart apps/mobile/lib/features/assessments/ui/pages/deadlines_page.dart
+git commit -m "fix(ui): verification pass on result history and deadlines screens"
+git push -u origin ui/verify-resulthistory-deadlines
+```
+
+── END OF TASK-29 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-30 — Verification: AI History, AI Settings
+Branch: `ui/verify-aihistory-aisettings`
+Screens covered: 34 aiHistory, 35 aiSettings
+Status: page complete, route missing (covered by TASK-14)
+Depends on: TASK-00 must be merged; TASK-14 should be merged first (see TASK-28 note)
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-28. BACKEND IS READ-ONLY.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| aiHistory | `apps/mobile/lib/features/ai_teacher/ui/pages/ai_teacher_session_history_page.dart` | `screenshots/light/34-screen.png`, `screenshots/dark/34-screen.png` |
+| aiSettings | `apps/mobile/lib/features/ai_teacher/ui/pages/ai_teacher_settings_page.dart` | `screenshots/light/35-screen.png`, `screenshots/dark/35-screen.png` |
+
+**Note:** `aiSettings` is backed by local device prefs (`ai_teacher_preferences_store.dart`), not a
+network endpoint — confirm toggles persist locally and the screen doesn't show a loading/error state
+that implies a network call that doesn't exist.
+
+**Steps:** same checklist as TASK-28, applied to both screens. Confirm `aiHistory` row tap routes
+into `aiTeacherChat` with the correct `sessionId` argument.
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-aihistory-aisettings
+git add apps/mobile/lib/features/ai_teacher/ui/pages/ai_teacher_session_history_page.dart apps/mobile/lib/features/ai_teacher/ui/pages/ai_teacher_settings_page.dart
+git commit -m "fix(ui): verification pass on AI history and AI settings screens"
+git push -u origin ui/verify-aihistory-aisettings
+```
+
+── END OF TASK-30 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-31 — Verification: Learning Path, Notification Detail
+Branch: `ui/verify-learningpath-notifdetail`
+Screens covered: 37 learningPath, 40 notifDetail
+Status: page complete, route missing (covered by TASK-14)
+Depends on: TASK-00 must be merged; TASK-14 should be merged first (see TASK-28 note)
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-28. BACKEND IS READ-ONLY.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| learningPath | `apps/mobile/lib/features/learning_path/ui/pages/learning_path_page.dart` | `screenshots/light/37-screen.png`, `screenshots/dark/37-screen.png` |
+| notifDetail | `apps/mobile/lib/features/notifications/ui/pages/notification_detail_page.dart` | `screenshots/light/40-screen.png`, `screenshots/dark/40-screen.png` |
+
+**Note:** `learning_path_section_header.dart`, `learning_path_recommendation_card.dart`,
+`learning_path_skill_state_card.dart`, `learning_path_weakness_chip.dart` duplicate near-identical
+widgets in `features/progress/ui/widgets/` and `features/home/ui/widgets/`. If TASK-19/TASK-17
+already consolidated these into `core/widgets/`, point `learningPath` at the same consolidated
+widgets; otherwise leave as-is unless you find a visible inconsistency — don't start a fresh
+consolidation effort here if one is already in flight elsewhere.
+
+**Steps:** same checklist as TASK-28, applied to both screens. Confirm `notifDetail`'s
+mark-read/dismiss actions (`PATCH .../inbox/:eventId/read`/`dismiss`) still work and that navigating
+back returns to the inbox.
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-learningpath-notifdetail
+git add apps/mobile/lib/features/learning_path/ui/pages/learning_path_page.dart apps/mobile/lib/features/notifications/ui/pages/notification_detail_page.dart
+git commit -m "fix(ui): verification pass on learning path and notification detail screens"
+git push -u origin ui/verify-learningpath-notifdetail
+```
+
+── END OF TASK-31 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-32 — Verification: Notification Preferences, Reminder Settings
+Branch: `ui/verify-notifprefs-reminders`
+Screens covered: 41 notifPrefs, 42 reminderSettings
+Status: page complete, route missing (covered by TASK-14)
+Depends on: TASK-00 must be merged; TASK-14 should be merged first (see TASK-28 note)
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-28. BACKEND IS READ-ONLY.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| notifPrefs | `apps/mobile/lib/features/notifications/ui/pages/notification_preferences_page.dart` | `screenshots/light/41-screen.png`, `screenshots/dark/41-screen.png` |
+| reminderSettings | `apps/mobile/lib/features/notifications/ui/pages/reminder_settings_page.dart` | `screenshots/light/42-screen.png`, `screenshots/dark/42-screen.png` |
+
+**Steps:** same checklist as TASK-28, applied to both screens. Confirm toggles call
+`GET/PATCH /api/v1/notifications/preferences` and reminder pause/resume/cancel actions call the
+correct `/api/v1/notifications/reminders/:id/*` endpoints — don't change the data layer, only the
+visual treatment if it's off.
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-notifprefs-reminders
+git add apps/mobile/lib/features/notifications/ui/pages/notification_preferences_page.dart apps/mobile/lib/features/notifications/ui/pages/reminder_settings_page.dart
+git commit -m "fix(ui): verification pass on notification preferences and reminder settings screens"
+git push -u origin ui/verify-notifprefs-reminders
+```
+
+── END OF TASK-32 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-33 — Verification: Checkout Start, Checkout Status
+Branch: `ui/verify-checkout`
+Screens covered: 45 checkoutStart, 46 checkoutStatus
+Status: page complete, route missing (covered by TASK-14)
+Depends on: TASK-00 must be merged; TASK-14 should be merged first (see TASK-28 note)
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-28. BACKEND IS READ-ONLY.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| checkoutStart | `apps/mobile/lib/features/billing/ui/pages/checkout_start_page.dart` | `screenshots/light/45-screen.png`, `screenshots/dark/45-screen.png` |
+| checkoutStatus | `apps/mobile/lib/features/billing/ui/pages/checkout_status_page.dart` | `screenshots/light/46-screen.png`, `screenshots/dark/46-screen.png` |
+
+**Note on billing:** `/billing/checkout` endpoints are marked "Planned / Not Yet Active" in
+`docs/mobile-app-api-endpoints.md`. Verify both screens degrade gracefully (clear error/empty state,
+not a crash) if the backend isn't actually live in this environment — that's expected, not a bug to
+fix by inventing fake data.
+
+**Steps:** same checklist as TASK-28, applied to both screens.
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-checkout
+git add apps/mobile/lib/features/billing/ui/pages/checkout_start_page.dart apps/mobile/lib/features/billing/ui/pages/checkout_status_page.dart
+git commit -m "fix(ui): verification pass on checkout start and status screens"
+git push -u origin ui/verify-checkout
+```
+
+── END OF TASK-33 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-34 — Verification: Help Center, Parent Help
+Branch: `ui/verify-helpcenter-parenthelp`
+Screens covered: 48 helpCenter, 49 parentHelp
+Status: page complete, route missing (covered by TASK-14); backend `SupportDatasource` has no
+concrete implementation wired yet
+Depends on: TASK-00 must be merged; TASK-14 should be merged first (see TASK-28 note)
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-28. BACKEND IS READ-ONLY — do not write a
+`SupportDatasource` implementation; that's a backend/data-layer task out of scope here.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| helpCenter | `apps/mobile/lib/features/support/ui/pages/help_center_page.dart` | `screenshots/light/48-screen.png`, `screenshots/dark/48-screen.png` |
+| parentHelp | `apps/mobile/lib/features/support/ui/pages/parent_help_center_page.dart` | `screenshots/light/49-screen.png`, `screenshots/dark/49-screen.png` |
+
+**Note:** these are largely static/local FAQ content per `SCREENS.md`, so a missing backend
+implementation may not block visual verification — confirm the screens render their content
+correctly without depending on the unimplemented datasource. If you find the screen literally
+cannot render without the missing implementation, note that explicitly in your final report instead
+of building a fake one.
+
+**Steps:** same checklist as TASK-28, applied to both screens.
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-helpcenter-parenthelp
+git add apps/mobile/lib/features/support/ui/pages/help_center_page.dart apps/mobile/lib/features/support/ui/pages/parent_help_center_page.dart
+git commit -m "fix(ui): verification pass on help center and parent help screens"
+git push -u origin ui/verify-helpcenter-parenthelp
+```
+
+── END OF TASK-34 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-35 — Verification: Create Ticket, Feedback
+Branch: `ui/verify-createticket-feedback`
+Screens covered: 50 createTicket, 51 feedback
+Status: page complete, route missing (covered by TASK-14); backend endpoint "Planned / Not Yet
+Active"
+Depends on: TASK-00 must be merged; TASK-14 should be merged first (see TASK-28 note)
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-28. BACKEND IS READ-ONLY.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| createTicket | `apps/mobile/lib/features/support/ui/pages/create_ticket_page.dart` | `screenshots/light/50-screen.png`, `screenshots/dark/50-screen.png` |
+| feedback | `apps/mobile/lib/features/support/ui/pages/feedback_page.dart` | `screenshots/light/51-screen.png`, `screenshots/dark/51-screen.png` |
+
+**Note:** `POST /support/tickets` and `POST /feedback` are marked "Planned / Not Yet Active." Build
+the form UI to match the screenshots and verify submit shows a graceful error/disabled state when
+the backend call fails — do not fake a success response.
+
+**Steps:** same checklist as TASK-28, applied to both screens (form layout, validation, submit
+button state, error handling).
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-createticket-feedback
+git add apps/mobile/lib/features/support/ui/pages/create_ticket_page.dart apps/mobile/lib/features/support/ui/pages/feedback_page.dart
+git commit -m "fix(ui): verification pass on create ticket and feedback screens"
+git push -u origin ui/verify-createticket-feedback
+```
+
+── END OF TASK-35 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-36 — Verification: Ticket List, Parent Ticket List
+Branch: `ui/verify-ticketlists`
+Screens covered: 52 ticketList, 53 parentTicketList
+Status: page complete, route missing (covered by TASK-14); backend endpoint "Planned / Not Yet
+Active"
+Depends on: TASK-00 must be merged; TASK-14 should be merged first (see TASK-28 note)
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-28. BACKEND IS READ-ONLY.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| ticketList | `apps/mobile/lib/features/support/ui/pages/ticket_list_page.dart` | `screenshots/light/52-screen.png`, `screenshots/dark/52-screen.png` |
+| parentTicketList | `apps/mobile/lib/features/support/ui/pages/parent_ticket_list_page.dart` | `screenshots/light/53-screen.png`, `screenshots/dark/53-screen.png` |
+
+**Note:** these two screens are likely near-identical layouts scoped to different roles (student vs
+parent). If you find them visually inconsistent with each other where the screenshots show they
+should match, fix the discrepancy. `GET /support/tickets` is "Planned / Not Yet Active" — verify
+graceful empty/error state.
+
+**Steps:** same checklist as TASK-28, applied to both screens. Confirm tapping a ticket row routes
+to `ticketDetail` with the correct `ticketId`.
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-ticketlists
+git add apps/mobile/lib/features/support/ui/pages/ticket_list_page.dart apps/mobile/lib/features/support/ui/pages/parent_ticket_list_page.dart
+git commit -m "fix(ui): verification pass on ticket list and parent ticket list screens"
+git push -u origin ui/verify-ticketlists
+```
+
+── END OF TASK-36 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-37 — Verification: Ticket Detail, Status
+Branch: `ui/verify-ticketdetail-status`
+Screens covered: 54 ticketDetail, 55 status
+Status: page complete, route missing (covered by TASK-14); backend endpoint "Planned / Not Yet
+Active"
+Depends on: TASK-00 must be merged; TASK-14 should be merged first (see TASK-28 note)
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-28. BACKEND IS READ-ONLY.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| ticketDetail | `apps/mobile/lib/features/support/ui/pages/ticket_detail_page.dart` | `screenshots/light/54-screen.png`, `screenshots/dark/54-screen.png` |
+| status | `apps/mobile/lib/features/support/ui/pages/status_page.dart` | `screenshots/light/55-screen.png`, `screenshots/dark/55-screen.png` |
+
+**Note:** `status` likely maps to `/health`/`/version` rather than the planned support endpoints —
+confirm which it actually calls before assuming it's blocked the same way as the other support
+screens.
+
+**Steps:** same checklist as TASK-28, applied to both screens.
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-ticketdetail-status
+git add apps/mobile/lib/features/support/ui/pages/ticket_detail_page.dart apps/mobile/lib/features/support/ui/pages/status_page.dart
+git commit -m "fix(ui): verification pass on ticket detail and status screens"
+git push -u origin ui/verify-ticketdetail-status
+```
+
+── END OF TASK-37 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-38 — Verification: Release Notes, Release Note Detail
+Branch: `ui/verify-releasenotes`
+Screens covered: 56 releaseNotes, 57 releaseNoteDetail
+Status: page complete, route missing (covered by TASK-14); backend endpoint "Planned / Not Yet
+Active"
+Depends on: TASK-00 must be merged; TASK-14 should be merged first (see TASK-28 note)
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-28. BACKEND IS READ-ONLY.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| releaseNotes | `apps/mobile/lib/features/support/ui/pages/release_notes_page.dart` | `screenshots/light/56-screen.png`, `screenshots/dark/56-screen.png` |
+| releaseNoteDetail | `apps/mobile/lib/features/support/ui/pages/release_note_detail_page.dart` | `screenshots/light/57-screen.png`, `screenshots/dark/57-screen.png` |
+
+**Steps:** same checklist as TASK-28, applied to both screens. Confirm tapping a release note row
+routes to `releaseNoteDetail` with the correct `noteId`.
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-releasenotes
+git add apps/mobile/lib/features/support/ui/pages/release_notes_page.dart apps/mobile/lib/features/support/ui/pages/release_note_detail_page.dart
+git commit -m "fix(ui): verification pass on release notes and release note detail screens"
+git push -u origin ui/verify-releasenotes
+```
+
+── END OF TASK-38 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-39 — Verification: Design System Preview
+Branch: `ui/verify-dspreview`
+Screens covered: 58 dsPreview
+Status: page complete, route missing (covered by TASK-14)
+Depends on: TASK-00 must be merged (this screen should reflect TASK-00's new gradients/widgets in
+its showcase sections); TASK-14 should be merged first (see TASK-28 note)
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-28 (single screen, no pairing left over). BACKEND IS
+READ-ONLY.
+
+**Screen and file:**
+| Screen | File | Screenshots |
+|---|---|---|
+| dsPreview | `apps/mobile/lib/features/design_system_preview/ui/pages/ds_preview_page.dart` (+ section files under `ui/sections/`) | `screenshots/light/58-screen.png`, `screenshots/dark/58-screen.png` |
+
+**Note:** this is the dev-only component showcase. After TASK-00 adds `AIMGradientHeroHeader`,
+`AIMAppDrawer`, `AIMNotificationsSheet`, `AIMBlobCard`, `AIMGradientButton`, `AIMStatTile`, and
+`AIMSkillBlob`, add a showcase section for each new widget here if the existing sections follow a
+per-widget-category pattern (check `ui/sections/` first) — this keeps the dev preview screen useful
+as a living catalog, consistent with its stated purpose. Do not add showcase entries for widgets
+that aren't new from TASK-00.
+
+**Steps:** same checklist as TASK-28, plus confirm new TASK-00 widgets have a corresponding preview
+section if the existing pattern calls for one.
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-dspreview
+git add apps/mobile/lib/features/design_system_preview
+git commit -m "fix(ui): verification pass on design system preview screen, add TASK-00 widget showcases"
+git push -u origin ui/verify-dspreview
+```
+
+── END OF TASK-39 PROMPT ──
