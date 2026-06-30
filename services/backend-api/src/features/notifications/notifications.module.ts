@@ -10,7 +10,6 @@ import { DatabaseModule } from '../../database/database.module';
 import { AnalyticsModule } from '../analytics/analytics.module';
 import { UsersModule } from '../users/users.module';
 import { RolesModule } from '../roles/roles.module';
-import { ParentsModule } from '../parents/parents.module';
 
 import { NotificationRepository } from './notification.repository';
 import { NotificationAuditService } from './notification-audit.service';
@@ -44,10 +43,9 @@ import { InboxController } from './inbox.controller';
 import { DeviceTokenController } from './device-token.controller';
 import { NotificationsAdminController } from './notifications-admin.controller';
 import { AdminBroadcastService } from './admin-broadcast.service';
-import { NotificationReminderScheduler } from './notification-reminder.scheduler';
 
 @Module({
-  imports: [AuthModule, DatabaseModule, AnalyticsModule, UsersModule, RolesModule, ParentsModule],
+  imports: [AuthModule, DatabaseModule, AnalyticsModule, UsersModule, RolesModule],
   controllers: [
     PreferencesController,
     RemindersController,
@@ -76,7 +74,6 @@ import { NotificationReminderScheduler } from './notification-reminder.scheduler
     NotificationAdminGuard,
     NotificationOwnershipGuard,
     AdminBroadcastService,
-    NotificationReminderScheduler,
     { provide: PUSH_PROVIDER_ADAPTER, useClass: NoopPushProviderAdapter },
     { provide: EMAIL_PROVIDER_ADAPTER, useClass: NoopEmailProviderAdapter },
   ],
@@ -88,6 +85,7 @@ import { NotificationReminderScheduler } from './notification-reminder.scheduler
     LearningReminderIntegration,
     StreakReminderIntegration,
     ParentSummaryReminderIntegration,
+    AdminBroadcastService,
   ],
 })
 export class NotificationsModule {}
