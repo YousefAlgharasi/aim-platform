@@ -127,12 +127,22 @@ class _ProgressContent extends StatelessWidget {
           if (data.skillStates.isNotEmpty) ...[
             const ProgressSectionHeader(title: 'Skill Mastery'),
             const SizedBox(height: AimSpacing.componentGap),
-            ...data.skillStates.map(
-              (m) => Padding(
-                padding:
-                    const EdgeInsets.only(bottom: AimSpacing.listItemGap),
-                child: ProgressSkillStateCard(model: m),
-              ),
+            Wrap(
+              spacing: AimSpacing.space16,
+              runSpacing: AimSpacing.space16,
+              children: data.skillStates
+                  .map(
+                    (m) => AIMSkillBlob(
+                      skillName: m.skillId,
+                      masteryLevel: m.masteryScore.clamp(0.0, 1.0),
+                      color: switch (m.masteryTrend) {
+                        'improving' => AimColors.success500,
+                        'declining' => AimColors.error500,
+                        _ => AimColors.primary500,
+                      },
+                    ),
+                  )
+                  .toList(),
             ),
             const SizedBox(height: AimSpacing.sectionGap),
           ],

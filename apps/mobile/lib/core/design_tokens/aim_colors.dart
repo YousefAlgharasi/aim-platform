@@ -71,6 +71,12 @@ final class AimColors {
   static const Color info500 = Color(0xFF3A8DDE);
   static const Color info600 = Color(0xFF2A72BC);
   static const Color info700 = Color(0xFF205893);
+
+  // Gen Z accent colors — see docs/design/ui-for-all-system-mobile/README.md.
+  static const Color gzPurple = Color(0xFF6C63FF);
+  static const Color gzLime = Color(0xFFC8FF3D);
+  static const Color gzCoral = Color(0xFFFF6B8A);
+  static const Color gzSky = Color(0xFF5AC8FA);
 }
 
 final class AimColorTheme {
