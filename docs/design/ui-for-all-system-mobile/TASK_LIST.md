@@ -2,7 +2,14 @@
 
 Generated from an audit of `docs/design/ui-for-all-system-mobile/` (design reference) against
 `apps/mobile/lib/` (existing Flutter app). See sections 1–3 below for the underlying audit data,
-then TASK-00 through TASK-13 for the executable Claude Code prompts.
+then TASK-00 through TASK-19 for the executable Claude Code prompts.
+
+**Coverage:** TASK-00–13 cover the 13 screens flagged ⚠️/❌ (content/data work). TASK-14 covers
+routing wiring for the 24 screens whose pages exist but have no named route. TASK-15 covers the
+menu drawer + notifications bottom sheet (not part of the 59-screen list, but required by
+`screenshots/menu/`). TASK-16–19 are batched verification tasks for the remaining 23 screens that
+already match the design with no known route/content gaps — together TASK-00–19 touch all 59
+screens plus the menu.
 
 ---
 
@@ -137,8 +144,13 @@ invent a new named route.
 
 ## Summary
 
-**Total tasks generated: 14** (TASK-00 + 13 screen tasks)
-**Recommended run order:** TASK-00 → merge → TASK-01 through TASK-13 in parallel
+**Total tasks generated: 20** (TASK-00 + TASK-01–13 screen content tasks + TASK-14 routing +
+TASK-15 menu + TASK-16–19 batched verification, covering all 59 screens plus the menu drawer and
+notifications sheet)
+**Recommended run order:** TASK-00 → merge → TASK-01–13, TASK-15, TASK-16–19 in parallel → TASK-14
+last (touches `app_router.dart`/`app_route_paths.dart`, the one shared file every other task's
+screen might also reference for navigation, so merge it after the screen-level branches to avoid
+rebase churn)
 **Blocked screens:** none — all 13 ⚠️/❌ screens have a real backend endpoint already documented
 (achievements and placementIntro have no endpoint wired yet; their tasks are scoped to UI-only with
 the existing empty state, since wiring a new endpoint is a backend change out of scope per the
@@ -964,3 +976,349 @@ git push -u origin ui/achievements
 ```
 
 ── END OF TASK-13 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-14 — Wire Missing Routes
+Branch: `ui/routing-wiring`
+Design ref: n/a — this is routing plumbing, not visual work
+Status: 24 screens have a working page file with no named route
+Depends on: TASK-00 must be merged. Should be the LAST branch merged of TASK-00–19 since it touches
+the shared router files every screen's navigation passes through — merging it after the screen
+branches avoids rebase conflicts on `app_router.dart`.
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+You are working on the Flutter mobile app in `apps/mobile/`. Your job is ONLY to add missing named
+routes — do not touch screen layout/content, do not touch the backend.
+
+**Scope:**
+- `apps/mobile/lib/core/routing/app_route_paths.dart`
+- `apps/mobile/lib/core/routing/app_router.dart`
+
+**Background:** An audit of `apps/mobile/lib/core/routing/` found these 24 screens have a complete
+page widget but are NOT reachable via any named route in `AppRoutePaths`/`AppRouter.onGenerateRoute`
+— they're either unreachable, or only reachable via an ad hoc unnamed `Navigator.push` from one
+specific parent screen that the audit didn't fully trace. Your job: give each one a proper named
+route, following the exact existing pattern in `app_router.dart` (the `switch (routeName)` with
+typed-argument `_build*` helper functions, see `_buildLessonDetailPage` for the pattern of a route
+that needs typed arguments via `settings.arguments`).
+
+| # | Screen id | File | Suggested route path | Args needed (check the page's constructor) |
+|---|---|---|---|---|
+| 10 | review | `reviews/ui/pages/review_page.dart` | `/main/review-queue` or fold into existing `review` shell tab — check `MainShellPage` first to see if this page is meant to be the `review` tab's content (if so, this may already be wired through the shell's `IndexedStack` and not need a top-level route at all — verify before adding one) | none expected |
+| 18 | placementIntro | `placement/ui/pages/placement_intro_page.dart` | `/placement/intro` | none |
+| 28 | submitAttempt (assessments) | `assessments/ui/pages/submit_attempt_page.dart` | `/student/assessments/submit` | `attemptId`, `assessmentTitle` |
+| 30 | resultHistory | `assessments/ui/pages/result_history_page.dart` | `/student/assessments/history` | `assessmentId` |
+| 31 | deadlines | `assessments/ui/pages/deadlines_page.dart` | `/student/assessments/deadlines` | none |
+| 34 | aiHistory | `ai_teacher/ui/pages/ai_teacher_session_history_page.dart` | `/ai-teacher/history` | none |
+| 35 | aiSettings | `ai_teacher/ui/pages/ai_teacher_settings_page.dart` | `/ai-teacher/settings` | none |
+| 36 | voice | `voice_teacher/ui/pages/voice_teacher_page.dart` | `/voice-teacher` | check page constructor for a required lesson/context ref |
+| 37 | learningPath | `learning_path/ui/pages/learning_path_page.dart` | `/learning-path` | none |
+| 40 | notifDetail | `notifications/ui/pages/notification_detail_page.dart` | `/notifications/detail` | `eventId` |
+| 41 | notifPrefs | `notifications/ui/pages/notification_preferences_page.dart` | `/notifications/preferences` | none |
+| 42 | reminderSettings | `notifications/ui/pages/reminder_settings_page.dart` | `/notifications/reminders` | none |
+| 45 | checkoutStart | `billing/ui/pages/checkout_start_page.dart` | `/billing/checkout/start` | `planId` |
+| 46 | checkoutStatus | `billing/ui/pages/checkout_status_page.dart` | `/billing/checkout/status` | `sessionId` |
+| 48 | helpCenter | `support/ui/pages/help_center_page.dart` | `/support/help` | none |
+| 49 | parentHelp | `support/ui/pages/parent_help_center_page.dart` | `/support/parent-help` | none |
+| 50 | createTicket | `support/ui/pages/create_ticket_page.dart` | `/support/tickets/new` | none |
+| 51 | feedback | `support/ui/pages/feedback_page.dart` | `/support/feedback` | none |
+| 52 | ticketList | `support/ui/pages/ticket_list_page.dart` | `/support/tickets` | none |
+| 53 | parentTicketList | `support/ui/pages/parent_ticket_list_page.dart` | `/support/parent-tickets` | none |
+| 54 | ticketDetail | `support/ui/pages/ticket_detail_page.dart` | `/support/tickets/detail` | `ticketId` |
+| 55 | status | `support/ui/pages/status_page.dart` | `/support/status` | none |
+| 56 | releaseNotes | `support/ui/pages/release_notes_page.dart` | `/support/release-notes` | none |
+| 57 | releaseNoteDetail | `support/ui/pages/release_note_detail_page.dart` | `/support/release-notes/detail` | `noteId` |
+| 58 | dsPreview | `design_system_preview/ui/pages/ds_preview_page.dart` | `/dev-tools/design-system` (dev-only, mirror how `endpointTester` is registered as a non-protected dev route) | none |
+
+**Steps:**
+1. Branch from `main` after confirming TASK-00 is merged. Rebase onto each screen branch's tip only
+   if you hit conflicts — this branch should otherwise be independent since it doesn't touch any
+   screen file.
+2. For `review` (#10): first check `MainShellPage`/`main_shell_tab_provider.dart` — it may already
+   be the review tab's content via the `IndexedStack`, in which case it needs no separate route. Only
+   add a route if it's genuinely a standalone page nothing currently shows.
+3. For each remaining row: add a `static const` to `AppRoutePaths`, add a `case` to the
+   `onGenerateRoute` switch, and (if the page constructor needs arguments) a typed `_build*` helper
+   matching the existing pattern — read the target page's constructor signature first to know
+   exactly what arguments are required, don't guess.
+4. Decide protected vs. unprotected: everything except `dsPreview` should be added to
+   `_protectedRoutes` (all of them require a signed-in user per their backend endpoints) — verify
+   against how similar existing protected routes are declared.
+5. Do NOT change how any screen navigates internally — only add the missing destination route. If a
+   parent screen needs a button wired to navigate to one of these new routes, that's the parent
+   screen's task to do (e.g. TASK-12 for voice, TASK-07 for placementIntro) — this task only makes
+   the destination reachable, it doesn't add new navigation triggers elsewhere.
+6. `flutter analyze` to confirm no broken references; `flutter run` and manually navigate to a
+   couple of the newly-added routes via `Navigator.pushNamed` in a temporary debug button or the
+   dev-tools endpoint tester page, then remove any temporary test code before committing.
+
+**Commit and push:**
+```
+git checkout -b ui/routing-wiring
+git add apps/mobile/lib/core/routing/app_route_paths.dart apps/mobile/lib/core/routing/app_router.dart
+git commit -m "feat(routing): add named routes for screens previously unreachable via AppRouter"
+git push -u origin ui/routing-wiring
+```
+
+── END OF TASK-14 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-15 — Menu Drawer + Notifications Sheet Integration
+Branch: `ui/menu-integration`
+Design ref: `screenshots/menu/01-view.png` (Home, dark), `screenshots/menu/02-view.png` (drawer,
+            dark), `screenshots/menu/03-view.png` (drawer, light), `screenshots/menu/04-view.png`
+            (notifications sheet)
+Status: ❌ Missing — `AIMAppDrawer`/`AIMNotificationsSheet` are built in TASK-00 but never wired
+        into a screen
+Depends on: TASK-00 must be merged (provides `AIMAppDrawer`, `AIMNotificationsSheet`)
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+You are working on the Flutter mobile app in `apps/mobile/`. Your job is to wire the side menu
+drawer and the notifications bottom sheet into the app shell — these widgets are built by TASK-00
+but not yet attached to any screen.
+
+**Scope:**
+- `apps/mobile/lib/features/shell/ui/pages/main_shell_page.dart`
+- `apps/mobile/lib/core/widgets/navigation/aim_top_app_bar.dart` (only if a hamburger/menu icon
+  needs adding to trigger the drawer — check current params first)
+
+BACKEND IS READ-ONLY.
+
+**What this covers:** `screenshots/menu/02-view.png`/`03-view.png` show a side drawer (opened from
+the app bar) listing navigation destinations + a header with user avatar/name + a footer
+(e.g. sign out). `screenshots/menu/04-view.png` shows a bottom sheet of notifications, triggered by
+a bell icon — this is a quick-glance overlay, distinct from the full `notifInbox` screen.
+
+**Endpoints:** Reuse whatever the existing `notifInbox`/`notification_inbox_page.dart` provider
+already exposes for notification data (`GET /api/v1/notifications/inbox`) — do not create a second
+data source for the sheet, point `AIMNotificationsSheet` at the same provider.
+
+**Steps:**
+1. Branch.
+2. Add a design-ref header comment to `main_shell_page.dart` noting the menu/drawer integration.
+3. Wire `AIMAppDrawer` into `MainShellPage`'s `Scaffold.drawer` (or `endDrawer` if RTL/LTR
+   conventions in the screenshots indicate the trailing side — check `02-view.png`/`03-view.png` for
+   which edge the drawer opens from, and confirm it mirrors correctly in RTL).
+4. Populate `AIMAppDrawer.items` with the app's primary navigation destinations (Home, Learn,
+   Review, Progress, Profile, plus secondary items like Settings/Help/Sign out as shown in the
+   screenshot) using the existing route constants from `AppRoutePaths` — do not invent new
+   destinations not shown in the screenshots.
+5. Add a hamburger/menu trigger icon to the top app bar (or confirm one already exists) that opens
+   the drawer via `Scaffold.of(context).openDrawer()`.
+6. Wire the bell icon (check if `notification_bell_button.dart` already exists and is placed
+   correctly — the audit found this widget already exists in
+   `features/notifications/ui/widgets/notification_bell_button.dart`) to open
+   `AIMNotificationsSheet` via `showModalBottomSheet`, instead of/in addition to whatever it
+   currently does — check its current `onTap` behavior before changing it; if it already navigates
+   to the full inbox, decide per the screenshots whether tapping the bell should open the quick
+   sheet (with a "View all" link to the full inbox) or keep navigating directly, and ask if
+   ambiguous.
+7. Dark mode vs `02-view.png`, light mode vs `03-view.png`, sheet vs `04-view.png`.
+8. RTL: drawer slide direction and sheet content must mirror correctly.
+9. `flutter run` — open the drawer, open the notifications sheet, confirm both render correctly in
+   both themes and both directions, and that drawer items navigate correctly.
+
+**Commit and push:**
+```
+git checkout -b ui/menu-integration
+git add apps/mobile/lib/features/shell/ui/pages/main_shell_page.dart
+git commit -m "feat(ui): wire side menu drawer and notifications sheet into app shell"
+git push -u origin ui/menu-integration
+```
+
+── END OF TASK-15 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-16 — Verification: Auth, Shell, Home, Lessons
+Branch: `ui/verify-auth-shell-home-lessons`
+Screens covered: 01 splash, 04 mainShell, 05 home, 06 courseList, 07 chapterList
+Status: ✅ Match per audit — this task confirms it, fixes only what's actually wrong
+Depends on: TASK-00 must be merged
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+You are working on the Flutter mobile app in `apps/mobile/`. These 5 screens were already audited
+as matching the design (✅), so your job is **verification, not a rebuild**: confirm each screen
+against its screenshots in both themes, and fix only concrete discrepancies you find — do not
+restructure working code, do not add features not shown in the screenshots.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| splash | `features/onboarding/ui/pages/splash_page.dart` | `light/01-screen.png`, `dark/01-screen.png` |
+| mainShell | `features/shell/ui/pages/main_shell_page.dart` | `light/04-screen.png`, `dark/04-screen.png` |
+| home | `features/home/ui/pages/home_page.dart` | `light/05-screen.png`, `dark/05-screen.png` |
+| courseList | `features/lessons/ui/pages/course_list_page.dart` | `light/06-screen.png`, `dark/06-screen.png` |
+| chapterList | `features/lessons/ui/pages/chapter_list_page.dart` | `light/07-screen.png`, `dark/07-screen.png` |
+
+**Note:** `home_page.dart` is a good candidate to adopt `AIMGradientHeroHeader`, `AIMStatTile`, and
+`AIMBlobCard` from TASK-00 if its current layout uses ad hoc local widgets that visually approximate
+but don't exactly match those new universal widgets — check `features/home/ui/widgets/` for
+`home_section_header.dart`, `home_goal_card.dart`, etc. and replace with the TASK-00 universal
+widgets where they're a drop-in visual match, to reduce the duplication the audit flagged across
+home/progress/learning_path. Don't force the swap if it would change the visual result — screenshots
+are ground truth, not the new widgets.
+
+**Steps per screen:**
+1. Open the light and dark screenshot side by side with the running screen.
+2. Check: layout/spacing match `AimSpacing` tokens, colors match `AimColors`/`AimColorTheme` (no
+   hardcoded hex), dark mode renders correctly, RTL mirrors correctly, no overflow at 360px/414px,
+   44px touch targets, loading/empty/error states present and using `AIMSkeleton`/`AIMEmptyState`/
+   `AIMFullScreenError`.
+3. If you find a real mismatch, fix it minimally. If everything matches, make no change to that
+   file.
+4. Where `home_page.dart`'s local widgets are a clean swap for TASK-00's universal widgets, make the
+   swap and delete the now-unused local widget file if nothing else references it.
+
+**Commit and push (only if you made changes):**
+```
+git checkout -b ui/verify-auth-shell-home-lessons
+git add apps/mobile/lib/features/onboarding apps/mobile/lib/features/shell apps/mobile/lib/features/home apps/mobile/lib/features/lessons
+git commit -m "fix(ui): verification pass on splash/shell/home/courseList/chapterList"
+git push -u origin ui/verify-auth-shell-home-lessons
+```
+If no changes were needed, report that explicitly instead of pushing an empty branch.
+
+── END OF TASK-16 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-17 — Verification: Progress, Profile, Reviews
+Branch: `ui/verify-progress-profile`
+Screens covered: 11 progress, 13 weakness, 14 recommendations, 15 reviewSchedule, 16 profile
+Status: ✅ Match per audit
+Depends on: TASK-00 must be merged (provides `AIMSkillBlob`, `AIMStatTile` for potential reuse)
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-16 — confirm against screenshots, fix only real
+discrepancies, no rebuilds.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| progress | `features/progress/ui/pages/progress_page.dart` | `light/11-screen.png`, `dark/11-screen.png` |
+| weakness | `features/progress/ui/pages/weakness_summary_page.dart` | `light/13-screen.png`, `dark/13-screen.png` |
+| recommendations | `features/progress/ui/pages/recommendations_page.dart` | `light/14-screen.png`, `dark/14-screen.png` |
+| reviewSchedule | `features/progress/ui/pages/review_schedule_page.dart` | `light/15-screen.png`, `dark/15-screen.png` |
+| profile | `features/profile/ui/pages/profile_page.dart` | `light/16-screen.png`, `dark/16-screen.png` |
+
+**Note:** `progress_recommendation_card.dart`, `progress_weakness_chip.dart`,
+`progress_section_header.dart` here duplicate near-identical widgets in `features/learning_path/ui/
+widgets/`. If you find both sets are simple visual matches for shared widgets, consolidate by
+promoting one shared implementation into `core/widgets/` and pointing both features at it — but only
+if TASK-18 (which covers `learningPath`) hasn't already done so; check for that branch/PR first to
+avoid duplicate work, and if in doubt leave the consolidation for a separate cleanup task rather than
+risk conflicting with TASK-18.
+
+**Steps:** same checklist as TASK-16 (theme tokens, dark mode, RTL, 360/414px, touch targets, 4
+states).
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-progress-profile
+git add apps/mobile/lib/features/progress apps/mobile/lib/features/profile
+git commit -m "fix(ui): verification pass on progress/weakness/recommendations/reviewSchedule/profile"
+git push -u origin ui/verify-progress-profile
+```
+
+── END OF TASK-17 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-18 — Verification: Placement, Assessments
+Branch: `ui/verify-placement-assessments`
+Screens covered: 19 placementStart, 20 placementSection, 22 placementSubmit, 23 placementResult,
+                 24 assessmentList, 25 assessmentDetail, 26 startAttempt, 29 assessmentResult
+Status: ✅ Match per audit
+Depends on: TASK-00 must be merged
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-16.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| placementStart | `features/placement/ui/pages/placement_start_page.dart` | `light/19-screen.png`, `dark/19-screen.png` |
+| placementSection | `features/placement/ui/pages/placement_section_page.dart` | `light/20-screen.png`, `dark/20-screen.png` |
+| placementSubmit | `features/placement/ui/pages/placement_submit_page.dart` | `light/22-screen.png`, `dark/22-screen.png` |
+| placementResult | `features/placement/ui/pages/placement_result_page.dart` | `light/23-screen.png`, `dark/23-screen.png` |
+| assessmentList | `features/assessments/ui/pages/assessment_list_page.dart` | `light/24-screen.png`, `dark/24-screen.png` |
+| assessmentDetail | `features/assessments/ui/pages/assessment_detail_page.dart` | `light/25-screen.png`, `dark/25-screen.png` |
+| startAttempt | `features/assessments/ui/pages/start_attempt_page.dart` | `light/26-screen.png`, `dark/26-screen.png` |
+| assessmentResult | `features/assessments/ui/pages/assessment_result_page.dart` | `light/29-screen.png`, `dark/29-screen.png` |
+
+**Note:** `assessment_list_tile.dart` has an internal `_DeadlineStatusChip` that duplicates
+`deadline_status_widgets.dart`'s `DeadlineStatusBadge`/`DeadlineStatusCard` (used by the `deadlines`
+screen, TASK-14 routing target). If you find this duplication causes a visible inconsistency between
+`assessmentList`'s deadline chip and the dedicated `deadlines` screen's badge, consolidate on one
+implementation; otherwise leave both, this isn't required for visual match.
+
+**Steps:** same checklist as TASK-16, applied to all 8 screens.
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-placement-assessments
+git add apps/mobile/lib/features/placement apps/mobile/lib/features/assessments
+git commit -m "fix(ui): verification pass on placement and assessment screens"
+git push -u origin ui/verify-placement-assessments
+```
+
+── END OF TASK-18 PROMPT ──
+
+---
+
+════════════════════════════════════════════════════════
+## TASK-19 — Verification: AI Teacher, Analytics, Notifications, Billing
+Branch: `ui/verify-ai-notifications-billing`
+Screens covered: 38 analytics, 39 notifInbox, 43 pricing, 44 subscription, 47 invoiceHistory
+Status: ✅ Match per audit
+Depends on: TASK-00 must be merged
+════════════════════════════════════════════════════════
+
+### CLAUDE CODE PROMPT
+
+Same verification-only mandate as TASK-16.
+
+**Screens and files:**
+| Screen | File | Screenshots |
+|---|---|---|
+| analytics | `features/analytics_summary/ui/pages/analytics_summary_page.dart` | `light/38-screen.png`, `dark/38-screen.png` |
+| notifInbox | `features/notifications/ui/pages/notification_inbox_page.dart` | `light/39-screen.png`, `dark/39-screen.png` |
+| pricing | `features/billing/ui/pages/pricing_page.dart` | `light/43-screen.png`, `dark/43-screen.png` |
+| subscription | `features/billing/ui/pages/subscription_page.dart` | `light/44-screen.png`, `dark/44-screen.png` |
+| invoiceHistory | `features/billing/ui/pages/invoice_history_page.dart` | `light/47-screen.png`, `dark/47-screen.png` |
+
+**Note on billing:** `docs/mobile-app-api-endpoints.md` marks most `/billing/*` endpoints as
+"Planned / Not Yet Active." These 3 billing screens already have concrete datasource
+implementations per the audit, but verify they degrade gracefully (clear error/empty state, not a
+crash) if the backend endpoint isn't actually live yet in this environment — that's an acceptable,
+expected state, not a bug to "fix" by inventing fake data.
+
+**Steps:** same checklist as TASK-16, applied to all 5 screens.
+
+**Commit and push (only if changes were made):**
+```
+git checkout -b ui/verify-ai-notifications-billing
+git add apps/mobile/lib/features/analytics_summary apps/mobile/lib/features/notifications apps/mobile/lib/features/billing
+git commit -m "fix(ui): verification pass on analytics, notification inbox, and billing screens"
+git push -u origin ui/verify-ai-notifications-billing
+```
+
+── END OF TASK-19 PROMPT ──
