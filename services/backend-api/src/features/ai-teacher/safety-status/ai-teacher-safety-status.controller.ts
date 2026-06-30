@@ -22,8 +22,8 @@ import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@
 
 import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
 import { RoleGuard } from '../../../auth/authorization/role.guard';
-import { CurrentUser } from '../../../auth/current-user.decorator';
-import { AuthenticatedUser } from '../../../auth/authenticated-user';
+import { ResolveInternalUserIdGuard } from '../../../auth/authorization/resolve-internal-user-id.guard';
+import { ResolvedInternalUserId } from '../../../auth/current-user.decorator';
 import { AuthorizedRole } from '../../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../../auth/authorization/required-roles.decorator';
 import { OPENAPI_TAGS } from '../../../openapi/openapi.tags';
@@ -49,7 +49,7 @@ export class AiTeacherSafetyStatusController {
    * always resolved from the verified JWT — never from the route or query.
    */
   @Get('sessions/:id/safety-status')
-  @UseGuards(SupabaseJwtAuthGuard, RoleGuard)
+  @UseGuards(SupabaseJwtAuthGuard, RoleGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @ApiBearerAuth()
   @ApiOperation({
@@ -62,12 +62,12 @@ export class AiTeacherSafetyStatusController {
   @ApiParam({ name: 'id', description: 'UUID of the AI Teacher chat session.' })
   @ApiOkResponse({ description: 'Safety status for the session.' })
   async getSafetyStatus(
-    @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() studentId: string,
     @Param('id') sessionId: string,
   ): Promise<AiTeacherSafetyStatusResult> {
     const session = await this.chatSessionRepository.findById(sessionId);
 
-    if (!session || session.student_id !== user.id) {
+    if (!session || session.student_id !== studentId) {
       throw new AppError({
         code: ApiErrorCode.NOT_FOUND,
         message: 'Chat session not found.',

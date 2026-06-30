@@ -23,8 +23,8 @@ import { ApiBearerAuth, ApiCreatedResponse, ApiOperation, ApiTags } from '@nestj
 
 import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
 import { RoleGuard } from '../../../auth/authorization/role.guard';
-import { CurrentUser } from '../../../auth/current-user.decorator';
-import { AuthenticatedUser } from '../../../auth/authenticated-user';
+import { ResolveInternalUserIdGuard } from '../../../auth/authorization/resolve-internal-user-id.guard';
+import { ResolvedInternalUserId } from '../../../auth/current-user.decorator';
 import { AuthorizedRole } from '../../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../../auth/authorization/required-roles.decorator';
 import { OPENAPI_TAGS } from '../../../openapi/openapi.tags';
@@ -45,7 +45,7 @@ export class ChatSessionStartController {
    * studentId is always resolved from the verified JWT — never from the body.
    */
   @Post('sessions')
-  @UseGuards(SupabaseJwtAuthGuard, RoleGuard)
+  @UseGuards(SupabaseJwtAuthGuard, RoleGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()
@@ -57,13 +57,13 @@ export class ChatSessionStartController {
   })
   @ApiCreatedResponse({ description: 'Chat session created.' })
   async startSession(
-    @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() studentId: string,
     @Body() body: unknown,
   ): Promise<StartChatSessionResult> {
     const dto = StartChatSessionRequestDto.fromBody(body);
 
     return this.chatSessionStartService.startSession({
-      studentId: user.id,
+      studentId,
       contextRef: dto.contextRef,
     });
   }

@@ -73,7 +73,7 @@ describe('ChatMessageSubmitController', () => {
     const { controller, service, repository } = makeController();
     const user = makeUser({ id: 'student-1' });
 
-    await controller.sendMessage(user, 'session-1', { message: 'hello' });
+    await controller.sendMessage(user.id, 'session-1', { message: 'hello' });
 
     expect(repository.findById).toHaveBeenCalledWith('session-1');
     expect(service.submitMessage).toHaveBeenCalledWith({
@@ -89,7 +89,7 @@ describe('ChatMessageSubmitController', () => {
     const { controller } = makeController(makeSessionRow(), result);
 
     await expect(
-      controller.sendMessage(makeUser(), 'session-1', { message: 'hello' }),
+      controller.sendMessage(makeUser().id, 'session-1', { message: 'hello' }),
     ).resolves.toEqual(result);
   });
 
@@ -97,7 +97,7 @@ describe('ChatMessageSubmitController', () => {
     const { controller, service } = makeController(null);
 
     await expect(
-      controller.sendMessage(makeUser(), 'missing-session', { message: 'hello' }),
+      controller.sendMessage(makeUser().id, 'missing-session', { message: 'hello' }),
     ).rejects.toThrow(AppError);
     expect(service.submitMessage).not.toHaveBeenCalled();
   });
@@ -106,7 +106,7 @@ describe('ChatMessageSubmitController', () => {
     const { controller, service } = makeController(makeSessionRow({ student_id: 'other-student' }));
 
     await expect(
-      controller.sendMessage(makeUser({ id: 'student-1' }), 'session-1', { message: 'hello' }),
+      controller.sendMessage(makeUser({ id: 'student-1' }).id, 'session-1', { message: 'hello' }),
     ).rejects.toThrow(AppError);
     expect(service.submitMessage).not.toHaveBeenCalled();
   });
@@ -114,7 +114,7 @@ describe('ChatMessageSubmitController', () => {
   it('rejects before checking the session when message is missing', async () => {
     const { controller, service, repository } = makeController();
 
-    await expect(controller.sendMessage(makeUser(), 'session-1', {})).rejects.toThrow(AppError);
+    await expect(controller.sendMessage(makeUser().id, 'session-1', {})).rejects.toThrow(AppError);
     expect(repository.findById).not.toHaveBeenCalled();
     expect(service.submitMessage).not.toHaveBeenCalled();
   });

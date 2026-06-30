@@ -27,8 +27,8 @@ import { Observable } from 'rxjs';
 
 import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
 import { RoleGuard } from '../../../auth/authorization/role.guard';
-import { CurrentUser } from '../../../auth/current-user.decorator';
-import { AuthenticatedUser } from '../../../auth/authenticated-user';
+import { ResolveInternalUserIdGuard } from '../../../auth/authorization/resolve-internal-user-id.guard';
+import { ResolvedInternalUserId } from '../../../auth/current-user.decorator';
 import { AuthorizedRole } from '../../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../../auth/authorization/required-roles.decorator';
 import { OPENAPI_TAGS } from '../../../openapi/openapi.tags';
@@ -57,7 +57,7 @@ export class AiTeacherStreamMessageController {
    * the body.
    */
   @Sse('sessions/:id/messages/stream')
-  @UseGuards(SupabaseJwtAuthGuard, RoleGuard)
+  @UseGuards(SupabaseJwtAuthGuard, RoleGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @ApiBearerAuth()
   @ApiOperation({
@@ -71,7 +71,7 @@ export class AiTeacherStreamMessageController {
   @ApiParam({ name: 'id', description: 'UUID of the AI Teacher chat session.' })
   @ApiOkResponse({ description: 'Server-sent event stream of the AI Teacher reply.' })
   streamMessage(
-    @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() studentId: string,
     @Param('id') sessionId: string,
     @Body() body: unknown,
   ): Observable<MessageEvent> {
@@ -83,7 +83,7 @@ export class AiTeacherStreamMessageController {
       (async () => {
         const session = await this.chatSessionRepository.findById(sessionId);
 
-        if (!session || session.student_id !== user.id) {
+        if (!session || session.student_id !== studentId) {
           subscriber.error(
             new AppError({
               code: ApiErrorCode.NOT_FOUND,
@@ -96,7 +96,7 @@ export class AiTeacherStreamMessageController {
 
         try {
           for await (const event of this.streamMessageService.streamTurn({
-            studentId: user.id,
+            studentId,
             sessionId: session.id,
             contextRef: session.context_ref,
             studentMessage: dto.message,

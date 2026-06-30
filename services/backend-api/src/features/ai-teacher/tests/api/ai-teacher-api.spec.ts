@@ -53,6 +53,7 @@ import { AiChatSessionRepository } from '../../repositories/ai-chat-session.repo
 import { AiChatSessionRow } from '../../repositories/ai-chat-repository.types';
 import { AppError } from '../../../../common/errors/app-error';
 import { AuthenticatedUser } from '../../../../auth/authenticated-user';
+import { UsersService } from '../../../users/users.service';
 
 // ---------------------------------------------------------------------------
 // Shared fixtures
@@ -176,11 +177,20 @@ describe('SubmitFeedbackRequestDto — validation (P8-077)', () => {
 // ---------------------------------------------------------------------------
 
 describe('AiTeacherSessionOwnershipGuard (P8-076)', () => {
+  // findBySupabaseUid resolves the auth UID to itself as the internal id —
+  // sufficient for these tests since the fixtures use the same literal
+  // string for both `request.user.id` and `session.student_id`.
+  function makeUsersService(): UsersService {
+    return {
+      findBySupabaseUid: jest.fn((uid: string) => Promise.resolve({ id: uid })),
+    } as unknown as UsersService;
+  }
+
   function makeGuard(session: AiChatSessionRow | null) {
     const repo = {
       findById: jest.fn().mockResolvedValue(session),
     } as unknown as AiChatSessionRepository;
-    return new AiTeacherSessionOwnershipGuard(repo);
+    return new AiTeacherSessionOwnershipGuard(repo, makeUsersService());
   }
 
   function makeContext(userId: string, sessionId: string) {
@@ -204,7 +214,7 @@ describe('AiTeacherSessionOwnershipGuard (P8-076)', () => {
   it('attaches the loaded session to the request for downstream handlers', async () => {
     const session = makeSession({ id: 'session-1', student_id: 'student-1' });
     const repo = { findById: jest.fn().mockResolvedValue(session) } as unknown as AiChatSessionRepository;
-    const guard = new AiTeacherSessionOwnershipGuard(repo);
+    const guard = new AiTeacherSessionOwnershipGuard(repo, makeUsersService());
     const request: Record<string, unknown> = {
       user: makeUser({ id: 'student-1' }),
       params: { id: 'session-1' },
@@ -288,7 +298,7 @@ describe('ChatSessionStartController (P8-071)', () => {
 
   it('resolves studentId from the JWT user — never from the body', async () => {
     const { controller, service } = makeController();
-    await controller.startSession(makeUser({ id: 'student-jwt' }), { contextRef: 'lesson:x' });
+    await controller.startSession(makeUser({ id: 'student-jwt' }).id, { contextRef: 'lesson:x' });
     expect(service.startSession).toHaveBeenCalledWith(
       expect.objectContaining({ studentId: 'student-jwt' }),
     );
@@ -296,7 +306,7 @@ describe('ChatSessionStartController (P8-071)', () => {
 
   it('passes contextRef from the validated DTO to the service', async () => {
     const { controller, service } = makeController();
-    await controller.startSession(makeUser(), { contextRef: '  lesson:fractions  ' });
+    await controller.startSession(makeUser().id, { contextRef: '  lesson:fractions  ' });
     expect(service.startSession).toHaveBeenCalledWith(
       expect.objectContaining({ contextRef: 'lesson:fractions' }),
     );
@@ -305,7 +315,7 @@ describe('ChatSessionStartController (P8-071)', () => {
   it('throws VALIDATION_ERROR when contextRef is missing before calling the service', async () => {
     const { controller, service } = makeController();
     let err: AppError | undefined;
-    try { await controller.startSession(makeUser(), {}); }
+    try { await controller.startSession(makeUser().id, {}); }
     catch (e) { err = e as AppError; }
     expect(err?.statusCode).toBe(HttpStatus.BAD_REQUEST);
     expect(service.startSession).not.toHaveBeenCalled();
@@ -313,13 +323,13 @@ describe('ChatSessionStartController (P8-071)', () => {
 
   it('returns the service result directly', async () => {
     const { controller } = makeController();
-    const result = await controller.startSession(makeUser(), { contextRef: 'lesson:fractions' });
+    const result = await controller.startSession(makeUser().id, { contextRef: 'lesson:fractions' });
     expect(result).toEqual(SESSION_RESULT);
   });
 
   it('never includes mastery, level, weakness, difficulty, recommendation, or reviewSchedule in the response', async () => {
     const { controller } = makeController();
-    const result = await controller.startSession(makeUser(), { contextRef: 'lesson:fractions' });
+    const result = await controller.startSession(makeUser().id, { contextRef: 'lesson:fractions' });
     const serialized = JSON.stringify(result);
     expect(serialized).not.toMatch(/mastery|weakness|difficulty|recommendation|reviewSchedule/i);
   });
@@ -353,7 +363,7 @@ describe('ChatMessageSubmitController (P8-072)', () => {
 
   it('resolves studentId from the JWT user — never from the body', async () => {
     const { controller, service } = makeController(makeSession({ student_id: 'jwt-student' }));
-    await controller.sendMessage(makeUser({ id: 'jwt-student' }), 'session-1', { message: 'hi' });
+    await controller.sendMessage(makeUser({ id: 'jwt-student' }).id, 'session-1', { message: 'hi' });
     expect(service.submitMessage).toHaveBeenCalledWith(
       expect.objectContaining({ studentId: 'jwt-student' }),
     );
@@ -361,7 +371,7 @@ describe('ChatMessageSubmitController (P8-072)', () => {
 
   it('reads contextRef from the session row — never from the body', async () => {
     const { controller, service } = makeController(makeSession({ context_ref: 'lesson:fractions' }));
-    await controller.sendMessage(makeUser(), 'session-1', { message: 'hi', contextRef: 'attacker-context' } as any);
+    await controller.sendMessage(makeUser().id, 'session-1', { message: 'hi', contextRef: 'attacker-context' } as any);
     expect(service.submitMessage).toHaveBeenCalledWith(
       expect.objectContaining({ contextRef: 'lesson:fractions' }),
     );
@@ -370,7 +380,7 @@ describe('ChatMessageSubmitController (P8-072)', () => {
   it('throws NOT_FOUND when session does not exist — no existence leak', async () => {
     const { controller, service } = makeController(null);
     let err: AppError | undefined;
-    try { await controller.sendMessage(makeUser(), 'no-session', { message: 'hi' }); }
+    try { await controller.sendMessage(makeUser().id, 'no-session', { message: 'hi' }); }
     catch (e) { err = e as AppError; }
     expect(err?.statusCode).toBe(HttpStatus.NOT_FOUND);
     expect(service.submitMessage).not.toHaveBeenCalled();
@@ -379,7 +389,7 @@ describe('ChatMessageSubmitController (P8-072)', () => {
   it('throws NOT_FOUND when the session belongs to a different student — no existence leak', async () => {
     const { controller, service } = makeController(makeSession({ student_id: 'other-student' }));
     let err: AppError | undefined;
-    try { await controller.sendMessage(makeUser({ id: 'student-1' }), 'session-1', { message: 'hi' }); }
+    try { await controller.sendMessage(makeUser({ id: 'student-1' }).id, 'session-1', { message: 'hi' }); }
     catch (e) { err = e as AppError; }
     expect(err?.statusCode).toBe(HttpStatus.NOT_FOUND);
     expect(service.submitMessage).not.toHaveBeenCalled();
@@ -388,7 +398,7 @@ describe('ChatMessageSubmitController (P8-072)', () => {
   it('throws VALIDATION_ERROR when the message body is missing before calling the service', async () => {
     const { controller, service } = makeController();
     let err: AppError | undefined;
-    try { await controller.sendMessage(makeUser(), 'session-1', {}); }
+    try { await controller.sendMessage(makeUser().id, 'session-1', {}); }
     catch (e) { err = e as AppError; }
     expect(err?.statusCode).toBe(HttpStatus.BAD_REQUEST);
     expect(service.submitMessage).not.toHaveBeenCalled();
@@ -396,13 +406,13 @@ describe('ChatMessageSubmitController (P8-072)', () => {
 
   it('returns the service result directly', async () => {
     const { controller } = makeController();
-    const result = await controller.sendMessage(makeUser(), 'session-1', { message: 'hi' });
+    const result = await controller.sendMessage(makeUser().id, 'session-1', { message: 'hi' });
     expect(result).toEqual(MESSAGE_RESULT);
   });
 
   it('never includes AIM Engine authority fields in the response', async () => {
     const { controller } = makeController();
-    const result = await controller.sendMessage(makeUser(), 'session-1', { message: 'hi' });
+    const result = await controller.sendMessage(makeUser().id, 'session-1', { message: 'hi' });
     const keys = Object.keys(result);
     ['mastery', 'level', 'weakness', 'difficulty', 'recommendation', 'reviewSchedule'].forEach(
       (k) => expect(keys).not.toContain(k),
@@ -432,7 +442,7 @@ describe('ChatHistoryReadController (P8-073)', () => {
 
   it('resolves studentId from the JWT user and passes it to the service', async () => {
     const { controller, service } = makeController();
-    await controller.getHistory(makeUser({ id: 'jwt-student' }), 'session-1');
+    await controller.getHistory(makeUser({ id: 'jwt-student' }).id, 'session-1');
     expect(service.getHistory).toHaveBeenCalledWith({ studentId: 'jwt-student', sessionId: 'session-1' });
   });
 
@@ -440,20 +450,20 @@ describe('ChatHistoryReadController (P8-073)', () => {
     const service = { getHistory: jest.fn().mockResolvedValue(null) } as unknown as ChatHistoryReadService;
     const controller = new ChatHistoryReadController(service);
     let err: AppError | undefined;
-    try { await controller.getHistory(makeUser(), 'bad-session'); }
+    try { await controller.getHistory(makeUser().id, 'bad-session'); }
     catch (e) { err = e as AppError; }
     expect(err?.statusCode).toBe(HttpStatus.NOT_FOUND);
   });
 
   it('returns the service result directly', async () => {
     const { controller } = makeController();
-    const result = await controller.getHistory(makeUser(), 'session-1');
+    const result = await controller.getHistory(makeUser().id, 'session-1');
     expect(result).toEqual(HISTORY_RESULT);
   });
 
   it('never includes AIM Engine authority fields in the response', async () => {
     const { controller } = makeController();
-    const result = await controller.getHistory(makeUser(), 'session-1');
+    const result = await controller.getHistory(makeUser().id, 'session-1');
     const serialized = JSON.stringify(result);
     expect(serialized).not.toMatch(/mastery|weakness|difficulty|recommendation|reviewSchedule/i);
   });
@@ -479,7 +489,7 @@ describe('ChatSessionListReadController (P8-074)', () => {
 
   it('resolves studentId exclusively from the JWT user — no route/query param', async () => {
     const { controller, service } = makeController();
-    await controller.listSessions(makeUser({ id: 'jwt-student' }));
+    await controller.listSessions(makeUser({ id: 'jwt-student' }).id);
     expect(service.listSessions).toHaveBeenCalledWith({ studentId: 'jwt-student' });
   });
 
@@ -491,7 +501,7 @@ describe('ChatSessionListReadController (P8-074)', () => {
 
   it('returns the service result directly', async () => {
     const { controller } = makeController();
-    const result = await controller.listSessions(makeUser());
+    const result = await controller.listSessions(makeUser().id);
     expect(result).toEqual(LIST_RESULT);
   });
 });
@@ -519,7 +529,7 @@ describe('AiTeacherFeedbackSubmitController (P8-075/076)', () => {
 
   it('resolves studentId from JWT — never from the body', async () => {
     const { controller, service } = makeController();
-    await controller.submitFeedback(makeUser({ id: 'jwt-student' }), 'msg-1', { rating: 'helpful' });
+    await controller.submitFeedback(makeUser({ id: 'jwt-student' }).id, 'msg-1', { rating: 'helpful' });
     expect(service.submitFeedback).toHaveBeenCalledWith(
       expect.objectContaining({ studentId: 'jwt-student' }),
     );
@@ -527,7 +537,7 @@ describe('AiTeacherFeedbackSubmitController (P8-075/076)', () => {
 
   it('reads messageId from the route param — never from the body', async () => {
     const { controller, service } = makeController();
-    await controller.submitFeedback(makeUser(), 'route-msg-id', { rating: 'helpful', messageId: 'body-msg-id' } as any);
+    await controller.submitFeedback(makeUser().id, 'route-msg-id', { rating: 'helpful', messageId: 'body-msg-id' } as any);
     expect(service.submitFeedback).toHaveBeenCalledWith(
       expect.objectContaining({ messageId: 'route-msg-id' }),
     );
@@ -536,7 +546,7 @@ describe('AiTeacherFeedbackSubmitController (P8-075/076)', () => {
   it('throws VALIDATION_ERROR when rating is missing before calling the service', async () => {
     const { controller, service } = makeController();
     let err: AppError | undefined;
-    try { await controller.submitFeedback(makeUser(), 'msg-1', {}); }
+    try { await controller.submitFeedback(makeUser().id, 'msg-1', {}); }
     catch (e) { err = e as AppError; }
     expect(err?.statusCode).toBe(HttpStatus.BAD_REQUEST);
     expect(service.submitFeedback).not.toHaveBeenCalled();
@@ -545,7 +555,7 @@ describe('AiTeacherFeedbackSubmitController (P8-075/076)', () => {
   it('throws VALIDATION_ERROR when rating is invalid before calling the service', async () => {
     const { controller, service } = makeController();
     let err: AppError | undefined;
-    try { await controller.submitFeedback(makeUser(), 'msg-1', { rating: 'HELPFUL' }); }
+    try { await controller.submitFeedback(makeUser().id, 'msg-1', { rating: 'HELPFUL' }); }
     catch (e) { err = e as AppError; }
     expect(err?.statusCode).toBe(HttpStatus.BAD_REQUEST);
     expect(service.submitFeedback).not.toHaveBeenCalled();
@@ -554,7 +564,7 @@ describe('AiTeacherFeedbackSubmitController (P8-075/076)', () => {
   it('maps "message not found" service error to safe 404 — no internal detail exposed', async () => {
     const { controller } = makeController(FEEDBACK_RESULT, new Error('Cannot submit AI Teacher feedback: message not found.'));
     let err: AppError | undefined;
-    try { await controller.submitFeedback(makeUser(), 'msg-1', { rating: 'helpful' }); }
+    try { await controller.submitFeedback(makeUser().id, 'msg-1', { rating: 'helpful' }); }
     catch (e) { err = e as AppError; }
     expect(err?.statusCode).toBe(HttpStatus.NOT_FOUND);
     expect(err?.message).toBe('Message not found.');
@@ -564,7 +574,7 @@ describe('AiTeacherFeedbackSubmitController (P8-075/076)', () => {
   it('maps "feedback already recorded" service error to safe 409 CONFLICT', async () => {
     const { controller } = makeController(FEEDBACK_RESULT, new Error('Cannot submit AI Teacher feedback: feedback already recorded for this message.'));
     let err: AppError | undefined;
-    try { await controller.submitFeedback(makeUser(), 'msg-1', { rating: 'helpful' }); }
+    try { await controller.submitFeedback(makeUser().id, 'msg-1', { rating: 'helpful' }); }
     catch (e) { err = e as AppError; }
     expect(err?.statusCode).toBe(HttpStatus.CONFLICT);
   });
@@ -572,7 +582,7 @@ describe('AiTeacherFeedbackSubmitController (P8-075/076)', () => {
   it('maps "not an AI Teacher reply" service error to safe 400', async () => {
     const { controller } = makeController(FEEDBACK_RESULT, new Error('Cannot submit AI Teacher feedback: message is not an AI Teacher reply.'));
     let err: AppError | undefined;
-    try { await controller.submitFeedback(makeUser(), 'msg-1', { rating: 'helpful' }); }
+    try { await controller.submitFeedback(makeUser().id, 'msg-1', { rating: 'helpful' }); }
     catch (e) { err = e as AppError; }
     expect(err?.statusCode).toBe(HttpStatus.BAD_REQUEST);
   });
@@ -580,7 +590,7 @@ describe('AiTeacherFeedbackSubmitController (P8-075/076)', () => {
   it('maps unexpected service errors to safe 500 — no internals leaked', async () => {
     const { controller } = makeController(FEEDBACK_RESULT, new Error('Some internal db error'));
     let err: AppError | undefined;
-    try { await controller.submitFeedback(makeUser(), 'msg-1', { rating: 'helpful' }); }
+    try { await controller.submitFeedback(makeUser().id, 'msg-1', { rating: 'helpful' }); }
     catch (e) { err = e as AppError; }
     expect(err?.statusCode).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
     expect(err?.message).toBe('An unexpected error occurred.');
@@ -589,7 +599,7 @@ describe('AiTeacherFeedbackSubmitController (P8-075/076)', () => {
 
   it('returns the service result on success', async () => {
     const { controller } = makeController();
-    const result = await controller.submitFeedback(makeUser(), 'msg-1', { rating: 'helpful' });
+    const result = await controller.submitFeedback(makeUser().id, 'msg-1', { rating: 'helpful' });
     expect(result).toEqual(FEEDBACK_RESULT);
   });
 });

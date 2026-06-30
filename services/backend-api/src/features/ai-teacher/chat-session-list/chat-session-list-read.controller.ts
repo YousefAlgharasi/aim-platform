@@ -19,8 +19,8 @@ import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swa
 
 import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
 import { RoleGuard } from '../../../auth/authorization/role.guard';
-import { CurrentUser } from '../../../auth/current-user.decorator';
-import { AuthenticatedUser } from '../../../auth/authenticated-user';
+import { ResolveInternalUserIdGuard } from '../../../auth/authorization/resolve-internal-user-id.guard';
+import { ResolvedInternalUserId } from '../../../auth/current-user.decorator';
 import { AuthorizedRole } from '../../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../../auth/authorization/required-roles.decorator';
 import { OPENAPI_TAGS } from '../../../openapi/openapi.tags';
@@ -41,7 +41,7 @@ export class ChatSessionListReadController {
    * verified JWT.
    */
   @Get('sessions')
-  @UseGuards(SupabaseJwtAuthGuard, RoleGuard)
+  @UseGuards(SupabaseJwtAuthGuard, RoleGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @ApiBearerAuth()
   @ApiOperation({
@@ -52,8 +52,8 @@ export class ChatSessionListReadController {
   })
   @ApiOkResponse({ description: "The student's active chat sessions." })
   async listSessions(
-    @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() studentId: string,
   ): Promise<ListChatSessionsResult> {
-    return this.chatSessionListReadService.listSessions({ studentId: user.id });
+    return this.chatSessionListReadService.listSessions({ studentId });
   }
 }
