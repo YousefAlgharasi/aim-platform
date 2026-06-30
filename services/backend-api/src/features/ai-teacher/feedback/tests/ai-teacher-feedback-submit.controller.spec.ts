@@ -59,7 +59,7 @@ describe('AiTeacherFeedbackSubmitController', () => {
   it('resolves studentId from the authenticated user and messageId from the route', async () => {
     const { controller, service } = makeController();
 
-    await controller.submitFeedback(makeUser({ id: 'student-1' }), 'message-1', {
+    await controller.submitFeedback(makeUser({ id: 'student-1' }).id, 'message-1', {
       rating: 'helpful',
     });
 
@@ -75,14 +75,14 @@ describe('AiTeacherFeedbackSubmitController', () => {
     const { controller } = makeController({ result });
 
     await expect(
-      controller.submitFeedback(makeUser(), 'message-1', { rating: 'helpful' }),
+      controller.submitFeedback(makeUser().id, 'message-1', { rating: 'helpful' }),
     ).resolves.toEqual(result);
   });
 
   it('rejects before calling the service when rating is missing', async () => {
     const { controller, service } = makeController();
 
-    await expect(controller.submitFeedback(makeUser(), 'message-1', {})).rejects.toThrow(
+    await expect(controller.submitFeedback(makeUser().id, 'message-1', {})).rejects.toThrow(
       AppError,
     );
     expect(service.submitFeedback).not.toHaveBeenCalled();
@@ -94,7 +94,7 @@ describe('AiTeacherFeedbackSubmitController', () => {
     });
 
     await expect(
-      controller.submitFeedback(makeUser(), 'message-1', { rating: 'helpful' }),
+      controller.submitFeedback(makeUser().id, 'message-1', { rating: 'helpful' }),
     ).rejects.toMatchObject({ code: ApiErrorCode.NOT_FOUND });
   });
 
@@ -104,7 +104,7 @@ describe('AiTeacherFeedbackSubmitController', () => {
     });
 
     await expect(
-      controller.submitFeedback(makeUser(), 'message-1', { rating: 'helpful' }),
+      controller.submitFeedback(makeUser().id, 'message-1', { rating: 'helpful' }),
     ).rejects.toMatchObject({ code: ApiErrorCode.VALIDATION_ERROR });
   });
 
@@ -114,14 +114,14 @@ describe('AiTeacherFeedbackSubmitController', () => {
     });
 
     await expect(
-      controller.submitFeedback(makeUser(), 'message-1', { rating: 'helpful' }),
+      controller.submitFeedback(makeUser().id, 'message-1', { rating: 'helpful' }),
     ).rejects.toMatchObject({ code: ApiErrorCode.CONFLICT });
   });
 
   it('maps an unrecognized service error to a generic INTERNAL_SERVER_ERROR without leaking details', async () => {
     const { controller } = makeController({ error: new Error('unexpected db failure: secret') });
 
-    const rejection = controller.submitFeedback(makeUser(), 'message-1', { rating: 'helpful' });
+    const rejection = controller.submitFeedback(makeUser().id, 'message-1', { rating: 'helpful' });
     await expect(rejection).rejects.toMatchObject({ code: ApiErrorCode.INTERNAL_SERVER_ERROR });
     await expect(rejection).rejects.not.toMatchObject({ message: expect.stringContaining('secret') });
   });

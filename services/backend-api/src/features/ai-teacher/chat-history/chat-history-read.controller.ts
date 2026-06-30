@@ -21,8 +21,8 @@ import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@
 
 import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
 import { RoleGuard } from '../../../auth/authorization/role.guard';
-import { CurrentUser } from '../../../auth/current-user.decorator';
-import { AuthenticatedUser } from '../../../auth/authenticated-user';
+import { ResolveInternalUserIdGuard } from '../../../auth/authorization/resolve-internal-user-id.guard';
+import { ResolvedInternalUserId } from '../../../auth/current-user.decorator';
 import { AuthorizedRole } from '../../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../../auth/authorization/required-roles.decorator';
 import { OPENAPI_TAGS } from '../../../openapi/openapi.tags';
@@ -45,7 +45,7 @@ export class ChatHistoryReadController {
    * never from the route or query.
    */
   @Get('sessions/:id/messages')
-  @UseGuards(SupabaseJwtAuthGuard, RoleGuard)
+  @UseGuards(SupabaseJwtAuthGuard, RoleGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @ApiBearerAuth()
   @ApiOperation({
@@ -57,11 +57,11 @@ export class ChatHistoryReadController {
   @ApiParam({ name: 'id', description: 'UUID of the AI Teacher chat session.' })
   @ApiOkResponse({ description: 'Chat history for the session.' })
   async getHistory(
-    @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() studentId: string,
     @Param('id') sessionId: string,
   ): Promise<GetChatHistoryResult> {
     const result = await this.chatHistoryReadService.getHistory({
-      studentId: user.id,
+      studentId,
       sessionId,
     });
 
