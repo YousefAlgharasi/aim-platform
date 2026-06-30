@@ -45,6 +45,7 @@ describe('CurrentLessonContextAdapter', () => {
       description: 'Intro to fractions',
       status: 'published',
       sortOrder: 1,
+      xpValue: 0,
       createdAt: '2026-06-01T00:00:00Z',
       updatedAt: '2026-06-01T00:00:00Z',
     }));

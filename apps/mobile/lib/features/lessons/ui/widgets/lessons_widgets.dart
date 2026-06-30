@@ -6,3 +6,4 @@ export 'course_list_tile.dart';
 export 'lesson_asset_tile.dart';
 export 'lesson_content_renderer.dart';
 export 'lesson_list_tile.dart';
+export 'lesson_step_tile.dart';

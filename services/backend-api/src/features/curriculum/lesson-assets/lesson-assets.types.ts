@@ -1,15 +1,21 @@
 export type LessonAssetType =
+  | 'text'
   | 'image'
   | 'audio'
   | 'video'
   | 'document'
+  | 'vocabulary'
+  | 'exercise'
   | 'external_reference';
 
 export const LESSON_ASSET_TYPES: readonly LessonAssetType[] = [
+  'text',
   'image',
   'audio',
   'video',
   'document',
+  'vocabulary',
+  'exercise',
   'external_reference',
 ];
 
