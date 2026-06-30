@@ -53,4 +53,14 @@ abstract class HomeRepository {
   Future<HomeContinueLearningModel?> getContinueLearning({
     required String bearerToken,
   });
+
+  /// Fetch the next lesson to start, derived from the student's placement result.
+  Future<HomeQuickStartLessonModel?> getQuickStartLesson({
+    required String bearerToken,
+  });
+
+  /// Fetch the course recommended based on the student's placement result.
+  Future<HomeRecommendedCourseModel?> getRecommendedCourse({
+    required String bearerToken,
+  });
 }

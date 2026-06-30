@@ -39,3 +39,17 @@ export interface ContinueLearningLesson {
   readonly percent: number;
   readonly lastActiveAt: string;
 }
+
+export interface QuickStartLesson {
+  readonly lessonId: string;
+  readonly lessonTitle: string;
+  readonly lessonDescription: string;
+  readonly skillName: string | null;
+}
+
+export interface RecommendedCourse {
+  readonly courseId: string;
+  readonly courseTitle: string;
+  readonly courseDescription: string | null;
+  readonly estimatedLevel: string | null;
+}

@@ -155,6 +155,36 @@ class HomeRemoteDatasourceImpl implements HomeRemoteDatasource {
     return envelope.data;
   }
 
+  @override
+  Future<HomeQuickStartLessonModel?> getQuickStartLesson({
+    required String bearerToken,
+  }) async {
+    final envelope = await _apiClient.get<HomeQuickStartLessonModel?>(
+      BackendApiPaths.lessonsQuickStart,
+      headers: _auth(bearerToken),
+      decodeData: (json) {
+        if (json == null) return null;
+        return HomeQuickStartLessonModel.fromJson(json as Map<String, dynamic>);
+      },
+    );
+    return envelope.data;
+  }
+
+  @override
+  Future<HomeRecommendedCourseModel?> getRecommendedCourse({
+    required String bearerToken,
+  }) async {
+    final envelope = await _apiClient.get<HomeRecommendedCourseModel?>(
+      BackendApiPaths.lessonsRecommendedCourse,
+      headers: _auth(bearerToken),
+      decodeData: (json) {
+        if (json == null) return null;
+        return HomeRecommendedCourseModel.fromJson(json as Map<String, dynamic>);
+      },
+    );
+    return envelope.data;
+  }
+
   // ── Helpers ──────────────────────────────────────────────────────────────
 
   Map<String, String> _auth(String bearerToken) =>

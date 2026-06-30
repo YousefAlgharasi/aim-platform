@@ -33,6 +33,8 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart'
 import 'package:aim_mobile/features/home/logic/entity/home_data.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_provider.dart';
 import 'package:aim_mobile/features/shell/logic/main_shell_tab_provider.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_quick_start_lesson.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_recommended_course.dart';
 import '../widgets/home_widgets.dart';
 
 /// Student home screen MVP.
@@ -131,6 +133,20 @@ class _HomeContent extends ConsumerWidget {
   final HomeData data;
   final Future<void> Function() onRefresh;
 
+  void _navigateToLesson(BuildContext context, HomeQuickStartLesson lesson) {
+    Navigator.of(context).pushNamed(
+      AppRoutePaths.lessonDetail,
+      arguments: {'lessonId': lesson.lessonId},
+    );
+  }
+
+  void _navigateToCourse(BuildContext context, HomeRecommendedCourse course) {
+    Navigator.of(context).pushNamed(
+      AppRoutePaths.courseChapters,
+      arguments: {'courseId': course.courseId},
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return RefreshIndicator(
@@ -141,6 +157,24 @@ class _HomeContent extends ConsumerWidget {
           vertical: AimSpacing.sectionGap,
         ),
         children: [
+          if (data.quickStartLesson != null) ...[
+            const HomeSectionHeader(title: 'Quick Start'),
+            const SizedBox(height: AimSpacing.componentGap),
+            HomeQuickStartLessonCard(
+              lesson: data.quickStartLesson!,
+              onTap: () => _navigateToLesson(context, data.quickStartLesson!),
+            ),
+            const SizedBox(height: AimSpacing.sectionGap),
+          ],
+          if (data.recommendedCourse != null) ...[
+            const HomeSectionHeader(title: 'Recommended Course'),
+            const SizedBox(height: AimSpacing.componentGap),
+            HomeRecommendedCourseCard(
+              course: data.recommendedCourse!,
+              onTap: () => _navigateToCourse(context, data.recommendedCourse!),
+            ),
+            const SizedBox(height: AimSpacing.sectionGap),
+          ],
           if (data.continueLearning != null) ...[
             const HomeSectionHeader(title: 'Continue Learning'),
             const SizedBox(height: AimSpacing.componentGap),

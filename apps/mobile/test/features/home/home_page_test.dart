@@ -282,4 +282,16 @@ class _FakeHomeRepository implements HomeRepository {
     required String bearerToken,
   }) async =>
       null;
+
+  @override
+  Future<HomeQuickStartLessonModel?> getQuickStartLesson({
+    required String bearerToken,
+  }) async =>
+      null;
+
+  @override
+  Future<HomeRecommendedCourseModel?> getRecommendedCourse({
+    required String bearerToken,
+  }) async =>
+      null;
 }
