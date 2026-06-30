@@ -6,8 +6,6 @@ import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/features/home/data/datasources/home_remote_datasource.dart'
     show HomeEngagementSummary;
 import 'package:aim_mobile/features/home/data/models/home_models.dart';
-import 'package:aim_mobile/features/home/data/models/home_quick_start_lesson_model.dart';
-import 'package:aim_mobile/features/home/data/models/home_recommended_course_model.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_data.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_provider.dart';
 import 'package:aim_mobile/features/home/logic/repository/home_repository.dart';

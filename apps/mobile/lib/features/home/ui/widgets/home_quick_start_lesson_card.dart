@@ -49,7 +49,7 @@ class HomeQuickStartLessonCard extends StatelessWidget {
                 if (lesson.skillName != null) ...[
                   Text(
                     lesson.skillName!,
-                    style: AimTextStyles.labelSm.copyWith(
+                    style: AimTextStyles.label.copyWith(
                       color: AimColors.primary600,
                     ),
                   ),
