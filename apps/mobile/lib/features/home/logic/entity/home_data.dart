@@ -6,6 +6,8 @@
 // are backend-computed. Flutter renders them verbatim; no local computation.
 
 import 'package:aim_mobile/features/home/data/models/home_models.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_quick_start_lesson.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_recommended_course.dart';
 
 /// Aggregated home screen data loaded from the backend.
 ///
@@ -20,6 +22,8 @@ class HomeData {
     this.goal,
     this.dailyChallenge,
     this.continueLearning,
+    this.quickStartLesson,
+    this.recommendedCourse,
   });
 
   /// Backend-computed skill state summary cards.
@@ -46,6 +50,14 @@ class HomeData {
   /// Most recently active, incomplete lesson, or null if the student has
   /// not started any lesson yet.
   final HomeContinueLearningModel? continueLearning;
+
+  /// Next lesson recommended for the student based on their placement result,
+  /// or null if no placement has been taken yet or no published lessons exist.
+  final HomeQuickStartLesson? quickStartLesson;
+
+  /// Course recommended for the student based on their placement result,
+  /// or null if no placement has been taken yet or no published courses exist.
+  final HomeRecommendedCourse? recommendedCourse;
 
   /// True when the four core AIM lists and continue-learning are all empty
   /// (backend returned no progress data yet) — drives whether the "getting

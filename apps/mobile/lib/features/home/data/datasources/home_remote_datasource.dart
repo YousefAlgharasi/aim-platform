@@ -69,6 +69,22 @@ abstract class HomeRemoteDatasource {
   Future<HomeContinueLearningModel?> getContinueLearning({
     required String bearerToken,
   });
+
+  /// GET /lessons/quick-start
+  ///
+  /// Returns the next lesson the student should start, derived from their
+  /// placement result. Null if no published lessons exist.
+  Future<HomeQuickStartLessonModel?> getQuickStartLesson({
+    required String bearerToken,
+  });
+
+  /// GET /lessons/recommended-course
+  ///
+  /// Returns the course recommended based on the student's placement result.
+  /// Null if no published courses exist.
+  Future<HomeRecommendedCourseModel?> getRecommendedCourse({
+    required String bearerToken,
+  });
 }
 
 /// Bundles the goal + daily challenge payload from a single backend call.

@@ -21,7 +21,12 @@ import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../auth/authorization/required-roles.decorator';
 import { RoleGuard } from '../../auth/authorization/role.guard';
 import { LessonProgressService } from './lesson-progress.service';
-import { ContinueLearningLesson, LessonProgressAckResponse } from './lesson-progress.types';
+import {
+  ContinueLearningLesson,
+  LessonProgressAckResponse,
+  QuickStartLesson,
+  RecommendedCourse,
+} from './lesson-progress.types';
 
 interface RecordProgressBody {
   readonly percent: number;
@@ -59,6 +64,24 @@ export class LessonsController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<ContinueLearningLesson | null> {
     return this.lessonProgress.findContinueLearningLesson(user.id);
+  }
+
+  @Get('quick-start')
+  @ApiOperation({ summary: 'Get the next lesson to start, derived from the student\'s placement result.' })
+  @ApiOkResponse({ description: 'The recommended next lesson, or null if none available.' })
+  async getQuickStartLesson(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<QuickStartLesson | null> {
+    return this.lessonProgress.findQuickStartLesson(user.id);
+  }
+
+  @Get('recommended-course')
+  @ApiOperation({ summary: 'Get the course recommended for the student based on their placement result.' })
+  @ApiOkResponse({ description: 'The recommended course, or null if none available.' })
+  async getRecommendedCourse(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<RecommendedCourse | null> {
+    return this.lessonProgress.findRecommendedCourse(user.id);
   }
 
   @Post(':id/complete')

@@ -69,14 +69,21 @@ class HomeNotifier extends AppStateNotifier<HomeData> {
         recommendFuture,
       ]);
 
-      // Goal, daily challenge, and continue-learning are supplementary —
-      // a failure here must not take down the whole home page.
+      // Goal, daily challenge, continue-learning, quick-start lesson, and
+      // recommended course are supplementary — a failure here must not take
+      // down the whole home page.
       final engagementResult = await _repository
           .getEngagementSummary(bearerToken: bearerToken)
           .then<HomeEngagementSummary?>((value) => value)
           .catchError((_) => null);
       final continueLearningResult = await _repository
           .getContinueLearning(bearerToken: bearerToken)
+          .catchError((_) => null);
+      final quickStartResult = await _repository
+          .getQuickStartLesson(bearerToken: bearerToken)
+          .catchError((_) => null);
+      final recommendedCourseResult = await _repository
+          .getRecommendedCourse(bearerToken: bearerToken)
           .catchError((_) => null);
 
       setSuccess(HomeData(
@@ -87,6 +94,8 @@ class HomeNotifier extends AppStateNotifier<HomeData> {
         goal: engagementResult?.goal,
         dailyChallenge: engagementResult?.dailyChallenge,
         continueLearning: continueLearningResult,
+        quickStartLesson: quickStartResult,
+        recommendedCourse: recommendedCourseResult,
       ));
     } on AppException catch (e) {
       setFailure(message: e.message, code: e.code);
