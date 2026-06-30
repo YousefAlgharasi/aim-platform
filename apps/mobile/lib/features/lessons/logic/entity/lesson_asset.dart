@@ -7,7 +7,8 @@
 // All fields are backend-supplied verbatim. Flutter renders them; it never
 // computes type, status, order, sizeBytes, durationSeconds, or metadata.
 //
-// Asset types: image, audio, video, document, external_reference.
+// Asset types: text, image, audio, video, document, vocabulary, exercise,
+// external_reference.
 
 class LessonAsset {
   const LessonAsset({

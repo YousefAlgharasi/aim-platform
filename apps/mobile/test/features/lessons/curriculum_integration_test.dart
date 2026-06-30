@@ -161,7 +161,7 @@ const _publishedLesson = LessonModel(
     title: 'Pub Lesson',
     description: '',
     status: _pub,
-    sortOrder: 1,
+    sortOrder: 1, xpValue: 0,
     createdAt: '',
     updatedAt: '');
 const _draftLesson = LessonModel(
@@ -170,7 +170,7 @@ const _draftLesson = LessonModel(
     title: 'Draft Lesson',
     description: '',
     status: _draft,
-    sortOrder: 2,
+    sortOrder: 2, xpValue: 0,
     createdAt: '',
     updatedAt: '');
 
@@ -200,7 +200,7 @@ const _baseLesson = LessonModel(
     title: 'Lesson',
     description: '',
     status: _pub,
-    sortOrder: 1,
+    sortOrder: 1, xpValue: 0,
     createdAt: '',
     updatedAt: '');
 

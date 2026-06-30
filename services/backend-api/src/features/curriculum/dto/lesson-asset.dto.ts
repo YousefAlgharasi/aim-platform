@@ -24,7 +24,16 @@ import {
   rejectImmutableField,
 } from '../validation/validation-helpers';
 
-export const LESSON_ASSET_TYPES = ['image', 'audio', 'video', 'document', 'external_reference'] as const;
+export const LESSON_ASSET_TYPES = [
+  'text',
+  'image',
+  'audio',
+  'video',
+  'document',
+  'vocabulary',
+  'exercise',
+  'external_reference',
+] as const;
 
 export type LessonAssetType = (typeof LESSON_ASSET_TYPES)[number];
 
@@ -74,7 +83,7 @@ export function validateCreateLessonAssetRequest(input: Record<string, unknown>)
   }
 
   if (!isLessonAssetType(input.type)) {
-    issues.push({ field: 'type', message: 'Asset type must be one of: image, audio, video, document, external_reference' });
+    issues.push({ field: 'type', message: `Asset type must be one of: ${LESSON_ASSET_TYPES.join(', ')}` });
   }
 
   if (!isNonEmptyString(input.title)) {

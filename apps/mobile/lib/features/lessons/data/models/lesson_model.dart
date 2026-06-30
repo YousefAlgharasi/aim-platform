@@ -16,6 +16,7 @@ class LessonModel extends Lesson {
     required super.description,
     required super.status,
     required super.sortOrder,
+    required super.xpValue,
     required super.createdAt,
     required super.updatedAt,
   });
@@ -28,6 +29,7 @@ class LessonModel extends Lesson {
       description: json['description'] as String,
       status: json['status'] as String,
       sortOrder: (json['sortOrder'] as num).toInt(),
+      xpValue: (json['xpValue'] as num?)?.toInt() ?? 0,
       createdAt: json['createdAt'] as String,
       updatedAt: json['updatedAt'] as String,
     );
@@ -40,6 +42,7 @@ class LessonModel extends Lesson {
         'description': description,
         'status': status,
         'sortOrder': sortOrder,
+        'xpValue': xpValue,
         'createdAt': createdAt,
         'updatedAt': updatedAt,
       };
