@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { AuthorizedRole } from '../../auth/authorization/authorized-role';
@@ -235,9 +235,8 @@ export class NotificationsAdminController {
 
   @Post('broadcasts')
   @ApiOperation({ summary: 'Create and send an admin broadcast notification' })
-  async createBroadcast(@Body() body: CreateBroadcastPayload & { createdBy?: string }, @Req() req: { user?: { sub?: string } }) {
-    const createdBy = (req.user?.sub as string | undefined) ?? null;
-    const broadcast = await this.broadcastService.createAndSend({ ...body, createdBy });
+  async createBroadcast(@Body() body: CreateBroadcastPayload) {
+    const broadcast = await this.broadcastService.createAndSend({ ...body, createdBy: null });
     return mapBroadcast(broadcast);
   }
 
