@@ -1,0 +1,41 @@
+ID,Task Name,Status,Assigned To,Depends On
+TASK-00,Theme Layer Additions + Universal Widget Library,Undone,,
+TASK-01,Login Screen,Undone,,TASK-00
+TASK-02,Register Screen,Undone,,TASK-00
+TASK-03,Lesson List Screen,Undone,,TASK-00
+TASK-04,Lesson Detail Screen,Undone,,TASK-00
+TASK-05,Skill State Screen,Undone,,TASK-00
+TASK-06,Edit Profile Screen,Undone,,TASK-00
+TASK-07,Placement Intro Screen,Undone,,TASK-00
+TASK-08,Placement Question Screen,Undone,,TASK-00
+TASK-09,Assessment Attempt Screen,Undone,,TASK-00
+TASK-10,Question Page (fill-in-the-blank input),Undone,,TASK-00
+TASK-11,AI Teacher Chat Screen,Undone,,TASK-00
+TASK-12,Voice Teacher Screen,Undone,,TASK-00
+TASK-13,Achievements Screen,Undone,,TASK-00
+TASK-14,Wire Missing Routes,Undone,,TASK-00
+TASK-15,Menu Drawer + Notifications Sheet Integration,Undone,,TASK-00
+TASK-16,Verification: Splash + Main Shell,Undone,,TASK-00
+TASK-17,Verification: Home + Course List,Undone,,TASK-00
+TASK-18,Verification: Chapter List + Progress,Undone,,TASK-00
+TASK-19,Verification: Weakness + Recommendations,Undone,,TASK-00
+TASK-20,Verification: Review Schedule + Profile,Undone,,TASK-00
+TASK-21,Verification: Placement Start + Placement Section,Undone,,TASK-00
+TASK-22,Verification: Placement Submit + Placement Result,Undone,,TASK-00
+TASK-23,Verification: Assessment List + Assessment Detail,Undone,,TASK-00
+TASK-24,Verification: Start Attempt + Assessment Result,Undone,,TASK-00
+TASK-25,Verification: Analytics + Notification Inbox,Undone,,TASK-00
+TASK-26,Verification: Pricing + Subscription,Undone,,TASK-00
+TASK-27,Verification: Invoice History,Undone,,TASK-00
+TASK-28,Verification: Review + Submit Attempt,Undone,,TASK-00; TASK-14
+TASK-29,Verification: Result History + Deadlines,Undone,,TASK-00; TASK-14
+TASK-30,Verification: AI History + AI Settings,Undone,,TASK-00; TASK-14
+TASK-31,Verification: Learning Path + Notification Detail,Undone,,TASK-00; TASK-14
+TASK-32,Verification: Notification Preferences + Reminder Settings,Undone,,TASK-00; TASK-14
+TASK-33,Verification: Checkout Start + Checkout Status,Undone,,TASK-00; TASK-14
+TASK-34,Verification: Help Center + Parent Help,Undone,,TASK-00; TASK-14
+TASK-35,Verification: Create Ticket + Feedback,Undone,,TASK-00; TASK-14
+TASK-36,Verification: Ticket List + Parent Ticket List,Undone,,TASK-00; TASK-14
+TASK-37,Verification: Ticket Detail + Status,Undone,,TASK-00; TASK-14
+TASK-38,Verification: Release Notes + Release Note Detail,Undone,,TASK-00; TASK-14
+TASK-39,Verification: Design System Preview,Undone,,TASK-00; TASK-14
