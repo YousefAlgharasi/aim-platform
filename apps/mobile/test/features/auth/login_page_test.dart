@@ -15,13 +15,11 @@ import 'package:aim_mobile/features/auth/logic/provider/login_provider.dart';
 import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
 import 'package:aim_mobile/features/auth/ui/pages/login_page.dart';
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────────────────────
 
 /// The primary sign-in submit button, distinct from the secondary
-/// test-mode buttons rendered alongside it.
-final Finder _submitButtonFinder = find.byWidgetPredicate(
-  (widget) => widget is AIMButton && widget.variant == AIMButtonVariant.primary,
-);
+/// test-mode/social buttons rendered alongside it.
+final Finder _submitButtonFinder = find.byType(AIMGradientButton);
 
 Widget _testApp({List<Override> overrides = const []}) {
   return ProviderScope(
@@ -86,18 +84,19 @@ class _ErrorLoginNotifier extends LoginNotifier {
   }
 }
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
+// ── Tests ───────────────────────────────────────────────────────────────────────────────────
 
 void main() {
-  // ── Smoke ──────────────────────────────────────────────────────────────
+  // ── Smoke ────────────────────────────────────────
 
-  testWidgets('LoginPage renders AIM branding and form fields', (tester) async {
+  testWidgets('LoginPage renders the gradient header and form fields',
+      (tester) async {
     await tester.pumpWidget(_testApp());
     await tester.pump();
 
     expect(find.byType(LoginPage), findsOneWidget);
-    expect(find.text('Sign in to AIM'), findsOneWidget);
-    expect(find.text('AIM'), findsOneWidget);
+    expect(find.text('Welcome back'), findsOneWidget);
+    expect(find.text('Sign in to keep your streak alive'), findsOneWidget);
   });
 
   testWidgets('LoginPage uses AIM design system widgets', (tester) async {
@@ -105,18 +104,20 @@ void main() {
     await tester.pump();
 
     expect(find.byType(AIMInput), findsNWidgets(2));   // email + password
-    expect(find.byType(AIMButton), findsNWidgets(4));  // submit + 3 test-mode buttons
+    expect(find.byType(AIMGradientButton), findsOneWidget); // sign in
+    // 3 test-mode buttons + Google/Apple/Facebook (visual-only) + endpoint tester.
+    expect(find.byType(AIMButton), findsNWidgets(7));
     expect(find.text("Don't have an account? Create one"), findsOneWidget);
   });
 
-  // ── Submit button state ────────────────────────────────────────────────
+  // ── Submit button state ────────────────────────────────
 
   testWidgets('Submit button is disabled when form is empty', (tester) async {
     await tester.pumpWidget(_testApp());
     await tester.pump();
 
-    final button = tester.widget<AIMButton>(_submitButtonFinder);
-    expect(button.onPressed, isNull);
+    final button = tester.widget<AIMGradientButton>(_submitButtonFinder);
+    expect(button.enabled, isFalse);
   });
 
   testWidgets('Submit button enables after valid email + password entered',
@@ -133,11 +134,11 @@ void main() {
     await tester.enterText(fields.last, 'secret123');
     await tester.pump();
 
-    final button = tester.widget<AIMButton>(_submitButtonFinder);
-    expect(button.onPressed, isNotNull);
+    final button = tester.widget<AIMGradientButton>(_submitButtonFinder);
+    expect(button.enabled, isTrue);
   });
 
-  // ── Error banner ───────────────────────────────────────────────────────
+  // ── Error banner ──────────────────────────────────────
 
   testWidgets('Error banner is hidden when there is no error', (tester) async {
     await tester.pumpWidget(_testApp());
@@ -170,7 +171,7 @@ void main() {
     expect(find.text('Invalid credentials'), findsOneWidget);
   });
 
-  // ── RTL / Arabic ───────────────────────────────────────────────────────
+  // ── RTL / Arabic ──────────────────────────────────
 
   testWidgets('LoginPage renders without errors under Arabic RTL locale',
       (tester) async {
