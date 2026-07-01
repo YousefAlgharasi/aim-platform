@@ -1,8 +1,27 @@
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Courses" (courseList)
+//   docs/design/ui-for-all-system-mobile/screenshots/light/06-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/06-screen.png
+// Endpoint: GET /curriculum/courses (CourseModel fields only)
+// Widgets: AIMTopAppBar, AIMFullScreenLoading, AIMFullScreenError,
+//   AIMEmptyState, CourseListTile
+//
 // Phase 6 — P6-073
 // CourseListPage — displays published courses from the backend.
 //
 // Loads via [coursesProvider] on first build. Tapping a course navigates
 // to the chapter list (P6-074) passing the backend-supplied course ID.
+//
+// Real-data-only redesign: the design screenshots show a header-level
+// student level badge ("Level B1"), filter chips ("All"/"In progress"/
+// "Completed"), and per-course level badges/progress bars/lesson counts/
+// completion chips/lock treatment. None of those have a backing field on
+// the backend's CourseModel (no level, no per-student progress, no lesson
+// count, no completion flag — see
+// services/backend-api/src/features/curriculum/courses). Those are
+// intentionally omitted here rather than fabricated; see CourseListTile
+// for the row-level real-data-only treatment. The plain
+// AIMTopAppBar(title: 'Courses') app bar is kept as-is with no filter
+// chips or header badge added.
 //
 // Security rules:
 // - Flutter never computes status, sortOrder, or difficulty.
@@ -135,6 +154,7 @@ class _CourseListContent extends StatelessWidget {
           final course = courses[index];
           return CourseListTile(
             model: course,
+            index: index,
             onTap: () => onTap(course),
           );
         },
