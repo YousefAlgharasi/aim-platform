@@ -14,7 +14,7 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart'
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 
 void main() {
-  // ── resolveRouteName unit tests ─────────────────────────────────────────
+  // ── resolveRouteName unit tests ─────────────────────────────
 
   test('redirects protected routes for unauthenticated users', () {
     final resolvedRoute = AppRouter.resolveRouteName(
@@ -76,7 +76,7 @@ void main() {
     expect(resolvedRoute, AppRoutePaths.register);
   });
 
-  // ── AuthGate widget tests ───────────────────────────────────────────────
+  // ── AuthGate widget tests ─────────────────────────────────
 
   testWidgets('AuthGate auto-navigates to sign-in when bootstrap completes with signedOut',
       (tester) async {
@@ -108,7 +108,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // After bootstrap the AuthGate should have pushed /auth/sign-in.
-    expect(find.text('Sign in to AIM'), findsOneWidget);
+    expect(find.text('Welcome back'), findsOneWidget);
   });
 
   testWidgets('splash shows AIM branding while checking', (tester) async {
@@ -125,7 +125,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('AIM'), findsOneWidget);
-    expect(find.text('Checking your session\u2026'), findsOneWidget);
+    expect(find.text('Checking your session…'), findsOneWidget);
   });
 
   testWidgets('falls back to splash when placement question arguments are missing',
