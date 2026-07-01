@@ -1,10 +1,26 @@
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Lessons" (lessonList)
+//   docs/design/ui-for-all-system-mobile/screenshots/light/08-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/08-screen.png
+// Endpoint: GET /curriculum/lessons?chapterId=
+// Widgets: AIMTopAppBar, AIMFullScreenLoading, AIMFullScreenError,
+//   AIMEmptyState, LessonListTile
+//
 // Phase 6 — P6-075
 // LessonListPage — displays lessons for a backend-supplied chapter.
 //
 // Receives [chapterId] and [chapterTitle] from route arguments (set by
 // ChapterListPage). Loads via [lessonsListProvider.autoDispose] on first build.
-// Tapping a lesson is a no-op placeholder — lesson detail is out of scope
-// for this task (P6-075 only covers the list UI).
+// Tapping a lesson navigates to [AppRoutePaths.lessonDetail] with the
+// backend-supplied lessonId and lessonTitle as route arguments.
+//
+// Real-data-only redesign: the design screenshots show a chapter-level
+// progress bar ("2/4 done") and per-lesson type/duration/completion
+// indicators that have no backing field on the backend's LessonModel (see
+// services/backend-api/src/features/curriculum/lessons). Those are
+// intentionally omitted here rather than fabricated; see LessonListTile
+// for the row-level real-data-only treatment. The chapter header/progress
+// bar redesign is out of scope for this task — the existing
+// AIMTopAppBar(title: chapterTitle) app bar is kept as-is.
 //
 // Security rules:
 // - chapterId is always the backend-supplied value from ChapterModel; never
@@ -140,6 +156,7 @@ class _LessonListContent extends StatelessWidget {
           final lesson = lessons[index];
           return LessonListTile(
             model: lesson,
+            index: index,
             onTap: () {
               // Navigate to lesson detail; lessonId is backend-supplied.
               Navigator.of(context).pushNamed(
