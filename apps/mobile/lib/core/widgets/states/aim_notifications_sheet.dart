@@ -46,6 +46,9 @@ class AIMNotificationsSheet extends StatelessWidget {
     this.onDismissItem,
     this.loading = false,
     this.emptyMessage = 'No notifications yet',
+    this.subtitle,
+    this.headerIcon,
+    this.onMarkAllRead,
   });
 
   final List<AIMNotificationItemData> notifications;
@@ -53,6 +56,18 @@ class AIMNotificationsSheet extends StatelessWidget {
   final ValueChanged<AIMNotificationItemData>? onDismissItem;
   final bool loading;
   final String emptyMessage;
+
+  /// Optional subtitle rendered under the "Notifications" title, e.g.
+  /// "2 new today". Defaults to `null` (not rendered).
+  final String? subtitle;
+
+  /// Optional leading avatar/icon rendered beside the title, e.g. a
+  /// colored bell-icon avatar. Defaults to `null` (not rendered).
+  final Widget? headerIcon;
+
+  /// Optional bulk "Mark read" action shown in the header row. Defaults to
+  /// `null`, in which case no action button is rendered.
+  final VoidCallback? onMarkAllRead;
 
   @override
   Widget build(BuildContext context) {
@@ -85,16 +100,62 @@ class AIMNotificationsSheet extends StatelessWidget {
                   AimSpacing.screenPaddingMobile,
                   AimSpacing.space8,
                 ),
-                child: Text(
-                  'Notifications',
-                  style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
-                ),
+                child: _buildHeader(context, surfaces),
               ),
               Flexible(child: _buildBody(context, surfaces)),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, AimSurfaceTheme surfaces) {
+    final titleAndSubtitle = Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Notifications',
+            style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
+          ),
+          if (subtitle != null) ...[
+            const SizedBox(height: AimSpacing.space4),
+            Text(
+              subtitle!,
+              style: AimTextStyles.bodySm.copyWith(
+                color: surfaces.textSecondary,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+
+    if (headerIcon == null && onMarkAllRead == null) {
+      return Row(children: [titleAndSubtitle]);
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        if (headerIcon != null) ...[
+          headerIcon!,
+          const SizedBox(width: AimSpacing.componentGap),
+        ],
+        titleAndSubtitle,
+        if (onMarkAllRead != null)
+          TextButton(
+            onPressed: onMarkAllRead,
+            child: const Text('Mark read'),
+          ),
+        AIMIconButton(
+          semanticLabel: 'Close notifications',
+          icon: const Icon(Icons.close_rounded),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ],
     );
   }
 
