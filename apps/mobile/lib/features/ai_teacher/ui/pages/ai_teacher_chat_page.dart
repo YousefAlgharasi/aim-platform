@@ -26,11 +26,17 @@
 //   learning state from contextRef.
 //
 // RTL/Arabic rules:
-// - AIMTopAppBar mirrors its back arrow internally.
+// - The gradient header's back button uses Directionality-aware chevron
+//   icons (mirrored the same way AIMTopAppBar mirrors internally).
 // - Message bubbles (AiChatMessageBubble) align to the student/ai_teacher
 //   side using direction-aware MainAxisAlignment.end/start.
 // - The send button is a trailing element in a Row, so it mirrors under RTL
 //   automatically; no hard-coded TextDirection or Alignment.
+//
+// The history icon in the header opens [AiTeacherSessionHistoryPage] (a
+// fully-built screen that was previously unreachable from anywhere in the
+// app). It is pushed directly (no named route) since no route is declared
+// for it in AppRoutePaths.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -41,6 +47,7 @@ import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_chat_stat
 import 'package:aim_mobile/features/ai_teacher/logic/provider/ai_teacher_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import '../widgets/ai_teacher_widgets.dart';
+import 'ai_teacher_session_history_page.dart';
 
 /// Main AI Teacher text chat screen.
 ///
@@ -166,12 +173,20 @@ class _AiTeacherChatPageState extends ConsumerState<AiTeacherChatPage> {
         );
   }
 
+  void _openHistory() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const AiTeacherSessionHistoryPage(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(aiTeacherChatProvider);
 
     return Scaffold(
-      appBar: const AIMTopAppBar(title: 'AI Teacher'),
+      appBar: _AiTeacherChatHeader(onOpenHistory: _openHistory),
       body: SafeArea(
         child: switch (state) {
           AppAsyncLoading() => const AIMFullScreenLoading(
@@ -232,6 +247,11 @@ class _ChatContent extends StatelessWidget {
 
     final streamingText = chatState.isStreaming ? chatState.streamingText ?? '' : null;
     final streamItemCount = itemCount + (streamingText != null ? 1 : 0);
+    final isEmpty = messages.isEmpty && !isSending && streamingText == null;
+    // The quick-action prompt row stays visible above the input bar for the
+    // whole conversation (not just the empty state), matching the design.
+    // It is only hidden while a reply is actively being sent/streamed.
+    final showPromptsRow = !isSending && streamingText == null;
 
     return Column(
       children: [
@@ -259,22 +279,11 @@ class _ChatContent extends StatelessWidget {
             ),
           ),
         Expanded(
-          child: messages.isEmpty && !isSending && streamingText == null
-              ? Column(
-                  children: [
-                    const Expanded(
-                      child: AIMEmptyState(
-                        icon: Icon(Icons.chat_bubble_outline_rounded),
-                        title: 'Ask AI Teacher anything',
-                        subtitle: 'Start the conversation by sending a message.',
-                      ),
-                    ),
-                    AiSuggestedPromptsRow(
-                      disabled: isSending,
-                      onSelect: (prompt) => onSelectPrompt(prompt),
-                    ),
-                    const SizedBox(height: AimSpacing.innerGap),
-                  ],
+          child: isEmpty
+              ? const AIMEmptyState(
+                  icon: Icon(Icons.chat_bubble_outline_rounded),
+                  title: 'Ask AI Teacher anything',
+                  subtitle: 'Start the conversation by sending a message.',
                 )
               : ListView.separated(
                   padding: const EdgeInsets.symmetric(
@@ -298,12 +307,167 @@ class _ChatContent extends StatelessWidget {
                   },
                 ),
         ),
+        if (showPromptsRow) ...[
+          AiSuggestedPromptsRow(
+            disabled: isSending,
+            onSelect: (prompt) => onSelectPrompt(prompt),
+          ),
+          const SizedBox(height: AimSpacing.innerGap),
+        ],
         AiChatInputBar(
           controller: messageController,
           isSending: chatState.isSending || chatState.isStreaming,
           onSend: onSend,
         ),
       ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Header
+// ---------------------------------------------------------------------------
+
+/// Gradient header for the AI Teacher chat screen.
+///
+/// Mirrors the gradient-hero-header pattern used elsewhere (e.g.
+/// register_page.dart's back button styling), with an added small circular
+/// AI-avatar icon (plus a green "online" dot, since the AI is always
+/// available — unlike a human presence indicator, this is not a fabricated
+/// claim) and a history action that opens [AiTeacherSessionHistoryPage].
+class _AiTeacherChatHeader extends StatelessWidget
+    implements PreferredSizeWidget {
+  const _AiTeacherChatHeader({required this.onOpenHistory});
+
+  final VoidCallback onOpenHistory;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(88);
+
+  @override
+  Widget build(BuildContext context) {
+    final direction = Directionality.of(context);
+
+    return Container(
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.space8,
+        AimSpacing.space8,
+        AimSpacing.space8,
+        AimSpacing.space12,
+      ),
+      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            Semantics(
+              button: true,
+              label: 'Back',
+              child: InkWell(
+                onTap: () => Navigator.of(context).pop(),
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AimSpacing.space12),
+                    child: Icon(
+                      direction == TextDirection.rtl
+                          ? Icons.arrow_forward
+                          : Icons.arrow_back,
+                      size: AimSizes.iconMd,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AimSpacing.space8),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.all(AimSpacing.space8),
+                    child: Icon(
+                      Icons.auto_awesome_rounded,
+                      size: AimSizes.iconSm,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                ),
+                PositionedDirectional(
+                  end: -1,
+                  bottom: -1,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AimColors.success500,
+                      shape: BoxShape.circle,
+                      border:
+                          Border.all(color: AimColors.neutral0, width: 1.5),
+                    ),
+                    child: const SizedBox(width: 10, height: 10),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(width: AimSpacing.space8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'AI Teacher',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AimTextStyles.h3.copyWith(
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                  const SizedBox(height: AimSpacing.space4),
+                  Text(
+                    'Always here to help',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AimTextStyles.bodySm.copyWith(
+                      color: AimColors.neutral0.withValues(alpha: 0.85),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Semantics(
+              button: true,
+              label: 'Conversation history',
+              child: InkWell(
+                onTap: onOpenHistory,
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.all(AimSpacing.space12),
+                    child: Icon(
+                      Icons.history_rounded,
+                      size: AimSizes.iconMd,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
