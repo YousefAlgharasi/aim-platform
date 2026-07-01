@@ -9,26 +9,36 @@ void main() {
   testWidgets('main shell shows all primary tabs', (tester) async {
     await tester.pumpWidget(const TestShell(child: MainShellPage()));
 
-    expect(find.text('Home'), findsWidgets);
-    expect(find.byType(AIMBottomNav<int>), findsOneWidget);
-    expect(find.text('Learn'), findsWidgets);
-    expect(find.text('Review'), findsWidgets);
-    expect(find.text('Progress'), findsWidgets);
-    expect(find.text('Profile'), findsWidgets);
+    // NOTE: TASK-15 added an AIMAppDrawer with items labelled identically to
+    // the bottom nav ('Home'/'Learn'/'Review'/'Progress'/'Profile'), so
+    // lookups/taps here are scoped to descendants of AIMBottomNav<int> to
+    // avoid ambiguously matching the (always-mounted, off-screen-when-closed)
+    // drawer's duplicate labels.
+    final bottomNav = find.byType(AIMBottomNav<int>);
 
-    await tester.tap(find.text('Learn').last);
+    Finder inNav(String text) =>
+        find.descendant(of: bottomNav, matching: find.text(text));
+
+    expect(inNav('Home'), findsOneWidget);
+    expect(bottomNav, findsOneWidget);
+    expect(inNav('Learn'), findsOneWidget);
+    expect(inNav('Review'), findsOneWidget);
+    expect(inNav('Progress'), findsOneWidget);
+    expect(inNav('Profile'), findsOneWidget);
+
+    await tester.tap(inNav('Learn'));
     await tester.pump();
-    expect(find.text('Learn'), findsWidgets);
+    expect(inNav('Learn'), findsOneWidget);
 
-    await tester.tap(find.text('Review').last);
+    await tester.tap(inNav('Review'));
     await tester.pump();
-    expect(find.text('Review'), findsWidgets);
+    expect(inNav('Review'), findsOneWidget);
 
-    await tester.tap(find.text('Progress').last);
+    await tester.tap(inNav('Progress'));
     await tester.pump();
-    expect(find.text('Progress'), findsWidgets);
+    expect(inNav('Progress'), findsOneWidget);
 
-    await tester.tap(find.text('Profile').last);
+    await tester.tap(inNav('Profile'));
     await tester.pump();
     expect(find.text('No profile loaded.'), findsOneWidget);
   });
