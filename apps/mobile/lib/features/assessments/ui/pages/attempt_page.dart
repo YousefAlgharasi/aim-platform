@@ -335,9 +335,11 @@ class _AttemptContent extends StatelessWidget {
     final surfaces = aimSurfacesOf(context);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AimSpacing.screenPaddingMobile,
-        vertical: AimSpacing.sectionGap,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.sectionGap,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.sectionGap,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
