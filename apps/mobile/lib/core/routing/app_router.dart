@@ -28,6 +28,33 @@ import '../../features/analytics_summary/ui/pages/analytics_summary_page.dart';
 import '../../features/achievements/ui/pages/achievements_page.dart';
 import '../../features/shell/ui/pages/main_shell_page.dart';
 import '../../features/dev_tools/ui/pages/endpoint_tester_page.dart';
+import '../../features/profile/ui/pages/edit_profile_page.dart';
+import '../../features/progress/ui/pages/skill_state_page.dart';
+import '../../features/progress/ui/pages/weakness_summary_page.dart';
+import '../../features/progress/ui/pages/recommendations_page.dart';
+import '../../features/progress/ui/pages/review_schedule_page.dart';
+import '../../features/placement/ui/pages/placement_intro_page.dart';
+import '../../features/assessments/ui/pages/deadlines_page.dart';
+import '../../features/ai_teacher/ui/pages/ai_teacher_settings_page.dart';
+import '../../features/ai_teacher/ui/pages/ai_teacher_session_history_page.dart';
+import '../../features/notifications/ui/pages/notification_preferences_page.dart';
+import '../../features/notifications/ui/pages/reminder_settings_page.dart';
+import '../../features/notifications/ui/pages/notification_detail_page.dart';
+import '../../features/notifications/data/models/notification_event_model.dart';
+import '../../features/support/ui/pages/help_center_page.dart';
+import '../../features/support/ui/pages/parent_help_center_page.dart';
+import '../../features/support/ui/pages/create_ticket_page.dart';
+import '../../features/support/ui/pages/feedback_page.dart';
+import '../../features/support/ui/pages/ticket_list_page.dart';
+import '../../features/support/ui/pages/ticket_detail_page.dart';
+import '../../features/support/ui/pages/parent_ticket_list_page.dart';
+import '../../features/support/ui/pages/status_page.dart';
+import '../../features/support/ui/pages/release_notes_page.dart';
+import '../../features/support/ui/pages/release_note_detail_page.dart';
+import '../../features/voice_teacher/ui/pages/voice_teacher_page.dart';
+import '../../features/billing/ui/pages/checkout_start_page.dart';
+import '../../features/billing/ui/pages/checkout_status_page.dart';
+import '../../features/design_system_preview/ui/pages/ds_preview_page.dart';
 import 'app_route_paths.dart';
 
 class AppRouter {
@@ -104,6 +131,68 @@ class AppRouter {
             return const AchievementsPage();
           case AppRoutePaths.endpointTester:
             return const EndpointTesterPage();
+          // TASK-14: Profile routes
+          case AppRoutePaths.editProfile:
+            return const EditProfilePage();
+          // TASK-14: Progress detail routes
+          case AppRoutePaths.skillState:
+            return const SkillStatePage();
+          case AppRoutePaths.weaknessSummary:
+            return const WeaknessSummaryPage();
+          case AppRoutePaths.recommendations:
+            return const RecommendationsPage();
+          case AppRoutePaths.reviewSchedule:
+            return const ReviewSchedulePage();
+          // TASK-14: Placement intro route
+          case AppRoutePaths.placementIntro:
+            return const PlacementIntroPage();
+          // TASK-14: Assessment deadlines route
+          case AppRoutePaths.assessmentDeadlines:
+            return const DeadlinesPage();
+          // TASK-14: Voice Teacher routes
+          case AppRoutePaths.voiceTeacher:
+            return _buildVoiceTeacherPage(settings.arguments);
+          // TASK-14: AI Teacher routes
+          case AppRoutePaths.aiTeacherSettings:
+            return const AiTeacherSettingsPage();
+          case AppRoutePaths.aiTeacherHistory:
+            return const AiTeacherSessionHistoryPage();
+          // TASK-14: Notification routes
+          case AppRoutePaths.notificationPreferences:
+            return const NotificationPreferencesPage();
+          case AppRoutePaths.reminderSettings:
+            return const ReminderSettingsPage();
+          case AppRoutePaths.notificationDetail:
+            return _buildNotificationDetailPage(settings.arguments);
+          // TASK-14: Support routes
+          case AppRoutePaths.helpCenter:
+            return const HelpCenterPage();
+          case AppRoutePaths.parentHelpCenter:
+            return const ParentHelpCenterPage();
+          case AppRoutePaths.createTicket:
+            return const CreateTicketPage();
+          case AppRoutePaths.feedback:
+            return const FeedbackPage();
+          case AppRoutePaths.ticketList:
+            return const TicketListPage();
+          case AppRoutePaths.ticketDetail:
+            return _buildTicketDetailPage(settings.arguments);
+          case AppRoutePaths.parentTicketList:
+            return const ParentTicketListPage();
+          case AppRoutePaths.supportStatus:
+            return const StatusPage();
+          case AppRoutePaths.releaseNotes:
+            return const ReleaseNotesPage();
+          case AppRoutePaths.releaseNoteDetail:
+            return _buildReleaseNoteDetailPage(settings.arguments);
+          // TASK-14: Billing routes
+          case AppRoutePaths.checkoutStart:
+            return _buildCheckoutStartPage(settings.arguments);
+          case AppRoutePaths.checkoutStatus:
+            return _buildCheckoutStatusPage(settings.arguments);
+          // TASK-14: Dev Tools
+          case AppRoutePaths.designSystemPreview:
+            return const DSPreviewPage();
           default:
             return const SplashPage();
         }
@@ -271,6 +360,70 @@ class AppRouter {
     return arguments is Map<String, dynamic> ? arguments : const {};
   }
 
+  static Widget _buildVoiceTeacherPage(Object? arguments) {
+    final args = arguments is Map<String, dynamic>
+        ? arguments
+        : const <String, dynamic>{};
+    final contextRef = args['contextRef'];
+    if (contextRef is! String) return const SplashPage();
+    return VoiceTeacherPage(contextRef: contextRef);
+  }
+
+  static Widget _buildTicketDetailPage(Object? arguments) {
+    final args = arguments is Map<String, dynamic>
+        ? arguments
+        : const <String, dynamic>{};
+    final ticketId = args['ticketId'];
+    if (ticketId is! String) return const SplashPage();
+    return TicketDetailPage(ticketId: ticketId);
+  }
+
+  static Widget _buildReleaseNoteDetailPage(Object? arguments) {
+    final args = arguments is Map<String, dynamic>
+        ? arguments
+        : const <String, dynamic>{};
+    final noteId = args['noteId'];
+    if (noteId is! String) return const SplashPage();
+    return ReleaseNoteDetailPage(noteId: noteId);
+  }
+
+  static Widget _buildCheckoutStartPage(Object? arguments) {
+    final args = arguments is Map<String, dynamic>
+        ? arguments
+        : const <String, dynamic>{};
+    final planName = args['planName'];
+    final priceId = args['priceId'];
+    final formattedPrice = args['formattedPrice'];
+    final interval = args['interval'];
+    if (planName is! String ||
+        priceId is! String ||
+        formattedPrice is! String ||
+        interval is! String) {
+      return const SplashPage();
+    }
+    return CheckoutStartPage(
+      planName: planName,
+      priceId: priceId,
+      formattedPrice: formattedPrice,
+      interval: interval,
+    );
+  }
+
+  static Widget _buildCheckoutStatusPage(Object? arguments) {
+    final args = arguments is Map<String, dynamic>
+        ? arguments
+        : const <String, dynamic>{};
+    final sessionId = args['sessionId'];
+    if (sessionId is! String) return const SplashPage();
+    return CheckoutStatusPage(sessionId: sessionId);
+  }
+
+  static Widget _buildNotificationDetailPage(Object? arguments) {
+    return arguments is NotificationEventModel
+        ? NotificationDetailPage(event: arguments)
+        : const SplashPage();
+  }
+
   static String resolveRouteName(
     String? requestedRouteName, {
     AuthFlowState? authState,
@@ -330,5 +483,32 @@ class AppRouter {
     AppRoutePaths.notificationInbox,
     AppRoutePaths.analyticsSummary,
     AppRoutePaths.achievements,
+    // TASK-14: Newly wired-up screens are authenticated-student-facing
+    AppRoutePaths.editProfile,
+    AppRoutePaths.skillState,
+    AppRoutePaths.weaknessSummary,
+    AppRoutePaths.recommendations,
+    AppRoutePaths.reviewSchedule,
+    AppRoutePaths.placementIntro,
+    AppRoutePaths.assessmentDeadlines,
+    AppRoutePaths.voiceTeacher,
+    AppRoutePaths.aiTeacherSettings,
+    AppRoutePaths.aiTeacherHistory,
+    AppRoutePaths.notificationPreferences,
+    AppRoutePaths.reminderSettings,
+    AppRoutePaths.notificationDetail,
+    AppRoutePaths.helpCenter,
+    AppRoutePaths.parentHelpCenter,
+    AppRoutePaths.createTicket,
+    AppRoutePaths.feedback,
+    AppRoutePaths.ticketList,
+    AppRoutePaths.ticketDetail,
+    AppRoutePaths.parentTicketList,
+    AppRoutePaths.supportStatus,
+    AppRoutePaths.releaseNotes,
+    AppRoutePaths.releaseNoteDetail,
+    AppRoutePaths.checkoutStart,
+    AppRoutePaths.checkoutStatus,
+    AppRoutePaths.designSystemPreview,
   };
 }
