@@ -173,8 +173,8 @@ class _AIMNotificationRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!data.read)
-            Padding(
-              padding: const EdgeInsetsDirectional.only(
+            const Padding(
+              padding: EdgeInsetsDirectional.only(
                 end: AimSpacing.space8,
                 top: AimSpacing.space8,
               ),

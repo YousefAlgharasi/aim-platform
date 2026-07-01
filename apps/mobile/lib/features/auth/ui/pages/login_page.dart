@@ -248,32 +248,32 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: AimSpacing.formFieldGap),
-                    AIMButton(
+                    const AIMButton(
                       onPressed: null,
                       variant: AIMButtonVariant.outline,
                       fullWidth: true,
                       semanticLabel: 'Continue with Google (coming soon)',
-                      child: const Text('Continue with Google'),
+                      child: Text('Continue with Google'),
                     ),
                     const SizedBox(height: AimSpacing.innerGap),
-                    Row(
+                    const Row(
                       children: [
                         Expanded(
                           child: AIMButton(
                             onPressed: null,
                             variant: AIMButtonVariant.outline,
                             semanticLabel: 'Continue with Apple (coming soon)',
-                            child: const Text('Apple'),
+                            child: Text('Apple'),
                           ),
                         ),
-                        const SizedBox(width: AimSpacing.innerGap),
+                        SizedBox(width: AimSpacing.innerGap),
                         Expanded(
                           child: AIMButton(
                             onPressed: null,
                             variant: AIMButtonVariant.outline,
                             semanticLabel:
                                 'Continue with Facebook (coming soon)',
-                            child: const Text('Facebook'),
+                            child: Text('Facebook'),
                           ),
                         ),
                       ],

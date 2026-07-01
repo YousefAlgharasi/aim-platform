@@ -168,8 +168,8 @@ class _ConfirmBody extends StatelessWidget {
           // Submit button
           FilledButton(
             onPressed: onSubmit,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: AimSpacing.space4),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: AimSpacing.space4),
               child: Text('Submit Placement Test', style: AimTextStyles.bodyMd),
             ),
           ),
