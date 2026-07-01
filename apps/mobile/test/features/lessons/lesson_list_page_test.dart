@@ -8,6 +8,8 @@
 //   4. Populated state renders lesson titles.
 //   5. RTL layout renders without error.
 //   6. chapterTitle appears in AppBar.
+//   7. xpValue > 0 renders an XP badge; xpValue == 0 renders no badge
+//      (real-data-only redesign — no fabricated type/duration/completion).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -58,7 +60,7 @@ const _lessons = [
     title: 'Lesson 2: Nouns',
     description: 'Understanding nouns.',
     status: 'published',
-    sortOrder: 2, xpValue: 0,
+    sortOrder: 2, xpValue: 20,
     createdAt: '2025-01-02T00:00:00Z',
     updatedAt: '2025-06-02T00:00:00Z',
   ),
@@ -152,6 +154,26 @@ void main() {
       ));
       await tester.pump();
       expect(find.text('Unit 1: Basics'), findsOneWidget);
+    });
+
+    testWidgets(
+        'shows an XP badge only for lessons with xpValue > 0 '
+        '(real-data-only redesign: no fabricated type/duration/completion)',
+        (tester) async {
+      await tester.pumpWidget(_wrap(
+        _page,
+        overrides: [
+          lessonsListProvider.overrideWith(
+            (ref) =>
+                _FakeLessonsListNotifier(const AppAsyncState.success(_lessons)),
+          ),
+        ],
+      ));
+      await tester.pump();
+      // lesson-2 has xpValue: 20 → badge renders.
+      expect(find.text('20 XP'), findsOneWidget);
+      // lesson-1 has xpValue: 0 → no badge for it.
+      expect(find.text('0 XP'), findsNothing);
     });
   });
 }
