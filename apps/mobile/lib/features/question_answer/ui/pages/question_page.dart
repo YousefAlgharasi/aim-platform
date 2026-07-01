@@ -1,6 +1,17 @@
 // Phase 6 — P6-089 / P6-090
 // QuestionPage — Student question/answer screen MVP.
 //
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Question page"
+//   docs/design/ui-for-all-system-mobile/screenshots/light/32-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/32-screen.png
+//   NOTE: the screenshots depict the multiple-choice branch of this screen
+//   (gradient "Practice" header, small-caps topic label, lettered options).
+//   There is no design reference for the fill-in-the-blank branch; that
+//   branch keeps its existing plain-input treatment (see
+//   question_fill_blank_input.dart) — only the shared chrome (header, topic
+//   label) is restyled to match the screenshot here.
+// Endpoints: POST /sessions/start, POST /sessions/:id/attempt
+//
 // Accepts [sessionId] and [questionId] as route arguments (both
 // backend-supplied). Loads the question, collects the student's answer,
 // and delegates submission to [AnswerSubmitFlow] (P6-090).
@@ -12,10 +23,14 @@
 // - attemptResult (backend ack) contains no is_correct field.
 // - sessionId and questionId must be backend-supplied; never user input.
 // - Bearer token from authFlowProvider; never stored in this widget.
+// - question.tags is backend-supplied; the topic label below only reformats
+//   underscores/hyphens into spaced title case for display — it never
+//   invents or alters the underlying tag content.
 //
 // RTL/Arabic rules:
-// - EdgeInsets.symmetric — RTL-safe.
-// - AIMTopAppBar mirrors RTL navigation icon internally.
+// - EdgeInsets.symmetric / EdgeInsetsDirectional — RTL-safe.
+// - Gradient header back button uses AlignmentDirectional + mirrored icon,
+//   matching register_page.dart's pattern.
 // - AIMAnswerOption uses leading-edge text alignment internally.
 // - Column/CrossAxisAlignment: direction-aware.
 
@@ -68,8 +83,12 @@ class _QuestionPageState extends ConsumerState<QuestionPage> {
     final token = ref.watch(authFlowProvider).accessToken ?? '';
 
     return Scaffold(
-      appBar: const AIMTopAppBar(title: 'Question'),
-      body: _buildBody(state),
+      body: Column(
+        children: [
+          _buildHeader(context),
+          Expanded(child: _buildBody(state)),
+        ],
+      ),
       bottomNavigationBar: state.hasQuestion && !state.isSubmitted
           ? SafeArea(
               child: Padding(
@@ -85,6 +104,69 @@ class _QuestionPageState extends ConsumerState<QuestionPage> {
             )
           : null,
     );
+  }
+
+  /// Gradient hero header mirroring register_page.dart's back-button/title
+  /// pattern (design ref: screenshots/{light,dark}/32-screen.png, header
+  /// reads "Practice" in the multiple-choice branch shown there).
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+      ),
+      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            Semantics(
+              button: true,
+              label: 'Back',
+              child: InkWell(
+                onTap: () => Navigator.of(context).pop(),
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.all(AimSpacing.space12),
+                    child: Icon(
+                      Icons.arrow_back,
+                      size: AimSizes.iconMd,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AimSpacing.componentGap),
+            Expanded(
+              child: Text(
+                'Practice',
+                style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Backend-supplied tag slugs (e.g. "present_perfect") are display-only
+  /// reformatted into spaced title case (e.g. "Present Perfect"). This never
+  /// invents content — it only reformats what the backend already sent.
+  String _prettifyTag(String tag) {
+    return tag
+        .split(RegExp('[_-]'))
+        .where((word) => word.isNotEmpty)
+        .map((word) => word[0].toUpperCase() + word.substring(1).toLowerCase())
+        .join(' ');
   }
 
   Widget _buildBody(QuestionSessionState state) {
@@ -106,6 +188,9 @@ class _QuestionPageState extends ConsumerState<QuestionPage> {
         question.type == 'true_false' ||
         question.type == 'multiple_select' ||
         question.type == 'listening_choice';
+    final surfaces = aimSurfacesOf(context);
+    final topicLabel =
+        question.tags.isNotEmpty ? _prettifyTag(question.tags.first) : null;
 
     return ListView(
       padding: const EdgeInsets.symmetric(
@@ -113,6 +198,13 @@ class _QuestionPageState extends ConsumerState<QuestionPage> {
         vertical: AimSpacing.sectionGap,
       ),
       children: [
+        if (topicLabel != null) ...[
+          Text(
+            topicLabel.toUpperCase(),
+            style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
+          ),
+          const SizedBox(height: AimSpacing.space8),
+        ],
         QuestionStemCard(question: question),
         const SizedBox(height: AimSpacing.sectionGap),
         if (state.isSubmitted && state.attemptResult != null)
