@@ -5,6 +5,7 @@ import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/state/app_async_state.dart';
 import '../../../../core/theme/theme_mode_provider.dart';
 import '../../../../core/widgets/widgets.dart';
+import '../../../auth/logic/provider/auth_flow_provider.dart';
 import '../../../auth/ui/widgets/logout_button.dart';
 import '../../../home/ui/pages/home_page.dart';
 import '../../../lessons/ui/pages/course_list_page.dart';
@@ -22,7 +23,7 @@ import '../../logic/main_shell_tab_provider.dart';
 /// The selected tab is held in [mainShellTabIndexProvider] (rather than
 /// local State) so descendant pages — e.g. Home's "Browse Courses" action —
 /// can switch tabs directly without reaching into shell-private state.
-class MainShellPage extends ConsumerWidget {
+class MainShellPage extends ConsumerStatefulWidget {
   const MainShellPage({super.key});
 
   static const List<Widget> _screens = [
@@ -34,7 +35,34 @@ class MainShellPage extends ConsumerWidget {
   ];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MainShellPage> createState() => _MainShellPageState();
+}
+
+class _MainShellPageState extends ConsumerState<MainShellPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Eagerly load the unread notification count so the drawer's
+    // Notifications badge (see _buildDrawer) reflects real data as soon as
+    // the shell mounts, rather than only after some other screen (e.g.
+    // Profile's NotificationBellButton) happens to have loaded it first.
+    // Deferred via addPostFrameCallback, matching the same pattern already
+    // used by every other screen's initial load in this codebase (e.g.
+    // HomePage._load) — calling a provider's .load() synchronously during
+    // build/initState would risk a "setState during build" error.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadUnreadCount());
+  }
+
+  void _loadUnreadCount() {
+    final state = ref.read(notificationUnreadCountProvider);
+    if (state is AppAsyncSuccess || state is AppAsyncLoading) return;
+    final token = ref.read(authFlowProvider).accessToken;
+    if (token == null || token.isEmpty) return;
+    ref.read(notificationUnreadCountProvider.notifier).load(bearerToken: token);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final selectedIndex = ref.watch(mainShellTabIndexProvider);
 
     return Scaffold(
@@ -51,7 +79,7 @@ class MainShellPage extends ConsumerWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       body: IndexedStack(
         index: selectedIndex,
-        children: _screens,
+        children: MainShellPage._screens,
       ),
       bottomNavigationBar: AIMBottomNav<int>(
         value: selectedIndex,
