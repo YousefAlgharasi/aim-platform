@@ -3,9 +3,15 @@
 //   docs/design/ui-for-all-system-mobile/screenshots/dark/36-screen.png
 // Endpoints: POST /voice-teacher/sessions
 //   GET /voice-teacher/sessions/:id/audio
-// Widgets: AIMTopAppBar (transparent), AIMBadge, VoiceRecordButton,
-//   VoiceTranscriptList, VoiceWaveformIndicator, VoiceErrorState,
-//   VoiceTextFallback
+// Widgets: bespoke transparent header (see _VoiceTeacherHeader — AIMTopAppBar
+//   has no foreground-color override, so it can't render a white title/back
+//   icon over the gradient; same bespoke-when-shared-doesn't-fit precedent
+//   used elsewhere, e.g. register_page.dart's gradient header), bespoke
+//   status pill (see _VoiceHeroIdle — AIMBadge's neutral tone resolves its
+//   background/dot from theme colors with no override, only its own child
+//   text style is overridable, so a translucent-white pill is built
+//   directly here instead), VoiceRecordButton, VoiceTranscriptList,
+//   VoiceWaveformIndicator, VoiceErrorState, VoiceTextFallback
 //
 // Phase 18 — P18-065 / P18-066
 // VoiceTeacherPage — main Voice Tutor screen.
@@ -186,11 +192,7 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
 
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AIMTopAppBar(
-        title: 'Voice Teacher',
-        transparent: true,
-        onBack: () => Navigator.of(context).pop(),
-      ),
+      appBar: const _VoiceTeacherHeader(),
       body: DecoratedBox(
         decoration: const BoxDecoration(gradient: AimGradients.gzHero),
         child: SafeArea(
@@ -216,6 +218,75 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
                 onRetry: _onStopRecording,
               ),
           },
+        ),
+      ),
+    );
+  }
+}
+
+/// Transparent header rendered over the gradient background.
+///
+/// `AIMTopAppBar(transparent: true)` only makes the bar's own background/
+/// border transparent — its title and back-icon colors are hard-wired to
+/// `surfaces.textPrimary`/theme defaults with no override, so over this
+/// screen's purple-to-blue gradient it renders a near-black title and a
+/// mid-grey back chevron in light mode (wrong in both light and dark per
+/// the design screenshots, which show a white title and a white chevron in
+/// a translucent circle). Since `AIMTopAppBar` is a shared widget with no
+/// foreground-override escape hatch, this is a small bespoke header instead
+/// (mirrors register_page.dart's gradient-header/back-button pattern).
+class _VoiceTeacherHeader extends StatelessWidget
+    implements PreferredSizeWidget {
+  const _VoiceTeacherHeader();
+
+  @override
+  Size get preferredSize => const Size.fromHeight(AimSizes.topBarHeight);
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      bottom: false,
+      child: SizedBox(
+        height: AimSizes.topBarHeight,
+        child: Padding(
+          padding: const EdgeInsetsDirectional.symmetric(
+            horizontal: AimSpacing.space8,
+          ),
+          child: Row(
+            children: [
+              Semantics(
+                button: true,
+                label: 'Back',
+                child: InkWell(
+                  onTap: () => Navigator.of(context).pop(),
+                  customBorder: const CircleBorder(),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AimColors.neutral0.withValues(alpha: 0.18),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.all(AimSpacing.space12),
+                      child: Icon(
+                        Icons.arrow_back,
+                        size: AimSizes.iconMd,
+                        color: AimColors.neutral0,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AimSpacing.componentGap),
+              Expanded(
+                child: Text(
+                  'Voice Teacher',
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -374,17 +445,7 @@ class _VoiceHeroIdle extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AIMBadge(
-              tone: AIMBadgeTone.neutral,
-              variant: AIMBadgeVariant.soft,
-              pill: true,
-              dot: true,
-              semanticLabel: 'Status: $label',
-              child: DefaultTextStyle.merge(
-                style: const TextStyle(color: AimColors.neutral0),
-                child: Text(label.toUpperCase()),
-              ),
-            ),
+            _VoiceStatusPill(label: label),
             const SizedBox(height: AimSpacing.sectionGap),
             Text(
               heading,
@@ -406,6 +467,69 @@ class _VoiceHeroIdle extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Translucent-white status pill ("READY"/"RECORDING"/"PROCESSING") shown
+/// over the gradient hero.
+///
+/// `AIMBadge` resolves its background and status-dot color from `tone` with
+/// no override — only the text style of its `child` can be overridden by
+/// the caller — so a neutral/soft `AIMBadge` with a white-text override
+/// still renders its default near-white background and grey dot in light
+/// mode (both driven by theme colors, not the text style), which is
+/// low-contrast against a white label and doesn't match the translucent
+/// all-white pill in the design screenshots. This bespoke pill overrides
+/// background, border, and dot together instead.
+class _VoiceStatusPill extends StatelessWidget {
+  const _VoiceStatusPill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Status: $label',
+      child: ExcludeSemantics(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: AimColors.neutral0.withValues(alpha: 0.18),
+            border: Border.all(
+              color: AimColors.neutral0.withValues(alpha: 0.3),
+            ),
+            borderRadius: AimRadius.borderPill,
+          ),
+          child: Padding(
+            padding: const EdgeInsetsDirectional.symmetric(
+              horizontal: AimSpacing.space12,
+              vertical: AimSpacing.space4,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox.square(
+                  dimension: 6,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AimColors.neutral0,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AimSpacing.space4),
+                Text(
+                  label.toUpperCase(),
+                  style: AimTextStyles.caption.copyWith(
+                    color: AimColors.neutral0,
+                    fontWeight: AimFontWeights.semibold,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
