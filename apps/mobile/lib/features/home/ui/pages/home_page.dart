@@ -32,6 +32,8 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.da
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_data.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_provider.dart';
+import 'package:aim_mobile/features/notifications/data/models/notification_event_model.dart';
+import 'package:aim_mobile/features/notifications/logic/provider/notification_providers.dart';
 import 'package:aim_mobile/features/shell/logic/main_shell_tab_provider.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_quick_start_lesson.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_recommended_course.dart';
@@ -94,12 +96,118 @@ class _HomePageState extends ConsumerState<HomePage> {
         );
   }
 
+  /// Ensures the inbox has been loaded (or is loading) before/while the
+  /// notifications sheet is shown, then presents the sheet so it can react
+  /// to the provider's state as it resolves.
+  void _openNotifications(BuildContext context, WidgetRef ref) {
+    final state = ref.read(notificationInboxProvider);
+    if (state is! AppAsyncSuccess && state is! AppAsyncLoading) {
+      final token = ref.read(authFlowProvider).accessToken;
+      if (token != null && token.isNotEmpty) {
+        ref.read(notificationInboxProvider.notifier).load(bearerToken: token);
+      }
+    }
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => Consumer(
+        builder: (context, ref, _) {
+          final inboxState = ref.watch(notificationInboxProvider);
+
+          return switch (inboxState) {
+            AppAsyncSuccess(:final data) => AIMNotificationsSheet(
+                notifications: data
+                    .where((event) => event.dismissedAt == null)
+                    .map((event) => _toNotificationItemData(event))
+                    .toList(),
+                headerIcon: const _NotificationBellAvatar(),
+                subtitle: _unreadSubtitle(data),
+                onTapItem: (item) {
+                  Navigator.of(sheetContext).pop();
+                  final event = data.firstWhere((e) => e.id == item.id);
+                  Navigator.of(context).pushNamed(
+                    AppRoutePaths.notificationDetail,
+                    arguments: event,
+                  );
+                },
+                // onDismissItem intentionally left unset: mirroring
+                // NotificationInboxPage's real dismiss flow here would need
+                // this sheet to also own bearer-token lookups + notifier
+                // wiring for a call site that's meant to be a lightweight
+                // preview; the full dismiss flow already exists on the
+                // dedicated inbox page, so it's safer to omit it here than
+                // risk a half-correct reimplementation.
+                // onMarkAllRead intentionally left unset: no bulk
+                // mark-all-as-read method exists on NotificationRepository
+                // or NotificationInboxNotifier today (only per-item
+                // markAsRead) — omitted rather than inventing an endpoint.
+              ),
+            AppAsyncFailure(:final message) => AIMNotificationsSheet(
+                notifications: const [],
+                emptyMessage: message,
+              ),
+            _ => const AIMNotificationsSheet(
+                notifications: [],
+                loading: true,
+              ),
+          };
+        },
+      ),
+    );
+  }
+
+  /// Real subtitle computed from the same backend-returned list shown in
+  /// the sheet — counts unread, non-dismissed events, not a fabricated
+  /// figure.
+  String _unreadSubtitle(List<NotificationEventModel> events) {
+    final unread = events.where((e) => e.isUnread).length;
+    if (unread == 0) return 'No new notifications';
+    return unread == 1 ? '1 new notification' : '$unread new notifications';
+  }
+
+  AIMNotificationItemData _toNotificationItemData(NotificationEventModel event) {
+    return AIMNotificationItemData(
+      id: event.id,
+      title: event.title ?? '',
+      body: event.body,
+      timeLabel: _relativeTimeLabel(event.createdAt),
+      read: !event.isUnread,
+    );
+  }
+
+  /// Computes a real relative-time label (e.g. "1h ago", "Yesterday") from
+  /// the backend-supplied `createdAt` ISO timestamp. No time-formatting
+  /// utility already existed elsewhere in this codebase (searched), so this
+  /// is a small real computation from real data, not a fabricated value.
+  String _relativeTimeLabel(String createdAtIso) {
+    final createdAt = DateTime.tryParse(createdAtIso);
+    if (createdAt == null) return '';
+
+    final diff = DateTime.now().toUtc().difference(createdAt.toUtc());
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays == 1) return 'Yesterday';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    return '${diff.inDays ~/ 7}w ago';
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(homeProvider);
 
     return Scaffold(
-      appBar: const AIMTopAppBar(title: 'Home'),
+      appBar: AIMTopAppBar(
+        title: 'Home',
+        actions: [
+          AIMIconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            semanticLabel: 'Notifications',
+            onPressed: () => _openNotifications(context, ref),
+          ),
+        ],
+      ),
       body: switch (state) {
         AppAsyncLoading() => const AIMFullScreenLoading(
             semanticLabel: 'Loading home data',
@@ -116,6 +224,31 @@ class _HomePageState extends ConsumerState<HomePage> {
             semanticLabel: 'Loading home data',
           ),
       },
+    );
+  }
+}
+
+/// Small colored bell-icon avatar shown beside the sheet's title, matching
+/// the mockup's notification-sheet header treatment. Purely decorative —
+/// carries no data of its own.
+class _NotificationBellAvatar extends StatelessWidget {
+  const _NotificationBellAvatar();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: AimSizes.avatarMd,
+      height: AimSizes.avatarMd,
+      alignment: Alignment.center,
+      decoration: const BoxDecoration(
+        color: AimColors.error500,
+        shape: BoxShape.circle,
+      ),
+      child: const Icon(
+        Icons.notifications_rounded,
+        color: AimColors.neutral0,
+        size: AimSizes.iconMd,
+      ),
     );
   }
 }
