@@ -183,7 +183,7 @@ void main() {
         const SubscriptionPage(),
         repository: _FakeBillingRepository(
           subscriptions: [
-            SubscriptionModel(
+            const SubscriptionModel(
               id: 'sub_1',
               planId: 'plan_1',
               status: 'active',
@@ -212,7 +212,7 @@ void main() {
         const SubscriptionPage(),
         repository: _FakeBillingRepository(
           subscriptions: [
-            SubscriptionModel(
+            const SubscriptionModel(
               id: 'sub_1',
               planId: 'plan_1',
               status: 'active',
