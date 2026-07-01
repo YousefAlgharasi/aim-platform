@@ -110,12 +110,12 @@ Widget _wrap(AppAsyncState<AuthContextModel> authState) {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 void main() {
-  testWidgets('EditProfilePage uses AIMTopAppBar', (tester) async {
+  testWidgets('EditProfilePage shows gradient header title', (tester) async {
     await tester
         .pumpWidget(_wrap(const AppAsyncState.success(_studentContext)));
     await tester.pump();
 
-    expect(find.byType(AIMTopAppBar), findsOneWidget);
+    expect(find.text('Edit profile'), findsOneWidget);
   });
 
   testWidgets('EditProfilePage renders without exceptions', (tester) async {
@@ -144,7 +144,7 @@ void main() {
 
     expect(find.text('Yousef'), findsOneWidget);
     expect(find.text('Arabic'), findsOneWidget);
-    expect(find.text('Riyadh (Asia/Riyadh)'), findsOneWidget);
+    expect(find.text('Asia/Riyadh (GMT+3)'), findsOneWidget);
   });
 
   testWidgets('EditProfilePage shows safe-fields info banner', (tester) async {
@@ -181,16 +181,30 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('EditProfilePage Save button disabled when not dirty',
+  testWidgets('EditProfilePage header Save action disabled when not dirty',
       (tester) async {
     await tester
         .pumpWidget(_wrap(const AppAsyncState.success(_studentContext)));
     await tester.pump();
 
-    // Save button should be disabled (not dirty yet).
-    final saveBtn = find.widgetWithText(AIMButton, 'Save');
+    // Header "Save" text action should be disabled (not dirty yet).
+    final saveBtn = find.widgetWithText(TextButton, 'Save');
     expect(saveBtn, findsOneWidget);
-    final btn = tester.widget<AIMButton>(saveBtn);
-    expect(btn.disabled, isTrue);
+    final btn = tester.widget<TextButton>(saveBtn);
+    expect(btn.onPressed, isNull);
+  });
+
+  testWidgets(
+      'EditProfilePage bottom Save changes CTA disabled when not dirty',
+      (tester) async {
+    await tester
+        .pumpWidget(_wrap(const AppAsyncState.success(_studentContext)));
+    await tester.pump();
+
+    // Bottom gradient "Save changes" CTA should be disabled (not dirty yet).
+    final saveCta = find.widgetWithText(AIMGradientButton, 'Save changes');
+    expect(saveCta, findsOneWidget);
+    final btn = tester.widget<AIMGradientButton>(saveCta);
+    expect(btn.isEnabled, isFalse);
   });
 }
