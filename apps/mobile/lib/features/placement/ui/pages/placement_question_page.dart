@@ -1,3 +1,10 @@
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Placement question"
+//   docs/design/ui-for-all-system-mobile/screenshots/light/21-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/21-screen.png
+// Endpoints: GET /placement/questions?sectionId=, POST /placement/attempts/:id/answers
+// Widgets: AIMTopAppBar, AIMProgressBar, AIMAnswerOption, AIMGradientButton,
+//          AIMAlertBanner, AIMFullScreenLoading, AIMFullScreenError
+//
 // PlacementQuestionPage — student-facing placement question screen.
 //
 // Scope: Placement Test phase only.
@@ -146,7 +153,7 @@ class _QuestionBody extends StatelessWidget {
     final question = state.currentQuestion;
 
     return Padding(
-      padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
+      padding: const EdgeInsetsDirectional.all(AimSpacing.screenPaddingMobile),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -199,15 +206,15 @@ class _QuestionBody extends StatelessWidget {
             ),
           ],
           const SizedBox(height: AimSpacing.componentGap),
-          AIMButton(
-            onPressed: state.canSubmit ? onSubmit : null,
+          AIMGradientButton(
+            label: state.isLastQuestion ? 'Submit Final Answer' : 'Next Question',
+            gradient: AimGradients.gzHero,
             fullWidth: true,
             loading: state.isSubmitting,
+            enabled: state.canSubmit,
             semanticLabel:
                 state.isLastQuestion ? 'Submit final answer' : 'Next question',
-            child: Text(
-              state.isLastQuestion ? 'Submit Final Answer' : 'Next Question',
-            ),
+            onPressed: state.canSubmit ? onSubmit : null,
           ),
         ],
       ),
