@@ -2,9 +2,11 @@
 // overview screen.
 //
 // Renders a single published lesson asset as a numbered step row (icon,
-// title, subtitle, step number). Distinct from LessonContentRenderer, which
-// renders full inline content (used inside the step detail view). All values
-// are backend-supplied verbatim; Flutter only chooses icon/color per type.
+// title, subtitle, step number). Tapping a row (when [onTap] is provided)
+// opens the full content view — rendered elsewhere via
+// LessonContentRenderer, which renders full inline content (used inside the
+// step detail view). All values are backend-supplied verbatim; Flutter only
+// chooses icon/color per type.
 
 import 'package:flutter/material.dart';
 
@@ -16,10 +18,15 @@ class LessonStepTile extends StatelessWidget {
     required this.asset,
     required this.stepNumber,
     super.key,
+    this.onTap,
   });
 
   final LessonAsset asset;
   final int stepNumber;
+
+  /// Called when the row is tapped. Optional so this tile can still be used
+  /// as a non-interactive row where no content view is available.
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +35,7 @@ class LessonStepTile extends StatelessWidget {
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
+      onTap: onTap,
       semanticLabel: 'Step $stepNumber: ${asset.title}',
       child: Row(
         children: [
