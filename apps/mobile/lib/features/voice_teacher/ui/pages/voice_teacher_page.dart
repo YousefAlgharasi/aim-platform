@@ -1,3 +1,12 @@
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Voice"
+//   docs/design/ui-for-all-system-mobile/screenshots/light/36-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/36-screen.png
+// Endpoints: POST /voice-teacher/sessions
+//   GET /voice-teacher/sessions/:id/audio
+// Widgets: AIMTopAppBar (transparent), AIMBadge, VoiceRecordButton,
+//   VoiceTranscriptList, VoiceWaveformIndicator, VoiceErrorState,
+//   VoiceTextFallback
+//
 // Phase 18 — P18-065 / P18-066
 // VoiceTeacherPage — main Voice Tutor screen.
 //
@@ -5,6 +14,14 @@
 // AIM design system, backed by [voiceTeacherSessionProvider] (session +
 // history), [voiceRecordSubmitProvider] (record → submit turn) and
 // [voicePlaybackProvider] (AI Teacher audio playback).
+//
+// Pre-conversation (no history yet, not recording/processing/erroring) shows
+// a full-bleed gradient hero with a status pill, "Tap to speak" heading, the
+// centered record button, and a static subtitle — matching the design
+// screenshot. Once real history exists, or while an error/fallback is
+// showing, the screen keeps the functional transcript-list layout (a
+// full-bleed gradient behind a scrolling chat history would not read well),
+// with just a shorter gradient header bar for visual continuity.
 //
 // Security rules:
 // - studentId is never supplied by this screen; the backend always resolves
@@ -19,7 +36,7 @@
 // microphone capture is not wired to a recorder plugin yet. The state
 // machine, network submission, and transcript rendering are real; only the
 // raw audio byte source is a placeholder until a recorder dependency is
-// added.
+// added. This UI-only pass does not touch that gap.
 
 import 'dart:typed_data';
 
@@ -168,30 +185,38 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
     final playbackState = ref.watch(voicePlaybackProvider);
 
     return Scaffold(
-      appBar: const AIMTopAppBar(title: 'Voice Teacher'),
-      body: SafeArea(
-        child: switch (sessionState) {
-          AppAsyncLoading() => const AIMFullScreenLoading(
-              semanticLabel: 'Starting Voice Teacher session',
-            ),
-          AppAsyncIdle() => const AIMFullScreenLoading(
-              semanticLabel: 'Starting Voice Teacher session',
-            ),
-          AppAsyncFailure() => VoiceErrorState(
-              errorType: VoiceErrorType.serverError,
-              onRetry: _start,
-            ),
-          AppAsyncSuccess(:final data) => _VoiceTutorContent(
-              sessionState: data,
-              recordState: recordState,
-              playbackState: playbackState,
-              onStartRecording: _onStartRecording,
-              onStopRecording: _onStopRecording,
-              onPlayReply: _onPlayReply,
-              onFeedback: _onFeedback,
-              onRetry: _onStopRecording,
-            ),
-        },
+      extendBodyBehindAppBar: true,
+      appBar: AIMTopAppBar(
+        title: 'Voice Teacher',
+        transparent: true,
+        onBack: () => Navigator.of(context).pop(),
+      ),
+      body: DecoratedBox(
+        decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+        child: SafeArea(
+          child: switch (sessionState) {
+            AppAsyncLoading() => const AIMFullScreenLoading(
+                semanticLabel: 'Starting Voice Teacher session',
+              ),
+            AppAsyncIdle() => const AIMFullScreenLoading(
+                semanticLabel: 'Starting Voice Teacher session',
+              ),
+            AppAsyncFailure() => VoiceErrorState(
+                errorType: VoiceErrorType.serverError,
+                onRetry: _start,
+              ),
+            AppAsyncSuccess(:final data) => _VoiceTutorContent(
+                sessionState: data,
+                recordState: recordState,
+                playbackState: playbackState,
+                onStartRecording: _onStartRecording,
+                onStopRecording: _onStopRecording,
+                onPlayReply: _onPlayReply,
+                onFeedback: _onFeedback,
+                onRetry: _onStopRecording,
+              ),
+          },
+        ),
       ),
     );
   }
@@ -223,54 +248,166 @@ class _VoiceTutorContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final isRecording = recordState.state == RecordSubmitState.recording;
     final isSubmitting = recordState.state == RecordSubmitState.submitting;
+    final isError = recordState.state == RecordSubmitState.error;
     final isPlaying = playbackState.state == PlaybackState.playing ||
         playbackState.state == PlaybackState.loading;
     final lastTurn = sessionState.lastTurn;
+    final hasFallback = lastTurn != null && lastTurn.isFallback;
+
+    final recordButtonState = isSubmitting
+        ? VoiceRecordState.processing
+        : isRecording
+            ? VoiceRecordState.recording
+            : VoiceRecordState.idle;
+
+    // Pre-conversation hero: no history yet and nothing currently in
+    // progress (recording/processing/erroring/fallback) — matches the
+    // design screenshot's full-bleed gradient "Tap to speak" treatment.
+    final showHero = sessionState.history.isEmpty &&
+        !isRecording &&
+        !isSubmitting &&
+        !isError &&
+        !hasFallback;
+
+    if (showHero) {
+      return _VoiceHeroIdle(
+        recordButtonState: recordButtonState,
+        onStartRecording: onStartRecording,
+        onStopRecording: () => onStopRecording(),
+      );
+    }
+
+    final surfaces = aimSurfacesOf(context);
 
     return Column(
       children: [
+        // Shorter gradient header bar for visual continuity with the hero
+        // state, instead of a jarring gradient→plain-white cut once a
+        // conversation starts.
+        Container(
+          width: double.infinity,
+          height: AimSpacing.space32,
+          decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+        ),
         Expanded(
-          child: VoiceTranscriptList(
-            messages: sessionState.history,
-            onPlayAudio: (audioRef) => onPlayReply(audioRef),
-            onFeedback: onFeedback,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AimSpacing.screenPaddingMobile,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              VoiceWaveformIndicator(active: isRecording || isPlaying),
-              const SizedBox(height: AimSpacing.innerGap),
-              if (recordState.state == RecordSubmitState.error)
-                VoiceErrorState(
-                  errorType: VoiceErrorType.microphoneError,
-                  onRetry: () => onRetry(),
-                )
-              else if (lastTurn != null && lastTurn.isFallback)
-                VoiceTextFallback(
-                  fallbackText: lastTurn.text,
-                  originalAudioError: 'audio_unavailable',
+          child: DecoratedBox(
+            decoration: BoxDecoration(color: surfaces.background),
+            child: Column(
+              children: [
+                Expanded(
+                  child: VoiceTranscriptList(
+                    messages: sessionState.history,
+                    onPlayAudio: (audioRef) => onPlayReply(audioRef),
+                    onFeedback: onFeedback,
+                  ),
                 ),
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
-          child: VoiceRecordButton(
-            state: isSubmitting
-                ? VoiceRecordState.processing
-                : isRecording
-                    ? VoiceRecordState.recording
-                    : VoiceRecordState.idle,
-            onStartRecording: onStartRecording,
-            onStopRecording: () => onStopRecording(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AimSpacing.screenPaddingMobile,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      VoiceWaveformIndicator(active: isRecording || isPlaying),
+                      const SizedBox(height: AimSpacing.innerGap),
+                      if (isError)
+                        VoiceErrorState(
+                          errorType: VoiceErrorType.microphoneError,
+                          onRetry: () => onRetry(),
+                        )
+                      else if (hasFallback)
+                        VoiceTextFallback(
+                          fallbackText: lastTurn.text,
+                          originalAudioError: 'audio_unavailable',
+                        ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
+                  child: VoiceRecordButton(
+                    state: recordButtonState,
+                    onStartRecording: onStartRecording,
+                    onStopRecording: () => onStopRecording(),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Pre-conversation idle hero — full-bleed gradient background, status
+/// pill, heading, centered record button, and static subtitle. Matches
+/// `docs/design/ui-for-all-system-mobile/screenshots/{light,dark}/36-screen.png`.
+///
+/// The "Tap anywhere to change state" hint visible in the mockup is a
+/// Figma/prototyping-tool artifact for whoever is clicking through the
+/// prototype's other states — it is intentionally omitted here.
+class _VoiceHeroIdle extends StatelessWidget {
+  const _VoiceHeroIdle({
+    required this.recordButtonState,
+    required this.onStartRecording,
+    required this.onStopRecording,
+  });
+
+  final VoiceRecordState recordButtonState;
+  final VoidCallback onStartRecording;
+  final VoidCallback onStopRecording;
+
+  @override
+  Widget build(BuildContext context) {
+    final (label, heading) = switch (recordButtonState) {
+      VoiceRecordState.recording => ('Recording', 'Listening...'),
+      VoiceRecordState.processing => ('Processing', 'Processing...'),
+      VoiceRecordState.idle => ('Ready', 'Tap to speak'),
+    };
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsetsDirectional.symmetric(
+          horizontal: AimSpacing.screenPaddingMobile,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AIMBadge(
+              tone: AIMBadgeTone.neutral,
+              variant: AIMBadgeVariant.soft,
+              pill: true,
+              dot: true,
+              semanticLabel: 'Status: $label',
+              child: DefaultTextStyle.merge(
+                style: const TextStyle(color: AimColors.neutral0),
+                child: Text(label.toUpperCase()),
+              ),
+            ),
+            const SizedBox(height: AimSpacing.sectionGap),
+            Text(
+              heading,
+              style: AimTextStyles.h2.copyWith(color: AimColors.neutral0),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AimSpacing.sectionGap),
+            VoiceRecordButton(
+              state: recordButtonState,
+              onStartRecording: onStartRecording,
+              onStopRecording: onStopRecording,
+            ),
+            const SizedBox(height: AimSpacing.sectionGap),
+            Text(
+              'Practise your pronunciation with the AI teacher',
+              style: AimTextStyles.bodySm.copyWith(
+                color: AimColors.neutral0.withValues(alpha: 0.85),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
