@@ -12,7 +12,7 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart'
 import 'package:aim_mobile/features/auth/logic/provider/session_store_provider.dart';
 
 void main() {
-  // ── AppBootstrapNotifier unit tests ─────────────────────────────────────
+  // ── AppBootstrapNotifier unit tests ──────────────────────────
 
   test('AppBootstrapNotifier starts in checking state', () async {
     final container = ProviderContainer(
@@ -47,7 +47,7 @@ void main() {
     expect(container.read(authFlowProvider).isSignedOut, isTrue);
   });
 
-  // ── AuthGate widget tests ───────────────────────────────────────────────
+  // ── AuthGate widget tests ─────────────────────────────────
 
   testWidgets(
       'AuthGate navigates to sign-in when bootstrap is done and signedOut',
@@ -73,7 +73,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Sign in to AIM'), findsOneWidget);
+    expect(find.text('Welcome back'), findsOneWidget);
   });
 
   testWidgets('AuthGate stays on splash while still checking', (tester) async {
@@ -94,7 +94,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('AIM'), findsOneWidget);
-    expect(find.text('Sign in to AIM'), findsNothing);
+    expect(find.text('Welcome back'), findsNothing);
   });
 
   testWidgets('AuthGate navigates to mainShell when already signed in',
@@ -125,7 +125,7 @@ void main() {
   });
 }
 
-// ── Test doubles ──────────────────────────────────────────────────────────────
+// ── Test doubles ─────────────────────────────────────────
 
 /// Resolves immediately to done without hitting any async path.
 class _ImmediateDoneNotifier extends AppBootstrapNotifier {
