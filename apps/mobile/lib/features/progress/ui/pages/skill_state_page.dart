@@ -1,9 +1,22 @@
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Skill states"
+//   docs/design/ui-for-all-system-mobile/screenshots/light/12-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/12-screen.png
+// Endpoint: GET /aim/students/:id/skill-states
+// Widgets: AIMTopAppBar, AIMCard, AIMBadge, AIMProgressBar, AIMEmptyState,
+//   AIMFullScreenLoading, AIMFullScreenError
+//
 // Phase 6 — P6-099
 // SkillStatePage — read-only skill state view.
 //
 // Dedicated page showing all backend-persisted AIM skill states for the
 // student. masteryScore, masteryConfidence, masteryTrend, and
 // previousMasteryScore are AIM Engine outputs; Flutter displays verbatim.
+//
+// The per-skill card's "tier" badge (Strong / Developing / Needs work) is a
+// UI-only bucketing of masteryScore for display purposes — it is NOT the
+// same as masteryTrend (which is the AIM Engine's own directional signal and
+// is shown separately, verbatim, as the inline trend indicator). Thresholds:
+// >=0.8 Strong, >=0.5 Developing, else Needs work.
 //
 // CRITICAL SECURITY RULES:
 // - Flutter NEVER computes mastery. All values from aimResultsProvider.
@@ -127,29 +140,105 @@ class _SkillStateList extends StatelessWidget {
   }
 }
 
+/// UI-only mastery tier bucketing for the tier badge. NOT the same signal as
+/// [AimSkillStateModel.masteryTrend] (which is the AIM Engine's own
+/// directional trend, shown separately/verbatim as the trend indicator).
+enum _SkillMasteryTier { strong, developing, needsWork }
+
+/// Buckets a real, backend-computed masteryScore (0.0–1.0) into a display
+/// tier. Thresholds chosen to match the design mock: >=0.8 Strong,
+/// >=0.5 Developing, else Needs work. Flutter never computes masteryScore
+/// itself — this only labels an already-computed value for display.
+_SkillMasteryTier _tierOf(double masteryScore) {
+  if (masteryScore >= 0.8) return _SkillMasteryTier.strong;
+  if (masteryScore >= 0.5) return _SkillMasteryTier.developing;
+  return _SkillMasteryTier.needsWork;
+}
+
+/// Converts a raw, machine-oriented `skillId` slug (e.g.
+/// `"skill:arabic:p1:vocab"` or `"past_simple"`) into a readable label by
+/// taking the last colon-delimited segment, replacing underscores/hyphens
+/// with spaces, and title-casing each word. This is a real-data display
+/// transform, not a fabricated name — it won't always match a curated
+/// display name (e.g. it can't know "vocab" should render as "Vocabulary"),
+/// and that's expected/acceptable since the backend has no reliable
+/// slug-to-display-name mapping available to students.
+String _prettifySkillId(String skillId) {
+  final lastSegment = skillId.split(':').last;
+  final words = lastSegment
+      .split(RegExp(r'[_\-]+'))
+      .where((w) => w.isNotEmpty)
+      .map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase());
+  final label = words.join(' ');
+  return label.isEmpty ? skillId : label;
+}
+
 class _SkillStateDetailCard extends StatelessWidget {
   const _SkillStateDetailCard({required this.model});
   final AimSkillStateModel model;
 
-  AIMBadgeTone get _trendTone => switch (model.masteryTrend) {
-        'improving' => AIMBadgeTone.success,
-        'declining' => AIMBadgeTone.error,
-        'stable' => AIMBadgeTone.neutral,
-        _ => AIMBadgeTone.neutral,
-      };
+  ({AIMBadgeTone tone, AIMProgressBarTone barTone, String label}) get _tier {
+    return switch (_tierOf(model.masteryScore)) {
+      _SkillMasteryTier.strong => (
+          tone: AIMBadgeTone.success,
+          barTone: AIMProgressBarTone.success,
+          label: 'Strong',
+        ),
+      _SkillMasteryTier.developing => (
+          tone: AIMBadgeTone.primary,
+          barTone: AIMProgressBarTone.primary,
+          label: 'Developing',
+        ),
+      _SkillMasteryTier.needsWork => (
+          tone: AIMBadgeTone.warning,
+          barTone: AIMProgressBarTone.warning,
+          label: 'Needs work',
+        ),
+    };
+  }
+
+  ({IconData icon, Color color, String label}) _trendDisplay(
+    AimSurfaceTheme surfaces,
+  ) {
+    return switch (model.masteryTrend) {
+      'improving' => (
+          icon: Icons.trending_up,
+          color: AimColors.success500,
+          label: 'Improving',
+        ),
+      'declining' => (
+          icon: Icons.trending_down,
+          color: AimColors.error500,
+          label: 'Declining',
+        ),
+      'stable' => (
+          icon: Icons.trending_flat,
+          color: surfaces.textSecondary,
+          label: 'Stable',
+        ),
+      _ => (
+          icon: Icons.trending_flat,
+          color: surfaces.textSecondary,
+          label: 'Insufficient data',
+        ),
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
-    final masteryPct = (model.masteryScore * 100).roundToDouble();
-    final confidencePct = (model.masteryConfidence * 100).roundToDouble();
+    final masteryPct = (model.masteryScore * 100).round();
+    final confidencePct = (model.masteryConfidence * 100).round();
     final prevPct = model.previousMasteryScore != null
-        ? (model.previousMasteryScore! * 100).roundToDouble()
+        ? (model.previousMasteryScore! * 100).round()
         : null;
+    final tier = _tier;
+    final trend = _trendDisplay(surfaces);
+    final title = _prettifySkillId(model.skillId);
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
-      semanticLabel: '${model.skillId} mastery ${masteryPct.toInt()}%',
+      semanticLabel: '$title mastery $masteryPct%, ${tier.label}',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -157,7 +246,7 @@ class _SkillStateDetailCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  model.skillId,
+                  title,
                   style: AimTextStyles.title
                       .copyWith(color: surfaces.textPrimary),
                   maxLines: 1,
@@ -165,54 +254,63 @@ class _SkillStateDetailCard extends StatelessWidget {
                 ),
               ),
               AIMBadge(
-                tone: _trendTone,
+                tone: tier.tone,
                 variant: AIMBadgeVariant.soft,
                 pill: true,
-                child: Text(model.masteryTrend),
+                child: Text(tier.label),
               ),
             ],
           ),
           const SizedBox(height: AimSpacing.componentGap),
           AIMProgressBar(
-            value: masteryPct,
+            value: masteryPct.toDouble(),
             max: 100,
-            showValue: true,
-            label: 'Mastery',
-            tone: AIMProgressBarTone.primary,
+            tone: tier.barTone,
             size: AIMProgressBarSize.lg,
           ),
           const SizedBox(height: AimSpacing.space8),
-          AIMProgressBar(
-            value: confidencePct,
-            max: 100,
-            showValue: true,
-            label: 'Confidence',
-            tone: AIMProgressBarTone.gradient,
-          ),
-          if (prevPct != null) ...[
-            const SizedBox(height: AimSpacing.componentGap),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Previous mastery',
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text.rich(
+                TextSpan(
                   style: AimTextStyles.bodySm
                       .copyWith(color: surfaces.textSecondary),
+                  children: [
+                    const TextSpan(text: 'Mastery '),
+                    TextSpan(
+                      text: '$masteryPct',
+                      style: AimTextStyles.label
+                          .copyWith(color: surfaces.textPrimary),
+                    ),
+                    if (prevPct != null) TextSpan(text: ' · was $prevPct'),
+                  ],
                 ),
-                Text(
-                  '${prevPct.toInt()}%',
-                  style: AimTextStyles.label
-                      .copyWith(color: surfaces.textSecondary),
-                ),
-              ],
-            ),
-          ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(trend.icon, size: AimSizes.iconSm, color: trend.color),
+                  const SizedBox(width: AimSpacing.space4),
+                  Text(
+                    trend.label,
+                    style:
+                        AimTextStyles.label.copyWith(color: trend.color),
+                  ),
+                ],
+              ),
+            ],
+          ),
           const SizedBox(height: AimSpacing.space4),
           Text(
-            'Last evaluated: ${model.lastEvaluatedAt}',
+            'Confidence $confidencePct%',
             style:
                 AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
           ),
+          // lastEvaluatedAt intentionally dropped from this redesign: the
+          // screenshot's card layout (docs/design/.../12-screen.png) has no
+          // room/slot for it and does not show it. Real data (model itself
+          // still carries lastEvaluatedAt) is simply not rendered here.
         ],
       ),
     );
