@@ -78,6 +78,15 @@ class BackendApiPaths {
   static const String studentAnalyticsSummary = '/student/analytics/summary';
 
   // ---------------------------------------------------------------------------
+  // Achievements — Phase 13
+  // Read-only. Achievement unlock criteria, badge logic, and milestone
+  // tracking are never computed in Flutter.
+  // ---------------------------------------------------------------------------
+
+  /// GET /student/achievements
+  static const String achievements = '/student/achievements';
+
+  // ---------------------------------------------------------------------------
   // Engagement — daily goal, streak, and daily challenge.
   // Read-only summary; goal target is the only client-writable field.
   // Streak and challenge progress are always backend-computed.
