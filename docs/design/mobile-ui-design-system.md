@@ -233,13 +233,15 @@ Type roles:
 | Label | `13/18` | 600 | `0.01em` |
 | Helper | `12/16` | 400 | `0` |
 
-Arabic typography:
+Arabic typography and text rendering strategy:
 
 - Use IBM Plex Sans Arabic for Arabic text.
 - Arabic line-height should be looser: multiply role line heights by about `1.18`.
 - Avoid all-caps styling for Arabic.
 - Avoid tight or negative letter spacing for Arabic.
 - Learner content should not be smaller than 16px unless it is helper, metadata, or dense secondary UI.
+- Local bundled fonts should be preferred for production reliability (e.g., `assets/fonts/inter/` and `assets/fonts/ibm_plex_sans_arabic/`). 
+- If local font files are not yet available, `pubspec.yaml` should not declare them to prevent build failures. The `aim_typography.dart` file should still declare the `AimFontFamilies` (Inter, IBM Plex Sans Arabic) and `AimFontAssets` path expectations, and fall back to platform defaults or `Noto Sans Arabic` smoothly until the local font `.ttf` files are provided in the repo.
 
 ## Spacing System
 
