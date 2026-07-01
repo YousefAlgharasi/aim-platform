@@ -13,6 +13,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/ai_teacher/ui/widgets/ai_chat_input_bar.dart';
 
+/// The send button is a private `_SendButton` widget (a bespoke circular
+/// gradient button, since `AIMIconButton` has no gradient-fill variant — see
+/// `ai_chat_input_bar.dart`'s header comment) and so can't be referenced by
+/// type from this test file. It's located instead via the `InkWell` that
+/// wraps the send icon, which is how the widget itself implements enabled/
+/// disabled state (`onTap: enabled ? onPressed : null`).
+Finder _sendButtonInkWell() => find.ancestor(
+      of: find.byIcon(Icons.send_rounded),
+      matching: find.byType(InkWell),
+    );
+
 void main() {
   testWidgets('send button is disabled while input is empty',
       (tester) async {
@@ -27,10 +38,8 @@ void main() {
       ),
     );
 
-    final iconButton = tester.widget<AIMIconButton>(
-      find.byType(AIMIconButton),
-    );
-    expect(iconButton.onPressed, isNull);
+    final inkWell = tester.widget<InkWell>(_sendButtonInkWell());
+    expect(inkWell.onTap, isNull);
   });
 
   testWidgets('typing enables the send button and tapping invokes onSend',
@@ -52,12 +61,10 @@ void main() {
     await tester.enterText(find.byType(TextField), 'Hello');
     await tester.pump();
 
-    final iconButton = tester.widget<AIMIconButton>(
-      find.byType(AIMIconButton),
-    );
-    expect(iconButton.onPressed, isNotNull);
+    final inkWell = tester.widget<InkWell>(_sendButtonInkWell());
+    expect(inkWell.onTap, isNotNull);
 
-    await tester.tap(find.byType(AIMIconButton));
+    await tester.tap(find.byIcon(Icons.send_rounded));
     await tester.pump();
     expect(sendCount, 1);
   });
@@ -75,10 +82,8 @@ void main() {
       ),
     );
 
-    final iconButton = tester.widget<AIMIconButton>(
-      find.byType(AIMIconButton),
-    );
-    expect(iconButton.onPressed, isNull);
+    final inkWell = tester.widget<InkWell>(_sendButtonInkWell());
+    expect(inkWell.onTap, isNull);
 
     final textField = tester.widget<TextField>(find.byType(TextField));
     expect(textField.enabled, isFalse);
