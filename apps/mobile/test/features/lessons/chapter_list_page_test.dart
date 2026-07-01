@@ -8,6 +8,8 @@
 //   4. Populated state renders chapter titles.
 //   5. RTL layout renders without error.
 //   6. levelId is backend-supplied — widget accepts it as a required param.
+//   7. Populated state renders the real, computed '${chapters.length}
+//      chapters' subtitle (real-data-only redesign — not fabricated).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -135,6 +137,23 @@ void main() {
       await tester.pump();
       expect(find.byType(ChapterListPage), findsOneWidget);
       expect(find.text('Unit 1: Basics'), findsOneWidget);
+    });
+
+    testWidgets(
+        'shows real chapter count subtitle when populated', (tester) async {
+      await tester.pumpWidget(_wrap(
+        _page,
+        overrides: [
+          chaptersProvider.overrideWith(
+            (ref) =>
+                _FakeChaptersNotifier(const AppAsyncState.success(_chapters)),
+          ),
+        ],
+      ));
+      await tester.pump();
+      // _chapters has 2 entries — the subtitle is computed from the real,
+      // already-loaded list length, not a fabricated value.
+      expect(find.text('2 chapters'), findsOneWidget);
     });
 
     testWidgets('courseTitle appears in AppBar', (tester) async {
