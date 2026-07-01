@@ -122,11 +122,11 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
     return Scaffold(
       appBar: AIMTopAppBar(
         title: widget.lessonTitle,
-        actions: [
+        actions: const [
           // Visual only — no bookmark/save-lesson endpoint exists yet, so
           // this action is disabled rather than a dead-end tap.
-          AIMIconButton(
-            icon: const Icon(Icons.bookmark_border_rounded),
+           AIMIconButton(
+            icon: Icon(Icons.bookmark_border_rounded),
             semanticLabel: 'Save lesson (coming soon)',
             onPressed: null,
           ),
@@ -268,7 +268,7 @@ class _LessonHero extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AimSpacing.sectionGap),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: AimGradients.ai,
         borderRadius: AimRadius.borderXl,
       ),

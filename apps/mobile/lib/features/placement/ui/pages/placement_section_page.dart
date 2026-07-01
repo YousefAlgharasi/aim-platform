@@ -172,7 +172,7 @@ class _SectionBody extends StatelessWidget {
           // Question count info
           Row(
             children: [
-              Icon(Icons.quiz_outlined, size: AimSizes.iconMd),
+              const Icon(Icons.quiz_outlined, size: AimSizes.iconMd),
               const SizedBox(width: AimSpacing.space8),
               Text(
                 '${section.totalQuestions} questions',
