@@ -16,6 +16,10 @@ import 'package:aim_mobile/features/auth/ui/pages/register_page.dart';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+/// The primary create-account submit button, distinct from the disabled
+/// social buttons rendered alongside it.
+final Finder _submitButtonFinder = find.byType(AIMGradientButton);
+
 Widget _testApp({List<Override> overrides = const []}) {
   return ProviderScope(
     overrides: overrides,
@@ -71,14 +75,14 @@ class _FakeAuthRepository implements AuthRepository {
 void main() {
   // ── Smoke ──────────────────────────────────────────────────────────────
 
-  testWidgets('RegisterPage renders AIM branding and three form fields',
+  testWidgets('RegisterPage renders the gradient header and form fields',
       (tester) async {
     await tester.pumpWidget(_testApp());
     await tester.pump();
 
     expect(find.byType(RegisterPage), findsOneWidget);
-    expect(find.text('Create your AIM account'), findsOneWidget);
-    expect(find.text('AIM'), findsOneWidget);
+    expect(find.text('Create account'), findsOneWidget);
+    expect(find.text('Start learning English the fun way'), findsOneWidget);
     expect(find.byType(AIMInput), findsNWidgets(3));
   });
 
@@ -87,8 +91,9 @@ void main() {
     await tester.pump();
 
     expect(find.byType(AIMInput), findsNWidgets(3));
-    expect(find.byType(AIMButton), findsOneWidget);
-    expect(find.byType(AIMTopAppBar), findsOneWidget);
+    expect(find.byType(AIMGradientButton), findsOneWidget);
+    // Google/Apple/Facebook (visual-only, disabled).
+    expect(find.byType(AIMButton), findsNWidgets(3));
     await tester.scrollUntilVisible(
       find.text('Already have an account? Sign in'),
       80,
@@ -103,8 +108,8 @@ void main() {
     await tester.pumpWidget(_testApp());
     await tester.pump();
 
-    final button = tester.widget<AIMButton>(find.byType(AIMButton));
-    expect(button.onPressed, isNull);
+    final button = tester.widget<AIMGradientButton>(_submitButtonFinder);
+    expect(button.enabled, isFalse);
   });
 
   testWidgets('Submit button enables when all fields are valid', (tester) async {
@@ -126,8 +131,8 @@ void main() {
     );
     await tester.pump();
 
-    final button = tester.widget<AIMButton>(find.byType(AIMButton));
-    expect(button.onPressed, isNotNull);
+    final button = tester.widget<AIMGradientButton>(_submitButtonFinder);
+    expect(button.enabled, isTrue);
   });
 
   testWidgets('Submit button stays disabled when passwords do not match',
@@ -150,8 +155,8 @@ void main() {
     );
     await tester.pump();
 
-    final button = tester.widget<AIMButton>(find.byType(AIMButton));
-    expect(button.onPressed, isNull);
+    final button = tester.widget<AIMGradientButton>(_submitButtonFinder);
+    expect(button.enabled, isFalse);
   });
 
   // ── Error banner ───────────────────────────────────────────────────────
