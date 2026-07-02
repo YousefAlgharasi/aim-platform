@@ -45,8 +45,7 @@ services:
     name: aim-engine
     runtime: docker
     plan: starter
-    rootDir: services/aim-engine
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: services/aim-engine/Dockerfile
     healthCheckPath: /health
     autoDeploy: false
     envVars:
