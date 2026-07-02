@@ -1,4 +1,10 @@
-// Phase 4 — P4-065
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Placement start"
+//   docs/design/ui-for-all-system-mobile/screenshots/light/19-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/19-screen.png
+// Endpoint: GET /placement/active (read-only preview, no attempt started)
+// Widgets: AIMGradientButton
+//
+// Phase 4 — P4-065 (restyled — TASK-19)
 // PlacementStartPage — student-facing placement start screen.
 //
 // Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → placementStart
@@ -9,6 +15,20 @@
 // Widgets: AIMGradientButton, AIMFullScreenLoading, AIMFullScreenError
 //
 // Scope: Placement Test phase only.
+//
+// This is a real-data-only visual restyle. The bare Material AppBar is
+// replaced with a bespoke gradient header (mirrors PlacementIntroPage's
+// private `_IntroHeader`, duplicated locally since it's private to that
+// file), and the ready-state body now leads with a rounded gradient card
+// showing exactly two real stat cells: Sections (test.totalSections) and
+// Estimated time (test.estimatedMinutes). Per
+// services/backend-api/src/features/placement/placement-test-read.service.ts,
+// GET /placement/active only ever returns id/title/status/total_sections/
+// estimated_minutes — there is no per-section name/duration breakdown and no
+// total question count anywhere in this response. The design's "SECTIONS"
+// list (Vocabulary/Grammar/Reading/Listening rows) and its 36-question stat
+// cell are therefore intentionally NOT built here, mirroring the same
+// real-data-only reasoning already documented in placement_intro_page.dart.
 //
 // Responsibility:
 //   1. Load the active placement test (+ its sections, for the preview list)
@@ -78,21 +98,17 @@ class _PlacementStartPageState extends ConsumerState<PlacementStartPage> {
     });
 
     return Scaffold(
-      backgroundColor: surfaces.background,
-      body: switch (state) {
-        PlacementStartIdle() || PlacementStartLoading() => Column(
-            children: [
-              const _GradientTopBar(title: 'Placement Test'),
-              const Expanded(child: AIMFullScreenLoading()),
-            ],
-          ),
-        PlacementStartError(:final message) => Column(
-            children: [
-              const _GradientTopBar(title: 'Placement Test'),
-              Expanded(
-                child: AIMFullScreenError(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _StartHeader(),
+          Expanded(
+            child: switch (state) {
+              PlacementStartIdle() ||
+              PlacementStartLoading() =>
+                const Center(child: CircularProgressIndicator()),
+              PlacementStartError(:final message) => _ErrorBody(
                   message: message,
-                  retryLabel: 'Retry',
                   onRetry: () {
                     final token = ref.read(authFlowProvider).accessToken ?? '';
                     ref
@@ -100,24 +116,82 @@ class _PlacementStartPageState extends ConsumerState<PlacementStartPage> {
                         .loadActivePlacementTest(token);
                   },
                 ),
-              ),
-            ],
-          ),
-        PlacementStartReady(:final test, :final sections) => _ReadyBody(
-            test: test,
-            sections: sections,
-            onStart: () {
-              final token = ref.read(authFlowProvider).accessToken ?? '';
-              ref.read(placementStartProvider.notifier).startAttempt(token);
+              PlacementStartReady(:final test) => _ReadyBody(
+                  test: test,
+                  onStart: () {
+                    final token = ref.read(authFlowProvider).accessToken ?? '';
+                    ref.read(placementStartProvider.notifier).startAttempt(token);
+                  },
+                ),
+              PlacementStarted() =>
+                // Transitioning — show spinner while navigation fires.
+                const Center(child: CircularProgressIndicator()),
             },
           ),
-        PlacementStarted() => Column(
-            children: [
-              const _GradientTopBar(title: 'Placement Test'),
-              const Expanded(child: AIMFullScreenLoading()),
-            ],
-          ),
-      },
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Gradient header — mirrors PlacementIntroPage's private `_IntroHeader`
+// (duplicated locally since that widget is private to its own file). Back
+// button is a genuine pop: PlacementIntroPage pushes this screen via
+// Navigator.pushNamed(AppRoutePaths.placementStart), so a working back
+// affordance matches normal push/pop semantics. The old bare AppBar's
+// `automaticallyImplyLeading: false` was an oversight, not an intentional
+// dead-end.
+// ---------------------------------------------------------------------------
+
+class _StartHeader extends StatelessWidget {
+  const _StartHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+      ),
+      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            Semantics(
+              button: true,
+              label: 'Back',
+              child: InkWell(
+                onTap: () => Navigator.of(context).maybePop(),
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.all(AimSpacing.space12),
+                    child: Icon(
+                      Icons.arrow_back,
+                      size: AimSizes.iconMd,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AimSpacing.componentGap),
+            Text(
+              'Placement Test',
+              style: AimTextStyles.h2.copyWith(color: AimColors.neutral0),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -133,40 +207,116 @@ class _GradientTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
+    final surfaces = aimSurfacesOf(context);
 
-    // Without this, the OS paints its default status bar background above
-    // the gradient instead of light icons sitting transparently on it.
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
-      child: Container(
-        width: double.infinity,
-        decoration: const BoxDecoration(gradient: AimGradients.gzHero),
-        child: SafeArea(
-          bottom: false,
-          child: SizedBox(
-            height: AimSizes.topBarHeight,
-            child: Row(
-              children: [
-                const SizedBox(width: AimSpacing.space8),
-                AIMIconButton(
-                  semanticLabel: 'Back',
-                  icon: Icon(
-                    isRtl ? Icons.chevron_right : Icons.chevron_left,
-                    color: AimColors.neutral0,
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Gradient "Find your level" card — static UI copy (non-data)
+            // plus exactly two real stat cells.
+            Container(
+              padding: const EdgeInsetsDirectional.all(AimSpacing.space20),
+              decoration: BoxDecoration(
+                gradient: AimGradients.gzHero,
+                borderRadius: AimRadius.borderLg,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Find your level',
+                    style:
+                        AimTextStyles.h3.copyWith(color: AimColors.neutral0),
                   ),
-                  onPressed: () => Navigator.of(context).maybePop(),
+                  const SizedBox(height: AimSpacing.space8),
+                  Text(
+                    'A short adaptive test places you at the right level so '
+                    'every lesson fits you.',
+                    style: AimTextStyles.bodySm.copyWith(
+                      color: AimColors.neutral0.withValues(alpha: 0.85),
+                    ),
+                  ),
+                  const SizedBox(height: AimSpacing.sectionGap),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _StatCell(
+                          value: '${test.totalSections}',
+                          label: 'sections',
+                        ),
+                      ),
+                      Expanded(
+                        child: _StatCell(
+                          value: '~${test.estimatedMinutes}',
+                          label: 'minutes',
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AimSpacing.sectionGap),
+            // Boundary note — backend authority.
+            Container(
+              padding: const EdgeInsetsDirectional.all(AimSpacing.space12),
+              decoration: BoxDecoration(
+                color: surfaces.surfaceSunken,
+                borderRadius: AimRadius.borderSm,
+              ),
+              child: Text(
+                'Your level is determined by the backend after completion. '
+                'Results are never calculated on your device.',
+                style: AimTextStyles.bodySm.copyWith(
+                  color: surfaces.textSecondary,
                 ),
-                const SizedBox(width: AimSpacing.space4),
-                Text(
-                  title,
-                  style:
-                      AimTextStyles.title.copyWith(color: AimColors.neutral0),
-                ),
-              ],
+              ),
+            ),
+            const Spacer(),
+            AIMGradientButton(
+              label: 'Start Placement Test',
+              fullWidth: true,
+              semanticLabel: 'Start Placement Test',
+              onPressed: onStart,
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Compact white-on-gradient number+label stat cell used in the "Find your
+/// level" card (Sections / Estimated time — both real, backend-supplied).
+class _StatCell extends StatelessWidget {
+  const _StatCell({required this.value, required this.label});
+
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: '$value $label',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+          ),
+          const SizedBox(height: AimSpacing.space2),
+          Text(
+            label,
+            style: AimTextStyles.caption.copyWith(
+              color: AimColors.neutral0.withValues(alpha: 0.85),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -194,77 +344,30 @@ class _ReadyBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
 
-    return Column(
-      children: [
-        const _GradientTopBar(title: 'Placement Test'),
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AimSpacing.screenPaddingMobile,
-              vertical: AimSpacing.sectionGap,
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AimSpacing.space24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 48,
+              color: Theme.of(context).colorScheme.error,
             ),
-            children: [
-              // ── Hero card ──────────────────────────────────────────────
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AimSpacing.cardPaddingLg),
-                decoration: BoxDecoration(
-                  gradient: AimGradients.gzHero,
-                  borderRadius: AimRadius.borderXl,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Find your level',
-                      style: AimTextStyles.h3.copyWith(
-                        color: AimColors.neutral0,
-                      ),
-                    ),
-                    const SizedBox(height: AimSpacing.space8),
-                    Text(
-                      'A short adaptive test places you at the right CEFR '
-                      'level so every lesson fits you.',
-                      style: AimTextStyles.bodySm.copyWith(
-                        color: AimColors.neutral0.withValues(alpha: 0.85),
-                      ),
-                    ),
-                    const SizedBox(height: AimSpacing.sectionGap),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _HeroStat(
-                            value: '${test.totalSections}',
-                            label: 'sections',
-                          ),
-                        ),
-                        Expanded(
-                          child: _HeroStat(
-                            value: '~${test.estimatedMinutes}',
-                            label: 'minutes',
-                          ),
-                        ),
-                        Expanded(
-                          child: _HeroStat(
-                            value: '$_totalQuestions',
-                            label: 'questions',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+            const SizedBox(height: AimSpacing.space16),
+            Text(
+              'Could not load placement test',
+              style: AimTextStyles.title.copyWith(
+                color: surfaces.textPrimary,
               ),
-              const SizedBox(height: AimSpacing.sectionGap),
-
-              // ── Sections preview list ──────────────────────────────────
-              Text(
-                'SECTIONS',
-                style: AimTextStyles.caption.copyWith(
-                  color: surfaces.textMuted,
-                  fontWeight: AimFontWeights.semibold,
-                  letterSpacing: 0.6,
-                ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AimSpacing.space8),
+            Text(
+              message,
+              style: AimTextStyles.bodySm.copyWith(
+                color: surfaces.textSecondary,
               ),
               const SizedBox(height: AimSpacing.componentGap),
               for (final section in sections) ...[
@@ -291,95 +394,6 @@ class _ReadyBody extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _HeroStat extends StatelessWidget {
-  const _HeroStat({required this.value, required this.label});
-
-  final String value;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          value,
-          style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
-        ),
-        Text(
-          label,
-          style: AimTextStyles.caption.copyWith(
-            color: AimColors.neutral0.withValues(alpha: 0.85),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SectionPreviewRow extends StatelessWidget {
-  const _SectionPreviewRow({required this.section});
-
-  final PlacementSectionModel section;
-
-  @override
-  Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-    final soft = aimSoftFillsOf(context);
-    final minutes = placementEstimatedMinutes(section.totalQuestions);
-
-    return Container(
-      padding: const EdgeInsets.all(AimSpacing.cardPadding),
-      decoration: BoxDecoration(
-        color: surfaces.surface,
-        border: Border.all(color: surfaces.border),
-        borderRadius: AimRadius.borderLg,
-      ),
-      child: Row(
-        children: [
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: soft.primary,
-              borderRadius: AimRadius.borderMd,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(AimSpacing.space8),
-              child: Icon(
-                placementSkillIcon(section.skillCode),
-                size: AimSizes.iconMd,
-                color: soft.onPrimary,
-              ),
-            ),
-          ),
-          const SizedBox(width: AimSpacing.componentGap),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  section.title,
-                  style: AimTextStyles.title.copyWith(
-                    color: surfaces.textPrimary,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  '${placementSkillCategoryLabel(section.skillCode)} · '
-                  '$minutes min',
-                  style: AimTextStyles.bodySm.copyWith(
-                    color: surfaces.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
