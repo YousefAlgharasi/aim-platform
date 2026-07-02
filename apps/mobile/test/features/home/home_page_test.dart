@@ -181,10 +181,21 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('Skill States'), findsOneWidget);
-      expect(find.text('Focus Areas'), findsOneWidget);
-      expect(find.text('Review Schedule'), findsOneWidget);
-      expect(find.text('AIM Recommendations'), findsOneWidget);
+      // The greeting header + level hero card sit above these sections now,
+      // so scroll each one into view before asserting (ListView is lazy).
+      for (final section in [
+        'Skill States',
+        'Focus Areas',
+        'Review Schedule',
+        'AIM Recommendations',
+      ]) {
+        await tester.scrollUntilVisible(
+          find.text(section),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        expect(find.text(section), findsOneWidget);
+      }
     });
 
     testWidgets('renders without error under RTL directionality', (tester) async {

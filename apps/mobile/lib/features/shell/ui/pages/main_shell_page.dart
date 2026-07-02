@@ -15,10 +15,11 @@ import '../../../progress/ui/pages/progress_page.dart';
 import '../../../reviews/ui/pages/review_page.dart';
 import '../../logic/main_shell_tab_provider.dart';
 
-/// Main shell page — holds the bottom-navigation [IndexedStack].
+/// Main shell page — holds the tab [IndexedStack].
 ///
-/// Uses [AIMBottomNav] from the AIM Mobile Design System. Raw [NavigationBar]
-/// has been replaced as part of P6-028 component adoption.
+/// Navigation between tabs is via the [AIMAppDrawer] (opened from the FAB)
+/// only — no bottom tab bar, per product direction (the drawer's MENU
+/// section already covers the same 5 destinations).
 ///
 /// The selected tab is held in [mainShellTabIndexProvider] (rather than
 /// local State) so descendant pages — e.g. Home's "Browse Courses" action —
@@ -77,51 +78,13 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+      // No bottomNavigationBar: navigation between tabs is handled entirely
+      // by the drawer's MENU section (see _buildDrawer) opened via the FAB
+      // above, per product direction — the bottom tab bar was redundant
+      // with the drawer and has been removed.
       body: IndexedStack(
         index: selectedIndex,
         children: MainShellPage._screens,
-      ),
-      bottomNavigationBar: AIMBottomNav<int>(
-        value: selectedIndex,
-        onChanged: (index) =>
-            ref.read(mainShellTabIndexProvider.notifier).state = index,
-        items: const [
-          AIMBottomNavDestination(
-            value: 0,
-            label: 'Home',
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            semanticLabel: 'Home tab',
-          ),
-          AIMBottomNavDestination(
-            value: 1,
-            label: 'Learn',
-            icon: Icon(Icons.menu_book_outlined),
-            activeIcon: Icon(Icons.menu_book),
-            semanticLabel: 'Learn tab',
-          ),
-          AIMBottomNavDestination(
-            value: 2,
-            label: 'Review',
-            icon: Icon(Icons.replay_outlined),
-            activeIcon: Icon(Icons.replay),
-            semanticLabel: 'Review tab',
-          ),
-          AIMBottomNavDestination(
-            value: 3,
-            label: 'Progress',
-            icon: Icon(Icons.insights_outlined),
-            activeIcon: Icon(Icons.insights),
-            semanticLabel: 'Progress tab',
-          ),
-          AIMBottomNavDestination(
-            value: 4,
-            label: 'Profile',
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            semanticLabel: 'Profile tab',
-          ),
-        ],
       ),
     );
   }
@@ -225,12 +188,12 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
           trailing: Icon(Icons.chevron_right, color: aimSurfacesOf(context).textMuted),
         ),
       ],
-      footer: Column(
+      footer: const Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const _AIMThemeToggleRow(),
-          const SizedBox(height: AimSpacing.componentGap),
-          const LogoutButton(),
+          _AIMThemeToggleRow(),
+          SizedBox(height: AimSpacing.componentGap),
+          LogoutButton(),
         ],
       ),
     );

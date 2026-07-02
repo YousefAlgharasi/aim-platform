@@ -6,9 +6,9 @@
 // initState → load flow is exercised, not a hand-rolled fake notifier.
 //
 // Covers:
-//   1. Loading state renders a progress indicator, no crash.
-//   2. Backend failure renders an error message with a retry action.
-//   3. Ready state renders the test title, section count, and time.
+//   1. Loading state renders AIMFullScreenLoading, no crash.
+//   2. Backend failure renders AIMFullScreenError with a retry action.
+//   3. Ready state renders the hero stats and the sections preview list.
 //   4. RTL layout does not throw; key content still renders.
 
 import 'dart:async';
@@ -18,6 +18,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/core/theme/app_theme.dart';
+import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart';
 import 'package:aim_mobile/features/placement/data/models/placement_models.dart';
@@ -35,6 +36,30 @@ const _testModel = PlacementTestModel(
   totalSections: 3,
   estimatedMinutes: 20,
 );
+
+const _sections = [
+  PlacementSectionModel(
+    id: 'sec-1',
+    title: 'Vocabulary',
+    skillCode: 'vocabulary',
+    orderIndex: 1,
+    totalQuestions: 10,
+  ),
+  PlacementSectionModel(
+    id: 'sec-2',
+    title: 'Grammar',
+    skillCode: 'grammar',
+    orderIndex: 2,
+    totalQuestions: 8,
+  ),
+  PlacementSectionModel(
+    id: 'sec-3',
+    title: 'Reading',
+    skillCode: 'reading',
+    orderIndex: 3,
+    totalQuestions: 6,
+  ),
+];
 
 class _FakePlacementRepository implements PlacementRepository {
   final Exception? _loadError;
@@ -56,8 +81,11 @@ class _FakePlacementRepository implements PlacementRepository {
       throw UnimplementedError();
 
   @override
-  Future<List<PlacementSectionModel>> getActiveSections(String t) async =>
-      throw UnimplementedError();
+  Future<List<PlacementSectionModel>> getActiveSections(String t) async {
+    if (_gate != null) return _gate.future.then((_) => _sections);
+    if (_loadError != null) throw _loadError;
+    return _sections;
+  }
 
   @override
   Future<List<PlacementQuestionModel>> getQuestionsForSection(String t,
@@ -121,7 +149,7 @@ void main() {
       );
       await tester.pump(); // first frame — postFrameCallback fires here
 
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(AIMFullScreenLoading), findsOneWidget);
     });
 
     testWidgets('shows an error message when the backend call fails',
@@ -137,11 +165,11 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.text('Could not load placement test'), findsOneWidget);
+      expect(find.byType(AIMFullScreenError), findsOneWidget);
       expect(find.text('Retry'), findsOneWidget);
     });
 
-    testWidgets('shows test info once the active test loads',
+    testWidgets('shows hero stats and the sections preview once loaded',
         (tester) async {
       await tester.pumpWidget(
         _wrap(
@@ -162,6 +190,8 @@ void main() {
         find.textContaining('determined by the backend'),
         findsOneWidget,
       );
+      expect(find.text('Start Placement Test'), findsOneWidget);
+      expect(find.text('Not now'), findsOneWidget);
     });
 
     testWidgets('renders without error under RTL directionality',

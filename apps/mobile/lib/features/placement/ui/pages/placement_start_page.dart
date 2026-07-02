@@ -7,6 +7,13 @@
 // Phase 4 — P4-065 (restyled — TASK-19)
 // PlacementStartPage — student-facing placement start screen.
 //
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → placementStart
+//   docs/design/ui-for-all-system-mobile/screenshots/light/19-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/19-screen.png
+// Endpoints: GET /placement/active, GET /placement/active/sections,
+//   POST /placement/attempts
+// Widgets: AIMGradientButton, AIMFullScreenLoading, AIMFullScreenError
+//
 // Scope: Placement Test phase only.
 //
 // This is a real-data-only visual restyle. The bare Material AppBar is
@@ -24,27 +31,34 @@
 // real-data-only reasoning already documented in placement_intro_page.dart.
 //
 // Responsibility:
-//   1. Load the active placement test on mount.
-//   2. Display test info (title, sections, estimated time).
+//   1. Load the active placement test (+ its sections, for the preview list)
+//      on mount.
+//   2. Display test info (title, sections, estimated time) and a "SECTIONS"
+//      preview list.
 //   3. Let the student start the attempt via a single "Start" button.
 //   4. Navigate to the section page once the attempt is created (P4-066).
 //
 // Security rules:
 // - Displays only data returned from the backend via placementStartProvider.
 // - estimatedLevel, scores, and mastery values are never shown or computed here.
+// - Per-section duration is a cosmetic client-side pacing estimate derived
+//   from totalQuestions (see placement_skill_display.dart) — never a scored
+//   or backend value.
 // - No AIM Engine runtime, AI Teacher, lesson delivery, or progress dashboard.
 // - No secrets, service-role keys, or privileged config here.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/features/placement/data/models/placement_section_model.dart';
 import 'package:aim_mobile/features/placement/data/models/placement_test_model.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_provider.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_start_notifier.dart';
+import 'package:aim_mobile/features/placement/ui/widgets/placement_skill_display.dart';
 
 class PlacementStartPage extends ConsumerStatefulWidget {
   const PlacementStartPage({super.key});
@@ -67,6 +81,7 @@ class _PlacementStartPageState extends ConsumerState<PlacementStartPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(placementStartProvider);
+    final surfaces = aimSurfacesOf(context);
 
     // Navigate once attempt is started — handle in listener to avoid
     // mid-build navigation.
@@ -182,14 +197,13 @@ class _StartHeader extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Body — ready state
+// Gradient top bar — back chevron + title, matches the mockup's hero bar.
 // ---------------------------------------------------------------------------
 
-class _ReadyBody extends StatelessWidget {
-  const _ReadyBody({required this.test, required this.onStart});
+class _GradientTopBar extends StatelessWidget {
+  const _GradientTopBar({required this.title});
 
-  final PlacementTestModel test;
-  final VoidCallback onStart;
+  final String title;
 
   @override
   Widget build(BuildContext context) {
@@ -269,12 +283,7 @@ class _ReadyBody extends StatelessWidget {
               semanticLabel: 'Start Placement Test',
               onPressed: onStart,
             ),
-            const SizedBox(height: AimSpacing.space12),
-            TextButton(
-              onPressed: () => Navigator.of(context).maybePop(),
-              child: const Text('Not now'),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -314,14 +323,22 @@ class _StatCell extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Body — error state
+// Body — ready state
 // ---------------------------------------------------------------------------
 
-class _ErrorBody extends StatelessWidget {
-  const _ErrorBody({required this.message, required this.onRetry});
+class _ReadyBody extends StatelessWidget {
+  const _ReadyBody({
+    required this.test,
+    required this.sections,
+    required this.onStart,
+  });
 
-  final String message;
-  final VoidCallback onRetry;
+  final PlacementTestModel test;
+  final List<PlacementSectionModel> sections;
+  final VoidCallback onStart;
+
+  int get _totalQuestions =>
+      sections.fold(0, (sum, s) => sum + s.totalQuestions);
 
   @override
   Widget build(BuildContext context) {
@@ -352,16 +369,31 @@ class _ErrorBody extends StatelessWidget {
               style: AimTextStyles.bodySm.copyWith(
                 color: surfaces.textSecondary,
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AimSpacing.space24),
-            FilledButton.tonal(
-              onPressed: onRetry,
-              child: const Text('Retry'),
-            ),
-          ],
+              const SizedBox(height: AimSpacing.componentGap),
+              for (final section in sections) ...[
+                _SectionPreviewRow(section: section),
+                const SizedBox(height: AimSpacing.componentGap),
+              ],
+              const SizedBox(height: AimSpacing.sectionGap),
+
+              // ── Start / Not now ─────────────────────────────────────────
+              AIMGradientButton(
+                label: 'Start Placement Test',
+                fullWidth: true,
+                onPressed: onStart,
+                semanticLabel: 'Start Placement Test',
+              ),
+              const SizedBox(height: AimSpacing.componentGap),
+              Center(
+                child: TextButton(
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  child: const Text('Not now'),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }

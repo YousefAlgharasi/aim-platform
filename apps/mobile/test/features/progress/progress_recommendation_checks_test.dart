@@ -414,8 +414,11 @@ void main() {
         _wrap(const ReviewSchedulePage(), state: _populatedSuccess),
       );
       await tester.pump();
-      expect(find.textContaining('Due:'), findsOneWidget);
-      expect(find.textContaining('7d interval'), findsOneWidget);
+      // dueAt (2026-06-10) is far enough in the past that the relative
+      // "Due Today / Due Nd ago" formatting has settled into the stable
+      // "Due <Mon> <day>" branch regardless of the exact test run date.
+      expect(find.textContaining('Due Jun 10'), findsOneWidget);
+      expect(find.textContaining('7d · rep #3'), findsOneWidget);
       expect(find.text('grammar-articles'), findsOneWidget);
     });
 
