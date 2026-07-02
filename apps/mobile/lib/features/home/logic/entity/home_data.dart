@@ -24,6 +24,7 @@ class HomeData {
     this.continueLearning,
     this.quickStartLesson,
     this.recommendedCourse,
+    this.engagementStats,
   });
 
   /// Backend-computed skill state summary cards.
@@ -58,6 +59,12 @@ class HomeData {
   /// Course recommended for the student based on their placement result,
   /// or null if no placement has been taken yet or no published courses exist.
   final HomeRecommendedCourse? recommendedCourse;
+
+  /// Backend-computed level/XP/badge/rank/weekly-activity stats for the
+  /// hero card. Null only if the engagement stats call failed to load
+  /// (handled separately, like [goal]/[dailyChallenge], so a failure here
+  /// never fails the whole page).
+  final HomeEngagementStatsModel? engagementStats;
 
   /// True when the four core AIM lists and continue-learning are all empty
   /// (backend returned no progress data yet) — drives whether the "getting
