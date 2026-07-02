@@ -104,6 +104,11 @@ class BackendApiPaths {
   static const String engagementSummary = '/student/engagement/summary';
   static const String engagementGoal = '/student/engagement/goal';
 
+  /// GET /student/engagement/stats — level, XP, badge count, rank, and
+  /// weekly activity for the Home hero card. Read-only; all computed
+  /// backend-side.
+  static const String engagementStats = '/student/engagement/stats';
+
   // ---------------------------------------------------------------------------
   // Lessons — student-facing progress endpoints.
   // ---------------------------------------------------------------------------

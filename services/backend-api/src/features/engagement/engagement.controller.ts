@@ -1,10 +1,13 @@
 // EngagementController.
 //
-// Scope: Student-facing daily goal + daily challenge endpoints only.
+// Scope: Student-facing daily goal + daily challenge + gamification stats
+// endpoints only.
 //
 // Endpoints:
 //   GET /student/engagement/summary — Goal, streak, and today's challenge.
 //   PUT /student/engagement/goal     — Update the student's daily lesson goal.
+//   GET /student/engagement/stats    — Level, XP, badge count, rank, and
+//                                       weekly activity for the Home hero card.
 //
 // Security rules:
 //   - All endpoints guarded by SupabaseJwtAuthGuard and RoleGuard, requiring
@@ -20,7 +23,11 @@ import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../auth/authorization/required-roles.decorator';
 import { RoleGuard } from '../../auth/authorization/role.guard';
 import { EngagementService } from './engagement.service';
-import { DailyGoalSummary, EngagementSummaryResponse } from './engagement.types';
+import {
+  DailyGoalSummary,
+  EngagementStatsResponse,
+  EngagementSummaryResponse,
+} from './engagement.types';
 
 interface UpdateGoalBody {
   readonly dailyGoalLessons: number;
@@ -39,6 +46,16 @@ export class EngagementController {
   @ApiOkResponse({ description: 'Engagement summary. studentId always from JWT.' })
   async getSummary(@CurrentUser() user: AuthenticatedUser): Promise<EngagementSummaryResponse> {
     return this.engagementService.getSummary(user.id);
+  }
+
+  @Get('stats')
+  @ApiOperation({
+    summary:
+      "Get the student's level, XP, badge count, global rank, and weekly activity for the Home hero card.",
+  })
+  @ApiOkResponse({ description: 'Engagement stats. studentId always from JWT.' })
+  async getStats(@CurrentUser() user: AuthenticatedUser): Promise<EngagementStatsResponse> {
+    return this.engagementService.getStats(user.id);
   }
 
   @Put('goal')
