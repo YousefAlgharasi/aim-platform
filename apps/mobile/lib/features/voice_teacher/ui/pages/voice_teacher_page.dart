@@ -510,7 +510,7 @@ class _VoiceStatusPill extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox.square(
+                const SizedBox.square(
                   dimension: 6,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
