@@ -20,6 +20,91 @@ class _DSLearningSectionState extends State<DSLearningSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Blob Card
+        DSSection(
+          title: 'Blob Card',
+          children: [
+            AIMBlobCard(
+              gradient: AimGradients.gzLime,
+              icon: const Icon(Icons.local_fire_department_rounded),
+              title: '5-day streak',
+              subtitle: 'Keep it going today',
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () {},
+            ),
+            AIMBlobCard(
+              backgroundColor: AimColors.primary100,
+              icon: const Icon(Icons.bolt_rounded, color: AimColors.primary500),
+              title: '320 XP this week',
+              onTap: () {},
+            ),
+          ],
+        ),
+
+        // Stat Tile
+        DSSection(
+          title: 'Stat Tile',
+          children: [
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: const [
+                  AIMStatTile(
+                    icon: Icon(Icons.local_fire_department_rounded),
+                    value: '5',
+                    label: 'Day streak',
+                  ),
+                  SizedBox(width: 12),
+                  AIMStatTile(
+                    icon: Icon(Icons.bolt_rounded),
+                    value: '320',
+                    label: 'XP',
+                    accentColor: AimColors.warning500,
+                  ),
+                  SizedBox(width: 12),
+                  AIMStatTile(
+                    icon: Icon(Icons.school_outlined),
+                    value: '12',
+                    label: 'Lessons',
+                    accentColor: AimColors.success500,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+
+        // Skill Blob
+        const DSSection(
+          title: 'Skill Blob',
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Wrap(
+              spacing: 24,
+              runSpacing: 16,
+              alignment: WrapAlignment.center,
+              children: [
+                AIMSkillBlob(
+                  skillName: 'Listening',
+                  masteryLevel: 0.72,
+                  size: AIMSkillBlobSize.sm,
+                ),
+                AIMSkillBlob(
+                  skillName: 'Speaking',
+                  masteryLevel: 0.45,
+                  color: AimColors.accent500,
+                ),
+                AIMSkillBlob(
+                  skillName: 'Grammar',
+                  masteryLevel: 0.9,
+                  color: AimColors.success500,
+                  size: AIMSkillBlobSize.lg,
+                ),
+              ],
+            ),
+          ],
+        ),
+
         // AIM Card
         DSSection(
           title: 'AIM Card',

@@ -144,6 +144,12 @@ class _NoOpHomeRepo implements HomeRepository {
       );
 
   @override
+  Future<HomeEngagementStatsModel?> getEngagementStats({
+    required String bearerToken,
+  }) async =>
+      null;
+
+  @override
   Future<HomeContinueLearningModel?> getContinueLearning({
     required String bearerToken,
   }) async =>

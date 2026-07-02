@@ -375,8 +375,8 @@ class _AiTeacherChatHeader extends StatelessWidget
                     padding: const EdgeInsets.all(AimSpacing.space12),
                     child: Icon(
                       direction == TextDirection.rtl
-                          ? Icons.arrow_forward
-                          : Icons.arrow_back,
+                          ? Icons.chevron_right_rounded
+                          : Icons.chevron_left_rounded,
                       size: AimSizes.iconMd,
                       color: AimColors.neutral0,
                     ),

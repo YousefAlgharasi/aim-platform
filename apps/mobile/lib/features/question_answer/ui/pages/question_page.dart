@@ -68,7 +68,7 @@ class _QuestionPageState extends ConsumerState<QuestionPage> {
     final token = ref.watch(authFlowProvider).accessToken ?? '';
 
     return Scaffold(
-      appBar: const AIMTopAppBar(title: 'Question'),
+      appBar: const _PracticeHeader(),
       body: _buildBody(state),
       bottomNavigationBar: state.hasQuestion && !state.isSubmitted
           ? SafeArea(
@@ -133,6 +133,67 @@ class _QuestionPageState extends ConsumerState<QuestionPage> {
                 .updateWrittenAnswer(v),
           ),
       ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Gradient header — static "Practice" title (design screen 32's top bar).
+// ---------------------------------------------------------------------------
+
+class _PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
+  const _PracticeHeader();
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+      ),
+      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            Semantics(
+              button: true,
+              label: 'Back',
+              child: InkWell(
+                onTap: () => Navigator.of(context).maybePop(),
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AimSpacing.space12),
+                    child: Icon(
+                      Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_right_rounded
+                          : Icons.chevron_left_rounded,
+                      size: AimSizes.iconMd,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AimSpacing.space12),
+            Text(
+              'Practice',
+              style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

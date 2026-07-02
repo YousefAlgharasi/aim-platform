@@ -110,8 +110,8 @@ class _ReviewSchedulePageState extends ConsumerState<ReviewSchedulePage> {
               child: IconButton(
                 icon: Icon(
                   Directionality.of(context) == TextDirection.rtl
-                      ? Icons.arrow_forward
-                      : Icons.arrow_back,
+                      ? Icons.chevron_right_rounded
+                      : Icons.chevron_left_rounded,
                 ),
                 tooltip: MaterialLocalizations.of(context).backButtonTooltip,
                 onPressed: () => Navigator.of(context).maybePop(),

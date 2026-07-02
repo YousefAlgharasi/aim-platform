@@ -166,7 +166,9 @@ void main() {
       await tester.pump();
 
       expect(find.byType(AIMFullScreenError), findsOneWidget);
-      expect(find.text('Retry'), findsOneWidget);
+      // AIMFullScreenError's default retryLabel is "Try again" (matches the
+      // convention used everywhere else in the app), not "Retry".
+      expect(find.text('Try again'), findsOneWidget);
     });
 
     testWidgets('shows hero stats and the sections preview once loaded',
@@ -180,19 +182,15 @@ void main() {
       await tester.pump();
       await tester.pump();
 
+      expect(find.text('Placement Test'), findsOneWidget); // header title
       expect(find.text('Find your level'), findsOneWidget);
       expect(find.text('3'), findsOneWidget); // totalSections
       expect(find.text('~20'), findsOneWidget); // estimatedMinutes
-      expect(find.text('24'), findsOneWidget); // sum of totalQuestions
-      expect(find.text('Vocabulary'), findsOneWidget);
-      expect(find.text('Grammar'), findsOneWidget);
-      expect(find.text('Reading'), findsOneWidget);
-
-      // Below the fold — scroll the ListView to reach it.
-      await tester.scrollUntilVisible(
-        find.text('Start Placement Test'),
-        200,
-        scrollable: find.byType(Scrollable).first,
+      expect(find.text('Start Placement Test'), findsOneWidget);
+      // Backend-authority note must always be visible before starting.
+      expect(
+        find.textContaining('determined by the backend'),
+        findsOneWidget,
       );
       expect(find.text('Start Placement Test'), findsOneWidget);
       expect(find.text('Not now'), findsOneWidget);

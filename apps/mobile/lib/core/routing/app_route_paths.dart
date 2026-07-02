@@ -30,6 +30,9 @@ class AppRoutePaths {
   static const String assessmentStart = '/student/assessments/start';
   static const String assessmentAttempt = '/student/assessments/attempt';
   static const String assessmentResult = '/student/assessments/result';
+  // TASK-29: Result history route (page existed with no route — see TASK-14
+  // table row 30, which never actually got wired up).
+  static const String assessmentResultHistory = '/student/assessments/history';
 
   // Billing routes
   static const String subscription = '/billing/subscription';
