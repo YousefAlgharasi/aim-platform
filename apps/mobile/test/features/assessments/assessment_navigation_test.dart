@@ -213,7 +213,13 @@ void main() {
     if (!file.existsSync()) return;
     final content = file.readAsStringSync();
 
-    expect(content.contains("'/student/assessments/result'"), isTrue,
+    // TASK-24: the page now uses the AppRoutePaths constant (which is
+    // defined as '/student/assessments/result') instead of a hardcoded
+    // string, so accept either form.
+    expect(
+        content.contains("'/student/assessments/result'") ||
+            content.contains('AppRoutePaths.assessmentResult'),
+        isTrue,
         reason: 'History page must navigate to result route');
     expect(content.contains("'attemptId'"), isTrue,
         reason: 'History page must pass attemptId argument');
@@ -277,6 +283,12 @@ void main() {
     final content = historyFile.readAsStringSync();
     final targets =
         navPattern.allMatches(content).map((m) => m.group(1)!).toSet();
+    // TASK-24: the page now navigates via the AppRoutePaths constant
+    // (defined as '/student/assessments/result') rather than a hardcoded
+    // string literal, which the literal-only regex above cannot see.
+    if (content.contains('AppRoutePaths.assessmentResult')) {
+      targets.add('/student/assessments/result');
+    }
 
     expect(targets, contains('/student/assessments/result'),
         reason: 'History page must navigate to result');
