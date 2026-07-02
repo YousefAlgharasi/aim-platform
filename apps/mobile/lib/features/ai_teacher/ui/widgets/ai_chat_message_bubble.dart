@@ -46,20 +46,19 @@ class AiChatMessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
     final isStudent = message.isFromStudent;
 
-    final avatar = DecoratedBox(
+    const avatar = DecoratedBox(
       decoration: BoxDecoration(
-        color: isStudent ? surfaces.surfaceSunken : AimColors.primary50,
+        color: AimColors.primary500,
         shape: BoxShape.circle,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(AimSpacing.space8),
+        padding: EdgeInsets.all(AimSpacing.space8),
         child: Icon(
-          isStudent ? Icons.person_outline_rounded : Icons.auto_awesome_rounded,
+          Icons.auto_awesome_rounded,
           size: AimSizes.iconSm,
-          color: isStudent ? surfaces.textSecondary : AimColors.primary500,
+          color: AimColors.neutral0,
         ),
       ),
     );
@@ -74,7 +73,7 @@ class AiChatMessageBubble extends StatelessWidget {
             maxWidth: MediaQuery.of(context).size.width * 0.72,
           ),
           child: AIMCard(
-            variant: isStudent ? AIMCardVariant.standard : AIMCardVariant.ai,
+            variant: isStudent ? AIMCardVariant.gradient : AIMCardVariant.ai,
             semanticLabel: isStudent
                 ? 'Your message: ${message.text}'
                 : 'AI Teacher: ${message.text}',
@@ -91,15 +90,21 @@ class AiChatMessageBubble extends StatelessWidget {
       ],
     );
 
-    final rowChildren = isStudent
-        ? [bubbleColumn, const SizedBox(width: AimSpacing.space8), avatar]
-        : [avatar, const SizedBox(width: AimSpacing.space8), bubbleColumn];
-
-    return Row(
-      mainAxisAlignment:
-          isStudent ? MainAxisAlignment.end : MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: rowChildren,
-    );
+    // Design screen 33: only AI Teacher messages carry a leading avatar;
+    // student messages are a plain trailing-aligned gradient bubble.
+    return isStudent
+        ? Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [bubbleColumn],
+          )
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              avatar,
+              const SizedBox(width: AimSpacing.space8),
+              bubbleColumn,
+            ],
+          );
   }
 }
