@@ -181,6 +181,18 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   }
 }
 
+// ── Mocked gamification stats ───────────────────────────────────────────────
+// Placeholder only — see file-level NOTE. Never sourced from the backend.
+class _MockGamificationStats {
+  static const dayStreak = '7';
+  static const totalXp = '2,480';
+  static const globalRankPercentile = 'Top 5%';
+  static const weeklyDeltaLabel = '+18% vs last';
+
+  /// Relative bar heights (0.0–1.0) for Mon–Sun, most-recent-day highlighted.
+  static const weeklyActivity = [0.55, 0.7, 0.45, 0.85, 0.65, 1.0, 0.0];
+}
+
 // ── Profile body ──────────────────────────────────────────────────────────────
 
 class _ProfileBody extends StatelessWidget {
@@ -622,6 +634,8 @@ class _AchievementsCarousel extends StatelessWidget {
 
   IconData _iconFor(AchievementModel achievement) =>
       _iconsByName[achievement.icon] ?? Icons.military_tech;
+
+  static const _dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   @override
   Widget build(BuildContext context) {

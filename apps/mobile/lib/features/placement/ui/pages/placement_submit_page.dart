@@ -1,12 +1,18 @@
 // Phase 4 — P4-068
 // PlacementSubmitPage — confirmation and completion screen.
 //
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → placementSubmit
+//   docs/design/ui-for-all-system-mobile/screenshots/light/22-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/22-screen.png
+// Endpoint: POST /placement/attempts/:id/complete
+// Widgets: AIMGradientButton, AIMFullScreenLoading
+//
 // Scope: Placement Test phase only.
 //
 // Responsibility:
 //   1. Show a summary screen after the student has answered all questions
 //      across all sections.
-//   2. "Submit Test" calls POST /placement/attempts/:id/complete.
+//   2. "Submit Placement Test" calls POST /placement/attempts/:id/complete.
 //   3. Backend transitions the attempt active → submitted and runs scoring.
 //      Flutter receives only the submission confirmation — no scores, no level.
 //   4. On success, navigate to the result page (P4-069) which polls for the
@@ -21,9 +27,10 @@
 // - No secrets, service-role keys, or privileged config here.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
+import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_provider.dart';
@@ -33,10 +40,16 @@ class PlacementSubmitPage extends ConsumerStatefulWidget {
   const PlacementSubmitPage({
     super.key,
     required this.attemptId,
+    this.totalSections,
   });
 
   /// The active placement attempt to complete.
   final String attemptId;
+
+  /// Total section count, passed from the section page's ready state, so
+  /// this screen can show "All N sections complete" — falls back to
+  /// generic copy if not supplied (e.g. deep-linked directly).
+  final int? totalSections;
 
   @override
   ConsumerState<PlacementSubmitPage> createState() =>
@@ -47,6 +60,7 @@ class _PlacementSubmitPageState extends ConsumerState<PlacementSubmitPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(placementSubmitProvider);
+    final surfaces = aimSurfacesOf(context);
 
     // Navigate to result page on success.
     ref.listen<PlacementSubmitState>(placementSubmitProvider, (_, next) {
@@ -59,40 +73,89 @@ class _PlacementSubmitPageState extends ConsumerState<PlacementSubmitPage> {
     });
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Placement Test'),
-        automaticallyImplyLeading: false,
+      backgroundColor: surfaces.background,
+      body: Column(
+        children: [
+          _GradientTopBar(title: 'Almost done'),
+          Expanded(
+            child: switch (state) {
+              PlacementSubmitLoading() => const AIMFullScreenLoading(
+                  semanticLabel: 'Submitting your answers',
+                ),
+              PlacementSubmitSuccess() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading your result',
+                ),
+              PlacementSubmitError(:final message) => AIMFullScreenError(
+                  message: message,
+                  retryLabel: 'Retry',
+                  onRetry: () {
+                    ref.read(placementSubmitProvider.notifier).reset();
+                  },
+                ),
+              PlacementSubmitIdle() => _ConfirmBody(
+                  totalSections: widget.totalSections,
+                  onSubmit: () {
+                    final token = ref.read(authFlowProvider).accessToken ?? '';
+                    ref.read(placementSubmitProvider.notifier).completeAttempt(
+                          token,
+                          attemptId: widget.attemptId,
+                        );
+                  },
+                ),
+            },
+          ),
+        ],
       ),
-      body: switch (state) {
-        PlacementSubmitLoading() => const Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Gradient top bar — back chevron + "Almost done".
+// ---------------------------------------------------------------------------
+
+class _GradientTopBar extends StatelessWidget {
+  const _GradientTopBar({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
+
+    // Without this, the OS paints its default status bar background above
+    // the gradient instead of light icons sitting transparently on it.
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+        child: SafeArea(
+          bottom: false,
+          child: SizedBox(
+            height: AimSizes.topBarHeight,
+            child: Row(
               children: [
-                CircularProgressIndicator(),
-                SizedBox(height: AimSpacing.space20),
-                Text('Submitting your answers…'),
+                const SizedBox(width: AimSpacing.space8),
+                AIMIconButton(
+                  semanticLabel: 'Back',
+                  icon: Icon(
+                    isRtl ? Icons.chevron_right : Icons.chevron_left,
+                    color: AimColors.neutral0,
+                  ),
+                  onPressed: () => Navigator.of(context).maybePop(),
+                ),
+                const SizedBox(width: AimSpacing.space4),
+                Text(
+                  title,
+                  style:
+                      AimTextStyles.title.copyWith(color: AimColors.neutral0),
+                ),
               ],
             ),
           ),
-        PlacementSubmitSuccess() => const Center(
-            child: CircularProgressIndicator(),
-          ),
-        PlacementSubmitError(:final message) => _ErrorBody(
-            message: message,
-            onRetry: () {
-              ref.read(placementSubmitProvider.notifier).reset();
-            },
-          ),
-        PlacementSubmitIdle() => _ConfirmBody(
-            onSubmit: () {
-              final token = ref.read(authFlowProvider).accessToken ?? '';
-              ref.read(placementSubmitProvider.notifier).completeAttempt(
-                    token,
-                    attemptId: widget.attemptId,
-                  );
-            },
-          ),
-      },
+        ),
+      ),
     );
   }
 }
@@ -102,115 +165,62 @@ class _PlacementSubmitPageState extends ConsumerState<PlacementSubmitPage> {
 // ---------------------------------------------------------------------------
 
 class _ConfirmBody extends StatelessWidget {
-  const _ConfirmBody({required this.onSubmit});
+  const _ConfirmBody({required this.onSubmit, this.totalSections});
 
   final VoidCallback onSubmit;
+  final int? totalSections;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final surfaces = aimSurfacesOf(context);
+    final soft = aimSoftFillsOf(context);
+    final headline = totalSections != null
+        ? 'All $totalSections sections complete'
+        : 'All sections complete';
 
     return Padding(
-      padding: const EdgeInsets.all(AimSpacing.space32),
+      padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const Spacer(),
-
-          // Completion icon
-          const Icon(
-            Icons.check_circle_outline,
-            size: 80,
-            color: AimColors.success500,
-          ),
-          const SizedBox(height: AimSpacing.space24),
-
-          // Headline
-          Text(
-            'All sections complete!',
-            textAlign: TextAlign.center,
-            style: AimTextStyles.h2.copyWith(color: theme.colorScheme.onSurface),
-          ),
-          const SizedBox(height: AimSpacing.space16),
-
-          // Subtext — sets expectations, no scores shown here
-          Text(
-            'Your answers have been recorded. When you submit, '
-            'the backend will evaluate your results and determine '
-            'your starting level.',
-            textAlign: TextAlign.center,
-            style: AimTextStyles.bodyMd.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
-            ),
-          ),
-          const SizedBox(height: AimSpacing.space12),
-
-          // Backend authority note — security compliance
-          Container(
-            padding: const EdgeInsets.all(AimSpacing.space12),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
-              borderRadius: AimRadius.borderSm,
-            ),
-            child: Text(
-              'Scoring is performed by the server. '
-              'Your estimated level and study plan will be available '
-              'on the result page.',
-              textAlign: TextAlign.center,
-              style: AimTextStyles.bodySm.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+          Center(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: soft.success,
+                shape: BoxShape.circle,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(AimSpacing.space16),
+                child: Icon(
+                  Icons.check,
+                  size: AimSizes.iconLg,
+                  color: soft.onSuccess,
+                ),
               ),
             ),
           ),
-
+          const SizedBox(height: AimSpacing.sectionGap),
+          Text(
+            headline,
+            textAlign: TextAlign.center,
+            style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
+          ),
+          const SizedBox(height: AimSpacing.space8),
+          Text(
+            'Submit your placement test to see your level and a '
+            'personalised plan.',
+            textAlign: TextAlign.center,
+            style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
+          ),
           const Spacer(),
-
-          // Submit button
-          FilledButton(
+          AIMGradientButton(
+            label: 'Submit Placement Test',
+            fullWidth: true,
             onPressed: onSubmit,
-            child: const Padding(
-              padding: EdgeInsets.symmetric(vertical: AimSpacing.space4),
-              child: Text('Submit Placement Test', style: AimTextStyles.bodyMd),
-            ),
+            semanticLabel: 'Submit Placement Test',
           ),
-          const SizedBox(height: AimSpacing.space16),
         ],
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Error body
-// ---------------------------------------------------------------------------
-
-class _ErrorBody extends StatelessWidget {
-  const _ErrorBody({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AimSpacing.space24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline, size: 48, color: AimColors.error500),
-            const SizedBox(height: AimSpacing.space16),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: AimTextStyles.bodyMd.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: AimSpacing.space24),
-            OutlinedButton(onPressed: onRetry, child: const Text('Try Again')),
-          ],
-        ),
       ),
     );
   }

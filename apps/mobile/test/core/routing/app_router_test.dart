@@ -125,7 +125,9 @@ void main() {
     await tester.pump();
 
     expect(find.text('AIM'), findsOneWidget);
-    expect(find.text('Checking your session…'), findsOneWidget);
+    // Redesigned splash shows static "Tap to continue" copy while checking
+    // (see splash_page.dart) instead of the old "Checking your session…".
+    expect(find.text('Tap to continue'), findsOneWidget);
   });
 
   testWidgets('falls back to splash when placement question arguments are missing',
