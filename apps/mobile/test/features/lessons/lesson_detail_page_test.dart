@@ -7,7 +7,8 @@
 //   3. Success with no assets renders AIMEmptyState.
 //   4. Success with assets renders lesson description and asset titles.
 //   5. RTL layout renders without error.
-//   6. lessonTitle appears in AppBar.
+//   6. AppBar shows the static "Lesson" title; the real lesson title
+//      renders prominently in the hero card instead (design screen 09).
 //   7. "Lesson {sortOrder}" pill renders in the hero.
 //   8. Disabled bookmark action renders in the AppBar and is non-interactive.
 //   9. Tapping a step tile opens a bottom sheet with LessonContentRenderer.
@@ -17,7 +18,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
-import 'package:aim_mobile/core/theme/app_theme.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lesson.dart';
@@ -160,7 +160,9 @@ void main() {
       expect(find.text('Grammar Diagram'), findsOneWidget);
     });
 
-    testWidgets('lessonTitle appears in AppBar', (tester) async {
+    testWidgets(
+        'AppBar shows the static "Lesson" title; real title renders in the hero',
+        (tester) async {
       await tester.pumpWidget(_wrap(
         _page,
         overrides: [
@@ -170,6 +172,7 @@ void main() {
         ],
       ));
       await tester.pump();
+      expect(find.text('Lesson'), findsOneWidget);
       expect(find.text('Lesson 1: Introduction'), findsOneWidget);
     });
 
@@ -201,11 +204,9 @@ void main() {
       ));
       await tester.pump();
 
-      // The AppBar's only icon button is the disabled bookmark action (this
-      // page never configures AIMTopAppBar's onBack, so no back button
-      // competes with it).
-      final bookmarkButton =
-          tester.widget<AIMIconButton>(find.byType(AIMIconButton));
+      final bookmarkButton = tester.widget<AIMIconButton>(
+        find.widgetWithIcon(AIMIconButton, Icons.bookmark_border_rounded),
+      );
       expect(bookmarkButton.onPressed, isNull);
     });
 

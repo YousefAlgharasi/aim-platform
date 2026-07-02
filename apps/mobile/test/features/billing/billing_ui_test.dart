@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/billing/data/models/billing_models.dart';
 import 'package:aim_mobile/features/billing/logic/provider/billing_provider.dart';
 import 'package:aim_mobile/features/billing/logic/repository/billing_repository.dart';
@@ -162,10 +163,10 @@ void main() {
       ));
       await tester.pumpAndSettle();
       expect(find.text('\$19.99'), findsOneWidget);
-      final selectButton = tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'Select Plan'),
+      final subscribeButton = tester.widget<AIMGradientButton>(
+        find.widgetWithText(AIMGradientButton, 'Subscribe'),
       );
-      expect(selectButton.onPressed, isNotNull);
+      expect(subscribeButton.onPressed, isNotNull);
     });
   });
 
@@ -175,7 +176,7 @@ void main() {
         const SubscriptionPage(),
         repository: _FakeBillingRepository(),
       ));
-      expect(find.text('My Subscription'), findsOneWidget);
+      expect(find.text('Subscription'), findsOneWidget);
     });
 
     testWidgets('shows entitlement usage once loaded', (tester) async {
@@ -183,7 +184,7 @@ void main() {
         const SubscriptionPage(),
         repository: _FakeBillingRepository(
           subscriptions: [
-            SubscriptionModel(
+            const SubscriptionModel(
               id: 'sub_1',
               planId: 'plan_1',
               status: 'active',
@@ -203,7 +204,9 @@ void main() {
         ),
       ));
       await tester.pumpAndSettle();
-      expect(find.text('ai_teacher'), findsOneWidget);
+      // Feature keys are humanized for display (design screen 44 shows
+      // readable labels, not raw snake_case backend keys).
+      expect(find.text('Ai Teacher'), findsOneWidget);
       expect(find.text('50 / 100'), findsOneWidget);
     });
 
@@ -212,7 +215,7 @@ void main() {
         const SubscriptionPage(),
         repository: _FakeBillingRepository(
           subscriptions: [
-            SubscriptionModel(
+            const SubscriptionModel(
               id: 'sub_1',
               planId: 'plan_1',
               status: 'active',
@@ -221,9 +224,10 @@ void main() {
         ),
       ));
       await tester.pumpAndSettle();
-      expect(find.text('Current Plan'), findsOneWidget);
-      expect(find.text('Change Plan'), findsOneWidget);
-      expect(find.text('Cancel'), findsOneWidget);
+      expect(find.text('Current plan'), findsOneWidget);
+      expect(find.text('Change plan'), findsOneWidget);
+      expect(find.text('Invoices'), findsOneWidget);
+      expect(find.text('Cancel subscription'), findsOneWidget);
     });
 
     testWidgets('shows plans directly when no active subscription', (tester) async {
@@ -253,30 +257,9 @@ void main() {
         ),
       ));
       await tester.pumpAndSettle();
-      expect(find.text('Choose Your Plan'), findsOneWidget);
       expect(find.text('Free Plan'), findsOneWidget);
       expect(find.text('No Active Subscription'), findsNothing);
       expect(find.text('View Plans'), findsNothing);
-    });
-
-    testWidgets('buildEntitlementTile renders granted state', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => SubscriptionPage.buildEntitlementTile(
-                context: context,
-                featureKey: 'ai_teacher',
-                granted: true,
-                usageText: '50/100 sessions',
-              ),
-            ),
-          ),
-        ),
-      );
-      await tester.pump();
-      expect(find.text('ai_teacher'), findsOneWidget);
-      expect(find.text('50/100 sessions'), findsOneWidget);
     });
   });
 
@@ -286,7 +269,7 @@ void main() {
         const InvoiceHistoryPage(),
         repository: _FakeBillingRepository(),
       ));
-      expect(find.text('Invoice History'), findsOneWidget);
+      expect(find.text('Invoices'), findsOneWidget);
     });
 
     testWidgets('shows empty state when no invoices', (tester) async {
@@ -314,8 +297,8 @@ void main() {
         ),
       ));
       await tester.pumpAndSettle();
-      expect(find.text('\$19.99 USD'), findsOneWidget);
-      expect(find.text('paid'), findsOneWidget);
+      expect(find.text('\$19.99'), findsOneWidget);
+      expect(find.text('Paid'), findsOneWidget);
     });
 
     testWidgets('buildEmptyState shows no invoices message', (tester) async {

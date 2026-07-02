@@ -101,9 +101,9 @@ class _AIMGradientButtonState extends State<AIMGradientButton> {
                     ),
             ),
             if (widget.loading)
-              SizedBox.square(
+              const SizedBox.square(
                 dimension: AimTypography.buttonSize,
-                child: const CircularProgressIndicator(
+                child: CircularProgressIndicator(
                   strokeWidth: 2,
                   color: AimColors.neutral0,
                 ),

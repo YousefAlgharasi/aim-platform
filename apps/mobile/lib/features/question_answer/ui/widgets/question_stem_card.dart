@@ -1,8 +1,9 @@
 // Phase 6 — P6-089
-// QuestionStemCard — renders the question stem and optional difficulty badge.
+// QuestionStemCard — renders the question's topic tag (if any) and stem.
 //
 // All content is backend-supplied verbatim. Flutter never infers difficulty
-// or modifies the stem.
+// or modifies the stem. Design screen 32 shows the first backend tag as a
+// small-caps topic label above the stem, not the difficulty level.
 
 import 'package:flutter/material.dart';
 
@@ -22,24 +23,19 @@ class QuestionStemCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  question.stem,
-                  style: AimTextStyles.title
-                      .copyWith(color: surfaces.textPrimary),
-                ),
+          if (question.tags.isNotEmpty) ...[
+            Text(
+              question.tags.first.toUpperCase(),
+              style: AimTextStyles.caption.copyWith(
+                color: surfaces.textSecondary,
+                letterSpacing: 0.5,
               ),
-              const SizedBox(width: AimSpacing.innerGap),
-              AIMBadge(
-                tone: AIMBadgeTone.neutral,
-                variant: AIMBadgeVariant.soft,
-                pill: true,
-                semanticLabel: 'Difficulty: ${question.difficulty}',
-                child: Text(question.difficulty),
-              ),
-            ],
+            ),
+            const SizedBox(height: AimSpacing.space4),
+          ],
+          Text(
+            question.stem,
+            style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
           ),
           if (question.hint != null) ...[
             const SizedBox(height: AimSpacing.componentGap),

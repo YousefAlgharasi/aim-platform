@@ -24,11 +24,11 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 /// Fixed set of safe, educational conversation starters shown when a chat
 /// has no messages yet.
 const List<String> kAiSuggestedPrompts = [
-  'Can you explain this lesson in simple terms?',
-  'Give me an example of this grammar rule',
-  'Help me practice a short conversation',
-  'What does this word mean?',
-  'Can you quiz me on this topic?',
+  'Explain grammar',
+  'Quick quiz',
+  'Check my writing',
+  'Give an example',
+  'Practice speaking',
 ];
 
 /// Horizontal row of suggested prompt chips.

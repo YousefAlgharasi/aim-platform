@@ -17,6 +17,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/core/theme/app_theme.dart';
+import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart';
 import 'package:aim_mobile/features/placement/data/models/placement_models.dart';
@@ -124,7 +125,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(AIMFullScreenLoading), findsOneWidget);
     });
 
     testWidgets('shows an error message when the backend call fails',
@@ -143,7 +144,7 @@ void main() {
       expect(find.text('Retry'), findsOneWidget);
     });
 
-    testWidgets('shows section title, skill badge, and question count',
+    testWidgets('shows section title, skill category, and question count',
         (tester) async {
       await tester.pumpWidget(
         _wrap(
@@ -155,14 +156,12 @@ void main() {
       await tester.pump();
 
       expect(find.text('Grammar'), findsAtLeastNWidgets(1));
-      expect(find.text('5 questions'), findsOneWidget);
-      expect(find.text('Section 1 of 1'), findsOneWidget);
-      expect(find.text('Start Final Section'), findsOneWidget);
-      // Backend-authority note must always be visible on this screen.
       expect(
-        find.textContaining('All scoring is performed by the server'),
+        find.textContaining('Structures · 5 questions · about'),
         findsOneWidget,
       );
+      expect(find.text('Section 1 of 1'), findsOneWidget);
+      expect(find.text('Begin Final Section'), findsOneWidget);
     });
 
     testWidgets('renders without error under RTL directionality',

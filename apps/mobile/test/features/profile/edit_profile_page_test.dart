@@ -147,12 +147,14 @@ void main() {
     expect(find.text('Asia/Riyadh (GMT+3)'), findsOneWidget);
   });
 
-  testWidgets('EditProfilePage shows safe-fields info banner', (tester) async {
+  testWidgets(
+      'EditProfilePage shows no banner by default (design screen 17 has no '
+      'content below the Save button)', (tester) async {
     await tester
         .pumpWidget(_wrap(const AppAsyncState.success(_studentContext)));
     await tester.pump();
 
-    expect(find.byType(AIMAlertBanner), findsOneWidget);
+    expect(find.byType(AIMAlertBanner), findsNothing);
   });
 
   testWidgets('EditProfilePage renders under Arabic RTL locale',

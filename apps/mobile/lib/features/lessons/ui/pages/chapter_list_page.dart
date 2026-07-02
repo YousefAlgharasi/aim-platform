@@ -1,3 +1,10 @@
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Chapters" (chapterList)
+//   docs/design/ui-for-all-system-mobile/screenshots/light/07-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/07-screen.png
+// Endpoint: GET /curriculum/chapters?levelId= (ChapterModel fields only)
+// Widgets: AIMTopAppBar, AIMFullScreenLoading, AIMFullScreenError,
+//   AIMEmptyState, ChapterListTile
+//
 // Phase 6 — P6-074
 // ChapterListPage — displays chapters for a backend-supplied course.
 //
@@ -6,6 +13,19 @@
 // first resolves the course's (first) level via [getLevels], then loads
 // chapters for that resolved levelId via [chaptersProvider.autoDispose].
 // Tapping a chapter navigates to the lesson list (P6-075).
+//
+// Real-data-only redesign: the design screenshots show a header-level
+// percent-done badge ("62% DONE"), a level badge ("A2 level"), filter chips
+// ("All chapters"/"In progress"/"Completed"), and per-chapter level
+// badges/progress bars/lesson counts/completion chips. None of those have
+// a backing field on the backend's ChapterModel (no level, no per-student
+// progress, no lesson count, no completion flag — see
+// services/backend-api/src/features/curriculum/chapters). Those are
+// intentionally omitted here rather than fabricated; see ChapterListTile
+// for the row-level real-data-only treatment. What IS real and shown here:
+// once the chapter list has loaded, the subtitle displays
+// '${chapters.length} chapters' — a string computed from the real,
+// already-loaded list length, not fabricated.
 //
 // Security rules:
 // - courseId is always the backend-supplied value from CourseModel; never
@@ -144,6 +164,8 @@ class _ChapterListContent extends StatelessWidget {
       );
     }
 
+    final surfaces = aimSurfacesOf(context);
+
     return RefreshIndicator(
       onRefresh: onRefresh,
       child: ListView.separated(
@@ -151,13 +173,24 @@ class _ChapterListContent extends StatelessWidget {
           horizontal: AimSpacing.screenPaddingMobile,
           vertical: AimSpacing.sectionGap,
         ),
-        itemCount: chapters.length,
+        // +1 for the real chapter-count subtitle header row.
+        itemCount: chapters.length + 1,
         separatorBuilder: (_, __) =>
             const SizedBox(height: AimSpacing.listItemGap),
         itemBuilder: (context, index) {
-          final chapter = chapters[index];
+          if (index == 0) {
+            // Real, computed-from-real-data subtitle: the chapter count is
+            // known once the list has loaded — not fabricated.
+            return Text(
+              '${chapters.length} chapters',
+              style: AimTextStyles.bodySm
+                  .copyWith(color: surfaces.textSecondary),
+            );
+          }
+          final chapter = chapters[index - 1];
           return ChapterListTile(
             model: chapter,
+            index: index - 1,
             onTap: () => onTap(chapter),
           );
         },

@@ -120,10 +120,12 @@ void main() {
         ));
         await tester.pump();
 
-        expect(find.text('lesson-1'), findsOneWidget);
-        expect(find.text('lesson-2'), findsOneWidget);
+        // contextRef is prettified for display (design screen 34 shows
+        // readable titles, not raw slugs).
+        expect(find.text('Lesson 1'), findsOneWidget);
+        expect(find.text('Lesson 2'), findsOneWidget);
         expect(find.text('Active'), findsOneWidget);
-        expect(find.text('Closed'), findsOneWidget);
+        expect(find.text('Ended'), findsOneWidget);
 
         for (final forbidden in [
           'mastery',
@@ -154,7 +156,7 @@ void main() {
       ));
       await tester.pump();
 
-      await tester.tap(find.text('lesson-1'));
+      await tester.tap(find.text('Lesson 1'));
       await tester.pumpAndSettle();
 
       expect(find.byType(AiTeacherChatPage), findsOneWidget);

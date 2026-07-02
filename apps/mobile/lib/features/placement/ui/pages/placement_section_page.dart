@@ -1,13 +1,19 @@
 // Phase 4 — P4-066
 // PlacementSectionPage — student-facing placement section screen.
 //
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → placementSection
+//   docs/design/ui-for-all-system-mobile/screenshots/light/20-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/20-screen.png
+// Endpoint: GET /placement/active/sections
+// Widgets: AIMGradientButton, AIMFullScreenLoading, AIMFullScreenError
+//
 // Scope: Placement Test phase only.
 //
 // Responsibility:
 //   1. Load the ordered placement sections on mount.
-//   2. Display the current section title, skill area, question count, and
-//      section progress (e.g. "Section 2 of 4").
-//   3. Provide a "Start Section" button that navigates to the question page
+//   2. Display the current section title, skill category, and question
+//      count/pacing estimate, plus a segmented section-progress indicator.
+//   3. Provide a "Begin Section" button that navigates to the question page
 //      (P4-067) with the current section ID and attempt ID.
 //   4. After the question page returns, advance to the next section or
 //      navigate to the completion flow (P4-068).
@@ -16,17 +22,22 @@
 // - Displays only data returned from the backend via placementSectionProvider.
 // - estimatedLevel, mastery scores, is_correct, and correct_answer are never
 //   shown, computed, or forwarded to any widget.
+// - Per-section duration is a cosmetic client-side pacing estimate derived
+//   from totalQuestions (see placement_skill_display.dart) — never a scored
+//   or backend value.
 // - No AIM Engine runtime, AI Teacher, lesson delivery, or progress dashboard.
 // - No secrets, service-role keys, or privileged config here.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
+import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_provider.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_section_notifier.dart';
+import 'package:aim_mobile/features/placement/ui/widgets/placement_skill_display.dart';
 
 class PlacementSectionPage extends ConsumerStatefulWidget {
   const PlacementSectionPage({
@@ -58,34 +69,40 @@ class _PlacementSectionPageState extends ConsumerState<PlacementSectionPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(placementSectionProvider);
+    final surfaces = aimSurfacesOf(context);
+    final title = state is PlacementSectionReady
+        ? 'Section ${state.displayIndex} of ${state.totalSections}'
+        : 'Placement Test';
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Placement Test'),
-        automaticallyImplyLeading: false,
-      ),
-      body: switch (state) {
-        PlacementSectionIdle() ||
-        PlacementSectionLoading() =>
-          const Center(child: CircularProgressIndicator()),
-        PlacementSectionError(:final message) => _ErrorBody(
-            message: message,
-            onRetry: () {
-              final token = ref.read(authFlowProvider).accessToken ?? '';
-              ref.read(placementSectionProvider.notifier).loadSections(
-                    token,
-                    attemptId: widget.attemptId,
-                  );
+      backgroundColor: surfaces.background,
+      body: Column(
+        children: [
+          _GradientTopBar(title: title),
+          Expanded(
+            child: switch (state) {
+              PlacementSectionIdle() ||
+              PlacementSectionLoading() =>
+                const AIMFullScreenLoading(),
+              PlacementSectionError(:final message) => AIMFullScreenError(
+                  message: message,
+                  retryLabel: 'Retry',
+                  onRetry: () {
+                    final token = ref.read(authFlowProvider).accessToken ?? '';
+                    ref.read(placementSectionProvider.notifier).loadSections(
+                          token,
+                          attemptId: widget.attemptId,
+                        );
+                  },
+                ),
+              PlacementSectionReady() => _SectionBody(
+                  state: state,
+                  onStartSection: () => _navigateToQuestions(context, state),
+                ),
             },
           ),
-        PlacementSectionReady() => _SectionBody(
-            state: state,
-            onStartSection: () => _navigateToQuestions(
-              context,
-              state,
-            ),
-          ),
-      },
+        ],
+      ),
     );
   }
 
@@ -112,12 +129,65 @@ class _PlacementSectionPageState extends ConsumerState<PlacementSectionPage> {
       // All sections complete — navigate to submit/complete flow (P4-068).
       Navigator.of(context).pushReplacementNamed(
         AppRoutePaths.placementSubmit,
-        arguments: {'attemptId': state.attemptId},
+        arguments: {
+          'attemptId': state.attemptId,
+          'totalSections': state.totalSections,
+        },
       );
     } else {
       // Advance to the next section.
       ref.read(placementSectionProvider.notifier).advanceToNextSection();
     }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Gradient top bar — back chevron + "Section X of Y".
+// ---------------------------------------------------------------------------
+
+class _GradientTopBar extends StatelessWidget {
+  const _GradientTopBar({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
+
+    // Without this, the OS paints its default status bar background above
+    // the gradient instead of light icons sitting transparently on it.
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+        child: SafeArea(
+          bottom: false,
+          child: SizedBox(
+            height: AimSizes.topBarHeight,
+            child: Row(
+              children: [
+                const SizedBox(width: AimSpacing.space8),
+                AIMIconButton(
+                  semanticLabel: 'Back',
+                  icon: Icon(
+                    isRtl ? Icons.chevron_right : Icons.chevron_left,
+                    color: AimColors.neutral0,
+                  ),
+                  onPressed: () => Navigator.of(context).maybePop(),
+                ),
+                const SizedBox(width: AimSpacing.space4),
+                Text(
+                  title,
+                  style:
+                      AimTextStyles.title.copyWith(color: AimColors.neutral0),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -136,79 +206,64 @@ class _SectionBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final surfaces = aimSurfacesOf(context);
+    final soft = aimSoftFillsOf(context);
     final section = state.currentSection;
+    final minutes = placementEstimatedMinutes(section.totalQuestions);
 
     return Padding(
-      padding: const EdgeInsets.all(AimSpacing.space24),
+      padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Progress indicator
-          _SectionProgressBar(
-            current: state.displayIndex,
+          _SegmentedProgress(
             total: state.totalSections,
+            currentIndex: state.currentIndex,
           ),
-          const SizedBox(height: AimSpacing.space32),
-
-          // Section header
-          Text(
-            'Section ${state.displayIndex} of ${state.totalSections}',
-            style: AimTextStyles.bodyMd.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
-          ),
-          const SizedBox(height: AimSpacing.space8),
-          Text(
-            section.title,
-            style: AimTextStyles.h2.copyWith(color: theme.colorScheme.onSurface),
-          ),
-          const SizedBox(height: AimSpacing.space16),
-
-          // Skill area badge
-          _SkillBadge(skillCode: section.skillCode),
-          const SizedBox(height: AimSpacing.space24),
-
-          // Question count info
-          Row(
-            children: [
-              Icon(Icons.quiz_outlined, size: AimSizes.iconMd),
-              const SizedBox(width: AimSpacing.space8),
-              Text(
-                '${section.totalQuestions} questions',
-                style: AimTextStyles.bodyLg.copyWith(
-                  color: theme.colorScheme.onSurface,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AimSpacing.space8),
-
-          // Backend authority note — important for security compliance
-          Text(
-            'Your answers are submitted to the backend for evaluation. '
-            'All scoring is performed by the server.',
-            style: AimTextStyles.bodySm.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-            ),
-          ),
-
           const Spacer(),
-
-          // Start section button
-          FilledButton(
-            onPressed: onStartSection,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: AimSpacing.space4),
-              child: Text(
-                state.isLastSection
-                    ? 'Start Final Section'
-                    : 'Start Section',
-                style: AimTextStyles.bodyMd,
-              ),
+          Center(
+            child: Column(
+              children: [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: soft.primary,
+                    borderRadius: AimRadius.borderXl,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AimSpacing.space16),
+                    child: Icon(
+                      placementSkillIcon(section.skillCode),
+                      size: AimSizes.iconLg,
+                      color: soft.onPrimary,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AimSpacing.componentGap),
+                Text(
+                  section.title,
+                  style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
+                ),
+                const SizedBox(height: AimSpacing.space4),
+                Text(
+                  '${placementSkillCategoryLabel(section.skillCode)} · '
+                  '${section.totalQuestions} questions · about $minutes minutes',
+                  style: AimTextStyles.bodySm.copyWith(
+                    color: surfaces.textSecondary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: AimSpacing.space16),
+          const Spacer(),
+          AIMGradientButton(
+            label:
+                state.isLastSection ? 'Begin Final Section' : 'Begin Section',
+            fullWidth: true,
+            onPressed: onStartSection,
+            semanticLabel:
+                state.isLastSection ? 'Begin Final Section' : 'Begin Section',
+          ),
         ],
       ),
     );
@@ -216,137 +271,40 @@ class _SectionBody extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Progress bar
+// Segmented progress bar — one pill segment per section.
 // ---------------------------------------------------------------------------
 
-class _SectionProgressBar extends StatelessWidget {
-  const _SectionProgressBar({required this.current, required this.total});
+class _SegmentedProgress extends StatelessWidget {
+  const _SegmentedProgress({required this.total, required this.currentIndex});
 
-  final int current;
   final int total;
+  final int currentIndex;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final progress = total > 0 ? current / total : 0.0;
+    final surfaces = aimSurfacesOf(context);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Section progress',
-              style: AimTextStyles.label.copyWith(
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-            Text(
-              '$current / $total',
-              style: AimTextStyles.label.copyWith(
-                color: theme.colorScheme.onSurface,
-                fontWeight: AimFontWeights.semibold,
+    return Semantics(
+      label: 'Section ${currentIndex + 1} of $total',
+      child: Row(
+        children: [
+          for (var i = 0; i < total; i++) ...[
+            if (i > 0) const SizedBox(width: AimSpacing.space4),
+            Expanded(
+              child: SizedBox(
+                height: AimSpacing.space4,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: i <= currentIndex
+                        ? AimColors.primary500
+                        : surfaces.border,
+                    borderRadius: AimRadius.borderXs,
+                  ),
+                ),
               ),
             ),
           ],
-        ),
-        const SizedBox(height: AimSpacing.space8),
-        LinearProgressIndicator(
-          value: progress,
-          backgroundColor:
-              theme.colorScheme.onSurface.withValues(alpha: 0.12),
-          minHeight: AimSpacing.space8,
-          borderRadius: AimRadius.borderXs,
-        ),
-      ],
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Skill area badge
-// ---------------------------------------------------------------------------
-
-class _SkillBadge extends StatelessWidget {
-  const _SkillBadge({required this.skillCode});
-
-  final String skillCode;
-
-  static const _labels = {
-    'grammar': 'Grammar',
-    'vocabulary': 'Vocabulary',
-    'reading': 'Reading',
-    'listening': 'Listening',
-  };
-
-  static const _colors = {
-    'grammar': AimColors.primary500,
-    'vocabulary': AimColors.success500,
-    'reading': AimColors.secondary500,
-    'listening': AimColors.warning500,
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    final label = _labels[skillCode] ?? skillCode;
-    final color = _colors[skillCode] ?? AimColors.neutral400;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AimSpacing.space12,
-        vertical: AimSpacing.space4,
-      ),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: AimRadius.borderPill,
-        border: Border.all(color: color.withValues(alpha: 0.4)),
-      ),
-      child: Text(
-        label,
-        style: AimTextStyles.label.copyWith(
-          color: color,
-          fontWeight: AimFontWeights.semibold,
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Error body
-// ---------------------------------------------------------------------------
-
-class _ErrorBody extends StatelessWidget {
-  const _ErrorBody({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AimSpacing.space24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline, size: 48, color: AimColors.error500),
-            const SizedBox(height: AimSpacing.space16),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: AimTextStyles.bodyMd.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: AimSpacing.space24),
-            OutlinedButton(
-              onPressed: onRetry,
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }

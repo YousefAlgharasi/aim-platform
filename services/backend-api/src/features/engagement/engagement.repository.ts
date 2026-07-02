@@ -79,4 +79,120 @@ export class EngagementRepository {
     );
     return result.rows;
   }
+
+  async findXpLevels(): Promise<XpLevelRow[]> {
+    const result = await this.db.query<XpLevelRow>(
+      `SELECT level, min_xp FROM xp_levels ORDER BY level ASC`,
+    );
+    return result.rows;
+  }
+
+  async sumTotalXp(studentId: string): Promise<number> {
+    const result = await this.db.query<{ total_xp: number }>(
+      `SELECT COALESCE(SUM(l.xp_value), 0)::int AS total_xp
+       FROM lesson_progress lp
+       JOIN lessons l ON l.id = lp.lesson_id
+       WHERE lp.student_id = $1 AND lp.completed = true`,
+      [studentId],
+    );
+    return result.rows[0]?.total_xp ?? 0;
+  }
+
+  async sumXpToday(studentId: string): Promise<number> {
+    const result = await this.db.query<{ xp_today: number }>(
+      `SELECT COALESCE(SUM(l.xp_value), 0)::int AS xp_today
+       FROM lesson_progress lp
+       JOIN lessons l ON l.id = lp.lesson_id
+       WHERE lp.student_id = $1 AND lp.completed = true
+         AND (lp.completed_at AT TIME ZONE 'UTC')::date = (now() AT TIME ZONE 'UTC')::date`,
+      [studentId],
+    );
+    return result.rows[0]?.xp_today ?? 0;
+  }
+
+  /** Sum of XP earned in the 7 UTC days immediately before the current week. */
+  async sumXpLastWeek(studentId: string): Promise<number> {
+    const result = await this.db.query<{ total_xp: number }>(
+      `WITH week_bounds AS (
+         SELECT date_trunc('week', (now() AT TIME ZONE 'UTC'))::date AS week_start
+       )
+       SELECT COALESCE(SUM(l.xp_value), 0)::int AS total_xp
+       FROM lesson_progress lp
+       JOIN lessons l ON l.id = lp.lesson_id, week_bounds wb
+       WHERE lp.student_id = $1 AND lp.completed = true
+         AND (lp.completed_at AT TIME ZONE 'UTC')::date >= wb.week_start - INTERVAL '7 days'
+         AND (lp.completed_at AT TIME ZONE 'UTC')::date < wb.week_start`,
+      [studentId],
+    );
+    return result.rows[0]?.total_xp ?? 0;
+  }
+
+  async findWeeklyXp(studentId: string): Promise<WeeklyXpRow[]> {
+    const result = await this.db.query<WeeklyXpRow>(
+      `WITH week_bounds AS (
+         SELECT date_trunc('week', (now() AT TIME ZONE 'UTC'))::date AS week_start
+       ),
+       days AS (
+         SELECT generate_series(0, 6) AS day_offset
+       ),
+       daily AS (
+         SELECT (wb.week_start + d.day_offset) AS day
+         FROM week_bounds wb, days d
+       )
+       SELECT daily.day::text AS day, COALESCE(SUM(l.xp_value), 0)::int AS xp
+       FROM daily
+       LEFT JOIN lesson_progress lp
+         ON lp.student_id = $1 AND lp.completed = true
+         AND (lp.completed_at AT TIME ZONE 'UTC')::date = daily.day
+       LEFT JOIN lessons l ON l.id = lp.lesson_id
+       GROUP BY daily.day
+       ORDER BY daily.day ASC`,
+      [studentId],
+    );
+    return result.rows;
+  }
+
+  async countUnlockedBadges(studentId: string): Promise<number> {
+    const result = await this.db.query<{ count: string }>(
+      `SELECT COUNT(*)::text AS count FROM student_achievements
+       WHERE student_id = $1 AND unlocked_at IS NOT NULL`,
+      [studentId],
+    );
+    return parseInt(result.rows[0]?.count ?? '0', 10);
+  }
+
+  /**
+   * Percentile rank (0 = best) of studentId's total XP among all students
+   * (every row in student_profiles), lowest total_xp tying at 1 (worst).
+   * Returns null if studentId has no student_profiles row.
+   */
+  async findRankPercentile(studentId: string): Promise<number | null> {
+    const result = await this.db.query<{ pct_rank: number }>(
+      `WITH totals AS (
+         SELECT sp.user_id AS student_id,
+                COALESCE(SUM(l.xp_value) FILTER (WHERE lp.completed = true), 0)::int AS total_xp
+         FROM student_profiles sp
+         LEFT JOIN lesson_progress lp ON lp.student_id = sp.user_id
+         LEFT JOIN lessons l ON l.id = lp.lesson_id
+         GROUP BY sp.user_id
+       ),
+       ranked AS (
+         SELECT student_id, PERCENT_RANK() OVER (ORDER BY total_xp DESC) AS pct_rank
+         FROM totals
+       )
+       SELECT pct_rank FROM ranked WHERE student_id = $1`,
+      [studentId],
+    );
+    return result.rows[0]?.pct_rank ?? null;
+  }
+}
+
+interface XpLevelRow {
+  readonly level: number;
+  readonly min_xp: number;
+}
+
+interface WeeklyXpRow {
+  readonly day: string;
+  readonly xp: number;
 }
