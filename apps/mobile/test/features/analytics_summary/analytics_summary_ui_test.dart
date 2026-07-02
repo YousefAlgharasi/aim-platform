@@ -279,7 +279,8 @@ void main() {
       );
       await tester.pump();
       expect(find.text('Learning Progress'), findsOneWidget);
-      expect(find.text('learning'), findsOneWidget);
+      // TASK-25: the category badge shows the real backend value title-cased.
+      expect(find.text('Learning'), findsOneWidget);
       expect(
           find.text('Skill mastery progress over time.'), findsOneWidget);
     });
