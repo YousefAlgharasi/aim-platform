@@ -1,73 +1,57 @@
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Parent tickets" (53)
+//   docs/design/ui-for-all-system-mobile/screenshots/light/53-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/53-screen.png
+//
+// Parent ticket list page.
+//
+// Same pattern as student TicketListPage but for parent role.
+// Reuses shared widget builders from TicketListPage.
+// RTL/Arabic ready via Directionality-aware layout.
+//
+// TASK-36: restyled to match design screen 53 — same layout as
+// TicketListPage (screen 52), header title "Parent tickets". See
+// ticket_list_page.dart's header comment for the same note on why the
+// empty state is shown directly rather than an infinite loading spinner.
+
 import 'package:flutter/material.dart';
 
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
+import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'ticket_list_page.dart';
 
-/// Parent ticket list page.
-///
-/// Same pattern as student TicketListPage but for parent role.
-/// Reuses shared widget builders from TicketListPage.
-/// RTL/Arabic ready via Directionality-aware layout.
 class ParentTicketListPage extends StatelessWidget {
   const ParentTicketListPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final surfaces = aimSurfacesOf(context);
 
     // Parent tickets loaded from backend via GET /support/tickets
     // filtered by parent role on the backend
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Support Tickets'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'Create Ticket',
-            onPressed: () {
-              // Navigate to create ticket page
-            },
-          ),
+      backgroundColor: surfaces.background,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _ParentTicketListHeader(),
+          Expanded(child: buildEmptyState(context)),
         ],
       ),
-      body: SafeArea(
-        child: _buildContent(context, theme),
+      floatingActionButton: AIMFab(
+        semanticLabel: 'Create a support ticket',
+        onPressed: () =>
+            Navigator.of(context).pushNamed(AppRoutePaths.createTicket),
+        icon: const Icon(Icons.add),
       ),
-    );
-  }
-
-  Widget _buildContent(BuildContext context, ThemeData theme) {
-    // Will be connected to provider — shows loading state for now
-    return const Center(
-      child: CircularProgressIndicator(),
     );
   }
 
   /// Builds an empty state for parent tickets using shared pattern.
   static Widget buildEmptyState(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.confirmation_number_outlined,
-            size: 64,
-            color: theme.colorScheme.outline,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No Support Tickets',
-            style: theme.textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Create a ticket if you need help with your account.',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
+    return const AIMEmptyState(
+      icon: Icon(Icons.confirmation_number_outlined),
+      title: 'No Support Tickets',
+      subtitle: 'Create a ticket if you need help with your account.',
     );
   }
 
@@ -91,6 +75,60 @@ class ParentTicketListPage extends StatelessWidget {
       severity: severity,
       createdAt: createdAt,
       onTap: onTap,
+    );
+  }
+}
+
+class _ParentTicketListHeader extends StatelessWidget {
+  const _ParentTicketListHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+      ),
+      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            Semantics(
+              button: true,
+              label: 'Back',
+              child: InkWell(
+                onTap: () => Navigator.of(context).maybePop(),
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(AimSpacing.space12),
+                    child: Icon(
+                      Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_right_rounded
+                          : Icons.chevron_left_rounded,
+                      size: AimSizes.iconMd,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AimSpacing.space12),
+            Text(
+              'Parent tickets',
+              style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

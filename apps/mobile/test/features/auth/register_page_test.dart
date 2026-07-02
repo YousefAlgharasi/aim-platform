@@ -81,7 +81,8 @@ void main() {
     await tester.pump();
 
     expect(find.byType(RegisterPage), findsOneWidget);
-    expect(find.text('Create account'), findsOneWidget);
+    // "Create account" appears twice by design: header title + submit CTA.
+    expect(find.text('Create account'), findsNWidgets(2));
     expect(find.text('Start learning English the fun way'), findsOneWidget);
     expect(find.byType(AIMInput), findsNWidgets(3));
   });

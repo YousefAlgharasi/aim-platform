@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:aim_mobile/core/widgets/widgets.dart';
+
 class PlanCard extends StatelessWidget {
   final String planName;
   final String? description;
@@ -24,91 +26,93 @@ class PlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final surfaces = aimSurfacesOf(context);
 
-    return Card(
-      elevation: isRecommended ? 4 : 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: isRecommended
-            ? BorderSide(color: colorScheme.primary, width: 2)
-            : BorderSide.none,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (isRecommended)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: colorScheme.primary,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  'Recommended',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: colorScheme.onPrimary,
-                  ),
-                ),
-              ),
-            if (isRecommended) const SizedBox(height: 8),
-            Text(
-              planName,
-              style: theme.textTheme.titleLarge,
-            ),
-            if (description != null) ...[
-              const SizedBox(height: 4),
+    return AIMCard(
+      variant: isRecommended ? AIMCardVariant.elevated : AIMCardVariant.standard,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
               Text(
-                description!,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
+                planName,
+                style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
               ),
-            ],
-            const SizedBox(height: 12),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Text(price, style: theme.textTheme.headlineMedium),
-                const SizedBox(width: 4),
-                Text(
-                  '/ $interval',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+              if (isRecommended) ...[
+                const SizedBox(width: AimSpacing.space8),
+                const AIMBadge(
+                  tone: AIMBadgeTone.primary,
+                  pill: true,
+                  child: Text('Popular'),
                 ),
               ],
-            ),
-            const SizedBox(height: 16),
-            ...features.map(
-              (feature) => Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Row(
-                  children: [
-                    Icon(Icons.check_circle,
-                        size: 16, color: colorScheme.primary),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(feature, style: theme.textTheme.bodyMedium),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: isCurrentPlan ? null : onSelect,
-                child: Text(isCurrentPlan ? 'Current Plan' : 'Select Plan'),
-              ),
+            ],
+          ),
+          if (description != null) ...[
+            const SizedBox(height: AimSpacing.space4),
+            Text(
+              description!,
+              style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
             ),
           ],
-        ),
+          const SizedBox(height: AimSpacing.space12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                price,
+                style: AimTextStyles.display.copyWith(color: surfaces.textPrimary),
+              ),
+              const SizedBox(width: AimSpacing.space4),
+              Text(
+                '/$interval',
+                style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
+              ),
+            ],
+          ),
+          const SizedBox(height: AimSpacing.space16),
+          ...features.map(
+            (feature) => Padding(
+              padding: const EdgeInsets.only(bottom: AimSpacing.space8),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.check,
+                    size: AimSizes.iconSm,
+                    color: AimColors.success500,
+                  ),
+                  const SizedBox(width: AimSpacing.space8),
+                  Expanded(
+                    child: Text(
+                      feature,
+                      style:
+                          AimTextStyles.bodySm.copyWith(color: surfaces.textPrimary),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: AimSpacing.space16),
+          if (isCurrentPlan)
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: null,
+                child: const Text('Current plan'),
+              ),
+            )
+          else
+            AIMGradientButton(
+              label: 'Subscribe',
+              onPressed: onSelect,
+              enabled: onSelect != null,
+              fullWidth: true,
+              semanticLabel: 'Subscribe to $planName',
+            ),
+        ],
       ),
     );
   }

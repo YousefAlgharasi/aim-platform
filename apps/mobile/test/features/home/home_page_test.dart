@@ -94,6 +94,27 @@ HomeData _populated() => const HomeData(
       ],
     );
 
+const _stats = HomeEngagementStatsModel(
+  totalXp: 1234,
+  xpToday: 40,
+  level: 3,
+  nextLevel: 4,
+  currentLevelMinXp: 300,
+  nextLevelMinXp: 600,
+  levelProgressPercent: 62,
+  badgeCount: 5,
+  rankPercentile: 17,
+  weeklyActivity: [],
+);
+
+HomeData _populatedWithStats() => HomeData(
+      skillStates: _populated().skillStates,
+      weaknessRecords: _populated().weaknessRecords,
+      reviewSchedules: _populated().reviewSchedules,
+      recommendations: _populated().recommendations,
+      engagementStats: _stats,
+    );
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -181,10 +202,67 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('Skill States'), findsOneWidget);
-      expect(find.text('Focus Areas'), findsOneWidget);
-      expect(find.text('Review Schedule'), findsOneWidget);
-      expect(find.text('AIM Recommendations'), findsOneWidget);
+      // The greeting header + level hero card sit above these sections now,
+      // so scroll each one into view before asserting (ListView is lazy).
+      for (final section in [
+        'Skill States',
+        'Focus Areas',
+        'Review Schedule',
+        'AIM Recommendations',
+      ]) {
+        await tester.scrollUntilVisible(
+          find.text(section),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        expect(find.text(section), findsOneWidget);
+      }
+    });
+
+    testWidgets(
+        'renders the level hero card from real engagementStats — no hardcoded mock values',
+        (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          const HomePage(),
+          overrides: [
+            homeProvider.overrideWith(
+              (ref) => _FakeHomeNotifier(
+                AppAsyncState.success(_populatedWithStats()),
+              ),
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      // Real values from _stats above, not the old hardcoded
+      // "14" / "2,480" / "3,000" / "+480" / "12 badges" / "Top 5%" mock.
+      expect(find.text('3'), findsOneWidget); // level
+      expect(find.text('+40'), findsOneWidget); // xpToday
+      expect(find.text('1,234 / 600 XP'), findsOneWidget);
+      expect(find.text('Level 4 →'), findsOneWidget);
+      expect(find.text('5 badges'), findsOneWidget);
+      expect(find.text('Top 17%'), findsOneWidget);
+    });
+
+    testWidgets('omits the level hero card entirely when engagementStats failed to load',
+        (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          const HomePage(),
+          overrides: [
+            homeProvider.overrideWith(
+              (ref) => _FakeHomeNotifier(
+                AppAsyncState.success(_populated()), // engagementStats: null
+              ),
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      expect(find.textContaining('XP TODAY'), findsNothing);
     });
 
     testWidgets('renders without error under RTL directionality', (tester) async {
@@ -276,6 +354,12 @@ class _FakeHomeRepository implements HomeRepository {
           streakDays: 0,
         ),
       );
+
+  @override
+  Future<HomeEngagementStatsModel?> getEngagementStats({
+    required String bearerToken,
+  }) async =>
+      null;
 
   @override
   Future<HomeContinueLearningModel?> getContinueLearning({

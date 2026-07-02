@@ -121,12 +121,13 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
 
     return Scaffold(
       appBar: AIMTopAppBar(
-        title: widget.lessonTitle,
-        actions: [
+        title: 'Lesson',
+        onBack: () => Navigator.of(context).maybePop(),
+        actions: const [
           // Visual only — no bookmark/save-lesson endpoint exists yet, so
           // this action is disabled rather than a dead-end tap.
-          AIMIconButton(
-            icon: const Icon(Icons.bookmark_border_rounded),
+           AIMIconButton(
+            icon: Icon(Icons.bookmark_border_rounded),
             semanticLabel: 'Save lesson (coming soon)',
             onPressed: null,
           ),
@@ -268,7 +269,7 @@ class _LessonHero extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AimSpacing.sectionGap),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: AimGradients.ai,
         borderRadius: AimRadius.borderXl,
       ),
@@ -283,6 +284,11 @@ class _LessonHero extends StatelessWidget {
           // real-data-only precedent in lesson_list_tile.dart).
           _HeroPill(text: 'Lesson ${detail.lesson.sortOrder}'),
           const SizedBox(height: AimSpacing.space8),
+          Text(
+            detail.lesson.title,
+            style: AimTextStyles.h2.copyWith(color: Colors.white),
+          ),
+          const SizedBox(height: AimSpacing.space4),
           if (detail.lesson.description.isNotEmpty)
             Text(
               detail.lesson.description,

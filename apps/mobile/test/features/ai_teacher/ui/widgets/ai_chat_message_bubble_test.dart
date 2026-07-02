@@ -2,8 +2,10 @@
 // ai_chat_message_bubble_test.dart — widget tests for AiChatMessageBubble.
 //
 // Covers:
-//   1. Student message renders text and aligns to the trailing edge.
-//   2. AI Teacher message renders text and aligns to the leading edge.
+//   1. Student message renders text and aligns to the trailing edge, with
+//      no leading/trailing avatar (design screen 33: plain gradient bubble).
+//   2. AI Teacher message renders text, its leading avatar, and aligns to
+//      the leading edge.
 //   3. RTL layout renders without error.
 
 import 'package:flutter/material.dart';
@@ -28,14 +30,16 @@ void main() {
     createdAt: '2025-01-01T00:00:01Z',
   );
 
-  testWidgets('renders student message aligned to the trailing edge',
+  testWidgets(
+      'renders student message aligned to the trailing edge with no avatar',
       (tester) async {
     await tester.pumpAimWidget(
       const AiChatMessageBubble(message: studentMessage),
     );
 
     expect(find.text('What is the past tense of go?'), findsOneWidget);
-    expect(find.byIcon(Icons.person_outline_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.person_outline_rounded), findsNothing);
+    expect(find.byIcon(Icons.auto_awesome_rounded), findsNothing);
 
     final row = tester.widget<Row>(find.byType(Row));
     expect(row.mainAxisAlignment, MainAxisAlignment.end);

@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/routing/routing.dart';
-import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/features/shell/ui/pages/main_shell_page.dart';
 import 'package:aim_mobile/features/auth/data/session/session_store.dart';
 import 'package:aim_mobile/features/auth/logic/provider/app_bootstrap_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/provider/app_bootstrap_provider.dart';
@@ -121,7 +121,9 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    expect(find.byType(AIMBottomNav<int>), findsOneWidget);
+    // Bottom tab bar was removed (navigation is via the drawer only) —
+    // confirm the shell itself mounted instead.
+    expect(find.byType(MainShellPage), findsOneWidget);
   });
 }
 

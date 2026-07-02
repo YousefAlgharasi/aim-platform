@@ -99,8 +99,9 @@ void main() {
         _wrap(const AppAsyncState.success(_studentContext)));
     await tester.pump();
 
-    expect(find.byType(AIMTopAppBar), findsOneWidget);
-    expect(find.byType(LogoutButton), findsOneWidget);
+    expect(find.byType(AIMGradientHeroHeader), findsOneWidget);
+    // Sign-out lives in the side menu drawer, not on this screen.
+    expect(find.byType(LogoutButton), findsNothing);
     expect(find.byType(AIMCard), findsWidgets);
   });
 

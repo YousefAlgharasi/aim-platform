@@ -123,6 +123,14 @@ class _FakeHomeRepository implements HomeRepository {
   }
 
   @override
+  Future<HomeEngagementStatsModel?> getEngagementStats({
+    required String bearerToken,
+  }) async {
+    if (shouldFail) throw const AppException(code: 'SERVER_ERROR', message: 'Error');
+    return null;
+  }
+
+  @override
   Future<HomeContinueLearningModel?> getContinueLearning({
     required String bearerToken,
   }) async {

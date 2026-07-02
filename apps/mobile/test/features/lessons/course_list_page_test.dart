@@ -7,7 +7,7 @@
 //   3. Empty success state renders AIMEmptyState.
 //   4. Populated state renders course titles.
 //   5. RTL layout renders without error.
-//   6. Course status and sortOrder are from backend — not mutated in UI.
+//   6. Course level/percent/status are backend values — not mutated in UI.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,11 +15,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
-import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
-import 'package:aim_mobile/features/lessons/logic/provider/courses_notifier.dart';
-import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
-import 'package:aim_mobile/features/lessons/logic/repository/lessons_repository.dart';
 import 'package:aim_mobile/features/lessons/ui/pages/course_list_page.dart';
+import 'package:aim_mobile/features/student_courses/data/models/student_course_model.dart';
+import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
+import 'package:aim_mobile/features/student_courses/logic/provider/student_courses_notifier.dart';
+import 'package:aim_mobile/features/student_courses/logic/provider/student_courses_provider.dart';
+import 'package:aim_mobile/features/student_courses/logic/repository/student_courses_repository.dart';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -37,21 +38,23 @@ Widget _wrap(
     );
 
 const _courses = [
-  CourseModel(
-    id: 'course-1',
+  StudentCourseModel(
+    courseId: 'course-1',
     title: 'English B1',
-    status: 'published',
-    sortOrder: 1,
-    createdAt: '2025-01-01T00:00:00Z',
-    updatedAt: '2025-06-01T00:00:00Z',
+    levelCode: 'B1',
+    lessonCount: 20,
+    completedLessonCount: 5,
+    percent: 25,
+    status: StudentCourseStatus.inProgress,
   ),
-  CourseModel(
-    id: 'course-2',
+  StudentCourseModel(
+    courseId: 'course-2',
     title: 'Math Foundations',
-    status: 'published',
-    sortOrder: 2,
-    createdAt: '2025-01-02T00:00:00Z',
-    updatedAt: '2025-06-02T00:00:00Z',
+    levelCode: null,
+    lessonCount: 10,
+    completedLessonCount: 0,
+    percent: 0,
+    status: StudentCourseStatus.notStarted,
   ),
 ];
 
@@ -63,8 +66,8 @@ void main() {
       await tester.pumpWidget(_wrap(
         const CourseListPage(),
         overrides: [
-          coursesProvider.overrideWith(
-            (ref) => _FakeCoursesNotifier(const AppAsyncState.loading()),
+          studentCoursesProvider.overrideWith(
+            (ref) => _FakeStudentCoursesNotifier(const AppAsyncState.loading()),
           ),
         ],
       ));
@@ -76,8 +79,8 @@ void main() {
       await tester.pumpWidget(_wrap(
         const CourseListPage(),
         overrides: [
-          coursesProvider.overrideWith(
-            (ref) => _FakeCoursesNotifier(
+          studentCoursesProvider.overrideWith(
+            (ref) => _FakeStudentCoursesNotifier(
                 const AppAsyncState.failure(message: 'Load failed')),
           ),
         ],
@@ -90,9 +93,9 @@ void main() {
       await tester.pumpWidget(_wrap(
         const CourseListPage(),
         overrides: [
-          coursesProvider.overrideWith(
+          studentCoursesProvider.overrideWith(
             (ref) =>
-                _FakeCoursesNotifier(const AppAsyncState.success([])),
+                _FakeStudentCoursesNotifier(const AppAsyncState.success([])),
           ),
         ],
       ));
@@ -104,8 +107,8 @@ void main() {
       await tester.pumpWidget(_wrap(
         const CourseListPage(),
         overrides: [
-          coursesProvider.overrideWith(
-            (ref) => _FakeCoursesNotifier(
+          studentCoursesProvider.overrideWith(
+            (ref) => _FakeStudentCoursesNotifier(
                 const AppAsyncState.success(_courses)),
           ),
         ],
@@ -120,8 +123,8 @@ void main() {
       await tester.pumpWidget(_wrap(
         const CourseListPage(),
         overrides: [
-          coursesProvider.overrideWith(
-            (ref) => _FakeCoursesNotifier(
+          studentCoursesProvider.overrideWith(
+            (ref) => _FakeStudentCoursesNotifier(
                 const AppAsyncState.success(_courses)),
           ),
         ],
@@ -132,19 +135,21 @@ void main() {
       expect(find.text('English B1'), findsOneWidget);
     });
 
-    testWidgets('course status and sortOrder are backend values — not mutated',
+    testWidgets(
+        'course level, percent, and status are backend values — not mutated',
         (tester) async {
-      // The widget renders titles; status/sortOrder come verbatim from model.
-      // This test confirms the model values are not modified before display.
+      // The widget renders these verbatim from the model; this test confirms
+      // the model values are not recomputed before display.
       final course = _courses[0];
-      expect(course.status, 'published');
-      expect(course.sortOrder, 1);
-      // Render to confirm widget accepts these verbatim values without error.
+      expect(course.levelCode, 'B1');
+      expect(course.percent, 25);
+      expect(course.status, StudentCourseStatus.inProgress);
+
       await tester.pumpWidget(_wrap(
         const CourseListPage(),
         overrides: [
-          coursesProvider.overrideWith(
-            (ref) => _FakeCoursesNotifier(
+          studentCoursesProvider.overrideWith(
+            (ref) => _FakeStudentCoursesNotifier(
               AppAsyncState.success([course]),
             ),
           ),
@@ -152,15 +157,18 @@ void main() {
       ));
       await tester.pump();
       expect(find.text('English B1'), findsOneWidget);
+      expect(find.text('25%'), findsOneWidget);
+      expect(find.text('In progress'), findsWidgets);
     });
   });
 }
 
 // ── Fake notifier ─────────────────────────────────────────────────────────────
 
-class _FakeCoursesNotifier extends CoursesNotifier {
-  _FakeCoursesNotifier(AppAsyncState<List<CourseModel>> initialState)
-      : super(repository: _FakeLessonsRepository()) {
+class _FakeStudentCoursesNotifier extends StudentCoursesNotifier {
+  _FakeStudentCoursesNotifier(
+      AppAsyncState<List<StudentCourseModel>> initialState)
+      : super(repository: _FakeStudentCoursesRepository()) {
     state = initialState;
   }
 
@@ -170,29 +178,10 @@ class _FakeCoursesNotifier extends CoursesNotifier {
   Future<void> refresh({required String bearerToken}) async {}
 }
 
-class _FakeLessonsRepository implements LessonsRepository {
+class _FakeStudentCoursesRepository implements StudentCoursesRepository {
   @override
-  Future<List<CourseModel>> getCourses({required String bearerToken}) async =>
-      const [];
-
-  @override
-  Future<List<LevelModel>> getLevels({
+  Future<List<StudentCourseModel>> getCourses({
     required String bearerToken,
-    required String courseId,
-  }) async =>
-      const [];
-
-  @override
-  Future<List<ChapterModel>> getChapters({
-    required String bearerToken,
-    required String levelId,
-  }) async =>
-      const [];
-
-  @override
-  Future<List<LessonModel>> getLessons({
-    required String bearerToken,
-    required String chapterId,
   }) async =>
       const [];
 }

@@ -1,129 +1,183 @@
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Parent help" (49)
+//   docs/design/ui-for-all-system-mobile/screenshots/light/49-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/49-screen.png
+//
+// TASK-34: restyled to match design screen 49 — same pattern as
+// HelpCenterPage (gradient header, expandable FAQ accordion cards), parent-
+// specific category content. Static local app copy, no backend dependency
+// (see help_center_page.dart's header for the same note on
+// SupportDatasource).
+
 import 'package:flutter/material.dart';
 
-/// Parent Help Center page.
-///
-/// Same pattern as student HelpCenterPage but tailored for parent role.
-/// Reuses shared widget patterns from the support feature.
-/// RTL/Arabic ready via Directionality-aware layout.
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
+import 'package:aim_mobile/core/widgets/widgets.dart';
+import '../widgets/help_faq_accordion.dart';
+
 class ParentHelpCenterPage extends StatelessWidget {
   const ParentHelpCenterPage({super.key});
 
-  static const List<_ParentHelpCategory> _categories = [
-    _ParentHelpCategory(
-      icon: Icons.child_care,
+  static const List<HelpCategory> _categories = [
+    HelpCategory(
       title: 'Student Progress',
-      description: 'Questions about your child\'s learning progress',
+      faqs: [
+        HelpFaqItem(
+          question: "How do I track my child's progress?",
+          answer: 'Your parent dashboard shows mastery, streaks, and '
+              'recent activity for each learner.',
+        ),
+      ],
     ),
-    _ParentHelpCategory(
-      icon: Icons.school,
+    HelpCategory(
       title: 'Courses & Content',
-      description: 'Help with available courses and learning materials',
+      faqs: [
+        HelpFaqItem(
+          question: 'How do I see which courses my child is taking?',
+          answer: "Open your parent dashboard and select your child's "
+              'profile to see their enrolled courses.',
+        ),
+      ],
     ),
-    _ParentHelpCategory(
-      icon: Icons.payment,
+    HelpCategory(
       title: 'Billing & Payments',
-      description: 'Payment issues, subscription plans, and invoices',
+      faqs: [
+        HelpFaqItem(
+          question: 'How do I see my invoices?',
+          answer: 'Open Subscription from your profile, then tap '
+              'Invoices to see your billing history.',
+        ),
+        HelpFaqItem(
+          question: 'How do I change my plan?',
+          answer: 'Open Subscription and use the Change Plan option to '
+              'pick a different plan.',
+        ),
+      ],
     ),
-    _ParentHelpCategory(
-      icon: Icons.account_circle,
+    HelpCategory(
       title: 'Account Management',
-      description: 'Manage your account and linked student accounts',
+      faqs: [
+        HelpFaqItem(
+          question: 'How do I link a student account?',
+          answer: 'Student accounts are linked from your parent profile '
+              'settings.',
+        ),
+      ],
     ),
-    _ParentHelpCategory(
-      icon: Icons.security,
+    HelpCategory(
       title: 'Privacy & Safety',
-      description: 'Data privacy, safety settings, and parental controls',
+      faqs: [
+        HelpFaqItem(
+          question: "How is my child's data protected?",
+          answer: 'AIM only collects data needed for learning progress '
+              'and never shares it with third parties for advertising.',
+        ),
+      ],
     ),
-    _ParentHelpCategory(
-      icon: Icons.help_outline,
+    HelpCategory(
       title: 'General Help',
-      description: 'Other questions and general assistance',
+      faqs: [
+        HelpFaqItem(
+          question: "Didn't find what you're looking for?",
+          answer: 'Create a support ticket and our team will get back to '
+              'you.',
+        ),
+      ],
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final surfaces = aimSurfacesOf(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Parent Help Center'),
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(16.0),
-                children: [
-                  Text(
-                    'How can we help you?',
-                    style: theme.textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Browse categories or create a support ticket.',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  ..._categories.map(
-                    (cat) => _buildCategoryCard(context, theme, cat),
-                  ),
-                ],
+      backgroundColor: surfaces.background,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _ParentHelpCenterHeader(),
+          Expanded(
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AimSpacing.screenPaddingMobile,
+                vertical: AimSpacing.sectionGap,
+              ),
+              itemCount: _categories.length,
+              separatorBuilder: (_, __) =>
+                  const SizedBox(height: AimSpacing.listItemGap),
+              itemBuilder: (context, index) =>
+                  HelpCategoryAccordionCard(category: _categories[index]),
+            ),
+          ),
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
+              child: AIMGradientButton(
+                label: 'Create Ticket',
+                icon: const Icon(Icons.add),
+                onPressed: () => Navigator.of(context)
+                    .pushNamed(AppRoutePaths.createTicket),
+                fullWidth: true,
+                semanticLabel: 'Create a support ticket',
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: () {
-                    // Navigate to create ticket page
-                  },
-                  icon: const Icon(Icons.add),
-                  label: const Text('Create Ticket'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ParentHelpCenterHeader extends StatelessWidget {
+  const _ParentHelpCenterHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+      ),
+      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            Semantics(
+              button: true,
+              label: 'Back',
+              child: InkWell(
+                onTap: () => Navigator.of(context).maybePop(),
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(AimSpacing.space12),
+                    child: Icon(
+                      Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_right_rounded
+                          : Icons.chevron_left_rounded,
+                      size: AimSizes.iconMd,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
                 ),
               ),
+            ),
+            const SizedBox(width: AimSpacing.space12),
+            Text(
+              'Parent Help',
+              style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],
         ),
       ),
     );
   }
-
-  Widget _buildCategoryCard(
-    BuildContext context,
-    ThemeData theme,
-    _ParentHelpCategory category,
-  ) {
-    return Card(
-      margin: const EdgeInsetsDirectional.only(bottom: 8),
-      child: ListTile(
-        leading: Icon(
-          category.icon,
-          color: theme.colorScheme.primary,
-        ),
-        title: Text(category.title),
-        subtitle: Text(category.description),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () {
-          // Navigate to filtered help content for this category
-        },
-      ),
-    );
-  }
-}
-
-class _ParentHelpCategory {
-  final IconData icon;
-  final String title;
-  final String description;
-
-  const _ParentHelpCategory({
-    required this.icon,
-    required this.title,
-    required this.description,
-  });
 }

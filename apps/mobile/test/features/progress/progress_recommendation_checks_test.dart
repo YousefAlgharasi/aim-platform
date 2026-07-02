@@ -1,4 +1,4 @@
-// Phase 6 — P6-104
+// Phase 6 — P6-104 (updated — TASK-14 Progress hub restructure)
 // progress_recommendation_checks_test.dart — widget checks for progress and
 // recommendation pages.
 //
@@ -6,7 +6,7 @@
 //   1.  ProgressPage loading state renders AIMFullScreenLoading.
 //   2.  ProgressPage error state renders AIMFullScreenError.
 //   3.  ProgressPage empty success state renders AIMEmptyState.
-//   4.  ProgressPage populated state renders all four section headers.
+//   4.  ProgressPage populated state renders the four hub navigation rows.
 //   5.  ProgressPage RTL layout does not throw.
 //   6.  RecommendationsPage loading state renders AIMFullScreenLoading.
 //   7.  RecommendationsPage error state renders AIMFullScreenError.
@@ -18,6 +18,11 @@
 //   13. ReviewSchedulePage empty success state renders AIMEmptyState.
 //   14. ReviewSchedulePage populated state renders schedule cards.
 //   15. ReviewSchedulePage RTL layout does not throw.
+//
+// ProgressPage now also depends on homeProvider (for the day-streak stat),
+// so its wrap helper additionally overrides homeProvider with a stub
+// notifier defaulting to a successful, zeroed HomeData — mirroring the fake
+// notifier pattern already used in test/features/home/home_page_test.dart.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,6 +35,13 @@ import 'package:aim_mobile/features/aim_results/logic/entity/aim_results_data.da
 import 'package:aim_mobile/features/aim_results/logic/provider/aim_results_notifier.dart';
 import 'package:aim_mobile/features/aim_results/logic/provider/aim_results_provider.dart';
 import 'package:aim_mobile/features/aim_results/logic/repository/aim_results_repository.dart';
+import 'package:aim_mobile/features/home/data/datasources/home_remote_datasource.dart'
+    show HomeEngagementSummary;
+import 'package:aim_mobile/features/home/data/models/home_models.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_data.dart';
+import 'package:aim_mobile/features/home/logic/provider/home_notifier.dart';
+import 'package:aim_mobile/features/home/logic/provider/home_provider.dart';
+import 'package:aim_mobile/features/home/logic/repository/home_repository.dart';
 import 'package:aim_mobile/features/progress/ui/pages/progress_page.dart';
 import 'package:aim_mobile/features/progress/ui/pages/recommendations_page.dart';
 import 'package:aim_mobile/features/progress/ui/pages/review_schedule_page.dart';
@@ -40,11 +52,25 @@ Widget _wrap(
   Widget child, {
   required AppAsyncState<AimResultsData> state,
   TextDirection dir = TextDirection.ltr,
+  AppAsyncState<HomeData>? homeState,
 }) {
   return ProviderScope(
     overrides: [
       aimResultsProvider.overrideWith(
         (ref) => _StubNotifier(state),
+      ),
+      homeProvider.overrideWith(
+        (ref) => _StubHomeNotifier(
+          homeState ??
+              const AppAsyncState.success(
+                HomeData(
+                  skillStates: [],
+                  weaknessRecords: [],
+                  reviewSchedules: [],
+                  recommendations: [],
+                ),
+              ),
+        ),
       ),
     ],
     child: MaterialApp(
@@ -55,6 +81,91 @@ Widget _wrap(
       ),
     ),
   );
+}
+
+class _StubHomeNotifier extends HomeNotifier {
+  _StubHomeNotifier(AppAsyncState<HomeData> initial)
+      : super(repository: _NoOpHomeRepo()) {
+    state = initial;
+  }
+
+  @override
+  Future<void> load({
+    required String bearerToken,
+    required String studentId,
+  }) async {}
+
+  @override
+  Future<void> refresh({
+    required String bearerToken,
+    required String studentId,
+  }) async {}
+}
+
+class _NoOpHomeRepo implements HomeRepository {
+  @override
+  Future<List<HomeSkillStateModel>> getSkillStates({
+    required String bearerToken,
+    required String studentId,
+  }) async =>
+      const [];
+
+  @override
+  Future<List<HomeWeaknessRecordModel>> getWeaknessRecords({
+    required String bearerToken,
+    required String studentId,
+  }) async =>
+      const [];
+
+  @override
+  Future<List<HomeReviewScheduleModel>> getReviewSchedules({
+    required String bearerToken,
+    required String studentId,
+  }) async =>
+      const [];
+
+  @override
+  Future<List<HomeRecommendationModel>> getRecommendations({
+    required String bearerToken,
+    required String studentId,
+  }) async =>
+      const [];
+
+  @override
+  Future<HomeEngagementSummary> getEngagementSummary({
+    required String bearerToken,
+  }) async =>
+      const HomeEngagementSummary(
+        goal: HomeEngagementGoalModel(
+          targetLessons: 1,
+          completedToday: 0,
+          streakDays: 0,
+        ),
+      );
+
+  @override
+  Future<HomeEngagementStatsModel?> getEngagementStats({
+    required String bearerToken,
+  }) async =>
+      null;
+
+  @override
+  Future<HomeContinueLearningModel?> getContinueLearning({
+    required String bearerToken,
+  }) async =>
+      null;
+
+  @override
+  Future<HomeQuickStartLessonModel?> getQuickStartLesson({
+    required String bearerToken,
+  }) async =>
+      null;
+
+  @override
+  Future<HomeRecommendedCourseModel?> getRecommendedCourse({
+    required String bearerToken,
+  }) async =>
+      null;
 }
 
 class _StubNotifier extends AimResultsNotifier {
@@ -198,15 +309,20 @@ void main() {
       expect(find.text('No progress data yet'), findsOneWidget);
     });
 
-    testWidgets('4. populated state renders section headers', (tester) async {
+    testWidgets('4. populated state renders the four hub navigation rows',
+        (tester) async {
       await tester.pumpWidget(
         _wrap(const ProgressPage(), state: _populatedSuccess),
       );
       await tester.pump();
-      expect(find.text('Skill Mastery'), findsOneWidget);
-      expect(find.text('Focus Areas'), findsOneWidget);
-      expect(find.text('AIM Recommendations'), findsOneWidget);
+      expect(find.text('Skill States'), findsOneWidget);
+      expect(find.text('1 skills tracked'), findsOneWidget);
+      expect(find.text('Weaknesses'), findsOneWidget);
+      expect(find.text('1 focus areas'), findsOneWidget);
+      expect(find.text('Recommendations'), findsOneWidget);
+      expect(find.text('1 from AIM'), findsOneWidget);
       expect(find.text('Review Schedule'), findsOneWidget);
+      expect(find.text('1 reviews scheduled'), findsOneWidget);
     });
 
     testWidgets('5. RTL layout does not throw', (tester) async {
@@ -304,8 +420,11 @@ void main() {
         _wrap(const ReviewSchedulePage(), state: _populatedSuccess),
       );
       await tester.pump();
-      expect(find.textContaining('Due:'), findsOneWidget);
-      expect(find.textContaining('7d interval'), findsOneWidget);
+      // dueAt (2026-06-10) is far enough in the past that the relative
+      // "Due Today / Due Nd ago" formatting has settled into the stable
+      // "Due <Mon> <day>" branch regardless of the exact test run date.
+      expect(find.textContaining('Due Jun 10'), findsOneWidget);
+      expect(find.textContaining('7d · rep #3'), findsOneWidget);
       expect(find.text('grammar-articles'), findsOneWidget);
     });
 

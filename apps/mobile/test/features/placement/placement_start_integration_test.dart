@@ -43,8 +43,18 @@ class _FakePlacementRepository implements PlacementRepository {
   }
 
   @override
-  Future<List<PlacementSectionModel>> getActiveSections(String t) async =>
-      throw UnimplementedError();
+  Future<List<PlacementSectionModel>> getActiveSections(String t) async {
+    if (_shouldFail) throw Exception('Server error');
+    return const [
+      PlacementSectionModel(
+        id: 'sec-1',
+        title: 'Vocabulary',
+        skillCode: 'vocabulary',
+        orderIndex: 1,
+        totalQuestions: 10,
+      ),
+    ];
+  }
 
   @override
   Future<List<PlacementQuestionModel>> getQuestionsForSection(String t,
