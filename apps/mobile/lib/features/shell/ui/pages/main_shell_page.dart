@@ -225,12 +225,12 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
           trailing: Icon(Icons.chevron_right, color: aimSurfacesOf(context).textMuted),
         ),
       ],
-      footer: Column(
+      footer: const Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const _AIMThemeToggleRow(),
-          const SizedBox(height: AimSpacing.componentGap),
-          const LogoutButton(),
+          _AIMThemeToggleRow(),
+          SizedBox(height: AimSpacing.componentGap),
+          LogoutButton(),
         ],
       ),
     );

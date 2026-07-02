@@ -46,7 +46,6 @@ import 'package:aim_mobile/features/aim_results/logic/provider/aim_results_provi
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/home/data/models/home_models.dart';
-import 'package:aim_mobile/features/home/logic/entity/home_data.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_provider.dart';
 
 class ProgressPage extends ConsumerStatefulWidget {
