@@ -20,6 +20,106 @@ class _DSNavigationSectionState extends State<DSNavigationSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Gradient Hero Header
+        DSSection(
+          title: 'Gradient Hero Header',
+          children: [
+            ClipRRect(
+              borderRadius: AimRadius.borderMd,
+              child: AIMGradientHeroHeader(
+                title: 'Good evening, Sara',
+                subtitle: 'Keep your 5-day streak going',
+                trailing: IconButton(
+                  icon: const Icon(
+                    Icons.notifications_outlined,
+                    color: AimColors.neutral0,
+                  ),
+                  onPressed: () {},
+                ),
+              ),
+            ),
+          ],
+        ),
+        // App Drawer — needs its own nested Scaffold to open from, since
+        // this preview screen's own Scaffold has no drawer attached.
+        DSSection(
+          title: 'App Drawer',
+          children: [
+            SizedBox(
+              height: 120,
+              child: Scaffold(
+                backgroundColor: Colors.transparent,
+                drawer: AIMAppDrawer(
+                  header: const Padding(
+                    padding: EdgeInsets.all(AimSpacing.space16),
+                    child: Text(
+                      'Sara Ahmed',
+                      style: AimTextStyles.title,
+                    ),
+                  ),
+                  items: [
+                    AIMDrawerItemData(
+                      icon: const Icon(Icons.home_outlined),
+                      label: 'Home',
+                      selected: true,
+                      onTap: () {},
+                    ),
+                    AIMDrawerItemData(
+                      icon: const Icon(Icons.school_outlined),
+                      label: 'Learn',
+                      onTap: () {},
+                    ),
+                    AIMDrawerItemData(
+                      icon: const Icon(Icons.settings_outlined),
+                      label: 'Settings',
+                      onTap: () {},
+                    ),
+                  ],
+                ),
+                body: Builder(
+                  builder: (context) => AIMButton(
+                    variant: AIMButtonVariant.outline,
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                    child: const Text('Open drawer'),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        // Notifications Sheet
+        DSSection(
+          title: 'Notifications Sheet',
+          children: [
+            Builder(
+              builder: (context) => AIMButton(
+                variant: AIMButtonVariant.outline,
+                onPressed: () => showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (_) => const AIMNotificationsSheet(
+                    notifications: [
+                      AIMNotificationItemData(
+                        id: '1',
+                        title: 'Review due: Past Simple',
+                        body: '3 cards ready for review today.',
+                        timeLabel: '2h ago',
+                      ),
+                      AIMNotificationItemData(
+                        id: '2',
+                        title: 'Achievement unlocked',
+                        body: 'You completed a 5-day streak!',
+                        timeLabel: 'Yesterday',
+                        read: true,
+                      ),
+                    ],
+                  ),
+                ),
+                child: const Text('Show notifications'),
+              ),
+            ),
+          ],
+        ),
         // Top App Bar
         DSSection(
           title: 'Top App Bar',
