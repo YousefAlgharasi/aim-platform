@@ -24,6 +24,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:aim_mobile/core/formatting/score_percent.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -263,12 +264,14 @@ class _ResultHistoryTile extends StatelessWidget {
     final surfaces = aimSurfacesOf(context);
     final passed = item.passed;
 
-    // Display-only arithmetic on two backend-supplied values — NOT score
-    // computation (the backend remains the grading authority). Guarded so a
-    // zero maxScore never divides; in that case the raw score text is shown.
-    final int? percentage = item.maxScore > 0
-        ? ((item.score / item.maxScore) * 100).round()
-        : null;
+    // Display-only formatting of two backend-supplied values — NOT score
+    // computation (the backend remains the grading authority). See
+    // core/formatting/score_percent.dart. Guarded so a zero maxScore never
+    // divides; in that case the raw score text is shown.
+    final int? percentage = scorePercent(
+      numerator: item.score,
+      denominator: item.maxScore,
+    );
     final scoreLabel = percentage != null
         ? '$percentage%'
         : '${_fmtPts(item.score)} / ${_fmtPts(item.maxScore)}';
