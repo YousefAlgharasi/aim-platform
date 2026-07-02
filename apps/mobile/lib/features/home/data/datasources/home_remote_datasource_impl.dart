@@ -137,6 +137,18 @@ class HomeRemoteDatasourceImpl implements HomeRemoteDatasource {
   }
 
   @override
+  Future<HomeEngagementStatsModel?> getEngagementStats({
+    required String bearerToken,
+  }) async {
+    final envelope = await _apiClient.get<HomeEngagementStatsModel>(
+      BackendApiPaths.engagementStats,
+      headers: _auth(bearerToken),
+      decodeData: (json) => HomeEngagementStatsModel.fromJson(_requireMap(json)),
+    );
+    return envelope.data;
+  }
+
+  @override
   Future<HomeContinueLearningModel?> getContinueLearning({
     required String bearerToken,
   }) async {

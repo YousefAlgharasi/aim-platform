@@ -15,16 +15,16 @@
 // Flutter never calculates or infers any AIM value. All values come from the
 // backend verbatim through HomeNotifier → HomeRepository → backend API.
 //
-// NOTE — level / XP / badges / rank hero card:
-// the design's gradient level card shows a numeric level, XP totals, "+XP
-// today", badge count, and "Top N%" rank. No backend endpoint exposes any
-// of those fields to Flutter (HomeData carries goal/streak, challenge,
-// continue-learning, quick-start, and AIM lists only). Per product
-// direction the card renders clearly-marked mock values from
-// `_MockHomeStats` so the screen matches the design pixel-for-pixel; swap
-// for a real provider once a gamification endpoint exists. The streak pill
-// in the header is REAL (goal.streakDays), as are the continue-learning
-// percent and challenge progress.
+// Level / XP / badges / rank hero card — 100% REAL, via
+// GET /student/engagement/stats (features/engagement on the backend):
+// level, XP-to-next-level, and levelProgressPercent are computed from an
+// xp_levels threshold table against the student's real lifetime XP (sum of
+// xp_value across completed lesson_progress rows); badgeCount is the real
+// count of unlocked student_achievements; rankPercentile is a real
+// PERCENT_RANK() of the student's total XP among all students. None of it
+// is computed in Flutter. The streak pill in the header is also REAL
+// (goal.streakDays), as are the continue-learning percent and challenge
+// progress.
 //
 // Security rules:
 // - studentId sourced from authContextProvider (JWT-resolved).
@@ -240,19 +240,6 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 }
 
-// ── Mocked gamification stats ───────────────────────────────────────────────
-// Placeholder only — see file-level NOTE. Never sourced from the backend.
-class _MockHomeStats {
-  static const level = 14;
-  static const nextLevel = 15;
-  static const xpToday = '+480';
-  static const currentXp = '2,480';
-  static const nextLevelXp = '3,000';
-  static const xpFraction = 2480 / 3000;
-  static const badgeCount = '12 badges';
-  static const rankLabel = 'Top 5%';
-}
-
 /// Small colored bell-icon avatar shown beside the sheet's title, matching
 /// the mockup's notification-sheet header treatment. Purely decorative —
 /// carries no data of its own.
@@ -323,9 +310,11 @@ class _HomeContent extends ConsumerWidget {
             streakDays: data.goal?.streakDays ?? 0,
             onOpenNotifications: onOpenNotifications,
           ),
-          const SizedBox(height: AimSpacing.componentGap),
-          const _HomeLevelHeroCard(),
-          const SizedBox(height: AimSpacing.sectionGap),
+          if (data.engagementStats != null) ...[
+            const SizedBox(height: AimSpacing.componentGap),
+            _HomeLevelHeroCard(stats: data.engagementStats!),
+            const SizedBox(height: AimSpacing.sectionGap),
+          ],
           if (data.continueLearning != null) ...[
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -710,16 +699,33 @@ class _HomeGreetingHeader extends ConsumerWidget {
   }
 }
 
-// ── Level hero card (mocked — see file-level NOTE) ─────────────────────────
+// ── Level hero card (REAL — GET /student/engagement/stats) ─────────────────
 
 class _HomeLevelHeroCard extends StatelessWidget {
-  const _HomeLevelHeroCard();
+  const _HomeLevelHeroCard({required this.stats});
+
+  final HomeEngagementStats stats;
+
+  /// Thousands-separator formatting of an already-real backend integer —
+  /// pure presentation, no computation of the value itself.
+  static String _withThousandsSeparator(int value) {
+    final digits = value.abs().toString();
+    final buffer = StringBuffer();
+    for (var i = 0; i < digits.length; i++) {
+      if (i > 0 && (digits.length - i) % 3 == 0) buffer.write(',');
+      buffer.write(digits[i]);
+    }
+    return (value < 0 ? '-' : '') + buffer.toString();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final nextLevelXp = stats.nextLevelMinXp;
+    final xpFraction = stats.levelProgressPercent / 100;
+
     return Semantics(
-      label: 'Level ${_MockHomeStats.level}, '
-          '${_MockHomeStats.currentXp} of ${_MockHomeStats.nextLevelXp} XP',
+      label: 'Level ${stats.level}, ${stats.totalXp} XP'
+          '${nextLevelXp != null ? ', $nextLevelXp XP to level ${stats.nextLevel}' : ' (max level)'}',
       child: Container(
         padding: const EdgeInsets.all(AimSpacing.cardPaddingLg),
         decoration: BoxDecoration(
@@ -758,7 +764,7 @@ class _HomeLevelHeroCard extends StatelessWidget {
                       ),
                       const SizedBox(width: AimSpacing.space8),
                       Text(
-                        '${_MockHomeStats.level}',
+                        '${stats.level}',
                         style: AimTextStyles.display
                             .copyWith(color: AimColors.neutral0, height: 1),
                       ),
@@ -778,7 +784,7 @@ class _HomeLevelHeroCard extends StatelessWidget {
                     child: Column(
                       children: [
                         Text(
-                          '${_MockHomeStats.xpToday}',
+                          '+${_withThousandsSeparator(stats.xpToday)}',
                           style: AimTextStyles.h3
                               .copyWith(color: AimColors.neutral0),
                         ),
@@ -799,25 +805,36 @@ class _HomeLevelHeroCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '${_MockHomeStats.currentXp} / ${_MockHomeStats.nextLevelXp} XP',
+                  nextLevelXp != null
+                      ? '${_withThousandsSeparator(stats.totalXp)} / ${_withThousandsSeparator(nextLevelXp)} XP'
+                      : '${_withThousandsSeparator(stats.totalXp)} XP',
                   style: AimTextStyles.caption.copyWith(
                     color: AimColors.neutral0.withValues(alpha: 0.9),
                   ),
                 ),
-                Text(
-                  'Level ${_MockHomeStats.nextLevel} →',
-                  style: AimTextStyles.caption.copyWith(
-                    color: AimColors.neutral0.withValues(alpha: 0.9),
-                    fontWeight: AimFontWeights.semibold,
+                if (stats.nextLevel != null)
+                  Text(
+                    'Level ${stats.nextLevel} →',
+                    style: AimTextStyles.caption.copyWith(
+                      color: AimColors.neutral0.withValues(alpha: 0.9),
+                      fontWeight: AimFontWeights.semibold,
+                    ),
+                  )
+                else
+                  Text(
+                    'Max level',
+                    style: AimTextStyles.caption.copyWith(
+                      color: AimColors.neutral0.withValues(alpha: 0.9),
+                      fontWeight: AimFontWeights.semibold,
+                    ),
                   ),
-                ),
               ],
             ),
             const SizedBox(height: AimSpacing.space8),
             ClipRRect(
               borderRadius: AimRadius.borderPill,
               child: LinearProgressIndicator(
-                value: _MockHomeStats.xpFraction,
+                value: xpFraction,
                 minHeight: AimSpacing.space8,
                 backgroundColor: AimColors.neutral0.withValues(alpha: 0.25),
                 valueColor:
@@ -829,12 +846,14 @@ class _HomeLevelHeroCard extends StatelessWidget {
               children: [
                 _HeroPill(
                   icon: Icons.emoji_events_outlined,
-                  label: _MockHomeStats.badgeCount,
+                  label: stats.badgeCount == 1
+                      ? '1 badge'
+                      : '${stats.badgeCount} badges',
                 ),
                 const SizedBox(width: AimSpacing.innerGap),
-                const _HeroPill(
+                _HeroPill(
                   icon: Icons.star_rounded,
-                  label: _MockHomeStats.rankLabel,
+                  label: 'Top ${stats.rankPercentile}%',
                 ),
               ],
             ),

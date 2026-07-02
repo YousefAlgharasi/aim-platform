@@ -69,6 +69,12 @@ class HomeRepositoryImpl implements HomeRepository {
       _wrap(() => _datasource.getEngagementSummary(bearerToken: bearerToken));
 
   @override
+  Future<HomeEngagementStatsModel?> getEngagementStats({
+    required String bearerToken,
+  }) =>
+      _wrap(() => _datasource.getEngagementStats(bearerToken: bearerToken));
+
+  @override
   Future<HomeContinueLearningModel?> getContinueLearning({
     required String bearerToken,
   }) =>
