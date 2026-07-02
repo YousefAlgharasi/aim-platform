@@ -49,6 +49,7 @@ class _AIMGradientButtonState extends State<AIMGradientButton> {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final shadows = aimShadowsOf(context);
 
     final content = IconTheme.merge(
       data: const IconThemeData(
@@ -86,6 +87,7 @@ class _AIMGradientButtonState extends State<AIMGradientButton> {
           gradient: widget.isEnabled ? widget.gradient : null,
           color: widget.isEnabled ? null : surfaces.disabledBg,
           borderRadius: AimRadius.borderPill,
+          boxShadow: widget.isEnabled ? shadows.fab : AimShadows.none,
         ),
         child: Stack(
           alignment: Alignment.center,
