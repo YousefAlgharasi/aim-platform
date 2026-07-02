@@ -100,7 +100,7 @@ class _AIMInputState extends State<AIMInput> {
 
     final field = DecoratedBox(
       decoration: BoxDecoration(
-        color: widget.disabled ? surfaces.disabledBg : surfaces.surface,
+        color: widget.disabled ? surfaces.disabledBg : surfaces.surfaceSunken,
         border: Border.all(
           color: widget.disabled ? surfaces.disabledBorder : borderColor,
         ),
