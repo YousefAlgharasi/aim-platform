@@ -1,9 +1,13 @@
 // P10-054: AssessmentListPage — displays available quizzes/exams.
 // All data is backend-supplied; Flutter never computes deadline status.
+//
+// TASK-21: restyled to match design screen 24 — gradient header (back +
+// "Assessments" + a "Deadlines" link to the existing deadlines route).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -47,26 +51,120 @@ class _AssessmentListPageState extends ConsumerState<AssessmentListPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(assessmentListProvider);
+    final surfaces = aimSurfacesOf(context);
 
     return Scaffold(
-      appBar: const AIMTopAppBar(title: 'Assessments'),
-      body: switch (state) {
-        AppAsyncLoading() => const AIMFullScreenLoading(
-            semanticLabel: 'Loading assessments',
+      backgroundColor: surfaces.background,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _AssessmentListHeader(),
+          Expanded(
+            child: switch (state) {
+              AppAsyncLoading() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading assessments',
+                ),
+              AppAsyncFailure(:final message) => AIMFullScreenError(
+                  message: message,
+                  onRetry: _load,
+                ),
+              AppAsyncSuccess(:final data) => _AssessmentListContent(
+                  items: data,
+                  onRefresh: _refresh,
+                  onTap: _onAssessmentTap,
+                ),
+              AppAsyncIdle() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading assessments',
+                ),
+            },
           ),
-        AppAsyncFailure(:final message) => AIMFullScreenError(
-            message: message,
-            onRetry: _load,
-          ),
-        AppAsyncSuccess(:final data) => _AssessmentListContent(
-            items: data,
-            onRefresh: _refresh,
-            onTap: _onAssessmentTap,
-          ),
-        AppAsyncIdle() => const AIMFullScreenLoading(
-            semanticLabel: 'Loading assessments',
-          ),
-      },
+        ],
+      ),
+    );
+  }
+}
+
+// ── Gradient header ─────────────────────────────────────────────────────────
+
+/// Hero header mirroring [DeadlinesPage]'s back-button/title pattern (design
+/// screen 24's top bar), plus a "Deadlines" link to the existing deadlines
+/// route.
+class _AssessmentListHeader extends StatelessWidget {
+  const _AssessmentListHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+      ),
+      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            Semantics(
+              button: true,
+              label: 'Back',
+              child: InkWell(
+                onTap: () => Navigator.of(context).maybePop(),
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(AimSpacing.space12),
+                    child: Icon(
+                      Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_right_rounded
+                          : Icons.chevron_left_rounded,
+                      size: AimSizes.iconMd,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AimSpacing.space12),
+            Expanded(
+              child: Text(
+                'Assessments',
+                style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Semantics(
+              button: true,
+              label: 'Deadlines',
+              child: InkWell(
+                onTap: () => Navigator.of(context)
+                    .pushNamed(AppRoutePaths.assessmentDeadlines),
+                borderRadius: AimRadius.borderSm,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AimSpacing.space8,
+                    vertical: AimSpacing.space4,
+                  ),
+                  child: Text(
+                    'Deadlines',
+                    style: AimTextStyles.label.copyWith(
+                      color: AimColors.neutral0,
+                      fontWeight: AimFontWeights.semibold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
