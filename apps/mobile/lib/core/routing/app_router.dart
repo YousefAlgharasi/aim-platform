@@ -435,7 +435,10 @@ class AppRouter {
         : const <String, dynamic>{};
     final sessionId = args['sessionId'];
     if (sessionId is! String) return const SplashPage();
-    return CheckoutStatusPage(sessionId: sessionId);
+    return CheckoutStatusPage(
+      sessionId: sessionId,
+      planName: args['planName'] as String?,
+    );
   }
 
   static Widget _buildNotificationDetailPage(Object? arguments) {
