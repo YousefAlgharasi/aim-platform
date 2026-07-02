@@ -24,7 +24,7 @@ import { ProviderGatewayConfigService } from './provider-gateway.config';
 import { ProviderRequestMapperService } from './provider-request.mapper';
 import { ProviderResponseMapperService } from './provider-response.mapper';
 import { ProviderCompletionResponse } from './provider-response-mapper.types';
-import { AI_PROVIDER_COMPLETIONS_URL, AI_PROVIDER_NAME } from './provider-gateway-http-client.constants';
+import { AI_PROVIDER_NAME } from './provider-gateway-http-client.constants';
 import { AI_PROVIDER_CALL_TIMEOUT_MS } from './provider-gateway-timeout.constants';
 
 const NETWORK_ERROR_CATEGORY = 'PROVIDER_NETWORK_ERROR';
@@ -41,12 +41,12 @@ export class ProviderGatewayHttpClientService extends AiProviderGateway {
   }
 
   async complete(request: AiProviderRequest): Promise<AiProviderResponse> {
-    const { apiKey, model } = this.providerGatewayConfig.getConfig();
+    const { apiKey, model, baseUrl } = this.providerGatewayConfig.getConfig();
     const completionRequest = this.requestMapper.mapRequest(request);
     const start = Date.now();
 
     try {
-      const response = await fetch(AI_PROVIDER_COMPLETIONS_URL, {
+      const response = await fetch(baseUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
