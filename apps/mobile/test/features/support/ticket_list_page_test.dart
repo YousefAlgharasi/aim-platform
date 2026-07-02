@@ -67,7 +67,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(home: CreateTicketPage()),
       );
-      expect(find.text('Create Ticket'), findsOneWidget);
+      expect(find.text('New ticket'), findsOneWidget);
     });
 
     testWidgets('shows form fields', (tester) async {
