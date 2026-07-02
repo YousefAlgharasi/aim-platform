@@ -25,6 +25,8 @@ COPY --from=builder /install /usr/local
 COPY --chown=aim:aim services/aim-engine/app ./app
 COPY --chown=aim:aim services/api/src/aim ./api/src/aim
 
+ENV PYTHONPATH=/app/api/src
+
 USER aim
 
 EXPOSE 8010
