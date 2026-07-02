@@ -41,27 +41,78 @@ class PlacementIntroPage extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          AIMGradientHeroHeader(
-            gradient: AimGradients.gzHero,
-            title: 'Placement Test',
-            subtitle: 'A quick check to find your starting level',
-            leading: Semantics(
-              button: true,
-              label: 'Back',
-              child: InkWell(
-                onTap: () => Navigator.of(context).pop(),
-                customBorder: const CircleBorder(),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AimColors.neutral0.withValues(alpha: 0.18),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Padding(
-                    padding: EdgeInsets.all(AimSpacing.space12),
-                    child: Icon(
-                      Icons.arrow_back,
-                      size: AimSizes.iconMd,
-                      color: AimColors.neutral0,
+          const _IntroHeader(),
+          Expanded(
+            child: switch (state) {
+              PlacementStartIdle() ||
+              PlacementStartLoading() =>
+                const AIMFullScreenLoading(
+                  semanticLabel: 'Loading placement test',
+                ),
+              PlacementStartError(:final message) => AIMFullScreenError(
+                  message: message,
+                  onRetry: _loadActiveTest,
+                ),
+              PlacementStartReady(:final test) => _IntroBody(test: test),
+              // Attempt was already started elsewhere (e.g. the student
+              // returned to this screen after starting) — nothing new to
+              // preview here beyond a simple loading indicator.
+              PlacementStarted() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading placement test',
+                ),
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Gradient header
+// ---------------------------------------------------------------------------
+
+class _IntroHeader extends StatelessWidget {
+  const _IntroHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.sectionGap,
+      ),
+      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Semantics(
+                button: true,
+                label: 'Back',
+                child: InkWell(
+                  onTap: () => Navigator.of(context).pop(),
+                  customBorder: const CircleBorder(),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AimColors.neutral0.withValues(alpha: 0.18),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(AimSpacing.space12),
+                      child: Icon(
+                        Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_right_rounded
+                          : Icons.chevron_left_rounded,
+                        size: AimSizes.iconMd,
+                        color: AimColors.neutral0,
+                      ),
                     ),
                   ),
                 ),

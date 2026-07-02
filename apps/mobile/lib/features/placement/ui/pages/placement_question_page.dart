@@ -1,3 +1,10 @@
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Placement question"
+//   docs/design/ui-for-all-system-mobile/screenshots/light/21-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/21-screen.png
+// Endpoints: GET /placement/questions?sectionId=, POST /placement/attempts/:id/answers
+// Widgets: AIMTopAppBar, AIMProgressBar, AIMAnswerOption, AIMGradientButton,
+//          AIMAlertBanner, AIMFullScreenLoading, AIMFullScreenError
+//
 // PlacementQuestionPage — student-facing placement question screen.
 //
 // Scope: Placement Test phase only.
@@ -67,8 +74,17 @@ class _PlacementQuestionPageState
       }
     });
 
+    final counter = switch (state) {
+      PlacementQuestionReady() =>
+        '${state.displayIndex} of ${state.totalQuestions}',
+      _ => null,
+    };
+
     return Scaffold(
-      appBar: AIMTopAppBar(title: widget.sectionTitle),
+      appBar: _PlacementQuestionHeader(
+        title: widget.sectionTitle,
+        counter: counter,
+      ),
       body: SafeArea(
         child: switch (state) {
           PlacementQuestionIdle() ||
@@ -84,8 +100,6 @@ class _PlacementQuestionPageState
             ),
           PlacementQuestionReady() => _QuestionBody(
               state: state,
-              sectionIndex: widget.sectionIndex,
-              totalSections: widget.totalSections,
               submitError: _submitError,
               onSelectAnswer: (answer) {
                 setState(() => _submitError = null);
@@ -120,22 +134,95 @@ class _PlacementQuestionPageState
 }
 
 // ---------------------------------------------------------------------------
+// Gradient header — title + real "N of totalQuestions" counter (design
+// screen 21's top bar).
+// ---------------------------------------------------------------------------
+
+class _PlacementQuestionHeader extends StatelessWidget
+    implements PreferredSizeWidget {
+  const _PlacementQuestionHeader({required this.title, this.counter});
+
+  final String title;
+  final String? counter;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+      ),
+      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            Semantics(
+              button: true,
+              label: 'Back',
+              child: InkWell(
+                onTap: () => Navigator.of(context).maybePop(),
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AimSpacing.space12),
+                    child: Icon(
+                      Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_right_rounded
+                          : Icons.chevron_left_rounded,
+                      size: AimSizes.iconMd,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AimSpacing.space12),
+            Expanded(
+              child: Text(
+                title,
+                style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (counter != null)
+              Text(
+                counter!,
+                style: AimTextStyles.bodySm.copyWith(
+                  color: AimColors.neutral0.withValues(alpha: 0.85),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Question body
 // ---------------------------------------------------------------------------
 
 class _QuestionBody extends StatelessWidget {
   const _QuestionBody({
     required this.state,
-    required this.sectionIndex,
-    required this.totalSections,
     required this.onSelectAnswer,
     required this.onSubmit,
     this.submitError,
   });
 
   final PlacementQuestionReady state;
-  final int sectionIndex;
-  final int totalSections;
   final ValueChanged<String> onSelectAnswer;
   final VoidCallback onSubmit;
   final String? submitError;
@@ -146,28 +233,12 @@ class _QuestionBody extends StatelessWidget {
     final question = state.currentQuestion;
 
     return Padding(
-      padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
+      padding: const EdgeInsetsDirectional.all(AimSpacing.screenPaddingMobile),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              Text(
-                'Section $sectionIndex/$totalSections',
-                style: AimTextStyles.label.copyWith(
-                  color: surfaces.textSecondary,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                'Q ${state.displayIndex} of ${state.totalQuestions}',
-                style: AimTextStyles.label.copyWith(
-                  color: surfaces.textPrimary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AimSpacing.innerGap),
+          // Question counter now lives in the header's trailing area
+          // (design screen 21) — see _PlacementQuestionHeader.
           AIMProgressBar(
             value: state.displayIndex.toDouble(),
             max: state.totalQuestions.toDouble(),
@@ -199,15 +270,15 @@ class _QuestionBody extends StatelessWidget {
             ),
           ],
           const SizedBox(height: AimSpacing.componentGap),
-          AIMButton(
-            onPressed: state.canSubmit ? onSubmit : null,
+          AIMGradientButton(
+            label: state.isLastQuestion ? 'Submit Final Answer' : 'Next question',
+            gradient: AimGradients.gzHero,
             fullWidth: true,
             loading: state.isSubmitting,
+            enabled: state.canSubmit,
             semanticLabel:
                 state.isLastQuestion ? 'Submit final answer' : 'Next question',
-            child: Text(
-              state.isLastQuestion ? 'Submit Final Answer' : 'Next Question',
-            ),
+            onPressed: state.canSubmit ? onSubmit : null,
           ),
         ],
       ),

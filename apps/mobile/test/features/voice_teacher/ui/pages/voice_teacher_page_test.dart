@@ -93,25 +93,38 @@ void main() {
       expect(find.text('internal trace=abc'), findsNothing);
     });
 
-    testWidgets('shows empty transcript state when there is no history', (
-      tester,
-    ) async {
-      await tester.pumpWidget(_wrap(
-        const VoiceTeacherPage(contextRef: 'lesson-1'),
-        overrides: [
-          voiceTeacherSessionProvider.overrideWith(
-            (ref) => _FakeVoiceTeacherSessionNotifier(
-              const AppAsyncState.success(VoiceTeacherSessionState(
-                sessionId: 'session-1',
-              )),
+    testWidgets(
+      'shows the pre-conversation idle hero when there is no history',
+      (tester) async {
+        // With no history and nothing in progress, the screen shows the
+        // full-bleed gradient "Tap to speak" hero (see
+        // VoiceTeacherPage's _VoiceHeroIdle) rather than
+        // VoiceTranscriptList's own empty-state text — that empty state is
+        // only reachable once a session has genuinely started producing an
+        // (empty) history list distinct from "no session activity yet".
+        await tester.pumpWidget(_wrap(
+          const VoiceTeacherPage(contextRef: 'lesson-1'),
+          overrides: [
+            voiceTeacherSessionProvider.overrideWith(
+              (ref) => _FakeVoiceTeacherSessionNotifier(
+                const AppAsyncState.success(VoiceTeacherSessionState(
+                  sessionId: 'session-1',
+                )),
+              ),
             ),
-          ),
-        ],
-      ));
-      await tester.pump();
+          ],
+        ));
+        await tester.pump();
 
-      expect(find.text('Start talking with your Voice Teacher'), findsOneWidget);
-    });
+        // "Tap to speak" appears twice by design: idle-hero headline +
+        // record-button caption.
+        expect(find.text('Tap to speak'), findsNWidgets(2));
+        expect(
+          find.text('Start talking with your Voice Teacher'),
+          findsNothing,
+        );
+      },
+    );
 
     testWidgets(
       'shows student/teacher transcript turns and never renders '

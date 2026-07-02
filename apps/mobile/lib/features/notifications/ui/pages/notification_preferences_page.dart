@@ -4,6 +4,22 @@
 // configure quiet hours. These are requests only — the backend remains
 // the final authority on eligibility, quiet-hour enforcement, and final
 // delivery state.
+//
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Notification settings" (41)
+//   docs/design/ui-for-all-system-mobile/screenshots/light/41-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/41-screen.png
+//
+// TASK-32: restyled to match design screen 41 — gradient header, small-caps
+// muted "CHANNELS"/"QUIET HOURS" section labels, gradient "Save quiet
+// hours" button.
+//
+// Deviation from the mockup: the design shows one toggle per category
+// (5 rows total). The real preference model is per channel-per-category
+// (NotificationPreferenceModel has both `channel` and `category` —
+// GET/PATCH /api/v1/notifications/preferences), so each category has 3
+// independent channel toggles (in-app/push/email). Collapsing to one
+// toggle per category would silently discard real user control over
+// individual channels, so the full channel x category matrix is kept.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -95,47 +111,120 @@ class _NotificationPreferencesPageState
   Widget build(BuildContext context) {
     final preferencesState = ref.watch(notificationPreferencesProvider);
     final quietHoursState = ref.watch(notificationQuietHoursProvider);
+    final surfaces = aimSurfacesOf(context);
 
     return Scaffold(
-      appBar: const AIMTopAppBar(title: 'Notification settings'),
-      body: SafeArea(
-        child: switch (preferencesState) {
-          AppAsyncLoading() ||
-          AppAsyncIdle() =>
-            const AIMFullScreenLoading(
-              semanticLabel: 'Loading notification preferences',
-            ),
-          AppAsyncFailure(:final message) => AIMFullScreenError(
-              message: message,
-              onRetry: _load,
-            ),
-          AppAsyncSuccess(:final data) => SingleChildScrollView(
-              padding: const EdgeInsetsDirectional.fromSTEB(
-                AimSpacing.screenPaddingMobile,
-                AimSpacing.sectionGap,
-                AimSpacing.screenPaddingMobile,
-                AimSpacing.sectionGap,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text('Channels', style: AimTextStyles.h2),
-                  const SizedBox(height: AimSpacing.componentGap),
-                  _PreferencesTable(
-                    preferences: data,
-                    onToggle: _onToggle,
+      backgroundColor: surfaces.background,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _NotificationPreferencesHeader(),
+          Expanded(
+            child: switch (preferencesState) {
+              AppAsyncLoading() ||
+              AppAsyncIdle() =>
+                const AIMFullScreenLoading(
+                  semanticLabel: 'Loading notification preferences',
+                ),
+              AppAsyncFailure(:final message) => AIMFullScreenError(
+                  message: message,
+                  onRetry: _load,
+                ),
+              AppAsyncSuccess(:final data) => SingleChildScrollView(
+                  padding: const EdgeInsetsDirectional.fromSTEB(
+                    AimSpacing.screenPaddingMobile,
+                    AimSpacing.sectionGap,
+                    AimSpacing.screenPaddingMobile,
+                    AimSpacing.sectionGap,
                   ),
-                  const SizedBox(height: AimSpacing.sectionGap),
-                  const Text('Quiet hours', style: AimTextStyles.h2),
-                  const SizedBox(height: AimSpacing.componentGap),
-                  _QuietHoursSection(
-                    state: quietHoursState,
-                    onSave: _onSaveQuietHours,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'CHANNELS',
+                        style: AimTextStyles.label.copyWith(
+                          color: surfaces.textMuted,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: AimSpacing.componentGap),
+                      _PreferencesTable(
+                        preferences: data,
+                        onToggle: _onToggle,
+                      ),
+                      const SizedBox(height: AimSpacing.sectionGap),
+                      Text(
+                        'QUIET HOURS',
+                        style: AimTextStyles.label.copyWith(
+                          color: surfaces.textMuted,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: AimSpacing.componentGap),
+                      _QuietHoursSection(
+                        state: quietHoursState,
+                        onSave: _onSaveQuietHours,
+                      ),
+                    ],
                   ),
-                ],
+                ),
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NotificationPreferencesHeader extends StatelessWidget {
+  const _NotificationPreferencesHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+      ),
+      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            Semantics(
+              button: true,
+              label: 'Back',
+              child: InkWell(
+                onTap: () => Navigator.of(context).maybePop(),
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(AimSpacing.space12),
+                    child: Icon(
+                      Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_right_rounded
+                          : Icons.chevron_left_rounded,
+                      size: AimSizes.iconMd,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                ),
               ),
             ),
-        },
+            const SizedBox(width: AimSpacing.space12),
+            Text(
+              'Notification settings',
+              style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -289,7 +378,8 @@ class _QuietHoursSectionState extends State<_QuietHoursSection> {
             onTap: () => _pickTime(false),
           ),
           const SizedBox(height: AimSpacing.sectionGap),
-          AIMButton(
+          AIMGradientButton(
+            label: 'Save quiet hours',
             onPressed: isLoading
                 ? null
                 : () => widget.onSave(
@@ -300,7 +390,7 @@ class _QuietHoursSectionState extends State<_QuietHoursSection> {
                     ),
             loading: isLoading,
             fullWidth: true,
-            child: const Text('Save quiet hours'),
+            semanticLabel: 'Save quiet hours',
           ),
         ],
       ),

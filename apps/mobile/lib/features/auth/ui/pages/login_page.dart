@@ -4,6 +4,7 @@
 // Endpoint: POST /auth/login (POST /auth/test-login outside production only)
 // Widgets: AIMInput, AIMGradientButton, AIMAlertBanner, AIMButton (test mode)
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/config/app_config_provider.dart';
@@ -98,225 +99,232 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       }
     });
 
-    return Scaffold(
-      backgroundColor: surfaces.background,
-      body: AutofillGroup(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            // ── Gradient welcome header ───────────────────────────────
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsetsDirectional.fromSTEB(
-                AimSpacing.screenPaddingMobile,
-                AimSpacing.space64,
-                AimSpacing.screenPaddingMobile,
-                AimSpacing.sectionGap * 2,
-              ),
-              decoration: const BoxDecoration(gradient: AimGradients.gzHero),
-              child: SafeArea(
-                bottom: false,
-                child: Column(
-                  children: [
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: AimColors.neutral0.withValues(alpha: 0.18),
-                        shape: BoxShape.circle,
+    // Without this, the OS paints its default status bar background above
+    // the gradient instead of light icons sitting transparently on it.
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: surfaces.background,
+        body: AutofillGroup(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              // ── Gradient welcome header ───────────────────────────────
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                  AimSpacing.screenPaddingMobile,
+                  AimSpacing.space64,
+                  AimSpacing.screenPaddingMobile,
+                  AimSpacing.sectionGap * 2,
+                ),
+                decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+                child: SafeArea(
+                  bottom: false,
+                  child: Column(
+                    children: [
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: AimColors.neutral0.withValues(alpha: 0.18),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.all(AimSpacing.space16),
+                          child: Icon(
+                            Icons.school_outlined,
+                            size: AimSizes.iconLg,
+                            color: AimColors.neutral0,
+                          ),
+                        ),
                       ),
-                      child: const Padding(
-                        padding: EdgeInsets.all(AimSpacing.space16),
-                        child: Icon(
-                          Icons.school_outlined,
-                          size: AimSizes.iconLg,
+                      const SizedBox(height: AimSpacing.componentGap),
+                      Text(
+                        'Welcome back',
+                        style: AimTextStyles.h2.copyWith(
                           color: AimColors.neutral0,
                         ),
+                        textAlign: TextAlign.center,
                       ),
-                    ),
-                    const SizedBox(height: AimSpacing.componentGap),
-                    Text(
-                      'Welcome back',
-                      style: AimTextStyles.h2.copyWith(
-                        color: AimColors.neutral0,
+                      const SizedBox(height: AimSpacing.space4),
+                      Text(
+                        'Sign in to keep your streak alive',
+                        style: AimTextStyles.bodySm.copyWith(
+                          color: AimColors.neutral0.withValues(alpha: 0.85),
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: AimSpacing.space4),
-                    Text(
-                      'Sign in to keep your streak alive',
-                      style: AimTextStyles.bodySm.copyWith(
-                        color: AimColors.neutral0.withValues(alpha: 0.85),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
 
-            // ── Form card ──────────────────────────────────────────────
-            Transform.translate(
-              offset: const Offset(0, -AimSpacing.sectionGap),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AimSpacing.screenPaddingMobile,
-                  vertical: AimSpacing.sectionGap,
-                ),
-                decoration: BoxDecoration(
-                  color: surfaces.surface,
-                  borderRadius: const BorderRadiusDirectional.only(
-                    topStart: Radius.circular(AimRadius.x2l),
-                    topEnd: Radius.circular(AimRadius.x2l),
+              // ── Form card ──────────────────────────────────────────────
+              Transform.translate(
+                offset: const Offset(0, -AimSpacing.sectionGap),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AimSpacing.screenPaddingMobile,
+                    vertical: AimSpacing.sectionGap,
                   ),
-                  boxShadow: shadows.card,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // ── Error banner ───────────────────────────────────
-                    if (formState.errorMessage != null) ...[
-                      AIMAlertBanner(
-                        tone: AIMAlertTone.error,
-                        child: Text(formState.errorMessage!),
-                      ),
-                      const SizedBox(height: AimSpacing.formFieldGap),
-                    ],
-
-                    // ── Email ──────────────────────────────────────────
-                    AIMInput(
-                      controller: _emailController,
-                      focusNode: _emailFocus,
-                      label: 'Email',
-                      placeholder: 'you@example.com',
-                      type: AIMInputType.email,
-                      disabled: formState.isSubmitting,
-                      leadingIcon: const Icon(Icons.email_outlined),
-                      onChanged: _onEmailChanged,
-                      onSubmitted: (_) => _passwordFocus.requestFocus(),
-                      textInputAction: TextInputAction.next,
-                      autofillHints: const [AutofillHints.email],
-                      semanticLabel: 'Email address',
+                  decoration: BoxDecoration(
+                    color: surfaces.surface,
+                    borderRadius: const BorderRadiusDirectional.only(
+                      topStart: Radius.circular(AimRadius.x2l),
+                      topEnd: Radius.circular(AimRadius.x2l),
                     ),
-                    const SizedBox(height: AimSpacing.formFieldGap),
-
-                    // ── Password ───────────────────────────────────────
-                    AIMInput(
-                      controller: _passwordController,
-                      focusNode: _passwordFocus,
-                      label: 'Password',
-                      type: AIMInputType.password,
-                      disabled: formState.isSubmitting,
-                      leadingIcon: const Icon(Icons.lock_outline),
-                      onChanged: _onPasswordChanged,
-                      onSubmitted: (_) => _submit(),
-                      textInputAction: TextInputAction.done,
-                      autofillHints: const [AutofillHints.password],
-                      semanticLabel: 'Password',
-                    ),
-                    const SizedBox(height: AimSpacing.space8),
-
-                    // Visible per design, but there is no forgot-password
-                    // endpoint or route yet, so this is a non-interactive
-                    // placeholder rather than a dead-end action.
-                    Align(
-                      alignment: AlignmentDirectional.centerEnd,
-                      child: Text(
-                        'Forgot password?',
-                        style: AimTextStyles.label.copyWith(
-                          color: surfaces.textMuted,
+                    boxShadow: shadows.card,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // ── Error banner ───────────────────────────────────
+                      if (formState.errorMessage != null) ...[
+                        AIMAlertBanner(
+                          tone: AIMAlertTone.error,
+                          child: Text(formState.errorMessage!),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: AimSpacing.sectionGap),
-
-                    // ── Submit ─────────────────────────────────────────
-                    AIMGradientButton(
-                      label: 'Sign In',
-                      fullWidth: true,
-                      loading: formState.isSubmitting,
-                      enabled: formState.isValid,
-                      onPressed: _submit,
-                      semanticLabel: 'Sign in',
-                    ),
-                    const SizedBox(height: AimSpacing.sectionGap),
-
-                    // ── Social sign-in (visual only — no backend yet) ───
-                    Text(
-                      'OR CONTINUE WITH',
-                      style:
-                          AimTextStyles.caption.copyWith(color: surfaces.textMuted),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: AimSpacing.formFieldGap),
-                    AIMButton(
-                      onPressed: null,
-                      variant: AIMButtonVariant.outline,
-                      fullWidth: true,
-                      semanticLabel: 'Continue with Google (coming soon)',
-                      child: const Text('Continue with Google'),
-                    ),
-                    const SizedBox(height: AimSpacing.innerGap),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: AIMButton(
-                            onPressed: null,
-                            variant: AIMButtonVariant.outline,
-                            semanticLabel: 'Continue with Apple (coming soon)',
-                            child: const Text('Apple'),
-                          ),
-                        ),
-                        const SizedBox(width: AimSpacing.innerGap),
-                        Expanded(
-                          child: AIMButton(
-                            onPressed: null,
-                            variant: AIMButtonVariant.outline,
-                            semanticLabel:
-                                'Continue with Facebook (coming soon)',
-                            child: const Text('Facebook'),
-                          ),
-                        ),
+                        const SizedBox(height: AimSpacing.formFieldGap),
                       ],
-                    ),
-                    const SizedBox(height: AimSpacing.sectionGap),
 
-                    // ── Register link ───────────────────────────────────
-                    Center(
-                      child: TextButton(
-                        onPressed: () => Navigator.of(context)
-                            .pushNamed(AppRoutePaths.register),
-                        child: const Text("Don't have an account? Create one"),
+                      // ── Email ──────────────────────────────────────────
+                      AIMInput(
+                        controller: _emailController,
+                        focusNode: _emailFocus,
+                        label: 'Email',
+                        placeholder: 'you@example.com',
+                        type: AIMInputType.email,
+                        disabled: formState.isSubmitting,
+                        leadingIcon: const Icon(Icons.email_outlined),
+                        onChanged: _onEmailChanged,
+                        onSubmitted: (_) => _passwordFocus.requestFocus(),
+                        textInputAction: TextInputAction.next,
+                        autofillHints: const [AutofillHints.email],
+                        semanticLabel: 'Email address',
                       ),
-                    ),
+                      const SizedBox(height: AimSpacing.formFieldGap),
 
-                    // ── Test mode (non-production builds only) ──────────
-                    // Lets a developer/tester sign in as a fixed
-                    // student/admin/parent test account without a real
-                    // password. The backend returns 404 for this route in
-                    // production, so this button never appears (and would
-                    // be a dead end if it did).
-                    if (isTestModeAvailable) ...[
+                      // ── Password ───────────────────────────────────────
+                      AIMInput(
+                        controller: _passwordController,
+                        focusNode: _passwordFocus,
+                        label: 'Password',
+                        type: AIMInputType.password,
+                        disabled: formState.isSubmitting,
+                        leadingIcon: const Icon(Icons.lock_outline),
+                        onChanged: _onPasswordChanged,
+                        onSubmitted: (_) => _submit(),
+                        textInputAction: TextInputAction.done,
+                        autofillHints: const [AutofillHints.password],
+                        semanticLabel: 'Password',
+                      ),
+                      const SizedBox(height: AimSpacing.space8),
+
+                      // Visible per design, but there is no forgot-password
+                      // endpoint or route yet, so this is a non-interactive
+                      // placeholder rather than a dead-end action.
+                      Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: Text(
+                          'Forgot password?',
+                          style: AimTextStyles.label.copyWith(
+                            color: surfaces.textLink,
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: AimSpacing.sectionGap),
-                      const _TestModeDivider(),
-                      const SizedBox(height: AimSpacing.formFieldGap),
-                      _TestModeButtonRow(
-                        isSubmitting: formState.isSubmitting,
-                        onSelectRole: _submitTestLogin,
+
+                      // ── Submit ─────────────────────────────────────────
+                      AIMGradientButton(
+                        label: 'Sign In',
+                        fullWidth: true,
+                        loading: formState.isSubmitting,
+                        enabled: formState.isValid,
+                        onPressed: _submit,
+                        semanticLabel: 'Sign in',
+                      ),
+                      const SizedBox(height: AimSpacing.sectionGap),
+
+                      // ── Social sign-in (visual only — no backend yet) ───
+                      Text(
+                        'OR CONTINUE WITH',
+                        style: AimTextStyles.caption
+                            .copyWith(color: surfaces.textMuted),
+                        textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: AimSpacing.formFieldGap),
-                      AIMButton(
-                        onPressed: () => Navigator.of(context)
-                            .pushNamed(AppRoutePaths.endpointTester),
+                      const AIMButton(
+                        onPressed: null,
                         variant: AIMButtonVariant.outline,
                         fullWidth: true,
-                        child: const Text('Open API Endpoint Tester'),
+                        semanticLabel: 'Continue with Google (coming soon)',
+                        child: Text('Continue with Google'),
                       ),
+                      const SizedBox(height: AimSpacing.innerGap),
+                      const Row(
+                        children: [
+                          Expanded(
+                            child: AIMButton(
+                              onPressed: null,
+                              variant: AIMButtonVariant.outline,
+                              semanticLabel:
+                                  'Continue with Apple (coming soon)',
+                              child: Text('Apple'),
+                            ),
+                          ),
+                          SizedBox(width: AimSpacing.innerGap),
+                          Expanded(
+                            child: AIMButton(
+                              onPressed: null,
+                              variant: AIMButtonVariant.outline,
+                              semanticLabel:
+                                  'Continue with Facebook (coming soon)',
+                              child: Text('Facebook'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AimSpacing.sectionGap),
+
+                      // ── Register link ───────────────────────────────────
+                      Center(
+                        child: TextButton(
+                          onPressed: () => Navigator.of(context)
+                              .pushNamed(AppRoutePaths.register),
+                          child:
+                              const Text("Don't have an account? Create one"),
+                        ),
+                      ),
+
+                      // ── Test mode (non-production builds only) ──────────
+                      // Lets a developer/tester sign in as a fixed
+                      // student/admin/parent test account without a real
+                      // password. The backend returns 404 for this route in
+                      // production, so this button never appears (and would
+                      // be a dead end if it did).
+                      if (isTestModeAvailable) ...[
+                        const SizedBox(height: AimSpacing.sectionGap),
+                        const _TestModeDivider(),
+                        const SizedBox(height: AimSpacing.formFieldGap),
+                        _TestModeButtonRow(
+                          isSubmitting: formState.isSubmitting,
+                          onSelectRole: _submitTestLogin,
+                        ),
+                        const SizedBox(height: AimSpacing.formFieldGap),
+                        AIMButton(
+                          onPressed: () => Navigator.of(context)
+                              .pushNamed(AppRoutePaths.endpointTester),
+                          variant: AIMButtonVariant.outline,
+                          fullWidth: true,
+                          child: const Text('Open API Endpoint Tester'),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

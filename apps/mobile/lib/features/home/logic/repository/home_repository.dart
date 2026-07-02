@@ -49,6 +49,12 @@ abstract class HomeRepository {
     required String bearerToken,
   });
 
+  /// Fetch the backend-computed level, XP, badge count, global rank, and
+  /// weekly activity for the hero card.
+  Future<HomeEngagementStatsModel?> getEngagementStats({
+    required String bearerToken,
+  });
+
   /// Fetch the most recently active, incomplete lesson, if any.
   Future<HomeContinueLearningModel?> getContinueLearning({
     required String bearerToken,

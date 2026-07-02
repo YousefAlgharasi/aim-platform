@@ -1,10 +1,28 @@
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "New ticket" (50)
+//   docs/design/ui-for-all-system-mobile/screenshots/light/50-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/50-screen.png
+//
+// Create support ticket page.
+//
+// Form with category, severity, subject, and description fields.
+// Submits to POST /support/tickets via repository.
+// RTL/Arabic ready via Directionality-aware layout.
+//
+// TASK-35: restyled to match design screen 50 — gradient header ("New
+// ticket"), AIMSelect/AIMInput/AIMTextarea form fields, gradient "Submit
+// Ticket" button.
+//
+// Note: POST /support/tickets is "Planned / Not Yet Active" and
+// SupportDatasource has no concrete implementation (out of scope for this
+// UI-only verification task — see the task note). Submitting now shows a
+// graceful "not available yet" message instead of either faking a success
+// response or leaving the button stuck in a permanent loading spinner
+// (the previous behavior: `_isSubmitting` was set to true and never reset).
+
 import 'package:flutter/material.dart';
 
-/// Create support ticket page.
-///
-/// Form with category, severity, subject, and description fields.
-/// Submits to POST /support/tickets via repository.
-/// RTL/Arabic ready via Directionality-aware layout.
+import 'package:aim_mobile/core/widgets/widgets.dart';
+
 class CreateTicketPage extends StatefulWidget {
   const CreateTicketPage({super.key});
 
@@ -13,27 +31,29 @@ class CreateTicketPage extends StatefulWidget {
 }
 
 class _CreateTicketPageState extends State<CreateTicketPage> {
-  final _formKey = GlobalKey<FormState>();
   String _category = 'general';
   String _severity = 'medium';
   final _subjectController = TextEditingController();
   final _descriptionController = TextEditingController();
   bool _isSubmitting = false;
+  String? _subjectError;
+  String? _descriptionError;
+  String? _submitError;
 
-  static const List<String> _categories = [
-    'technical',
-    'billing',
-    'account',
-    'content',
-    'feedback',
-    'general',
+  static const _categoryOptions = [
+    AIMSelectOption(value: 'technical', label: 'Technical Issue'),
+    AIMSelectOption(value: 'billing', label: 'Billing'),
+    AIMSelectOption(value: 'account', label: 'Account'),
+    AIMSelectOption(value: 'content', label: 'Content'),
+    AIMSelectOption(value: 'feedback', label: 'Feedback'),
+    AIMSelectOption(value: 'general', label: 'General'),
   ];
 
-  static const List<String> _severities = [
-    'low',
-    'medium',
-    'high',
-    'critical',
+  static const _severityOptions = [
+    AIMSelectOption(value: 'low', label: 'Low'),
+    AIMSelectOption(value: 'medium', label: 'Medium'),
+    AIMSelectOption(value: 'high', label: 'High'),
+    AIMSelectOption(value: 'critical', label: 'Critical'),
   ];
 
   @override
@@ -45,113 +65,152 @@ class _CreateTicketPageState extends State<CreateTicketPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final surfaces = aimSurfacesOf(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Ticket'),
-      ),
-      body: SafeArea(
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.all(16.0),
-            children: [
-              Text(
-                'Describe your issue',
-                style: theme.textTheme.titleMedium,
+      backgroundColor: surfaces.background,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _CreateTicketHeader(),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AimSpacing.screenPaddingMobile,
+                vertical: AimSpacing.sectionGap,
               ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                initialValue: _category,
-                decoration: const InputDecoration(
-                  labelText: 'Category',
-                  border: OutlineInputBorder(),
+              children: [
+                AIMSelect(
+                  label: 'Category',
+                  options: _categoryOptions,
+                  value: _category,
+                  onChanged: (value) {
+                    if (value != null) setState(() => _category = value);
+                  },
                 ),
-                items: _categories
-                    .map((c) => DropdownMenuItem(
-                          value: c,
-                          child: Text(c[0].toUpperCase() + c.substring(1)),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) setState(() => _category = value);
-                },
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                initialValue: _severity,
-                decoration: const InputDecoration(
-                  labelText: 'Severity',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: AimSpacing.componentGap),
+                AIMSelect(
+                  label: 'Severity',
+                  options: _severityOptions,
+                  value: _severity,
+                  onChanged: (value) {
+                    if (value != null) setState(() => _severity = value);
+                  },
                 ),
-                items: _severities
-                    .map((s) => DropdownMenuItem(
-                          value: s,
-                          child: Text(s[0].toUpperCase() + s.substring(1)),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) setState(() => _severity = value);
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _subjectController,
-                decoration: const InputDecoration(
-                  labelText: 'Subject',
-                  border: OutlineInputBorder(),
-                  hintText: 'Brief summary of your issue',
+                const SizedBox(height: AimSpacing.componentGap),
+                AIMInput(
+                  label: 'Subject',
+                  controller: _subjectController,
+                  placeholder: 'Briefly describe the issue',
+                  error: _subjectError,
                 ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Subject is required';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
-                  border: OutlineInputBorder(),
-                  hintText: 'Describe the issue in detail',
-                  alignLabelWithHint: true,
+                const SizedBox(height: AimSpacing.componentGap),
+                AIMTextarea(
+                  label: 'Description',
+                  controller: _descriptionController,
+                  placeholder: 'Tell us what happened, step by step...',
+                  rows: 5,
+                  error: _descriptionError,
                 ),
-                maxLines: 5,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Description is required';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: _isSubmitting ? null : _handleSubmit,
-                child: _isSubmitting
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('Submit Ticket'),
-              ),
-            ],
+                if (_submitError != null) ...[
+                  const SizedBox(height: AimSpacing.componentGap),
+                  Text(
+                    _submitError!,
+                    style: AimTextStyles.bodySm
+                        .copyWith(color: AimColors.error500),
+                  ),
+                ],
+                const SizedBox(height: AimSpacing.sectionGap),
+                AIMGradientButton(
+                  label: 'Submit Ticket',
+                  onPressed: _isSubmitting ? null : _handleSubmit,
+                  loading: _isSubmitting,
+                  fullWidth: true,
+                  semanticLabel: 'Submit ticket',
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 
   void _handleSubmit() {
-    if (!_formKey.currentState!.validate()) return;
+    final subject = _subjectController.text.trim();
+    final description = _descriptionController.text.trim();
+    setState(() {
+      _subjectError = subject.isEmpty ? 'Subject is required' : null;
+      _descriptionError =
+          description.isEmpty ? 'Description is required' : null;
+      _submitError = null;
+    });
+    if (_subjectError != null || _descriptionError != null) return;
 
     setState(() => _isSubmitting = true);
 
-    // Will call repository.createTicket() via provider
-    // On success: navigate back to ticket list
-    // On error: show error snackbar and reset _isSubmitting
+    // POST /support/tickets is "Planned / Not Yet Active" and
+    // SupportDatasource has no concrete implementation yet — a real
+    // submission can't be attempted here without inventing backend
+    // behavior. Show a graceful, honest message instead of faking success.
+    setState(() {
+      _isSubmitting = false;
+      _submitError = 'Ticket submission is not available yet. Please try '
+          'again later.';
+    });
+  }
+}
+
+class _CreateTicketHeader extends StatelessWidget {
+  const _CreateTicketHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+      ),
+      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            Semantics(
+              button: true,
+              label: 'Back',
+              child: InkWell(
+                onTap: () => Navigator.of(context).maybePop(),
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(AimSpacing.space12),
+                    child: Icon(
+                      Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_right_rounded
+                          : Icons.chevron_left_rounded,
+                      size: AimSizes.iconMd,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AimSpacing.space12),
+            Text(
+              'New ticket',
+              style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

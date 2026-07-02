@@ -11,7 +11,9 @@ import { EngagementRepository } from './engagement.repository';
 import {
   DailyChallengeSummary,
   DailyGoalSummary,
+  EngagementStatsResponse,
   EngagementSummaryResponse,
+  WeeklyActivityDay,
 } from './engagement.types';
 
 const DEFAULT_DAILY_GOAL_LESSONS = 1;
@@ -54,6 +56,100 @@ export class EngagementService {
       targetLessons: goalRow.daily_goal_lessons,
       completedToday,
       streakDays: this.computeStreakDays(activeDates),
+    };
+  }
+
+  /**
+   * Level/XP/badge/rank/weekly-activity stats for the mobile Home screen's
+   * hero card. Every field is computed here from real lesson_progress +
+   * lessons.xp_value + student_achievements + xp_levels data — none of it
+   * is fabricated, and Flutter never recomputes any of it.
+   */
+  async getStats(studentId: string): Promise<EngagementStatsResponse> {
+    const [totalXp, xpToday, xpLastWeek, levels, badgeCount, rankPct, weeklyRows] =
+      await Promise.all([
+        this.repository.sumTotalXp(studentId),
+        this.repository.sumXpToday(studentId),
+        this.repository.sumXpLastWeek(studentId),
+        this.repository.findXpLevels(),
+        this.repository.countUnlockedBadges(studentId),
+        this.repository.findRankPercentile(studentId),
+        this.repository.findWeeklyXp(studentId),
+      ]);
+
+    const { level, nextLevel, currentLevelMinXp, nextLevelMinXp, levelProgressPercent } =
+      this.computeLevel(totalXp, levels);
+
+    const weeklyActivity: WeeklyActivityDay[] = weeklyRows.map((row) => ({
+      date: row.day,
+      xp: row.xp,
+    }));
+    const weeklyTotal = weeklyActivity.reduce((sum, day) => sum + day.xp, 0);
+    const weeklyDeltaPercent =
+      xpLastWeek === 0 ? null : Math.round(((weeklyTotal - xpLastWeek) / xpLastWeek) * 100);
+
+    // PERCENT_RANK returns 0 for the best student; convert to a 1-100
+    // "Top N%" label, never 0.
+    const rankPercentile = rankPct === null ? 100 : Math.max(1, Math.round(rankPct * 100));
+
+    return {
+      totalXp,
+      xpToday,
+      level,
+      nextLevel,
+      currentLevelMinXp,
+      nextLevelMinXp,
+      levelProgressPercent,
+      badgeCount,
+      rankPercentile,
+      weeklyActivity,
+      weeklyDeltaPercent,
+    };
+  }
+
+  private computeLevel(
+    totalXp: number,
+    levels: readonly { level: number; min_xp: number }[],
+  ): {
+    level: number;
+    nextLevel: number | null;
+    currentLevelMinXp: number;
+    nextLevelMinXp: number | null;
+    levelProgressPercent: number;
+  } {
+    if (levels.length === 0) {
+      return {
+        level: 1,
+        nextLevel: null,
+        currentLevelMinXp: 0,
+        nextLevelMinXp: null,
+        levelProgressPercent: 0,
+      };
+    }
+
+    const sorted = [...levels].sort((a, b) => a.level - b.level);
+    let currentIndex = 0;
+    for (let i = 0; i < sorted.length; i += 1) {
+      if (sorted[i].min_xp <= totalXp) {
+        currentIndex = i;
+      } else {
+        break;
+      }
+    }
+
+    const current = sorted[currentIndex];
+    const next = sorted[currentIndex + 1] ?? null;
+
+    const levelProgressPercent = next
+      ? Math.round(((totalXp - current.min_xp) / (next.min_xp - current.min_xp)) * 100)
+      : 100;
+
+    return {
+      level: current.level,
+      nextLevel: next?.level ?? null,
+      currentLevelMinXp: current.min_xp,
+      nextLevelMinXp: next?.min_xp ?? null,
+      levelProgressPercent,
     };
   }
 

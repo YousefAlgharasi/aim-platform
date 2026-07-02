@@ -1,7 +1,28 @@
-// Phase 4 — P4-065
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Placement start"
+//   docs/design/ui-for-all-system-mobile/screenshots/light/19-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/19-screen.png
+//
+// Phase 4 — P4-065 (restyled — TASK-19)
 // PlacementStartPage — student-facing placement start screen.
 //
+// Endpoints: GET /placement/active, POST /placement/attempts
+// Widgets: AIMGradientButton, AIMFullScreenLoading, AIMFullScreenError
+//
 // Scope: Placement Test phase only.
+//
+// This is a real-data-only visual restyle. The bare Material AppBar is
+// replaced with a bespoke gradient header (mirrors PlacementIntroPage's
+// private `_IntroHeader`, duplicated locally since it's private to that
+// file), and the ready-state body leads with a rounded gradient card
+// showing exactly two real stat cells: Sections (test.totalSections) and
+// Estimated time (test.estimatedMinutes). Per
+// services/backend-api/src/features/placement/placement-test-read.service.ts,
+// GET /placement/active only ever returns id/title/status/total_sections/
+// estimated_minutes — there is no per-section name/duration breakdown and no
+// total question count anywhere in this response. The design's "SECTIONS"
+// list (Vocabulary/Grammar/Reading/Listening rows) and its 36-question stat
+// cell are therefore intentionally NOT built here, mirroring the same
+// real-data-only reasoning already documented in placement_intro_page.dart.
 //
 // Responsibility:
 //   1. Load the active placement test on mount.
@@ -18,8 +39,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
+import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/placement/data/models/placement_test_model.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_provider.dart';
@@ -62,34 +83,104 @@ class _PlacementStartPageState extends ConsumerState<PlacementStartPage> {
     });
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Placement Test'),
-        automaticallyImplyLeading: false,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _StartHeader(),
+          Expanded(
+            child: switch (state) {
+              PlacementStartIdle() ||
+              PlacementStartLoading() =>
+                const AIMFullScreenLoading(
+                  semanticLabel: 'Loading placement test',
+                ),
+              PlacementStartError(:final message) => AIMFullScreenError(
+                  message: message,
+                  onRetry: () {
+                    final token = ref.read(authFlowProvider).accessToken ?? '';
+                    ref
+                        .read(placementStartProvider.notifier)
+                        .loadActivePlacementTest(token);
+                  },
+                ),
+              PlacementStartReady(:final test) => _ReadyBody(
+                  test: test,
+                  onStart: () {
+                    final token = ref.read(authFlowProvider).accessToken ?? '';
+                    ref.read(placementStartProvider.notifier).startAttempt(token);
+                  }, sections: const [],
+                ),
+              PlacementStarted() =>
+                // Transitioning — show spinner while navigation fires.
+                const AIMFullScreenLoading(
+                  semanticLabel: 'Starting placement test',
+                ),
+            },
+          ),
+        ],
       ),
-      body: switch (state) {
-        PlacementStartIdle() ||
-        PlacementStartLoading() =>
-          const Center(child: CircularProgressIndicator()),
-        PlacementStartError(:final message) => _ErrorBody(
-            message: message,
-            onRetry: () {
-              final token = ref.read(authFlowProvider).accessToken ?? '';
-              ref
-                  .read(placementStartProvider.notifier)
-                  .loadActivePlacementTest(token);
-            },
-          ),
-        PlacementStartReady(:final test) => _ReadyBody(
-            test: test,
-            onStart: () {
-              final token = ref.read(authFlowProvider).accessToken ?? '';
-              ref.read(placementStartProvider.notifier).startAttempt(token);
-            },
-          ),
-        PlacementStarted() =>
-          // Transitioning — show spinner while navigation fires.
-          const Center(child: CircularProgressIndicator()),
-      },
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Gradient header — mirrors PlacementIntroPage's private `_IntroHeader`
+// (duplicated locally since that widget is private to its own file). Back
+// button is a genuine pop: PlacementIntroPage pushes this screen via
+// Navigator.pushNamed(AppRoutePaths.placementStart), so a working back
+// affordance matches normal push/pop semantics.
+// ---------------------------------------------------------------------------
+
+class _StartHeader extends StatelessWidget {
+  const _StartHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+      ),
+      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            Semantics(
+              button: true,
+              label: 'Back',
+              child: InkWell(
+                onTap: () => Navigator.of(context).maybePop(),
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(AimSpacing.space12),
+                    child: Icon(
+                      Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_right_rounded
+                          : Icons.chevron_left_rounded,
+                      size: AimSizes.iconMd,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AimSpacing.componentGap),
+            Text(
+              'Placement Test',
+              style: AimTextStyles.h2.copyWith(color: AimColors.neutral0),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -99,88 +190,97 @@ class _PlacementStartPageState extends ConsumerState<PlacementStartPage> {
 // ---------------------------------------------------------------------------
 
 class _ReadyBody extends StatelessWidget {
-  const _ReadyBody({required this.test, required this.onStart});
+  const _ReadyBody({
+    required this.test,
+    required this.onStart, required List<dynamic> sections,
+  });
 
   final PlacementTestModel test;
   final VoidCallback onStart;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final surfaces = aimSurfacesOf(context);
 
     return SafeArea(
+      top: false,
       child: Padding(
-        padding: const EdgeInsets.all(AimSpacing.space24),
+        padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Spacer(),
-            // Icon
-            Icon(
-              Icons.assignment_outlined,
-              size: 72,
-              color: colorScheme.primary,
-            ),
-            const SizedBox(height: AimSpacing.space24),
-            // Title
-            Text(
-              test.title,
-              style: AimTextStyles.h2.copyWith(color: colorScheme.onSurface),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AimSpacing.space8),
-            Text(
-              'Determine your English level',
-              style: AimTextStyles.bodyMd.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AimSpacing.space32),
-            // Info cards
-            _InfoRow(
-              icon: Icons.layers_outlined,
-              label: 'Sections',
-              value: '${test.totalSections}',
-            ),
-            const SizedBox(height: AimSpacing.space12),
-            _InfoRow(
-              icon: Icons.timer_outlined,
-              label: 'Estimated time',
-              value: '${test.estimatedMinutes} min',
-            ),
-            const SizedBox(height: AimSpacing.space32),
-            // Boundary note — backend authority
+            // Gradient "Find your level" card — static UI copy (non-data)
+            // plus exactly two real stat cells.
             Container(
-              padding: const EdgeInsets.all(AimSpacing.space12),
+              padding: const EdgeInsetsDirectional.all(AimSpacing.space20),
+              decoration: const BoxDecoration(
+                gradient: AimGradients.gzHero,
+                borderRadius: AimRadius.borderLg,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Find your level',
+                    style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+                  ),
+                  const SizedBox(height: AimSpacing.space8),
+                  Text(
+                    'A short adaptive test places you at the right level so '
+                    'every lesson fits you.',
+                    style: AimTextStyles.bodySm.copyWith(
+                      color: AimColors.neutral0.withValues(alpha: 0.85),
+                    ),
+                  ),
+                  const SizedBox(height: AimSpacing.sectionGap),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _StatCell(
+                          value: '${test.totalSections}',
+                          label: 'sections',
+                        ),
+                      ),
+                      Expanded(
+                        child: _StatCell(
+                          value: '~${test.estimatedMinutes}',
+                          label: 'minutes',
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AimSpacing.sectionGap),
+            // Boundary note — backend authority.
+            Container(
+              padding: const EdgeInsetsDirectional.all(AimSpacing.space12),
               decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerHighest,
+                color: surfaces.surfaceSunken,
                 borderRadius: AimRadius.borderSm,
               ),
               child: Text(
                 'Your level is determined by the backend after completion. '
                 'Results are never calculated on your device.',
                 style: AimTextStyles.bodySm.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+                  color: surfaces.textSecondary,
                 ),
-                textAlign: TextAlign.center,
               ),
             ),
             const Spacer(),
-            FilledButton(
+            AIMGradientButton(
+              label: 'Start Placement Test',
+              fullWidth: true,
+              semanticLabel: 'Start Placement Test',
               onPressed: onStart,
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  vertical: AimSpacing.space16,
-                ),
-              ),
-              child: const Text('Start Placement Test'),
             ),
-            const SizedBox(height: AimSpacing.space12),
-            TextButton(
-              onPressed: () => Navigator.of(context).maybePop(),
-              child: const Text('Not now'),
+            const SizedBox(height: AimSpacing.componentGap),
+            Center(
+              child: TextButton(
+                onPressed: () => Navigator.of(context).maybePop(),
+                child: const Text('Not now'),
+              ),
             ),
           ],
         ),
@@ -189,93 +289,34 @@ class _ReadyBody extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Body — error state
-// ---------------------------------------------------------------------------
+/// Compact white-on-gradient number+label stat cell used in the "Find your
+/// level" card (Sections / Estimated time — both real, backend-supplied).
+class _StatCell extends StatelessWidget {
+  const _StatCell({required this.value, required this.label});
 
-class _ErrorBody extends StatelessWidget {
-  const _ErrorBody({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AimSpacing.space24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            const SizedBox(height: AimSpacing.space16),
-            Text(
-              'Could not load placement test',
-              style: AimTextStyles.title.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AimSpacing.space8),
-            Text(
-              message,
-              style: AimTextStyles.bodySm.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AimSpacing.space24),
-            FilledButton.tonal(
-              onPressed: onRetry,
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Info row widget
-// ---------------------------------------------------------------------------
-
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  final IconData icon;
-  final String label;
   final String value;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Row(
-      children: [
-        Icon(icon, size: AimSizes.iconMd, color: theme.colorScheme.primary),
-        const SizedBox(width: AimSpacing.space12),
-        Text(
-          label,
-          style: AimTextStyles.bodyMd.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+    return Semantics(
+      label: '$value $label',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
           ),
-        ),
-        const Spacer(),
-        Text(
-          value,
-          style: AimTextStyles.bodyMd.copyWith(
-            fontWeight: AimFontWeights.semibold,
+          const SizedBox(height: AimSpacing.space2),
+          Text(
+            label,
+            style: AimTextStyles.caption.copyWith(
+              color: AimColors.neutral0.withValues(alpha: 0.85),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
