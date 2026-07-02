@@ -33,7 +33,8 @@
 // RTL/Arabic rules:
 // - EdgeInsets.symmetric / EdgeInsetsDirectional — RTL-safe.
 // - CrossAxisAlignment.start in Column — direction-aware.
-// - Header back icon is a directional Icons.arrow_back (auto-mirrors in RTL).
+// - Header back icon swaps chevron_left_rounded/chevron_right_rounded based
+//   on Directionality.of(context).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -145,10 +146,12 @@ class _AnalyticsHeader extends StatelessWidget {
                     color: AimColors.neutral0.withValues(alpha: 0.18),
                     shape: BoxShape.circle,
                   ),
-                  child: const Padding(
+                  child: Padding(
                     padding: EdgeInsets.all(AimSpacing.space12),
                     child: Icon(
-                      Icons.arrow_back,
+                      Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_right_rounded
+                          : Icons.chevron_left_rounded,
                       size: AimSizes.iconMd,
                       color: AimColors.neutral0,
                     ),
