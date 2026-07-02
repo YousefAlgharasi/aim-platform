@@ -51,18 +51,14 @@ import '../../../achievements/logic/provider/achievements_provider.dart';
 import '../../../auth/data/models/auth_context_model.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
-import '../../../auth/ui/widgets/logout_button.dart';
-import '../../../home/logic/entity/home_data.dart';
-import '../../../home/logic/provider/home_provider.dart';
 import '../../../notifications/ui/widgets/notification_bell_button.dart';
 
 /// Student profile screen.
 ///
-/// Renders a gradient hero header (avatar, name/email, role/status badges,
-/// day-streak + achievements-earned stats), an achievements carousel, and
-/// account info / student profile fields / role badges sourced from the
-/// backend [authContextProvider]. The [LogoutButton] at the bottom calls
-/// [LogoutNotifier] which clears the persisted session and in-memory state.
+/// Renders a gradient hero header (avatar, name, email, role/status badges),
+/// account info, student profile fields, and role badges sourced from the
+/// backend [authContextProvider]. Sign-out lives in the side menu drawer
+/// (see [MainShellPage]), not on this screen, to avoid a duplicate action.
 ///
 /// Design system: all colours, typography, spacing, and interactive widgets
 /// use AIM Mobile Design System tokens. No hard-coded values.
@@ -166,17 +162,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             ),
           ),
       },
-      bottomNavigationBar: const SafeArea(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            AimSpacing.screenPaddingMobile,
-            AimSpacing.innerGap,
-            AimSpacing.screenPaddingMobile,
-            AimSpacing.space16,
-          ),
-          child: LogoutButton(),
-        ),
-      ),
     );
   }
 }
@@ -635,56 +620,47 @@ class _AchievementsCarousel extends StatelessWidget {
           style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
         ),
         const SizedBox(height: AimSpacing.componentGap),
-        SizedBox(
-          height: 96,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: achievements.length,
-            separatorBuilder: (_, __) =>
-                const SizedBox(width: AimSpacing.componentGap),
-            itemBuilder: (context, index) {
-              final achievement = achievements[index];
-              final unlocked = achievement.unlocked;
-              final iconBg = unlocked ? AimColors.primary500 : surfaces.disabledBg;
-              final iconFg = unlocked ? AimColors.neutral0 : surfaces.disabledFg;
-
-              return SizedBox(
-                width: 76,
-                child: Semantics(
-                  label: unlocked
-                      ? '${achievement.title}, unlocked'
-                      : '${achievement.title}, locked',
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: iconBg,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(AimSpacing.space12),
-                          child: Icon(
-                            _iconFor(achievement),
-                            size: AimSizes.iconMd,
-                            color: iconFg,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: AimSpacing.space4),
-                      Text(
-                        achievement.title,
-                        style: AimTextStyles.caption.copyWith(
-                          color: unlocked
-                              ? surfaces.textPrimary
-                              : surfaces.textMuted,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
+        switch (state) {
+          AppAsyncLoading() => SizedBox(
+              height: 100,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AimSpacing.screenPaddingMobile,
+                ),
+                itemCount: 4,
+                separatorBuilder: (_, __) =>
+                    const SizedBox(width: AimSpacing.componentGap),
+                itemBuilder: (_, __) => const AIMSkeleton(
+                  shape: AIMSkeletonShape.rect,
+                  width: 72,
+                  height: 100,
+                ),
+              ),
+            ),
+          AppAsyncSuccess<List<AchievementModel>>() when achievements.isEmpty =>
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AimSpacing.screenPaddingMobile,
+              ),
+              child: Text(
+                'No achievements unlocked yet.',
+                style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
+              ),
+            ),
+          _ => SizedBox(
+              height: 100,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AimSpacing.screenPaddingMobile,
+                ),
+                itemCount: achievements.length,
+                separatorBuilder: (_, __) =>
+                    const SizedBox(width: AimSpacing.componentGap),
+                itemBuilder: (_, i) => _AchievementChip(
+                  achievement: achievements[i],
+                  surfaces: surfaces,
                 ),
               );
             },
