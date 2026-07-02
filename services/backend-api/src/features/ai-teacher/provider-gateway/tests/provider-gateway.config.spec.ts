@@ -4,21 +4,30 @@
 import { ProviderGatewayConfigService } from '../provider-gateway.config';
 import { BackendConfigService } from '../../../../config/backend-config.service';
 
-function makeMockBackendConfig(aiProvider: { apiKey: string; model: string }) {
+function makeMockBackendConfig(aiProvider: {
+  apiKey: string;
+  model: string;
+  baseUrl: string;
+}) {
   return { aiProvider } as unknown as BackendConfigService;
 }
 
 describe('ProviderGatewayConfigService', () => {
-  it('reads apiKey and model from BackendConfigService.aiProvider', () => {
+  it('reads apiKey, model, and baseUrl from BackendConfigService.aiProvider', () => {
     const backendConfig = makeMockBackendConfig({
       apiKey: 'test-ai-provider-key',
       model: 'test-model',
+      baseUrl: 'https://api.openai.com/v1/chat/completions',
     });
     const service = new ProviderGatewayConfigService(backendConfig);
 
     const config = service.getConfig();
 
-    expect(config).toEqual({ apiKey: 'test-ai-provider-key', model: 'test-model' });
+    expect(config).toEqual({
+      apiKey: 'test-ai-provider-key',
+      model: 'test-model',
+      baseUrl: 'https://api.openai.com/v1/chat/completions',
+    });
   });
 
   it('never hard-codes a provider API key or reads process.env directly', () => {
@@ -33,7 +42,11 @@ describe('ProviderGatewayConfigService', () => {
   });
 
   it('returns a fresh object per call rather than exposing internal config state', () => {
-    const backendConfig = makeMockBackendConfig({ apiKey: 'key-1', model: 'model-1' });
+    const backendConfig = makeMockBackendConfig({
+      apiKey: 'key-1',
+      model: 'model-1',
+      baseUrl: 'https://api.openai.com/v1/chat/completions',
+    });
     const service = new ProviderGatewayConfigService(backendConfig);
 
     const first = service.getConfig();
