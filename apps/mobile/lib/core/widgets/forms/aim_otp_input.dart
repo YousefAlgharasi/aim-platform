@@ -256,7 +256,7 @@ class _OtpCell extends StatelessWidget {
             counterText: '',
             contentPadding: EdgeInsets.zero,
             filled: true,
-            fillColor: enabled ? surfaces.surface : surfaces.disabledBg,
+            fillColor: enabled ? surfaces.surfaceSunken : surfaces.disabledBg,
             hintTextDirection: TextDirection.ltr,
             enabledBorder: OutlineInputBorder(
               borderRadius: AimRadius.borderMd,

@@ -50,7 +50,7 @@ class AIMSelect extends StatelessWidget {
 
     final select = DecoratedBox(
       decoration: BoxDecoration(
-        color: disabled ? surfaces.disabledBg : surfaces.surface,
+        color: disabled ? surfaces.disabledBg : surfaces.surfaceSunken,
         border: Border.all(
           color: disabled
               ? surfaces.disabledBorder
