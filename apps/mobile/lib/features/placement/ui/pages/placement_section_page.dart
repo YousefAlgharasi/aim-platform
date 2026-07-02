@@ -29,6 +29,7 @@
 // - No secrets, service-role keys, or privileged config here.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
@@ -153,30 +154,36 @@ class _GradientTopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final isRtl = Directionality.of(context) == TextDirection.rtl;
 
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
-      child: SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: AimSizes.topBarHeight,
-          child: Row(
-            children: [
-              const SizedBox(width: AimSpacing.space8),
-              AIMIconButton(
-                semanticLabel: 'Back',
-                icon: Icon(
-                  isRtl ? Icons.chevron_right : Icons.chevron_left,
-                  color: AimColors.neutral0,
+    // Without this, the OS paints its default status bar background above
+    // the gradient instead of light icons sitting transparently on it.
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+        child: SafeArea(
+          bottom: false,
+          child: SizedBox(
+            height: AimSizes.topBarHeight,
+            child: Row(
+              children: [
+                const SizedBox(width: AimSpacing.space8),
+                AIMIconButton(
+                  semanticLabel: 'Back',
+                  icon: Icon(
+                    isRtl ? Icons.chevron_right : Icons.chevron_left,
+                    color: AimColors.neutral0,
+                  ),
+                  onPressed: () => Navigator.of(context).maybePop(),
                 ),
-                onPressed: () => Navigator.of(context).maybePop(),
-              ),
-              const SizedBox(width: AimSpacing.space4),
-              Text(
-                title,
-                style: AimTextStyles.title.copyWith(color: AimColors.neutral0),
-              ),
-            ],
+                const SizedBox(width: AimSpacing.space4),
+                Text(
+                  title,
+                  style:
+                      AimTextStyles.title.copyWith(color: AimColors.neutral0),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -234,8 +241,7 @@ class _SectionBody extends StatelessWidget {
                 const SizedBox(height: AimSpacing.componentGap),
                 Text(
                   section.title,
-                  style:
-                      AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
+                  style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
                 ),
                 const SizedBox(height: AimSpacing.space4),
                 Text(
@@ -251,7 +257,8 @@ class _SectionBody extends StatelessWidget {
           ),
           const Spacer(),
           AIMGradientButton(
-            label: state.isLastSection ? 'Begin Final Section' : 'Begin Section',
+            label:
+                state.isLastSection ? 'Begin Final Section' : 'Begin Section',
             fullWidth: true,
             onPressed: onStartSection,
             semanticLabel:
