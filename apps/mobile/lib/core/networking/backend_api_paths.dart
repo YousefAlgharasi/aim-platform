@@ -87,6 +87,15 @@ class BackendApiPaths {
   static const String achievements = '/student/achievements';
 
   // ---------------------------------------------------------------------------
+  // Student Courses — enriched course list (level, lesson count, real
+  // per-student progress) for the mobile Courses screen. Distinct from
+  // /curriculum/courses (admin-facing content listing).
+  // ---------------------------------------------------------------------------
+
+  /// GET /student/courses
+  static const String studentCourses = '/student/courses';
+
+  // ---------------------------------------------------------------------------
   // Engagement — daily goal, streak, and daily challenge.
   // Read-only summary; goal target is the only client-writable field.
   // Streak and challenge progress are always backend-computed.
