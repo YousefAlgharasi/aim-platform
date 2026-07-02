@@ -27,6 +27,7 @@
 // - No secrets, service-role keys, or privileged config here.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -94,8 +95,7 @@ class _PlacementSubmitPageState extends ConsumerState<PlacementSubmitPage> {
               PlacementSubmitIdle() => _ConfirmBody(
                   totalSections: widget.totalSections,
                   onSubmit: () {
-                    final token =
-                        ref.read(authFlowProvider).accessToken ?? '';
+                    final token = ref.read(authFlowProvider).accessToken ?? '';
                     ref.read(placementSubmitProvider.notifier).completeAttempt(
                           token,
                           attemptId: widget.attemptId,
@@ -123,30 +123,36 @@ class _GradientTopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final isRtl = Directionality.of(context) == TextDirection.rtl;
 
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
-      child: SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: AimSizes.topBarHeight,
-          child: Row(
-            children: [
-              const SizedBox(width: AimSpacing.space8),
-              AIMIconButton(
-                semanticLabel: 'Back',
-                icon: Icon(
-                  isRtl ? Icons.chevron_right : Icons.chevron_left,
-                  color: AimColors.neutral0,
+    // Without this, the OS paints its default status bar background above
+    // the gradient instead of light icons sitting transparently on it.
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+        child: SafeArea(
+          bottom: false,
+          child: SizedBox(
+            height: AimSizes.topBarHeight,
+            child: Row(
+              children: [
+                const SizedBox(width: AimSpacing.space8),
+                AIMIconButton(
+                  semanticLabel: 'Back',
+                  icon: Icon(
+                    isRtl ? Icons.chevron_right : Icons.chevron_left,
+                    color: AimColors.neutral0,
+                  ),
+                  onPressed: () => Navigator.of(context).maybePop(),
                 ),
-                onPressed: () => Navigator.of(context).maybePop(),
-              ),
-              const SizedBox(width: AimSpacing.space4),
-              Text(
-                title,
-                style: AimTextStyles.title.copyWith(color: AimColors.neutral0),
-              ),
-            ],
+                const SizedBox(width: AimSpacing.space4),
+                Text(
+                  title,
+                  style:
+                      AimTextStyles.title.copyWith(color: AimColors.neutral0),
+                ),
+              ],
+            ),
           ),
         ),
       ),
