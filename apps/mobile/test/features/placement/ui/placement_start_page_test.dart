@@ -152,9 +152,10 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.text('English Placement Test'), findsOneWidget);
+      expect(find.text('Placement Test'), findsOneWidget); // header title
+      expect(find.text('Find your level'), findsOneWidget);
       expect(find.text('3'), findsOneWidget); // totalSections
-      expect(find.text('20 min'), findsOneWidget);
+      expect(find.text('~20'), findsOneWidget); // estimatedMinutes
       expect(find.text('Start Placement Test'), findsOneWidget);
       // Backend-authority note must always be visible before starting.
       expect(
@@ -176,7 +177,7 @@ void main() {
       await tester.pump();
 
       expect(find.byType(PlacementStartPage), findsOneWidget);
-      expect(find.text('English Placement Test'), findsOneWidget);
+      expect(find.text('Find your level'), findsOneWidget);
     });
   });
 }
