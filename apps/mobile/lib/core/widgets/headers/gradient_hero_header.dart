@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../theme/theme.dart';
 
@@ -52,83 +53,91 @@ class AIMGradientHeroHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      label: semanticLabel,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsetsDirectional.fromSTEB(
-          AimSpacing.screenPaddingMobile,
-          AimSpacing.sectionGap,
-          AimSpacing.screenPaddingMobile,
-          AimSpacing.sectionGap,
-        ),
-        decoration: BoxDecoration(
-          gradient: gradient,
-          borderRadius: const BorderRadiusDirectional.only(
-            bottomStart: Radius.circular(AimRadius.x2l),
-            bottomEnd: Radius.circular(AimRadius.x2l),
+    // Without this, the OS paints its default status bar background (dark
+    // icons on an opaque strip) above the gradient instead of light icons
+    // sitting transparently on it — visible as a seam/border along the top
+    // edge that isn't in the design. AnnotatedRegion applies for exactly as
+    // long as this header is in the tree.
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Semantics(
+        label: semanticLabel,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsetsDirectional.fromSTEB(
+            AimSpacing.screenPaddingMobile,
+            AimSpacing.sectionGap,
+            AimSpacing.screenPaddingMobile,
+            AimSpacing.sectionGap,
           ),
-        ),
-        child: SafeArea(
-          bottom: false,
-          child: IconTheme.merge(
-            data: const IconThemeData(
-              color: AimColors.neutral0,
-              size: AimSizes.iconMd,
+          decoration: BoxDecoration(
+            gradient: gradient,
+            borderRadius: const BorderRadiusDirectional.only(
+              bottomStart: Radius.circular(AimRadius.x2l),
+              bottomEnd: Radius.circular(AimRadius.x2l),
             ),
-            child: DefaultTextStyle.merge(
-              style: const TextStyle(color: AimColors.neutral0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    children: [
-                      if (leading != null) ...[
-                        leading!,
-                        const SizedBox(width: AimSpacing.componentGap),
-                      ],
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              title,
-                              style: AimTextStyles.h2
-                                  .copyWith(color: AimColors.neutral0),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            if (subtitle != null) ...[
-                              const SizedBox(height: AimSpacing.space4),
+          ),
+          child: SafeArea(
+            bottom: false,
+            child: IconTheme.merge(
+              data: const IconThemeData(
+                color: AimColors.neutral0,
+                size: AimSizes.iconMd,
+              ),
+              child: DefaultTextStyle.merge(
+                style: const TextStyle(color: AimColors.neutral0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        if (leading != null) ...[
+                          leading!,
+                          const SizedBox(width: AimSpacing.componentGap),
+                        ],
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
                               Text(
-                                subtitle!,
-                                style: AimTextStyles.bodySm.copyWith(
-                                  color: AimColors.neutral0.withValues(
-                                    alpha: 0.85,
-                                  ),
-                                ),
-                                maxLines: 2,
+                                title,
+                                style: AimTextStyles.h2
+                                    .copyWith(color: AimColors.neutral0),
+                                maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
+                              if (subtitle != null) ...[
+                                const SizedBox(height: AimSpacing.space4),
+                                Text(
+                                  subtitle!,
+                                  style: AimTextStyles.bodySm.copyWith(
+                                    color: AimColors.neutral0.withValues(
+                                      alpha: 0.85,
+                                    ),
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
-                      ),
-                      if (trailing != null) ...[
-                        const SizedBox(width: AimSpacing.componentGap),
-                        SizedBox(
-                          width: AimSizes.touchTarget,
-                          height: AimSizes.touchTarget,
-                          child: trailing,
-                        ),
+                        if (trailing != null) ...[
+                          const SizedBox(width: AimSpacing.componentGap),
+                          SizedBox(
+                            width: AimSizes.touchTarget,
+                            height: AimSizes.touchTarget,
+                            child: trailing,
+                          ),
+                        ],
                       ],
+                    ),
+                    if (child != null) ...[
+                      const SizedBox(height: AimSpacing.sectionGap),
+                      child!,
                     ],
-                  ),
-                  if (child != null) ...[
-                    const SizedBox(height: AimSpacing.sectionGap),
-                    child!,
                   ],
-                ],
+                ),
               ),
             ),
           ),

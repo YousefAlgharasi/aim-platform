@@ -262,17 +262,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                     onPressed: _submit,
                     semanticLabel: 'Save changes',
                   ),
-                  const SizedBox(height: AimSpacing.sectionGap),
-
-                  // Safe-fields note
-                  const AIMAlertBanner(
-                    tone: AIMAlertTone.info,
-                    child: Text(
-                      'Only your display name, preferred language, and '
-                      'timezone can be edited here. Email, roles, and '
-                      'account status are managed by the platform.',
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -331,10 +320,12 @@ class _EditProfileGradientHeader extends StatelessWidget {
                         color: AimColors.neutral0.withValues(alpha: 0.18),
                         shape: BoxShape.circle,
                       ),
-                      child: const Padding(
+                      child: Padding(
                         padding: EdgeInsets.all(AimSpacing.space12),
                         child: Icon(
-                          Icons.arrow_back,
+                          Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_right_rounded
+                          : Icons.chevron_left_rounded,
                           size: AimSizes.iconMd,
                           color: AimColors.neutral0,
                         ),

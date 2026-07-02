@@ -185,7 +185,7 @@ void main() {
     });
 
     testWidgets(
-        'shows estimated level, skill row, and weakness row from the backend',
+        'shows the CEFR level, total score, and section breakdown from the backend',
         (tester) async {
       await tester.pumpWidget(
         _wrap(
@@ -196,14 +196,14 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.text('Intermediate'), findsOneWidget); // estimatedLevel
-      expect(find.text('Grammar'), findsAtLeastNWidgets(1));
-      expect(find.text('Developing'), findsOneWidget); // signal, capitalized
-      expect(find.text('Continue to Home'), findsOneWidget);
+      expect(find.text('B1'), findsOneWidget); // CEFR code for intermediate
       expect(
-        find.textContaining('no local calculations are performed'),
+        find.text('Intermediate · Total score 70 / 100'),
         findsOneWidget,
-      );
+      ); // 7/10 correct → 70%
+      expect(find.text('Grammar'), findsOneWidget);
+      expect(find.text('7 / 10'), findsOneWidget);
+      expect(find.text('Continue to AIM'), findsOneWidget);
     });
 
     testWidgets('renders without error under RTL directionality',
@@ -219,7 +219,7 @@ void main() {
       await tester.pump();
 
       expect(find.byType(PlacementResultPage), findsOneWidget);
-      expect(find.text('Intermediate'), findsOneWidget);
+      expect(find.text('B1'), findsOneWidget);
     });
   });
 }

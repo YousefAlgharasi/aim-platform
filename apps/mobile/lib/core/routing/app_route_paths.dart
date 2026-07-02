@@ -30,6 +30,9 @@ class AppRoutePaths {
   static const String assessmentStart = '/student/assessments/start';
   static const String assessmentAttempt = '/student/assessments/attempt';
   static const String assessmentResult = '/student/assessments/result';
+  // TASK-29: Result history route (page existed with no route — see TASK-14
+  // table row 30, which never actually got wired up).
+  static const String assessmentResultHistory = '/student/assessments/history';
 
   // Billing routes
   static const String subscription = '/billing/subscription';
@@ -50,4 +53,50 @@ class AppRoutePaths {
 
   // Dev Tools
   static const String endpointTester = '/dev-tools/endpoint-tester';
+
+  // TASK-14: Profile routes
+  static const String editProfile = '/profile/edit';
+
+  // TASK-14: Progress detail routes
+  static const String skillState = '/progress/skill-state';
+  static const String weaknessSummary = '/progress/weakness';
+  static const String recommendations = '/progress/recommendations';
+  static const String reviewSchedule = '/progress/review-schedule';
+
+  // TASK-14: Placement intro route
+  static const String placementIntro = '/placement/intro';
+
+  // TASK-14: Assessment deadlines route
+  static const String assessmentDeadlines = '/student/assessments/deadlines';
+
+  // TASK-14: Voice Teacher routes
+  static const String voiceTeacher = '/voice-teacher';
+
+  // TASK-14: AI Teacher routes
+  static const String aiTeacherSettings = '/ai-teacher/settings';
+  static const String aiTeacherHistory = '/ai-teacher/history';
+
+  // TASK-14: Notification routes
+  static const String notificationPreferences = '/notifications/preferences';
+  static const String reminderSettings = '/notifications/reminders';
+  static const String notificationDetail = '/notifications/detail';
+
+  // TASK-14: Support routes
+  static const String helpCenter = '/support/help';
+  static const String parentHelpCenter = '/support/help-parent';
+  static const String createTicket = '/support/tickets/new';
+  static const String feedback = '/support/feedback';
+  static const String ticketList = '/support/tickets';
+  static const String ticketDetail = '/support/tickets/detail';
+  static const String parentTicketList = '/support/tickets-parent';
+  static const String supportStatus = '/support/status';
+  static const String releaseNotes = '/support/release-notes';
+  static const String releaseNoteDetail = '/support/release-notes/detail';
+
+  // TASK-14: Billing routes
+  static const String checkoutStart = '/billing/checkout';
+  static const String checkoutStatus = '/billing/checkout-status';
+
+  // TASK-14: Dev Tools
+  static const String designSystemPreview = '/dev-tools/design-system-preview';
 }

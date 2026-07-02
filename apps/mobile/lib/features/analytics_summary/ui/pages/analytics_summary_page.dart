@@ -1,9 +1,28 @@
 // Phase 15 — P15-072
 // AnalyticsSummaryPage — read-only student analytics summary view.
 //
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Analytics" (38)
+//   docs/design/ui-for-all-system-mobile/screenshots/light/38-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/38-screen.png
+// Endpoint: GET /student/analytics/summary
+//
 // Lists backend-approved report definitions visible to the authenticated
 // student. Flutter never computes report content, mastery, or progress
 // figures — these are backend outputs surfaced verbatim.
+//
+// TASK-25: restyled to match design screen 38 — gradient header (back +
+// "Analytics") and cards with title, soft category pill, and description.
+//
+// Deviations from the mockup (real-data-only rules):
+// - The design's "Generated Jun 24, 2026" caption is OMITTED. This endpoint
+//   returns report DEFINITIONS (via ReportDefinitionService.listVisibleToRole),
+//   not report RUNS — there is no generated-at timestamp in the response, and
+//   a definition's own createdAt would be semantically wrong (definition
+//   creation ≠ report generation). Never fabricated.
+// - The design's fictional Progress/Skills/Habits pills map to the backend's
+//   real ReportCategory values ('learning', 'assessment', …). The real value
+//   is shown title-cased in a neutral soft badge — a fixed color map keyed to
+//   fictional categories would be meaningless.
 //
 // CRITICAL SECURITY RULES:
 // - Flutter NEVER computes report content. All values from
@@ -12,9 +31,10 @@
 // - No AIM Engine, AI Teacher, or AI provider calls from Flutter.
 //
 // RTL/Arabic rules:
-// - EdgeInsets.symmetric — RTL-safe.
+// - EdgeInsets.symmetric / EdgeInsetsDirectional — RTL-safe.
 // - CrossAxisAlignment.start in Column — direction-aware.
-// - AIMTopAppBar mirrors RTL back icon internally.
+// - Header back icon swaps chevron_left_rounded/chevron_right_rounded based
+//   on Directionality.of(context).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -62,23 +82,95 @@ class _AnalyticsSummaryPageState extends ConsumerState<AnalyticsSummaryPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(analyticsSummaryProvider);
 
+    final surfaces = aimSurfacesOf(context);
+
     return Scaffold(
-      appBar: const AIMTopAppBar(title: 'Analytics Summary'),
-      body: switch (state) {
-        AppAsyncLoading() => const AIMFullScreenLoading(
-            semanticLabel: 'Loading analytics summary'),
-        AppAsyncFailure(:final message) =>
-          AIMFullScreenError(message: message, onRetry: _load),
-        AppAsyncSuccess(:final data) => data.isEmpty
-            ? const AIMEmptyState(
-                icon: Icon(Icons.insights_outlined),
-                title: 'No reports available',
-                subtitle: 'There are no analytics reports for you yet.',
-              )
-            : _ReportList(reports: data, onRefresh: _refresh),
-        AppAsyncIdle() => const AIMFullScreenLoading(
-            semanticLabel: 'Loading analytics summary'),
-      },
+      backgroundColor: surfaces.background,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _AnalyticsHeader(),
+          Expanded(
+            child: switch (state) {
+              AppAsyncLoading() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading analytics summary'),
+              AppAsyncFailure(:final message) =>
+                AIMFullScreenError(message: message, onRetry: _load),
+              AppAsyncSuccess(:final data) => data.isEmpty
+                  ? const AIMEmptyState(
+                      icon: Icon(Icons.insights_outlined),
+                      title: 'No reports available',
+                      subtitle: 'There are no analytics reports for you yet.',
+                    )
+                  : _ReportList(reports: data, onRefresh: _refresh),
+              AppAsyncIdle() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading analytics summary'),
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Gradient header ─────────────────────────────────────────────────────────
+
+/// Hero header mirroring [DeadlinesPage]'s back-button/title pattern
+/// (design screen 38's top bar).
+class _AnalyticsHeader extends StatelessWidget {
+  const _AnalyticsHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+      ),
+      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            Semantics(
+              button: true,
+              label: 'Back',
+              child: InkWell(
+                onTap: () => Navigator.of(context).maybePop(),
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(AimSpacing.space12),
+                    child: Icon(
+                      Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_right_rounded
+                          : Icons.chevron_left_rounded,
+                      size: AimSizes.iconMd,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AimSpacing.space12),
+            Expanded(
+              child: Text(
+                'Analytics',
+                style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -114,6 +206,14 @@ class _ReportCard extends StatelessWidget {
   const _ReportCard({required this.model});
   final AnalyticsSummaryReportModel model;
 
+  /// Display-only first-letter capitalisation of the REAL backend category
+  /// value (e.g. 'learning' → 'Learning'). Mirrors achievements_page.dart's
+  /// `_titleCase`; the underlying value is never altered or remapped.
+  String _titleCase(String value) {
+    if (value.isEmpty) return value;
+    return value[0].toUpperCase() + value.substring(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
@@ -139,7 +239,7 @@ class _ReportCard extends StatelessWidget {
                 tone: AIMBadgeTone.neutral,
                 variant: AIMBadgeVariant.soft,
                 pill: true,
-                child: Text(model.category),
+                child: Text(_titleCase(model.category)),
               ),
             ],
           ),

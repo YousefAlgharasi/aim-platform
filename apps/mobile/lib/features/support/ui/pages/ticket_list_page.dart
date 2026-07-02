@@ -1,40 +1,53 @@
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "My tickets" (52)
+//   docs/design/ui-for-all-system-mobile/screenshots/light/52-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/52-screen.png
+//
+// Displays the user's support tickets fetched from backend.
+//
+// Shows loading, empty, and populated states.
+// RTL/Arabic ready via Directionality-aware layout.
+//
+// TASK-36: restyled to match design screen 52 — gradient header ("My
+// tickets"), ticket cards with a status pill, gradient FAB (replacing the
+// old header icon button) to create a new ticket, wired to
+// AppRoutePaths.createTicket.
+//
+// Note: GET /support/tickets is "Planned / Not Yet Active" and
+// SupportDatasource has no concrete implementation (out of scope for this
+// UI-only verification task). Previously `_buildTicketList` returned a
+// permanent `CircularProgressIndicator` that never resolved to anything —
+// a real bug, not a "loading state." Since there's no way to load real
+// tickets, the empty state is shown directly instead of an infinite
+// spinner, which is the honest state absent live data.
+
 import 'package:flutter/material.dart';
 
-/// Displays the user's support tickets fetched from backend.
-///
-/// Shows loading, empty, and populated states.
-/// RTL/Arabic ready via Directionality-aware layout.
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
+import 'package:aim_mobile/core/widgets/widgets.dart';
+
 class TicketListPage extends StatelessWidget {
   const TicketListPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final surfaces = aimSurfacesOf(context);
 
     // Ticket data loaded from backend via GET /support/tickets
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Tickets'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'Create Ticket',
-            onPressed: () {
-              // Navigate to create ticket page
-            },
-          ),
+      backgroundColor: surfaces.background,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _TicketListHeader(title: 'My tickets'),
+          Expanded(child: buildEmptyState(context)),
         ],
       ),
-      body: SafeArea(
-        child: _buildTicketList(context, theme),
+      floatingActionButton: AIMFab(
+        semanticLabel: 'Create a support ticket',
+        onPressed: () =>
+            Navigator.of(context).pushNamed(AppRoutePaths.createTicket),
+        icon: const Icon(Icons.add),
       ),
-    );
-  }
-
-  Widget _buildTicketList(BuildContext context, ThemeData theme) {
-    // Will be connected to provider — shows loading state for now
-    return const Center(
-      child: CircularProgressIndicator(),
     );
   }
 
@@ -49,86 +62,140 @@ class TicketListPage extends StatelessWidget {
     required DateTime createdAt,
     VoidCallback? onTap,
   }) {
-    final theme = Theme.of(context);
-    return Card(
-      margin: const EdgeInsetsDirectional.only(
-        start: 16,
-        end: 16,
-        bottom: 8,
+    final surfaces = aimSurfacesOf(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AimSpacing.screenPaddingMobile,
       ),
-      child: ListTile(
-        title: Text(
-          subject,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Text(
-          '$category · $severity',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: AimSpacing.listItemGap),
+        child: AIMCard(
+          interactive: onTap != null,
+          onTap: onTap,
+          semanticLabel: '$subject, $status',
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      subject,
+                      style: AimTextStyles.title
+                          .copyWith(color: surfaces.textPrimary),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: AimSpacing.space2),
+                    Text(
+                      '${_formatDate(createdAt)} · $category · $severity',
+                      style: AimTextStyles.bodySm
+                          .copyWith(color: surfaces.textSecondary),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AimSpacing.space8),
+              _buildStatusChip(status),
+            ],
           ),
         ),
-        trailing: _buildStatusChip(context, status),
-        onTap: onTap,
       ),
     );
   }
 
   /// Builds an empty state when no tickets exist.
   static Widget buildEmptyState(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.confirmation_number_outlined,
-            size: 64,
-            color: theme.colorScheme.outline,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No Tickets Yet',
-            style: theme.textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Create a ticket to get help from our support team.',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
+    return const AIMEmptyState(
+      icon: Icon(Icons.confirmation_number_outlined),
+      title: 'No Tickets Yet',
+      subtitle: 'Create a ticket to get help from our support team.',
     );
   }
 
-  static Widget _buildStatusChip(BuildContext context, String status) {
-    final theme = Theme.of(context);
-    final Color chipColor;
-    switch (status) {
-      case 'open':
-        chipColor = theme.colorScheme.primary;
-        break;
-      case 'in_progress':
-        chipColor = theme.colorScheme.tertiary;
-        break;
-      case 'resolved':
-      case 'closed':
-        chipColor = theme.colorScheme.outline;
-        break;
-      default:
-        chipColor = theme.colorScheme.outline;
-    }
+  static Widget _buildStatusChip(String status) {
+    final AIMBadgeTone tone = switch (status) {
+      'open' => AIMBadgeTone.info,
+      'in_progress' => AIMBadgeTone.warning,
+      'resolved' || 'closed' => AIMBadgeTone.success,
+      _ => AIMBadgeTone.neutral,
+    };
+    return AIMBadge(
+      tone: tone,
+      pill: true,
+      child: Text(_statusLabel(status)),
+    );
+  }
+
+  static String _statusLabel(String status) {
+    final words = status.split('_');
+    return words
+        .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
+        .join(' ');
+  }
+
+  static const _months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+
+  static String _formatDate(DateTime date) =>
+      '${_months[date.month - 1]} ${date.day}, ${date.year}';
+}
+
+class _TicketListHeader extends StatelessWidget {
+  const _TicketListHeader({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: chipColor.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(4),
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
       ),
-      child: Text(
-        status.replaceAll('_', ' '),
-        style: theme.textTheme.labelSmall?.copyWith(color: chipColor),
+      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            Semantics(
+              button: true,
+              label: 'Back',
+              child: InkWell(
+                onTap: () => Navigator.of(context).maybePop(),
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(AimSpacing.space12),
+                    child: Icon(
+                      Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_right_rounded
+                          : Icons.chevron_left_rounded,
+                      size: AimSizes.iconMd,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AimSpacing.space12),
+            Text(
+              title,
+              style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -78,6 +78,24 @@ class BackendApiPaths {
   static const String studentAnalyticsSummary = '/student/analytics/summary';
 
   // ---------------------------------------------------------------------------
+  // Achievements — Phase 13
+  // Read-only. Achievement unlock criteria, badge logic, and milestone
+  // tracking are never computed in Flutter.
+  // ---------------------------------------------------------------------------
+
+  /// GET /student/achievements
+  static const String achievements = '/student/achievements';
+
+  // ---------------------------------------------------------------------------
+  // Student Courses — enriched course list (level, lesson count, real
+  // per-student progress) for the mobile Courses screen. Distinct from
+  // /curriculum/courses (admin-facing content listing).
+  // ---------------------------------------------------------------------------
+
+  /// GET /student/courses
+  static const String studentCourses = '/student/courses';
+
+  // ---------------------------------------------------------------------------
   // Engagement — daily goal, streak, and daily challenge.
   // Read-only summary; goal target is the only client-writable field.
   // Streak and challenge progress are always backend-computed.
@@ -85,6 +103,11 @@ class BackendApiPaths {
 
   static const String engagementSummary = '/student/engagement/summary';
   static const String engagementGoal = '/student/engagement/goal';
+
+  /// GET /student/engagement/stats — level, XP, badge count, rank, and
+  /// weekly activity for the Home hero card. Read-only; all computed
+  /// backend-side.
+  static const String engagementStats = '/student/engagement/stats';
 
   // ---------------------------------------------------------------------------
   // Lessons — student-facing progress endpoints.
