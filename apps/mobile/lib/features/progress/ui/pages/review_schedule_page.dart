@@ -2,9 +2,20 @@
 // ReviewSchedulePage — dedicated read-only view for backend-approved AIM
 // review schedules.
 //
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Review
+//   Schedule"
+//   docs/design/ui-for-all-system-mobile/screenshots/light/15-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/15-screen.png
+// Endpoint: GET /aim/students/:id/review-schedules
+// Widgets: AIMGradientHeroHeader, AIMCard, AIMBadge, AIMFullScreenLoading,
+//   AIMFullScreenError, AIMEmptyState
+//
 // All review schedule data (dueAt, intervalDays, repetitionCount, status) is
 // AIM Engine output persisted by the backend. Flutter displays verbatim;
-// never modifies, reschedules, or recalculates intervals locally.
+// never modifies, reschedules, or recalculates intervals locally. The
+// "Due today / Due in Nd / Due Nd ago" label is a pure date-formatting
+// presentation of the backend-supplied dueAt — it derives no new business
+// data.
 //
 // CRITICAL SECURITY RULES:
 // - Flutter NEVER computes or mutates review schedules.
@@ -14,9 +25,10 @@
 // - No AIM Engine, AI Teacher, or AI provider calls from Flutter.
 //
 // RTL/Arabic rules:
-// - EdgeInsets.symmetric — RTL-safe.
+// - EdgeInsetsDirectional/AlignmentDirectional — RTL-safe throughout.
 // - CrossAxisAlignment.start in Column — direction-aware.
-// - AIMTopAppBar mirrors RTL back icon internally.
+// - AIMGradientHeroHeader mirrors its leading/trailing slots via
+//   Directionality.
 // - Row children — reversed automatically by Directionality in RTL.
 
 import 'package:flutter/material.dart';
@@ -82,26 +94,53 @@ class _ReviewSchedulePageState extends ConsumerState<ReviewSchedulePage> {
     final state = ref.watch(aimResultsProvider);
 
     return Scaffold(
-      appBar: const AIMTopAppBar(title: 'Review Schedule'),
-      body: switch (state) {
-        AppAsyncLoading() => const AIMFullScreenLoading(
-            semanticLabel: 'Loading review schedule'),
-        AppAsyncFailure(:final message) =>
-          AIMFullScreenError(message: message, onRetry: _load),
-        AppAsyncSuccess(:final data) => data.reviewSchedules.isEmpty
-            ? const AIMEmptyState(
-                icon: Icon(Icons.schedule_outlined),
-                title: 'No reviews scheduled',
-                subtitle:
-                    'Complete practice sessions to receive AIM-computed review reminders.',
-              )
-            : _ReviewScheduleList(
-                schedules: data.reviewSchedules,
-                onRefresh: _refresh,
+      body: Column(
+        children: [
+          AIMGradientHeroHeader(
+            title: 'Review Schedule',
+            // IconButton resolves its own foreground colour from the
+            // Material 3 colour scheme rather than the ambient IconTheme,
+            // so it would otherwise ignore the header's white
+            // IconTheme.merge — force it explicitly here.
+            leading: IconButtonTheme(
+              data: IconButtonThemeData(
+                style:
+                    IconButton.styleFrom(foregroundColor: AimColors.neutral0),
               ),
-        AppAsyncIdle() => const AIMFullScreenLoading(
-            semanticLabel: 'Loading review schedule'),
-      },
+              child: IconButton(
+                icon: Icon(
+                  Directionality.of(context) == TextDirection.rtl
+                      ? Icons.arrow_forward
+                      : Icons.arrow_back,
+                ),
+                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                onPressed: () => Navigator.of(context).maybePop(),
+              ),
+            ),
+          ),
+          Expanded(
+            child: switch (state) {
+              AppAsyncLoading() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading review schedule'),
+              AppAsyncFailure(:final message) =>
+                AIMFullScreenError(message: message, onRetry: _load),
+              AppAsyncSuccess(:final data) => data.reviewSchedules.isEmpty
+                  ? const AIMEmptyState(
+                      icon: Icon(Icons.schedule_outlined),
+                      title: 'No reviews scheduled',
+                      subtitle:
+                          'Complete practice sessions to receive AIM-computed review reminders.',
+                    )
+                  : _ReviewScheduleList(
+                      schedules: data.reviewSchedules,
+                      onRefresh: _refresh,
+                    ),
+              AppAsyncIdle() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading review schedule'),
+            },
+          ),
+        ],
+      ),
     );
   }
 }
@@ -127,97 +166,110 @@ class _ReviewScheduleList extends StatelessWidget {
         itemCount: schedules.length,
         separatorBuilder: (_, __) =>
             const SizedBox(height: AimSpacing.listItemGap),
-        itemBuilder: (_, i) => _ReviewScheduleDetailCard(model: schedules[i]),
+        itemBuilder: (_, i) => _ReviewScheduleRow(model: schedules[i]),
       ),
     );
   }
 }
 
-class _ReviewScheduleDetailCard extends StatelessWidget {
-  const _ReviewScheduleDetailCard({required this.model});
+class _ReviewScheduleRow extends StatelessWidget {
+  const _ReviewScheduleRow({required this.model});
   final AimReviewScheduleModel model;
 
-  AIMBadgeTone get _statusTone => switch (model.status) {
-        'pending' => AIMBadgeTone.warning,
-        'completed' => AIMBadgeTone.success,
-        'skipped' => AIMBadgeTone.neutral,
-        'overdue' => AIMBadgeTone.error,
-        _ => AIMBadgeTone.neutral,
+  ({AIMBadgeTone tone, String label}) get _status => switch (model.status) {
+        'due' => (tone: AIMBadgeTone.primary, label: 'Due'),
+        'pending' => (tone: AIMBadgeTone.neutral, label: 'Pending'),
+        'completed' => (tone: AIMBadgeTone.success, label: 'Completed'),
+        'skipped' => (tone: AIMBadgeTone.warning, label: 'Skipped'),
+        'overdue' => (tone: AIMBadgeTone.error, label: 'Overdue'),
+        final other => (
+            tone: AIMBadgeTone.neutral,
+            label: other.isEmpty ? '—' : other[0].toUpperCase() + other.substring(1),
+          ),
       };
+
+  /// Pure date-formatting of the backend-supplied [AimReviewScheduleModel.dueAt].
+  /// Derives no new business data — Flutter never computes review timing.
+  String _dueLabel() {
+    final dueAt = DateTime.tryParse(model.dueAt);
+    if (dueAt == null) return 'Due ${model.dueAt}';
+
+    final now = DateTime.now();
+    final due = DateTime(dueAt.year, dueAt.month, dueAt.day);
+    final today = DateTime(now.year, now.month, now.day);
+    final diffDays = due.difference(today).inDays;
+
+    if (diffDays == 0) return 'Due Today';
+    if (diffDays == 1) return 'Due Tomorrow';
+    if (diffDays > 1) return 'Due in $diffDays days';
+    if (diffDays == -1) return 'Due 1 day ago';
+    if (diffDays > -7) return 'Due ${-diffDays} days ago';
+
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return 'Due ${months[dueAt.month - 1]} ${dueAt.day}';
+  }
 
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final soft = aimSoftFillsOf(context);
+    final status = _status;
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
       semanticLabel:
-          '${model.skillId} review due ${model.dueAt} — ${model.status}',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+          '${model.skillId} review due ${model.dueAt} — ${status.label}',
+      padding: const EdgeInsets.all(AimSpacing.componentGap),
+      child: Row(
         children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.schedule_outlined,
-                size: AimSizes.iconSm,
-                color: AimColors.primary500,
-              ),
-              const SizedBox(width: AimSpacing.space8),
-              Expanded(
-                child: Text(
+          Container(
+            width: AimSizes.avatarMd,
+            height: AimSizes.avatarMd,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: soft.primary,
+              borderRadius: AimRadius.borderMd,
+            ),
+            child: Icon(
+              Icons.calendar_today_outlined,
+              size: AimSizes.iconSm,
+              color: soft.onPrimary,
+            ),
+          ),
+          const SizedBox(width: AimSpacing.componentGap),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
                   model.skillId,
-                  style: AimTextStyles.title
-                      .copyWith(color: surfaces.textPrimary),
+                  style: AimTextStyles.bodyMd.copyWith(
+                    color: surfaces.textPrimary,
+                    fontWeight: AimFontWeights.semibold,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              AIMBadge(
-                tone: _statusTone,
-                variant: AIMBadgeVariant.soft,
-                pill: true,
-                child: Text(model.status),
-              ),
-            ],
+                const SizedBox(height: AimSpacing.space2),
+                Text(
+                  '${_dueLabel()} · ${model.intervalDays}d · rep #${model.repetitionCount}',
+                  style: AimTextStyles.bodySm
+                      .copyWith(color: surfaces.textSecondary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: AimSpacing.componentGap),
-          Row(
-            children: [
-              Icon(
-                Icons.calendar_today_outlined,
-                size: AimSizes.iconSm,
-                color: surfaces.textSecondary,
-              ),
-              const SizedBox(width: AimSpacing.space4),
-              Text(
-                'Due: ${model.dueAt}',
-                style:
-                    AimTextStyles.bodySm.copyWith(color: surfaces.textPrimary),
-              ),
-              const Spacer(),
-              AIMBadge(
-                tone: AIMBadgeTone.primary,
-                variant: AIMBadgeVariant.soft,
-                child: Text('${model.intervalDays}d interval'),
-              ),
-            ],
-          ),
-          const SizedBox(height: AimSpacing.space8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Repetition #${model.repetitionCount}',
-                style: AimTextStyles.bodySm
-                    .copyWith(color: surfaces.textSecondary),
-              ),
-              Text(
-                'Scheduled: ${model.scheduledAt}',
-                style: AimTextStyles.bodySm
-                    .copyWith(color: surfaces.textSecondary),
-              ),
-            ],
+          const SizedBox(width: AimSpacing.componentGap),
+          AIMBadge(
+            tone: status.tone,
+            variant: AIMBadgeVariant.solid,
+            pill: true,
+            child: Text(status.label),
           ),
         ],
       ),
