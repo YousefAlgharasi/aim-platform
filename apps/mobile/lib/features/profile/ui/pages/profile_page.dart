@@ -34,15 +34,14 @@ import '../../../achievements/logic/provider/achievements_provider.dart';
 import '../../../auth/data/models/auth_context_model.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
-import '../../../auth/ui/widgets/logout_button.dart';
 import '../../../notifications/ui/widgets/notification_bell_button.dart';
 
 /// Student profile screen.
 ///
 /// Renders a gradient hero header (avatar, name, email, role/status badges),
 /// account info, student profile fields, and role badges sourced from the
-/// backend [authContextProvider]. The [LogoutButton] at the bottom calls
-/// [LogoutNotifier] which clears the persisted session and in-memory state.
+/// backend [authContextProvider]. Sign-out lives in the side menu drawer
+/// (see [MainShellPage]), not on this screen, to avoid a duplicate action.
 ///
 /// Design system: all colours, typography, spacing, and interactive widgets
 /// use AIM Mobile Design System tokens. No hard-coded values.
@@ -119,17 +118,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             ),
           ),
       },
-      bottomNavigationBar: const SafeArea(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            AimSpacing.screenPaddingMobile,
-            AimSpacing.innerGap,
-            AimSpacing.screenPaddingMobile,
-            AimSpacing.space16,
-          ),
-          child: LogoutButton(),
-        ),
-      ),
     );
   }
 }
@@ -651,7 +639,7 @@ class _AchievementsStrip extends ConsumerWidget {
         const SizedBox(height: AimSpacing.componentGap),
         switch (state) {
           AppAsyncLoading() => SizedBox(
-              height: 88,
+              height: 100,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(
@@ -663,7 +651,7 @@ class _AchievementsStrip extends ConsumerWidget {
                 itemBuilder: (_, __) => const AIMSkeleton(
                   shape: AIMSkeletonShape.rect,
                   width: 72,
-                  height: 88,
+                  height: 100,
                 ),
               ),
             ),
@@ -678,7 +666,7 @@ class _AchievementsStrip extends ConsumerWidget {
               ),
             ),
           _ => SizedBox(
-              height: 88,
+              height: 100,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(

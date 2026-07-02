@@ -100,7 +100,8 @@ void main() {
     await tester.pump();
 
     expect(find.byType(AIMGradientHeroHeader), findsOneWidget);
-    expect(find.byType(LogoutButton), findsOneWidget);
+    // Sign-out lives in the side menu drawer, not on this screen.
+    expect(find.byType(LogoutButton), findsNothing);
     expect(find.byType(AIMCard), findsWidgets);
   });
 
