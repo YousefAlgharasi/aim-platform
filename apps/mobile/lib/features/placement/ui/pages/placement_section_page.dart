@@ -128,7 +128,10 @@ class _PlacementSectionPageState extends ConsumerState<PlacementSectionPage> {
       // All sections complete — navigate to submit/complete flow (P4-068).
       Navigator.of(context).pushReplacementNamed(
         AppRoutePaths.placementSubmit,
-        arguments: {'attemptId': state.attemptId},
+        arguments: {
+          'attemptId': state.attemptId,
+          'totalSections': state.totalSections,
+        },
       );
     } else {
       // Advance to the next section.
