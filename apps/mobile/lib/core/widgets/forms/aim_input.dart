@@ -134,7 +134,24 @@ class _AIMInputState extends State<AIMInput> {
                     onSubmitted: widget.onSubmitted,
                     style: AimTextStyles.bodyMd.copyWith(color: foreground),
                     decoration: InputDecoration(
+                      // The ambient Material theme defines its own
+                      // InputDecorationTheme (enabledBorder/focusedBorder/
+                      // errorBorder/filled/fillColor) for raw TextFields
+                      // elsewhere in the app. Setting only `border: none`
+                      // does not suppress those more specific slots, so
+                      // Flutter falls back to the theme's own (blue-on-
+                      // focus) border and fill here, nested inside this
+                      // widget's own DecoratedBox border/fill — a visible
+                      // double-border. Every border slot must be
+                      // explicitly none, and filled must be explicitly
+                      // false, to fully opt this field out of the theme.
                       border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      errorBorder: InputBorder.none,
+                      disabledBorder: InputBorder.none,
+                      focusedErrorBorder: InputBorder.none,
+                      filled: false,
                       isDense: true,
                       hintText: widget.placeholder,
                       hintStyle: AimTextStyles.bodyMd.copyWith(
