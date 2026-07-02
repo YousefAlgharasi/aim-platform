@@ -172,21 +172,24 @@ void main() {
         reason: 'Start attempt page must pass assessmentTitle argument');
   });
 
-  test('attempt_page passes attemptId, resultId, assessmentTitle to result',
+  test('attempt_page opens the submit confirmation with attemptId and title',
       () {
     if (!pagesDir.existsSync()) return;
     final file = File('${pagesDir.path}/attempt_page.dart');
     if (!file.existsSync()) return;
     final content = file.readAsStringSync();
 
-    expect(content.contains("'/student/assessments/result'"), isTrue,
-        reason: 'Attempt page must navigate to result route');
-    expect(content.contains("'attemptId'"), isTrue,
-        reason: 'Attempt page must pass attemptId argument');
-    expect(content.contains("'resultId'"), isTrue,
-        reason: 'Attempt page must pass resultId argument');
-    expect(content.contains("'assessmentTitle'"), isTrue,
-        reason: 'Attempt page must pass assessmentTitle argument');
+    // TASK-23: the attempt page no longer submits inline or navigates to the
+    // result route directly — its Submit button pushes the SubmitAttemptPage
+    // confirmation screen (design screen 28), which owns the submission and
+    // the navigation to the result screen.
+    expect(content.contains('SubmitAttemptPage('), isTrue,
+        reason: 'Attempt page must open the submit confirmation page');
+    expect(content.contains('attemptId: widget.attemptId'), isTrue,
+        reason: 'Attempt page must pass attemptId to the confirmation page');
+    expect(content.contains('assessmentTitle: widget.assessmentTitle'), isTrue,
+        reason:
+            'Attempt page must pass assessmentTitle to the confirmation page');
   });
 
   test(
@@ -197,7 +200,13 @@ void main() {
     if (!file.existsSync()) return;
     final content = file.readAsStringSync();
 
-    expect(content.contains("'/student/assessments/result'"), isTrue,
+    // TASK-23: the page navigates via the AppRoutePaths.assessmentResult
+    // constant (defined as '/student/assessments/result') instead of a
+    // hardcoded string, so accept either form.
+    expect(
+        content.contains("'/student/assessments/result'") ||
+            content.contains('AppRoutePaths.assessmentResult'),
+        isTrue,
         reason: 'Submit page must navigate to result route');
     expect(content.contains("'attemptId'"), isTrue,
         reason: 'Submit page must pass attemptId argument');
@@ -213,7 +222,13 @@ void main() {
     if (!file.existsSync()) return;
     final content = file.readAsStringSync();
 
-    expect(content.contains("'/student/assessments/result'"), isTrue,
+    // TASK-24: the page now uses the AppRoutePaths constant (which is
+    // defined as '/student/assessments/result') instead of a hardcoded
+    // string, so accept either form.
+    expect(
+        content.contains("'/student/assessments/result'") ||
+            content.contains('AppRoutePaths.assessmentResult'),
+        isTrue,
         reason: 'History page must navigate to result route');
     expect(content.contains("'attemptId'"), isTrue,
         reason: 'History page must pass attemptId argument');
@@ -257,9 +272,20 @@ void main() {
     // Attempt can go to result directly or via submit.
     final attemptTargets = edges['attempt_page.dart'] ?? {};
     final submitTargets = edges['submit_attempt_page.dart'] ?? {};
+    // TASK-23: the attempt page reaches the result screen via the
+    // SubmitAttemptPage confirmation step, which navigates with the
+    // AppRoutePaths.assessmentResult constant (defined as
+    // '/student/assessments/result') — invisible to the literal-only regex
+    // above, so check for the constant form as a fallback.
+    final submitFile = File('${pagesDir.path}/submit_attempt_page.dart');
+    final submitUsesConstant = submitFile.existsSync() &&
+        submitFile
+            .readAsStringSync()
+            .contains('AppRoutePaths.assessmentResult');
     expect(
       attemptTargets.contains('/student/assessments/result') ||
-          submitTargets.contains('/student/assessments/result'),
+          submitTargets.contains('/student/assessments/result') ||
+          submitUsesConstant,
       isTrue,
       reason: 'Attempt or submit page must navigate to result',
     );
@@ -277,6 +303,12 @@ void main() {
     final content = historyFile.readAsStringSync();
     final targets =
         navPattern.allMatches(content).map((m) => m.group(1)!).toSet();
+    // TASK-24: the page now navigates via the AppRoutePaths constant
+    // (defined as '/student/assessments/result') rather than a hardcoded
+    // string literal, which the literal-only regex above cannot see.
+    if (content.contains('AppRoutePaths.assessmentResult')) {
+      targets.add('/student/assessments/result');
+    }
 
     expect(targets, contains('/student/assessments/result'),
         reason: 'History page must navigate to result');
