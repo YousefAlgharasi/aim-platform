@@ -108,7 +108,7 @@ class _PlacementStartPageState extends ConsumerState<PlacementStartPage> {
                   onStart: () {
                     final token = ref.read(authFlowProvider).accessToken ?? '';
                     ref.read(placementStartProvider.notifier).startAttempt(token);
-                  },
+                  }, sections: const [],
                 ),
               PlacementStarted() =>
                 // Transitioning — show spinner while navigation fires.
@@ -211,7 +211,7 @@ class _ReadyBody extends StatelessWidget {
             // plus exactly two real stat cells.
             Container(
               padding: const EdgeInsetsDirectional.all(AimSpacing.space20),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: AimGradients.gzHero,
                 borderRadius: AimRadius.borderLg,
               ),
@@ -220,8 +220,7 @@ class _ReadyBody extends StatelessWidget {
                 children: [
                   Text(
                     'Find your level',
-                    style:
-                        AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+                    style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
                   ),
                   const SizedBox(height: AimSpacing.space8),
                   Text(
