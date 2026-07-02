@@ -21,7 +21,7 @@
 //   - Computes no mastery/level/weakness/difficulty/recommendation/
 //     review-schedule value (docs/phase-8/no-aim-replacement-rule.md).
 
-import { Body, Controller, HttpStatus, MessageEvent, Param, Sse, UseGuards } from '@nestjs/common';
+import { Body, Controller, HttpStatus, MessageEvent, Param, Post, Sse, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 
@@ -56,6 +56,12 @@ export class AiTeacherStreamMessageController {
    * body. contextRef is always read from the session row — never from
    * the body.
    */
+  // @Sse() defaults its route to GET (nestjs/common's Sse decorator hard-codes
+  // RequestMethod.GET unless overridden) — this endpoint needs the student's
+  // message in the body, so @Post() must come after @Sse() in this stack:
+  // decorators apply bottom-up, so @Post()'s method metadata is written last
+  // and wins, while @Sse() still marks the route as an SSE response.
+  @Post('sessions/:id/messages/stream')
   @Sse('sessions/:id/messages/stream')
   @UseGuards(SupabaseJwtAuthGuard, RoleGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)

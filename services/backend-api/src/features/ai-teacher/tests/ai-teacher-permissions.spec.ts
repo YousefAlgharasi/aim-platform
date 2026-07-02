@@ -14,6 +14,7 @@
 // suite asserting the access-control invariant holds everywhere.
 
 import 'reflect-metadata';
+import { RequestMethod } from '@nestjs/common';
 import { Observable } from 'rxjs';
 
 import { REQUIRED_ROLES_KEY } from '../../../auth/authorization/authorization.constants';
@@ -62,6 +63,21 @@ describe('AI Teacher permission metadata: student-facing controllers require STU
   it.each(studentControllers)('%s requires STUDENT role', (_name, Controller, methodName) => {
     const roles = getMethodRoles(Controller, methodName) ?? getClassRoles(Controller);
     expect(roles).toEqual([AuthorizedRole.STUDENT]);
+  });
+});
+
+describe('AiTeacherStreamMessageController route method', () => {
+  it('registers streamMessage as POST, not the @Sse default of GET', () => {
+    // @Sse() (nestjs/common) hard-codes RequestMethod.GET unless a method
+    // decorator overrides it. This endpoint accepts the student's message
+    // in the body, so it must be POST — regression guard for a bug where
+    // the missing @Post() left the route unreachable by the Flutter client
+    // (which POSTs), producing a 404 that never reached app-level logging.
+    const method = Reflect.getMetadata(
+      'method',
+      AiTeacherStreamMessageController.prototype.streamMessage,
+    );
+    expect(method).toBe(RequestMethod.POST);
   });
 });
 
