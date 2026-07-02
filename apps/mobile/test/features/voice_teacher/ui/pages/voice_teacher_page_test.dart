@@ -116,7 +116,9 @@ void main() {
         ));
         await tester.pump();
 
-        expect(find.text('Tap to speak'), findsOneWidget);
+        // "Tap to speak" appears twice by design: idle-hero headline +
+        // record-button caption.
+        expect(find.text('Tap to speak'), findsNWidgets(2));
         expect(
           find.text('Start talking with your Voice Teacher'),
           findsNothing,
