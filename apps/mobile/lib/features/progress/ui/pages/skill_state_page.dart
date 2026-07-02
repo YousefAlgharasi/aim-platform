@@ -26,7 +26,13 @@
 // RTL/Arabic rules:
 // - EdgeInsets.symmetric — RTL-safe.
 // - CrossAxisAlignment.start in Column — direction-aware.
-// - AIMTopAppBar mirrors RTL back icon internally.
+// - Header back icon swaps chevron_left_rounded/chevron_right_rounded based
+//   on Directionality.of(context).
+//
+// TASK (full-screen audit): restyled the header to match design screen 12 —
+// gradient hero header ("Skill States") with a back button. Was previously
+// a flat AIMTopAppBar with no onBack wired, so no back button rendered at
+// all (a broken navigation affordance, not just a color mismatch).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -89,26 +95,89 @@ class _SkillStatePageState extends ConsumerState<SkillStatePage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(aimResultsProvider);
+    final surfaces = aimSurfacesOf(context);
 
     return Scaffold(
-      appBar: const AIMTopAppBar(title: 'Skill States'),
-      body: switch (state) {
-        AppAsyncLoading() =>
-          const AIMFullScreenLoading(semanticLabel: 'Loading skill states'),
-        AppAsyncFailure(:final message) =>
-          AIMFullScreenError(message: message, onRetry: _load),
-        AppAsyncSuccess(:final data) => data.skillStates.isEmpty
-            ? const AIMEmptyState(
-                icon: Icon(Icons.auto_stories_outlined),
-                title: 'No skill data yet',
-                subtitle:
-                    'Complete lessons and practice to build your skill profile.',
-              )
-            : _SkillStateList(
-                skillStates: data.skillStates, onRefresh: _refresh),
-        AppAsyncIdle() =>
-          const AIMFullScreenLoading(semanticLabel: 'Loading skill states'),
-      },
+      backgroundColor: surfaces.background,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _SkillStateHeader(),
+          Expanded(
+            child: switch (state) {
+              AppAsyncLoading() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading skill states'),
+              AppAsyncFailure(:final message) =>
+                AIMFullScreenError(message: message, onRetry: _load),
+              AppAsyncSuccess(:final data) => data.skillStates.isEmpty
+                  ? const AIMEmptyState(
+                      icon: Icon(Icons.auto_stories_outlined),
+                      title: 'No skill data yet',
+                      subtitle:
+                          'Complete lessons and practice to build your skill profile.',
+                    )
+                  : _SkillStateList(
+                      skillStates: data.skillStates, onRefresh: _refresh),
+              AppAsyncIdle() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading skill states'),
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SkillStateHeader extends StatelessWidget {
+  const _SkillStateHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+      ),
+      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            Semantics(
+              button: true,
+              label: 'Back',
+              child: InkWell(
+                onTap: () => Navigator.of(context).maybePop(),
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AimSpacing.space12),
+                    child: Icon(
+                      Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_right_rounded
+                          : Icons.chevron_left_rounded,
+                      size: AimSizes.iconMd,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AimSpacing.space12),
+            Text(
+              'Skill States',
+              style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
