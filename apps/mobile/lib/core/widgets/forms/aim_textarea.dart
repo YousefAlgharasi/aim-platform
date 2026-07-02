@@ -108,7 +108,18 @@ class _AIMTextareaState extends State<AIMTextarea> {
           keyboardType: TextInputType.multiline,
           style: AimTextStyles.bodyMd.copyWith(color: foreground),
           decoration: InputDecoration(
+            // See AIMInput for why every border slot (not just the
+            // generic `border`) must be explicitly none, and `filled`
+            // explicitly false: the ambient InputDecorationTheme
+            // otherwise bleeds through as a nested blue-on-focus border
+            // and fill inside this widget's own DecoratedBox.
             border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            errorBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            focusedErrorBorder: InputBorder.none,
+            filled: false,
             counterText: '',
             hintText: widget.placeholder,
             hintStyle: AimTextStyles.bodyMd.copyWith(
