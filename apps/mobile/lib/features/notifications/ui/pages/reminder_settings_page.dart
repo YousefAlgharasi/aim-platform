@@ -3,6 +3,16 @@
 // Lets the student view active learning/review/deadline reminders and
 // request pause/resume/cancel. The backend remains the final authority
 // on the resulting schedule state and on actual dispatch timing.
+//
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Reminders" (42)
+//   docs/design/ui-for-all-system-mobile/screenshots/light/42-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/42-screen.png
+//
+// TASK-32: restyled to match design screen 42 — gradient header, and a
+// real schedule-time subtitle ("Every day · 7:00 PM") derived from the
+// backend's `cronExpression`. A paused reminder still shows "Resume" (not
+// "Pause" again, unlike the mockup) — that's the functionally correct
+// action for a paused schedule, kept over pixel-matching the mockup.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,6 +31,43 @@ const _kReminderTypeLabels = {
   'streak': 'Streak',
   'custom': 'Custom',
 };
+
+const _kWeekdayNames = [
+  'Sundays', 'Mondays', 'Tuesdays', 'Wednesdays',
+  'Thursdays', 'Fridays', 'Saturdays',
+];
+
+/// Formats a real 5-field cron expression ("min hour dom month dow") into a
+/// short human label, e.g. "Every day · 7:00 PM" or "Sundays · 9:00 AM".
+/// Returns null for null/unparseable/complex expressions — the caller then
+/// shows no subtitle rather than fabricating one.
+String? _formatCronSchedule(String? cron) {
+  if (cron == null) return null;
+  final parts = cron.trim().split(RegExp(r'\s+'));
+  if (parts.length != 5) return null;
+
+  final minute = int.tryParse(parts[0]);
+  final hour = int.tryParse(parts[1]);
+  final dayOfMonth = parts[2];
+  final month = parts[3];
+  final dayOfWeek = parts[4];
+  if (minute == null || hour == null || month != '*') return null;
+
+  final period = hour < 12 ? 'AM' : 'PM';
+  final displayHour = hour % 12 == 0 ? 12 : hour % 12;
+  final timeStr = '$displayHour:${minute.toString().padLeft(2, '0')} $period';
+
+  if (dayOfMonth == '*' && dayOfWeek == '*') {
+    return 'Every day · $timeStr';
+  }
+  if (dayOfMonth == '*') {
+    final dow = int.tryParse(dayOfWeek);
+    if (dow != null && dow >= 0 && dow <= 6) {
+      return '${_kWeekdayNames[dow]} · $timeStr';
+    }
+  }
+  return null;
+}
 
 class ReminderSettingsPage extends ConsumerStatefulWidget {
   const ReminderSettingsPage({super.key});
@@ -73,47 +120,106 @@ class _ReminderSettingsPageState extends ConsumerState<ReminderSettingsPage> {
   @override
   Widget build(BuildContext context) {
     final remindersState = ref.watch(notificationRemindersProvider);
+    final surfaces = aimSurfacesOf(context);
 
     return Scaffold(
-      appBar: const AIMTopAppBar(title: 'Reminders'),
-      body: SafeArea(
-        child: switch (remindersState) {
-          AppAsyncLoading() ||
-          AppAsyncIdle() =>
-            const AIMFullScreenLoading(
-              semanticLabel: 'Loading reminder schedules',
-            ),
-          AppAsyncFailure(:final message) => AIMFullScreenError(
-              message: message,
-              onRetry: _load,
-            ),
-          AppAsyncSuccess(:final data) => data.isEmpty
-              ? const AIMEmptyState(
-                  title: 'No reminders yet',
-                  subtitle: 'Reminders you enable will appear here.',
-                  semanticLabel: 'No reminder schedules',
-                )
-              : ListView.separated(
-                  padding: const EdgeInsetsDirectional.fromSTEB(
-                    AimSpacing.screenPaddingMobile,
-                    AimSpacing.sectionGap,
-                    AimSpacing.screenPaddingMobile,
-                    AimSpacing.sectionGap,
-                  ),
-                  itemCount: data.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: AimSpacing.listItemGap),
-                  itemBuilder: (context, index) {
-                    final schedule = data[index];
-                    return _ReminderScheduleTile(
-                      schedule: schedule,
-                      onPause: () => _onPause(schedule.id),
-                      onResume: () => _onResume(schedule.id),
-                      onCancel: () => _onCancel(schedule.id),
-                    );
-                  },
+      backgroundColor: surfaces.background,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _ReminderSettingsHeader(),
+          Expanded(
+            child: switch (remindersState) {
+              AppAsyncLoading() ||
+              AppAsyncIdle() =>
+                const AIMFullScreenLoading(
+                  semanticLabel: 'Loading reminder schedules',
                 ),
-        },
+              AppAsyncFailure(:final message) => AIMFullScreenError(
+                  message: message,
+                  onRetry: _load,
+                ),
+              AppAsyncSuccess(:final data) => data.isEmpty
+                  ? const AIMEmptyState(
+                      title: 'No reminders yet',
+                      subtitle: 'Reminders you enable will appear here.',
+                      semanticLabel: 'No reminder schedules',
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                        AimSpacing.screenPaddingMobile,
+                        AimSpacing.sectionGap,
+                        AimSpacing.screenPaddingMobile,
+                        AimSpacing.sectionGap,
+                      ),
+                      itemCount: data.length,
+                      separatorBuilder: (_, __) =>
+                          const SizedBox(height: AimSpacing.listItemGap),
+                      itemBuilder: (context, index) {
+                        final schedule = data[index];
+                        return _ReminderScheduleTile(
+                          schedule: schedule,
+                          onPause: () => _onPause(schedule.id),
+                          onResume: () => _onResume(schedule.id),
+                          onCancel: () => _onCancel(schedule.id),
+                        );
+                      },
+                    ),
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReminderSettingsHeader extends StatelessWidget {
+  const _ReminderSettingsHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+      ),
+      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            Semantics(
+              button: true,
+              label: 'Back',
+              child: InkWell(
+                onTap: () => Navigator.of(context).maybePop(),
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.all(AimSpacing.space12),
+                    child: Icon(
+                      Icons.arrow_back,
+                      size: AimSizes.iconMd,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AimSpacing.space12),
+            Text(
+              'Reminders',
+              style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -149,10 +255,12 @@ class _ReminderScheduleTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
     final isCancelled = schedule.status == 'cancelled';
     final isCompleted = schedule.status == 'completed';
     final isPaused = schedule.status == 'paused';
     final isActionable = !isCancelled && !isCompleted;
+    final scheduleLabel = _formatCronSchedule(schedule.cronExpression);
 
     return AIMCard(
       variant: AIMCardVariant.standard,
@@ -174,10 +282,19 @@ class _ReminderScheduleTile extends StatelessWidget {
               AIMBadge(
                 tone: _toneForStatus(schedule.status),
                 variant: AIMBadgeVariant.soft,
+                pill: true,
                 child: Text(schedule.status),
               ),
             ],
           ),
+          if (scheduleLabel != null) ...[
+            const SizedBox(height: AimSpacing.space4),
+            Text(
+              scheduleLabel,
+              style:
+                  AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
+            ),
+          ],
           if (isActionable) ...[
             const SizedBox(height: AimSpacing.componentGap),
             Row(
