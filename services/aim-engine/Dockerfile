@@ -7,7 +7,7 @@ WORKDIR /app
 RUN pip install --no-cache-dir build wheel
 
 # Install dependencies into isolated prefix
-COPY pyproject.toml ./
+COPY services/aim-engine/pyproject.toml ./
 RUN pip install --no-cache-dir --prefix=/install .
 
 # ── Stage 2: runtime ─────────────────────────────────────────────────────────
@@ -22,7 +22,8 @@ RUN addgroup --system aim && adduser --system --ingroup aim aim
 COPY --from=builder /install /usr/local
 
 # Copy application source
-COPY --chown=aim:aim app ./app
+COPY --chown=aim:aim services/aim-engine/app ./app
+COPY --chown=aim:aim services/api/src/aim ./api/src/aim
 
 USER aim
 
