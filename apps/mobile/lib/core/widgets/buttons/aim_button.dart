@@ -55,6 +55,7 @@ class _AIMButtonState extends State<AIMButton> {
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
     final soft = aimSoftFillsOf(context);
+    final shadows = aimShadowsOf(context);
     final spec = _AIMButtonSpec.resolve(
       variant: widget.variant,
       disabled: !widget.isEnabled,
@@ -62,6 +63,11 @@ class _AIMButtonState extends State<AIMButton> {
       surfaces: surfaces,
       soft: soft,
     );
+    // Ghost buttons have no visible surface to lift, and a disabled button
+    // should read as flat/sunken rather than floating.
+    final boxShadow = widget.isEnabled && widget.variant != AIMButtonVariant.ghost
+        ? shadows.card
+        : AimShadows.none;
     final height = widget.size.height;
     final radius = widget.size == AIMButtonSize.small
         ? AimRadius.borderSm
@@ -113,6 +119,7 @@ class _AIMButtonState extends State<AIMButton> {
           color: spec.background,
           border: Border.all(color: spec.border),
           borderRadius: radius,
+          boxShadow: boxShadow,
         ),
         child: Container(
           height: height,
