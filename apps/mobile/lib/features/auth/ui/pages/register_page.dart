@@ -86,6 +86,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     final notifier = ref.read(registerProvider.notifier);
     final surfaces = aimSurfacesOf(context);
     final shadows = aimShadowsOf(context);
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
 
     // Navigate to main shell when auto-confirmed and signed in.
     //
@@ -145,16 +146,16 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         label: 'Back',
                         child: InkWell(
                           onTap: () => Navigator.of(context).pop(),
-                          customBorder: const CircleBorder(),
+                          borderRadius: AimRadius.borderMd,
                           child: DecoratedBox(
                             decoration: BoxDecoration(
                               color: AimColors.neutral0.withValues(alpha: 0.18),
-                              shape: BoxShape.circle,
+                              borderRadius: AimRadius.borderMd,
                             ),
-                            child: const Padding(
-                              padding: EdgeInsets.all(AimSpacing.space12),
+                            child: Padding(
+                              padding: const EdgeInsets.all(AimSpacing.space12),
                               child: Icon(
-                                Icons.arrow_back,
+                                isRtl ? Icons.chevron_right : Icons.chevron_left,
                                 size: AimSizes.iconMd,
                                 color: AimColors.neutral0,
                               ),
@@ -257,8 +258,11 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       disabled: formState.isSubmitting,
                       leadingIcon: const Icon(Icons.lock_outline),
                       error: passwordsMatch ? null : 'Passwords do not match',
-                      helper: (confirm.isNotEmpty && passwordsMatch)
-                          ? 'Passwords match'
+                      trailingIcon: (confirm.isNotEmpty && passwordsMatch)
+                          ? const Icon(
+                              Icons.check_circle,
+                              color: AimColors.success500,
+                            )
                           : null,
                       onChanged: _onConfirmChanged,
                       onSubmitted: (_) => _submit(),
@@ -292,7 +296,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       variant: AIMButtonVariant.outline,
                       fullWidth: true,
                       semanticLabel: 'Sign up with Google (coming soon)',
-                      child: Text('Continue with Google'),
+                      child: Text('Sign up with Google'),
                     ),
                     const SizedBox(height: AimSpacing.innerGap),
                     const Row(
@@ -320,13 +324,27 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     const SizedBox(height: AimSpacing.sectionGap),
 
                     // Visible per design, but there is no Terms/Privacy
-                    // route or page yet, so this is non-interactive plain
-                    // text rather than a dead-end link.
-                    Text(
-                      'By creating an account, you agree to our Terms of '
-                      'Service and Privacy Policy.',
-                      style: AimTextStyles.caption.copyWith(
-                        color: surfaces.textMuted,
+                    // route or page yet, so "Terms"/"Privacy Policy" are
+                    // styled like links without being tappable — not a
+                    // dead-end action.
+                    Text.rich(
+                      TextSpan(
+                        style: AimTextStyles.caption.copyWith(
+                          color: surfaces.textMuted,
+                        ),
+                        children: [
+                          const TextSpan(text: "By signing up you agree to AIM's "),
+                          TextSpan(
+                            text: 'Terms',
+                            style: TextStyle(color: surfaces.textLink),
+                          ),
+                          const TextSpan(text: ' and '),
+                          TextSpan(
+                            text: 'Privacy Policy',
+                            style: TextStyle(color: surfaces.textLink),
+                          ),
+                          const TextSpan(text: '.'),
+                        ],
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -457,7 +475,7 @@ class _PasswordStrengthMeter extends StatelessWidget {
     final color = switch (strength) {
       _PasswordStrength.weak => AimColors.error500,
       _PasswordStrength.medium => AimColors.warning500,
-      _PasswordStrength.strong => AimColors.success500,
+      _PasswordStrength.strong => AimColors.gzLime,
     };
     final label = switch (strength) {
       _PasswordStrength.weak => 'Weak',
