@@ -190,7 +190,7 @@ class _StartHeader extends StatelessWidget {
 class _ReadyBody extends StatelessWidget {
   const _ReadyBody({
     required this.test,
-    required this.onStart,
+    required this.onStart, required List<dynamic> sections,
   });
 
   final PlacementTestModel test;
