@@ -166,7 +166,9 @@ void main() {
       await tester.pump();
 
       expect(find.byType(AIMFullScreenError), findsOneWidget);
-      expect(find.text('Retry'), findsOneWidget);
+      // AIMFullScreenError's default retryLabel is "Try again" (matches the
+      // convention used everywhere else in the app), not "Retry".
+      expect(find.text('Try again'), findsOneWidget);
     });
 
     testWidgets('shows hero stats and the sections preview once loaded',
