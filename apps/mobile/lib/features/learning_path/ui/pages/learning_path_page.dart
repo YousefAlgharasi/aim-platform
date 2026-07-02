@@ -19,8 +19,20 @@
 // RTL/Arabic rules:
 // - Uses Directionality-aware widgets only (Row, Column, CrossAxisAlignment).
 // - Text widgets respect ambient directionality; no explicit LTR overrides.
-// - AIMTopAppBar handles RTL navigation icon mirroring internally.
 // - Padding uses symmetric EdgeInsets so it mirrors correctly under RTL.
+//
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Learning path" (37)
+//   docs/design/ui-for-all-system-mobile/screenshots/light/37-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/37-screen.png
+//
+// TASK-31: restyled to match design screen 37 — gradient header ("Learning
+// Path" / "Your personalized roadmap"), section titles renamed to match the
+// mockup's copy ("Skill coverage", "Focus Areas", "Next up").
+//
+// Deviation from the mockup (never fabricate data): the design's hero card
+// ("Your goal level" with a circular ring gauge) has no backing field
+// anywhere in LearningPathData — there is no "goal level" concept in this
+// payload. It is omitted rather than fabricated.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -93,25 +105,100 @@ class _LearningPathPageState extends ConsumerState<LearningPathPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(learningPathProvider);
+    final surfaces = aimSurfacesOf(context);
 
     return Scaffold(
-      appBar: const AIMTopAppBar(title: 'My Learning Path'),
-      body: switch (state) {
-        AppAsyncLoading() => const AIMFullScreenLoading(
-            semanticLabel: 'Loading learning path data',
+      backgroundColor: surfaces.background,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _LearningPathHeader(),
+          Expanded(
+            child: switch (state) {
+              AppAsyncLoading() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading learning path data',
+                ),
+              AppAsyncFailure(:final message) => AIMFullScreenError(
+                  message: message,
+                  onRetry: _load,
+                ),
+              AppAsyncSuccess(:final data) => _LearningPathContent(
+                  data: data,
+                  onRefresh: _refresh,
+                ),
+              AppAsyncIdle() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading learning path data',
+                ),
+            },
           ),
-        AppAsyncFailure(:final message) => AIMFullScreenError(
-            message: message,
-            onRetry: _load,
-          ),
-        AppAsyncSuccess(:final data) => _LearningPathContent(
-            data: data,
-            onRefresh: _refresh,
-          ),
-        AppAsyncIdle() => const AIMFullScreenLoading(
-            semanticLabel: 'Loading learning path data',
-          ),
-      },
+        ],
+      ),
+    );
+  }
+}
+
+class _LearningPathHeader extends StatelessWidget {
+  const _LearningPathHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+      ),
+      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            Semantics(
+              button: true,
+              label: 'Back',
+              child: InkWell(
+                onTap: () => Navigator.of(context).maybePop(),
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.all(AimSpacing.space12),
+                    child: Icon(
+                      Icons.arrow_back,
+                      size: AimSizes.iconMd,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AimSpacing.space12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Learning Path',
+                    style:
+                        AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+                  ),
+                  Text(
+                    'Your personalized roadmap',
+                    style: AimTextStyles.bodySm.copyWith(
+                      color: AimColors.neutral0.withValues(alpha: 0.85),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -149,7 +236,7 @@ class _LearningPathContent extends StatelessWidget {
         ),
         children: [
           if (data.skillStates.isNotEmpty) ...[
-            const LearningPathSectionHeader(title: 'Skill States'),
+            const LearningPathSectionHeader(title: 'Skill coverage'),
             const SizedBox(height: AimSpacing.componentGap),
             ...data.skillStates.map(
               (m) => Padding(
@@ -172,7 +259,19 @@ class _LearningPathContent extends StatelessWidget {
             const SizedBox(height: AimSpacing.sectionGap),
           ],
           if (data.recommendations.isNotEmpty) ...[
-            const LearningPathSectionHeader(title: 'AIM Recommendations'),
+            // "AI picked" is descriptive chrome, not a fabricated field —
+            // every card in this list already is a backend AIM-generated
+            // recommendation by definition (see file header).
+            const LearningPathSectionHeader(
+              title: 'Next up',
+              trailing: AIMBadge(
+                tone: AIMBadgeTone.primary,
+                variant: AIMBadgeVariant.soft,
+                pill: true,
+                icon: Icon(Icons.auto_awesome_outlined),
+                child: Text('AI picked'),
+              ),
+            ),
             const SizedBox(height: AimSpacing.componentGap),
             ...data.recommendations.map(
               (m) => Padding(

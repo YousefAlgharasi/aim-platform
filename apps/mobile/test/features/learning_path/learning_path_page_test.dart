@@ -164,9 +164,9 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('Skill States'), findsOneWidget);
+      expect(find.text('Skill coverage'), findsOneWidget);
       expect(find.text('Focus Areas'), findsOneWidget);
-      expect(find.text('AIM Recommendations'), findsOneWidget);
+      expect(find.text('Next up'), findsOneWidget);
     });
 
     testWidgets('renders without error under RTL directionality', (tester) async {
@@ -187,7 +187,7 @@ void main() {
 
       // No layout exceptions; page renders correctly.
       expect(find.byType(LearningPathPage), findsOneWidget);
-      expect(find.text('Skill States'), findsOneWidget);
+      expect(find.text('Skill coverage'), findsOneWidget);
     });
   });
 }
