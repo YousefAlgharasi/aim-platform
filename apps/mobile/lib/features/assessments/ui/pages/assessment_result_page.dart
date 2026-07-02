@@ -26,6 +26,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:aim_mobile/core/formatting/score_percent.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -128,12 +129,14 @@ class _ResultContent extends StatelessWidget {
         result.passed ? AimColors.success500 : AimColors.error500;
     final statusLabel = result.passed ? 'Passed' : 'Failed';
 
-    // Display-only arithmetic on two backend-supplied values — NOT score
-    // computation (the backend remains the grading authority). Guarded so a
-    // zero maxScore never divides; in that case the raw score text is shown.
-    final int? percentage = result.maxScore > 0
-        ? ((result.score / result.maxScore) * 100).round()
-        : null;
+    // Display-only formatting of two backend-supplied values — NOT score
+    // computation (the backend remains the grading authority). See
+    // core/formatting/score_percent.dart. Guarded so a zero maxScore never
+    // divides; in that case the raw score text is shown.
+    final int? percentage = scorePercent(
+      numerator: result.score,
+      denominator: result.maxScore,
+    );
 
     return ListView(
       padding: const EdgeInsets.symmetric(
