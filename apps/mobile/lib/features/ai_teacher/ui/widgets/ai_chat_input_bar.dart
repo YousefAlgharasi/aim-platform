@@ -130,7 +130,20 @@ class _AiChatInputBarState extends State<AiChatInputBar> {
                               color: foreground,
                             ),
                             decoration: InputDecoration(
+                              // See AIMInput: the ambient
+                              // InputDecorationTheme's own
+                              // enabledBorder/focusedBorder/errorBorder/
+                              // filled/fillColor otherwise bleed through
+                              // (a blue-on-focus border nested inside
+                              // this widget's own DecoratedBox) unless
+                              // every slot is explicitly suppressed.
                               border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              errorBorder: InputBorder.none,
+                              disabledBorder: InputBorder.none,
+                              focusedErrorBorder: InputBorder.none,
+                              filled: false,
                               isDense: true,
                               hintText: 'Ask me anything...',
                               hintStyle: AimTextStyles.bodyMd.copyWith(
