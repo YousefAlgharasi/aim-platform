@@ -2,7 +2,15 @@
 //   docs/design/ui-for-all-system-mobile/screenshots/light/02-screen.png
 //   docs/design/ui-for-all-system-mobile/screenshots/dark/02-screen.png
 // Endpoint: POST /auth/login (POST /auth/test-login outside production only)
-// Widgets: AIMInput, AIMGradientButton, AIMAlertBanner, AIMButton (test mode)
+// Widgets: AIMInput, AIMGradientButton, AIMAlertBanner, AIMButton
+//
+// Security:
+// - The backend (NestJS, services/backend-api) is the sole auth authority.
+//   This screen never talks to Supabase (or any identity provider) directly,
+//   never stores a service-role key/JWT secret, and never decides
+//   authorization — it only initiates the flow and reacts to the result.
+// - Session tokens are handed to [SessionStore] only after the backend has
+//   confirmed identity (see [LoginNotifier.submit]/[submitTestLogin]).
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,24 +23,16 @@ import '../../logic/provider/login_provider.dart';
 
 /// Login screen — Student Mobile App MVP.
 ///
-/// Flow:
-/// 1. Student enters email + password.
-/// 2. [LoginNotifier] validates locally, then calls the backend's
-///    `POST /auth/login` (the backend is the sole auth authority).
-/// 3. On success the session is synced (bootstrap + me) and
-///    [authFlowProvider] transitions to signedIn.
-/// 4. [ref.listen] on [authFlowProvider] navigates to [AppRoutePaths.mainShell].
+/// A student enters their email and password, [LoginNotifier] validates the
+/// input locally and then calls the backend's `POST /auth/login`. On
+/// success the notifier syncs the auth context, persists the session, and
+/// flips [authFlowProvider] to signed-in; this widget's only job after that
+/// is to notice the transition and navigate to [AppRoutePaths.mainShell].
 ///
-/// Design system: all colours, typography, spacing, and interactive widgets
-/// use AIM Mobile Design System tokens.  No hard-coded values.
-///
-/// RTL/Arabic: no [TextDirection] is hard-coded.  [ListView] and all children
-/// respect the ambient locale direction.  Icons are direction-neutral.
-///
-/// Security:
-/// - No service-role keys, JWT secrets, or backend credentials here.
-/// - Role and permission checks are backend-enforced.
-/// - The form never decides authorisation.
+/// A separate, non-production-only "test mode" section lets developers sign
+/// in as a fixed student/admin/parent account (`POST /auth/test-login`) or
+/// jump to the API endpoint tester, without touching the real password
+/// form. It is hidden entirely in production builds.
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
@@ -55,11 +55,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     super.dispose();
   }
 
-  void _onEmailChanged(String value) =>
-      ref.read(loginProvider.notifier).setEmail(value);
+  void _onEmailChanged(String value) {
+    ref.read(loginProvider.notifier).setEmail(value);
+  }
 
-  void _onPasswordChanged(String value) =>
-      ref.read(loginProvider.notifier).setPassword(value);
+  void _onPasswordChanged(String value) {
+    ref.read(loginProvider.notifier).setPassword(value);
+  }
 
   Future<void> _submit() async {
     _emailFocus.unfocus();
@@ -67,10 +69,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     await ref.read(loginProvider.notifier).submit();
   }
 
-  Future<void> _submitTestLogin(String role) async {
+  Future<void> _enterAsTestRole(String role) async {
     _emailFocus.unfocus();
     _passwordFocus.unfocus();
     await ref.read(loginProvider.notifier).submitTestLogin(role);
+  }
+
+  void _openRegister() {
+    Navigator.of(context).pushNamed(AppRoutePaths.register);
+  }
+
+  void _openEndpointTester() {
+    Navigator.of(context).pushNamed(AppRoutePaths.endpointTester);
   }
 
   @override
@@ -80,27 +90,24 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final shadows = aimShadowsOf(context);
     final isTestModeAvailable = !ref.watch(appConfigProvider).isProduction;
 
-    // Navigate to main shell once sign-in succeeds.
-    //
-    // Deferred via addPostFrameCallback: this listener fires synchronously
-    // on state change, before the root MaterialApp (which watches
-    // authFlowProvider to build onGenerateRoute) has rebuilt. Pushing
-    // immediately would route against the stale (signed-out) closure and
-    // get redirected straight back to sign-in.
+    // The root MaterialApp also watches authFlowProvider (to decide which
+    // route onGenerateRoute resolves to), and it hasn't rebuilt yet at the
+    // moment this listener fires. Navigating synchronously here would push
+    // against that stale, still-signed-out closure and immediately bounce
+    // back to sign-in, so the actual push is deferred to the next frame.
     ref.listen(authFlowProvider, (_, next) {
-      if (next.isSignedIn && mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            AppRoutePaths.mainShell,
-            (route) => false,
-          );
-        });
-      }
+      if (!next.isSignedIn || !mounted) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          AppRoutePaths.mainShell,
+          (route) => false,
+        );
+      });
     });
 
-    // Without this, the OS paints its default status bar background above
-    // the gradient instead of light icons sitting transparently on it.
+    // Paints light status-bar icons over the gradient header; without this
+    // the OS falls back to dark icons on an assumed light background.
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
@@ -109,56 +116,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
-              // ── Gradient welcome header ───────────────────────────────
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsetsDirectional.fromSTEB(
-                  AimSpacing.screenPaddingMobile,
-                  AimSpacing.space64,
-                  AimSpacing.screenPaddingMobile,
-                  AimSpacing.sectionGap * 2,
-                ),
-                decoration: const BoxDecoration(gradient: AimGradients.gzHero),
-                child: SafeArea(
-                  bottom: false,
-                  child: Column(
-                    children: [
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: AimColors.neutral0.withValues(alpha: 0.18),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Padding(
-                          padding: EdgeInsets.all(AimSpacing.space16),
-                          child: Icon(
-                            Icons.school_outlined,
-                            size: AimSizes.iconLg,
-                            color: AimColors.neutral0,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: AimSpacing.componentGap),
-                      Text(
-                        'Welcome back',
-                        style: AimTextStyles.h2.copyWith(
-                          color: AimColors.neutral0,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: AimSpacing.space4),
-                      Text(
-                        'Sign in to keep your streak alive',
-                        style: AimTextStyles.bodySm.copyWith(
-                          color: AimColors.neutral0.withValues(alpha: 0.85),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // ── Form card ──────────────────────────────────────────────
+              const _WelcomeHeader(),
               Transform.translate(
                 offset: const Offset(0, -AimSpacing.sectionGap),
                 child: Container(
@@ -178,7 +136,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // ── Error banner ───────────────────────────────────
                       if (formState.errorMessage != null) ...[
                         AIMAlertBanner(
                           tone: AIMAlertTone.error,
@@ -186,8 +143,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ),
                         const SizedBox(height: AimSpacing.formFieldGap),
                       ],
-
-                      // ── Email ──────────────────────────────────────────
                       AIMInput(
                         controller: _emailController,
                         focusNode: _emailFocus,
@@ -203,8 +158,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         semanticLabel: 'Email address',
                       ),
                       const SizedBox(height: AimSpacing.formFieldGap),
-
-                      // ── Password ───────────────────────────────────────
                       AIMInput(
                         controller: _passwordController,
                         focusNode: _passwordFocus,
@@ -219,10 +172,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         semanticLabel: 'Password',
                       ),
                       const SizedBox(height: AimSpacing.space8),
-
-                      // Visible per design, but there is no forgot-password
-                      // endpoint or route yet, so this is a non-interactive
-                      // placeholder rather than a dead-end action.
+                      // There is no forgot-password endpoint or route yet, so
+                      // this is styled as a link but is plain, non-tappable
+                      // text rather than a dead-end button.
                       Align(
                         alignment: AlignmentDirectional.centerEnd,
                         child: Text(
@@ -233,8 +185,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ),
                       ),
                       const SizedBox(height: AimSpacing.sectionGap),
-
-                      // ── Submit ─────────────────────────────────────────
                       AIMGradientButton(
                         label: 'Sign In',
                         fullWidth: true,
@@ -244,89 +194,27 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         semanticLabel: 'Sign in',
                       ),
                       const SizedBox(height: AimSpacing.sectionGap),
-
-                      // ── Social sign-in (visual only — no backend yet) ───
-                      // onPressed is a no-op (not null) so AIMButton renders
-                      // its normal enabled outline spec instead of the
-                      // low-contrast disabled spec; IgnorePointer keeps them
-                      // untappable while still announcing to screen readers.
-                      Text(
-                        'OR CONTINUE WITH',
-                        style: AimTextStyles.caption
-                            .copyWith(color: surfaces.textMuted),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: AimSpacing.formFieldGap),
-                      IgnorePointer(
-                        ignoringSemantics: false,
-                        child: AIMButton(
-                          onPressed: () {},
-                          variant: AIMButtonVariant.outline,
-                          fullWidth: true,
-                          semanticLabel: 'Continue with Google (coming soon)',
-                          child: const Text('Continue with Google'),
-                        ),
-                      ),
-                      const SizedBox(height: AimSpacing.innerGap),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: IgnorePointer(
-                              ignoringSemantics: false,
-                              child: AIMButton(
-                                onPressed: () {},
-                                variant: AIMButtonVariant.outline,
-                                semanticLabel:
-                                    'Continue with Apple (coming soon)',
-                                child: const Text('Apple'),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: AimSpacing.innerGap),
-                          Expanded(
-                            child: IgnorePointer(
-                              ignoringSemantics: false,
-                              child: AIMButton(
-                                onPressed: () {},
-                                variant: AIMButtonVariant.outline,
-                                semanticLabel:
-                                    'Continue with Facebook (coming soon)',
-                                child: const Text('Facebook'),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                      _SocialSignInSection(surfaces: surfaces),
                       const SizedBox(height: AimSpacing.sectionGap),
-
-                      // ── Register link ───────────────────────────────────
                       Center(
                         child: TextButton(
-                          onPressed: () => Navigator.of(context)
-                              .pushNamed(AppRoutePaths.register),
-                          child:
-                              const Text("Don't have an account? Create one"),
+                          onPressed: _openRegister,
+                          child: const Text(
+                            "Don't have an account? Create one",
+                          ),
                         ),
                       ),
-
-                      // ── Test mode (non-production builds only) ──────────
-                      // Lets a developer/tester sign in as a fixed
-                      // student/admin/parent test account without a real
-                      // password. The backend returns 404 for this route in
-                      // production, so this button never appears (and would
-                      // be a dead end if it did).
                       if (isTestModeAvailable) ...[
                         const SizedBox(height: AimSpacing.sectionGap),
-                        const _TestModeDivider(),
+                        const _DeveloperTestModeDivider(),
                         const SizedBox(height: AimSpacing.formFieldGap),
-                        _TestModeButtonRow(
+                        _DeveloperTestModeRoleButtons(
                           isSubmitting: formState.isSubmitting,
-                          onSelectRole: _submitTestLogin,
+                          onSelectRole: _enterAsTestRole,
                         ),
                         const SizedBox(height: AimSpacing.formFieldGap),
                         AIMButton(
-                          onPressed: () => Navigator.of(context)
-                              .pushNamed(AppRoutePaths.endpointTester),
+                          onPressed: _openEndpointTester,
                           variant: AIMButtonVariant.outline,
                           fullWidth: true,
                           child: const Text('Open API Endpoint Tester'),
@@ -344,12 +232,147 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 }
 
-// ── Supporting widgets ────────────────────────────────────────────────────────
+// ── Header ───────────────────────────────────────────────────────────────
 
-/// Visual separator between real sign-in and the test-mode shortcut, so
-/// testers can't mistake it for part of the real auth flow.
-class _TestModeDivider extends StatelessWidget {
-  const _TestModeDivider();
+/// The purple-to-blue gradient hero: badge icon, "Welcome back", and the
+/// supporting streak line beneath it.
+class _WelcomeHeader extends StatelessWidget {
+  const _WelcomeHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space64,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.sectionGap * 2,
+      ),
+      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: AimColors.neutral0.withValues(alpha: 0.18),
+                shape: BoxShape.circle,
+              ),
+              child: const Padding(
+                padding: EdgeInsets.all(AimSpacing.space16),
+                child: Icon(
+                  Icons.school_outlined,
+                  size: AimSizes.iconLg,
+                  color: AimColors.neutral0,
+                ),
+              ),
+            ),
+            const SizedBox(height: AimSpacing.componentGap),
+            Text(
+              'Welcome back',
+              style: AimTextStyles.h2.copyWith(color: AimColors.neutral0),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AimSpacing.space4),
+            Text(
+              'Sign in to keep your streak alive',
+              style: AimTextStyles.bodySm.copyWith(
+                color: AimColors.neutral0.withValues(alpha: 0.85),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Social sign-in (visual only — no backend yet) ──────────────────────────
+
+/// "OR CONTINUE WITH" plus the Google / Apple / Facebook buttons.
+///
+/// None of these have a backend endpoint yet, so every button must be
+/// genuinely untappable while still looking exactly like a normal,
+/// legible outline button (per the design mock) and still being announced
+/// to screen readers as a "(coming soon)" affordance.
+///
+/// `AIMButton(onPressed: null, ...)` would satisfy "untappable" but is the
+/// wrong tool: `AIMButton` treats a null [AIMButton.onPressed] as a *true*
+/// disabled state and renders `surfaces.disabledBg/disabledFg/disabledBorder`
+/// — in dark mode that is a near-invisible dark-gray-on-navy combination,
+/// which does not match the mock and fails contrast. Passing a no-op
+/// `() {}` callback instead keeps [AIMButton.isEnabled] true, so the button
+/// paints its normal, legible outline spec (visible border, primary-colored
+/// label). [IgnorePointer] then blocks the tap from ever reaching that
+/// callback, while `ignoringSemantics: false` keeps the button in the
+/// accessibility tree so the semantic label is still announced.
+class _SocialSignInSection extends StatelessWidget {
+  const _SocialSignInSection({required this.surfaces});
+
+  final AimSurfaceTheme surfaces;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'OR CONTINUE WITH',
+          style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: AimSpacing.formFieldGap),
+        IgnorePointer(
+          ignoringSemantics: false,
+          child: AIMButton(
+            onPressed: () {},
+            variant: AIMButtonVariant.outline,
+            fullWidth: true,
+            semanticLabel: 'Continue with Google (coming soon)',
+            child: const Text('Continue with Google'),
+          ),
+        ),
+        const SizedBox(height: AimSpacing.innerGap),
+        Row(
+          children: [
+            Expanded(
+              child: IgnorePointer(
+                ignoringSemantics: false,
+                child: AIMButton(
+                  onPressed: () {},
+                  variant: AIMButtonVariant.outline,
+                  semanticLabel: 'Continue with Apple (coming soon)',
+                  child: const Text('Apple'),
+                ),
+              ),
+            ),
+            const SizedBox(width: AimSpacing.innerGap),
+            Expanded(
+              child: IgnorePointer(
+                ignoringSemantics: false,
+                child: AIMButton(
+                  onPressed: () {},
+                  variant: AIMButtonVariant.outline,
+                  semanticLabel: 'Continue with Facebook (coming soon)',
+                  child: const Text('Facebook'),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+// ── Developer test mode (non-production builds only) ──────────────────────
+
+/// Visual divider that keeps the test-mode shortcut from being mistaken
+/// for part of the real sign-in flow.
+class _DeveloperTestModeDivider extends StatelessWidget {
+  const _DeveloperTestModeDivider();
 
   @override
   Widget build(BuildContext context) {
@@ -373,17 +396,18 @@ class _TestModeDivider extends StatelessWidget {
   }
 }
 
-/// Three buttons that sign in as a fixed student/admin/parent test account,
-/// bypassing the real password form entirely. Only ever shown outside
-/// production (see [isTestModeAvailable] in [LoginPage]).
-class _TestModeButtonRow extends StatelessWidget {
-  const _TestModeButtonRow({
+/// Three shortcuts that sign in as a fixed student/admin/parent test
+/// account via `POST /auth/test-login`, bypassing the password form. The
+/// backend only serves that route outside production, so [LoginPage] only
+/// ever mounts this widget when `appConfigProvider` reports non-production.
+class _DeveloperTestModeRoleButtons extends StatelessWidget {
+  const _DeveloperTestModeRoleButtons({
     required this.isSubmitting,
     required this.onSelectRole,
   });
 
   final bool isSubmitting;
-  final void Function(String role) onSelectRole;
+  final ValueChanged<String> onSelectRole;
 
   @override
   Widget build(BuildContext context) {
