@@ -18,9 +18,15 @@ function makeRequest(): AiProviderRequest {
   };
 }
 
+const TEST_BASE_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
 function makeConfig() {
   return {
-    getConfig: jest.fn().mockReturnValue({ apiKey: 'sk-real-key-not-a-placeholder', model: 'gpt-test' }),
+    getConfig: jest.fn().mockReturnValue({
+      apiKey: 'sk-real-key-not-a-placeholder',
+      model: 'gpt-test',
+      baseUrl: TEST_BASE_URL,
+    }),
   } as unknown as ProviderGatewayConfigService;
 }
 
@@ -49,7 +55,8 @@ describe('ProviderGatewayHttpClientService', () => {
     const result = await service.complete(makeRequest());
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [, init] = fetchMock.mock.calls[0];
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe(TEST_BASE_URL);
     expect(init.method).toBe('POST');
     expect(init.headers.Authorization).toBe('Bearer sk-real-key-not-a-placeholder');
     expect(result.status).toBe('success');
