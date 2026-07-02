@@ -62,6 +62,14 @@ abstract class HomeRemoteDatasource {
     required String bearerToken,
   });
 
+  /// GET /student/engagement/stats
+  ///
+  /// Returns the backend-computed level, XP, badge count, global rank, and
+  /// weekly activity for the hero card. Never calculated locally.
+  Future<HomeEngagementStatsModel?> getEngagementStats({
+    required String bearerToken,
+  });
+
   /// GET /lessons/continue
   ///
   /// Returns the most recently active, incomplete lesson, or null if the

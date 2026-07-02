@@ -2,44 +2,46 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/shell/ui/pages/main_shell_page.dart';
 
 void main() {
-  testWidgets('main shell shows all primary tabs', (tester) async {
+  testWidgets('main shell shows all primary tabs via the drawer',
+      (tester) async {
     await tester.pumpWidget(const TestShell(child: MainShellPage()));
 
-    // NOTE: TASK-15 added an AIMAppDrawer with items labelled identically to
-    // the bottom nav ('Home'/'Learn'/'Review'/'Progress'/'Profile'), so
-    // lookups/taps here are scoped to descendants of AIMBottomNav<int> to
-    // avoid ambiguously matching the (always-mounted, off-screen-when-closed)
-    // drawer's duplicate labels.
-    final bottomNav = find.byType(AIMBottomNav<int>);
+    // No bottom tab bar (removed per product direction) — navigation is
+    // exclusively via the AIMAppDrawer opened from the FAB.
+    Future<void> openDrawer() async {
+      await tester.tap(find.byIcon(Icons.menu));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+    }
 
-    Finder inNav(String text) =>
-        find.descendant(of: bottomNav, matching: find.text(text));
+    await openDrawer();
+    expect(find.text('Home'), findsOneWidget);
+    expect(find.text('Learn'), findsOneWidget);
+    expect(find.text('Review'), findsOneWidget);
+    expect(find.text('Progress'), findsOneWidget);
+    expect(find.text('Profile'), findsOneWidget);
 
-    expect(inNav('Home'), findsOneWidget);
-    expect(bottomNav, findsOneWidget);
-    expect(inNav('Learn'), findsOneWidget);
-    expect(inNav('Review'), findsOneWidget);
-    expect(inNav('Progress'), findsOneWidget);
-    expect(inNav('Profile'), findsOneWidget);
-
-    await tester.tap(inNav('Learn'));
+    await tester.tap(find.text('Learn'));
     await tester.pump();
-    expect(inNav('Learn'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 300));
 
-    await tester.tap(inNav('Review'));
+    await openDrawer();
+    await tester.tap(find.text('Review'));
     await tester.pump();
-    expect(inNav('Review'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 300));
 
-    await tester.tap(inNav('Progress'));
+    await openDrawer();
+    await tester.tap(find.text('Progress'));
     await tester.pump();
-    expect(inNav('Progress'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 300));
 
-    await tester.tap(inNav('Profile'));
+    await openDrawer();
+    await tester.tap(find.text('Profile'));
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('No profile loaded.'), findsOneWidget);
   });
 }

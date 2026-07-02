@@ -175,7 +175,8 @@ void main() {
       expect(find.text('A) Alpha'), findsOneWidget);
       expect(find.text('B) Beta'), findsOneWidget);
       expect(find.byType(AIMAnswerOption), findsNWidgets(2));
-      expect(find.byType(AIMButton), findsOneWidget);
+      // The redesigned page uses the gradient CTA, not the plain AIMButton.
+      expect(find.byType(AIMGradientButton), findsOneWidget);
     });
 
     testWidgets('selecting an option enables the submit button',
@@ -186,14 +187,16 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      final button = tester.widget<AIMButton>(find.byType(AIMButton));
-      expect(button.onPressed, isNull); // no selection yet
+      final button = tester
+          .widget<AIMGradientButton>(find.byType(AIMGradientButton));
+      expect(button.enabled, isFalse); // no selection yet
 
       await tester.tap(find.byType(AIMAnswerOption).first);
       await tester.pump();
 
-      final updated = tester.widget<AIMButton>(find.byType(AIMButton));
-      expect(updated.onPressed, isNotNull);
+      final updated = tester
+          .widget<AIMGradientButton>(find.byType(AIMGradientButton));
+      expect(updated.enabled, isTrue);
     });
 
     testWidgets('renders without error under RTL directionality',

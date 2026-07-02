@@ -265,10 +265,12 @@ class _VoiceTeacherHeader extends StatelessWidget
                       color: AimColors.neutral0.withValues(alpha: 0.18),
                       shape: BoxShape.circle,
                     ),
-                    child: const Padding(
+                    child: Padding(
                       padding: EdgeInsets.all(AimSpacing.space12),
                       child: Icon(
-                        Icons.arrow_back,
+                        Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_right_rounded
+                          : Icons.chevron_left_rounded,
                         size: AimSizes.iconMd,
                         color: AimColors.neutral0,
                       ),
@@ -510,7 +512,7 @@ class _VoiceStatusPill extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox.square(
+                const SizedBox.square(
                   dimension: 6,
                   child: DecoratedBox(
                     decoration: BoxDecoration(

@@ -76,6 +76,9 @@ class HomeNotifier extends AppStateNotifier<HomeData> {
           .getEngagementSummary(bearerToken: bearerToken)
           .then<HomeEngagementSummary?>((value) => value)
           .catchError((_) => null);
+      final engagementStatsResult = await _repository
+          .getEngagementStats(bearerToken: bearerToken)
+          .catchError((_) => null);
       final continueLearningResult = await _repository
           .getContinueLearning(bearerToken: bearerToken)
           .catchError((_) => null);
@@ -93,6 +96,7 @@ class HomeNotifier extends AppStateNotifier<HomeData> {
         recommendations: results[3] as List<HomeRecommendationModel>,
         goal: engagementResult?.goal,
         dailyChallenge: engagementResult?.dailyChallenge,
+        engagementStats: engagementStatsResult,
         continueLearning: continueLearningResult,
         quickStartLesson: quickStartResult,
         recommendedCourse: recommendedCourseResult,

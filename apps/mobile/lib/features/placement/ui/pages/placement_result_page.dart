@@ -1,12 +1,25 @@
 // PlacementResultPage — student-facing placement result screen.
 //
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → placementResult
+//   docs/design/ui-for-all-system-mobile/screenshots/light/23-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/23-screen.png
+// Endpoint: GET /placement/attempts/:id/result
+// Widgets: AIMGradientButton, AIMFullScreenLoading, AIMFullScreenError
+//
 // Scope: Placement Test phase only.
 //
 // Security rules:
 // - All values are displayed exactly as returned by the backend.
 // - Flutter NEVER calculates or infers estimatedLevel, mastery, or weaknesses.
-// - Raw masteryScore is never shown as a number — only the backend-provided
-//   qualitative signal (strong / developing / emerging) is displayed.
+// - Raw masteryScore (0.0–1.0) is never shown as a number — only the
+//   backend-provided correctAnswers/totalQuestions counts (per-section) and
+//   the backend-provided qualitative signal (strong/developing/emerging),
+//   mapped only to a display color, are used.
+// - "Total score" is a plain arithmetic sum of the backend's real
+//   correctAnswers/totalQuestions across sections, shown as a percentage —
+//   it is not a backend field, but it is not an inferred mastery/level
+//   judgement either; estimatedLevel itself always comes from the backend
+//   verbatim.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -50,9 +63,10 @@ class _PlacementResultPageState extends ConsumerState<PlacementResultPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(placementResultProvider);
+    final surfaces = aimSurfacesOf(context);
 
     return Scaffold(
-      appBar: const AIMTopAppBar(title: 'Your Placement Result'),
+      backgroundColor: surfaces.background,
       body: SafeArea(
         child: switch (state) {
           PlacementResultIdle() ||
@@ -120,6 +134,29 @@ class _PendingBody extends StatelessWidget {
 // Result body — displayed once result is ready
 // ---------------------------------------------------------------------------
 
+const _cefrCodes = {
+  'beginner': 'A1',
+  'elementary': 'A2',
+  'intermediate': 'B1',
+  'upper_intermediate': 'B2',
+  'advanced': 'C1',
+};
+
+const _displayNames = {
+  'beginner': 'Beginner',
+  'elementary': 'Elementary',
+  'intermediate': 'Intermediate',
+  'upper_intermediate': 'Upper Intermediate',
+  'advanced': 'Advanced',
+};
+
+const _skillNames = {
+  'grammar': 'Grammar',
+  'vocabulary': 'Vocabulary',
+  'reading': 'Reading',
+  'listening': 'Listening',
+};
+
 class _ResultBody extends StatelessWidget {
   const _ResultBody({required this.result});
 
@@ -128,80 +165,49 @@ class _ResultBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final masteries = result.skillMasteryMap;
+
+    final totalCorrect =
+        masteries.values.fold(0, (sum, m) => sum + m.correctAnswers);
+    final totalQuestions =
+        masteries.values.fold(0, (sum, m) => sum + m.totalQuestions);
+    final totalScore =
+        totalQuestions > 0 ? (100 * totalCorrect / totalQuestions).round() : 0;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _LevelCard(estimatedLevel: result.estimatedLevel),
-          const SizedBox(height: AimSpacing.sectionGap),
-          if (result.skillMasteryMap.isNotEmpty) ...[
+          _LevelCard(
+            estimatedLevel: result.estimatedLevel,
+            totalScore: totalScore,
+          ),
+          if (masteries.isNotEmpty) ...[
+            const SizedBox(height: AimSpacing.sectionGap),
             Text(
-              'Section Summary',
-              style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
-            ),
-            const SizedBox(height: AimSpacing.componentGap),
-            AIMCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (final (i, entry)
-                      in result.skillMasteryMap.entries.indexed) ...[
-                    _SkillRow(skillCode: entry.key, mastery: entry.value),
-                    if (i != result.skillMasteryMap.length - 1)
-                      const SizedBox(height: AimSpacing.componentGap),
-                  ],
-                ],
+              'SECTION BREAKDOWN',
+              style: AimTextStyles.caption.copyWith(
+                color: surfaces.textMuted,
+                fontWeight: AimFontWeights.semibold,
+                letterSpacing: 0.6,
               ),
             ),
-            const SizedBox(height: AimSpacing.sectionGap),
-          ],
-          if (result.weaknesses.isNotEmpty) ...[
-            Text(
-              'Areas to Focus On',
-              style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
-            ),
-            const SizedBox(height: AimSpacing.space4),
-            Text(
-              'Identified by your backend evaluation — displayed in priority order.',
-              style:
-                  AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
-            ),
             const SizedBox(height: AimSpacing.componentGap),
-            AIMCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (final (i, weakness)
-                      in result.weaknesses.take(3).indexed) ...[
-                    _WeaknessRow(weakness: weakness),
-                    if (i != result.weaknesses.take(3).length - 1)
-                      const SizedBox(height: AimSpacing.componentGap),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(height: AimSpacing.sectionGap),
+            for (final entry in masteries.entries) ...[
+              _SectionBreakdownRow(skillCode: entry.key, mastery: entry.value),
+              const SizedBox(height: AimSpacing.componentGap),
+            ],
           ],
-          _InitialPathBanner(initialPathId: result.initialPathId),
           const SizedBox(height: AimSpacing.sectionGap),
-          AIMButton(
+          AIMGradientButton(
+            label: 'Continue to AIM',
             fullWidth: true,
-            semanticLabel: 'Continue to home',
+            semanticLabel: 'Continue to AIM',
             onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
               AppRoutePaths.mainShell,
               (route) => false,
             ),
-            child: const Text('Continue to Home'),
-          ),
-          const SizedBox(height: AimSpacing.sectionGap),
-          Text(
-            'Your level and study plan were determined by the backend based '
-            'on your answers. Flutter displays these results exactly as '
-            'received — no local calculations are performed.',
-            style: AimTextStyles.helper.copyWith(color: surfaces.textMuted),
-            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -214,166 +220,122 @@ class _ResultBody extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _LevelCard extends StatelessWidget {
-  const _LevelCard({required this.estimatedLevel});
+  const _LevelCard({required this.estimatedLevel, required this.totalScore});
 
   final String estimatedLevel;
-
-  static const _displayNames = {
-    'beginner': 'Beginner',
-    'elementary': 'Elementary',
-    'intermediate': 'Intermediate',
-    'upper_intermediate': 'Upper Intermediate',
-    'advanced': 'Advanced',
-  };
+  final int totalScore;
 
   @override
   Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
     final displayName = _displayNames[estimatedLevel] ?? estimatedLevel;
+    final code = _cefrCodes[estimatedLevel] ?? estimatedLevel;
 
-    return AIMCard(
-      variant: AIMCardVariant.elevated,
-      semanticLabel: 'Estimated level: $displayName',
-      child: Column(
-        children: [
-          Text(
-            'Your Estimated Level',
-            style: AimTextStyles.label.copyWith(color: surfaces.textSecondary),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AimSpacing.innerGap),
-          Text(
-            displayName,
-            style: AimTextStyles.h1.copyWith(color: AimColors.primary600),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AimSpacing.space4),
-          Text(
-            'Assigned by the backend based on your placement test',
-            style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
-            textAlign: TextAlign.center,
-          ),
-        ],
+    return Semantics(
+      label: 'Your level: $displayName, total score $totalScore out of 100',
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(AimSpacing.cardPaddingLg),
+        decoration: BoxDecoration(
+          gradient: AimGradients.gzHero,
+          borderRadius: AimRadius.borderXl,
+        ),
+        child: Column(
+          children: [
+            Text(
+              'YOUR LEVEL',
+              style: AimTextStyles.caption.copyWith(
+                color: AimColors.neutral0.withValues(alpha: 0.85),
+                fontWeight: AimFontWeights.semibold,
+                letterSpacing: 0.6,
+              ),
+            ),
+            const SizedBox(height: AimSpacing.space4),
+            Text(
+              code,
+              style: AimTextStyles.display.copyWith(color: AimColors.neutral0),
+            ),
+            const SizedBox(height: AimSpacing.space4),
+            Text(
+              '$displayName · Total score $totalScore / 100',
+              style: AimTextStyles.bodySm.copyWith(
+                color: AimColors.neutral0.withValues(alpha: 0.85),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
 // ---------------------------------------------------------------------------
-// Skill row — shows the backend-provided signal as-is
+// Section breakdown row — real per-section correct/total from the backend,
+// signal mapped only to a display color (never to a computed value).
 // ---------------------------------------------------------------------------
 
-class _SkillRow extends StatelessWidget {
-  const _SkillRow({required this.skillCode, required this.mastery});
+class _SectionBreakdownRow extends StatelessWidget {
+  const _SectionBreakdownRow({required this.skillCode, required this.mastery});
 
   final String skillCode;
   final PlacementSkillMastery mastery;
 
-  static const _names = {
-    'grammar': 'Grammar',
-    'vocabulary': 'Vocabulary',
-    'reading': 'Reading',
-    'listening': 'Listening',
-  };
-
-  static const _tones = {
-    'strong': AIMBadgeTone.success,
-    'developing': AIMBadgeTone.warning,
+  static const _signalColors = {
+    'strong': AimColors.success500,
+    'emerging': AimColors.warning500,
   };
 
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
-    final signal = mastery.signal;
-    final name = _names[skillCode] ?? skillCode;
-    final tone = _tones[signal] ?? AIMBadgeTone.error;
-    final label = signal.isEmpty
-        ? signal
-        : signal[0].toUpperCase() + signal.substring(1);
+    final name = _skillNames[skillCode] ?? skillCode;
+    final color = _signalColors[mastery.signal] ?? AimColors.primary500;
+    final progress = mastery.totalQuestions > 0
+        ? mastery.correctAnswers / mastery.totalQuestions
+        : 0.0;
 
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            name,
-            style: AimTextStyles.bodyMd.copyWith(color: surfaces.textPrimary),
-          ),
+    return Semantics(
+      label: '$name: ${mastery.correctAnswers} of '
+          '${mastery.totalQuestions} correct',
+      child: Container(
+        padding: const EdgeInsets.all(AimSpacing.cardPadding),
+        decoration: BoxDecoration(
+          color: surfaces.surface,
+          border: Border.all(color: surfaces.border),
+          borderRadius: AimRadius.borderLg,
         ),
-        AIMBadge(
-          tone: tone,
-          pill: true,
-          semanticLabel: '$name mastery: $label',
-          child: Text(label),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    name,
+                    style: AimTextStyles.title.copyWith(
+                      color: surfaces.textPrimary,
+                    ),
+                  ),
+                ),
+                Text(
+                  '${mastery.correctAnswers} / ${mastery.totalQuestions}',
+                  style: AimTextStyles.bodySm.copyWith(
+                    color: surfaces.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AimSpacing.space8),
+            ClipRRect(
+              borderRadius: AimRadius.borderXs,
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: AimSpacing.space8,
+                backgroundColor: surfaces.surfaceSunken,
+                valueColor: AlwaysStoppedAnimation<Color>(color),
+              ),
+            ),
+          ],
         ),
-      ],
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Weakness row
-// ---------------------------------------------------------------------------
-
-class _WeaknessRow extends StatelessWidget {
-  const _WeaknessRow({required this.weakness});
-
-  final PlacementWeakness weakness;
-
-  static const _names = {
-    'grammar': 'Grammar',
-    'vocabulary': 'Vocabulary',
-    'reading': 'Reading',
-    'listening': 'Listening',
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-    final name = _names[weakness.skillCode] ?? weakness.skillCode;
-
-    return Row(
-      children: [
-        AIMBadge(
-          tone: AIMBadgeTone.error,
-          pill: true,
-          semanticLabel: 'Priority ${weakness.priority}',
-          child: Text('${weakness.priority}'),
-        ),
-        const SizedBox(width: AimSpacing.componentGap),
-        Expanded(
-          child: Text(
-            name,
-            style: AimTextStyles.bodyMd.copyWith(color: surfaces.textPrimary),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Initial path banner
-// ---------------------------------------------------------------------------
-
-class _InitialPathBanner extends StatelessWidget {
-  const _InitialPathBanner({required this.initialPathId});
-
-  final String? initialPathId;
-
-  @override
-  Widget build(BuildContext context) {
-    final isReady = initialPathId != null && initialPathId!.isNotEmpty;
-
-    return AIMAlertBanner(
-      tone: isReady ? AIMAlertTone.success : AIMAlertTone.info,
-      title: isReady ? 'Initial Study Path Ready' : 'Study Path Pending',
-      semanticLabel: isReady
-          ? 'Your personalised starting path has been assigned'
-          : 'Your study path is being prepared',
-      child: Text(
-        isReady
-            ? 'Your personalised starting path has been assigned by the backend.'
-            : 'Your study path is being prepared by the backend.',
       ),
     );
   }

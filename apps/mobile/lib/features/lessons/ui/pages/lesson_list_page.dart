@@ -98,7 +98,10 @@ class _LessonListPageState extends ConsumerState<LessonListPage> {
     final state = ref.watch(lessonsListProvider);
 
     return Scaffold(
-      appBar: AIMTopAppBar(title: widget.chapterTitle),
+      appBar: AIMTopAppBar(
+        title: widget.chapterTitle,
+        onBack: () => Navigator.of(context).maybePop(),
+      ),
       body: switch (state) {
         AppAsyncLoading() => const AIMFullScreenLoading(
             semanticLabel: 'Loading lessons',

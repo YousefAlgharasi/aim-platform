@@ -5,7 +5,10 @@
 //
 // Responsibilities:
 //   1. Load the active placement test via GET /placement/active.
-//   2. Start a new attempt via POST /placement/attempts when student taps "Start".
+//   2. Load its ordered sections via GET /placement/active/sections (for the
+//      "SECTIONS" preview list on the start screen — same endpoint the
+//      section page already uses; no new endpoint introduced).
+//   3. Start a new attempt via POST /placement/attempts when student taps "Start".
 //
 // Security rules:
 // - Flutter never calculates placement scores, CEFR levels, mastery, or weakness maps.
@@ -17,6 +20,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/features/placement/data/models/placement_attempt_model.dart';
+import 'package:aim_mobile/features/placement/data/models/placement_section_model.dart';
 import 'package:aim_mobile/features/placement/data/models/placement_test_model.dart';
 import 'package:aim_mobile/features/placement/logic/repository/placement_repository.dart';
 
@@ -40,8 +44,11 @@ final class PlacementStartLoading extends PlacementStartState {
 
 /// Active test loaded — ready for the student to start.
 final class PlacementStartReady extends PlacementStartState {
-  const PlacementStartReady(this.test);
+  const PlacementStartReady(this.test, this.sections);
   final PlacementTestModel test;
+
+  /// Ordered sections for the "SECTIONS" preview list.
+  final List<PlacementSectionModel> sections;
 }
 
 /// Attempt started — carries the new attempt for navigation.
@@ -69,12 +76,17 @@ class PlacementStartNotifier extends StateNotifier<PlacementStartState> {
 
   final PlacementRepository _repository;
 
-  /// Load the currently active placement test.
+  /// Load the currently active placement test and its section list.
   Future<void> loadActivePlacementTest(String bearerToken) async {
     state = const PlacementStartLoading();
     try {
-      final test = await _repository.getActivePlacementTest(bearerToken);
-      state = PlacementStartReady(test);
+      final results = await Future.wait([
+        _repository.getActivePlacementTest(bearerToken),
+        _repository.getActiveSections(bearerToken),
+      ]);
+      final test = results[0] as PlacementTestModel;
+      final sections = results[1] as List<PlacementSectionModel>;
+      state = PlacementStartReady(test, sections);
     } catch (e) {
       state = PlacementStartError(
         message: e is Exception ? e.toString() : 'Failed to load placement test',

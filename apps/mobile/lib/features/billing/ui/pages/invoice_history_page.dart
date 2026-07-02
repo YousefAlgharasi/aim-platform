@@ -1,3 +1,15 @@
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Invoice history" (47)
+//   docs/design/ui-for-all-system-mobile/screenshots/light/47-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/47-screen.png
+//
+// TASK-27: restyled to match design screen 47 — gradient header ("Invoices"),
+// rows with a leading receipt-icon avatar, bold amount, date subtitle, and a
+// soft "Paid"/status pill.
+//
+// Security/data rules:
+// - Invoice id, status, amount, currency, and date are all backend-supplied;
+//   Flutter never invents or computes any of them.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -21,87 +33,78 @@ class InvoiceHistoryPage extends ConsumerStatefulWidget {
     required String dateFormatted,
     VoidCallback? onTap,
   }) {
-    final theme = Theme.of(context);
-    return ListTile(
+    final surfaces = aimSurfacesOf(context);
+    return AIMCard(
+      interactive: onTap != null,
       onTap: onTap,
-      leading: Icon(
-        _iconForStatus(status),
-        color: _colorForStatus(status, theme),
-      ),
-      title: Text(amountFormatted),
-      subtitle: Text(dateFormatted),
-      trailing: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: _colorForStatus(status, theme).withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Text(
-          status,
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: _colorForStatus(status, theme),
+      semanticLabel: '$amountFormatted, $dateFormatted, $status',
+      child: Row(
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: surfaces.surfaceSunken,
+              borderRadius: AimRadius.borderMd,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(AimSpacing.space12),
+              child: Icon(
+                Icons.receipt_outlined,
+                size: AimSizes.iconMd,
+                color: surfaces.textSecondary,
+              ),
+            ),
           ),
-        ),
+          const SizedBox(width: AimSpacing.componentGap),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  amountFormatted,
+                  style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
+                ),
+                const SizedBox(height: AimSpacing.space2),
+                Text(
+                  dateFormatted,
+                  style:
+                      AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
+                ),
+              ],
+            ),
+          ),
+          AIMBadge(
+            tone: _toneForStatus(status),
+            pill: true,
+            child: Text(_capitalize(status)),
+          ),
+        ],
       ),
     );
   }
 
-  static IconData _iconForStatus(String status) {
+  static AIMBadgeTone _toneForStatus(String status) {
     switch (status) {
       case 'paid':
-        return Icons.check_circle;
+        return AIMBadgeTone.success;
       case 'pending':
-        return Icons.schedule;
+        return AIMBadgeTone.warning;
       case 'failed':
-        return Icons.error;
+        return AIMBadgeTone.error;
       case 'refunded':
-        return Icons.replay;
+        return AIMBadgeTone.info;
       default:
-        return Icons.receipt;
+        return AIMBadgeTone.neutral;
     }
   }
 
-  static Color _colorForStatus(String status, ThemeData theme) {
-    switch (status) {
-      case 'paid':
-        return theme.colorScheme.primary;
-      case 'pending':
-        return theme.colorScheme.tertiary;
-      case 'failed':
-        return theme.colorScheme.error;
-      case 'refunded':
-        return theme.colorScheme.outline;
-      default:
-        return theme.colorScheme.onSurface;
-    }
-  }
+  static String _capitalize(String value) =>
+      value.isEmpty ? value : '${value[0].toUpperCase()}${value.substring(1)}';
 
   static Widget buildEmptyState(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.receipt_long,
-            size: 64,
-            color: theme.colorScheme.outline,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No Invoices Yet',
-            style: theme.textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Your invoices will appear here after your first payment.',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+    return const AIMEmptyState(
+      icon: Icon(Icons.receipt_long_outlined),
+      title: 'No Invoices Yet',
+      subtitle: 'Your invoices will appear here after your first payment.',
     );
   }
 }
@@ -120,36 +123,96 @@ class _InvoiceHistoryPageState extends ConsumerState<InvoiceHistoryPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(invoiceProvider);
+    final surfaces = aimSurfacesOf(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Invoice History')),
-      body: SafeArea(
-        child: switch (state) {
-          AppAsyncLoading() || AppAsyncIdle() => const AIMFullScreenLoading(
-              semanticLabel: 'Loading invoices',
-            ),
-          AppAsyncFailure(:final message) => AIMFullScreenError(
-              message: message,
-              onRetry: _load,
-            ),
-          AppAsyncSuccess(:final data) => data.isEmpty
-              ? RefreshIndicator(
-                  onRefresh: _refresh,
-                  child: ListView(
-                    children: [
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.7,
-                        child: InvoiceHistoryPage.buildEmptyState(context),
+      backgroundColor: surfaces.background,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _InvoiceHistoryHeader(),
+          Expanded(
+            child: switch (state) {
+              AppAsyncLoading() || AppAsyncIdle() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading invoices',
+                ),
+              AppAsyncFailure(:final message) => AIMFullScreenError(
+                  message: message,
+                  onRetry: _load,
+                ),
+              AppAsyncSuccess(:final data) => data.isEmpty
+                  ? RefreshIndicator(
+                      onRefresh: _refresh,
+                      child: ListView(
+                        children: [
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.7,
+                            child: InvoiceHistoryPage.buildEmptyState(context),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                )
-              : _InvoiceList(invoices: data, onRefresh: _refresh),
-        },
+                    )
+                  : _InvoiceList(invoices: data, onRefresh: _refresh),
+            },
+          ),
+        ],
       ),
     );
   }
+}
 
+class _InvoiceHistoryHeader extends StatelessWidget {
+  const _InvoiceHistoryHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+      ),
+      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            Semantics(
+              button: true,
+              label: 'Back',
+              child: InkWell(
+                onTap: () => Navigator.of(context).pop(),
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(AimSpacing.space12),
+                    child: Icon(
+                      Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_right_rounded
+                          : Icons.chevron_left_rounded,
+                      size: AimSizes.iconMd,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AimSpacing.space12),
+            Text(
+              'Invoices',
+              style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _InvoiceList extends StatelessWidget {
@@ -162,16 +225,21 @@ class _InvoiceList extends StatelessWidget {
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: onRefresh,
-      child: ListView.builder(
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AimSpacing.screenPaddingMobile,
+          vertical: AimSpacing.sectionGap,
+        ),
         itemCount: invoices.length,
+        separatorBuilder: (_, __) =>
+            const SizedBox(height: AimSpacing.listItemGap),
         itemBuilder: (context, index) {
           final invoice = invoices[index];
           return InvoiceHistoryPage.buildInvoiceTile(
             context: context,
             invoiceId: invoice.id,
             status: invoice.status,
-            amountFormatted:
-                '\$${(invoice.total / 100).toStringAsFixed(2)} ${invoice.currency.toUpperCase()}',
+            amountFormatted: '\$${(invoice.total / 100).toStringAsFixed(2)}',
             dateFormatted: _formatDate(invoice.createdAt),
           );
         },
@@ -179,8 +247,15 @@ class _InvoiceList extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime date) =>
-      '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  /// Formats a real backend timestamp as e.g. "Jun 25, 2026" (design screen
+  /// 47's row subtitle).
+  String _formatDate(DateTime date) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
+  }
 }
 
 class InvoiceDetailPage extends StatelessWidget {

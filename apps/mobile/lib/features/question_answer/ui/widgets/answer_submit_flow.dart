@@ -91,10 +91,14 @@ class _AnswerSubmitFlowContent extends StatelessWidget {
           ),
           const SizedBox(height: AimSpacing.componentGap),
         ],
-        AIMButton(
+        AIMGradientButton(
+          label: 'Continue',
+          gradient: AimGradients.gzHero,
+          fullWidth: true,
           loading: state.isSubmitting,
+          enabled: state.canSubmit,
+          semanticLabel: 'Continue',
           onPressed: state.canSubmit ? onSubmit : null,
-          child: const Text('Submit Answer'),
         ),
       ],
     );
