@@ -1,40 +1,38 @@
 // Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Courses" (courseList)
 //   docs/design/ui-for-all-system-mobile/screenshots/light/06-screen.png
 //   docs/design/ui-for-all-system-mobile/screenshots/dark/06-screen.png
-// Endpoint: GET /curriculum/courses (CourseModel fields only)
-// Widgets: AIMTopAppBar, AIMFullScreenLoading, AIMFullScreenError,
-//   AIMEmptyState, CourseListTile
+// Endpoint: GET /student/courses (level badge, lesson count, real
+//   per-student progress — see services/backend-api/src/features/
+//   student-courses)
+// Widgets: AIMFullScreenLoading, AIMFullScreenError, AIMEmptyState,
+//   AIMChip, AIMBadge, CourseListTile
 //
 // Phase 6 — P6-073
-// CourseListPage — displays published courses from the backend.
+// CourseListPage — displays published courses, with real per-student
+// progress, from the backend.
 //
-// Loads via [coursesProvider] on first build. Tapping a course navigates
-// to the chapter list (P6-074) passing the backend-supplied course ID.
+// Loads via [studentCoursesProvider] on first build. Tapping a course
+// navigates to the chapter list (P6-074) passing the backend-supplied
+// course ID.
 //
-// NOTE — header level badge / filter chips / per-course progress:
-// the design shows a header-level student level badge ("Level B1"), filter
-// chips ("All courses"/"In progress"/"Completed"), and rich per-course
-// cards (level badge, progress bar, lesson count, status chip). None of
-// those have a backing field on the backend's CourseModel (no level, no
-// per-student progress, no lesson count, no completion flag — see
-// services/backend-api/src/features/curriculum/courses). Per product
-// direction they render clearly-marked mock values ([MockCourseProgress]
-// per row, [_kMockStudentLevel] in the header) so the screen matches the
-// design pixel-for-pixel; the filter chips filter against the same mocked
-// statuses. Swap for real fields once the backend exposes them. Course
-// title and description remain 100% backend-real.
+// All card content — title, description, levelCode, lessonCount, percent,
+// status — is backend-computed by GET /student/courses. Flutter never
+// computes progress percentage or completion status locally. The header
+// "Level" badge shows the levelCode of the student's most-advanced
+// touched course (also real, derived from the same response) — hidden
+// entirely if no course has a level yet.
 //
 // Security rules:
-// - Flutter never computes status, sortOrder, or difficulty.
+// - Flutter never computes status, sortOrder, progress percent, or lesson
+//   counts.
 // - Bearer token from authFlowProvider; never stored here.
 // - courseId passed to next screen is always backend-supplied from the
-//   CourseModel; never constructed from user input.
+//   StudentCourseModel; never constructed from user input.
 // - No AIM Engine, AI Teacher, or AI provider calls from Flutter.
 // - No secrets here.
 //
 // RTL/Arabic rules:
 // - Uses Directionality-aware Row/Column/ListView.
-// - AIMTopAppBar handles back-arrow mirroring internally.
 // - EdgeInsets.symmetric mirrors correctly under RTL.
 // - CourseListTile chevron mirrors via Directionality.of(context).
 
@@ -45,15 +43,16 @@ import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
-import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
-import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
+import 'package:aim_mobile/features/student_courses/data/models/student_course_model.dart';
+import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
+import 'package:aim_mobile/features/student_courses/logic/provider/student_courses_provider.dart';
 import '../widgets/lessons_widgets.dart';
 
-/// Published course list screen.
+/// Published course list screen, enriched with real per-student progress.
 ///
 /// Auto-loads on first build using the bearer token from [authFlowProvider].
 /// Tapping a course navigates to the chapter list, passing the
-/// backend-supplied [CourseModel.id].
+/// backend-supplied [StudentCourseModel.courseId].
 class CourseListPage extends ConsumerStatefulWidget {
   const CourseListPage({super.key});
 
@@ -71,27 +70,27 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
   void _load() {
     final token = ref.read(authFlowProvider).accessToken;
     if (token == null || token.isEmpty) return;
-    ref.read(coursesProvider.notifier).load(bearerToken: token);
+    ref.read(studentCoursesProvider.notifier).load(bearerToken: token);
   }
 
   Future<void> _refresh() async {
     final token = ref.read(authFlowProvider).accessToken;
     if (token == null || token.isEmpty) return;
-    await ref.read(coursesProvider.notifier).refresh(bearerToken: token);
+    await ref.read(studentCoursesProvider.notifier).refresh(bearerToken: token);
   }
 
-  void _onCourseTap(CourseModel course) {
-    // Navigate to the chapter list, passing the backend-supplied course.id.
+  void _onCourseTap(StudentCourseModel course) {
+    // Navigate to the chapter list, passing the backend-supplied courseId.
     // courseId is never constructed from user input.
     Navigator.of(context).pushNamed(
       AppRoutePaths.courseChapters,
-      arguments: {'courseId': course.id, 'courseTitle': course.title},
+      arguments: {'courseId': course.courseId, 'courseTitle': course.title},
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(coursesProvider);
+    final state = ref.watch(studentCoursesProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -122,10 +121,6 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
 // Content widget
 // ---------------------------------------------------------------------------
 
-/// Mocked header level badge — see file-level NOTE. No endpoint exposes the
-/// student's CEFR level on this screen.
-const String _kMockStudentLevel = 'Level B1';
-
 enum _CourseFilter { all, inProgress, completed }
 
 class _CourseListContent extends StatefulWidget {
@@ -135,9 +130,9 @@ class _CourseListContent extends StatefulWidget {
     required this.onTap,
   });
 
-  final List<CourseModel> courses;
+  final List<StudentCourseModel> courses;
   final Future<void> Function() onRefresh;
-  final void Function(CourseModel) onTap;
+  final void Function(StudentCourseModel) onTap;
 
   @override
   State<_CourseListContent> createState() => _CourseListContentState();
@@ -146,15 +141,28 @@ class _CourseListContent extends StatefulWidget {
 class _CourseListContentState extends State<_CourseListContent> {
   _CourseFilter _filter = _CourseFilter.all;
 
-  /// Filters against the same deterministic [MockCourseProgress] statuses
-  /// the tiles render — see file-level NOTE on mocked progress.
-  bool _matchesFilter(int index) {
-    final mock = MockCourseProgress.forIndex(index);
+  bool _matchesFilter(StudentCourseModel course) {
     return switch (_filter) {
       _CourseFilter.all => true,
-      _CourseFilter.inProgress => mock.inProgress,
-      _CourseFilter.completed => mock.completed,
+      _CourseFilter.inProgress =>
+        course.status == StudentCourseStatus.inProgress,
+      _CourseFilter.completed =>
+        course.status == StudentCourseStatus.completed,
     };
+  }
+
+  /// Level badge for the most-advanced course the student has touched
+  /// (in-progress or completed, latest by list order), falling back to the
+  /// first course's level. Real data derived from the same response —
+  /// never a fabricated "current student level" field.
+  String? _headerLevel(List<StudentCourseModel> courses) {
+    for (final course in courses.reversed) {
+      if (course.status != StudentCourseStatus.notStarted &&
+          course.levelCode != null) {
+        return course.levelCode;
+      }
+    }
+    return courses.isNotEmpty ? courses.first.levelCode : null;
   }
 
   @override
@@ -169,10 +177,8 @@ class _CourseListContentState extends State<_CourseListContent> {
       );
     }
 
-    final visibleIndexes = [
-      for (var i = 0; i < widget.courses.length; i++)
-        if (_matchesFilter(i)) i,
-    ];
+    final visibleCourses = widget.courses.where(_matchesFilter).toList();
+    final headerLevel = _headerLevel(widget.courses);
 
     return RefreshIndicator(
       onRefresh: widget.onRefresh,
@@ -191,13 +197,14 @@ class _CourseListContentState extends State<_CourseListContent> {
                   style: AimTextStyles.h1.copyWith(color: surfaces.textPrimary),
                 ),
               ),
-              AIMBadge(
-                tone: AIMBadgeTone.primary,
-                variant: AIMBadgeVariant.soft,
-                pill: true,
-                dot: true,
-                child: const Text(_kMockStudentLevel),
-              ),
+              if (headerLevel != null)
+                AIMBadge(
+                  tone: AIMBadgeTone.primary,
+                  variant: AIMBadgeVariant.soft,
+                  pill: true,
+                  dot: true,
+                  child: Text('Level $headerLevel'),
+                ),
             ],
           ),
           const SizedBox(height: AimSpacing.space4),
@@ -234,14 +241,24 @@ class _CourseListContentState extends State<_CourseListContent> {
             ),
           ),
           const SizedBox(height: AimSpacing.sectionGap),
-          for (final index in visibleIndexes) ...[
-            CourseListTile(
-              model: widget.courses[index],
-              index: index,
-              onTap: () => widget.onTap(widget.courses[index]),
-            ),
-            const SizedBox(height: AimSpacing.listItemGap),
-          ],
+          if (visibleCourses.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: AimSpacing.sectionGap),
+              child: Text(
+                'No courses match this filter yet.',
+                style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
+                textAlign: TextAlign.center,
+              ),
+            )
+          else
+            for (var i = 0; i < visibleCourses.length; i++) ...[
+              CourseListTile(
+                model: visibleCourses[i],
+                index: i,
+                onTap: () => widget.onTap(visibleCourses[i]),
+              ),
+              const SizedBox(height: AimSpacing.listItemGap),
+            ],
         ],
       ),
     );
