@@ -15,6 +15,7 @@ import 'package:aim_mobile/features/auth/data/models/login_result_model.dart';
 import 'package:aim_mobile/features/auth/data/models/refresh_result_model.dart';
 import 'package:aim_mobile/features/auth/data/models/register_result_model.dart';
 import 'package:aim_mobile/features/auth/ui/widgets/logout_button.dart';
+import 'package:aim_mobile/features/notifications/ui/widgets/notification_bell_button.dart';
 import 'package:aim_mobile/features/profile/ui/pages/profile_page.dart';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -99,7 +100,11 @@ void main() {
         _wrap(const AppAsyncState.success(_studentContext)));
     await tester.pump();
 
-    expect(find.byType(AIMGradientHeroHeader), findsOneWidget);
+    // Bespoke gradient hero header (not AIMGradientHeroHeader — its
+    // `trailing` slot can't fit both the bell and edit icon buttons; see
+    // _ProfileHeroHeader's doc comment in profile_page.dart).
+    expect(find.byType(NotificationBellButton), findsOneWidget);
+    expect(find.byIcon(Icons.edit_outlined), findsOneWidget);
     // Sign-out lives in the side menu drawer, not on this screen.
     expect(find.byType(LogoutButton), findsNothing);
     expect(find.byType(AIMCard), findsWidgets);
