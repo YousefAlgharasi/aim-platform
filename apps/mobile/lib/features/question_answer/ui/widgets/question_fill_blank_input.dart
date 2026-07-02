@@ -2,6 +2,17 @@
 // QuestionFillBlankInput — free-text answer input for fill_blank /
 // free_text question types.
 //
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Question page"
+//   docs/design/ui-for-all-system-mobile/screenshots/light/32-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/32-screen.png
+//   NOTE: the screenshots depict the multiple-choice branch of the Question
+//   page, not this fill-blank branch — there is no design reference for
+//   this widget's specific appearance. This is a token-driven visual tidy
+//   (matching the AIMInput styling already used elsewhere, e.g.
+//   register_page.dart), not a redesign: same controller, same
+//   onChanged/disabled wiring, same semantic label as before.
+// Endpoints: POST /sessions/start, POST /sessions/:id/attempt
+//
 // Collects student input only. Flutter never evaluates correctness.
 
 import 'package:flutter/material.dart';
@@ -42,6 +53,7 @@ class _QuestionFillBlankInputState extends State<QuestionFillBlankInput> {
     return AIMInput(
       controller: _controller,
       label: 'Your answer',
+      helper: 'Type your response, then tap Continue to submit.',
       placeholder: 'Type your answer here',
       disabled: widget.disabled,
       onChanged: widget.onChanged,
