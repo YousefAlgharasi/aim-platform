@@ -217,10 +217,12 @@ class _FeedbackHeader extends StatelessWidget {
                     color: AimColors.neutral0.withValues(alpha: 0.18),
                     shape: BoxShape.circle,
                   ),
-                  child: const Padding(
+                  child: Padding(
                     padding: EdgeInsets.all(AimSpacing.space12),
                     child: Icon(
-                      Icons.arrow_back,
+                      Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_right_rounded
+                          : Icons.chevron_left_rounded,
                       size: AimSizes.iconMd,
                       color: AimColors.neutral0,
                     ),
