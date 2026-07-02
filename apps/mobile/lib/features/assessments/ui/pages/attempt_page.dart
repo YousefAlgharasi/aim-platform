@@ -11,6 +11,10 @@
 // Resumes the attempt on load, shows status and a live countdown, and
 // allows submission. Question rendering is blocked on a backend gap
 // (see comment in _AttemptContent below) — a placeholder is shown instead.
+//
+// TASK-23: Submit no longer fires inline — it pushes the SubmitAttemptPage
+// confirmation screen (design screen 28), which owns the actual submission
+// and its loading state, per the design flow 27 → 28 → 29.
 
 import 'dart:async';
 
@@ -22,6 +26,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
 import 'package:aim_mobile/features/assessments/logic/provider/assessment_provider.dart';
+import 'package:aim_mobile/features/assessments/ui/pages/submit_attempt_page.dart';
 
 class AttemptPage extends ConsumerStatefulWidget {
   const AttemptPage({
@@ -40,8 +45,6 @@ class AttemptPage extends ConsumerStatefulWidget {
 }
 
 class _AttemptPageState extends ConsumerState<AttemptPage> {
-  bool _submitting = false;
-
   @override
   void initState() {
     super.initState();
@@ -57,49 +60,23 @@ class _AttemptPageState extends ConsumerState<AttemptPage> {
         );
   }
 
-  void _submitAttempt() {
-    final token = ref.read(authFlowProvider).accessToken;
-    if (token == null || token.isEmpty) return;
-
-    setState(() => _submitting = true);
-
-    ref.read(submitAttemptProvider.notifier).submit(
-          bearerToken: token,
+  /// Pushes the SubmitAttemptPage confirmation screen (design screen 28)
+  /// instead of submitting inline; the confirmation page owns the submit
+  /// call, its loading state, and navigation to the result screen.
+  void _openSubmitConfirmation() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => SubmitAttemptPage(
           attemptId: widget.attemptId,
-        );
-  }
-
-  void _onSubmitSuccess(SubmitAttemptResult result) {
-    Navigator.of(context).pushReplacementNamed(
-      '/student/assessments/result',
-      arguments: {
-        'attemptId': result.attemptId,
-        'resultId': result.resultId,
-        'assessmentTitle': widget.assessmentTitle,
-      },
+          assessmentTitle: widget.assessmentTitle,
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final resumeState = ref.watch(resumeAttemptProvider);
-
-    ref.listen<AppAsyncState<SubmitAttemptResult>>(
-      submitAttemptProvider,
-      (_, next) {
-        switch (next) {
-          case AppAsyncSuccess(:final data):
-            _onSubmitSuccess(data);
-          case AppAsyncFailure(:final message):
-            setState(() => _submitting = false);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(message)),
-            );
-          case _:
-            break;
-        }
-      },
-    );
 
     final surfaces = aimSurfacesOf(context);
 
@@ -123,8 +100,7 @@ class _AttemptPageState extends ConsumerState<AttemptPage> {
                 ),
               AppAsyncSuccess(:final data) => _AttemptContent(
                   result: data,
-                  submitting: _submitting,
-                  onSubmit: _submitAttempt,
+                  onSubmit: _openSubmitConfirmation,
                 ),
               AppAsyncIdle() => const AIMFullScreenLoading(
                   semanticLabel: 'Resuming attempt',
@@ -240,10 +216,12 @@ class _AttemptHeaderState extends State<_AttemptHeader> {
                     color: AimColors.neutral0.withValues(alpha: 0.18),
                     shape: BoxShape.circle,
                   ),
-                  child: const Padding(
+                  child: Padding(
                     padding: EdgeInsets.all(AimSpacing.space12),
                     child: Icon(
-                      Icons.arrow_back,
+                      Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_right_rounded
+                          : Icons.chevron_left_rounded,
                       size: AimSizes.iconMd,
                       color: AimColors.neutral0,
                     ),
@@ -322,12 +300,10 @@ class _CountdownPill extends StatelessWidget {
 class _AttemptContent extends StatelessWidget {
   const _AttemptContent({
     required this.result,
-    required this.submitting,
     required this.onSubmit,
   });
 
   final ResumeAttemptResult result;
-  final bool submitting;
   final VoidCallback onSubmit;
 
   @override
@@ -430,8 +406,7 @@ class _AttemptContent extends StatelessWidget {
           const SizedBox(height: AimSpacing.sectionGap),
           AIMGradientButton(
             label: 'Submit',
-            onPressed: submitting ? null : onSubmit,
-            loading: submitting,
+            onPressed: onSubmit,
             fullWidth: true,
             semanticLabel: 'Submit attempt',
           ),

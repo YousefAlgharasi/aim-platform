@@ -1,26 +1,43 @@
-// Phase 6 — P6-041
-// Profile screen — Student Mobile App MVP.
-//
 // Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Profile"
 //   docs/design/ui-for-all-system-mobile/screenshots/light/16-screen.png
 //   docs/design/ui-for-all-system-mobile/screenshots/dark/16-screen.png
-// Endpoints: GET /profile/me (via authContextProvider),
-//   GET /student/achievements (via achievementsProvider)
-// Widgets: AIMGradientHeroHeader, AIMStatTile, AIMBadge, AIMCard,
-//   AIMFullScreenLoading, AIMFullScreenError
+// Endpoints: GET /auth/me (via authContextProvider); Home engagement summary
+//   (via homeProvider, for the day-streak stat only); GET /student/achievements
+//   (via achievementsProvider, for the achievements-earned stat and the
+//   achievements carousel).
+// Widgets: AIMCard, AIMBadge, AIMFullScreenLoading, AIMFullScreenError
+//
+// Phase 6 — P6-041 (restyled — TASK-19)
+// Profile screen — Student Mobile App MVP.
+//
+// This is a real-data-only visual restyle (confirmed with the end user,
+// scope: "Gradient header, real stats only"). The plain AIMTopAppBar is
+// replaced with a bespoke gradient hero header (mirrors AIMGradientHeroHeader
+// styling, but built locally because its `trailing` slot cannot cleanly fit
+// two icon buttons — bell + edit — side by side; see _ProfileHeroHeader).
+// The header shows the avatar, name/email, role + status pill badges, and
+// exactly two real stat cards: day streak (homeProvider) and achievements
+// earned (achievementsProvider). Below the header, a compact achievements
+// carousel is shown (real title/icon only). The following are intentionally
+// NOT shown because no backend field backs them: total XP, global/percentile
+// rank, the "this week" daily-activity bar chart, and achievement rarity
+// tags. The existing ACCOUNT/PROFILE/ROLES/QUICK LINKS sections below are
+// unchanged.
 //
 // Security boundary:
-// - Displays only data returned from the backend via authContextProvider.
+// - Displays only data returned from the backend via authContextProvider,
+//   homeProvider, and achievementsProvider.
 // - Role badges are UX-only. Backend is the final authority for role enforcement.
 // - supabase_auth_uid and internal permission keys are never rendered.
+// - homeProvider/achievementsProvider are secondary: their failure or
+//   loading state never blocks the primary profile content — stats are
+//   simply omitted/zeroed, matching the same graceful-degradation pattern
+//   already used in progress_page.dart.
 //
-// NOTE — day streak / total XP / global rank / weekly activity chart:
-// no backend endpoint currently exposes these fields to Flutter (checked
-// AuthContextModel, achievements, and analytics_summary — none carry
-// gamification stats). The stat row and weekly chart below render
-// clearly-mocked placeholder values so the screen matches the design
-// pixel-for-pixel; swap `_MockGamificationStats` for a real provider once a
-// backend endpoint exists. The achievements strip uses real data.
+// RTL/Arabic rules:
+// - EdgeInsetsDirectional / BorderRadiusDirectional used throughout the new
+//   header so it mirrors correctly.
+// - ListView and all children respect the ambient locale direction.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,12 +64,11 @@ import '../../../notifications/ui/widgets/notification_bell_button.dart';
 /// use AIM Mobile Design System tokens. No hard-coded values.
 ///
 /// RTL/Arabic: no [TextDirection] hard-coded. [ListView] and all children
-/// respect the ambient locale direction; the hero header's icon cluster uses
-/// [PositionedDirectional] so it mirrors correctly.
+/// respect the ambient locale direction.
 ///
 /// Security:
-/// - Reads data only from authContextProvider and achievementsProvider
-///   (both backend-sourced).
+/// - Reads data only from authContextProvider (backend-sourced), homeProvider,
+///   and achievementsProvider.
 /// - No credentials, no scoring, no AIM Engine calls.
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
@@ -65,18 +81,35 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadAchievements());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
-  void _loadAchievements() {
-    final token = ref.read(authFlowProvider).accessToken;
+  void _load() {
+    final authContext = ref.read(authContextProvider);
+    final authFlow = ref.read(authFlowProvider);
+    final contextData = switch (authContext) {
+      AppAsyncSuccess(:final data) => data,
+      _ => null,
+    };
+    if (contextData == null) return;
+    final token = authFlow.accessToken;
     if (token == null || token.isEmpty) return;
+
+    // Secondary stats — day streak (homeProvider) and achievements
+    // (achievementsProvider). Neither blocks the primary profile content;
+    // see class doc comment.
+    ref.read(homeProvider.notifier).load(
+          bearerToken: token,
+          studentId: contextData.user.id,
+        );
     ref.read(achievementsProvider.notifier).load(bearerToken: token);
   }
 
   @override
   Widget build(BuildContext context) {
     final authContextState = ref.watch(authContextProvider);
+    final homeState = ref.watch(homeProvider);
+    final achievementsState = ref.watch(achievementsProvider);
     final surfaces = aimSurfacesOf(context);
 
     // Navigate to sign-in when sign-out completes.
@@ -98,6 +131,15 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       }
     });
 
+    final goal = switch (homeState) {
+      AppAsyncSuccess<HomeData>(:final data) => data.goal,
+      _ => null,
+    };
+    final achievements = switch (achievementsState) {
+      AppAsyncSuccess<List<AchievementModel>>(:final data) => data,
+      _ => const <AchievementModel>[],
+    };
+
     return Scaffold(
       body: switch (authContextState) {
         AppAsyncLoading() => const AIMFullScreenLoading(
@@ -110,6 +152,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         AppAsyncSuccess(:final data) => _ProfileBody(
             authContext: data,
             surfaces: surfaces,
+            streakDays: goal?.streakDays,
+            achievements: achievements,
           ),
         _ => Center(
             child: Text(
@@ -122,64 +166,59 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   }
 }
 
-// ── Mocked gamification stats ───────────────────────────────────────────────
-// Placeholder only — see file-level NOTE. Never sourced from the backend.
-class _MockGamificationStats {
-  static const dayStreak = '7';
-  static const totalXp = '2,480';
-  static const globalRankPercentile = 'Top 5%';
-  static const weeklyDeltaLabel = '+18% vs last';
-
-  /// Relative bar heights (0.0–1.0) for Mon–Sun, most-recent-day highlighted.
-  static const weeklyActivity = [0.55, 0.7, 0.45, 0.85, 0.65, 1.0, 0.0];
-}
-
 // ── Profile body ──────────────────────────────────────────────────────────────
 
 class _ProfileBody extends StatelessWidget {
   const _ProfileBody({
     required this.authContext,
     required this.surfaces,
+    required this.streakDays,
+    required this.achievements,
   });
 
   final AuthContextModel authContext;
   final AimSurfaceTheme surfaces;
 
+  /// Backend-computed day streak from homeProvider, or null if that
+  /// secondary call hasn't succeeded yet / failed — rendered as 0.
+  final int? streakDays;
+
+  /// Backend-supplied achievements from achievementsProvider, or an empty
+  /// list while loading / on failure — the stat and carousel simply omit
+  /// gracefully in that case.
+  final List<AchievementModel> achievements;
+
   @override
   Widget build(BuildContext context) {
     final profile = authContext.profile;
+    final unlockedCount = achievements.where((a) => a.unlocked).length;
 
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        _ProfileHeroHeader(authContext: authContext),
-        const SizedBox(height: AimSpacing.sectionGap),
-
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AimSpacing.screenPaddingMobile,
-          ),
-          child: _StatRow(surfaces: surfaces),
+        _ProfileHeroHeader(
+          authContext: authContext,
+          streakDays: streakDays ?? 0,
+          unlockedCount: unlockedCount,
+          totalAchievements: achievements.length,
         ),
-        const SizedBox(height: AimSpacing.sectionGap),
-
         Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AimSpacing.screenPaddingMobile,
-          ),
-          child: _WeeklyActivityCard(surfaces: surfaces),
-        ),
-        const SizedBox(height: AimSpacing.sectionGap),
-
-        _AchievementsStrip(surfaces: surfaces),
-        const SizedBox(height: AimSpacing.sectionGap),
-
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AimSpacing.screenPaddingMobile,
+            vertical: AimSpacing.space24,
           ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Achievements carousel — omitted entirely while loading/idle
+              // or when there are no achievements, per graceful-degradation
+              // rules (the dedicated Achievements page already has its own
+              // empty state).
+              if (achievements.isNotEmpty) ...[
+                _AchievementsCarousel(achievements: achievements),
+                const SizedBox(height: AimSpacing.sectionGap),
+              ],
+
               // Account section
               _ProfileSection(
                 title: 'ACCOUNT',
@@ -314,12 +353,29 @@ class _ProfileBody extends StatelessWidget {
   }
 }
 
-// ── Hero header ─────────────────────────────────────────────────────────────
+// ── Gradient hero header ───────────────────────────────────────────────────────
 
+/// Bespoke gradient hero header for the profile screen.
+///
+/// Visually mirrors [AIMGradientHeroHeader]'s styling (same gradient,
+/// bottom-corner radius, padding, SafeArea, and IconTheme/DefaultTextStyle
+/// merges), but is not built on top of it directly: that widget's `trailing`
+/// slot is a single widget wrapped in a fixed touch-target-sized SizedBox,
+/// which cannot cleanly fit two icon buttons (bell + edit) side by side.
+/// This mirrors the same bespoke-widget-when-shared-doesn't-fit approach
+/// already used for the Achievements page and Voice Teacher headers.
 class _ProfileHeroHeader extends StatelessWidget {
-  const _ProfileHeroHeader({required this.authContext});
+  const _ProfileHeroHeader({
+    required this.authContext,
+    required this.streakDays,
+    required this.unlockedCount,
+    required this.totalAchievements,
+  });
 
   final AuthContextModel authContext;
+  final int streakDays;
+  final int unlockedCount;
+  final int totalAchievements;
 
   String _initials(String? value) {
     if (value == null || value.isEmpty) return '?';
@@ -333,121 +389,198 @@ class _ProfileHeroHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final profile = authContext.profile;
-    final displayName = profile?.displayName ?? authContext.user.email;
-    final roleLabel = authContext.roles.isNotEmpty
-        ? authContext.roles.first.name
-        : authContext.user.userType;
+    final displayName = profile?.displayName;
+    final email = authContext.user.email;
+    final initials = _initials(displayName ?? email);
 
-    return Stack(
-      children: [
-        AIMGradientHeroHeader(
-          title: displayName ?? '',
-          subtitle: authContext.user.email,
-          semanticLabel: 'Profile for $displayName',
-          leading: CircleAvatar(
-            radius: AimSizes.avatarLg / 2,
-            backgroundColor: AimColors.neutral0.withValues(alpha: 0.25),
-            child: Text(
-              _initials(displayName),
-              style: AimTextStyles.title.copyWith(color: AimColors.neutral0),
-            ),
-          ),
-          child: Wrap(
-            spacing: AimSpacing.innerGap,
-            runSpacing: AimSpacing.space8,
-            children: [
-              _HeaderPill(
-                icon: Icons.school_outlined,
-                label: _titleCase(roleLabel),
-                background: AimColors.neutral0.withValues(alpha: 0.18),
-              ),
-              _HeaderPill(
-                label: _titleCase(authContext.user.status),
-                background: AimColors.gzLime,
-                foreground: AimColors.neutral900,
-              ),
-            ],
-          ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.sectionGap,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.sectionGap,
+      ),
+      decoration: const BoxDecoration(
+        gradient: AimGradients.gzHero,
+        borderRadius: BorderRadiusDirectional.only(
+          bottomStart: Radius.circular(AimRadius.x2l),
+          bottomEnd: Radius.circular(AimRadius.x2l),
         ),
-        PositionedDirectional(
-          top: MediaQuery.paddingOf(context).top + AimSpacing.space4,
-          end: AimSpacing.screenPaddingMobile,
-          // IconButton resolves its own foreground colour from the
-          // Material 3 colour scheme rather than the ambient IconTheme, so
-          // it would otherwise ignore AIMGradientHeroHeader's white
-          // IconTheme.merge — force it explicitly for this header cluster.
-          child: IconButtonTheme(
-            data: IconButtonThemeData(
-              style: IconButton.styleFrom(foregroundColor: AimColors.neutral0),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: IconTheme.merge(
+          data: const IconThemeData(
+            color: AimColors.neutral0,
+            size: AimSizes.iconMd,
+          ),
+          child: DefaultTextStyle.merge(
+            style: const TextStyle(color: AimColors.neutral0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const NotificationBellButton(),
-                IconButton(
-                  icon: const Icon(Icons.edit_outlined),
-                  tooltip: 'Edit profile',
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const EditProfilePage(),
+                // Top row: "Profile" label + bell/edit actions.
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Profile',
+                        style: AimTextStyles.title
+                            .copyWith(color: AimColors.neutral0),
+                      ),
                     ),
-                  ),
+                    const NotificationBellButton(),
+                    IconButton(
+                      icon: const Icon(Icons.edit_outlined),
+                      tooltip: 'Edit profile',
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const EditProfilePage(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AimSpacing.sectionGap),
+
+                // Avatar + name/email + role/status badges.
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(
+                      radius: AimSizes.iconLg,
+                      backgroundColor:
+                          AimColors.neutral0.withValues(alpha: 0.18),
+                      child: Text(
+                        initials,
+                        style: AimTextStyles.title
+                            .copyWith(color: AimColors.neutral0),
+                      ),
+                    ),
+                    const SizedBox(width: AimSpacing.componentGap),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (displayName != null)
+                            Text(
+                              displayName,
+                              style: AimTextStyles.h3
+                                  .copyWith(color: AimColors.neutral0),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          if (email != null)
+                            Text(
+                              email,
+                              style: AimTextStyles.bodySm.copyWith(
+                                color: AimColors.neutral0.withValues(alpha: 0.85),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          const SizedBox(height: AimSpacing.space8),
+                          Wrap(
+                            spacing: AimSpacing.space8,
+                            runSpacing: AimSpacing.space8,
+                            children: [
+                              for (final role in authContext.roles)
+                                AIMBadge(
+                                  tone: AIMBadgeTone.neutral,
+                                  variant: AIMBadgeVariant.solid,
+                                  pill: true,
+                                  child: Text(role.name),
+                                ),
+                              if (authContext.user.status != null)
+                                AIMBadge(
+                                  tone: AIMBadgeTone.success,
+                                  variant: AIMBadgeVariant.solid,
+                                  pill: true,
+                                  child: Text(authContext.user.status!),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AimSpacing.sectionGap),
+
+                // Stat row — day streak + achievements earned. Exactly two
+                // real stats; no XP or rank card (not backend-backed).
+                Row(
+                  children: [
+                    Expanded(
+                      child: _HeroStatCard(
+                        value: '$streakDays',
+                        label: 'day streak',
+                        trailingEmoji: '🔥',
+                      ),
+                    ),
+                    const SizedBox(width: AimSpacing.componentGap),
+                    Expanded(
+                      child: _HeroStatCard(
+                        value: '$unlockedCount/$totalAchievements',
+                        label: 'achievements',
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
         ),
-      ],
+      ),
     );
-  }
-
-  String _titleCase(String? value) {
-    if (value == null || value.isEmpty) return '—';
-    return value[0].toUpperCase() + value.substring(1);
   }
 }
 
-/// Small pill used only inside [_ProfileHeroHeader], where colours must stay
-/// legible against the gradient regardless of the ambient light/dark theme —
-/// unlike [AIMBadge], which resolves its colours from the surface theme.
-class _HeaderPill extends StatelessWidget {
-  const _HeaderPill({
+/// Small semi-transparent white-on-gradient stat card used in the profile
+/// hero header. Not a reuse of progress_page.dart's `_StatCard`, which is
+/// styled for a white/surface background rather than a gradient one.
+class _HeroStatCard extends StatelessWidget {
+  const _HeroStatCard({
+    required this.value,
     required this.label,
-    required this.background,
-    this.icon,
-    this.foreground = AimColors.neutral0,
+    this.trailingEmoji,
   });
 
+  final String value;
   final String label;
-  final IconData? icon;
-  final Color background;
-  final Color foreground;
+  final String? trailingEmoji;
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: AimRadius.borderPill,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AimSpacing.space12,
-          vertical: AimSpacing.space4,
+    return Semantics(
+      label: '$value $label',
+      child: Container(
+        padding: const EdgeInsetsDirectional.symmetric(
+          horizontal: AimSpacing.componentGap,
+          vertical: AimSpacing.space12,
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+        decoration: BoxDecoration(
+          color: AimColors.neutral0.withValues(alpha: 0.15),
+          borderRadius: AimRadius.borderMd,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (icon != null) ...[
-              Icon(icon, size: AimSizes.iconSm, color: foreground),
-              const SizedBox(width: AimSpacing.space4),
-            ],
+            Text(
+              trailingEmoji == null ? value : '$value $trailingEmoji',
+              style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: AimSpacing.space4),
             Text(
               label,
               style: AimTextStyles.caption.copyWith(
-                color: foreground,
-                fontWeight: AimFontWeights.semibold,
+                color: AimColors.neutral0.withValues(alpha: 0.85),
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -456,148 +589,15 @@ class _HeaderPill extends StatelessWidget {
   }
 }
 
-// ── Stat row (mocked — see file-level NOTE) ─────────────────────────────────
+// ── Achievements carousel ───────────────────────────────────────────────────────
 
-class _StatRow extends StatelessWidget {
-  const _StatRow({required this.surfaces});
-  final AimSurfaceTheme surfaces;
+/// Compact horizontal carousel of real achievements (icon + title only — no
+/// rarity tag, since [AchievementModel] has no rarity field). Mirrors the
+/// design's compact carousel look without inventing any unbacked data.
+class _AchievementsCarousel extends StatelessWidget {
+  const _AchievementsCarousel({required this.achievements});
 
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: AIMCard(
-            padding: const EdgeInsets.symmetric(vertical: AimSpacing.space12),
-            child: AIMStatTile(
-              icon: const Icon(Icons.local_fire_department_rounded),
-              value: _MockGamificationStats.dayStreak,
-              label: 'day streak',
-              accentColor: AimColors.gzCoral,
-              width: double.infinity,
-            ),
-          ),
-        ),
-        const SizedBox(width: AimSpacing.componentGap),
-        Expanded(
-          child: AIMCard(
-            padding: const EdgeInsets.symmetric(vertical: AimSpacing.space12),
-            child: AIMStatTile(
-              icon: const Icon(Icons.bolt_rounded),
-              value: _MockGamificationStats.totalXp,
-              label: 'total XP',
-              accentColor: AimColors.gzPurple,
-              width: double.infinity,
-            ),
-          ),
-        ),
-        const SizedBox(width: AimSpacing.componentGap),
-        Expanded(
-          child: AIMCard(
-            padding: const EdgeInsets.symmetric(vertical: AimSpacing.space12),
-            child: AIMStatTile(
-              icon: const Icon(Icons.star_rounded),
-              value: _MockGamificationStats.globalRankPercentile,
-              label: 'global rank',
-              accentColor: AimColors.gzLime,
-              width: double.infinity,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ── Weekly activity chart (mocked — see file-level NOTE) ───────────────────
-
-class _WeeklyActivityCard extends StatelessWidget {
-  const _WeeklyActivityCard({required this.surfaces});
-  final AimSurfaceTheme surfaces;
-
-  static const _dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-
-  @override
-  Widget build(BuildContext context) {
-    return AIMCard(
-      semanticLabel: 'This week activity, ${_MockGamificationStats.weeklyDeltaLabel}',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'This week',
-                style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
-              ),
-              Text(
-                _MockGamificationStats.weeklyDeltaLabel,
-                style: AimTextStyles.bodySm
-                    .copyWith(color: AimColors.success500),
-              ),
-            ],
-          ),
-          const SizedBox(height: AimSpacing.componentGap),
-          SizedBox(
-            height: 88,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                for (var i = 0; i < _MockGamificationStats.weeklyActivity.length; i++)
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AimSpacing.space4,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Container(
-                            height: 56 *
-                                (_MockGamificationStats.weeklyActivity[i] == 0
-                                    ? 0.06
-                                    : _MockGamificationStats.weeklyActivity[i]),
-                            decoration: BoxDecoration(
-                              gradient: i ==
-                                      _MockGamificationStats.weeklyActivity
-                                              .length -
-                                          2
-                                  ? AimGradients.gzHero
-                                  : null,
-                              color: i ==
-                                      _MockGamificationStats.weeklyActivity
-                                              .length -
-                                          2
-                                  ? null
-                                  : AimColors.gzLime.withValues(alpha: 0.6),
-                              borderRadius: AimRadius.borderSm,
-                            ),
-                          ),
-                          const SizedBox(height: AimSpacing.space4),
-                          Text(
-                            _dayLabels[i],
-                            style: AimTextStyles.caption
-                                .copyWith(color: surfaces.textMuted),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Achievements strip (real data via achievementsProvider) ────────────────
-
-class _AchievementsStrip extends ConsumerWidget {
-  const _AchievementsStrip({required this.surfaces});
-  final AimSurfaceTheme surfaces;
+  final List<AchievementModel> achievements;
 
   static const _iconsByName = {
     'emoji_events': Icons.emoji_events,
@@ -605,36 +605,19 @@ class _AchievementsStrip extends ConsumerWidget {
     'workspace_premium': Icons.workspace_premium,
   };
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(achievementsProvider);
+  IconData _iconFor(AchievementModel achievement) =>
+      _iconsByName[achievement.icon] ?? Icons.military_tech;
 
-    final achievements = switch (state) {
-      AppAsyncSuccess<List<AchievementModel>>(:final data) => data,
-      _ => const <AchievementModel>[],
-    };
-    final earnedCount = achievements.where((a) => a.unlocked).length;
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AimSpacing.screenPaddingMobile,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Achievements',
-                style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
-              ),
-              Text(
-                '$earnedCount earned',
-                style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
-              ),
-            ],
-          ),
+        Text(
+          'Achievements',
+          style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
         ),
         const SizedBox(height: AimSpacing.componentGap),
         switch (state) {
@@ -679,57 +662,11 @@ class _AchievementsStrip extends ConsumerWidget {
                   achievement: achievements[i],
                   surfaces: surfaces,
                 ),
-              ),
-            ),
-        },
+              );
+            },
+          ),
+        ),
       ],
-    );
-  }
-}
-
-class _AchievementChip extends StatelessWidget {
-  const _AchievementChip({required this.achievement, required this.surfaces});
-
-  final AchievementModel achievement;
-  final AimSurfaceTheme surfaces;
-
-  IconData get _iconData =>
-      _AchievementsStrip._iconsByName[achievement.icon] ??
-      Icons.military_tech;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 72,
-      child: Column(
-        children: [
-          Container(
-            width: AimSizes.avatarLg,
-            height: AimSizes.avatarLg,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              gradient: achievement.unlocked ? AimGradients.gzFire : null,
-              color: achievement.unlocked ? null : surfaces.surfaceSunken,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              _iconData,
-              color: achievement.unlocked
-                  ? AimColors.neutral0
-                  : surfaces.textMuted,
-              size: AimSizes.iconMd,
-            ),
-          ),
-          const SizedBox(height: AimSpacing.space4),
-          Text(
-            achievement.title,
-            style: AimTextStyles.caption.copyWith(color: surfaces.textPrimary),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
     );
   }
 }

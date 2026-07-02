@@ -8,6 +8,21 @@
 // [AiTeacherChatState.sessions] already existed and is fully backed by the
 // backend session-list endpoint.
 //
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Conversations" (34)
+//   docs/design/ui-for-all-system-mobile/screenshots/light/34-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/34-screen.png
+//
+// TASK-30: restyled to match design screen 34 — gradient header ("Conversations"),
+// rows with a prettified contextRef title, a relative-time subtitle, and an
+// Active/Ended pill.
+//
+// Deviations from the mockup (real-data-only rules):
+// - The design's message-preview line ("...has finished. Try the next one
+//   yourself!") and "N messages" count have no backing field —
+//   ChatSessionListItem (chat-session-list-read.types.ts) only carries
+//   sessionId/contextRef/status/createdAt/updatedAt. Both are omitted rather
+//   than fabricated.
+//
 // Security rules:
 // - studentId is never supplied by this screen; sessions are resolved by the
 //   backend from the verified JWT.
@@ -16,8 +31,7 @@
 //   displays mastery/level/weakness/difficulty/recommendation values.
 //
 // RTL/Arabic rules:
-// - AIMTopAppBar mirrors its back arrow internally.
-// - List tiles use EdgeInsetsDirectional and direction-aware row layout.
+// - EdgeInsetsDirectional / direction-aware row layout throughout.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,6 +44,43 @@ import 'package:aim_mobile/features/ai_teacher/logic/provider/ai_teacher_provide
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'ai_teacher_chat_page.dart';
 import '../widgets/ai_chat_error_state.dart';
+
+/// Converts a raw, machine-oriented `contextRef` slug (e.g. `lesson:fractions`
+/// or `general`) into a readable label by taking the last colon-delimited
+/// segment, replacing underscores/hyphens with spaces, and title-casing each
+/// word. Same approach as `_prettifySkillId` in review_page.dart.
+String _prettifyContextRef(String contextRef) {
+  final lastSegment = contextRef.split(':').last;
+  final words = lastSegment
+      .split(RegExp(r'[_\-]+'))
+      .where((w) => w.isNotEmpty)
+      .map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase());
+  final label = words.join(' ');
+  return label.isEmpty ? contextRef : label;
+}
+
+const _months = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
+/// Real relative-time label (e.g. "2h ago", "Yesterday", "Jun 20") from the
+/// backend-supplied `updatedAt` ISO timestamp. Same pattern as
+/// `_relativeTimeLabel` in home_page.dart, extended to fall back to a plain
+/// date past a week out (matches design screen 34's oldest row, "Jun 20").
+String _relativeTimeLabel(String updatedAtIso) {
+  final updatedAt = DateTime.tryParse(updatedAtIso);
+  if (updatedAt == null) return updatedAtIso;
+
+  final local = updatedAt.toLocal();
+  final diff = DateTime.now().difference(local);
+  if (diff.inMinutes < 1) return 'Just now';
+  if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+  if (diff.inHours < 24) return '${diff.inHours}h ago';
+  if (diff.inDays == 1) return 'Yesterday';
+  if (diff.inDays < 7) return '${diff.inDays}d ago';
+  return '${_months[local.month - 1]} ${local.day}';
+}
 
 /// Lists the student's AI Teacher conversations and opens the chat screen
 /// for a selected session.
@@ -71,23 +122,84 @@ class _AiTeacherSessionHistoryPageState
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(aiTeacherChatProvider);
+    final surfaces = aimSurfacesOf(context);
 
     return Scaffold(
-      appBar: const AIMTopAppBar(title: 'AI Teacher Conversations'),
-      body: SafeArea(
-        child: switch (state) {
-          AppAsyncLoading() => const AIMFullScreenLoading(
-              semanticLabel: 'Loading AI Teacher conversations',
+      backgroundColor: surfaces.background,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _SessionHistoryHeader(),
+          Expanded(
+            child: switch (state) {
+              AppAsyncLoading() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading AI Teacher conversations',
+                ),
+              AppAsyncIdle() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading AI Teacher conversations',
+                ),
+              AppAsyncFailure() => AiChatErrorState(onRetry: _load),
+              AppAsyncSuccess(:final data) => _SessionListContent(
+                  chatState: data,
+                  onTap: _openSession,
+                ),
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SessionHistoryHeader extends StatelessWidget {
+  const _SessionHistoryHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space16,
+      ),
+      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            Semantics(
+              button: true,
+              label: 'Back',
+              child: InkWell(
+                onTap: () => Navigator.of(context).maybePop(),
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(AimSpacing.space12),
+                    child: Icon(
+                      Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_right_rounded
+                          : Icons.chevron_left_rounded,
+                      size: AimSizes.iconMd,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                ),
+              ),
             ),
-          AppAsyncIdle() => const AIMFullScreenLoading(
-              semanticLabel: 'Loading AI Teacher conversations',
+            const SizedBox(width: AimSpacing.space12),
+            Text(
+              'Conversations',
+              style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
-          AppAsyncFailure() => AiChatErrorState(onRetry: _load),
-          AppAsyncSuccess(:final data) => _SessionListContent(
-              chatState: data,
-              onTap: _openSession,
-            ),
-        },
+          ],
+        ),
       ),
     );
   }
@@ -136,41 +248,43 @@ class _SessionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
     final isActive = session.status == 'active';
+    final title = _prettifyContextRef(session.contextRef);
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
+      interactive: true,
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsetsDirectional.all(AimSpacing.innerGap),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    session.contextRef,
-                    style: AimTextStyles.bodyMd,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: AimSpacing.space4),
-                  Text(
-                    session.updatedAt,
-                    style: AimTextStyles.caption.copyWith(
-                      color: surfaces.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
+      semanticLabel: '$title, ${isActive ? "active" : "ended"}',
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style:
+                      AimTextStyles.title.copyWith(color: surfaces.textPrimary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: AimSpacing.space4),
+                Text(
+                  _relativeTimeLabel(session.updatedAt),
+                  style: AimTextStyles.bodySm
+                      .copyWith(color: surfaces.textSecondary),
+                ),
+              ],
             ),
-            const SizedBox(width: AimSpacing.space8),
-            AIMBadge(
-              tone: isActive ? AIMBadgeTone.success : AIMBadgeTone.neutral,
-              variant: AIMBadgeVariant.soft,
-              child: Text(isActive ? 'Active' : 'Closed'),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(width: AimSpacing.space8),
+          AIMBadge(
+            tone: isActive ? AIMBadgeTone.success : AIMBadgeTone.neutral,
+            variant: AIMBadgeVariant.soft,
+            pill: true,
+            child: Text(isActive ? 'Active' : 'Ended'),
+          ),
+        ],
       ),
     );
   }

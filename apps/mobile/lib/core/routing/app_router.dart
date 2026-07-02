@@ -17,6 +17,7 @@ import '../../features/placement/ui/pages/placement_submit_page.dart';
 import '../../features/assessments/ui/pages/assessment_detail_page.dart';
 import '../../features/assessments/ui/pages/assessment_list_page.dart';
 import '../../features/assessments/ui/pages/assessment_result_page.dart';
+import '../../features/assessments/ui/pages/result_history_page.dart';
 import '../../features/assessments/ui/pages/attempt_page.dart';
 import '../../features/assessments/ui/pages/start_attempt_page.dart';
 import '../../features/billing/ui/pages/subscription_page.dart';
@@ -115,6 +116,8 @@ class AppRouter {
             return _buildAssessmentAttempt(settings.arguments);
           case AppRoutePaths.assessmentResult:
             return _buildAssessmentResult(settings.arguments);
+          case AppRoutePaths.assessmentResultHistory:
+            return _buildResultHistory(settings.arguments);
           case AppRoutePaths.subscription:
             return const SubscriptionPage();
           case AppRoutePaths.pricing:
@@ -349,6 +352,19 @@ class AppRouter {
     );
   }
 
+  static Widget _buildResultHistory(Object? arguments) {
+    final args = _assessmentArgs(arguments);
+    final assessmentId = args['assessmentId'];
+    final assessmentTitle = args['assessmentTitle'];
+    if (assessmentId is! String || assessmentTitle is! String) {
+      return const SplashPage();
+    }
+    return ResultHistoryPage(
+      assessmentId: assessmentId,
+      assessmentTitle: assessmentTitle,
+    );
+  }
+
   static Widget _buildAiTeacherChat(Object? arguments) {
     final args = arguments is Map<String, dynamic> ? arguments : const <String, dynamic>{};
     final contextRef = args['contextRef'] as String? ?? 'general';
@@ -419,7 +435,10 @@ class AppRouter {
         : const <String, dynamic>{};
     final sessionId = args['sessionId'];
     if (sessionId is! String) return const SplashPage();
-    return CheckoutStatusPage(sessionId: sessionId);
+    return CheckoutStatusPage(
+      sessionId: sessionId,
+      planName: args['planName'] as String?,
+    );
   }
 
   static Widget _buildNotificationDetailPage(Object? arguments) {
@@ -480,6 +499,7 @@ class AppRouter {
     AppRoutePaths.assessmentStart,
     AppRoutePaths.assessmentAttempt,
     AppRoutePaths.assessmentResult,
+    AppRoutePaths.assessmentResultHistory,
     AppRoutePaths.subscription,
     AppRoutePaths.pricing,
     AppRoutePaths.invoiceHistory,

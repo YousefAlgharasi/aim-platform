@@ -9,7 +9,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(home: FeedbackPage()),
       );
-      expect(find.text('Send Feedback'), findsOneWidget);
+      expect(find.text('Send feedback'), findsOneWidget);
     });
 
     testWidgets('shows feedback form fields', (tester) async {
@@ -17,17 +17,10 @@ void main() {
         const MaterialApp(home: FeedbackPage()),
       );
       expect(find.text('Category'), findsOneWidget);
-      expect(find.text('Rating (optional)'), findsOneWidget);
+      expect(find.text('How would you rate AIM?'), findsOneWidget);
       expect(find.text('Title'), findsOneWidget);
-      expect(find.text('Details'), findsOneWidget);
-      expect(find.text('Submit Feedback'), findsOneWidget);
-    });
-
-    testWidgets('shows value message', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(home: FeedbackPage()),
-      );
-      expect(find.text('We value your feedback'), findsOneWidget);
+      expect(find.text('Your feedback'), findsOneWidget);
+      expect(find.text('Submit'), findsOneWidget);
     });
 
     testWidgets('shows star rating icons', (tester) async {
@@ -45,15 +38,15 @@ void main() {
 
       // Scroll to submit button and tap
       await tester.scrollUntilVisible(
-        find.text('Submit Feedback'),
+        find.text('Submit'),
         100,
         scrollable: find.byType(Scrollable).first,
       );
-      await tester.tap(find.text('Submit Feedback'));
+      await tester.tap(find.text('Submit'));
       await tester.pump();
 
       expect(find.text('Title is required'), findsOneWidget);
-      expect(find.text('Details are required'), findsOneWidget);
+      expect(find.text('Feedback details are required'), findsOneWidget);
     });
   });
 }
