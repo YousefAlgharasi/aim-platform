@@ -246,6 +246,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       const SizedBox(height: AimSpacing.sectionGap),
 
                       // ── Social sign-in (visual only — no backend yet) ───
+                      // onPressed is a no-op (not null) so AIMButton renders
+                      // its normal enabled outline spec instead of the
+                      // low-contrast disabled spec; IgnorePointer keeps them
+                      // untappable while still announcing to screen readers.
                       Text(
                         'OR CONTINUE WITH',
                         style: AimTextStyles.caption
@@ -253,33 +257,42 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: AimSpacing.formFieldGap),
-                      const AIMButton(
-                        onPressed: null,
-                        variant: AIMButtonVariant.outline,
-                        fullWidth: true,
-                        semanticLabel: 'Continue with Google (coming soon)',
-                        child: Text('Continue with Google'),
+                      IgnorePointer(
+                        ignoringSemantics: false,
+                        child: AIMButton(
+                          onPressed: () {},
+                          variant: AIMButtonVariant.outline,
+                          fullWidth: true,
+                          semanticLabel: 'Continue with Google (coming soon)',
+                          child: const Text('Continue with Google'),
+                        ),
                       ),
                       const SizedBox(height: AimSpacing.innerGap),
-                      const Row(
+                      Row(
                         children: [
                           Expanded(
-                            child: AIMButton(
-                              onPressed: null,
-                              variant: AIMButtonVariant.outline,
-                              semanticLabel:
-                                  'Continue with Apple (coming soon)',
-                              child: Text('Apple'),
+                            child: IgnorePointer(
+                              ignoringSemantics: false,
+                              child: AIMButton(
+                                onPressed: () {},
+                                variant: AIMButtonVariant.outline,
+                                semanticLabel:
+                                    'Continue with Apple (coming soon)',
+                                child: const Text('Apple'),
+                              ),
                             ),
                           ),
-                          SizedBox(width: AimSpacing.innerGap),
+                          const SizedBox(width: AimSpacing.innerGap),
                           Expanded(
-                            child: AIMButton(
-                              onPressed: null,
-                              variant: AIMButtonVariant.outline,
-                              semanticLabel:
-                                  'Continue with Facebook (coming soon)',
-                              child: Text('Facebook'),
+                            child: IgnorePointer(
+                              ignoringSemantics: false,
+                              child: AIMButton(
+                                onPressed: () {},
+                                variant: AIMButtonVariant.outline,
+                                semanticLabel:
+                                    'Continue with Facebook (coming soon)',
+                                child: const Text('Facebook'),
+                              ),
                             ),
                           ),
                         ],
