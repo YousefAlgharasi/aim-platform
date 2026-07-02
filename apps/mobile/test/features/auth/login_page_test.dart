@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:aim_mobile/core/config/app_config.dart';
+import 'package:aim_mobile/core/config/app_config_provider.dart';
 import 'package:aim_mobile/core/routing/routing.dart';
 import 'package:aim_mobile/core/state/app_form_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -14,8 +16,9 @@ import 'package:aim_mobile/features/auth/logic/provider/login_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/provider/login_provider.dart';
 import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
 import 'package:aim_mobile/features/auth/ui/pages/login_page.dart';
+import 'package:aim_mobile/features/auth/ui/pages/register_page.dart';
 
-// ── Helpers ──────────────────────────────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────
 
 /// The primary sign-in submit button, distinct from the secondary
 /// test-mode/social buttons rendered alongside it.
@@ -31,7 +34,16 @@ Widget _testApp({List<Override> overrides = const []}) {
   );
 }
 
-/// No-op backend AuthRepository for tests that don't call submit().
+/// A production [AppConfig] override, used to hide the developer test-mode
+/// section the same way a real production build would.
+const _productionConfig = AppConfig(
+  environment: 'production',
+  backendApiBaseUrl: 'https://api.example.com',
+);
+
+/// [AuthRepository] fake that always throws — every test in this file
+/// either never submits, or only exercises local form/UI state, so the
+/// network path should never actually be invoked.
 class _FakeAuthRepository implements AuthRepository {
   @override
   Future<AuthContextModel> getMe(String bearerToken) async =>
@@ -72,25 +84,41 @@ class _FakeAuthRepository implements AuthRepository {
       throw UnimplementedError('not called in UI-only tests');
 }
 
-/// LoginNotifier subclass that starts with a preset error message.
-class _ErrorLoginNotifier extends LoginNotifier {
-  _ErrorLoginNotifier(Ref ref)
+/// A [LoginNotifier] double that lets a test (a) force the form into an
+/// arbitrary [AppFormState] — e.g. mid-submit or carrying a backend error —
+/// without touching the network, and (b) record every [setEmail]/
+/// [setPassword] call the widget under test makes, so field-wiring can be
+/// asserted without depending on validation internals.
+class _RecordingLoginNotifier extends LoginNotifier {
+  _RecordingLoginNotifier(Ref ref)
       : super(repository: _FakeAuthRepository(), ref: ref);
 
-  void seedError(String message) {
-    // Use the public clearError + internal path to surface an error.
-    // We expose a test-only seeder so production code stays unmodified.
-    state = AppFormState(errorMessage: message);
+  final List<String> emailCalls = [];
+  final List<String> passwordCalls = [];
+
+  @override
+  void setEmail(String value) {
+    emailCalls.add(value);
+    super.setEmail(value);
   }
+
+  @override
+  void setPassword(String value) {
+    passwordCalls.add(value);
+    super.setPassword(value);
+  }
+
+  /// Bypasses validation/network entirely to pin the form into whatever
+  /// state a test needs to assert against (error banner, loading spinner).
+  void seedState(AppFormState next) => state = next;
 }
 
-// ── Tests ───────────────────────────────────────────────────────────────────────────────────
+// ── Tests ────────────────────────────────────────────────────────────────
 
 void main() {
-  // ── Smoke ────────────────────────────────────────
+  // ── Smoke ──────────────────────────────────────────
 
-  testWidgets('LoginPage renders the gradient header and form fields',
-      (tester) async {
+  testWidgets('LoginPage renders the gradient header copy', (tester) async {
     await tester.pumpWidget(_testApp());
     await tester.pump();
 
@@ -99,20 +127,27 @@ void main() {
     expect(find.text('Sign in to keep your streak alive'), findsOneWidget);
   });
 
-  testWidgets('LoginPage uses AIM design system widgets', (tester) async {
+  testWidgets(
+      'LoginPage uses AIM design-system widgets for inputs, submit, and social row',
+      (tester) async {
     await tester.pumpWidget(_testApp());
     await tester.pump();
 
-    expect(find.byType(AIMInput), findsNWidgets(2));   // email + password
-    expect(find.byType(AIMGradientButton), findsOneWidget); // sign in
-    // 3 test-mode buttons + Google/Apple/Facebook (visual-only) + endpoint tester.
+    expect(find.byType(AIMInput), findsNWidgets(2)); // email + password
+    expect(find.byType(AIMGradientButton), findsOneWidget); // Sign In
+    // Non-production by default in tests: 3 social (visual-only) +
+    // 3 test-mode role shortcuts + 1 endpoint-tester link.
     expect(find.byType(AIMButton), findsNWidgets(7));
+    expect(find.text('Continue with Google'), findsOneWidget);
+    expect(find.text('Apple'), findsOneWidget);
+    expect(find.text('Facebook'), findsOneWidget);
     expect(find.text("Don't have an account? Create one"), findsOneWidget);
   });
 
-  // ── Submit button state ────────────────────────────────
+  // ── Submit button state ─────────────────────────────
 
-  testWidgets('Submit button is disabled when form is empty', (tester) async {
+  testWidgets('Submit button is disabled when the form is empty',
+      (tester) async {
     await tester.pumpWidget(_testApp());
     await tester.pump();
 
@@ -120,12 +155,11 @@ void main() {
     expect(button.enabled, isFalse);
   });
 
-  testWidgets('Submit button enables after valid email + password entered',
+  testWidgets('Submit button enables once a valid email + password are entered',
       (tester) async {
     await tester.pumpWidget(_testApp());
     await tester.pump();
 
-    // Find the two TextField widgets inside AIMInput.
     final fields = find.byType(TextField);
     expect(fields, findsNWidgets(2));
 
@@ -138,7 +172,34 @@ void main() {
     expect(button.enabled, isTrue);
   });
 
-  // ── Error banner ──────────────────────────────────────
+  // ── Field wiring ─────────────────────────────────────
+
+  testWidgets('Entering email and password forwards values to LoginNotifier',
+      (tester) async {
+    late _RecordingLoginNotifier notifier;
+
+    await tester.pumpWidget(
+      _testApp(
+        overrides: [
+          loginProvider.overrideWith((ref) {
+            notifier = _RecordingLoginNotifier(ref);
+            return notifier;
+          }),
+        ],
+      ),
+    );
+    await tester.pump();
+
+    final fields = find.byType(TextField);
+    await tester.enterText(fields.first, 'learner@example.com');
+    await tester.enterText(fields.last, 'secret123');
+    await tester.pump();
+
+    expect(notifier.emailCalls, contains('learner@example.com'));
+    expect(notifier.passwordCalls, contains('secret123'));
+  });
+
+  // ── Error banner ─────────────────────────────────────
 
   testWidgets('Error banner is hidden when there is no error', (tester) async {
     await tester.pumpWidget(_testApp());
@@ -147,31 +208,121 @@ void main() {
     expect(find.byType(AIMAlertBanner), findsNothing);
   });
 
-  testWidgets('Error banner is shown when loginProvider surfaces an error',
+  testWidgets('Error banner appears with the backend message once seeded',
       (tester) async {
-    late _ErrorLoginNotifier capturedNotifier;
+    late _RecordingLoginNotifier notifier;
 
     await tester.pumpWidget(
       _testApp(
         overrides: [
           loginProvider.overrideWith((ref) {
-            capturedNotifier = _ErrorLoginNotifier(ref);
-            return capturedNotifier;
+            notifier = _RecordingLoginNotifier(ref);
+            return notifier;
           }),
         ],
       ),
     );
     await tester.pump();
 
-    // Seed an error through the test-only method.
-    capturedNotifier.seedError('Invalid credentials');
+    notifier.seedState(
+      const AppFormState(errorMessage: 'Wrong email or password. Try again.'),
+    );
     await tester.pump();
 
     expect(find.byType(AIMAlertBanner), findsOneWidget);
-    expect(find.text('Invalid credentials'), findsOneWidget);
+    expect(
+      find.text('Wrong email or password. Try again.'),
+      findsOneWidget,
+    );
   });
 
-  // ── RTL / Arabic ──────────────────────────────────
+  // ── Submitting / loading state ───────────────────────
+
+  testWidgets('Sign In button shows its loading state while submitting',
+      (tester) async {
+    late _RecordingLoginNotifier notifier;
+
+    await tester.pumpWidget(
+      _testApp(
+        overrides: [
+          loginProvider.overrideWith((ref) {
+            notifier = _RecordingLoginNotifier(ref);
+            return notifier;
+          }),
+        ],
+      ),
+    );
+    await tester.pump();
+
+    notifier.seedState(
+      const AppFormState(isValid: true, isSubmitting: true),
+    );
+    await tester.pump();
+
+    final button = tester.widget<AIMGradientButton>(_submitButtonFinder);
+    expect(button.loading, isTrue);
+  });
+
+  // ── Navigation ───────────────────────────────────────
+
+  testWidgets('Tapping "Create one" navigates to the register screen',
+      (tester) async {
+    await tester.pumpWidget(_testApp());
+    await tester.pump();
+
+    // The link sits below the fold on the default test viewport; scroll it
+    // into view so the tap lands inside the Scrollable's clipped hit-test
+    // area (a plain `find` would succeed either way, but `tap` requires the
+    // target to actually be visible).
+    final createOneLink = find.text("Don't have an account? Create one");
+    await tester.scrollUntilVisible(
+      createOneLink,
+      80,
+      scrollable: find.byType(Scrollable).first,
+    );
+
+    await tester.tap(createOneLink);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(RegisterPage), findsOneWidget);
+    expect(find.byType(LoginPage), findsNothing);
+  });
+
+  // ── Developer test-mode section ──────────────────────
+
+  testWidgets('Test-mode shortcuts are present outside production',
+      (tester) async {
+    await tester.pumpWidget(_testApp());
+    await tester.pump();
+
+    expect(find.text('Test mode'), findsOneWidget);
+    expect(find.text('Student'), findsOneWidget);
+    expect(find.text('Parent'), findsOneWidget);
+    expect(find.text('Admin'), findsOneWidget);
+    expect(find.text('Open API Endpoint Tester'), findsOneWidget);
+  });
+
+  testWidgets('Test-mode shortcuts are absent in production',
+      (tester) async {
+    await tester.pumpWidget(
+      _testApp(
+        overrides: [
+          appConfigProvider.overrideWithValue(_productionConfig),
+        ],
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Test mode'), findsNothing);
+    expect(find.text('Student'), findsNothing);
+    expect(find.text('Parent'), findsNothing);
+    expect(find.text('Admin'), findsNothing);
+    expect(find.text('Open API Endpoint Tester'), findsNothing);
+    // Only the 3 visual-only social buttons remain.
+    expect(find.byType(AIMButton), findsNWidgets(3));
+  });
+
+  // ── RTL / Arabic ─────────────────────────────────────
 
   testWidgets('LoginPage renders without errors under Arabic RTL locale',
       (tester) async {
