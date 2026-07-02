@@ -1,6 +1,27 @@
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Assessment result" (29)
+//   docs/design/ui-for-all-system-mobile/screenshots/light/29-screen.png
+//   docs/design/ui-for-all-system-mobile/screenshots/dark/29-screen.png
+// Endpoint: GET /student/assessments/attempts/:attemptId/result
+// Widgets: AIMTopAppBar, AIMCard, AIMBadge, AIMProgressBar,
+//   AIMGradientButton, AIMFullScreenLoading, AIMFullScreenError
+//
 // P10-062: Assessment result page — displays backend-graded score,
 // pass/fail status, breakdown, and optional late-penalty indicator.
 // Flutter never computes score; all values are backend-supplied.
+//
+// Deviations from the mockup (real-data-only rules):
+// - The design is a headerless sheet; the real-title AIMTopAppBar is KEPT —
+//   without it there is no way to identify which assessment this result
+//   belongs to or to navigate back (established affordance-first deviation).
+// - The design's big "85%" is a guarded, display-only derivation of two real
+//   backend values (score / maxScore); when maxScore is 0 the raw
+//   "score / maxScore" text is shown instead. Backend remains the grading
+//   authority — see the comment at the derivation site.
+// - The design's breakdown rows are labelled with section NAMES ("Grammar",
+//   "Vocabulary", "Reading"). Names are omitted: the result contract only
+//   carries opaque IDs (assessmentQuestionLinkId, nullable sectionId) and
+//   points — no name field exists anywhere in the result payload. The
+//   existing numbered per-question treatment is kept instead.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +31,25 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
 import 'package:aim_mobile/features/assessments/logic/provider/assessment_provider.dart';
+
+/// Display-only formatting of a real backend value: drops the trailing ".0"
+/// when a points double is integral (e.g. "17" instead of "17.0").
+String _fmtPts(double v) => v == v.roundToDouble() ? '${v.round()}' : '$v';
+
+/// Formats an ISO date string as e.g. "Jun 30, 2026"; falls back to the raw
+/// string on parse failure. (Same local pattern as achievements_page.dart.)
+String _formatDate(String dateStr) {
+  try {
+    final date = DateTime.parse(dateStr);
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
+  } catch (_) {
+    return dateStr;
+  }
+}
 
 class AssessmentResultPage extends ConsumerStatefulWidget {
   const AssessmentResultPage({
@@ -88,36 +128,43 @@ class _ResultContent extends StatelessWidget {
         result.passed ? AimColors.success500 : AimColors.error500;
     final statusLabel = result.passed ? 'Passed' : 'Failed';
 
+    // Display-only arithmetic on two backend-supplied values — NOT score
+    // computation (the backend remains the grading authority). Guarded so a
+    // zero maxScore never divides; in that case the raw score text is shown.
+    final int? percentage = result.maxScore > 0
+        ? ((result.score / result.maxScore) * 100).round()
+        : null;
+
     return ListView(
       padding: const EdgeInsets.symmetric(
         horizontal: AimSpacing.screenPaddingMobile,
         vertical: AimSpacing.sectionGap,
       ),
       children: [
-        // Score display
-        Center(
-          child: Text(
-            '${result.score} / ${result.maxScore}',
-            style: AimTextStyles.h1.copyWith(color: surfaces.textPrimary),
-          ),
-        ),
-        const SizedBox(height: AimSpacing.componentGap),
-
-        // Pass/fail badge
-        Center(
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AimSpacing.space12,
-              vertical: AimSpacing.space4,
-            ),
-            decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.12),
-              borderRadius: AimRadius.borderSm,
-            ),
-            child: Text(
-              statusLabel,
-              style: AimTextStyles.label.copyWith(color: statusColor),
-            ),
+        // Score hero card — big percentage + solid pass/fail pill.
+        AIMCard(
+          variant: AIMCardVariant.elevated,
+          child: Column(
+            children: [
+              Text(
+                percentage != null
+                    ? '$percentage%'
+                    : '${_fmtPts(result.score)} / ${_fmtPts(result.maxScore)}',
+                style: AimTextStyles.display.copyWith(color: statusColor),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AimSpacing.componentGap),
+              AIMBadge(
+                tone: result.passed ? AIMBadgeTone.success : AIMBadgeTone.error,
+                variant: AIMBadgeVariant.solid,
+                pill: true,
+                icon: Icon(result.passed ? Icons.check : Icons.close),
+                semanticLabel: '$statusLabel: '
+                    '${_fmtPts(result.score)} of ${_fmtPts(result.maxScore)} '
+                    'points',
+                child: Text(statusLabel),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: AimSpacing.componentGap),
@@ -148,7 +195,7 @@ class _ResultContent extends StatelessWidget {
         // Graded timestamp
         Center(
           child: Text(
-            'Graded at ${result.gradedAt}',
+            'Graded ${_formatDate(result.gradedAt)}',
             style:
                 AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
           ),
@@ -158,8 +205,11 @@ class _ResultContent extends StatelessWidget {
         if (result.breakdown.isNotEmpty) ...[
           const SizedBox(height: AimSpacing.sectionGap),
           Text(
-            'Breakdown',
-            style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
+            'BREAKDOWN',
+            style: AimTextStyles.label.copyWith(
+              color: surfaces.textMuted,
+              letterSpacing: 1.2,
+            ),
           ),
           const SizedBox(height: AimSpacing.componentGap),
           ...result.breakdown.asMap().entries.map(
@@ -175,12 +225,11 @@ class _ResultContent extends StatelessWidget {
         ],
 
         const SizedBox(height: AimSpacing.sectionGap),
-        AIMButton(
+        AIMGradientButton(
+          label: 'Done',
           onPressed: onDone,
           fullWidth: true,
-          size: AIMButtonSize.large,
           semanticLabel: 'Done viewing result',
-          child: const Text('Done'),
         ),
       ],
     );
@@ -208,31 +257,54 @@ class _BreakdownCard extends StatelessWidget {
 
     return AIMCard(
       variant: AIMCardVariant.standard,
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: surfaces.surfaceSunken,
-              borderRadius: AimRadius.borderX2l,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(AimSpacing.space8),
-              child: Text(
-                '$index',
-                style: Theme.of(context).textTheme.titleSmall,
+          Row(
+            children: [
+              // Number circle — the result contract carries no section or
+              // question names (only opaque IDs + points), so the design's
+              // "Grammar"/"Vocabulary" labels cannot be shown; see file
+              // header.
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: surfaces.surfaceSunken,
+                  borderRadius: AimRadius.borderX2l,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(AimSpacing.space8),
+                  child: Text(
+                    '$index',
+                    style: AimTextStyles.label
+                        .copyWith(color: surfaces.textPrimary),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: AimSpacing.componentGap),
+              Expanded(
+                child: Text(
+                  '${_fmtPts(item.pointsAwarded)} / '
+                  '${_fmtPts(item.pointsPossible)} pts',
+                  style: AimTextStyles.bodyMd
+                      .copyWith(color: surfaces.textPrimary),
+                ),
+              ),
+              if (icon != null)
+                Icon(icon, size: AimSizes.iconSm, color: iconColor),
+            ],
           ),
-          const SizedBox(width: AimSpacing.componentGap),
-          Expanded(
-            child: Text(
-              '${item.pointsAwarded} / ${item.pointsPossible} pts',
-              style: AimTextStyles.bodyMd
-                  .copyWith(color: surfaces.textPrimary),
+          // Per-item progress bar (design screen 29). Guarded: with a zero
+          // pointsPossible the bar's value/max division would be NaN, so it
+          // is omitted for zero-point items.
+          if (item.pointsPossible > 0) ...[
+            const SizedBox(height: AimSpacing.space8),
+            AIMProgressBar(
+              value: item.pointsAwarded,
+              max: item.pointsPossible,
+              tone: AIMProgressBarTone.success,
+              size: AIMProgressBarSize.sm,
             ),
-          ),
-          if (icon != null)
-            Icon(icon, size: AimSizes.iconSm, color: iconColor),
+          ],
         ],
       ),
     );
