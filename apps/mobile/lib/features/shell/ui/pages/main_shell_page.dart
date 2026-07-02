@@ -86,6 +86,48 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
         index: selectedIndex,
         children: MainShellPage._screens,
       ),
+      bottomNavigationBar: AIMBottomNav<int>(
+        value: selectedIndex,
+        onChanged: (index) =>
+            ref.read(mainShellTabIndexProvider.notifier).state = index,
+        items: const [
+          AIMBottomNavDestination(
+            value: 0,
+            label: 'Home',
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            semanticLabel: 'Home tab',
+          ),
+          AIMBottomNavDestination(
+            value: 1,
+            label: 'Learn',
+            icon: Icon(Icons.menu_book_outlined),
+            activeIcon: Icon(Icons.menu_book),
+            semanticLabel: 'Learn tab',
+          ),
+          AIMBottomNavDestination(
+            value: 2,
+            label: 'Review',
+            icon: Icon(Icons.replay_outlined),
+            activeIcon: Icon(Icons.replay),
+            semanticLabel: 'Review tab',
+          ),
+          AIMBottomNavDestination(
+            value: 3,
+            label: 'Progress',
+            icon: Icon(Icons.insights_outlined),
+            activeIcon: Icon(Icons.insights),
+            semanticLabel: 'Progress tab',
+          ),
+          AIMBottomNavDestination(
+            value: 4,
+            label: 'Profile',
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            semanticLabel: 'Profile tab',
+          ),
+        ],
+      ),
     );
   }
 
