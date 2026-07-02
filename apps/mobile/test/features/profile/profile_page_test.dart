@@ -99,7 +99,7 @@ void main() {
         _wrap(const AppAsyncState.success(_studentContext)));
     await tester.pump();
 
-    expect(find.byType(AIMTopAppBar), findsOneWidget);
+    expect(find.byType(AIMGradientHeroHeader), findsOneWidget);
     expect(find.byType(LogoutButton), findsOneWidget);
     expect(find.byType(AIMCard), findsWidgets);
   });

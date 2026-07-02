@@ -552,7 +552,7 @@ class _WeeklyActivityCard extends StatelessWidget {
           ),
           const SizedBox(height: AimSpacing.componentGap),
           SizedBox(
-            height: 72,
+            height: 88,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
