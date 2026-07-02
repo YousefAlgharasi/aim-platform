@@ -223,7 +223,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       child: Text(
                         'Forgot password?',
                         style: AimTextStyles.label.copyWith(
-                          color: surfaces.textMuted,
+                          color: surfaces.textLink,
                         ),
                       ),
                     ),

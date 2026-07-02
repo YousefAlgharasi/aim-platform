@@ -25,6 +25,7 @@ class AIMInput extends StatefulWidget {
     this.required = false,
     this.disabled = false,
     this.leadingIcon,
+    this.trailingIcon,
     this.type = AIMInputType.text,
     this.size = AIMInputSize.medium,
     this.controller,
@@ -44,6 +45,11 @@ class AIMInput extends StatefulWidget {
   final bool required;
   final bool disabled;
   final Widget? leadingIcon;
+
+  /// Optional trailing indicator rendered after the built-in password
+  /// visibility toggle (or in its place, for non-password fields) — e.g. a
+  /// "passwords match" checkmark.
+  final Widget? trailingIcon;
   final AIMInputType type;
   final AIMInputSize size;
   final TextEditingController? controller;
@@ -161,6 +167,10 @@ class _AIMInputState extends State<AIMInput> {
                       ),
                     ),
                   ),
+                if (widget.trailingIcon != null) ...[
+                  const SizedBox(width: AimSpacing.space8),
+                  widget.trailingIcon!,
+                ],
               ],
             ),
           ),
