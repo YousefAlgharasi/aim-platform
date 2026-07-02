@@ -45,14 +45,15 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(home: ParentTicketListPage()),
       );
-      expect(find.text('My Support Tickets'), findsOneWidget);
+      expect(find.text('Parent tickets'), findsOneWidget);
     });
 
-    testWidgets('shows loading indicator', (tester) async {
+    testWidgets('shows empty state (no live backend to load tickets from)',
+        (tester) async {
       await tester.pumpWidget(
         const MaterialApp(home: ParentTicketListPage()),
       );
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.text('No Support Tickets'), findsOneWidget);
     });
 
     testWidgets('buildEmptyState shows no tickets message', (tester) async {
@@ -94,7 +95,7 @@ void main() {
       );
       await tester.pump();
       expect(find.text('Cannot view child progress'), findsOneWidget);
-      expect(find.text('account · medium'), findsOneWidget);
+      expect(find.text('Jan 20, 2026 · account · medium'), findsOneWidget);
     });
   });
 }

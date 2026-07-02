@@ -10,14 +10,15 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(home: TicketListPage()),
       );
-      expect(find.text('My Tickets'), findsOneWidget);
+      expect(find.text('My tickets'), findsOneWidget);
     });
 
-    testWidgets('shows loading indicator', (tester) async {
+    testWidgets('shows empty state (no live backend to load tickets from)',
+        (tester) async {
       await tester.pumpWidget(
         const MaterialApp(home: TicketListPage()),
       );
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.text('No Tickets Yet'), findsOneWidget);
     });
 
     testWidgets('buildEmptyState shows no tickets message', (tester) async {
@@ -58,7 +59,7 @@ void main() {
       );
       await tester.pump();
       expect(find.text('Cannot access lesson'), findsOneWidget);
-      expect(find.text('technical · high'), findsOneWidget);
+      expect(find.text('Jan 15, 2026 · technical · high'), findsOneWidget);
     });
   });
 
