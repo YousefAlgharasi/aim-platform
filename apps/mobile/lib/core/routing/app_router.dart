@@ -237,10 +237,14 @@ class AppRouter {
   static Widget _buildPlacementSubmit(Object? arguments) {
     final args = _placementArgs(arguments);
     final attemptId = args['attemptId'];
+    final totalSections = args['totalSections'];
 
     if (attemptId is! String) return const SplashPage();
 
-    return PlacementSubmitPage(attemptId: attemptId);
+    return PlacementSubmitPage(
+      attemptId: attemptId,
+      totalSections: totalSections is int ? totalSections : null,
+    );
   }
 
   static Widget _buildPlacementResult(Object? arguments) {
