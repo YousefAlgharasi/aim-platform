@@ -51,6 +51,8 @@ import '../../../achievements/logic/provider/achievements_provider.dart';
 import '../../../auth/data/models/auth_context_model.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
+import '../../../home/logic/entity/home_data.dart';
+import '../../../home/logic/provider/home_provider.dart';
 import '../../../notifications/ui/widgets/notification_bell_button.dart';
 
 /// Student profile screen.
@@ -620,53 +622,72 @@ class _AchievementsCarousel extends StatelessWidget {
           style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
         ),
         const SizedBox(height: AimSpacing.componentGap),
-        switch (state) {
-          AppAsyncLoading() => SizedBox(
-              height: 100,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AimSpacing.screenPaddingMobile,
-                ),
-                itemCount: 4,
-                separatorBuilder: (_, __) =>
-                    const SizedBox(width: AimSpacing.componentGap),
-                itemBuilder: (_, __) => const AIMSkeleton(
-                  shape: AIMSkeletonShape.rect,
-                  width: 72,
-                  height: 100,
-                ),
-              ),
+        // The caller (_ProfileBody) only mounts this widget when
+        // achievements.isNotEmpty, so no loading/empty branch is needed here.
+        SizedBox(
+          height: 100,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AimSpacing.screenPaddingMobile,
             ),
-          AppAsyncSuccess<List<AchievementModel>>() when achievements.isEmpty =>
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AimSpacing.screenPaddingMobile,
-              ),
-              child: Text(
-                'No achievements unlocked yet.',
-                style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
-              ),
+            itemCount: achievements.length,
+            separatorBuilder: (_, __) =>
+                const SizedBox(width: AimSpacing.componentGap),
+            itemBuilder: (_, i) => _AchievementChip(
+              achievement: achievements[i],
+              icon: _iconFor(achievements[i]),
+              surfaces: surfaces,
             ),
-          _ => SizedBox(
-              height: 100,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AimSpacing.screenPaddingMobile,
-                ),
-                itemCount: achievements.length,
-                separatorBuilder: (_, __) =>
-                    const SizedBox(width: AimSpacing.componentGap),
-                itemBuilder: (_, i) => _AchievementChip(
-                  achievement: achievements[i],
-                  surfaces: surfaces,
-                ),
-              );
-            },
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Compact icon-circle + title tile for one unlocked achievement. No rarity
+/// tag is rendered — [AchievementModel] has no rarity field.
+class _AchievementChip extends StatelessWidget {
+  const _AchievementChip({
+    required this.achievement,
+    required this.icon,
+    required this.surfaces,
+  });
+
+  final AchievementModel achievement;
+  final IconData icon;
+  final AimSurfaceTheme surfaces;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 72,
+      child: Semantics(
+        label: achievement.title,
+        child: Column(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: const BoxDecoration(
+                gradient: AimGradients.gzFire,
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Icon(icon, color: AimColors.neutral0, size: AimSizes.iconMd),
+            ),
+            const SizedBox(height: AimSpacing.space8),
+            Text(
+              achievement.title,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AimTextStyles.caption.copyWith(color: surfaces.textPrimary),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

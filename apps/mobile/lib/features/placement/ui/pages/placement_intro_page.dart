@@ -1,8 +1,12 @@
 // Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Placement intro"
 //   docs/design/ui-for-all-system-mobile/screenshots/light/18-screen.png
 //   docs/design/ui-for-all-system-mobile/screenshots/dark/18-screen.png
+//   NOTE: the screenshot is a literal pre-implementation stub ("Placement
+//   Intro — Coming soon — Preview start screen"), not a final design — see
+//   TASK_LIST.md row 18. This screen instead follows its own documented
+//   responsibility below (gradient header + static info + Start CTA).
 // Endpoint: none (static screen — no backend call required)
-// Widgets: AIMGradientHeroHeader, AIMGradientButton
+// Widgets: AIMGradientButton
 //
 // PlacementIntroPage — static explainer screen before [PlacementStartPage].
 //
@@ -38,29 +42,59 @@ class PlacementIntroPage extends StatelessWidget {
     final surfaces = aimSurfacesOf(context);
 
     return Scaffold(
+      backgroundColor: surfaces.background,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const _IntroHeader(),
           Expanded(
-            child: switch (state) {
-              PlacementStartIdle() ||
-              PlacementStartLoading() =>
-                const AIMFullScreenLoading(
-                  semanticLabel: 'Loading placement test',
-                ),
-              PlacementStartError(:final message) => AIMFullScreenError(
-                  message: message,
-                  onRetry: _loadActiveTest,
-                ),
-              PlacementStartReady(:final test) => _IntroBody(test: test),
-              // Attempt was already started elsewhere (e.g. the student
-              // returned to this screen after starting) — nothing new to
-              // preview here beyond a simple loading indicator.
-              PlacementStarted() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading placement test',
-                ),
-            },
+            child: SingleChildScrollView(
+              padding: const EdgeInsetsDirectional.all(
+                AimSpacing.screenPaddingMobile,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const _InfoRow(
+                    icon: Icons.layers_outlined,
+                    label: 'Sections',
+                    value: '3 sections',
+                  ),
+                  const SizedBox(height: AimSpacing.componentGap),
+                  const _InfoRow(
+                    icon: Icons.timer_outlined,
+                    label: 'Estimated time',
+                    value: '~15 min',
+                  ),
+                  const SizedBox(height: AimSpacing.sectionGap),
+                  Container(
+                    padding:
+                        const EdgeInsetsDirectional.all(AimSpacing.space12),
+                    decoration: BoxDecoration(
+                      color: surfaces.surfaceSunken,
+                      borderRadius: AimRadius.borderSm,
+                    ),
+                    child: Text(
+                      'Your level is determined by the backend after '
+                      'completion. Results are never calculated on your '
+                      'device.',
+                      style: AimTextStyles.bodySm.copyWith(
+                        color: surfaces.textSecondary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AimSpacing.sectionGap),
+                  AIMGradientButton(
+                    label: 'Start',
+                    gradient: AimGradients.gzHero,
+                    fullWidth: true,
+                    semanticLabel: 'Start placement test',
+                    onPressed: () => Navigator.of(context)
+                        .pushNamed(AppRoutePaths.placementStart),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -91,93 +125,44 @@ class _IntroHeader extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: Semantics(
-                button: true,
-                label: 'Back',
-                child: InkWell(
-                  onTap: () => Navigator.of(context).pop(),
-                  customBorder: const CircleBorder(),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: AimColors.neutral0.withValues(alpha: 0.18),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(AimSpacing.space12),
-                      child: Icon(
-                        Directionality.of(context) == TextDirection.rtl
+            Semantics(
+              button: true,
+              label: 'Back',
+              child: InkWell(
+                onTap: () => Navigator.of(context).maybePop(),
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AimSpacing.space12),
+                    child: Icon(
+                      Directionality.of(context) == TextDirection.rtl
                           ? Icons.chevron_right_rounded
                           : Icons.chevron_left_rounded,
-                        size: AimSizes.iconMd,
-                        color: AimColors.neutral0,
-                      ),
+                      size: AimSizes.iconMd,
+                      color: AimColors.neutral0,
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-          Expanded(
-            child: SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsetsDirectional.all(
-                  AimSpacing.screenPaddingMobile,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      'General English Placement',
-                      style: AimTextStyles.h3
-                          .copyWith(color: surfaces.textPrimary),
-                    ),
-                    const SizedBox(height: AimSpacing.sectionGap),
-                    const _InfoRow(
-                      icon: Icons.layers_outlined,
-                      label: 'Sections',
-                      value: '3 sections',
-                    ),
-                    const SizedBox(height: AimSpacing.componentGap),
-                    const _InfoRow(
-                      icon: Icons.timer_outlined,
-                      label: 'Estimated time',
-                      value: '~15 min',
-                    ),
-                    const SizedBox(height: AimSpacing.sectionGap),
-                    Container(
-                      padding:
-                          const EdgeInsetsDirectional.all(AimSpacing.space12),
-                      decoration: BoxDecoration(
-                        color: surfaces.surfaceSunken,
-                        borderRadius: AimRadius.borderSm,
-                      ),
-                      child: Text(
-                        'Your level is determined by the backend after '
-                        'completion. Results are never calculated on your '
-                        'device.',
-                        style: AimTextStyles.bodySm.copyWith(
-                          color: surfaces.textSecondary,
-                        ),
-                      ),
-                    ),
-                    const Spacer(),
-                    AIMGradientButton(
-                      label: 'Start',
-                      gradient: AimGradients.gzHero,
-                      fullWidth: true,
-                      semanticLabel: 'Start placement test',
-                      onPressed: () => Navigator.of(context)
-                          .pushNamed(AppRoutePaths.placementStart),
-                    ),
-                  ],
-                ),
+            const SizedBox(height: AimSpacing.componentGap),
+            Text(
+              'General English Placement',
+              style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+            ),
+            const SizedBox(height: AimSpacing.space4),
+            Text(
+              'A quick check to find your starting level.',
+              style: AimTextStyles.bodySm.copyWith(
+                color: AimColors.neutral0.withValues(alpha: 0.85),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

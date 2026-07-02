@@ -102,58 +102,6 @@ class _QuestionPageState extends ConsumerState<QuestionPage> {
     );
   }
 
-  /// Gradient hero header mirroring register_page.dart's back-button/title
-  /// pattern (design ref: screenshots/{light,dark}/32-screen.png, header
-  /// reads "Practice" in the multiple-choice branch shown there).
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsetsDirectional.fromSTEB(
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.space16,
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.space16,
-      ),
-      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
-      child: SafeArea(
-        bottom: false,
-        child: Row(
-          children: [
-            Semantics(
-              button: true,
-              label: 'Back',
-              child: InkWell(
-                onTap: () => Navigator.of(context).pop(),
-                customBorder: const CircleBorder(),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AimColors.neutral0.withValues(alpha: 0.18),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Padding(
-                    padding: EdgeInsets.all(AimSpacing.space12),
-                    child: Icon(
-                      Icons.arrow_back,
-                      size: AimSizes.iconMd,
-                      color: AimColors.neutral0,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: AimSpacing.componentGap),
-            Expanded(
-              child: Text(
-                'Practice',
-                style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   /// Backend-supplied tag slugs (e.g. "present_perfect") are display-only
   /// reformatted into spaced title case (e.g. "Present Perfect"). This never
   /// invents content — it only reformats what the backend already sent.
