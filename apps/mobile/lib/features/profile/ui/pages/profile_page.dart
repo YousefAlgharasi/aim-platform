@@ -413,8 +413,8 @@ class _ProfileHeroHeader extends StatelessWidget {
     );
   }
 
-  String _titleCase(String value) {
-    if (value.isEmpty) return value;
+  String _titleCase(String? value) {
+    if (value == null || value.isEmpty) return '—';
     return value[0].toUpperCase() + value.substring(1);
   }
 }
