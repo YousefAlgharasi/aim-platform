@@ -269,7 +269,7 @@ void main() {
         const InvoiceHistoryPage(),
         repository: _FakeBillingRepository(),
       ));
-      expect(find.text('Invoice History'), findsOneWidget);
+      expect(find.text('Invoices'), findsOneWidget);
     });
 
     testWidgets('shows empty state when no invoices', (tester) async {
@@ -297,8 +297,8 @@ void main() {
         ),
       ));
       await tester.pumpAndSettle();
-      expect(find.text('\$19.99 USD'), findsOneWidget);
-      expect(find.text('paid'), findsOneWidget);
+      expect(find.text('\$19.99'), findsOneWidget);
+      expect(find.text('Paid'), findsOneWidget);
     });
 
     testWidgets('buildEmptyState shows no invoices message', (tester) async {
