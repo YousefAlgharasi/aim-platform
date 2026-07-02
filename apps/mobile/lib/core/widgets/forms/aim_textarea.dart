@@ -85,7 +85,7 @@ class _AIMTextareaState extends State<AIMTextarea> {
 
     final textarea = DecoratedBox(
       decoration: BoxDecoration(
-        color: widget.disabled ? surfaces.disabledBg : surfaces.surface,
+        color: widget.disabled ? surfaces.disabledBg : surfaces.surfaceSunken,
         border: Border.all(
           color: widget.disabled
               ? surfaces.disabledBorder
