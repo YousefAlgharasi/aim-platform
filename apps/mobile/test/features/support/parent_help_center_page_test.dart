@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/support/ui/pages/parent_help_center_page.dart';
 import 'package:aim_mobile/features/support/ui/pages/parent_ticket_list_page.dart';
 
@@ -10,7 +11,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(home: ParentHelpCenterPage()),
       );
-      expect(find.text('Parent Help Center'), findsOneWidget);
+      expect(find.text('Parent Help'), findsOneWidget);
     });
 
     testWidgets('shows parent-specific help categories', (tester) async {
@@ -30,19 +31,12 @@ void main() {
       expect(find.text('General Help'), findsOneWidget);
     });
 
-    testWidgets('shows how can we help text', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(home: ParentHelpCenterPage()),
-      );
-      expect(find.text('How can we help you?'), findsOneWidget);
-    });
-
     testWidgets('shows create ticket button', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(home: ParentHelpCenterPage()),
       );
       expect(find.text('Create Ticket'), findsOneWidget);
-      expect(find.byType(FilledButton), findsOneWidget);
+      expect(find.byType(AIMGradientButton), findsOneWidget);
     });
   });
 
