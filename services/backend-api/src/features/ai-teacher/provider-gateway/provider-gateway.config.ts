@@ -20,6 +20,7 @@ import { BackendConfigService } from '../../../config/backend-config.service';
 export interface ProviderGatewayConfig {
   readonly apiKey: string;
   readonly model: string;
+  readonly baseUrl: string;
 }
 
 @Injectable()
@@ -27,7 +28,7 @@ export class ProviderGatewayConfigService {
   constructor(private readonly backendConfig: BackendConfigService) {}
 
   getConfig(): ProviderGatewayConfig {
-    const { apiKey, model } = this.backendConfig.aiProvider;
-    return { apiKey, model };
+    const { apiKey, model, baseUrl } = this.backendConfig.aiProvider;
+    return { apiKey, model, baseUrl };
   }
 }

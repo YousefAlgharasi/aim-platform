@@ -59,6 +59,14 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
   );
   const aiProviderApiKey = readRequiredString(env, 'AI_PROVIDER_API_KEY', issues);
   const aiProviderModel = readRequiredString(env, 'AI_PROVIDER_MODEL', issues);
+  // Optional — lets any OpenAI-compatible provider (e.g. Groq) be used by
+  // setting AI_PROVIDER_BASE_URL instead of hard-coding OpenAI's endpoint.
+  const aiProviderBaseUrl = readOptionalUrl(
+    env,
+    'AI_PROVIDER_BASE_URL',
+    'https://api.openai.com/v1/chat/completions',
+    issues,
+  );
   // P9-039 — STT provider settings for Group E's STT Gateway.
   // STT_PROVIDER_API_KEY is a secret: never logged, never returned to clients.
   const sttProviderApiKey = readRequiredString(env, 'STT_PROVIDER_API_KEY', issues);
@@ -109,6 +117,7 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
     aiProvider: {
       apiKey: aiProviderApiKey,
       model: aiProviderModel,
+      baseUrl: aiProviderBaseUrl,
     },
     sttProvider: {
       apiKey: sttProviderApiKey,

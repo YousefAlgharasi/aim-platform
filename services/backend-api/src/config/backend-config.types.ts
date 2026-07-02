@@ -31,6 +31,12 @@ export interface BackendConfig {
   readonly aiProvider: {
     readonly apiKey: string;
     readonly model: string;
+    /**
+     * Chat-completions endpoint URL. Defaults to OpenAI's endpoint; set
+     * AI_PROVIDER_BASE_URL to point at any other OpenAI-compatible
+     * provider (e.g. Groq) without a code change.
+     */
+    readonly baseUrl: string;
   };
   /** P9-039 — STT provider settings for Group E's STT Gateway. */
   readonly sttProvider: {
