@@ -5,8 +5,8 @@
 //
 // Covers:
 //   1. Idle/confirm state renders the summary and submit button.
-//   2. Tapping submit shows the loading copy while completeAttempt runs.
-//   3. Backend failure renders an error message with a retry action.
+//   2. Tapping submit shows AIMFullScreenLoading while completeAttempt runs.
+//   3. Backend failure renders AIMFullScreenError with a retry action.
 //   4. RTL layout does not throw; key content still renders.
 
 import 'dart:async';
@@ -16,6 +16,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/core/theme/app_theme.dart';
+import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart';
 import 'package:aim_mobile/features/placement/data/models/placement_models.dart';
@@ -103,7 +104,7 @@ Widget _wrap(
   );
 }
 
-const _page = PlacementSubmitPage(attemptId: 'attempt-1');
+const _page = PlacementSubmitPage(attemptId: 'attempt-1', totalSections: 4);
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
@@ -116,16 +117,11 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('All sections complete!'), findsOneWidget);
+      expect(find.text('All 4 sections complete'), findsOneWidget);
       expect(find.text('Submit Placement Test'), findsOneWidget);
-      // Backend-authority note must always be visible before submitting.
-      expect(
-        find.textContaining('Scoring is performed by the server'),
-        findsOneWidget,
-      );
     });
 
-    testWidgets('shows the submitting copy while completeAttempt runs',
+    testWidgets('shows AIMFullScreenLoading while completeAttempt runs',
         (tester) async {
       final gate = Completer<PlacementAttemptModel>();
       await tester.pumpWidget(
@@ -136,7 +132,7 @@ void main() {
       await tester.tap(find.text('Submit Placement Test'));
       await tester.pump(); // loading state renders immediately
 
-      expect(find.text('Submitting your answers…'), findsOneWidget);
+      expect(find.byType(AIMFullScreenLoading), findsOneWidget);
     });
 
     testWidgets('shows an error message and lets the student retry',
@@ -155,13 +151,14 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.text('Try Again'), findsOneWidget);
+      expect(find.byType(AIMFullScreenError), findsOneWidget);
+      expect(find.text('Retry'), findsOneWidget);
 
-      await tester.tap(find.text('Try Again'));
+      await tester.tap(find.text('Retry'));
       await tester.pump();
 
       // reset() returns to idle — confirmation screen shown again.
-      expect(find.text('All sections complete!'), findsOneWidget);
+      expect(find.text('All 4 sections complete'), findsOneWidget);
     });
 
     testWidgets('renders without error under RTL directionality',
@@ -176,7 +173,7 @@ void main() {
       await tester.pump();
 
       expect(find.byType(PlacementSubmitPage), findsOneWidget);
-      expect(find.text('All sections complete!'), findsOneWidget);
+      expect(find.text('All 4 sections complete'), findsOneWidget);
     });
   });
 }

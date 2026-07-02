@@ -43,7 +43,7 @@ class LessonStepTile extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: style.color,
+              gradient: style.gradient,
               borderRadius: BorderRadius.circular(AimRadius.md),
             ),
             alignment: Alignment.center,
@@ -93,21 +93,27 @@ class LessonStepTile extends StatelessWidget {
 
   _StepStyle _styleFor(String type) {
     return switch (type) {
-      'text' => const _StepStyle(Icons.notes_outlined, AimColors.primary500),
-      'image' => const _StepStyle(Icons.image_outlined, AimColors.success500),
-      'audio' => const _StepStyle(Icons.headphones_outlined, AimColors.error500),
-      'video' => const _StepStyle(Icons.play_circle_outline, AimColors.error500),
-      'vocabulary' => const _StepStyle(Icons.menu_book_outlined, AimColors.warning500),
-      'exercise' => const _StepStyle(Icons.check_circle_outline, AimColors.success500),
-      'document' => const _StepStyle(Icons.description_outlined, AimColors.primary500),
-      'external_reference' => const _StepStyle(Icons.open_in_new, AimColors.primary500),
-      _ => const _StepStyle(Icons.attachment_outlined, AimColors.primary500),
+      'text' => const _StepStyle(Icons.notes_outlined, AimGradients.gzHero),
+      'image' => const _StepStyle(Icons.image_outlined, AimGradients.growth),
+      'audio' =>
+        const _StepStyle(Icons.headphones_outlined, AimGradients.gzCoral),
+      'video' =>
+        const _StepStyle(Icons.play_circle_outline, AimGradients.gzCoral),
+      'vocabulary' =>
+        const _StepStyle(Icons.menu_book_outlined, AimGradients.gzFire),
+      'exercise' =>
+        const _StepStyle(Icons.check_circle_outline, AimGradients.gzLime),
+      'document' =>
+        const _StepStyle(Icons.description_outlined, AimGradients.gzHero),
+      'external_reference' =>
+        const _StepStyle(Icons.open_in_new, AimGradients.gzHero),
+      _ => const _StepStyle(Icons.attachment_outlined, AimGradients.gzHero),
     };
   }
 }
 
 class _StepStyle {
-  const _StepStyle(this.icon, this.color);
+  const _StepStyle(this.icon, this.gradient);
   final IconData icon;
-  final Color color;
+  final LinearGradient gradient;
 }

@@ -8,6 +8,16 @@ class DSButtonSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buttons(),
+        _gradientButtons(),
+      ],
+    );
+  }
+
+  Widget _buttons() {
     return DSSection(
       title: 'Buttons',
       children: [
@@ -79,6 +89,31 @@ class DSButtonSection extends StatelessWidget {
           onPressed: () {},
           fullWidth: true,
           child: const Text('Full Width Primary'),
+        ),
+      ],
+    );
+  }
+
+  Widget _gradientButtons() {
+    return DSSection(
+      title: 'Gradient Button',
+      children: [
+        _row('default / loading / disabled', [
+          AIMGradientButton(label: 'Continue', onPressed: () {}),
+          AIMGradientButton(label: 'Loading', loading: true, onPressed: () {}),
+          const AIMGradientButton(label: 'Disabled', enabled: false),
+        ]),
+        _row('with icon', [
+          AIMGradientButton(
+            label: 'Subscribe',
+            icon: const Icon(Icons.star_outline),
+            onPressed: () {},
+          ),
+        ]),
+        AIMGradientButton(
+          label: 'Full Width Gradient',
+          fullWidth: true,
+          onPressed: () {},
         ),
       ],
     );
