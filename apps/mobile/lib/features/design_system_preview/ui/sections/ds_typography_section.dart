@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../widgets/ds_section.dart';
 
 class DSTypographySection extends StatelessWidget {
@@ -9,11 +10,12 @@ class DSTypographySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     TextStyle s(TextStyle base) => base.copyWith(color: surfaces.textPrimary);
 
     return DSSection(
-      title: 'Typography',
+      title: l10n.dsPreviewSectionTypography,
       children: [
         _sample('Display', AimTextStyles.display, s(AimTextStyles.display),
             'The quick brown fox'),

@@ -4192,5 +4192,469 @@
   "supportNewTicketTitle": "New ticket",
   "@supportNewTicketTitle": {
     "description": "App bar title on the create-ticket page."
+  },
+  "dsPreviewCloseTooltip": "Close preview",
+  "@dsPreviewCloseTooltip": {
+    "description": "Tooltip for the close button on the internal design-system preview screen."
+  },
+  "dsPreviewTitle": "⚙ Design System Preview",
+  "@dsPreviewTitle": {
+    "description": "App bar title of the internal design-system preview screen (developer/QA tool)."
+  },
+  "dsPreviewTabFoundations": "Foundations",
+  "@dsPreviewTabFoundations": {
+    "description": "Tab label in the design-system preview for the foundations (spacing/radius/shadows) tab."
+  },
+  "dsPreviewTabButtons": "Buttons",
+  "@dsPreviewTabButtons": {
+    "description": "Tab label and section title in the design-system preview for the buttons demo."
+  },
+  "dsPreviewTabForms": "Forms",
+  "@dsPreviewTabForms": {
+    "description": "Tab label in the design-system preview for the form controls demo."
+  },
+  "dsPreviewTabFeedback": "Feedback",
+  "@dsPreviewTabFeedback": {
+    "description": "Tab label in the design-system preview for the feedback components demo."
+  },
+  "dsPreviewTabNavigation": "Navigation",
+  "@dsPreviewTabNavigation": {
+    "description": "Tab label in the design-system preview for the navigation components demo."
+  },
+  "dsPreviewTabLearning": "Learning",
+  "@dsPreviewTabLearning": {
+    "description": "Tab label in the design-system preview for the learning widgets demo."
+  },
+  "dsPreviewSectionGradientButton": "Gradient Button",
+  "@dsPreviewSectionGradientButton": {
+    "description": "Section title in the design-system preview showing gradient button variants."
+  },
+  "dsPreviewWordPrimary": "Primary",
+  "@dsPreviewWordPrimary": {
+    "description": "Generic 'Primary' variant/tone label reused across several demos in the design-system preview (buttons, colors, circular progress)."
+  },
+  "dsPreviewWordSecondary": "Secondary",
+  "@dsPreviewWordSecondary": {
+    "description": "Generic 'Secondary' variant/tone label reused across several demos in the design-system preview (buttons, colors)."
+  },
+  "dsPreviewWordOutline": "Outline",
+  "@dsPreviewWordOutline": {
+    "description": "Generic 'Outline' variant label reused across button and badge demos in the design-system preview."
+  },
+  "dsPreviewWordGhost": "Ghost",
+  "@dsPreviewWordGhost": {
+    "description": "Label for the ghost button variant in the design-system preview."
+  },
+  "dsPreviewWordDestructive": "Destructive",
+  "@dsPreviewWordDestructive": {
+    "description": "Label for the destructive button variant in the design-system preview."
+  },
+  "dsPreviewWordSmall": "Small",
+  "@dsPreviewWordSmall": {
+    "description": "Generic 'Small' size label reused across button and circular progress demos in the design-system preview."
+  },
+  "dsPreviewWordLarge": "Large",
+  "@dsPreviewWordLarge": {
+    "description": "Generic 'Large' size label reused across button and circular progress demos in the design-system preview."
+  },
+  "dsPreviewWordGradient": "Gradient",
+  "@dsPreviewWordGradient": {
+    "description": "Generic 'Gradient' tone label reused across progress bar and circular progress demos in the design-system preview."
+  },
+  "dsPreviewWordSuccess": "Success",
+  "@dsPreviewWordSuccess": {
+    "description": "Generic 'Success' tone label reused across alert banner and circular progress demos in the design-system preview."
+  },
+  "dsPreviewWordWarning": "Warning",
+  "@dsPreviewWordWarning": {
+    "description": "Title of the warning-tone alert banner demo in the design-system preview."
+  },
+  "dsPreviewWordError": "Error",
+  "@dsPreviewWordError": {
+    "description": "Title of the error-tone alert banner demo in the design-system preview."
+  },
+  "dsPreviewWordInformation": "Information",
+  "@dsPreviewWordInformation": {
+    "description": "Title of the info-tone alert banner demo in the design-system preview."
+  },
+  "dsPreviewStateDisabled": "Disabled",
+  "@dsPreviewStateDisabled": {
+    "description": "Generic 'Disabled' state label reused across button, chip, checkbox and radio demos in the design-system preview."
+  },
+  "dsPreviewStateLoading": "Loading",
+  "@dsPreviewStateLoading": {
+    "description": "Generic 'Loading' state label reused across button demos in the design-system preview."
+  },
+  "dsPreviewStateDefault": "Default",
+  "@dsPreviewStateDefault": {
+    "description": "Label for the default chip state in the design-system preview."
+  },
+  "dsPreviewStateSelected": "Selected",
+  "@dsPreviewStateSelected": {
+    "description": "Label for the selected chip state in the design-system preview."
+  },
+  "dsPreviewWithIcon": "With icon",
+  "@dsPreviewWithIcon": {
+    "description": "Generic 'With icon' caption reused across badge and chip demos in the design-system preview."
+  },
+  "dsPreviewBtnAddItem": "Add item",
+  "@dsPreviewBtnAddItem": {
+    "description": "Sample button label with a leading icon in the design-system preview."
+  },
+  "dsPreviewBtnFullWidthPrimary": "Full Width Primary",
+  "@dsPreviewBtnFullWidthPrimary": {
+    "description": "Sample full-width primary button label in the design-system preview."
+  },
+  "dsPreviewBtnSubscribe": "Subscribe",
+  "@dsPreviewBtnSubscribe": {
+    "description": "Sample gradient button label with an icon in the design-system preview."
+  },
+  "dsPreviewBtnFullWidthGradient": "Full Width Gradient",
+  "@dsPreviewBtnFullWidthGradient": {
+    "description": "Sample full-width gradient button label in the design-system preview."
+  },
+  "dsPreviewSectionColors": "Colors",
+  "@dsPreviewSectionColors": {
+    "description": "Section title in the design-system preview showing the color palette."
+  },
+  "dsPreviewColorAccent": "Accent",
+  "@dsPreviewColorAccent": {
+    "description": "Name of the accent color palette in the design-system preview."
+  },
+  "dsPreviewColorSemantic": "Semantic",
+  "@dsPreviewColorSemantic": {
+    "description": "Name of the semantic (success/warning/error/info) color palette in the design-system preview."
+  },
+  "dsPreviewColorNeutral": "Neutral",
+  "@dsPreviewColorNeutral": {
+    "description": "Name of the neutral color palette in the design-system preview."
+  },
+  "dsPreviewGradientAi": "AI Gradient",
+  "@dsPreviewGradientAi": {
+    "description": "Name of the AI gradient swatch in the design-system preview."
+  },
+  "dsPreviewGradientGrowth": "Growth Gradient",
+  "@dsPreviewGradientGrowth": {
+    "description": "Name of the growth gradient swatch in the design-system preview."
+  },
+  "dsPreviewGradientAiSoft": "AI Soft",
+  "@dsPreviewGradientAiSoft": {
+    "description": "Name of the soft AI gradient swatch in the design-system preview."
+  },
+  "dsPreviewSectionAlertBanners": "Alert Banners",
+  "@dsPreviewSectionAlertBanners": {
+    "description": "Section title in the design-system preview showing alert banner variants."
+  },
+  "dsPreviewSectionBadges": "Badges",
+  "@dsPreviewSectionBadges": {
+    "description": "Section title in the design-system preview showing badge variants."
+  },
+  "dsPreviewSectionChips": "Chips",
+  "@dsPreviewSectionChips": {
+    "description": "Section title in the design-system preview showing chip variants."
+  },
+  "dsPreviewSectionSkeletonLoaders": "Skeleton Loaders",
+  "@dsPreviewSectionSkeletonLoaders": {
+    "description": "Section title in the design-system preview showing skeleton loader placeholders."
+  },
+  "dsPreviewAlertInfoBody": "This is an informational message.",
+  "@dsPreviewAlertInfoBody": {
+    "description": "Body text of the info-tone alert banner demo in the design-system preview."
+  },
+  "dsPreviewAlertSuccessBody": "Your answer was correct!",
+  "@dsPreviewAlertSuccessBody": {
+    "description": "Body text of the success-tone alert banner demo in the design-system preview."
+  },
+  "dsPreviewAlertWarningBody": "Your session expires in 5 minutes.",
+  "@dsPreviewAlertWarningBody": {
+    "description": "Body text of the warning-tone alert banner demo in the design-system preview."
+  },
+  "dsPreviewAlertErrorBody": "Could not save your progress.",
+  "@dsPreviewAlertErrorBody": {
+    "description": "Body text of the error-tone alert banner demo in the design-system preview."
+  },
+  "dsPreviewAlertDismissibleBody": "Dismissible banner without title.",
+  "@dsPreviewAlertDismissibleBody": {
+    "description": "Body text of the dismissible, title-less alert banner demo in the design-system preview."
+  },
+  "dsPreviewBadgeSolid": "Solid",
+  "@dsPreviewBadgeSolid": {
+    "description": "Label for the solid badge variant in the design-system preview."
+  },
+  "dsPreviewBadgePillDot": "Pill + dot",
+  "@dsPreviewBadgePillDot": {
+    "description": "Label for the pill-shaped badge with a status dot in the design-system preview."
+  },
+  "dsPreviewChipRemovable": "Removable",
+  "@dsPreviewChipRemovable": {
+    "description": "Label for the removable chip variant in the design-system preview."
+  },
+  "dsPreviewSectionFormControls": "Form Controls",
+  "@dsPreviewSectionFormControls": {
+    "description": "Section title in the design-system preview showing form control widgets."
+  },
+  "dsPreviewInputDefaultLabel": "Default input",
+  "@dsPreviewInputDefaultLabel": {
+    "description": "Label for the default text input demo in the design-system preview."
+  },
+  "dsPreviewInputEnterTextPlaceholder": "Enter text…",
+  "@dsPreviewInputEnterTextPlaceholder": {
+    "description": "Placeholder for the default text input demo in the design-system preview."
+  },
+  "dsPreviewInputHelperLabel": "With helper text",
+  "@dsPreviewInputHelperLabel": {
+    "description": "Label for the input-with-helper-text demo in the design-system preview."
+  },
+  "dsPreviewInputInstitutionalEmailHelper": "Use your institutional email.",
+  "@dsPreviewInputInstitutionalEmailHelper": {
+    "description": "Helper text under the email input demo in the design-system preview."
+  },
+  "dsPreviewInputErrorLabel": "Error state",
+  "@dsPreviewInputErrorLabel": {
+    "description": "Label for the input error-state demo in the design-system preview."
+  },
+  "dsPreviewInputEnterPasswordPlaceholder": "Enter password",
+  "@dsPreviewInputEnterPasswordPlaceholder": {
+    "description": "Placeholder for the password input error-state demo in the design-system preview."
+  },
+  "dsPreviewInputPasswordError": "Password must be at least 8 characters.",
+  "@dsPreviewInputPasswordError": {
+    "description": "Error text under the password input demo in the design-system preview."
+  },
+  "dsPreviewInputCannotEditPlaceholder": "Cannot edit",
+  "@dsPreviewInputCannotEditPlaceholder": {
+    "description": "Placeholder for the disabled input demo in the design-system preview."
+  },
+  "dsPreviewInputRequiredLabel": "Required",
+  "@dsPreviewInputRequiredLabel": {
+    "description": "Label for the required-field input demo in the design-system preview."
+  },
+  "dsPreviewInputFullNamePlaceholder": "Full name",
+  "@dsPreviewInputFullNamePlaceholder": {
+    "description": "Placeholder for the required-field input demo in the design-system preview."
+  },
+  "dsPreviewInputSearchLabel": "Search",
+  "@dsPreviewInputSearchLabel": {
+    "description": "Label for the search input demo in the design-system preview."
+  },
+  "dsPreviewInputSearchLessonsPlaceholder": "Search lessons…",
+  "@dsPreviewInputSearchLessonsPlaceholder": {
+    "description": "Placeholder for the search input demo in the design-system preview."
+  },
+  "dsPreviewCheckboxUnchecked": "Unchecked",
+  "@dsPreviewCheckboxUnchecked": {
+    "description": "Label for the unchecked checkbox demo in the design-system preview."
+  },
+  "dsPreviewCheckboxChecked": "Checked",
+  "@dsPreviewCheckboxChecked": {
+    "description": "Label for the checked checkbox demo in the design-system preview."
+  },
+  "dsPreviewSwitchOn": "On",
+  "@dsPreviewSwitchOn": {
+    "description": "Label shown next to the switch demo in the design-system preview when it is on."
+  },
+  "dsPreviewSwitchOff": "Off",
+  "@dsPreviewSwitchOff": {
+    "description": "Label shown next to the switch demo in the design-system preview when it is off."
+  },
+  "dsPreviewSwitchDisabledOn": "Disabled on",
+  "@dsPreviewSwitchDisabledOn": {
+    "description": "Label for the disabled-and-on switch demo in the design-system preview."
+  },
+  "dsPreviewRadioOptionA": "Option A",
+  "@dsPreviewRadioOptionA": {
+    "description": "Label for the first radio button demo option in the design-system preview."
+  },
+  "dsPreviewRadioOptionB": "Option B",
+  "@dsPreviewRadioOptionB": {
+    "description": "Label for the second radio button demo option in the design-system preview."
+  },
+  "dsPreviewRadioOptionC": "Option C",
+  "@dsPreviewRadioOptionC": {
+    "description": "Label for the third radio button demo option in the design-system preview."
+  },
+  "dsPreviewSectionSpacing": "Spacing",
+  "@dsPreviewSectionSpacing": {
+    "description": "Section title in the design-system preview showing the spacing scale."
+  },
+  "dsPreviewSectionBorderRadius": "Border Radius",
+  "@dsPreviewSectionBorderRadius": {
+    "description": "Section title in the design-system preview showing the border-radius scale."
+  },
+  "dsPreviewSectionShadows": "Shadows",
+  "@dsPreviewSectionShadows": {
+    "description": "Section title in the design-system preview showing the elevation/shadow scale."
+  },
+  "dsPreviewSectionBlobCard": "Blob Card",
+  "@dsPreviewSectionBlobCard": {
+    "description": "Section title in the design-system preview showing the blob card widget."
+  },
+  "dsPreviewSectionStatTile": "Stat Tile",
+  "@dsPreviewSectionStatTile": {
+    "description": "Section title in the design-system preview showing the stat tile widget."
+  },
+  "dsPreviewSectionSkillBlob": "Skill Blob",
+  "@dsPreviewSectionSkillBlob": {
+    "description": "Section title in the design-system preview showing the skill blob widget."
+  },
+  "dsPreviewSectionAimCard": "AIM Card",
+  "@dsPreviewSectionAimCard": {
+    "description": "Section title in the design-system preview showing the AIM card widget."
+  },
+  "dsPreviewSectionProgressBar": "Progress Bar",
+  "@dsPreviewSectionProgressBar": {
+    "description": "Section title in the design-system preview showing the progress bar widget."
+  },
+  "dsPreviewSectionCircularProgress": "Circular Progress",
+  "@dsPreviewSectionCircularProgress": {
+    "description": "Section title in the design-system preview showing the circular progress widget."
+  },
+  "dsPreviewSectionAnswerOptions": "Answer Options",
+  "@dsPreviewSectionAnswerOptions": {
+    "description": "Section title in the design-system preview showing the lesson answer-option widget."
+  },
+  "dsPreviewSectionAiFeedbackBubble": "AI Feedback Bubble",
+  "@dsPreviewSectionAiFeedbackBubble": {
+    "description": "Section title in the design-system preview showing the AI feedback bubble widget."
+  },
+  "dsPreviewSectionRecordButton": "Record Button",
+  "@dsPreviewSectionRecordButton": {
+    "description": "Section title in the design-system preview showing the voice record button widget."
+  },
+  "dsPreviewStreakTitle": "5-day streak",
+  "@dsPreviewStreakTitle": {
+    "description": "Sample blob card title demonstrating a streak count in the design-system preview."
+  },
+  "dsPreviewStreakSubtitle": "Keep it going today",
+  "@dsPreviewStreakSubtitle": {
+    "description": "Sample blob card subtitle demonstrating a streak nudge in the design-system preview."
+  },
+  "dsPreviewXpWeekTitle": "320 XP this week",
+  "@dsPreviewXpWeekTitle": {
+    "description": "Sample blob card title demonstrating a weekly XP count in the design-system preview."
+  },
+  "dsPreviewStatDayStreak": "Day streak",
+  "@dsPreviewStatDayStreak": {
+    "description": "Label for the day-streak stat tile demo in the design-system preview."
+  },
+  "dsPreviewStatXp": "XP",
+  "@dsPreviewStatXp": {
+    "description": "Label for the XP stat tile demo in the design-system preview."
+  },
+  "dsPreviewStatLessons": "Lessons",
+  "@dsPreviewStatLessons": {
+    "description": "Label for the lessons-count stat tile demo in the design-system preview."
+  },
+  "dsPreviewSkillSpeaking": "Speaking",
+  "@dsPreviewSkillSpeaking": {
+    "description": "Skill name label reused for the skill blob and tab demos in the design-system preview."
+  },
+  "dsPreviewCardStandard": "Standard card",
+  "@dsPreviewCardStandard": {
+    "description": "Sample content for the standard AIM card variant in the design-system preview."
+  },
+  "dsPreviewCardElevated": "Elevated card",
+  "@dsPreviewCardElevated": {
+    "description": "Sample content for the elevated AIM card variant in the design-system preview."
+  },
+  "dsPreviewCardAiGradientBorder": "AI card (gradient border)",
+  "@dsPreviewCardAiGradientBorder": {
+    "description": "Sample content for the AI-gradient-border AIM card variant in the design-system preview."
+  },
+  "dsPreviewCardGradientAiContent": "Gradient card — AI adaptive content",
+  "@dsPreviewCardGradientAiContent": {
+    "description": "Sample content for the gradient AIM card variant in the design-system preview."
+  },
+  "dsPreviewCardInteractiveTapMe": "Interactive card — tap me",
+  "@dsPreviewCardInteractiveTapMe": {
+    "description": "Sample content for the interactive AIM card variant in the design-system preview."
+  },
+  "dsPreviewProgressLesson": "Lesson progress",
+  "@dsPreviewProgressLesson": {
+    "description": "Label for the lesson-progress bar demo in the design-system preview."
+  },
+  "dsPreviewProgressXpNextLevel": "XP to next level",
+  "@dsPreviewProgressXpNextLevel": {
+    "description": "Label for the XP-to-next-level progress bar demo in the design-system preview."
+  },
+  "dsPreviewProgressGrammarMastery": "Grammar mastery",
+  "@dsPreviewProgressGrammarMastery": {
+    "description": "Label for the grammar-mastery progress bar demo in the design-system preview."
+  },
+  "dsPreviewProgressVocabRetention": "Vocabulary retention",
+  "@dsPreviewProgressVocabRetention": {
+    "description": "Label for the vocabulary-retention progress bar demo in the design-system preview."
+  },
+  "dsPreviewXpProgressFormat": "{value}/{max} XP",
+  "@dsPreviewXpProgressFormat": {
+    "description": "Custom progress-bar value format demonstrating an XP counter in the design-system preview.",
+    "placeholders": {
+      "value": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "dsPreviewCircularDailyGoal": "daily goal",
+  "@dsPreviewCircularDailyGoal": {
+    "description": "Caption under the circular progress demo for the daily-goal variant in the design-system preview."
+  },
+  "dsPreviewCircularScore": "score",
+  "@dsPreviewCircularScore": {
+    "description": "Caption under the circular progress demo for the score variant in the design-system preview."
+  },
+  "dsPreviewSectionGradientHeroHeader": "Gradient Hero Header",
+  "@dsPreviewSectionGradientHeroHeader": {
+    "description": "Section title in the design-system preview showing the gradient hero header widget."
+  },
+  "dsPreviewSectionAppDrawer": "App Drawer",
+  "@dsPreviewSectionAppDrawer": {
+    "description": "Section title in the design-system preview showing the app drawer widget."
+  },
+  "dsPreviewSectionNotificationsSheet": "Notifications Sheet",
+  "@dsPreviewSectionNotificationsSheet": {
+    "description": "Section title in the design-system preview showing the notifications sheet widget."
+  },
+  "dsPreviewSectionTopAppBar": "Top App Bar",
+  "@dsPreviewSectionTopAppBar": {
+    "description": "Section title in the design-system preview showing the top app bar widget."
+  },
+  "dsPreviewSectionSegmentedControl": "Segmented Control",
+  "@dsPreviewSectionSegmentedControl": {
+    "description": "Section title in the design-system preview showing the segmented control widget."
+  },
+  "dsPreviewSectionTabs": "Tabs",
+  "@dsPreviewSectionTabs": {
+    "description": "Section title in the design-system preview showing the tabs widget."
+  },
+  "dsPreviewSectionBottomNavigation": "Bottom Navigation",
+  "@dsPreviewSectionBottomNavigation": {
+    "description": "Section title in the design-system preview showing the bottom navigation widget."
+  },
+  "dsPreviewNavSettings": "Settings",
+  "@dsPreviewNavSettings": {
+    "description": "Sample app-drawer item label in the design-system preview."
+  },
+  "dsPreviewOpenDrawerButton": "Open drawer",
+  "@dsPreviewOpenDrawerButton": {
+    "description": "Button label that opens the demo app drawer in the design-system preview."
+  },
+  "dsPreviewShowNotificationsButton": "Show notifications",
+  "@dsPreviewShowNotificationsButton": {
+    "description": "Button label that opens the demo notifications sheet in the design-system preview."
+  },
+  "dsPreviewCenteredTitleDemo": "Centered Title",
+  "@dsPreviewCenteredTitleDemo": {
+    "description": "Sample top app bar title demonstrating the centered-title layout in the design-system preview."
+  },
+  "dsPreviewSegAll": "All",
+  "@dsPreviewSegAll": {
+    "description": "Label for the 'all' segmented control option in the design-system preview."
+  },
+  "dsPreviewSectionTypography": "Typography",
+  "@dsPreviewSectionTypography": {
+    "description": "Section title in the design-system preview showing the type scale."
   }
 }

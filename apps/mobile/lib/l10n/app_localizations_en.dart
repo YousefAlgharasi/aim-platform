@@ -2992,4 +2992,352 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get supportNewTicketTitle => 'New ticket';
+
+  @override
+  String get dsPreviewCloseTooltip => 'Close preview';
+
+  @override
+  String get dsPreviewTitle => '⚙ Design System Preview';
+
+  @override
+  String get dsPreviewTabFoundations => 'Foundations';
+
+  @override
+  String get dsPreviewTabButtons => 'Buttons';
+
+  @override
+  String get dsPreviewTabForms => 'Forms';
+
+  @override
+  String get dsPreviewTabFeedback => 'Feedback';
+
+  @override
+  String get dsPreviewTabNavigation => 'Navigation';
+
+  @override
+  String get dsPreviewTabLearning => 'Learning';
+
+  @override
+  String get dsPreviewSectionGradientButton => 'Gradient Button';
+
+  @override
+  String get dsPreviewWordPrimary => 'Primary';
+
+  @override
+  String get dsPreviewWordSecondary => 'Secondary';
+
+  @override
+  String get dsPreviewWordOutline => 'Outline';
+
+  @override
+  String get dsPreviewWordGhost => 'Ghost';
+
+  @override
+  String get dsPreviewWordDestructive => 'Destructive';
+
+  @override
+  String get dsPreviewWordSmall => 'Small';
+
+  @override
+  String get dsPreviewWordLarge => 'Large';
+
+  @override
+  String get dsPreviewWordGradient => 'Gradient';
+
+  @override
+  String get dsPreviewWordSuccess => 'Success';
+
+  @override
+  String get dsPreviewWordWarning => 'Warning';
+
+  @override
+  String get dsPreviewWordError => 'Error';
+
+  @override
+  String get dsPreviewWordInformation => 'Information';
+
+  @override
+  String get dsPreviewStateDisabled => 'Disabled';
+
+  @override
+  String get dsPreviewStateLoading => 'Loading';
+
+  @override
+  String get dsPreviewStateDefault => 'Default';
+
+  @override
+  String get dsPreviewStateSelected => 'Selected';
+
+  @override
+  String get dsPreviewWithIcon => 'With icon';
+
+  @override
+  String get dsPreviewBtnAddItem => 'Add item';
+
+  @override
+  String get dsPreviewBtnFullWidthPrimary => 'Full Width Primary';
+
+  @override
+  String get dsPreviewBtnSubscribe => 'Subscribe';
+
+  @override
+  String get dsPreviewBtnFullWidthGradient => 'Full Width Gradient';
+
+  @override
+  String get dsPreviewSectionColors => 'Colors';
+
+  @override
+  String get dsPreviewColorAccent => 'Accent';
+
+  @override
+  String get dsPreviewColorSemantic => 'Semantic';
+
+  @override
+  String get dsPreviewColorNeutral => 'Neutral';
+
+  @override
+  String get dsPreviewGradientAi => 'AI Gradient';
+
+  @override
+  String get dsPreviewGradientGrowth => 'Growth Gradient';
+
+  @override
+  String get dsPreviewGradientAiSoft => 'AI Soft';
+
+  @override
+  String get dsPreviewSectionAlertBanners => 'Alert Banners';
+
+  @override
+  String get dsPreviewSectionBadges => 'Badges';
+
+  @override
+  String get dsPreviewSectionChips => 'Chips';
+
+  @override
+  String get dsPreviewSectionSkeletonLoaders => 'Skeleton Loaders';
+
+  @override
+  String get dsPreviewAlertInfoBody => 'This is an informational message.';
+
+  @override
+  String get dsPreviewAlertSuccessBody => 'Your answer was correct!';
+
+  @override
+  String get dsPreviewAlertWarningBody => 'Your session expires in 5 minutes.';
+
+  @override
+  String get dsPreviewAlertErrorBody => 'Could not save your progress.';
+
+  @override
+  String get dsPreviewAlertDismissibleBody =>
+      'Dismissible banner without title.';
+
+  @override
+  String get dsPreviewBadgeSolid => 'Solid';
+
+  @override
+  String get dsPreviewBadgePillDot => 'Pill + dot';
+
+  @override
+  String get dsPreviewChipRemovable => 'Removable';
+
+  @override
+  String get dsPreviewSectionFormControls => 'Form Controls';
+
+  @override
+  String get dsPreviewInputDefaultLabel => 'Default input';
+
+  @override
+  String get dsPreviewInputEnterTextPlaceholder => 'Enter text…';
+
+  @override
+  String get dsPreviewInputHelperLabel => 'With helper text';
+
+  @override
+  String get dsPreviewInputInstitutionalEmailHelper =>
+      'Use your institutional email.';
+
+  @override
+  String get dsPreviewInputErrorLabel => 'Error state';
+
+  @override
+  String get dsPreviewInputEnterPasswordPlaceholder => 'Enter password';
+
+  @override
+  String get dsPreviewInputPasswordError =>
+      'Password must be at least 8 characters.';
+
+  @override
+  String get dsPreviewInputCannotEditPlaceholder => 'Cannot edit';
+
+  @override
+  String get dsPreviewInputRequiredLabel => 'Required';
+
+  @override
+  String get dsPreviewInputFullNamePlaceholder => 'Full name';
+
+  @override
+  String get dsPreviewInputSearchLabel => 'Search';
+
+  @override
+  String get dsPreviewInputSearchLessonsPlaceholder => 'Search lessons…';
+
+  @override
+  String get dsPreviewCheckboxUnchecked => 'Unchecked';
+
+  @override
+  String get dsPreviewCheckboxChecked => 'Checked';
+
+  @override
+  String get dsPreviewSwitchOn => 'On';
+
+  @override
+  String get dsPreviewSwitchOff => 'Off';
+
+  @override
+  String get dsPreviewSwitchDisabledOn => 'Disabled on';
+
+  @override
+  String get dsPreviewRadioOptionA => 'Option A';
+
+  @override
+  String get dsPreviewRadioOptionB => 'Option B';
+
+  @override
+  String get dsPreviewRadioOptionC => 'Option C';
+
+  @override
+  String get dsPreviewSectionSpacing => 'Spacing';
+
+  @override
+  String get dsPreviewSectionBorderRadius => 'Border Radius';
+
+  @override
+  String get dsPreviewSectionShadows => 'Shadows';
+
+  @override
+  String get dsPreviewSectionBlobCard => 'Blob Card';
+
+  @override
+  String get dsPreviewSectionStatTile => 'Stat Tile';
+
+  @override
+  String get dsPreviewSectionSkillBlob => 'Skill Blob';
+
+  @override
+  String get dsPreviewSectionAimCard => 'AIM Card';
+
+  @override
+  String get dsPreviewSectionProgressBar => 'Progress Bar';
+
+  @override
+  String get dsPreviewSectionCircularProgress => 'Circular Progress';
+
+  @override
+  String get dsPreviewSectionAnswerOptions => 'Answer Options';
+
+  @override
+  String get dsPreviewSectionAiFeedbackBubble => 'AI Feedback Bubble';
+
+  @override
+  String get dsPreviewSectionRecordButton => 'Record Button';
+
+  @override
+  String get dsPreviewStreakTitle => '5-day streak';
+
+  @override
+  String get dsPreviewStreakSubtitle => 'Keep it going today';
+
+  @override
+  String get dsPreviewXpWeekTitle => '320 XP this week';
+
+  @override
+  String get dsPreviewStatDayStreak => 'Day streak';
+
+  @override
+  String get dsPreviewStatXp => 'XP';
+
+  @override
+  String get dsPreviewStatLessons => 'Lessons';
+
+  @override
+  String get dsPreviewSkillSpeaking => 'Speaking';
+
+  @override
+  String get dsPreviewCardStandard => 'Standard card';
+
+  @override
+  String get dsPreviewCardElevated => 'Elevated card';
+
+  @override
+  String get dsPreviewCardAiGradientBorder => 'AI card (gradient border)';
+
+  @override
+  String get dsPreviewCardGradientAiContent =>
+      'Gradient card — AI adaptive content';
+
+  @override
+  String get dsPreviewCardInteractiveTapMe => 'Interactive card — tap me';
+
+  @override
+  String get dsPreviewProgressLesson => 'Lesson progress';
+
+  @override
+  String get dsPreviewProgressXpNextLevel => 'XP to next level';
+
+  @override
+  String get dsPreviewProgressGrammarMastery => 'Grammar mastery';
+
+  @override
+  String get dsPreviewProgressVocabRetention => 'Vocabulary retention';
+
+  @override
+  String dsPreviewXpProgressFormat(int value, int max) {
+    return '$value/$max XP';
+  }
+
+  @override
+  String get dsPreviewCircularDailyGoal => 'daily goal';
+
+  @override
+  String get dsPreviewCircularScore => 'score';
+
+  @override
+  String get dsPreviewSectionGradientHeroHeader => 'Gradient Hero Header';
+
+  @override
+  String get dsPreviewSectionAppDrawer => 'App Drawer';
+
+  @override
+  String get dsPreviewSectionNotificationsSheet => 'Notifications Sheet';
+
+  @override
+  String get dsPreviewSectionTopAppBar => 'Top App Bar';
+
+  @override
+  String get dsPreviewSectionSegmentedControl => 'Segmented Control';
+
+  @override
+  String get dsPreviewSectionTabs => 'Tabs';
+
+  @override
+  String get dsPreviewSectionBottomNavigation => 'Bottom Navigation';
+
+  @override
+  String get dsPreviewNavSettings => 'Settings';
+
+  @override
+  String get dsPreviewOpenDrawerButton => 'Open drawer';
+
+  @override
+  String get dsPreviewShowNotificationsButton => 'Show notifications';
+
+  @override
+  String get dsPreviewCenteredTitleDemo => 'Centered Title';
+
+  @override
+  String get dsPreviewSegAll => 'All';
+
+  @override
+  String get dsPreviewSectionTypography => 'Typography';
 }

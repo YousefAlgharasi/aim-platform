@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/widgets/widgets.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../widgets/ds_section.dart';
 
 class DSFeedbackSection extends StatelessWidget {
@@ -8,44 +9,45 @@ class DSFeedbackSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Alert banners
         DSSection(
-          title: 'Alert Banners',
+          title: l10n.dsPreviewSectionAlertBanners,
           children: [
-            const AIMAlertBanner(
+            AIMAlertBanner(
               tone: AIMAlertTone.info,
-              title: 'Information',
-              child: Text('This is an informational message.'),
+              title: l10n.dsPreviewWordInformation,
+              child: Text(l10n.dsPreviewAlertInfoBody),
             ),
-            const AIMAlertBanner(
+            AIMAlertBanner(
               tone: AIMAlertTone.success,
-              title: 'Success',
-              child: Text('Your answer was correct!'),
+              title: l10n.dsPreviewWordSuccess,
+              child: Text(l10n.dsPreviewAlertSuccessBody),
             ),
-            const AIMAlertBanner(
+            AIMAlertBanner(
               tone: AIMAlertTone.warning,
-              title: 'Warning',
-              child: Text('Your session expires in 5 minutes.'),
+              title: l10n.dsPreviewWordWarning,
+              child: Text(l10n.dsPreviewAlertWarningBody),
             ),
-            const AIMAlertBanner(
+            AIMAlertBanner(
               tone: AIMAlertTone.error,
-              title: 'Error',
-              child: Text('Could not save your progress.'),
+              title: l10n.dsPreviewWordError,
+              child: Text(l10n.dsPreviewAlertErrorBody),
             ),
             AIMAlertBanner(
               tone: AIMAlertTone.info,
               dismissible: true,
               onDismiss: () {},
-              child: const Text('Dismissible banner without title.'),
+              child: Text(l10n.dsPreviewAlertDismissibleBody),
             ),
           ],
         ),
         // Badges
         DSSection(
-          title: 'Badges',
+          title: l10n.dsPreviewSectionBadges,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Wrap(
@@ -59,30 +61,30 @@ class DSFeedbackSection extends StatelessWidget {
                   ),
               ],
             ),
-            const Wrap(
+            Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
                 AIMBadge(
                   tone: AIMBadgeTone.primary,
                   variant: AIMBadgeVariant.solid,
-                  child: Text('Solid'),
+                  child: Text(l10n.dsPreviewBadgeSolid),
                 ),
                 AIMBadge(
                   tone: AIMBadgeTone.primary,
                   variant: AIMBadgeVariant.outline,
-                  child: Text('Outline'),
+                  child: Text(l10n.dsPreviewWordOutline),
                 ),
                 AIMBadge(
                   tone: AIMBadgeTone.success,
                   pill: true,
                   dot: true,
-                  child: Text('Pill + dot'),
+                  child: Text(l10n.dsPreviewBadgePillDot),
                 ),
                 AIMBadge(
                   tone: AIMBadgeTone.secondary,
-                  icon: Icon(Icons.star_rounded, size: 12),
-                  child: Text('With icon'),
+                  icon: const Icon(Icons.star_rounded, size: 12),
+                  child: Text(l10n.dsPreviewWithIcon),
                 ),
               ],
             ),
@@ -90,7 +92,7 @@ class DSFeedbackSection extends StatelessWidget {
         ),
         // Chips
         DSSection(
-          title: 'Chips',
+          title: l10n.dsPreviewSectionChips,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Wrap(
@@ -99,36 +101,36 @@ class DSFeedbackSection extends StatelessWidget {
               children: [
                 AIMChip(
                   onPressed: () {},
-                  child: const Text('Default'),
+                  child: Text(l10n.dsPreviewStateDefault),
                 ),
                 AIMChip(
                   selected: true,
                   onPressed: () {},
-                  child: const Text('Selected'),
+                  child: Text(l10n.dsPreviewStateSelected),
                 ),
                 AIMChip(
                   icon: const Icon(Icons.bookmark_outline, size: 14),
                   onPressed: () {},
-                  child: const Text('With icon'),
+                  child: Text(l10n.dsPreviewWithIcon),
                 ),
                 AIMChip(
                   removable: true,
                   onPressed: () {},
                   onRemove: () {},
-                  child: const Text('Removable'),
+                  child: Text(l10n.dsPreviewChipRemovable),
                 ),
-                const AIMChip(
+                AIMChip(
                   disabled: true,
-                  child: Text('Disabled'),
+                  child: Text(l10n.dsPreviewStateDisabled),
                 ),
               ],
             ),
           ],
         ),
         // Skeleton
-        const DSSection(
-          title: 'Skeleton Loaders',
-          children: [
+        DSSection(
+          title: l10n.dsPreviewSectionSkeletonLoaders,
+          children: const [
             AIMSkeleton(width: double.infinity, height: 20),
             AIMSkeleton(width: 200, height: 20),
             AIMSkeleton(width: 120, height: 20),

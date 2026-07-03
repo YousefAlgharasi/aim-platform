@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/widgets/widgets.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../widgets/ds_section.dart';
 
 class DSFormSection extends StatelessWidget {
@@ -8,44 +9,45 @@ class DSFormSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const DSSection(
-      title: 'Form Controls',
+    final l10n = AppLocalizations.of(context);
+    return DSSection(
+      title: l10n.dsPreviewSectionFormControls,
       children: [
         AIMInput(
-          label: 'Default input',
-          placeholder: 'Enter text…',
+          label: l10n.dsPreviewInputDefaultLabel,
+          placeholder: l10n.dsPreviewInputEnterTextPlaceholder,
         ),
         AIMInput(
-          label: 'With helper text',
+          label: l10n.dsPreviewInputHelperLabel,
           placeholder: 'username@example.com',
-          helper: 'Use your institutional email.',
+          helper: l10n.dsPreviewInputInstitutionalEmailHelper,
           type: AIMInputType.email,
         ),
         AIMInput(
-          label: 'Error state',
-          placeholder: 'Enter password',
-          error: 'Password must be at least 8 characters.',
+          label: l10n.dsPreviewInputErrorLabel,
+          placeholder: l10n.dsPreviewInputEnterPasswordPlaceholder,
+          error: l10n.dsPreviewInputPasswordError,
           type: AIMInputType.password,
         ),
         AIMInput(
-          label: 'Disabled',
-          placeholder: 'Cannot edit',
+          label: l10n.dsPreviewStateDisabled,
+          placeholder: l10n.dsPreviewInputCannotEditPlaceholder,
           disabled: true,
         ),
         AIMInput(
-          label: 'Required',
-          placeholder: 'Full name',
+          label: l10n.dsPreviewInputRequiredLabel,
+          placeholder: l10n.dsPreviewInputFullNamePlaceholder,
           required: true,
         ),
         AIMInput(
-          label: 'Search',
-          placeholder: 'Search lessons…',
+          label: l10n.dsPreviewInputSearchLabel,
+          placeholder: l10n.dsPreviewInputSearchLessonsPlaceholder,
           type: AIMInputType.search,
-          leadingIcon: Icon(Icons.search),
+          leadingIcon: const Icon(Icons.search),
         ),
-        _CheckboxRow(),
-        _SwitchRow(),
-        _RadioRow(),
+        const _CheckboxRow(),
+        const _SwitchRow(),
+        const _RadioRow(),
       ],
     );
   }
@@ -64,23 +66,24 @@ class _CheckboxRowState extends State<_CheckboxRow> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Wrap(
       spacing: 16,
       runSpacing: 8,
       children: [
         AIMCheckbox(
           value: _v1,
-          label: 'Unchecked',
+          label: l10n.dsPreviewCheckboxUnchecked,
           onChanged: (v) => setState(() => _v1 = v ?? false),
         ),
         AIMCheckbox(
           value: _v2,
-          label: 'Checked',
+          label: l10n.dsPreviewCheckboxChecked,
           onChanged: (v) => setState(() => _v2 = v ?? false),
         ),
-        const AIMCheckbox(
+        AIMCheckbox(
           value: false,
-          label: 'Disabled',
+          label: l10n.dsPreviewStateDisabled,
           disabled: true,
         ),
       ],
@@ -100,18 +103,19 @@ class _SwitchRowState extends State<_SwitchRow> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Wrap(
       spacing: 16,
       runSpacing: 8,
       children: [
         AIMSwitch(
           value: _on,
-          label: _on ? 'On' : 'Off',
+          label: _on ? l10n.dsPreviewSwitchOn : l10n.dsPreviewSwitchOff,
           onChanged: (v) => setState(() => _on = v),
         ),
-        const AIMSwitch(
+        AIMSwitch(
           value: true,
-          label: 'Disabled on',
+          label: l10n.dsPreviewSwitchDisabledOn,
           disabled: true,
         ),
       ],
@@ -131,11 +135,16 @@ class _RadioRowState extends State<_RadioRow> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Wrap(
       spacing: 16,
       runSpacing: 8,
       children: [
-        for (final (v, l) in [('a', 'Option A'), ('b', 'Option B'), ('c', 'Option C')])
+        for (final (v, l) in [
+          ('a', l10n.dsPreviewRadioOptionA),
+          ('b', l10n.dsPreviewRadioOptionB),
+          ('c', l10n.dsPreviewRadioOptionC),
+        ])
           AIMRadio<String>(
             value: v,
             groupValue: _value,
@@ -145,7 +154,7 @@ class _RadioRowState extends State<_RadioRow> {
         AIMRadio<String>(
           value: 'd',
           groupValue: _value,
-          label: 'Disabled',
+          label: l10n.dsPreviewStateDisabled,
           disabled: true,
           onChanged: null,
         ),

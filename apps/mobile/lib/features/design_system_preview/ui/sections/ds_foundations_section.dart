@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../widgets/ds_section.dart';
 
 class DSFoundationsSection extends StatelessWidget {
@@ -9,13 +10,14 @@ class DSFoundationsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Spacing
         DSSection(
-          title: 'Spacing',
+          title: l10n.dsPreviewSectionSpacing,
           children: [
             for (final (label, size) in const [
               ('space2', AimSpacing.space2),
@@ -56,7 +58,7 @@ class DSFoundationsSection extends StatelessWidget {
         ),
         // Radius
         DSSection(
-          title: 'Border Radius',
+          title: l10n.dsPreviewSectionBorderRadius,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Wrap(
@@ -105,7 +107,7 @@ class DSFoundationsSection extends StatelessWidget {
         ),
         // Shadows
         DSSection(
-          title: 'Shadows',
+          title: l10n.dsPreviewSectionShadows,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Wrap(

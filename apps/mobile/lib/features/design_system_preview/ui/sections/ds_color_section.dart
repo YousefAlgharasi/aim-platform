@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../widgets/ds_section.dart';
 
 class DSColorSection extends StatelessWidget {
@@ -8,10 +9,11 @@ class DSColorSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return DSSection(
-      title: 'Colors',
+      title: l10n.dsPreviewSectionColors,
       children: [
-        _palette('Primary', [
+        _palette(l10n.dsPreviewWordPrimary, [
           AimColors.primary50,
           AimColors.primary100,
           AimColors.primary200,
@@ -23,7 +25,7 @@ class DSColorSection extends StatelessWidget {
           AimColors.primary800,
           AimColors.primary900,
         ]),
-        _palette('Secondary', [
+        _palette(l10n.dsPreviewWordSecondary, [
           AimColors.secondary50,
           AimColors.secondary200,
           AimColors.secondary400,
@@ -31,7 +33,7 @@ class DSColorSection extends StatelessWidget {
           AimColors.secondary700,
           AimColors.secondary900,
         ]),
-        _palette('Accent', [
+        _palette(l10n.dsPreviewColorAccent, [
           AimColors.accent50,
           AimColors.accent200,
           AimColors.accent400,
@@ -39,13 +41,13 @@ class DSColorSection extends StatelessWidget {
           AimColors.accent700,
           AimColors.accent900,
         ]),
-        _palette('Semantic', [
+        _palette(l10n.dsPreviewColorSemantic, [
           AimColors.success500,
           AimColors.warning500,
           AimColors.error500,
           AimColors.info500,
         ]),
-        _palette('Neutral', [
+        _palette(l10n.dsPreviewColorNeutral, [
           AimColors.neutral0,
           AimColors.neutral50,
           AimColors.neutral100,
@@ -58,9 +60,9 @@ class DSColorSection extends StatelessWidget {
           AimColors.neutral800,
           AimColors.neutral900,
         ]),
-        _gradientTile('AI Gradient', AimGradients.ai),
-        _gradientTile('Growth Gradient', AimGradients.growth),
-        _gradientTile('AI Soft', AimGradients.aiSoft),
+        _gradientTile(l10n.dsPreviewGradientAi, AimGradients.ai),
+        _gradientTile(l10n.dsPreviewGradientGrowth, AimGradients.growth),
+        _gradientTile(l10n.dsPreviewGradientAiSoft, AimGradients.aiSoft),
       ],
     );
   }

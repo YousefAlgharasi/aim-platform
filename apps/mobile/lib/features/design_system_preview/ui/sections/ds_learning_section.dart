@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/widgets/widgets.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../widgets/ds_section.dart';
 
 class DSLearningSection extends StatefulWidget {
@@ -17,25 +18,26 @@ class _DSLearningSectionState extends State<DSLearningSection> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Blob Card
         DSSection(
-          title: 'Blob Card',
+          title: l10n.dsPreviewSectionBlobCard,
           children: [
             AIMBlobCard(
               gradient: AimGradients.gzLime,
               icon: const Icon(Icons.local_fire_department_rounded),
-              title: '5-day streak',
-              subtitle: 'Keep it going today',
+              title: l10n.dsPreviewStreakTitle,
+              subtitle: l10n.dsPreviewStreakSubtitle,
               trailing: const Icon(Icons.chevron_right_rounded),
               onTap: () {},
             ),
             AIMBlobCard(
               backgroundColor: AimColors.primary100,
               icon: const Icon(Icons.bolt_rounded, color: AimColors.primary500),
-              title: '320 XP this week',
+              title: l10n.dsPreviewXpWeekTitle,
               onTap: () {},
             ),
           ],
@@ -43,29 +45,29 @@ class _DSLearningSectionState extends State<DSLearningSection> {
 
         // Stat Tile
         DSSection(
-          title: 'Stat Tile',
+          title: l10n.dsPreviewSectionStatTile,
           children: [
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: const [
+                children: [
                   AIMStatTile(
-                    icon: Icon(Icons.local_fire_department_rounded),
+                    icon: const Icon(Icons.local_fire_department_rounded),
                     value: '5',
-                    label: 'Day streak',
+                    label: l10n.dsPreviewStatDayStreak,
                   ),
-                  SizedBox(width: 12),
+                  const SizedBox(width: 12),
                   AIMStatTile(
-                    icon: Icon(Icons.bolt_rounded),
+                    icon: const Icon(Icons.bolt_rounded),
                     value: '320',
-                    label: 'XP',
+                    label: l10n.dsPreviewStatXp,
                     accentColor: AimColors.warning500,
                   ),
-                  SizedBox(width: 12),
+                  const SizedBox(width: 12),
                   AIMStatTile(
-                    icon: Icon(Icons.school_outlined),
+                    icon: const Icon(Icons.school_outlined),
                     value: '12',
-                    label: 'Lessons',
+                    label: l10n.dsPreviewStatLessons,
                     accentColor: AimColors.success500,
                   ),
                 ],
@@ -75,8 +77,8 @@ class _DSLearningSectionState extends State<DSLearningSection> {
         ),
 
         // Skill Blob
-        const DSSection(
-          title: 'Skill Blob',
+        DSSection(
+          title: l10n.dsPreviewSectionSkillBlob,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Wrap(
@@ -85,17 +87,17 @@ class _DSLearningSectionState extends State<DSLearningSection> {
               alignment: WrapAlignment.center,
               children: [
                 AIMSkillBlob(
-                  skillName: 'Listening',
+                  skillName: l10n.placementSkillListening,
                   masteryLevel: 0.72,
                   size: AIMSkillBlobSize.sm,
                 ),
                 AIMSkillBlob(
-                  skillName: 'Speaking',
+                  skillName: l10n.dsPreviewSkillSpeaking,
                   masteryLevel: 0.45,
                   color: AimColors.accent500,
                 ),
                 AIMSkillBlob(
-                  skillName: 'Grammar',
+                  skillName: l10n.placementSkillGrammar,
                   masteryLevel: 0.9,
                   color: AimColors.success500,
                   size: AIMSkillBlobSize.lg,
@@ -107,31 +109,31 @@ class _DSLearningSectionState extends State<DSLearningSection> {
 
         // AIM Card
         DSSection(
-          title: 'AIM Card',
+          title: l10n.dsPreviewSectionAimCard,
           children: [
-            const AIMCard(child: Text('Standard card')),
-            const AIMCard(
+            AIMCard(child: Text(l10n.dsPreviewCardStandard)),
+            AIMCard(
               variant: AIMCardVariant.elevated,
-              child: Text('Elevated card'),
+              child: Text(l10n.dsPreviewCardElevated),
             ),
-            const AIMCard(
+            AIMCard(
               variant: AIMCardVariant.ai,
-              child: Text('AI card (gradient border)'),
+              child: Text(l10n.dsPreviewCardAiGradientBorder),
             ),
-            const AIMCard(
+            AIMCard(
               variant: AIMCardVariant.gradient,
               child: Text(
-                'Gradient card — AI adaptive content',
-                style: TextStyle(color: Colors.white),
+                l10n.dsPreviewCardGradientAiContent,
+                style: const TextStyle(color: Colors.white),
               ),
             ),
             AIMCard(
               interactive: true,
               onTap: () {},
-              child: const Row(
+              child: Row(
                 children: [
-                  Expanded(child: Text('Interactive card — tap me')),
-                  Icon(Icons.chevron_right),
+                  Expanded(child: Text(l10n.dsPreviewCardInteractiveTapMe)),
+                  const Icon(Icons.chevron_right),
                 ],
               ),
             ),
@@ -140,31 +142,31 @@ class _DSLearningSectionState extends State<DSLearningSection> {
 
         // Progress Bar
         DSSection(
-          title: 'Progress Bar',
+          title: l10n.dsPreviewSectionProgressBar,
           children: [
-            const AIMProgressBar(
+            AIMProgressBar(
               value: 70,
-              label: 'Lesson progress',
+              label: l10n.dsPreviewProgressLesson,
               showValue: true,
             ),
-            const AIMProgressBar(
+            AIMProgressBar(
               value: 320,
               max: 500,
               tone: AIMProgressBarTone.gradient,
-              label: 'XP to next level',
+              label: l10n.dsPreviewProgressXpNextLevel,
               showValue: true,
               size: AIMProgressBarSize.lg,
             ),
-            const AIMProgressBar(
+            AIMProgressBar(
               value: 85,
               tone: AIMProgressBarTone.success,
-              label: 'Grammar mastery',
+              label: l10n.dsPreviewProgressGrammarMastery,
               showValue: true,
             ),
-            const AIMProgressBar(
+            AIMProgressBar(
               value: 40,
               tone: AIMProgressBarTone.warning,
-              label: 'Vocabulary retention',
+              label: l10n.dsPreviewProgressVocabRetention,
               showValue: true,
               size: AIMProgressBarSize.sm,
             ),
@@ -173,14 +175,17 @@ class _DSLearningSectionState extends State<DSLearningSection> {
               max: 500,
               tone: AIMProgressBarTone.gradient,
               showValue: true,
-              valueFormat: (v, m) => '${v.toInt()}/${m.toInt()} XP',
+              valueFormat: (v, m) => l10n.dsPreviewXpProgressFormat(
+                v.toInt(),
+                m.toInt(),
+              ),
             ),
           ],
         ),
 
         // Circular Progress
         DSSection(
-          title: 'Circular Progress',
+          title: l10n.dsPreviewSectionCircularProgress,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Wrap(
@@ -188,22 +193,25 @@ class _DSLearningSectionState extends State<DSLearningSection> {
               runSpacing: 16,
               alignment: WrapAlignment.center,
               children: [
-                const Column(
+                Column(
                   children: [
-                    AIMCircularProgress(value: 68, caption: 'daily goal'),
-                    SizedBox(height: 4),
-                    Text('Primary', style: AimTextStyles.caption),
+                    AIMCircularProgress(
+                      value: 68,
+                      caption: l10n.dsPreviewCircularDailyGoal,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(l10n.dsPreviewWordPrimary, style: AimTextStyles.caption),
                   ],
                 ),
-                const Column(
+                Column(
                   children: [
                     AIMCircularProgress(
                       value: 68,
                       tone: AIMCircularProgressTone.gradient,
-                      caption: 'daily goal',
+                      caption: l10n.dsPreviewCircularDailyGoal,
                     ),
-                    SizedBox(height: 4),
-                    Text('Gradient', style: AimTextStyles.caption),
+                    const SizedBox(height: 4),
+                    Text(l10n.dsPreviewWordGradient, style: AimTextStyles.caption),
                   ],
                 ),
                 Column(
@@ -218,24 +226,24 @@ class _DSLearningSectionState extends State<DSLearningSection> {
                           color: AimColors.success700,
                         ),
                       ),
-                      caption: 'score',
+                      caption: l10n.dsPreviewCircularScore,
                     ),
                     const SizedBox(height: 4),
-                    const Text('Success', style: AimTextStyles.caption),
+                    Text(l10n.dsPreviewWordSuccess, style: AimTextStyles.caption),
                   ],
                 ),
-                const Column(
+                Column(
                   children: [
-                    AIMCircularProgress(value: 25, size: 64, thickness: 6),
-                    SizedBox(height: 4),
-                    Text('Small', style: AimTextStyles.caption),
+                    const AIMCircularProgress(value: 25, size: 64, thickness: 6),
+                    const SizedBox(height: 4),
+                    Text(l10n.dsPreviewWordSmall, style: AimTextStyles.caption),
                   ],
                 ),
-                const Column(
+                Column(
                   children: [
-                    AIMCircularProgress(value: 80, size: 128, thickness: 12),
-                    SizedBox(height: 4),
-                    Text('Large', style: AimTextStyles.caption),
+                    const AIMCircularProgress(value: 80, size: 128, thickness: 12),
+                    const SizedBox(height: 4),
+                    Text(l10n.dsPreviewWordLarge, style: AimTextStyles.caption),
                   ],
                 ),
               ],
@@ -245,7 +253,7 @@ class _DSLearningSectionState extends State<DSLearningSection> {
 
         // Answer Options
         DSSection(
-          title: 'Answer Options',
+          title: l10n.dsPreviewSectionAnswerOptions,
           children: [
             AIMAnswerOption(
               optionKey: 'A',
@@ -283,9 +291,9 @@ class _DSLearningSectionState extends State<DSLearningSection> {
         ),
 
         // AI Feedback Bubble
-        const DSSection(
-          title: 'AI Feedback Bubble',
-          children: [
+        DSSection(
+          title: l10n.dsPreviewSectionAiFeedbackBubble,
+          children: const [
             AIMAIFeedbackBubble(
               child: Text('Welcome! Let\'s practice English together.'),
             ),
@@ -307,7 +315,7 @@ class _DSLearningSectionState extends State<DSLearningSection> {
 
         // Record Button
         DSSection(
-          title: 'Record Button',
+          title: l10n.dsPreviewSectionRecordButton,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Wrap(

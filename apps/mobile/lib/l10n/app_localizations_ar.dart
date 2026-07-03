@@ -3057,4 +3057,354 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get supportNewTicketTitle => 'تذكرة جديدة';
+
+  @override
+  String get dsPreviewCloseTooltip => 'إغلاق المعاينة';
+
+  @override
+  String get dsPreviewTitle => '⚙ معاينة نظام التصميم';
+
+  @override
+  String get dsPreviewTabFoundations => 'الأساسيات';
+
+  @override
+  String get dsPreviewTabButtons => 'الأزرار';
+
+  @override
+  String get dsPreviewTabForms => 'النماذج';
+
+  @override
+  String get dsPreviewTabFeedback => 'التغذية الراجعة';
+
+  @override
+  String get dsPreviewTabNavigation => 'التنقل';
+
+  @override
+  String get dsPreviewTabLearning => 'التعلّم';
+
+  @override
+  String get dsPreviewSectionGradientButton => 'زر متدرّج اللون';
+
+  @override
+  String get dsPreviewWordPrimary => 'أساسي';
+
+  @override
+  String get dsPreviewWordSecondary => 'ثانوي';
+
+  @override
+  String get dsPreviewWordOutline => 'محدد بإطار';
+
+  @override
+  String get dsPreviewWordGhost => 'شبحي';
+
+  @override
+  String get dsPreviewWordDestructive => 'تحذيري';
+
+  @override
+  String get dsPreviewWordSmall => 'صغير';
+
+  @override
+  String get dsPreviewWordLarge => 'كبير';
+
+  @override
+  String get dsPreviewWordGradient => 'متدرّج اللون';
+
+  @override
+  String get dsPreviewWordSuccess => 'نجاح';
+
+  @override
+  String get dsPreviewWordWarning => 'تحذير';
+
+  @override
+  String get dsPreviewWordError => 'خطأ';
+
+  @override
+  String get dsPreviewWordInformation => 'معلومة';
+
+  @override
+  String get dsPreviewStateDisabled => 'معطّل';
+
+  @override
+  String get dsPreviewStateLoading => 'جارٍ التحميل';
+
+  @override
+  String get dsPreviewStateDefault => 'افتراضي';
+
+  @override
+  String get dsPreviewStateSelected => 'محدد';
+
+  @override
+  String get dsPreviewWithIcon => 'مع أيقونة';
+
+  @override
+  String get dsPreviewBtnAddItem => 'إضافة عنصر';
+
+  @override
+  String get dsPreviewBtnFullWidthPrimary => 'أساسي بعرض كامل';
+
+  @override
+  String get dsPreviewBtnSubscribe => 'اشترك';
+
+  @override
+  String get dsPreviewBtnFullWidthGradient => 'متدرّج اللون بعرض كامل';
+
+  @override
+  String get dsPreviewSectionColors => 'الألوان';
+
+  @override
+  String get dsPreviewColorAccent => 'لون التمييز';
+
+  @override
+  String get dsPreviewColorSemantic => 'الألوان الدلالية';
+
+  @override
+  String get dsPreviewColorNeutral => 'محايد';
+
+  @override
+  String get dsPreviewGradientAi => 'تدرّج الذكاء الاصطناعي';
+
+  @override
+  String get dsPreviewGradientGrowth => 'تدرّج النمو';
+
+  @override
+  String get dsPreviewGradientAiSoft => 'تدرّج الذكاء الاصطناعي الناعم';
+
+  @override
+  String get dsPreviewSectionAlertBanners => 'أشرطة التنبيه';
+
+  @override
+  String get dsPreviewSectionBadges => 'الشارات';
+
+  @override
+  String get dsPreviewSectionChips => 'الرقاقات';
+
+  @override
+  String get dsPreviewSectionSkeletonLoaders => 'مؤشرات التحميل الهيكلية';
+
+  @override
+  String get dsPreviewAlertInfoBody => 'هذه رسالة معلوماتية.';
+
+  @override
+  String get dsPreviewAlertSuccessBody => 'إجابتك صحيحة!';
+
+  @override
+  String get dsPreviewAlertWarningBody => 'ستنتهي جلستك خلال 5 دقائق.';
+
+  @override
+  String get dsPreviewAlertErrorBody => 'تعذّر حفظ تقدّمك.';
+
+  @override
+  String get dsPreviewAlertDismissibleBody =>
+      'شريط تنبيه قابل للإغلاق بلا عنوان.';
+
+  @override
+  String get dsPreviewBadgeSolid => 'معبأ';
+
+  @override
+  String get dsPreviewBadgePillDot => 'شكل حبة مع نقطة';
+
+  @override
+  String get dsPreviewChipRemovable => 'قابل للإزالة';
+
+  @override
+  String get dsPreviewSectionFormControls => 'عناصر النماذج';
+
+  @override
+  String get dsPreviewInputDefaultLabel => 'حقل إدخال افتراضي';
+
+  @override
+  String get dsPreviewInputEnterTextPlaceholder => 'أدخل نصًا…';
+
+  @override
+  String get dsPreviewInputHelperLabel => 'مع نص مساعد';
+
+  @override
+  String get dsPreviewInputInstitutionalEmailHelper =>
+      'استخدم بريدك الإلكتروني المؤسسي.';
+
+  @override
+  String get dsPreviewInputErrorLabel => 'حالة الخطأ';
+
+  @override
+  String get dsPreviewInputEnterPasswordPlaceholder => 'أدخل كلمة المرور';
+
+  @override
+  String get dsPreviewInputPasswordError =>
+      'يجب ألا تقل كلمة المرور عن 8 أحرف.';
+
+  @override
+  String get dsPreviewInputCannotEditPlaceholder => 'لا يمكن التعديل';
+
+  @override
+  String get dsPreviewInputRequiredLabel => 'مطلوب';
+
+  @override
+  String get dsPreviewInputFullNamePlaceholder => 'الاسم الكامل';
+
+  @override
+  String get dsPreviewInputSearchLabel => 'بحث';
+
+  @override
+  String get dsPreviewInputSearchLessonsPlaceholder => 'ابحث في الدروس…';
+
+  @override
+  String get dsPreviewCheckboxUnchecked => 'غير محدد';
+
+  @override
+  String get dsPreviewCheckboxChecked => 'محدد';
+
+  @override
+  String get dsPreviewSwitchOn => 'مفعّل';
+
+  @override
+  String get dsPreviewSwitchOff => 'معطّل';
+
+  @override
+  String get dsPreviewSwitchDisabledOn => 'معطّل ومفعّل';
+
+  @override
+  String get dsPreviewRadioOptionA => 'الخيار أ';
+
+  @override
+  String get dsPreviewRadioOptionB => 'الخيار ب';
+
+  @override
+  String get dsPreviewRadioOptionC => 'الخيار ج';
+
+  @override
+  String get dsPreviewSectionSpacing => 'التباعد';
+
+  @override
+  String get dsPreviewSectionBorderRadius => 'استدارة الحواف';
+
+  @override
+  String get dsPreviewSectionShadows => 'الظلال';
+
+  @override
+  String get dsPreviewSectionBlobCard => 'بطاقة الفقاعة';
+
+  @override
+  String get dsPreviewSectionStatTile => 'بطاقة الإحصائية';
+
+  @override
+  String get dsPreviewSectionSkillBlob => 'فقاعة المهارة';
+
+  @override
+  String get dsPreviewSectionAimCard => 'بطاقة AIM';
+
+  @override
+  String get dsPreviewSectionProgressBar => 'شريط التقدّم';
+
+  @override
+  String get dsPreviewSectionCircularProgress => 'التقدّم الدائري';
+
+  @override
+  String get dsPreviewSectionAnswerOptions => 'خيارات الإجابة';
+
+  @override
+  String get dsPreviewSectionAiFeedbackBubble =>
+      'فقاعة تغذية راجعة بالذكاء الاصطناعي';
+
+  @override
+  String get dsPreviewSectionRecordButton => 'زر التسجيل';
+
+  @override
+  String get dsPreviewStreakTitle => 'سلسلة إنجاز لمدة 5 أيام';
+
+  @override
+  String get dsPreviewStreakSubtitle => 'واصل التقدّم اليوم';
+
+  @override
+  String get dsPreviewXpWeekTitle => '320 نقطة خبرة هذا الأسبوع';
+
+  @override
+  String get dsPreviewStatDayStreak => 'سلسلة الأيام';
+
+  @override
+  String get dsPreviewStatXp => 'نقاط الخبرة';
+
+  @override
+  String get dsPreviewStatLessons => 'الدروس';
+
+  @override
+  String get dsPreviewSkillSpeaking => 'المحادثة';
+
+  @override
+  String get dsPreviewCardStandard => 'بطاقة قياسية';
+
+  @override
+  String get dsPreviewCardElevated => 'بطاقة مرتفعة';
+
+  @override
+  String get dsPreviewCardAiGradientBorder =>
+      'بطاقة ذكاء اصطناعي (حدود متدرّجة)';
+
+  @override
+  String get dsPreviewCardGradientAiContent =>
+      'بطاقة متدرّجة — محتوى تكيّفي بالذكاء الاصطناعي';
+
+  @override
+  String get dsPreviewCardInteractiveTapMe => 'بطاقة تفاعلية — اضغط هنا';
+
+  @override
+  String get dsPreviewProgressLesson => 'تقدّم الدرس';
+
+  @override
+  String get dsPreviewProgressXpNextLevel => 'نقاط الخبرة حتى المستوى التالي';
+
+  @override
+  String get dsPreviewProgressGrammarMastery => 'إتقان القواعد';
+
+  @override
+  String get dsPreviewProgressVocabRetention => 'استيعاب المفردات';
+
+  @override
+  String dsPreviewXpProgressFormat(int value, int max) {
+    return '$value/$max نقطة خبرة';
+  }
+
+  @override
+  String get dsPreviewCircularDailyGoal => 'الهدف اليومي';
+
+  @override
+  String get dsPreviewCircularScore => 'النتيجة';
+
+  @override
+  String get dsPreviewSectionGradientHeroHeader => 'رأسية متدرّجة اللون';
+
+  @override
+  String get dsPreviewSectionAppDrawer => 'قائمة التطبيق الجانبية';
+
+  @override
+  String get dsPreviewSectionNotificationsSheet => 'لوحة الإشعارات';
+
+  @override
+  String get dsPreviewSectionTopAppBar => 'الشريط العلوي';
+
+  @override
+  String get dsPreviewSectionSegmentedControl => 'التحكم المقسّم';
+
+  @override
+  String get dsPreviewSectionTabs => 'علامات التبويب';
+
+  @override
+  String get dsPreviewSectionBottomNavigation => 'شريط التنقل السفلي';
+
+  @override
+  String get dsPreviewNavSettings => 'الإعدادات';
+
+  @override
+  String get dsPreviewOpenDrawerButton => 'افتح القائمة الجانبية';
+
+  @override
+  String get dsPreviewShowNotificationsButton => 'عرض الإشعارات';
+
+  @override
+  String get dsPreviewCenteredTitleDemo => 'عنوان في المنتصف';
+
+  @override
+  String get dsPreviewSegAll => 'الكل';
+
+  @override
+  String get dsPreviewSectionTypography => 'الطباعة';
 }

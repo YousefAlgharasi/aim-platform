@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/widgets/widgets.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../widgets/ds_section.dart';
 
 class DSNavigationSection extends StatefulWidget {
@@ -17,12 +18,13 @@ class _DSNavigationSectionState extends State<DSNavigationSection> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Gradient Hero Header
         DSSection(
-          title: 'Gradient Hero Header',
+          title: l10n.dsPreviewSectionGradientHeroHeader,
           children: [
             ClipRRect(
               borderRadius: AimRadius.borderMd,
@@ -43,7 +45,7 @@ class _DSNavigationSectionState extends State<DSNavigationSection> {
         // App Drawer — needs its own nested Scaffold to open from, since
         // this preview screen's own Scaffold has no drawer attached.
         DSSection(
-          title: 'App Drawer',
+          title: l10n.dsPreviewSectionAppDrawer,
           children: [
             SizedBox(
               height: 120,
@@ -60,18 +62,18 @@ class _DSNavigationSectionState extends State<DSNavigationSection> {
                   items: [
                     AIMDrawerItemData(
                       icon: const Icon(Icons.home_outlined),
-                      label: 'Home',
+                      label: l10n.shellNavHome,
                       selected: true,
                       onTap: () {},
                     ),
                     AIMDrawerItemData(
                       icon: const Icon(Icons.school_outlined),
-                      label: 'Learn',
+                      label: l10n.shellNavLearn,
                       onTap: () {},
                     ),
                     AIMDrawerItemData(
                       icon: const Icon(Icons.settings_outlined),
-                      label: 'Settings',
+                      label: l10n.dsPreviewNavSettings,
                       onTap: () {},
                     ),
                   ],
@@ -80,7 +82,7 @@ class _DSNavigationSectionState extends State<DSNavigationSection> {
                   builder: (context) => AIMButton(
                     variant: AIMButtonVariant.outline,
                     onPressed: () => Scaffold.of(context).openDrawer(),
-                    child: const Text('Open drawer'),
+                    child: Text(l10n.dsPreviewOpenDrawerButton),
                   ),
                 ),
               ),
@@ -89,7 +91,7 @@ class _DSNavigationSectionState extends State<DSNavigationSection> {
         ),
         // Notifications Sheet
         DSSection(
-          title: 'Notifications Sheet',
+          title: l10n.dsPreviewSectionNotificationsSheet,
           children: [
             Builder(
               builder: (context) => AIMButton(
@@ -97,9 +99,9 @@ class _DSNavigationSectionState extends State<DSNavigationSection> {
                 onPressed: () => showModalBottomSheet<void>(
                   context: context,
                   isScrollControlled: true,
-                  builder: (_) => const AIMNotificationsSheet(
+                  builder: (_) => AIMNotificationsSheet(
                     notifications: [
-                      AIMNotificationItemData(
+                      const AIMNotificationItemData(
                         id: '1',
                         title: 'Review due: Past Simple',
                         body: '3 cards ready for review today.',
@@ -109,20 +111,20 @@ class _DSNavigationSectionState extends State<DSNavigationSection> {
                         id: '2',
                         title: 'Achievement unlocked',
                         body: 'You completed a 5-day streak!',
-                        timeLabel: 'Yesterday',
+                        timeLabel: l10n.commonYesterday,
                         read: true,
                       ),
                     ],
                   ),
                 ),
-                child: const Text('Show notifications'),
+                child: Text(l10n.dsPreviewShowNotificationsButton),
               ),
             ),
           ],
         ),
         // Top App Bar
         DSSection(
-          title: 'Top App Bar',
+          title: l10n.dsPreviewSectionTopAppBar,
           children: [
             ClipRRect(
               borderRadius: AimRadius.borderMd,
@@ -145,7 +147,7 @@ class _DSNavigationSectionState extends State<DSNavigationSection> {
               child: SizedBox(
                 height: AimSizes.topBarHeight,
                 child: AIMTopAppBar(
-                  title: 'Centered Title',
+                  title: l10n.dsPreviewCenteredTitleDemo,
                   centerTitle: true,
                   onBack: () {},
                 ),
@@ -155,38 +157,47 @@ class _DSNavigationSectionState extends State<DSNavigationSection> {
         ),
         // Segmented Control
         DSSection(
-          title: 'Segmented Control',
+          title: l10n.dsPreviewSectionSegmentedControl,
           children: [
             AIMSegmentedControl<String>(
               fullWidth: true,
               value: _segValue,
               onChanged: (v) => setState(() => _segValue = v),
-              items: const [
-                AIMSegmentedOption(value: 'all', label: 'All'),
-                AIMSegmentedOption(value: 'vocab', label: 'Vocabulary'),
-                AIMSegmentedOption(value: 'grammar', label: 'Grammar'),
+              items: [
+                AIMSegmentedOption(value: 'all', label: l10n.dsPreviewSegAll),
+                AIMSegmentedOption(
+                  value: 'vocab',
+                  label: l10n.placementSkillVocabulary,
+                ),
+                AIMSegmentedOption(
+                  value: 'grammar',
+                  label: l10n.placementSkillGrammar,
+                ),
               ],
             ),
           ],
         ),
         // Tabs
         DSSection(
-          title: 'Tabs',
+          title: l10n.dsPreviewSectionTabs,
           children: [
             AIMTabs<String>(
               value: _tabValue,
               onChanged: (v) => setState(() => _tabValue = v),
-              items: const [
-                AIMTabItem(value: 'vocab', label: 'Vocabulary'),
-                AIMTabItem(value: 'grammar', label: 'Grammar'),
-                AIMTabItem(value: 'speaking', label: 'Speaking'),
+              items: [
+                AIMTabItem(
+                  value: 'vocab',
+                  label: l10n.placementSkillVocabulary,
+                ),
+                AIMTabItem(value: 'grammar', label: l10n.placementSkillGrammar),
+                AIMTabItem(value: 'speaking', label: l10n.dsPreviewSkillSpeaking),
               ],
             ),
           ],
         ),
         // Bottom Nav
         DSSection(
-          title: 'Bottom Navigation',
+          title: l10n.dsPreviewSectionBottomNavigation,
           children: [
             ClipRRect(
               borderRadius: AimRadius.borderMd,
@@ -194,31 +205,31 @@ class _DSNavigationSectionState extends State<DSNavigationSection> {
                 useSafeArea: false,
                 value: _navValue,
                 onChanged: (v) => setState(() => _navValue = v),
-                items: const [
+                items: [
                   AIMBottomNavDestination(
                     value: 0,
-                    label: 'Home',
-                    icon: Icon(Icons.home_outlined),
-                    activeIcon: Icon(Icons.home),
+                    label: l10n.shellNavHome,
+                    icon: const Icon(Icons.home_outlined),
+                    activeIcon: const Icon(Icons.home),
                   ),
                   AIMBottomNavDestination(
                     value: 1,
-                    label: 'Learn',
-                    icon: Icon(Icons.school_outlined),
-                    activeIcon: Icon(Icons.school),
+                    label: l10n.shellNavLearn,
+                    icon: const Icon(Icons.school_outlined),
+                    activeIcon: const Icon(Icons.school),
                     badge: '3',
                   ),
                   AIMBottomNavDestination(
                     value: 2,
-                    label: 'Review',
-                    icon: Icon(Icons.replay_outlined),
-                    activeIcon: Icon(Icons.replay),
+                    label: l10n.shellNavReview,
+                    icon: const Icon(Icons.replay_outlined),
+                    activeIcon: const Icon(Icons.replay),
                   ),
                   AIMBottomNavDestination(
                     value: 3,
-                    label: 'Progress',
-                    icon: Icon(Icons.bar_chart_outlined),
-                    activeIcon: Icon(Icons.bar_chart),
+                    label: l10n.shellNavProgress,
+                    icon: const Icon(Icons.bar_chart_outlined),
+                    activeIcon: const Icon(Icons.bar_chart),
                   ),
                 ],
               ),

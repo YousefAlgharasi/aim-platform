@@ -4908,6 +4908,690 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New ticket'**
   String get supportNewTicketTitle;
+
+  /// Tooltip for the close button on the internal design-system preview screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Close preview'**
+  String get dsPreviewCloseTooltip;
+
+  /// App bar title of the internal design-system preview screen (developer/QA tool).
+  ///
+  /// In en, this message translates to:
+  /// **'⚙ Design System Preview'**
+  String get dsPreviewTitle;
+
+  /// Tab label in the design-system preview for the foundations (spacing/radius/shadows) tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Foundations'**
+  String get dsPreviewTabFoundations;
+
+  /// Tab label and section title in the design-system preview for the buttons demo.
+  ///
+  /// In en, this message translates to:
+  /// **'Buttons'**
+  String get dsPreviewTabButtons;
+
+  /// Tab label in the design-system preview for the form controls demo.
+  ///
+  /// In en, this message translates to:
+  /// **'Forms'**
+  String get dsPreviewTabForms;
+
+  /// Tab label in the design-system preview for the feedback components demo.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback'**
+  String get dsPreviewTabFeedback;
+
+  /// Tab label in the design-system preview for the navigation components demo.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigation'**
+  String get dsPreviewTabNavigation;
+
+  /// Tab label in the design-system preview for the learning widgets demo.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning'**
+  String get dsPreviewTabLearning;
+
+  /// Section title in the design-system preview showing gradient button variants.
+  ///
+  /// In en, this message translates to:
+  /// **'Gradient Button'**
+  String get dsPreviewSectionGradientButton;
+
+  /// Generic 'Primary' variant/tone label reused across several demos in the design-system preview (buttons, colors, circular progress).
+  ///
+  /// In en, this message translates to:
+  /// **'Primary'**
+  String get dsPreviewWordPrimary;
+
+  /// Generic 'Secondary' variant/tone label reused across several demos in the design-system preview (buttons, colors).
+  ///
+  /// In en, this message translates to:
+  /// **'Secondary'**
+  String get dsPreviewWordSecondary;
+
+  /// Generic 'Outline' variant label reused across button and badge demos in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Outline'**
+  String get dsPreviewWordOutline;
+
+  /// Label for the ghost button variant in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Ghost'**
+  String get dsPreviewWordGhost;
+
+  /// Label for the destructive button variant in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Destructive'**
+  String get dsPreviewWordDestructive;
+
+  /// Generic 'Small' size label reused across button and circular progress demos in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Small'**
+  String get dsPreviewWordSmall;
+
+  /// Generic 'Large' size label reused across button and circular progress demos in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Large'**
+  String get dsPreviewWordLarge;
+
+  /// Generic 'Gradient' tone label reused across progress bar and circular progress demos in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Gradient'**
+  String get dsPreviewWordGradient;
+
+  /// Generic 'Success' tone label reused across alert banner and circular progress demos in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Success'**
+  String get dsPreviewWordSuccess;
+
+  /// Title of the warning-tone alert banner demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning'**
+  String get dsPreviewWordWarning;
+
+  /// Title of the error-tone alert banner demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get dsPreviewWordError;
+
+  /// Title of the info-tone alert banner demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Information'**
+  String get dsPreviewWordInformation;
+
+  /// Generic 'Disabled' state label reused across button, chip, checkbox and radio demos in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Disabled'**
+  String get dsPreviewStateDisabled;
+
+  /// Generic 'Loading' state label reused across button demos in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading'**
+  String get dsPreviewStateLoading;
+
+  /// Label for the default chip state in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get dsPreviewStateDefault;
+
+  /// Label for the selected chip state in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected'**
+  String get dsPreviewStateSelected;
+
+  /// Generic 'With icon' caption reused across badge and chip demos in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'With icon'**
+  String get dsPreviewWithIcon;
+
+  /// Sample button label with a leading icon in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Add item'**
+  String get dsPreviewBtnAddItem;
+
+  /// Sample full-width primary button label in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Width Primary'**
+  String get dsPreviewBtnFullWidthPrimary;
+
+  /// Sample gradient button label with an icon in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribe'**
+  String get dsPreviewBtnSubscribe;
+
+  /// Sample full-width gradient button label in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Width Gradient'**
+  String get dsPreviewBtnFullWidthGradient;
+
+  /// Section title in the design-system preview showing the color palette.
+  ///
+  /// In en, this message translates to:
+  /// **'Colors'**
+  String get dsPreviewSectionColors;
+
+  /// Name of the accent color palette in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Accent'**
+  String get dsPreviewColorAccent;
+
+  /// Name of the semantic (success/warning/error/info) color palette in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Semantic'**
+  String get dsPreviewColorSemantic;
+
+  /// Name of the neutral color palette in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Neutral'**
+  String get dsPreviewColorNeutral;
+
+  /// Name of the AI gradient swatch in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Gradient'**
+  String get dsPreviewGradientAi;
+
+  /// Name of the growth gradient swatch in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Growth Gradient'**
+  String get dsPreviewGradientGrowth;
+
+  /// Name of the soft AI gradient swatch in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Soft'**
+  String get dsPreviewGradientAiSoft;
+
+  /// Section title in the design-system preview showing alert banner variants.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert Banners'**
+  String get dsPreviewSectionAlertBanners;
+
+  /// Section title in the design-system preview showing badge variants.
+  ///
+  /// In en, this message translates to:
+  /// **'Badges'**
+  String get dsPreviewSectionBadges;
+
+  /// Section title in the design-system preview showing chip variants.
+  ///
+  /// In en, this message translates to:
+  /// **'Chips'**
+  String get dsPreviewSectionChips;
+
+  /// Section title in the design-system preview showing skeleton loader placeholders.
+  ///
+  /// In en, this message translates to:
+  /// **'Skeleton Loaders'**
+  String get dsPreviewSectionSkeletonLoaders;
+
+  /// Body text of the info-tone alert banner demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'This is an informational message.'**
+  String get dsPreviewAlertInfoBody;
+
+  /// Body text of the success-tone alert banner demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answer was correct!'**
+  String get dsPreviewAlertSuccessBody;
+
+  /// Body text of the warning-tone alert banner demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session expires in 5 minutes.'**
+  String get dsPreviewAlertWarningBody;
+
+  /// Body text of the error-tone alert banner demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save your progress.'**
+  String get dsPreviewAlertErrorBody;
+
+  /// Body text of the dismissible, title-less alert banner demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismissible banner without title.'**
+  String get dsPreviewAlertDismissibleBody;
+
+  /// Label for the solid badge variant in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Solid'**
+  String get dsPreviewBadgeSolid;
+
+  /// Label for the pill-shaped badge with a status dot in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Pill + dot'**
+  String get dsPreviewBadgePillDot;
+
+  /// Label for the removable chip variant in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Removable'**
+  String get dsPreviewChipRemovable;
+
+  /// Section title in the design-system preview showing form control widgets.
+  ///
+  /// In en, this message translates to:
+  /// **'Form Controls'**
+  String get dsPreviewSectionFormControls;
+
+  /// Label for the default text input demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Default input'**
+  String get dsPreviewInputDefaultLabel;
+
+  /// Placeholder for the default text input demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter text…'**
+  String get dsPreviewInputEnterTextPlaceholder;
+
+  /// Label for the input-with-helper-text demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'With helper text'**
+  String get dsPreviewInputHelperLabel;
+
+  /// Helper text under the email input demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Use your institutional email.'**
+  String get dsPreviewInputInstitutionalEmailHelper;
+
+  /// Label for the input error-state demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Error state'**
+  String get dsPreviewInputErrorLabel;
+
+  /// Placeholder for the password input error-state demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter password'**
+  String get dsPreviewInputEnterPasswordPlaceholder;
+
+  /// Error text under the password input demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters.'**
+  String get dsPreviewInputPasswordError;
+
+  /// Placeholder for the disabled input demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot edit'**
+  String get dsPreviewInputCannotEditPlaceholder;
+
+  /// Label for the required-field input demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get dsPreviewInputRequiredLabel;
+
+  /// Placeholder for the required-field input demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Full name'**
+  String get dsPreviewInputFullNamePlaceholder;
+
+  /// Label for the search input demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get dsPreviewInputSearchLabel;
+
+  /// Placeholder for the search input demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Search lessons…'**
+  String get dsPreviewInputSearchLessonsPlaceholder;
+
+  /// Label for the unchecked checkbox demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Unchecked'**
+  String get dsPreviewCheckboxUnchecked;
+
+  /// Label for the checked checkbox demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked'**
+  String get dsPreviewCheckboxChecked;
+
+  /// Label shown next to the switch demo in the design-system preview when it is on.
+  ///
+  /// In en, this message translates to:
+  /// **'On'**
+  String get dsPreviewSwitchOn;
+
+  /// Label shown next to the switch demo in the design-system preview when it is off.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get dsPreviewSwitchOff;
+
+  /// Label for the disabled-and-on switch demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Disabled on'**
+  String get dsPreviewSwitchDisabledOn;
+
+  /// Label for the first radio button demo option in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Option A'**
+  String get dsPreviewRadioOptionA;
+
+  /// Label for the second radio button demo option in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Option B'**
+  String get dsPreviewRadioOptionB;
+
+  /// Label for the third radio button demo option in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Option C'**
+  String get dsPreviewRadioOptionC;
+
+  /// Section title in the design-system preview showing the spacing scale.
+  ///
+  /// In en, this message translates to:
+  /// **'Spacing'**
+  String get dsPreviewSectionSpacing;
+
+  /// Section title in the design-system preview showing the border-radius scale.
+  ///
+  /// In en, this message translates to:
+  /// **'Border Radius'**
+  String get dsPreviewSectionBorderRadius;
+
+  /// Section title in the design-system preview showing the elevation/shadow scale.
+  ///
+  /// In en, this message translates to:
+  /// **'Shadows'**
+  String get dsPreviewSectionShadows;
+
+  /// Section title in the design-system preview showing the blob card widget.
+  ///
+  /// In en, this message translates to:
+  /// **'Blob Card'**
+  String get dsPreviewSectionBlobCard;
+
+  /// Section title in the design-system preview showing the stat tile widget.
+  ///
+  /// In en, this message translates to:
+  /// **'Stat Tile'**
+  String get dsPreviewSectionStatTile;
+
+  /// Section title in the design-system preview showing the skill blob widget.
+  ///
+  /// In en, this message translates to:
+  /// **'Skill Blob'**
+  String get dsPreviewSectionSkillBlob;
+
+  /// Section title in the design-system preview showing the AIM card widget.
+  ///
+  /// In en, this message translates to:
+  /// **'AIM Card'**
+  String get dsPreviewSectionAimCard;
+
+  /// Section title in the design-system preview showing the progress bar widget.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress Bar'**
+  String get dsPreviewSectionProgressBar;
+
+  /// Section title in the design-system preview showing the circular progress widget.
+  ///
+  /// In en, this message translates to:
+  /// **'Circular Progress'**
+  String get dsPreviewSectionCircularProgress;
+
+  /// Section title in the design-system preview showing the lesson answer-option widget.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer Options'**
+  String get dsPreviewSectionAnswerOptions;
+
+  /// Section title in the design-system preview showing the AI feedback bubble widget.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Feedback Bubble'**
+  String get dsPreviewSectionAiFeedbackBubble;
+
+  /// Section title in the design-system preview showing the voice record button widget.
+  ///
+  /// In en, this message translates to:
+  /// **'Record Button'**
+  String get dsPreviewSectionRecordButton;
+
+  /// Sample blob card title demonstrating a streak count in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'5-day streak'**
+  String get dsPreviewStreakTitle;
+
+  /// Sample blob card subtitle demonstrating a streak nudge in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep it going today'**
+  String get dsPreviewStreakSubtitle;
+
+  /// Sample blob card title demonstrating a weekly XP count in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'320 XP this week'**
+  String get dsPreviewXpWeekTitle;
+
+  /// Label for the day-streak stat tile demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Day streak'**
+  String get dsPreviewStatDayStreak;
+
+  /// Label for the XP stat tile demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'XP'**
+  String get dsPreviewStatXp;
+
+  /// Label for the lessons-count stat tile demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Lessons'**
+  String get dsPreviewStatLessons;
+
+  /// Skill name label reused for the skill blob and tab demos in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Speaking'**
+  String get dsPreviewSkillSpeaking;
+
+  /// Sample content for the standard AIM card variant in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard card'**
+  String get dsPreviewCardStandard;
+
+  /// Sample content for the elevated AIM card variant in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Elevated card'**
+  String get dsPreviewCardElevated;
+
+  /// Sample content for the AI-gradient-border AIM card variant in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'AI card (gradient border)'**
+  String get dsPreviewCardAiGradientBorder;
+
+  /// Sample content for the gradient AIM card variant in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Gradient card — AI adaptive content'**
+  String get dsPreviewCardGradientAiContent;
+
+  /// Sample content for the interactive AIM card variant in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Interactive card — tap me'**
+  String get dsPreviewCardInteractiveTapMe;
+
+  /// Label for the lesson-progress bar demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson progress'**
+  String get dsPreviewProgressLesson;
+
+  /// Label for the XP-to-next-level progress bar demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'XP to next level'**
+  String get dsPreviewProgressXpNextLevel;
+
+  /// Label for the grammar-mastery progress bar demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Grammar mastery'**
+  String get dsPreviewProgressGrammarMastery;
+
+  /// Label for the vocabulary-retention progress bar demo in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Vocabulary retention'**
+  String get dsPreviewProgressVocabRetention;
+
+  /// Custom progress-bar value format demonstrating an XP counter in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'{value}/{max} XP'**
+  String dsPreviewXpProgressFormat(int value, int max);
+
+  /// Caption under the circular progress demo for the daily-goal variant in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'daily goal'**
+  String get dsPreviewCircularDailyGoal;
+
+  /// Caption under the circular progress demo for the score variant in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'score'**
+  String get dsPreviewCircularScore;
+
+  /// Section title in the design-system preview showing the gradient hero header widget.
+  ///
+  /// In en, this message translates to:
+  /// **'Gradient Hero Header'**
+  String get dsPreviewSectionGradientHeroHeader;
+
+  /// Section title in the design-system preview showing the app drawer widget.
+  ///
+  /// In en, this message translates to:
+  /// **'App Drawer'**
+  String get dsPreviewSectionAppDrawer;
+
+  /// Section title in the design-system preview showing the notifications sheet widget.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications Sheet'**
+  String get dsPreviewSectionNotificationsSheet;
+
+  /// Section title in the design-system preview showing the top app bar widget.
+  ///
+  /// In en, this message translates to:
+  /// **'Top App Bar'**
+  String get dsPreviewSectionTopAppBar;
+
+  /// Section title in the design-system preview showing the segmented control widget.
+  ///
+  /// In en, this message translates to:
+  /// **'Segmented Control'**
+  String get dsPreviewSectionSegmentedControl;
+
+  /// Section title in the design-system preview showing the tabs widget.
+  ///
+  /// In en, this message translates to:
+  /// **'Tabs'**
+  String get dsPreviewSectionTabs;
+
+  /// Section title in the design-system preview showing the bottom navigation widget.
+  ///
+  /// In en, this message translates to:
+  /// **'Bottom Navigation'**
+  String get dsPreviewSectionBottomNavigation;
+
+  /// Sample app-drawer item label in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get dsPreviewNavSettings;
+
+  /// Button label that opens the demo app drawer in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Open drawer'**
+  String get dsPreviewOpenDrawerButton;
+
+  /// Button label that opens the demo notifications sheet in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Show notifications'**
+  String get dsPreviewShowNotificationsButton;
+
+  /// Sample top app bar title demonstrating the centered-title layout in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Centered Title'**
+  String get dsPreviewCenteredTitleDemo;
+
+  /// Label for the 'all' segmented control option in the design-system preview.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get dsPreviewSegAll;
+
+  /// Section title in the design-system preview showing the type scale.
+  ///
+  /// In en, this message translates to:
+  /// **'Typography'**
+  String get dsPreviewSectionTypography;
 }
 
 class _AppLocalizationsDelegate

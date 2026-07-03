@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../ds_preview_state.dart';
 import '../sections/ds_button_section.dart';
 import '../sections/ds_color_section.dart';
@@ -40,15 +41,6 @@ class _DSPreviewPageState extends State<DSPreviewPage> {
   final _state = DSPreviewState();
   int _tab = 0;
 
-  static const _tabs = [
-    'Foundations',
-    'Buttons',
-    'Forms',
-    'Feedback',
-    'Navigation',
-    'Learning',
-  ];
-
   @override
   void dispose() {
     _state.dispose();
@@ -65,16 +57,32 @@ class _DSPreviewPageState extends State<DSPreviewPage> {
           themeMode: _state.themeMode,
           theme: AppTheme.light,
           darkTheme: AppTheme.dark,
+          locale: _state.locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           builder: (context, child) => Directionality(
             textDirection: _state.textDirection,
             child: child!,
           ),
-          home: _PreviewShell(
-            state: _state,
-            selectedTab: _tab,
-            onTabChanged: (i) => setState(() => _tab = i),
-            tabs: _tabs,
-            onClose: () => context.pop(),
+          home: Builder(
+            builder: (context) {
+              final l10n = AppLocalizations.of(context);
+              final tabs = [
+                l10n.dsPreviewTabFoundations,
+                l10n.dsPreviewTabButtons,
+                l10n.dsPreviewTabForms,
+                l10n.dsPreviewTabFeedback,
+                l10n.dsPreviewTabNavigation,
+                l10n.dsPreviewTabLearning,
+              ];
+              return _PreviewShell(
+                state: _state,
+                selectedTab: _tab,
+                onTabChanged: (i) => setState(() => _tab = i),
+                tabs: tabs,
+                onClose: () => context.pop(),
+              );
+            },
           ),
         );
       },
@@ -156,6 +164,7 @@ class _DSAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     return Container(
       height: preferredSize.height + MediaQuery.of(context).padding.top,
       padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
@@ -168,12 +177,12 @@ class _DSAppBar extends StatelessWidget implements PreferredSizeWidget {
           const SizedBox(width: AimSpacing.space4),
           IconButton(
             icon: Icon(Icons.close, color: surfaces.textPrimary),
-            tooltip: 'Close preview',
+            tooltip: l10n.dsPreviewCloseTooltip,
             onPressed: onClose,
           ),
           Expanded(
             child: Text(
-              '⚙ Design System Preview',
+              l10n.dsPreviewTitle,
               style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
               overflow: TextOverflow.ellipsis,
             ),
@@ -186,7 +195,7 @@ class _DSAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
           // Light / Dark toggle
           _ToggleButton(
-            label: state.isDark ? 'Dark' : 'Light',
+            label: state.isDark ? l10n.shellThemeDark : l10n.shellThemeLight,
             icon: state.isDark ? Icons.dark_mode : Icons.light_mode,
             onTap: state.toggleTheme,
           ),
