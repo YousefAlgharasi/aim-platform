@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/aim_results/data/models/aim_results_models.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class ProgressRecommendationCard extends StatelessWidget {
   const ProgressRecommendationCard({required this.model, super.key});
@@ -12,9 +13,11 @@ class ProgressRecommendationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return AIMCard(
       variant: AIMCardVariant.ai,
-      semanticLabel: 'AIM recommendation: ${model.kind} ${model.targetSkillId}',
+      semanticLabel:
+          l10n.homeRecommendationSemantic(model.kind, model.targetSkillId),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -36,7 +39,7 @@ class ProgressRecommendationCard extends StatelessWidget {
                 tone: AIMBadgeTone.neutral,
                 variant: AIMBadgeVariant.soft,
                 pill: true,
-                child: Text('#${model.rank}'),
+                child: Text(l10n.progressRankBadge(model.rank)),
               ),
             ],
           ),

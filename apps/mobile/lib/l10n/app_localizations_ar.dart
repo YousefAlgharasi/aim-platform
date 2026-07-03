@@ -950,4 +950,553 @@ class AppLocalizationsAr extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get progressPageTitle => 'تقدّمك';
+
+  @override
+  String get progressPageSubtitle => 'لمحة سريعة عن أدائك';
+
+  @override
+  String get progressLoadingSemantic => 'جارٍ تحميل بيانات التقدم';
+
+  @override
+  String get progressEmptyTitle => 'لا توجد بيانات تقدم بعد';
+
+  @override
+  String get progressEmptySubtitle =>
+      'أكمل الدروس وجلسات التدريب لرؤية تقدمك في AIM.';
+
+  @override
+  String get progressAvgMasteryLabel => 'متوسط الإتقان';
+
+  @override
+  String get progressDayStreakLabel => 'سلسلة الأيام';
+
+  @override
+  String progressStatCardSemantic(String value, String label) {
+    return '$value $label';
+  }
+
+  @override
+  String progressNavRowSemantic(String title, String subtitle) {
+    return '$title، $subtitle';
+  }
+
+  @override
+  String progressSkillStatesSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count مهارة مسجلة',
+      many: '$count مهارة مسجلة',
+      few: '$count مهارات مسجلة',
+      two: 'مهارتان مسجلتان',
+      one: 'مهارة واحدة مسجلة',
+      zero: 'لا مهارات مسجلة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get progressWeaknessesNavTitle => 'نقاط الضعف';
+
+  @override
+  String progressFocusAreasCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count مجال تركيز',
+      many: '$count مجال تركيز',
+      few: '$count مجالات تركيز',
+      two: 'مجالا تركيز',
+      one: 'مجال تركيز واحد',
+      zero: 'لا مجالات تركيز',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get progressRecommendationsNavTitle => 'التوصيات';
+
+  @override
+  String progressRecommendationsFromAimLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count توصية من AIM',
+      many: '$count توصية من AIM',
+      few: '$count توصيات من AIM',
+      two: 'توصيتان من AIM',
+      one: 'توصية واحدة من AIM',
+      zero: 'لا توصيات من AIM',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String progressReviewsScheduledCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count مراجعة مجدولة',
+      many: '$count مراجعة مجدولة',
+      few: '$count مراجعات مجدولة',
+      two: 'مراجعتان مجدولتان',
+      one: 'مراجعة واحدة مجدولة',
+      zero: 'لا مراجعات مجدولة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get progressWeaknessLoadingSemantic => 'جارٍ تحميل بيانات نقاط الضعف';
+
+  @override
+  String get progressNoFocusAreasTitle => 'لا توجد مجالات تركيز بعد';
+
+  @override
+  String get progressNoFocusAreasSubtitle =>
+      'أكمل جلسات التدريب حتى يتمكن AIM من تحديد المجالات التي تحتاج إلى تركيز.';
+
+  @override
+  String progressWeaknessDetailSemantic(
+      String skillId, String severity, String status) {
+    return 'ضعف في $skillId: $severity، $status';
+  }
+
+  @override
+  String progressDetectedLabel(String date) {
+    return 'تم الرصد: $date';
+  }
+
+  @override
+  String progressResolvedLabel(String date) {
+    return 'تم الحل: $date';
+  }
+
+  @override
+  String get progressRecommendationsLoadingSemantic => 'جارٍ تحميل التوصيات';
+
+  @override
+  String get progressNoRecommendationsTitle => 'لا توجد توصيات بعد';
+
+  @override
+  String get progressNoRecommendationsSubtitle =>
+      'أكمل الدروس وجلسات التدريب لتلقي توصيات AIM.';
+
+  @override
+  String progressRecommendationRankSemantic(
+      int rank, String kind, String skillId) {
+    return 'توصية AIM رقم $rank: $kind لمهارة $skillId';
+  }
+
+  @override
+  String progressRankBadge(int rank) {
+    return '#$rank';
+  }
+
+  @override
+  String progressLessonLabel(String lessonId) {
+    return 'الدرس: $lessonId';
+  }
+
+  @override
+  String progressExpiresLabel(String date) {
+    return 'تنتهي: $date';
+  }
+
+  @override
+  String progressGeneratedLabel(String date) {
+    return 'أُنشئت: $date';
+  }
+
+  @override
+  String get progressSkillStatesLoadingSemantic => 'جارٍ تحميل حالات المهارات';
+
+  @override
+  String get progressNoSkillDataTitle => 'لا توجد بيانات مهارات بعد';
+
+  @override
+  String get progressNoSkillDataSubtitle =>
+      'أكمل الدروس والتدريب لبناء ملف مهاراتك.';
+
+  @override
+  String progressSkillMasterySemantic(
+      String title, int masteryPct, String tierLabel) {
+    return 'إتقان $title: $masteryPct%، $tierLabel';
+  }
+
+  @override
+  String get progressTierStrong => 'قوي';
+
+  @override
+  String get progressTierDeveloping => 'قيد التطور';
+
+  @override
+  String get progressTierNeedsWork => 'يحتاج إلى عمل';
+
+  @override
+  String get progressTrendImproving => 'في تحسّن';
+
+  @override
+  String get progressTrendDeclining => 'في تراجع';
+
+  @override
+  String get progressTrendStable => 'مستقر';
+
+  @override
+  String get progressTrendInsufficientData => 'بيانات غير كافية';
+
+  @override
+  String get progressMasteryPrefix => 'الإتقان ';
+
+  @override
+  String progressMasteryWasSuffix(int prevPct) {
+    return ' · كان $prevPct';
+  }
+
+  @override
+  String progressConfidenceLabel(int percent) {
+    return 'الثقة $percent%';
+  }
+
+  @override
+  String get progressNoReviewsSubtitle =>
+      'أكمل جلسات التدريب لتلقي تذكيرات مراجعة يحسبها AIM.';
+
+  @override
+  String get progressReviewStatusDue => 'مستحقة';
+
+  @override
+  String get progressReviewStatusPending => 'قيد الانتظار';
+
+  @override
+  String get progressReviewStatusCompleted => 'مكتملة';
+
+  @override
+  String get progressReviewStatusSkipped => 'متجاوَزة';
+
+  @override
+  String get progressReviewStatusOverdue => 'متأخرة';
+
+  @override
+  String progressReviewCardSemantic(
+      String skillId, String dueAt, String statusLabel) {
+    return 'مراجعة $skillId مستحقة في $dueAt — $statusLabel';
+  }
+
+  @override
+  String progressReviewMetaLabel(
+      String dueLabel, int intervalDays, int repCount) {
+    return '$dueLabel · $intervalDays يوم · تكرار #$repCount';
+  }
+
+  @override
+  String progressDueRawLabel(String raw) {
+    return 'مستحقة $raw';
+  }
+
+  @override
+  String progressReviewScheduleCardSemantic(String skillId, String dueAt) {
+    return 'مراجعة $skillId مستحقة في $dueAt';
+  }
+
+  @override
+  String progressDueColonLabel(String dueAt) {
+    return 'الاستحقاق: $dueAt';
+  }
+
+  @override
+  String progressIntervalDaysBadge(int days) {
+    return '$days يوم';
+  }
+
+  @override
+  String get reviewsPageTitle => 'المراجعة';
+
+  @override
+  String get reviewsPageSubtitle => 'التكرار المتباعد يحفظها في الذاكرة';
+
+  @override
+  String get reviewsLoadingScheduleSemantic => 'جارٍ تحميل جدول المراجعة';
+
+  @override
+  String get reviewsNoReviewsScheduledTitle => 'لا توجد مراجعات مجدولة';
+
+  @override
+  String get reviewsNoReviewsSubtitle =>
+      'أكمل جلسات التدريب لتلقي تذكيرات المراجعة.';
+
+  @override
+  String reviewsCardSemantic(String title, String dueAt, String status) {
+    return 'مراجعة $title مستحقة في $dueAt — $status';
+  }
+
+  @override
+  String reviewsIntervalDaysLabel(int days) {
+    return 'الفاصل $days يوم';
+  }
+
+  @override
+  String reviewsRepBadge(int repCount) {
+    return 'تكرار #$repCount';
+  }
+
+  @override
+  String get reviewsDueTodayLabel => 'مستحقة اليوم';
+
+  @override
+  String get reviewsDueTomorrowLabel => 'مستحقة غدًا';
+
+  @override
+  String get reviewsDueYesterdayLabel => 'كانت مستحقة أمس';
+
+  @override
+  String reviewsDueInDaysLabel(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'مستحقة خلال $days يوم',
+      many: 'مستحقة خلال $days يومًا',
+      few: 'مستحقة خلال $days أيام',
+      two: 'مستحقة خلال يومين',
+      one: 'مستحقة خلال يوم واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reviewsDueDaysAgoLabel(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'كانت مستحقة قبل $days يوم',
+      many: 'كانت مستحقة قبل $days يومًا',
+      few: 'كانت مستحقة قبل $days أيام',
+      two: 'كانت مستحقة قبل يومين',
+      one: 'كانت مستحقة قبل يوم واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reviewsDueFormattedLabel(String date) {
+    return 'مستحقة في $date';
+  }
+
+  @override
+  String reviewsDueRawLabel(String raw) {
+    return 'مستحقة: $raw';
+  }
+
+  @override
+  String get analyticsSummaryTitle => 'التحليلات';
+
+  @override
+  String get analyticsSummaryLoadingSemantic => 'جارٍ تحميل ملخص التحليلات';
+
+  @override
+  String get analyticsSummaryNoReportsTitle => 'لا تقارير متاحة';
+
+  @override
+  String get analyticsSummaryNoReportsSubtitle =>
+      'لا توجد تقارير تحليلات لك بعد.';
+
+  @override
+  String analyticsSummaryReportSemantic(String name) {
+    return 'تقرير $name';
+  }
+
+  @override
+  String get notificationsSettingsTitle => 'إعدادات الإشعارات';
+
+  @override
+  String get notificationsPreferencesLoadingSemantic =>
+      'جارٍ تحميل تفضيلات الإشعارات';
+
+  @override
+  String get notificationsInboxLoadingSemantic => 'جارٍ تحميل الإشعارات';
+
+  @override
+  String get notificationsInboxEmptyTitle => 'لا توجد إشعارات بعد';
+
+  @override
+  String get notificationsInboxEmptySubtitle =>
+      'ستظهر هنا تذكيرات الجلسات وتحديثات التقدم.';
+
+  @override
+  String get notificationsDismissSemantic => 'تجاهل الإشعار';
+
+  @override
+  String notificationsUnreadTileSemantic(String title) {
+    return 'إشعار غير مقروء: $title';
+  }
+
+  @override
+  String notificationsTileSemantic(String title) {
+    return 'إشعار: $title';
+  }
+
+  @override
+  String get notificationsUnreadLabel => 'غير مقروء';
+
+  @override
+  String get notificationsReadLabel => 'مقروء';
+
+  @override
+  String get notificationsCategoryLearningReminder => 'تذكيرات التعلم';
+
+  @override
+  String get notificationsCategoryDeadlineReminder =>
+      'تذكيرات المواعيد النهائية';
+
+  @override
+  String get notificationsCategoryProgressUpdate => 'تحديثات التقدم';
+
+  @override
+  String get notificationsCategoryAssessmentResult => 'نتائج التقييمات';
+
+  @override
+  String get notificationsCategoryParentSummary => 'ملخصات التقدم';
+
+  @override
+  String get notificationsCategorySystemAlert => 'تنبيهات النظام';
+
+  @override
+  String get notificationsChannelInApp => 'داخل التطبيق';
+
+  @override
+  String get notificationsChannelPush => 'إشعارات الدفع';
+
+  @override
+  String get notificationsChannelEmail => 'البريد الإلكتروني';
+
+  @override
+  String get notificationsChannelsSectionLabel => 'القنوات';
+
+  @override
+  String get notificationsQuietHoursSectionLabel => 'ساعات الهدوء';
+
+  @override
+  String notificationsChannelToggleSemantic(String channel, String category) {
+    return 'إشعارات $channel لِـ $category';
+  }
+
+  @override
+  String get notificationsEnableQuietHoursLabel => 'تفعيل ساعات الهدوء';
+
+  @override
+  String get notificationsQuietHoursStartLabel => 'البداية';
+
+  @override
+  String get notificationsQuietHoursEndLabel => 'النهاية';
+
+  @override
+  String get notificationsSaveQuietHoursLabel => 'حفظ ساعات الهدوء';
+
+  @override
+  String get notificationsDetailTitle => 'الإشعار';
+
+  @override
+  String get notificationsMarkAsReadLabel => 'وضع علامة كمقروء';
+
+  @override
+  String get notificationsDismissLabel => 'تجاهل';
+
+  @override
+  String get notificationsDismissedTitle => 'تم التجاهل';
+
+  @override
+  String get notificationsDismissedBody => 'تم تجاهل هذا الإشعار.';
+
+  @override
+  String get notificationsReminderTypeLearningPlan => 'خطة التعلم';
+
+  @override
+  String get notificationsReminderTypeReview => 'المراجعة';
+
+  @override
+  String get notificationsReminderTypeDeadline => 'الموعد النهائي';
+
+  @override
+  String get notificationsReminderTypeStreak => 'سلسلة الإنجاز';
+
+  @override
+  String get notificationsReminderTypeCustom => 'مخصص';
+
+  @override
+  String notificationsEveryDayLabel(String time) {
+    return 'كل يوم · $time';
+  }
+
+  @override
+  String notificationsEveryWeekdayLabel(String weekday, String time) {
+    return 'كل $weekday · $time';
+  }
+
+  @override
+  String notificationsReminderSemantic(String type, String status) {
+    return 'تذكير $type، الحالة $status';
+  }
+
+  @override
+  String get notificationsNoRemindersTitle => 'لا توجد تذكيرات بعد';
+
+  @override
+  String get notificationsNoRemindersSubtitle =>
+      'ستظهر هنا التذكيرات التي تفعّلها.';
+
+  @override
+  String get notificationsNoRemindersSemantic => 'لا توجد جداول تذكير';
+
+  @override
+  String get notificationsRemindersLoadingSemantic =>
+      'جارٍ تحميل جداول التذكير';
+
+  @override
+  String get notificationsRemindersTitle => 'التذكيرات';
+
+  @override
+  String get notificationsResumeLabel => 'استئناف';
+
+  @override
+  String get notificationsResumeSemantic => 'استئناف التذكير';
+
+  @override
+  String get notificationsPauseLabel => 'إيقاف مؤقت';
+
+  @override
+  String get notificationsPauseSemantic => 'إيقاف التذكير مؤقتًا';
+
+  @override
+  String get notificationsCancelSemantic => 'إلغاء التذكير';
+
+  @override
+  String notificationsBellUnreadSemantic(int count) {
+    return 'الإشعارات، $count غير مقروء';
+  }
+
+  @override
+  String get achievementsLoadingSemantic => 'جارٍ تحميل الإنجازات';
+
+  @override
+  String get achievementsEmptyTitle => 'لا توجد إنجازات بعد';
+
+  @override
+  String get achievementsEmptySubtitle =>
+      'أكمل الدروس وجلسات التدريب لكسب الأوسمة والإنجازات.';
+
+  @override
+  String get achievementsStartLearningLabel => 'ابدأ التعلم';
+
+  @override
+  String achievementsUnlockedSemantic(String title) {
+    return '$title، مفتوح';
+  }
+
+  @override
+  String achievementsLockedSemantic(String title) {
+    return '$title، مقفل';
+  }
 }

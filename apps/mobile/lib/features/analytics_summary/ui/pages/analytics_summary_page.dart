@@ -45,6 +45,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/analytics_summary/data/models/analytics_summary_report_model.dart';
 import 'package:aim_mobile/features/analytics_summary/logic/provider/analytics_summary_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class AnalyticsSummaryPage extends ConsumerStatefulWidget {
   const AnalyticsSummaryPage({super.key});
@@ -93,19 +94,22 @@ class _AnalyticsSummaryPageState extends ConsumerState<AnalyticsSummaryPage> {
           const _AnalyticsHeader(),
           Expanded(
             child: switch (state) {
-              AppAsyncLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading analytics summary'),
+              AppAsyncLoading() => AIMFullScreenLoading(
+                  semanticLabel:
+                      AppLocalizations.of(context).analyticsSummaryLoadingSemantic),
               AppAsyncFailure(:final message) =>
                 AIMFullScreenError(message: message, onRetry: _load),
               AppAsyncSuccess(:final data) => data.isEmpty
-                  ? const AIMEmptyState(
-                      icon: Icon(Icons.insights_outlined),
-                      title: 'No reports available',
-                      subtitle: 'There are no analytics reports for you yet.',
+                  ? AIMEmptyState(
+                      icon: const Icon(Icons.insights_outlined),
+                      title: AppLocalizations.of(context).analyticsSummaryNoReportsTitle,
+                      subtitle: AppLocalizations.of(context)
+                          .analyticsSummaryNoReportsSubtitle,
                     )
                   : _ReportList(reports: data, onRefresh: _refresh),
-              AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading analytics summary'),
+              AppAsyncIdle() => AIMFullScreenLoading(
+                  semanticLabel:
+                      AppLocalizations.of(context).analyticsSummaryLoadingSemantic),
             },
           ),
         ],
@@ -138,7 +142,7 @@ class _AnalyticsHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -165,7 +169,7 @@ class _AnalyticsHeader extends StatelessWidget {
             const SizedBox(width: AimSpacing.space12),
             Expanded(
               child: Text(
-                'Analytics',
+                AppLocalizations.of(context).analyticsSummaryTitle,
                 style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -223,7 +227,8 @@ class _ReportCard extends StatelessWidget {
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
-      semanticLabel: '${model.name} report',
+      semanticLabel: AppLocalizations.of(context)
+          .analyticsSummaryReportSemantic(model.name),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -909,4 +909,532 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get progressPageTitle => 'Your progress';
+
+  @override
+  String get progressPageSubtitle => 'A snapshot of how you are doing';
+
+  @override
+  String get progressLoadingSemantic => 'Loading progress data';
+
+  @override
+  String get progressEmptyTitle => 'No progress data yet';
+
+  @override
+  String get progressEmptySubtitle =>
+      'Complete lessons and practice sessions to see your AIM progress.';
+
+  @override
+  String get progressAvgMasteryLabel => 'Avg mastery';
+
+  @override
+  String get progressDayStreakLabel => 'Day streak';
+
+  @override
+  String progressStatCardSemantic(String value, String label) {
+    return '$value $label';
+  }
+
+  @override
+  String progressNavRowSemantic(String title, String subtitle) {
+    return '$title, $subtitle';
+  }
+
+  @override
+  String progressSkillStatesSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count skills tracked',
+      one: '$count skills tracked',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get progressWeaknessesNavTitle => 'Weaknesses';
+
+  @override
+  String progressFocusAreasCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count focus areas',
+      one: '$count focus areas',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get progressRecommendationsNavTitle => 'Recommendations';
+
+  @override
+  String progressRecommendationsFromAimLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count from AIM',
+      one: '$count from AIM',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String progressReviewsScheduledCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count reviews scheduled',
+      one: '$count reviews scheduled',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get progressWeaknessLoadingSemantic => 'Loading weakness data';
+
+  @override
+  String get progressNoFocusAreasTitle => 'No focus areas yet';
+
+  @override
+  String get progressNoFocusAreasSubtitle =>
+      'Complete practice sessions so AIM can identify areas to focus on.';
+
+  @override
+  String progressWeaknessDetailSemantic(
+      String skillId, String severity, String status) {
+    return '$skillId weakness: $severity, $status';
+  }
+
+  @override
+  String progressDetectedLabel(String date) {
+    return 'Detected: $date';
+  }
+
+  @override
+  String progressResolvedLabel(String date) {
+    return 'Resolved: $date';
+  }
+
+  @override
+  String get progressRecommendationsLoadingSemantic =>
+      'Loading recommendations';
+
+  @override
+  String get progressNoRecommendationsTitle => 'No recommendations yet';
+
+  @override
+  String get progressNoRecommendationsSubtitle =>
+      'Complete lessons and practice sessions to receive AIM recommendations.';
+
+  @override
+  String progressRecommendationRankSemantic(
+      int rank, String kind, String skillId) {
+    return 'AIM recommendation rank $rank: $kind for $skillId';
+  }
+
+  @override
+  String progressRankBadge(int rank) {
+    return '#$rank';
+  }
+
+  @override
+  String progressLessonLabel(String lessonId) {
+    return 'Lesson: $lessonId';
+  }
+
+  @override
+  String progressExpiresLabel(String date) {
+    return 'Expires: $date';
+  }
+
+  @override
+  String progressGeneratedLabel(String date) {
+    return 'Generated: $date';
+  }
+
+  @override
+  String get progressSkillStatesLoadingSemantic => 'Loading skill states';
+
+  @override
+  String get progressNoSkillDataTitle => 'No skill data yet';
+
+  @override
+  String get progressNoSkillDataSubtitle =>
+      'Complete lessons and practice to build your skill profile.';
+
+  @override
+  String progressSkillMasterySemantic(
+      String title, int masteryPct, String tierLabel) {
+    return '$title mastery $masteryPct%, $tierLabel';
+  }
+
+  @override
+  String get progressTierStrong => 'Strong';
+
+  @override
+  String get progressTierDeveloping => 'Developing';
+
+  @override
+  String get progressTierNeedsWork => 'Needs work';
+
+  @override
+  String get progressTrendImproving => 'Improving';
+
+  @override
+  String get progressTrendDeclining => 'Declining';
+
+  @override
+  String get progressTrendStable => 'Stable';
+
+  @override
+  String get progressTrendInsufficientData => 'Insufficient data';
+
+  @override
+  String get progressMasteryPrefix => 'Mastery ';
+
+  @override
+  String progressMasteryWasSuffix(int prevPct) {
+    return ' · was $prevPct';
+  }
+
+  @override
+  String progressConfidenceLabel(int percent) {
+    return 'Confidence $percent%';
+  }
+
+  @override
+  String get progressNoReviewsSubtitle =>
+      'Complete practice sessions to receive AIM-computed review reminders.';
+
+  @override
+  String get progressReviewStatusDue => 'Due';
+
+  @override
+  String get progressReviewStatusPending => 'Pending';
+
+  @override
+  String get progressReviewStatusCompleted => 'Completed';
+
+  @override
+  String get progressReviewStatusSkipped => 'Skipped';
+
+  @override
+  String get progressReviewStatusOverdue => 'Overdue';
+
+  @override
+  String progressReviewCardSemantic(
+      String skillId, String dueAt, String statusLabel) {
+    return '$skillId review due $dueAt — $statusLabel';
+  }
+
+  @override
+  String progressReviewMetaLabel(
+      String dueLabel, int intervalDays, int repCount) {
+    return '$dueLabel · ${intervalDays}d · rep #$repCount';
+  }
+
+  @override
+  String progressDueRawLabel(String raw) {
+    return 'Due $raw';
+  }
+
+  @override
+  String progressReviewScheduleCardSemantic(String skillId, String dueAt) {
+    return '$skillId review due $dueAt';
+  }
+
+  @override
+  String progressDueColonLabel(String dueAt) {
+    return 'Due: $dueAt';
+  }
+
+  @override
+  String progressIntervalDaysBadge(int days) {
+    return '${days}d';
+  }
+
+  @override
+  String get reviewsPageTitle => 'Review';
+
+  @override
+  String get reviewsPageSubtitle => 'Spaced repetition keeps it in memory';
+
+  @override
+  String get reviewsLoadingScheduleSemantic => 'Loading review schedule';
+
+  @override
+  String get reviewsNoReviewsScheduledTitle => 'No reviews scheduled';
+
+  @override
+  String get reviewsNoReviewsSubtitle =>
+      'Complete practice sessions to receive review reminders.';
+
+  @override
+  String reviewsCardSemantic(String title, String dueAt, String status) {
+    return '$title review due $dueAt — $status';
+  }
+
+  @override
+  String reviewsIntervalDaysLabel(int days) {
+    return 'Interval ${days}d';
+  }
+
+  @override
+  String reviewsRepBadge(int repCount) {
+    return 'rep #$repCount';
+  }
+
+  @override
+  String get reviewsDueTodayLabel => 'Due Today';
+
+  @override
+  String get reviewsDueTomorrowLabel => 'Due Tomorrow';
+
+  @override
+  String get reviewsDueYesterdayLabel => 'Due Yesterday';
+
+  @override
+  String reviewsDueInDaysLabel(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Due in $days days',
+      one: 'Due in 1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reviewsDueDaysAgoLabel(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Due $days days ago',
+      one: 'Due 1 day ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reviewsDueFormattedLabel(String date) {
+    return 'Due $date';
+  }
+
+  @override
+  String reviewsDueRawLabel(String raw) {
+    return 'Due: $raw';
+  }
+
+  @override
+  String get analyticsSummaryTitle => 'Analytics';
+
+  @override
+  String get analyticsSummaryLoadingSemantic => 'Loading analytics summary';
+
+  @override
+  String get analyticsSummaryNoReportsTitle => 'No reports available';
+
+  @override
+  String get analyticsSummaryNoReportsSubtitle =>
+      'There are no analytics reports for you yet.';
+
+  @override
+  String analyticsSummaryReportSemantic(String name) {
+    return '$name report';
+  }
+
+  @override
+  String get notificationsSettingsTitle => 'Notification settings';
+
+  @override
+  String get notificationsPreferencesLoadingSemantic =>
+      'Loading notification preferences';
+
+  @override
+  String get notificationsInboxLoadingSemantic => 'Loading notifications';
+
+  @override
+  String get notificationsInboxEmptyTitle => 'No notifications yet';
+
+  @override
+  String get notificationsInboxEmptySubtitle =>
+      'Session reminders and progress updates will appear here.';
+
+  @override
+  String get notificationsDismissSemantic => 'Dismiss notification';
+
+  @override
+  String notificationsUnreadTileSemantic(String title) {
+    return 'Unread notification: $title';
+  }
+
+  @override
+  String notificationsTileSemantic(String title) {
+    return 'Notification: $title';
+  }
+
+  @override
+  String get notificationsUnreadLabel => 'Unread';
+
+  @override
+  String get notificationsReadLabel => 'Read';
+
+  @override
+  String get notificationsCategoryLearningReminder => 'Learning reminders';
+
+  @override
+  String get notificationsCategoryDeadlineReminder => 'Deadline reminders';
+
+  @override
+  String get notificationsCategoryProgressUpdate => 'Progress updates';
+
+  @override
+  String get notificationsCategoryAssessmentResult => 'Assessment results';
+
+  @override
+  String get notificationsCategoryParentSummary => 'Progress digests';
+
+  @override
+  String get notificationsCategorySystemAlert => 'System alerts';
+
+  @override
+  String get notificationsChannelInApp => 'In-app';
+
+  @override
+  String get notificationsChannelPush => 'Push';
+
+  @override
+  String get notificationsChannelEmail => 'Email';
+
+  @override
+  String get notificationsChannelsSectionLabel => 'CHANNELS';
+
+  @override
+  String get notificationsQuietHoursSectionLabel => 'QUIET HOURS';
+
+  @override
+  String notificationsChannelToggleSemantic(String channel, String category) {
+    return '$channel notifications for $category';
+  }
+
+  @override
+  String get notificationsEnableQuietHoursLabel => 'Enable quiet hours';
+
+  @override
+  String get notificationsQuietHoursStartLabel => 'Start';
+
+  @override
+  String get notificationsQuietHoursEndLabel => 'End';
+
+  @override
+  String get notificationsSaveQuietHoursLabel => 'Save quiet hours';
+
+  @override
+  String get notificationsDetailTitle => 'Notification';
+
+  @override
+  String get notificationsMarkAsReadLabel => 'Mark as read';
+
+  @override
+  String get notificationsDismissLabel => 'Dismiss';
+
+  @override
+  String get notificationsDismissedTitle => 'Dismissed';
+
+  @override
+  String get notificationsDismissedBody =>
+      'This notification has been dismissed.';
+
+  @override
+  String get notificationsReminderTypeLearningPlan => 'Learning plan';
+
+  @override
+  String get notificationsReminderTypeReview => 'Review';
+
+  @override
+  String get notificationsReminderTypeDeadline => 'Deadline';
+
+  @override
+  String get notificationsReminderTypeStreak => 'Streak';
+
+  @override
+  String get notificationsReminderTypeCustom => 'Custom';
+
+  @override
+  String notificationsEveryDayLabel(String time) {
+    return 'Every day · $time';
+  }
+
+  @override
+  String notificationsEveryWeekdayLabel(String weekday, String time) {
+    return 'Every $weekday · $time';
+  }
+
+  @override
+  String notificationsReminderSemantic(String type, String status) {
+    return '$type reminder, status $status';
+  }
+
+  @override
+  String get notificationsNoRemindersTitle => 'No reminders yet';
+
+  @override
+  String get notificationsNoRemindersSubtitle =>
+      'Reminders you enable will appear here.';
+
+  @override
+  String get notificationsNoRemindersSemantic => 'No reminder schedules';
+
+  @override
+  String get notificationsRemindersLoadingSemantic =>
+      'Loading reminder schedules';
+
+  @override
+  String get notificationsRemindersTitle => 'Reminders';
+
+  @override
+  String get notificationsResumeLabel => 'Resume';
+
+  @override
+  String get notificationsResumeSemantic => 'Resume reminder';
+
+  @override
+  String get notificationsPauseLabel => 'Pause';
+
+  @override
+  String get notificationsPauseSemantic => 'Pause reminder';
+
+  @override
+  String get notificationsCancelSemantic => 'Cancel reminder';
+
+  @override
+  String notificationsBellUnreadSemantic(int count) {
+    return 'Notifications, $count unread';
+  }
+
+  @override
+  String get achievementsLoadingSemantic => 'Loading achievements';
+
+  @override
+  String get achievementsEmptyTitle => 'No achievements yet';
+
+  @override
+  String get achievementsEmptySubtitle =>
+      'Complete lessons and practice sessions to earn badges and milestones.';
+
+  @override
+  String get achievementsStartLearningLabel => 'Start learning';
+
+  @override
+  String achievementsUnlockedSemantic(String title) {
+    return '$title, unlocked';
+  }
+
+  @override
+  String achievementsLockedSemantic(String title) {
+    return '$title, locked';
+  }
 }

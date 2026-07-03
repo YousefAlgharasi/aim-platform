@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/aim_results/data/models/aim_results_models.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class ProgressReviewScheduleCard extends StatelessWidget {
   const ProgressReviewScheduleCard({required this.model, super.key});
@@ -13,9 +14,11 @@ class ProgressReviewScheduleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     return AIMCard(
       variant: AIMCardVariant.elevated,
-      semanticLabel: '${model.skillId} review due ${model.dueAt}',
+      semanticLabel:
+          l10n.progressReviewScheduleCardSemantic(model.skillId, model.dueAt),
       child: Row(
         children: [
           const Icon(Icons.schedule_outlined,
@@ -34,7 +37,7 @@ class ProgressReviewScheduleCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AimSpacing.space2),
                 Text(
-                  'Due: ${model.dueAt}',
+                  l10n.progressDueColonLabel(model.dueAt),
                   style: AimTextStyles.bodySm
                       .copyWith(color: surfaces.textSecondary),
                   maxLines: 1,
@@ -47,7 +50,7 @@ class ProgressReviewScheduleCard extends StatelessWidget {
             tone: AIMBadgeTone.primary,
             variant: AIMBadgeVariant.soft,
             pill: true,
-            child: Text('${model.intervalDays}d'),
+            child: Text(l10n.progressIntervalDaysBadge(model.intervalDays)),
           ),
         ],
       ),

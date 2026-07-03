@@ -28,6 +28,7 @@ import 'package:aim_mobile/features/aim_results/data/models/aim_results_models.d
 import 'package:aim_mobile/features/aim_results/logic/provider/aim_results_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class RecommendationsPage extends ConsumerStatefulWidget {
   const RecommendationsPage({super.key});
@@ -81,27 +82,27 @@ class _RecommendationsPageState extends ConsumerState<RecommendationsPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(aimResultsProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: const AIMTopAppBar(title: 'Recommendations'),
+      appBar: AIMTopAppBar(title: l10n.progressRecommendationsNavTitle),
       body: switch (state) {
-        AppAsyncLoading() => const AIMFullScreenLoading(
-            semanticLabel: 'Loading recommendations'),
+        AppAsyncLoading() => AIMFullScreenLoading(
+            semanticLabel: l10n.progressRecommendationsLoadingSemantic),
         AppAsyncFailure(:final message) =>
           AIMFullScreenError(message: message, onRetry: _load),
         AppAsyncSuccess(:final data) => data.recommendations.isEmpty
-            ? const AIMEmptyState(
-                icon: Icon(Icons.auto_awesome_outlined),
-                title: 'No recommendations yet',
-                subtitle:
-                    'Complete lessons and practice sessions to receive AIM recommendations.',
+            ? AIMEmptyState(
+                icon: const Icon(Icons.auto_awesome_outlined),
+                title: l10n.progressNoRecommendationsTitle,
+                subtitle: l10n.progressNoRecommendationsSubtitle,
               )
             : _RecommendationsList(
                 recommendations: data.recommendations,
                 onRefresh: _refresh,
               ),
-        AppAsyncIdle() => const AIMFullScreenLoading(
-            semanticLabel: 'Loading recommendations'),
+        AppAsyncIdle() => AIMFullScreenLoading(
+            semanticLabel: l10n.progressRecommendationsLoadingSemantic),
       },
     );
   }
@@ -156,11 +157,15 @@ class _RecommendationDetailCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return AIMCard(
       variant: AIMCardVariant.ai,
-      semanticLabel:
-          'AIM recommendation rank ${model.rank}: ${model.kind} for ${model.targetSkillId}',
+      semanticLabel: l10n.progressRecommendationRankSemantic(
+        model.rank,
+        model.kind,
+        model.targetSkillId,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -185,7 +190,7 @@ class _RecommendationDetailCard extends StatelessWidget {
                 tone: AIMBadgeTone.neutral,
                 variant: AIMBadgeVariant.soft,
                 pill: true,
-                child: Text('#${model.rank}'),
+                child: Text(l10n.progressRankBadge(model.rank)),
               ),
             ],
           ),
@@ -213,7 +218,7 @@ class _RecommendationDetailCard extends StatelessWidget {
           if (model.targetLessonId != null) ...[
             const SizedBox(height: AimSpacing.space8),
             Text(
-              'Lesson: ${model.targetLessonId}',
+              l10n.progressLessonLabel(model.targetLessonId!),
               style:
                   AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
             ),
@@ -221,14 +226,14 @@ class _RecommendationDetailCard extends StatelessWidget {
           if (model.expiresAt != null) ...[
             const SizedBox(height: AimSpacing.space4),
             Text(
-              'Expires: ${model.expiresAt}',
+              l10n.progressExpiresLabel(model.expiresAt!),
               style:
                   AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
             ),
           ],
           const SizedBox(height: AimSpacing.space4),
           Text(
-            'Generated: ${model.generatedAt}',
+            l10n.progressGeneratedLabel(model.generatedAt),
             style:
                 AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
           ),

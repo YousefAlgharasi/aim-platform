@@ -28,6 +28,7 @@ import 'package:go_router/go_router.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 import '../../logic/entity/notification_entities.dart';
 import '../../logic/provider/notification_providers.dart';
@@ -42,20 +43,20 @@ const _kCategories = [
   'system_alert',
 ];
 
-const _kCategoryLabels = {
-  'learning_reminder': 'Learning reminders',
-  'deadline_reminder': 'Deadline reminders',
-  'progress_update': 'Progress updates',
-  'assessment_result': 'Assessment results',
-  'parent_summary': 'Progress digests',
-  'system_alert': 'System alerts',
-};
+Map<String, String> _categoryLabels(AppLocalizations l10n) => {
+      'learning_reminder': l10n.notificationsCategoryLearningReminder,
+      'deadline_reminder': l10n.notificationsCategoryDeadlineReminder,
+      'progress_update': l10n.notificationsCategoryProgressUpdate,
+      'assessment_result': l10n.notificationsCategoryAssessmentResult,
+      'parent_summary': l10n.notificationsCategoryParentSummary,
+      'system_alert': l10n.notificationsCategorySystemAlert,
+    };
 
-const _kChannelLabels = {
-  'in_app': 'In-app',
-  'push': 'Push',
-  'email': 'Email',
-};
+Map<String, String> _channelLabels(AppLocalizations l10n) => {
+      'in_app': l10n.notificationsChannelInApp,
+      'push': l10n.notificationsChannelPush,
+      'email': l10n.notificationsChannelEmail,
+    };
 
 class NotificationPreferencesPage extends ConsumerStatefulWidget {
   const NotificationPreferencesPage({super.key});
@@ -113,6 +114,7 @@ class _NotificationPreferencesPageState
     final preferencesState = ref.watch(notificationPreferencesProvider);
     final quietHoursState = ref.watch(notificationQuietHoursProvider);
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: surfaces.background,
@@ -124,8 +126,8 @@ class _NotificationPreferencesPageState
             child: switch (preferencesState) {
               AppAsyncLoading() ||
               AppAsyncIdle() =>
-                const AIMFullScreenLoading(
-                  semanticLabel: 'Loading notification preferences',
+                AIMFullScreenLoading(
+                  semanticLabel: l10n.notificationsInboxLoadingSemantic,
                 ),
               AppAsyncFailure(:final message) => AIMFullScreenError(
                   message: message,
@@ -142,7 +144,7 @@ class _NotificationPreferencesPageState
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
-                        'CHANNELS',
+                        l10n.notificationsChannelsSectionLabel,
                         style: AimTextStyles.label.copyWith(
                           color: surfaces.textMuted,
                           letterSpacing: 1.2,
@@ -155,7 +157,7 @@ class _NotificationPreferencesPageState
                       ),
                       const SizedBox(height: AimSpacing.sectionGap),
                       Text(
-                        'QUIET HOURS',
+                        l10n.notificationsQuietHoursSectionLabel,
                         style: AimTextStyles.label.copyWith(
                           color: surfaces.textMuted,
                           letterSpacing: 1.2,
@@ -182,6 +184,7 @@ class _NotificationPreferencesHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -197,7 +200,7 @@ class _NotificationPreferencesHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: l10n.commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -223,7 +226,7 @@ class _NotificationPreferencesHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Notification settings',
+              l10n.notificationsSettingsTitle,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],
@@ -253,6 +256,9 @@ class _PreferencesTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final categoryLabels = _categoryLabels(l10n);
+    final channelLabels = _channelLabels(l10n);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -263,7 +269,7 @@ class _PreferencesTable extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _kCategoryLabels[category] ?? category,
+                  categoryLabels[category] ?? category,
                   style: AimTextStyles.bodyMd.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -275,10 +281,12 @@ class _PreferencesTable extends StatelessWidget {
                       vertical: AimSpacing.space4,
                     ),
                     child: AIMSwitch(
-                      label: _kChannelLabels[channel] ?? channel,
+                      label: channelLabels[channel] ?? channel,
                       value: _isEnabled(channel, category),
-                      semanticLabel:
-                          '${_kChannelLabels[channel]} notifications for ${_kCategoryLabels[category]}',
+                      semanticLabel: l10n.notificationsChannelToggleSemantic(
+                        channelLabels[channel] ?? channel,
+                        categoryLabels[category] ?? category,
+                      ),
                       onChanged: (enabled) =>
                           onToggle(channel, category, enabled),
                     ),

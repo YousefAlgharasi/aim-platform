@@ -44,6 +44,7 @@ import 'package:aim_mobile/features/aim_results/data/models/aim_results_models.d
 import 'package:aim_mobile/features/aim_results/logic/provider/aim_results_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class SkillStatePage extends ConsumerStatefulWidget {
   const SkillStatePage({super.key});
@@ -106,21 +107,23 @@ class _SkillStatePageState extends ConsumerState<SkillStatePage> {
           const _SkillStateHeader(),
           Expanded(
             child: switch (state) {
-              AppAsyncLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading skill states'),
+              AppAsyncLoading() => AIMFullScreenLoading(
+                  semanticLabel:
+                      AppLocalizations.of(context).progressSkillStatesLoadingSemantic),
               AppAsyncFailure(:final message) =>
                 AIMFullScreenError(message: message, onRetry: _load),
               AppAsyncSuccess(:final data) => data.skillStates.isEmpty
-                  ? const AIMEmptyState(
-                      icon: Icon(Icons.auto_stories_outlined),
-                      title: 'No skill data yet',
+                  ? AIMEmptyState(
+                      icon: const Icon(Icons.auto_stories_outlined),
+                      title: AppLocalizations.of(context).progressNoSkillDataTitle,
                       subtitle:
-                          'Complete lessons and practice to build your skill profile.',
+                          AppLocalizations.of(context).progressNoSkillDataSubtitle,
                     )
                   : _SkillStateList(
                       skillStates: data.skillStates, onRefresh: _refresh),
-              AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading skill states'),
+              AppAsyncIdle() => AIMFullScreenLoading(
+                  semanticLabel:
+                      AppLocalizations.of(context).progressSkillStatesLoadingSemantic),
             },
           ),
         ],
@@ -149,7 +152,7 @@ class _SkillStateHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -175,7 +178,7 @@ class _SkillStateHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Skill States',
+              AppLocalizations.of(context).homeSkillStatesTitle,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],
@@ -249,49 +252,52 @@ class _SkillStateDetailCard extends StatelessWidget {
   const _SkillStateDetailCard({required this.model});
   final AimSkillStateModel model;
 
-  ({AIMBadgeTone tone, AIMProgressBarTone barTone, String label}) get _tier {
+  ({AIMBadgeTone tone, AIMProgressBarTone barTone, String label}) _tier(
+    AppLocalizations l10n,
+  ) {
     return switch (_tierOf(model.masteryScore)) {
       _SkillMasteryTier.strong => (
           tone: AIMBadgeTone.success,
           barTone: AIMProgressBarTone.success,
-          label: 'Strong',
+          label: l10n.progressTierStrong,
         ),
       _SkillMasteryTier.developing => (
           tone: AIMBadgeTone.primary,
           barTone: AIMProgressBarTone.primary,
-          label: 'Developing',
+          label: l10n.progressTierDeveloping,
         ),
       _SkillMasteryTier.needsWork => (
           tone: AIMBadgeTone.warning,
           barTone: AIMProgressBarTone.warning,
-          label: 'Needs work',
+          label: l10n.progressTierNeedsWork,
         ),
     };
   }
 
   ({IconData icon, Color color, String label}) _trendDisplay(
     AimSurfaceTheme surfaces,
+    AppLocalizations l10n,
   ) {
     return switch (model.masteryTrend) {
       'improving' => (
           icon: Icons.trending_up,
           color: AimColors.success500,
-          label: 'Improving',
+          label: l10n.progressTrendImproving,
         ),
       'declining' => (
           icon: Icons.trending_down,
           color: AimColors.error500,
-          label: 'Declining',
+          label: l10n.progressTrendDeclining,
         ),
       'stable' => (
           icon: Icons.trending_flat,
           color: surfaces.textSecondary,
-          label: 'Stable',
+          label: l10n.progressTrendStable,
         ),
       _ => (
           icon: Icons.trending_flat,
           color: surfaces.textSecondary,
-          label: 'Insufficient data',
+          label: l10n.progressTrendInsufficientData,
         ),
     };
   }
@@ -299,18 +305,23 @@ class _SkillStateDetailCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final masteryPct = (model.masteryScore * 100).round();
     final confidencePct = (model.masteryConfidence * 100).round();
     final prevPct = model.previousMasteryScore != null
         ? (model.previousMasteryScore! * 100).round()
         : null;
-    final tier = _tier;
-    final trend = _trendDisplay(surfaces);
+    final tier = _tier(l10n);
+    final trend = _trendDisplay(surfaces, l10n);
     final title = _prettifySkillId(model.skillId);
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
-      semanticLabel: '$title mastery $masteryPct%, ${tier.label}',
+      semanticLabel: l10n.progressSkillMasterySemantic(
+        title,
+        masteryPct,
+        tier.label,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -349,13 +360,14 @@ class _SkillStateDetailCard extends StatelessWidget {
                   style: AimTextStyles.bodySm
                       .copyWith(color: surfaces.textSecondary),
                   children: [
-                    const TextSpan(text: 'Mastery '),
+                    TextSpan(text: l10n.progressMasteryPrefix),
                     TextSpan(
                       text: '$masteryPct',
                       style: AimTextStyles.label
                           .copyWith(color: surfaces.textPrimary),
                     ),
-                    if (prevPct != null) TextSpan(text: ' · was $prevPct'),
+                    if (prevPct != null)
+                      TextSpan(text: l10n.progressMasteryWasSuffix(prevPct)),
                   ],
                 ),
               ),
@@ -375,7 +387,7 @@ class _SkillStateDetailCard extends StatelessWidget {
           ),
           const SizedBox(height: AimSpacing.space4),
           Text(
-            'Confidence $confidencePct%',
+            l10n.progressConfidenceLabel(confidencePct),
             style:
                 AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
           ),

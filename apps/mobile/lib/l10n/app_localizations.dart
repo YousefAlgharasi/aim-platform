@@ -1444,6 +1444,797 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, one{1 item} other{{count} items}}'**
   String lessonsItemsCountLabel(int count);
+
+  /// Title in the progress hub screen's gradient header.
+  ///
+  /// In en, this message translates to:
+  /// **'Your progress'**
+  String get progressPageTitle;
+
+  /// Subtitle in the progress hub screen's gradient header.
+  ///
+  /// In en, this message translates to:
+  /// **'A snapshot of how you are doing'**
+  String get progressPageSubtitle;
+
+  /// Accessibility label shown while the progress hub screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading progress data'**
+  String get progressLoadingSemantic;
+
+  /// Empty-state title shown when the student has no AIM progress data yet.
+  ///
+  /// In en, this message translates to:
+  /// **'No progress data yet'**
+  String get progressEmptyTitle;
+
+  /// Empty-state subtitle shown when the student has no AIM progress data yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete lessons and practice sessions to see your AIM progress.'**
+  String get progressEmptySubtitle;
+
+  /// Label under the average-mastery stat card on the progress hub screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg mastery'**
+  String get progressAvgMasteryLabel;
+
+  /// Label under the day-streak stat card on the progress hub screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Day streak'**
+  String get progressDayStreakLabel;
+
+  /// Accessibility label for a stat card on the progress hub screen.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} {label}'**
+  String progressStatCardSemantic(String value, String label);
+
+  /// Accessibility label for a tappable navigation row on the progress hub screen.
+  ///
+  /// In en, this message translates to:
+  /// **'{title}, {subtitle}'**
+  String progressNavRowSemantic(String title, String subtitle);
+
+  /// Subtitle under the 'Skill States' navigation row showing the tracked-skill count.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} skills tracked} other{{count} skills tracked}}'**
+  String progressSkillStatesSubtitle(int count);
+
+  /// Title of the 'Weaknesses' navigation row on the progress hub screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Weaknesses'**
+  String get progressWeaknessesNavTitle;
+
+  /// Subtitle under the 'Weaknesses' navigation row showing the focus-area count.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} focus areas} other{{count} focus areas}}'**
+  String progressFocusAreasCountLabel(int count);
+
+  /// Title of the 'Recommendations' navigation row on the progress hub screen, and app bar title of RecommendationsPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommendations'**
+  String get progressRecommendationsNavTitle;
+
+  /// Subtitle under the 'Recommendations' navigation row showing the recommendation count.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} from AIM} other{{count} from AIM}}'**
+  String progressRecommendationsFromAimLabel(int count);
+
+  /// Subtitle under the 'Review Schedule' navigation row showing the scheduled-review count.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} reviews scheduled} other{{count} reviews scheduled}}'**
+  String progressReviewsScheduledCountLabel(int count);
+
+  /// Accessibility label shown while the weakness summary screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading weakness data'**
+  String get progressWeaknessLoadingSemantic;
+
+  /// Empty-state title shown when the student has no weakness records yet.
+  ///
+  /// In en, this message translates to:
+  /// **'No focus areas yet'**
+  String get progressNoFocusAreasTitle;
+
+  /// Empty-state subtitle shown when the student has no weakness records yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete practice sessions so AIM can identify areas to focus on.'**
+  String get progressNoFocusAreasSubtitle;
+
+  /// Accessibility label for a weakness detail card on the weakness summary screen. skillId, severity, and status are backend-supplied values.
+  ///
+  /// In en, this message translates to:
+  /// **'{skillId} weakness: {severity}, {status}'**
+  String progressWeaknessDetailSemantic(
+      String skillId, String severity, String status);
+
+  /// Caption showing when a weakness was detected, on the weakness summary screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Detected: {date}'**
+  String progressDetectedLabel(String date);
+
+  /// Caption showing when a weakness was resolved, on the weakness summary screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved: {date}'**
+  String progressResolvedLabel(String date);
+
+  /// Accessibility label shown while the recommendations screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading recommendations'**
+  String get progressRecommendationsLoadingSemantic;
+
+  /// Empty-state title shown when the student has no AIM recommendations yet.
+  ///
+  /// In en, this message translates to:
+  /// **'No recommendations yet'**
+  String get progressNoRecommendationsTitle;
+
+  /// Empty-state subtitle shown when the student has no AIM recommendations yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete lessons and practice sessions to receive AIM recommendations.'**
+  String get progressNoRecommendationsSubtitle;
+
+  /// Accessibility label for a recommendation detail card on the recommendations screen. rank, kind, and skillId are backend-supplied values.
+  ///
+  /// In en, this message translates to:
+  /// **'AIM recommendation rank {rank}: {kind} for {skillId}'**
+  String progressRecommendationRankSemantic(
+      int rank, String kind, String skillId);
+
+  /// Small rank-number badge on a recommendation card.
+  ///
+  /// In en, this message translates to:
+  /// **'#{rank}'**
+  String progressRankBadge(int rank);
+
+  /// Caption showing the target lesson of a recommendation, on the recommendations screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson: {lessonId}'**
+  String progressLessonLabel(String lessonId);
+
+  /// Caption showing when a recommendation expires, on the recommendations screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires: {date}'**
+  String progressExpiresLabel(String date);
+
+  /// Caption showing when a recommendation was generated, on the recommendations screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Generated: {date}'**
+  String progressGeneratedLabel(String date);
+
+  /// Accessibility label shown while the skill states screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading skill states'**
+  String get progressSkillStatesLoadingSemantic;
+
+  /// Empty-state title shown when the student has no skill state data yet.
+  ///
+  /// In en, this message translates to:
+  /// **'No skill data yet'**
+  String get progressNoSkillDataTitle;
+
+  /// Empty-state subtitle shown when the student has no skill state data yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete lessons and practice to build your skill profile.'**
+  String get progressNoSkillDataSubtitle;
+
+  /// Accessibility label for a skill-state detail card on the skill states screen.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} mastery {masteryPct}%, {tierLabel}'**
+  String progressSkillMasterySemantic(
+      String title, int masteryPct, String tierLabel);
+
+  /// Mastery-tier badge label for a strong skill on the skill states screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Strong'**
+  String get progressTierStrong;
+
+  /// Mastery-tier badge label for a developing skill on the skill states screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Developing'**
+  String get progressTierDeveloping;
+
+  /// Mastery-tier badge label for a skill needing work on the skill states screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs work'**
+  String get progressTierNeedsWork;
+
+  /// Trend indicator label for an improving skill on the skill states screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Improving'**
+  String get progressTrendImproving;
+
+  /// Trend indicator label for a declining skill on the skill states screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Declining'**
+  String get progressTrendDeclining;
+
+  /// Trend indicator label for a stable skill on the skill states screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Stable'**
+  String get progressTrendStable;
+
+  /// Trend indicator label shown when there isn't enough data to determine a trend, on the skill states screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient data'**
+  String get progressTrendInsufficientData;
+
+  /// Prefix before the mastery percentage figure on a skill-state card. Includes a trailing space.
+  ///
+  /// In en, this message translates to:
+  /// **'Mastery '**
+  String get progressMasteryPrefix;
+
+  /// Suffix showing the previous mastery percentage on a skill-state card, when available. Includes a leading space.
+  ///
+  /// In en, this message translates to:
+  /// **' · was {prevPct}'**
+  String progressMasteryWasSuffix(int prevPct);
+
+  /// Caption showing the mastery confidence percentage on a skill-state card.
+  ///
+  /// In en, this message translates to:
+  /// **'Confidence {percent}%'**
+  String progressConfidenceLabel(int percent);
+
+  /// Empty-state subtitle shown when the student has no scheduled reviews, on the dedicated Review Schedule screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete practice sessions to receive AIM-computed review reminders.'**
+  String get progressNoReviewsSubtitle;
+
+  /// Status badge label for a review that is due.
+  ///
+  /// In en, this message translates to:
+  /// **'Due'**
+  String get progressReviewStatusDue;
+
+  /// Status badge label for a review that is pending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get progressReviewStatusPending;
+
+  /// Status badge label for a completed review.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get progressReviewStatusCompleted;
+
+  /// Status badge label for a skipped review.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped'**
+  String get progressReviewStatusSkipped;
+
+  /// Status badge label for an overdue review.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get progressReviewStatusOverdue;
+
+  /// Accessibility label for a review-schedule row on the dedicated Review Schedule screen.
+  ///
+  /// In en, this message translates to:
+  /// **'{skillId} review due {dueAt} — {statusLabel}'**
+  String progressReviewCardSemantic(
+      String skillId, String dueAt, String statusLabel);
+
+  /// Compact meta line on a review-schedule row: due label, interval, and repetition count.
+  ///
+  /// In en, this message translates to:
+  /// **'{dueLabel} · {intervalDays}d · rep #{repCount}'**
+  String progressReviewMetaLabel(
+      String dueLabel, int intervalDays, int repCount);
+
+  /// Fallback due-date label on the dedicated Review Schedule screen when the backend-supplied dueAt timestamp can't be parsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {raw}'**
+  String progressDueRawLabel(String raw);
+
+  /// Accessibility label for the standalone ProgressReviewScheduleCard widget.
+  ///
+  /// In en, this message translates to:
+  /// **'{skillId} review due {dueAt}'**
+  String progressReviewScheduleCardSemantic(String skillId, String dueAt);
+
+  /// Due-date caption on the standalone ProgressReviewScheduleCard widget.
+  ///
+  /// In en, this message translates to:
+  /// **'Due: {dueAt}'**
+  String progressDueColonLabel(String dueAt);
+
+  /// Compact interval-days badge, e.g. '7d', on the standalone ProgressReviewScheduleCard widget.
+  ///
+  /// In en, this message translates to:
+  /// **'{days}d'**
+  String progressIntervalDaysBadge(int days);
+
+  /// Title in the Review tab's gradient header.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get reviewsPageTitle;
+
+  /// Subtitle in the Review tab's gradient header.
+  ///
+  /// In en, this message translates to:
+  /// **'Spaced repetition keeps it in memory'**
+  String get reviewsPageSubtitle;
+
+  /// Accessibility label shown while a review schedule screen's data is loading. Shared by the Review tab and the dedicated Review Schedule screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading review schedule'**
+  String get reviewsLoadingScheduleSemantic;
+
+  /// Empty-state title shown when the student has no scheduled reviews. Shared by the Review tab and the dedicated Review Schedule screen.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews scheduled'**
+  String get reviewsNoReviewsScheduledTitle;
+
+  /// Empty-state subtitle shown when the student has no scheduled reviews, on the Review tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete practice sessions to receive review reminders.'**
+  String get reviewsNoReviewsSubtitle;
+
+  /// Accessibility label for a review schedule card on the Review tab.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} review due {dueAt} — {status}'**
+  String reviewsCardSemantic(String title, String dueAt, String status);
+
+  /// Interval-days pill on a review schedule card, on the Review tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Interval {days}d'**
+  String reviewsIntervalDaysLabel(int days);
+
+  /// Repetition-count pill on a review schedule card, on the Review tab.
+  ///
+  /// In en, this message translates to:
+  /// **'rep #{repCount}'**
+  String reviewsRepBadge(int repCount);
+
+  /// Relative due-date label for a review due today. Shared by the Review tab and the dedicated Review Schedule screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Due Today'**
+  String get reviewsDueTodayLabel;
+
+  /// Relative due-date label for a review due tomorrow. Shared by the Review tab and the dedicated Review Schedule screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Due Tomorrow'**
+  String get reviewsDueTomorrowLabel;
+
+  /// Relative due-date label for a review that was due yesterday, on the Review tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Due Yesterday'**
+  String get reviewsDueYesterdayLabel;
+
+  /// Relative due-date label for a review due in the near future. Shared by the Review tab and the dedicated Review Schedule screen.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, one{Due in 1 day} other{Due in {days} days}}'**
+  String reviewsDueInDaysLabel(int days);
+
+  /// Relative due-date label for a review that was due in the recent past. Shared by the Review tab and the dedicated Review Schedule screen.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, one{Due 1 day ago} other{Due {days} days ago}}'**
+  String reviewsDueDaysAgoLabel(int days);
+
+  /// Due-date label using a locale-formatted date, for reviews due further in the past or future. Shared by the Review tab and the dedicated Review Schedule screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String reviewsDueFormattedLabel(String date);
+
+  /// Fallback due-date label on the Review tab when the backend-supplied dueAt timestamp can't be parsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Due: {raw}'**
+  String reviewsDueRawLabel(String raw);
+
+  /// Title in the analytics summary screen's gradient header.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics'**
+  String get analyticsSummaryTitle;
+
+  /// Accessibility label shown while the analytics summary screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading analytics summary'**
+  String get analyticsSummaryLoadingSemantic;
+
+  /// Empty-state title shown when the student has no visible analytics reports.
+  ///
+  /// In en, this message translates to:
+  /// **'No reports available'**
+  String get analyticsSummaryNoReportsTitle;
+
+  /// Empty-state subtitle shown when the student has no visible analytics reports.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no analytics reports for you yet.'**
+  String get analyticsSummaryNoReportsSubtitle;
+
+  /// Accessibility label for a report card on the analytics summary screen.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} report'**
+  String analyticsSummaryReportSemantic(String name);
+
+  /// App bar title of the notification preferences screen, and accessibility label for the settings-gear button on the notification inbox screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification settings'**
+  String get notificationsSettingsTitle;
+
+  /// Accessibility label shown while the notification preferences screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading notification preferences'**
+  String get notificationsPreferencesLoadingSemantic;
+
+  /// Accessibility label shown while the notification inbox screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading notifications'**
+  String get notificationsInboxLoadingSemantic;
+
+  /// Empty-state title shown when the student has no notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
+  String get notificationsInboxEmptyTitle;
+
+  /// Empty-state subtitle shown when the student has no notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Session reminders and progress updates will appear here.'**
+  String get notificationsInboxEmptySubtitle;
+
+  /// Accessibility label for the swipe-to-dismiss action revealed behind a notification tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss notification'**
+  String get notificationsDismissSemantic;
+
+  /// Accessibility label for an unread notification tile on the inbox screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Unread notification: {title}'**
+  String notificationsUnreadTileSemantic(String title);
+
+  /// Accessibility label for a read notification tile on the inbox screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification: {title}'**
+  String notificationsTileSemantic(String title);
+
+  /// Label/accessibility label marking a notification as unread, used on the inbox unread dot and the notification detail screen's status badge.
+  ///
+  /// In en, this message translates to:
+  /// **'Unread'**
+  String get notificationsUnreadLabel;
+
+  /// Label marking a notification as read, used on the notification detail screen's status badge and its 'Read' action button when there's nothing left to mark.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get notificationsReadLabel;
+
+  /// Notification category label shown on the notification preferences screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning reminders'**
+  String get notificationsCategoryLearningReminder;
+
+  /// Notification category label shown on the notification preferences screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Deadline reminders'**
+  String get notificationsCategoryDeadlineReminder;
+
+  /// Notification category label shown on the notification preferences screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress updates'**
+  String get notificationsCategoryProgressUpdate;
+
+  /// Notification category label shown on the notification preferences screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Assessment results'**
+  String get notificationsCategoryAssessmentResult;
+
+  /// Notification category label shown on the notification preferences screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress digests'**
+  String get notificationsCategoryParentSummary;
+
+  /// Notification category label shown on the notification preferences screen.
+  ///
+  /// In en, this message translates to:
+  /// **'System alerts'**
+  String get notificationsCategorySystemAlert;
+
+  /// Notification channel label shown on the notification preferences screen.
+  ///
+  /// In en, this message translates to:
+  /// **'In-app'**
+  String get notificationsChannelInApp;
+
+  /// Notification channel label shown on the notification preferences screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Push'**
+  String get notificationsChannelPush;
+
+  /// Notification channel label shown on the notification preferences screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get notificationsChannelEmail;
+
+  /// Section heading above the channel/category preference toggles on the notification preferences screen.
+  ///
+  /// In en, this message translates to:
+  /// **'CHANNELS'**
+  String get notificationsChannelsSectionLabel;
+
+  /// Section heading above the quiet-hours settings on the notification preferences screen.
+  ///
+  /// In en, this message translates to:
+  /// **'QUIET HOURS'**
+  String get notificationsQuietHoursSectionLabel;
+
+  /// Accessibility label for a channel/category notification toggle on the notification preferences screen.
+  ///
+  /// In en, this message translates to:
+  /// **'{channel} notifications for {category}'**
+  String notificationsChannelToggleSemantic(String channel, String category);
+
+  /// Label and accessibility label for the quiet-hours enable/disable switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable quiet hours'**
+  String get notificationsEnableQuietHoursLabel;
+
+  /// Label for the quiet-hours start-time row.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get notificationsQuietHoursStartLabel;
+
+  /// Label for the quiet-hours end-time row.
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get notificationsQuietHoursEndLabel;
+
+  /// Label and accessibility label for the quiet-hours save button.
+  ///
+  /// In en, this message translates to:
+  /// **'Save quiet hours'**
+  String get notificationsSaveQuietHoursLabel;
+
+  /// Title in the notification detail screen's gradient header.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification'**
+  String get notificationsDetailTitle;
+
+  /// Button label that marks the current notification as read, on the notification detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as read'**
+  String get notificationsMarkAsReadLabel;
+
+  /// Button label that dismisses the current notification, on the notification detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get notificationsDismissLabel;
+
+  /// Title of the banner shown once a notification has been dismissed.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismissed'**
+  String get notificationsDismissedTitle;
+
+  /// Body of the banner shown once a notification has been dismissed.
+  ///
+  /// In en, this message translates to:
+  /// **'This notification has been dismissed.'**
+  String get notificationsDismissedBody;
+
+  /// Reminder-type label shown on the reminder settings screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning plan'**
+  String get notificationsReminderTypeLearningPlan;
+
+  /// Reminder-type label shown on the reminder settings screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get notificationsReminderTypeReview;
+
+  /// Reminder-type label shown on the reminder settings screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Deadline'**
+  String get notificationsReminderTypeDeadline;
+
+  /// Reminder-type label shown on the reminder settings screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak'**
+  String get notificationsReminderTypeStreak;
+
+  /// Reminder-type label shown on the reminder settings screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get notificationsReminderTypeCustom;
+
+  /// Schedule subtitle for a reminder that fires every day, on the reminder settings screen. time is already locale-formatted.
+  ///
+  /// In en, this message translates to:
+  /// **'Every day · {time}'**
+  String notificationsEveryDayLabel(String time);
+
+  /// Schedule subtitle for a reminder that fires on a specific weekday, on the reminder settings screen. weekday and time are already locale-formatted.
+  ///
+  /// In en, this message translates to:
+  /// **'Every {weekday} · {time}'**
+  String notificationsEveryWeekdayLabel(String weekday, String time);
+
+  /// Accessibility label for a reminder schedule tile on the reminder settings screen. status is a backend-supplied value.
+  ///
+  /// In en, this message translates to:
+  /// **'{type} reminder, status {status}'**
+  String notificationsReminderSemantic(String type, String status);
+
+  /// Empty-state title shown when the student has no reminder schedules.
+  ///
+  /// In en, this message translates to:
+  /// **'No reminders yet'**
+  String get notificationsNoRemindersTitle;
+
+  /// Empty-state subtitle shown when the student has no reminder schedules.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders you enable will appear here.'**
+  String get notificationsNoRemindersSubtitle;
+
+  /// Accessibility label for the empty-state shown when the student has no reminder schedules.
+  ///
+  /// In en, this message translates to:
+  /// **'No reminder schedules'**
+  String get notificationsNoRemindersSemantic;
+
+  /// Accessibility label shown while the reminder settings screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading reminder schedules'**
+  String get notificationsRemindersLoadingSemantic;
+
+  /// Title in the reminder settings screen's gradient header.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders'**
+  String get notificationsRemindersTitle;
+
+  /// Button label that resumes a paused reminder schedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get notificationsResumeLabel;
+
+  /// Accessibility label for the resume-reminder button.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume reminder'**
+  String get notificationsResumeSemantic;
+
+  /// Button label that pauses an active reminder schedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get notificationsPauseLabel;
+
+  /// Accessibility label for the pause-reminder button.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause reminder'**
+  String get notificationsPauseSemantic;
+
+  /// Accessibility label for the cancel-reminder button.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel reminder'**
+  String get notificationsCancelSemantic;
+
+  /// Accessibility label for the notification bell button when there are unread notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications, {count} unread'**
+  String notificationsBellUnreadSemantic(int count);
+
+  /// Accessibility label shown while the achievements screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading achievements'**
+  String get achievementsLoadingSemantic;
+
+  /// Empty-state title shown when the student has no achievements.
+  ///
+  /// In en, this message translates to:
+  /// **'No achievements yet'**
+  String get achievementsEmptyTitle;
+
+  /// Empty-state subtitle shown when the student has no achievements.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete lessons and practice sessions to earn badges and milestones.'**
+  String get achievementsEmptySubtitle;
+
+  /// Label and accessibility label for the button that returns to the main shell from the achievements empty state.
+  ///
+  /// In en, this message translates to:
+  /// **'Start learning'**
+  String get achievementsStartLearningLabel;
+
+  /// Accessibility label for an unlocked achievement badge card.
+  ///
+  /// In en, this message translates to:
+  /// **'{title}, unlocked'**
+  String achievementsUnlockedSemantic(String title);
+
+  /// Accessibility label for a locked achievement badge card.
+  ///
+  /// In en, this message translates to:
+  /// **'{title}, locked'**
+  String achievementsLockedSemantic(String title);
 }
 
 class _AppLocalizationsDelegate

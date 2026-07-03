@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/aim_results/data/models/aim_results_models.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class ProgressWeaknessChip extends StatelessWidget {
   const ProgressWeaknessChip({required this.model, super.key});
@@ -22,7 +23,8 @@ class ProgressWeaknessChip extends StatelessWidget {
       tone: _tone,
       variant: AIMBadgeVariant.soft,
       pill: true,
-      semanticLabel: '${model.skillId} weakness: ${model.severity}',
+      semanticLabel: AppLocalizations.of(context)
+          .commonWeaknessSemantic(model.skillId, model.severity),
       child: Text(model.skillId),
     );
   }

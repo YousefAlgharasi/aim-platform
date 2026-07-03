@@ -48,6 +48,7 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.da
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/home/data/models/home_models.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class ProgressPage extends ConsumerStatefulWidget {
   const ProgressPage({super.key});
@@ -129,22 +130,24 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
     final homeStillLoading =
         homeState is AppAsyncLoading || homeState is AppAsyncIdle;
 
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       body: Column(
         children: [
-          const AIMGradientHeroHeader(
-            title: 'Your progress',
-            subtitle: 'A snapshot of how you are doing',
+          AIMGradientHeroHeader(
+            title: l10n.progressPageTitle,
+            subtitle: l10n.progressPageSubtitle,
           ),
           Expanded(
             child: switch (aimState) {
-              AppAsyncLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading progress data'),
+              AppAsyncLoading() => AIMFullScreenLoading(
+                  semanticLabel: l10n.progressLoadingSemantic),
               AppAsyncFailure(:final message) =>
                 AIMFullScreenError(message: message, onRetry: _load),
               AppAsyncSuccess(:final data) => homeStillLoading
-                  ? const AIMFullScreenLoading(
-                      semanticLabel: 'Loading progress data')
+                  ? AIMFullScreenLoading(
+                      semanticLabel: l10n.progressLoadingSemantic)
                   : _ProgressContent(
                       data: data,
                       goal: switch (homeState) {
@@ -153,8 +156,8 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
                       },
                       onRefresh: _refresh,
                     ),
-              AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading progress data'),
+              AppAsyncIdle() => AIMFullScreenLoading(
+                  semanticLabel: l10n.progressLoadingSemantic),
             },
           ),
         ],
@@ -193,12 +196,13 @@ class _ProgressContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     if (data.isEmpty) {
-      return const AIMEmptyState(
-        icon: Icon(Icons.insights_outlined),
-        title: 'No progress data yet',
-        subtitle:
-            'Complete lessons and practice sessions to see your AIM progress.',
+      return AIMEmptyState(
+        icon: const Icon(Icons.insights_outlined),
+        title: l10n.progressEmptyTitle,
+        subtitle: l10n.progressEmptySubtitle,
       );
     }
 
@@ -215,14 +219,14 @@ class _ProgressContent extends StatelessWidget {
               Expanded(
                 child: _StatCard(
                   value: _averageMasteryPct?.toString() ?? '--',
-                  label: 'Avg mastery',
+                  label: l10n.progressAvgMasteryLabel,
                 ),
               ),
               const SizedBox(width: AimSpacing.componentGap),
               Expanded(
                 child: _StatCard(
                   value: '${goal?.streakDays ?? 0}',
-                  label: 'Day streak',
+                  label: l10n.progressDayStreakLabel,
                   trailingEmoji: '🔥',
                 ),
               ),
@@ -231,29 +235,32 @@ class _ProgressContent extends StatelessWidget {
           const SizedBox(height: AimSpacing.sectionGap),
           _ProgressNavRow(
             icon: Icons.auto_stories_outlined,
-            title: 'Skill States',
-            subtitle: '${data.skillStates.length} skills tracked',
+            title: l10n.homeSkillStatesTitle,
+            subtitle: l10n.progressSkillStatesSubtitle(data.skillStates.length),
             onTap: () => context.push(AppRoutePaths.skillState),
           ),
           const SizedBox(height: AimSpacing.listItemGap),
           _ProgressNavRow(
             icon: Icons.flag_outlined,
-            title: 'Weaknesses',
-            subtitle: '${data.weaknessRecords.length} focus areas',
+            title: l10n.progressWeaknessesNavTitle,
+            subtitle:
+                l10n.progressFocusAreasCountLabel(data.weaknessRecords.length),
             onTap: () => context.push(AppRoutePaths.weaknessSummary),
           ),
           const SizedBox(height: AimSpacing.listItemGap),
           _ProgressNavRow(
             icon: Icons.lightbulb_outline,
-            title: 'Recommendations',
-            subtitle: '${data.recommendations.length} from AIM',
+            title: l10n.progressRecommendationsNavTitle,
+            subtitle: l10n
+                .progressRecommendationsFromAimLabel(data.recommendations.length),
             onTap: () => context.push(AppRoutePaths.recommendations),
           ),
           const SizedBox(height: AimSpacing.listItemGap),
           _ProgressNavRow(
             icon: Icons.schedule_outlined,
-            title: 'Review Schedule',
-            subtitle: '${data.reviewSchedules.length} reviews scheduled',
+            title: l10n.homeReviewScheduleTitle,
+            subtitle: l10n
+                .progressReviewsScheduledCountLabel(data.reviewSchedules.length),
             onTap: () => context.push(AppRoutePaths.reviewSchedule),
           ),
         ],
@@ -282,7 +289,10 @@ class _StatCard extends StatelessWidget {
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
-      semanticLabel: '$value $label',
+      semanticLabel: AppLocalizations.of(context).progressStatCardSemantic(
+        value,
+        label,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -331,7 +341,10 @@ class _ProgressNavRow extends StatelessWidget {
       variant: AIMCardVariant.elevated,
       interactive: true,
       onTap: onTap,
-      semanticLabel: '$title, $subtitle',
+      semanticLabel: AppLocalizations.of(context).progressNavRowSemantic(
+        title,
+        subtitle,
+      ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: AimSizes.touchTarget),
         child: Row(

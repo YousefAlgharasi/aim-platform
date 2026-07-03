@@ -1214,5 +1214,788 @@
         "type": "int"
       }
     }
+  },
+
+  "progressPageTitle": "Your progress",
+  "@progressPageTitle": {
+    "description": "Title in the progress hub screen's gradient header."
+  },
+  "progressPageSubtitle": "A snapshot of how you are doing",
+  "@progressPageSubtitle": {
+    "description": "Subtitle in the progress hub screen's gradient header."
+  },
+  "progressLoadingSemantic": "Loading progress data",
+  "@progressLoadingSemantic": {
+    "description": "Accessibility label shown while the progress hub screen's data is loading."
+  },
+  "progressEmptyTitle": "No progress data yet",
+  "@progressEmptyTitle": {
+    "description": "Empty-state title shown when the student has no AIM progress data yet."
+  },
+  "progressEmptySubtitle": "Complete lessons and practice sessions to see your AIM progress.",
+  "@progressEmptySubtitle": {
+    "description": "Empty-state subtitle shown when the student has no AIM progress data yet."
+  },
+  "progressAvgMasteryLabel": "Avg mastery",
+  "@progressAvgMasteryLabel": {
+    "description": "Label under the average-mastery stat card on the progress hub screen."
+  },
+  "progressDayStreakLabel": "Day streak",
+  "@progressDayStreakLabel": {
+    "description": "Label under the day-streak stat card on the progress hub screen."
+  },
+  "progressStatCardSemantic": "{value} {label}",
+  "@progressStatCardSemantic": {
+    "description": "Accessibility label for a stat card on the progress hub screen.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "progressNavRowSemantic": "{title}, {subtitle}",
+  "@progressNavRowSemantic": {
+    "description": "Accessibility label for a tappable navigation row on the progress hub screen.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "subtitle": {
+        "type": "String"
+      }
+    }
+  },
+  "progressSkillStatesSubtitle": "{count, plural, one{{count} skills tracked} other{{count} skills tracked}}",
+  "@progressSkillStatesSubtitle": {
+    "description": "Subtitle under the 'Skill States' navigation row showing the tracked-skill count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "progressWeaknessesNavTitle": "Weaknesses",
+  "@progressWeaknessesNavTitle": {
+    "description": "Title of the 'Weaknesses' navigation row on the progress hub screen."
+  },
+  "progressFocusAreasCountLabel": "{count, plural, one{{count} focus areas} other{{count} focus areas}}",
+  "@progressFocusAreasCountLabel": {
+    "description": "Subtitle under the 'Weaknesses' navigation row showing the focus-area count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "progressRecommendationsNavTitle": "Recommendations",
+  "@progressRecommendationsNavTitle": {
+    "description": "Title of the 'Recommendations' navigation row on the progress hub screen, and app bar title of RecommendationsPage."
+  },
+  "progressRecommendationsFromAimLabel": "{count, plural, one{{count} from AIM} other{{count} from AIM}}",
+  "@progressRecommendationsFromAimLabel": {
+    "description": "Subtitle under the 'Recommendations' navigation row showing the recommendation count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "progressReviewsScheduledCountLabel": "{count, plural, one{{count} reviews scheduled} other{{count} reviews scheduled}}",
+  "@progressReviewsScheduledCountLabel": {
+    "description": "Subtitle under the 'Review Schedule' navigation row showing the scheduled-review count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "progressWeaknessLoadingSemantic": "Loading weakness data",
+  "@progressWeaknessLoadingSemantic": {
+    "description": "Accessibility label shown while the weakness summary screen's data is loading."
+  },
+  "progressNoFocusAreasTitle": "No focus areas yet",
+  "@progressNoFocusAreasTitle": {
+    "description": "Empty-state title shown when the student has no weakness records yet."
+  },
+  "progressNoFocusAreasSubtitle": "Complete practice sessions so AIM can identify areas to focus on.",
+  "@progressNoFocusAreasSubtitle": {
+    "description": "Empty-state subtitle shown when the student has no weakness records yet."
+  },
+  "progressWeaknessDetailSemantic": "{skillId} weakness: {severity}, {status}",
+  "@progressWeaknessDetailSemantic": {
+    "description": "Accessibility label for a weakness detail card on the weakness summary screen. skillId, severity, and status are backend-supplied values.",
+    "placeholders": {
+      "skillId": {
+        "type": "String"
+      },
+      "severity": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "progressDetectedLabel": "Detected: {date}",
+  "@progressDetectedLabel": {
+    "description": "Caption showing when a weakness was detected, on the weakness summary screen.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "progressResolvedLabel": "Resolved: {date}",
+  "@progressResolvedLabel": {
+    "description": "Caption showing when a weakness was resolved, on the weakness summary screen.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "progressRecommendationsLoadingSemantic": "Loading recommendations",
+  "@progressRecommendationsLoadingSemantic": {
+    "description": "Accessibility label shown while the recommendations screen's data is loading."
+  },
+  "progressNoRecommendationsTitle": "No recommendations yet",
+  "@progressNoRecommendationsTitle": {
+    "description": "Empty-state title shown when the student has no AIM recommendations yet."
+  },
+  "progressNoRecommendationsSubtitle": "Complete lessons and practice sessions to receive AIM recommendations.",
+  "@progressNoRecommendationsSubtitle": {
+    "description": "Empty-state subtitle shown when the student has no AIM recommendations yet."
+  },
+  "progressRecommendationRankSemantic": "AIM recommendation rank {rank}: {kind} for {skillId}",
+  "@progressRecommendationRankSemantic": {
+    "description": "Accessibility label for a recommendation detail card on the recommendations screen. rank, kind, and skillId are backend-supplied values.",
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      },
+      "kind": {
+        "type": "String"
+      },
+      "skillId": {
+        "type": "String"
+      }
+    }
+  },
+  "progressRankBadge": "#{rank}",
+  "@progressRankBadge": {
+    "description": "Small rank-number badge on a recommendation card.",
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      }
+    }
+  },
+  "progressLessonLabel": "Lesson: {lessonId}",
+  "@progressLessonLabel": {
+    "description": "Caption showing the target lesson of a recommendation, on the recommendations screen.",
+    "placeholders": {
+      "lessonId": {
+        "type": "String"
+      }
+    }
+  },
+  "progressExpiresLabel": "Expires: {date}",
+  "@progressExpiresLabel": {
+    "description": "Caption showing when a recommendation expires, on the recommendations screen.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "progressGeneratedLabel": "Generated: {date}",
+  "@progressGeneratedLabel": {
+    "description": "Caption showing when a recommendation was generated, on the recommendations screen.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "progressSkillStatesLoadingSemantic": "Loading skill states",
+  "@progressSkillStatesLoadingSemantic": {
+    "description": "Accessibility label shown while the skill states screen's data is loading."
+  },
+  "progressNoSkillDataTitle": "No skill data yet",
+  "@progressNoSkillDataTitle": {
+    "description": "Empty-state title shown when the student has no skill state data yet."
+  },
+  "progressNoSkillDataSubtitle": "Complete lessons and practice to build your skill profile.",
+  "@progressNoSkillDataSubtitle": {
+    "description": "Empty-state subtitle shown when the student has no skill state data yet."
+  },
+  "progressSkillMasterySemantic": "{title} mastery {masteryPct}%, {tierLabel}",
+  "@progressSkillMasterySemantic": {
+    "description": "Accessibility label for a skill-state detail card on the skill states screen.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "masteryPct": {
+        "type": "int"
+      },
+      "tierLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "progressTierStrong": "Strong",
+  "@progressTierStrong": {
+    "description": "Mastery-tier badge label for a strong skill on the skill states screen."
+  },
+  "progressTierDeveloping": "Developing",
+  "@progressTierDeveloping": {
+    "description": "Mastery-tier badge label for a developing skill on the skill states screen."
+  },
+  "progressTierNeedsWork": "Needs work",
+  "@progressTierNeedsWork": {
+    "description": "Mastery-tier badge label for a skill needing work on the skill states screen."
+  },
+  "progressTrendImproving": "Improving",
+  "@progressTrendImproving": {
+    "description": "Trend indicator label for an improving skill on the skill states screen."
+  },
+  "progressTrendDeclining": "Declining",
+  "@progressTrendDeclining": {
+    "description": "Trend indicator label for a declining skill on the skill states screen."
+  },
+  "progressTrendStable": "Stable",
+  "@progressTrendStable": {
+    "description": "Trend indicator label for a stable skill on the skill states screen."
+  },
+  "progressTrendInsufficientData": "Insufficient data",
+  "@progressTrendInsufficientData": {
+    "description": "Trend indicator label shown when there isn't enough data to determine a trend, on the skill states screen."
+  },
+  "progressMasteryPrefix": "Mastery ",
+  "@progressMasteryPrefix": {
+    "description": "Prefix before the mastery percentage figure on a skill-state card. Includes a trailing space."
+  },
+  "progressMasteryWasSuffix": " · was {prevPct}",
+  "@progressMasteryWasSuffix": {
+    "description": "Suffix showing the previous mastery percentage on a skill-state card, when available. Includes a leading space.",
+    "placeholders": {
+      "prevPct": {
+        "type": "int"
+      }
+    }
+  },
+  "progressConfidenceLabel": "Confidence {percent}%",
+  "@progressConfidenceLabel": {
+    "description": "Caption showing the mastery confidence percentage on a skill-state card.",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "progressNoReviewsSubtitle": "Complete practice sessions to receive AIM-computed review reminders.",
+  "@progressNoReviewsSubtitle": {
+    "description": "Empty-state subtitle shown when the student has no scheduled reviews, on the dedicated Review Schedule screen."
+  },
+  "progressReviewStatusDue": "Due",
+  "@progressReviewStatusDue": {
+    "description": "Status badge label for a review that is due."
+  },
+  "progressReviewStatusPending": "Pending",
+  "@progressReviewStatusPending": {
+    "description": "Status badge label for a review that is pending."
+  },
+  "progressReviewStatusCompleted": "Completed",
+  "@progressReviewStatusCompleted": {
+    "description": "Status badge label for a completed review."
+  },
+  "progressReviewStatusSkipped": "Skipped",
+  "@progressReviewStatusSkipped": {
+    "description": "Status badge label for a skipped review."
+  },
+  "progressReviewStatusOverdue": "Overdue",
+  "@progressReviewStatusOverdue": {
+    "description": "Status badge label for an overdue review."
+  },
+  "progressReviewCardSemantic": "{skillId} review due {dueAt} — {statusLabel}",
+  "@progressReviewCardSemantic": {
+    "description": "Accessibility label for a review-schedule row on the dedicated Review Schedule screen.",
+    "placeholders": {
+      "skillId": {
+        "type": "String"
+      },
+      "dueAt": {
+        "type": "String"
+      },
+      "statusLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "progressReviewMetaLabel": "{dueLabel} · {intervalDays}d · rep #{repCount}",
+  "@progressReviewMetaLabel": {
+    "description": "Compact meta line on a review-schedule row: due label, interval, and repetition count.",
+    "placeholders": {
+      "dueLabel": {
+        "type": "String"
+      },
+      "intervalDays": {
+        "type": "int"
+      },
+      "repCount": {
+        "type": "int"
+      }
+    }
+  },
+  "progressDueRawLabel": "Due {raw}",
+  "@progressDueRawLabel": {
+    "description": "Fallback due-date label on the dedicated Review Schedule screen when the backend-supplied dueAt timestamp can't be parsed.",
+    "placeholders": {
+      "raw": {
+        "type": "String"
+      }
+    }
+  },
+  "progressReviewScheduleCardSemantic": "{skillId} review due {dueAt}",
+  "@progressReviewScheduleCardSemantic": {
+    "description": "Accessibility label for the standalone ProgressReviewScheduleCard widget.",
+    "placeholders": {
+      "skillId": {
+        "type": "String"
+      },
+      "dueAt": {
+        "type": "String"
+      }
+    }
+  },
+  "progressDueColonLabel": "Due: {dueAt}",
+  "@progressDueColonLabel": {
+    "description": "Due-date caption on the standalone ProgressReviewScheduleCard widget.",
+    "placeholders": {
+      "dueAt": {
+        "type": "String"
+      }
+    }
+  },
+  "progressIntervalDaysBadge": "{days}d",
+  "@progressIntervalDaysBadge": {
+    "description": "Compact interval-days badge, e.g. '7d', on the standalone ProgressReviewScheduleCard widget.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+
+  "reviewsPageTitle": "Review",
+  "@reviewsPageTitle": {
+    "description": "Title in the Review tab's gradient header."
+  },
+  "reviewsPageSubtitle": "Spaced repetition keeps it in memory",
+  "@reviewsPageSubtitle": {
+    "description": "Subtitle in the Review tab's gradient header."
+  },
+  "reviewsLoadingScheduleSemantic": "Loading review schedule",
+  "@reviewsLoadingScheduleSemantic": {
+    "description": "Accessibility label shown while a review schedule screen's data is loading. Shared by the Review tab and the dedicated Review Schedule screen."
+  },
+  "reviewsNoReviewsScheduledTitle": "No reviews scheduled",
+  "@reviewsNoReviewsScheduledTitle": {
+    "description": "Empty-state title shown when the student has no scheduled reviews. Shared by the Review tab and the dedicated Review Schedule screen."
+  },
+  "reviewsNoReviewsSubtitle": "Complete practice sessions to receive review reminders.",
+  "@reviewsNoReviewsSubtitle": {
+    "description": "Empty-state subtitle shown when the student has no scheduled reviews, on the Review tab."
+  },
+  "reviewsCardSemantic": "{title} review due {dueAt} — {status}",
+  "@reviewsCardSemantic": {
+    "description": "Accessibility label for a review schedule card on the Review tab.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "dueAt": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewsIntervalDaysLabel": "Interval {days}d",
+  "@reviewsIntervalDaysLabel": {
+    "description": "Interval-days pill on a review schedule card, on the Review tab.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewsRepBadge": "rep #{repCount}",
+  "@reviewsRepBadge": {
+    "description": "Repetition-count pill on a review schedule card, on the Review tab.",
+    "placeholders": {
+      "repCount": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewsDueTodayLabel": "Due Today",
+  "@reviewsDueTodayLabel": {
+    "description": "Relative due-date label for a review due today. Shared by the Review tab and the dedicated Review Schedule screen."
+  },
+  "reviewsDueTomorrowLabel": "Due Tomorrow",
+  "@reviewsDueTomorrowLabel": {
+    "description": "Relative due-date label for a review due tomorrow. Shared by the Review tab and the dedicated Review Schedule screen."
+  },
+  "reviewsDueYesterdayLabel": "Due Yesterday",
+  "@reviewsDueYesterdayLabel": {
+    "description": "Relative due-date label for a review that was due yesterday, on the Review tab."
+  },
+  "reviewsDueInDaysLabel": "{days, plural, one{Due in 1 day} other{Due in {days} days}}",
+  "@reviewsDueInDaysLabel": {
+    "description": "Relative due-date label for a review due in the near future. Shared by the Review tab and the dedicated Review Schedule screen.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewsDueDaysAgoLabel": "{days, plural, one{Due 1 day ago} other{Due {days} days ago}}",
+  "@reviewsDueDaysAgoLabel": {
+    "description": "Relative due-date label for a review that was due in the recent past. Shared by the Review tab and the dedicated Review Schedule screen.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewsDueFormattedLabel": "Due {date}",
+  "@reviewsDueFormattedLabel": {
+    "description": "Due-date label using a locale-formatted date, for reviews due further in the past or future. Shared by the Review tab and the dedicated Review Schedule screen.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewsDueRawLabel": "Due: {raw}",
+  "@reviewsDueRawLabel": {
+    "description": "Fallback due-date label on the Review tab when the backend-supplied dueAt timestamp can't be parsed.",
+    "placeholders": {
+      "raw": {
+        "type": "String"
+      }
+    }
+  },
+
+  "analyticsSummaryTitle": "Analytics",
+  "@analyticsSummaryTitle": {
+    "description": "Title in the analytics summary screen's gradient header."
+  },
+  "analyticsSummaryLoadingSemantic": "Loading analytics summary",
+  "@analyticsSummaryLoadingSemantic": {
+    "description": "Accessibility label shown while the analytics summary screen's data is loading."
+  },
+  "analyticsSummaryNoReportsTitle": "No reports available",
+  "@analyticsSummaryNoReportsTitle": {
+    "description": "Empty-state title shown when the student has no visible analytics reports."
+  },
+  "analyticsSummaryNoReportsSubtitle": "There are no analytics reports for you yet.",
+  "@analyticsSummaryNoReportsSubtitle": {
+    "description": "Empty-state subtitle shown when the student has no visible analytics reports."
+  },
+  "analyticsSummaryReportSemantic": "{name} report",
+  "@analyticsSummaryReportSemantic": {
+    "description": "Accessibility label for a report card on the analytics summary screen.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+
+  "notificationsSettingsTitle": "Notification settings",
+  "@notificationsSettingsTitle": {
+    "description": "App bar title of the notification preferences screen, and accessibility label for the settings-gear button on the notification inbox screen."
+  },
+  "notificationsPreferencesLoadingSemantic": "Loading notification preferences",
+  "@notificationsPreferencesLoadingSemantic": {
+    "description": "Accessibility label shown while the notification preferences screen's data is loading."
+  },
+  "notificationsInboxLoadingSemantic": "Loading notifications",
+  "@notificationsInboxLoadingSemantic": {
+    "description": "Accessibility label shown while the notification inbox screen's data is loading."
+  },
+  "notificationsInboxEmptyTitle": "No notifications yet",
+  "@notificationsInboxEmptyTitle": {
+    "description": "Empty-state title shown when the student has no notifications."
+  },
+  "notificationsInboxEmptySubtitle": "Session reminders and progress updates will appear here.",
+  "@notificationsInboxEmptySubtitle": {
+    "description": "Empty-state subtitle shown when the student has no notifications."
+  },
+  "notificationsDismissSemantic": "Dismiss notification",
+  "@notificationsDismissSemantic": {
+    "description": "Accessibility label for the swipe-to-dismiss action revealed behind a notification tile."
+  },
+  "notificationsUnreadTileSemantic": "Unread notification: {title}",
+  "@notificationsUnreadTileSemantic": {
+    "description": "Accessibility label for an unread notification tile on the inbox screen.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsTileSemantic": "Notification: {title}",
+  "@notificationsTileSemantic": {
+    "description": "Accessibility label for a read notification tile on the inbox screen.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsUnreadLabel": "Unread",
+  "@notificationsUnreadLabel": {
+    "description": "Label/accessibility label marking a notification as unread, used on the inbox unread dot and the notification detail screen's status badge."
+  },
+  "notificationsReadLabel": "Read",
+  "@notificationsReadLabel": {
+    "description": "Label marking a notification as read, used on the notification detail screen's status badge and its 'Read' action button when there's nothing left to mark."
+  },
+  "notificationsCategoryLearningReminder": "Learning reminders",
+  "@notificationsCategoryLearningReminder": {
+    "description": "Notification category label shown on the notification preferences screen."
+  },
+  "notificationsCategoryDeadlineReminder": "Deadline reminders",
+  "@notificationsCategoryDeadlineReminder": {
+    "description": "Notification category label shown on the notification preferences screen."
+  },
+  "notificationsCategoryProgressUpdate": "Progress updates",
+  "@notificationsCategoryProgressUpdate": {
+    "description": "Notification category label shown on the notification preferences screen."
+  },
+  "notificationsCategoryAssessmentResult": "Assessment results",
+  "@notificationsCategoryAssessmentResult": {
+    "description": "Notification category label shown on the notification preferences screen."
+  },
+  "notificationsCategoryParentSummary": "Progress digests",
+  "@notificationsCategoryParentSummary": {
+    "description": "Notification category label shown on the notification preferences screen."
+  },
+  "notificationsCategorySystemAlert": "System alerts",
+  "@notificationsCategorySystemAlert": {
+    "description": "Notification category label shown on the notification preferences screen."
+  },
+  "notificationsChannelInApp": "In-app",
+  "@notificationsChannelInApp": {
+    "description": "Notification channel label shown on the notification preferences screen."
+  },
+  "notificationsChannelPush": "Push",
+  "@notificationsChannelPush": {
+    "description": "Notification channel label shown on the notification preferences screen."
+  },
+  "notificationsChannelEmail": "Email",
+  "@notificationsChannelEmail": {
+    "description": "Notification channel label shown on the notification preferences screen."
+  },
+  "notificationsChannelsSectionLabel": "CHANNELS",
+  "@notificationsChannelsSectionLabel": {
+    "description": "Section heading above the channel/category preference toggles on the notification preferences screen."
+  },
+  "notificationsQuietHoursSectionLabel": "QUIET HOURS",
+  "@notificationsQuietHoursSectionLabel": {
+    "description": "Section heading above the quiet-hours settings on the notification preferences screen."
+  },
+  "notificationsChannelToggleSemantic": "{channel} notifications for {category}",
+  "@notificationsChannelToggleSemantic": {
+    "description": "Accessibility label for a channel/category notification toggle on the notification preferences screen.",
+    "placeholders": {
+      "channel": {
+        "type": "String"
+      },
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsEnableQuietHoursLabel": "Enable quiet hours",
+  "@notificationsEnableQuietHoursLabel": {
+    "description": "Label and accessibility label for the quiet-hours enable/disable switch."
+  },
+  "notificationsQuietHoursStartLabel": "Start",
+  "@notificationsQuietHoursStartLabel": {
+    "description": "Label for the quiet-hours start-time row."
+  },
+  "notificationsQuietHoursEndLabel": "End",
+  "@notificationsQuietHoursEndLabel": {
+    "description": "Label for the quiet-hours end-time row."
+  },
+  "notificationsSaveQuietHoursLabel": "Save quiet hours",
+  "@notificationsSaveQuietHoursLabel": {
+    "description": "Label and accessibility label for the quiet-hours save button."
+  },
+  "notificationsDetailTitle": "Notification",
+  "@notificationsDetailTitle": {
+    "description": "Title in the notification detail screen's gradient header."
+  },
+  "notificationsMarkAsReadLabel": "Mark as read",
+  "@notificationsMarkAsReadLabel": {
+    "description": "Button label that marks the current notification as read, on the notification detail screen."
+  },
+  "notificationsDismissLabel": "Dismiss",
+  "@notificationsDismissLabel": {
+    "description": "Button label that dismisses the current notification, on the notification detail screen."
+  },
+  "notificationsDismissedTitle": "Dismissed",
+  "@notificationsDismissedTitle": {
+    "description": "Title of the banner shown once a notification has been dismissed."
+  },
+  "notificationsDismissedBody": "This notification has been dismissed.",
+  "@notificationsDismissedBody": {
+    "description": "Body of the banner shown once a notification has been dismissed."
+  },
+  "notificationsReminderTypeLearningPlan": "Learning plan",
+  "@notificationsReminderTypeLearningPlan": {
+    "description": "Reminder-type label shown on the reminder settings screen."
+  },
+  "notificationsReminderTypeReview": "Review",
+  "@notificationsReminderTypeReview": {
+    "description": "Reminder-type label shown on the reminder settings screen."
+  },
+  "notificationsReminderTypeDeadline": "Deadline",
+  "@notificationsReminderTypeDeadline": {
+    "description": "Reminder-type label shown on the reminder settings screen."
+  },
+  "notificationsReminderTypeStreak": "Streak",
+  "@notificationsReminderTypeStreak": {
+    "description": "Reminder-type label shown on the reminder settings screen."
+  },
+  "notificationsReminderTypeCustom": "Custom",
+  "@notificationsReminderTypeCustom": {
+    "description": "Reminder-type label shown on the reminder settings screen."
+  },
+  "notificationsEveryDayLabel": "Every day · {time}",
+  "@notificationsEveryDayLabel": {
+    "description": "Schedule subtitle for a reminder that fires every day, on the reminder settings screen. time is already locale-formatted.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsEveryWeekdayLabel": "Every {weekday} · {time}",
+  "@notificationsEveryWeekdayLabel": {
+    "description": "Schedule subtitle for a reminder that fires on a specific weekday, on the reminder settings screen. weekday and time are already locale-formatted.",
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsReminderSemantic": "{type} reminder, status {status}",
+  "@notificationsReminderSemantic": {
+    "description": "Accessibility label for a reminder schedule tile on the reminder settings screen. status is a backend-supplied value.",
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsNoRemindersTitle": "No reminders yet",
+  "@notificationsNoRemindersTitle": {
+    "description": "Empty-state title shown when the student has no reminder schedules."
+  },
+  "notificationsNoRemindersSubtitle": "Reminders you enable will appear here.",
+  "@notificationsNoRemindersSubtitle": {
+    "description": "Empty-state subtitle shown when the student has no reminder schedules."
+  },
+  "notificationsNoRemindersSemantic": "No reminder schedules",
+  "@notificationsNoRemindersSemantic": {
+    "description": "Accessibility label for the empty-state shown when the student has no reminder schedules."
+  },
+  "notificationsRemindersLoadingSemantic": "Loading reminder schedules",
+  "@notificationsRemindersLoadingSemantic": {
+    "description": "Accessibility label shown while the reminder settings screen's data is loading."
+  },
+  "notificationsRemindersTitle": "Reminders",
+  "@notificationsRemindersTitle": {
+    "description": "Title in the reminder settings screen's gradient header."
+  },
+  "notificationsResumeLabel": "Resume",
+  "@notificationsResumeLabel": {
+    "description": "Button label that resumes a paused reminder schedule."
+  },
+  "notificationsResumeSemantic": "Resume reminder",
+  "@notificationsResumeSemantic": {
+    "description": "Accessibility label for the resume-reminder button."
+  },
+  "notificationsPauseLabel": "Pause",
+  "@notificationsPauseLabel": {
+    "description": "Button label that pauses an active reminder schedule."
+  },
+  "notificationsPauseSemantic": "Pause reminder",
+  "@notificationsPauseSemantic": {
+    "description": "Accessibility label for the pause-reminder button."
+  },
+  "notificationsCancelSemantic": "Cancel reminder",
+  "@notificationsCancelSemantic": {
+    "description": "Accessibility label for the cancel-reminder button."
+  },
+  "notificationsBellUnreadSemantic": "Notifications, {count} unread",
+  "@notificationsBellUnreadSemantic": {
+    "description": "Accessibility label for the notification bell button when there are unread notifications.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "achievementsLoadingSemantic": "Loading achievements",
+  "@achievementsLoadingSemantic": {
+    "description": "Accessibility label shown while the achievements screen's data is loading."
+  },
+  "achievementsEmptyTitle": "No achievements yet",
+  "@achievementsEmptyTitle": {
+    "description": "Empty-state title shown when the student has no achievements."
+  },
+  "achievementsEmptySubtitle": "Complete lessons and practice sessions to earn badges and milestones.",
+  "@achievementsEmptySubtitle": {
+    "description": "Empty-state subtitle shown when the student has no achievements."
+  },
+  "achievementsStartLearningLabel": "Start learning",
+  "@achievementsStartLearningLabel": {
+    "description": "Label and accessibility label for the button that returns to the main shell from the achievements empty state."
+  },
+  "achievementsUnlockedSemantic": "{title}, unlocked",
+  "@achievementsUnlockedSemantic": {
+    "description": "Accessibility label for an unlocked achievement badge card.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "achievementsLockedSemantic": "{title}, locked",
+  "@achievementsLockedSemantic": {
+    "description": "Accessibility label for a locked achievement badge card.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   }
 }

@@ -34,6 +34,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -41,6 +42,7 @@ import 'package:aim_mobile/features/aim_results/data/models/aim_results_models.d
 import 'package:aim_mobile/features/aim_results/logic/provider/aim_results_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class ReviewSchedulePage extends ConsumerStatefulWidget {
   const ReviewSchedulePage({super.key});
@@ -93,12 +95,13 @@ class _ReviewSchedulePageState extends ConsumerState<ReviewSchedulePage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(aimResultsProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       body: Column(
         children: [
           AIMGradientHeroHeader(
-            title: 'Review Schedule',
+            title: l10n.homeReviewScheduleTitle,
             // IconButton resolves its own foreground colour from the
             // Material 3 colour scheme rather than the ambient IconTheme,
             // so it would otherwise ignore the header's white
@@ -123,23 +126,22 @@ class _ReviewSchedulePageState extends ConsumerState<ReviewSchedulePage> {
           ),
           Expanded(
             child: switch (state) {
-              AppAsyncLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading review schedule'),
+              AppAsyncLoading() => AIMFullScreenLoading(
+                  semanticLabel: l10n.reviewsLoadingScheduleSemantic),
               AppAsyncFailure(:final message) =>
                 AIMFullScreenError(message: message, onRetry: _load),
               AppAsyncSuccess(:final data) => data.reviewSchedules.isEmpty
-                  ? const AIMEmptyState(
-                      icon: Icon(Icons.schedule_outlined),
-                      title: 'No reviews scheduled',
-                      subtitle:
-                          'Complete practice sessions to receive AIM-computed review reminders.',
+                  ? AIMEmptyState(
+                      icon: const Icon(Icons.schedule_outlined),
+                      title: l10n.reviewsNoReviewsScheduledTitle,
+                      subtitle: l10n.progressNoReviewsSubtitle,
                     )
                   : _ReviewScheduleList(
                       schedules: data.reviewSchedules,
                       onRefresh: _refresh,
                     ),
-              AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading review schedule'),
+              AppAsyncIdle() => AIMFullScreenLoading(
+                  semanticLabel: l10n.reviewsLoadingScheduleSemantic),
             },
           ),
         ],
@@ -179,12 +181,25 @@ class _ReviewScheduleRow extends StatelessWidget {
   const _ReviewScheduleRow({required this.model});
   final AimReviewScheduleModel model;
 
-  ({AIMBadgeTone tone, String label}) get _status => switch (model.status) {
-        'due' => (tone: AIMBadgeTone.primary, label: 'Due'),
-        'pending' => (tone: AIMBadgeTone.neutral, label: 'Pending'),
-        'completed' => (tone: AIMBadgeTone.success, label: 'Completed'),
-        'skipped' => (tone: AIMBadgeTone.warning, label: 'Skipped'),
-        'overdue' => (tone: AIMBadgeTone.error, label: 'Overdue'),
+  ({AIMBadgeTone tone, String label}) _status(AppLocalizations l10n) =>
+      switch (model.status) {
+        'due' => (tone: AIMBadgeTone.primary, label: l10n.progressReviewStatusDue),
+        'pending' => (
+            tone: AIMBadgeTone.neutral,
+            label: l10n.progressReviewStatusPending,
+          ),
+        'completed' => (
+            tone: AIMBadgeTone.success,
+            label: l10n.progressReviewStatusCompleted,
+          ),
+        'skipped' => (
+            tone: AIMBadgeTone.warning,
+            label: l10n.progressReviewStatusSkipped,
+          ),
+        'overdue' => (
+            tone: AIMBadgeTone.error,
+            label: l10n.progressReviewStatusOverdue,
+          ),
         final other => (
             tone: AIMBadgeTone.neutral,
             label: other.isEmpty ? '—' : other[0].toUpperCase() + other.substring(1),
@@ -193,38 +208,40 @@ class _ReviewScheduleRow extends StatelessWidget {
 
   /// Pure date-formatting of the backend-supplied [AimReviewScheduleModel.dueAt].
   /// Derives no new business data — Flutter never computes review timing.
-  String _dueLabel() {
+  String _dueLabel(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final dueAt = DateTime.tryParse(model.dueAt);
-    if (dueAt == null) return 'Due ${model.dueAt}';
+    if (dueAt == null) return l10n.progressDueRawLabel(model.dueAt);
 
     final now = DateTime.now();
     final due = DateTime(dueAt.year, dueAt.month, dueAt.day);
     final today = DateTime(now.year, now.month, now.day);
     final diffDays = due.difference(today).inDays;
 
-    if (diffDays == 0) return 'Due Today';
-    if (diffDays == 1) return 'Due Tomorrow';
-    if (diffDays > 1) return 'Due in $diffDays days';
-    if (diffDays == -1) return 'Due 1 day ago';
-    if (diffDays > -7) return 'Due ${-diffDays} days ago';
+    if (diffDays == 0) return l10n.reviewsDueTodayLabel;
+    if (diffDays == 1) return l10n.reviewsDueTomorrowLabel;
+    if (diffDays > 1) return l10n.reviewsDueInDaysLabel(diffDays);
+    if (diffDays == -1) return l10n.reviewsDueDaysAgoLabel(1);
+    if (diffDays > -7) return l10n.reviewsDueDaysAgoLabel(-diffDays);
 
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-    return 'Due ${months[dueAt.month - 1]} ${dueAt.day}';
+    final locale = Localizations.localeOf(context).toString();
+    return l10n.reviewsDueFormattedLabel(DateFormat.MMMd(locale).format(dueAt));
   }
 
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
     final soft = aimSoftFillsOf(context);
-    final status = _status;
+    final l10n = AppLocalizations.of(context);
+    final status = _status(l10n);
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
-      semanticLabel:
-          '${model.skillId} review due ${model.dueAt} — ${status.label}',
+      semanticLabel: l10n.progressReviewCardSemantic(
+        model.skillId,
+        model.dueAt,
+        status.label,
+      ),
       padding: const EdgeInsets.all(AimSpacing.componentGap),
       child: Row(
         children: [
@@ -258,7 +275,11 @@ class _ReviewScheduleRow extends StatelessWidget {
                 ),
                 const SizedBox(height: AimSpacing.space2),
                 Text(
-                  '${_dueLabel()} · ${model.intervalDays}d · rep #${model.repetitionCount}',
+                  l10n.progressReviewMetaLabel(
+                    _dueLabel(context),
+                    model.intervalDays,
+                    model.repetitionCount,
+                  ),
                   style: AimTextStyles.bodySm
                       .copyWith(color: surfaces.textSecondary),
                   maxLines: 1,

@@ -34,6 +34,7 @@ import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 import '../../logic/entity/notification_entities.dart';
 import '../../logic/provider/notification_providers.dart';
@@ -42,17 +43,17 @@ import '../../logic/provider/notification_providers.dart';
 /// the backend-supplied `createdAt` ISO timestamp. Mirrors the home page's
 /// private `_relativeTimeLabel` helper — a small real computation from real
 /// data, not a fabricated value.
-String _relativeTimeLabel(String createdAtIso) {
+String _relativeTimeLabel(AppLocalizations l10n, String createdAtIso) {
   final createdAt = DateTime.tryParse(createdAtIso);
   if (createdAt == null) return '';
 
   final diff = DateTime.now().toUtc().difference(createdAt.toUtc());
-  if (diff.inMinutes < 1) return 'Just now';
-  if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-  if (diff.inHours < 24) return '${diff.inHours}h ago';
-  if (diff.inDays == 1) return 'Yesterday';
-  if (diff.inDays < 7) return '${diff.inDays}d ago';
-  return '${diff.inDays ~/ 7}w ago';
+  if (diff.inMinutes < 1) return l10n.commonJustNow;
+  if (diff.inMinutes < 60) return l10n.homeMinutesAgoLabel(diff.inMinutes);
+  if (diff.inHours < 24) return l10n.homeHoursAgoLabel(diff.inHours);
+  if (diff.inDays == 1) return l10n.commonYesterday;
+  if (diff.inDays < 7) return l10n.homeDaysAgoLabel(diff.inDays);
+  return l10n.homeWeeksAgoLabel(diff.inDays ~/ 7);
 }
 
 /// Display-only first-letter capitalisation of the REAL backend category
@@ -114,8 +115,9 @@ class _NotificationInboxPageState
             child: switch (state) {
               AppAsyncLoading() ||
               AppAsyncIdle() =>
-                const AIMFullScreenLoading(
-                  semanticLabel: 'Loading notifications',
+                AIMFullScreenLoading(
+                  semanticLabel:
+                      AppLocalizations.of(context).notificationsInboxLoadingSemantic,
                 ),
               AppAsyncFailure(:final message) => AIMFullScreenError(
                   message: message,
@@ -162,7 +164,7 @@ class _NotificationsHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -189,7 +191,7 @@ class _NotificationsHeader extends StatelessWidget {
             const SizedBox(width: AimSpacing.space12),
             Expanded(
               child: Text(
-                'Notifications',
+                AppLocalizations.of(context).shellNotifications,
                 style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -198,7 +200,7 @@ class _NotificationsHeader extends StatelessWidget {
             const SizedBox(width: AimSpacing.space12),
             Semantics(
               button: true,
-              label: 'Notification settings',
+              label: AppLocalizations.of(context).notificationsSettingsTitle,
               child: InkWell(
                 onTap: () =>
                     context.push(AppRoutePaths.notificationPreferences),
@@ -245,11 +247,11 @@ class _NotificationInboxList extends StatelessWidget {
         events.where((event) => event.dismissedAt == null).toList();
 
     if (visible.isEmpty) {
-      return const AIMEmptyState(
-        icon: Icon(Icons.notifications_none_rounded),
-        title: 'No notifications yet',
-        subtitle:
-            'Session reminders and progress updates will appear here.',
+      final l10n = AppLocalizations.of(context);
+      return AIMEmptyState(
+        icon: const Icon(Icons.notifications_none_rounded),
+        title: l10n.notificationsInboxEmptyTitle,
+        subtitle: l10n.notificationsInboxEmptySubtitle,
       );
     }
 
@@ -287,8 +289,9 @@ class _NotificationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final isUnread = event.isUnread;
-    final timeLabel = _relativeTimeLabel(event.createdAt);
+    final timeLabel = _relativeTimeLabel(l10n, event.createdAt);
 
     return Dismissible(
       key: ValueKey(event.id),
@@ -302,7 +305,7 @@ class _NotificationTile extends StatelessWidget {
         child: Icon(
           Icons.delete_outline_rounded,
           color: surfaces.textSecondary,
-          semanticLabel: 'Dismiss notification',
+          semanticLabel: l10n.notificationsDismissSemantic,
         ),
       ),
       child: AIMCard(
@@ -310,14 +313,14 @@ class _NotificationTile extends StatelessWidget {
         interactive: true,
         onTap: onOpen,
         semanticLabel: isUnread
-            ? 'Unread notification: ${event.title}'
-            : 'Notification: ${event.title}',
+            ? l10n.notificationsUnreadTileSemantic(event.title ?? '')
+            : l10n.notificationsTileSemantic(event.title ?? ''),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (isUnread)
-              const Padding(
-                padding: EdgeInsetsDirectional.only(
+              Padding(
+                padding: const EdgeInsetsDirectional.only(
                   end: AimSpacing.innerGap,
                   top: AimSpacing.space4,
                 ),
@@ -325,7 +328,7 @@ class _NotificationTile extends StatelessWidget {
                   Icons.circle,
                   size: AimSpacing.space8,
                   color: AimColors.primary500,
-                  semanticLabel: 'Unread',
+                  semanticLabel: l10n.notificationsUnreadLabel,
                 ),
               ),
             Expanded(

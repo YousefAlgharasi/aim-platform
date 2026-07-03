@@ -6,6 +6,7 @@
 //   AIMFullScreenError, AIMEmptyState
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -13,6 +14,7 @@ import 'package:aim_mobile/features/aim_results/data/models/aim_results_models.d
 import 'package:aim_mobile/features/aim_results/logic/provider/aim_results_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Review — Spaced-repetition schedule tab.
 ///
@@ -84,33 +86,33 @@ class _ReviewPageState extends ConsumerState<ReviewPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(aimResultsProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       body: Column(
         children: [
-          const AIMGradientHeroHeader(
-            title: 'Review',
-            subtitle: 'Spaced repetition keeps it in memory',
+          AIMGradientHeroHeader(
+            title: l10n.reviewsPageTitle,
+            subtitle: l10n.reviewsPageSubtitle,
           ),
           Expanded(
             child: switch (state) {
-              AppAsyncLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading review schedule'),
+              AppAsyncLoading() => AIMFullScreenLoading(
+                  semanticLabel: l10n.reviewsLoadingScheduleSemantic),
               AppAsyncFailure(:final message) =>
                 AIMFullScreenError(message: message, onRetry: _load),
               AppAsyncSuccess(:final data) => data.reviewSchedules.isEmpty
-                  ? const AIMEmptyState(
-                      icon: Icon(Icons.replay_outlined),
-                      title: 'No reviews scheduled',
-                      subtitle:
-                          'Complete practice sessions to receive review reminders.',
+                  ? AIMEmptyState(
+                      icon: const Icon(Icons.replay_outlined),
+                      title: l10n.reviewsNoReviewsScheduledTitle,
+                      subtitle: l10n.reviewsNoReviewsSubtitle,
                     )
                   : _ReviewContent(
                       schedules: data.reviewSchedules,
                       onRefresh: _refresh,
                     ),
-              AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading review schedule'),
+              AppAsyncIdle() => AIMFullScreenLoading(
+                  semanticLabel: l10n.reviewsLoadingScheduleSemantic),
             },
           ),
         ],
@@ -172,9 +174,10 @@ String _prettifySkillId(String skillId) {
 /// `features/home/ui/pages/home_page.dart`, extended to handle near-future
 /// dates since review due-dates are frequently in the future, not just the
 /// past.
-String _dueDateLabel(String dueAtIso) {
+String _dueDateLabel(BuildContext context, String dueAtIso) {
+  final l10n = AppLocalizations.of(context);
   final dueAt = DateTime.tryParse(dueAtIso);
-  if (dueAt == null) return 'Due: $dueAtIso';
+  if (dueAt == null) return l10n.reviewsDueRawLabel(dueAtIso);
 
   final now = DateTime.now().toUtc();
   final due = dueAt.toUtc();
@@ -182,21 +185,21 @@ String _dueDateLabel(String dueAtIso) {
   final startOfDue = DateTime.utc(due.year, due.month, due.day);
   final dayDiff = startOfDue.difference(startOfToday).inDays;
 
-  if (dayDiff == 0) return 'Due Today';
-  if (dayDiff == 1) return 'Due Tomorrow';
-  if (dayDiff == -1) return 'Due Yesterday';
-  if (dayDiff > 1 && dayDiff < 7) return 'Due in $dayDiff days';
-  if (dayDiff < -1 && dayDiff > -7) return 'Due ${-dayDiff} days ago';
+  if (dayDiff == 0) return l10n.reviewsDueTodayLabel;
+  if (dayDiff == 1) return l10n.reviewsDueTomorrowLabel;
+  if (dayDiff == -1) return l10n.reviewsDueYesterdayLabel;
+  if (dayDiff > 1 && dayDiff < 7) return l10n.reviewsDueInDaysLabel(dayDiff);
+  if (dayDiff < -1 && dayDiff > -7) {
+    return l10n.reviewsDueDaysAgoLabel(-dayDiff);
+  }
 
-  return 'Due ${_formatDate(due)}';
+  return l10n.reviewsDueFormattedLabel(_formatDate(context, due));
 }
 
-const _months = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-];
-
-String _formatDate(DateTime date) => '${_months[date.month - 1]} ${date.day}';
+String _formatDate(BuildContext context, DateTime date) {
+  final locale = Localizations.localeOf(context).toString();
+  return DateFormat.MMMd(locale).format(date);
+}
 
 class _ReviewScheduleCard extends StatelessWidget {
   const _ReviewScheduleCard({required this.model});
@@ -214,20 +217,22 @@ class _ReviewScheduleCard extends StatelessWidget {
         _ => AIMBadgeTone.neutral,
       };
 
-  String get _statusLabel => switch (model.status) {
-        'due' => 'Due',
-        'pending' => 'Pending',
+  String _statusLabel(AppLocalizations l10n) => switch (model.status) {
+        'due' => l10n.progressReviewStatusDue,
+        'pending' => l10n.progressReviewStatusPending,
         _ => model.status,
       };
 
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final title = _prettifySkillId(model.skillId);
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
-      semanticLabel: '$title review due ${model.dueAt} — ${model.status}',
+      semanticLabel:
+          l10n.reviewsCardSemantic(title, model.dueAt, model.status),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -246,7 +251,7 @@ class _ReviewScheduleCard extends StatelessWidget {
                 tone: _statusTone,
                 variant: AIMBadgeVariant.soft,
                 pill: true,
-                child: Text(_statusLabel),
+                child: Text(_statusLabel(l10n)),
               ),
             ],
           ),
@@ -261,7 +266,7 @@ class _ReviewScheduleCard extends StatelessWidget {
               const SizedBox(width: AimSpacing.space4),
               Expanded(
                 child: Text(
-                  _dueDateLabel(model.dueAt),
+                  _dueDateLabel(context, model.dueAt),
                   style: AimTextStyles.bodySm
                       .copyWith(color: surfaces.textPrimary),
                 ),
@@ -277,19 +282,19 @@ class _ReviewScheduleCard extends StatelessWidget {
                 tone: AIMBadgeTone.neutral,
                 variant: AIMBadgeVariant.soft,
                 pill: true,
-                child: Text('Interval ${model.intervalDays}d'),
+                child: Text(l10n.reviewsIntervalDaysLabel(model.intervalDays)),
               ),
               AIMBadge(
                 tone: AIMBadgeTone.neutral,
                 variant: AIMBadgeVariant.soft,
                 pill: true,
-                child: Text('rep #${model.repetitionCount}'),
+                child: Text(l10n.reviewsRepBadge(model.repetitionCount)),
               ),
               AIMBadge(
                 tone: AIMBadgeTone.neutral,
                 variant: AIMBadgeVariant.soft,
                 pill: true,
-                child: Text(_formatScheduledDate(model.scheduledAt)),
+                child: Text(_formatScheduledDate(context, model.scheduledAt)),
               ),
             ],
           ),
@@ -301,9 +306,9 @@ class _ReviewScheduleCard extends StatelessWidget {
   /// Formats the real `scheduledAt` timestamp for the small pill badge.
   /// Falls back to the raw string if it isn't a parseable ISO date, so we
   /// never hide real data on a parse failure.
-  String _formatScheduledDate(String scheduledAtIso) {
+  String _formatScheduledDate(BuildContext context, String scheduledAtIso) {
     final scheduledAt = DateTime.tryParse(scheduledAtIso);
     if (scheduledAt == null) return scheduledAtIso;
-    return _formatDate(scheduledAt.toUtc());
+    return _formatDate(context, scheduledAt.toUtc());
   }
 }

@@ -24,6 +24,7 @@ import 'package:aim_mobile/features/aim_results/data/models/aim_results_models.d
 import 'package:aim_mobile/features/aim_results/logic/provider/aim_results_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class WeaknessSummaryPage extends ConsumerStatefulWidget {
   const WeaknessSummaryPage({super.key});
@@ -75,25 +76,25 @@ class _WeaknessSummaryPageState extends ConsumerState<WeaknessSummaryPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(aimResultsProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: const AIMTopAppBar(title: 'Focus Areas'),
+      appBar: AIMTopAppBar(title: l10n.commonFocusAreas),
       body: switch (state) {
-        AppAsyncLoading() =>
-          const AIMFullScreenLoading(semanticLabel: 'Loading weakness data'),
+        AppAsyncLoading() => AIMFullScreenLoading(
+            semanticLabel: l10n.progressWeaknessLoadingSemantic),
         AppAsyncFailure(:final message) =>
           AIMFullScreenError(message: message, onRetry: _load),
         AppAsyncSuccess(:final data) => data.weaknessRecords.isEmpty
-            ? const AIMEmptyState(
-                icon: Icon(Icons.check_circle_outline),
-                title: 'No focus areas yet',
-                subtitle:
-                    'Complete practice sessions so AIM can identify areas to focus on.',
+            ? AIMEmptyState(
+                icon: const Icon(Icons.check_circle_outline),
+                title: l10n.progressNoFocusAreasTitle,
+                subtitle: l10n.progressNoFocusAreasSubtitle,
               )
             : _WeaknessList(
                 weaknessRecords: data.weaknessRecords, onRefresh: _refresh),
-        AppAsyncIdle() =>
-          const AIMFullScreenLoading(semanticLabel: 'Loading weakness data'),
+        AppAsyncIdle() => AIMFullScreenLoading(
+            semanticLabel: l10n.progressWeaknessLoadingSemantic),
       },
     );
   }
@@ -148,10 +149,15 @@ class _WeaknessDetailCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
 
+    final l10n = AppLocalizations.of(context);
+
     return AIMCard(
       variant: AIMCardVariant.elevated,
-      semanticLabel:
-          '${model.skillId} weakness: ${model.severity}, ${model.status}',
+      semanticLabel: l10n.progressWeaknessDetailSemantic(
+        model.skillId,
+        model.severity,
+        model.status,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -183,14 +189,14 @@ class _WeaknessDetailCard extends StatelessWidget {
           ),
           const SizedBox(height: AimSpacing.componentGap),
           Text(
-            'Detected: ${model.detectedAt}',
+            l10n.progressDetectedLabel(model.detectedAt),
             style: AimTextStyles.bodySm
                 .copyWith(color: surfaces.textSecondary),
           ),
           if (model.resolvedAt != null) ...[
             const SizedBox(height: AimSpacing.space2),
             Text(
-              'Resolved: ${model.resolvedAt}',
+              l10n.progressResolvedLabel(model.resolvedAt!),
               style: AimTextStyles.bodySm
                   .copyWith(color: surfaces.textSecondary),
             ),

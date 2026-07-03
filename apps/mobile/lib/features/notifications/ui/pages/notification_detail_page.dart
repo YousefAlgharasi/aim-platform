@@ -25,6 +25,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 import '../../logic/entity/notification_entities.dart';
 import '../../logic/provider/notification_providers.dart';
@@ -32,17 +33,17 @@ import '../../logic/provider/notification_providers.dart';
 /// Real relative-time label from the backend-supplied `createdAt`
 /// timestamp. Same helper as notification_inbox_page.dart's
 /// `_relativeTimeLabel`.
-String _relativeTimeLabel(String createdAtIso) {
+String _relativeTimeLabel(AppLocalizations l10n, String createdAtIso) {
   final createdAt = DateTime.tryParse(createdAtIso);
   if (createdAt == null) return '';
 
   final diff = DateTime.now().toUtc().difference(createdAt.toUtc());
-  if (diff.inMinutes < 1) return 'Just now';
-  if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-  if (diff.inHours < 24) return '${diff.inHours}h ago';
-  if (diff.inDays == 1) return 'Yesterday';
-  if (diff.inDays < 7) return '${diff.inDays}d ago';
-  return '${diff.inDays ~/ 7}w ago';
+  if (diff.inMinutes < 1) return l10n.commonJustNow;
+  if (diff.inMinutes < 60) return l10n.homeMinutesAgoLabel(diff.inMinutes);
+  if (diff.inHours < 24) return l10n.homeHoursAgoLabel(diff.inHours);
+  if (diff.inDays == 1) return l10n.commonYesterday;
+  if (diff.inDays < 7) return l10n.homeDaysAgoLabel(diff.inDays);
+  return l10n.homeWeeksAgoLabel(diff.inDays ~/ 7);
 }
 
 /// Display-only first-letter capitalisation of the REAL backend category
@@ -120,8 +121,9 @@ class _NotificationDetailPageState
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final isDismissed = _event.dismissedAt != null;
-    final timeLabel = _relativeTimeLabel(_event.createdAt);
+    final timeLabel = _relativeTimeLabel(l10n, _event.createdAt);
 
     return Scaffold(
       backgroundColor: surfaces.background,
@@ -156,7 +158,11 @@ class _NotificationDetailPageState
                             : AIMBadgeTone.success,
                         variant: AIMBadgeVariant.soft,
                         pill: true,
-                        child: Text(_event.isUnread ? 'Unread' : 'Read'),
+                        child: Text(
+                          _event.isUnread
+                              ? l10n.notificationsUnreadLabel
+                              : l10n.notificationsReadLabel,
+                        ),
                       ),
                     ],
                   ),
@@ -185,21 +191,23 @@ class _NotificationDetailPageState
                     AIMButton(
                       onPressed: _busy ? null : _markAsRead,
                       variant: AIMButtonVariant.secondary,
-                      child: Text(_event.isUnread ? 'Mark as read' : 'Read'),
+                      child: Text(
+                        _event.isUnread
+                            ? l10n.notificationsMarkAsReadLabel
+                            : l10n.notificationsReadLabel,
+                      ),
                     ),
                     const SizedBox(height: AimSpacing.innerGap),
                     AIMButton(
                       onPressed: _busy ? null : _dismiss,
                       variant: AIMButtonVariant.ghost,
-                      child: const Text('Dismiss'),
+                      child: Text(l10n.notificationsDismissLabel),
                     ),
                   ] else
-                    const AIMAlertBanner(
+                    AIMAlertBanner(
                       tone: AIMAlertTone.info,
-                      title: 'Dismissed',
-                      child: Text(
-                        'This notification has been dismissed.',
-                      ),
+                      title: l10n.notificationsDismissedTitle,
+                      child: Text(l10n.notificationsDismissedBody),
                     ),
                 ],
               ),
@@ -231,7 +239,7 @@ class _NotificationDetailHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -257,7 +265,7 @@ class _NotificationDetailHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Notification',
+              AppLocalizations.of(context).notificationsDetailTitle,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],
