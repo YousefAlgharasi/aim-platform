@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Deterministic-but-varied gradient + icon cycled by list index to give
 /// each course row a distinct icon tile. Purely decorative — does not
@@ -57,6 +58,7 @@ class CourseListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final gradient = _kCourseIconGradients[index % _kCourseIconGradients.length];
     final icon = _kCourseIcons[index % _kCourseIcons.length];
     final completed = model.status == StudentCourseStatus.completed;
@@ -65,9 +67,10 @@ class CourseListTile extends StatelessWidget {
     return AIMCard(
       variant: AIMCardVariant.elevated,
       onTap: onTap,
-      semanticLabel: 'Course: ${model.title}'
-          '${model.levelCode != null ? ', level ${model.levelCode}' : ''}, '
-          '${model.percent} percent complete',
+      semanticLabel: model.levelCode != null
+          ? l10n.lessonsCourseSemanticWithLevel(
+              model.title, model.levelCode!, model.percent)
+          : l10n.lessonsCourseSemanticBase(model.title, model.percent),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -150,7 +153,7 @@ class CourseListTile extends StatelessWidget {
                 ),
                 const SizedBox(width: AimSpacing.componentGap),
                 Text(
-                  completed ? 'Done' : '${model.percent}%',
+                  completed ? l10n.commonDone : '${model.percent}%',
                   style: AimTextStyles.caption.copyWith(
                     color: surfaces.textSecondary,
                     fontWeight: AimFontWeights.semibold,
@@ -169,31 +172,31 @@ class CourseListTile extends StatelessWidget {
               ),
               const SizedBox(width: AimSpacing.space4),
               Text(
-                '${model.lessonCount} lessons',
+                l10n.lessonsLessonsCountLabel(model.lessonCount),
                 style:
                     AimTextStyles.caption.copyWith(color: surfaces.textMuted),
               ),
               const SizedBox(width: AimSpacing.innerGap),
               if (completed)
-                const AIMBadge(
+                AIMBadge(
                   tone: AIMBadgeTone.success,
                   variant: AIMBadgeVariant.soft,
                   pill: true,
-                  child: Text('Completed'),
+                  child: Text(l10n.lessonsCompletedLabel),
                 )
               else if (inProgress)
-                const AIMBadge(
+                AIMBadge(
                   tone: AIMBadgeTone.primary,
                   variant: AIMBadgeVariant.soft,
                   pill: true,
-                  child: Text('In progress'),
+                  child: Text(l10n.lessonsInProgressLabel),
                 )
               else
-                const AIMBadge(
+                AIMBadge(
                   tone: AIMBadgeTone.neutral,
                   variant: AIMBadgeVariant.soft,
                   pill: true,
-                  child: Text('Not started'),
+                  child: Text(l10n.lessonsNotStartedLabel),
                 ),
               const Spacer(),
               Container(

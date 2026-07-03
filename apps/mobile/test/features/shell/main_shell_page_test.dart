@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/localization/app_locale.dart';
 import 'package:aim_mobile/features/shell/ui/pages/main_shell_page.dart';
 
 void main() {
@@ -72,6 +73,8 @@ class TestShell extends StatelessWidget {
           ],
           errorBuilder: (context, state) => const SizedBox(),
         ),
+        localizationsDelegates: AppLocale.delegates,
+        supportedLocales: AppLocale.supportedLocales,
       ),
     );
   }

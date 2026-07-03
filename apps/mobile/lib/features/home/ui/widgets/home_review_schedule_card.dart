@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/home/data/models/home_models.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class HomeReviewScheduleCard extends StatelessWidget {
   const HomeReviewScheduleCard({
@@ -30,7 +31,8 @@ class HomeReviewScheduleCard extends StatelessWidget {
     final surfaces = aimSurfacesOf(context);
 
     return AIMCard(
-      semanticLabel: 'Review ${model.skillId} due ${model.dueAt}',
+      semanticLabel: AppLocalizations.of(context)
+          .homeReviewScheduleSemantic(model.skillId, model.dueAt),
       child: Row(
         children: [
           const Icon(

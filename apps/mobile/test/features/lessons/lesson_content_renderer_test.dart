@@ -15,6 +15,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:aim_mobile/core/localization/localization.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
 import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
 import 'package:aim_mobile/features/lessons/ui/widgets/lesson_content_renderer.dart';
@@ -24,6 +25,8 @@ import 'package:aim_mobile/features/lessons/ui/widgets/lesson_content_renderer.d
 Widget _wrap(Widget child, {TextDirection dir = TextDirection.ltr}) =>
     MaterialApp(
       theme: AppTheme.light,
+      localizationsDelegates: AppLocale.delegates,
+      supportedLocales: AppLocale.supportedLocales,
       home: Scaffold(
         body: Directionality(
           textDirection: dir,

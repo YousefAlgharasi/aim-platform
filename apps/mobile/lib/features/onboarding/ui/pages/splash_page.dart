@@ -28,6 +28,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
@@ -111,6 +112,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authFlowProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       body: Stack(
@@ -171,7 +173,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'AIM',
+                        l10n.onboardingBrandName,
                         style: AimTextStyles.display.copyWith(
                           color: AimColors.neutral0,
                           letterSpacing: 2,
@@ -179,7 +181,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
                       ),
                       const SizedBox(height: AimSpacing.innerGap),
                       Text(
-                        'Adaptive Intelligence for Mastery',
+                        l10n.onboardingTagline,
                         style: AimTextStyles.bodySm.copyWith(
                           color: AimColors.neutral0.withValues(alpha: 0.85),
                         ),
@@ -237,7 +239,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
                           ),
                           const SizedBox(height: AimSpacing.componentGap),
                           Text(
-                            'Tap to continue',
+                            l10n.onboardingTapToContinue,
                             style: AimTextStyles.caption.copyWith(
                               color: AimColors.neutral0.withValues(
                                 alpha: 0.75,

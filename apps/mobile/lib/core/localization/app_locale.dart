@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import '../../l10n/app_localizations.dart';
+
 /// Locale constants and app-level localization configuration.
 ///
 /// AIM Mobile supports English (LTR) and Arabic (RTL). Direction is driven
@@ -36,6 +38,7 @@ class AppLocale {
   /// full RTL support for Arabic.
   static const List<LocalizationsDelegate<dynamic>> delegates =
       <LocalizationsDelegate<dynamic>>[
+    AppLocalizations.delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalWidgetsLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,

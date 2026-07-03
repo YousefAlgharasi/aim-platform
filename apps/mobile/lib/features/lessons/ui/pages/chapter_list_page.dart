@@ -52,6 +52,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../widgets/lessons_widgets.dart';
 
 /// Filter tabs shown above the chapter list. Filters on the real,
@@ -124,6 +125,8 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(chaptersProvider);
+    final loadingLabel =
+        AppLocalizations.of(context).lessonsLoadingChaptersSemantic;
 
     return Scaffold(
       body: SafeArea(
@@ -145,8 +148,8 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
             },
             Expanded(
               child: switch (state) {
-                AppAsyncLoading() => const AIMFullScreenLoading(
-                    semanticLabel: 'Loading chapters',
+                AppAsyncLoading() => AIMFullScreenLoading(
+                    semanticLabel: loadingLabel,
                   ),
                 AppAsyncFailure(:final message) => AIMFullScreenError(
                     message: message,
@@ -158,8 +161,8 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
                     onRefresh: _refresh,
                     onTap: _onChapterTap,
                   ),
-                AppAsyncIdle() => const AIMFullScreenLoading(
-                    semanticLabel: 'Loading chapters',
+                AppAsyncIdle() => AIMFullScreenLoading(
+                    semanticLabel: loadingLabel,
                   ),
               },
             ),
@@ -191,6 +194,7 @@ class _ChapterListHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
     final soft = aimSoftFillsOf(context);
+    final l10n = AppLocalizations.of(context);
 
     // Real overall percent — average of each chapter's backend-computed
     // percent (ChapterProgressModel.percent).
@@ -212,7 +216,7 @@ class _ChapterListHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               AIMIconButton(
-                semanticLabel: 'Back',
+                semanticLabel: l10n.commonBack,
                 onPressed: () {
                   if (context.canPop()) context.pop();
                 },
@@ -239,7 +243,7 @@ class _ChapterListHeader extends StatelessWidget {
                       Text(
                         // Real, computed-from-real-data subtitle — the
                         // chapter count is known once the list has loaded.
-                        '${chapters.length} chapters',
+                        l10n.lessonsChapterCountLabel(chapters.length),
                         style: AimTextStyles.bodySm
                             .copyWith(color: surfaces.textSecondary),
                       ),
@@ -260,7 +264,7 @@ class _ChapterListHeader extends StatelessWidget {
                       vertical: AimSpacing.space8,
                     ),
                     child: Semantics(
-                      label: '$overallPercent percent done',
+                      label: l10n.lessonsPercentDoneSemantic(overallPercent),
                       child: ExcludeSemantics(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
@@ -273,7 +277,7 @@ class _ChapterListHeader extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              'DONE',
+                              l10n.lessonsDoneBadge,
                               style: AimTextStyles.caption.copyWith(
                                 color: AimColors.success700,
                                 fontWeight: AimFontWeights.bold,
@@ -294,10 +298,10 @@ class _ChapterListHeader extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  for (final entry in const [
-                    (ChapterListFilter.all, 'All chapters'),
-                    (ChapterListFilter.inProgress, 'In progress'),
-                    (ChapterListFilter.completed, 'Completed'),
+                  for (final entry in [
+                    (ChapterListFilter.all, l10n.lessonsFilterAllChapters),
+                    (ChapterListFilter.inProgress, l10n.lessonsInProgressLabel),
+                    (ChapterListFilter.completed, l10n.lessonsCompletedLabel),
                   ]) ...[
                     AIMChip(
                       selected: filter == entry.$1,
@@ -335,11 +339,13 @@ class _ChapterListContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     if (chapters.isEmpty) {
-      return const AIMEmptyState(
-        icon: Icon(Icons.layers_outlined),
-        title: 'No chapters available',
-        subtitle: 'Published chapters will appear here.',
+      return AIMEmptyState(
+        icon: const Icon(Icons.layers_outlined),
+        title: l10n.lessonsNoChaptersTitle,
+        subtitle: l10n.lessonsNoChaptersSubtitle,
       );
     }
 
@@ -351,10 +357,10 @@ class _ChapterListContent extends StatelessWidget {
     ];
 
     if (visible.isEmpty) {
-      return const AIMEmptyState(
-        icon: Icon(Icons.filter_alt_off_outlined),
-        title: 'No chapters in this filter',
-        subtitle: 'Try a different filter above.',
+      return AIMEmptyState(
+        icon: const Icon(Icons.filter_alt_off_outlined),
+        title: l10n.lessonsNoChaptersFilterTitle,
+        subtitle: l10n.lessonsTryDifferentFilterSubtitle,
       );
     }
 

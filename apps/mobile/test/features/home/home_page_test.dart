@@ -22,6 +22,7 @@ import 'package:aim_mobile/features/home/data/datasources/home_remote_datasource
 import 'package:aim_mobile/features/home/logic/repository/home_repository.dart';
 import 'package:aim_mobile/features/home/ui/pages/home_page.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
+import 'package:aim_mobile/core/localization/localization.dart';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -36,6 +37,8 @@ Widget _wrap(
     overrides: overrides,
     child: MaterialApp(
       theme: AppTheme.light,
+      localizationsDelegates: AppLocale.delegates,
+      supportedLocales: AppLocale.supportedLocales,
       home: Directionality(
         textDirection: dir,
         child: child,

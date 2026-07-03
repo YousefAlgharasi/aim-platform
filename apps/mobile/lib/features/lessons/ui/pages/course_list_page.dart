@@ -47,6 +47,7 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart'
 import 'package:aim_mobile/features/student_courses/data/models/student_course_model.dart';
 import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
 import 'package:aim_mobile/features/student_courses/logic/provider/student_courses_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../widgets/lessons_widgets.dart';
 
 /// Published course list screen, enriched with real per-student progress.
@@ -92,13 +93,15 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(studentCoursesProvider);
+    final loadingLabel =
+        AppLocalizations.of(context).lessonsLoadingCoursesSemantic;
 
     return Scaffold(
       body: SafeArea(
         bottom: false,
         child: switch (state) {
-          AppAsyncLoading() => const AIMFullScreenLoading(
-              semanticLabel: 'Loading courses',
+          AppAsyncLoading() => AIMFullScreenLoading(
+              semanticLabel: loadingLabel,
             ),
           AppAsyncFailure(:final message) => AIMFullScreenError(
               message: message,
@@ -109,8 +112,8 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
               onRefresh: _refresh,
               onTap: _onCourseTap,
             ),
-          AppAsyncIdle() => const AIMFullScreenLoading(
-              semanticLabel: 'Loading courses',
+          AppAsyncIdle() => AIMFullScreenLoading(
+              semanticLabel: loadingLabel,
             ),
         },
       ),
@@ -169,12 +172,13 @@ class _CourseListContentState extends State<_CourseListContent> {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     if (widget.courses.isEmpty) {
-      return const AIMEmptyState(
-        icon: Icon(Icons.menu_book_outlined),
-        title: 'No courses available',
-        subtitle: 'Published courses will appear here.',
+      return AIMEmptyState(
+        icon: const Icon(Icons.menu_book_outlined),
+        title: l10n.lessonsNoCoursesTitle,
+        subtitle: l10n.lessonsNoCoursesSubtitle,
       );
     }
 
@@ -194,7 +198,7 @@ class _CourseListContentState extends State<_CourseListContent> {
             children: [
               Expanded(
                 child: Text(
-                  'Courses',
+                  l10n.lessonsCoursesPageTitle,
                   style: AimTextStyles.h1.copyWith(color: surfaces.textPrimary),
                 ),
               ),
@@ -204,13 +208,13 @@ class _CourseListContentState extends State<_CourseListContent> {
                   variant: AIMBadgeVariant.soft,
                   pill: true,
                   dot: true,
-                  child: Text('Level $headerLevel'),
+                  child: Text(l10n.lessonsLevelBadge(headerLevel)),
                 ),
             ],
           ),
           const SizedBox(height: AimSpacing.space4),
           Text(
-            'Level up your English, step by step',
+            l10n.lessonsCoursesSubtitle,
             style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
           ),
           const SizedBox(height: AimSpacing.componentGap),
@@ -222,21 +226,21 @@ class _CourseListContentState extends State<_CourseListContent> {
                   selected: _filter == _CourseFilter.all,
                   onPressed: () =>
                       setState(() => _filter = _CourseFilter.all),
-                  child: const Text('All courses'),
+                  child: Text(l10n.lessonsFilterAllCourses),
                 ),
                 const SizedBox(width: AimSpacing.innerGap),
                 AIMChip(
                   selected: _filter == _CourseFilter.inProgress,
                   onPressed: () =>
                       setState(() => _filter = _CourseFilter.inProgress),
-                  child: const Text('In progress'),
+                  child: Text(l10n.lessonsInProgressLabel),
                 ),
                 const SizedBox(width: AimSpacing.innerGap),
                 AIMChip(
                   selected: _filter == _CourseFilter.completed,
                   onPressed: () =>
                       setState(() => _filter = _CourseFilter.completed),
-                  child: const Text('Completed'),
+                  child: Text(l10n.lessonsCompletedLabel),
                 ),
               ],
             ),
@@ -246,7 +250,7 @@ class _CourseListContentState extends State<_CourseListContent> {
             Padding(
               padding: const EdgeInsets.only(top: AimSpacing.sectionGap),
               child: Text(
-                'No courses match this filter yet.',
+                l10n.lessonsNoCoursesFilterMessage,
                 style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
                 textAlign: TextAlign.center,
               ),
