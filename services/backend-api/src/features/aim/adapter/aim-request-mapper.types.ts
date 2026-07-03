@@ -202,11 +202,27 @@ export interface AimRecentAttemptSnapshotInput {
   readonly skip: boolean;
 }
 
+/** One timestamped mastery/retention reading for a skill (P20-008). */
+export interface AimRetentionHistoryPointInput {
+  readonly recordedAt: string;
+  readonly masteryScore: number;
+}
+
 export interface AimSkillMasteryContextInput {
   /** student_skill_states.mastery_score (0-100). Null if no prior state yet. */
   readonly previousMasteryScore: number | null;
   /** Most recent prior attempts for this skill, oldest first. */
   readonly recentAttempts: AimRecentAttemptSnapshotInput[];
+  /** skills.domain (P20-008) — e.g. 'grammar', 'vocabulary'. Null if unresolved. */
+  readonly category: string | null;
+  /** student_skill_states.last_evaluated_at (P20-008). Null if no prior state yet. */
+  readonly lastEvaluatedAt: string | null;
+  /**
+   * Timestamped mastery/retention readings (P20-008), oldest first. Always
+   * empty today — the backend does not persist a rolling per-skill
+   * retention history yet (a known data gap, not a fabricated value).
+   */
+  readonly retentionHistory: AimRetentionHistoryPointInput[];
 }
 
 // ---------------------------------------------------------------------------
