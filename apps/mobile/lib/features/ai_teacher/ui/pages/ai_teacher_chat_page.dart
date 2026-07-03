@@ -96,7 +96,14 @@ class _AiTeacherChatPageState extends ConsumerState<AiTeacherChatPage> {
     if (token == null || token.isEmpty) return;
 
     final notifier = ref.read(aiTeacherChatProvider.notifier);
-    final existingSessionId = widget.sessionId;
+    // Prefer a session this widget already resolved (e.g. via a prior
+    // successful startSession earlier in this widget's lifetime, or a
+    // retry after a transient error) over widget.sessionId alone — a
+    // fresh-open ("start a new session") page never carries a
+    // widget.sessionId, so without this, retrying after any failure would
+    // start an unrelated brand-new session and the just-sent conversation
+    // would appear to vanish.
+    final existingSessionId = widget.sessionId ?? _activeSessionId();
 
     if (existingSessionId != null && existingSessionId.isNotEmpty) {
       await notifier.loadHistory(
@@ -123,6 +130,14 @@ class _AiTeacherChatPageState extends ConsumerState<AiTeacherChatPage> {
         await _loadSafetyStatus(session.sessionId);
       }
     }
+  }
+
+  String? _activeSessionId() {
+    final state = ref.read(aiTeacherChatProvider);
+    if (state is AppAsyncSuccess<AiTeacherChatState>) {
+      return state.data.history?.sessionId ?? state.data.activeSession?.sessionId;
+    }
+    return null;
   }
 
   Future<void> _loadSafetyStatus(String sessionId) async {

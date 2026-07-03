@@ -251,6 +251,24 @@ ProviderContainer _container({bool shouldFail = false}) {
   );
 }
 
+/// Otherwise-succeeding fake repository whose safety-status call always
+/// fails, used to prove a safety-status failure never wipes an
+/// already-successful conversation (see AiTeacherChatNotifier tests below).
+class _SafetyStatusFailingRepository extends _FakeAiTeacherRepository {
+  const _SafetyStatusFailingRepository();
+
+  @override
+  Future<AiTeacherSafetyStatusModel> getSafetyStatus({
+    required String bearerToken,
+    required String sessionId,
+  }) async {
+    throw const AppException(
+      code: 'AI_TEACHER_SAFETY_STATUS_ERROR',
+      message: 'Safety status failed',
+    );
+  }
+}
+
 void main() {
   group('AiTeacherChatRepositoryImpl', () {
     test('passes backend chat data through verbatim', () async {
@@ -407,6 +425,35 @@ void main() {
         (state as AppAsyncFailure<AiTeacherChatState>).code,
         'AI_TEACHER_REPOSITORY_ERROR',
       );
+    });
+
+    test(
+        'loadSafetyStatus failure does not wipe an already-successful conversation into AppAsyncFailure',
+        () async {
+      final container = ProviderContainer(
+        overrides: [
+          aiTeacherChatRepositoryProvider.overrideWithValue(
+            const _SafetyStatusFailingRepository(),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final notifier = container.read(aiTeacherChatProvider.notifier);
+
+      // Establish a successful conversation first (loadHistory succeeds).
+      await notifier.loadHistory(bearerToken: 'token', sessionId: 'session-1');
+      expect(container.read(aiTeacherChatProvider), isA<AppAsyncSuccess<AiTeacherChatState>>());
+
+      // A failing safety-status call (e.g. transient network error) must
+      // leave the conversation visible rather than replacing it with a
+      // full-page error — this was the root cause of AI Teacher chat
+      // appearing to "reset" right after sending a message.
+      await notifier.loadSafetyStatus(bearerToken: 'token', sessionId: 'session-1');
+
+      final state = container.read(aiTeacherChatProvider);
+      expect(state, isA<AppAsyncSuccess<AiTeacherChatState>>());
+      final data = (state as AppAsyncSuccess<AiTeacherChatState>).data;
+      expect(data.history!.messages.single.text, 'Explain this.');
     });
 
     test('clear resets to idle', () async {
