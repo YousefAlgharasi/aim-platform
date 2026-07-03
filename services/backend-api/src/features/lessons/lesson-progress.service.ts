@@ -8,8 +8,15 @@
 //   - percent is clamped to 0-100 server-side.
 //   - completed is only ever set TRUE via markComplete; recordProgress can
 //     never set it.
+//   - Course/level gating (P20-010): recordProgress and markComplete are the
+//     server-side mutation entry points for "starting"/advancing a lesson.
+//     Both re-check that the lesson's course is unlocked for this student
+//     (cefr_rank <= max_unlocked_cefr_rank for its track, defaulting to rank
+//     1 when the student has no student_level_state row yet) and reject with
+//     403 otherwise — a client showing a locked course as open must not be
+//     able to write progress by guessing/hardcoding a lesson id.
 
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import {
   ContinueLearningLesson,
@@ -28,6 +35,15 @@ interface LessonProgressRow {
 
 interface LessonRow {
   readonly id: string;
+}
+
+interface LessonCourseGatingRow {
+  readonly track_slug: string | null;
+  readonly cefr_rank: number | null;
+}
+
+interface LevelStateRow {
+  readonly max_unlocked_cefr_rank: number;
 }
 
 interface ContinueLearningRow {
@@ -57,6 +73,7 @@ export class LessonProgressService {
 
   async recordProgress(input: RecordLessonProgressInput): Promise<LessonProgressAckResponse> {
     await this.assertLessonExists(input.lessonId);
+    await this.assertCourseUnlockedForLesson(input.studentId, input.lessonId);
 
     const safePercent = Math.min(Math.max(Math.round(input.percent), 0), 100);
 
@@ -77,6 +94,7 @@ export class LessonProgressService {
 
   async markComplete(studentId: string, lessonId: string): Promise<LessonProgressAckResponse> {
     await this.assertLessonExists(lessonId);
+    await this.assertCourseUnlockedForLesson(studentId, lessonId);
 
     const result = await this.db.query<LessonProgressRow>(
       `INSERT INTO lesson_progress (student_id, lesson_id, percent, completed, completed_at, last_active_at)
@@ -281,6 +299,33 @@ export class LessonProgressService {
 
     if (result.rows.length === 0) {
       throw new NotFoundException('Lesson not found');
+    }
+  }
+
+  private async assertCourseUnlockedForLesson(studentId: string, lessonId: string): Promise<void> {
+    const courseResult = await this.db.query<LessonCourseGatingRow>(
+      `SELECT co.track_slug, co.cefr_rank
+       FROM lessons l
+       JOIN chapters c ON c.id = l.chapter_id
+       JOIN levels lv ON lv.id = c.level_id
+       JOIN courses co ON co.id = lv.course_id
+       WHERE l.id = $1`,
+      [lessonId],
+    );
+
+    const course = courseResult.rows[0];
+    if (!course || course.track_slug === null || course.cefr_rank === null) {
+      return;
+    }
+
+    const stateResult = await this.db.query<LevelStateRow>(
+      `SELECT max_unlocked_cefr_rank FROM student_level_state WHERE student_id = $1 AND track_slug = $2`,
+      [studentId, course.track_slug],
+    );
+
+    const maxUnlockedCefrRank = stateResult.rows[0]?.max_unlocked_cefr_rank ?? 1;
+    if (course.cefr_rank > maxUnlockedCefrRank) {
+      throw new ForbiddenException('This course is locked for this student');
     }
   }
 
