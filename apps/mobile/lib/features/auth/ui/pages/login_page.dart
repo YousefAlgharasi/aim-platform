@@ -117,111 +117,123 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             padding: EdgeInsets.zero,
             children: [
               const _WelcomeHeader(),
-              Transform.translate(
-                offset: const Offset(0, -AimSpacing.sectionGap),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AimSpacing.screenPaddingMobile,
-                    vertical: AimSpacing.sectionGap,
-                  ),
-                  decoration: BoxDecoration(
-                    color: surfaces.surface,
-                    borderRadius: const BorderRadiusDirectional.only(
-                      topStart: Radius.circular(AimRadius.x2l),
-                      topEnd: Radius.circular(AimRadius.x2l),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AimSpacing.screenPaddingMobile,
+                  0,
+                  AimSpacing.screenPaddingMobile,
+                  AimSpacing.sectionGap,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // The form is its own floating card — rounded on all
+                    // four corners with a drop shadow — separate from the
+                    // plain page background beneath it, pulled up over the
+                    // hero via a negative top margin (a Transform would
+                    // only shift paint, not layout, and misplace the
+                    // siblings below it).
+                    Container(
+                      margin:
+                          const EdgeInsets.only(top: -AimSpacing.sectionGap),
+                      padding:
+                          const EdgeInsets.all(AimSpacing.cardPaddingLg),
+                      decoration: BoxDecoration(
+                        color: surfaces.surface,
+                        borderRadius: AimRadius.borderX2l,
+                        boxShadow: shadows.card,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (formState.errorMessage != null) ...[
+                            AIMAlertBanner(
+                              tone: AIMAlertTone.error,
+                              child: Text(formState.errorMessage!),
+                            ),
+                            const SizedBox(height: AimSpacing.formFieldGap),
+                          ],
+                          AIMInput(
+                            controller: _emailController,
+                            focusNode: _emailFocus,
+                            label: 'Email',
+                            placeholder: 'you@example.com',
+                            type: AIMInputType.email,
+                            disabled: formState.isSubmitting,
+                            leadingIcon: const Icon(Icons.email_outlined),
+                            onChanged: _onEmailChanged,
+                            onSubmitted: (_) => _passwordFocus.requestFocus(),
+                            textInputAction: TextInputAction.next,
+                            autofillHints: const [AutofillHints.email],
+                            semanticLabel: 'Email address',
+                          ),
+                          const SizedBox(height: AimSpacing.formFieldGap),
+                          AIMInput(
+                            controller: _passwordController,
+                            focusNode: _passwordFocus,
+                            label: 'Password',
+                            type: AIMInputType.password,
+                            disabled: formState.isSubmitting,
+                            leadingIcon: const Icon(Icons.lock_outline),
+                            onChanged: _onPasswordChanged,
+                            onSubmitted: (_) => _submit(),
+                            textInputAction: TextInputAction.done,
+                            autofillHints: const [AutofillHints.password],
+                            semanticLabel: 'Password',
+                          ),
+                          const SizedBox(height: AimSpacing.space8),
+                          // There is no forgot-password endpoint or route
+                          // yet, so this is styled as a link but is plain,
+                          // non-tappable text rather than a dead-end button.
+                          Align(
+                            alignment: AlignmentDirectional.centerEnd,
+                            child: Text(
+                              'Forgot password?',
+                              style: AimTextStyles.label.copyWith(
+                                color: surfaces.textLink,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: AimSpacing.sectionGap),
+                          AIMGradientButton(
+                            label: 'Sign In',
+                            fullWidth: true,
+                            loading: formState.isSubmitting,
+                            enabled: formState.isValid,
+                            onPressed: _submit,
+                            semanticLabel: 'Sign in',
+                          ),
+                        ],
+                      ),
                     ),
-                    boxShadow: shadows.card,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (formState.errorMessage != null) ...[
-                        AIMAlertBanner(
-                          tone: AIMAlertTone.error,
-                          child: Text(formState.errorMessage!),
+                    const SizedBox(height: AimSpacing.sectionGap),
+                    _SocialSignInSection(surfaces: surfaces),
+                    const SizedBox(height: AimSpacing.sectionGap),
+                    Center(
+                      child: TextButton(
+                        onPressed: _openRegister,
+                        child: const Text(
+                          "Don't have an account? Create one",
                         ),
-                        const SizedBox(height: AimSpacing.formFieldGap),
-                      ],
-                      AIMInput(
-                        controller: _emailController,
-                        focusNode: _emailFocus,
-                        label: 'Email',
-                        placeholder: 'you@example.com',
-                        type: AIMInputType.email,
-                        disabled: formState.isSubmitting,
-                        leadingIcon: const Icon(Icons.email_outlined),
-                        onChanged: _onEmailChanged,
-                        onSubmitted: (_) => _passwordFocus.requestFocus(),
-                        textInputAction: TextInputAction.next,
-                        autofillHints: const [AutofillHints.email],
-                        semanticLabel: 'Email address',
+                      ),
+                    ),
+                    if (isTestModeAvailable) ...[
+                      const SizedBox(height: AimSpacing.sectionGap),
+                      const _DeveloperTestModeDivider(),
+                      const SizedBox(height: AimSpacing.formFieldGap),
+                      _DeveloperTestModeRoleButtons(
+                        isSubmitting: formState.isSubmitting,
+                        onSelectRole: _enterAsTestRole,
                       ),
                       const SizedBox(height: AimSpacing.formFieldGap),
-                      AIMInput(
-                        controller: _passwordController,
-                        focusNode: _passwordFocus,
-                        label: 'Password',
-                        type: AIMInputType.password,
-                        disabled: formState.isSubmitting,
-                        leadingIcon: const Icon(Icons.lock_outline),
-                        onChanged: _onPasswordChanged,
-                        onSubmitted: (_) => _submit(),
-                        textInputAction: TextInputAction.done,
-                        autofillHints: const [AutofillHints.password],
-                        semanticLabel: 'Password',
-                      ),
-                      const SizedBox(height: AimSpacing.space8),
-                      // There is no forgot-password endpoint or route yet, so
-                      // this is styled as a link but is plain, non-tappable
-                      // text rather than a dead-end button.
-                      Align(
-                        alignment: AlignmentDirectional.centerEnd,
-                        child: Text(
-                          'Forgot password?',
-                          style: AimTextStyles.label.copyWith(
-                            color: surfaces.textLink,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: AimSpacing.sectionGap),
-                      AIMGradientButton(
-                        label: 'Sign In',
+                      AIMButton(
+                        onPressed: _openEndpointTester,
+                        variant: AIMButtonVariant.outline,
                         fullWidth: true,
-                        loading: formState.isSubmitting,
-                        enabled: formState.isValid,
-                        onPressed: _submit,
-                        semanticLabel: 'Sign in',
+                        child: const Text('Open API Endpoint Tester'),
                       ),
-                      const SizedBox(height: AimSpacing.sectionGap),
-                      _SocialSignInSection(surfaces: surfaces),
-                      const SizedBox(height: AimSpacing.sectionGap),
-                      Center(
-                        child: TextButton(
-                          onPressed: _openRegister,
-                          child: const Text(
-                            "Don't have an account? Create one",
-                          ),
-                        ),
-                      ),
-                      if (isTestModeAvailable) ...[
-                        const SizedBox(height: AimSpacing.sectionGap),
-                        const _DeveloperTestModeDivider(),
-                        const SizedBox(height: AimSpacing.formFieldGap),
-                        _DeveloperTestModeRoleButtons(
-                          isSubmitting: formState.isSubmitting,
-                          onSelectRole: _enterAsTestRole,
-                        ),
-                        const SizedBox(height: AimSpacing.formFieldGap),
-                        AIMButton(
-                          onPressed: _openEndpointTester,
-                          variant: AIMButtonVariant.outline,
-                          fullWidth: true,
-                          child: const Text('Open API Endpoint Tester'),
-                        ),
-                      ],
                     ],
-                  ),
+                  ],
                 ),
               ),
             ],
