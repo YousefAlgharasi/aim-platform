@@ -42,11 +42,15 @@ export interface BackendConfig {
   readonly sttProvider: {
     readonly apiKey: string;
     readonly model: string;
+    /** Transcription endpoint URL. Defaults to Groq's free Whisper endpoint. */
+    readonly baseUrl: string;
   };
   /** P9-059 — TTS provider settings for Group G's TTS Gateway. */
   readonly ttsProvider: {
     readonly apiKey: string;
     readonly model: string;
+    /** Speech-synthesis endpoint URL. No standardized free default exists. */
+    readonly baseUrl: string;
   };
   readonly cors: {
     readonly origins: readonly string[];

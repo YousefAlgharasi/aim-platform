@@ -1,5 +1,6 @@
 /// <reference types="multer" />
 import {
+  Body,
   Controller,
   HttpCode,
   HttpStatus,
@@ -22,6 +23,9 @@ import {
 import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
 import { CurrentUser } from '../../../auth/current-user.decorator';
 import { AuthenticatedUser } from '../../../auth/authenticated-user';
+import { VoiceSessionOwnershipGuard } from './guards/voice-session-ownership.guard';
+import { VoiceSessionRepository } from '../repositories/voice-session.repository';
+import { VoiceOrchestratorService } from '../orchestrator/voice-orchestrator.service';
 
 import { VoiceAudioSubmitResponse } from './voice-audio-submit.types';
 
@@ -35,11 +39,21 @@ const ALLOWED_AUDIO_TYPES = new Set([
 
 const MAX_AUDIO_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
+// Arabic-speaking English learners is this app's whole target audience
+// (AI_TEACHER_PROMPT_SYSTEM_INSTRUCTIONS); used only when the client omits
+// languageCode, never as an AIM authority signal.
+const DEFAULT_LANGUAGE_CODE = 'ar';
+
 @ApiTags('Voice Teacher')
 @ApiBearerAuth()
-@UseGuards(SupabaseJwtAuthGuard)
+@UseGuards(SupabaseJwtAuthGuard, VoiceSessionOwnershipGuard)
 @Controller('voice-teacher/sessions')
 export class VoiceAudioSubmitController {
+  constructor(
+    private readonly voiceSessionRepository: VoiceSessionRepository,
+    private readonly voiceOrchestrator: VoiceOrchestratorService,
+  ) {}
+
   @Post(':sessionId/audio')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Submit voice audio for a session turn' })
@@ -55,15 +69,17 @@ export class VoiceAudioSubmitController {
     @Param('sessionId') sessionId: string,
     @CurrentUser() user: AuthenticatedUser,
     @UploadedFile() file: Express.Multer.File,
+    @Body('languageCode') languageCode?: string,
   ): Promise<VoiceAudioSubmitResponse> {
     const studentId = user.id;
+    const turnStart = Date.now();
 
     if (!file || !file.buffer || file.buffer.length === 0) {
       return {
         text: 'عذرًا، لم يتم استلام الملف الصوتي. يرجى المحاولة مرة أخرى.',
         audioRef: null,
         isFallback: true,
-        latencyMs: 0,
+        latencyMs: Date.now() - turnStart,
       };
     }
 
@@ -72,23 +88,29 @@ export class VoiceAudioSubmitController {
         text: 'عذرًا، نوع الملف الصوتي غير مدعوم.',
         audioRef: null,
         isFallback: true,
-        latencyMs: 0,
+        latencyMs: Date.now() - turnStart,
       };
     }
 
-    // The voice orchestrator (P9-048) handles STT → AI Teacher → TTS.
-    // studentId is resolved from JWT, never from client input.
-    // The orchestrator never returns mastery/weakness/difficulty/
-    // recommendation/review-schedule values.
-    // For now, return a placeholder until the orchestrator is wired
-    // into this controller via dependency injection.
-    const turnStart = Date.now();
+    // VoiceSessionOwnershipGuard has already confirmed this session exists
+    // and belongs to studentId; re-fetch here only to read its contextRef.
+    const session = await this.voiceSessionRepository.findById(sessionId);
+    const contextRef = session?.context_ref ?? '';
+
+    const result = await this.voiceOrchestrator.handleTurn({
+      studentId,
+      sessionId,
+      contextRef,
+      audio: file.buffer,
+      contentType: file.mimetype,
+      languageCode: languageCode?.trim() || DEFAULT_LANGUAGE_CODE,
+    });
 
     return {
-      text: '',
-      audioRef: null,
-      isFallback: true,
-      latencyMs: Date.now() - turnStart,
+      text: result.text,
+      audioRef: result.audioRef,
+      isFallback: result.isFallback,
+      latencyMs: result.latencyMs,
     };
   }
 }

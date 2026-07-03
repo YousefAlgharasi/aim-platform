@@ -19,12 +19,15 @@ import { Response } from 'express';
 import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
 import { CurrentUser } from '../../../auth/current-user.decorator';
 import { AuthenticatedUser } from '../../../auth/authenticated-user';
+import { TtsAudioStorageService } from '../tts-gateway/tts-audio-storage.service';
 
 @ApiTags('Voice Teacher')
 @ApiBearerAuth()
 @UseGuards(SupabaseJwtAuthGuard)
 @Controller('voice-teacher/audio')
 export class VoiceAudioPlaybackController {
+  constructor(private readonly audioStorage: TtsAudioStorageService) {}
+
   @Get(':audioRef')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Stream voice audio by reference' })
@@ -37,19 +40,22 @@ export class VoiceAudioPlaybackController {
   ): Promise<void> {
     const studentId = user.id;
 
-    // audioRef is opaque — no provider URL or filesystem path.
-    // Ownership is validated: only the student who owns the session
-    // can access the audio. The storage service (P9-064) enforces this.
-    // No provider credentials or AIM fields are returned.
-    // Placeholder until TtsAudioStorageService is wired via DI.
-
+    // audioRef is opaque — no provider URL or filesystem path. Ownership is
+    // enforced by TtsAudioStorageService.retrieveAudio: only the student who
+    // generated this audio (studentId match) can retrieve it. No provider
+    // credentials or AIM fields are ever returned.
     if (!audioRef) {
       res.status(HttpStatus.NOT_FOUND).json({ error: 'Audio not found' });
       return;
     }
 
-    // When storage is wired, this will stream the audio bytes with
-    // the correct Content-Type header from the stored contentType.
-    res.status(HttpStatus.NOT_FOUND).json({ error: 'Audio not found' });
+    const audio = await this.audioStorage.retrieveAudio(audioRef, studentId);
+
+    if (!audio) {
+      res.status(HttpStatus.NOT_FOUND).json({ error: 'Audio not found' });
+      return;
+    }
+
+    res.status(HttpStatus.OK).set('Content-Type', audio.contentType).send(audio.data);
   }
 }

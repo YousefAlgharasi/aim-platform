@@ -21,6 +21,7 @@ import { BackendConfigService } from '../../../config/backend-config.service';
 export interface SttGatewayConfig {
   readonly apiKey: string;
   readonly model: string;
+  readonly baseUrl: string;
 }
 
 @Injectable()
@@ -28,7 +29,7 @@ export class SttGatewayConfigService {
   constructor(private readonly backendConfig: BackendConfigService) {}
 
   getConfig(): SttGatewayConfig {
-    const { apiKey, model } = this.backendConfig.sttProvider;
-    return { apiKey, model };
+    const { apiKey, model, baseUrl } = this.backendConfig.sttProvider;
+    return { apiKey, model, baseUrl };
   }
 }

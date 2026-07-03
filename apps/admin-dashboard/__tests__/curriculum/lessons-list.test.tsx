@@ -15,6 +15,7 @@ const makeLesson = (overrides: Partial<AdminLessonSummary> = {}): AdminLessonSum
   description: 'First lesson',
   status: 'draft',
   sortOrder: 1,
+  systemPrompt: null,
   createdAt: NOW,
   updatedAt: NOW,
   ...overrides,

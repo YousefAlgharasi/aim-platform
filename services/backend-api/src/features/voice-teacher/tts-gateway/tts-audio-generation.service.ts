@@ -5,12 +5,15 @@ import { TtsGateway } from './tts-gateway.interface';
 import { TtsProviderRequest, TtsProviderResponse } from './tts-gateway.types';
 import { TtsRequestMapperService } from './tts-request.mapper';
 import { TtsResponseMapperService } from './tts-response.mapper';
+import { TtsAudioStorageService } from './tts-audio-storage.service';
+import { TtsCompletionRequest } from './tts-request-mapper.types';
 import { TtsCompletionResponse } from './tts-response-mapper.types';
 
 const TTS_TIMEOUT_MS = 30_000;
 const ERROR_CATEGORY_TIMEOUT = 'TTS_TIMEOUT';
 const ERROR_CATEGORY_NETWORK = 'TTS_NETWORK_ERROR';
 const ERROR_CATEGORY_PROVIDER = 'TTS_PROVIDER_ERROR';
+const ERROR_CATEGORY_STORAGE_FAILED = 'TTS_AUDIO_STORAGE_FAILED';
 
 @Injectable()
 export class TtsAudioGenerationService extends TtsGateway {
@@ -20,19 +23,20 @@ export class TtsAudioGenerationService extends TtsGateway {
     private readonly configService: TtsGatewayConfigService,
     private readonly requestMapper: TtsRequestMapperService,
     private readonly responseMapper: TtsResponseMapperService,
+    private readonly audioStorage: TtsAudioStorageService,
   ) {
     super();
   }
 
   async synthesize(request: TtsProviderRequest): Promise<TtsProviderResponse> {
     const completionRequest = this.requestMapper.mapRequest(request);
-    const { apiKey } = this.configService.getConfig();
+    const { apiKey, baseUrl } = this.configService.getConfig();
 
     let raw: TtsCompletionResponse | null = null;
     let errorCategory: string | null = null;
 
     try {
-      raw = await this.callProvider(apiKey, completionRequest);
+      raw = await this.callProvider(apiKey, baseUrl, completionRequest);
     } catch (error: unknown) {
       errorCategory = this.classifyError(error);
       this.logger.warn(
@@ -45,29 +49,32 @@ export class TtsAudioGenerationService extends TtsGateway {
 
   private async callProvider(
     apiKey: string,
-    request: { model: string; text: string; languageCode: string },
+    baseUrl: string,
+    request: TtsCompletionRequest,
   ): Promise<TtsCompletionResponse> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), TTS_TIMEOUT_MS);
 
     try {
-      const response = await fetch(
-        'https://api.openai.com/v1/audio/speech',
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: request.model,
-            input: request.text,
-            voice: 'alloy',
-            response_format: 'mp3',
-          }),
-          signal: controller.signal,
+      // Contract assumed for tts.ai (no verified docs yet): JSON body with
+      // Bearer auth, raw audio bytes back. OpenAI's /v1/audio/speech shape
+      // is used as the request/response template since it's the closest
+      // documented reference; confirm and adjust once real tts.ai
+      // credentials/docs are available.
+      const response = await fetch(baseUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({
+          model: request.model,
+          input: request.text,
+          voice: 'alloy',
+          response_format: 'mp3',
+        }),
+        signal: controller.signal,
+      });
 
       if (!response.ok) {
         throw new BadGatewayException(`TTS provider returned HTTP ${response.status}`);
@@ -75,14 +82,26 @@ export class TtsAudioGenerationService extends TtsGateway {
 
       const audioBuffer = Buffer.from(await response.arrayBuffer());
       const audioRef = this.generateAudioRef();
-      const durationMs = this.estimateDurationMs(audioBuffer.length, 'audio/mpeg');
+      const contentType = 'audio/mpeg';
+      const durationMs = this.estimateDurationMs(audioBuffer.length, contentType);
 
-      // Audio bytes stay in memory only long enough to be handed to
-      // persistence (a later Group G task). The ref is opaque.
+      const stored = await this.audioStorage.storeAudio({
+        audioRef,
+        audioData: audioBuffer,
+        contentType,
+        durationMs,
+        sessionId: request.sessionId,
+        studentId: request.studentId,
+      });
+
+      if (!stored.stored) {
+        throw new BadGatewayException(ERROR_CATEGORY_STORAGE_FAILED);
+      }
+
       return {
         audioRef,
         durationMs,
-        contentType: 'audio/mpeg',
+        contentType,
       };
     } finally {
       clearTimeout(timeout);
