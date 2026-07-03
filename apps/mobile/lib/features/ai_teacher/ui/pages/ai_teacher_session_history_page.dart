@@ -114,6 +114,7 @@ class _AiTeacherSessionHistoryPageState
         builder: (_) => AiTeacherChatPage(
           contextRef: session.contextRef,
           sessionId: session.sessionId,
+          lessonTitle: session.contextTitle,
         ),
       ),
     );
@@ -248,7 +249,9 @@ class _SessionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
     final isActive = session.status == 'active';
-    final title = _prettifyContextRef(session.contextRef);
+    final title = session.contextTitle?.trim().isNotEmpty == true
+        ? session.contextTitle!.trim()
+        : _prettifyContextRef(session.contextRef);
 
     return AIMCard(
       variant: AIMCardVariant.elevated,

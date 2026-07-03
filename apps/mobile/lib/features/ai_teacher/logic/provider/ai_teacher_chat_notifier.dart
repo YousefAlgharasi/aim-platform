@@ -160,11 +160,17 @@ class AiTeacherChatNotifier extends AppStateNotifier<AiTeacherChatState> {
               isStreaming: true,
             ));
           case AiTeacherStreamDone():
-            setSuccess(current.copyWith(
-              isStreaming: false,
-              clearStreamingText: true,
-            ));
-            await loadHistory(bearerToken: bearerToken, sessionId: sessionId);
+            // Stop showing the streaming indicator, but keep the streamed
+            // text on screen until the history refresh below actually
+            // succeeds — the reply already streamed successfully, so a
+            // failure in this best-effort refresh must not make it vanish
+            // or turn the whole (already-successful) conversation into a
+            // full-page error.
+            setSuccess(current.copyWith(isStreaming: false));
+            await _refreshHistoryAfterStream(
+              bearerToken: bearerToken,
+              sessionId: sessionId,
+            );
         }
       }
     } on AppException catch (e) {
@@ -174,6 +180,30 @@ class AiTeacherChatNotifier extends AppStateNotifier<AiTeacherChatState> {
         message: 'Failed to stream AI Teacher reply',
         code: 'AI_TEACHER_STREAM_FAILED',
       );
+    }
+  }
+
+  /// Best-effort history refresh after a stream completes. Unlike
+  /// [loadHistory], this never puts the notifier into a loading/failure
+  /// state: the message was already sent and replied to successfully, so a
+  /// transient failure here should not replace the visible conversation
+  /// with a full-page error. On failure, the streamed reply simply stays
+  /// on screen (as streaming text) until the next successful refresh.
+  Future<void> _refreshHistoryAfterStream({
+    required String bearerToken,
+    required String sessionId,
+  }) async {
+    try {
+      final history = await _repository.getHistory(
+        bearerToken: bearerToken,
+        sessionId: sessionId,
+      );
+      final current = _currentDataOrEmpty();
+      setSuccess(current.copyWith(history: history, clearStreamingText: true));
+    } catch (_) {
+      // Swallow: the conversation already succeeded server-side. The next
+      // successful history load (e.g. on the following message, or opening
+      // this session again) will pick it up.
     }
   }
 

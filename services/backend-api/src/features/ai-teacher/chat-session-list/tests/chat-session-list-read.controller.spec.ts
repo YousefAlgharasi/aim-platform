@@ -16,6 +16,7 @@ function makeResult(overrides: Partial<ListChatSessionsResult> = {}): ListChatSe
       {
         sessionId: 'session-1',
         contextRef: 'lesson:fractions',
+        contextTitle: 'Fractions Basics',
         status: 'active',
         createdAt: '2026-06-19T00:00:00.000Z',
         updatedAt: '2026-06-19T00:00:00.000Z',
