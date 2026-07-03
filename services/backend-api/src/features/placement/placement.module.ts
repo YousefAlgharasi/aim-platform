@@ -24,6 +24,7 @@ import { PlacementAnswerValidationService } from './placement-answer-validation.
 import { PlacementScoringService } from './placement-scoring.service';
 import { PlacementResultService } from './placement-result.service';
 import { PlacementInitialLearningPathService } from './placement-initial-learning-path.service';
+import { PlacementLevelStateService } from './placement-level-state.service';
 import { PlacementResultReadService } from './placement-result-read.service';
 import { PlacementRetakePolicyService } from './placement-retake-policy.service';
 import { PlacementAuditService } from './placement-audit.service';
@@ -49,6 +50,7 @@ import { PlacementTestReadService } from './placement-test-read.service';
     PlacementScoringService,
     PlacementResultService,
     PlacementInitialLearningPathService,
+    PlacementLevelStateService,
     PlacementResultReadService,
     PlacementAuditService,
     PlacementAnalyticsService,
