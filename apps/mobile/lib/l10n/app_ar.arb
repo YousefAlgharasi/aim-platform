@@ -1,4 +1,24 @@
 {
   "@@locale": "ar",
-  "appTitle": "AIM"
+  "appTitle": "AIM",
+
+  "commonBack": "رجوع",
+  "commonCancel": "إلغاء",
+  "commonSave": "حفظ",
+  "commonSubmit": "إرسال",
+  "commonRetry": "أعد المحاولة",
+  "commonClose": "إغلاق",
+  "commonContinue": "متابعة",
+  "commonStart": "ابدأ",
+  "commonDone": "تم",
+  "commonLoading": "جارٍ التحميل…",
+  "commonError": "حدث خطأ ما",
+  "commonYes": "نعم",
+  "commonNo": "لا",
+  "commonOk": "حسنًا",
+  "commonDelete": "حذف",
+  "commonEdit": "تعديل",
+  "commonSeeAll": "عرض الكل",
+  "commonJustNow": "الآن",
+  "commonYesterday": "أمس"
 }
