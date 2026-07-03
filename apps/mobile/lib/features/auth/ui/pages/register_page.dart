@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/routing/routing.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../logic/provider/register_notifier.dart';
@@ -75,14 +76,16 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   }
 
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context);
     _emailFocus.unfocus();
     _passwordFocus.unfocus();
     _confirmFocus.unfocus();
-    await ref.read(registerProvider.notifier).submit();
+    await ref.read(registerProvider.notifier).submit(l10n);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final formState = ref.watch(registerProvider);
     final notifier = ref.read(registerProvider.notifier);
     final surfaces = aimSurfacesOf(context);
@@ -133,7 +136,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         alignment: AlignmentDirectional.centerStart,
                         child: Semantics(
                           button: true,
-                          label: 'Back',
+                          label: l10n.commonBack,
                           child: InkWell(
                             onTap: () => context.pop(),
                             borderRadius: AimRadius.borderMd,
@@ -160,14 +163,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       ),
                       const SizedBox(height: AimSpacing.sectionGap),
                       Text(
-                        'Create account',
+                        l10n.authCreateAccount,
                         style: AimTextStyles.h2.copyWith(
                           color: AimColors.neutral0,
                         ),
                       ),
                       const SizedBox(height: AimSpacing.space4),
                       Text(
-                        'Start learning English the fun way',
+                        l10n.authStartLearningTagline,
                         style: AimTextStyles.bodySm.copyWith(
                           color: AimColors.neutral0.withValues(alpha: 0.85),
                         ),
@@ -210,8 +213,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       AIMInput(
                         controller: _emailController,
                         focusNode: _emailFocus,
-                        label: 'Email',
-                        placeholder: 'you@example.com',
+                        label: l10n.authEmailLabel,
+                        placeholder: l10n.authEmailPlaceholder,
                         type: AIMInputType.email,
                         disabled: formState.isSubmitting,
                         leadingIcon: const Icon(Icons.email_outlined),
@@ -219,7 +222,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         onSubmitted: (_) => _passwordFocus.requestFocus(),
                         textInputAction: TextInputAction.next,
                         autofillHints: const [AutofillHints.newUsername],
-                        semanticLabel: 'Email address',
+                        semanticLabel: l10n.authEmailSemantic,
                       ),
                       const SizedBox(height: AimSpacing.formFieldGap),
 
@@ -227,7 +230,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       AIMInput(
                         controller: _passwordController,
                         focusNode: _passwordFocus,
-                        label: 'Password',
+                        label: l10n.authPasswordLabel,
                         type: AIMInputType.password,
                         disabled: formState.isSubmitting,
                         leadingIcon: const Icon(Icons.lock_outline),
@@ -235,7 +238,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         onSubmitted: (_) => _confirmFocus.requestFocus(),
                         textInputAction: TextInputAction.next,
                         autofillHints: const [AutofillHints.newPassword],
-                        semanticLabel: 'Password',
+                        semanticLabel: l10n.authPasswordSemantic,
                       ),
                       if (password.isNotEmpty) ...[
                         const SizedBox(height: AimSpacing.space8),
@@ -247,11 +250,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       AIMInput(
                         controller: _confirmController,
                         focusNode: _confirmFocus,
-                        label: 'Confirm Password',
+                        label: l10n.authConfirmPasswordLabel,
                         type: AIMInputType.password,
                         disabled: formState.isSubmitting,
                         leadingIcon: const Icon(Icons.lock_outline),
-                        error: passwordsMatch ? null : 'Passwords do not match',
+                        error:
+                            passwordsMatch ? null : l10n.authPasswordsDoNotMatch,
                         trailingIcon: (confirm.isNotEmpty && passwordsMatch)
                             ? const Icon(
                                 Icons.check_circle,
@@ -262,18 +266,18 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         onSubmitted: (_) => _submit(),
                         textInputAction: TextInputAction.done,
                         autofillHints: const [AutofillHints.newPassword],
-                        semanticLabel: 'Confirm password',
+                        semanticLabel: l10n.authConfirmPasswordSemantic,
                       ),
                       const SizedBox(height: AimSpacing.sectionGap),
 
                       // ── Submit ─────────────────────────────────────────
                       AIMGradientButton(
-                        label: 'Create account',
+                        label: l10n.authCreateAccount,
                         fullWidth: true,
                         loading: formState.isSubmitting,
                         enabled: formState.isValid,
                         onPressed: _submit,
-                        semanticLabel: 'Create account',
+                        semanticLabel: l10n.authCreateAccount,
                       ),
                       const SizedBox(height: AimSpacing.sectionGap),
 
@@ -283,7 +287,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       // low-contrast disabled spec; IgnorePointer keeps them
                       // untappable while still announcing to screen readers.
                       Text(
-                        'OR SIGN UP WITH',
+                        l10n.authOrSignUpWith,
                         style: AimTextStyles.caption
                             .copyWith(color: surfaces.textMuted),
                         textAlign: TextAlign.center,
@@ -295,8 +299,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                           onPressed: () {},
                           variant: AIMButtonVariant.outline,
                           fullWidth: true,
-                          semanticLabel: 'Sign up with Google (coming soon)',
-                          child: const Text('Sign up with Google'),
+                          semanticLabel: l10n.authSignUpWithGoogleSemantic,
+                          child: Text(l10n.authSignUpWithGoogle),
                         ),
                       ),
                       const SizedBox(height: AimSpacing.innerGap),
@@ -309,8 +313,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                 onPressed: () {},
                                 variant: AIMButtonVariant.outline,
                                 semanticLabel:
-                                    'Sign up with Apple (coming soon)',
-                                child: const Text('Apple'),
+                                    l10n.authSignUpWithAppleSemantic,
+                                child: Text(l10n.authAppleButton),
                               ),
                             ),
                           ),
@@ -322,8 +326,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                 onPressed: () {},
                                 variant: AIMButtonVariant.outline,
                                 semanticLabel:
-                                    'Sign up with Facebook (coming soon)',
-                                child: const Text('Facebook'),
+                                    l10n.authSignUpWithFacebookSemantic,
+                                child: Text(l10n.authFacebookButton),
                               ),
                             ),
                           ),
@@ -341,15 +345,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             color: surfaces.textMuted,
                           ),
                           children: [
-                            const TextSpan(
-                                text: "By signing up you agree to AIM's "),
+                            TextSpan(text: l10n.authAgreeToTermsPrefix),
                             TextSpan(
-                              text: 'Terms',
+                              text: l10n.authTermsLink,
                               style: TextStyle(color: surfaces.textLink),
                             ),
-                            const TextSpan(text: ' and '),
+                            TextSpan(text: l10n.authAndConnector),
                             TextSpan(
-                              text: 'Privacy Policy',
+                              text: l10n.authPrivacyPolicyLink,
                               style: TextStyle(color: surfaces.textLink),
                             ),
                             const TextSpan(text: '.'),
@@ -363,7 +366,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       Center(
                         child: TextButton(
                           onPressed: () => context.pop(),
-                          child: const Text('Already have an account? Sign in'),
+                          child: Text(l10n.authAlreadyHaveAccount),
                         ),
                       ),
                     ],
@@ -390,10 +393,11 @@ class _ConfirmationSentView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: const AIMTopAppBar(
-        title: 'Check Your Email',
+      appBar: AIMTopAppBar(
+        title: l10n.authCheckYourEmailTitle,
         centerTitle: true,
       ),
       body: SafeArea(
@@ -410,24 +414,23 @@ class _ConfirmationSentView extends StatelessWidget {
                 ),
                 const SizedBox(height: AimSpacing.sectionGap),
                 Text(
-                  'Confirmation email sent',
+                  l10n.authConfirmationEmailSentTitle,
                   style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AimSpacing.componentGap),
                 Text(
-                  'We sent a confirmation link to:\n$email\n\n'
-                  'Open the link to activate your account, then sign in.',
+                  l10n.authConfirmationEmailBody(email),
                   style: AimTextStyles.bodyMd
                       .copyWith(color: surfaces.textSecondary),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AimSpacing.space32),
                 AIMGradientButton(
-                  label: 'Go to Sign In',
+                  label: l10n.authGoToSignInButton,
                   fullWidth: true,
                   onPressed: () => context.go(AppRoutePaths.signIn),
-                  semanticLabel: 'Go to sign in',
+                  semanticLabel: l10n.authGoToSignInSemantic,
                 ),
               ],
             ),
@@ -471,6 +474,7 @@ class _PasswordStrengthMeter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final strength = _strength;
     final activeSegments = switch (strength) {
       _PasswordStrength.weak => 1,
@@ -483,13 +487,13 @@ class _PasswordStrengthMeter extends StatelessWidget {
       _PasswordStrength.strong => AimColors.gzLime,
     };
     final label = switch (strength) {
-      _PasswordStrength.weak => 'Weak',
-      _PasswordStrength.medium => 'Medium',
-      _PasswordStrength.strong => 'Strong',
+      _PasswordStrength.weak => l10n.authPasswordStrengthWeak,
+      _PasswordStrength.medium => l10n.authPasswordStrengthMedium,
+      _PasswordStrength.strong => l10n.authPasswordStrengthStrong,
     };
 
     return Semantics(
-      label: 'Password strength: $label',
+      label: l10n.authPasswordStrengthSemantic(label),
       child: Row(
         children: [
           for (var i = 0; i < 3; i++) ...[

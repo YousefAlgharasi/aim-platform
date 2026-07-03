@@ -49,6 +49,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../widgets/lessons_widgets.dart';
 
 /// Lesson list screen for a single chapter.
@@ -110,6 +111,8 @@ class _LessonListPageState extends ConsumerState<LessonListPage> {
     final lessons = state is AppAsyncSuccess<List<LessonProgressModel>>
         ? state.data
         : const <LessonProgressModel>[];
+    final loadingLabel =
+        AppLocalizations.of(context).lessonsLoadingLessonsSemantic;
 
     return Scaffold(
       body: SafeArea(
@@ -122,8 +125,8 @@ class _LessonListPageState extends ConsumerState<LessonListPage> {
             ),
             Expanded(
               child: switch (state) {
-                AppAsyncLoading() => const AIMFullScreenLoading(
-                    semanticLabel: 'Loading lessons',
+                AppAsyncLoading() => AIMFullScreenLoading(
+                    semanticLabel: loadingLabel,
                   ),
                 AppAsyncFailure(:final message) => AIMFullScreenError(
                     message: message,
@@ -133,8 +136,8 @@ class _LessonListPageState extends ConsumerState<LessonListPage> {
                     lessons: data,
                     onRefresh: _refresh,
                   ),
-                AppAsyncIdle() => const AIMFullScreenLoading(
-                    semanticLabel: 'Loading lessons',
+                AppAsyncIdle() => AIMFullScreenLoading(
+                    semanticLabel: loadingLabel,
                   ),
               },
             ),
@@ -163,6 +166,7 @@ class _LessonListHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     // Real "N/total done" — backend-computed LessonProgressModel.completed.
     final completedCount = lessons.where((lesson) => lesson.completed).length;
@@ -179,7 +183,7 @@ class _LessonListHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               AIMIconButton(
-                semanticLabel: 'Back',
+                semanticLabel: l10n.commonBack,
                 onPressed: () {
                   if (context.canPop()) context.pop();
                 },
@@ -196,7 +200,7 @@ class _LessonListHeader extends StatelessWidget {
                   children: [
                     if (chapterIndex != null)
                       Text(
-                        'CHAPTER ${chapterIndex! + 1}',
+                        l10n.lessonsChapterEyebrowLabel(chapterIndex! + 1),
                         style: AimTextStyles.caption.copyWith(
                           color: AimColors.primary500,
                           fontWeight: AimFontWeights.bold,
@@ -222,7 +226,8 @@ class _LessonListHeader extends StatelessWidget {
               max: lessons.length.toDouble(),
               tone: AIMProgressBarTone.gradient,
               showValue: true,
-              valueFormat: (v, m) => '${v.round()}/${m.round()} done',
+              valueFormat: (v, m) =>
+                  l10n.commonDoneProgress(v.round(), m.round()),
             ),
           ],
         ],
@@ -247,10 +252,11 @@ class _LessonListContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (lessons.isEmpty) {
-      return const AIMEmptyState(
-        icon: Icon(Icons.play_lesson_outlined),
-        title: 'No lessons available',
-        subtitle: 'Published lessons will appear here.',
+      final l10n = AppLocalizations.of(context);
+      return AIMEmptyState(
+        icon: const Icon(Icons.play_lesson_outlined),
+        title: l10n.lessonsNoLessonsTitle,
+        subtitle: l10n.lessonsNoLessonsSubtitle,
       );
     }
 

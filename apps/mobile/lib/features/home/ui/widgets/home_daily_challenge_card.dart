@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_engagement.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class HomeDailyChallengeCard extends StatelessWidget {
   const HomeDailyChallengeCard({required this.challenge, super.key});
@@ -18,11 +19,15 @@ class HomeDailyChallengeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
-      semanticLabel:
-          'Daily challenge: ${challenge.title}, ${challenge.progressCount} of ${challenge.targetCount}',
+      semanticLabel: l10n.homeDailyChallengeSemantic(
+        challenge.title,
+        challenge.progressCount,
+        challenge.targetCount,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

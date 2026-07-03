@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lesson_asset.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Card entry for a single published lesson asset.
 ///
@@ -46,7 +47,8 @@ class LessonAssetTile extends StatelessWidget {
 
     return AIMCard(
       variant: AIMCardVariant.standard,
-      semanticLabel: '${asset.type} asset: ${asset.title}',
+      semanticLabel:
+          AppLocalizations.of(context).lessonsAssetSemantic(asset.type, asset.title),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

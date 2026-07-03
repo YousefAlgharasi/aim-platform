@@ -1,6 +1,7 @@
 import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/state/app_form_state.dart';
 import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'auth_context_provider.dart';
@@ -83,7 +84,7 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
   ///     signedIn.
   /// 2b. If email confirmation required: sets [outcome] to
   ///     [RegisterOutcome.awaitingEmailConfirmation].
-  Future<void> submit() async {
+  Future<void> submit(AppLocalizations l10n) async {
     if (!state.isValid || state.isSubmitting) return;
 
     state = state.copyWith(isSubmitting: true, clearError: true);
@@ -108,12 +109,12 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
       // Auto-confirmed — sync with backend and sign in.
       final didLoadContext = await _ref
           .read(authContextProvider.notifier)
-          .syncAndLoadUser(accessToken);
+          .syncAndLoadUser(accessToken, l10n: l10n);
 
       if (!didLoadContext) {
         state = state.copyWith(
           isSubmitting: false,
-          errorMessage: 'Your session has expired. Please sign in again.',
+          errorMessage: l10n.authSessionExpiredError,
         );
         return;
       }
@@ -140,7 +141,7 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
     } catch (_) {
       state = state.copyWith(
         isSubmitting: false,
-        errorMessage: 'Registration failed. Please try again.',
+        errorMessage: l10n.authRegistrationFailedGeneric,
       );
     }
   }

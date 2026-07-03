@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
 import '../../../../core/networking/backend_api_paths.dart';
@@ -76,16 +77,17 @@ class _EndpointTesterPageState extends ConsumerState<EndpointTesterPage> {
   ];
 
   Future<void> _executeRequest(ApiEndpointDef endpoint) async {
+    final l10n = AppLocalizations.of(context);
     final key = endpoint.name;
     setState(() {
       _loading[key] = true;
-      _responses[key] = 'Loading...';
+      _responses[key] = l10n.commonLoading;
     });
 
     try {
       final config = AppConfig.fromEnvironment();
       final uri = Uri.parse('${config.backendApiBaseUrl}${endpoint.path}');
-      
+
       final headers = <String, String>{
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -97,7 +99,7 @@ class _EndpointTesterPageState extends ConsumerState<EndpointTesterPage> {
           headers['Authorization'] = 'Bearer $token';
         } else {
           setState(() {
-            _responses[key] = 'Error: No auth token found. Please login first.';
+            _responses[key] = l10n.devToolsNoAuthTokenError;
             _loading[key] = false;
           });
           return;
@@ -157,7 +159,7 @@ class _EndpointTesterPageState extends ConsumerState<EndpointTesterPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('API Endpoint Tester'),
+        title: Text(AppLocalizations.of(context).devToolsEndpointTesterTitle),
         backgroundColor: Colors.deepPurple,
         foregroundColor: Colors.white,
       ),
@@ -169,14 +171,15 @@ class _EndpointTesterPageState extends ConsumerState<EndpointTesterPage> {
 
           return ExpansionTile(
             title: Text(category, style: const TextStyle(fontWeight: FontWeight.bold)),
-            children: eps.map((ep) => _buildEndpointCard(ep)).toList(),
+            children: eps.map((ep) => _buildEndpointCard(context, ep)).toList(),
           );
         },
       ),
     );
   }
 
-  Widget _buildEndpointCard(ApiEndpointDef endpoint) {
+  Widget _buildEndpointCard(BuildContext context, ApiEndpointDef endpoint) {
+    final l10n = AppLocalizations.of(context);
     final key = endpoint.name;
     final isLoading = _loading[key] ?? false;
     final response = _responses[key];
@@ -216,7 +219,7 @@ class _EndpointTesterPageState extends ConsumerState<EndpointTesterPage> {
             Text(endpoint.name, style: const TextStyle(color: Colors.grey)),
             if (endpoint.defaultBody != null) ...[
               const SizedBox(height: 12),
-              const Text('Body:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              Text(l10n.devToolsBodyLabel, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(8),
@@ -231,7 +234,7 @@ class _EndpointTesterPageState extends ConsumerState<EndpointTesterPage> {
                 onPressed: isLoading ? null : () => _executeRequest(endpoint),
                 child: isLoading
                     ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text('Send Request'),
+                    : Text(l10n.devToolsSendRequestButton),
               ),
             ),
             if (response != null) ...[

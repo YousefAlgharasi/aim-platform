@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:aim_mobile/core/localization/app_locale.dart';
 import 'package:aim_mobile/core/routing/routing.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -29,6 +30,11 @@ class TestRouterApp extends ConsumerWidget {
       authState: () => ref.read(authFlowProvider),
       authContextState: () => ref.read(authContextProvider),
     );
-    return MaterialApp.router(routerConfig: router, locale: locale);
+    return MaterialApp.router(
+      routerConfig: router,
+      locale: locale,
+      localizationsDelegates: AppLocale.delegates,
+      supportedLocales: AppLocale.supportedLocales,
+    );
   }
 }

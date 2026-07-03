@@ -1,0 +1,1218 @@
+{
+  "@@locale": "en",
+  "appTitle": "AIM Mobile",
+  "@appTitle": {
+    "description": "The application title."
+  },
+
+  "commonBack": "Back",
+  "commonCancel": "Cancel",
+  "commonSave": "Save",
+  "commonSubmit": "Submit",
+  "commonRetry": "Try again",
+  "commonClose": "Close",
+  "commonContinue": "Continue",
+  "commonStart": "Start",
+  "commonDone": "Done",
+  "commonLoading": "Loading…",
+  "commonError": "Something went wrong",
+  "commonYes": "Yes",
+  "commonNo": "No",
+  "commonOk": "OK",
+  "commonDelete": "Delete",
+  "commonEdit": "Edit",
+  "commonSeeAll": "See all",
+  "commonJustNow": "Just now",
+  "commonYesterday": "Yesterday",
+  "commonFocusAreas": "Focus Areas",
+  "@commonFocusAreas": {
+    "description": "Section header for the weakness/focus-areas list, shown on both the Home and Learning Path screens."
+  },
+  "commonDoneProgress": "{done}/{total} done",
+  "@commonDoneProgress": {
+    "description": "Compact 'x/y done' progress label with no surrounding spaces, e.g. for a progress bar's value text.",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "commonWeaknessSemantic": "{skillId} weakness: {severity}",
+  "@commonWeaknessSemantic": {
+    "description": "Accessibility label for a weakness chip, shared by Home and Learning Path. skillId and severity are backend-supplied values.",
+    "placeholders": {
+      "skillId": {
+        "type": "String"
+      },
+      "severity": {
+        "type": "String"
+      }
+    }
+  },
+
+  "authEmailLabel": "Email",
+  "@authEmailLabel": {
+    "description": "Label for the email input field on the login/register forms."
+  },
+  "authEmailPlaceholder": "you@example.com",
+  "@authEmailPlaceholder": {
+    "description": "Example placeholder text shown inside the empty email field."
+  },
+  "authEmailSemantic": "Email address",
+  "@authEmailSemantic": {
+    "description": "Accessibility label for the email input field."
+  },
+  "authPasswordLabel": "Password",
+  "@authPasswordLabel": {
+    "description": "Label for the password input field."
+  },
+  "authPasswordSemantic": "Password",
+  "@authPasswordSemantic": {
+    "description": "Accessibility label for the password input field."
+  },
+  "authForgotPassword": "Forgot password?",
+  "@authForgotPassword": {
+    "description": "Non-interactive 'forgot password' link text shown on the login form."
+  },
+  "authSignInButton": "Sign In",
+  "@authSignInButton": {
+    "description": "Label for the primary sign-in submit button."
+  },
+  "authSignInSemantic": "Sign in",
+  "@authSignInSemantic": {
+    "description": "Accessibility label for the sign-in submit button."
+  },
+  "authNoAccountPrompt": "Don't have an account? ",
+  "@authNoAccountPrompt": {
+    "description": "Prompt shown before the 'Create one' link on the login page."
+  },
+  "authCreateOneLink": "Create one",
+  "@authCreateOneLink": {
+    "description": "Link text that opens the registration page."
+  },
+  "authOpenEndpointTester": "Open API Endpoint Tester",
+  "@authOpenEndpointTester": {
+    "description": "Developer-only button on the login page that opens the API endpoint tester."
+  },
+  "authWelcomeBackTitle": "Welcome back",
+  "@authWelcomeBackTitle": {
+    "description": "Heading shown in the login page's gradient hero header."
+  },
+  "authWelcomeBackSubtitle": "Sign in to keep your streak alive",
+  "@authWelcomeBackSubtitle": {
+    "description": "Subtitle shown beneath the welcome-back heading on the login page."
+  },
+  "authOrContinueWith": "OR CONTINUE WITH",
+  "@authOrContinueWith": {
+    "description": "Divider label above the social sign-in buttons on the login page."
+  },
+  "authContinueWithGoogle": "Continue with Google",
+  "@authContinueWithGoogle": {
+    "description": "Label for the (visual-only) Google sign-in button on the login page."
+  },
+  "authContinueWithGoogleSemantic": "Continue with Google (coming soon)",
+  "@authContinueWithGoogleSemantic": {
+    "description": "Accessibility label for the disabled Google sign-in button on the login page."
+  },
+  "authAppleButton": "Apple",
+  "@authAppleButton": {
+    "description": "Label for the (visual-only) Apple sign-in/sign-up button."
+  },
+  "authFacebookButton": "Facebook",
+  "@authFacebookButton": {
+    "description": "Label for the (visual-only) Facebook sign-in/sign-up button."
+  },
+  "authContinueWithAppleSemantic": "Continue with Apple (coming soon)",
+  "@authContinueWithAppleSemantic": {
+    "description": "Accessibility label for the disabled Apple sign-in button on the login page."
+  },
+  "authContinueWithFacebookSemantic": "Continue with Facebook (coming soon)",
+  "@authContinueWithFacebookSemantic": {
+    "description": "Accessibility label for the disabled Facebook sign-in button on the login page."
+  },
+  "authTestModeLabel": "Test mode",
+  "@authTestModeLabel": {
+    "description": "Divider label above the developer test-mode shortcuts on the login page."
+  },
+  "authEnterAsTestStudentSemantic": "Enter as test student",
+  "@authEnterAsTestStudentSemantic": {
+    "description": "Accessibility label for the developer test-mode 'Student' shortcut button."
+  },
+  "authStudentButton": "Student",
+  "@authStudentButton": {
+    "description": "Label for the developer test-mode 'Student' shortcut button."
+  },
+  "authEnterAsTestParentSemantic": "Enter as test parent",
+  "@authEnterAsTestParentSemantic": {
+    "description": "Accessibility label for the developer test-mode 'Parent' shortcut button."
+  },
+  "authParentButton": "Parent",
+  "@authParentButton": {
+    "description": "Label for the developer test-mode 'Parent' shortcut button."
+  },
+  "authEnterAsTestAdminSemantic": "Enter as test admin",
+  "@authEnterAsTestAdminSemantic": {
+    "description": "Accessibility label for the developer test-mode 'Admin' shortcut button."
+  },
+  "authAdminButton": "Admin",
+  "@authAdminButton": {
+    "description": "Label for the developer test-mode 'Admin' shortcut button."
+  },
+  "authCreateAccount": "Create account",
+  "@authCreateAccount": {
+    "description": "Register page heading, submit button label, and its accessibility label."
+  },
+  "authStartLearningTagline": "Start learning English the fun way",
+  "@authStartLearningTagline": {
+    "description": "Subtitle shown beneath the create-account heading on the register page."
+  },
+  "authConfirmPasswordLabel": "Confirm Password",
+  "@authConfirmPasswordLabel": {
+    "description": "Label for the confirm-password input field on the register page."
+  },
+  "authConfirmPasswordSemantic": "Confirm password",
+  "@authConfirmPasswordSemantic": {
+    "description": "Accessibility label for the confirm-password input field."
+  },
+  "authPasswordsDoNotMatch": "Passwords do not match",
+  "@authPasswordsDoNotMatch": {
+    "description": "Validation error shown when password and confirm-password fields differ."
+  },
+  "authOrSignUpWith": "OR SIGN UP WITH",
+  "@authOrSignUpWith": {
+    "description": "Divider label above the social sign-up buttons on the register page."
+  },
+  "authSignUpWithGoogle": "Sign up with Google",
+  "@authSignUpWithGoogle": {
+    "description": "Label for the (visual-only) Google sign-up button on the register page."
+  },
+  "authSignUpWithGoogleSemantic": "Sign up with Google (coming soon)",
+  "@authSignUpWithGoogleSemantic": {
+    "description": "Accessibility label for the disabled Google sign-up button on the register page."
+  },
+  "authSignUpWithAppleSemantic": "Sign up with Apple (coming soon)",
+  "@authSignUpWithAppleSemantic": {
+    "description": "Accessibility label for the disabled Apple sign-up button on the register page."
+  },
+  "authSignUpWithFacebookSemantic": "Sign up with Facebook (coming soon)",
+  "@authSignUpWithFacebookSemantic": {
+    "description": "Accessibility label for the disabled Facebook sign-up button on the register page."
+  },
+  "authAgreeToTermsPrefix": "By signing up you agree to AIM's ",
+  "@authAgreeToTermsPrefix": {
+    "description": "Prefix of the terms/privacy-policy notice on the register page."
+  },
+  "authTermsLink": "Terms",
+  "@authTermsLink": {
+    "description": "Non-interactive 'Terms' link text on the register page's terms notice."
+  },
+  "authAndConnector": " and ",
+  "@authAndConnector": {
+    "description": "Connector word between the Terms and Privacy Policy links."
+  },
+  "authPrivacyPolicyLink": "Privacy Policy",
+  "@authPrivacyPolicyLink": {
+    "description": "Non-interactive 'Privacy Policy' link text on the register page's terms notice."
+  },
+  "authAlreadyHaveAccount": "Already have an account? Sign in",
+  "@authAlreadyHaveAccount": {
+    "description": "Link back to the login page shown at the bottom of the register page."
+  },
+  "authCheckYourEmailTitle": "Check Your Email",
+  "@authCheckYourEmailTitle": {
+    "description": "App bar title for the email-confirmation-sent screen."
+  },
+  "authConfirmationEmailSentTitle": "Confirmation email sent",
+  "@authConfirmationEmailSentTitle": {
+    "description": "Heading on the email-confirmation-sent screen."
+  },
+  "authConfirmationEmailBody": "We sent a confirmation link to:\n{email}\n\nOpen the link to activate your account, then sign in.",
+  "@authConfirmationEmailBody": {
+    "description": "Body text on the email-confirmation-sent screen, includes the address the link was sent to.",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "authGoToSignInButton": "Go to Sign In",
+  "@authGoToSignInButton": {
+    "description": "Button label that returns the user to the login page after registering."
+  },
+  "authGoToSignInSemantic": "Go to sign in",
+  "@authGoToSignInSemantic": {
+    "description": "Accessibility label for the 'Go to Sign In' button."
+  },
+  "authPasswordStrengthWeak": "Weak",
+  "@authPasswordStrengthWeak": {
+    "description": "Password-strength meter label for a weak password."
+  },
+  "authPasswordStrengthMedium": "Medium",
+  "@authPasswordStrengthMedium": {
+    "description": "Password-strength meter label for a medium-strength password."
+  },
+  "authPasswordStrengthStrong": "Strong",
+  "@authPasswordStrengthStrong": {
+    "description": "Password-strength meter label for a strong password."
+  },
+  "authPasswordStrengthSemantic": "Password strength: {strength}",
+  "@authPasswordStrengthSemantic": {
+    "description": "Accessibility label announcing the current password strength.",
+    "placeholders": {
+      "strength": {
+        "type": "String"
+      }
+    }
+  },
+  "authSignOutSemantic": "Sign out",
+  "@authSignOutSemantic": {
+    "description": "Accessibility label for the sign-out button."
+  },
+  "authSignOutButton": "Sign Out",
+  "@authSignOutButton": {
+    "description": "Label for the sign-out button."
+  },
+  "authFailedToLoadUser": "Failed to load user",
+  "@authFailedToLoadUser": {
+    "description": "Fallback error message shown when the current user's profile fails to load."
+  },
+  "authFailedToSyncUser": "Failed to sync and load user",
+  "@authFailedToSyncUser": {
+    "description": "Fallback error message shown when syncing and loading the current user fails."
+  },
+  "authSessionExpiredError": "Your session has expired. Please sign in again.",
+  "@authSessionExpiredError": {
+    "description": "Error message shown when the user's session has expired and they must sign in again."
+  },
+  "authSignInFailedGeneric": "Sign in failed. Please try again.",
+  "@authSignInFailedGeneric": {
+    "description": "Generic fallback error message shown when sign-in fails for an unknown reason."
+  },
+  "authTestLoginFailedGeneric": "Test login failed. Please try again.",
+  "@authTestLoginFailedGeneric": {
+    "description": "Generic fallback error message shown when the developer test-login shortcut fails."
+  },
+  "authRegistrationFailedGeneric": "Registration failed. Please try again.",
+  "@authRegistrationFailedGeneric": {
+    "description": "Generic fallback error message shown when registration fails for an unknown reason."
+  },
+
+  "devToolsEndpointTesterTitle": "API Endpoint Tester",
+  "@devToolsEndpointTesterTitle": {
+    "description": "App bar title for the developer API endpoint tester screen."
+  },
+  "devToolsBodyLabel": "Body:",
+  "@devToolsBodyLabel": {
+    "description": "Label above a request's default JSON body preview in the endpoint tester."
+  },
+  "devToolsSendRequestButton": "Send Request",
+  "@devToolsSendRequestButton": {
+    "description": "Button label that sends the selected API request in the endpoint tester."
+  },
+  "devToolsNoAuthTokenError": "Error: No auth token found. Please login first.",
+  "@devToolsNoAuthTokenError": {
+    "description": "Error shown in the endpoint tester when an authenticated request is attempted without a signed-in session."
+  },
+
+  "shellOpenMenuTooltip": "Open menu",
+  "@shellOpenMenuTooltip": {
+    "description": "Tooltip for the floating action button that opens the navigation drawer."
+  },
+  "shellNavHome": "Home",
+  "@shellNavHome": {
+    "description": "Label for the Home destination in the bottom nav and drawer."
+  },
+  "shellNavHomeSemantic": "Home tab",
+  "@shellNavHomeSemantic": {
+    "description": "Accessibility label for the Home bottom-nav tab."
+  },
+  "shellNavLearn": "Learn",
+  "@shellNavLearn": {
+    "description": "Label for the Learn destination in the bottom nav and drawer."
+  },
+  "shellNavLearnSemantic": "Learn tab",
+  "@shellNavLearnSemantic": {
+    "description": "Accessibility label for the Learn bottom-nav tab."
+  },
+  "shellNavReview": "Review",
+  "@shellNavReview": {
+    "description": "Label for the Review destination in the bottom nav and drawer."
+  },
+  "shellNavReviewSemantic": "Review tab",
+  "@shellNavReviewSemantic": {
+    "description": "Accessibility label for the Review bottom-nav tab."
+  },
+  "shellNavProgress": "Progress",
+  "@shellNavProgress": {
+    "description": "Label for the Progress destination in the bottom nav and drawer."
+  },
+  "shellNavProgressSemantic": "Progress tab",
+  "@shellNavProgressSemantic": {
+    "description": "Accessibility label for the Progress bottom-nav tab."
+  },
+  "shellNavProfile": "Profile",
+  "@shellNavProfile": {
+    "description": "Label for the Profile destination in the bottom nav and drawer."
+  },
+  "shellNavProfileSemantic": "Profile tab",
+  "@shellNavProfileSemantic": {
+    "description": "Accessibility label for the Profile bottom-nav tab."
+  },
+  "shellMenuSectionLabel": "MENU",
+  "@shellMenuSectionLabel": {
+    "description": "Section heading above the primary navigation items in the drawer."
+  },
+  "shellMoreSectionLabel": "MORE",
+  "@shellMoreSectionLabel": {
+    "description": "Section heading above the secondary navigation items in the drawer."
+  },
+  "shellNotifications": "Notifications",
+  "@shellNotifications": {
+    "description": "Drawer item label for the notifications inbox."
+  },
+  "shellAchievements": "Achievements",
+  "@shellAchievements": {
+    "description": "Drawer item label for the achievements screen."
+  },
+  "shellAimPlus": "AIM Plus",
+  "@shellAimPlus": {
+    "description": "Drawer item label for the premium subscription / pricing screen."
+  },
+  "shellSupport": "Support",
+  "@shellSupport": {
+    "description": "Drawer item label for the help center."
+  },
+  "shellUnreadNotificationsSemantic": "{count, plural, zero{No unread notifications} one{{count} unread notification} two{{count} unread notifications} few{{count} unread notifications} many{{count} unread notifications} other{{count} unread notifications}}",
+  "@shellUnreadNotificationsSemantic": {
+    "description": "Accessibility label announcing the number of unread notifications on the drawer's Notifications badge.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shellBrandName": "AIM Learning",
+  "@shellBrandName": {
+    "description": "App brand name shown in the navigation drawer header."
+  },
+  "shellBrandTagline": "English, smarter",
+  "@shellBrandTagline": {
+    "description": "Tagline shown beneath the brand name in the navigation drawer header."
+  },
+  "shellThemeLight": "Light",
+  "@shellThemeLight": {
+    "description": "Label for the light-theme toggle option in the drawer."
+  },
+  "shellThemeDark": "Dark",
+  "@shellThemeDark": {
+    "description": "Label for the dark-theme toggle option in the drawer."
+  },
+  "shellThemeSemantic": "{theme} theme",
+  "@shellThemeSemantic": {
+    "description": "Accessibility label for a theme toggle option, e.g. 'Light theme'.",
+    "placeholders": {
+      "theme": {
+        "type": "String"
+      }
+    }
+  },
+
+  "onboardingBrandName": "AIM",
+  "@onboardingBrandName": {
+    "description": "App brand name shown on the splash screen."
+  },
+  "onboardingTagline": "Adaptive Intelligence for Mastery",
+  "@onboardingTagline": {
+    "description": "Tagline shown beneath the brand name on the splash screen."
+  },
+  "onboardingTapToContinue": "Tap to continue",
+  "@onboardingTapToContinue": {
+    "description": "Static hint text shown alongside the splash screen's progress bar while the session check runs."
+  },
+
+  "homeLoadingSemantic": "Loading home data",
+  "@homeLoadingSemantic": {
+    "description": "Accessibility label shown while the home screen's data is loading."
+  },
+  "homeUnreadNotificationsSubtitle": "{count, plural, zero{No new notifications} one{1 new notification} other{{count} new notifications}}",
+  "@homeUnreadNotificationsSubtitle": {
+    "description": "Subtitle in the notifications sheet summarizing the number of unread, non-dismissed notifications.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeMinutesAgoLabel": "{count, plural, one{1m ago} other{{count}m ago}}",
+  "@homeMinutesAgoLabel": {
+    "description": "Compact relative-time label for a notification created less than an hour ago.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeHoursAgoLabel": "{count, plural, one{1h ago} other{{count}h ago}}",
+  "@homeHoursAgoLabel": {
+    "description": "Compact relative-time label for a notification created less than a day ago.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeDaysAgoLabel": "{count, plural, one{1d ago} other{{count}d ago}}",
+  "@homeDaysAgoLabel": {
+    "description": "Compact relative-time label for a notification created a few days ago.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeWeeksAgoLabel": "{count, plural, one{1w ago} other{{count}w ago}}",
+  "@homeWeeksAgoLabel": {
+    "description": "Compact relative-time label for a notification created a week or more ago.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeContinueLearningTitle": "Continue learning",
+  "@homeContinueLearningTitle": {
+    "description": "Section header above the continue-learning hero card on the home screen."
+  },
+  "homeLibraryLink": "Library",
+  "@homeLibraryLink": {
+    "description": "Link button next to 'Continue learning' that switches to the Learn tab."
+  },
+  "homeDailyChallengesTitle": "Daily challenges",
+  "@homeDailyChallengesTitle": {
+    "description": "Section header above the daily challenge row on the home screen."
+  },
+  "homeDailyChallengeCountLabel": "{done} / {total} done",
+  "@homeDailyChallengeCountLabel": {
+    "description": "Count of daily challenges completed, shown next to the 'Daily challenges' section header.",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "homeQuickStartTitle": "Quick Start",
+  "@homeQuickStartTitle": {
+    "description": "Section header above the quick-start lesson card on the home screen."
+  },
+  "homeRecommendedCourseTitle": "Recommended Course",
+  "@homeRecommendedCourseTitle": {
+    "description": "Section header above the recommended-course card on the home screen."
+  },
+  "homeGoalTitle": "Goal",
+  "@homeGoalTitle": {
+    "description": "Section header above the daily-goal card on the home screen."
+  },
+  "homeSkillStatesTitle": "Skill States",
+  "@homeSkillStatesTitle": {
+    "description": "Section header above the skill-state cards on the home screen."
+  },
+  "homeReviewScheduleTitle": "Review Schedule",
+  "@homeReviewScheduleTitle": {
+    "description": "Section header above the review-schedule cards on the home screen."
+  },
+  "homeRecommendationsTitle": "AIM Recommendations",
+  "@homeRecommendationsTitle": {
+    "description": "Section header above the AIM recommendation cards on the home screen."
+  },
+  "homeGetStartedTitle": "Get Started",
+  "@homeGetStartedTitle": {
+    "description": "Section header shown above the getting-started promo cards for students with no AIM data yet."
+  },
+  "homePlacementTestTitle": "Placement Test",
+  "@homePlacementTestTitle": {
+    "description": "Title of the getting-started promo card that opens the placement test."
+  },
+  "homePlacementTestSubtitle": "Find your level and get personalised recommendations.",
+  "@homePlacementTestSubtitle": {
+    "description": "Subtitle of the getting-started promo card that opens the placement test."
+  },
+  "homeBrowseCoursesTitle": "Browse Courses",
+  "@homeBrowseCoursesTitle": {
+    "description": "Title of the getting-started promo card that switches to the Learn tab."
+  },
+  "homeBrowseCoursesSubtitle": "Explore available courses and start learning.",
+  "@homeBrowseCoursesSubtitle": {
+    "description": "Subtitle of the getting-started promo card that switches to the Learn tab."
+  },
+  "homeAssessmentsTitle": "Assessments",
+  "@homeAssessmentsTitle": {
+    "description": "Title of the getting-started promo card that opens the assessments list."
+  },
+  "homeAssessmentsSubtitle": "View and take available assessments.",
+  "@homeAssessmentsSubtitle": {
+    "description": "Subtitle of the getting-started promo card that opens the assessments list."
+  },
+  "homeGreetingWeekdayLine": "{weekday} · let's go",
+  "@homeGreetingWeekdayLine": {
+    "description": "Small caption above the greeting, e.g. 'Monday · let's go'. weekday is already localized via intl.",
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "homeGreetingHey": "Hey {name} ✦",
+  "@homeGreetingHey": {
+    "description": "Main greeting line on the home screen showing the student's first name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeStreakDaysSemantic": "{count, plural, one{1 day streak} other{{count} day streak}}",
+  "@homeStreakDaysSemantic": {
+    "description": "Accessibility label for the streak pill in the home screen's greeting header.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeCrushingGoalsTitle": "You're crushing your goals 🚀",
+  "@homeCrushingGoalsTitle": {
+    "description": "Encouraging caption at the top of the level hero card on the home screen."
+  },
+  "homeLevelLabel": "LEVEL",
+  "@homeLevelLabel": {
+    "description": "Small eyebrow label above the student's level number on the home screen's level hero card."
+  },
+  "homeXpTodayLabel": "XP TODAY",
+  "@homeXpTodayLabel": {
+    "description": "Small label under the XP-earned-today figure on the home screen's level hero card."
+  },
+  "homeLevelHeroSemanticNext": "Level {level}, {xp} XP, {nextXp} XP to level {nextLevel}",
+  "@homeLevelHeroSemanticNext": {
+    "description": "Accessibility label for the level hero card when the student has not yet reached the max level.",
+    "placeholders": {
+      "level": {
+        "type": "int"
+      },
+      "xp": {
+        "type": "int"
+      },
+      "nextXp": {
+        "type": "int"
+      },
+      "nextLevel": {
+        "type": "int"
+      }
+    }
+  },
+  "homeLevelHeroSemanticMax": "Level {level}, {xp} XP (max level)",
+  "@homeLevelHeroSemanticMax": {
+    "description": "Accessibility label for the level hero card when the student is at the max level.",
+    "placeholders": {
+      "level": {
+        "type": "int"
+      },
+      "xp": {
+        "type": "int"
+      }
+    }
+  },
+  "homeXpProgressWithNext": "{xp} / {nextXp} XP",
+  "@homeXpProgressWithNext": {
+    "description": "XP progress text shown on the level hero card when a next level exists. xp/nextXp are already thousands-separator formatted.",
+    "placeholders": {
+      "xp": {
+        "type": "String"
+      },
+      "nextXp": {
+        "type": "String"
+      }
+    }
+  },
+  "homeXpProgressMax": "{xp} XP",
+  "@homeXpProgressMax": {
+    "description": "XP progress text shown on the level hero card when the student is at the max level. xp is already thousands-separator formatted.",
+    "placeholders": {
+      "xp": {
+        "type": "String"
+      }
+    }
+  },
+  "homeNextLevelCta": "Level {level} →",
+  "@homeNextLevelCta": {
+    "description": "Label pointing to the next level on the level hero card.",
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "homeMaxLevelLabel": "Max level",
+  "@homeMaxLevelLabel": {
+    "description": "Label shown instead of a next-level pointer once the student is at the max level."
+  },
+  "homeBadgeCountLabel": "{count, plural, one{1 badge} other{{count} badges}}",
+  "@homeBadgeCountLabel": {
+    "description": "Badge-count pill on the home screen's level hero card.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeTopPercentLabel": "Top {percent}%",
+  "@homeTopPercentLabel": {
+    "description": "Rank-percentile pill on the home screen's level hero card.",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "homeResumeButton": "Resume",
+  "@homeResumeButton": {
+    "description": "Button label that resumes the in-progress lesson from the continue-learning hero card."
+  },
+  "homePercentCompleteLabel": "{percent}% complete",
+  "@homePercentCompleteLabel": {
+    "description": "Percent-complete caption shown under a lesson title on continue-learning cards.",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "homeContinueSemanticLabel": "Continue {title}, {percent} percent complete",
+  "@homeContinueSemanticLabel": {
+    "description": "Accessibility label for the home screen's continue-learning hero card.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "homeDailyChallengeSemantic": "Daily challenge: {title}, {progress} of {target}",
+  "@homeDailyChallengeSemantic": {
+    "description": "Accessibility label for a daily challenge row/card.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "progress": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "homeQuickStartSemantic": "Quick Start: {title}",
+  "@homeQuickStartSemantic": {
+    "description": "Accessibility label for the quick-start lesson card.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "homeRecommendedCourseSemantic": "Recommended course: {title}",
+  "@homeRecommendedCourseSemantic": {
+    "description": "Accessibility label for the recommended-course card.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "homeRecommendationSemantic": "AIM recommendation: {kind} {skillId}",
+  "@homeRecommendationSemantic": {
+    "description": "Accessibility label for an AIM recommendation card on the home screen. kind and skillId are backend-supplied values.",
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "skillId": {
+        "type": "String"
+      }
+    }
+  },
+  "homeContinueLearningCardSemantic": "Continue learning: {title}, {percent}% complete",
+  "@homeContinueLearningCardSemantic": {
+    "description": "Accessibility label for the standalone HomeContinueLearningCard widget.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "homeReviewScheduleSemantic": "Review {skillId} due {dueAt}",
+  "@homeReviewScheduleSemantic": {
+    "description": "Accessibility label for a review-schedule card. skillId and dueAt are backend-supplied values.",
+    "placeholders": {
+      "skillId": {
+        "type": "String"
+      },
+      "dueAt": {
+        "type": "String"
+      }
+    }
+  },
+  "homeSkillMasterySemantic": "{skillId} mastery: {percent}%",
+  "@homeSkillMasterySemantic": {
+    "description": "Accessibility label for a skill-state card. skillId is a backend-supplied value.",
+    "placeholders": {
+      "skillId": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "homeMasteryPercentLabel": "{percent}% mastery",
+  "@homeMasteryPercentLabel": {
+    "description": "Mastery-percent caption shown on a skill-state card.",
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "homeGoalSemantic": "Daily goal: {completed} of {target} lessons, {streak} day streak",
+  "@homeGoalSemantic": {
+    "description": "Accessibility label for the daily-goal card.",
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      },
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "homeTodaysGoalTitle": "Today's Goal",
+  "@homeTodaysGoalTitle": {
+    "description": "Title on the daily-goal card."
+  },
+  "homeGoalProgressLabel": "{completed} of {target} lessons completed today",
+  "@homeGoalProgressLabel": {
+    "description": "Progress caption on the daily-goal card.",
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+
+  "learningPathLoadingSemantic": "Loading learning path data",
+  "@learningPathLoadingSemantic": {
+    "description": "Accessibility label shown while the learning path screen's data is loading."
+  },
+  "learningPathHeaderTitle": "Learning Path",
+  "@learningPathHeaderTitle": {
+    "description": "Title in the learning path screen's gradient header."
+  },
+  "learningPathHeaderSubtitle": "Your personalized roadmap",
+  "@learningPathHeaderSubtitle": {
+    "description": "Subtitle in the learning path screen's gradient header."
+  },
+  "learningPathEmptyTitle": "Your learning path is empty",
+  "@learningPathEmptyTitle": {
+    "description": "Title shown when the student has no learning path data yet."
+  },
+  "learningPathEmptySubtitle": "Complete your placement test to generate a personalised learning path.",
+  "@learningPathEmptySubtitle": {
+    "description": "Subtitle shown when the student has no learning path data yet."
+  },
+  "learningPathSkillCoverageTitle": "Skill coverage",
+  "@learningPathSkillCoverageTitle": {
+    "description": "Section header above the skill-state cards on the learning path screen."
+  },
+  "learningPathNextUpTitle": "Next up",
+  "@learningPathNextUpTitle": {
+    "description": "Section header above the AIM recommendation cards on the learning path screen."
+  },
+  "learningPathAiPickedBadge": "AI picked",
+  "@learningPathAiPickedBadge": {
+    "description": "Badge shown next to the 'Next up' section header."
+  },
+  "learningPathRecommendationSemantic": "AIM recommendation: {kind} for {skillId}",
+  "@learningPathRecommendationSemantic": {
+    "description": "Accessibility label for an AIM recommendation card on the learning path screen. kind and skillId are backend-supplied values.",
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "skillId": {
+        "type": "String"
+      }
+    }
+  },
+  "learningPathSkillMasterySemantic": "{title} mastery: {percent}%, {trend}",
+  "@learningPathSkillMasterySemantic": {
+    "description": "Accessibility label for a skill-state card on the learning path screen. title and trend are derived from backend-supplied values.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      },
+      "trend": {
+        "type": "String"
+      }
+    }
+  },
+
+  "lessonsLoadingChaptersSemantic": "Loading chapters",
+  "@lessonsLoadingChaptersSemantic": {
+    "description": "Accessibility label shown while the chapter list is loading."
+  },
+  "lessonsChapterCountLabel": "{count, plural, one{1 chapter} other{{count} chapters}}",
+  "@lessonsChapterCountLabel": {
+    "description": "Chapter count subtitle shown under the course title on the chapter list header.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonsPercentDoneSemantic": "{percent} percent done",
+  "@lessonsPercentDoneSemantic": {
+    "description": "Accessibility label for the overall-percent-done badge on the chapter list header.",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonsDoneBadge": "DONE",
+  "@lessonsDoneBadge": {
+    "description": "Small eyebrow label under the percent-done figure on the chapter list header."
+  },
+  "lessonsFilterAllChapters": "All chapters",
+  "@lessonsFilterAllChapters": {
+    "description": "Filter chip label showing every chapter."
+  },
+  "lessonsInProgressLabel": "In progress",
+  "@lessonsInProgressLabel": {
+    "description": "Filter chip and status badge label for in-progress chapters/courses."
+  },
+  "lessonsCompletedLabel": "Completed",
+  "@lessonsCompletedLabel": {
+    "description": "Filter chip and status badge label for completed chapters/courses/lessons."
+  },
+  "lessonsNotStartedLabel": "Not started",
+  "@lessonsNotStartedLabel": {
+    "description": "Status badge label for a course the student has not started yet."
+  },
+  "lessonsNoChaptersTitle": "No chapters available",
+  "@lessonsNoChaptersTitle": {
+    "description": "Empty-state title shown when a course has no published chapters."
+  },
+  "lessonsNoChaptersSubtitle": "Published chapters will appear here.",
+  "@lessonsNoChaptersSubtitle": {
+    "description": "Empty-state subtitle shown when a course has no published chapters."
+  },
+  "lessonsNoChaptersFilterTitle": "No chapters in this filter",
+  "@lessonsNoChaptersFilterTitle": {
+    "description": "Empty-state title shown when the selected chapter filter has no matches."
+  },
+  "lessonsTryDifferentFilterSubtitle": "Try a different filter above.",
+  "@lessonsTryDifferentFilterSubtitle": {
+    "description": "Empty-state subtitle shown when the selected chapter filter has no matches."
+  },
+  "lessonsLoadingCoursesSemantic": "Loading courses",
+  "@lessonsLoadingCoursesSemantic": {
+    "description": "Accessibility label shown while the course list is loading."
+  },
+  "lessonsNoCoursesTitle": "No courses available",
+  "@lessonsNoCoursesTitle": {
+    "description": "Empty-state title shown when there are no published courses."
+  },
+  "lessonsNoCoursesSubtitle": "Published courses will appear here.",
+  "@lessonsNoCoursesSubtitle": {
+    "description": "Empty-state subtitle shown when there are no published courses."
+  },
+  "lessonsCoursesPageTitle": "Courses",
+  "@lessonsCoursesPageTitle": {
+    "description": "Heading at the top of the course list screen."
+  },
+  "lessonsLevelBadge": "Level {level}",
+  "@lessonsLevelBadge": {
+    "description": "Level badge shown next to the course list heading.",
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "lessonsCoursesSubtitle": "Level up your English, step by step",
+  "@lessonsCoursesSubtitle": {
+    "description": "Subtitle shown under the course list heading."
+  },
+  "lessonsFilterAllCourses": "All courses",
+  "@lessonsFilterAllCourses": {
+    "description": "Filter chip label showing every course."
+  },
+  "lessonsNoCoursesFilterMessage": "No courses match this filter yet.",
+  "@lessonsNoCoursesFilterMessage": {
+    "description": "Message shown when the selected course filter has no matches."
+  },
+  "lessonsLoadingLessonsSemantic": "Loading lessons",
+  "@lessonsLoadingLessonsSemantic": {
+    "description": "Accessibility label shown while the lesson list is loading."
+  },
+  "lessonsChapterEyebrowLabel": "CHAPTER {number}",
+  "@lessonsChapterEyebrowLabel": {
+    "description": "Small eyebrow label above the chapter title on the lesson list header.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonsNoLessonsTitle": "No lessons available",
+  "@lessonsNoLessonsTitle": {
+    "description": "Empty-state title shown when a chapter has no published lessons."
+  },
+  "lessonsNoLessonsSubtitle": "Published lessons will appear here.",
+  "@lessonsNoLessonsSubtitle": {
+    "description": "Empty-state subtitle shown when a chapter has no published lessons."
+  },
+  "lessonsLoadingLessonSemantic": "Loading lesson",
+  "@lessonsLoadingLessonSemantic": {
+    "description": "Accessibility label shown while a single lesson's detail is loading."
+  },
+  "lessonsLessonAppBarTitle": "Lesson",
+  "@lessonsLessonAppBarTitle": {
+    "description": "App bar title on the lesson detail screen."
+  },
+  "lessonsSaveLessonComingSoonSemantic": "Save lesson (coming soon)",
+  "@lessonsSaveLessonComingSoonSemantic": {
+    "description": "Accessibility label for the disabled bookmark/save-lesson action on the lesson detail screen."
+  },
+  "lessonsWhatsInsideTitle": "What's inside",
+  "@lessonsWhatsInsideTitle": {
+    "description": "Section header above the step list on the lesson detail screen."
+  },
+  "lessonsStepsCountLabel": "{count, plural, one{1 step} other{{count} steps}}",
+  "@lessonsStepsCountLabel": {
+    "description": "Step count shown next to the 'What's inside' section header.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonsNoContentTitle": "No content yet",
+  "@lessonsNoContentTitle": {
+    "description": "Empty-state title shown when a lesson has no published assets."
+  },
+  "lessonsNoContentSubtitle": "Published lesson content will appear here.",
+  "@lessonsNoContentSubtitle": {
+    "description": "Empty-state subtitle shown when a lesson has no published assets."
+  },
+  "lessonsStartPracticeButton": "Start practice",
+  "@lessonsStartPracticeButton": {
+    "description": "Button label that opens the AI Teacher chat for this lesson."
+  },
+  "lessonsPracticeContextLabel": "Lesson practice",
+  "@lessonsPracticeContextLabel": {
+    "description": "Context label passed along to the AI Teacher chat screen when starting practice from a lesson."
+  },
+  "lessonsLessonNumberPill": "Lesson {number}",
+  "@lessonsLessonNumberPill": {
+    "description": "Pill on the lesson detail hero banner showing the lesson's position within its chapter.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonsMinutesLabel": "{count, plural, one{1 min} other{{count} min}}",
+  "@lessonsMinutesLabel": {
+    "description": "Total duration pill on the lesson detail hero banner.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonsBlocksCountLabel": "{count, plural, one{1 block} other{{count} blocks}}",
+  "@lessonsBlocksCountLabel": {
+    "description": "Content-block count pill on the lesson detail hero banner.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonsXpBadge": "+{xp} XP",
+  "@lessonsXpBadge": {
+    "description": "XP-earned badge on the lesson detail hero banner.",
+    "placeholders": {
+      "xp": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonsStepTitleLabel": "Step {number}",
+  "@lessonsStepTitleLabel": {
+    "description": "Title of the bottom sheet shown when a lesson step is tapped.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonsStepSemantic": "Step {number}: {title}",
+  "@lessonsStepSemantic": {
+    "description": "Accessibility label for a step row on the lesson detail screen.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "lessonsAssetSemantic": "{type} asset: {title}",
+  "@lessonsAssetSemantic": {
+    "description": "Accessibility label for a lesson asset entry. type is a backend-supplied value (e.g. image, audio, video).",
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "lessonsCourseSemanticBase": "Course: {title}, {percent} percent complete",
+  "@lessonsCourseSemanticBase": {
+    "description": "Accessibility label for a course card when the course has no level code.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonsCourseSemanticWithLevel": "Course: {title}, level {level}, {percent} percent complete",
+  "@lessonsCourseSemanticWithLevel": {
+    "description": "Accessibility label for a course card when the course has a level code.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "level": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonsLessonsCountLabel": "{count, plural, one{1 lesson} other{{count} lessons}}",
+  "@lessonsLessonsCountLabel": {
+    "description": "Lesson count caption shown on course and chapter cards.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonsLessonSemantic": "Lesson: {title}",
+  "@lessonsLessonSemantic": {
+    "description": "Accessibility label for a lesson card.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "lessonsXpValueLabel": "{xp} XP",
+  "@lessonsXpValueLabel": {
+    "description": "XP-value badge shown on a lesson card.",
+    "placeholders": {
+      "xp": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonsStartLessonSemantic": "Start lesson",
+  "@lessonsStartLessonSemantic": {
+    "description": "Accessibility label for the trailing play button on the current lesson's card."
+  },
+  "lessonsChapterSemantic": "Chapter: {title}",
+  "@lessonsChapterSemantic": {
+    "description": "Accessibility label for a chapter card.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "lessonsImageUrlMissingError": "Image URL is missing for asset: {title}",
+  "@lessonsImageUrlMissingError": {
+    "description": "Error card message shown when an image lesson asset has no URL.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "lessonsImageLoadFailedError": "Failed to load image: {title}",
+  "@lessonsImageLoadFailedError": {
+    "description": "Error card message shown when an image lesson asset fails to load.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "lessonsNewWordsCountLabel": "{count, plural, one{1 new word} other{{count} new words}}",
+  "@lessonsNewWordsCountLabel": {
+    "description": "Word-count subtitle shown on a vocabulary lesson asset card.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonsItemsCountLabel": "{count, plural, one{1 item} other{{count} items}}",
+  "@lessonsItemsCountLabel": {
+    "description": "Item-count subtitle shown on an exercise lesson asset card.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}
