@@ -12,11 +12,15 @@ import 'package:aim_mobile/features/auth/data/models/auth_sync_response_model.da
 import 'package:aim_mobile/features/auth/data/models/login_result_model.dart';
 import 'package:aim_mobile/features/auth/data/models/refresh_result_model.dart';
 import 'package:aim_mobile/features/auth/data/models/register_result_model.dart';
+import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart';
+import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/login_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/provider/login_provider.dart';
 import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
 import 'package:aim_mobile/features/auth/ui/pages/login_page.dart';
 import 'package:aim_mobile/features/auth/ui/pages/register_page.dart';
+
+import '../../support/test_router_app.dart';
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -24,12 +28,21 @@ import 'package:aim_mobile/features/auth/ui/pages/register_page.dart';
 /// test-mode/social buttons rendered alongside it.
 final Finder _submitButtonFinder = find.byType(AIMGradientButton);
 
-Widget _testApp({List<Override> overrides = const []}) {
+Widget _testApp({List<Override> overrides = const [], Locale? locale}) {
   return ProviderScope(
-    overrides: overrides,
-    child: const MaterialApp(
-      initialRoute: AppRoutePaths.signIn,
-      onGenerateRoute: AppRouter.onGenerateRoute,
+    overrides: [
+      // Signed-out by default so AppRouter's redirect lets the sign-in
+      // route through unchanged (it only special-cases `checking`,
+      // `signedOut` on a protected route, and `signedIn` on an auth page —
+      // none of which should divert away from /auth/sign-in here). Tests
+      // that need a different auth state override this explicitly below.
+      authFlowProvider.overrideWith((ref) => AuthFlowNotifier()
+        ..completeBootstrap()),
+      ...overrides,
+    ],
+    child: TestRouterApp(
+      initialLocation: AppRoutePaths.signIn,
+      locale: locale,
     ),
   );
 }
@@ -331,15 +344,7 @@ void main() {
 
   testWidgets('LoginPage renders without errors under Arabic RTL locale',
       (tester) async {
-    await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(
-          locale: Locale('ar'),
-          initialRoute: AppRoutePaths.signIn,
-          onGenerateRoute: AppRouter.onGenerateRoute,
-        ),
-      ),
-    );
+    await tester.pumpWidget(_testApp(locale: const Locale('ar')));
     await tester.pump();
 
     expect(find.byType(LoginPage), findsOneWidget);

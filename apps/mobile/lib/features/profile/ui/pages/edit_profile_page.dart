@@ -16,6 +16,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/state/app_async_state.dart';
 import '../../../../core/widgets/widgets.dart';
@@ -159,7 +160,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     if (!mounted) return;
     if (success) {
       _showSnack('Profile updated.');
-      Navigator.of(context).pop();
+      context.pop();
     }
   }
 
@@ -313,7 +314,7 @@ class _EditProfileGradientHeader extends StatelessWidget {
                   button: true,
                   label: 'Back',
                   child: InkWell(
-                    onTap: () => Navigator.of(context).pop(),
+                    onTap: () => context.pop(),
                     customBorder: const CircleBorder(),
                     child: DecoratedBox(
                       decoration: BoxDecoration(

@@ -14,6 +14,7 @@
 // removing it would remove real functionality, not just cosmetic mismatch.
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -135,8 +136,7 @@ class HelpCenterPage extends StatelessWidget {
               child: AIMGradientButton(
                 label: 'Create Ticket',
                 icon: const Icon(Icons.add),
-                onPressed: () =>
-                    Navigator.of(context).pushNamed(AppRoutePaths.createTicket),
+                onPressed: () => context.push(AppRoutePaths.createTicket),
                 fullWidth: true,
                 semanticLabel: 'Create a support ticket',
               ),
@@ -170,7 +170,9 @@ class _HelpCenterHeader extends StatelessWidget {
               button: true,
               label: 'Back',
               child: InkWell(
-                onTap: () => Navigator.of(context).maybePop(),
+                onTap: () {
+                  if (context.canPop()) context.pop();
+                },
                 customBorder: const CircleBorder(),
                 child: DecoratedBox(
                   decoration: BoxDecoration(

@@ -13,6 +13,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
@@ -97,7 +98,7 @@ class _SubscriptionHeader extends StatelessWidget {
               button: true,
               label: 'Back',
               child: InkWell(
-                onTap: () => Navigator.of(context).pop(),
+                onTap: () => context.pop(),
                 customBorder: const CircleBorder(),
                 child: DecoratedBox(
                   decoration: BoxDecoration(
@@ -211,16 +212,14 @@ class _SubscriptionContent extends ConsumerWidget {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () =>
-                      Navigator.of(context).pushNamed(AppRoutePaths.invoiceHistory),
+                  onPressed: () => context.push(AppRoutePaths.invoiceHistory),
                   child: const Text('Invoices'),
                 ),
               ),
               const SizedBox(width: AimSpacing.componentGap),
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () =>
-                      Navigator.of(context).pushNamed(AppRoutePaths.pricing),
+                  onPressed: () => context.push(AppRoutePaths.pricing),
                   child: const Text('Change plan'),
                 ),
               ),
@@ -253,12 +252,12 @@ class _SubscriptionContent extends ConsumerWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
+            onPressed: () => ctx.pop(),
             child: const Text('Keep Subscription'),
           ),
           TextButton(
             onPressed: () {
-              Navigator.of(ctx).pop();
+              ctx.pop();
               ref
                   .read(subscriptionProvider.notifier)
                   .cancelSubscription(subscriptionId);

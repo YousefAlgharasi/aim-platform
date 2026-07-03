@@ -6,10 +6,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/routing.dart';
 import '../../../../core/widgets/widgets.dart';
-import '../../logic/provider/auth_flow_provider.dart';
 import '../../logic/provider/register_notifier.dart';
 import '../../logic/provider/register_provider.dart';
 
@@ -89,24 +89,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     final shadows = aimShadowsOf(context);
     final isRtl = Directionality.of(context) == TextDirection.rtl;
 
-    // Navigate to main shell when auto-confirmed and signed in.
-    //
-    // Deferred via addPostFrameCallback: this listener fires synchronously
-    // on state change, before the root MaterialApp (which watches
-    // authFlowProvider to build onGenerateRoute) has rebuilt. Pushing
-    // immediately would route against the stale (signed-out) closure and
-    // get redirected straight back to sign-in.
-    ref.listen(authFlowProvider, (_, next) {
-      if (next.isSignedIn && mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            AppRoutePaths.mainShell,
-            (route) => false,
-          );
-        });
-      }
-    });
+    // Navigation to main shell when auto-confirmed and signed in is handled
+    // declaratively by AppRouter's `redirect` (see AimMobileApp), which
+    // re-evaluates authFlowProvider via a refresh listenable.
 
     // Show email-confirmation screen after successful signup.
     if (notifier.outcome == RegisterOutcome.awaitingEmailConfirmation) {
@@ -150,7 +135,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                           button: true,
                           label: 'Back',
                           child: InkWell(
-                            onTap: () => Navigator.of(context).pop(),
+                            onTap: () => context.pop(),
                             borderRadius: AimRadius.borderMd,
                             child: DecoratedBox(
                               decoration: BoxDecoration(
@@ -377,7 +362,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       // ── Sign-in link ───────────────────────────────────
                       Center(
                         child: TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
+                          onPressed: () => context.pop(),
                           child: const Text('Already have an account? Sign in'),
                         ),
                       ),
@@ -441,11 +426,7 @@ class _ConfirmationSentView extends StatelessWidget {
                 AIMGradientButton(
                   label: 'Go to Sign In',
                   fullWidth: true,
-                  onPressed: () =>
-                      Navigator.of(context).pushNamedAndRemoveUntil(
-                    AppRoutePaths.signIn,
-                    (route) => false,
-                  ),
+                  onPressed: () => context.go(AppRoutePaths.signIn),
                   semanticLabel: 'Go to sign in',
                 ),
               ],

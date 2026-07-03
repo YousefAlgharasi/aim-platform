@@ -20,13 +20,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
 import 'package:aim_mobile/features/assessments/logic/provider/assessment_provider.dart';
-import 'package:aim_mobile/features/assessments/ui/pages/submit_attempt_page.dart';
 
 class AttemptPage extends ConsumerStatefulWidget {
   const AttemptPage({
@@ -64,13 +65,12 @@ class _AttemptPageState extends ConsumerState<AttemptPage> {
   /// instead of submitting inline; the confirmation page owns the submit
   /// call, its loading state, and navigation to the result screen.
   void _openSubmitConfirmation() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => SubmitAttemptPage(
-          attemptId: widget.attemptId,
-          assessmentTitle: widget.assessmentTitle,
-        ),
-      ),
+    context.push(
+      AppRoutePaths.assessmentSubmit,
+      extra: {
+        'attemptId': widget.attemptId,
+        'assessmentTitle': widget.assessmentTitle,
+      },
     );
   }
 
@@ -209,7 +209,7 @@ class _AttemptHeaderState extends State<_AttemptHeader> {
               button: true,
               label: 'Back',
               child: InkWell(
-                onTap: () => Navigator.of(context).pop(),
+                onTap: () => context.pop(),
                 customBorder: const CircleBorder(),
                 child: DecoratedBox(
                   decoration: BoxDecoration(

@@ -29,6 +29,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
@@ -65,9 +66,9 @@ class _PlacementSubmitPageState extends ConsumerState<PlacementSubmitPage> {
     // Navigate to result page on success.
     ref.listen<PlacementSubmitState>(placementSubmitProvider, (_, next) {
       if (next is PlacementSubmitSuccess && context.mounted) {
-        Navigator.of(context).pushReplacementNamed(
+        context.pushReplacement(
           AppRoutePaths.placementResult,
-          arguments: {'attemptId': next.attemptId},
+          extra: {'attemptId': next.attemptId},
         );
       }
     });
@@ -143,7 +144,9 @@ class _GradientTopBar extends StatelessWidget {
                     isRtl ? Icons.chevron_right : Icons.chevron_left,
                     color: AimColors.neutral0,
                   ),
-                  onPressed: () => Navigator.of(context).maybePop(),
+                  onPressed: () {
+                    if (context.canPop()) context.pop();
+                  },
                 ),
                 const SizedBox(width: AimSpacing.space4),
                 Text(

@@ -33,6 +33,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -114,7 +115,9 @@ class _ReviewSchedulePageState extends ConsumerState<ReviewSchedulePage> {
                       : Icons.chevron_left_rounded,
                 ),
                 tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-                onPressed: () => Navigator.of(context).maybePop(),
+                onPressed: () {
+                  if (context.canPop()) context.pop();
+                },
               ),
             ),
           ),

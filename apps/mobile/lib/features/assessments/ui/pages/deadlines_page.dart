@@ -27,6 +27,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
@@ -164,7 +165,9 @@ class _DeadlinesHeader extends StatelessWidget {
               button: true,
               label: 'Back',
               child: InkWell(
-                onTap: () => Navigator.of(context).maybePop(),
+                onTap: () {
+                  if (context.canPop()) context.pop();
+                },
                 customBorder: const CircleBorder(),
                 child: DecoratedBox(
                   decoration: BoxDecoration(
@@ -382,9 +385,9 @@ class _DeadlineTile extends StatelessWidget {
     return AIMCard(
       variant: AIMCardVariant.elevated,
       interactive: true,
-      onTap: () => Navigator.of(context).pushNamed(
+      onTap: () => context.push(
         AppRoutePaths.assessmentDetail,
-        arguments: {
+        extra: {
           'assessmentId': item.assessmentId,
           'assessmentTitle': item.assessmentTitle,
         },

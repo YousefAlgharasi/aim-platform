@@ -38,6 +38,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
@@ -82,9 +83,9 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
   void _onCourseTap(StudentCourseModel course) {
     // Navigate to the chapter list, passing the backend-supplied courseId.
     // courseId is never constructed from user input.
-    Navigator.of(context).pushNamed(
+    context.push(
       AppRoutePaths.courseChapters,
-      arguments: {'courseId': course.courseId, 'courseTitle': course.title},
+      extra: {'courseId': course.courseId, 'courseTitle': course.title},
     );
   }
 

@@ -5,6 +5,7 @@
 // lesson to resume locally — it always reflects lesson_progress verbatim.
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -23,9 +24,9 @@ class HomeContinueLearningCard extends StatelessWidget {
       variant: AIMCardVariant.elevated,
       semanticLabel:
           'Continue learning: ${lesson.lessonTitle}, ${lesson.percent}% complete',
-      onTap: () => Navigator.of(context).pushNamed(
+      onTap: () => context.push(
         AppRoutePaths.lessonDetail,
-        arguments: {
+        extra: {
           'lessonId': lesson.lessonId,
           'lessonTitle': lesson.lessonTitle,
         },

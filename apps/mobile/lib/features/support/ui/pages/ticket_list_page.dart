@@ -21,6 +21,7 @@
 // spinner, which is the honest state absent live data.
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -44,8 +45,7 @@ class TicketListPage extends StatelessWidget {
       ),
       floatingActionButton: AIMFab(
         semanticLabel: 'Create a support ticket',
-        onPressed: () =>
-            Navigator.of(context).pushNamed(AppRoutePaths.createTicket),
+        onPressed: () => context.push(AppRoutePaths.createTicket),
         icon: const Icon(Icons.add),
       ),
     );
@@ -169,7 +169,9 @@ class _TicketListHeader extends StatelessWidget {
               button: true,
               label: 'Back',
               child: InkWell(
-                onTap: () => Navigator.of(context).maybePop(),
+                onTap: () {
+                  if (context.canPop()) context.pop();
+                },
                 customBorder: const CircleBorder(),
                 child: DecoratedBox(
                   decoration: BoxDecoration(

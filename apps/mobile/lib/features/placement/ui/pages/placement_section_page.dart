@@ -31,6 +31,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -112,9 +113,9 @@ class _PlacementSectionPageState extends ConsumerState<PlacementSectionPage> {
     BuildContext context,
     PlacementSectionReady state,
   ) async {
-    await Navigator.of(context).pushNamed(
+    await context.push(
       AppRoutePaths.placementQuestion,
-      arguments: {
+      extra: {
         'sectionId': state.currentSection.id,
         'attemptId': state.attemptId,
         'sectionTitle': state.currentSection.title,
@@ -127,9 +128,9 @@ class _PlacementSectionPageState extends ConsumerState<PlacementSectionPage> {
 
     if (state.isLastSection) {
       // All sections complete — navigate to submit/complete flow (P4-068).
-      Navigator.of(context).pushReplacementNamed(
+      context.pushReplacement(
         AppRoutePaths.placementSubmit,
-        arguments: {
+        extra: {
           'attemptId': state.attemptId,
           'totalSections': state.totalSections,
         },
@@ -174,7 +175,9 @@ class _GradientTopBar extends StatelessWidget {
                     isRtl ? Icons.chevron_right : Icons.chevron_left,
                     color: AimColors.neutral0,
                   ),
-                  onPressed: () => Navigator.of(context).maybePop(),
+                  onPressed: () {
+                    if (context.canPop()) context.pop();
+                  },
                 ),
                 const SizedBox(width: AimSpacing.space4),
                 Text(

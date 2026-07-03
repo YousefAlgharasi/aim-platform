@@ -38,6 +38,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -72,9 +73,9 @@ class _PlacementStartPageState extends ConsumerState<PlacementStartPage> {
     // mid-build navigation.
     ref.listen<PlacementStartState>(placementStartProvider, (_, next) {
       if (next is PlacementStarted && context.mounted) {
-        Navigator.of(context).pushNamed(
+        context.push(
           AppRoutePaths.placementSection,
-          arguments: {
+          extra: {
             'attemptId': next.attempt.id,
             'testId': next.test.id,
           },
@@ -127,7 +128,7 @@ class _PlacementStartPageState extends ConsumerState<PlacementStartPage> {
 // Gradient header — mirrors PlacementIntroPage's private `_IntroHeader`
 // (duplicated locally since that widget is private to its own file). Back
 // button is a genuine pop: PlacementIntroPage pushes this screen via
-// Navigator.pushNamed(AppRoutePaths.placementStart), so a working back
+// context.push(AppRoutePaths.placementStart), so a working back
 // affordance matches normal push/pop semantics.
 // ---------------------------------------------------------------------------
 
@@ -153,7 +154,9 @@ class _StartHeader extends StatelessWidget {
               button: true,
               label: 'Back',
               child: InkWell(
-                onTap: () => Navigator.of(context).maybePop(),
+                onTap: () {
+                  if (context.canPop()) context.pop();
+                },
                 customBorder: const CircleBorder(),
                 child: DecoratedBox(
                   decoration: BoxDecoration(
@@ -278,7 +281,9 @@ class _ReadyBody extends StatelessWidget {
             const SizedBox(height: AimSpacing.componentGap),
             Center(
               child: TextButton(
-                onPressed: () => Navigator.of(context).maybePop(),
+                onPressed: () {
+                  if (context.canPop()) context.pop();
+                },
                 child: const Text('Not now'),
               ),
             ),
