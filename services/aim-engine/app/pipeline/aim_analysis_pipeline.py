@@ -143,7 +143,8 @@ class _RequestSkillStateRepository:
         # hardcode until then, not a new fabrication).
         return SkillState(
             retention=100.0,
-            confidence=0.0,  # unused by MasteryCalculator.calculate(); kept for the dataclass contract.
+            # confidence unused by MasteryCalculator.calculate(); kept for the dataclass contract.
+            confidence=0.0,
             mastery=self._previous_mastery_by_skill[skill_id],
         )
 
