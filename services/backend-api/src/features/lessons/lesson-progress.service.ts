@@ -19,6 +19,14 @@
 //     lesson_progress.completed is ever set to true, so it is the single
 //     hook point for CourseCompletionService — see that file for the
 //     frontier-only advancement rule.
+//   - Sequential lesson ordering (P20-012): recordProgress and markComplete
+//     reject a lesson unless the immediately preceding lesson in the course
+//     (by levels.sort_order, chapters.sort_order, lessons.sort_order — the
+//     first lesson in a chapter's predecessor being the last lesson of the
+//     previous chapter) is already completed. A recommendation's
+//     targetLessonId (P20-009) is read-only AI Teacher prompt context
+//     (see CurrentLessonContextAdapter) and is never a path that starts or
+//     unlocks a lesson — this check is the only gate on that.
 
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
@@ -49,6 +57,14 @@ interface LessonCourseGatingRow {
 
 interface LevelStateRow {
   readonly max_unlocked_cefr_rank: number;
+}
+
+interface PreviousLessonRow {
+  readonly prev_lesson_id: string | null;
+}
+
+interface LessonCompletedRow {
+  readonly completed: boolean;
 }
 
 interface ContinueLearningRow {
@@ -82,6 +98,7 @@ export class LessonProgressService {
   async recordProgress(input: RecordLessonProgressInput): Promise<LessonProgressAckResponse> {
     await this.assertLessonExists(input.lessonId);
     await this.assertCourseUnlockedForLesson(input.studentId, input.lessonId);
+    await this.assertPreviousLessonCompleted(input.studentId, input.lessonId);
 
     const safePercent = Math.min(Math.max(Math.round(input.percent), 0), 100);
 
@@ -103,6 +120,7 @@ export class LessonProgressService {
   async markComplete(studentId: string, lessonId: string): Promise<LessonProgressAckResponse> {
     await this.assertLessonExists(lessonId);
     await this.assertCourseUnlockedForLesson(studentId, lessonId);
+    await this.assertPreviousLessonCompleted(studentId, lessonId);
 
     const result = await this.db.query<LessonProgressRow>(
       `INSERT INTO lesson_progress (student_id, lesson_id, percent, completed, completed_at, last_active_at)
@@ -336,6 +354,45 @@ export class LessonProgressService {
     const maxUnlockedCefrRank = stateResult.rows[0]?.max_unlocked_cefr_rank ?? 1;
     if (course.cefr_rank > maxUnlockedCefrRank) {
       throw new ForbiddenException('This course is locked for this student');
+    }
+  }
+
+  private async assertPreviousLessonCompleted(studentId: string, lessonId: string): Promise<void> {
+    const previousResult = await this.db.query<PreviousLessonRow>(
+      `WITH target AS (
+         SELECT lv.course_id
+         FROM lessons l
+         JOIN chapters c ON c.id = l.chapter_id
+         JOIN levels lv ON lv.id = c.level_id
+         WHERE l.id = $1
+       ),
+       ordered_lessons AS (
+         SELECT
+           l.id AS lesson_id,
+           LAG(l.id) OVER (ORDER BY lv.sort_order ASC, c.sort_order ASC, l.sort_order ASC) AS prev_lesson_id
+         FROM lessons l
+         JOIN chapters c ON c.id = l.chapter_id AND c.status = 'published'
+         JOIN levels lv ON lv.id = c.level_id AND lv.status = 'published'
+         JOIN target t ON t.course_id = lv.course_id
+         WHERE l.status = 'published'
+       )
+       SELECT prev_lesson_id FROM ordered_lessons WHERE lesson_id = $1`,
+      [lessonId],
+    );
+
+    const prevLessonId = previousResult.rows[0]?.prev_lesson_id ?? null;
+    if (prevLessonId === null) {
+      // First lesson in the course (by level/chapter/lesson sort_order) — no prerequisite.
+      return;
+    }
+
+    const progressResult = await this.db.query<LessonCompletedRow>(
+      `SELECT completed FROM lesson_progress WHERE student_id = $1 AND lesson_id = $2`,
+      [studentId, prevLessonId],
+    );
+
+    if (!progressResult.rows[0]?.completed) {
+      throw new ForbiddenException('Complete the previous lesson before starting this one');
     }
   }
 
