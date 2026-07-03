@@ -514,6 +514,17 @@ export class FakeDatabaseService {
       return toQueryResult([]);
     }
 
+    // ---- student_level_state seeding (P20-006) -----------------------------
+    // No courses are seeded by this fake, so the course lookup always misses
+    // and PlacementLevelStateService logs a warning and skips the upsert —
+    // this fixture doesn't exercise course gating.
+    if (sql.includes('FROM courses')) {
+      return toQueryResult([]);
+    }
+    if (sql.startsWith('INSERT INTO student_level_state')) {
+      return toQueryResult([]);
+    }
+
     // ---- initial_learning_path: bulk insert --------------------------------
     if (sql.startsWith('INSERT INTO initial_learning_path')) {
       const columnsPerRow = 9;
