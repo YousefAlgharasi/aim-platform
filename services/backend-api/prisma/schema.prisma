@@ -45,6 +45,7 @@ model StudentProfile {
   updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  levelStates       StudentLevelState[]
 
   @@index([userId])
   @@index([profileType])
@@ -264,4 +265,24 @@ model Course {
   @@index([status])
   @@index([sortOrder])
   @@map("courses")
+}
+
+model StudentLevelState {
+  id                  String   @id @default(uuid()) @db.Uuid
+  studentId           String   @map("student_id") @db.Uuid
+  trackSlug           String   @default("english") @map("track_slug")
+
+  currentCefrRank     Int      @map("current_cefr_rank") @db.SmallInt
+  maxUnlockedCefrRank Int      @map("max_unlocked_cefr_rank") @db.SmallInt
+  source              String
+
+  lastComputedAt      DateTime @default(now()) @map("last_computed_at") @db.Timestamptz(6)
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  student             StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, trackSlug])
+  @@index([studentId])
+  @@map("student_level_state")
 }
