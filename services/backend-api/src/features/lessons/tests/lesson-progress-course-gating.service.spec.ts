@@ -7,8 +7,12 @@
 import { ForbiddenException } from '@nestjs/common';
 import { LessonProgressService } from '../lesson-progress.service';
 import { DatabaseService } from '../../../database/database.service';
+import { CourseCompletionService } from '../course-completion.service';
 
 describe('LessonProgressService — course/level gating', () => {
+  const makeCourseCompletionService = () =>
+    ({ handleLessonCompleted: jest.fn().mockResolvedValue(undefined) }) as unknown as CourseCompletionService;
+
   const makeDb = (
     lessonExistsRows: unknown[],
     courseGatingRows: unknown[],
@@ -31,7 +35,7 @@ describe('LessonProgressService — course/level gating', () => {
         [{ track_slug: 'general-english', cefr_rank: 3 }],
         [{ max_unlocked_cefr_rank: 2 }],
       );
-      const service = new LessonProgressService(db);
+      const service = new LessonProgressService(db, makeCourseCompletionService());
 
       await expect(
         service.recordProgress({ studentId: 'student-1', lessonId: 'lesson-1', percent: 50 }),
@@ -44,7 +48,7 @@ describe('LessonProgressService — course/level gating', () => {
         [{ track_slug: 'general-english', cefr_rank: 2 }],
         [],
       );
-      const service = new LessonProgressService(db);
+      const service = new LessonProgressService(db, makeCourseCompletionService());
 
       await expect(
         service.recordProgress({ studentId: 'student-1', lessonId: 'lesson-1', percent: 50 }),
@@ -58,7 +62,7 @@ describe('LessonProgressService — course/level gating', () => {
         [{ max_unlocked_cefr_rank: 2 }],
         [{ lesson_id: 'lesson-1', percent: 50, completed: false, updated_at: '2026-06-01T00:00:00Z' }],
       );
-      const service = new LessonProgressService(db);
+      const service = new LessonProgressService(db, makeCourseCompletionService());
 
       const result = await service.recordProgress({
         studentId: 'student-1',
@@ -82,7 +86,7 @@ describe('LessonProgressService — course/level gating', () => {
           rows: [{ lesson_id: 'lesson-1', percent: 50, completed: false, updated_at: '2026-06-01T00:00:00Z' }],
         });
       const db = { query } as unknown as DatabaseService;
-      const service = new LessonProgressService(db);
+      const service = new LessonProgressService(db, makeCourseCompletionService());
 
       const result = await service.recordProgress({
         studentId: 'student-1',
@@ -101,7 +105,7 @@ describe('LessonProgressService — course/level gating', () => {
         [{ track_slug: 'general-english', cefr_rank: 3 }],
         [{ max_unlocked_cefr_rank: 1 }],
       );
-      const service = new LessonProgressService(db);
+      const service = new LessonProgressService(db, makeCourseCompletionService());
 
       await expect(service.markComplete('student-1', 'lesson-1')).rejects.toBeInstanceOf(
         ForbiddenException,
@@ -115,7 +119,7 @@ describe('LessonProgressService — course/level gating', () => {
         [{ max_unlocked_cefr_rank: 2 }],
         [{ lesson_id: 'lesson-1', percent: 100, completed: true, updated_at: '2026-06-01T00:00:00Z' }],
       );
-      const service = new LessonProgressService(db);
+      const service = new LessonProgressService(db, makeCourseCompletionService());
 
       const result = await service.markComplete('student-1', 'lesson-1');
 

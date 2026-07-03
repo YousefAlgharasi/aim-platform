@@ -15,9 +15,14 @@
 //     1 when the student has no student_level_state row yet) and reject with
 //     403 otherwise — a client showing a locked course as open must not be
 //     able to write progress by guessing/hardcoding a lesson id.
+//   - Course completion unlock (P20-011): markComplete is the only place
+//     lesson_progress.completed is ever set to true, so it is the single
+//     hook point for CourseCompletionService — see that file for the
+//     frontier-only advancement rule.
 
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import { CourseCompletionService } from './course-completion.service';
 import {
   ContinueLearningLesson,
   LessonProgressAckResponse,
@@ -69,7 +74,10 @@ interface RecommendedCourseRow {
 
 @Injectable()
 export class LessonProgressService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly courseCompletionService: CourseCompletionService,
+  ) {}
 
   async recordProgress(input: RecordLessonProgressInput): Promise<LessonProgressAckResponse> {
     await this.assertLessonExists(input.lessonId);
@@ -109,6 +117,8 @@ export class LessonProgressService {
        RETURNING lesson_id, percent, completed, updated_at`,
       [studentId, lessonId],
     );
+
+    await this.courseCompletionService.handleLessonCompleted(studentId, lessonId);
 
     return this.toAck(result.rows[0]);
   }
