@@ -248,7 +248,8 @@ export class LessonProgressService {
       };
     }
 
-    // Fallback: lowest sort_order published course.
+    // Fallback: lowest sort_order published course. Not filtered by
+    // student — takes no query parameters.
     const fallbackResult = await this.db.query<RecommendedCourseRow>(
       `SELECT
          id   AS course_id,
@@ -259,7 +260,6 @@ export class LessonProgressService {
        WHERE status = 'published'
        ORDER BY sort_order ASC, created_at ASC
        LIMIT 1`,
-      [studentId],
     );
 
     const fallback = fallbackResult.rows[0];
