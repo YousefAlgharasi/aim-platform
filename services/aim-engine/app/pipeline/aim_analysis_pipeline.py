@@ -54,12 +54,18 @@ from aim.domain.services.emotional_state_detector import (  # noqa: E402
     EmotionalAttempt,
     EmotionalStateDetector,
 )
+from aim.domain.services.mastery_calculator import (  # noqa: E402
+    AttemptSnapshot,
+    MasteryCalculator,
+    SkillState,
+)
 from aim.domain.services.weakness_detector import WeaknessAttempt, WeaknessDetector  # noqa: E402
 
 from app.schemas.aim_analysis_request import (  # noqa: E402
     AimAnalysisRequest,
     AimAttemptInput,
     AimSessionInput,
+    AimSkillMasteryContext,
 )
 from app.schemas.aim_analysis_response import (  # noqa: E402
     AimAnalysisResponse,
@@ -89,6 +95,60 @@ from app.validation.aim_request_validator import (  # noqa: E402
 )
 
 logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# MasteryCalculator adapters (P20-007)
+#
+# MasteryCalculator was written against a repository-injection pattern
+# (query history, persist the result). The AIM Engine is side-effect-free —
+# it never queries or writes to any database (see module docstring) — so
+# these adapters satisfy MasteryCalculator's Protocol contracts using only
+# data already present in the validated request. ``update_mastery`` is a
+# deliberate no-op: the Backend, not the AIM Engine, persists mastery_score
+# via AimPersistenceService after this response is validated.
+# ---------------------------------------------------------------------------
+
+
+class _RequestAttemptSnapshotRepository:
+    """Read-only AttemptSnapshotRepository backed by request-supplied history."""
+
+    def __init__(self, attempts_by_skill: dict[str, list[AttemptSnapshot]]) -> None:
+        self._attempts_by_skill = attempts_by_skill
+
+    def get_attempts(
+        self, student_id: object, skill_id: str, limit: int | None = None
+    ) -> list[AttemptSnapshot]:
+        attempts = self._attempts_by_skill.get(skill_id, [])
+        return attempts[-limit:] if limit else attempts
+
+
+class _RequestSkillStateRepository:
+    """SkillStateRepository backed by request-supplied prior mastery.
+
+    ``update_mastery`` intentionally does nothing — the AIM Engine must never
+    write to any database (P5-006). The returned mastery_score is persisted
+    by the Backend's AimPersistenceService after response validation.
+    """
+
+    def __init__(self, previous_mastery_by_skill: dict[str, float]) -> None:
+        self._previous_mastery_by_skill = previous_mastery_by_skill
+
+    def get_skill_state(self, student_id: object, skill_id: str) -> SkillState | None:
+        if skill_id not in self._previous_mastery_by_skill:
+            return None
+        # retention defaults to 100.0 (no personalized retention input exists
+        # yet — that is P20-008's job to port RetentionTracker and supply a
+        # real value here; matches this same file's existing retention
+        # hardcode until then, not a new fabrication).
+        return SkillState(
+            retention=100.0,
+            confidence=0.0,  # unused by MasteryCalculator.calculate(); kept for the dataclass contract.
+            mastery=self._previous_mastery_by_skill[skill_id],
+        )
+
+    def update_mastery(self, student_id: object, skill_id: str, mastery: float) -> None:
+        return None
 
 
 def _ensure_domain_services_importable() -> None:
@@ -220,7 +280,9 @@ class AimAnalysisPipelineEntrypoint:
         (P5-056 through P5-063 for the actual adaptive logic).
         """
         return AimResponseCategories(
-            skill_state=await self._analyze_skill_state(request.session, request.attempts),
+            skill_state=await self._analyze_skill_state(
+                request.session, request.attempts, request.skill_mastery_context
+            ),
             weakness_records=await self._analyze_weakness_records(
                 request.session, request.attempts
             ),
@@ -239,8 +301,14 @@ class AimAnalysisPipelineEntrypoint:
         self,
         session: AimSessionInput,
         attempts: list[AimAttemptInput],
+        skill_mastery_context: dict[str, AimSkillMasteryContext],
     ) -> list[AimSkillStateOutput] | None:
-        """Compute skill-state updates (P5-012).
+        """Compute skill-state updates (P5-012) using the real weighted
+        mastery formula (P20-007), ported from
+        ``services/api/src/aim/domain/services/mastery_calculator.py``:
+        ``accuracy*0.40 + consistency*0.20 + retention*0.15 +
+        difficulty*0.20 + evidence_quality*0.05``, blended against previous
+        mastery by a reliability factor and capped for one-session movement.
 
         Mastery, confidence, and trend are exclusively AIM Engine outputs.
         Speed and response-time are behavioral context only and must never
@@ -257,29 +325,61 @@ class AimAnalysisPipelineEntrypoint:
 
         results: list[AimSkillStateOutput] = []
         for skill_id, skill_atts in skill_attempts.items():
-            valid = [a for a in skill_atts if not a.behavioral_context.abandoned_first_then_retried]
-            source = valid if valid else skill_atts
-            total = len(source)
-            correct = sum(1 for a in source if a.is_correct)
-            accuracy = correct / total if total > 0 else 0.0
+            context = skill_mastery_context.get(skill_id)
 
-            confidence = min(1.0, total / 10.0)
-            if total >= 3:
-                trend = (
-                    AimMasteryTrend.IMPROVING
-                    if accuracy >= 0.7
-                    else (AimMasteryTrend.DECLINING if accuracy < 0.4 else AimMasteryTrend.STABLE)
+            # Prior history (oldest first) + this call's new attempt(s), so
+            # MasteryCalculator sees the full evidence set, not just history.
+            history_snapshots = [
+                AttemptSnapshot(
+                    is_correct=prior.is_correct,
+                    attempts=prior.attempt_number_for_item,
+                    difficulty=int(prior.presented_difficulty),
+                    skip=prior.skip,
+                    hint_used=prior.used_hint,
                 )
-            else:
+                for prior in (context.recent_attempts if context else [])
+            ]
+            current_snapshots = [
+                AttemptSnapshot(
+                    is_correct=a.is_correct,
+                    attempts=a.attempt_number_for_item,
+                    difficulty=int(a.presented_difficulty),
+                    skip=False,
+                    hint_used=a.behavioral_context.used_hint,
+                )
+                for a in skill_atts
+            ]
+
+            attempt_repo = _RequestAttemptSnapshotRepository(
+                {skill_id: history_snapshots + current_snapshots}
+            )
+            previous_mastery_by_skill = (
+                {skill_id: context.previous_mastery_score}
+                if context is not None and context.previous_mastery_score is not None
+                else {}
+            )
+            state_repo = _RequestSkillStateRepository(previous_mastery_by_skill)
+
+            calculator = MasteryCalculator(attempt_repo, state_repo)
+            result = calculator.calculate(session.student_id, skill_id)
+
+            if result.valid_attempt_count < 3:
                 trend = AimMasteryTrend.INSUFFICIENT_DATA
+            elif result.final_mastery > result.previous_mastery:
+                trend = AimMasteryTrend.IMPROVING
+            elif result.final_mastery < result.previous_mastery:
+                trend = AimMasteryTrend.DECLINING
+            else:
+                trend = AimMasteryTrend.STABLE
 
             results.append(
                 AimSkillStateOutput(
                     skill_id=skill_id,
-                    mastery_score=round(accuracy, 2),
-                    mastery_confidence=round(confidence, 2),
+                    # MasteryCalculator's scale is 0-100; the response contract is 0.00-1.00.
+                    mastery_score=round(result.final_mastery / 100.0, 4),
+                    mastery_confidence=round(result.reliability, 4),
                     mastery_trend=trend,
-                    attempts_considered_count=total,
+                    attempts_considered_count=result.attempt_count,
                     last_attempt_id=skill_atts[-1].attempt_id,
                     evaluated_at=now,
                 )

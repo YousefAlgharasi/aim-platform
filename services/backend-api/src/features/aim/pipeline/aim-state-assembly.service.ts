@@ -35,9 +35,14 @@ import {
   AimLevelSource,
   AimMappingContext,
   AimPlacementContextInput,
+  AimRecentAttemptSnapshotInput,
   AimSessionContextInput,
   AimSessionType,
+  AimSkillMasteryContextInput,
 } from '../adapter/aim-request-mapper.types';
+
+/** Bounded window of prior attempts fed into MasteryCalculator per skill (P20-007). */
+const RECENT_ATTEMPTS_WINDOW = 10;
 
 // ---------------------------------------------------------------------------
 // Assembly result — a tagged union so callers can never confuse "not enough
@@ -95,6 +100,19 @@ interface EventCountRow {
   readonly count: string;
 }
 
+interface SkillStateRow {
+  readonly skill_id: string;
+  readonly mastery_score: string;
+}
+
+interface HistoricalAttemptRow {
+  readonly skill_ids: string[];
+  readonly is_correct: boolean;
+  readonly attempt_number_for_item: number;
+  readonly presented_difficulty: number;
+  readonly used_hint: boolean;
+}
+
 @Injectable()
 export class AimStateAssemblyService {
   constructor(private readonly db: DatabaseService) {}
@@ -137,6 +155,10 @@ export class AimStateAssemblyService {
 
     const eventCounts = await this.fetchEventCounts(context.sessionId);
     const placementContext = await this.buildPlacementContext(session);
+    const skillMasteryContext = await this.buildSkillMasteryContext(
+      session.student_id,
+      triggeringAttempt,
+    );
 
     const sessionInput: AimSessionContextInput = {
       sessionId: session.id,
@@ -164,6 +186,7 @@ export class AimStateAssemblyService {
         xRequestId: context.xRequestId,
         session: sessionInput,
         attempts: [attemptInput],
+        skillMasteryContext,
       },
     };
   }
@@ -253,6 +276,88 @@ export class AimStateAssemblyService {
       placementCompletedAt: session.placement_completed_at,
       initialSkillSignals: [],
     };
+  }
+
+  /**
+   * Prior mastery/attempt history per skill (P20-007), feeding the AIM
+   * Engine's MasteryCalculator. Sourced from student_skill_states
+   * (previous mastery) and lesson_attempts (recent history), both
+   * backend-only queries — the AIM Engine never queries a database itself.
+   */
+  private async buildSkillMasteryContext(
+    studentId: string,
+    triggeringAttempt: LessonAttemptRow,
+  ): Promise<Record<string, AimSkillMasteryContextInput>> {
+    const skillIds = triggeringAttempt.skill_ids;
+    if (skillIds.length === 0) return {};
+
+    const [previousMasteryByskill, historyBySkill] = await Promise.all([
+      this.fetchPreviousMasteryScores(studentId, skillIds),
+      this.fetchRecentAttemptsBySkill(studentId, skillIds, triggeringAttempt.id),
+    ]);
+
+    const context: Record<string, AimSkillMasteryContextInput> = {};
+    for (const skillId of skillIds) {
+      context[skillId] = {
+        previousMasteryScore: previousMasteryByskill.get(skillId) ?? null,
+        recentAttempts: historyBySkill.get(skillId) ?? [],
+      };
+    }
+    return context;
+  }
+
+  private async fetchPreviousMasteryScores(
+    studentId: string,
+    skillIds: readonly string[],
+  ): Promise<Map<string, number>> {
+    const result = await this.db.query<SkillStateRow>(
+      `SELECT skill_id, mastery_score
+       FROM student_skill_states
+       WHERE student_id = $1 AND skill_id = ANY($2)`,
+      [studentId, skillIds],
+    );
+    return new Map(result.rows.map((r) => [r.skill_id, parseFloat(r.mastery_score)]));
+  }
+
+  private async fetchRecentAttemptsBySkill(
+    studentId: string,
+    skillIds: readonly string[],
+    excludeAttemptId: string,
+  ): Promise<Map<string, AimRecentAttemptSnapshotInput[]>> {
+    const result = await this.db.query<HistoricalAttemptRow>(
+      `SELECT skill_ids, is_correct, attempt_number_for_item, presented_difficulty, used_hint
+       FROM lesson_attempts
+       WHERE student_id = $1
+         AND skill_ids ?| $2::text[]
+         AND id != $3
+       ORDER BY submitted_at ASC`,
+      [studentId, skillIds, excludeAttemptId],
+    );
+
+    const bySkill = new Map<string, AimRecentAttemptSnapshotInput[]>();
+    for (const row of result.rows) {
+      const snapshot: AimRecentAttemptSnapshotInput = {
+        isCorrect: row.is_correct,
+        attemptNumberForItem: row.attempt_number_for_item,
+        presentedDifficulty: row.presented_difficulty as AimRecentAttemptSnapshotInput['presentedDifficulty'],
+        usedHint: row.used_hint,
+        skip: false, // lesson_attempts has no skip-tracking column yet.
+      };
+      for (const skillId of row.skill_ids) {
+        if (!skillIds.includes(skillId)) continue;
+        const existing = bySkill.get(skillId) ?? [];
+        existing.push(snapshot);
+        bySkill.set(skillId, existing);
+      }
+    }
+
+    // Cap to the most recent window per skill (rows are ascending, so keep the tail).
+    for (const [skillId, snapshots] of bySkill) {
+      if (snapshots.length > RECENT_ATTEMPTS_WINDOW) {
+        bySkill.set(skillId, snapshots.slice(-RECENT_ATTEMPTS_WINDOW));
+      }
+    }
+    return bySkill;
   }
 
   private buildSessionBehavioralContext(

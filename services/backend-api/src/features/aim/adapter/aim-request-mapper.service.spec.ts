@@ -68,6 +68,7 @@ const BASE_CONTEXT: AimMappingContext = {
       },
     },
   ],
+  skillMasteryContext: {},
 };
 
 describe('AimRequestMapperService (P5-047)', () => {
