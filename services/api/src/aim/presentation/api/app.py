@@ -1,4 +1,15 @@
-"""FastAPI application factory."""
+"""FastAPI application factory.
+
+P20-015: This standalone FastAPI app is never started by any deployed
+service (no entry in render.yaml or infra/docker/docker-compose.yml) — it
+predates services/aim-engine and is not the real, deployed AIM engine.
+See services/api/src/aim/README.md for the full picture: most of this
+package is a dead sandbox, but some domain/services/*.py modules this
+app.py itself does not depend on ARE imported live by services/aim-engine
+at runtime. Changes to this file and everything it imports
+(infrastructure/database, infrastructure/config, presentation/) have zero
+effect on any running service.
+"""
 
 from __future__ import annotations
 
