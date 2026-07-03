@@ -2,6 +2,10 @@
 // state, weakness, recommendation, review schedule, and recent mistakes
 // adapters from this module's providers/exports. The Phase 18 AI Authority
 // Rule forbids AI Teacher from reading those values.
+//
+// P20-013: Added FocusDirectiveContextAdapter — reads only the single
+// pre-computed directive_text string (ai_focus_directives), not raw
+// weakness/recommendation/difficulty data. See context-builder.types.ts.
 
 import { Module } from '@nestjs/common';
 
@@ -13,6 +17,7 @@ import { AiChatRepositoriesModule } from '../repositories/ai-chat-repositories.m
 import { StudentProfileContextAdapter } from './adapters/student-profile-context.adapter';
 import { CurrentLessonContextAdapter } from './adapters/current-lesson-context.adapter';
 import { CurriculumSkillContextAdapter } from './adapters/curriculum-skill-context.adapter';
+import { FocusDirectiveContextAdapter } from './adapters/focus-directive-context.adapter';
 import { ContextBuilderService } from './context-builder.service';
 import { ContextBudgetPolicyService } from './context-budget-policy.service';
 
@@ -24,6 +29,7 @@ import { ContextBudgetPolicyService } from './context-budget-policy.service';
     StudentProfileContextAdapter,
     CurrentLessonContextAdapter,
     CurriculumSkillContextAdapter,
+    FocusDirectiveContextAdapter,
   ],
   exports: [
     ContextBuilderService,
@@ -31,6 +37,7 @@ import { ContextBudgetPolicyService } from './context-budget-policy.service';
     StudentProfileContextAdapter,
     CurrentLessonContextAdapter,
     CurriculumSkillContextAdapter,
+    FocusDirectiveContextAdapter,
   ],
 })
 export class ContextBuilderModule {}

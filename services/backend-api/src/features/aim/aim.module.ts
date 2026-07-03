@@ -23,6 +23,7 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
 import { AuthModule } from '../../auth/auth.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { SkillsModule } from '../curriculum/skills/skills.module';
 import { AimEngineClientService } from './aim-engine-client.service';
 import { AimService } from './aim.service';
 
@@ -45,6 +46,7 @@ import { RecommendationOutputService } from './persistence/recommendation-output
 import { ReviewScheduleOutputService } from './persistence/review-schedule-output.service';
 import { FrustrationSignalService } from './persistence/frustration-signal.service';
 import { SessionSummaryService } from './persistence/session-summary.service';
+import { AimFocusDirectiveService } from './persistence/aim-focus-directive.service';
 import { AimResultService } from './result/aim-result.service';
 import { StudentSkillStateReadService } from './result/student-skill-state-read.service';
 import { ReviewScheduleReadService } from './result/review-schedule-read.service';
@@ -52,10 +54,11 @@ import { SessionStateReadService } from './result/session-state-read.service';
 import { WeaknessRecordsReadService } from './result/weakness-records-read.service';
 import { RecommendationReadService } from './result/recommendation-read.service';
 import { ErrorPatternsReadService } from './result/error-patterns-read.service';
+import { FocusDirectiveReadService } from './result/focus-directive-read.service';
 import { AimResultController } from './result/aim-result.controller';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, NotificationsModule],
+  imports: [DatabaseModule, AuthModule, NotificationsModule, SkillsModule],
   controllers: [AimResultController],
   providers: [
     // Existing (pre-Phase 5)
@@ -112,6 +115,9 @@ import { AimResultController } from './result/aim-result.controller';
     // Phase 5 — session summary persistence (P5-063)
     SessionSummaryService,
 
+    // Phase 20 — AI Teacher focus directive generation (P20-013)
+    AimFocusDirectiveService,
+
     // Phase 5 — result read APIs
     AimResultService,
     StudentSkillStateReadService,
@@ -130,6 +136,9 @@ import { AimResultController } from './result/aim-result.controller';
 
     // Phase 5 — error patterns read service (P5-035 table)
     ErrorPatternsReadService,
+
+    // Phase 20 — focus directive read service (P20-013)
+    FocusDirectiveReadService,
   ],
   exports: [
     // Existing exports preserved
@@ -158,6 +167,9 @@ import { AimResultController } from './result/aim-result.controller';
 
     // Phase 12 — session state read service (needed by Parent Activity Summary Service, P12-029)
     SessionStateReadService,
+
+    // Phase 20 — focus directive read service (needed by AI Teacher context builder, P20-013)
+    FocusDirectiveReadService,
   ],
 })
 export class AimModule {}

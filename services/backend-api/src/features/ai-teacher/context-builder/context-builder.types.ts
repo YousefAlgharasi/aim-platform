@@ -11,6 +11,14 @@
  * studentProfile/currentLesson/curriculumSkill remain because they only
  * surface AIM-Engine-chosen identity fields (e.g. lesson title, skill key),
  * never mastery/level/weakness/difficulty values.
+ *
+ * P20-013: Added focusDirective. Unlike the fields removed in P18-031, this
+ * is not raw weakness/recommendation/difficulty data — it is a single,
+ * already-generated directive_text string (ai_focus_directives, P20-003)
+ * that the backend wrote via AimFocusDirectiveService. AI Teacher only ever
+ * restates this pre-computed sentence verbatim, per the Authority Rule's
+ * explicit allowance to "restate backend-approved recommendations verbatim,
+ * never generate new ones."
  */
 export interface AiTeacherContextSnapshot {
   studentId: string;
@@ -19,6 +27,7 @@ export interface AiTeacherContextSnapshot {
   studentProfile: Record<string, unknown> | null;
   currentLesson: Record<string, unknown> | null;
   curriculumSkill: Record<string, unknown> | null;
+  focusDirective: Record<string, unknown> | null;
 }
 
 export interface BuildContextInput {

@@ -12,6 +12,7 @@ import { AiTeacherContextSnapshot } from '../context-builder.types';
 import { StudentProfileContextAdapter } from '../adapters/student-profile-context.adapter';
 import { CurrentLessonContextAdapter } from '../adapters/current-lesson-context.adapter';
 import { CurriculumSkillContextAdapter } from '../adapters/curriculum-skill-context.adapter';
+import { FocusDirectiveContextAdapter } from '../adapters/focus-directive-context.adapter';
 
 const STUDENT_ID = '770e8400-e29b-41d4-a716-446655440002';
 const SESSION_ID = '880e8400-e29b-41d4-a716-446655440003';
@@ -46,11 +47,16 @@ function buildServiceWithAdapterSpies(studentIdsSeen: string[]) {
     'getSkillContext',
     recordCall({ skillId: 'skill-1' }),
   );
+  const focusDirective = makeMockAdapter<FocusDirectiveContextAdapter>(
+    'getFocusDirectiveContext',
+    recordCall({ skillId: 'skill-1', directiveText: 'Focus on skill-1.' }),
+  );
 
   const service = new ContextBuilderService(
     studentProfile,
     currentLesson,
     curriculumSkill,
+    focusDirective,
     makeMockRepository(async () => {
       throw new Error('not used in buildContext tests');
     }),
@@ -66,6 +72,7 @@ function makeSnapshot(): AiTeacherContextSnapshot {
     studentProfile: { gradeLevel: 6 },
     currentLesson: { lessonId: 'lesson-1' },
     curriculumSkill: { skillId: 'skill-1' },
+    focusDirective: { skillId: 'skill-1', directiveText: 'Focus on skill-1.' },
   };
 }
 
@@ -88,11 +95,16 @@ describe('ContextBuilderService.buildContext — contextRef lesson parsing', () 
       'getSkillContext',
       async () => ({ skillId: 'skill-1' }),
     );
+    const focusDirective = makeMockAdapter<FocusDirectiveContextAdapter>(
+      'getFocusDirectiveContext',
+      async () => null,
+    );
 
     const service = new ContextBuilderService(
       studentProfile,
       currentLesson,
       curriculumSkill,
+      focusDirective,
       makeMockRepository(async () => {
         throw new Error('not used in buildContext tests');
       }),
@@ -124,11 +136,16 @@ describe('ContextBuilderService.buildContext — contextRef lesson parsing', () 
       'getSkillContext',
       async () => ({ skillId: 'skill-1' }),
     );
+    const focusDirective = makeMockAdapter<FocusDirectiveContextAdapter>(
+      'getFocusDirectiveContext',
+      async () => null,
+    );
 
     const service = new ContextBuilderService(
       studentProfile,
       currentLesson,
       curriculumSkill,
+      focusDirective,
       makeMockRepository(async () => {
         throw new Error('not used in buildContext tests');
       }),
@@ -155,12 +172,12 @@ describe('ContextBuilderService.buildContext', () => {
       contextRef: 'lesson:p1:l3',
     });
 
-    expect(studentIdsSeen).toHaveLength(3);
+    expect(studentIdsSeen).toHaveLength(4);
     expect(studentIdsSeen.every((id) => id === STUDENT_ID)).toBe(true);
     expect(studentIdsSeen).not.toContain(OTHER_STUDENT_ID);
   });
 
-  it('assembles all three context fields plus studentId/sessionId into a single snapshot', async () => {
+  it('assembles all four context fields plus studentId/sessionId into a single snapshot', async () => {
     const service = buildServiceWithAdapterSpies([]);
 
     const snapshot = await service.buildContext({
@@ -175,6 +192,7 @@ describe('ContextBuilderService.buildContext', () => {
       studentProfile: { gradeLevel: 6 },
       currentLesson: { lessonId: 'lesson-1' },
       curriculumSkill: { skillId: 'skill-1' },
+      focusDirective: { skillId: 'skill-1', directiveText: 'Focus on skill-1.' },
     });
   });
 
@@ -206,6 +224,7 @@ describe('ContextBuilderService.persistSnapshot', () => {
       };
     });
     const service = new ContextBuilderService(
+      undefined as never,
       undefined as never,
       undefined as never,
       undefined as never,
