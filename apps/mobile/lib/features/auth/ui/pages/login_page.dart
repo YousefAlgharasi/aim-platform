@@ -130,21 +130,30 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     // The form is its own floating card — rounded on all
                     // four corners with a drop shadow — separate from the
                     // plain page background beneath it, pulled up over the
-                    // hero via a negative top margin (a Transform would
-                    // only shift paint, not layout, and misplace the
-                    // siblings below it).
-                    Container(
-                      margin:
-                          const EdgeInsets.only(top: -AimSpacing.sectionGap),
-                      padding:
-                          const EdgeInsets.all(AimSpacing.cardPaddingLg),
-                      decoration: BoxDecoration(
-                        color: surfaces.surface,
-                        borderRadius: AimRadius.borderX2l,
-                        boxShadow: shadows.card,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                    // hero via Transform.translate (paint-only — the card's
+                    // *layout* box stays where the Column put it). Both
+                    // Container.margin and Padding assert their insets are
+                    // non-negative, so neither can express this overlap
+                    // directly. The SizedBox that would normally separate
+                    // the card from the social-sign-in section below is
+                    // omitted instead: since the translate doesn't move the
+                    // card's layout box, the gap between the card's
+                    // (shifted-up) visible bottom edge and the next
+                    // sibling's untouched position naturally comes out to
+                    // exactly sectionGap — the same amount the card is
+                    // shifted up by.
+                    Transform.translate(
+                      offset: const Offset(0, -AimSpacing.sectionGap),
+                      child: Container(
+                        padding:
+                            const EdgeInsets.all(AimSpacing.cardPaddingLg),
+                        decoration: BoxDecoration(
+                          color: surfaces.surface,
+                          borderRadius: AimRadius.borderX2l,
+                          boxShadow: shadows.card,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           if (formState.errorMessage != null) ...[
                             AIMAlertBanner(
@@ -206,39 +215,28 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: AimSpacing.sectionGap),
+                    ),
                     _SocialSignInSection(surfaces: surfaces),
                     const SizedBox(height: AimSpacing.sectionGap),
                     Center(
-                      child: Semantics(
-                        button: true,
-                        label: "Don't have an account? Create one",
-                        child: InkWell(
-                          onTap: _openRegister,
-                          borderRadius: AimRadius.borderSm,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AimSpacing.space8,
-                              vertical: AimSpacing.space4,
-                            ),
-                            child: Text.rich(
-                              TextSpan(
-                                style: AimTextStyles.bodySm
-                                    .copyWith(color: surfaces.textSecondary),
-                                children: [
-                                  const TextSpan(
-                                    text: "Don't have an account? ",
-                                  ),
-                                  TextSpan(
-                                    text: 'Create one',
-                                    style: TextStyle(
-                                      color: surfaces.textLink,
-                                      fontWeight: AimFontWeights.semibold,
-                                    ),
-                                  ),
-                                ],
+                      child: TextButton(
+                        onPressed: _openRegister,
+                        child: Text.rich(
+                          TextSpan(
+                            style: AimTextStyles.bodySm
+                                .copyWith(color: surfaces.textSecondary),
+                            children: [
+                              const TextSpan(
+                                text: "Don't have an account? ",
                               ),
-                            ),
+                              TextSpan(
+                                text: 'Create one',
+                                style: TextStyle(
+                                  color: surfaces.textLink,
+                                  fontWeight: AimFontWeights.semibold,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),

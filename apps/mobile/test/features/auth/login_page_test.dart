@@ -277,9 +277,14 @@ void main() {
     final createOneLink = find.text("Don't have an account? Create one");
     await tester.scrollUntilVisible(
       createOneLink,
-      80,
+      300,
       scrollable: find.byType(Scrollable).first,
     );
+    // scrollUntilVisible stops as soon as any part of the target enters the
+    // viewport, which can leave its center (where tap() aims) still
+    // off-screen. ensureVisible scrolls until the whole target is in view.
+    await tester.ensureVisible(createOneLink);
+    await tester.pumpAndSettle();
 
     await tester.tap(createOneLink);
     await tester.pumpAndSettle();
