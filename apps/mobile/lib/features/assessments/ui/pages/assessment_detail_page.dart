@@ -16,7 +16,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -56,7 +55,7 @@ class _AssessmentDetailPageState extends ConsumerState<AssessmentDetailPage> {
 
   void _navigateToStartAttempt(AssessmentDetail detail) {
     Navigator.of(context).pushNamed(
-      AppRoutePaths.assessmentStart,
+      '/student/assessments/start',
       arguments: {
         'assessmentId': detail.id,
         'assessmentTitle': detail.title,
@@ -67,7 +66,7 @@ class _AssessmentDetailPageState extends ConsumerState<AssessmentDetailPage> {
 
   void _navigateToPastResults(AssessmentDetail detail) {
     Navigator.of(context).pushNamed(
-      AppRoutePaths.assessmentResultHistory,
+      '/student/assessments/history',
       arguments: {
         'assessmentId': detail.id,
         'assessmentTitle': detail.title,
