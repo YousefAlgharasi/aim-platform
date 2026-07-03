@@ -81,6 +81,19 @@ describe('AiChatSessionRepository', () => {
     expect(calls[0].params).toEqual([STUDENT_ID]);
   });
 
+  it('findActiveByStudentIdWithContextTitle() joins lessons for lesson: context refs', async () => {
+    const calls: { sql: string; params: readonly unknown[] }[] = [];
+    const db = makeMockDb(async (sql, params) => {
+      calls.push({ sql, params });
+      return { rows: [], rowCount: 0 };
+    });
+    const repo = new AiChatSessionRepository(db);
+    await repo.findActiveByStudentIdWithContextTitle(STUDENT_ID);
+    expect(calls[0].sql).toContain('LEFT JOIN lessons');
+    expect(calls[0].sql).toContain("status = 'active'");
+    expect(calls[0].params).toEqual([STUDENT_ID]);
+  });
+
   it('closeSession() updates status to closed scoped by id', async () => {
     const calls: { sql: string; params: readonly unknown[] }[] = [];
     const db = makeMockDb(async (sql, params) => {

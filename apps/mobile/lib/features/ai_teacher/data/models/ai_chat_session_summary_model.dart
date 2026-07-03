@@ -10,6 +10,7 @@ class AiChatSessionSummaryModel extends AiChatSessionSummary {
   const AiChatSessionSummaryModel({
     required super.sessionId,
     required super.contextRef,
+    super.contextTitle,
     required super.status,
     required super.createdAt,
     required super.updatedAt,
@@ -19,6 +20,7 @@ class AiChatSessionSummaryModel extends AiChatSessionSummary {
     return AiChatSessionSummaryModel(
       sessionId: json['sessionId'] as String,
       contextRef: json['contextRef'] as String,
+      contextTitle: json['contextTitle'] as String?,
       status: json['status'] as String,
       createdAt: json['createdAt'] as String,
       updatedAt: json['updatedAt'] as String,
@@ -28,6 +30,7 @@ class AiChatSessionSummaryModel extends AiChatSessionSummary {
   Map<String, dynamic> toJson() => {
         'sessionId': sessionId,
         'contextRef': contextRef,
+        'contextTitle': contextTitle,
         'status': status,
         'createdAt': createdAt,
         'updatedAt': updatedAt,

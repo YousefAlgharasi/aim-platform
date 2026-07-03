@@ -16,6 +16,10 @@ export interface AiChatSessionRow {
   readonly updated_at: string;
 }
 
+export interface AiChatSessionWithContextTitleRow extends AiChatSessionRow {
+  readonly context_title: string | null;
+}
+
 export interface AiChatMessageRow {
   readonly id: string;
   readonly session_id: string;

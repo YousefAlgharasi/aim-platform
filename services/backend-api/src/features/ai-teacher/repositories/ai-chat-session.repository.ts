@@ -7,7 +7,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { DatabaseService } from '../../../database/database.service';
-import { AiChatSessionRow } from './ai-chat-repository.types';
+import { AiChatSessionRow, AiChatSessionWithContextTitleRow } from './ai-chat-repository.types';
 
 @Injectable()
 export class AiChatSessionRepository {
@@ -42,6 +42,30 @@ export class AiChatSessionRepository {
        FROM ai_chat_sessions
        WHERE student_id = $1 AND status = 'active'
        ORDER BY updated_at DESC`,
+      [studentId],
+    );
+
+    return result.rows;
+  }
+
+  /**
+   * Same as findActiveByStudentId, but also resolves a display title for
+   * `lesson:<uuid>` context refs by joining `lessons`, so the session list
+   * can show the actual lesson name instead of a raw UUID slug. Other
+   * context_ref shapes (e.g. `general`) yield contextTitle: null.
+   */
+  async findActiveByStudentIdWithContextTitle(
+    studentId: string,
+  ): Promise<AiChatSessionWithContextTitleRow[]> {
+    const result = await this.db.query<AiChatSessionWithContextTitleRow>(
+      `SELECT s.id, s.student_id, s.context_ref, s.status, s.created_at, s.updated_at,
+              l.title AS context_title
+       FROM ai_chat_sessions s
+       LEFT JOIN lessons l
+         ON s.context_ref LIKE 'lesson:%'
+        AND l.id = substring(s.context_ref FROM 8)::uuid
+       WHERE s.student_id = $1 AND s.status = 'active'
+       ORDER BY s.updated_at DESC`,
       [studentId],
     );
 
