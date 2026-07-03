@@ -14,11 +14,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/app_config_provider.dart';
 import '../../../../core/routing/routing.dart';
 import '../../../../core/widgets/widgets.dart';
-import '../../logic/provider/auth_flow_provider.dart';
 import '../../logic/provider/login_provider.dart';
 
 /// Login screen — Student Mobile App MVP.
@@ -26,8 +26,8 @@ import '../../logic/provider/login_provider.dart';
 /// A student enters their email and password, [LoginNotifier] validates the
 /// input locally and then calls the backend's `POST /auth/login`. On
 /// success the notifier syncs the auth context, persists the session, and
-/// flips [authFlowProvider] to signed-in; this widget's only job after that
-/// is to notice the transition and navigate to [AppRoutePaths.mainShell].
+/// flips `authFlowProvider` to signed-in; `AppRouter`'s redirect then takes
+/// the user to [AppRoutePaths.mainShell] automatically.
 ///
 /// A separate, non-production-only "test mode" section lets developers sign
 /// in as a fixed student/admin/parent account (`POST /auth/test-login`) or
@@ -76,11 +76,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   void _openRegister() {
-    Navigator.of(context).pushNamed(AppRoutePaths.register);
+    context.push(AppRoutePaths.register);
   }
 
   void _openEndpointTester() {
-    Navigator.of(context).pushNamed(AppRoutePaths.endpointTester);
+    context.push(AppRoutePaths.endpointTester);
   }
 
   @override
@@ -90,21 +90,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final shadows = aimShadowsOf(context);
     final isTestModeAvailable = !ref.watch(appConfigProvider).isProduction;
 
-    // The root MaterialApp also watches authFlowProvider (to decide which
-    // route onGenerateRoute resolves to), and it hasn't rebuilt yet at the
-    // moment this listener fires. Navigating synchronously here would push
-    // against that stale, still-signed-out closure and immediately bounce
-    // back to sign-in, so the actual push is deferred to the next frame.
-    ref.listen(authFlowProvider, (_, next) {
-      if (!next.isSignedIn || !mounted) return;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          AppRoutePaths.mainShell,
-          (route) => false,
-        );
-      });
-    });
+    // Navigation to mainShell on sign-in is handled declaratively by
+    // AppRouter's `redirect` (see AimMobileApp), which re-evaluates
+    // authFlowProvider via a refresh listenable — no imperative push needed
+    // here anymore.
 
     // Paints light status-bar icons over the gradient header; without this
     // the OS falls back to dark icons on an assumed light background.

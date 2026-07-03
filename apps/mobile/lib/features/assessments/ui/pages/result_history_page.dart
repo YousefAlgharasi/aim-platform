@@ -24,6 +24,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:aim_mobile/core/formatting/score_percent.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
@@ -68,9 +69,9 @@ class _ResultHistoryPageState extends ConsumerState<ResultHistoryPage> {
   }
 
   void _onItemTap(ResultHistoryItem item) {
-    Navigator.of(context).pushNamed(
+    context.push(
       AppRoutePaths.assessmentResult,
-      arguments: {
+      extra: {
         'attemptId': item.attemptId,
         'assessmentTitle': widget.assessmentTitle,
       },
@@ -143,7 +144,7 @@ class _HistoryHeader extends StatelessWidget {
               button: true,
               label: 'Back',
               child: InkWell(
-                onTap: () => Navigator.of(context).pop(),
+                onTap: () => context.pop(),
                 customBorder: const CircleBorder(),
                 child: DecoratedBox(
                   decoration: BoxDecoration(

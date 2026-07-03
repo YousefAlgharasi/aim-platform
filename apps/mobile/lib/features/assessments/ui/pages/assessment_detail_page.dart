@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -42,9 +43,9 @@ class _AssessmentDetailPageState extends ConsumerState<AssessmentDetailPage> {
   }
 
   void _navigateToStartAttempt(AssessmentDetail detail) {
-    Navigator.of(context).pushNamed(
+    context.push(
       '/student/assessments/start',
-      arguments: {
+      extra: {
         'assessmentId': detail.id,
         'assessmentTitle': detail.title,
       },

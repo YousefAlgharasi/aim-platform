@@ -6,6 +6,7 @@
 //   AIMGradientButton, AIMCard
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/routing.dart';
 import '../../../../core/state/app_async_state.dart';
@@ -53,10 +54,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
   }
 
   void _goToMainShell() {
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      AppRoutePaths.mainShell,
-      (route) => false,
-    );
+    context.go(AppRoutePaths.mainShell);
   }
 
   @override
@@ -68,7 +66,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
       backgroundColor: surfaces.background,
       body: Column(
         children: [
-          _GradientHeader(onBack: () => Navigator.of(context).pop()),
+          _GradientHeader(onBack: () => context.pop()),
           Expanded(
             child: switch (state) {
               AppAsyncLoading() || AppAsyncIdle() => const AIMFullScreenLoading(

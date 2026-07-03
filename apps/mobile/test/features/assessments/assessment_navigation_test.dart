@@ -6,11 +6,12 @@ import 'package:flutter_test/flutter_test.dart';
 ///
 /// Scans source files to ensure:
 /// 1. All pages are exported from the barrel file.
-/// 2. Every route referenced by pushNamed/pushReplacementNamed calls is a
+/// 2. Every route referenced by a `context.push`/`pushReplacement`/`go` call
+///    (whether as a literal path string or an `AppRoutePaths` constant) is a
 ///    known route in the navigation graph.
-/// 3. Route arguments pass the correct keys between pages.
+/// 3. Route arguments (`extra:` maps) pass the correct keys between pages.
 /// 4. The expected navigation flows are wired correctly:
-///    list -> detail -> start -> attempt -> submit/result
+///    list -> detail -> start -> attempt -> submit -> result
 ///    detail -> history -> result
 void main() {
   final pagesDir = Directory('lib/features/assessments/ui/pages');
@@ -24,10 +25,47 @@ void main() {
     '/student/assessments/detail',
     '/student/assessments/start',
     '/student/assessments/attempt',
+    '/student/assessments/submit',
     '/student/assessments/result',
     '/student/assessments/history',
     '/student/assessments/deadlines',
   };
+
+  // AppRoutePaths constant names → their path values (mirrors
+  // lib/core/routing/app_route_paths.dart), used to resolve navigation
+  // calls that pass the constant instead of a literal string.
+  const routeConstantValues = <String, String>{
+    'AppRoutePaths.assessments': '/student/assessments',
+    'AppRoutePaths.assessmentDetail': '/student/assessments/detail',
+    'AppRoutePaths.assessmentStart': '/student/assessments/start',
+    'AppRoutePaths.assessmentAttempt': '/student/assessments/attempt',
+    'AppRoutePaths.assessmentSubmit': '/student/assessments/submit',
+    'AppRoutePaths.assessmentResult': '/student/assessments/result',
+    'AppRoutePaths.assessmentResultHistory': '/student/assessments/history',
+    'AppRoutePaths.assessmentDeadlines': '/student/assessments/deadlines',
+  };
+
+  // Matches GoRouter navigation calls (context.push / context.pushReplacement
+  // / context.go) with a literal assessment route path string.
+  final literalRoutePattern = RegExp(
+    r'''context\.(?:push|pushReplacement|go)\(\s*['"](/student/assessments[^'"]*)['"]''',
+  );
+
+  /// Every assessment route this file's `context.push`/`pushReplacement`/`go`
+  /// calls navigate to — resolved from either a literal path string or a
+  /// known `AppRoutePaths` constant.
+  Set<String> navigationTargets(String content) {
+    final targets = <String>{};
+    for (final match in literalRoutePattern.allMatches(content)) {
+      targets.add(match.group(1)!);
+    }
+    for (final entry in routeConstantValues.entries) {
+      if (content.contains(entry.key)) {
+        targets.add(entry.value);
+      }
+    }
+    return targets;
+  }
 
   // Expected page files that must exist and be exported.
   final expectedPages = <String>[
@@ -86,22 +124,17 @@ void main() {
   });
 
   // ---------------------------------------------------------------------------
-  // 2. All pushNamed routes are valid known routes
+  // 2. All navigation calls reference known assessment routes
   // ---------------------------------------------------------------------------
 
-  test('all pushNamed routes reference known assessment routes', () {
+  test('all navigation calls reference known assessment routes', () {
     if (!pagesDir.existsSync()) return;
-
-    final routePattern = RegExp(
-      r'''(?:pushNamed|pushReplacementNamed)\(\s*['"](/student/assessments[^'"]*)['"]''',
-    );
 
     final unknownRoutes = <String, List<String>>{};
 
     for (final file in pageFiles) {
       final content = file.readAsStringSync();
-      for (final match in routePattern.allMatches(content)) {
-        final route = match.group(1)!;
+      for (final route in navigationTargets(content)) {
         if (!knownRoutes.contains(route)) {
           unknownRoutes
               .putIfAbsent(route, () => [])
@@ -130,7 +163,7 @@ void main() {
     if (!file.existsSync()) return;
     final content = file.readAsStringSync();
 
-    expect(content.contains("'/student/assessments/detail'"), isTrue,
+    expect(navigationTargets(content), contains('/student/assessments/detail'),
         reason: 'List page must navigate to detail route');
     expect(content.contains("'assessmentId'"), isTrue,
         reason: 'List page must pass assessmentId argument');
@@ -146,7 +179,7 @@ void main() {
     if (!file.existsSync()) return;
     final content = file.readAsStringSync();
 
-    expect(content.contains("'/student/assessments/start'"), isTrue,
+    expect(navigationTargets(content), contains('/student/assessments/start'),
         reason: 'Detail page must navigate to start route');
     expect(content.contains("'assessmentId'"), isTrue,
         reason: 'Detail page must pass assessmentId argument');
@@ -162,7 +195,7 @@ void main() {
     if (!file.existsSync()) return;
     final content = file.readAsStringSync();
 
-    expect(content.contains("'/student/assessments/attempt'"), isTrue,
+    expect(navigationTargets(content), contains('/student/assessments/attempt'),
         reason: 'Start attempt page must navigate to attempt route');
     expect(content.contains("'attemptId'"), isTrue,
         reason: 'Start attempt page must pass attemptId argument');
@@ -180,14 +213,15 @@ void main() {
     final content = file.readAsStringSync();
 
     // TASK-23: the attempt page no longer submits inline or navigates to the
-    // result route directly — its Submit button pushes the SubmitAttemptPage
-    // confirmation screen (design screen 28), which owns the submission and
-    // the navigation to the result screen.
-    expect(content.contains('SubmitAttemptPage('), isTrue,
-        reason: 'Attempt page must open the submit confirmation page');
-    expect(content.contains('attemptId: widget.attemptId'), isTrue,
+    // result route directly — its Submit button navigates to the
+    // AppRoutePaths.assessmentSubmit confirmation screen (design screen 28),
+    // which owns the submission and the navigation to the result screen.
+    expect(navigationTargets(content), contains('/student/assessments/submit'),
+        reason: 'Attempt page must open the submit confirmation route');
+    expect(content.contains("'attemptId': widget.attemptId"), isTrue,
         reason: 'Attempt page must pass attemptId to the confirmation page');
-    expect(content.contains('assessmentTitle: widget.assessmentTitle'), isTrue,
+    expect(
+        content.contains("'assessmentTitle': widget.assessmentTitle"), isTrue,
         reason:
             'Attempt page must pass assessmentTitle to the confirmation page');
   });
@@ -200,13 +234,7 @@ void main() {
     if (!file.existsSync()) return;
     final content = file.readAsStringSync();
 
-    // TASK-23: the page navigates via the AppRoutePaths.assessmentResult
-    // constant (defined as '/student/assessments/result') instead of a
-    // hardcoded string, so accept either form.
-    expect(
-        content.contains("'/student/assessments/result'") ||
-            content.contains('AppRoutePaths.assessmentResult'),
-        isTrue,
+    expect(navigationTargets(content), contains('/student/assessments/result'),
         reason: 'Submit page must navigate to result route');
     expect(content.contains("'attemptId'"), isTrue,
         reason: 'Submit page must pass attemptId argument');
@@ -222,13 +250,7 @@ void main() {
     if (!file.existsSync()) return;
     final content = file.readAsStringSync();
 
-    // TASK-24: the page now uses the AppRoutePaths constant (which is
-    // defined as '/student/assessments/result') instead of a hardcoded
-    // string, so accept either form.
-    expect(
-        content.contains("'/student/assessments/result'") ||
-            content.contains('AppRoutePaths.assessmentResult'),
-        isTrue,
+    expect(navigationTargets(content), contains('/student/assessments/result'),
         reason: 'History page must navigate to result route');
     expect(content.contains("'attemptId'"), isTrue,
         reason: 'History page must pass attemptId argument');
@@ -240,25 +262,17 @@ void main() {
   // 4. Navigation graph completeness: the expected flows are wired
   // ---------------------------------------------------------------------------
 
-  test('navigation graph covers list -> detail -> start -> attempt -> result',
+  test(
+      'navigation graph covers list -> detail -> start -> attempt -> submit -> result',
       () {
     if (!pagesDir.existsSync()) return;
-
-    // Build an adjacency map: source file -> set of target routes.
-    final navPattern = RegExp(
-      r'''(?:pushNamed|pushReplacementNamed)\(\s*['"](/student/assessments[^'"]*)['"]''',
-    );
 
     final edges = <String, Set<String>>{};
     for (final file in pageFiles) {
       final name = file.uri.pathSegments.last;
-      final content = file.readAsStringSync();
-      for (final match in navPattern.allMatches(content)) {
-        edges.putIfAbsent(name, () => {}).add(match.group(1)!);
-      }
+      edges[name] = navigationTargets(file.readAsStringSync());
     }
 
-    // Verify the primary flow.
     expect(edges['assessment_list_page.dart'],
         contains('/student/assessments/detail'),
         reason: 'List must navigate to detail');
@@ -268,47 +282,20 @@ void main() {
     expect(edges['start_attempt_page.dart'],
         contains('/student/assessments/attempt'),
         reason: 'Start must navigate to attempt');
-
-    // Attempt can go to result directly or via submit.
-    final attemptTargets = edges['attempt_page.dart'] ?? {};
-    final submitTargets = edges['submit_attempt_page.dart'] ?? {};
-    // TASK-23: the attempt page reaches the result screen via the
-    // SubmitAttemptPage confirmation step, which navigates with the
-    // AppRoutePaths.assessmentResult constant (defined as
-    // '/student/assessments/result') — invisible to the literal-only regex
-    // above, so check for the constant form as a fallback.
-    final submitFile = File('${pagesDir.path}/submit_attempt_page.dart');
-    final submitUsesConstant = submitFile.existsSync() &&
-        submitFile
-            .readAsStringSync()
-            .contains('AppRoutePaths.assessmentResult');
-    expect(
-      attemptTargets.contains('/student/assessments/result') ||
-          submitTargets.contains('/student/assessments/result') ||
-          submitUsesConstant,
-      isTrue,
-      reason: 'Attempt or submit page must navigate to result',
-    );
+    expect(edges['attempt_page.dart'],
+        contains('/student/assessments/submit'),
+        reason: 'Attempt must navigate to the submit confirmation');
+    expect(edges['submit_attempt_page.dart'],
+        contains('/student/assessments/result'),
+        reason: 'Submit must navigate to result');
   });
 
   test('navigation graph covers history -> result', () {
     if (!pagesDir.existsSync()) return;
 
-    final navPattern = RegExp(
-      r'''(?:pushNamed|pushReplacementNamed)\(\s*['"](/student/assessments[^'"]*)['"]''',
-    );
-
     final historyFile = File('${pagesDir.path}/result_history_page.dart');
     if (!historyFile.existsSync()) return;
-    final content = historyFile.readAsStringSync();
-    final targets =
-        navPattern.allMatches(content).map((m) => m.group(1)!).toSet();
-    // TASK-24: the page now navigates via the AppRoutePaths constant
-    // (defined as '/student/assessments/result') rather than a hardcoded
-    // string literal, which the literal-only regex above cannot see.
-    if (content.contains('AppRoutePaths.assessmentResult')) {
-      targets.add('/student/assessments/result');
-    }
+    final targets = navigationTargets(historyFile.readAsStringSync());
 
     expect(targets, contains('/student/assessments/result'),
         reason: 'History page must navigate to result');
@@ -321,20 +308,13 @@ void main() {
   test('no page navigates to an assessment route outside the known set', () {
     if (!pagesDir.existsSync()) return;
 
-    final routePattern = RegExp(
-      r'''(?:pushNamed|pushReplacementNamed)\(\s*['"]([^'"]+)['"]''',
-    );
-
     final invalidRoutes = <String, String>{};
 
     for (final file in pageFiles) {
       final name = file.uri.pathSegments.last;
       if (name == 'assessment_pages.dart') continue;
-      final content = file.readAsStringSync();
-      for (final match in routePattern.allMatches(content)) {
-        final route = match.group(1)!;
-        if (route.startsWith('/student/assessments') &&
-            !knownRoutes.contains(route)) {
+      for (final route in navigationTargets(file.readAsStringSync())) {
+        if (!knownRoutes.contains(route)) {
           invalidRoutes[route] = name;
         }
       }

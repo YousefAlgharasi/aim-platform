@@ -25,8 +25,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/formatting/score_percent.dart';
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -99,11 +101,7 @@ class _AssessmentResultPageState extends ConsumerState<AssessmentResultPage> {
           ),
         AppAsyncSuccess(:final data) => _ResultContent(
             result: data,
-            onDone: () => Navigator.of(context).popUntil(
-              (route) =>
-                  route.settings.name == '/student/assessments' ||
-                  route.isFirst,
-            ),
+            onDone: () => context.go(AppRoutePaths.assessments),
           ),
         AppAsyncIdle() => const AIMFullScreenLoading(
             semanticLabel: 'Loading result',

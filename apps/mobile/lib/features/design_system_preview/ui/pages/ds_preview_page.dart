@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/theme/theme.dart';
 import '../ds_preview_state.dart';
 import '../sections/ds_button_section.dart';
@@ -27,13 +29,7 @@ class DSPreviewPage extends StatefulWidget {
   /// Push the preview modally. No-op in release builds.
   static void push(BuildContext context) {
     if (!kDebugMode) return;
-    Navigator.of(context, rootNavigator: true).push<void>(
-      MaterialPageRoute<void>(
-        fullscreenDialog: true,
-        builder: (_) => const DSPreviewPage(),
-        settings: const RouteSettings(name: '/debug/design-system'),
-      ),
-    );
+    context.push(AppRoutePaths.designSystemPreview);
   }
 
   @override
@@ -78,7 +74,7 @@ class _DSPreviewPageState extends State<DSPreviewPage> {
             selectedTab: _tab,
             onTabChanged: (i) => setState(() => _tab = i),
             tabs: _tabs,
-            onClose: () => Navigator.of(context, rootNavigator: true).pop(),
+            onClose: () => context.pop(),
           ),
         );
       },

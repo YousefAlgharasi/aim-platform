@@ -19,6 +19,7 @@
 // a graceful "not available yet" empty state instead.
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 
@@ -147,7 +148,9 @@ class _ReleaseNotesHeader extends StatelessWidget {
               button: true,
               label: 'Back',
               child: InkWell(
-                onTap: () => Navigator.of(context).maybePop(),
+                onTap: () {
+                  if (context.canPop()) context.pop();
+                },
                 customBorder: const CircleBorder(),
                 child: DecoratedBox(
                   decoration: BoxDecoration(

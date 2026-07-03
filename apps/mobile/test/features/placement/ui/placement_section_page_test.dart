@@ -15,6 +15,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/theme/app_theme.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -101,11 +102,19 @@ Widget _wrap(
         return notifier;
       }),
     ],
-    child: MaterialApp(
+    child: MaterialApp.router(
       theme: AppTheme.light,
-      onGenerateRoute: (_) =>
-          MaterialPageRoute(builder: (_) => const SizedBox()),
-      home: Directionality(textDirection: dir, child: child),
+      routerConfig: GoRouter(
+        initialLocation: '/',
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) =>
+                Directionality(textDirection: dir, child: child),
+          ),
+        ],
+        errorBuilder: (context, state) => const SizedBox(),
+      ),
     ),
   );
 }

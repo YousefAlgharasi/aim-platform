@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:app_links/app_links.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
@@ -19,10 +19,10 @@ class DeepLinkHandler {
   final AppLinks _appLinks = AppLinks();
   StreamSubscription<Uri>? _sub;
   bool _processing = false;
-  GlobalKey<NavigatorState>? _navigatorKey;
+  GoRouter? _router;
 
-  void init(GlobalKey<NavigatorState> navigatorKey) {
-    _navigatorKey = navigatorKey;
+  void init(GoRouter router) {
+    _router = router;
 
     _appLinks.getInitialLink().then((uri) {
       if (uri != null) _handleUri(uri);
@@ -80,10 +80,7 @@ class DeepLinkHandler {
             accessToken: accessToken,
           );
 
-      _navigatorKey?.currentState?.pushNamedAndRemoveUntil(
-        AppRoutePaths.mainShell,
-        (route) => false,
-      );
+      _router?.go(AppRoutePaths.mainShell);
     } finally {
       _processing = false;
     }
