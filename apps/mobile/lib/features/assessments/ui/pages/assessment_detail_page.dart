@@ -1,9 +1,22 @@
 // P10-055/P10-057: AssessmentDetailPage — displays assessment info before attempt.
 // All data is backend-supplied; Flutter never computes deadline status.
+//
+// TASK-22: restyled to match design screen 25 — gradient header ("Quiz
+// details" / "Exam details", derived from the real backend `type`), stat
+// tiles for Questions/Time limit/Max attempts, a "Past results" link to the
+// existing result-history route, and a gradient Start Attempt button.
+//
+// Deviations from the mockup (real-data-only rules):
+// - The mockup's "70% Passing score" and "1 / 3 Attempts used" tiles have no
+//   backing field anywhere in AssessmentDetail — the backend detail payload
+//   has no passingScore or attemptsUsed/attemptCount. Neither is fabricated;
+//   "Max attempts" (a real field) is shown instead of "Attempts used".
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -43,7 +56,18 @@ class _AssessmentDetailPageState extends ConsumerState<AssessmentDetailPage> {
 
   void _navigateToStartAttempt(AssessmentDetail detail) {
     Navigator.of(context).pushNamed(
-      '/student/assessments/start',
+      AppRoutePaths.assessmentStart,
+      arguments: {
+        'assessmentId': detail.id,
+        'assessmentTitle': detail.title,
+        'timeLimitSeconds': detail.timeLimitSeconds,
+      },
+    );
+  }
+
+  void _navigateToPastResults(AssessmentDetail detail) {
+    Navigator.of(context).pushNamed(
+      AppRoutePaths.assessmentResultHistory,
       arguments: {
         'assessmentId': detail.id,
         'assessmentTitle': detail.title,
@@ -54,25 +78,105 @@ class _AssessmentDetailPageState extends ConsumerState<AssessmentDetailPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(assessmentDetailProvider);
+    final surfaces = aimSurfacesOf(context);
+    final headerTitle = switch (state) {
+      AppAsyncSuccess(:final data) =>
+        data.type == 'exam' ? 'Exam details' : 'Quiz details',
+      _ => 'Assessment details',
+    };
 
     return Scaffold(
-      appBar: AIMTopAppBar(title: widget.assessmentTitle),
-      body: switch (state) {
-        AppAsyncLoading() => const AIMFullScreenLoading(
-            semanticLabel: 'Loading assessment',
+      backgroundColor: surfaces.background,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _AssessmentDetailHeader(title: headerTitle),
+          Expanded(
+            child: switch (state) {
+              AppAsyncLoading() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading assessment',
+                ),
+              AppAsyncFailure(:final message) => AIMFullScreenError(
+                  message: message,
+                  onRetry: _load,
+                ),
+              AppAsyncSuccess(:final data) => _AssessmentDetailContent(
+                  detail: data,
+                  onStartAttempt: () => _navigateToStartAttempt(data),
+                  onViewPastResults: () => _navigateToPastResults(data),
+                ),
+              AppAsyncIdle() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading assessment',
+                ),
+            },
           ),
-        AppAsyncFailure(:final message) => AIMFullScreenError(
-            message: message,
-            onRetry: _load,
+        ],
+      ),
+    );
+  }
+}
+
+// ── Gradient header ─────────────────────────────────────────────────────────
+
+class _AssessmentDetailHeader extends StatelessWidget {
+  const _AssessmentDetailHeader({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsetsDirectional.fromSTEB(
+          AimSpacing.screenPaddingMobile,
+          AimSpacing.space16,
+          AimSpacing.screenPaddingMobile,
+          AimSpacing.space16,
+        ),
+        decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+        child: SafeArea(
+          bottom: false,
+          child: Row(
+            children: [
+              Semantics(
+                button: true,
+                label: 'Back',
+                child: InkWell(
+                  onTap: () => Navigator.of(context).maybePop(),
+                  customBorder: const CircleBorder(),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AimColors.neutral0.withValues(alpha: 0.18),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(AimSpacing.space12),
+                      child: Icon(
+                        Directionality.of(context) == TextDirection.rtl
+                            ? Icons.chevron_right_rounded
+                            : Icons.chevron_left_rounded,
+                        size: AimSizes.iconMd,
+                        color: AimColors.neutral0,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AimSpacing.space12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
-        AppAsyncSuccess(:final data) => _AssessmentDetailContent(
-            detail: data,
-            onStartAttempt: () => _navigateToStartAttempt(data),
-          ),
-        AppAsyncIdle() => const AIMFullScreenLoading(
-            semanticLabel: 'Loading assessment',
-          ),
-      },
+        ),
+      ),
     );
   }
 }
@@ -81,10 +185,12 @@ class _AssessmentDetailContent extends StatelessWidget {
   const _AssessmentDetailContent({
     required this.detail,
     required this.onStartAttempt,
+    required this.onViewPastResults,
   });
 
   final AssessmentDetail detail;
   final VoidCallback onStartAttempt;
+  final VoidCallback onViewPastResults;
 
   @override
   Widget build(BuildContext context) {
@@ -98,35 +204,35 @@ class _AssessmentDetailContent extends StatelessWidget {
         vertical: AimSpacing.sectionGap,
       ),
       children: [
+        Text(
+          detail.title,
+          style: AimTextStyles.h2.copyWith(color: surfaces.textPrimary),
+        ),
         if (detail.description != null && detail.description!.isNotEmpty) ...[
+          const SizedBox(height: AimSpacing.space4),
           Text(
             detail.description!,
             style: AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
           ),
-          const SizedBox(height: AimSpacing.sectionGap),
         ],
+        const SizedBox(height: AimSpacing.sectionGap),
 
-        _InfoRow(
-          icon: Icons.category_outlined,
-          label: 'Type',
-          value: detail.type == 'exam' ? 'Exam' : 'Quiz',
+        Wrap(
+          spacing: AimSpacing.componentGap,
+          runSpacing: AimSpacing.componentGap,
+          children: [
+            _StatTile(value: '$totalQuestions', label: 'Questions'),
+            if (detail.timeLimitSeconds != null)
+              _StatTile(
+                value: _formatDuration(detail.timeLimitSeconds!),
+                label: 'Time limit',
+              ),
+            _StatTile(value: '${detail.maxAttempts}', label: 'Max attempts'),
+          ],
         ),
-        _InfoRow(
-          icon: Icons.help_outline,
-          label: 'Total questions',
-          value: '$totalQuestions',
-        ),
-        _InfoRow(
-          icon: Icons.replay,
-          label: 'Max attempts',
-          value: '${detail.maxAttempts}',
-        ),
-        if (detail.timeLimitSeconds != null)
-          _InfoRow(
-            icon: Icons.timer_outlined,
-            label: 'Time limit',
-            value: _formatDuration(detail.timeLimitSeconds!),
-          ),
+        const SizedBox(height: AimSpacing.componentGap),
+
+        _PastResultsCard(onTap: onViewPastResults),
 
         if (detail.deadline != null) ...[
           const SizedBox(height: AimSpacing.sectionGap),
@@ -154,12 +260,11 @@ class _AssessmentDetailContent extends StatelessWidget {
         ],
 
         const SizedBox(height: AimSpacing.sectionGap),
-        AIMButton(
-          onPressed: onStartAttempt,
+        AIMGradientButton(
+          label: 'Start Attempt',
           fullWidth: true,
-          size: AIMButtonSize.large,
+          onPressed: onStartAttempt,
           semanticLabel: 'Start attempt for ${detail.title}',
-          child: const Text('Start Attempt'),
         ),
       ],
     );
@@ -173,37 +278,89 @@ class _AssessmentDetailContent extends StatelessWidget {
   }
 }
 
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
+class _StatTile extends StatelessWidget {
+  const _StatTile({required this.value, required this.label});
 
-  final IconData icon;
-  final String label;
   final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final shadows = aimShadowsOf(context);
+
+    return SizedBox(
+      width: (MediaQuery.sizeOf(context).width -
+              AimSpacing.screenPaddingMobile * 2 -
+              AimSpacing.componentGap) /
+          2,
+      child: Container(
+        padding: const EdgeInsets.all(AimSpacing.cardPadding),
+        decoration: BoxDecoration(
+          color: surfaces.surface,
+          borderRadius: AimRadius.borderLg,
+          boxShadow: shadows.card,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              value,
+              style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
+            ),
+            const SizedBox(height: AimSpacing.space4),
+            Text(
+              label,
+              style: AimTextStyles.bodySm.copyWith(
+                color: surfaces.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PastResultsCard extends StatelessWidget {
+  const _PastResultsCard({required this.onTap});
+
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AimSpacing.space12),
+    return AIMCard(
+      variant: AIMCardVariant.elevated,
+      interactive: true,
+      onTap: onTap,
+      semanticLabel: 'Past results, view your attempt history',
       child: Row(
         children: [
-          Icon(icon, size: AimSizes.iconSm, color: surfaces.textSecondary),
-          const SizedBox(width: AimSpacing.space8),
           Expanded(
-            child: Text(
-              label,
-              style: AimTextStyles.bodyMd
-                  .copyWith(color: surfaces.textSecondary),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Past results',
+                  style:
+                      AimTextStyles.title.copyWith(color: surfaces.textPrimary),
+                ),
+                const SizedBox(height: AimSpacing.space4),
+                Text(
+                  'View your attempt history',
+                  style: AimTextStyles.bodySm.copyWith(
+                    color: surfaces.textSecondary,
+                  ),
+                ),
+              ],
             ),
           ),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.titleSmall,
+          Icon(
+            Icons.chevron_right,
+            size: AimSizes.iconSm,
+            color: surfaces.textSecondary,
           ),
         ],
       ),
