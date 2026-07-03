@@ -6,6 +6,12 @@
 // computation — it never touches skill_states, weakness_records, or any
 // AIM-owned table, so it is not subject to the "no client-side AIM logic"
 // rule (the computation itself lives here, backend-side, not in Flutter).
+//
+// Course/level gating (P20-010): a course with a track_slug/cefr_rank is
+// locked when its cefr_rank exceeds the student's max_unlocked_cefr_rank for
+// that track. A student with no student_level_state row yet has only
+// rank-1 courses unlocked in each track. Courses with no track_slug/cefr_rank
+// mapping are never locked (gating doesn't apply to them).
 
 import { Injectable } from '@nestjs/common';
 import { StudentCoursesRepository } from './student-courses.repository';
@@ -32,6 +38,9 @@ export class StudentCoursesService {
         status = 'not_started';
       }
 
+      const maxUnlockedCefrRank = row.max_unlocked_cefr_rank ?? 1;
+      const locked = row.cefr_rank !== null && row.cefr_rank > maxUnlockedCefrRank;
+
       return {
         courseId: row.course_id,
         title: row.title,
@@ -41,6 +50,7 @@ export class StudentCoursesService {
         completedLessonCount,
         percent,
         status,
+        locked,
       };
     });
 
