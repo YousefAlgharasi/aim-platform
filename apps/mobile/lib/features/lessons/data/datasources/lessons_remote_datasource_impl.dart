@@ -78,6 +78,36 @@ class LessonsRemoteDatasourceImpl implements LessonsRemoteDatasource {
     return envelope.data ?? const [];
   }
 
+  @override
+  Future<List<ChapterProgressModel>> getChaptersWithProgress({
+    required String bearerToken,
+    required String levelId,
+  }) async {
+    final envelope = await _apiClient.get<List<ChapterProgressModel>>(
+      BackendApiPaths.studentChapters,
+      queryParameters: {'levelId': levelId},
+      headers: _auth(bearerToken),
+      decodeData: (json) =>
+          _decodeListFromKey(json, 'chapters', ChapterProgressModel.fromJson),
+    );
+    return envelope.data ?? const [];
+  }
+
+  @override
+  Future<List<LessonProgressModel>> getLessonsWithProgress({
+    required String bearerToken,
+    required String chapterId,
+  }) async {
+    final envelope = await _apiClient.get<List<LessonProgressModel>>(
+      BackendApiPaths.studentLessons,
+      queryParameters: {'chapterId': chapterId},
+      headers: _auth(bearerToken),
+      decodeData: (json) =>
+          _decodeListFromKey(json, 'lessons', LessonProgressModel.fromJson),
+    );
+    return envelope.data ?? const [];
+  }
+
   // ── Helpers ────────────────────────────────────────────────────────────────
 
   Map<String, String> _auth(String bearerToken) =>

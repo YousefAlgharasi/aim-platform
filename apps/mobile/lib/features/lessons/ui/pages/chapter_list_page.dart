@@ -1,7 +1,8 @@
 // Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Chapters" (chapterList)
 //   docs/design/ui-for-all-system-mobile/screenshots/light/07-screen.png
 //   docs/design/ui-for-all-system-mobile/screenshots/dark/07-screen.png
-// Endpoint: GET /curriculum/chapters?levelId= (ChapterModel fields only)
+// Endpoint: GET /student/chapters?levelId= (ChapterProgressModel fields,
+//   real per-student progress — see student-chapters.controller.ts)
 // Widgets: AIMIconButton, AIMBadge, AIMChip, AIMFullScreenLoading,
 //   AIMFullScreenError, AIMEmptyState, ChapterListTile
 //
@@ -11,28 +12,26 @@
 // Receives [courseId] and [courseTitle] from route arguments (set by
 // CourseListPage). A course's chapters live under its levels, so this page
 // first resolves the course's (first) level via [getLevels], then loads
-// chapters for that resolved levelId via [chaptersProvider.autoDispose].
-// Tapping a chapter navigates to the lesson list (P6-075).
+// chapters (with real per-student progress) for that resolved levelId via
+// [chaptersProvider.autoDispose]. Tapping a chapter navigates to the lesson
+// list (P6-075).
 //
-// Visual parity pass: the design shows a header-level percent-done badge
-// ("62% DONE"), filter chips ("All chapters"/"In progress"/"Completed"),
-// and per-chapter progress bars/lesson counts/completion chips. None of
-// those have a backing field on the backend's ChapterModel (no per-student
-// progress, no lesson count — see
-// services/backend-api/src/features/curriculum/chapters). Rather than omit
-// them (which left the screen visually mismatched from the design), they
-// are rendered from a deterministic, cosmetic [ChapterProgressMock] — see
-// curriculum_progress_mock.dart and TODO_BACKEND_PROGRESS.md for the real
-// endpoints this should be replaced with once available. Title/description
-// and the '${chapters.length} chapters' subtitle remain real, backend-
-// sourced values.
+// The header's percent-done badge, the "All chapters"/"In progress"/
+// "Completed" filter chips, and each row's progress bar/lesson count/status
+// chip are all driven by real, backend-computed fields on
+// [ChapterProgressModel] (percent, lessonCount, completedLessonCount,
+// status) — GET /student/chapters?levelId= joins the student's real
+// lesson_progress rows server-side; Flutter never computes any of these.
 //
 // Security rules:
 // - courseId is always the backend-supplied value from CourseModel; never
 //   from user input or local computation. The resolved levelId is always
 //   backend-supplied from a prior LevelModel response.
-// - chapterId passed to the next screen is always from ChapterModel.
-// - Flutter never computes status, sortOrder, or hierarchy values.
+// - chapterId passed to the next screen is always from ChapterProgressModel.
+// - Flutter never computes status, sortOrder, percent, or any progress value
+//   — all come verbatim from the backend.
+// - studentId is never sent by this screen; the backend resolves it from
+//   the JWT.
 // - Bearer token from authFlowProvider; never stored here.
 // - No AIM Engine, AI Teacher, or AI provider calls from Flutter.
 // - No secrets here.
@@ -54,6 +53,10 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart'
 import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
 import '../widgets/lessons_widgets.dart';
+
+/// Filter tabs shown above the chapter list. Filters on the real,
+/// backend-computed [ChapterProgressModel.status] value.
+enum ChapterListFilter { all, inProgress, completed }
 
 /// Chapter list screen for a single course.
 ///
@@ -103,7 +106,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
         );
   }
 
-  void _onChapterTap(ChapterModel chapter, int index) {
+  void _onChapterTap(ChapterProgressModel chapter, int index) {
     // Navigate to lesson list with backend-supplied chapterId.
     // chapterId is never constructed from user input. chapterIndex is the
     // chapter's real position in the backend-ordered list — used only to
@@ -111,7 +114,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
     context.push(
       AppRoutePaths.chapterLessons,
       extra: {
-        'chapterId': chapter.id,
+        'chapterId': chapter.chapterId,
         'chapterTitle': chapter.title,
         'chapterIndex': index,
       },
@@ -168,7 +171,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
 }
 
 // ---------------------------------------------------------------------------
-// Header — title, real chapter count, cosmetic percent-done badge, filters
+// Header — title, real chapter count, real percent-done badge, filters
 // ---------------------------------------------------------------------------
 
 class _ChapterListHeader extends StatelessWidget {
@@ -180,7 +183,7 @@ class _ChapterListHeader extends StatelessWidget {
   });
 
   final String courseTitle;
-  final List<ChapterModel> chapters;
+  final List<ChapterProgressModel> chapters;
   final ChapterListFilter filter;
   final ValueChanged<ChapterListFilter> onFilterChanged;
 
@@ -189,18 +192,11 @@ class _ChapterListHeader extends StatelessWidget {
     final surfaces = aimSurfacesOf(context);
     final soft = aimSoftFillsOf(context);
 
-    // Cosmetic overall percent — average of the per-chapter mock progress.
-    // See ChapterProgressMock doc comment; not a real backend aggregate.
+    // Real overall percent — average of each chapter's backend-computed
+    // percent (ChapterProgressModel.percent).
     final overallPercent = chapters.isEmpty
         ? 0
-        : (chapters.asMap().entries.fold<int>(
-                  0,
-                  (sum, entry) => sum +
-                      ChapterProgressMock.forIndex(
-                        entry.key,
-                        chapters.length,
-                      ).percent,
-                ) /
+        : (chapters.fold<int>(0, (sum, chapter) => sum + chapter.percent) /
                 chapters.length)
             .round();
 
@@ -332,10 +328,10 @@ class _ChapterListContent extends StatelessWidget {
     required this.onTap,
   });
 
-  final List<ChapterModel> chapters;
+  final List<ChapterProgressModel> chapters;
   final ChapterListFilter filter;
   final Future<void> Function() onRefresh;
-  final void Function(ChapterModel, int) onTap;
+  final void Function(ChapterProgressModel, int) onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -348,10 +344,10 @@ class _ChapterListContent extends StatelessWidget {
     }
 
     // Index is preserved from the full, backend-ordered list even when
-    // filtered, so the numbered circle and mock progress stay stable.
-    final visible = <(int, ChapterModel)>[
+    // filtered, so the numbered circle stays stable.
+    final visible = <(int, ChapterProgressModel)>[
       for (final (index, chapter) in chapters.indexed)
-        if (_matchesFilter(index, chapters.length)) (index, chapter),
+        if (_matchesFilter(chapter)) (index, chapter),
     ];
 
     if (visible.isEmpty) {
@@ -377,7 +373,6 @@ class _ChapterListContent extends StatelessWidget {
           return ChapterListTile(
             model: chapter,
             index: index,
-            progress: ChapterProgressMock.forIndex(index, chapters.length),
             onTap: () => onTap(chapter, index),
           );
         },
@@ -385,13 +380,11 @@ class _ChapterListContent extends StatelessWidget {
     );
   }
 
-  bool _matchesFilter(int index, int total) {
-    if (filter == ChapterListFilter.all) return true;
-    final progress = ChapterProgressMock.forIndex(index, total);
+  bool _matchesFilter(ChapterProgressModel chapter) {
     return switch (filter) {
       ChapterListFilter.all => true,
-      ChapterListFilter.inProgress => progress.inProgress,
-      ChapterListFilter.completed => progress.completed,
+      ChapterListFilter.inProgress => chapter.isInProgress,
+      ChapterListFilter.completed => chapter.isCompleted,
     };
   }
 }

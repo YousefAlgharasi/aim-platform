@@ -44,4 +44,23 @@ abstract class LessonsRepository {
     required String bearerToken,
     required String chapterId,
   });
+
+  /// Fetch published chapters for a backend-supplied [levelId], enriched
+  /// with the authenticated student's real progress (percent,
+  /// completedLessonCount, status — all backend-computed).
+  /// [levelId] must come from a prior response; never from user input.
+  Future<List<ChapterProgressModel>> getChaptersWithProgress({
+    required String bearerToken,
+    required String levelId,
+  });
+
+  /// Fetch published lessons for a backend-supplied [chapterId], enriched
+  /// with the authenticated student's real completed/current markers (both
+  /// backend-computed).
+  /// [chapterId] must come from a prior [getChaptersWithProgress] response;
+  /// never from user input.
+  Future<List<LessonProgressModel>> getLessonsWithProgress({
+    required String bearerToken,
+    required String chapterId,
+  });
 }

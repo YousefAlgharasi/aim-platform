@@ -73,7 +73,7 @@ final coursesProvider =
 ///
 /// Security: levelId must come from a prior backend CourseModel response.
 final chaptersProvider = StateNotifierProvider.autoDispose<
-    ChaptersNotifier, AppAsyncState<List<ChapterModel>>>(
+    ChaptersNotifier, AppAsyncState<List<ChapterProgressModel>>>(
   (ref) => ChaptersNotifier(
     repository: ref.watch(lessonsRepositoryProvider),
   ),
@@ -87,7 +87,7 @@ final chaptersProvider = StateNotifierProvider.autoDispose<
 ///
 /// Security: chapterId must come from a prior backend ChapterModel response.
 final lessonsListProvider = StateNotifierProvider.autoDispose<
-    LessonsListNotifier, AppAsyncState<List<LessonModel>>>(
+    LessonsListNotifier, AppAsyncState<List<LessonProgressModel>>>(
   (ref) => LessonsListNotifier(
     repository: ref.watch(lessonsRepositoryProvider),
   ),

@@ -42,14 +42,14 @@ import 'package:aim_mobile/features/lessons/logic/provider/lessons_list_notifier
 
 class _FakeLessonsDatasource implements LessonsRemoteDatasource {
   final List<CourseModel> courses;
-  final List<ChapterModel> chapters;
-  final List<LessonModel> lessons;
+  final List<ChapterProgressModel> chaptersProgress;
+  final List<LessonProgressModel> lessonsProgress;
   final bool shouldFail;
 
   const _FakeLessonsDatasource({
     this.courses = const [],
-    this.chapters = const [],
-    this.lessons = const [],
+    this.chaptersProgress = const [],
+    this.lessonsProgress = const [],
     this.shouldFail = false,
   });
 
@@ -77,14 +77,28 @@ class _FakeLessonsDatasource implements LessonsRemoteDatasource {
   Future<List<ChapterModel>> getChapters(
       {required String bearerToken, required String levelId}) async {
     _maybeThrow();
-    return chapters;
+    return const [];
   }
 
   @override
   Future<List<LessonModel>> getLessons(
       {required String bearerToken, required String chapterId}) async {
     _maybeThrow();
-    return lessons;
+    return const [];
+  }
+
+  @override
+  Future<List<ChapterProgressModel>> getChaptersWithProgress(
+      {required String bearerToken, required String levelId}) async {
+    _maybeThrow();
+    return chaptersProgress;
+  }
+
+  @override
+  Future<List<LessonProgressModel>> getLessonsWithProgress(
+      {required String bearerToken, required String chapterId}) async {
+    _maybeThrow();
+    return lessonsProgress;
   }
 }
 
@@ -138,42 +152,6 @@ const _archivedCourse = CourseModel(
     createdAt: '',
     updatedAt: '');
 
-const _publishedChapter = ChapterModel(
-    id: 'ch-pub',
-    levelId: 'lv-1',
-    title: 'Pub Chapter',
-    status: _pub,
-    sortOrder: 1,
-    createdAt: '',
-    updatedAt: '');
-const _draftChapter = ChapterModel(
-    id: 'ch-draft',
-    levelId: 'lv-1',
-    title: 'Draft Chapter',
-    status: _draft,
-    sortOrder: 2,
-    createdAt: '',
-    updatedAt: '');
-
-const _publishedLesson = LessonModel(
-    id: 'l-pub',
-    chapterId: 'ch-1',
-    title: 'Pub Lesson',
-    description: '',
-    status: _pub,
-    sortOrder: 1, xpValue: 0,
-    createdAt: '',
-    updatedAt: '');
-const _draftLesson = LessonModel(
-    id: 'l-draft',
-    chapterId: 'ch-1',
-    title: 'Draft Lesson',
-    description: '',
-    status: _draft,
-    sortOrder: 2, xpValue: 0,
-    createdAt: '',
-    updatedAt: '');
-
 LessonAssetModel _assetWithStatus(String id, String status) =>
     LessonAssetModel.fromJson({
       'id': id,
@@ -193,6 +171,24 @@ LessonAssetModel _assetWithStatus(String id, String status) =>
       'createdAt': '',
       'updatedAt': '',
     });
+
+const _publishedChapterProgress = ChapterProgressModel(
+    chapterId: 'ch-pub',
+    title: 'Pub Chapter',
+    description: null,
+    levelCode: 'A1',
+    lessonCount: 4,
+    completedLessonCount: 1,
+    percent: 25,
+    status: 'in_progress');
+
+const _publishedLessonProgress = LessonProgressModel(
+    id: 'l-pub',
+    title: 'Pub Lesson',
+    description: '',
+    xpValue: 10,
+    completed: false,
+    current: true);
 
 const _baseLesson = LessonModel(
     id: 'l-1',
@@ -246,52 +242,67 @@ void main() {
   });
 
   group('Curriculum integration — chapters pipeline', () {
-    test('4. Published chapters flow through for a given levelId', () async {
+    test(
+        '4. Chapters with real per-student progress flow through repository '
+        'to notifier state (GET /student/chapters?levelId=)', () async {
       const repo = LessonsRepositoryImpl(
-        datasource:  _FakeLessonsDatasource(chapters: [_publishedChapter]),
+        datasource:
+            _FakeLessonsDatasource(chaptersProgress: [_publishedChapterProgress]),
       );
       final notifier = ChaptersNotifier(repository: repo);
       await notifier.load(bearerToken: 'tok', levelId: 'lv-1');
-      final state = notifier.state as AppAsyncSuccess<List<ChapterModel>>;
+      final state =
+          notifier.state as AppAsyncSuccess<List<ChapterProgressModel>>;
       expect(state.data.length, 1);
-      expect(state.data.first.id, 'ch-pub');
+      expect(state.data.first.chapterId, 'ch-pub');
     });
 
-    test('5. Non-published chapters are filtered before reaching notifier',
-        () async {
+    test(
+        '5. Backend-computed percent/completedLessonCount/status pass '
+        'through unchanged — Flutter never recomputes them', () async {
       const repo = LessonsRepositoryImpl(
-        datasource:  _FakeLessonsDatasource(
-            chapters: [_publishedChapter, _draftChapter]),
+        datasource:
+            _FakeLessonsDatasource(chaptersProgress: [_publishedChapterProgress]),
       );
       final notifier = ChaptersNotifier(repository: repo);
       await notifier.load(bearerToken: 'tok', levelId: 'lv-1');
-      final state = notifier.state as AppAsyncSuccess<List<ChapterModel>>;
-      expect(state.data.every((c) => c.status == _pub), isTrue);
+      final state =
+          notifier.state as AppAsyncSuccess<List<ChapterProgressModel>>;
+      expect(state.data.first.percent, 25);
+      expect(state.data.first.completedLessonCount, 1);
+      expect(state.data.first.status, 'in_progress');
     });
   });
 
   group('Curriculum integration — lessons pipeline', () {
-    test('6. Published lessons flow through for a given chapterId', () async {
+    test(
+        '6. Lessons with real per-student progress flow through for a given '
+        'chapterId (GET /student/lessons?chapterId=)', () async {
       const repo = LessonsRepositoryImpl(
-        datasource:  _FakeLessonsDatasource(lessons: [_publishedLesson]),
+        datasource:
+            _FakeLessonsDatasource(lessonsProgress: [_publishedLessonProgress]),
       );
       final notifier = LessonsListNotifier(repository: repo);
       await notifier.load(bearerToken: 'tok', chapterId: 'ch-1');
-      final state = notifier.state as AppAsyncSuccess<List<LessonModel>>;
+      final state =
+          notifier.state as AppAsyncSuccess<List<LessonProgressModel>>;
       expect(state.data.length, 1);
       expect(state.data.first.id, 'l-pub');
     });
 
-    test('7. Non-published lessons are filtered before reaching notifier',
-        () async {
+    test(
+        '7. Backend-computed completed/current pass through unchanged — '
+        'Flutter never recomputes them', () async {
       const repo = LessonsRepositoryImpl(
-        datasource:  _FakeLessonsDatasource(
-            lessons: [_publishedLesson, _draftLesson]),
+        datasource:
+            _FakeLessonsDatasource(lessonsProgress: [_publishedLessonProgress]),
       );
       final notifier = LessonsListNotifier(repository: repo);
       await notifier.load(bearerToken: 'tok', chapterId: 'ch-1');
-      final state = notifier.state as AppAsyncSuccess<List<LessonModel>>;
-      expect(state.data.every((l) => l.status == _pub), isTrue);
+      final state =
+          notifier.state as AppAsyncSuccess<List<LessonProgressModel>>;
+      expect(state.data.first.completed, isFalse);
+      expect(state.data.first.current, isTrue);
     });
   });
 
@@ -344,10 +355,11 @@ void main() {
 
     test('11. ChaptersNotifier emits loading then success', () async {
       const repo = LessonsRepositoryImpl(
-        datasource:  _FakeLessonsDatasource(chapters: [_publishedChapter]),
+        datasource:
+            _FakeLessonsDatasource(chaptersProgress: [_publishedChapterProgress]),
       );
       final notifier = ChaptersNotifier(repository: repo);
-      final emitted = <AppAsyncState<List<ChapterModel>>>[];
+      final emitted = <AppAsyncState<List<ChapterProgressModel>>>[];
       notifier.addListener((s) => emitted.add(s), fireImmediately: false);
       await notifier.load(bearerToken: 'tok', levelId: 'lv-1');
       expect(emitted.first, isA<AppAsyncLoading>());
@@ -356,10 +368,11 @@ void main() {
 
     test('12. LessonsListNotifier emits loading then success', () async {
       const repo = LessonsRepositoryImpl(
-        datasource:  _FakeLessonsDatasource(lessons: [_publishedLesson]),
+        datasource:
+            _FakeLessonsDatasource(lessonsProgress: [_publishedLessonProgress]),
       );
       final notifier = LessonsListNotifier(repository: repo);
-      final emitted = <AppAsyncState<List<LessonModel>>>[];
+      final emitted = <AppAsyncState<List<LessonProgressModel>>>[];
       notifier.addListener((s) => emitted.add(s), fireImmediately: false);
       await notifier.load(bearerToken: 'tok', chapterId: 'ch-1');
       expect(emitted.first, isA<AppAsyncLoading>());

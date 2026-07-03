@@ -53,4 +53,26 @@ abstract class LessonsRemoteDatasource {
     required String bearerToken,
     required String chapterId,
   });
+
+  /// GET /student/chapters?levelId=:levelId
+  ///
+  /// Returns published chapters for the given backend-supplied [levelId],
+  /// enriched with the authenticated student's real progress (percent,
+  /// completedLessonCount, status). studentId is resolved by the backend
+  /// from the JWT — never sent from Flutter.
+  Future<List<ChapterProgressModel>> getChaptersWithProgress({
+    required String bearerToken,
+    required String levelId,
+  });
+
+  /// GET /student/lessons?chapterId=:chapterId
+  ///
+  /// Returns published lessons for the given backend-supplied [chapterId],
+  /// enriched with the authenticated student's real completed/current
+  /// markers. studentId is resolved by the backend from the JWT — never
+  /// sent from Flutter.
+  Future<List<LessonProgressModel>> getLessonsWithProgress({
+    required String bearerToken,
+    required String chapterId,
+  });
 }

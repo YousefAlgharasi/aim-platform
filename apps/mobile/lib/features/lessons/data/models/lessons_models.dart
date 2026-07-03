@@ -2,7 +2,9 @@
 // Lessons models barrel.
 
 export 'chapter_model.dart';
+export 'chapter_progress_model.dart';
 export 'course_model.dart';
 export 'lesson_asset_model.dart';
 export 'lesson_model.dart';
+export 'lesson_progress_model.dart';
 export 'level_model.dart';
