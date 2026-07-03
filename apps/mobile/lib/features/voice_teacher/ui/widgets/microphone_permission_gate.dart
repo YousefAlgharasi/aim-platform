@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../logic/provider/microphone_permission_provider.dart';
 
 class MicrophonePermissionGate extends StatefulWidget {
@@ -41,7 +42,7 @@ class _MicrophonePermissionGateState extends State<MicrophonePermissionGate> {
       return widget.child;
     }
 
-    final isArabic = Directionality.of(context) == TextDirection.rtl;
+    final l10n = AppLocalizations.of(context);
 
     return Center(
       child: Padding(
@@ -52,17 +53,13 @@ class _MicrophonePermissionGateState extends State<MicrophonePermissionGate> {
             const Icon(Icons.mic_off, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
-              isArabic
-                  ? 'يحتاج المعلم الصوتي إلى إذن الميكروفون'
-                  : 'Voice Teacher needs microphone access',
+              l10n.voiceTeacherMicPermissionTitle,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              isArabic
-                  ? 'يرجى السماح بالوصول إلى الميكروفون للتحدث مع المعلم'
-                  : 'Please allow microphone access to talk with the teacher',
+              l10n.voiceTeacherMicPermissionBody,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
@@ -70,12 +67,12 @@ class _MicrophonePermissionGateState extends State<MicrophonePermissionGate> {
             if (state == MicrophonePermissionState.permanentlyDenied)
               ElevatedButton(
                 onPressed: () => widget.permissionProvider.openSettings(),
-                child: Text(isArabic ? 'فتح الإعدادات' : 'Open Settings'),
+                child: Text(l10n.voiceTeacherOpenSettingsButton),
               )
             else
               ElevatedButton(
                 onPressed: () => widget.permissionProvider.requestPermission(),
-                child: Text(isArabic ? 'السماح بالميكروفون' : 'Allow Microphone'),
+                child: Text(l10n.voiceTeacherAllowMicrophoneButton),
               ),
           ],
         ),

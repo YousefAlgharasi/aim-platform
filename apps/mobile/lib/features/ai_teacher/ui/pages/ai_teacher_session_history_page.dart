@@ -36,6 +36,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
@@ -44,6 +45,7 @@ import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_chat_session_summ
 import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_chat_state.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/provider/ai_teacher_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../widgets/ai_chat_error_state.dart';
 
 /// Converts a raw, machine-oriented `contextRef` slug (e.g. `lesson:fractions`
@@ -60,27 +62,25 @@ String _prettifyContextRef(String contextRef) {
   return label.isEmpty ? contextRef : label;
 }
 
-const _months = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-];
-
 /// Real relative-time label (e.g. "2h ago", "Yesterday", "Jun 20") from the
 /// backend-supplied `updatedAt` ISO timestamp. Same pattern as
 /// `_relativeTimeLabel` in home_page.dart, extended to fall back to a plain
-/// date past a week out (matches design screen 34's oldest row, "Jun 20").
-String _relativeTimeLabel(String updatedAtIso) {
+/// localized date past a week out (matches design screen 34's oldest row,
+/// "Jun 20").
+String _relativeTimeLabel(BuildContext context, String updatedAtIso) {
   final updatedAt = DateTime.tryParse(updatedAtIso);
   if (updatedAt == null) return updatedAtIso;
+  final l10n = AppLocalizations.of(context);
 
   final local = updatedAt.toLocal();
   final diff = DateTime.now().difference(local);
-  if (diff.inMinutes < 1) return 'Just now';
-  if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-  if (diff.inHours < 24) return '${diff.inHours}h ago';
-  if (diff.inDays == 1) return 'Yesterday';
-  if (diff.inDays < 7) return '${diff.inDays}d ago';
-  return '${_months[local.month - 1]} ${local.day}';
+  if (diff.inMinutes < 1) return l10n.commonJustNow;
+  if (diff.inMinutes < 60) return l10n.homeMinutesAgoLabel(diff.inMinutes);
+  if (diff.inHours < 24) return l10n.homeHoursAgoLabel(diff.inHours);
+  if (diff.inDays == 1) return l10n.commonYesterday;
+  if (diff.inDays < 7) return l10n.homeDaysAgoLabel(diff.inDays);
+  final locale = Localizations.localeOf(context).toString();
+  return DateFormat.MMMd(locale).format(local);
 }
 
 /// Lists the student's AI Teacher conversations and opens the chat screen
@@ -133,11 +133,13 @@ class _AiTeacherSessionHistoryPageState
           const _SessionHistoryHeader(),
           Expanded(
             child: switch (state) {
-              AppAsyncLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading AI Teacher conversations',
+              AppAsyncLoading() => AIMFullScreenLoading(
+                  semanticLabel:
+                      AppLocalizations.of(context).aiTeacherLoadingConversationsSemantic,
                 ),
-              AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading AI Teacher conversations',
+              AppAsyncIdle() => AIMFullScreenLoading(
+                  semanticLabel:
+                      AppLocalizations.of(context).aiTeacherLoadingConversationsSemantic,
                 ),
               AppAsyncFailure() => AiChatErrorState(onRetry: _load),
               AppAsyncSuccess(:final data) => _SessionListContent(
@@ -157,6 +159,8 @@ class _SessionHistoryHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -172,7 +176,7 @@ class _SessionHistoryHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: l10n.commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -198,7 +202,7 @@ class _SessionHistoryHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Conversations',
+              l10n.aiTeacherConversationsTitle,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],
@@ -219,10 +223,11 @@ class _SessionListContent extends StatelessWidget {
     final sessions = chatState.sessions;
 
     if (sessions.isEmpty) {
-      return const AIMEmptyState(
-        icon: Icon(Icons.forum_outlined),
-        title: 'No conversations yet',
-        subtitle: 'Start chatting with AI Teacher to see your history here.',
+      final l10n = AppLocalizations.of(context);
+      return AIMEmptyState(
+        icon: const Icon(Icons.forum_outlined),
+        title: l10n.aiTeacherNoConversationsTitle,
+        subtitle: l10n.aiTeacherNoConversationsSubtitle,
       );
     }
 
@@ -250,16 +255,20 @@ class _SessionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final isActive = session.status == 'active';
     final title = session.contextTitle?.trim().isNotEmpty == true
         ? session.contextTitle!.trim()
         : _prettifyContextRef(session.contextRef);
+    final statusLabel = isActive
+        ? l10n.aiTeacherSessionActiveLabel
+        : l10n.aiTeacherSessionEndedLabel;
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
       interactive: true,
       onTap: onTap,
-      semanticLabel: '$title, ${isActive ? "active" : "ended"}',
+      semanticLabel: l10n.aiTeacherSessionSemantic(title, statusLabel),
       child: Row(
         children: [
           Expanded(
@@ -275,7 +284,7 @@ class _SessionTile extends StatelessWidget {
                 ),
                 const SizedBox(height: AimSpacing.space4),
                 Text(
-                  _relativeTimeLabel(session.updatedAt),
+                  _relativeTimeLabel(context, session.updatedAt),
                   style: AimTextStyles.bodySm
                       .copyWith(color: surfaces.textSecondary),
                 ),
@@ -287,7 +296,7 @@ class _SessionTile extends StatelessWidget {
             tone: isActive ? AIMBadgeTone.success : AIMBadgeTone.neutral,
             variant: AIMBadgeVariant.soft,
             pill: true,
-            child: Text(isActive ? 'Active' : 'Ended'),
+            child: Text(statusLabel),
           ),
         ],
       ),

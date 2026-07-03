@@ -9,6 +9,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class AiLessonContextHeader extends StatelessWidget {
   const AiLessonContextHeader({
@@ -23,11 +24,12 @@ class AiLessonContextHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final safeContextLabel = contextLabel?.trim();
 
     return AIMCard(
       variant: AIMCardVariant.standard,
-      semanticLabel: 'AI Teacher lesson context: $lessonTitle',
+      semanticLabel: l10n.aiTeacherLessonContextSemantic(lessonTitle),
       padding: const EdgeInsetsDirectional.fromSTEB(
         AimSpacing.space16,
         AimSpacing.space12,
@@ -58,7 +60,7 @@ class AiLessonContextHeader extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Current lesson',
+                  l10n.aiTeacherCurrentLessonLabel,
                   style: AimTextStyles.label.copyWith(
                     color: surfaces.textSecondary,
                   ),

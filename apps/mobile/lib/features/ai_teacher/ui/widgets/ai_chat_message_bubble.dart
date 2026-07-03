@@ -27,6 +27,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_chat_message.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'ai_reply_feedback_actions.dart';
 
 /// Role-aligned chat bubble for one [AiChatMessage].
@@ -47,6 +48,7 @@ class AiChatMessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isStudent = message.isFromStudent;
+    final l10n = AppLocalizations.of(context);
 
     const avatar = DecoratedBox(
       decoration: BoxDecoration(
@@ -75,8 +77,8 @@ class AiChatMessageBubble extends StatelessWidget {
           child: AIMCard(
             variant: isStudent ? AIMCardVariant.gradient : AIMCardVariant.ai,
             semanticLabel: isStudent
-                ? 'Your message: ${message.text}'
-                : 'AI Teacher: ${message.text}',
+                ? l10n.aiTeacherYourMessageSemantic(message.text)
+                : l10n.aiTeacherReplySemantic(message.text),
             child: Text(message.text),
           ),
         ),

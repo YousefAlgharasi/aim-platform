@@ -3,6 +3,7 @@ import 'package:aim_mobile/core/design_tokens/aim_colors.dart';
 import 'package:aim_mobile/core/design_tokens/aim_spacing.dart';
 import 'package:aim_mobile/core/design_tokens/aim_radius.dart';
 import 'package:aim_mobile/core/widgets/learning/aim_card.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class VoiceTeacherEntryCard extends StatelessWidget {
   final VoidCallback onTap;
@@ -13,12 +14,13 @@ class VoiceTeacherEntryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isRtl = Directionality.of(context) == TextDirection.rtl;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return AIMCard(
       variant: AIMCardVariant.ai,
       interactive: true,
       onTap: onTap,
-      semanticLabel: isRtl ? 'المعلم الصوتي' : 'Voice Teacher',
+      semanticLabel: l10n.voiceTeacherTitle,
       child: Row(
         children: [
           Container(
@@ -40,16 +42,14 @@ class VoiceTeacherEntryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isRtl ? 'المعلم الصوتي' : 'Voice Teacher',
+                  l10n.voiceTeacherTitle,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  isRtl
-                      ? 'تحدث مع معلمك بالصوت'
-                      : 'Talk with your teacher using voice',
+                  l10n.voiceTeacherEntrySubtitle,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),

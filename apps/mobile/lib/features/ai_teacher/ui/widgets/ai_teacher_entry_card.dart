@@ -15,6 +15,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Entry point card for the AI Teacher feature.
 ///
@@ -30,14 +31,15 @@ class AiTeacherEntryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return Semantics(
-      label: 'Open AI Teacher',
+      label: l10n.aiTeacherOpenSemantic,
       button: true,
       child: AIMCard(
         variant: AIMCardVariant.elevated,
         onTap: onTap,
-        semanticLabel: 'Open AI Teacher',
+        semanticLabel: l10n.aiTeacherOpenSemantic,
         child: Row(
           children: [
             DecoratedBox(
@@ -60,7 +62,7 @@ class AiTeacherEntryCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'AI Teacher',
+                    l10n.aiTeacherName,
                     style: AimTextStyles.title
                         .copyWith(color: surfaces.textPrimary),
                     maxLines: 1,
@@ -68,7 +70,7 @@ class AiTeacherEntryCard extends StatelessWidget {
                   ),
                   const SizedBox(height: AimSpacing.space2),
                   Text(
-                    'Ask questions and get guidance on this lesson.',
+                    l10n.aiTeacherEntrySubtitle,
                     style: AimTextStyles.bodySm
                         .copyWith(color: surfaces.textSecondary),
                     maxLines: 2,

@@ -53,6 +53,7 @@ import 'package:go_router/go_router.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/entity/voice_teacher_session_state.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_playback_notifier.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_record_submit_notifier.dart';
@@ -191,6 +192,8 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
     final recordState = ref.watch(voiceRecordSubmitProvider);
     final playbackState = ref.watch(voicePlaybackProvider);
 
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: const _VoiceTeacherHeader(),
@@ -198,11 +201,11 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
         decoration: const BoxDecoration(gradient: AimGradients.gzHero),
         child: SafeArea(
           child: switch (sessionState) {
-            AppAsyncLoading() => const AIMFullScreenLoading(
-                semanticLabel: 'Starting Voice Teacher session',
+            AppAsyncLoading() => AIMFullScreenLoading(
+                semanticLabel: l10n.voiceTeacherStartingSessionSemantic,
               ),
-            AppAsyncIdle() => const AIMFullScreenLoading(
-                semanticLabel: 'Starting Voice Teacher session',
+            AppAsyncIdle() => AIMFullScreenLoading(
+                semanticLabel: l10n.voiceTeacherStartingSessionSemantic,
               ),
             AppAsyncFailure() => VoiceErrorState(
                 errorType: VoiceErrorType.serverError,
@@ -245,6 +248,8 @@ class _VoiceTeacherHeader extends StatelessWidget
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return SafeArea(
       bottom: false,
       child: SizedBox(
@@ -257,7 +262,7 @@ class _VoiceTeacherHeader extends StatelessWidget
             children: [
               Semantics(
                 button: true,
-                label: 'Back',
+                label: l10n.commonBack,
                 child: InkWell(
                   onTap: () => context.pop(),
                   customBorder: const CircleBorder(),
@@ -282,7 +287,7 @@ class _VoiceTeacherHeader extends StatelessWidget
               const SizedBox(width: AimSpacing.componentGap),
               Expanded(
                 child: Text(
-                  'Voice Teacher',
+                  l10n.voiceTeacherTitle,
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                   style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
@@ -434,10 +439,20 @@ class _VoiceHeroIdle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final (label, heading) = switch (recordButtonState) {
-      VoiceRecordState.recording => ('Recording', 'Listening...'),
-      VoiceRecordState.processing => ('Processing', 'Processing...'),
-      VoiceRecordState.idle => ('Ready', 'Tap to speak'),
+      VoiceRecordState.recording => (
+          l10n.voiceTeacherStatusRecording,
+          l10n.voiceTeacherHeadingListening,
+        ),
+      VoiceRecordState.processing => (
+          l10n.voiceTeacherStatusProcessing,
+          l10n.voiceTeacherHeadingProcessing,
+        ),
+      VoiceRecordState.idle => (
+          l10n.voiceTeacherStatusReady,
+          l10n.voiceTeacherHeadingTapToSpeak,
+        ),
     };
 
     return Center(
@@ -463,7 +478,7 @@ class _VoiceHeroIdle extends StatelessWidget {
             ),
             const SizedBox(height: AimSpacing.sectionGap),
             Text(
-              'Practise your pronunciation with the AI teacher',
+              l10n.voiceTeacherHeroSubtitle,
               style: AimTextStyles.bodySm.copyWith(
                 color: AimColors.neutral0.withValues(alpha: 0.85),
               ),
@@ -495,7 +510,7 @@ class _VoiceStatusPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Status: $label',
+      label: AppLocalizations.of(context).voiceTeacherStatusSemantic(label),
       child: ExcludeSemantics(
         child: DecoratedBox(
           decoration: BoxDecoration(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:aim_mobile/core/design_tokens/aim_colors.dart';
 import 'package:aim_mobile/core/design_tokens/aim_spacing.dart';
 import 'package:aim_mobile/core/design_tokens/aim_radius.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 enum VoiceErrorType {
   networkError,
@@ -26,8 +27,8 @@ class VoiceErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       margin: const EdgeInsets.all(AimSpacing.space16),
@@ -53,7 +54,7 @@ class VoiceErrorState extends StatelessWidget {
               const SizedBox(width: AimSpacing.space8),
               Expanded(
                 child: Text(
-                  _titleForType(errorType, isRtl),
+                  _titleForType(errorType, l10n),
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: theme.colorScheme.error,
                   ),
@@ -73,7 +74,7 @@ class VoiceErrorState extends StatelessWidget {
           ),
           const SizedBox(height: AimSpacing.space4),
           Text(
-            _messageForType(errorType, isRtl),
+            _messageForType(errorType, l10n),
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onErrorContainer,
             ),
@@ -91,7 +92,7 @@ class VoiceErrorState extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isRtl ? 'رد المعلم (نصي):' : 'Teacher response (text):',
+                    l10n.voiceTeacherTeacherResponseTextLabel,
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -115,7 +116,7 @@ class VoiceErrorState extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh, size: 18),
-                label: Text(isRtl ? 'إعادة المحاولة' : 'Try Again'),
+                label: Text(l10n.commonRetry),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AimColors.primary500,
                   side: BorderSide(color: AimColors.primary500.withValues(alpha: 0.3)),
@@ -141,37 +142,29 @@ class VoiceErrorState extends StatelessWidget {
     }
   }
 
-  String _titleForType(VoiceErrorType type, bool isRtl) {
+  String _titleForType(VoiceErrorType type, AppLocalizations l10n) {
     switch (type) {
       case VoiceErrorType.networkError:
-        return isRtl ? 'خطأ في الاتصال' : 'Connection Error';
+        return l10n.voiceTeacherErrorTitleNetwork;
       case VoiceErrorType.microphoneError:
-        return isRtl ? 'خطأ في الميكروفون' : 'Microphone Error';
+        return l10n.voiceTeacherErrorTitleMicrophone;
       case VoiceErrorType.serverError:
-        return isRtl ? 'خطأ في الخادم' : 'Server Error';
+        return l10n.voiceTeacherErrorTitleServer;
       case VoiceErrorType.unknownError:
-        return isRtl ? 'حدث خطأ' : 'Something Went Wrong';
+        return l10n.voiceTeacherErrorTitleUnknown;
     }
   }
 
-  String _messageForType(VoiceErrorType type, bool isRtl) {
+  String _messageForType(VoiceErrorType type, AppLocalizations l10n) {
     switch (type) {
       case VoiceErrorType.networkError:
-        return isRtl
-            ? 'تحقق من اتصالك بالإنترنت وحاول مرة أخرى'
-            : 'Check your internet connection and try again';
+        return l10n.voiceTeacherErrorMessageNetwork;
       case VoiceErrorType.microphoneError:
-        return isRtl
-            ? 'لم نتمكن من الوصول إلى الميكروفون. تحقق من الأذونات'
-            : 'Could not access the microphone. Check permissions';
+        return l10n.voiceTeacherErrorMessageMicrophone;
       case VoiceErrorType.serverError:
-        return isRtl
-            ? 'الخادم غير متاح حالياً. حاول لاحقاً'
-            : 'Server is currently unavailable. Try again later';
+        return l10n.voiceTeacherErrorMessageServer;
       case VoiceErrorType.unknownError:
-        return isRtl
-            ? 'حدث خطأ غير متوقع. حاول مرة أخرى'
-            : 'An unexpected error occurred. Please try again';
+        return l10n.voiceTeacherErrorMessageUnknown;
     }
   }
 

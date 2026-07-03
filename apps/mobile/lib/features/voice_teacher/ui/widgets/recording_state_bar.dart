@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:aim_mobile/core/design_tokens/aim_colors.dart';
 import 'package:aim_mobile/core/design_tokens/aim_spacing.dart';
 import 'package:aim_mobile/core/design_tokens/aim_radius.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 enum RecordingState { idle, recording, stopped, cancelled }
 
@@ -23,8 +24,8 @@ class RecordingStateBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     if (state == RecordingState.idle || state == RecordingState.cancelled) {
       return const SizedBox.shrink();
@@ -56,14 +57,14 @@ class RecordingStateBar extends StatelessWidget {
             const Spacer(),
             _ActionButton(
               icon: Icons.close,
-              label: isRtl ? 'إلغاء' : 'Cancel',
+              label: l10n.commonCancel,
               color: theme.colorScheme.onSurfaceVariant,
               onTap: onCancel,
             ),
             const SizedBox(width: AimSpacing.space8),
             _ActionButton(
               icon: Icons.stop,
-              label: isRtl ? 'إيقاف' : 'Stop',
+              label: l10n.voiceTeacherStopLabel,
               color: Colors.red,
               onTap: onStop,
             ),
@@ -72,7 +73,7 @@ class RecordingStateBar extends StatelessWidget {
             const Icon(Icons.check_circle, color: AimColors.primary500, size: 20),
             const SizedBox(width: AimSpacing.space8),
             Text(
-              isRtl ? 'تم التسجيل' : 'Recorded',
+              l10n.voiceTeacherRecordedLabel,
               style: theme.textTheme.bodyMedium,
             ),
             if (duration != null) ...[
@@ -87,14 +88,14 @@ class RecordingStateBar extends StatelessWidget {
             const Spacer(),
             _ActionButton(
               icon: Icons.delete_outline,
-              label: isRtl ? 'حذف' : 'Discard',
+              label: l10n.voiceTeacherDiscardLabel,
               color: theme.colorScheme.error,
               onTap: onCancel,
             ),
             const SizedBox(width: AimSpacing.space8),
             _ActionButton(
               icon: Icons.send,
-              label: isRtl ? 'إرسال' : 'Send',
+              label: l10n.voiceTeacherSendLabel,
               color: AimColors.primary500,
               onTap: onSend,
             ),

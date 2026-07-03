@@ -11,20 +11,19 @@
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class AiSafetyBlockBanner extends StatelessWidget {
   const AiSafetyBlockBanner({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const AIMAlertBanner(
+    final l10n = AppLocalizations.of(context);
+    return AIMAlertBanner(
       tone: AIMAlertTone.warning,
-      title: 'AI Teacher is limited right now',
-      semanticLabel: 'AI Teacher safety limited banner',
-      child: Text(
-        "Some responses in this conversation were held back to keep things "
-        'safe. You can keep chatting, or start a new conversation.',
-      ),
+      title: l10n.aiTeacherSafetyLimitedTitle,
+      semanticLabel: l10n.aiTeacherSafetyLimitedBannerSemantic,
+      child: Text(l10n.aiTeacherSafetyLimitedBody),
     );
   }
 }

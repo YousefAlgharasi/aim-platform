@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:aim_mobile/core/design_tokens/aim_colors.dart';
 import 'package:aim_mobile/core/design_tokens/aim_spacing.dart';
 import 'package:aim_mobile/core/design_tokens/aim_radius.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class TranscriptionPreview extends StatelessWidget {
   final String? transcript;
@@ -19,6 +20,7 @@ class TranscriptionPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     final isRtl = Directionality.of(context) == TextDirection.rtl;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     if (isLoading) {
       return _buildContainer(
@@ -37,7 +39,7 @@ class TranscriptionPreview extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space8),
             Text(
-              isRtl ? 'جارٍ التحويل...' : 'Transcribing...',
+              l10n.voiceTeacherTranscribingLabel,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
                 fontStyle: FontStyle.italic,
@@ -70,8 +72,8 @@ class TranscriptionPreview extends StatelessWidget {
               const SizedBox(width: AimSpacing.space4),
               Text(
                 isStudent
-                    ? (isRtl ? 'ما قلته' : 'What you said')
-                    : (isRtl ? 'رد المعلم' : 'Teacher response'),
+                    ? l10n.voiceTeacherWhatYouSaidLabel
+                    : l10n.voiceTeacherResponseLabel,
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),

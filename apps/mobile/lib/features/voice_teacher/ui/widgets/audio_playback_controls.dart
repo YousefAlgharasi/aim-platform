@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:aim_mobile/core/design_tokens/aim_colors.dart';
 import 'package:aim_mobile/core/design_tokens/aim_spacing.dart';
 import 'package:aim_mobile/core/design_tokens/aim_radius.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 enum AudioPlaybackState { idle, loading, playing, paused, error }
 
@@ -27,8 +28,8 @@ class AudioPlaybackControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -78,7 +79,7 @@ class AudioPlaybackControls extends StatelessWidget {
               icon: const Icon(Icons.replay, size: 20),
               color: AimColors.primary500,
               onPressed: onReplay,
-              tooltip: isRtl ? 'إعادة' : 'Replay',
+              tooltip: l10n.voiceTeacherReplayTooltip,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
             ),
@@ -86,7 +87,7 @@ class AudioPlaybackControls extends StatelessWidget {
           if (state == AudioPlaybackState.error) ...[
             const SizedBox(width: AimSpacing.space4),
             Text(
-              isRtl ? 'فشل التشغيل' : 'Playback failed',
+              l10n.voiceTeacherPlaybackFailedLabel,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.error,
               ),
@@ -109,7 +110,7 @@ class AudioPlaybackControls extends StatelessWidget {
   }
 
   Widget _buildMainButton(BuildContext context) {
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
+    final l10n = AppLocalizations.of(context);
 
     switch (state) {
       case AudioPlaybackState.idle:
@@ -117,7 +118,7 @@ class AudioPlaybackControls extends StatelessWidget {
           icon: const Icon(Icons.play_arrow),
           color: AimColors.primary500,
           onPressed: onPlay,
-          tooltip: isRtl ? 'تشغيل' : 'Play',
+          tooltip: l10n.voiceTeacherPlayTooltip,
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
         );
@@ -138,7 +139,7 @@ class AudioPlaybackControls extends StatelessWidget {
           icon: const Icon(Icons.pause),
           color: AimColors.primary500,
           onPressed: onPause,
-          tooltip: isRtl ? 'إيقاف مؤقت' : 'Pause',
+          tooltip: l10n.voiceTeacherPauseTooltip,
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
         );
@@ -147,7 +148,7 @@ class AudioPlaybackControls extends StatelessWidget {
           icon: const Icon(Icons.play_arrow),
           color: AimColors.primary500,
           onPressed: onPlay,
-          tooltip: isRtl ? 'استئناف' : 'Resume',
+          tooltip: l10n.voiceTeacherResumeTooltip,
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
         );
@@ -156,7 +157,7 @@ class AudioPlaybackControls extends StatelessWidget {
           icon: const Icon(Icons.refresh),
           color: Theme.of(context).colorScheme.error,
           onPressed: onRetry,
-          tooltip: isRtl ? 'إعادة المحاولة' : 'Retry',
+          tooltip: l10n.voiceTeacherRetryTooltip,
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
         );

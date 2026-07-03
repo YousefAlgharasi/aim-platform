@@ -2430,4 +2430,340 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get profileLanguageArabicOption => 'العربية';
+
+  @override
+  String get voiceTeacherTitle => 'المعلم الصوتي';
+
+  @override
+  String get voiceTeacherEntrySubtitle => 'تحدث مع معلمك بالصوت';
+
+  @override
+  String get voiceTeacherStartingSessionSemantic =>
+      'جارٍ بدء جلسة المعلم الصوتي';
+
+  @override
+  String get voiceTeacherStatusReady => 'جاهز';
+
+  @override
+  String get voiceTeacherStatusRecording => 'جارٍ التسجيل';
+
+  @override
+  String get voiceTeacherStatusProcessing => 'جارٍ المعالجة';
+
+  @override
+  String get voiceTeacherHeadingTapToSpeak => 'اضغط للتحدث';
+
+  @override
+  String get voiceTeacherHeadingListening => 'يستمع...';
+
+  @override
+  String get voiceTeacherHeadingProcessing => 'جارٍ المعالجة...';
+
+  @override
+  String voiceTeacherStatusSemantic(String label) {
+    return 'الحالة: $label';
+  }
+
+  @override
+  String get voiceTeacherHeroSubtitle => 'تدرّب على نطقك مع المعلم الذكي';
+
+  @override
+  String get voiceTeacherTranscriptEmptyTitle => 'ابدأ التحدث مع معلمك الصوتي';
+
+  @override
+  String get voiceTeacherTranscriptEmptySubtitle => 'سيظهر نص محادثتك هنا.';
+
+  @override
+  String get voiceTeacherPlayAudioTooltip => 'تشغيل الصوت';
+
+  @override
+  String voiceTeacherTeacherSaidSemantic(String text) {
+    return 'قال المعلم الصوتي: $text';
+  }
+
+  @override
+  String voiceTeacherYouSaidSemantic(String text) {
+    return 'قلت: $text';
+  }
+
+  @override
+  String get voiceTeacherFeedbackThanks => 'شكراً!';
+
+  @override
+  String get voiceTeacherFeedbackSubmitted => 'تم الإرسال';
+
+  @override
+  String get voiceTeacherFeedbackHelpful => 'مفيد';
+
+  @override
+  String get voiceTeacherFeedbackNotHelpful => 'غير مفيد';
+
+  @override
+  String get voiceTeacherFeedbackCommentHint => 'أخبرنا بالمزيد (اختياري)';
+
+  @override
+  String get voiceTeacherSpeakingLabel => 'المعلم يتحدث...';
+
+  @override
+  String get voiceTeacherThinkingLabel => 'المعلم يفكر...';
+
+  @override
+  String get voiceTeacherReplayTooltip => 'إعادة';
+
+  @override
+  String get voiceTeacherPlayTooltip => 'تشغيل';
+
+  @override
+  String get voiceTeacherPauseTooltip => 'إيقاف مؤقت';
+
+  @override
+  String get voiceTeacherResumeTooltip => 'استئناف';
+
+  @override
+  String get voiceTeacherRetryTooltip => 'إعادة المحاولة';
+
+  @override
+  String get voiceTeacherPlaybackFailedLabel => 'فشل التشغيل';
+
+  @override
+  String get voiceTeacherErrorTitleNetwork => 'خطأ في الاتصال';
+
+  @override
+  String get voiceTeacherErrorTitleMicrophone => 'خطأ في الميكروفون';
+
+  @override
+  String get voiceTeacherErrorTitleServer => 'خطأ في الخادم';
+
+  @override
+  String get voiceTeacherErrorTitleUnknown => 'حدث خطأ';
+
+  @override
+  String get voiceTeacherErrorMessageNetwork =>
+      'تحقق من اتصالك بالإنترنت وحاول مرة أخرى';
+
+  @override
+  String get voiceTeacherErrorMessageMicrophone =>
+      'لم نتمكن من الوصول إلى الميكروفون. تحقق من الأذونات';
+
+  @override
+  String get voiceTeacherErrorMessageServer =>
+      'الخادم غير متاح حالياً. حاول لاحقاً';
+
+  @override
+  String get voiceTeacherErrorMessageUnknown =>
+      'حدث خطأ غير متوقع. حاول مرة أخرى';
+
+  @override
+  String get voiceTeacherTeacherResponseTextLabel => 'رد المعلم (نصي):';
+
+  @override
+  String get voiceTeacherMicPermissionTitle =>
+      'يحتاج المعلم الصوتي إلى إذن الميكروفون';
+
+  @override
+  String get voiceTeacherMicPermissionBody =>
+      'يرجى السماح بالوصول إلى الميكروفون للتحدث مع المعلم';
+
+  @override
+  String get voiceTeacherOpenSettingsButton => 'فتح الإعدادات';
+
+  @override
+  String get voiceTeacherAllowMicrophoneButton => 'السماح بالميكروفون';
+
+  @override
+  String get voiceTeacherTranscribingLabel => 'جارٍ التحويل...';
+
+  @override
+  String get voiceTeacherWhatYouSaidLabel => 'ما قلته';
+
+  @override
+  String get voiceTeacherResponseLabel => 'رد المعلم';
+
+  @override
+  String get voiceTeacherStopLabel => 'إيقاف';
+
+  @override
+  String get voiceTeacherRecordedLabel => 'تم التسجيل';
+
+  @override
+  String get voiceTeacherDiscardLabel => 'حذف';
+
+  @override
+  String get voiceTeacherSendLabel => 'إرسال';
+
+  @override
+  String get voiceTeacherTextResponseLabel => 'رد نصي من المعلم';
+
+  @override
+  String get voiceTeacherAudioUnavailableLabel =>
+      'لم يتوفر الصوت — إليك الرد النصي';
+
+  @override
+  String get voiceTeacherRetryAudioLabel => 'إعادة تحميل الصوت';
+
+  @override
+  String get aiTeacherName => 'المعلم الذكي';
+
+  @override
+  String get aiTeacherHeaderSubtitle => 'دائماً هنا للمساعدة';
+
+  @override
+  String get aiTeacherEntrySubtitle =>
+      'اطرح الأسئلة واحصل على إرشادات حول هذا الدرس.';
+
+  @override
+  String get aiTeacherOpenSemantic => 'افتح المعلم الذكي';
+
+  @override
+  String get aiTeacherLoadingChatSemantic => 'جارٍ تحميل محادثة المعلم الذكي';
+
+  @override
+  String get aiTeacherHistorySemantic => 'سجل المحادثات';
+
+  @override
+  String get aiTeacherAskAnythingTitle => 'اسأل المعلم الذكي أي شيء';
+
+  @override
+  String get aiTeacherAskAnythingSubtitle => 'ابدأ المحادثة بإرسال رسالة.';
+
+  @override
+  String get aiTeacherConversationsTitle => 'المحادثات';
+
+  @override
+  String get aiTeacherLoadingConversationsSemantic =>
+      'جارٍ تحميل محادثات المعلم الذكي';
+
+  @override
+  String get aiTeacherNoConversationsTitle => 'لا توجد محادثات بعد';
+
+  @override
+  String get aiTeacherNoConversationsSubtitle =>
+      'ابدأ الدردشة مع المعلم الذكي لرؤية سجلك هنا.';
+
+  @override
+  String get aiTeacherSessionActiveLabel => 'نشطة';
+
+  @override
+  String get aiTeacherSessionEndedLabel => 'منتهية';
+
+  @override
+  String aiTeacherSessionSemantic(String title, String status) {
+    return '$title، $status';
+  }
+
+  @override
+  String get aiTeacherSettingsTitle => 'إعدادات المعلم الذكي';
+
+  @override
+  String get aiTeacherPreferTextSettingSemantic => 'إعداد تفضيل الردود النصية';
+
+  @override
+  String get aiTeacherPreferTextLabel => 'تفضيل الردود النصية على الصوت';
+
+  @override
+  String get aiTeacherReducedMotionSettingSemantic => 'إعداد تقليل الحركة';
+
+  @override
+  String get aiTeacherReducedMotionLabel =>
+      'تقليل الحركة في المعلم الذكي والمعلم الصوتي';
+
+  @override
+  String get aiTeacherSettingsInfoBannerSemantic =>
+      'شريط معلومات إعدادات المعلم الذكي';
+
+  @override
+  String get aiTeacherSettingsInfoTitle => 'حول هذه الإعدادات';
+
+  @override
+  String get aiTeacherSettingsInfoBody =>
+      'تغيّر هذه التفضيلات فقط طريقة عرض الردود على هذا الجهاز. فهي لا تغيّر أبداً كيفية تعليم المعلم الذكي أو تصفيته أو تقييمه، ولا تؤثر على تقدّمك التعليمي أو الاقتراحات الصادرة من الخادم — فتلك تبقى تحت تحكم الخادم بالكامل.';
+
+  @override
+  String get aiTeacherChatErrorMessage =>
+      'المعلم الذكي غير متاح مؤقتاً. تقدّمك محفوظ، ويمكنك المحاولة مرة أخرى.';
+
+  @override
+  String get aiTeacherRetryChatLabel => 'إعادة محاولة المحادثة';
+
+  @override
+  String get aiTeacherChatErrorSemantic => 'خطأ في محادثة المعلم الذكي';
+
+  @override
+  String get aiTeacherMessageInputSemantic => 'حقل إدخال رسالة المعلم الذكي';
+
+  @override
+  String get aiTeacherInputHint => 'اسألني عن أي شيء...';
+
+  @override
+  String get aiTeacherVoiceInputComingSoonSemantic => 'الإدخال الصوتي (قريباً)';
+
+  @override
+  String get aiTeacherSendMessageSemantic => 'إرسال الرسالة';
+
+  @override
+  String aiTeacherYourMessageSemantic(String text) {
+    return 'رسالتك: $text';
+  }
+
+  @override
+  String aiTeacherReplySemantic(String text) {
+    return 'المعلم الذكي: $text';
+  }
+
+  @override
+  String aiTeacherRepliedSemantic(String text) {
+    return 'المعلم الذكي يرد: $text';
+  }
+
+  @override
+  String get aiTeacherCurrentLessonLabel => 'الدرس الحالي';
+
+  @override
+  String aiTeacherLessonContextSemantic(String lessonTitle) {
+    return 'سياق درس المعلم الذكي: $lessonTitle';
+  }
+
+  @override
+  String get aiTeacherWasHelpfulLabel => 'هل كان هذا مفيداً؟';
+
+  @override
+  String get aiTeacherMarkHelpfulSemantic => 'وسم رد المعلم الذكي بأنه مفيد';
+
+  @override
+  String get aiTeacherMarkNotHelpfulSemantic =>
+      'وسم رد المعلم الذكي بأنه غير مفيد';
+
+  @override
+  String get aiTeacherSafetyLimitedTitle => 'المعلم الذكي محدود حالياً';
+
+  @override
+  String get aiTeacherSafetyLimitedBannerSemantic =>
+      'شريط تنبيه محدودية المعلم الذكي';
+
+  @override
+  String get aiTeacherSafetyLimitedBody =>
+      'تم حجب بعض الردود في هذه المحادثة للحفاظ على السلامة. يمكنك متابعة الدردشة أو بدء محادثة جديدة.';
+
+  @override
+  String get aiTeacherTypingSemantic => 'المعلم الذكي يكتب';
+
+  @override
+  String aiTeacherSuggestedPromptSemantic(String prompt) {
+    return 'اقتراح: $prompt';
+  }
+
+  @override
+  String get aiTeacherPromptExplainGrammar => 'اشرح قاعدة نحوية';
+
+  @override
+  String get aiTeacherPromptQuickQuiz => 'اختبار سريع';
+
+  @override
+  String get aiTeacherPromptCheckWriting => 'تحقق من كتابتي';
+
+  @override
+  String get aiTeacherPromptGiveExample => 'أعطني مثالاً';
+
+  @override
+  String get aiTeacherPromptPracticeSpeaking => 'تدرّب على المحادثة';
 }

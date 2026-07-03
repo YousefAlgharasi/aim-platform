@@ -9,6 +9,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class AiChatErrorState extends StatelessWidget {
   const AiChatErrorState({
@@ -20,11 +21,11 @@ class AiChatErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return AIMFullScreenError(
-      message:
-          'AI Teacher is temporarily unavailable. Your progress is safe, and you can try again.',
-      retryLabel: 'Retry chat',
-      semanticLabel: 'AI Teacher chat error',
+      message: l10n.aiTeacherChatErrorMessage,
+      retryLabel: l10n.aiTeacherRetryChatLabel,
+      semanticLabel: l10n.aiTeacherChatErrorSemantic,
       onRetry: onRetry,
     );
   }

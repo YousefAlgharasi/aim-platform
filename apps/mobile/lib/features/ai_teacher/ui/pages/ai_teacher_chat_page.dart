@@ -48,6 +48,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_chat_state.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/provider/ai_teacher_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../widgets/ai_teacher_widgets.dart';
 
 /// Main AI Teacher text chat screen.
@@ -196,16 +197,17 @@ class _AiTeacherChatPageState extends ConsumerState<AiTeacherChatPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(aiTeacherChatProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: _AiTeacherChatHeader(onOpenHistory: _openHistory),
       body: SafeArea(
         child: switch (state) {
-          AppAsyncLoading() => const AIMFullScreenLoading(
-              semanticLabel: 'Loading AI Teacher chat',
+          AppAsyncLoading() => AIMFullScreenLoading(
+              semanticLabel: l10n.aiTeacherLoadingChatSemantic,
             ),
-          AppAsyncIdle() => const AIMFullScreenLoading(
-              semanticLabel: 'Loading AI Teacher chat',
+          AppAsyncIdle() => AIMFullScreenLoading(
+              semanticLabel: l10n.aiTeacherLoadingChatSemantic,
             ),
           AppAsyncFailure() => AiChatErrorState(
               onRetry: _init,
@@ -250,6 +252,7 @@ class _ChatContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final messages = chatState.history?.messages ?? const [];
     final isSending = chatState.isSending;
     final itemCount = messages.length + (isSending ? 1 : 0);
@@ -292,10 +295,10 @@ class _ChatContent extends StatelessWidget {
           ),
         Expanded(
           child: isEmpty
-              ? const AIMEmptyState(
-                  icon: Icon(Icons.chat_bubble_outline_rounded),
-                  title: 'Ask AI Teacher anything',
-                  subtitle: 'Start the conversation by sending a message.',
+              ? AIMEmptyState(
+                  icon: const Icon(Icons.chat_bubble_outline_rounded),
+                  title: l10n.aiTeacherAskAnythingTitle,
+                  subtitle: l10n.aiTeacherAskAnythingSubtitle,
                 )
               : ListView.separated(
                   padding: const EdgeInsets.symmetric(
@@ -359,6 +362,7 @@ class _AiTeacherChatHeader extends StatelessWidget
   @override
   Widget build(BuildContext context) {
     final direction = Directionality.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -374,7 +378,7 @@ class _AiTeacherChatHeader extends StatelessWidget
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: l10n.commonBack,
               child: InkWell(
                 onTap: () => context.pop(),
                 customBorder: const CircleBorder(),
@@ -436,7 +440,7 @@ class _AiTeacherChatHeader extends StatelessWidget
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'AI Teacher',
+                    l10n.aiTeacherName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AimTextStyles.h3.copyWith(
@@ -445,7 +449,7 @@ class _AiTeacherChatHeader extends StatelessWidget
                   ),
                   const SizedBox(height: AimSpacing.space4),
                   Text(
-                    'Always here to help',
+                    l10n.aiTeacherHeaderSubtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AimTextStyles.bodySm.copyWith(
@@ -457,7 +461,7 @@ class _AiTeacherChatHeader extends StatelessWidget
             ),
             Semantics(
               button: true,
-              label: 'Conversation history',
+              label: l10n.aiTeacherHistorySemantic,
               child: InkWell(
                 onTap: onOpenHistory,
                 customBorder: const CircleBorder(),

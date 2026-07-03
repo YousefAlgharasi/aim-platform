@@ -2359,4 +2359,346 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileLanguageArabicOption => 'Arabic';
+
+  @override
+  String get voiceTeacherTitle => 'Voice Teacher';
+
+  @override
+  String get voiceTeacherEntrySubtitle => 'Talk with your teacher using voice';
+
+  @override
+  String get voiceTeacherStartingSessionSemantic =>
+      'Starting Voice Teacher session';
+
+  @override
+  String get voiceTeacherStatusReady => 'Ready';
+
+  @override
+  String get voiceTeacherStatusRecording => 'Recording';
+
+  @override
+  String get voiceTeacherStatusProcessing => 'Processing';
+
+  @override
+  String get voiceTeacherHeadingTapToSpeak => 'Tap to speak';
+
+  @override
+  String get voiceTeacherHeadingListening => 'Listening...';
+
+  @override
+  String get voiceTeacherHeadingProcessing => 'Processing...';
+
+  @override
+  String voiceTeacherStatusSemantic(String label) {
+    return 'Status: $label';
+  }
+
+  @override
+  String get voiceTeacherHeroSubtitle =>
+      'Practise your pronunciation with the AI teacher';
+
+  @override
+  String get voiceTeacherTranscriptEmptyTitle =>
+      'Start talking with your Voice Teacher';
+
+  @override
+  String get voiceTeacherTranscriptEmptySubtitle =>
+      'Your transcript will appear here.';
+
+  @override
+  String get voiceTeacherPlayAudioTooltip => 'Play audio';
+
+  @override
+  String voiceTeacherTeacherSaidSemantic(String text) {
+    return 'Voice Teacher said: $text';
+  }
+
+  @override
+  String voiceTeacherYouSaidSemantic(String text) {
+    return 'You said: $text';
+  }
+
+  @override
+  String get voiceTeacherFeedbackThanks => 'Thanks!';
+
+  @override
+  String get voiceTeacherFeedbackSubmitted => 'Submitted';
+
+  @override
+  String get voiceTeacherFeedbackHelpful => 'Helpful';
+
+  @override
+  String get voiceTeacherFeedbackNotHelpful => 'Not helpful';
+
+  @override
+  String get voiceTeacherFeedbackCommentHint => 'Tell us more (optional)';
+
+  @override
+  String get voiceTeacherSpeakingLabel => 'Teacher speaking...';
+
+  @override
+  String get voiceTeacherThinkingLabel => 'Teacher thinking...';
+
+  @override
+  String get voiceTeacherReplayTooltip => 'Replay';
+
+  @override
+  String get voiceTeacherPlayTooltip => 'Play';
+
+  @override
+  String get voiceTeacherPauseTooltip => 'Pause';
+
+  @override
+  String get voiceTeacherResumeTooltip => 'Resume';
+
+  @override
+  String get voiceTeacherRetryTooltip => 'Retry';
+
+  @override
+  String get voiceTeacherPlaybackFailedLabel => 'Playback failed';
+
+  @override
+  String get voiceTeacherErrorTitleNetwork => 'Connection Error';
+
+  @override
+  String get voiceTeacherErrorTitleMicrophone => 'Microphone Error';
+
+  @override
+  String get voiceTeacherErrorTitleServer => 'Server Error';
+
+  @override
+  String get voiceTeacherErrorTitleUnknown => 'Something Went Wrong';
+
+  @override
+  String get voiceTeacherErrorMessageNetwork =>
+      'Check your internet connection and try again';
+
+  @override
+  String get voiceTeacherErrorMessageMicrophone =>
+      'Could not access the microphone. Check permissions';
+
+  @override
+  String get voiceTeacherErrorMessageServer =>
+      'Server is currently unavailable. Try again later';
+
+  @override
+  String get voiceTeacherErrorMessageUnknown =>
+      'An unexpected error occurred. Please try again';
+
+  @override
+  String get voiceTeacherTeacherResponseTextLabel => 'Teacher response (text):';
+
+  @override
+  String get voiceTeacherMicPermissionTitle =>
+      'Voice Teacher needs microphone access';
+
+  @override
+  String get voiceTeacherMicPermissionBody =>
+      'Please allow microphone access to talk with the teacher';
+
+  @override
+  String get voiceTeacherOpenSettingsButton => 'Open Settings';
+
+  @override
+  String get voiceTeacherAllowMicrophoneButton => 'Allow Microphone';
+
+  @override
+  String get voiceTeacherTranscribingLabel => 'Transcribing...';
+
+  @override
+  String get voiceTeacherWhatYouSaidLabel => 'What you said';
+
+  @override
+  String get voiceTeacherResponseLabel => 'Teacher response';
+
+  @override
+  String get voiceTeacherStopLabel => 'Stop';
+
+  @override
+  String get voiceTeacherRecordedLabel => 'Recorded';
+
+  @override
+  String get voiceTeacherDiscardLabel => 'Discard';
+
+  @override
+  String get voiceTeacherSendLabel => 'Send';
+
+  @override
+  String get voiceTeacherTextResponseLabel => 'Text response from teacher';
+
+  @override
+  String get voiceTeacherAudioUnavailableLabel =>
+      'Audio unavailable — here\'s the text response';
+
+  @override
+  String get voiceTeacherRetryAudioLabel => 'Retry audio';
+
+  @override
+  String get aiTeacherName => 'AI Teacher';
+
+  @override
+  String get aiTeacherHeaderSubtitle => 'Always here to help';
+
+  @override
+  String get aiTeacherEntrySubtitle =>
+      'Ask questions and get guidance on this lesson.';
+
+  @override
+  String get aiTeacherOpenSemantic => 'Open AI Teacher';
+
+  @override
+  String get aiTeacherLoadingChatSemantic => 'Loading AI Teacher chat';
+
+  @override
+  String get aiTeacherHistorySemantic => 'Conversation history';
+
+  @override
+  String get aiTeacherAskAnythingTitle => 'Ask AI Teacher anything';
+
+  @override
+  String get aiTeacherAskAnythingSubtitle =>
+      'Start the conversation by sending a message.';
+
+  @override
+  String get aiTeacherConversationsTitle => 'Conversations';
+
+  @override
+  String get aiTeacherLoadingConversationsSemantic =>
+      'Loading AI Teacher conversations';
+
+  @override
+  String get aiTeacherNoConversationsTitle => 'No conversations yet';
+
+  @override
+  String get aiTeacherNoConversationsSubtitle =>
+      'Start chatting with AI Teacher to see your history here.';
+
+  @override
+  String get aiTeacherSessionActiveLabel => 'Active';
+
+  @override
+  String get aiTeacherSessionEndedLabel => 'Ended';
+
+  @override
+  String aiTeacherSessionSemantic(String title, String status) {
+    return '$title, $status';
+  }
+
+  @override
+  String get aiTeacherSettingsTitle => 'AI Teacher settings';
+
+  @override
+  String get aiTeacherPreferTextSettingSemantic =>
+      'Prefer text replies setting';
+
+  @override
+  String get aiTeacherPreferTextLabel => 'Prefer text replies over voice';
+
+  @override
+  String get aiTeacherReducedMotionSettingSemantic => 'Reduced motion setting';
+
+  @override
+  String get aiTeacherReducedMotionLabel =>
+      'Reduce animations in AI Teacher and Voice Tutor';
+
+  @override
+  String get aiTeacherSettingsInfoBannerSemantic =>
+      'AI Teacher settings info banner';
+
+  @override
+  String get aiTeacherSettingsInfoTitle => 'About these settings';
+
+  @override
+  String get aiTeacherSettingsInfoBody =>
+      'These preferences only change how replies are shown on this device. They never change how the AI Teacher is taught, filtered, or graded, and never affect your learning progress or backend-generated suggestions — those stay fully backend-controlled.';
+
+  @override
+  String get aiTeacherChatErrorMessage =>
+      'AI Teacher is temporarily unavailable. Your progress is safe, and you can try again.';
+
+  @override
+  String get aiTeacherRetryChatLabel => 'Retry chat';
+
+  @override
+  String get aiTeacherChatErrorSemantic => 'AI Teacher chat error';
+
+  @override
+  String get aiTeacherMessageInputSemantic => 'AI Teacher message input';
+
+  @override
+  String get aiTeacherInputHint => 'Ask me anything...';
+
+  @override
+  String get aiTeacherVoiceInputComingSoonSemantic =>
+      'Voice input (coming soon)';
+
+  @override
+  String get aiTeacherSendMessageSemantic => 'Send message';
+
+  @override
+  String aiTeacherYourMessageSemantic(String text) {
+    return 'Your message: $text';
+  }
+
+  @override
+  String aiTeacherReplySemantic(String text) {
+    return 'AI Teacher: $text';
+  }
+
+  @override
+  String aiTeacherRepliedSemantic(String text) {
+    return 'AI Teacher is replying: $text';
+  }
+
+  @override
+  String get aiTeacherCurrentLessonLabel => 'Current lesson';
+
+  @override
+  String aiTeacherLessonContextSemantic(String lessonTitle) {
+    return 'AI Teacher lesson context: $lessonTitle';
+  }
+
+  @override
+  String get aiTeacherWasHelpfulLabel => 'Was this helpful?';
+
+  @override
+  String get aiTeacherMarkHelpfulSemantic => 'Mark AI Teacher reply as helpful';
+
+  @override
+  String get aiTeacherMarkNotHelpfulSemantic =>
+      'Mark AI Teacher reply as not helpful';
+
+  @override
+  String get aiTeacherSafetyLimitedTitle => 'AI Teacher is limited right now';
+
+  @override
+  String get aiTeacherSafetyLimitedBannerSemantic =>
+      'AI Teacher safety limited banner';
+
+  @override
+  String get aiTeacherSafetyLimitedBody =>
+      'Some responses in this conversation were held back to keep things safe. You can keep chatting, or start a new conversation.';
+
+  @override
+  String get aiTeacherTypingSemantic => 'AI Teacher is typing';
+
+  @override
+  String aiTeacherSuggestedPromptSemantic(String prompt) {
+    return 'Suggested prompt: $prompt';
+  }
+
+  @override
+  String get aiTeacherPromptExplainGrammar => 'Explain grammar';
+
+  @override
+  String get aiTeacherPromptQuickQuiz => 'Quick quiz';
+
+  @override
+  String get aiTeacherPromptCheckWriting => 'Check my writing';
+
+  @override
+  String get aiTeacherPromptGiveExample => 'Give an example';
+
+  @override
+  String get aiTeacherPromptPracticeSpeaking => 'Practice speaking';
 }

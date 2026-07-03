@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:aim_mobile/core/design_tokens/aim_colors.dart';
 import 'package:aim_mobile/core/design_tokens/aim_spacing.dart';
 import 'package:aim_mobile/core/design_tokens/aim_radius.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 enum VoiceFeedbackSelection { none, helpful, notHelpful }
 
@@ -64,6 +65,7 @@ class _VoiceFeedbackActionsState extends State<VoiceFeedbackActions> {
   Widget build(BuildContext context) {
     final isRtl = Directionality.of(context) == TextDirection.rtl;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     if (_selection != VoiceFeedbackSelection.none && !_showCommentField) {
       return Padding(
@@ -81,8 +83,8 @@ class _VoiceFeedbackActionsState extends State<VoiceFeedbackActions> {
             const SizedBox(width: AimSpacing.space4),
             Text(
               _selection == VoiceFeedbackSelection.helpful
-                  ? (isRtl ? 'شكراً!' : 'Thanks!')
-                  : (isRtl ? 'تم الإرسال' : 'Submitted'),
+                  ? l10n.voiceTeacherFeedbackThanks
+                  : l10n.voiceTeacherFeedbackSubmitted,
               style: theme.textTheme.labelSmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -101,14 +103,14 @@ class _VoiceFeedbackActionsState extends State<VoiceFeedbackActions> {
           children: [
             _FeedbackButton(
               icon: Icons.thumb_up_outlined,
-              label: isRtl ? 'مفيد' : 'Helpful',
+              label: l10n.voiceTeacherFeedbackHelpful,
               isSelected: _selection == VoiceFeedbackSelection.helpful,
               onTap: () => _onSelect(VoiceFeedbackSelection.helpful),
             ),
             const SizedBox(width: AimSpacing.space8),
             _FeedbackButton(
               icon: Icons.thumb_down_outlined,
-              label: isRtl ? 'غير مفيد' : 'Not helpful',
+              label: l10n.voiceTeacherFeedbackNotHelpful,
               isSelected: _selection == VoiceFeedbackSelection.notHelpful,
               onTap: () => _onSelect(VoiceFeedbackSelection.notHelpful),
             ),
@@ -124,9 +126,7 @@ class _VoiceFeedbackActionsState extends State<VoiceFeedbackActions> {
                   maxLength: 1000,
                   maxLines: 2,
                   decoration: InputDecoration(
-                    hintText: isRtl
-                        ? 'أخبرنا بالمزيد (اختياري)'
-                        : 'Tell us more (optional)',
+                    hintText: l10n.voiceTeacherFeedbackCommentHint,
                     isDense: true,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AimRadius.sm),
@@ -142,7 +142,7 @@ class _VoiceFeedbackActionsState extends State<VoiceFeedbackActions> {
                 icon: const Icon(Icons.send, size: 20),
                 color: AimColors.primary500,
                 onPressed: _submitNotHelpful,
-                tooltip: isRtl ? 'إرسال' : 'Submit',
+                tooltip: l10n.commonSubmit,
               ),
             ],
           ),

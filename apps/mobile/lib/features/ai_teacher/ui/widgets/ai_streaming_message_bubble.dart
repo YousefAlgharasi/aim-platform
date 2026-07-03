@@ -15,6 +15,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class AiStreamingMessageBubble extends StatelessWidget {
   const AiStreamingMessageBubble({required this.text, super.key});
@@ -50,7 +51,7 @@ class AiStreamingMessageBubble extends StatelessWidget {
           ),
           child: AIMCard(
             variant: AIMCardVariant.ai,
-            semanticLabel: 'AI Teacher is replying: $text',
+            semanticLabel: AppLocalizations.of(context).aiTeacherRepliedSemantic(text),
             child: Text(text.isEmpty ? '…' : text),
           ),
         ),

@@ -30,6 +30,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/provider/ai_teacher_preferences_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class AiTeacherSettingsPage extends ConsumerWidget {
   const AiTeacherSettingsPage({super.key});
@@ -39,6 +40,7 @@ class AiTeacherSettingsPage extends ConsumerWidget {
     final preferences = ref.watch(aiTeacherPreferencesProvider);
     final notifier = ref.read(aiTeacherPreferencesProvider.notifier);
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: surfaces.background,
@@ -55,38 +57,31 @@ class AiTeacherSettingsPage extends ConsumerWidget {
               children: [
                 AIMCard(
                   variant: AIMCardVariant.standard,
-                  semanticLabel: 'Prefer text replies setting',
+                  semanticLabel: l10n.aiTeacherPreferTextSettingSemantic,
                   child: AIMSwitch(
-                    label: 'Prefer text replies over voice',
+                    label: l10n.aiTeacherPreferTextLabel,
                     value: preferences.preferTextReplies,
                     onChanged: notifier.setPreferTextReplies,
-                    semanticLabel: 'Prefer text replies over voice',
+                    semanticLabel: l10n.aiTeacherPreferTextLabel,
                   ),
                 ),
                 const SizedBox(height: AimSpacing.innerGap),
                 AIMCard(
                   variant: AIMCardVariant.standard,
-                  semanticLabel: 'Reduced motion setting',
+                  semanticLabel: l10n.aiTeacherReducedMotionSettingSemantic,
                   child: AIMSwitch(
-                    label: 'Reduce animations in AI Teacher and Voice Tutor',
+                    label: l10n.aiTeacherReducedMotionLabel,
                     value: preferences.reducedMotion,
                     onChanged: notifier.setReducedMotion,
-                    semanticLabel:
-                        'Reduce animations in AI Teacher and Voice Tutor',
+                    semanticLabel: l10n.aiTeacherReducedMotionLabel,
                   ),
                 ),
                 const SizedBox(height: AimSpacing.sectionGap),
-                const AIMAlertBanner(
+                AIMAlertBanner(
                   tone: AIMAlertTone.info,
-                  title: 'About these settings',
-                  semanticLabel: 'AI Teacher settings info banner',
-                  child: Text(
-                    'These preferences only change how replies are shown on '
-                    'this device. They never change how the AI Teacher is '
-                    'taught, filtered, or graded, and never affect your '
-                    'learning progress or backend-generated suggestions — '
-                    'those stay fully backend-controlled.',
-                  ),
+                  title: l10n.aiTeacherSettingsInfoTitle,
+                  semanticLabel: l10n.aiTeacherSettingsInfoBannerSemantic,
+                  child: Text(l10n.aiTeacherSettingsInfoBody),
                 ),
               ],
             ),
@@ -102,6 +97,8 @@ class _AiTeacherSettingsHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -117,7 +114,7 @@ class _AiTeacherSettingsHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: l10n.commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -143,7 +140,7 @@ class _AiTeacherSettingsHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'AI Teacher settings',
+              l10n.aiTeacherSettingsTitle,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],

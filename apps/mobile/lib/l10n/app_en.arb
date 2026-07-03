@@ -3337,5 +3337,455 @@
   "profileLanguageArabicOption": "Arabic",
   "@profileLanguageArabicOption": {
     "description": "Label for the Arabic option in the preferred-language select field."
+  },
+
+  "voiceTeacherTitle": "Voice Teacher",
+  "@voiceTeacherTitle": {
+    "description": "Screen title, entry-card title, and accessibility label for the Voice Teacher feature."
+  },
+  "voiceTeacherEntrySubtitle": "Talk with your teacher using voice",
+  "@voiceTeacherEntrySubtitle": {
+    "description": "Subtitle on the Voice Teacher entry card."
+  },
+  "voiceTeacherStartingSessionSemantic": "Starting Voice Teacher session",
+  "@voiceTeacherStartingSessionSemantic": {
+    "description": "Accessibility label shown while the Voice Teacher session is starting."
+  },
+  "voiceTeacherStatusReady": "Ready",
+  "@voiceTeacherStatusReady": {
+    "description": "Status pill label shown on the Voice Teacher hero when idle."
+  },
+  "voiceTeacherStatusRecording": "Recording",
+  "@voiceTeacherStatusRecording": {
+    "description": "Status pill label shown on the Voice Teacher hero while recording."
+  },
+  "voiceTeacherStatusProcessing": "Processing",
+  "@voiceTeacherStatusProcessing": {
+    "description": "Status pill label shown on the Voice Teacher hero while processing."
+  },
+  "voiceTeacherHeadingTapToSpeak": "Tap to speak",
+  "@voiceTeacherHeadingTapToSpeak": {
+    "description": "Heading shown on the Voice Teacher hero when idle."
+  },
+  "voiceTeacherHeadingListening": "Listening...",
+  "@voiceTeacherHeadingListening": {
+    "description": "Heading shown on the Voice Teacher hero while recording."
+  },
+  "voiceTeacherHeadingProcessing": "Processing...",
+  "@voiceTeacherHeadingProcessing": {
+    "description": "Heading shown on the Voice Teacher hero while processing, and caption on the record button while processing."
+  },
+  "voiceTeacherStatusSemantic": "Status: {label}",
+  "@voiceTeacherStatusSemantic": {
+    "description": "Accessibility label for the Voice Teacher status pill.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceTeacherHeroSubtitle": "Practise your pronunciation with the AI teacher",
+  "@voiceTeacherHeroSubtitle": {
+    "description": "Static subtitle shown on the Voice Teacher pre-conversation hero."
+  },
+  "voiceTeacherTranscriptEmptyTitle": "Start talking with your Voice Teacher",
+  "@voiceTeacherTranscriptEmptyTitle": {
+    "description": "Empty-state title shown when the Voice Teacher transcript has no messages yet."
+  },
+  "voiceTeacherTranscriptEmptySubtitle": "Your transcript will appear here.",
+  "@voiceTeacherTranscriptEmptySubtitle": {
+    "description": "Empty-state subtitle shown when the Voice Teacher transcript has no messages yet."
+  },
+  "voiceTeacherPlayAudioTooltip": "Play audio",
+  "@voiceTeacherPlayAudioTooltip": {
+    "description": "Tooltip for the play-audio button on a Voice Teacher transcript message."
+  },
+  "voiceTeacherTeacherSaidSemantic": "Voice Teacher said: {text}",
+  "@voiceTeacherTeacherSaidSemantic": {
+    "description": "Accessibility label for a teacher transcript message. text is the backend-returned message text.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceTeacherYouSaidSemantic": "You said: {text}",
+  "@voiceTeacherYouSaidSemantic": {
+    "description": "Accessibility label for a student transcript message. text is the backend-returned message text.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceTeacherFeedbackThanks": "Thanks!",
+  "@voiceTeacherFeedbackThanks": {
+    "description": "Confirmation label shown after selecting 'Helpful' feedback on a Voice Teacher reply."
+  },
+  "voiceTeacherFeedbackSubmitted": "Submitted",
+  "@voiceTeacherFeedbackSubmitted": {
+    "description": "Confirmation label shown after submitting 'Not helpful' feedback on a Voice Teacher reply."
+  },
+  "voiceTeacherFeedbackHelpful": "Helpful",
+  "@voiceTeacherFeedbackHelpful": {
+    "description": "Button label for marking a Voice Teacher reply as helpful."
+  },
+  "voiceTeacherFeedbackNotHelpful": "Not helpful",
+  "@voiceTeacherFeedbackNotHelpful": {
+    "description": "Button label for marking a Voice Teacher reply as not helpful."
+  },
+  "voiceTeacherFeedbackCommentHint": "Tell us more (optional)",
+  "@voiceTeacherFeedbackCommentHint": {
+    "description": "Placeholder text for the optional comment field shown after marking a Voice Teacher reply as not helpful."
+  },
+  "voiceTeacherSpeakingLabel": "Teacher speaking...",
+  "@voiceTeacherSpeakingLabel": {
+    "description": "Label shown next to the animated indicator while the Voice Teacher is speaking."
+  },
+  "voiceTeacherThinkingLabel": "Teacher thinking...",
+  "@voiceTeacherThinkingLabel": {
+    "description": "Label shown next to the animated indicator while the Voice Teacher is thinking."
+  },
+  "voiceTeacherReplayTooltip": "Replay",
+  "@voiceTeacherReplayTooltip": {
+    "description": "Tooltip for the replay-audio button on the audio playback controls."
+  },
+  "voiceTeacherPlayTooltip": "Play",
+  "@voiceTeacherPlayTooltip": {
+    "description": "Tooltip for the play-audio button on the audio playback controls."
+  },
+  "voiceTeacherPauseTooltip": "Pause",
+  "@voiceTeacherPauseTooltip": {
+    "description": "Tooltip for the pause-audio button on the audio playback controls."
+  },
+  "voiceTeacherResumeTooltip": "Resume",
+  "@voiceTeacherResumeTooltip": {
+    "description": "Tooltip for the resume-audio button on the audio playback controls."
+  },
+  "voiceTeacherRetryTooltip": "Retry",
+  "@voiceTeacherRetryTooltip": {
+    "description": "Tooltip for the retry-audio button on the audio playback controls."
+  },
+  "voiceTeacherPlaybackFailedLabel": "Playback failed",
+  "@voiceTeacherPlaybackFailedLabel": {
+    "description": "Message shown on the audio playback controls when playback fails."
+  },
+  "voiceTeacherErrorTitleNetwork": "Connection Error",
+  "@voiceTeacherErrorTitleNetwork": {
+    "description": "Title shown on the Voice Teacher error state for a network error."
+  },
+  "voiceTeacherErrorTitleMicrophone": "Microphone Error",
+  "@voiceTeacherErrorTitleMicrophone": {
+    "description": "Title shown on the Voice Teacher error state for a microphone error."
+  },
+  "voiceTeacherErrorTitleServer": "Server Error",
+  "@voiceTeacherErrorTitleServer": {
+    "description": "Title shown on the Voice Teacher error state for a server error."
+  },
+  "voiceTeacherErrorTitleUnknown": "Something Went Wrong",
+  "@voiceTeacherErrorTitleUnknown": {
+    "description": "Title shown on the Voice Teacher error state for an unknown error."
+  },
+  "voiceTeacherErrorMessageNetwork": "Check your internet connection and try again",
+  "@voiceTeacherErrorMessageNetwork": {
+    "description": "Message shown on the Voice Teacher error state for a network error."
+  },
+  "voiceTeacherErrorMessageMicrophone": "Could not access the microphone. Check permissions",
+  "@voiceTeacherErrorMessageMicrophone": {
+    "description": "Message shown on the Voice Teacher error state for a microphone error."
+  },
+  "voiceTeacherErrorMessageServer": "Server is currently unavailable. Try again later",
+  "@voiceTeacherErrorMessageServer": {
+    "description": "Message shown on the Voice Teacher error state for a server error."
+  },
+  "voiceTeacherErrorMessageUnknown": "An unexpected error occurred. Please try again",
+  "@voiceTeacherErrorMessageUnknown": {
+    "description": "Message shown on the Voice Teacher error state for an unknown error."
+  },
+  "voiceTeacherTeacherResponseTextLabel": "Teacher response (text):",
+  "@voiceTeacherTeacherResponseTextLabel": {
+    "description": "Label above the fallback text response shown on the Voice Teacher error state."
+  },
+  "voiceTeacherMicPermissionTitle": "Voice Teacher needs microphone access",
+  "@voiceTeacherMicPermissionTitle": {
+    "description": "Title shown on the microphone-permission gate screen."
+  },
+  "voiceTeacherMicPermissionBody": "Please allow microphone access to talk with the teacher",
+  "@voiceTeacherMicPermissionBody": {
+    "description": "Body text shown on the microphone-permission gate screen."
+  },
+  "voiceTeacherOpenSettingsButton": "Open Settings",
+  "@voiceTeacherOpenSettingsButton": {
+    "description": "Button label shown on the microphone-permission gate screen when permission is permanently denied."
+  },
+  "voiceTeacherAllowMicrophoneButton": "Allow Microphone",
+  "@voiceTeacherAllowMicrophoneButton": {
+    "description": "Button label shown on the microphone-permission gate screen to request permission."
+  },
+  "voiceTeacherTranscribingLabel": "Transcribing...",
+  "@voiceTeacherTranscribingLabel": {
+    "description": "Label shown while a Voice Teacher turn's audio is being transcribed."
+  },
+  "voiceTeacherWhatYouSaidLabel": "What you said",
+  "@voiceTeacherWhatYouSaidLabel": {
+    "description": "Label above the student's transcription preview."
+  },
+  "voiceTeacherResponseLabel": "Teacher response",
+  "@voiceTeacherResponseLabel": {
+    "description": "Label above the teacher's transcription preview."
+  },
+  "voiceTeacherStopLabel": "Stop",
+  "@voiceTeacherStopLabel": {
+    "description": "Button label to stop an in-progress Voice Teacher recording."
+  },
+  "voiceTeacherRecordedLabel": "Recorded",
+  "@voiceTeacherRecordedLabel": {
+    "description": "Label shown once a Voice Teacher recording has stopped."
+  },
+  "voiceTeacherDiscardLabel": "Discard",
+  "@voiceTeacherDiscardLabel": {
+    "description": "Button label to discard a stopped Voice Teacher recording."
+  },
+  "voiceTeacherSendLabel": "Send",
+  "@voiceTeacherSendLabel": {
+    "description": "Button label to send a stopped Voice Teacher recording."
+  },
+  "voiceTeacherTextResponseLabel": "Text response from teacher",
+  "@voiceTeacherTextResponseLabel": {
+    "description": "Label shown above a Voice Teacher text-fallback reply."
+  },
+  "voiceTeacherAudioUnavailableLabel": "Audio unavailable — here's the text response",
+  "@voiceTeacherAudioUnavailableLabel": {
+    "description": "Message shown when a Voice Teacher reply's audio is unavailable and a text fallback is shown instead."
+  },
+  "voiceTeacherRetryAudioLabel": "Retry audio",
+  "@voiceTeacherRetryAudioLabel": {
+    "description": "Button label to retry loading a Voice Teacher reply's audio."
+  },
+
+  "aiTeacherName": "AI Teacher",
+  "@aiTeacherName": {
+    "description": "Feature name shown as the chat header title and entry-card title."
+  },
+  "aiTeacherHeaderSubtitle": "Always here to help",
+  "@aiTeacherHeaderSubtitle": {
+    "description": "Subtitle shown under the AI Teacher name on the chat screen's header."
+  },
+  "aiTeacherEntrySubtitle": "Ask questions and get guidance on this lesson.",
+  "@aiTeacherEntrySubtitle": {
+    "description": "Subtitle on the AI Teacher entry card."
+  },
+  "aiTeacherOpenSemantic": "Open AI Teacher",
+  "@aiTeacherOpenSemantic": {
+    "description": "Accessibility label for the AI Teacher entry card."
+  },
+  "aiTeacherLoadingChatSemantic": "Loading AI Teacher chat",
+  "@aiTeacherLoadingChatSemantic": {
+    "description": "Accessibility label shown while the AI Teacher chat screen's data is loading."
+  },
+  "aiTeacherHistorySemantic": "Conversation history",
+  "@aiTeacherHistorySemantic": {
+    "description": "Accessibility label for the button that opens the AI Teacher conversation history screen."
+  },
+  "aiTeacherAskAnythingTitle": "Ask AI Teacher anything",
+  "@aiTeacherAskAnythingTitle": {
+    "description": "Empty-state title shown when an AI Teacher chat has no messages yet."
+  },
+  "aiTeacherAskAnythingSubtitle": "Start the conversation by sending a message.",
+  "@aiTeacherAskAnythingSubtitle": {
+    "description": "Empty-state subtitle shown when an AI Teacher chat has no messages yet."
+  },
+  "aiTeacherConversationsTitle": "Conversations",
+  "@aiTeacherConversationsTitle": {
+    "description": "Title in the AI Teacher conversation history screen's gradient header."
+  },
+  "aiTeacherLoadingConversationsSemantic": "Loading AI Teacher conversations",
+  "@aiTeacherLoadingConversationsSemantic": {
+    "description": "Accessibility label shown while the AI Teacher conversation history screen's data is loading."
+  },
+  "aiTeacherNoConversationsTitle": "No conversations yet",
+  "@aiTeacherNoConversationsTitle": {
+    "description": "Empty-state title shown when the student has no AI Teacher conversations yet."
+  },
+  "aiTeacherNoConversationsSubtitle": "Start chatting with AI Teacher to see your history here.",
+  "@aiTeacherNoConversationsSubtitle": {
+    "description": "Empty-state subtitle shown when the student has no AI Teacher conversations yet."
+  },
+  "aiTeacherSessionActiveLabel": "Active",
+  "@aiTeacherSessionActiveLabel": {
+    "description": "Status pill label for an active AI Teacher conversation."
+  },
+  "aiTeacherSessionEndedLabel": "Ended",
+  "@aiTeacherSessionEndedLabel": {
+    "description": "Status pill label for an ended AI Teacher conversation."
+  },
+  "aiTeacherSessionSemantic": "{title}, {status}",
+  "@aiTeacherSessionSemantic": {
+    "description": "Accessibility label for a conversation row on the AI Teacher conversation history screen. status is the localized Active/Ended label.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "aiTeacherSettingsTitle": "AI Teacher settings",
+  "@aiTeacherSettingsTitle": {
+    "description": "App bar title on the AI Teacher settings screen."
+  },
+  "aiTeacherPreferTextSettingSemantic": "Prefer text replies setting",
+  "@aiTeacherPreferTextSettingSemantic": {
+    "description": "Accessibility label for the card wrapping the prefer-text-replies toggle."
+  },
+  "aiTeacherPreferTextLabel": "Prefer text replies over voice",
+  "@aiTeacherPreferTextLabel": {
+    "description": "Label and accessibility label for the prefer-text-replies toggle on the AI Teacher settings screen."
+  },
+  "aiTeacherReducedMotionSettingSemantic": "Reduced motion setting",
+  "@aiTeacherReducedMotionSettingSemantic": {
+    "description": "Accessibility label for the card wrapping the reduced-motion toggle."
+  },
+  "aiTeacherReducedMotionLabel": "Reduce animations in AI Teacher and Voice Tutor",
+  "@aiTeacherReducedMotionLabel": {
+    "description": "Label and accessibility label for the reduced-motion toggle on the AI Teacher settings screen."
+  },
+  "aiTeacherSettingsInfoBannerSemantic": "AI Teacher settings info banner",
+  "@aiTeacherSettingsInfoBannerSemantic": {
+    "description": "Accessibility label for the info banner on the AI Teacher settings screen."
+  },
+  "aiTeacherSettingsInfoTitle": "About these settings",
+  "@aiTeacherSettingsInfoTitle": {
+    "description": "Title of the info banner on the AI Teacher settings screen."
+  },
+  "aiTeacherSettingsInfoBody": "These preferences only change how replies are shown on this device. They never change how the AI Teacher is taught, filtered, or graded, and never affect your learning progress or backend-generated suggestions — those stay fully backend-controlled.",
+  "@aiTeacherSettingsInfoBody": {
+    "description": "Body text of the info banner on the AI Teacher settings screen."
+  },
+  "aiTeacherChatErrorMessage": "AI Teacher is temporarily unavailable. Your progress is safe, and you can try again.",
+  "@aiTeacherChatErrorMessage": {
+    "description": "Message shown on the AI Teacher chat error state."
+  },
+  "aiTeacherRetryChatLabel": "Retry chat",
+  "@aiTeacherRetryChatLabel": {
+    "description": "Retry button label on the AI Teacher chat error state."
+  },
+  "aiTeacherChatErrorSemantic": "AI Teacher chat error",
+  "@aiTeacherChatErrorSemantic": {
+    "description": "Accessibility label for the AI Teacher chat error state."
+  },
+  "aiTeacherMessageInputSemantic": "AI Teacher message input",
+  "@aiTeacherMessageInputSemantic": {
+    "description": "Accessibility label for the AI Teacher chat message input field."
+  },
+  "aiTeacherInputHint": "Ask me anything...",
+  "@aiTeacherInputHint": {
+    "description": "Placeholder text for the AI Teacher chat message input field."
+  },
+  "aiTeacherVoiceInputComingSoonSemantic": "Voice input (coming soon)",
+  "@aiTeacherVoiceInputComingSoonSemantic": {
+    "description": "Accessibility label for the disabled voice-input (mic) button on the AI Teacher chat input bar."
+  },
+  "aiTeacherSendMessageSemantic": "Send message",
+  "@aiTeacherSendMessageSemantic": {
+    "description": "Accessibility label for the send-message button on the AI Teacher chat input bar."
+  },
+  "aiTeacherYourMessageSemantic": "Your message: {text}",
+  "@aiTeacherYourMessageSemantic": {
+    "description": "Accessibility label for a student message bubble. text is the backend-returned message text.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "aiTeacherReplySemantic": "AI Teacher: {text}",
+  "@aiTeacherReplySemantic": {
+    "description": "Accessibility label for an AI Teacher message bubble. text is the backend-returned message text.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "aiTeacherRepliedSemantic": "AI Teacher is replying: {text}",
+  "@aiTeacherRepliedSemantic": {
+    "description": "Accessibility label for the in-progress streaming AI Teacher reply bubble. text is the partial, safety-filtered reply text.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "aiTeacherCurrentLessonLabel": "Current lesson",
+  "@aiTeacherCurrentLessonLabel": {
+    "description": "Label above the lesson title on the AI Teacher lesson context header."
+  },
+  "aiTeacherLessonContextSemantic": "AI Teacher lesson context: {lessonTitle}",
+  "@aiTeacherLessonContextSemantic": {
+    "description": "Accessibility label for the AI Teacher lesson context header. lessonTitle is a caller-provided, backend-approved label.",
+    "placeholders": {
+      "lessonTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "aiTeacherWasHelpfulLabel": "Was this helpful?",
+  "@aiTeacherWasHelpfulLabel": {
+    "description": "Prompt shown under an AI Teacher reply, above the helpful/not-helpful buttons."
+  },
+  "aiTeacherMarkHelpfulSemantic": "Mark AI Teacher reply as helpful",
+  "@aiTeacherMarkHelpfulSemantic": {
+    "description": "Accessibility label for the helpful-feedback button on an AI Teacher reply."
+  },
+  "aiTeacherMarkNotHelpfulSemantic": "Mark AI Teacher reply as not helpful",
+  "@aiTeacherMarkNotHelpfulSemantic": {
+    "description": "Accessibility label for the not-helpful-feedback button on an AI Teacher reply."
+  },
+  "aiTeacherSafetyLimitedTitle": "AI Teacher is limited right now",
+  "@aiTeacherSafetyLimitedTitle": {
+    "description": "Title of the safety-limited banner shown on the AI Teacher chat screen."
+  },
+  "aiTeacherSafetyLimitedBannerSemantic": "AI Teacher safety limited banner",
+  "@aiTeacherSafetyLimitedBannerSemantic": {
+    "description": "Accessibility label for the safety-limited banner on the AI Teacher chat screen."
+  },
+  "aiTeacherSafetyLimitedBody": "Some responses in this conversation were held back to keep things safe. You can keep chatting, or start a new conversation.",
+  "@aiTeacherSafetyLimitedBody": {
+    "description": "Body text of the safety-limited banner on the AI Teacher chat screen."
+  },
+  "aiTeacherTypingSemantic": "AI Teacher is typing",
+  "@aiTeacherTypingSemantic": {
+    "description": "Accessibility label for the AI Teacher typing indicator."
+  },
+  "aiTeacherSuggestedPromptSemantic": "Suggested prompt: {prompt}",
+  "@aiTeacherSuggestedPromptSemantic": {
+    "description": "Accessibility label for a suggested-prompt chip on the AI Teacher chat screen. prompt is one of the fixed, app-defined conversation starters.",
+    "placeholders": {
+      "prompt": {
+        "type": "String"
+      }
+    }
+  },
+  "aiTeacherPromptExplainGrammar": "Explain grammar",
+  "@aiTeacherPromptExplainGrammar": {
+    "description": "Fixed, app-defined suggested-prompt chip label on the AI Teacher chat screen."
+  },
+  "aiTeacherPromptQuickQuiz": "Quick quiz",
+  "@aiTeacherPromptQuickQuiz": {
+    "description": "Fixed, app-defined suggested-prompt chip label on the AI Teacher chat screen."
+  },
+  "aiTeacherPromptCheckWriting": "Check my writing",
+  "@aiTeacherPromptCheckWriting": {
+    "description": "Fixed, app-defined suggested-prompt chip label on the AI Teacher chat screen."
+  },
+  "aiTeacherPromptGiveExample": "Give an example",
+  "@aiTeacherPromptGiveExample": {
+    "description": "Fixed, app-defined suggested-prompt chip label on the AI Teacher chat screen."
+  },
+  "aiTeacherPromptPracticeSpeaking": "Practice speaking",
+  "@aiTeacherPromptPracticeSpeaking": {
+    "description": "Fixed, app-defined suggested-prompt chip label on the AI Teacher chat screen."
   }
 }

@@ -3773,6 +3773,606 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Arabic'**
   String get profileLanguageArabicOption;
+
+  /// Screen title, entry-card title, and accessibility label for the Voice Teacher feature.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice Teacher'**
+  String get voiceTeacherTitle;
+
+  /// Subtitle on the Voice Teacher entry card.
+  ///
+  /// In en, this message translates to:
+  /// **'Talk with your teacher using voice'**
+  String get voiceTeacherEntrySubtitle;
+
+  /// Accessibility label shown while the Voice Teacher session is starting.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting Voice Teacher session'**
+  String get voiceTeacherStartingSessionSemantic;
+
+  /// Status pill label shown on the Voice Teacher hero when idle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
+  String get voiceTeacherStatusReady;
+
+  /// Status pill label shown on the Voice Teacher hero while recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording'**
+  String get voiceTeacherStatusRecording;
+
+  /// Status pill label shown on the Voice Teacher hero while processing.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing'**
+  String get voiceTeacherStatusProcessing;
+
+  /// Heading shown on the Voice Teacher hero when idle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to speak'**
+  String get voiceTeacherHeadingTapToSpeak;
+
+  /// Heading shown on the Voice Teacher hero while recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening...'**
+  String get voiceTeacherHeadingListening;
+
+  /// Heading shown on the Voice Teacher hero while processing, and caption on the record button while processing.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing...'**
+  String get voiceTeacherHeadingProcessing;
+
+  /// Accessibility label for the Voice Teacher status pill.
+  ///
+  /// In en, this message translates to:
+  /// **'Status: {label}'**
+  String voiceTeacherStatusSemantic(String label);
+
+  /// Static subtitle shown on the Voice Teacher pre-conversation hero.
+  ///
+  /// In en, this message translates to:
+  /// **'Practise your pronunciation with the AI teacher'**
+  String get voiceTeacherHeroSubtitle;
+
+  /// Empty-state title shown when the Voice Teacher transcript has no messages yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Start talking with your Voice Teacher'**
+  String get voiceTeacherTranscriptEmptyTitle;
+
+  /// Empty-state subtitle shown when the Voice Teacher transcript has no messages yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Your transcript will appear here.'**
+  String get voiceTeacherTranscriptEmptySubtitle;
+
+  /// Tooltip for the play-audio button on a Voice Teacher transcript message.
+  ///
+  /// In en, this message translates to:
+  /// **'Play audio'**
+  String get voiceTeacherPlayAudioTooltip;
+
+  /// Accessibility label for a teacher transcript message. text is the backend-returned message text.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice Teacher said: {text}'**
+  String voiceTeacherTeacherSaidSemantic(String text);
+
+  /// Accessibility label for a student transcript message. text is the backend-returned message text.
+  ///
+  /// In en, this message translates to:
+  /// **'You said: {text}'**
+  String voiceTeacherYouSaidSemantic(String text);
+
+  /// Confirmation label shown after selecting 'Helpful' feedback on a Voice Teacher reply.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks!'**
+  String get voiceTeacherFeedbackThanks;
+
+  /// Confirmation label shown after submitting 'Not helpful' feedback on a Voice Teacher reply.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted'**
+  String get voiceTeacherFeedbackSubmitted;
+
+  /// Button label for marking a Voice Teacher reply as helpful.
+  ///
+  /// In en, this message translates to:
+  /// **'Helpful'**
+  String get voiceTeacherFeedbackHelpful;
+
+  /// Button label for marking a Voice Teacher reply as not helpful.
+  ///
+  /// In en, this message translates to:
+  /// **'Not helpful'**
+  String get voiceTeacherFeedbackNotHelpful;
+
+  /// Placeholder text for the optional comment field shown after marking a Voice Teacher reply as not helpful.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us more (optional)'**
+  String get voiceTeacherFeedbackCommentHint;
+
+  /// Label shown next to the animated indicator while the Voice Teacher is speaking.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher speaking...'**
+  String get voiceTeacherSpeakingLabel;
+
+  /// Label shown next to the animated indicator while the Voice Teacher is thinking.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher thinking...'**
+  String get voiceTeacherThinkingLabel;
+
+  /// Tooltip for the replay-audio button on the audio playback controls.
+  ///
+  /// In en, this message translates to:
+  /// **'Replay'**
+  String get voiceTeacherReplayTooltip;
+
+  /// Tooltip for the play-audio button on the audio playback controls.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get voiceTeacherPlayTooltip;
+
+  /// Tooltip for the pause-audio button on the audio playback controls.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get voiceTeacherPauseTooltip;
+
+  /// Tooltip for the resume-audio button on the audio playback controls.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get voiceTeacherResumeTooltip;
+
+  /// Tooltip for the retry-audio button on the audio playback controls.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get voiceTeacherRetryTooltip;
+
+  /// Message shown on the audio playback controls when playback fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Playback failed'**
+  String get voiceTeacherPlaybackFailedLabel;
+
+  /// Title shown on the Voice Teacher error state for a network error.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection Error'**
+  String get voiceTeacherErrorTitleNetwork;
+
+  /// Title shown on the Voice Teacher error state for a microphone error.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone Error'**
+  String get voiceTeacherErrorTitleMicrophone;
+
+  /// Title shown on the Voice Teacher error state for a server error.
+  ///
+  /// In en, this message translates to:
+  /// **'Server Error'**
+  String get voiceTeacherErrorTitleServer;
+
+  /// Title shown on the Voice Teacher error state for an unknown error.
+  ///
+  /// In en, this message translates to:
+  /// **'Something Went Wrong'**
+  String get voiceTeacherErrorTitleUnknown;
+
+  /// Message shown on the Voice Teacher error state for a network error.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your internet connection and try again'**
+  String get voiceTeacherErrorMessageNetwork;
+
+  /// Message shown on the Voice Teacher error state for a microphone error.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not access the microphone. Check permissions'**
+  String get voiceTeacherErrorMessageMicrophone;
+
+  /// Message shown on the Voice Teacher error state for a server error.
+  ///
+  /// In en, this message translates to:
+  /// **'Server is currently unavailable. Try again later'**
+  String get voiceTeacherErrorMessageServer;
+
+  /// Message shown on the Voice Teacher error state for an unknown error.
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred. Please try again'**
+  String get voiceTeacherErrorMessageUnknown;
+
+  /// Label above the fallback text response shown on the Voice Teacher error state.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher response (text):'**
+  String get voiceTeacherTeacherResponseTextLabel;
+
+  /// Title shown on the microphone-permission gate screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice Teacher needs microphone access'**
+  String get voiceTeacherMicPermissionTitle;
+
+  /// Body text shown on the microphone-permission gate screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Please allow microphone access to talk with the teacher'**
+  String get voiceTeacherMicPermissionBody;
+
+  /// Button label shown on the microphone-permission gate screen when permission is permanently denied.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get voiceTeacherOpenSettingsButton;
+
+  /// Button label shown on the microphone-permission gate screen to request permission.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow Microphone'**
+  String get voiceTeacherAllowMicrophoneButton;
+
+  /// Label shown while a Voice Teacher turn's audio is being transcribed.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcribing...'**
+  String get voiceTeacherTranscribingLabel;
+
+  /// Label above the student's transcription preview.
+  ///
+  /// In en, this message translates to:
+  /// **'What you said'**
+  String get voiceTeacherWhatYouSaidLabel;
+
+  /// Label above the teacher's transcription preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher response'**
+  String get voiceTeacherResponseLabel;
+
+  /// Button label to stop an in-progress Voice Teacher recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get voiceTeacherStopLabel;
+
+  /// Label shown once a Voice Teacher recording has stopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded'**
+  String get voiceTeacherRecordedLabel;
+
+  /// Button label to discard a stopped Voice Teacher recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get voiceTeacherDiscardLabel;
+
+  /// Button label to send a stopped Voice Teacher recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get voiceTeacherSendLabel;
+
+  /// Label shown above a Voice Teacher text-fallback reply.
+  ///
+  /// In en, this message translates to:
+  /// **'Text response from teacher'**
+  String get voiceTeacherTextResponseLabel;
+
+  /// Message shown when a Voice Teacher reply's audio is unavailable and a text fallback is shown instead.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio unavailable — here\'s the text response'**
+  String get voiceTeacherAudioUnavailableLabel;
+
+  /// Button label to retry loading a Voice Teacher reply's audio.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry audio'**
+  String get voiceTeacherRetryAudioLabel;
+
+  /// Feature name shown as the chat header title and entry-card title.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Teacher'**
+  String get aiTeacherName;
+
+  /// Subtitle shown under the AI Teacher name on the chat screen's header.
+  ///
+  /// In en, this message translates to:
+  /// **'Always here to help'**
+  String get aiTeacherHeaderSubtitle;
+
+  /// Subtitle on the AI Teacher entry card.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask questions and get guidance on this lesson.'**
+  String get aiTeacherEntrySubtitle;
+
+  /// Accessibility label for the AI Teacher entry card.
+  ///
+  /// In en, this message translates to:
+  /// **'Open AI Teacher'**
+  String get aiTeacherOpenSemantic;
+
+  /// Accessibility label shown while the AI Teacher chat screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading AI Teacher chat'**
+  String get aiTeacherLoadingChatSemantic;
+
+  /// Accessibility label for the button that opens the AI Teacher conversation history screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation history'**
+  String get aiTeacherHistorySemantic;
+
+  /// Empty-state title shown when an AI Teacher chat has no messages yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask AI Teacher anything'**
+  String get aiTeacherAskAnythingTitle;
+
+  /// Empty-state subtitle shown when an AI Teacher chat has no messages yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Start the conversation by sending a message.'**
+  String get aiTeacherAskAnythingSubtitle;
+
+  /// Title in the AI Teacher conversation history screen's gradient header.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversations'**
+  String get aiTeacherConversationsTitle;
+
+  /// Accessibility label shown while the AI Teacher conversation history screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading AI Teacher conversations'**
+  String get aiTeacherLoadingConversationsSemantic;
+
+  /// Empty-state title shown when the student has no AI Teacher conversations yet.
+  ///
+  /// In en, this message translates to:
+  /// **'No conversations yet'**
+  String get aiTeacherNoConversationsTitle;
+
+  /// Empty-state subtitle shown when the student has no AI Teacher conversations yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Start chatting with AI Teacher to see your history here.'**
+  String get aiTeacherNoConversationsSubtitle;
+
+  /// Status pill label for an active AI Teacher conversation.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get aiTeacherSessionActiveLabel;
+
+  /// Status pill label for an ended AI Teacher conversation.
+  ///
+  /// In en, this message translates to:
+  /// **'Ended'**
+  String get aiTeacherSessionEndedLabel;
+
+  /// Accessibility label for a conversation row on the AI Teacher conversation history screen. status is the localized Active/Ended label.
+  ///
+  /// In en, this message translates to:
+  /// **'{title}, {status}'**
+  String aiTeacherSessionSemantic(String title, String status);
+
+  /// App bar title on the AI Teacher settings screen.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Teacher settings'**
+  String get aiTeacherSettingsTitle;
+
+  /// Accessibility label for the card wrapping the prefer-text-replies toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer text replies setting'**
+  String get aiTeacherPreferTextSettingSemantic;
+
+  /// Label and accessibility label for the prefer-text-replies toggle on the AI Teacher settings screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer text replies over voice'**
+  String get aiTeacherPreferTextLabel;
+
+  /// Accessibility label for the card wrapping the reduced-motion toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduced motion setting'**
+  String get aiTeacherReducedMotionSettingSemantic;
+
+  /// Label and accessibility label for the reduced-motion toggle on the AI Teacher settings screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduce animations in AI Teacher and Voice Tutor'**
+  String get aiTeacherReducedMotionLabel;
+
+  /// Accessibility label for the info banner on the AI Teacher settings screen.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Teacher settings info banner'**
+  String get aiTeacherSettingsInfoBannerSemantic;
+
+  /// Title of the info banner on the AI Teacher settings screen.
+  ///
+  /// In en, this message translates to:
+  /// **'About these settings'**
+  String get aiTeacherSettingsInfoTitle;
+
+  /// Body text of the info banner on the AI Teacher settings screen.
+  ///
+  /// In en, this message translates to:
+  /// **'These preferences only change how replies are shown on this device. They never change how the AI Teacher is taught, filtered, or graded, and never affect your learning progress or backend-generated suggestions — those stay fully backend-controlled.'**
+  String get aiTeacherSettingsInfoBody;
+
+  /// Message shown on the AI Teacher chat error state.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Teacher is temporarily unavailable. Your progress is safe, and you can try again.'**
+  String get aiTeacherChatErrorMessage;
+
+  /// Retry button label on the AI Teacher chat error state.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry chat'**
+  String get aiTeacherRetryChatLabel;
+
+  /// Accessibility label for the AI Teacher chat error state.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Teacher chat error'**
+  String get aiTeacherChatErrorSemantic;
+
+  /// Accessibility label for the AI Teacher chat message input field.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Teacher message input'**
+  String get aiTeacherMessageInputSemantic;
+
+  /// Placeholder text for the AI Teacher chat message input field.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask me anything...'**
+  String get aiTeacherInputHint;
+
+  /// Accessibility label for the disabled voice-input (mic) button on the AI Teacher chat input bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice input (coming soon)'**
+  String get aiTeacherVoiceInputComingSoonSemantic;
+
+  /// Accessibility label for the send-message button on the AI Teacher chat input bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Send message'**
+  String get aiTeacherSendMessageSemantic;
+
+  /// Accessibility label for a student message bubble. text is the backend-returned message text.
+  ///
+  /// In en, this message translates to:
+  /// **'Your message: {text}'**
+  String aiTeacherYourMessageSemantic(String text);
+
+  /// Accessibility label for an AI Teacher message bubble. text is the backend-returned message text.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Teacher: {text}'**
+  String aiTeacherReplySemantic(String text);
+
+  /// Accessibility label for the in-progress streaming AI Teacher reply bubble. text is the partial, safety-filtered reply text.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Teacher is replying: {text}'**
+  String aiTeacherRepliedSemantic(String text);
+
+  /// Label above the lesson title on the AI Teacher lesson context header.
+  ///
+  /// In en, this message translates to:
+  /// **'Current lesson'**
+  String get aiTeacherCurrentLessonLabel;
+
+  /// Accessibility label for the AI Teacher lesson context header. lessonTitle is a caller-provided, backend-approved label.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Teacher lesson context: {lessonTitle}'**
+  String aiTeacherLessonContextSemantic(String lessonTitle);
+
+  /// Prompt shown under an AI Teacher reply, above the helpful/not-helpful buttons.
+  ///
+  /// In en, this message translates to:
+  /// **'Was this helpful?'**
+  String get aiTeacherWasHelpfulLabel;
+
+  /// Accessibility label for the helpful-feedback button on an AI Teacher reply.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark AI Teacher reply as helpful'**
+  String get aiTeacherMarkHelpfulSemantic;
+
+  /// Accessibility label for the not-helpful-feedback button on an AI Teacher reply.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark AI Teacher reply as not helpful'**
+  String get aiTeacherMarkNotHelpfulSemantic;
+
+  /// Title of the safety-limited banner shown on the AI Teacher chat screen.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Teacher is limited right now'**
+  String get aiTeacherSafetyLimitedTitle;
+
+  /// Accessibility label for the safety-limited banner on the AI Teacher chat screen.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Teacher safety limited banner'**
+  String get aiTeacherSafetyLimitedBannerSemantic;
+
+  /// Body text of the safety-limited banner on the AI Teacher chat screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Some responses in this conversation were held back to keep things safe. You can keep chatting, or start a new conversation.'**
+  String get aiTeacherSafetyLimitedBody;
+
+  /// Accessibility label for the AI Teacher typing indicator.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Teacher is typing'**
+  String get aiTeacherTypingSemantic;
+
+  /// Accessibility label for a suggested-prompt chip on the AI Teacher chat screen. prompt is one of the fixed, app-defined conversation starters.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested prompt: {prompt}'**
+  String aiTeacherSuggestedPromptSemantic(String prompt);
+
+  /// Fixed, app-defined suggested-prompt chip label on the AI Teacher chat screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Explain grammar'**
+  String get aiTeacherPromptExplainGrammar;
+
+  /// Fixed, app-defined suggested-prompt chip label on the AI Teacher chat screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick quiz'**
+  String get aiTeacherPromptQuickQuiz;
+
+  /// Fixed, app-defined suggested-prompt chip label on the AI Teacher chat screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Check my writing'**
+  String get aiTeacherPromptCheckWriting;
+
+  /// Fixed, app-defined suggested-prompt chip label on the AI Teacher chat screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Give an example'**
+  String get aiTeacherPromptGiveExample;
+
+  /// Fixed, app-defined suggested-prompt chip label on the AI Teacher chat screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice speaking'**
+  String get aiTeacherPromptPracticeSpeaking;
 }
 
 class _AppLocalizationsDelegate

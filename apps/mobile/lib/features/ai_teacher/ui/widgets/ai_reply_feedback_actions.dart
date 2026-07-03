@@ -18,6 +18,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// 'helpful' | 'not_helpful', mirrors the backend rating contract exactly
 /// (ai-teacher-feedback-submit.types.ts).
@@ -78,12 +79,13 @@ class _AiReplyFeedbackActionsState extends State<AiReplyFeedbackActions> {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'Was this helpful?',
+          l10n.aiTeacherWasHelpfulLabel,
           style: AimTextStyles.caption.copyWith(
             color: surfaces.textSecondary,
           ),
@@ -92,7 +94,7 @@ class _AiReplyFeedbackActionsState extends State<AiReplyFeedbackActions> {
         _FeedbackIconButton(
           icon: Icons.thumb_up_alt_outlined,
           selectedIcon: Icons.thumb_up_alt_rounded,
-          semanticLabel: 'Mark AI Teacher reply as helpful',
+          semanticLabel: l10n.aiTeacherMarkHelpfulSemantic,
           selected: _selected == AiReplyRating.helpful,
           disabled: _submitting,
           onPressed: () => _handleTap(AiReplyRating.helpful),
@@ -101,7 +103,7 @@ class _AiReplyFeedbackActionsState extends State<AiReplyFeedbackActions> {
         _FeedbackIconButton(
           icon: Icons.thumb_down_alt_outlined,
           selectedIcon: Icons.thumb_down_alt_rounded,
-          semanticLabel: 'Mark AI Teacher reply as not helpful',
+          semanticLabel: l10n.aiTeacherMarkNotHelpfulSemantic,
           selected: _selected == AiReplyRating.notHelpful,
           disabled: _submitting,
           onPressed: () => _handleTap(AiReplyRating.notHelpful),

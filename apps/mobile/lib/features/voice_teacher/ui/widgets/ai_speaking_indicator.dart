@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:aim_mobile/core/design_tokens/aim_colors.dart';
 import 'package:aim_mobile/core/design_tokens/aim_spacing.dart';
 import 'package:aim_mobile/core/design_tokens/aim_radius.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 enum AiVoiceState { thinking, speaking, idle }
 
@@ -54,8 +55,8 @@ class _AiSpeakingIndicatorState extends State<AiSpeakingIndicator>
   Widget build(BuildContext context) {
     if (widget.state == AiVoiceState.idle) return const SizedBox.shrink();
 
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final isSpeaking = widget.state == AiVoiceState.speaking;
 
     return Container(
@@ -92,9 +93,7 @@ class _AiSpeakingIndicatorState extends State<AiSpeakingIndicator>
             _ThinkingDots(controller: _controller),
           const SizedBox(width: AimSpacing.space8),
           Text(
-            isSpeaking
-                ? (isRtl ? 'المعلم يتحدث...' : 'Teacher speaking...')
-                : (isRtl ? 'المعلم يفكر...' : 'Teacher thinking...'),
+            isSpeaking ? l10n.voiceTeacherSpeakingLabel : l10n.voiceTeacherThinkingLabel,
             style: theme.textTheme.bodySmall?.copyWith(
               color: AimColors.primary500,
             ),

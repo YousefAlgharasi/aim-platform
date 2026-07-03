@@ -35,6 +35,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Chat message input row: pill-shaped text field (with a disabled mic
 /// affordance) plus a circular gradient send button.
@@ -85,6 +86,7 @@ class _AiChatInputBarState extends State<AiChatInputBar> {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final foreground =
         widget.isSending ? surfaces.disabledFg : surfaces.textPrimary;
 
@@ -99,7 +101,7 @@ class _AiChatInputBarState extends State<AiChatInputBar> {
           Expanded(
             child: Semantics(
               textField: true,
-              label: 'AI Teacher message input',
+              label: l10n.aiTeacherMessageInputSemantic,
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: widget.isSending
@@ -145,7 +147,7 @@ class _AiChatInputBarState extends State<AiChatInputBar> {
                               focusedErrorBorder: InputBorder.none,
                               filled: false,
                               isDense: true,
-                              hintText: 'Ask me anything...',
+                              hintText: l10n.aiTeacherInputHint,
                               hintStyle: AimTextStyles.bodyMd.copyWith(
                                 color: surfaces.textMuted,
                               ),
@@ -158,7 +160,7 @@ class _AiChatInputBarState extends State<AiChatInputBar> {
                         // (onPressed: null) rather than faking capture.
                         Semantics(
                           button: true,
-                          label: 'Voice input (coming soon)',
+                          label: l10n.aiTeacherVoiceInputComingSoonSemantic,
                           child: IconButton(
                             constraints: const BoxConstraints(
                               minWidth: AimSizes.touchTarget,
@@ -205,7 +207,7 @@ class _SendButton extends StatelessWidget {
     return Semantics(
       button: true,
       enabled: enabled,
-      label: 'Send message',
+      label: AppLocalizations.of(context).aiTeacherSendMessageSemantic,
       onTap: enabled ? onPressed : null,
       excludeSemantics: true,
       child: SizedBox.square(

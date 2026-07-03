@@ -19,6 +19,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Animated "AI Teacher is typing" bubble, styled like an ai_teacher chat
 /// message bubble so it appears inline with the message history.
@@ -98,7 +99,7 @@ class _AiTypingIndicatorState extends State<AiTypingIndicator>
 
     final bubble = AIMCard(
       variant: AIMCardVariant.ai,
-      semanticLabel: 'AI Teacher is typing',
+      semanticLabel: AppLocalizations.of(context).aiTeacherTypingSemantic,
       child: dots,
     );
 

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:aim_mobile/core/widgets/learning/aim_record_button.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 enum VoiceRecordState { idle, recording, processing }
 
@@ -63,7 +64,6 @@ class _VoiceRecordButtonState extends State<VoiceRecordButton> {
 
   @override
   Widget build(BuildContext context) {
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
     final isRecording = widget.state == VoiceRecordState.recording;
     final isProcessing = widget.state == VoiceRecordState.processing;
 
@@ -71,7 +71,7 @@ class _VoiceRecordButtonState extends State<VoiceRecordButton> {
     if (isRecording) {
       caption = _formatDuration(_elapsedSeconds);
     } else if (isProcessing) {
-      caption = isRtl ? 'جارٍ المعالجة...' : 'Processing...';
+      caption = AppLocalizations.of(context).voiceTeacherHeadingProcessing;
     }
 
     return AIMRecordButton(

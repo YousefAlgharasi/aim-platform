@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:aim_mobile/core/design_tokens/aim_colors.dart';
 import 'package:aim_mobile/core/design_tokens/aim_spacing.dart';
 import 'package:aim_mobile/core/design_tokens/aim_radius.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class VoiceTextFallback extends StatelessWidget {
   final String fallbackText;
@@ -17,8 +18,8 @@ class VoiceTextFallback extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final isArabicText = _containsArabic(fallbackText);
 
     return Container(
@@ -47,7 +48,7 @@ class VoiceTextFallback extends StatelessWidget {
               ),
               const SizedBox(width: AimSpacing.space4),
               Text(
-                isRtl ? 'رد نصي من المعلم' : 'Text response from teacher',
+                l10n.voiceTeacherTextResponseLabel,
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: AimColors.primary500,
                   fontWeight: FontWeight.w600,
@@ -67,9 +68,7 @@ class VoiceTextFallback extends StatelessWidget {
                 const SizedBox(width: AimSpacing.space4),
                 Expanded(
                   child: Text(
-                    isRtl
-                        ? 'لم يتوفر الصوت — إليك الرد النصي'
-                        : 'Audio unavailable — here\'s the text response',
+                    l10n.voiceTeacherAudioUnavailableLabel,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                       fontStyle: FontStyle.italic,
@@ -102,7 +101,7 @@ class VoiceTextFallback extends StatelessWidget {
                     const Icon(Icons.refresh, size: 16, color: AimColors.primary500),
                     const SizedBox(width: AimSpacing.space4),
                     Text(
-                      isRtl ? 'إعادة تحميل الصوت' : 'Retry audio',
+                      l10n.voiceTeacherRetryAudioLabel,
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: AimColors.primary500,
                       ),
