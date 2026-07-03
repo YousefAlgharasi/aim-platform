@@ -505,6 +505,15 @@ export class FakeDatabaseService {
       return toQueryResult([]);
     }
 
+    // ---- initial learning path: skill_id resolution (P20-004) -------------
+    // No skills are seeded by this fake, so every weakness_map/skill_mastery_map
+    // code resolves to "no match" — every path entry stays section-level, which
+    // matches this test's fixtures (section-level placement_answers.skill_code
+    // only, no skill-tagged questions).
+    if (sql.startsWith('SELECT id, key FROM skills')) {
+      return toQueryResult([]);
+    }
+
     // ---- initial_learning_path: bulk insert --------------------------------
     if (sql.startsWith('INSERT INTO initial_learning_path')) {
       const columnsPerRow = 9;
