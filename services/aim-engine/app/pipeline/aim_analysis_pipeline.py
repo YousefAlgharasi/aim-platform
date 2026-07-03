@@ -60,6 +60,13 @@ from aim.domain.services.mastery_calculator import (  # noqa: E402
     MasteryResult,
     SkillState,
 )
+from aim.domain.services.recommendation_engine import (  # noqa: E402
+    RecommendationActionType,
+    RecommendationAttempt,
+    RecommendationContext,
+    RecommendationEngine,
+    RecommendationSkillState,
+)
 from aim.domain.services.retention_tracker import (  # noqa: E402
     RetentionSkillState,
     RetentionTracker,
@@ -100,6 +107,72 @@ from app.validation.aim_request_validator import (  # noqa: E402
 )
 
 logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# RecommendationActionType -> (AimRecommendationKind, AimRecommendationReason)
+# (P20-009)
+#
+# recommendations.kind and recommendations.reason are locked by live Postgres
+# CHECK constraints (recommendations_kind_check: lesson/targeted_practice/
+# review_session; recommendations_reason_check: addresses_weakness/
+# reinforces_recent_skill/next_in_sequence/review_due — confirmed via
+# Supabase, not assumed) predating this task. The ported engine's 12 action
+# types are mapped onto that fixed vocabulary rather than expanding the
+# schema, which is out of this task's scope. `kind=lesson` is never produced
+# here because it requires a real target_lesson_id the AIM Engine has no
+# source for. TRIGGER_TUTOR_INTERVENTION has no entry — handled separately
+# in `_generate_recommendations` since no recommendation category fits it.
+# ---------------------------------------------------------------------------
+
+_ACTION_TYPE_TO_KIND_REASON: dict[
+    RecommendationActionType, tuple[AimRecommendationKind, AimRecommendationReason]
+] = {
+    RecommendationActionType.COLLECT_MORE_EVIDENCE: (
+        AimRecommendationKind.TARGETED_PRACTICE,
+        AimRecommendationReason.NEXT_IN_SEQUENCE,
+    ),
+    RecommendationActionType.EASY_WIN: (
+        AimRecommendationKind.TARGETED_PRACTICE,
+        AimRecommendationReason.NEXT_IN_SEQUENCE,
+    ),
+    RecommendationActionType.REVIEW_PREREQUISITE: (
+        AimRecommendationKind.REVIEW_SESSION,
+        AimRecommendationReason.NEXT_IN_SEQUENCE,
+    ),
+    RecommendationActionType.RETEACH_CONCEPT: (
+        AimRecommendationKind.TARGETED_PRACTICE,
+        AimRecommendationReason.ADDRESSES_WEAKNESS,
+    ),
+    RecommendationActionType.TARGETED_PRACTICE: (
+        AimRecommendationKind.TARGETED_PRACTICE,
+        AimRecommendationReason.ADDRESSES_WEAKNESS,
+    ),
+    RecommendationActionType.SPACED_REVIEW: (
+        AimRecommendationKind.REVIEW_SESSION,
+        AimRecommendationReason.REVIEW_DUE,
+    ),
+    RecommendationActionType.CONFIDENCE_BUILDER: (
+        AimRecommendationKind.TARGETED_PRACTICE,
+        AimRecommendationReason.NEXT_IN_SEQUENCE,
+    ),
+    RecommendationActionType.REFLECTION_PRACTICE: (
+        AimRecommendationKind.TARGETED_PRACTICE,
+        AimRecommendationReason.NEXT_IN_SEQUENCE,
+    ),
+    RecommendationActionType.MIXED_PRACTICE: (
+        AimRecommendationKind.TARGETED_PRACTICE,
+        AimRecommendationReason.REINFORCES_RECENT_SKILL,
+    ),
+    RecommendationActionType.INCREASE_DIFFICULTY: (
+        AimRecommendationKind.TARGETED_PRACTICE,
+        AimRecommendationReason.REINFORCES_RECENT_SKILL,
+    ),
+    RecommendationActionType.CONTINUE_CURRENT_SKILL: (
+        AimRecommendationKind.TARGETED_PRACTICE,
+        AimRecommendationReason.NEXT_IN_SEQUENCE,
+    ),
+}
 
 
 # ---------------------------------------------------------------------------
@@ -202,6 +275,29 @@ class _RequestRetentionRepository:
 
     def upsert_schedule(self, student_id: object, skill_id: str, **kwargs: object) -> None:
         return None
+
+
+# ---------------------------------------------------------------------------
+# RecommendationEngine adapter (P20-009)
+#
+# RecommendationEngine's own dependencies (SkillGraph, ConfidenceMatrix,
+# ErrorPatternClassifier, MicroGoalGenerator, ContextualMemory) are all
+# stateless or backed only by a bundled static file / a fresh in-process
+# dict per instance — none of them write to a database, so RecommendationEngine
+# itself can be constructed fresh per request with no adapter needed for it.
+# Only its RecommendationContextProvider needs one, since that's the one
+# repository-injection seam RecommendationEngine's constructor requires.
+# ---------------------------------------------------------------------------
+
+
+class _RequestRecommendationContextProvider:
+    """RecommendationContextProvider backed by a single request-built context."""
+
+    def __init__(self, context: RecommendationContext) -> None:
+        self._context = context
+
+    def get_context(self, student_id: object) -> RecommendationContext:
+        return self._context
 
 
 def _ensure_domain_services_importable() -> None:
@@ -339,15 +435,21 @@ class AimAnalysisPipelineEntrypoint:
             request.session, request.attempts, request.skill_mastery_context
         )
 
+        weakness_records = await self._analyze_weakness_records(request.session, request.attempts)
+
         return AimResponseCategories(
             skill_state=await self._analyze_skill_state(request.attempts, mastery_results),
-            weakness_records=await self._analyze_weakness_records(
-                request.session, request.attempts
-            ),
+            weakness_records=weakness_records,
             difficulty_decision=await self._decide_difficulty(
                 request.session, request.attempts, mastery_results, request.skill_mastery_context
             ),
-            recommendations=await self._generate_recommendations(request.session, request.attempts),
+            recommendations=await self._generate_recommendations(
+                request.session,
+                request.attempts,
+                mastery_results,
+                request.skill_mastery_context,
+                weakness_records,
+            ),
             review_schedule=await self._compute_review_schedule(
                 request.session, request.attempts, request.skill_mastery_context
             ),
@@ -707,52 +809,176 @@ class AimAnalysisPipelineEntrypoint:
         self,
         session: AimSessionInput,
         attempts: list[AimAttemptInput],
+        mastery_results: dict[str, MasteryResult],
+        skill_mastery_context: dict[str, AimSkillMasteryContext],
+        weakness_records: list[AimWeaknessRecordOutput] | None,
     ) -> list[AimRecommendationOutput] | None:
-        """Generate ranked recommendations (P5-015).
+        """Generate the highest-priority recommendation (P5-015) using the
+        real 12-action recommendation cascade (P20-009), ported from
+        ``services/api/src/aim/domain/services/recommendation_engine.py``.
 
         Recommendations reference existing curriculum content only; they
         never generate new content and never embed AI Teacher framing.
-        Rank values must be unique within the returned list.
+
+        This replaces the old per-skill if/elif with a single top-priority
+        decision from ``RecommendationEngine.get_next_action()`` — that
+        engine picks *the* next best action across all signals, not an
+        independent guess per skill, so this method now returns at most one
+        recommendation (rank=1) instead of one per skill touched.
+
+        The engine's 12-value ``RecommendationActionType`` is mapped onto
+        the existing 3-value ``AimRecommendationKind`` / 4-value
+        ``AimRecommendationReason`` enums, both of which are enforced by a
+        live Postgres CHECK constraint on the `recommendations` table
+        (confirmed via Supabase, not assumed) — introducing new wire values
+        would fail every insert, so this is a deliberate, lossy-but-safe
+        mapping, not an oversight. See the module-level
+        ``_ACTION_TYPE_TO_KIND_REASON`` table and ``_map_recommendation``.
         """
-        if not attempts:
+        if not attempts or not mastery_results:
             return None
 
         now = datetime.now(UTC)
-        skills_touched = list({sid for a in attempts for sid in a.skill_ids})
-        if not skills_touched:
+        context = self._build_recommendation_context(
+            session, attempts, mastery_results, skill_mastery_context
+        )
+        provider = _RequestRecommendationContextProvider(context)
+        engine = RecommendationEngine(provider)
+        decision = engine.get_next_action(0)
+
+        if decision.action_type == RecommendationActionType.TRIGGER_TUTOR_INTERVENTION:
+            # No response category exists today for "escalate to a human
+            # tutor" — recommendations must reference existing curriculum
+            # content only (this method's own docstring / P5-015), and this
+            # decision isn't that. Skip rather than mis-tag it as ordinary
+            # practice content. Flagged as a real contract gap in the PR.
             return None
 
-        results: list[AimRecommendationOutput] = []
-        for rank, skill_id in enumerate(skills_touched, start=1):
-            skill_atts = [a for a in attempts if skill_id in a.skill_ids]
-            skill_correct = sum(1 for a in skill_atts if a.is_correct)
-            skill_accuracy = skill_correct / len(skill_atts) if skill_atts else 0.0
+        kind, reason = _ACTION_TYPE_TO_KIND_REASON[decision.action_type]
+        target_skill_id = decision.skill_id or (
+            attempts[0].skill_ids[0] if attempts[0].skill_ids else "unknown"
+        )
 
-            if skill_accuracy < 0.5:
-                kind = AimRecommendationKind.TARGETED_PRACTICE
-                reason = AimRecommendationReason.ADDRESSES_WEAKNESS
-            elif skill_accuracy < 0.8:
-                kind = AimRecommendationKind.REVIEW_SESSION
-                reason = AimRecommendationReason.REINFORCES_RECENT_SKILL
-            else:
-                kind = AimRecommendationKind.TARGETED_PRACTICE
+        based_on_weakness_id = None
+        if reason == AimRecommendationReason.ADDRESSES_WEAKNESS:
+            based_on_weakness_id = self._find_weakness_id(weakness_records, target_skill_id)
+            if based_on_weakness_id is None:
+                # The DB requires based_on_weakness_id whenever reason is
+                # addresses_weakness — never violate that by guessing an id;
+                # fall back to a reason that doesn't need one.
                 reason = AimRecommendationReason.NEXT_IN_SEQUENCE
 
-            results.append(
-                AimRecommendationOutput(
-                    recommendation_id=str(uuid.uuid4()),
-                    kind=kind,
-                    target_skill_id=skill_id,
-                    target_lesson_id=None,
-                    rank=rank,
-                    reason=reason,
-                    based_on_weakness_id=None,
-                    generated_at=now,
-                    expires_at=None,
+        return [
+            AimRecommendationOutput(
+                recommendation_id=str(uuid.uuid4()),
+                kind=kind,
+                target_skill_id=target_skill_id,
+                target_lesson_id=None,
+                rank=1,
+                reason=reason,
+                based_on_weakness_id=based_on_weakness_id,
+                generated_at=now,
+                expires_at=None,
+            )
+        ]
+
+    def _build_recommendation_context(
+        self,
+        session: AimSessionInput,
+        attempts: list[AimAttemptInput],
+        mastery_results: dict[str, MasteryResult],
+        skill_mastery_context: dict[str, AimSkillMasteryContext],
+    ) -> RecommendationContext:
+        """Build the RecommendationEngine's input context from request data
+        only (P20-009). Fields the request contract has no real source for
+        (historical_avg_speed, last_session_frustration_score,
+        prerequisite_gaps, transfer_result) are left at their safe defaults
+        (None / empty) rather than fabricated — see this task's PR for the
+        specific gaps that leaves inert, most notably that the bundled
+        ``SkillGraph`` static file uses a placeholder skill-id namespace
+        (e.g. "VOCAB_BASIC") that does not match this curriculum's real
+        `skills.key` values, so prerequisite-gap detection can never
+        actually match a real skill today.
+        """
+        skill_attempts: dict[str, list[AimAttemptInput]] = {}
+        for attempt in attempts:
+            for sid in attempt.skill_ids:
+                skill_attempts.setdefault(sid, []).append(attempt)
+
+        skill_states: list[RecommendationSkillState] = []
+        recommendation_attempts: list[RecommendationAttempt] = []
+        for skill_id, result in mastery_results.items():
+            skill_atts = skill_attempts.get(skill_id, [])
+            if not skill_atts:
+                continue
+
+            current_diff = skill_atts[-1].presented_difficulty.value
+            correct = sum(1 for a in skill_atts if a.is_correct)
+            weakness_score = (1.0 - correct / len(skill_atts)) * 100.0
+            retention = self._compute_retention(skill_id, skill_mastery_context.get(skill_id))
+            frustration_score = min(100.0, session.behavioral_context.consecutive_incorrect * 20.0)
+
+            skill_states.append(
+                RecommendationSkillState(
+                    skill_id=skill_id,
+                    mastery=result.final_mastery,
+                    # No real metacognitive-confidence signal exists yet —
+                    # reliability (evidence volume) is the best available
+                    # proxy, not an equivalent measurement. Flagged in the PR.
+                    confidence=round(result.reliability * 100.0, 2),
+                    attempts=result.attempt_count,
+                    consistency=result.consistency_score,
+                    current_difficulty=min(5, max(1, current_diff)),
+                    retention=retention,
+                    review_due=False,
+                    weakness_score=weakness_score,
+                    frustration_score=frustration_score,
+                    reliability=result.reliability,
                 )
             )
 
-        return results if results else None
+            for a in skill_atts:
+                recommendation_attempts.append(
+                    RecommendationAttempt(
+                        student_id=0,
+                        skill_id=skill_id,
+                        question_id=a.item_id,
+                        is_correct=a.is_correct,
+                        response_time=a.response_time_ms / 1000.0,
+                        difficulty=int(a.presented_difficulty),
+                        skip=False,
+                        hint_used=a.behavioral_context.used_hint,
+                        attempts=a.attempt_number_for_item,
+                    )
+                )
+
+        current_skill_id = attempts[0].skill_ids[0] if attempts[0].skill_ids else None
+
+        return RecommendationContext(
+            student_id=0,
+            current_skill_id=current_skill_id,
+            skill_states=skill_states,
+            recent_attempts=recommendation_attempts,
+            historical_avg_speed=None,
+            last_session_frustration_score=None,
+            error_pattern_type=None,
+            error_pattern_evidence=None,
+            error_pattern_treatment_recommendation=None,
+            prerequisite_gaps=(),
+            transfer_result=None,
+        )
+
+    @staticmethod
+    def _find_weakness_id(
+        weakness_records: list[AimWeaknessRecordOutput] | None,
+        skill_id: str | None,
+    ) -> str | None:
+        if not weakness_records or skill_id is None:
+            return None
+        for record in weakness_records:
+            if record.skill_id == skill_id:
+                return record.weakness_id
+        return None
 
     async def _compute_review_schedule(
         self,
