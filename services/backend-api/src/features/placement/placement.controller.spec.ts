@@ -9,6 +9,7 @@ import { PlacementAttemptCompleteService } from './placement-attempt-complete.se
 import { PlacementResultReadService } from './placement-result-read.service';
 import { PlacementResultService } from './placement-result.service';
 import { PlacementInitialLearningPathService } from './placement-initial-learning-path.service';
+import { PlacementLevelStateService } from './placement-level-state.service';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { PlacementPermissionGuard } from './placement-permission.guard';
 
@@ -29,6 +30,7 @@ describe('PlacementController', () => {
   let resultRead: jest.Mocked<PlacementResultReadService>;
   let resultCreate: jest.Mocked<PlacementResultService>;
   let initialPath: jest.Mocked<PlacementInitialLearningPathService>;
+  let levelState: jest.Mocked<PlacementLevelStateService>;
 
   beforeEach(async () => {
     const mocks = {
@@ -41,6 +43,7 @@ describe('PlacementController', () => {
       resultRead: { getResult: jest.fn().mockResolvedValue({ id: 'res-1', placement_attempt_id: 'att-1', estimated_level: 'A1', skill_mastery_map: {}, weakness_map: { weaknesses: [] }, initial_path_id: null, created_at: '2026-06-01T00:00:00Z' }) },
       resultCreate: { createResult: jest.fn().mockResolvedValue({ resultId: 'res-1', estimatedLevel: 'intermediate', attemptId: 'att-1' }) },
       initialPath: { createInitialPath: jest.fn().mockResolvedValue({ resultId: 'res-1', pathEntryCount: 2, source: 'weakness_map' }) },
+      levelState: { upsertFromPlacement: jest.fn().mockResolvedValue(undefined) },
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -55,6 +58,7 @@ describe('PlacementController', () => {
         { provide: PlacementResultReadService, useValue: mocks.resultRead },
         { provide: PlacementResultService, useValue: mocks.resultCreate },
         { provide: PlacementInitialLearningPathService, useValue: mocks.initialPath },
+        { provide: PlacementLevelStateService, useValue: mocks.levelState },
       ],
     })
       .overrideGuard(SupabaseJwtAuthGuard).useValue({ canActivate: () => true })
@@ -71,6 +75,7 @@ describe('PlacementController', () => {
     resultRead = module.get(PlacementResultReadService) as any;
     resultCreate = module.get(PlacementResultService) as any;
     initialPath = module.get(PlacementInitialLearningPathService) as any;
+    levelState = module.get(PlacementLevelStateService) as any;
   });
 
   describe('getActiveTest (P4-038)', () => {
@@ -130,6 +135,12 @@ describe('PlacementController', () => {
       await controller.completeAttempt('att-1', user);
       expect(resultCreate.createResult).toHaveBeenCalledWith('att-1');
       expect(initialPath.createInitialPath).toHaveBeenCalledWith('res-1');
+    });
+
+    it('seeds student_level_state from the placement result (P20-006)', async () => {
+      const user = { id: 'student-1' } as any;
+      await controller.completeAttempt('att-1', user);
+      expect(levelState.upsertFromPlacement).toHaveBeenCalledWith('student-1', 'intermediate');
     });
   });
 

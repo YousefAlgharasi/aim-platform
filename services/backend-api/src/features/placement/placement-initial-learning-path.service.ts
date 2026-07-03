@@ -83,8 +83,10 @@ const SECTION_DISPLAY_NAMES: Record<string, string> = {
   listening: 'Listening',
 };
 
-// Map 5-level estimated_level → 3-level CEFR annotation for initial_learning_path
-const LEVEL_TO_CEFR: Record<string, 'A1' | 'A2' | 'B1'> = {
+// Map 5-level estimated_level → 3-level CEFR annotation for initial_learning_path.
+// Exported so other placement services (e.g. PlacementLevelStateService, P20-006)
+// reuse the same mapping instead of redefining it.
+export const LEVEL_TO_CEFR: Record<string, 'A1' | 'A2' | 'B1'> = {
   beginner: 'A1',
   elementary: 'A1',
   intermediate: 'A2',
