@@ -12,12 +12,41 @@
 //     - skill_mastery_map: { [skill]: { total_questions, correct_answers, mastery_score, signal } }
 //     - weakness_map: { weaknesses: [{ skill_code, mastery_score, priority }] }
 //     - initial_path_id: UUID or null
+//     - recommended_course_id, unlocked_course_ids, note (P20-014, see below)
+//
+// P20-014 — course recommendation, ties placement + gating (P20-001/002/010)
+// together:
+//   - recommended_course_id: resolved from the SAME LEVEL_TO_CEFR mapping
+//     PlacementLevelStateService (P20-006) uses, by finding a course whose
+//     cefr_code matches (any status, to learn its intended cefr_rank/track
+//     even if archived/unpublished). If a PUBLISHED course exists at that
+//     exact cefr_rank, that is the recommendation, note is null.
+//   - If no published course exists at that exact rank (a real, currently
+//     live gap: LEVEL_TO_CEFR maps upper_intermediate/advanced -> 'B1', but
+//     this platform's live courses only define cefr_code A1/A2/A3 — no B1
+//     course exists yet), fall back to the highest-ranked published course
+//     below that rank in the same track, and explain via `note`. If the
+//     cefr_code has no course row at all (today's real B1 case), there is
+//     no rank to compare against, so fall back to the single most helpful
+//     answer: the highest-ranked published course that exists, in the
+//     track resolved from the student's own student_level_state row (or
+//     the highest-ranked published course sitewide if that row doesn't
+//     exist either) — never a course that doesn't exist, per the task.
+//   - unlocked_course_ids: every published course in that same track with
+//     cefr_rank <= the student's max_unlocked_cefr_rank (student_level_state,
+//     P20-002/006), defaulting to rank 1 when no state row exists yet
+//     (same fallback convention as P20-010's course gating).
+//   - Both fields, and note, are null/empty (never fabricated) if the
+//     estimated_level is unmapped or no courses exist at all yet.
 //
 // Security rules:
 //   - Requires a valid Supabase JWT (student must own the attempt).
 //   - Attempt ownership is enforced: student_id from JWT must match the attempt.
 //   - Result is only available after attempt.status = 'completed'.
-//   - No scoring computation here — reads only, from placement_results.
+//   - No scoring computation here — reads only, from placement_results. The
+//     P20-014 course recommendation is a read-only lookup against already
+//     backend-computed estimated_level/student_level_state, not a new
+//     scoring computation.
 //   - No AIM Engine runtime, AI Teacher, lesson delivery, or progress dashboard.
 //   - No secrets, service-role keys, database credentials, or privileged config here.
 
@@ -25,6 +54,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AppError } from '../../common/errors/app-error';
 import { PlacementErrorCode } from './placement-error-codes';
+import { LEVEL_TO_CEFR } from './placement-initial-learning-path.service';
 
 // ---------------------------------------------------------------------------
 // Internal DB row types
@@ -52,6 +82,24 @@ interface ResultRow {
   readonly created_at: string;
 }
 
+interface CefrCodeCourseRow {
+  readonly track_slug: string;
+  readonly cefr_rank: number;
+}
+
+interface PublishedCourseRow {
+  readonly id: string;
+  readonly cefr_rank: number;
+}
+
+interface StudentTrackRow {
+  readonly track_slug: string;
+}
+
+interface LevelStateRankRow {
+  readonly max_unlocked_cefr_rank: number;
+}
+
 // ---------------------------------------------------------------------------
 // Flutter-safe response shape (matches PlacementResultModel.fromJson())
 // ---------------------------------------------------------------------------
@@ -76,6 +124,9 @@ export interface PlacementResultResponse {
   };
   readonly initial_path_id: string | null;
   readonly created_at: string;
+  readonly recommended_course_id: string | null;
+  readonly unlocked_course_ids: string[];
+  readonly note: string | null;
 }
 
 // Signal thresholds — must match P4-045 constants (backend config, never exposed)
@@ -182,7 +233,16 @@ export class PlacementResultReadService {
     const result = resultQuery.rows[0];
 
     // -----------------------------------------------------------------------
-    // 4. Return response shape matching Flutter PlacementResultModel.fromJson().
+    // 4. Resolve the course recommendation (P20-014).
+    // -----------------------------------------------------------------------
+    const { recommendedCourseId, note, trackSlug } = await this.resolveRecommendedCourse(
+      result.estimated_level,
+      studentId,
+    );
+    const unlockedCourseIds = await this.resolveUnlockedCourseIds(studentId, trackSlug);
+
+    // -----------------------------------------------------------------------
+    // 5. Return response shape matching Flutter PlacementResultModel.fromJson().
     // -----------------------------------------------------------------------
     return {
       id: result.id,
@@ -192,7 +252,136 @@ export class PlacementResultReadService {
       weakness_map: result.weakness_map as any,
       initial_path_id: result.initial_path_id,
       created_at: result.created_at,
+      recommended_course_id: recommendedCourseId,
+      unlocked_course_ids: unlockedCourseIds,
+      note,
     };
+  }
+
+  // -------------------------------------------------------------------------
+  // Private: P20-014 course recommendation
+  // -------------------------------------------------------------------------
+
+  /**
+   * Resolves the recommended course id for an estimated_level, plus the
+   * track it belongs to (needed for resolveUnlockedCourseIds) and an
+   * optional explanatory note when an exact-rank course doesn't exist.
+   */
+  private async resolveRecommendedCourse(
+    estimatedLevel: string,
+    studentId: string,
+  ): Promise<{ recommendedCourseId: string | null; note: string | null; trackSlug: string | null }> {
+    const cefrCode = LEVEL_TO_CEFR[estimatedLevel];
+    if (!cefrCode) {
+      return { recommendedCourseId: null, note: null, trackSlug: null };
+    }
+
+    // Match by cefr_code regardless of status — this tells us the intended
+    // cefr_rank/track even if the exact-level course is archived/unpublished,
+    // without fabricating a rank ourselves (cefr_rank is always author-set).
+    const anchorResult = await this.db.query<CefrCodeCourseRow>(
+      `SELECT track_slug, cefr_rank FROM courses WHERE cefr_code = $1 AND cefr_rank IS NOT NULL ORDER BY cefr_rank ASC LIMIT 1`,
+      [cefrCode],
+    );
+    const anchor = anchorResult.rows[0];
+
+    if (!anchor) {
+      // No course has ever been authored for this cefr_code (e.g. this
+      // platform's live courses only define A1/A2/A3 — LEVEL_TO_CEFR's 'B1'
+      // has no matching course yet). Fall back to the most advanced course
+      // that exists, in the track resolved from the student's own level
+      // state (or sitewide if no state row exists either).
+      const trackSlug = await this.resolveStudentTrackSlug(studentId);
+      const fallback = await this.highestRankedPublishedCourse(trackSlug);
+      if (!fallback) {
+        return { recommendedCourseId: null, note: 'No course is available for this level yet.', trackSlug };
+      }
+      return {
+        recommendedCourseId: fallback.id,
+        note: 'No course exists yet for the recommended level; showing the most advanced course currently available.',
+        trackSlug: trackSlug ?? null,
+      };
+    }
+
+    const exactResult = await this.db.query<PublishedCourseRow>(
+      `SELECT id, cefr_rank FROM courses WHERE track_slug = $1 AND cefr_rank = $2 AND status = 'published' LIMIT 1`,
+      [anchor.track_slug, anchor.cefr_rank],
+    );
+    const exact = exactResult.rows[0];
+    if (exact) {
+      return { recommendedCourseId: exact.id, note: null, trackSlug: anchor.track_slug };
+    }
+
+    // Exact-rank course exists in content but isn't published (e.g. archived)
+    // — fall back to the closest lower published rank in the same track.
+    const lowerResult = await this.db.query<PublishedCourseRow>(
+      `SELECT id, cefr_rank FROM courses
+       WHERE track_slug = $1 AND cefr_rank IS NOT NULL AND cefr_rank < $2 AND status = 'published'
+       ORDER BY cefr_rank DESC LIMIT 1`,
+      [anchor.track_slug, anchor.cefr_rank],
+    );
+    const lower = lowerResult.rows[0];
+    if (lower) {
+      return {
+        recommendedCourseId: lower.id,
+        note: 'No course exists yet for the recommended level; showing the closest lower-level course instead.',
+        trackSlug: anchor.track_slug,
+      };
+    }
+
+    return {
+      recommendedCourseId: null,
+      note: 'No course is available for this level yet.',
+      trackSlug: anchor.track_slug,
+    };
+  }
+
+  /** Every published course in trackSlug with cefr_rank <= the student's max_unlocked_cefr_rank. */
+  private async resolveUnlockedCourseIds(studentId: string, trackSlug: string | null): Promise<string[]> {
+    if (!trackSlug) {
+      return [];
+    }
+
+    const stateResult = await this.db.query<LevelStateRankRow>(
+      `SELECT max_unlocked_cefr_rank FROM student_level_state WHERE student_id = $1 AND track_slug = $2`,
+      [studentId, trackSlug],
+    );
+    // No student_level_state row yet -> only rank-1 courses unlocked, same
+    // fallback convention as P20-010's course-list/lesson-start gating.
+    const maxUnlockedCefrRank = stateResult.rows[0]?.max_unlocked_cefr_rank ?? 1;
+
+    const coursesResult = await this.db.query<PublishedCourseRow>(
+      `SELECT id, cefr_rank FROM courses
+       WHERE track_slug = $1 AND cefr_rank IS NOT NULL AND cefr_rank <= $2 AND status = 'published'
+       ORDER BY cefr_rank ASC`,
+      [trackSlug, maxUnlockedCefrRank],
+    );
+
+    return coursesResult.rows.map((row) => row.id);
+  }
+
+  private async resolveStudentTrackSlug(studentId: string): Promise<string | null> {
+    const result = await this.db.query<StudentTrackRow>(
+      `SELECT track_slug FROM student_level_state WHERE student_id = $1 ORDER BY updated_at DESC LIMIT 1`,
+      [studentId],
+    );
+    return result.rows[0]?.track_slug ?? null;
+  }
+
+  private async highestRankedPublishedCourse(trackSlug: string | null): Promise<PublishedCourseRow | null> {
+    const result = trackSlug
+      ? await this.db.query<PublishedCourseRow>(
+          `SELECT id, cefr_rank FROM courses
+           WHERE track_slug = $1 AND cefr_rank IS NOT NULL AND status = 'published'
+           ORDER BY cefr_rank DESC LIMIT 1`,
+          [trackSlug],
+        )
+      : await this.db.query<PublishedCourseRow>(
+          `SELECT id, cefr_rank FROM courses
+           WHERE cefr_rank IS NOT NULL AND status = 'published'
+           ORDER BY cefr_rank DESC LIMIT 1`,
+        );
+    return result.rows[0] ?? null;
   }
 
   // -------------------------------------------------------------------------

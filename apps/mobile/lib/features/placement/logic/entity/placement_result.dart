@@ -16,6 +16,9 @@ class PlacementResult {
     required this.weaknesses,
     required this.initialPathId,
     required this.createdAt,
+    this.recommendedCourseId,
+    this.unlockedCourseIds = const [],
+    this.note,
   });
 
   /// Backend-generated UUID.
@@ -40,6 +43,21 @@ class PlacementResult {
 
   /// Set by backend on result creation.
   final String createdAt;
+
+  /// The course whose cefr_rank matches estimatedLevel (P20-014). Backend-
+  /// computed — never chosen by Flutter. Null if no course is available yet
+  /// for this level (see [note]).
+  final String? recommendedCourseId;
+
+  /// Every course id currently unlocked for the student (cefr_rank <=
+  /// their max_unlocked_cefr_rank). Backend-computed — never derived by
+  /// Flutter from estimatedLevel.
+  final List<String> unlockedCourseIds;
+
+  /// Explanatory note when recommendedCourseId falls back to a
+  /// lower/different rank than the exact estimated level (e.g. no course
+  /// exists yet at that level). Null when the exact-rank course was found.
+  final String? note;
 
   // Note: student_id is intentionally excluded — internal field.
 }
