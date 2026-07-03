@@ -2766,4 +2766,281 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get aiTeacherPromptPracticeSpeaking => 'تدرّب على المحادثة';
+
+  @override
+  String get supportCategoryLabel => 'الفئة';
+
+  @override
+  String get supportCategoryGeneral => 'عام';
+
+  @override
+  String get supportCategoryFeatureRequest => 'طلب ميزة';
+
+  @override
+  String get supportCategoryBugReport => 'الإبلاغ عن خلل';
+
+  @override
+  String get supportCategoryContent => 'المحتوى';
+
+  @override
+  String get supportCategoryUserExperience => 'تجربة الاستخدام';
+
+  @override
+  String get supportRateAimQuestion => 'كيف تقيّم تطبيق AIM؟';
+
+  @override
+  String supportRateStarsSemantic(int value) {
+    return 'قيّم $value من 5';
+  }
+
+  @override
+  String get supportTitleLabel => 'العنوان';
+
+  @override
+  String get supportTitlePlaceholder => 'ملخص قصير';
+
+  @override
+  String get supportFeedbackLabel => 'ملاحظاتك';
+
+  @override
+  String get supportFeedbackPlaceholder => 'أخبرنا برأيك...';
+
+  @override
+  String get supportSubmitFeedbackSemantic => 'إرسال الملاحظات';
+
+  @override
+  String get supportFeedbackSubmitUnavailable =>
+      'إرسال الملاحظات غير متاح حالياً. يرجى المحاولة لاحقاً.';
+
+  @override
+  String get supportTitleRequired => 'العنوان مطلوب';
+
+  @override
+  String get supportFeedbackDetailsRequired => 'تفاصيل الملاحظات مطلوبة';
+
+  @override
+  String get supportSendFeedbackTitle => 'إرسال ملاحظات';
+
+  @override
+  String get supportHelpCenterTitle => 'مركز المساعدة';
+
+  @override
+  String get supportCategoryLessonsContent => 'الدروس والمحتوى';
+
+  @override
+  String get supportCategoryAssessmentsGrades => 'التقييمات والدرجات';
+
+  @override
+  String get supportCategoryAccountProfile => 'الحساب والملف الشخصي';
+
+  @override
+  String get supportCategoryBillingSubscription => 'الفوترة والاشتراك';
+
+  @override
+  String get supportCategoryTechnicalIssues => 'المشكلات التقنية';
+
+  @override
+  String get supportCategoryGeneralHelp => 'مساعدة عامة';
+
+  @override
+  String get supportCreateTicketButton => 'إنشاء تذكرة';
+
+  @override
+  String get supportCreateTicketSemantic => 'إنشاء تذكرة دعم';
+
+  @override
+  String get supportParentHelpTitle => 'مساعدة أولياء الأمور';
+
+  @override
+  String get supportCategoryStudentProgress => 'تقدّم الطالب';
+
+  @override
+  String get supportCategoryCoursesContent => 'الدورات والمحتوى';
+
+  @override
+  String get supportCategoryBillingPayments => 'الفوترة والمدفوعات';
+
+  @override
+  String get supportCategoryAccountManagement => 'إدارة الحساب';
+
+  @override
+  String get supportCategoryPrivacySafety => 'الخصوصية والسلامة';
+
+  @override
+  String get supportReleaseNoteTitle => 'ملاحظة الإصدار';
+
+  @override
+  String get supportReleaseNoteUnavailableTitle =>
+      'ملاحظة الإصدار غير متاحة حالياً';
+
+  @override
+  String get supportReleaseNoteUnavailableSubtitle =>
+      'ستظهر ملاحظة الإصدار هذه هنا عند تفعيل ملاحظات الإصدارات.';
+
+  @override
+  String supportReleasedOnLabel(String date) {
+    return 'صدر في $date';
+  }
+
+  @override
+  String get supportSystemStatusTitle => 'حالة النظام';
+
+  @override
+  String get supportStatusUnavailableTitle => 'حالة النظام غير متاحة حالياً';
+
+  @override
+  String get supportStatusUnavailableSubtitle =>
+      'ستظهر حالة النظام المباشرة هنا عند تفعيل تتبع الحالة.';
+
+  @override
+  String get supportReleaseNotesTitle => 'ملاحظات الإصدارات';
+
+  @override
+  String get supportWhatsNewSubtitle => 'ما الجديد في AIM';
+
+  @override
+  String get supportReleaseNotesCardSemantic =>
+      'ملاحظات الإصدارات، ما الجديد في AIM';
+
+  @override
+  String get supportStatusOperational => 'تعمل بشكل طبيعي';
+
+  @override
+  String get supportStatusDegraded => 'أداء متراجع';
+
+  @override
+  String get supportStatusPartialOutage => 'انقطاع جزئي';
+
+  @override
+  String get supportStatusMajorOutage => 'انقطاع كبير';
+
+  @override
+  String get supportStatusMaintenanceLabel => 'قيد الصيانة';
+
+  @override
+  String get supportStatusInProgressLabel => 'قيد التنفيذ';
+
+  @override
+  String get supportStatusScheduledLabel => 'مجدولة';
+
+  @override
+  String get supportStatusOpenLabel => 'مفتوحة';
+
+  @override
+  String get supportStatusResolvedLabel => 'تم الحل';
+
+  @override
+  String get supportStatusClosedLabel => 'مغلقة';
+
+  @override
+  String get supportAllSystemsOperationalTitle =>
+      'جميع الأنظمة تعمل بشكل طبيعي';
+
+  @override
+  String get supportMyTicketsTitle => 'تذاكري';
+
+  @override
+  String supportTicketTileSemantic(String subject, String status) {
+    return '$subject، $status';
+  }
+
+  @override
+  String get supportNoTicketsTitle => 'لا توجد تذاكر بعد';
+
+  @override
+  String get supportNoTicketsSubtitle =>
+      'أنشئ تذكرة للحصول على مساعدة من فريق الدعم لدينا.';
+
+  @override
+  String get supportParentTicketsTitle => 'تذاكر ولي الأمر';
+
+  @override
+  String get supportNoParentTicketsTitle => 'لا توجد تذاكر دعم';
+
+  @override
+  String get supportNoParentTicketsSubtitle =>
+      'أنشئ تذكرة إذا احتجت إلى مساعدة بخصوص حسابك.';
+
+  @override
+  String get supportTicketDetailTitle => 'التذكرة';
+
+  @override
+  String get supportTicketDetailUnavailableTitle =>
+      'تفاصيل التذكرة غير متاحة حالياً';
+
+  @override
+  String supportTicketDetailUnavailableSubtitle(String ticketId) {
+    return 'ستظهر التذكرة رقم $ticketId هنا عند تفعيل تتبع تذاكر الدعم.';
+  }
+
+  @override
+  String get supportNoReleaseNotesTitle => 'لا توجد ملاحظات إصدارات';
+
+  @override
+  String get supportNoReleaseNotesSubtitle =>
+      'ستظهر ملاحظات الإصدارات هنا عند نشرها.';
+
+  @override
+  String supportReleaseNoteTileSemantic(
+      String version, String title, String date) {
+    return '$version، $title، $date';
+  }
+
+  @override
+  String get supportSeverityLabel => 'درجة الخطورة';
+
+  @override
+  String get supportSeverityLow => 'منخفضة';
+
+  @override
+  String get supportSeverityMedium => 'متوسطة';
+
+  @override
+  String get supportSeverityHigh => 'عالية';
+
+  @override
+  String get supportSeverityCritical => 'حرجة';
+
+  @override
+  String get supportCategoryTechnicalIssue => 'مشكلة تقنية';
+
+  @override
+  String get supportCategoryBilling => 'الفوترة';
+
+  @override
+  String get supportCategoryAccount => 'الحساب';
+
+  @override
+  String get supportCategoryFeedback => 'ملاحظات';
+
+  @override
+  String get supportSubjectLabel => 'الموضوع';
+
+  @override
+  String get supportSubjectPlaceholder => 'صف المشكلة باختصار';
+
+  @override
+  String get supportDescriptionLabel => 'الوصف';
+
+  @override
+  String get supportDescriptionPlaceholder => 'أخبرنا بما حدث خطوة بخطوة...';
+
+  @override
+  String get supportSubmitTicketButton => 'إرسال التذكرة';
+
+  @override
+  String get supportSubmitTicketSemantic => 'إرسال التذكرة';
+
+  @override
+  String get supportSubjectRequired => 'الموضوع مطلوب';
+
+  @override
+  String get supportDescriptionRequired => 'الوصف مطلوب';
+
+  @override
+  String get supportTicketSubmitUnavailable =>
+      'إرسال التذكرة غير متاح حالياً. يرجى المحاولة لاحقاً.';
+
+  @override
+  String get supportNewTicketTitle => 'تذكرة جديدة';
 }

@@ -18,6 +18,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'ticket_list_page.dart';
 
 class ParentTicketListPage extends StatelessWidget {
@@ -26,6 +27,7 @@ class ParentTicketListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     // Parent tickets loaded from backend via GET /support/tickets
     // filtered by parent role on the backend
@@ -39,7 +41,7 @@ class ParentTicketListPage extends StatelessWidget {
         ],
       ),
       floatingActionButton: AIMFab(
-        semanticLabel: 'Create a support ticket',
+        semanticLabel: l10n.supportCreateTicketSemantic,
         onPressed: () => context.push(AppRoutePaths.createTicket),
         icon: const Icon(Icons.add),
       ),
@@ -48,10 +50,11 @@ class ParentTicketListPage extends StatelessWidget {
 
   /// Builds an empty state for parent tickets using shared pattern.
   static Widget buildEmptyState(BuildContext context) {
-    return const AIMEmptyState(
-      icon: Icon(Icons.confirmation_number_outlined),
-      title: 'No Support Tickets',
-      subtitle: 'Create a ticket if you need help with your account.',
+    final l10n = AppLocalizations.of(context);
+    return AIMEmptyState(
+      icon: const Icon(Icons.confirmation_number_outlined),
+      title: l10n.supportNoParentTicketsTitle,
+      subtitle: l10n.supportNoParentTicketsSubtitle,
     );
   }
 
@@ -84,6 +87,7 @@ class _ParentTicketListHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -99,7 +103,7 @@ class _ParentTicketListHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: l10n.commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -125,7 +129,7 @@ class _ParentTicketListHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Parent tickets',
+              l10n.supportParentTicketsTitle,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],

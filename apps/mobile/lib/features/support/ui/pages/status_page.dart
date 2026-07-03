@@ -26,9 +26,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class StatusPage extends StatelessWidget {
   const StatusPage({super.key});
@@ -36,6 +38,7 @@ class StatusPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     // Status data loaded from backend via GET /status
     return Scaffold(
@@ -51,17 +54,16 @@ class StatusPage extends StatelessWidget {
                 vertical: AimSpacing.sectionGap,
               ),
               children: [
-                const AIMEmptyState(
-                  icon: Icon(Icons.monitor_heart_outlined),
-                  title: 'Status is not available yet',
-                  subtitle: 'Live system status will appear here once '
-                      'status tracking is live.',
+                AIMEmptyState(
+                  icon: const Icon(Icons.monitor_heart_outlined),
+                  title: l10n.supportStatusUnavailableTitle,
+                  subtitle: l10n.supportStatusUnavailableSubtitle,
                 ),
                 const SizedBox(height: AimSpacing.sectionGap),
                 AIMCard(
                   interactive: true,
                   onTap: () => context.push(AppRoutePaths.releaseNotes),
-                  semanticLabel: "Release notes, what's new in AIM",
+                  semanticLabel: l10n.supportReleaseNotesCardSemantic,
                   child: Row(
                     children: [
                       Expanded(
@@ -69,13 +71,13 @@ class StatusPage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Release notes',
+                              l10n.supportReleaseNotesTitle,
                               style: AimTextStyles.title
                                   .copyWith(color: surfaces.textPrimary),
                             ),
                             const SizedBox(height: AimSpacing.space2),
                             Text(
-                              "What's new in AIM",
+                              l10n.supportWhatsNewSubtitle,
                               style: AimTextStyles.bodySm
                                   .copyWith(color: surfaces.textSecondary),
                             ),
@@ -105,6 +107,7 @@ class StatusPage extends StatelessWidget {
     String? message,
   }) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final color = _statusColor(status);
 
     return Padding(
@@ -136,7 +139,7 @@ class StatusPage extends StatelessWidget {
             ),
           ),
           Text(
-            _statusLabel(status),
+            _statusLabel(l10n, status),
             style: AimTextStyles.bodySm.copyWith(color: color),
           ),
         ],
@@ -154,6 +157,7 @@ class StatusPage extends StatelessWidget {
     required String status,
   }) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final isActive = status == 'in_progress';
 
     return AIMCard(
@@ -179,7 +183,9 @@ class StatusPage extends StatelessWidget {
               AIMBadge(
                 tone: isActive ? AIMBadgeTone.error : AIMBadgeTone.neutral,
                 pill: true,
-                child: Text(isActive ? 'In Progress' : 'Scheduled'),
+                child: Text(isActive
+                    ? l10n.supportStatusInProgressLabel
+                    : l10n.supportStatusScheduledLabel),
               ),
             ],
           ),
@@ -193,8 +199,8 @@ class StatusPage extends StatelessWidget {
           ],
           const SizedBox(height: AimSpacing.space8),
           Text(
-            '${_formatDateTime(scheduledStart)} — '
-            '${_formatDateTime(scheduledEnd)}',
+            '${_formatDateTime(context, scheduledStart)} — '
+            '${_formatDateTime(context, scheduledEnd)}',
             style:
                 AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
           ),
@@ -205,11 +211,12 @@ class StatusPage extends StatelessWidget {
 
   /// Builds an all-operational banner.
   static Widget buildAllOperationalBanner(BuildContext context) {
-    return const AIMAlertBanner(
+    final l10n = AppLocalizations.of(context);
+    return AIMAlertBanner(
       tone: AIMAlertTone.success,
-      title: 'All Systems Operational',
-      semanticLabel: 'All systems operational',
-      child: SizedBox.shrink(),
+      title: l10n.supportAllSystemsOperationalTitle,
+      semanticLabel: l10n.supportAllSystemsOperationalTitle,
+      child: const SizedBox.shrink(),
     );
   }
 
@@ -221,25 +228,21 @@ class StatusPage extends StatelessWidget {
         _ => AimColors.neutral500,
       };
 
-  static String _statusLabel(String status) => switch (status) {
-        'operational' => 'Operational',
-        'degraded' => 'Degraded',
-        'partial_outage' => 'Partial Outage',
-        'major_outage' => 'Major Outage',
-        'maintenance' => 'Maintenance',
+  static String _statusLabel(AppLocalizations l10n, String status) =>
+      switch (status) {
+        'operational' => l10n.supportStatusOperational,
+        'degraded' => l10n.supportStatusDegraded,
+        'partial_outage' => l10n.supportStatusPartialOutage,
+        'major_outage' => l10n.supportStatusMajorOutage,
+        'maintenance' => l10n.supportStatusMaintenanceLabel,
         _ => status,
       };
 
-  static const _months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ];
-
-  static String _formatDateTime(DateTime dt) {
+  static String _formatDateTime(BuildContext context, DateTime dt) {
+    final locale = Localizations.localeOf(context).toString();
     final local = dt.toLocal();
-    final hour = local.hour.toString().padLeft(2, '0');
-    final minute = local.minute.toString().padLeft(2, '0');
-    return '${_months[local.month - 1]} ${local.day} · $hour:$minute';
+    return '${DateFormat.MMMd(locale).format(local)} · '
+        '${DateFormat.Hm(locale).format(local)}';
   }
 }
 
@@ -248,6 +251,7 @@ class _StatusHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -263,7 +267,7 @@ class _StatusHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: l10n.commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -289,7 +293,7 @@ class _StatusHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'System Status',
+              l10n.supportSystemStatusTitle,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],

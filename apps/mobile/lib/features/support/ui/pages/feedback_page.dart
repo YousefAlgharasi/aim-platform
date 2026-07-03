@@ -23,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class FeedbackPage extends StatefulWidget {
   const FeedbackPage({super.key});
@@ -41,13 +42,15 @@ class _FeedbackPageState extends State<FeedbackPage> {
   String? _bodyError;
   String? _submitError;
 
-  static const _categoryOptions = [
-    AIMSelectOption(value: 'general', label: 'General'),
-    AIMSelectOption(value: 'feature', label: 'Feature request'),
-    AIMSelectOption(value: 'bug', label: 'Bug report'),
-    AIMSelectOption(value: 'content', label: 'Content'),
-    AIMSelectOption(value: 'ux', label: 'User experience'),
-  ];
+  List<AIMSelectOption> _categoryOptions(AppLocalizations l10n) => [
+        AIMSelectOption(value: 'general', label: l10n.supportCategoryGeneral),
+        AIMSelectOption(
+            value: 'feature', label: l10n.supportCategoryFeatureRequest),
+        AIMSelectOption(value: 'bug', label: l10n.supportCategoryBugReport),
+        AIMSelectOption(value: 'content', label: l10n.supportCategoryContent),
+        AIMSelectOption(
+            value: 'ux', label: l10n.supportCategoryUserExperience),
+      ];
 
   @override
   void dispose() {
@@ -59,6 +62,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: surfaces.background,
@@ -74,8 +78,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
               ),
               children: [
                 AIMSelect(
-                  label: 'Category',
-                  options: _categoryOptions,
+                  label: l10n.supportCategoryLabel,
+                  options: _categoryOptions(l10n),
                   value: _category,
                   onChanged: (value) {
                     if (value != null) setState(() => _category = value);
@@ -83,7 +87,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                 ),
                 const SizedBox(height: AimSpacing.componentGap),
                 Text(
-                  'How would you rate AIM?',
+                  l10n.supportRateAimQuestion,
                   style: AimTextStyles.label
                       .copyWith(color: surfaces.textPrimary),
                 ),
@@ -94,16 +98,16 @@ class _FeedbackPageState extends State<FeedbackPage> {
                 ),
                 const SizedBox(height: AimSpacing.componentGap),
                 AIMInput(
-                  label: 'Title',
+                  label: l10n.supportTitleLabel,
                   controller: _titleController,
-                  placeholder: 'A short summary',
+                  placeholder: l10n.supportTitlePlaceholder,
                   error: _titleError,
                 ),
                 const SizedBox(height: AimSpacing.componentGap),
                 AIMTextarea(
-                  label: 'Your feedback',
+                  label: l10n.supportFeedbackLabel,
                   controller: _bodyController,
-                  placeholder: 'Tell us what you think...',
+                  placeholder: l10n.supportFeedbackPlaceholder,
                   rows: 5,
                   error: _bodyError,
                 ),
@@ -117,11 +121,11 @@ class _FeedbackPageState extends State<FeedbackPage> {
                 ],
                 const SizedBox(height: AimSpacing.sectionGap),
                 AIMGradientButton(
-                  label: 'Submit',
+                  label: l10n.commonSubmit,
                   onPressed: _isSubmitting ? null : _handleSubmit,
                   loading: _isSubmitting,
                   fullWidth: true,
-                  semanticLabel: 'Submit feedback',
+                  semanticLabel: l10n.supportSubmitFeedbackSemantic,
                 ),
               ],
             ),
@@ -132,11 +136,12 @@ class _FeedbackPageState extends State<FeedbackPage> {
   }
 
   void _handleSubmit() {
+    final l10n = AppLocalizations.of(context);
     final title = _titleController.text.trim();
     final body = _bodyController.text.trim();
     setState(() {
-      _titleError = title.isEmpty ? 'Title is required' : null;
-      _bodyError = body.isEmpty ? 'Feedback details are required' : null;
+      _titleError = title.isEmpty ? l10n.supportTitleRequired : null;
+      _bodyError = body.isEmpty ? l10n.supportFeedbackDetailsRequired : null;
       _submitError = null;
     });
     if (_titleError != null || _bodyError != null) return;
@@ -149,8 +154,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
     // honest message instead of faking success.
     setState(() {
       _isSubmitting = false;
-      _submitError = 'Feedback submission is not available yet. Please try '
-          'again later.';
+      _submitError = l10n.supportFeedbackSubmitUnavailable;
     });
   }
 }
@@ -163,6 +167,7 @@ class _StarRating extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(5, (index) {
@@ -170,7 +175,7 @@ class _StarRating extends StatelessWidget {
         final filled = rating != null && starValue <= rating!;
         return Semantics(
           button: true,
-          label: 'Rate $starValue out of 5',
+          label: l10n.supportRateStarsSemantic(starValue),
           child: InkWell(
             onTap: () => onChanged(rating == starValue ? null : starValue),
             customBorder: const CircleBorder(),
@@ -194,6 +199,7 @@ class _FeedbackHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -209,7 +215,7 @@ class _FeedbackHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: l10n.commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -235,7 +241,7 @@ class _FeedbackHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Send feedback',
+              l10n.supportSendFeedbackTitle,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],

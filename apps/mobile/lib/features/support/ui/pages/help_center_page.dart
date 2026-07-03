@@ -18,15 +18,16 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../widgets/help_faq_accordion.dart';
 
 class HelpCenterPage extends StatelessWidget {
   const HelpCenterPage({super.key});
 
-  static const List<HelpCategory> _categories = [
+  static List<HelpCategory> _categories(AppLocalizations l10n) => [
     HelpCategory(
-      title: 'Lessons & Content',
-      faqs: [
+      title: l10n.supportCategoryLessonsContent,
+      faqs: const [
         HelpFaqItem(
           question: 'How do I start a lesson?',
           answer: 'Open the Learn tab, choose a course and chapter, then '
@@ -40,8 +41,8 @@ class HelpCenterPage extends StatelessWidget {
       ],
     ),
     HelpCategory(
-      title: 'Assessments & Grades',
-      faqs: [
+      title: l10n.supportCategoryAssessmentsGrades,
+      faqs: const [
         HelpFaqItem(
           question: 'When is my assessment graded?',
           answer: 'Most assessments are graded automatically right after '
@@ -55,8 +56,8 @@ class HelpCenterPage extends StatelessWidget {
       ],
     ),
     HelpCategory(
-      title: 'Account & Profile',
-      faqs: [
+      title: l10n.supportCategoryAccountProfile,
+      faqs: const [
         HelpFaqItem(
           question: 'How do I change my profile details?',
           answer: 'Go to Profile, then Edit Profile, to update your name '
@@ -70,8 +71,8 @@ class HelpCenterPage extends StatelessWidget {
       ],
     ),
     HelpCategory(
-      title: 'Billing & Subscription',
-      faqs: [
+      title: l10n.supportCategoryBillingSubscription,
+      faqs: const [
         HelpFaqItem(
           question: 'How do I see my invoices?',
           answer: 'Open Subscription from your profile, then tap '
@@ -85,8 +86,8 @@ class HelpCenterPage extends StatelessWidget {
       ],
     ),
     HelpCategory(
-      title: 'Technical Issues',
-      faqs: [
+      title: l10n.supportCategoryTechnicalIssues,
+      faqs: const [
         HelpFaqItem(
           question: 'The app is not loading my content.',
           answer: 'Check your internet connection and try again. If the '
@@ -95,8 +96,8 @@ class HelpCenterPage extends StatelessWidget {
       ],
     ),
     HelpCategory(
-      title: 'General Help',
-      faqs: [
+      title: l10n.supportCategoryGeneralHelp,
+      faqs: const [
         HelpFaqItem(
           question: "Didn't find what you're looking for?",
           answer: 'Create a support ticket and our team will get back to '
@@ -109,6 +110,8 @@ class HelpCenterPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
+    final categories = _categories(l10n);
 
     return Scaffold(
       backgroundColor: surfaces.background,
@@ -122,11 +125,11 @@ class HelpCenterPage extends StatelessWidget {
                 horizontal: AimSpacing.screenPaddingMobile,
                 vertical: AimSpacing.sectionGap,
               ),
-              itemCount: _categories.length,
+              itemCount: categories.length,
               separatorBuilder: (_, __) =>
                   const SizedBox(height: AimSpacing.listItemGap),
               itemBuilder: (context, index) =>
-                  HelpCategoryAccordionCard(category: _categories[index]),
+                  HelpCategoryAccordionCard(category: categories[index]),
             ),
           ),
           SafeArea(
@@ -134,11 +137,11 @@ class HelpCenterPage extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
               child: AIMGradientButton(
-                label: 'Create Ticket',
+                label: l10n.supportCreateTicketButton,
                 icon: const Icon(Icons.add),
                 onPressed: () => context.push(AppRoutePaths.createTicket),
                 fullWidth: true,
-                semanticLabel: 'Create a support ticket',
+                semanticLabel: l10n.supportCreateTicketSemantic,
               ),
             ),
           ),
@@ -153,6 +156,7 @@ class _HelpCenterHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -168,7 +172,7 @@ class _HelpCenterHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: l10n.commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -194,7 +198,7 @@ class _HelpCenterHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Help Center',
+              l10n.supportHelpCenterTitle,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],

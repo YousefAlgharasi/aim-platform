@@ -22,9 +22,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class TicketListPage extends StatelessWidget {
   const TicketListPage({super.key});
@@ -32,6 +34,7 @@ class TicketListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     // Ticket data loaded from backend via GET /support/tickets
     return Scaffold(
@@ -39,12 +42,12 @@ class TicketListPage extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _TicketListHeader(title: 'My tickets'),
+          _TicketListHeader(title: l10n.supportMyTicketsTitle),
           Expanded(child: buildEmptyState(context)),
         ],
       ),
       floatingActionButton: AIMFab(
-        semanticLabel: 'Create a support ticket',
+        semanticLabel: l10n.supportCreateTicketSemantic,
         onPressed: () => context.push(AppRoutePaths.createTicket),
         icon: const Icon(Icons.add),
       ),
@@ -63,6 +66,7 @@ class TicketListPage extends StatelessWidget {
     VoidCallback? onTap,
   }) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AimSpacing.screenPaddingMobile,
@@ -72,7 +76,7 @@ class TicketListPage extends StatelessWidget {
         child: AIMCard(
           interactive: onTap != null,
           onTap: onTap,
-          semanticLabel: '$subject, $status',
+          semanticLabel: l10n.supportTicketTileSemantic(subject, status),
           child: Row(
             children: [
               Expanded(
@@ -88,7 +92,8 @@ class TicketListPage extends StatelessWidget {
                     ),
                     const SizedBox(height: AimSpacing.space2),
                     Text(
-                      '${_formatDate(createdAt)} · $category · $severity',
+                      '${_formatDate(context, createdAt)} · $category · '
+                      '$severity',
                       style: AimTextStyles.bodySm
                           .copyWith(color: surfaces.textSecondary),
                       maxLines: 1,
@@ -98,7 +103,7 @@ class TicketListPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AimSpacing.space8),
-              _buildStatusChip(status),
+              _buildStatusChip(context, status),
             ],
           ),
         ),
@@ -108,14 +113,15 @@ class TicketListPage extends StatelessWidget {
 
   /// Builds an empty state when no tickets exist.
   static Widget buildEmptyState(BuildContext context) {
-    return const AIMEmptyState(
-      icon: Icon(Icons.confirmation_number_outlined),
-      title: 'No Tickets Yet',
-      subtitle: 'Create a ticket to get help from our support team.',
+    final l10n = AppLocalizations.of(context);
+    return AIMEmptyState(
+      icon: const Icon(Icons.confirmation_number_outlined),
+      title: l10n.supportNoTicketsTitle,
+      subtitle: l10n.supportNoTicketsSubtitle,
     );
   }
 
-  static Widget _buildStatusChip(String status) {
+  static Widget _buildStatusChip(BuildContext context, String status) {
     final AIMBadgeTone tone = switch (status) {
       'open' => AIMBadgeTone.info,
       'in_progress' => AIMBadgeTone.warning,
@@ -125,24 +131,28 @@ class TicketListPage extends StatelessWidget {
     return AIMBadge(
       tone: tone,
       pill: true,
-      child: Text(_statusLabel(status)),
+      child: Text(_statusLabel(AppLocalizations.of(context), status)),
     );
   }
 
-  static String _statusLabel(String status) {
-    final words = status.split('_');
-    return words
-        .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
-        .join(' ');
+  static String _statusLabel(AppLocalizations l10n, String status) =>
+      switch (status) {
+        'open' => l10n.supportStatusOpenLabel,
+        'in_progress' => l10n.supportStatusInProgressLabel,
+        'resolved' => l10n.supportStatusResolvedLabel,
+        'closed' => l10n.supportStatusClosedLabel,
+        _ => status
+            .split('_')
+            .map((w) =>
+                w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
+            .join(' '),
+      };
+
+  static String _formatDate(BuildContext context, DateTime date) {
+    return DateFormat.yMMMd(
+      Localizations.localeOf(context).toString(),
+    ).format(date);
   }
-
-  static const _months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ];
-
-  static String _formatDate(DateTime date) =>
-      '${_months[date.month - 1]} ${date.day}, ${date.year}';
 }
 
 class _TicketListHeader extends StatelessWidget {
@@ -152,6 +162,7 @@ class _TicketListHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -167,7 +178,7 @@ class _TicketListHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: l10n.commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();

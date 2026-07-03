@@ -20,8 +20,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class ReleaseNotesPage extends StatelessWidget {
   const ReleaseNotesPage({super.key});
@@ -53,6 +55,8 @@ class ReleaseNotesPage extends StatelessWidget {
     VoidCallback? onTap,
   }) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
+    final formattedDate = _formatDate(context, publishedAt);
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AimSpacing.screenPaddingMobile,
@@ -62,7 +66,8 @@ class ReleaseNotesPage extends StatelessWidget {
         child: AIMCard(
           interactive: onTap != null,
           onTap: onTap,
-          semanticLabel: '$version, $title, ${_formatDate(publishedAt)}',
+          semanticLabel:
+              l10n.supportReleaseNoteTileSemantic(version, title, formattedDate),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -75,7 +80,7 @@ class ReleaseNotesPage extends StatelessWidget {
                   ),
                   const SizedBox(width: AimSpacing.space8),
                   Text(
-                    _formatDate(publishedAt),
+                    formattedDate,
                     style: AimTextStyles.bodySm
                         .copyWith(color: surfaces.textSecondary),
                   ),
@@ -108,21 +113,18 @@ class ReleaseNotesPage extends StatelessWidget {
 
   /// Builds an empty state when no release notes exist.
   static Widget buildEmptyState(BuildContext context) {
-    return const AIMEmptyState(
-      icon: Icon(Icons.new_releases_outlined),
-      title: 'No Release Notes',
-      subtitle: 'Release notes will appear here when published.',
+    final l10n = AppLocalizations.of(context);
+    return AIMEmptyState(
+      icon: const Icon(Icons.new_releases_outlined),
+      title: l10n.supportNoReleaseNotesTitle,
+      subtitle: l10n.supportNoReleaseNotesSubtitle,
     );
   }
 
-  static const _months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ];
-
-  static String _formatDate(DateTime date) {
-    final local = date.toLocal();
-    return '${_months[local.month - 1]} ${local.day}, ${local.year}';
+  static String _formatDate(BuildContext context, DateTime date) {
+    return DateFormat.yMMMd(
+      Localizations.localeOf(context).toString(),
+    ).format(date.toLocal());
   }
 }
 
@@ -131,6 +133,7 @@ class _ReleaseNotesHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -146,7 +149,7 @@ class _ReleaseNotesHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: l10n.commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -172,7 +175,7 @@ class _ReleaseNotesHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Release notes',
+              l10n.supportReleaseNotesTitle,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],

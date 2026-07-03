@@ -4373,6 +4373,517 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Practice speaking'**
   String get aiTeacherPromptPracticeSpeaking;
+
+  /// Label for the category dropdown on the feedback and create-ticket forms.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get supportCategoryLabel;
+
+  /// Category dropdown option shared by the feedback and create-ticket forms.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get supportCategoryGeneral;
+
+  /// Category dropdown option on the feedback form.
+  ///
+  /// In en, this message translates to:
+  /// **'Feature request'**
+  String get supportCategoryFeatureRequest;
+
+  /// Category dropdown option on the feedback form.
+  ///
+  /// In en, this message translates to:
+  /// **'Bug report'**
+  String get supportCategoryBugReport;
+
+  /// Category dropdown option shared by the feedback and create-ticket forms.
+  ///
+  /// In en, this message translates to:
+  /// **'Content'**
+  String get supportCategoryContent;
+
+  /// Category dropdown option on the feedback form.
+  ///
+  /// In en, this message translates to:
+  /// **'User experience'**
+  String get supportCategoryUserExperience;
+
+  /// Label above the star rating control on the feedback form.
+  ///
+  /// In en, this message translates to:
+  /// **'How would you rate AIM?'**
+  String get supportRateAimQuestion;
+
+  /// Accessibility label for a single star in the feedback form's star rating control.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate {value} out of 5'**
+  String supportRateStarsSemantic(int value);
+
+  /// Label for the title input field on the feedback form.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get supportTitleLabel;
+
+  /// Placeholder text for the title input field on the feedback form.
+  ///
+  /// In en, this message translates to:
+  /// **'A short summary'**
+  String get supportTitlePlaceholder;
+
+  /// Label for the feedback body textarea on the feedback form.
+  ///
+  /// In en, this message translates to:
+  /// **'Your feedback'**
+  String get supportFeedbackLabel;
+
+  /// Placeholder text for the feedback body textarea on the feedback form.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us what you think...'**
+  String get supportFeedbackPlaceholder;
+
+  /// Accessibility label for the submit button on the feedback form.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit feedback'**
+  String get supportSubmitFeedbackSemantic;
+
+  /// Error message shown when submitting feedback since the backend endpoint is not yet live.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback submission is not available yet. Please try again later.'**
+  String get supportFeedbackSubmitUnavailable;
+
+  /// Validation error shown when the feedback form's title field is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Title is required'**
+  String get supportTitleRequired;
+
+  /// Validation error shown when the feedback form's body field is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback details are required'**
+  String get supportFeedbackDetailsRequired;
+
+  /// App bar title on the feedback page.
+  ///
+  /// In en, this message translates to:
+  /// **'Send feedback'**
+  String get supportSendFeedbackTitle;
+
+  /// App bar title on the student help center page.
+  ///
+  /// In en, this message translates to:
+  /// **'Help Center'**
+  String get supportHelpCenterTitle;
+
+  /// FAQ category section header on the student help center page.
+  ///
+  /// In en, this message translates to:
+  /// **'Lessons & Content'**
+  String get supportCategoryLessonsContent;
+
+  /// FAQ category section header on the student help center page.
+  ///
+  /// In en, this message translates to:
+  /// **'Assessments & Grades'**
+  String get supportCategoryAssessmentsGrades;
+
+  /// FAQ category section header on the student help center page.
+  ///
+  /// In en, this message translates to:
+  /// **'Account & Profile'**
+  String get supportCategoryAccountProfile;
+
+  /// FAQ category section header on the student help center page.
+  ///
+  /// In en, this message translates to:
+  /// **'Billing & Subscription'**
+  String get supportCategoryBillingSubscription;
+
+  /// FAQ category section header on the student help center page.
+  ///
+  /// In en, this message translates to:
+  /// **'Technical Issues'**
+  String get supportCategoryTechnicalIssues;
+
+  /// FAQ category section header shared by the student and parent help center pages.
+  ///
+  /// In en, this message translates to:
+  /// **'General Help'**
+  String get supportCategoryGeneralHelp;
+
+  /// Label for the button that opens the create-ticket form, shown on the help center pages.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Ticket'**
+  String get supportCreateTicketButton;
+
+  /// Accessibility label for the create-ticket action, shared by the help center pages and the ticket list pages' floating action button.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a support ticket'**
+  String get supportCreateTicketSemantic;
+
+  /// App bar title on the parent help center page.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent Help'**
+  String get supportParentHelpTitle;
+
+  /// FAQ category section header on the parent help center page.
+  ///
+  /// In en, this message translates to:
+  /// **'Student Progress'**
+  String get supportCategoryStudentProgress;
+
+  /// FAQ category section header on the parent help center page.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses & Content'**
+  String get supportCategoryCoursesContent;
+
+  /// FAQ category section header on the parent help center page.
+  ///
+  /// In en, this message translates to:
+  /// **'Billing & Payments'**
+  String get supportCategoryBillingPayments;
+
+  /// FAQ category section header on the parent help center page.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Management'**
+  String get supportCategoryAccountManagement;
+
+  /// FAQ category section header on the parent help center page.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy & Safety'**
+  String get supportCategoryPrivacySafety;
+
+  /// App bar title on the release note detail page.
+  ///
+  /// In en, this message translates to:
+  /// **'Release note'**
+  String get supportReleaseNoteTitle;
+
+  /// Empty-state title shown on the release note detail page since the backend endpoint is not yet live.
+  ///
+  /// In en, this message translates to:
+  /// **'Release note is not available yet'**
+  String get supportReleaseNoteUnavailableTitle;
+
+  /// Empty-state subtitle shown on the release note detail page since the backend endpoint is not yet live.
+  ///
+  /// In en, this message translates to:
+  /// **'This release note will appear here once release notes are live.'**
+  String get supportReleaseNoteUnavailableSubtitle;
+
+  /// Caption showing a release note's publish date. date is already localized via intl.
+  ///
+  /// In en, this message translates to:
+  /// **'Released {date}'**
+  String supportReleasedOnLabel(String date);
+
+  /// App bar title on the system status page.
+  ///
+  /// In en, this message translates to:
+  /// **'System Status'**
+  String get supportSystemStatusTitle;
+
+  /// Empty-state title shown on the system status page since the backend endpoint is not yet live.
+  ///
+  /// In en, this message translates to:
+  /// **'Status is not available yet'**
+  String get supportStatusUnavailableTitle;
+
+  /// Empty-state subtitle shown on the system status page since the backend endpoint is not yet live.
+  ///
+  /// In en, this message translates to:
+  /// **'Live system status will appear here once status tracking is live.'**
+  String get supportStatusUnavailableSubtitle;
+
+  /// Title used for the release-notes navigation card on the system status page and the app bar on the release notes list page.
+  ///
+  /// In en, this message translates to:
+  /// **'Release notes'**
+  String get supportReleaseNotesTitle;
+
+  /// Subtitle under the release-notes navigation card on the system status page.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s new in AIM'**
+  String get supportWhatsNewSubtitle;
+
+  /// Accessibility label for the release-notes navigation card on the system status page.
+  ///
+  /// In en, this message translates to:
+  /// **'Release notes, what\'s new in AIM'**
+  String get supportReleaseNotesCardSemantic;
+
+  /// Status label for a system component that is fully operational.
+  ///
+  /// In en, this message translates to:
+  /// **'Operational'**
+  String get supportStatusOperational;
+
+  /// Status label for a system component with degraded performance.
+  ///
+  /// In en, this message translates to:
+  /// **'Degraded'**
+  String get supportStatusDegraded;
+
+  /// Status label for a system component experiencing a partial outage.
+  ///
+  /// In en, this message translates to:
+  /// **'Partial Outage'**
+  String get supportStatusPartialOutage;
+
+  /// Status label for a system component experiencing a major outage.
+  ///
+  /// In en, this message translates to:
+  /// **'Major Outage'**
+  String get supportStatusMajorOutage;
+
+  /// Status label for a system component currently under maintenance.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintenance'**
+  String get supportStatusMaintenanceLabel;
+
+  /// Status label shared by an active maintenance window and an in-progress support ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'In Progress'**
+  String get supportStatusInProgressLabel;
+
+  /// Status label for an upcoming, not-yet-started maintenance window.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled'**
+  String get supportStatusScheduledLabel;
+
+  /// Status label for an open support ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get supportStatusOpenLabel;
+
+  /// Status label for a resolved support ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get supportStatusResolvedLabel;
+
+  /// Status label for a closed support ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get supportStatusClosedLabel;
+
+  /// Title and accessibility label for the all-operational banner on the system status page.
+  ///
+  /// In en, this message translates to:
+  /// **'All Systems Operational'**
+  String get supportAllSystemsOperationalTitle;
+
+  /// App bar title on the student ticket list page.
+  ///
+  /// In en, this message translates to:
+  /// **'My tickets'**
+  String get supportMyTicketsTitle;
+
+  /// Accessibility label for a ticket list row. subject and status are backend-supplied values.
+  ///
+  /// In en, this message translates to:
+  /// **'{subject}, {status}'**
+  String supportTicketTileSemantic(String subject, String status);
+
+  /// Empty-state title shown when the student has no support tickets.
+  ///
+  /// In en, this message translates to:
+  /// **'No Tickets Yet'**
+  String get supportNoTicketsTitle;
+
+  /// Empty-state subtitle shown when the student has no support tickets.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a ticket to get help from our support team.'**
+  String get supportNoTicketsSubtitle;
+
+  /// App bar title on the parent ticket list page.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent tickets'**
+  String get supportParentTicketsTitle;
+
+  /// Empty-state title shown when the parent has no support tickets.
+  ///
+  /// In en, this message translates to:
+  /// **'No Support Tickets'**
+  String get supportNoParentTicketsTitle;
+
+  /// Empty-state subtitle shown when the parent has no support tickets.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a ticket if you need help with your account.'**
+  String get supportNoParentTicketsSubtitle;
+
+  /// App bar title on the ticket detail page.
+  ///
+  /// In en, this message translates to:
+  /// **'Ticket'**
+  String get supportTicketDetailTitle;
+
+  /// Empty-state title shown on the ticket detail page since the backend endpoint is not yet live.
+  ///
+  /// In en, this message translates to:
+  /// **'Ticket details are not available yet'**
+  String get supportTicketDetailUnavailableTitle;
+
+  /// Empty-state subtitle shown on the ticket detail page since the backend endpoint is not yet live. ticketId is the real ticket id.
+  ///
+  /// In en, this message translates to:
+  /// **'Ticket #{ticketId} will appear here once support ticket tracking is live.'**
+  String supportTicketDetailUnavailableSubtitle(String ticketId);
+
+  /// Empty-state title shown when there are no published release notes.
+  ///
+  /// In en, this message translates to:
+  /// **'No Release Notes'**
+  String get supportNoReleaseNotesTitle;
+
+  /// Empty-state subtitle shown when there are no published release notes.
+  ///
+  /// In en, this message translates to:
+  /// **'Release notes will appear here when published.'**
+  String get supportNoReleaseNotesSubtitle;
+
+  /// Accessibility label for a release note list row. version, title, and date are backend-supplied values (date already localized via intl).
+  ///
+  /// In en, this message translates to:
+  /// **'{version}, {title}, {date}'**
+  String supportReleaseNoteTileSemantic(
+      String version, String title, String date);
+
+  /// Label for the severity dropdown on the create-ticket form.
+  ///
+  /// In en, this message translates to:
+  /// **'Severity'**
+  String get supportSeverityLabel;
+
+  /// Severity dropdown option on the create-ticket form.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get supportSeverityLow;
+
+  /// Severity dropdown option on the create-ticket form.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get supportSeverityMedium;
+
+  /// Severity dropdown option on the create-ticket form.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get supportSeverityHigh;
+
+  /// Severity dropdown option on the create-ticket form.
+  ///
+  /// In en, this message translates to:
+  /// **'Critical'**
+  String get supportSeverityCritical;
+
+  /// Category dropdown option on the create-ticket form.
+  ///
+  /// In en, this message translates to:
+  /// **'Technical Issue'**
+  String get supportCategoryTechnicalIssue;
+
+  /// Category dropdown option on the create-ticket form.
+  ///
+  /// In en, this message translates to:
+  /// **'Billing'**
+  String get supportCategoryBilling;
+
+  /// Category dropdown option on the create-ticket form.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get supportCategoryAccount;
+
+  /// Category dropdown option on the create-ticket form.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback'**
+  String get supportCategoryFeedback;
+
+  /// Label for the subject input field on the create-ticket form.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get supportSubjectLabel;
+
+  /// Placeholder text for the subject input field on the create-ticket form.
+  ///
+  /// In en, this message translates to:
+  /// **'Briefly describe the issue'**
+  String get supportSubjectPlaceholder;
+
+  /// Label for the description textarea on the create-ticket form.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get supportDescriptionLabel;
+
+  /// Placeholder text for the description textarea on the create-ticket form.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us what happened, step by step...'**
+  String get supportDescriptionPlaceholder;
+
+  /// Label for the submit button on the create-ticket form.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Ticket'**
+  String get supportSubmitTicketButton;
+
+  /// Accessibility label for the submit button on the create-ticket form.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit ticket'**
+  String get supportSubmitTicketSemantic;
+
+  /// Validation error shown when the create-ticket form's subject field is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject is required'**
+  String get supportSubjectRequired;
+
+  /// Validation error shown when the create-ticket form's description field is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Description is required'**
+  String get supportDescriptionRequired;
+
+  /// Error message shown when submitting a ticket since the backend endpoint is not yet live.
+  ///
+  /// In en, this message translates to:
+  /// **'Ticket submission is not available yet. Please try again later.'**
+  String get supportTicketSubmitUnavailable;
+
+  /// App bar title on the create-ticket page.
+  ///
+  /// In en, this message translates to:
+  /// **'New ticket'**
+  String get supportNewTicketTitle;
 }
 
 class _AppLocalizationsDelegate

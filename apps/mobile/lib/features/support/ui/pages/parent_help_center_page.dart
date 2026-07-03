@@ -13,15 +13,16 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../widgets/help_faq_accordion.dart';
 
 class ParentHelpCenterPage extends StatelessWidget {
   const ParentHelpCenterPage({super.key});
 
-  static const List<HelpCategory> _categories = [
+  static List<HelpCategory> _categories(AppLocalizations l10n) => [
     HelpCategory(
-      title: 'Student Progress',
-      faqs: [
+      title: l10n.supportCategoryStudentProgress,
+      faqs: const [
         HelpFaqItem(
           question: "How do I track my child's progress?",
           answer: 'Your parent dashboard shows mastery, streaks, and '
@@ -30,8 +31,8 @@ class ParentHelpCenterPage extends StatelessWidget {
       ],
     ),
     HelpCategory(
-      title: 'Courses & Content',
-      faqs: [
+      title: l10n.supportCategoryCoursesContent,
+      faqs: const [
         HelpFaqItem(
           question: 'How do I see which courses my child is taking?',
           answer: "Open your parent dashboard and select your child's "
@@ -40,8 +41,8 @@ class ParentHelpCenterPage extends StatelessWidget {
       ],
     ),
     HelpCategory(
-      title: 'Billing & Payments',
-      faqs: [
+      title: l10n.supportCategoryBillingPayments,
+      faqs: const [
         HelpFaqItem(
           question: 'How do I see my invoices?',
           answer: 'Open Subscription from your profile, then tap '
@@ -55,8 +56,8 @@ class ParentHelpCenterPage extends StatelessWidget {
       ],
     ),
     HelpCategory(
-      title: 'Account Management',
-      faqs: [
+      title: l10n.supportCategoryAccountManagement,
+      faqs: const [
         HelpFaqItem(
           question: 'How do I link a student account?',
           answer: 'Student accounts are linked from your parent profile '
@@ -65,8 +66,8 @@ class ParentHelpCenterPage extends StatelessWidget {
       ],
     ),
     HelpCategory(
-      title: 'Privacy & Safety',
-      faqs: [
+      title: l10n.supportCategoryPrivacySafety,
+      faqs: const [
         HelpFaqItem(
           question: "How is my child's data protected?",
           answer: 'AIM only collects data needed for learning progress '
@@ -75,8 +76,8 @@ class ParentHelpCenterPage extends StatelessWidget {
       ],
     ),
     HelpCategory(
-      title: 'General Help',
-      faqs: [
+      title: l10n.supportCategoryGeneralHelp,
+      faqs: const [
         HelpFaqItem(
           question: "Didn't find what you're looking for?",
           answer: 'Create a support ticket and our team will get back to '
@@ -89,6 +90,8 @@ class ParentHelpCenterPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
+    final categories = _categories(l10n);
 
     return Scaffold(
       backgroundColor: surfaces.background,
@@ -102,11 +105,11 @@ class ParentHelpCenterPage extends StatelessWidget {
                 horizontal: AimSpacing.screenPaddingMobile,
                 vertical: AimSpacing.sectionGap,
               ),
-              itemCount: _categories.length,
+              itemCount: categories.length,
               separatorBuilder: (_, __) =>
                   const SizedBox(height: AimSpacing.listItemGap),
               itemBuilder: (context, index) =>
-                  HelpCategoryAccordionCard(category: _categories[index]),
+                  HelpCategoryAccordionCard(category: categories[index]),
             ),
           ),
           SafeArea(
@@ -114,11 +117,11 @@ class ParentHelpCenterPage extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
               child: AIMGradientButton(
-                label: 'Create Ticket',
+                label: l10n.supportCreateTicketButton,
                 icon: const Icon(Icons.add),
                 onPressed: () => context.push(AppRoutePaths.createTicket),
                 fullWidth: true,
-                semanticLabel: 'Create a support ticket',
+                semanticLabel: l10n.supportCreateTicketSemantic,
               ),
             ),
           ),
@@ -133,6 +136,7 @@ class _ParentHelpCenterHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -148,7 +152,7 @@ class _ParentHelpCenterHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: l10n.commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -174,7 +178,7 @@ class _ParentHelpCenterHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Parent Help',
+              l10n.supportParentHelpTitle,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],

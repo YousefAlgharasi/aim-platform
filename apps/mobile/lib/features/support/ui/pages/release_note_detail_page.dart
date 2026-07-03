@@ -22,8 +22,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class ReleaseNoteDetailPage extends StatelessWidget {
   final String noteId;
@@ -33,20 +35,20 @@ class ReleaseNoteDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     // Release note loaded from backend via GET /release-notes/:id
     return Scaffold(
       backgroundColor: surfaces.background,
-      body: const Column(
+      body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _ReleaseNoteDetailHeader(),
+          const _ReleaseNoteDetailHeader(),
           Expanded(
             child: AIMEmptyState(
-              icon: Icon(Icons.new_releases_outlined),
-              title: 'Release note is not available yet',
-              subtitle: 'This release note will appear here once release '
-                  'notes are live.',
+              icon: const Icon(Icons.new_releases_outlined),
+              title: l10n.supportReleaseNoteUnavailableTitle,
+              subtitle: l10n.supportReleaseNoteUnavailableSubtitle,
             ),
           ),
         ],
@@ -63,6 +65,7 @@ class ReleaseNoteDetailPage extends StatelessWidget {
     required DateTime publishedAt,
   }) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final (paragraphs, bullets) = _parseBody(body);
 
     return SingleChildScrollView(
@@ -84,7 +87,7 @@ class ReleaseNoteDetailPage extends StatelessWidget {
           ),
           const SizedBox(height: AimSpacing.space4),
           Text(
-            'Released ${_formatDate(publishedAt)}',
+            l10n.supportReleasedOnLabel(_formatDate(context, publishedAt)),
             style:
                 AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
           ),
@@ -151,14 +154,10 @@ class ReleaseNoteDetailPage extends StatelessWidget {
     return (paragraphs, bullets);
   }
 
-  static const _months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ];
-
-  static String _formatDate(DateTime date) {
-    final local = date.toLocal();
-    return '${_months[local.month - 1]} ${local.day}, ${local.year}';
+  static String _formatDate(BuildContext context, DateTime date) {
+    return DateFormat.yMMMd(
+      Localizations.localeOf(context).toString(),
+    ).format(date.toLocal());
   }
 }
 
@@ -167,6 +166,7 @@ class _ReleaseNoteDetailHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -182,7 +182,7 @@ class _ReleaseNoteDetailHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: l10n.commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -208,7 +208,7 @@ class _ReleaseNoteDetailHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Release note',
+              l10n.supportReleaseNoteTitle,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],

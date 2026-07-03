@@ -26,8 +26,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class TicketDetailPage extends StatelessWidget {
   final String ticketId;
@@ -37,6 +39,7 @@ class TicketDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     // Ticket and comments loaded from backend
     // via GET /support/tickets/:id and GET /support/tickets/:id/comments
@@ -49,9 +52,9 @@ class TicketDetailPage extends StatelessWidget {
           Expanded(
             child: AIMEmptyState(
               icon: const Icon(Icons.confirmation_number_outlined),
-              title: 'Ticket details are not available yet',
-              subtitle: 'Ticket #$ticketId will appear here once support '
-                  'ticket tracking is live.',
+              title: l10n.supportTicketDetailUnavailableTitle,
+              subtitle:
+                  l10n.supportTicketDetailUnavailableSubtitle(ticketId),
             ),
           ),
         ],
@@ -70,6 +73,7 @@ class TicketDetailPage extends StatelessWidget {
     required DateTime createdAt,
   }) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AimSpacing.screenPaddingMobile,
@@ -82,7 +86,7 @@ class TicketDetailPage extends StatelessWidget {
               AIMBadge(
                 tone: _statusTone(status),
                 pill: true,
-                child: Text(_statusLabel(status)),
+                child: Text(_statusLabel(l10n, status)),
               ),
               const SizedBox(width: AimSpacing.space8),
               Expanded(
@@ -123,6 +127,7 @@ class TicketDetailPage extends StatelessWidget {
     final surfaces = aimSurfacesOf(context);
     final bubbleColor = isStaff ? surfaces.surfaceSunken : AimColors.primary500;
     final textColor = isStaff ? surfaces.textPrimary : AimColors.neutral0;
+    final timestamp = _formatTimestamp(context, createdAt);
 
     return Align(
       alignment: isStaff ? AlignmentDirectional.centerStart : AlignmentDirectional.centerEnd,
@@ -147,7 +152,7 @@ class TicketDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: AimSpacing.space4),
             Text(
-              '$authorName · ${_formatTimestamp(createdAt)}',
+              '$authorName · $timestamp',
               style: AimTextStyles.caption.copyWith(
                 color: isStaff
                     ? surfaces.textMuted
@@ -167,7 +172,14 @@ class TicketDetailPage extends StatelessWidget {
         _ => AIMBadgeTone.neutral,
       };
 
-  static String _statusLabel(String status) => _titleCase(status);
+  static String _statusLabel(AppLocalizations l10n, String status) =>
+      switch (status) {
+        'open' => l10n.supportStatusOpenLabel,
+        'in_progress' => l10n.supportStatusInProgressLabel,
+        'resolved' => l10n.supportStatusResolvedLabel,
+        'closed' => l10n.supportStatusClosedLabel,
+        _ => _titleCase(status),
+      };
 
   static String _titleCase(String value) {
     final words = value.split('_');
@@ -176,16 +188,11 @@ class TicketDetailPage extends StatelessWidget {
         .join(' ');
   }
 
-  static const _months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ];
-
-  static String _formatTimestamp(DateTime dt) {
+  static String _formatTimestamp(BuildContext context, DateTime dt) {
+    final locale = Localizations.localeOf(context).toString();
     final local = dt.toLocal();
-    final hour = local.hour.toString().padLeft(2, '0');
-    final minute = local.minute.toString().padLeft(2, '0');
-    return '${_months[local.month - 1]} ${local.day} · $hour:$minute';
+    return '${DateFormat.MMMd(locale).format(local)} · '
+        '${DateFormat.Hm(locale).format(local)}';
   }
 }
 
@@ -194,6 +201,7 @@ class _TicketDetailHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -209,7 +217,7 @@ class _TicketDetailHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: l10n.commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -235,7 +243,7 @@ class _TicketDetailHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Ticket',
+              l10n.supportTicketDetailTitle,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],

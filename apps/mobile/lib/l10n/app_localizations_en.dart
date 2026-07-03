@@ -2701,4 +2701,281 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiTeacherPromptPracticeSpeaking => 'Practice speaking';
+
+  @override
+  String get supportCategoryLabel => 'Category';
+
+  @override
+  String get supportCategoryGeneral => 'General';
+
+  @override
+  String get supportCategoryFeatureRequest => 'Feature request';
+
+  @override
+  String get supportCategoryBugReport => 'Bug report';
+
+  @override
+  String get supportCategoryContent => 'Content';
+
+  @override
+  String get supportCategoryUserExperience => 'User experience';
+
+  @override
+  String get supportRateAimQuestion => 'How would you rate AIM?';
+
+  @override
+  String supportRateStarsSemantic(int value) {
+    return 'Rate $value out of 5';
+  }
+
+  @override
+  String get supportTitleLabel => 'Title';
+
+  @override
+  String get supportTitlePlaceholder => 'A short summary';
+
+  @override
+  String get supportFeedbackLabel => 'Your feedback';
+
+  @override
+  String get supportFeedbackPlaceholder => 'Tell us what you think...';
+
+  @override
+  String get supportSubmitFeedbackSemantic => 'Submit feedback';
+
+  @override
+  String get supportFeedbackSubmitUnavailable =>
+      'Feedback submission is not available yet. Please try again later.';
+
+  @override
+  String get supportTitleRequired => 'Title is required';
+
+  @override
+  String get supportFeedbackDetailsRequired => 'Feedback details are required';
+
+  @override
+  String get supportSendFeedbackTitle => 'Send feedback';
+
+  @override
+  String get supportHelpCenterTitle => 'Help Center';
+
+  @override
+  String get supportCategoryLessonsContent => 'Lessons & Content';
+
+  @override
+  String get supportCategoryAssessmentsGrades => 'Assessments & Grades';
+
+  @override
+  String get supportCategoryAccountProfile => 'Account & Profile';
+
+  @override
+  String get supportCategoryBillingSubscription => 'Billing & Subscription';
+
+  @override
+  String get supportCategoryTechnicalIssues => 'Technical Issues';
+
+  @override
+  String get supportCategoryGeneralHelp => 'General Help';
+
+  @override
+  String get supportCreateTicketButton => 'Create Ticket';
+
+  @override
+  String get supportCreateTicketSemantic => 'Create a support ticket';
+
+  @override
+  String get supportParentHelpTitle => 'Parent Help';
+
+  @override
+  String get supportCategoryStudentProgress => 'Student Progress';
+
+  @override
+  String get supportCategoryCoursesContent => 'Courses & Content';
+
+  @override
+  String get supportCategoryBillingPayments => 'Billing & Payments';
+
+  @override
+  String get supportCategoryAccountManagement => 'Account Management';
+
+  @override
+  String get supportCategoryPrivacySafety => 'Privacy & Safety';
+
+  @override
+  String get supportReleaseNoteTitle => 'Release note';
+
+  @override
+  String get supportReleaseNoteUnavailableTitle =>
+      'Release note is not available yet';
+
+  @override
+  String get supportReleaseNoteUnavailableSubtitle =>
+      'This release note will appear here once release notes are live.';
+
+  @override
+  String supportReleasedOnLabel(String date) {
+    return 'Released $date';
+  }
+
+  @override
+  String get supportSystemStatusTitle => 'System Status';
+
+  @override
+  String get supportStatusUnavailableTitle => 'Status is not available yet';
+
+  @override
+  String get supportStatusUnavailableSubtitle =>
+      'Live system status will appear here once status tracking is live.';
+
+  @override
+  String get supportReleaseNotesTitle => 'Release notes';
+
+  @override
+  String get supportWhatsNewSubtitle => 'What\'s new in AIM';
+
+  @override
+  String get supportReleaseNotesCardSemantic =>
+      'Release notes, what\'s new in AIM';
+
+  @override
+  String get supportStatusOperational => 'Operational';
+
+  @override
+  String get supportStatusDegraded => 'Degraded';
+
+  @override
+  String get supportStatusPartialOutage => 'Partial Outage';
+
+  @override
+  String get supportStatusMajorOutage => 'Major Outage';
+
+  @override
+  String get supportStatusMaintenanceLabel => 'Maintenance';
+
+  @override
+  String get supportStatusInProgressLabel => 'In Progress';
+
+  @override
+  String get supportStatusScheduledLabel => 'Scheduled';
+
+  @override
+  String get supportStatusOpenLabel => 'Open';
+
+  @override
+  String get supportStatusResolvedLabel => 'Resolved';
+
+  @override
+  String get supportStatusClosedLabel => 'Closed';
+
+  @override
+  String get supportAllSystemsOperationalTitle => 'All Systems Operational';
+
+  @override
+  String get supportMyTicketsTitle => 'My tickets';
+
+  @override
+  String supportTicketTileSemantic(String subject, String status) {
+    return '$subject, $status';
+  }
+
+  @override
+  String get supportNoTicketsTitle => 'No Tickets Yet';
+
+  @override
+  String get supportNoTicketsSubtitle =>
+      'Create a ticket to get help from our support team.';
+
+  @override
+  String get supportParentTicketsTitle => 'Parent tickets';
+
+  @override
+  String get supportNoParentTicketsTitle => 'No Support Tickets';
+
+  @override
+  String get supportNoParentTicketsSubtitle =>
+      'Create a ticket if you need help with your account.';
+
+  @override
+  String get supportTicketDetailTitle => 'Ticket';
+
+  @override
+  String get supportTicketDetailUnavailableTitle =>
+      'Ticket details are not available yet';
+
+  @override
+  String supportTicketDetailUnavailableSubtitle(String ticketId) {
+    return 'Ticket #$ticketId will appear here once support ticket tracking is live.';
+  }
+
+  @override
+  String get supportNoReleaseNotesTitle => 'No Release Notes';
+
+  @override
+  String get supportNoReleaseNotesSubtitle =>
+      'Release notes will appear here when published.';
+
+  @override
+  String supportReleaseNoteTileSemantic(
+      String version, String title, String date) {
+    return '$version, $title, $date';
+  }
+
+  @override
+  String get supportSeverityLabel => 'Severity';
+
+  @override
+  String get supportSeverityLow => 'Low';
+
+  @override
+  String get supportSeverityMedium => 'Medium';
+
+  @override
+  String get supportSeverityHigh => 'High';
+
+  @override
+  String get supportSeverityCritical => 'Critical';
+
+  @override
+  String get supportCategoryTechnicalIssue => 'Technical Issue';
+
+  @override
+  String get supportCategoryBilling => 'Billing';
+
+  @override
+  String get supportCategoryAccount => 'Account';
+
+  @override
+  String get supportCategoryFeedback => 'Feedback';
+
+  @override
+  String get supportSubjectLabel => 'Subject';
+
+  @override
+  String get supportSubjectPlaceholder => 'Briefly describe the issue';
+
+  @override
+  String get supportDescriptionLabel => 'Description';
+
+  @override
+  String get supportDescriptionPlaceholder =>
+      'Tell us what happened, step by step...';
+
+  @override
+  String get supportSubmitTicketButton => 'Submit Ticket';
+
+  @override
+  String get supportSubmitTicketSemantic => 'Submit ticket';
+
+  @override
+  String get supportSubjectRequired => 'Subject is required';
+
+  @override
+  String get supportDescriptionRequired => 'Description is required';
+
+  @override
+  String get supportTicketSubmitUnavailable =>
+      'Ticket submission is not available yet. Please try again later.';
+
+  @override
+  String get supportNewTicketTitle => 'New ticket';
 }

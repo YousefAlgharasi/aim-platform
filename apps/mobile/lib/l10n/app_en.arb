@@ -3787,5 +3787,389 @@
   "aiTeacherPromptPracticeSpeaking": "Practice speaking",
   "@aiTeacherPromptPracticeSpeaking": {
     "description": "Fixed, app-defined suggested-prompt chip label on the AI Teacher chat screen."
+  },
+
+  "supportCategoryLabel": "Category",
+  "@supportCategoryLabel": {
+    "description": "Label for the category dropdown on the feedback and create-ticket forms."
+  },
+  "supportCategoryGeneral": "General",
+  "@supportCategoryGeneral": {
+    "description": "Category dropdown option shared by the feedback and create-ticket forms."
+  },
+  "supportCategoryFeatureRequest": "Feature request",
+  "@supportCategoryFeatureRequest": {
+    "description": "Category dropdown option on the feedback form."
+  },
+  "supportCategoryBugReport": "Bug report",
+  "@supportCategoryBugReport": {
+    "description": "Category dropdown option on the feedback form."
+  },
+  "supportCategoryContent": "Content",
+  "@supportCategoryContent": {
+    "description": "Category dropdown option shared by the feedback and create-ticket forms."
+  },
+  "supportCategoryUserExperience": "User experience",
+  "@supportCategoryUserExperience": {
+    "description": "Category dropdown option on the feedback form."
+  },
+  "supportRateAimQuestion": "How would you rate AIM?",
+  "@supportRateAimQuestion": {
+    "description": "Label above the star rating control on the feedback form."
+  },
+  "supportRateStarsSemantic": "Rate {value} out of 5",
+  "@supportRateStarsSemantic": {
+    "description": "Accessibility label for a single star in the feedback form's star rating control.",
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "supportTitleLabel": "Title",
+  "@supportTitleLabel": {
+    "description": "Label for the title input field on the feedback form."
+  },
+  "supportTitlePlaceholder": "A short summary",
+  "@supportTitlePlaceholder": {
+    "description": "Placeholder text for the title input field on the feedback form."
+  },
+  "supportFeedbackLabel": "Your feedback",
+  "@supportFeedbackLabel": {
+    "description": "Label for the feedback body textarea on the feedback form."
+  },
+  "supportFeedbackPlaceholder": "Tell us what you think...",
+  "@supportFeedbackPlaceholder": {
+    "description": "Placeholder text for the feedback body textarea on the feedback form."
+  },
+  "supportSubmitFeedbackSemantic": "Submit feedback",
+  "@supportSubmitFeedbackSemantic": {
+    "description": "Accessibility label for the submit button on the feedback form."
+  },
+  "supportFeedbackSubmitUnavailable": "Feedback submission is not available yet. Please try again later.",
+  "@supportFeedbackSubmitUnavailable": {
+    "description": "Error message shown when submitting feedback since the backend endpoint is not yet live."
+  },
+  "supportTitleRequired": "Title is required",
+  "@supportTitleRequired": {
+    "description": "Validation error shown when the feedback form's title field is empty."
+  },
+  "supportFeedbackDetailsRequired": "Feedback details are required",
+  "@supportFeedbackDetailsRequired": {
+    "description": "Validation error shown when the feedback form's body field is empty."
+  },
+  "supportSendFeedbackTitle": "Send feedback",
+  "@supportSendFeedbackTitle": {
+    "description": "App bar title on the feedback page."
+  },
+
+  "supportHelpCenterTitle": "Help Center",
+  "@supportHelpCenterTitle": {
+    "description": "App bar title on the student help center page."
+  },
+  "supportCategoryLessonsContent": "Lessons & Content",
+  "@supportCategoryLessonsContent": {
+    "description": "FAQ category section header on the student help center page."
+  },
+  "supportCategoryAssessmentsGrades": "Assessments & Grades",
+  "@supportCategoryAssessmentsGrades": {
+    "description": "FAQ category section header on the student help center page."
+  },
+  "supportCategoryAccountProfile": "Account & Profile",
+  "@supportCategoryAccountProfile": {
+    "description": "FAQ category section header on the student help center page."
+  },
+  "supportCategoryBillingSubscription": "Billing & Subscription",
+  "@supportCategoryBillingSubscription": {
+    "description": "FAQ category section header on the student help center page."
+  },
+  "supportCategoryTechnicalIssues": "Technical Issues",
+  "@supportCategoryTechnicalIssues": {
+    "description": "FAQ category section header on the student help center page."
+  },
+  "supportCategoryGeneralHelp": "General Help",
+  "@supportCategoryGeneralHelp": {
+    "description": "FAQ category section header shared by the student and parent help center pages."
+  },
+  "supportCreateTicketButton": "Create Ticket",
+  "@supportCreateTicketButton": {
+    "description": "Label for the button that opens the create-ticket form, shown on the help center pages."
+  },
+  "supportCreateTicketSemantic": "Create a support ticket",
+  "@supportCreateTicketSemantic": {
+    "description": "Accessibility label for the create-ticket action, shared by the help center pages and the ticket list pages' floating action button."
+  },
+
+  "supportParentHelpTitle": "Parent Help",
+  "@supportParentHelpTitle": {
+    "description": "App bar title on the parent help center page."
+  },
+  "supportCategoryStudentProgress": "Student Progress",
+  "@supportCategoryStudentProgress": {
+    "description": "FAQ category section header on the parent help center page."
+  },
+  "supportCategoryCoursesContent": "Courses & Content",
+  "@supportCategoryCoursesContent": {
+    "description": "FAQ category section header on the parent help center page."
+  },
+  "supportCategoryBillingPayments": "Billing & Payments",
+  "@supportCategoryBillingPayments": {
+    "description": "FAQ category section header on the parent help center page."
+  },
+  "supportCategoryAccountManagement": "Account Management",
+  "@supportCategoryAccountManagement": {
+    "description": "FAQ category section header on the parent help center page."
+  },
+  "supportCategoryPrivacySafety": "Privacy & Safety",
+  "@supportCategoryPrivacySafety": {
+    "description": "FAQ category section header on the parent help center page."
+  },
+
+  "supportReleaseNoteTitle": "Release note",
+  "@supportReleaseNoteTitle": {
+    "description": "App bar title on the release note detail page."
+  },
+  "supportReleaseNoteUnavailableTitle": "Release note is not available yet",
+  "@supportReleaseNoteUnavailableTitle": {
+    "description": "Empty-state title shown on the release note detail page since the backend endpoint is not yet live."
+  },
+  "supportReleaseNoteUnavailableSubtitle": "This release note will appear here once release notes are live.",
+  "@supportReleaseNoteUnavailableSubtitle": {
+    "description": "Empty-state subtitle shown on the release note detail page since the backend endpoint is not yet live."
+  },
+  "supportReleasedOnLabel": "Released {date}",
+  "@supportReleasedOnLabel": {
+    "description": "Caption showing a release note's publish date. date is already localized via intl.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+
+  "supportSystemStatusTitle": "System Status",
+  "@supportSystemStatusTitle": {
+    "description": "App bar title on the system status page."
+  },
+  "supportStatusUnavailableTitle": "Status is not available yet",
+  "@supportStatusUnavailableTitle": {
+    "description": "Empty-state title shown on the system status page since the backend endpoint is not yet live."
+  },
+  "supportStatusUnavailableSubtitle": "Live system status will appear here once status tracking is live.",
+  "@supportStatusUnavailableSubtitle": {
+    "description": "Empty-state subtitle shown on the system status page since the backend endpoint is not yet live."
+  },
+  "supportReleaseNotesTitle": "Release notes",
+  "@supportReleaseNotesTitle": {
+    "description": "Title used for the release-notes navigation card on the system status page and the app bar on the release notes list page."
+  },
+  "supportWhatsNewSubtitle": "What's new in AIM",
+  "@supportWhatsNewSubtitle": {
+    "description": "Subtitle under the release-notes navigation card on the system status page."
+  },
+  "supportReleaseNotesCardSemantic": "Release notes, what's new in AIM",
+  "@supportReleaseNotesCardSemantic": {
+    "description": "Accessibility label for the release-notes navigation card on the system status page."
+  },
+  "supportStatusOperational": "Operational",
+  "@supportStatusOperational": {
+    "description": "Status label for a system component that is fully operational."
+  },
+  "supportStatusDegraded": "Degraded",
+  "@supportStatusDegraded": {
+    "description": "Status label for a system component with degraded performance."
+  },
+  "supportStatusPartialOutage": "Partial Outage",
+  "@supportStatusPartialOutage": {
+    "description": "Status label for a system component experiencing a partial outage."
+  },
+  "supportStatusMajorOutage": "Major Outage",
+  "@supportStatusMajorOutage": {
+    "description": "Status label for a system component experiencing a major outage."
+  },
+  "supportStatusMaintenanceLabel": "Maintenance",
+  "@supportStatusMaintenanceLabel": {
+    "description": "Status label for a system component currently under maintenance."
+  },
+  "supportStatusInProgressLabel": "In Progress",
+  "@supportStatusInProgressLabel": {
+    "description": "Status label shared by an active maintenance window and an in-progress support ticket."
+  },
+  "supportStatusScheduledLabel": "Scheduled",
+  "@supportStatusScheduledLabel": {
+    "description": "Status label for an upcoming, not-yet-started maintenance window."
+  },
+  "supportStatusOpenLabel": "Open",
+  "@supportStatusOpenLabel": {
+    "description": "Status label for an open support ticket."
+  },
+  "supportStatusResolvedLabel": "Resolved",
+  "@supportStatusResolvedLabel": {
+    "description": "Status label for a resolved support ticket."
+  },
+  "supportStatusClosedLabel": "Closed",
+  "@supportStatusClosedLabel": {
+    "description": "Status label for a closed support ticket."
+  },
+  "supportAllSystemsOperationalTitle": "All Systems Operational",
+  "@supportAllSystemsOperationalTitle": {
+    "description": "Title and accessibility label for the all-operational banner on the system status page."
+  },
+
+  "supportMyTicketsTitle": "My tickets",
+  "@supportMyTicketsTitle": {
+    "description": "App bar title on the student ticket list page."
+  },
+  "supportTicketTileSemantic": "{subject}, {status}",
+  "@supportTicketTileSemantic": {
+    "description": "Accessibility label for a ticket list row. subject and status are backend-supplied values.",
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "supportNoTicketsTitle": "No Tickets Yet",
+  "@supportNoTicketsTitle": {
+    "description": "Empty-state title shown when the student has no support tickets."
+  },
+  "supportNoTicketsSubtitle": "Create a ticket to get help from our support team.",
+  "@supportNoTicketsSubtitle": {
+    "description": "Empty-state subtitle shown when the student has no support tickets."
+  },
+
+  "supportParentTicketsTitle": "Parent tickets",
+  "@supportParentTicketsTitle": {
+    "description": "App bar title on the parent ticket list page."
+  },
+  "supportNoParentTicketsTitle": "No Support Tickets",
+  "@supportNoParentTicketsTitle": {
+    "description": "Empty-state title shown when the parent has no support tickets."
+  },
+  "supportNoParentTicketsSubtitle": "Create a ticket if you need help with your account.",
+  "@supportNoParentTicketsSubtitle": {
+    "description": "Empty-state subtitle shown when the parent has no support tickets."
+  },
+
+  "supportTicketDetailTitle": "Ticket",
+  "@supportTicketDetailTitle": {
+    "description": "App bar title on the ticket detail page."
+  },
+  "supportTicketDetailUnavailableTitle": "Ticket details are not available yet",
+  "@supportTicketDetailUnavailableTitle": {
+    "description": "Empty-state title shown on the ticket detail page since the backend endpoint is not yet live."
+  },
+  "supportTicketDetailUnavailableSubtitle": "Ticket #{ticketId} will appear here once support ticket tracking is live.",
+  "@supportTicketDetailUnavailableSubtitle": {
+    "description": "Empty-state subtitle shown on the ticket detail page since the backend endpoint is not yet live. ticketId is the real ticket id.",
+    "placeholders": {
+      "ticketId": {
+        "type": "String"
+      }
+    }
+  },
+
+  "supportNoReleaseNotesTitle": "No Release Notes",
+  "@supportNoReleaseNotesTitle": {
+    "description": "Empty-state title shown when there are no published release notes."
+  },
+  "supportNoReleaseNotesSubtitle": "Release notes will appear here when published.",
+  "@supportNoReleaseNotesSubtitle": {
+    "description": "Empty-state subtitle shown when there are no published release notes."
+  },
+  "supportReleaseNoteTileSemantic": "{version}, {title}, {date}",
+  "@supportReleaseNoteTileSemantic": {
+    "description": "Accessibility label for a release note list row. version, title, and date are backend-supplied values (date already localized via intl).",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+
+  "supportSeverityLabel": "Severity",
+  "@supportSeverityLabel": {
+    "description": "Label for the severity dropdown on the create-ticket form."
+  },
+  "supportSeverityLow": "Low",
+  "@supportSeverityLow": {
+    "description": "Severity dropdown option on the create-ticket form."
+  },
+  "supportSeverityMedium": "Medium",
+  "@supportSeverityMedium": {
+    "description": "Severity dropdown option on the create-ticket form."
+  },
+  "supportSeverityHigh": "High",
+  "@supportSeverityHigh": {
+    "description": "Severity dropdown option on the create-ticket form."
+  },
+  "supportSeverityCritical": "Critical",
+  "@supportSeverityCritical": {
+    "description": "Severity dropdown option on the create-ticket form."
+  },
+  "supportCategoryTechnicalIssue": "Technical Issue",
+  "@supportCategoryTechnicalIssue": {
+    "description": "Category dropdown option on the create-ticket form."
+  },
+  "supportCategoryBilling": "Billing",
+  "@supportCategoryBilling": {
+    "description": "Category dropdown option on the create-ticket form."
+  },
+  "supportCategoryAccount": "Account",
+  "@supportCategoryAccount": {
+    "description": "Category dropdown option on the create-ticket form."
+  },
+  "supportCategoryFeedback": "Feedback",
+  "@supportCategoryFeedback": {
+    "description": "Category dropdown option on the create-ticket form."
+  },
+  "supportSubjectLabel": "Subject",
+  "@supportSubjectLabel": {
+    "description": "Label for the subject input field on the create-ticket form."
+  },
+  "supportSubjectPlaceholder": "Briefly describe the issue",
+  "@supportSubjectPlaceholder": {
+    "description": "Placeholder text for the subject input field on the create-ticket form."
+  },
+  "supportDescriptionLabel": "Description",
+  "@supportDescriptionLabel": {
+    "description": "Label for the description textarea on the create-ticket form."
+  },
+  "supportDescriptionPlaceholder": "Tell us what happened, step by step...",
+  "@supportDescriptionPlaceholder": {
+    "description": "Placeholder text for the description textarea on the create-ticket form."
+  },
+  "supportSubmitTicketButton": "Submit Ticket",
+  "@supportSubmitTicketButton": {
+    "description": "Label for the submit button on the create-ticket form."
+  },
+  "supportSubmitTicketSemantic": "Submit ticket",
+  "@supportSubmitTicketSemantic": {
+    "description": "Accessibility label for the submit button on the create-ticket form."
+  },
+  "supportSubjectRequired": "Subject is required",
+  "@supportSubjectRequired": {
+    "description": "Validation error shown when the create-ticket form's subject field is empty."
+  },
+  "supportDescriptionRequired": "Description is required",
+  "@supportDescriptionRequired": {
+    "description": "Validation error shown when the create-ticket form's description field is empty."
+  },
+  "supportTicketSubmitUnavailable": "Ticket submission is not available yet. Please try again later.",
+  "@supportTicketSubmitUnavailable": {
+    "description": "Error message shown when submitting a ticket since the backend endpoint is not yet live."
+  },
+  "supportNewTicketTitle": "New ticket",
+  "@supportNewTicketTitle": {
+    "description": "App bar title on the create-ticket page."
   }
 }
