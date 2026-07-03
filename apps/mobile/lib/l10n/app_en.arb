@@ -419,6 +419,23 @@
       }
     }
   },
+  "shellLanguageEnglishLabel": "English",
+  "@shellLanguageEnglishLabel": {
+    "description": "Label for the English option in the drawer's language toggle."
+  },
+  "shellLanguageArabicLabel": "العربية",
+  "@shellLanguageArabicLabel": {
+    "description": "Label for the Arabic option in the drawer's language toggle. Intentionally shown in Arabic script even in the English locale, matching how language pickers conventionally display each language's own native name."
+  },
+  "shellLanguageSemantic": "{language} language",
+  "@shellLanguageSemantic": {
+    "description": "Accessibility label for a language toggle option, e.g. 'English language'.",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
 
   "onboardingBrandName": "AIM",
   "@onboardingBrandName": {

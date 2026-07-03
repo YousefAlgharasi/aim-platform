@@ -752,6 +752,24 @@ abstract class AppLocalizations {
   /// **'{theme} theme'**
   String shellThemeSemantic(String theme);
 
+  /// Label for the English option in the drawer's language toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get shellLanguageEnglishLabel;
+
+  /// Label for the Arabic option in the drawer's language toggle. Intentionally shown in Arabic script even in the English locale, matching how language pickers conventionally display each language's own native name.
+  ///
+  /// In en, this message translates to:
+  /// **'العربية'**
+  String get shellLanguageArabicLabel;
+
+  /// Accessibility label for a language toggle option, e.g. 'English language'.
+  ///
+  /// In en, this message translates to:
+  /// **'{language} language'**
+  String shellLanguageSemantic(String language);
+
   /// App brand name shown on the splash screen.
   ///
   /// In en, this message translates to:

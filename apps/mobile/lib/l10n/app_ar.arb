@@ -113,6 +113,9 @@
   "shellThemeLight": "فاتح",
   "shellThemeDark": "داكن",
   "shellThemeSemantic": "مظهر {theme}",
+  "shellLanguageEnglishLabel": "English",
+  "shellLanguageArabicLabel": "العربية",
+  "shellLanguageSemantic": "لغة {language}",
 
   "onboardingBrandName": "AIM",
   "onboardingTagline": "ذكاء تكيّفي من أجل الإتقان",

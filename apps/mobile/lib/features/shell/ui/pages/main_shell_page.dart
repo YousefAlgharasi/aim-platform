@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/l10n/app_localizations.dart';
+import '../../../../core/localization/localization.dart';
 import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/state/app_async_state.dart';
 import '../../../../core/theme/theme_mode_provider.dart';
@@ -239,6 +240,8 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
         children: [
           _AIMThemeToggleRow(),
           SizedBox(height: AimSpacing.componentGap),
+          _AIMLanguageToggleRow(),
+          SizedBox(height: AimSpacing.componentGap),
           LogoutButton(),
         ],
       ),
@@ -362,6 +365,7 @@ class _AIMThemeToggleRow extends ConsumerWidget {
             icon: Icons.light_mode_outlined,
             selected: mode == ThemeMode.light,
             surfaces: surfaces,
+            semanticLabel: l10n.shellThemeSemantic(l10n.shellThemeLight),
             onTap: () =>
                 ref.read(themeModeProvider.notifier).state = ThemeMode.light,
           ),
@@ -373,8 +377,54 @@ class _AIMThemeToggleRow extends ConsumerWidget {
             icon: Icons.dark_mode_outlined,
             selected: mode == ThemeMode.dark,
             surfaces: surfaces,
+            semanticLabel: l10n.shellThemeSemantic(l10n.shellThemeDark),
             onTap: () =>
                 ref.read(themeModeProvider.notifier).state = ThemeMode.dark,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// English/Arabic segmented toggle wired to [localeProvider]. Switching
+/// languages also switches the app's [TextDirection] (RTL for Arabic) since
+/// [AimMobileApp] derives `locale`/`Directionality` entirely from this
+/// provider — no separate RTL toggle is needed.
+class _AIMLanguageToggleRow extends ConsumerWidget {
+  const _AIMLanguageToggleRow();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final surfaces = aimSurfacesOf(context);
+    final locale = ref.watch(localeProvider);
+    final l10n = AppLocalizations.of(context);
+
+    return Row(
+      children: [
+        Expanded(
+          child: _ThemeToggleButton(
+            label: l10n.shellLanguageEnglishLabel,
+            icon: Icons.language,
+            selected: locale.languageCode == AppLocale.english,
+            surfaces: surfaces,
+            semanticLabel:
+                l10n.shellLanguageSemantic(l10n.shellLanguageEnglishLabel),
+            onTap: () => ref.read(localeProvider.notifier).state =
+                const Locale(AppLocale.english),
+          ),
+        ),
+        const SizedBox(width: AimSpacing.componentGap),
+        Expanded(
+          child: _ThemeToggleButton(
+            label: l10n.shellLanguageArabicLabel,
+            icon: Icons.language,
+            selected: locale.languageCode == AppLocale.arabic,
+            surfaces: surfaces,
+            semanticLabel:
+                l10n.shellLanguageSemantic(l10n.shellLanguageArabicLabel),
+            onTap: () => ref.read(localeProvider.notifier).state =
+                const Locale(AppLocale.arabic),
           ),
         ),
       ],
@@ -389,6 +439,7 @@ class _ThemeToggleButton extends StatelessWidget {
     required this.selected,
     required this.surfaces,
     required this.onTap,
+    required this.semanticLabel,
   });
 
   final String label;
@@ -396,11 +447,11 @@ class _ThemeToggleButton extends StatelessWidget {
   final bool selected;
   final AimSurfaceTheme surfaces;
   final VoidCallback onTap;
+  final String semanticLabel;
 
   @override
   Widget build(BuildContext context) {
     final soft = aimSoftFillsOf(context);
-    final l10n = AppLocalizations.of(context);
     final background = selected ? soft.primary : surfaces.surfaceSunken;
     final foreground = selected ? soft.onPrimary : surfaces.textSecondary;
 
@@ -415,7 +466,7 @@ class _ThemeToggleButton extends StatelessWidget {
         child: Semantics(
           button: true,
           selected: selected,
-          label: l10n.shellThemeSemantic(label),
+          label: semanticLabel,
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: AimSizes.touchTarget),
             child: Row(
