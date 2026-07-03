@@ -498,24 +498,223 @@ and add one true end-to-end test proving the whole chain works.
 
 ---
 
-## Suggestions not included above (your call, not started)
+## P20-017 — Remove the dead duplicate `FrustrationSignalService`
 
-A few things came up during investigation that you didn't ask for explicitly
-— flagging them here rather than quietly adding them as tasks:
+**Why:** Confirmed by direct comparison — `frustration-signal.service.ts`
+(P5-062) and `session-summary.service.ts` (P5-063) write the exact same
+`session_summaries` row, with byte-for-byte identical INSERT/UPDATE SQL and
+field lists. `session-summary.service.ts`'s own header comment says as much:
+*"FrustrationSignalService (P5-062) writes the same row from the
+behavioral-signal angle; in a composed pipeline one or the other is called,
+not both, to avoid duplicate writes."* `aim-persistence.service.ts` already
+only calls `SessionSummaryService`. `FrustrationSignalService` has no live
+callers anywhere in the codebase — it isn't "pending a decision," the decision
+already happened implicitly (SessionSummaryService won), it just was never
+cleaned up. This is a deletion, not a wiring task.
 
-- **Difficulty decisions currently aren't read by anything student-facing** —
-  `difficulty_decisions` gets written but no endpoint/adapter surfaces
-  "this question is now harder/easier" to the app or AI Teacher. If you want
-  the AI Teacher to also mention "I'm going to make this a bit easier/harder
-  now," that's an additional context-builder adapter, not covered above.
-- **`FrustrationSignalService` (P5-062)** is explicitly noted as
-  deliberately unwired, pending a team decision, in
-  `aim-persistence.service.ts`. Worth a decision either way before it rots
-  further.
-- **Non-English tracks**: the gating design above (`track_slug`) is built to
-  support more than one subject/track later, but nothing else in this list
-  builds a second track. Not needed now, just noting the schema doesn't box
-  you in.
-- **`prompt-renderer.service.ts`/templates**: confirmed dead code (zero
-  importers) in earlier investigation. Not touched by any task above; worth a
-  separate decision to delete or finish wiring it, later.
+**Read first:**
+- `services/backend-api/src/features/aim/persistence/frustration-signal.service.ts` and `session-summary.service.ts` — confirm for yourself they're duplicates (they should be, as of this audit, but re-verify since files may have diverged since).
+- `services/backend-api/src/features/aim/persistence/aim-persistence.service.ts` and `aim.module.ts` — confirm `FrustrationSignalService` genuinely has zero live callers before deleting (grep the whole repo, not just this folder).
+
+**Implementation:**
+- If still confirmed dead and duplicate: delete `frustration-signal.service.ts` and its spec file, remove it from `aim.module.ts`'s providers if it's still registered there.
+- If it turns out something *does* call it (re-verify, don't trust this doc blindly if the code has moved on), stop and report back instead of deleting — don't guess.
+
+**Acceptance criteria:**
+- `FrustrationSignalService` no longer exists in the codebase, `SessionSummaryService` remains the sole writer of `session_summaries`.
+- Full backend test suite still green (removing dead code shouldn't break anything real).
+
+**Claude Code web prompt:**
+> Read `services/backend-api/src/features/aim/persistence/frustration-signal.service.ts` and `services/backend-api/src/features/aim/persistence/session-summary.service.ts` side by side and confirm whether they are still functionally duplicate writers of the `session_summaries` table (as of a prior audit, they were byte-for-byte identical in their SQL and field handling). Then grep the entire `services/backend-api` tree for every reference to `FrustrationSignalService` to confirm it has zero live callers (check `aim-persistence.service.ts`, which per its own design should only call `SessionSummaryService`, and `aim.module.ts`'s provider list). If both checks confirm it's dead, duplicate code, delete `frustration-signal.service.ts` and `frustration-signal.service.spec.ts`, and remove any leftover registration of it from `aim.module.ts`. If your investigation finds it is NOT actually dead (something changed since this was documented), stop and report what you found instead of deleting anything. Run the backend test suite afterward and confirm it's still green.
+
+---
+
+## P20-018 — Surface difficulty decisions to the student and the AI Teacher
+
+**Why:** `difficulty_decisions` gets written by the real, working
+`DifficultyAdapter.decide()` pipeline output, but nothing ever reads it back —
+no endpoint, no AI Teacher context adapter. A student whose questions just got
+easier or harder has no way to know that happened, and the AI Teacher can't
+acknowledge it either ("since you've been finding this tough, let's slow
+down").
+
+**Read first:**
+- `difficulty_decisions` table columns (Supabase) — `current_difficulty`, `previous_difficulty`, `rationale`, `based_on_attempt_ids`, `decided_at`.
+- `services/backend-api/src/features/aim/result/recommendation-read.service.ts` — the existing pattern for a pure pass-through AIM-output read service; mirror this exactly for difficulty decisions rather than inventing a different shape.
+- `docs/phase-18/ai-teacher-authority-rules.md` — confirm surfacing `rationale` text (already backend/AIM-generated) to the AI Teacher doesn't cross the authority line; it doesn't, since the AI Teacher would only be reading a precomputed rationale string, same as the focus-directive pattern in P20-013.
+
+**Implementation:**
+- Add `DifficultyDecisionReadService` (mirroring `RecommendationReadService`) with a `getLatestForStudent(studentId, skillId?)` method.
+- Add a read endpoint, e.g. `GET /aim/students/:studentId/difficulty-decisions`, consistent with the existing sibling endpoints listed in `docs/mobile-app-api-endpoints.md` §7 — update that doc file too.
+- Add a new AI Teacher context-builder adapter (same pattern as P20-013's focus-directive adapter) that pulls the latest difficulty decision's `rationale` in as context, so the AI Teacher can acknowledge a difficulty change without ever computing one itself.
+
+**Acceptance criteria:**
+- New endpoint returns real data for a student with existing `difficulty_decisions` rows.
+- `docs/mobile-app-api-endpoints.md` updated with the new endpoint.
+- AI Teacher prompt includes the difficulty rationale when one exists, `null`/omitted when it doesn't (fail-closed, matching every other adapter).
+
+**Claude Code web prompt:**
+> This can be done independently of the other P20 tasks, though it reads more naturally after P20-013 (focus directives) since it follows the same adapter pattern — read that task's resulting code if it exists yet. Read the `difficulty_decisions` table's columns on Supabase project `yrarpdkvdxszgxxondkt`, `services/backend-api/src/features/aim/result/recommendation-read.service.ts` in full (as the pattern to mirror), and `docs/phase-18/ai-teacher-authority-rules.md`. Add a `DifficultyDecisionReadService` mirroring `RecommendationReadService`'s structure exactly, with a method returning the latest difficulty decision for a student (optionally filtered by skill). Add a `GET /aim/students/:studentId/difficulty-decisions` endpoint following this codebase's existing conventions for the sibling AIM read endpoints (see `docs/mobile-app-api-endpoints.md` section 7 for the existing list, and update that doc with the new row). Add a new AI Teacher context-builder adapter, matching the exact style of `services/backend-api/src/features/ai-teacher/context-builder/adapters/student-profile-context.adapter.ts` and its siblings, that reads the latest difficulty decision's `rationale` field and exposes it on the context snapshot, returning `null` when none exists (fail-closed, same as every other adapter — do not fabricate a default). Wire it into `AI_TEACHER_PROMPT_SECTION_ORDER`. Add tests for the read service, the endpoint, and the adapter's null-handling.
+
+---
+
+## P20-019 — Delete or finish the dead `prompt-renderer` code
+
+**Why:** `prompt-renderer.service.ts`, `prompt-renderer.module.ts`, and its
+`templates/` directory were confirmed to have zero importers outside their own
+files/specs — the live prompt-assembly path is entirely
+`prompt-builder.service.ts` (which just `JSON.stringify()`s each context
+section). Dead code that looks like a live feature is worse than no code —
+someone will eventually edit it thinking it does something.
+
+**Read first:**
+- `services/backend-api/src/features/ai-teacher/prompt-builder/prompt-renderer.service.ts`, `prompt-renderer.module.ts`, everything under its `templates/` directory, and their spec files.
+- Re-confirm zero live importers (grep the whole repo — not just `ai-teacher/` — in case something outside the feature folder references it).
+- Check git history / commit messages for these files (e.g. `git log --follow`) for any stated intent to finish wiring them later, so you don't delete something mid-flight that was deliberately paused.
+
+**Implementation:**
+- If genuinely dead with no stated future plan: delete the service, module, templates directory, and their specs. Remove any leftover reference in `ai-teacher.module.ts` or similar aggregator modules.
+- If you find evidence (commit messages, TODOs referencing a specific future phase/task) that this was intentionally left mid-build for a real planned reason: do not delete it — instead report exactly what you found and stop, so a decision can be made explicitly rather than silently picking one path.
+
+**Acceptance criteria:**
+- Either the dead code is gone and the backend still builds/tests clean, or you've reported back with the specific evidence that stopped you from deleting it.
+
+**Claude Code web prompt:**
+> Read `services/backend-api/src/features/ai-teacher/prompt-builder/prompt-renderer.service.ts`, `prompt-renderer.module.ts`, every file under its `templates/` directory, and their spec files. Grep the entire repository (not just the `ai-teacher` folder) for any import of these files to re-confirm they have zero live callers — the live prompt-assembly path is `prompt-builder.service.ts`. Also check `git log --follow` on these files for any commit message or code comment indicating they were intentionally left mid-build for a specific planned reason. If they are confirmed dead with no stated future intent, delete `prompt-renderer.service.ts`, `prompt-renderer.module.ts`, the `templates/` directory, and their spec files, and remove any leftover reference to them from `ai-teacher.module.ts` or any other aggregator module. Run the backend build and test suite to confirm nothing broke. If you find real evidence they were deliberately paused for a specific future purpose, do not delete anything — report exactly what you found instead.
+
+---
+
+## P20-020 — Surface the emotional/frustration signal that's already being computed
+
+**Why:** `EmotionalStateDetector` (imported from `services/api`, already
+wired into the real aim-engine pipeline) produces a real `frustration_score`
+(derived from `consecutive_incorrect * 20.0`) and maps it to a coarse
+`frustration_level`/`engagement_level` enum, persisted into
+`session_summaries` by `SessionSummaryService` (confirmed real, see P20-017).
+Nothing downstream ever reads it back — it's computed and stored, then
+ignored.
+
+**Read first:**
+- `services/aim-engine/app/pipeline/aim_analysis_pipeline.py` lines ~520-605 (the frustration/engagement level mapping and where it lands in the response).
+- `session_summaries` table columns — `frustration_level`, `engagement_level`, `signal_basis`.
+- `services/backend-api/src/features/ai-teacher/context-builder/` — same adapter pattern as P20-013/P20-018.
+- `docs/phase-18/ai-teacher-authority-rules.md` — frustration/engagement level are explicitly documented as "coarse educational signals only, never clinical/diagnostic" (see the comments in `frustration-signal.service.ts`/`session-summary.service.ts`) — respect this boundary in whatever text you generate from it; never construct clinical/psychological-sounding language.
+
+**Implementation:**
+- Add a context-builder adapter that reads the most recent `session_summaries` row for the student's active session and exposes `frustrationLevel`/`engagementLevel` as coarse enum values (not the raw numeric score) to the AI Teacher context, so the AI Teacher can adjust tone (e.g. slow down, add encouragement) — phrased as pedagogical guidance in the prompt, never as a label shown verbatim to the student as a diagnosis.
+- Optionally (confirm with the user before doing this part — it's a UI decision, not just backend plumbing): add a lightweight, encouraging student-facing indicator (e.g. "Taking it steady today? Let's slow down" copy variants keyed off `engagement_level`), gated behind the same coarse-enum-only rule.
+
+**Acceptance criteria:**
+- AI Teacher prompt includes the current coarse frustration/engagement signal when available, absent when not (fail-closed).
+- No clinical/diagnostic-sounding language introduced anywhere in generated text.
+
+**Claude Code web prompt:**
+> Read `services/aim-engine/app/pipeline/aim_analysis_pipeline.py` lines ~520-605 (the frustration/engagement level computation and mapping), the `session_summaries` table's columns on Supabase project `yrarpdkvdxszgxxondkt`, `docs/phase-18/ai-teacher-authority-rules.md`, and the existing context-builder adapters under `services/backend-api/src/features/ai-teacher/context-builder/adapters/` (for the pattern to follow — this is the same shape of task as P20-013 and P20-018, read those tasks' resulting code if it exists). Add a new context-builder adapter that reads the most recent `session_summaries` row for the student and exposes the coarse `frustration_level`/`engagement_level` enum values (never the raw numeric `frustration_score`, and never any invented clinical/diagnostic-sounding label — the existing code comments in `frustration-signal.service.ts` and `session-summary.service.ts` are explicit that these are educational signals only) to the AI Teacher's context. Wire it into `AI_TEACHER_PROMPT_SECTION_ORDER`, phrased in the prompt as pedagogical guidance (e.g. "the student may be finding this challenging right now — consider slowing down and offering encouragement") rather than a label. Do not build a student-facing UI indicator for this in the same task — that's a separate UI/copy decision; note it in your report as a possible follow-up instead of building it speculatively. Add tests for the adapter's fail-closed `null` behavior when no recent session summary exists.
+
+---
+
+## P20-021 — Connect review-schedule due dates to actual notifications
+
+**Why:** `review_schedules` already computes real, per-skill spaced-repetition
+due dates (the exponential forgetting-curve math is real, see the original
+audit). But nothing connects a due review to the existing notification system
+— `reminder_schedules`, `notification_events`, `notification_preferences` all
+already exist and are wired for other purposes (per
+`docs/mobile-app-api-endpoints.md` §12), just not for this. Today, a student
+only ever sees a due review if they manually open the review-schedule screen.
+
+**Read first:**
+- `services/backend-api/src/features/aim/result/` — whatever currently reads `review_schedules` (the `GET /aim/students/:studentId/review-schedules` endpoint).
+- `reminder_schedules` table and whatever service manages it — find the existing pattern for how a reminder gets created/scheduled today (for something else, e.g. streak reminders) and mirror it, don't invent a parallel notification mechanism.
+- `notification_preferences`/`notification_quiet_hours` — a review-due notification must respect these like every other notification type does; don't bypass them.
+
+**Implementation:**
+- When a `review_schedules` row is created/updated with a `due_at` (as part of P20-006's pipeline wiring, or as a follow-on step in the same persistence transaction), create or update a corresponding `reminder_schedules` entry so the existing reminder/notification delivery pipeline picks it up at the right time, respecting the student's quiet hours and channel preferences exactly like other reminder types.
+- Do not build a second, separate notification delivery path — this task only needs to produce the right `reminder_schedules` row; delivery should reuse whatever mechanism already sends other reminder types.
+
+**Acceptance criteria:**
+- A newly created/updated `review_schedules` row results in a corresponding `reminder_schedules` row with the correct due time.
+- Existing reminder-delivery tests still pass; new tests cover the review-due reminder specifically.
+
+**Claude Code web prompt:**
+> This depends on P20-006 (the pipeline actually firing and writing real `review_schedules` rows) having landed — read that task's resulting code first. Read whatever currently reads/writes `review_schedules` under `services/backend-api/src/features/aim/`, the `reminder_schedules` table's schema on Supabase project `yrarpdkvdxszgxxondkt`, and find the existing service that creates/manages reminder schedules for at least one other feature already wired to notifications (check `docs/mobile-app-api-endpoints.md` section 12 for what's already active, e.g. streak or deadline reminders, and grep for whatever writes to `reminder_schedules` today) — mirror that exact pattern rather than inventing a second notification mechanism. When a `review_schedules` row is created or its `due_at` updated (hook into the same persistence step that writes it, from P20-006), create or update a corresponding `reminder_schedules` row so the review reaches the student through the existing reminder delivery pipeline, respecting `notification_preferences` and `notification_quiet_hours` exactly as other reminder types do — do not bypass them. Add tests confirming a review-schedule write produces the correct reminder-schedule row, and that existing reminder-delivery tests are unaffected.
+
+---
+
+## P20-022 — Auto-resolve weaknesses when mastery actually improves
+
+**Why:** `weakness_records` has a `resolved_at` column and a `status` field,
+but nothing currently checks whether a previously-flagged weakness has
+actually improved and closes it out. Left as-is, the weakness list only ever
+grows — a student who's since mastered a skill still shows as "weak" in it
+forever, which would make both the AI Teacher's focus directives (P20-013)
+and any weakness-facing UI increasingly wrong over time.
+
+**Read first:**
+- `weakness_records` table columns — `severity`, `status`, `trigger_attempt_ids`, `detected_at`, `resolved_at`.
+- `services/aim-engine`'s `WeaknessDetector.calculate_by_skill()` (the real, already-wired weighted formula) — check whether it already has a notion of "this skill is no longer weak" that just isn't being acted on, versus needing new logic.
+- `services/backend-api/src/features/aim/persistence/` — whichever service currently writes new `weakness_records` rows (`WeaknessUpdateService` per the earlier audit) — this task extends it, doesn't replace it.
+
+**Implementation:**
+- When the AIM engine's weakness-detection output for a skill no longer flags it as weak (or flags a materially lower severity) for a student who has an existing unresolved `weakness_records` row for that skill, set `status` to resolved and `resolved_at = now()` on that row rather than only ever inserting new rows.
+- Decide (and document in code comments) the exact threshold/rule for "no longer weak" using the real severity output already computed by `WeaknessDetector` — don't invent a second, separate definition of "resolved" from scratch; derive it from the same weighted signal that flagged it as weak in the first place.
+
+**Acceptance criteria:**
+- A synthetic test where a student's weakness-triggering pattern stops recurring and mastery improves results in the existing `weakness_records` row being marked resolved, not a growing pile of permanently-open rows.
+- Existing weakness-creation tests still pass.
+
+**Claude Code web prompt:**
+> This depends on P20-006 (pipeline actually firing) having landed. Read the `weakness_records` table's columns on Supabase project `yrarpdkvdxszgxxondkt`, `services/aim-engine`'s `WeaknessDetector.calculate_by_skill()` (the real weighted weakness formula — error frequency 25%, hint usage 20%, retry rate 15%, skip rate 15%, hesitation 10%, retention drop 10%, prerequisite gap 5%), and whichever backend service currently writes new `weakness_records` rows (grep for `WeaknessUpdateService` or similar under `services/backend-api/src/features/aim/persistence/`). Extend that service so that when the AIM engine's weakness output for a skill no longer flags it as weak (or drops materially in severity) for a student with an existing unresolved `weakness_records` row for that skill, the existing row is updated to a resolved status with `resolved_at = now()`, instead of only ever inserting new rows and leaving old ones open forever. Derive the "no longer weak" threshold from the same severity signal `WeaknessDetector` already computes — do not invent a second, independent definition of "resolved." Document the exact threshold you chose in a code comment, since it's a judgment call. Add tests covering: a weakness getting resolved when severity drops below the threshold, and a weakness staying open when it doesn't.
+
+---
+
+## P20-023 — Make `/student/analytics/summary` surface real AIM output, not just report metadata
+
+**Why:** Checked directly: `StudentAnalyticsSummaryController.getSummary()`
+only calls `ReportDefinitionService.listVisibleToRole()`, which returns
+report *definitions* (metadata — which reports exist and are visible to this
+role), not computed data. `ReportRunnerService` (which actually executes a
+report and returns real numbers) has no report definition anywhere that reads
+`student_skill_states`, `weakness_records`, or `review_schedules` — confirmed
+by grep, zero matches. So even after every other task in this list makes
+those tables real and populated, there is currently no report that would ever
+show a student their own real mastery/weakness/review-adherence trend.
+
+**Read first:**
+- `services/backend-api/src/features/analytics/report-definition.service.ts`, `report-runner.service.ts`, `analytics.repository.ts`, and `analytics.entities.ts` — understand exactly how a `ReportDefinition` row maps to what `ReportRunnerService` actually queries (it appears to be a generic, key-driven system reading from `metric_aggregates`/`metric_definitions` for most existing reports — confirm this and follow the same registration pattern for a new one, don't build a parallel bespoke endpoint).
+- The `report_definitions`/`metric_definitions`/`metric_aggregates` tables on Supabase, to see how existing reports are actually seeded and computed.
+
+**Implementation:**
+- Register a new report definition (e.g. key `student_aim_progress`) visible to the `student` role (and reuse for `parent` if that role already has an equivalent pattern — check `parent-reports.controller.ts`), whose underlying computation reads `student_skill_states` (current mastery per skill + trend), `weakness_records` (currently open ones, plus recently resolved ones per P20-022), and `review_schedules` (upcoming due reviews) for the authenticated student.
+- Follow whatever existing mechanism `ReportRunnerService` uses to execute a report's underlying query (it may be a generic metric-aggregate lookup, or a per-report-key dispatch — read the file fully before assuming which) — extend that mechanism rather than adding a special-cased branch that only this one report uses, unless the existing system genuinely has no way to add a custom, non-metric-aggregate-backed query, in which case say so explicitly and propose the smallest addition that fits the existing architecture.
+
+**Acceptance criteria:**
+- A student with real `student_skill_states`/`weakness_records`/`review_schedules` rows (from a real pipeline run, per P20-005/006) gets back real numbers when this report is run — not another layer of mocked/placeholder data.
+- Existing analytics reports/tests unaffected.
+
+**Claude Code web prompt:**
+> This depends on P20-005/006 (real AIM tables actually getting populated) to be meaningfully testable end-to-end, though the report-definition plumbing itself can be built independently. Read `services/backend-api/src/features/analytics/report-definition.service.ts`, `report-runner.service.ts`, `analytics.repository.ts`, and `analytics.entities.ts` in full, and check the `report_definitions`, `metric_definitions`, and `metric_aggregates` tables on Supabase project `yrarpdkvdxszgxxondkt` to understand exactly how an existing report definition's key maps to what `ReportRunnerService` actually computes when it's run — confirmed by prior investigation, `StudentAnalyticsSummaryController.getSummary()` today only returns report *definitions* via `ReportDefinitionService.listVisibleToRole()`, not computed data, and no existing report reads any AIM output table. Register a new report definition (e.g. key `student_aim_progress`) visible to the `student` role, whose execution reads the authenticated student's `student_skill_states` (mastery + trend per skill), `weakness_records` (open and recently-resolved), and `review_schedules` (upcoming due reviews). Follow the exact existing mechanism `ReportRunnerService` uses to execute report queries — read the whole file before deciding whether that's a generic metric-aggregate lookup you should feed correctly-shaped aggregate rows into, or a per-report dispatch you should add a case to. If the existing architecture has no clean way to add a custom query for this report, say so explicitly in your report and propose the smallest addition that fits its existing pattern rather than bolting on a special case. Check `parent-reports.controller.ts` to see if the same report should also be exposed to the `parent` role under its existing pattern. Add tests confirming the new report returns real, correctly-shaped data given synthetic AIM table rows.
+
+---
+
+## Anything else? (final check before you start)
+
+That's now 23 tasks. Two structural things worth flagging one more time, since
+you asked for anything that would make the algorithm "full and correct" —
+neither is a bug, both are judgment calls only you can make:
+
+- **Sequencing risk**: P20-007/008/009 (porting the richer algorithms) touch
+  the same pipeline file as P20-005 (the stub fix) and P20-006 (wiring
+  triggers). Doing them in the listed order (005 → 006 → 007 → 008 → 009)
+  avoids merge conflicts and lets you verify the wiring works with the
+  *current* simple formulas before swapping in the more complex ones — don't
+  parallelize 005/006 with 007/008/009.
+- **Rollout risk**: once P20-005/006 land, every real student's next lesson
+  attempt starts actually calling the AIM Engine, computing real mastery, and
+  (once P20-010/011 land) getting gated by level for the first time — this is
+  a behavior change for anyone already using the app, not just new users.
+  Worth deciding whether you want a feature flag around P20-006's trigger
+  wiring so it can be turned on for a small cohort first, or whether you're
+  comfortable with it going live for everyone as soon as it's merged. Not
+  building this speculatively — flagging it as a decision, same as everything
+  else in this section.
