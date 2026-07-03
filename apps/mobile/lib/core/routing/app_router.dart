@@ -319,9 +319,11 @@ class AppRouter {
     if (assessmentId is! String || assessmentTitle is! String) {
       return const SplashPage();
     }
+    final timeLimitSeconds = args['timeLimitSeconds'];
     return StartAttemptPage(
       assessmentId: assessmentId,
       assessmentTitle: assessmentTitle,
+      timeLimitSeconds: timeLimitSeconds is int ? timeLimitSeconds : null,
     );
   }
 
