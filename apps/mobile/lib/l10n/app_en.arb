@@ -1743,6 +1743,10 @@
   "@notificationsDismissSemantic": {
     "description": "Accessibility label for the swipe-to-dismiss action revealed behind a notification tile."
   },
+  "notificationsCloseSheetSemantic": "Close notifications",
+  "@notificationsCloseSheetSemantic": {
+    "description": "Accessibility label for the close button on the notifications bottom sheet."
+  },
   "notificationsUnreadTileSemantic": "Unread notification: {title}",
   "@notificationsUnreadTileSemantic": {
     "description": "Accessibility label for an unread notification tile on the inbox screen.",

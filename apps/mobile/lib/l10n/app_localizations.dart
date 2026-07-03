@@ -1936,6 +1936,12 @@ abstract class AppLocalizations {
   /// **'Dismiss notification'**
   String get notificationsDismissSemantic;
 
+  /// Accessibility label for the close button on the notifications bottom sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Close notifications'**
+  String get notificationsCloseSheetSemantic;
+
   /// Accessibility label for an unread notification tile on the inbox screen.
   ///
   /// In en, this message translates to:

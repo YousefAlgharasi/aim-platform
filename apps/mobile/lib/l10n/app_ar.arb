@@ -317,6 +317,7 @@
   "notificationsInboxEmptyTitle": "لا توجد إشعارات بعد",
   "notificationsInboxEmptySubtitle": "ستظهر هنا تذكيرات الجلسات وتحديثات التقدم.",
   "notificationsDismissSemantic": "تجاهل الإشعار",
+  "notificationsCloseSheetSemantic": "إغلاق الإشعارات",
   "notificationsUnreadTileSemantic": "إشعار غير مقروء: {title}",
   "notificationsTileSemantic": "إشعار: {title}",
   "notificationsUnreadLabel": "غير مقروء",

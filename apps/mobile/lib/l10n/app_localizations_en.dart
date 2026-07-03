@@ -1267,6 +1267,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationsDismissSemantic => 'Dismiss notification';
 
   @override
+  String get notificationsCloseSheetSemantic => 'Close notifications';
+
+  @override
   String notificationsUnreadTileSemantic(String title) {
     return 'Unread notification: $title';
   }

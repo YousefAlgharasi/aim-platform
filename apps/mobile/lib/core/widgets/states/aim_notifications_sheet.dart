@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../theme/theme.dart';
 import '../buttons/buttons.dart';
 import '../feedback/feedback.dart';
@@ -46,7 +47,7 @@ class AIMNotificationsSheet extends StatelessWidget {
     this.onTapItem,
     this.onDismissItem,
     this.loading = false,
-    this.emptyMessage = 'No notifications yet',
+    this.emptyMessage,
     this.subtitle,
     this.headerIcon,
     this.onMarkAllRead,
@@ -56,7 +57,10 @@ class AIMNotificationsSheet extends StatelessWidget {
   final ValueChanged<AIMNotificationItemData>? onTapItem;
   final ValueChanged<AIMNotificationItemData>? onDismissItem;
   final bool loading;
-  final String emptyMessage;
+
+  /// Message shown when [notifications] is empty. Defaults to a localized
+  /// "No notifications yet" when left `null`.
+  final String? emptyMessage;
 
   /// Optional subtitle rendered under the "Notifications" title, e.g.
   /// "2 new today". Defaults to `null` (not rendered).
@@ -112,13 +116,14 @@ class AIMNotificationsSheet extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context, AimSurfaceTheme surfaces) {
+    final l10n = AppLocalizations.of(context);
     final titleAndSubtitle = Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Notifications',
+            l10n.shellNotifications,
             style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
           ),
           if (subtitle != null) ...[
@@ -149,10 +154,10 @@ class AIMNotificationsSheet extends StatelessWidget {
         if (onMarkAllRead != null)
           TextButton(
             onPressed: onMarkAllRead,
-            child: const Text('Mark read'),
+            child: Text(l10n.notificationsMarkAsReadLabel),
           ),
         AIMIconButton(
-          semanticLabel: 'Close notifications',
+          semanticLabel: l10n.notificationsCloseSheetSemantic,
           icon: const Icon(Icons.close_rounded),
           onPressed: () => context.pop(),
         ),
@@ -186,7 +191,8 @@ class AIMNotificationsSheet extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: AimSpacing.sectionGap),
         child: AIMEmptyState(
           icon: const Icon(Icons.notifications_none_rounded),
-          title: emptyMessage,
+          title: emptyMessage ??
+              AppLocalizations.of(context).notificationsInboxEmptyTitle,
         ),
       );
     }
@@ -295,7 +301,7 @@ class _AIMNotificationRow extends StatelessWidget {
           ),
           if (onDismiss != null)
             AIMIconButton(
-              semanticLabel: 'Dismiss notification',
+              semanticLabel: AppLocalizations.of(context).notificationsDismissSemantic,
               icon: const Icon(Icons.close_rounded, size: AimSizes.iconSm),
               onPressed: onDismiss,
             ),

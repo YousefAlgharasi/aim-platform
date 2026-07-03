@@ -1329,6 +1329,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get notificationsDismissSemantic => 'تجاهل الإشعار';
 
   @override
+  String get notificationsCloseSheetSemantic => 'إغلاق الإشعارات';
+
+  @override
   String notificationsUnreadTileSemantic(String title) {
     return 'إشعار غير مقروء: $title';
   }
