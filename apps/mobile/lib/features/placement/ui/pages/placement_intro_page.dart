@@ -23,6 +23,7 @@
 //   skill mastery, weakness map, or initial path.
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/routing.dart';
 import '../../../../core/widgets/widgets.dart';
@@ -89,8 +90,8 @@ class PlacementIntroPage extends StatelessWidget {
                     gradient: AimGradients.gzHero,
                     fullWidth: true,
                     semanticLabel: 'Start placement test',
-                    onPressed: () => Navigator.of(context)
-                        .pushNamed(AppRoutePaths.placementStart),
+                    onPressed: () =>
+                        context.push(AppRoutePaths.placementStart),
                   ),
                 ],
               ),
@@ -129,7 +130,9 @@ class _IntroHeader extends StatelessWidget {
               button: true,
               label: 'Back',
               child: InkWell(
-                onTap: () => Navigator.of(context).maybePop(),
+                onTap: () {
+                  if (context.canPop()) context.pop();
+                },
                 customBorder: const CircleBorder(),
                 child: DecoratedBox(
                   decoration: BoxDecoration(

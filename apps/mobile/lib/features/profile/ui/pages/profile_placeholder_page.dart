@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/routing.dart';
 import '../../../../core/state/app_async_state.dart';
@@ -38,10 +39,7 @@ class ProfilePlaceholderPage extends ConsumerWidget {
           AIMButton(
             onPressed: () {
               ref.read(authFlowProvider.notifier).signOutPlaceholder();
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                AppRoutePaths.signIn,
-                (route) => false,
-              );
+              context.go(AppRoutePaths.signIn);
             },
             variant: AIMButtonVariant.outline,
             fullWidth: true,

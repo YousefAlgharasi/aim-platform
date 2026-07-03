@@ -1,8 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:aim_mobile/core/routing/routing.dart';
 import 'package:aim_mobile/features/shell/ui/pages/main_shell_page.dart';
 import 'package:aim_mobile/features/auth/data/session/session_store.dart';
 import 'package:aim_mobile/features/auth/logic/provider/app_bootstrap_notifier.dart';
@@ -10,6 +8,8 @@ import 'package:aim_mobile/features/auth/logic/provider/app_bootstrap_provider.d
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/session_store_provider.dart';
+
+import '../../support/test_router_app.dart';
 
 void main() {
   // ── AppBootstrapNotifier unit tests ──────────────────────────
@@ -47,7 +47,7 @@ void main() {
     expect(container.read(authFlowProvider).isSignedOut, isTrue);
   });
 
-  // ── AuthGate widget tests ─────────────────────────────────
+  // ── AuthGate / GoRouter redirect widget tests ────────────────
 
   testWidgets(
       'AuthGate navigates to sign-in when bootstrap is done and signedOut',
@@ -64,10 +64,7 @@ void main() {
             return n;
           }),
         ],
-        child: const MaterialApp(
-          initialRoute: AppRoutePaths.splash,
-          onGenerateRoute: AppRouter.onGenerateRoute,
-        ),
+        child: const TestRouterApp(),
       ),
     );
 
@@ -84,10 +81,7 @@ void main() {
           appBootstrapProvider.overrideWith(
               (ref) => _StuckCheckingNotifier(ref)),
         ],
-        child: const MaterialApp(
-          initialRoute: AppRoutePaths.splash,
-          onGenerateRoute: AppRouter.onGenerateRoute,
-        ),
+        child: const TestRouterApp(),
       ),
     );
 
@@ -109,10 +103,7 @@ void main() {
               ..signIn('learner@example.com', accessToken: 'tok-abc');
           }),
         ],
-        child: const MaterialApp(
-          initialRoute: AppRoutePaths.splash,
-          onGenerateRoute: AppRouter.onGenerateRoute,
-        ),
+        child: const TestRouterApp(),
       ),
     );
 

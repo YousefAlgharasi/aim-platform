@@ -36,6 +36,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
@@ -93,9 +94,9 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
   }
 
   void _startPractice(LessonDetail detail) {
-    Navigator.of(context).pushNamed(
+    context.push(
       AppRoutePaths.aiTeacherChat,
-      arguments: {
+      extra: {
         'contextRef': 'lesson:${detail.lesson.id}',
         'lessonTitle': detail.lesson.title,
         'contextLabel': 'Lesson practice',
@@ -122,7 +123,9 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
     return Scaffold(
       appBar: AIMTopAppBar(
         title: 'Lesson',
-        onBack: () => Navigator.of(context).maybePop(),
+        onBack: () {
+          if (context.canPop()) context.pop();
+        },
         actions: const [
           // Visual only — no bookmark/save-lesson endpoint exists yet, so
           // this action is disabled rather than a dead-end tap.
@@ -423,7 +426,7 @@ class _LessonStepSheet extends StatelessWidget {
                     AIMIconButton(
                       icon: const Icon(Icons.close_rounded),
                       semanticLabel: 'Close',
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () => context.pop(),
                     ),
                   ],
                 ),

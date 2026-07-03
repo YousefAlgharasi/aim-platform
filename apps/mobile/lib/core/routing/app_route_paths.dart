@@ -29,6 +29,8 @@ class AppRoutePaths {
   static const String assessmentDetail = '/student/assessments/detail';
   static const String assessmentStart = '/student/assessments/start';
   static const String assessmentAttempt = '/student/assessments/attempt';
+  // Confirmation step pushed on top of the attempt page (design screen 28).
+  static const String assessmentSubmit = '/student/assessments/submit';
   static const String assessmentResult = '/student/assessments/result';
   // TASK-29: Result history route (page existed with no route — see TASK-14
   // table row 30, which never actually got wired up).

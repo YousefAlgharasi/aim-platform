@@ -1,10 +1,11 @@
-import 'package:aim_mobile/features/auth/ui/pages/register_page.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../state/app_async_state.dart';
 import '../../features/auth/data/models/auth_context_model.dart';
 import '../../features/auth/logic/entity/auth_flow_state.dart';
 import '../../features/auth/ui/pages/login_page.dart';
+import '../../features/auth/ui/pages/register_page.dart';
 import '../../features/lessons/ui/pages/chapter_list_page.dart';
 import '../../features/lessons/ui/pages/lesson_detail_page.dart';
 import '../../features/lessons/ui/pages/lesson_list_page.dart';
@@ -20,6 +21,7 @@ import '../../features/assessments/ui/pages/assessment_result_page.dart';
 import '../../features/assessments/ui/pages/result_history_page.dart';
 import '../../features/assessments/ui/pages/attempt_page.dart';
 import '../../features/assessments/ui/pages/start_attempt_page.dart';
+import '../../features/assessments/ui/pages/submit_attempt_page.dart';
 import '../../features/billing/ui/pages/subscription_page.dart';
 import '../../features/billing/ui/pages/pricing_page.dart';
 import '../../features/billing/ui/pages/invoice_history_page.dart';
@@ -58,148 +60,299 @@ import '../../features/billing/ui/pages/checkout_status_page.dart';
 import '../../features/design_system_preview/ui/pages/ds_preview_page.dart';
 import 'app_route_paths.dart';
 
+/// Centralised GoRouter configuration for the app.
+///
+/// This is the single source of truth for the app's routing graph. Every
+/// screen is registered as a top-level [GoRoute] keyed by a path constant
+/// from [AppRoutePaths]. Arguments that used to travel via
+/// `RouteSettings.arguments` now travel via [GoRouterState.extra], keeping
+/// the same "typed args map, validated in a `_build*` helper, fall back to
+/// [SplashPage] on bad input" shape as before the migration.
+///
+/// Auth gating is centralised in [redirect], which defers entirely to
+/// [resolveRouteName] — the exact same decision function the app used
+/// pre-migration — so the auth business logic is untouched; only the
+/// mechanism that acts on it (declarative `redirect` vs. an imperative
+/// `Navigator` push from [AuthGate]) changed.
 class AppRouter {
   const AppRouter._();
 
-  static Route<dynamic> onGenerateRoute(
-    RouteSettings settings, {
-    AuthFlowState? authState,
-    AppAsyncState<AuthContextModel>? authContextState,
+  /// Builds the app's [GoRouter]. [authState] / [authContextState] are read
+  /// lazily on every redirect evaluation (not captured once) so the router
+  /// can be constructed a single time (in `initState`) while still reacting
+  /// to auth changes via [refreshListenable].
+  static GoRouter buildRouter({
+    required AuthFlowState Function() authState,
+    required AppAsyncState<AuthContextModel>? Function() authContextState,
+    Listenable? refreshListenable,
+    GlobalKey<NavigatorState>? navigatorKey,
+    String initialLocation = AppRoutePaths.splash,
   }) {
-    final routeName = resolveRouteName(
-      settings.name,
-      authState: authState,
-      authContextState: authContextState,
-    );
-
-    return MaterialPageRoute<void>(
-      settings: RouteSettings(name: routeName, arguments: settings.arguments),
-      builder: (context) {
-        switch (routeName) {
-          case AppRoutePaths.splash:
-            return const SplashPage();
-          case AppRoutePaths.signIn:
-            return const LoginPage();
-          case AppRoutePaths.register:
-            return const RegisterPage();
-          case AppRoutePaths.mainShell:
-          case AppRoutePaths.home:
-          case AppRoutePaths.learn:
-          case AppRoutePaths.review:
-          case AppRoutePaths.progress:
-          case AppRoutePaths.profile:
-            return const MainShellPage();
-          // P6-021: Placement Test flow routes — guarded, backend-driven
-          case AppRoutePaths.placementStart:
-            return const PlacementStartPage();
-          case AppRoutePaths.placementSection:
-            return _buildPlacementSection(settings.arguments);
-          case AppRoutePaths.placementQuestion:
-            return _buildPlacementQuestion(settings.arguments);
-          case AppRoutePaths.placementSubmit:
-            return _buildPlacementSubmit(settings.arguments);
-          case AppRoutePaths.placementResult:
-            return _buildPlacementResult(settings.arguments);
-          case AppRoutePaths.courseChapters:
-            return _buildChapterListPage(settings.arguments);
-          case AppRoutePaths.chapterLessons:
-            return _buildLessonListPage(settings.arguments);
-          case AppRoutePaths.lessonDetail:
-            return _buildLessonDetailPage(settings.arguments);
-          case AppRoutePaths.assessments:
-            return const AssessmentListPage();
-          case AppRoutePaths.assessmentDetail:
-            return _buildAssessmentDetail(settings.arguments);
-          case AppRoutePaths.assessmentStart:
-            return _buildAssessmentStart(settings.arguments);
-          case AppRoutePaths.assessmentAttempt:
-            return _buildAssessmentAttempt(settings.arguments);
-          case AppRoutePaths.assessmentResult:
-            return _buildAssessmentResult(settings.arguments);
-          case AppRoutePaths.assessmentResultHistory:
-            return _buildResultHistory(settings.arguments);
-          case AppRoutePaths.subscription:
-            return const SubscriptionPage();
-          case AppRoutePaths.pricing:
-            return const PricingPage();
-          case AppRoutePaths.invoiceHistory:
-            return const InvoiceHistoryPage();
-          case AppRoutePaths.aiTeacherChat:
-            return _buildAiTeacherChat(settings.arguments);
-          case AppRoutePaths.notificationInbox:
-            return const NotificationInboxPage();
-          case AppRoutePaths.analyticsSummary:
-            return const AnalyticsSummaryPage();
-          case AppRoutePaths.achievements:
-            return const AchievementsPage();
-          case AppRoutePaths.endpointTester:
-            return const EndpointTesterPage();
-          // TASK-14: Profile routes
-          case AppRoutePaths.editProfile:
-            return const EditProfilePage();
-          // TASK-14: Progress detail routes
-          case AppRoutePaths.skillState:
-            return const SkillStatePage();
-          case AppRoutePaths.weaknessSummary:
-            return const WeaknessSummaryPage();
-          case AppRoutePaths.recommendations:
-            return const RecommendationsPage();
-          case AppRoutePaths.reviewSchedule:
-            return const ReviewSchedulePage();
-          // TASK-14: Placement intro route
-          case AppRoutePaths.placementIntro:
-            return const PlacementIntroPage();
-          // TASK-14: Assessment deadlines route
-          case AppRoutePaths.assessmentDeadlines:
-            return const DeadlinesPage();
-          // TASK-14: Voice Teacher routes
-          case AppRoutePaths.voiceTeacher:
-            return _buildVoiceTeacherPage(settings.arguments);
-          // TASK-14: AI Teacher routes
-          case AppRoutePaths.aiTeacherSettings:
-            return const AiTeacherSettingsPage();
-          case AppRoutePaths.aiTeacherHistory:
-            return const AiTeacherSessionHistoryPage();
-          // TASK-14: Notification routes
-          case AppRoutePaths.notificationPreferences:
-            return const NotificationPreferencesPage();
-          case AppRoutePaths.reminderSettings:
-            return const ReminderSettingsPage();
-          case AppRoutePaths.notificationDetail:
-            return _buildNotificationDetailPage(settings.arguments);
-          // TASK-14: Support routes
-          case AppRoutePaths.helpCenter:
-            return const HelpCenterPage();
-          case AppRoutePaths.parentHelpCenter:
-            return const ParentHelpCenterPage();
-          case AppRoutePaths.createTicket:
-            return const CreateTicketPage();
-          case AppRoutePaths.feedback:
-            return const FeedbackPage();
-          case AppRoutePaths.ticketList:
-            return const TicketListPage();
-          case AppRoutePaths.ticketDetail:
-            return _buildTicketDetailPage(settings.arguments);
-          case AppRoutePaths.parentTicketList:
-            return const ParentTicketListPage();
-          case AppRoutePaths.supportStatus:
-            return const StatusPage();
-          case AppRoutePaths.releaseNotes:
-            return const ReleaseNotesPage();
-          case AppRoutePaths.releaseNoteDetail:
-            return _buildReleaseNoteDetailPage(settings.arguments);
-          // TASK-14: Billing routes
-          case AppRoutePaths.checkoutStart:
-            return _buildCheckoutStartPage(settings.arguments);
-          case AppRoutePaths.checkoutStatus:
-            return _buildCheckoutStatusPage(settings.arguments);
-          // TASK-14: Dev Tools
-          case AppRoutePaths.designSystemPreview:
-            return const DSPreviewPage();
-          default:
-            return const SplashPage();
-        }
+    return GoRouter(
+      navigatorKey: navigatorKey,
+      initialLocation: initialLocation,
+      refreshListenable: refreshListenable,
+      redirect: (context, state) {
+        final requested = state.matchedLocation;
+        final resolved = resolveRouteName(
+          requested,
+          authState: authState(),
+          authContextState: authContextState(),
+        );
+        return resolved == requested ? null : resolved;
       },
+      errorBuilder: (context, state) => const SplashPage(),
+      routes: [
+        GoRoute(
+          path: AppRoutePaths.splash,
+          builder: (context, state) => const SplashPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.signIn,
+          builder: (context, state) => const LoginPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.register,
+          builder: (context, state) => const RegisterPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.mainShell,
+          builder: (context, state) => const MainShellPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.home,
+          builder: (context, state) => const MainShellPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.learn,
+          builder: (context, state) => const MainShellPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.review,
+          builder: (context, state) => const MainShellPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.progress,
+          builder: (context, state) => const MainShellPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.profile,
+          builder: (context, state) => const MainShellPage(),
+        ),
+        // P6-021: Placement Test flow routes — guarded, backend-driven
+        GoRoute(
+          path: AppRoutePaths.placementStart,
+          builder: (context, state) => const PlacementStartPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.placementSection,
+          builder: (context, state) => _buildPlacementSection(state.extra),
+        ),
+        GoRoute(
+          path: AppRoutePaths.placementQuestion,
+          builder: (context, state) => _buildPlacementQuestion(state.extra),
+        ),
+        GoRoute(
+          path: AppRoutePaths.placementSubmit,
+          builder: (context, state) => _buildPlacementSubmit(state.extra),
+        ),
+        GoRoute(
+          path: AppRoutePaths.placementResult,
+          builder: (context, state) => _buildPlacementResult(state.extra),
+        ),
+        GoRoute(
+          path: AppRoutePaths.courseChapters,
+          builder: (context, state) => _buildChapterListPage(state.extra),
+        ),
+        GoRoute(
+          path: AppRoutePaths.chapterLessons,
+          builder: (context, state) => _buildLessonListPage(state.extra),
+        ),
+        GoRoute(
+          path: AppRoutePaths.lessonDetail,
+          builder: (context, state) => _buildLessonDetailPage(state.extra),
+        ),
+        GoRoute(
+          path: AppRoutePaths.assessments,
+          builder: (context, state) => const AssessmentListPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.assessmentDetail,
+          builder: (context, state) => _buildAssessmentDetail(state.extra),
+        ),
+        GoRoute(
+          path: AppRoutePaths.assessmentStart,
+          builder: (context, state) => _buildAssessmentStart(state.extra),
+        ),
+        GoRoute(
+          path: AppRoutePaths.assessmentAttempt,
+          builder: (context, state) => _buildAssessmentAttempt(state.extra),
+        ),
+        GoRoute(
+          path: AppRoutePaths.assessmentSubmit,
+          builder: (context, state) => _buildAssessmentSubmit(state.extra),
+        ),
+        GoRoute(
+          path: AppRoutePaths.assessmentResult,
+          builder: (context, state) => _buildAssessmentResult(state.extra),
+        ),
+        GoRoute(
+          path: AppRoutePaths.assessmentResultHistory,
+          builder: (context, state) => _buildResultHistory(state.extra),
+        ),
+        GoRoute(
+          path: AppRoutePaths.subscription,
+          builder: (context, state) => const SubscriptionPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.pricing,
+          builder: (context, state) => const PricingPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.invoiceHistory,
+          builder: (context, state) => const InvoiceHistoryPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.aiTeacherChat,
+          builder: (context, state) => _buildAiTeacherChat(state.extra),
+        ),
+        GoRoute(
+          path: AppRoutePaths.notificationInbox,
+          builder: (context, state) => const NotificationInboxPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.analyticsSummary,
+          builder: (context, state) => const AnalyticsSummaryPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.achievements,
+          builder: (context, state) => const AchievementsPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.endpointTester,
+          builder: (context, state) => const EndpointTesterPage(),
+        ),
+        // TASK-14: Profile routes
+        GoRoute(
+          path: AppRoutePaths.editProfile,
+          builder: (context, state) => const EditProfilePage(),
+        ),
+        // TASK-14: Progress detail routes
+        GoRoute(
+          path: AppRoutePaths.skillState,
+          builder: (context, state) => const SkillStatePage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.weaknessSummary,
+          builder: (context, state) => const WeaknessSummaryPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.recommendations,
+          builder: (context, state) => const RecommendationsPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.reviewSchedule,
+          builder: (context, state) => const ReviewSchedulePage(),
+        ),
+        // TASK-14: Placement intro route
+        GoRoute(
+          path: AppRoutePaths.placementIntro,
+          builder: (context, state) => const PlacementIntroPage(),
+        ),
+        // TASK-14: Assessment deadlines route
+        GoRoute(
+          path: AppRoutePaths.assessmentDeadlines,
+          builder: (context, state) => const DeadlinesPage(),
+        ),
+        // TASK-14: Voice Teacher routes
+        GoRoute(
+          path: AppRoutePaths.voiceTeacher,
+          builder: (context, state) => _buildVoiceTeacherPage(state.extra),
+        ),
+        // TASK-14: AI Teacher routes
+        GoRoute(
+          path: AppRoutePaths.aiTeacherSettings,
+          builder: (context, state) => const AiTeacherSettingsPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.aiTeacherHistory,
+          builder: (context, state) => const AiTeacherSessionHistoryPage(),
+        ),
+        // TASK-14: Notification routes
+        GoRoute(
+          path: AppRoutePaths.notificationPreferences,
+          builder: (context, state) => const NotificationPreferencesPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.reminderSettings,
+          builder: (context, state) => const ReminderSettingsPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.notificationDetail,
+          builder: (context, state) =>
+              _buildNotificationDetailPage(state.extra),
+        ),
+        // TASK-14: Support routes
+        GoRoute(
+          path: AppRoutePaths.helpCenter,
+          builder: (context, state) => const HelpCenterPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.parentHelpCenter,
+          builder: (context, state) => const ParentHelpCenterPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.createTicket,
+          builder: (context, state) => const CreateTicketPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.feedback,
+          builder: (context, state) => const FeedbackPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.ticketList,
+          builder: (context, state) => const TicketListPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.ticketDetail,
+          builder: (context, state) => _buildTicketDetailPage(state.extra),
+        ),
+        GoRoute(
+          path: AppRoutePaths.parentTicketList,
+          builder: (context, state) => const ParentTicketListPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.supportStatus,
+          builder: (context, state) => const StatusPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.releaseNotes,
+          builder: (context, state) => const ReleaseNotesPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.releaseNoteDetail,
+          builder: (context, state) =>
+              _buildReleaseNoteDetailPage(state.extra),
+        ),
+        // TASK-14: Billing routes
+        GoRoute(
+          path: AppRoutePaths.checkoutStart,
+          builder: (context, state) => _buildCheckoutStartPage(state.extra),
+        ),
+        GoRoute(
+          path: AppRoutePaths.checkoutStatus,
+          builder: (context, state) => _buildCheckoutStatusPage(state.extra),
+        ),
+        // TASK-14: Dev Tools — fullscreenDialog to match the debug preview's
+        // original MaterialPageRoute(fullscreenDialog: true) presentation.
+        GoRoute(
+          path: AppRoutePaths.designSystemPreview,
+          pageBuilder: (context, state) => const MaterialPage<void>(
+            fullscreenDialog: true,
+            child: DSPreviewPage(),
+          ),
+        ),
+      ],
     );
   }
 
@@ -339,6 +492,19 @@ class AppRouter {
     );
   }
 
+  static Widget _buildAssessmentSubmit(Object? arguments) {
+    final args = _assessmentArgs(arguments);
+    final attemptId = args['attemptId'];
+    final assessmentTitle = args['assessmentTitle'];
+    if (attemptId is! String || assessmentTitle is! String) {
+      return const SplashPage();
+    }
+    return SubmitAttemptPage(
+      attemptId: attemptId,
+      assessmentTitle: assessmentTitle,
+    );
+  }
+
   static Widget _buildAssessmentResult(Object? arguments) {
     final args = _assessmentArgs(arguments);
     final attemptId = args['attemptId'];
@@ -447,6 +613,10 @@ class AppRouter {
         : const SplashPage();
   }
 
+  /// Single source of truth for auth-gating decisions. Given the route the
+  /// caller asked for, returns the route that should actually be shown given
+  /// the current [authState] / [authContextState]. Used both by
+  /// [buildRouter]'s `redirect` callback and directly by tests.
   static String resolveRouteName(
     String? requestedRouteName, {
     AuthFlowState? authState,
@@ -468,11 +638,12 @@ class AppRouter {
       return AppRoutePaths.signIn;
     }
 
-    final hasProfileReadyContext = authContextState == null ||
-        authContextState is AppAsyncSuccess<AuthContextModel>;
-
+    // Note: intentionally does not gate on `authContextState` readiness —
+    // this mirrors the pre-GoRouter behavior, where the imperative
+    // AuthGate/login/register listeners that used to drive this exact
+    // transition forwarded signed-in users to mainShell as soon as
+    // authFlowProvider flipped, without waiting on authContextProvider.
     if (authState.isSignedIn &&
-        hasProfileReadyContext &&
         (routeName == AppRoutePaths.splash ||
             routeName == AppRoutePaths.signIn)) {
       return AppRoutePaths.mainShell;
@@ -498,6 +669,7 @@ class AppRouter {
     AppRoutePaths.assessmentDetail,
     AppRoutePaths.assessmentStart,
     AppRoutePaths.assessmentAttempt,
+    AppRoutePaths.assessmentSubmit,
     AppRoutePaths.assessmentResult,
     AppRoutePaths.assessmentResultHistory,
     AppRoutePaths.subscription,

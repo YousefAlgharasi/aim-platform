@@ -45,6 +45,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
@@ -103,9 +104,9 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
   void _onChapterTap(ChapterModel chapter) {
     // Navigate to lesson list with backend-supplied chapterId.
     // chapterId is never constructed from user input.
-    Navigator.of(context).pushNamed(
+    context.push(
       AppRoutePaths.chapterLessons,
-      arguments: {
+      extra: {
         'chapterId': chapter.id,
         'chapterTitle': chapter.title,
       },

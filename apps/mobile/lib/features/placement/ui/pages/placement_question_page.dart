@@ -17,6 +17,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/widgets.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
@@ -70,7 +71,7 @@ class _PlacementQuestionPageState
 
     ref.listen<PlacementQuestionState>(placementQuestionProvider, (_, next) {
       if (next is PlacementQuestionSectionComplete && context.mounted) {
-        Navigator.of(context).pop();
+        context.pop();
       }
     });
 
@@ -167,7 +168,9 @@ class _PlacementQuestionHeader extends StatelessWidget
               button: true,
               label: 'Back',
               child: InkWell(
-                onTap: () => Navigator.of(context).maybePop(),
+                onTap: () {
+                  if (context.canPop()) context.pop();
+                },
                 customBorder: const CircleBorder(),
                 child: DecoratedBox(
                   decoration: BoxDecoration(

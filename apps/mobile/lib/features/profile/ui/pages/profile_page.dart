@@ -41,8 +41,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-import 'edit_profile_page.dart';
 import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/state/app_async_state.dart';
 import '../../../../core/widgets/widgets.dart';
@@ -114,24 +114,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final achievementsState = ref.watch(achievementsProvider);
     final surfaces = aimSurfacesOf(context);
 
-    // Navigate to sign-in when sign-out completes.
-    //
-    // Deferred via addPostFrameCallback: this listener fires synchronously
-    // on state change, before the root MaterialApp (which watches
-    // authFlowProvider to build onGenerateRoute) has rebuilt. Pushing
-    // immediately would route against the stale (still-signed-in) closure
-    // and get redirected straight back to the main shell.
-    ref.listen(authFlowProvider, (_, next) {
-      if (next.isSignedOut && context.mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!context.mounted) return;
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            AppRoutePaths.signIn,
-            (_) => false,
-          );
-        });
-      }
-    });
+    // Navigation to sign-in when sign-out completes is handled declaratively
+    // by AppRouter's `redirect` (see AimMobileApp), which re-evaluates
+    // authFlowProvider via a refresh listenable.
 
     final goal = switch (homeState) {
       AppAsyncSuccess<HomeData>(:final data) => data.goal,
@@ -307,41 +292,31 @@ class _ProfileBody extends StatelessWidget {
                     icon: Icons.credit_card_outlined,
                     label: 'Subscription & Billing',
                     surfaces: surfaces,
-                    onTap: () => Navigator.of(context).pushNamed(
-                      AppRoutePaths.subscription,
-                    ),
+                    onTap: () => context.push(AppRoutePaths.subscription),
                   ),
                   _ProfileNavItem(
                     icon: Icons.receipt_long_outlined,
                     label: 'Invoice History',
                     surfaces: surfaces,
-                    onTap: () => Navigator.of(context).pushNamed(
-                      AppRoutePaths.invoiceHistory,
-                    ),
+                    onTap: () => context.push(AppRoutePaths.invoiceHistory),
                   ),
                   _ProfileNavItem(
                     icon: Icons.emoji_events_outlined,
                     label: 'Achievements',
                     surfaces: surfaces,
-                    onTap: () => Navigator.of(context).pushNamed(
-                      AppRoutePaths.achievements,
-                    ),
+                    onTap: () => context.push(AppRoutePaths.achievements),
                   ),
                   _ProfileNavItem(
                     icon: Icons.bar_chart_outlined,
                     label: 'Analytics Summary',
                     surfaces: surfaces,
-                    onTap: () => Navigator.of(context).pushNamed(
-                      AppRoutePaths.analyticsSummary,
-                    ),
+                    onTap: () => context.push(AppRoutePaths.analyticsSummary),
                   ),
                   _ProfileNavItem(
                     icon: Icons.api_outlined,
                     label: 'API Endpoint Tester (Dev)',
                     surfaces: surfaces,
-                    onTap: () => Navigator.of(context).pushNamed(
-                      AppRoutePaths.endpointTester,
-                    ),
+                    onTap: () => context.push(AppRoutePaths.endpointTester),
                   ),
                 ],
               ),
@@ -436,11 +411,8 @@ class _ProfileHeroHeader extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.edit_outlined),
                       tooltip: 'Edit profile',
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const EditProfilePage(),
-                        ),
-                      ),
+                      onPressed: () =>
+                          context.push(AppRoutePaths.editProfile),
                     ),
                   ],
                 ),

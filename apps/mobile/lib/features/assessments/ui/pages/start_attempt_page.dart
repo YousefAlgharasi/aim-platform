@@ -3,7 +3,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -40,9 +42,9 @@ class _StartAttemptPageState extends ConsumerState<StartAttemptPage> {
   }
 
   void _onStartSuccess(StartAttemptResult result) {
-    Navigator.of(context).pushReplacementNamed(
-      '/student/assessments/attempt',
-      arguments: {
+    context.pushReplacement(
+      AppRoutePaths.assessmentAttempt,
+      extra: {
         'attemptId': result.attemptId,
         'assessmentId': result.assessmentId,
         'assessmentTitle': widget.assessmentTitle,
@@ -110,7 +112,7 @@ class _StartAttemptPageState extends ConsumerState<StartAttemptPage> {
             const SizedBox(height: AimSpacing.componentGap),
             AIMButton(
               variant: AIMButtonVariant.outline,
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => context.pop(),
               fullWidth: true,
               child: const Text('Go Back'),
             ),

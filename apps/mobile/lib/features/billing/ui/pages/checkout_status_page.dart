@@ -15,8 +15,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/errors/app_exception.dart';
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/billing/logic/provider/billing_provider.dart';
 
@@ -105,7 +107,7 @@ class CheckoutStatusPage extends ConsumerStatefulWidget {
         AIMButton(
           variant: AIMButtonVariant.ghost,
           onPressed: () =>
-              Navigator.of(context).popUntil((route) => route.isFirst),
+              context.go(AppRoutePaths.mainShell),
           fullWidth: true,
           child: const Text('Go back'),
         ),
@@ -211,7 +213,7 @@ class _CheckoutStatusPageState extends ConsumerState<CheckoutStatusPage> {
                 child: AIMGradientButton(
                   label: 'Go to Home',
                   onPressed: () =>
-                      Navigator.of(context).popUntil((route) => route.isFirst),
+                      context.go(AppRoutePaths.mainShell),
                   fullWidth: true,
                   semanticLabel: 'Go to home',
                 ),

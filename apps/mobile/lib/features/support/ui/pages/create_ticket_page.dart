@@ -20,6 +20,7 @@
 // (the previous behavior: `_isSubmitting` was set to true and never reset).
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 
@@ -183,7 +184,9 @@ class _CreateTicketHeader extends StatelessWidget {
               button: true,
               label: 'Back',
               child: InkWell(
-                onTap: () => Navigator.of(context).maybePop(),
+                onTap: () {
+                  if (context.canPop()) context.pop();
+                },
                 customBorder: const CircleBorder(),
                 child: DecoratedBox(
                   decoration: BoxDecoration(

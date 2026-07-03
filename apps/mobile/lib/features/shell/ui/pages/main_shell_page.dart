@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/state/app_async_state.dart';
@@ -142,13 +143,13 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
     };
 
     void selectTab(int index) {
-      Navigator.of(context).pop();
+      context.pop();
       ref.read(mainShellTabIndexProvider.notifier).state = index;
     }
 
     void navigateTo(String routeName) {
-      Navigator.of(context).pop();
-      Navigator.of(context).pushNamed(routeName);
+      context.pop();
+      context.push(routeName);
     }
 
     return AIMAppDrawer(

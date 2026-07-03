@@ -28,6 +28,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
@@ -36,7 +37,6 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart'
 
 import '../../logic/entity/notification_entities.dart';
 import '../../logic/provider/notification_providers.dart';
-import 'notification_detail_page.dart';
 
 /// Computes a real relative-time label (e.g. "1h ago", "Yesterday") from
 /// the backend-supplied `createdAt` ISO timestamp. Mirrors the home page's
@@ -86,11 +86,7 @@ class _NotificationInboxPageState
   }
 
   void _onOpen(NotificationEventModel event) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => NotificationDetailPage(event: event),
-      ),
-    );
+    context.push(AppRoutePaths.notificationDetail, extra: event);
   }
 
   void _onDismiss(NotificationEventModel event) {
@@ -168,7 +164,9 @@ class _NotificationsHeader extends StatelessWidget {
               button: true,
               label: 'Back',
               child: InkWell(
-                onTap: () => Navigator.of(context).maybePop(),
+                onTap: () {
+                  if (context.canPop()) context.pop();
+                },
                 customBorder: const CircleBorder(),
                 child: DecoratedBox(
                   decoration: BoxDecoration(
@@ -202,8 +200,8 @@ class _NotificationsHeader extends StatelessWidget {
               button: true,
               label: 'Notification settings',
               child: InkWell(
-                onTap: () => Navigator.of(context)
-                    .pushNamed(AppRoutePaths.notificationPreferences),
+                onTap: () =>
+                    context.push(AppRoutePaths.notificationPreferences),
                 customBorder: const CircleBorder(),
                 child: DecoratedBox(
                   decoration: BoxDecoration(

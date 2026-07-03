@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../theme/theme.dart';
 import '../buttons/buttons.dart';
@@ -153,7 +154,7 @@ class AIMNotificationsSheet extends StatelessWidget {
         AIMIconButton(
           semanticLabel: 'Close notifications',
           icon: const Icon(Icons.close_rounded),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => context.pop(),
         ),
       ],
     );

@@ -37,6 +37,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
@@ -232,32 +233,28 @@ class _ProgressContent extends StatelessWidget {
             icon: Icons.auto_stories_outlined,
             title: 'Skill States',
             subtitle: '${data.skillStates.length} skills tracked',
-            onTap: () =>
-                Navigator.of(context).pushNamed(AppRoutePaths.skillState),
+            onTap: () => context.push(AppRoutePaths.skillState),
           ),
           const SizedBox(height: AimSpacing.listItemGap),
           _ProgressNavRow(
             icon: Icons.flag_outlined,
             title: 'Weaknesses',
             subtitle: '${data.weaknessRecords.length} focus areas',
-            onTap: () => Navigator.of(context)
-                .pushNamed(AppRoutePaths.weaknessSummary),
+            onTap: () => context.push(AppRoutePaths.weaknessSummary),
           ),
           const SizedBox(height: AimSpacing.listItemGap),
           _ProgressNavRow(
             icon: Icons.lightbulb_outline,
             title: 'Recommendations',
             subtitle: '${data.recommendations.length} from AIM',
-            onTap: () => Navigator.of(context)
-                .pushNamed(AppRoutePaths.recommendations),
+            onTap: () => context.push(AppRoutePaths.recommendations),
           ),
           const SizedBox(height: AimSpacing.listItemGap),
           _ProgressNavRow(
             icon: Icons.schedule_outlined,
             title: 'Review Schedule',
             subtitle: '${data.reviewSchedules.length} reviews scheduled',
-            onTap: () => Navigator.of(context)
-                .pushNamed(AppRoutePaths.reviewSchedule),
+            onTap: () => context.push(AppRoutePaths.reviewSchedule),
           ),
         ],
       ),

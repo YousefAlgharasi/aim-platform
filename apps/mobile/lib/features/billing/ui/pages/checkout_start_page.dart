@@ -16,12 +16,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:aim_mobile/core/errors/app_exception.dart';
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/billing/logic/provider/billing_provider.dart';
-import 'checkout_status_page.dart';
 
 class CheckoutStartPage extends ConsumerStatefulWidget {
   final String planName;
@@ -85,13 +86,12 @@ class _CheckoutStartPageState extends ConsumerState<CheckoutStartPage> {
       }
 
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute<void>(
-          builder: (_) => CheckoutStatusPage(
-            sessionId: session.id,
-            planName: widget.planName,
-          ),
-        ),
+      context.pushReplacement(
+        AppRoutePaths.checkoutStatus,
+        extra: {
+          'sessionId': session.id,
+          'planName': widget.planName,
+        },
       );
     } on AppException catch (e) {
       setState(() {
@@ -232,7 +232,9 @@ class _CheckoutHeader extends StatelessWidget {
               button: true,
               label: 'Back',
               child: InkWell(
-                onTap: () => Navigator.of(context).maybePop(),
+                onTap: () {
+                  if (context.canPop()) context.pop();
+                },
                 customBorder: const CircleBorder(),
                 child: DecoratedBox(
                   decoration: BoxDecoration(

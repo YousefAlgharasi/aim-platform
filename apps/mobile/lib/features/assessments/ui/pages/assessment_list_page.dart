@@ -6,6 +6,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
@@ -42,9 +43,9 @@ class _AssessmentListPageState extends ConsumerState<AssessmentListPage> {
   }
 
   void _onAssessmentTap(AssessmentListItem item) {
-    Navigator.of(context).pushNamed(
+    context.push(
       '/student/assessments/detail',
-      arguments: {'assessmentId': item.id, 'assessmentTitle': item.title},
+      extra: {'assessmentId': item.id, 'assessmentTitle': item.title},
     );
   }
 
@@ -111,7 +112,9 @@ class _AssessmentListHeader extends StatelessWidget {
               button: true,
               label: 'Back',
               child: InkWell(
-                onTap: () => Navigator.of(context).maybePop(),
+                onTap: () {
+                  if (context.canPop()) context.pop();
+                },
                 customBorder: const CircleBorder(),
                 child: DecoratedBox(
                   decoration: BoxDecoration(
@@ -144,8 +147,7 @@ class _AssessmentListHeader extends StatelessWidget {
               button: true,
               label: 'Deadlines',
               child: InkWell(
-                onTap: () => Navigator.of(context)
-                    .pushNamed(AppRoutePaths.assessmentDeadlines),
+                onTap: () => context.push(AppRoutePaths.assessmentDeadlines),
                 borderRadius: AimRadius.borderSm,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
