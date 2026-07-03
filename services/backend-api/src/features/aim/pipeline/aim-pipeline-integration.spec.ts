@@ -36,7 +36,7 @@
  */
 
 import { AimPipelineOrchestratorService, AimPipelineContext } from './aim-pipeline-orchestrator.service';
-import { AimStateAssemblyService } from './aim-state-assembly.service';
+import { AimStateAssemblyService, AimStateAssemblyResult } from './aim-state-assembly.service';
 import { AimRequestMapperService } from '../adapter/aim-request-mapper.service';
 import { AimEngineAdapterService } from '../adapter/aim-engine-adapter.service';
 import { AimEngineClientService } from '../aim-engine-client.service';
@@ -229,8 +229,8 @@ interface IntegrationHarness {
   setAdapterFailure: () => void;
   /** Override state assembly to throw for a single test. */
   setStateAssemblyError: (err: Error) => void;
-  /** Override state assembly to return null (stub phase) for a single test. */
-  setStateAssemblyNull: () => void;
+  /** Override state assembly to report insufficient data for a single test. */
+  setStateAssemblyInsufficientData: () => void;
   /** Override persistence to throw for a single test. */
   setPersistenceError: (err: Error) => void;
 }
@@ -275,10 +275,10 @@ function buildHarness(): IntegrationHarness {
   // Stub the request mapper so the fixture doesn't need to satisfy the full
   // AimMappingContext shape — the mapper is tested separately in its own spec.
   jest.spyOn(requestMapper, 'map').mockReturnValue({ backendRequestId: 'br-integration-001' } as never);
-  const stateAssembly = new AimStateAssemblyService();
+  const stateAssembly = new AimStateAssemblyService(mockDb);
   const stateAssemblySpy = jest
     .spyOn(stateAssembly, 'assemble')
-    .mockResolvedValue(STUB_MAPPING_CONTEXT);
+    .mockResolvedValue({ status: 'assembled', context: STUB_MAPPING_CONTEXT } satisfies AimStateAssemblyResult);
 
   const persistence = new AimPersistenceService(
     mockDb,
@@ -336,8 +336,11 @@ function buildHarness(): IntegrationHarness {
     setStateAssemblyError(err: Error) {
       stateAssemblySpy.mockRejectedValue(err);
     },
-    setStateAssemblyNull() {
-      stateAssemblySpy.mockResolvedValue(null);
+    setStateAssemblyInsufficientData() {
+      stateAssemblySpy.mockResolvedValue({
+        status: 'insufficient_data',
+        reason: 'Session has no recorded attempts yet.',
+      });
     },
     setPersistenceError(err: Error) {
       persistenceSpy.mockRejectedValue(err);
@@ -491,18 +494,19 @@ describe('AIM Pipeline Integration — attempt → AIM Engine → persistence', 
   });
 
   // -------------------------------------------------------------------------
-  // State assembly null — stub phase (no-op)
+  // State assembly insufficient data — a clean, deliberate skip
   // -------------------------------------------------------------------------
 
-  describe('state assembly returns null — stub phase no-op', () => {
+  describe('state assembly reports insufficient data — clean skip', () => {
     beforeEach(() => {
-      h.setStateAssemblyNull();
+      h.setStateAssemblyInsufficientData();
     });
 
-    it('returns ok: true (no-op path)', async () => {
+    it('returns ok: true with a skippedReason (deliberate skip path)', async () => {
       const outcome = await h.orchestrator.trigger(PIPELINE_CTX);
 
       expect(outcome.ok).toBe(true);
+      if (outcome.ok) expect(outcome.skippedReason).toBeDefined();
     });
 
     it('does NOT call the AIM Engine HTTP client', async () => {
@@ -688,7 +692,7 @@ describe('AIM Pipeline Integration — attempt → AIM Engine → persistence', 
       const callOrder: string[] = [];
       h.stateAssemblySpy.mockImplementation(async () => {
         callOrder.push('stateAssembly');
-        return STUB_MAPPING_CONTEXT;
+        return { status: 'assembled', context: STUB_MAPPING_CONTEXT } satisfies AimStateAssemblyResult;
       });
       h.adapterSpy.mockImplementation(async () => {
         callOrder.push('adapter');
