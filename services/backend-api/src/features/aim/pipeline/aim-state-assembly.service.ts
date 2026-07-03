@@ -103,6 +103,12 @@ interface EventCountRow {
 interface SkillStateRow {
   readonly skill_id: string;
   readonly mastery_score: string;
+  readonly last_evaluated_at: string;
+}
+
+interface SkillDomainRow {
+  readonly key: string;
+  readonly domain: string;
 }
 
 interface HistoricalAttemptRow {
@@ -279,10 +285,17 @@ export class AimStateAssemblyService {
   }
 
   /**
-   * Prior mastery/attempt history per skill (P20-007), feeding the AIM
-   * Engine's MasteryCalculator. Sourced from student_skill_states
-   * (previous mastery) and lesson_attempts (recent history), both
-   * backend-only queries — the AIM Engine never queries a database itself.
+   * Prior mastery/attempt/retention history per skill (P20-007/P20-008),
+   * feeding the AIM Engine's ported MasteryCalculator and RetentionTracker.
+   * Sourced from student_skill_states (previous mastery, last evaluated at),
+   * lesson_attempts (recent history), and skills.domain (category) — all
+   * backend-only queries; the AIM Engine never queries a database itself.
+   *
+   * retentionHistory is always empty: the backend does not persist a
+   * rolling per-skill timestamped mastery series (student_skill_states
+   * stores only the current and one prior value, not a series) — a known
+   * data gap, not a fabricated value. See AimSkillMasteryContext's schema
+   * docstring on the AIM Engine side for the same note.
    */
   private async buildSkillMasteryContext(
     studentId: string,
@@ -291,32 +304,52 @@ export class AimStateAssemblyService {
     const skillIds = triggeringAttempt.skill_ids;
     if (skillIds.length === 0) return {};
 
-    const [previousMasteryByskill, historyBySkill] = await Promise.all([
-      this.fetchPreviousMasteryScores(studentId, skillIds),
+    const [skillStateBySkill, historyBySkill, categoryBySkill] = await Promise.all([
+      this.fetchPreviousSkillStates(studentId, skillIds),
       this.fetchRecentAttemptsBySkill(studentId, skillIds, triggeringAttempt.id),
+      this.fetchSkillCategories(skillIds),
     ]);
 
     const context: Record<string, AimSkillMasteryContextInput> = {};
     for (const skillId of skillIds) {
+      const skillState = skillStateBySkill.get(skillId);
       context[skillId] = {
-        previousMasteryScore: previousMasteryByskill.get(skillId) ?? null,
+        previousMasteryScore: skillState?.masteryScore ?? null,
         recentAttempts: historyBySkill.get(skillId) ?? [],
+        category: categoryBySkill.get(skillId) ?? null,
+        lastEvaluatedAt: skillState?.lastEvaluatedAt ?? null,
+        retentionHistory: [],
       };
     }
     return context;
   }
 
-  private async fetchPreviousMasteryScores(
+  private async fetchPreviousSkillStates(
     studentId: string,
     skillIds: readonly string[],
-  ): Promise<Map<string, number>> {
+  ): Promise<Map<string, { masteryScore: number; lastEvaluatedAt: string }>> {
     const result = await this.db.query<SkillStateRow>(
-      `SELECT skill_id, mastery_score
+      `SELECT skill_id, mastery_score, last_evaluated_at
        FROM student_skill_states
        WHERE student_id = $1 AND skill_id = ANY($2)`,
       [studentId, skillIds],
     );
-    return new Map(result.rows.map((r) => [r.skill_id, parseFloat(r.mastery_score)]));
+    return new Map(
+      result.rows.map((r) => [
+        r.skill_id,
+        { masteryScore: parseFloat(r.mastery_score), lastEvaluatedAt: r.last_evaluated_at },
+      ]),
+    );
+  }
+
+  private async fetchSkillCategories(
+    skillIds: readonly string[],
+  ): Promise<Map<string, string>> {
+    const result = await this.db.query<SkillDomainRow>(
+      `SELECT key, domain FROM skills WHERE key = ANY($1)`,
+      [skillIds],
+    );
+    return new Map(result.rows.map((r) => [r.key, r.domain]));
   }
 
   private async fetchRecentAttemptsBySkill(
