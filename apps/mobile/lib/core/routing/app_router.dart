@@ -430,10 +430,15 @@ class AppRouter {
         : const <String, dynamic>{};
     final chapterId = args['chapterId'];
     final chapterTitle = args['chapterTitle'];
+    final chapterIndex = args['chapterIndex'];
     if (chapterId is! String || chapterTitle is! String) {
       return const SplashPage();
     }
-    return LessonListPage(chapterId: chapterId, chapterTitle: chapterTitle);
+    return LessonListPage(
+      chapterId: chapterId,
+      chapterTitle: chapterTitle,
+      chapterIndex: chapterIndex is int ? chapterIndex : null,
+    );
   }
 
   static Widget _buildChapterListPage(Object? arguments) {

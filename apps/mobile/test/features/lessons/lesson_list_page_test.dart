@@ -142,7 +142,7 @@ void main() {
       expect(find.text('Lesson 1: Introduction'), findsOneWidget);
     });
 
-    testWidgets('chapterTitle appears in AppBar', (tester) async {
+    testWidgets('chapterTitle appears in header', (tester) async {
       await tester.pumpWidget(_wrap(
         _page,
         overrides: [
@@ -174,6 +174,25 @@ void main() {
       expect(find.text('20 XP'), findsOneWidget);
       // lesson-1 has xpValue: 0 → no badge for it.
       expect(find.text('0 XP'), findsNothing);
+    });
+
+    testWidgets(
+        'shows cosmetic chapter progress header and a play affordance on '
+        'the current lesson', (tester) async {
+      await tester.pumpWidget(_wrap(
+        _page,
+        overrides: [
+          lessonsListProvider.overrideWith(
+            (ref) =>
+                _FakeLessonsListNotifier(const AppAsyncState.success(_lessons)),
+          ),
+        ],
+      ));
+      await tester.pump();
+      // 2 lessons → mock marks lesson-1 (index 0) completed, so "1/2 done".
+      expect(find.text('1/2 done'), findsOneWidget);
+      expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.check_rounded), findsOneWidget);
     });
   });
 }
