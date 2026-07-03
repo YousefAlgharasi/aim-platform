@@ -46,8 +46,12 @@ export class ContextBuilderService {
   async buildContext(input: BuildContextInput): Promise<AiTeacherContextSnapshot> {
     this.logger.log(`Building AI Teacher context for session ${input.sessionId}`);
 
+    const explicitLessonId = this.parseLessonIdFromContextRef(input.contextRef);
     const studentProfile = await this.studentProfileContext.getProfileContext(input.studentId);
-    const currentLesson = await this.currentLessonContext.getCurrentLessonContext(input.studentId);
+    const currentLesson = await this.currentLessonContext.getCurrentLessonContext(
+      input.studentId,
+      explicitLessonId,
+    );
     const curriculumSkill = await this.curriculumSkillContext.getSkillContext(input.studentId);
 
     return {
@@ -79,5 +83,19 @@ export class ContextBuilderService {
     );
 
     this.logger.log(`Persisted AI Teacher context snapshot for message ${messageId}`);
+  }
+
+  /**
+   * Extracts a lesson id from a `lesson:<uuid>` contextRef (set when the
+   * student opens AI Teacher from a lesson's detail screen), so the current
+   * lesson context reflects the specific lesson being viewed rather than
+   * only the AIM Engine's top recommendation. Returns null for any other
+   * contextRef shape (e.g. "general") or a malformed/non-UUID suffix.
+   */
+  private parseLessonIdFromContextRef(contextRef: string): string | null {
+    const match = /^lesson:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.exec(
+      contextRef,
+    );
+    return match?.[1] ?? null;
   }
 }

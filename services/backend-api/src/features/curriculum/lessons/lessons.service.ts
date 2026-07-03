@@ -25,6 +25,7 @@ function toLessonSummary(row: LessonRow): LessonSummary {
     status: row.status,
     sortOrder: row.sort_order,
     xpValue: row.xp_value,
+    systemPrompt: row.system_prompt,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -90,7 +91,7 @@ export class LessonsService {
     const total = parseInt(countResult.rows[0]?.total ?? '0', 10);
 
     const dataResult = await this.db.query<LessonRow>(
-      `SELECT id, chapter_id, title, description, sort_order, status, xp_value, created_at, updated_at
+      `SELECT id, chapter_id, title, description, sort_order, status, xp_value, system_prompt, created_at, updated_at
          FROM lessons
          ${where}
          ORDER BY sort_order ASC, created_at ASC
@@ -108,7 +109,7 @@ export class LessonsService {
 
   async getLesson(id: string): Promise<LessonSummary> {
     const result = await this.db.query<LessonRow>(
-      `SELECT id, chapter_id, title, description, sort_order, status, xp_value, created_at, updated_at
+      `SELECT id, chapter_id, title, description, sort_order, status, xp_value, system_prompt, created_at, updated_at
          FROM lessons
          WHERE id = $1`,
       [id],
@@ -165,7 +166,7 @@ export class LessonsService {
     const result = await this.db.query<LessonRow>(
       `INSERT INTO lessons (chapter_id, title, description, sort_order, status)
          VALUES ($1, $2, $3, $4, 'draft')
-         RETURNING id, chapter_id, title, description, sort_order, status, xp_value, created_at, updated_at`,
+         RETURNING id, chapter_id, title, description, sort_order, status, xp_value, system_prompt, created_at, updated_at`,
       [chapterId, title.trim(), description.trim(), resolvedSortOrder],
     );
 
@@ -223,6 +224,11 @@ export class LessonsService {
       values.push(input.sortOrder);
     }
 
+    if (input.systemPrompt !== undefined) {
+      setClauses.push(`system_prompt = $${idx++}`);
+      values.push(input.systemPrompt);
+    }
+
     if (setClauses.length === 0) {
       return existing;
     }
@@ -233,7 +239,7 @@ export class LessonsService {
       `UPDATE lessons
          SET ${setClauses.join(', ')}
          WHERE id = $${idx}
-         RETURNING id, chapter_id, title, description, sort_order, status, xp_value, created_at, updated_at`,
+         RETURNING id, chapter_id, title, description, sort_order, status, xp_value, system_prompt, created_at, updated_at`,
       values,
     );
 

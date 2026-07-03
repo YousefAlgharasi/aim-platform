@@ -1,10 +1,34 @@
 import { VoiceAudioSubmitController } from '../voice-audio-submit.controller';
+import { VoiceSessionRepository } from '../../repositories/voice-session.repository';
+import { VoiceOrchestratorService } from '../../orchestrator/voice-orchestrator.service';
 
 describe('VoiceAudioSubmitController', () => {
   let controller: VoiceAudioSubmitController;
+  let voiceSessionRepository: jest.Mocked<VoiceSessionRepository>;
+  let voiceOrchestrator: jest.Mocked<VoiceOrchestratorService>;
 
   beforeEach(() => {
-    controller = new VoiceAudioSubmitController();
+    voiceSessionRepository = {
+      findById: jest.fn().mockResolvedValue({
+        id: 'session-1',
+        student_id: 'student-1',
+        context_ref: 'lesson:abc',
+        status: 'active',
+        created_at: '2026-01-01T00:00:00.000Z',
+        updated_at: '2026-01-01T00:00:00.000Z',
+      }),
+    } as any;
+    voiceOrchestrator = {
+      handleTurn: jest.fn().mockResolvedValue({
+        text: 'AI Teacher reply',
+        audioRef: 'tts_ref_123',
+        isFallback: false,
+        provider: 'groq',
+        model: 'llama-3.3-70b-versatile',
+        latencyMs: 250,
+      }),
+    } as any;
+    controller = new VoiceAudioSubmitController(voiceSessionRepository, voiceOrchestrator);
   });
 
   const mockUser = { id: 'student-1', email: 'test@test.com' } as any;

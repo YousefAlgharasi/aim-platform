@@ -46,6 +46,7 @@ describe('CurrentLessonContextAdapter', () => {
       status: 'published',
       sortOrder: 1,
       xpValue: 0,
+      systemPrompt: null,
       createdAt: '2026-06-01T00:00:00Z',
       updatedAt: '2026-06-01T00:00:00Z',
     }));
@@ -56,6 +57,7 @@ describe('CurrentLessonContextAdapter', () => {
       lessonId: LESSON_ID,
       title: 'Fractions',
       description: 'Intro to fractions',
+      systemPrompt: null,
     });
     // Recommendation-adjacent fields must not leak through.
     expect(context).not.toHaveProperty('reason');
@@ -100,5 +102,34 @@ describe('CurrentLessonContextAdapter', () => {
     const adapter = new CurrentLessonContextAdapter(recommendations, lessons);
     const context = await adapter.getCurrentLessonContext(STUDENT_ID);
     expect(context).toBeNull();
+  });
+
+  it('prefers an explicit lessonId over the recommendation-based lookup, and surfaces its systemPrompt', async () => {
+    const EXPLICIT_LESSON_ID = 'ff0e8400-e29b-41d4-a716-446655440099';
+    const recommendations = makeMockRecommendations(async () => {
+      throw new Error('should not be called when an explicit lessonId is given');
+    });
+    const lessons = makeMockLessons(async (id) => ({
+      id,
+      chapterId: 'chapter-1',
+      title: 'Explicit Lesson',
+      description: 'Opened directly from the lesson detail screen',
+      status: 'published',
+      sortOrder: 1,
+      xpValue: 0,
+      systemPrompt: 'Focus on present-tense verbs and keep examples food-related.',
+      createdAt: '2026-06-01T00:00:00Z',
+      updatedAt: '2026-06-01T00:00:00Z',
+    }));
+    const adapter = new CurrentLessonContextAdapter(recommendations, lessons);
+
+    const context = await adapter.getCurrentLessonContext(STUDENT_ID, EXPLICIT_LESSON_ID);
+
+    expect(context).toEqual({
+      lessonId: EXPLICIT_LESSON_ID,
+      title: 'Explicit Lesson',
+      description: 'Opened directly from the lesson detail screen',
+      systemPrompt: 'Focus on present-tense verbs and keep examples food-related.',
+    });
   });
 });

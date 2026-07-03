@@ -17,8 +17,21 @@ import { VoiceOrchestratorService } from '../orchestrator/voice-orchestrator.ser
 import { SttGateway } from '../stt-gateway/stt-gateway.interface';
 import { SttSafeFailureService } from '../stt-gateway/stt-safe-failure.service';
 import { SttProviderResponse } from '../stt-gateway/stt-gateway.types';
+import { TtsGateway } from '../tts-gateway/tts-gateway.interface';
+import { TtsSafeFailureService } from '../tts-gateway/tts-safe-failure.service';
 import { AiTeacherOrchestratorService } from '../../ai-teacher/orchestrator/ai-teacher-orchestrator.service';
 import { TranscriptToAiTeacherService } from '../transcript-pipeline/transcript-to-ai-teacher.service';
+
+const makeMockTtsGateway = (): TtsGateway =>
+  ({
+    synthesize: jest.fn().mockResolvedValue({
+      status: 'error',
+      audioRef: null,
+      durationMs: null,
+      contentType: null,
+      errorCategory: 'TTS_NOT_CONFIGURED_IN_TEST',
+    }),
+  }) as unknown as TtsGateway;
 
 describe('Voice tutor — session lifecycle', () => {
   it('starts a voice session owned by the requesting student', async () => {
@@ -119,7 +132,7 @@ describe('Voice tutor — STT -> AI Teacher safety-checked reply (full turn)', (
       }),
     } as unknown as AiTeacherOrchestratorService;
 
-    const orchestrator = new VoiceOrchestratorService(sttGateway, sttSafeFailure, aiOrchestrator);
+    const orchestrator = new VoiceOrchestratorService(sttGateway, sttSafeFailure, makeMockTtsGateway(), new TtsSafeFailureService(), aiOrchestrator);
 
     const result = await orchestrator.handleTurn({
       studentId: 'student-1',
@@ -150,7 +163,7 @@ describe('Voice tutor — STT -> AI Teacher safety-checked reply (full turn)', (
       }),
     } as unknown as AiTeacherOrchestratorService;
 
-    const orchestrator = new VoiceOrchestratorService(sttGateway, sttSafeFailure, aiOrchestrator);
+    const orchestrator = new VoiceOrchestratorService(sttGateway, sttSafeFailure, makeMockTtsGateway(), new TtsSafeFailureService(), aiOrchestrator);
 
     const result = await orchestrator.handleTurn({
       studentId: 'student-1',
@@ -208,7 +221,7 @@ describe('Voice tutor — STT -> AI Teacher safety-checked reply (full turn)', (
       }),
     } as unknown as AiTeacherOrchestratorService;
 
-    const orchestrator = new VoiceOrchestratorService(sttGateway, sttSafeFailure, aiOrchestrator);
+    const orchestrator = new VoiceOrchestratorService(sttGateway, sttSafeFailure, makeMockTtsGateway(), new TtsSafeFailureService(), aiOrchestrator);
     const result = await orchestrator.handleTurn({
       studentId: 'student-1',
       sessionId: 'voice-session-1',

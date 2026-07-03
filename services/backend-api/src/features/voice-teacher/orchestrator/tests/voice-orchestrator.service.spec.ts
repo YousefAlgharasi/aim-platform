@@ -1,10 +1,12 @@
-// P9-048: Create Voice Orchestrator Skeleton — unit tests.
-// Verifies the skeleton's coordination logic:
+// P9-048: Voice Orchestrator — unit tests.
+// Verifies the orchestrator's coordination logic:
 //   1. STT gateway is called with the raw audio; its safe-failure path
 //      is honoured (empty transcript + isFallback=true) when unavailable.
 //   2. AI Teacher orchestrator receives the transcript as studentMessage;
 //      its result drives the return value.
-//   3. audioRef is null and isFallback is true for the TTS placeholder seam.
+//   3. TTS gateway is called with the AI Teacher reply text; audioRef is
+//      populated on success and null (with isFallback=true) on failure or
+//      when TTS_GATEWAY is unbound.
 //   4. No mastery/level/weakness/difficulty/recommendation/review-schedule
 //      value is ever computed or returned (AIM authority check).
 //   5. No provider credentials or raw audio bytes appear in the result.
@@ -15,6 +17,9 @@ import { AiTeacherOrchestratorService } from '../../../ai-teacher/orchestrator/a
 import { SttGateway } from '../../stt-gateway/stt-gateway.interface';
 import { SttSafeFailureService } from '../../stt-gateway/stt-safe-failure.service';
 import { SttProviderResponse } from '../../stt-gateway/stt-gateway.types';
+import { TtsGateway } from '../../tts-gateway/tts-gateway.interface';
+import { TtsSafeFailureService } from '../../tts-gateway/tts-safe-failure.service';
+import { TtsProviderResponse } from '../../tts-gateway/tts-gateway.types';
 import { VoiceOrchestratorService } from '../voice-orchestrator.service';
 import { VoiceTurnInput } from '../voice-orchestrator.types';
 
@@ -48,6 +53,19 @@ const makeAiResult = (overrides: Record<string, unknown> = {}) => ({
 const buildMockSttGateway = (response: SttProviderResponse): jest.Mocked<SttGateway> =>
   ({ transcribe: jest.fn().mockResolvedValue(response) } as unknown as jest.Mocked<SttGateway>);
 
+const FALLBACK_TTS_RESPONSE: TtsProviderResponse = {
+  status: 'error',
+  audioRef: null,
+  durationMs: null,
+  contentType: null,
+  errorCategory: 'TTS_NOT_CONFIGURED_IN_TEST',
+};
+
+const buildMockTtsGateway = (
+  response: TtsProviderResponse = FALLBACK_TTS_RESPONSE,
+): jest.Mocked<TtsGateway> =>
+  ({ synthesize: jest.fn().mockResolvedValue(response) } as unknown as jest.Mocked<TtsGateway>);
+
 const buildMockAiOrchestrator = (
   result: ReturnType<typeof makeAiResult>,
 ): jest.Mocked<AiTeacherOrchestratorService> =>
@@ -59,9 +77,11 @@ const buildMockAiOrchestrator = (
 
 describe('VoiceOrchestratorService', () => {
   let sttSafeFailure: SttSafeFailureService;
+  let ttsSafeFailure: TtsSafeFailureService;
 
   beforeEach(() => {
     sttSafeFailure = new SttSafeFailureService();
+    ttsSafeFailure = new TtsSafeFailureService();
     jest.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
     jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
   });
@@ -71,25 +91,37 @@ describe('VoiceOrchestratorService', () => {
   // ── Happy path ────────────────────────────────────────────────────────────
 
   describe('handleTurn — STT success + AI Teacher success', () => {
-    it('returns AI Teacher reply text and null audioRef', async () => {
+    it('returns AI Teacher reply text and the synthesised audioRef', async () => {
       const sttResponse: SttProviderResponse = {
         status: 'success',
         transcript: 'مرحباً',
         durationMs: 800,
       };
       const aiResult = makeAiResult();
+      const ttsGateway = buildMockTtsGateway({
+        status: 'success',
+        audioRef: 'tts_ref_123',
+        durationMs: 500,
+        contentType: 'audio/mpeg',
+      });
       const svc = new VoiceOrchestratorService(
         buildMockSttGateway(sttResponse),
         sttSafeFailure,
+        ttsGateway,
+        ttsSafeFailure,
         buildMockAiOrchestrator(aiResult),
       );
 
       const result = await svc.handleTurn(makeInput());
 
       expect(result.text).toBe('AI Teacher reply');
-      expect(result.audioRef).toBeNull(); // TTS not yet wired
+      expect(result.audioRef).toBe('tts_ref_123');
+      expect(result.isFallback).toBe(false);
       expect(result.provider).toBe('anthropic');
       expect(result.model).toBe('claude-3-haiku');
+      expect(ttsGateway.synthesize).toHaveBeenCalledWith(
+        expect.objectContaining({ text: 'AI Teacher reply', languageCode: 'ar' }),
+      );
     });
 
     it('forwards the STT transcript as studentMessage to AI Teacher', async () => {
@@ -102,6 +134,8 @@ describe('VoiceOrchestratorService', () => {
       const svc = new VoiceOrchestratorService(
         buildMockSttGateway(sttResponse),
         sttSafeFailure,
+        buildMockTtsGateway(),
+        ttsSafeFailure,
         aiOrchestrator,
       );
 
@@ -122,6 +156,8 @@ describe('VoiceOrchestratorService', () => {
       const svc = new VoiceOrchestratorService(
         buildMockSttGateway(sttResponse),
         sttSafeFailure,
+        buildMockTtsGateway(),
+        ttsSafeFailure,
         aiOrchestrator,
       );
       const input = makeInput({
@@ -141,7 +177,7 @@ describe('VoiceOrchestratorService', () => {
       );
     });
 
-    it('isFallback is true because TTS is not yet wired (Group G placeholder)', async () => {
+    it('isFallback is true and audioRef is null when the TTS gateway call fails', async () => {
       const sttResponse: SttProviderResponse = {
         status: 'success',
         transcript: 'test',
@@ -151,12 +187,36 @@ describe('VoiceOrchestratorService', () => {
       const svc = new VoiceOrchestratorService(
         buildMockSttGateway(sttResponse),
         sttSafeFailure,
+        buildMockTtsGateway(),
+        ttsSafeFailure,
         buildMockAiOrchestrator(aiResult),
       );
 
       const result = await svc.handleTurn(makeInput());
 
-      // TTS placeholder always sets isFallback=true until Group G is wired.
+      expect(result.audioRef).toBeNull();
+      expect(result.isFallback).toBe(true);
+    });
+
+    it('falls back to text-only gracefully when TTS_GATEWAY is null (binding not registered)', async () => {
+      const sttResponse: SttProviderResponse = {
+        status: 'success',
+        transcript: 'test',
+        durationMs: 300,
+      };
+      const aiResult = makeAiResult({ isFallback: false });
+      const svc = new VoiceOrchestratorService(
+        buildMockSttGateway(sttResponse),
+        sttSafeFailure,
+        null,
+        ttsSafeFailure,
+        buildMockAiOrchestrator(aiResult),
+      );
+
+      const result = await svc.handleTurn(makeInput());
+
+      expect(result.text).toBe('AI Teacher reply');
+      expect(result.audioRef).toBeNull();
       expect(result.isFallback).toBe(true);
     });
   });
@@ -175,6 +235,8 @@ describe('VoiceOrchestratorService', () => {
       const svc = new VoiceOrchestratorService(
         buildMockSttGateway(sttResponse),
         sttSafeFailure,
+        buildMockTtsGateway(),
+        ttsSafeFailure,
         aiOrchestrator,
       );
 
@@ -197,6 +259,8 @@ describe('VoiceOrchestratorService', () => {
       const svc = new VoiceOrchestratorService(
         buildMockSttGateway(sttResponse),
         sttSafeFailure,
+        buildMockTtsGateway(),
+        ttsSafeFailure,
         aiOrchestrator,
       );
 
@@ -210,7 +274,13 @@ describe('VoiceOrchestratorService', () => {
     it('falls back gracefully when STT_GATEWAY is null (binding not yet registered)', async () => {
       const aiOrchestrator = buildMockAiOrchestrator(makeAiResult());
       // Pass null as the STT gateway — simulates skeleton state before SttGatewayModule is wired.
-      const svc = new VoiceOrchestratorService(null, sttSafeFailure, aiOrchestrator);
+      const svc = new VoiceOrchestratorService(
+        null,
+        sttSafeFailure,
+        buildMockTtsGateway(),
+        ttsSafeFailure,
+        aiOrchestrator,
+      );
 
       const result = await svc.handleTurn(makeInput());
 
@@ -233,6 +303,8 @@ describe('VoiceOrchestratorService', () => {
       const svc = new VoiceOrchestratorService(
         buildMockSttGateway(sttResponse),
         sttSafeFailure,
+        buildMockTtsGateway(),
+        ttsSafeFailure,
         buildMockAiOrchestrator(makeAiResult()),
       );
 
@@ -264,6 +336,8 @@ describe('VoiceOrchestratorService', () => {
       const svc = new VoiceOrchestratorService(
         buildMockSttGateway(sttResponse),
         sttSafeFailure,
+        buildMockTtsGateway(),
+        ttsSafeFailure,
         buildMockAiOrchestrator(makeAiResult()),
       );
 
@@ -288,6 +362,8 @@ describe('VoiceOrchestratorService', () => {
     const svc = new VoiceOrchestratorService(
       buildMockSttGateway(sttResponse),
       sttSafeFailure,
+      buildMockTtsGateway(),
+      ttsSafeFailure,
       buildMockAiOrchestrator(makeAiResult()),
     );
 

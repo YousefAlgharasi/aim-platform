@@ -28,6 +28,7 @@ type LessonEditorFormProps = {
     title: string;
     description: string;
     sortOrder?: number;
+    systemPrompt?: string | null;
   }) => Promise<{ error?: string }>;
 };
 
@@ -36,6 +37,7 @@ export function LessonEditorForm({ lesson, onUpdate }: LessonEditorFormProps) {
   const [title, setTitle] = useState(lesson.title);
   const [description, setDescription] = useState(lesson.description);
   const [sortOrder, setSortOrder] = useState(String(lesson.sortOrder));
+  const [systemPrompt, setSystemPrompt] = useState(lesson.systemPrompt ?? '');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -67,6 +69,7 @@ export function LessonEditorForm({ lesson, onUpdate }: LessonEditorFormProps) {
         title: title.trim(),
         description: description.trim(),
         ...(sortOrder.trim() && !isNaN(orderNum) ? { sortOrder: orderNum } : {}),
+        systemPrompt: systemPrompt.trim() ? systemPrompt.trim() : null,
       });
       if (result.error) {
         setError(result.error);
@@ -171,6 +174,22 @@ export function LessonEditorForm({ lesson, onUpdate }: LessonEditorFormProps) {
             placeholder="0"
             disabled={isPending}
             hasError={!!fieldErrors.sortOrder}
+          />
+        </AdminFormField>
+
+        <AdminFormField
+          id="lesson-system-prompt"
+          label="AI Teacher instructions"
+          hint="Optional. Tells AI Teacher what this specific lesson is about and what to focus on, in addition to the title/description above."
+        >
+          <AdminTextarea
+            id="lesson-system-prompt"
+            value={systemPrompt}
+            onChange={(e) => setSystemPrompt(e.target.value)}
+            placeholder="e.g. Focus on present-tense verbs; keep examples food-related; avoid grammar terms the student hasn't learned yet."
+            disabled={isPending}
+            rows={4}
+            maxLength={2000}
           />
         </AdminFormField>
       </div>
