@@ -102,18 +102,26 @@ export class PlacementInitialLearningPathService {
   constructor(private readonly db: DatabaseService) {}
 
   /**
-   * Derive and persist the initial learning path for a completed placement result.
-   *
-   * Steps:
-   *   1. Fetch placement_results row (weakness_map, estimated_level, skill_mastery_map).
-   *   2. Build ordered path entries from weakness_map (primary) or mastery order (fallback).
-   *   3. Deduplicate: keep each section/skill at its highest-priority occurrence.
-   *   4. Bulk-insert into initial_learning_path.
-   *   5. Update placement_results.initial_path_id with the first entry's id.
-   *
-   * @param resultId  UUID of the placement_results row.
-   * @returns         InitialPathCreationSummary for the calling service.
+   * Resolve skill_code values against the skills table by their unique `key`
+   * column. Entries whose skill_code matches a real skill's key are skill-level
+   * (P4-033 tiers 2/3, e.g. "grammar.past_simple.questions"); entries that don't
+   * match (the four section codes: grammar/vocabulary/reading/listening) stay
+   * section-level. Never guesses — only resolves what's actually in `skills`.
    */
+  private async resolveSkillsByKey(
+    codes: readonly string[],
+  ): Promise<Map<string, { id: string; key: string }>> {
+    const uniqueCodes = Array.from(new Set(codes));
+    if (uniqueCodes.length === 0) return new Map();
+
+    const result = await this.db.query<{ id: string; key: string }>(
+      `SELECT id, key FROM skills WHERE key = ANY($1)`,
+      [uniqueCodes],
+    );
+
+    return new Map(result.rows.map((r) => [r.key, r]));
+  }
+
   async createInitialPath(resultId: string): Promise<InitialPathCreationSummary> {
     // -----------------------------------------------------------------------
     // 1. Fetch the placement result.
@@ -143,11 +151,15 @@ export class PlacementInitialLearningPathService {
 
     if (weaknesses.length > 0) {
       // Primary rule: follow weakness_map rank order (P4-034 §3.1)
-      pathEntries = this.buildFromWeaknessMap(weaknesses, cefrLevel);
+      const skillsByKey = await this.resolveSkillsByKey(
+        weaknesses.map((w: { skill_code: string }) => w.skill_code),
+      );
+      pathEntries = this.buildFromWeaknessMap(weaknesses, cefrLevel, skillsByKey);
       source = 'weakness_map';
     } else {
       // Fallback rule: rank by ascending mastery score (P4-034 §3.2)
-      pathEntries = this.buildFallback(result.skill_mastery_map as any, cefrLevel);
+      const skillsByKey = await this.resolveSkillsByKey(SECTION_ORDER);
+      pathEntries = this.buildFallback(result.skill_mastery_map as any, cefrLevel, skillsByKey);
       source = 'fallback';
     }
 
@@ -216,23 +228,27 @@ export class PlacementInitialLearningPathService {
       signal: string;
     }>,
     cefrLevel: 'A1' | 'A2' | 'B1',
+    skillsByKey: Map<string, { id: string; key: string }>,
   ): PathEntryInsert[] {
-    // For Phase 4, weakness_map entries are section-level (skill_code = section code).
-    // Skill-level entries (from individual skill signals) use the skill_code as the
-    // key — they are treated as section-type entries here because the weakness_map
-    // from P4-046 stores section codes at the top level.
+    // weakness_map mixes section-level tier-1 entries (skill_code = section code:
+    // grammar/vocabulary/reading/listening) with skill-level tier-2/3 entries
+    // (skill_code = a real skills.key, e.g. "grammar.past_simple.questions").
+    // Resolve against skillsByKey to tell which is which — never guess.
     return weaknesses
       .sort((a, b) => a.priority - b.priority)
-      .map((w, index) => ({
-        priority: index + 1,
-        entry_type: 'section' as const,
-        skill_code: w.skill_code,
-        skill_id: null,
-        skill_key: null,
-        skill_name: SECTION_DISPLAY_NAMES[w.skill_code] ?? w.skill_code,
-        estimated_level: cefrLevel,
-        source: 'weakness_map' as const,
-      }));
+      .map((w, index) => {
+        const matchedSkill = skillsByKey.get(w.skill_code);
+        return {
+          priority: index + 1,
+          entry_type: matchedSkill ? ('skill' as const) : ('section' as const),
+          skill_code: matchedSkill ? null : w.skill_code,
+          skill_id: matchedSkill?.id ?? null,
+          skill_key: matchedSkill?.key ?? null,
+          skill_name: SECTION_DISPLAY_NAMES[w.skill_code] ?? w.skill_code,
+          estimated_level: cefrLevel,
+          source: 'weakness_map' as const,
+        };
+      });
   }
 
   // -------------------------------------------------------------------------
@@ -245,6 +261,7 @@ export class PlacementInitialLearningPathService {
       { total_questions: number; correct_answers: number; mastery_score: number }
     >,
     cefrLevel: 'A1' | 'A2' | 'B1',
+    skillsByKey: Map<string, { id: string; key: string }>,
   ): PathEntryInsert[] {
     const sections = SECTION_ORDER.map((code) => ({
       skill_code: code,
@@ -254,16 +271,19 @@ export class PlacementInitialLearningPathService {
     // Sort ascending by mastery score — lowest mastery = highest priority (P4-034 §3.2)
     sections.sort((a, b) => a.mastery_score - b.mastery_score);
 
-    return sections.map((s, index) => ({
-      priority: index + 1,
-      entry_type: 'section' as const,
-      skill_code: s.skill_code,
-      skill_id: null,
-      skill_key: null,
-      skill_name: SECTION_DISPLAY_NAMES[s.skill_code] ?? s.skill_code,
-      estimated_level: cefrLevel,
-      source: 'fallback' as const,
-    }));
+    return sections.map((s, index) => {
+      const matchedSkill = skillsByKey.get(s.skill_code);
+      return {
+        priority: index + 1,
+        entry_type: matchedSkill ? ('skill' as const) : ('section' as const),
+        skill_code: matchedSkill ? null : s.skill_code,
+        skill_id: matchedSkill?.id ?? null,
+        skill_key: matchedSkill?.key ?? null,
+        skill_name: SECTION_DISPLAY_NAMES[s.skill_code] ?? s.skill_code,
+        estimated_level: cefrLevel,
+        source: 'fallback' as const,
+      };
+    });
   }
 
   // -------------------------------------------------------------------------
