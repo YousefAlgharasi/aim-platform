@@ -37,10 +37,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { AimEngineAdapterService } from '../adapter/aim-engine-adapter.service';
 import { AimRequestMapperService } from '../adapter/aim-request-mapper.service';
-import { AimMappingContext } from '../adapter/aim-request-mapper.types';
 import { AimAuditService } from '../persistence/aim-audit.service';
 import { AimPersistenceService } from '../persistence/aim-persistence.service';
-import { AimStateAssemblyService } from './aim-state-assembly.service';
+import { AimStateAssemblyService, AimStateAssemblyResult } from './aim-state-assembly.service';
 
 // ---------------------------------------------------------------------------
 // Pipeline context — the structured trigger payload passed by the caller
@@ -68,6 +67,12 @@ export type AimPipelineOutcome =
       readonly backendRequestId: string;
       readonly studentId: string;
       readonly sessionId: string;
+      /**
+       * Present only when the pipeline deliberately skipped the AIM Engine
+       * call because state assembly reported insufficient data (e.g. a
+       * session with no attempts yet) — distinct from a normal completed run.
+       */
+      readonly skippedReason?: string;
     }
   | {
       readonly ok: false;
@@ -118,10 +123,10 @@ export class AimPipelineOrchestratorService {
     // If state assembly fails (missing session, orphaned attempt, contract
     // violation), abort pipeline without calling the AIM Engine.
     // -----------------------------------------------------------------------
-    let mappingContext: AimMappingContext | null;
+    let assemblyResult: AimStateAssemblyResult;
 
     try {
-      mappingContext = (await this.stateAssembly.assemble(context)) as AimMappingContext | null;
+      assemblyResult = await this.stateAssembly.assemble(context);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       this.logger.warn('aim_pipeline_state_assembly_failed', {
@@ -148,14 +153,14 @@ export class AimPipelineOrchestratorService {
       };
     }
 
-    if (!mappingContext) {
-      // State assembly stub not yet wired — pipeline proceeds with no-op
-      // outcome. This is the correct Phase 5 initial behaviour while
-      // downstream assembly tasks (P5-057+) are pending.
-      this.logger.warn('aim_pipeline_state_assembly_returned_null', {
+    if (assemblyResult.status === 'insufficient_data') {
+      // Deliberate, clean skip — distinct from both a stub and a failure.
+      // e.g. the session has no recorded attempts yet.
+      this.logger.log('aim_pipeline_state_assembly_insufficient_data', {
         backendRequestId,
         studentId: context.studentId,
         sessionId: context.sessionId,
+        reason: assemblyResult.reason,
       });
       this.audit.record({
         backendRequestId,
@@ -173,8 +178,11 @@ export class AimPipelineOrchestratorService {
         backendRequestId,
         studentId: context.studentId,
         sessionId: context.sessionId,
+        skippedReason: assemblyResult.reason,
       };
     }
+
+    const mappingContext = assemblyResult.context;
 
     // -----------------------------------------------------------------------
     // Stage 4 — Build raw AIM Engine request (P5-047 mapper)
