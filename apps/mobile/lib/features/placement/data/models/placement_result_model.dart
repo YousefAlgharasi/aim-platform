@@ -24,6 +24,9 @@ class PlacementResultModel extends PlacementResult {
     required super.weaknesses,
     required super.initialPathId,
     required super.createdAt,
+    super.recommendedCourseId,
+    super.unlockedCourseIds,
+    super.note,
   });
 
   factory PlacementResultModel.fromJson(Map<String, dynamic> json) {
@@ -39,6 +42,12 @@ class PlacementResultModel extends PlacementResult {
       ),
       initialPathId: json['initial_path_id'] as String?,
       createdAt: json['created_at'] as String,
+      recommendedCourseId: json['recommended_course_id'] as String?,
+      unlockedCourseIds: (json['unlocked_course_ids'] as List<dynamic>?)
+              ?.map((id) => id as String)
+              .toList() ??
+          const [],
+      note: json['note'] as String?,
     );
   }
 
@@ -67,6 +76,9 @@ class PlacementResultModel extends PlacementResult {
         },
         'initial_path_id': initialPathId,
         'created_at': createdAt,
+        'recommended_course_id': recommendedCourseId,
+        'unlocked_course_ids': unlockedCourseIds,
+        'note': note,
       };
 }
 
