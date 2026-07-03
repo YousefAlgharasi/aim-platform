@@ -46,6 +46,7 @@ model StudentProfile {
 
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   levelStates       StudentLevelState[]
+  focusDirectives   AiFocusDirective[]
 
   @@index([userId])
   @@index([profileType])
@@ -285,4 +286,23 @@ model StudentLevelState {
   @@unique([studentId, trackSlug])
   @@index([studentId])
   @@map("student_level_state")
+}
+
+model AiFocusDirective {
+  id            String   @id @default(uuid()) @db.Uuid
+  studentId     String   @map("student_id") @db.Uuid
+  skillId       String   @map("skill_id")
+
+  directiveText String   @map("directive_text")
+  source        String
+  sourceId      String?  @map("source_id") @db.Uuid
+
+  generatedAt   DateTime @default(now()) @map("generated_at") @db.Timestamptz(6)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  student       StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, active])
+  @@map("ai_focus_directives")
 }
