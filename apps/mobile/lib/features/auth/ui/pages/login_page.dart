@@ -16,6 +16,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/config/app_config_provider.dart';
 import '../../../../core/routing/routing.dart';
 import '../../../../core/widgets/widgets.dart';
@@ -64,15 +65,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context);
     _emailFocus.unfocus();
     _passwordFocus.unfocus();
-    await ref.read(loginProvider.notifier).submit();
+    await ref.read(loginProvider.notifier).submit(l10n);
   }
 
   Future<void> _enterAsTestRole(String role) async {
+    final l10n = AppLocalizations.of(context);
     _emailFocus.unfocus();
     _passwordFocus.unfocus();
-    await ref.read(loginProvider.notifier).submitTestLogin(role);
+    await ref.read(loginProvider.notifier).submitTestLogin(role, l10n);
   }
 
   void _openRegister() {
@@ -85,6 +88,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final formState = ref.watch(loginProvider);
     final surfaces = aimSurfacesOf(context);
     final shadows = aimShadowsOf(context);
@@ -106,6 +110,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             padding: EdgeInsets.zero,
             children: [
               const _WelcomeHeader(),
+              // note: _WelcomeHeader stays const — it reads its own
+              // localized strings from context inside its build method.
               Padding(
                 padding: const EdgeInsets.fromLTRB(
                   AimSpacing.screenPaddingMobile,
@@ -154,8 +160,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           AIMInput(
                             controller: _emailController,
                             focusNode: _emailFocus,
-                            label: 'Email',
-                            placeholder: 'you@example.com',
+                            label: l10n.authEmailLabel,
+                            placeholder: l10n.authEmailPlaceholder,
                             type: AIMInputType.email,
                             disabled: formState.isSubmitting,
                             leadingIcon: const Icon(Icons.email_outlined),
@@ -163,13 +169,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             onSubmitted: (_) => _passwordFocus.requestFocus(),
                             textInputAction: TextInputAction.next,
                             autofillHints: const [AutofillHints.email],
-                            semanticLabel: 'Email address',
+                            semanticLabel: l10n.authEmailSemantic,
                           ),
                           const SizedBox(height: AimSpacing.formFieldGap),
                           AIMInput(
                             controller: _passwordController,
                             focusNode: _passwordFocus,
-                            label: 'Password',
+                            label: l10n.authPasswordLabel,
                             type: AIMInputType.password,
                             disabled: formState.isSubmitting,
                             leadingIcon: const Icon(Icons.lock_outline),
@@ -177,7 +183,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             onSubmitted: (_) => _submit(),
                             textInputAction: TextInputAction.done,
                             autofillHints: const [AutofillHints.password],
-                            semanticLabel: 'Password',
+                            semanticLabel: l10n.authPasswordSemantic,
                           ),
                           const SizedBox(height: AimSpacing.space8),
                           // There is no forgot-password endpoint or route
@@ -186,7 +192,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           Align(
                             alignment: AlignmentDirectional.centerEnd,
                             child: Text(
-                              'Forgot password?',
+                              l10n.authForgotPassword,
                               style: AimTextStyles.label.copyWith(
                                 color: surfaces.textLink,
                               ),
@@ -194,12 +200,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           ),
                           const SizedBox(height: AimSpacing.sectionGap),
                           AIMGradientButton(
-                            label: 'Sign In',
+                            label: l10n.authSignInButton,
                             fullWidth: true,
                             loading: formState.isSubmitting,
                             enabled: formState.isValid,
                             onPressed: _submit,
-                            semanticLabel: 'Sign in',
+                            semanticLabel: l10n.authSignInSemantic,
                           ),
                         ],
                       ),
@@ -215,11 +221,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             style: AimTextStyles.bodySm
                                 .copyWith(color: surfaces.textSecondary),
                             children: [
-                              const TextSpan(
-                                text: "Don't have an account? ",
+                              TextSpan(
+                                text: l10n.authNoAccountPrompt,
                               ),
                               TextSpan(
-                                text: 'Create one',
+                                text: l10n.authCreateOneLink,
                                 style: TextStyle(
                                   color: surfaces.textLink,
                                   fontWeight: AimFontWeights.semibold,
@@ -243,7 +249,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         onPressed: _openEndpointTester,
                         variant: AIMButtonVariant.outline,
                         fullWidth: true,
-                        child: const Text('Open API Endpoint Tester'),
+                        child: Text(l10n.authOpenEndpointTester),
                       ),
                     ],
                   ],
@@ -274,6 +280,7 @@ class _WelcomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ClipRect(
       child: Container(
         width: double.infinity,
@@ -317,14 +324,14 @@ class _WelcomeHeader extends StatelessWidget {
                   ),
                   const SizedBox(height: AimSpacing.componentGap),
                   Text(
-                    'Welcome back',
+                    l10n.authWelcomeBackTitle,
                     style:
                         AimTextStyles.h2.copyWith(color: AimColors.neutral0),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AimSpacing.space4),
                   Text(
-                    'Sign in to keep your streak alive',
+                    l10n.authWelcomeBackSubtitle,
                     style: AimTextStyles.bodySm.copyWith(
                       color: AimColors.neutral0.withValues(alpha: 0.85),
                     ),
@@ -388,11 +395,12 @@ class _SocialSignInSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'OR CONTINUE WITH',
+          l10n.authOrContinueWith,
           style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
           textAlign: TextAlign.center,
         ),
@@ -403,8 +411,8 @@ class _SocialSignInSection extends StatelessWidget {
             onPressed: () {},
             variant: AIMButtonVariant.outline,
             fullWidth: true,
-            semanticLabel: 'Continue with Google (coming soon)',
-            child: const Text('Continue with Google'),
+            semanticLabel: l10n.authContinueWithGoogleSemantic,
+            child: Text(l10n.authContinueWithGoogle),
           ),
         ),
         const SizedBox(height: AimSpacing.innerGap),
@@ -416,8 +424,8 @@ class _SocialSignInSection extends StatelessWidget {
                 child: AIMButton(
                   onPressed: () {},
                   variant: AIMButtonVariant.outline,
-                  semanticLabel: 'Continue with Apple (coming soon)',
-                  child: const Text('Apple'),
+                  semanticLabel: l10n.authContinueWithAppleSemantic,
+                  child: Text(l10n.authAppleButton),
                 ),
               ),
             ),
@@ -428,8 +436,8 @@ class _SocialSignInSection extends StatelessWidget {
                 child: AIMButton(
                   onPressed: () {},
                   variant: AIMButtonVariant.outline,
-                  semanticLabel: 'Continue with Facebook (coming soon)',
-                  child: const Text('Facebook'),
+                  semanticLabel: l10n.authContinueWithFacebookSemantic,
+                  child: Text(l10n.authFacebookButton),
                 ),
               ),
             ),
@@ -450,6 +458,7 @@ class _DeveloperTestModeDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return Row(
       children: [
@@ -459,7 +468,7 @@ class _DeveloperTestModeDivider extends StatelessWidget {
             horizontal: AimSpacing.innerGap,
           ),
           child: Text(
-            'Test mode',
+            l10n.authTestModeLabel,
             style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
           ),
         ),
@@ -484,14 +493,15 @@ class _DeveloperTestModeRoleButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Row(
       children: [
         Expanded(
           child: AIMButton(
             onPressed: isSubmitting ? null : () => onSelectRole('student'),
             variant: AIMButtonVariant.secondary,
-            semanticLabel: 'Enter as test student',
-            child: const Text('Student'),
+            semanticLabel: l10n.authEnterAsTestStudentSemantic,
+            child: Text(l10n.authStudentButton),
           ),
         ),
         const SizedBox(width: AimSpacing.innerGap),
@@ -499,8 +509,8 @@ class _DeveloperTestModeRoleButtons extends StatelessWidget {
           child: AIMButton(
             onPressed: isSubmitting ? null : () => onSelectRole('parent'),
             variant: AIMButtonVariant.secondary,
-            semanticLabel: 'Enter as test parent',
-            child: const Text('Parent'),
+            semanticLabel: l10n.authEnterAsTestParentSemantic,
+            child: Text(l10n.authParentButton),
           ),
         ),
         const SizedBox(width: AimSpacing.innerGap),
@@ -508,8 +518,8 @@ class _DeveloperTestModeRoleButtons extends StatelessWidget {
           child: AIMButton(
             onPressed: isSubmitting ? null : () => onSelectRole('admin'),
             variant: AIMButtonVariant.secondary,
-            semanticLabel: 'Enter as test admin',
-            child: const Text('Admin'),
+            semanticLabel: l10n.authEnterAsTestAdminSemantic,
+            child: Text(l10n.authAdminButton),
           ),
         ),
       ],

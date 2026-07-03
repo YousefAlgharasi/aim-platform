@@ -7,6 +7,7 @@ import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/state/app_form_state.dart';
 import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
 import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'auth_context_provider.dart';
 import 'auth_flow_provider.dart';
 import 'session_store_provider.dart';
@@ -66,7 +67,7 @@ class LoginNotifier extends StateNotifier<AppFormState> {
   /// 2. Calls backend sync-user (bootstrap) + me via [AuthContextNotifier].
   /// 3. Persists the session to [SessionStore].
   /// 4. Transitions [AuthFlowNotifier] to signedIn.
-  Future<void> submit() async {
+  Future<void> submit(AppLocalizations l10n) async {
     if (!state.isValid || state.isSubmitting) return;
 
     state = state.copyWith(isSubmitting: true, clearError: true);
@@ -79,13 +80,13 @@ class LoginNotifier extends StateNotifier<AppFormState> {
 
       final didLoadContext = await _ref
           .read(authContextProvider.notifier)
-          .syncAndLoadUser(login.accessToken);
+          .syncAndLoadUser(login.accessToken, l10n: l10n);
 
       if (!didLoadContext) {
         final contextState = _ref.read(authContextProvider);
         final errorMessage = contextState is AppAsyncFailure<AuthContextModel>
             ? contextState.message
-            : 'Sign in failed. Please try again.';
+            : l10n.authSignInFailedGeneric;
         state = state.copyWith(
           isSubmitting: false,
           errorMessage: errorMessage,
@@ -117,7 +118,7 @@ class LoginNotifier extends StateNotifier<AppFormState> {
       log('Login failed: Unknown error');
       state = state.copyWith(
         isSubmitting: false,
-        errorMessage: 'Sign in failed. Please try again.',
+        errorMessage: l10n.authSignInFailedGeneric,
       );
     }
   }
@@ -127,7 +128,7 @@ class LoginNotifier extends StateNotifier<AppFormState> {
   /// as [submit] (sync + load context, persist session, transition
   /// [authFlowProvider]). The backend only serves this route outside
   /// production, so this is a dead end in production builds.
-  Future<void> submitTestLogin(String role) async {
+  Future<void> submitTestLogin(String role, AppLocalizations l10n) async {
     if (state.isSubmitting) return;
 
     state = state.copyWith(isSubmitting: true, clearError: true);
@@ -137,13 +138,13 @@ class LoginNotifier extends StateNotifier<AppFormState> {
 
       final didLoadContext = await _ref
           .read(authContextProvider.notifier)
-          .syncAndLoadUser(login.accessToken);
+          .syncAndLoadUser(login.accessToken, l10n: l10n);
 
       if (!didLoadContext) {
         final contextState = _ref.read(authContextProvider);
         final errorMessage = contextState is AppAsyncFailure<AuthContextModel>
             ? contextState.message
-            : 'Test login failed. Please try again.';
+            : l10n.authTestLoginFailedGeneric;
         state = state.copyWith(
           isSubmitting: false,
           errorMessage: errorMessage,
@@ -167,7 +168,7 @@ class LoginNotifier extends StateNotifier<AppFormState> {
     } catch (_) {
       state = state.copyWith(
         isSubmitting: false,
-        errorMessage: 'Test login failed. Please try again.',
+        errorMessage: l10n.authTestLoginFailedGeneric,
       );
     }
   }

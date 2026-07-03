@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/state/app_async_state.dart';
 import '../../../../core/theme/theme_mode_provider.dart';
@@ -66,6 +67,7 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
   @override
   Widget build(BuildContext context) {
     final selectedIndex = ref.watch(mainShellTabIndexProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       drawer: _buildDrawer(context, ref, selectedIndex),
@@ -73,7 +75,7 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
         builder: (context) => FloatingActionButton(
           backgroundColor: AimColors.primary500,
           foregroundColor: AimColors.neutral0,
-          tooltip: 'Open menu',
+          tooltip: l10n.shellOpenMenuTooltip,
           onPressed: () => Scaffold.of(context).openDrawer(),
           child: const Icon(Icons.menu),
         ),
@@ -91,41 +93,41 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
         value: selectedIndex,
         onChanged: (index) =>
             ref.read(mainShellTabIndexProvider.notifier).state = index,
-        items: const [
+        items: [
           AIMBottomNavDestination(
             value: 0,
-            label: 'Home',
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            semanticLabel: 'Home tab',
+            label: l10n.shellNavHome,
+            icon: const Icon(Icons.home_outlined),
+            activeIcon: const Icon(Icons.home),
+            semanticLabel: l10n.shellNavHomeSemantic,
           ),
           AIMBottomNavDestination(
             value: 1,
-            label: 'Learn',
-            icon: Icon(Icons.menu_book_outlined),
-            activeIcon: Icon(Icons.menu_book),
-            semanticLabel: 'Learn tab',
+            label: l10n.shellNavLearn,
+            icon: const Icon(Icons.menu_book_outlined),
+            activeIcon: const Icon(Icons.menu_book),
+            semanticLabel: l10n.shellNavLearnSemantic,
           ),
           AIMBottomNavDestination(
             value: 2,
-            label: 'Review',
-            icon: Icon(Icons.replay_outlined),
-            activeIcon: Icon(Icons.replay),
-            semanticLabel: 'Review tab',
+            label: l10n.shellNavReview,
+            icon: const Icon(Icons.replay_outlined),
+            activeIcon: const Icon(Icons.replay),
+            semanticLabel: l10n.shellNavReviewSemantic,
           ),
           AIMBottomNavDestination(
             value: 3,
-            label: 'Progress',
-            icon: Icon(Icons.insights_outlined),
-            activeIcon: Icon(Icons.insights),
-            semanticLabel: 'Progress tab',
+            label: l10n.shellNavProgress,
+            icon: const Icon(Icons.insights_outlined),
+            activeIcon: const Icon(Icons.insights),
+            semanticLabel: l10n.shellNavProgressSemantic,
           ),
           AIMBottomNavDestination(
             value: 4,
-            label: 'Profile',
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            semanticLabel: 'Profile tab',
+            label: l10n.shellNavProfile,
+            icon: const Icon(Icons.person_outline),
+            activeIcon: const Icon(Icons.person),
+            semanticLabel: l10n.shellNavProfileSemantic,
           ),
         ],
       ),
@@ -136,6 +138,7 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
   /// section mirroring the 5 bottom-nav tabs, a "MORE" section of
   /// secondary destinations, a theme toggle, and a sign-out footer.
   Widget _buildDrawer(BuildContext context, WidgetRef ref, int selectedIndex) {
+    final l10n = AppLocalizations.of(context);
     final unreadCountState = ref.watch(notificationUnreadCountProvider);
     final unreadCount = switch (unreadCountState) {
       AppAsyncSuccess<int>(:final data) => data,
@@ -154,23 +157,23 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
 
     return AIMAppDrawer(
       header: const _AIMDrawerBrandHeader(),
-      menuLabel: 'MENU',
+      menuLabel: l10n.shellMenuSectionLabel,
       items: [
         AIMDrawerItemData(
           icon: const Icon(Icons.home_outlined),
-          label: 'Home',
+          label: l10n.shellNavHome,
           selected: selectedIndex == 0,
           onTap: () => selectTab(0),
         ),
         AIMDrawerItemData(
           icon: const Icon(Icons.menu_book_outlined),
-          label: 'Learn',
+          label: l10n.shellNavLearn,
           selected: selectedIndex == 1,
           onTap: () => selectTab(1),
         ),
         AIMDrawerItemData(
           icon: const Icon(Icons.replay_outlined),
-          label: 'Review',
+          label: l10n.shellNavReview,
           selected: selectedIndex == 2,
           onTap: () => selectTab(2),
           // No unread/due-count badge: no real due-count data source exists
@@ -179,25 +182,25 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
         ),
         AIMDrawerItemData(
           icon: const Icon(Icons.insights_outlined),
-          label: 'Progress',
+          label: l10n.shellNavProgress,
           selected: selectedIndex == 3,
           onTap: () => selectTab(3),
         ),
         AIMDrawerItemData(
           icon: const Icon(Icons.person_outline),
-          label: 'Profile',
+          label: l10n.shellNavProfile,
           selected: selectedIndex == 4,
           onTap: () => selectTab(4),
         ),
       ],
-      moreLabel: 'MORE',
+      moreLabel: l10n.shellMoreSectionLabel,
       moreItems: [
         AIMDrawerItemData(
           icon: const _AIMDrawerIconAvatar(
             color: AimColors.error500,
             icon: Icons.notifications_outlined,
           ),
-          label: 'Notifications',
+          label: l10n.shellNotifications,
           onTap: () => navigateTo(AppRoutePaths.notificationInbox),
           trailing: unreadCount > 0
               ? _AIMDrawerCountBadge(count: unreadCount)
@@ -208,7 +211,7 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
             color: AimColors.warning500,
             icon: Icons.emoji_events_outlined,
           ),
-          label: 'Achievements',
+          label: l10n.shellAchievements,
           onTap: () => navigateTo(AppRoutePaths.achievements),
           trailing: Icon(Icons.chevron_right, color: aimSurfacesOf(context).textMuted),
         ),
@@ -217,7 +220,7 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
             color: AimColors.primary500,
             icon: Icons.workspace_premium_outlined,
           ),
-          label: 'AIM Plus',
+          label: l10n.shellAimPlus,
           onTap: () => navigateTo(AppRoutePaths.pricing),
           trailing: Icon(Icons.chevron_right, color: aimSurfacesOf(context).textMuted),
         ),
@@ -226,7 +229,7 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
             color: AimColors.success500,
             icon: Icons.help_outline,
           ),
-          label: 'Support',
+          label: l10n.shellSupport,
           onTap: () => navigateTo(AppRoutePaths.helpCenter),
           trailing: Icon(Icons.chevron_right, color: aimSurfacesOf(context).textMuted),
         ),
@@ -252,6 +255,7 @@ class _AIMDrawerBrandHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return Row(
       children: [
@@ -278,7 +282,7 @@ class _AIMDrawerBrandHeader extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'AIM Learning',
+                l10n.shellBrandName,
                 style: AimTextStyles.title.copyWith(
                   color: surfaces.textPrimary,
                 ),
@@ -286,7 +290,7 @@ class _AIMDrawerBrandHeader extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               Text(
-                'English, smarter',
+                l10n.shellBrandTagline,
                 style: AimTextStyles.bodySm.copyWith(
                   color: surfaces.textSecondary,
                 ),
@@ -329,11 +333,12 @@ class _AIMDrawerCountBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return AIMBadge(
       tone: AIMBadgeTone.error,
       variant: AIMBadgeVariant.solid,
       pill: true,
-      semanticLabel: '$count unread notifications',
+      semanticLabel: l10n.shellUnreadNotificationsSemantic(count),
       child: Text(count > 99 ? '99+' : '$count'),
     );
   }
@@ -347,12 +352,13 @@ class _AIMThemeToggleRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final surfaces = aimSurfacesOf(context);
     final mode = ref.watch(themeModeProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Row(
       children: [
         Expanded(
           child: _ThemeToggleButton(
-            label: 'Light',
+            label: l10n.shellThemeLight,
             icon: Icons.light_mode_outlined,
             selected: mode == ThemeMode.light,
             surfaces: surfaces,
@@ -363,7 +369,7 @@ class _AIMThemeToggleRow extends ConsumerWidget {
         const SizedBox(width: AimSpacing.componentGap),
         Expanded(
           child: _ThemeToggleButton(
-            label: 'Dark',
+            label: l10n.shellThemeDark,
             icon: Icons.dark_mode_outlined,
             selected: mode == ThemeMode.dark,
             surfaces: surfaces,
@@ -394,6 +400,7 @@ class _ThemeToggleButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final soft = aimSoftFillsOf(context);
+    final l10n = AppLocalizations.of(context);
     final background = selected ? soft.primary : surfaces.surfaceSunken;
     final foreground = selected ? soft.onPrimary : surfaces.textSecondary;
 
@@ -408,7 +415,7 @@ class _ThemeToggleButton extends StatelessWidget {
         child: Semantics(
           button: true,
           selected: selected,
-          label: '$label theme',
+          label: l10n.shellThemeSemantic(label),
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: AimSizes.touchTarget),
             child: Row(
