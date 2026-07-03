@@ -3,13 +3,16 @@
 
 import { ChatSessionListReadService } from '../chat-session-list-read.service';
 import { AiChatSessionRepository } from '../../repositories/ai-chat-session.repository';
-import { AiChatSessionRow } from '../../repositories/ai-chat-repository.types';
+import { AiChatSessionWithContextTitleRow } from '../../repositories/ai-chat-repository.types';
 
-function makeRow(overrides: Partial<AiChatSessionRow> = {}): AiChatSessionRow {
+function makeRow(
+  overrides: Partial<AiChatSessionWithContextTitleRow> = {},
+): AiChatSessionWithContextTitleRow {
   return {
     id: 'session-1',
     student_id: 'student-1',
     context_ref: 'lesson:fractions',
+    context_title: null,
     status: 'active',
     created_at: '2026-06-19T00:00:00.000Z',
     updated_at: '2026-06-19T00:00:00.000Z',
@@ -17,25 +20,26 @@ function makeRow(overrides: Partial<AiChatSessionRow> = {}): AiChatSessionRow {
   };
 }
 
-function makeRepository(rows: AiChatSessionRow[] = [makeRow()]) {
+function makeRepository(rows: AiChatSessionWithContextTitleRow[] = [makeRow()]) {
   return {
-    findActiveByStudentId: jest.fn().mockResolvedValue(rows),
+    findActiveByStudentIdWithContextTitle: jest.fn().mockResolvedValue(rows),
   } as unknown as AiChatSessionRepository;
 }
 
 describe('ChatSessionListReadService', () => {
   it('returns mapped sessions for the given studentId', async () => {
-    const repository = makeRepository();
+    const repository = makeRepository([makeRow({ context_title: 'Fractions Basics' })]);
     const service = new ChatSessionListReadService(repository);
 
     const result = await service.listSessions({ studentId: 'student-1' });
 
-    expect(repository.findActiveByStudentId).toHaveBeenCalledWith('student-1');
+    expect(repository.findActiveByStudentIdWithContextTitle).toHaveBeenCalledWith('student-1');
     expect(result).toEqual({
       sessions: [
         {
           sessionId: 'session-1',
           contextRef: 'lesson:fractions',
+          contextTitle: 'Fractions Basics',
           status: 'active',
           createdAt: '2026-06-19T00:00:00.000Z',
           updatedAt: '2026-06-19T00:00:00.000Z',

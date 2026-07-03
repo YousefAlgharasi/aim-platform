@@ -10,6 +10,7 @@ class AiChatSessionSummary {
   const AiChatSessionSummary({
     required this.sessionId,
     required this.contextRef,
+    this.contextTitle,
     required this.status,
     required this.createdAt,
     required this.updatedAt,
@@ -17,6 +18,10 @@ class AiChatSessionSummary {
 
   final String sessionId;
   final String contextRef;
+
+  /// Backend-resolved display title for [contextRef] (e.g. the lesson's
+  /// title for `lesson:<uuid>` refs); null when no such title exists.
+  final String? contextTitle;
 
   /// 'active' | 'closed'. Backend-owned lifecycle state.
   final String status;
