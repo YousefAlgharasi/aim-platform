@@ -7,6 +7,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart' hide TextDirection;
+
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 import '../../../../core/routing/routing.dart';
 import '../../../../core/state/app_async_state.dart';
@@ -69,8 +72,8 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
           _GradientHeader(onBack: () => context.pop()),
           Expanded(
             child: switch (state) {
-              AppAsyncLoading() || AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading achievements',
+              AppAsyncLoading() || AppAsyncIdle() => AIMFullScreenLoading(
+                  semanticLabel: AppLocalizations.of(context).achievementsLoadingSemantic,
                 ),
               AppAsyncFailure(:final message) => AIMFullScreenError(
                   message: message,
@@ -113,7 +116,7 @@ class _GradientHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: onBack,
                 customBorder: const CircleBorder(),
@@ -123,7 +126,7 @@ class _GradientHeader extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Padding(
-                    padding: EdgeInsets.all(AimSpacing.space12),
+                    padding: const EdgeInsets.all(AimSpacing.space12),
                     child: Icon(
                       Directionality.of(context) == TextDirection.rtl
                           ? Icons.chevron_right_rounded
@@ -137,7 +140,7 @@ class _GradientHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.componentGap),
             Text(
-              'Achievements',
+              AppLocalizations.of(context).shellAchievements,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],
@@ -158,15 +161,15 @@ class _EmptyAchievements extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return AIMEmptyState(
       icon: const Icon(Icons.emoji_events_outlined),
-      title: 'No achievements yet',
-      subtitle:
-          'Complete lessons and practice sessions to earn badges and milestones.',
+      title: l10n.achievementsEmptyTitle,
+      subtitle: l10n.achievementsEmptySubtitle,
       action: AIMGradientButton(
-        label: 'Start learning',
+        label: l10n.achievementsStartLearningLabel,
         onPressed: onStartLearning,
-        semanticLabel: 'Start learning',
+        semanticLabel: l10n.achievementsStartLearningLabel,
       ),
     );
   }
@@ -243,15 +246,12 @@ class _AchievementBadgeCard extends StatelessWidget {
 
   IconData get _iconData => _iconsByName[achievement.icon] ?? Icons.military_tech;
 
-  String _formatDate(String? dateStr) {
+  String _formatDate(BuildContext context, String? dateStr) {
     if (dateStr == null) return '';
     try {
       final date = DateTime.parse(dateStr);
-      const months = [
-        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-      ];
-      return '${months[date.month - 1]} ${date.day}, ${date.year}';
+      final locale = Localizations.localeOf(context).toString();
+      return DateFormat.yMMMd(locale).format(date);
     } catch (_) {
       return dateStr;
     }
@@ -259,6 +259,7 @@ class _AchievementBadgeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
     final unlocked = achievement.unlocked;
     final iconBg = unlocked ? AimColors.primary500 : surfaces.disabledBg;
@@ -267,8 +268,8 @@ class _AchievementBadgeCard extends StatelessWidget {
     return AIMCard(
       padding: const EdgeInsets.all(AimSpacing.space12),
       semanticLabel: unlocked
-          ? '${achievement.title}, unlocked'
-          : '${achievement.title}, locked',
+          ? l10n.achievementsUnlockedSemantic(achievement.title)
+          : l10n.achievementsLockedSemantic(achievement.title),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -304,7 +305,7 @@ class _AchievementBadgeCard extends StatelessWidget {
           if (unlocked && achievement.unlockedAt != null) ...[
             const SizedBox(height: AimSpacing.space4),
             Text(
-              _formatDate(achievement.unlockedAt),
+              _formatDate(context, achievement.unlockedAt),
               style: AimTextStyles.caption.copyWith(color: surfaces.textLink),
               textAlign: TextAlign.center,
             ),
