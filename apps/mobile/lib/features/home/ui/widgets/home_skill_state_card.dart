@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/home/data/models/home_models.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class HomeSkillStateCard extends StatelessWidget {
   const HomeSkillStateCard({
@@ -29,11 +30,12 @@ class HomeSkillStateCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final scorePercent = (model.masteryScore * 100).toStringAsFixed(0);
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
-      semanticLabel: '${model.skillId} mastery: $scorePercent%',
+      semanticLabel: l10n.homeSkillMasterySemantic(model.skillId, scorePercent),
       child: Row(
         children: [
           DecoratedBox(
@@ -64,7 +66,7 @@ class HomeSkillStateCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AimSpacing.space2),
                 Text(
-                  '$scorePercent% mastery',
+                  l10n.homeMasteryPercentLabel(scorePercent),
                   style: AimTextStyles.bodySm
                       .copyWith(color: surfaces.textSecondary),
                   maxLines: 1,

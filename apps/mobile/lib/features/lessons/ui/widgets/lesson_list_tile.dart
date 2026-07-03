@@ -23,6 +23,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Deterministic-but-varied gradient tokens cycled by list index — purely
 /// decorative, not derived from any backend "lesson type" field.
@@ -52,12 +53,13 @@ class LessonListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final gradient = _kLessonIconGradients[index % _kLessonIconGradients.length];
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
       onTap: onTap,
-      semanticLabel: 'Lesson: ${model.title}',
+      semanticLabel: l10n.lessonsLessonSemantic(model.title),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -106,8 +108,8 @@ class LessonListTile extends StatelessWidget {
                     tone: AIMBadgeTone.accent,
                     pill: true,
                     icon: const Icon(Icons.bolt_rounded),
-                    semanticLabel: '${model.xpValue} XP',
-                    child: Text('${model.xpValue} XP'),
+                    semanticLabel: l10n.lessonsXpValueLabel(model.xpValue),
+                    child: Text(l10n.lessonsXpValueLabel(model.xpValue)),
                   ),
                 ],
               ],
@@ -137,11 +139,11 @@ class _LessonTrailingIndicator extends StatelessWidget {
 
     if (model.completed) {
       return Semantics(
-        label: 'Completed',
+        label: AppLocalizations.of(context).lessonsCompletedLabel,
         child: CircleAvatar(
           radius: 16,
           backgroundColor: soft.success,
-          child: Icon(
+          child: const Icon(
             Icons.check_rounded,
             color: AimColors.success500,
             size: AimSizes.iconSm,
@@ -153,14 +155,14 @@ class _LessonTrailingIndicator extends StatelessWidget {
     if (model.current) {
       return Semantics(
         button: true,
-        label: 'Start lesson',
-        child: DecoratedBox(
-          decoration: const BoxDecoration(
+        label: AppLocalizations.of(context).lessonsStartLessonSemantic,
+        child: const DecoratedBox(
+          decoration: BoxDecoration(
             gradient: AimGradients.gzHero,
             shape: BoxShape.circle,
           ),
           child: Padding(
-            padding: const EdgeInsets.all(AimSpacing.space8),
+            padding: EdgeInsets.all(AimSpacing.space8),
             child: Icon(
               Icons.play_arrow_rounded,
               color: AimColors.neutral0,

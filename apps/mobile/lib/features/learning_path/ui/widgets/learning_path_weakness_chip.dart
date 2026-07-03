@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/learning_path/data/models/learning_path_models.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Same prettification approach as `_prettifySkillId` in review_page.dart.
 String _prettifySkillId(String skillId) {
@@ -46,8 +47,8 @@ class LearningPathWeaknessChip extends StatelessWidget {
       variant: AIMBadgeVariant.soft,
       pill: true,
       dot: true,
-      semanticLabel:
-          '${_prettifySkillId(model.skillId)} weakness: ${model.severity}',
+      semanticLabel: AppLocalizations.of(context)
+          .commonWeaknessSemantic(_prettifySkillId(model.skillId), model.severity),
       child: Text(_prettifySkillId(model.skillId)),
     );
   }

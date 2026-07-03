@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Deterministic-but-varied gradient tokens cycled by list index to give
 /// each chapter row a distinct numbered tile. Purely decorative color
@@ -45,22 +46,23 @@ class ChapterListTile extends StatelessWidget {
   final VoidCallback onTap;
   final int index;
 
-  String get _statusLabel {
-    if (model.isCompleted) return 'Completed';
-    if (model.isInProgress) return 'In progress';
-    return 'Start';
+  String _statusLabel(AppLocalizations l10n) {
+    if (model.isCompleted) return l10n.lessonsCompletedLabel;
+    if (model.isInProgress) return l10n.lessonsInProgressLabel;
+    return l10n.commonStart;
   }
 
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final gradient =
         _kChapterNumberGradients[index % _kChapterNumberGradients.length];
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
       onTap: onTap,
-      semanticLabel: 'Chapter: ${model.title}',
+      semanticLabel: l10n.lessonsChapterSemantic(model.title),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -149,7 +151,7 @@ class ChapterListTile extends StatelessWidget {
               ),
               const SizedBox(width: AimSpacing.space4),
               Text(
-                '${model.lessonCount} lessons',
+                l10n.lessonsLessonsCountLabel(model.lessonCount),
                 style: AimTextStyles.caption
                     .copyWith(color: surfaces.textSecondary),
               ),
@@ -161,8 +163,8 @@ class ChapterListTile extends StatelessWidget {
                         ? AIMBadgeTone.info
                         : AIMBadgeTone.neutral,
                 pill: true,
-                semanticLabel: _statusLabel,
-                child: Text(_statusLabel),
+                semanticLabel: _statusLabel(l10n),
+                child: Text(_statusLabel(l10n)),
               ),
             ],
           ),

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_recommended_course.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class HomeRecommendedCourseCard extends StatelessWidget {
   const HomeRecommendedCourseCard({
@@ -24,7 +25,8 @@ class HomeRecommendedCourseCard extends StatelessWidget {
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
-      semanticLabel: 'Recommended course: ${course.courseTitle}',
+      semanticLabel: AppLocalizations.of(context)
+          .homeRecommendedCourseSemantic(course.courseTitle),
       onTap: onTap,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

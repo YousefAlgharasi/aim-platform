@@ -41,8 +41,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
@@ -138,10 +140,10 @@ class _HomePageState extends ConsumerState<HomePage> {
             AppAsyncSuccess(:final data) => AIMNotificationsSheet(
                 notifications: data
                     .where((event) => event.dismissedAt == null)
-                    .map((event) => _toNotificationItemData(event))
+                    .map((event) => _toNotificationItemData(context, event))
                     .toList(),
                 headerIcon: const _NotificationBellAvatar(),
-                subtitle: _unreadSubtitle(data),
+                subtitle: _unreadSubtitle(context, data),
                 onTapItem: (item) {
                   sheetContext.pop();
                   final event = data.firstWhere((e) => e.id == item.id);
@@ -179,18 +181,23 @@ class _HomePageState extends ConsumerState<HomePage> {
   /// Real subtitle computed from the same backend-returned list shown in
   /// the sheet — counts unread, non-dismissed events, not a fabricated
   /// figure.
-  String _unreadSubtitle(List<NotificationEventModel> events) {
+  String _unreadSubtitle(
+    BuildContext context,
+    List<NotificationEventModel> events,
+  ) {
     final unread = events.where((e) => e.isUnread).length;
-    if (unread == 0) return 'No new notifications';
-    return unread == 1 ? '1 new notification' : '$unread new notifications';
+    return AppLocalizations.of(context).homeUnreadNotificationsSubtitle(unread);
   }
 
-  AIMNotificationItemData _toNotificationItemData(NotificationEventModel event) {
+  AIMNotificationItemData _toNotificationItemData(
+    BuildContext context,
+    NotificationEventModel event,
+  ) {
     return AIMNotificationItemData(
       id: event.id,
       title: event.title ?? '',
       body: event.body,
-      timeLabel: _relativeTimeLabel(event.createdAt),
+      timeLabel: _relativeTimeLabel(context, event.createdAt),
       read: !event.isUnread,
     );
   }
@@ -199,29 +206,31 @@ class _HomePageState extends ConsumerState<HomePage> {
   /// the backend-supplied `createdAt` ISO timestamp. No time-formatting
   /// utility already existed elsewhere in this codebase (searched), so this
   /// is a small real computation from real data, not a fabricated value.
-  String _relativeTimeLabel(String createdAtIso) {
+  String _relativeTimeLabel(BuildContext context, String createdAtIso) {
     final createdAt = DateTime.tryParse(createdAtIso);
     if (createdAt == null) return '';
+    final l10n = AppLocalizations.of(context);
 
     final diff = DateTime.now().toUtc().difference(createdAt.toUtc());
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    if (diff.inDays == 1) return 'Yesterday';
-    if (diff.inDays < 7) return '${diff.inDays}d ago';
-    return '${diff.inDays ~/ 7}w ago';
+    if (diff.inMinutes < 1) return l10n.commonJustNow;
+    if (diff.inMinutes < 60) return l10n.homeMinutesAgoLabel(diff.inMinutes);
+    if (diff.inHours < 24) return l10n.homeHoursAgoLabel(diff.inHours);
+    if (diff.inDays == 1) return l10n.commonYesterday;
+    if (diff.inDays < 7) return l10n.homeDaysAgoLabel(diff.inDays);
+    return l10n.homeWeeksAgoLabel(diff.inDays ~/ 7);
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(homeProvider);
+    final loadingLabel = AppLocalizations.of(context).homeLoadingSemantic;
 
     return Scaffold(
       body: SafeArea(
         bottom: false,
         child: switch (state) {
-          AppAsyncLoading() => const AIMFullScreenLoading(
-              semanticLabel: 'Loading home data',
+          AppAsyncLoading() => AIMFullScreenLoading(
+              semanticLabel: loadingLabel,
             ),
           AppAsyncFailure(:final message) => AIMFullScreenError(
               message: message,
@@ -232,8 +241,8 @@ class _HomePageState extends ConsumerState<HomePage> {
               onRefresh: _refresh,
               onOpenNotifications: () => _openNotifications(context, ref),
             ),
-          AppAsyncIdle() => const AIMFullScreenLoading(
-              semanticLabel: 'Loading home data',
+          AppAsyncIdle() => AIMFullScreenLoading(
+              semanticLabel: loadingLabel,
             ),
         },
       ),
@@ -298,6 +307,7 @@ class _HomeContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return RefreshIndicator(
       onRefresh: onRefresh,
@@ -321,12 +331,12 @@ class _HomeContent extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Continue learning',
+                  l10n.homeContinueLearningTitle,
                   style: AimTextStyles.h3
                       .copyWith(color: surfaces.textPrimary),
                 ),
                 _LinkButton(
-                  label: 'Library',
+                  label: l10n.homeLibraryLink,
                   onTap: () =>
                       ref.read(mainShellTabIndexProvider.notifier).state = 1,
                 ),
@@ -349,14 +359,17 @@ class _HomeContent extends ConsumerWidget {
                     ),
                     const SizedBox(width: AimSpacing.space8),
                     Text(
-                      'Daily challenges',
+                      l10n.homeDailyChallengesTitle,
                       style: AimTextStyles.h3
                           .copyWith(color: surfaces.textPrimary),
                     ),
                   ],
                 ),
                 Text(
-                  data.dailyChallenge!.completed ? '1 / 1 done' : '0 / 1 done',
+                  l10n.homeDailyChallengeCountLabel(
+                    data.dailyChallenge!.completed ? 1 : 0,
+                    1,
+                  ),
                   style: AimTextStyles.bodySm
                       .copyWith(color: surfaces.textMuted),
                 ),
@@ -371,7 +384,7 @@ class _HomeContent extends ConsumerWidget {
             const SizedBox(height: AimSpacing.sectionGap),
           ],
           if (data.quickStartLesson != null) ...[
-            const HomeSectionHeader(title: 'Quick Start'),
+            HomeSectionHeader(title: l10n.homeQuickStartTitle),
             const SizedBox(height: AimSpacing.componentGap),
             HomeQuickStartLessonCard(
               lesson: data.quickStartLesson!,
@@ -380,7 +393,7 @@ class _HomeContent extends ConsumerWidget {
             const SizedBox(height: AimSpacing.sectionGap),
           ],
           if (data.recommendedCourse != null) ...[
-            const HomeSectionHeader(title: 'Recommended Course'),
+            HomeSectionHeader(title: l10n.homeRecommendedCourseTitle),
             const SizedBox(height: AimSpacing.componentGap),
             HomeRecommendedCourseCard(
               course: data.recommendedCourse!,
@@ -389,14 +402,14 @@ class _HomeContent extends ConsumerWidget {
             const SizedBox(height: AimSpacing.sectionGap),
           ],
           if (data.goal != null) ...[
-            const HomeSectionHeader(title: 'Goal'),
+            HomeSectionHeader(title: l10n.homeGoalTitle),
             const SizedBox(height: AimSpacing.componentGap),
             HomeGoalCard(goal: data.goal!),
             const SizedBox(height: AimSpacing.sectionGap),
           ],
           if (data.isEmpty) ..._gettingStartedCards(context, ref),
           if (data.skillStates.isNotEmpty) ...[
-            const HomeSectionHeader(title: 'Skill States'),
+            HomeSectionHeader(title: l10n.homeSkillStatesTitle),
             const SizedBox(height: AimSpacing.componentGap),
             ...data.skillStates.map(
               (m) => Padding(
@@ -407,7 +420,7 @@ class _HomeContent extends ConsumerWidget {
             const SizedBox(height: AimSpacing.sectionGap),
           ],
           if (data.weaknessRecords.isNotEmpty) ...[
-            const HomeSectionHeader(title: 'Focus Areas'),
+            HomeSectionHeader(title: l10n.commonFocusAreas),
             const SizedBox(height: AimSpacing.componentGap),
             Wrap(
               spacing: AimSpacing.space8,
@@ -419,7 +432,7 @@ class _HomeContent extends ConsumerWidget {
             const SizedBox(height: AimSpacing.sectionGap),
           ],
           if (data.reviewSchedules.isNotEmpty) ...[
-            const HomeSectionHeader(title: 'Review Schedule'),
+            HomeSectionHeader(title: l10n.homeReviewScheduleTitle),
             const SizedBox(height: AimSpacing.componentGap),
             ...data.reviewSchedules.map(
               (m) => Padding(
@@ -430,7 +443,7 @@ class _HomeContent extends ConsumerWidget {
             const SizedBox(height: AimSpacing.sectionGap),
           ],
           if (data.recommendations.isNotEmpty) ...[
-            const HomeSectionHeader(title: 'AIM Recommendations'),
+            HomeSectionHeader(title: l10n.homeRecommendationsTitle),
             const SizedBox(height: AimSpacing.componentGap),
             ...data.recommendations.map(
               (m) => Padding(
@@ -451,9 +464,10 @@ class _HomeContent extends ConsumerWidget {
 /// above are never hidden behind this state.
 List<Widget> _gettingStartedCards(BuildContext context, WidgetRef ref) {
   final surfaces = aimSurfacesOf(context);
+  final l10n = AppLocalizations.of(context);
 
   return [
-    const HomeSectionHeader(title: 'Get Started'),
+    HomeSectionHeader(title: l10n.homeGetStartedTitle),
     const SizedBox(height: AimSpacing.componentGap),
     AIMCard(
       variant: AIMCardVariant.elevated,
@@ -473,14 +487,14 @@ List<Widget> _gettingStartedCards(BuildContext context, WidgetRef ref) {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Placement Test',
+                  l10n.homePlacementTestTitle,
                   style: AimTextStyles.title.copyWith(
                     color: surfaces.textPrimary,
                   ),
                 ),
                 const SizedBox(height: AimSpacing.space4),
                 Text(
-                  'Find your level and get personalised recommendations.',
+                  l10n.homePlacementTestSubtitle,
                   style: AimTextStyles.bodySm.copyWith(
                     color: surfaces.textSecondary,
                   ),
@@ -512,14 +526,14 @@ List<Widget> _gettingStartedCards(BuildContext context, WidgetRef ref) {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Browse Courses',
+                  l10n.homeBrowseCoursesTitle,
                   style: AimTextStyles.title.copyWith(
                     color: surfaces.textPrimary,
                   ),
                 ),
                 const SizedBox(height: AimSpacing.space4),
                 Text(
-                  'Explore available courses and start learning.',
+                  l10n.homeBrowseCoursesSubtitle,
                   style: AimTextStyles.bodySm.copyWith(
                     color: surfaces.textSecondary,
                   ),
@@ -553,14 +567,14 @@ List<Widget> _gettingStartedCards(BuildContext context, WidgetRef ref) {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Assessments',
+                  l10n.homeAssessmentsTitle,
                   style: AimTextStyles.title.copyWith(
                     color: surfaces.textPrimary,
                   ),
                 ),
                 const SizedBox(height: AimSpacing.space4),
                 Text(
-                  'View and take available assessments.',
+                  l10n.homeAssessmentsSubtitle,
                   style: AimTextStyles.bodySm.copyWith(
                     color: surfaces.textSecondary,
                   ),
@@ -591,11 +605,6 @@ class _HomeGreetingHeader extends ConsumerWidget {
   final int streakDays;
   final VoidCallback onOpenNotifications;
 
-  static const _weekdays = [
-    'Monday', 'Tuesday', 'Wednesday', 'Thursday',
-    'Friday', 'Saturday', 'Sunday',
-  ];
-
   String _initials(String? value) {
     if (value == null || value.isEmpty) return '?';
     final parts = value.trim().split(RegExp(r'[\s@.]+'));
@@ -608,6 +617,7 @@ class _HomeGreetingHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final authState = ref.watch(authContextProvider);
     final displayName = switch (authState) {
       AppAsyncSuccess(:final data) =>
@@ -615,7 +625,8 @@ class _HomeGreetingHeader extends ConsumerWidget {
       _ => '',
     };
     final firstName = displayName.split(RegExp(r'[\s@]+')).first;
-    final weekday = _weekdays[DateTime.now().weekday - 1];
+    final locale = Localizations.localeOf(context).toString();
+    final weekday = DateFormat.EEEE(locale).format(DateTime.now());
 
     return Row(
       children: [
@@ -638,14 +649,14 @@ class _HomeGreetingHeader extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "$weekday · let's go",
+                l10n.homeGreetingWeekdayLine(weekday),
                 style: AimTextStyles.caption
                     .copyWith(color: surfaces.textMuted),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               Text(
-                'Hey $firstName ✦',
+                l10n.homeGreetingHey(firstName),
                 style: AimTextStyles.title
                     .copyWith(color: surfaces.textPrimary),
                 maxLines: 1,
@@ -657,9 +668,9 @@ class _HomeGreetingHeader extends ConsumerWidget {
         if (streakDays > 0) ...[
           const SizedBox(width: AimSpacing.innerGap),
           Semantics(
-            label: '$streakDays day streak',
+            label: l10n.homeStreakDaysSemantic(streakDays),
             child: DecoratedBox(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: AimGradients.gzFire,
                 borderRadius: AimRadius.borderPill,
               ),
@@ -692,7 +703,7 @@ class _HomeGreetingHeader extends ConsumerWidget {
         ],
         AIMIconButton(
           icon: const Icon(Icons.notifications_outlined),
-          semanticLabel: 'Notifications',
+          semanticLabel: l10n.shellNotifications,
           onPressed: onOpenNotifications,
         ),
       ],
@@ -721,15 +732,18 @@ class _HomeLevelHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final nextLevelXp = stats.nextLevelMinXp;
     final xpFraction = stats.levelProgressPercent / 100;
 
     return Semantics(
-      label: 'Level ${stats.level}, ${stats.totalXp} XP'
-          '${nextLevelXp != null ? ', $nextLevelXp XP to level ${stats.nextLevel}' : ' (max level)'}',
+      label: nextLevelXp != null
+          ? l10n.homeLevelHeroSemanticNext(
+              stats.level, stats.totalXp, nextLevelXp, stats.nextLevel!)
+          : l10n.homeLevelHeroSemanticMax(stats.level, stats.totalXp),
       child: Container(
         padding: const EdgeInsets.all(AimSpacing.cardPaddingLg),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: AimGradients.gzHero,
           borderRadius: AimRadius.borderX2l,
         ),
@@ -737,7 +751,7 @@ class _HomeLevelHeroCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "You're crushing your goals 🚀",
+              l10n.homeCrushingGoalsTitle,
               style: AimTextStyles.caption.copyWith(
                 color: AimColors.neutral0.withValues(alpha: 0.9),
                 fontWeight: AimFontWeights.semibold,
@@ -756,7 +770,7 @@ class _HomeLevelHeroCard extends StatelessWidget {
                           bottom: AimSpacing.space8,
                         ),
                         child: Text(
-                          'LEVEL',
+                          l10n.homeLevelLabel,
                           style: AimTextStyles.caption.copyWith(
                             color: AimColors.neutral0.withValues(alpha: 0.85),
                             fontWeight: AimFontWeights.bold,
@@ -790,7 +804,7 @@ class _HomeLevelHeroCard extends StatelessWidget {
                               .copyWith(color: AimColors.neutral0),
                         ),
                         Text(
-                          'XP TODAY',
+                          l10n.homeXpTodayLabel,
                           style: AimTextStyles.caption.copyWith(
                             color: AimColors.neutral0.withValues(alpha: 0.85),
                           ),
@@ -807,15 +821,20 @@ class _HomeLevelHeroCard extends StatelessWidget {
               children: [
                 Text(
                   nextLevelXp != null
-                      ? '${_withThousandsSeparator(stats.totalXp)} / ${_withThousandsSeparator(nextLevelXp)} XP'
-                      : '${_withThousandsSeparator(stats.totalXp)} XP',
+                      ? l10n.homeXpProgressWithNext(
+                          _withThousandsSeparator(stats.totalXp),
+                          _withThousandsSeparator(nextLevelXp),
+                        )
+                      : l10n.homeXpProgressMax(
+                          _withThousandsSeparator(stats.totalXp),
+                        ),
                   style: AimTextStyles.caption.copyWith(
                     color: AimColors.neutral0.withValues(alpha: 0.9),
                   ),
                 ),
                 if (stats.nextLevel != null)
                   Text(
-                    'Level ${stats.nextLevel} →',
+                    l10n.homeNextLevelCta(stats.nextLevel!),
                     style: AimTextStyles.caption.copyWith(
                       color: AimColors.neutral0.withValues(alpha: 0.9),
                       fontWeight: AimFontWeights.semibold,
@@ -823,7 +842,7 @@ class _HomeLevelHeroCard extends StatelessWidget {
                   )
                 else
                   Text(
-                    'Max level',
+                    l10n.homeMaxLevelLabel,
                     style: AimTextStyles.caption.copyWith(
                       color: AimColors.neutral0.withValues(alpha: 0.9),
                       fontWeight: AimFontWeights.semibold,
@@ -847,14 +866,12 @@ class _HomeLevelHeroCard extends StatelessWidget {
               children: [
                 _HeroPill(
                   icon: Icons.emoji_events_outlined,
-                  label: stats.badgeCount == 1
-                      ? '1 badge'
-                      : '${stats.badgeCount} badges',
+                  label: l10n.homeBadgeCountLabel(stats.badgeCount),
                 ),
                 const SizedBox(width: AimSpacing.innerGap),
                 _HeroPill(
                   icon: Icons.star_rounded,
-                  label: 'Top ${stats.rankPercentile}%',
+                  label: l10n.homeTopPercentLabel(stats.rankPercentile),
                 ),
               ],
             ),
@@ -914,11 +931,12 @@ class _ContinueLearningHeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
       semanticLabel:
-          'Continue ${lesson.lessonTitle}, ${lesson.percent} percent complete',
+          l10n.homeContinueSemanticLabel(lesson.lessonTitle, lesson.percent),
       child: Row(
         children: [
           Expanded(
@@ -933,13 +951,13 @@ class _ContinueLearningHeroCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AimSpacing.space4),
                 Text(
-                  '${lesson.percent}% complete',
+                  l10n.homePercentCompleteLabel(lesson.percent),
                   style: AimTextStyles.bodySm
                       .copyWith(color: surfaces.textSecondary),
                 ),
                 const SizedBox(height: AimSpacing.componentGap),
                 AIMGradientButton(
-                  label: 'Resume',
+                  label: l10n.homeResumeButton,
                   icon: const Icon(Icons.play_arrow_rounded),
                   onPressed: () => context.push(
                     AppRoutePaths.lessonDetail,
@@ -976,19 +994,23 @@ class _DailyChallengeRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
       padding: const EdgeInsets.all(AimSpacing.componentGap),
-      semanticLabel: 'Daily challenge: ${challenge.title}, '
-          '${challenge.progressCount} of ${challenge.targetCount}',
+      semanticLabel: l10n.homeDailyChallengeSemantic(
+        challenge.title,
+        challenge.progressCount,
+        challenge.targetCount,
+      ),
       child: Row(
         children: [
           Container(
             width: AimSizes.avatarMd,
             height: AimSizes.avatarMd,
             alignment: Alignment.center,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: AimGradients.gzCoral,
               borderRadius: AimRadius.borderMd,
             ),
@@ -1025,11 +1047,11 @@ class _DailyChallengeRow extends StatelessWidget {
           ),
           const SizedBox(width: AimSpacing.componentGap),
           if (challenge.completed)
-            const AIMBadge(
+            AIMBadge(
               tone: AIMBadgeTone.success,
               variant: AIMBadgeVariant.solid,
               pill: true,
-              child: Text('Done'),
+              child: Text(l10n.commonDone),
             )
           else
             SizedBox(
@@ -1049,7 +1071,7 @@ class _DailyChallengeRow extends StatelessWidget {
                     fontWeight: AimFontWeights.bold,
                   ),
                 ),
-                child: const Text('Start'),
+                child: Text(l10n.commonStart),
               ),
             ),
         ],

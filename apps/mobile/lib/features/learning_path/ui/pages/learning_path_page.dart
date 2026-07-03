@@ -44,6 +44,7 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.da
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/learning_path/logic/entity/learning_path_data.dart';
 import 'package:aim_mobile/features/learning_path/logic/provider/learning_path_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../widgets/learning_path_widgets.dart';
 
 /// Student learning path screen MVP.
@@ -107,6 +108,8 @@ class _LearningPathPageState extends ConsumerState<LearningPathPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(learningPathProvider);
     final surfaces = aimSurfacesOf(context);
+    final loadingLabel =
+        AppLocalizations.of(context).learningPathLoadingSemantic;
 
     return Scaffold(
       backgroundColor: surfaces.background,
@@ -116,8 +119,8 @@ class _LearningPathPageState extends ConsumerState<LearningPathPage> {
           const _LearningPathHeader(),
           Expanded(
             child: switch (state) {
-              AppAsyncLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading learning path data',
+              AppAsyncLoading() => AIMFullScreenLoading(
+                  semanticLabel: loadingLabel,
                 ),
               AppAsyncFailure(:final message) => AIMFullScreenError(
                   message: message,
@@ -127,8 +130,8 @@ class _LearningPathPageState extends ConsumerState<LearningPathPage> {
                   data: data,
                   onRefresh: _refresh,
                 ),
-              AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading learning path data',
+              AppAsyncIdle() => AIMFullScreenLoading(
+                  semanticLabel: loadingLabel,
                 ),
             },
           ),
@@ -143,6 +146,7 @@ class _LearningPathHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -158,7 +162,7 @@ class _LearningPathHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: l10n.commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -170,7 +174,7 @@ class _LearningPathHeader extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Padding(
-                    padding: EdgeInsets.all(AimSpacing.space12),
+                    padding: const EdgeInsets.all(AimSpacing.space12),
                     child: Icon(
                       Directionality.of(context) == TextDirection.rtl
                           ? Icons.chevron_right_rounded
@@ -188,12 +192,12 @@ class _LearningPathHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Learning Path',
+                    l10n.learningPathHeaderTitle,
                     style:
                         AimTextStyles.h3.copyWith(color: AimColors.neutral0),
                   ),
                   Text(
-                    'Your personalized roadmap',
+                    l10n.learningPathHeaderSubtitle,
                     style: AimTextStyles.bodySm.copyWith(
                       color: AimColors.neutral0.withValues(alpha: 0.85),
                     ),
@@ -223,12 +227,13 @@ class _LearningPathContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     if (data.isEmpty) {
-      return const AIMEmptyState(
-        icon: Icon(Icons.route_outlined),
-        title: 'Your learning path is empty',
-        subtitle:
-            'Complete your placement test to generate a personalised learning path.',
+      return AIMEmptyState(
+        icon: const Icon(Icons.route_outlined),
+        title: l10n.learningPathEmptyTitle,
+        subtitle: l10n.learningPathEmptySubtitle,
       );
     }
 
@@ -241,7 +246,7 @@ class _LearningPathContent extends StatelessWidget {
         ),
         children: [
           if (data.skillStates.isNotEmpty) ...[
-            const LearningPathSectionHeader(title: 'Skill coverage'),
+            LearningPathSectionHeader(title: l10n.learningPathSkillCoverageTitle),
             const SizedBox(height: AimSpacing.componentGap),
             ...data.skillStates.map(
               (m) => Padding(
@@ -252,7 +257,7 @@ class _LearningPathContent extends StatelessWidget {
             const SizedBox(height: AimSpacing.sectionGap),
           ],
           if (data.weaknessRecords.isNotEmpty) ...[
-            const LearningPathSectionHeader(title: 'Focus Areas'),
+            LearningPathSectionHeader(title: l10n.commonFocusAreas),
             const SizedBox(height: AimSpacing.componentGap),
             Wrap(
               spacing: AimSpacing.space8,
@@ -267,14 +272,14 @@ class _LearningPathContent extends StatelessWidget {
             // "AI picked" is descriptive chrome, not a fabricated field —
             // every card in this list already is a backend AIM-generated
             // recommendation by definition (see file header).
-            const LearningPathSectionHeader(
-              title: 'Next up',
+            LearningPathSectionHeader(
+              title: l10n.learningPathNextUpTitle,
               trailing: AIMBadge(
                 tone: AIMBadgeTone.primary,
                 variant: AIMBadgeVariant.soft,
                 pill: true,
-                icon: Icon(Icons.auto_awesome_outlined),
-                child: Text('AI picked'),
+                icon: const Icon(Icons.auto_awesome_outlined),
+                child: Text(l10n.learningPathAiPickedBadge),
               ),
             ),
             const SizedBox(height: AimSpacing.componentGap),

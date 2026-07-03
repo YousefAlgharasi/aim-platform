@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lesson_asset.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class LessonStepTile extends StatelessWidget {
   const LessonStepTile({
@@ -36,7 +37,8 @@ class LessonStepTile extends StatelessWidget {
     return AIMCard(
       variant: AIMCardVariant.elevated,
       onTap: onTap,
-      semanticLabel: 'Step $stepNumber: ${asset.title}',
+      semanticLabel:
+          AppLocalizations.of(context).lessonsStepSemantic(stepNumber, asset.title),
       child: Row(
         children: [
           Container(

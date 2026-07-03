@@ -218,6 +218,24 @@ abstract class AppLocalizations {
   /// **'Yesterday'**
   String get commonYesterday;
 
+  /// Section header for the weakness/focus-areas list, shown on both the Home and Learning Path screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus Areas'**
+  String get commonFocusAreas;
+
+  /// Compact 'x/y done' progress label with no surrounding spaces, e.g. for a progress bar's value text.
+  ///
+  /// In en, this message translates to:
+  /// **'{done}/{total} done'**
+  String commonDoneProgress(int done, int total);
+
+  /// Accessibility label for a weakness chip, shared by Home and Learning Path. skillId and severity are backend-supplied values.
+  ///
+  /// In en, this message translates to:
+  /// **'{skillId} weakness: {severity}'**
+  String commonWeaknessSemantic(String skillId, String severity);
+
   /// Label for the email input field on the login/register forms.
   ///
   /// In en, this message translates to:
@@ -751,6 +769,681 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap to continue'**
   String get onboardingTapToContinue;
+
+  /// Accessibility label shown while the home screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading home data'**
+  String get homeLoadingSemantic;
+
+  /// Subtitle in the notifications sheet summarizing the number of unread, non-dismissed notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, zero{No new notifications} one{1 new notification} other{{count} new notifications}}'**
+  String homeUnreadNotificationsSubtitle(int count);
+
+  /// Compact relative-time label for a notification created less than an hour ago.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1m ago} other{{count}m ago}}'**
+  String homeMinutesAgoLabel(int count);
+
+  /// Compact relative-time label for a notification created less than a day ago.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1h ago} other{{count}h ago}}'**
+  String homeHoursAgoLabel(int count);
+
+  /// Compact relative-time label for a notification created a few days ago.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1d ago} other{{count}d ago}}'**
+  String homeDaysAgoLabel(int count);
+
+  /// Compact relative-time label for a notification created a week or more ago.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1w ago} other{{count}w ago}}'**
+  String homeWeeksAgoLabel(int count);
+
+  /// Section header above the continue-learning hero card on the home screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue learning'**
+  String get homeContinueLearningTitle;
+
+  /// Link button next to 'Continue learning' that switches to the Learn tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get homeLibraryLink;
+
+  /// Section header above the daily challenge row on the home screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily challenges'**
+  String get homeDailyChallengesTitle;
+
+  /// Count of daily challenges completed, shown next to the 'Daily challenges' section header.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} / {total} done'**
+  String homeDailyChallengeCountLabel(int done, int total);
+
+  /// Section header above the quick-start lesson card on the home screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Start'**
+  String get homeQuickStartTitle;
+
+  /// Section header above the recommended-course card on the home screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended Course'**
+  String get homeRecommendedCourseTitle;
+
+  /// Section header above the daily-goal card on the home screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get homeGoalTitle;
+
+  /// Section header above the skill-state cards on the home screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Skill States'**
+  String get homeSkillStatesTitle;
+
+  /// Section header above the review-schedule cards on the home screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Review Schedule'**
+  String get homeReviewScheduleTitle;
+
+  /// Section header above the AIM recommendation cards on the home screen.
+  ///
+  /// In en, this message translates to:
+  /// **'AIM Recommendations'**
+  String get homeRecommendationsTitle;
+
+  /// Section header shown above the getting-started promo cards for students with no AIM data yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get homeGetStartedTitle;
+
+  /// Title of the getting-started promo card that opens the placement test.
+  ///
+  /// In en, this message translates to:
+  /// **'Placement Test'**
+  String get homePlacementTestTitle;
+
+  /// Subtitle of the getting-started promo card that opens the placement test.
+  ///
+  /// In en, this message translates to:
+  /// **'Find your level and get personalised recommendations.'**
+  String get homePlacementTestSubtitle;
+
+  /// Title of the getting-started promo card that switches to the Learn tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse Courses'**
+  String get homeBrowseCoursesTitle;
+
+  /// Subtitle of the getting-started promo card that switches to the Learn tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore available courses and start learning.'**
+  String get homeBrowseCoursesSubtitle;
+
+  /// Title of the getting-started promo card that opens the assessments list.
+  ///
+  /// In en, this message translates to:
+  /// **'Assessments'**
+  String get homeAssessmentsTitle;
+
+  /// Subtitle of the getting-started promo card that opens the assessments list.
+  ///
+  /// In en, this message translates to:
+  /// **'View and take available assessments.'**
+  String get homeAssessmentsSubtitle;
+
+  /// Small caption above the greeting, e.g. 'Monday · let's go'. weekday is already localized via intl.
+  ///
+  /// In en, this message translates to:
+  /// **'{weekday} · let\'s go'**
+  String homeGreetingWeekdayLine(String weekday);
+
+  /// Main greeting line on the home screen showing the student's first name.
+  ///
+  /// In en, this message translates to:
+  /// **'Hey {name} ✦'**
+  String homeGreetingHey(String name);
+
+  /// Accessibility label for the streak pill in the home screen's greeting header.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 day streak} other{{count} day streak}}'**
+  String homeStreakDaysSemantic(int count);
+
+  /// Encouraging caption at the top of the level hero card on the home screen.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re crushing your goals 🚀'**
+  String get homeCrushingGoalsTitle;
+
+  /// Small eyebrow label above the student's level number on the home screen's level hero card.
+  ///
+  /// In en, this message translates to:
+  /// **'LEVEL'**
+  String get homeLevelLabel;
+
+  /// Small label under the XP-earned-today figure on the home screen's level hero card.
+  ///
+  /// In en, this message translates to:
+  /// **'XP TODAY'**
+  String get homeXpTodayLabel;
+
+  /// Accessibility label for the level hero card when the student has not yet reached the max level.
+  ///
+  /// In en, this message translates to:
+  /// **'Level {level}, {xp} XP, {nextXp} XP to level {nextLevel}'**
+  String homeLevelHeroSemanticNext(
+      int level, int xp, int nextXp, int nextLevel);
+
+  /// Accessibility label for the level hero card when the student is at the max level.
+  ///
+  /// In en, this message translates to:
+  /// **'Level {level}, {xp} XP (max level)'**
+  String homeLevelHeroSemanticMax(int level, int xp);
+
+  /// XP progress text shown on the level hero card when a next level exists. xp/nextXp are already thousands-separator formatted.
+  ///
+  /// In en, this message translates to:
+  /// **'{xp} / {nextXp} XP'**
+  String homeXpProgressWithNext(String xp, String nextXp);
+
+  /// XP progress text shown on the level hero card when the student is at the max level. xp is already thousands-separator formatted.
+  ///
+  /// In en, this message translates to:
+  /// **'{xp} XP'**
+  String homeXpProgressMax(String xp);
+
+  /// Label pointing to the next level on the level hero card.
+  ///
+  /// In en, this message translates to:
+  /// **'Level {level} →'**
+  String homeNextLevelCta(int level);
+
+  /// Label shown instead of a next-level pointer once the student is at the max level.
+  ///
+  /// In en, this message translates to:
+  /// **'Max level'**
+  String get homeMaxLevelLabel;
+
+  /// Badge-count pill on the home screen's level hero card.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 badge} other{{count} badges}}'**
+  String homeBadgeCountLabel(int count);
+
+  /// Rank-percentile pill on the home screen's level hero card.
+  ///
+  /// In en, this message translates to:
+  /// **'Top {percent}%'**
+  String homeTopPercentLabel(int percent);
+
+  /// Button label that resumes the in-progress lesson from the continue-learning hero card.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get homeResumeButton;
+
+  /// Percent-complete caption shown under a lesson title on continue-learning cards.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% complete'**
+  String homePercentCompleteLabel(int percent);
+
+  /// Accessibility label for the home screen's continue-learning hero card.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue {title}, {percent} percent complete'**
+  String homeContinueSemanticLabel(String title, int percent);
+
+  /// Accessibility label for a daily challenge row/card.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily challenge: {title}, {progress} of {target}'**
+  String homeDailyChallengeSemantic(String title, int progress, int target);
+
+  /// Accessibility label for the quick-start lesson card.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Start: {title}'**
+  String homeQuickStartSemantic(String title);
+
+  /// Accessibility label for the recommended-course card.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended course: {title}'**
+  String homeRecommendedCourseSemantic(String title);
+
+  /// Accessibility label for an AIM recommendation card on the home screen. kind and skillId are backend-supplied values.
+  ///
+  /// In en, this message translates to:
+  /// **'AIM recommendation: {kind} {skillId}'**
+  String homeRecommendationSemantic(String kind, String skillId);
+
+  /// Accessibility label for the standalone HomeContinueLearningCard widget.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue learning: {title}, {percent}% complete'**
+  String homeContinueLearningCardSemantic(String title, int percent);
+
+  /// Accessibility label for a review-schedule card. skillId and dueAt are backend-supplied values.
+  ///
+  /// In en, this message translates to:
+  /// **'Review {skillId} due {dueAt}'**
+  String homeReviewScheduleSemantic(String skillId, String dueAt);
+
+  /// Accessibility label for a skill-state card. skillId is a backend-supplied value.
+  ///
+  /// In en, this message translates to:
+  /// **'{skillId} mastery: {percent}%'**
+  String homeSkillMasterySemantic(String skillId, String percent);
+
+  /// Mastery-percent caption shown on a skill-state card.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% mastery'**
+  String homeMasteryPercentLabel(String percent);
+
+  /// Accessibility label for the daily-goal card.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal: {completed} of {target} lessons, {streak} day streak'**
+  String homeGoalSemantic(int completed, int target, int streak);
+
+  /// Title on the daily-goal card.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Goal'**
+  String get homeTodaysGoalTitle;
+
+  /// Progress caption on the daily-goal card.
+  ///
+  /// In en, this message translates to:
+  /// **'{completed} of {target} lessons completed today'**
+  String homeGoalProgressLabel(int completed, int target);
+
+  /// Accessibility label shown while the learning path screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading learning path data'**
+  String get learningPathLoadingSemantic;
+
+  /// Title in the learning path screen's gradient header.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning Path'**
+  String get learningPathHeaderTitle;
+
+  /// Subtitle in the learning path screen's gradient header.
+  ///
+  /// In en, this message translates to:
+  /// **'Your personalized roadmap'**
+  String get learningPathHeaderSubtitle;
+
+  /// Title shown when the student has no learning path data yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Your learning path is empty'**
+  String get learningPathEmptyTitle;
+
+  /// Subtitle shown when the student has no learning path data yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your placement test to generate a personalised learning path.'**
+  String get learningPathEmptySubtitle;
+
+  /// Section header above the skill-state cards on the learning path screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Skill coverage'**
+  String get learningPathSkillCoverageTitle;
+
+  /// Section header above the AIM recommendation cards on the learning path screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Next up'**
+  String get learningPathNextUpTitle;
+
+  /// Badge shown next to the 'Next up' section header.
+  ///
+  /// In en, this message translates to:
+  /// **'AI picked'**
+  String get learningPathAiPickedBadge;
+
+  /// Accessibility label for an AIM recommendation card on the learning path screen. kind and skillId are backend-supplied values.
+  ///
+  /// In en, this message translates to:
+  /// **'AIM recommendation: {kind} for {skillId}'**
+  String learningPathRecommendationSemantic(String kind, String skillId);
+
+  /// Accessibility label for a skill-state card on the learning path screen. title and trend are derived from backend-supplied values.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} mastery: {percent}%, {trend}'**
+  String learningPathSkillMasterySemantic(
+      String title, String percent, String trend);
+
+  /// Accessibility label shown while the chapter list is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading chapters'**
+  String get lessonsLoadingChaptersSemantic;
+
+  /// Chapter count subtitle shown under the course title on the chapter list header.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 chapter} other{{count} chapters}}'**
+  String lessonsChapterCountLabel(int count);
+
+  /// Accessibility label for the overall-percent-done badge on the chapter list header.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent} percent done'**
+  String lessonsPercentDoneSemantic(int percent);
+
+  /// Small eyebrow label under the percent-done figure on the chapter list header.
+  ///
+  /// In en, this message translates to:
+  /// **'DONE'**
+  String get lessonsDoneBadge;
+
+  /// Filter chip label showing every chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'All chapters'**
+  String get lessonsFilterAllChapters;
+
+  /// Filter chip and status badge label for in-progress chapters/courses.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get lessonsInProgressLabel;
+
+  /// Filter chip and status badge label for completed chapters/courses/lessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get lessonsCompletedLabel;
+
+  /// Status badge label for a course the student has not started yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not started'**
+  String get lessonsNotStartedLabel;
+
+  /// Empty-state title shown when a course has no published chapters.
+  ///
+  /// In en, this message translates to:
+  /// **'No chapters available'**
+  String get lessonsNoChaptersTitle;
+
+  /// Empty-state subtitle shown when a course has no published chapters.
+  ///
+  /// In en, this message translates to:
+  /// **'Published chapters will appear here.'**
+  String get lessonsNoChaptersSubtitle;
+
+  /// Empty-state title shown when the selected chapter filter has no matches.
+  ///
+  /// In en, this message translates to:
+  /// **'No chapters in this filter'**
+  String get lessonsNoChaptersFilterTitle;
+
+  /// Empty-state subtitle shown when the selected chapter filter has no matches.
+  ///
+  /// In en, this message translates to:
+  /// **'Try a different filter above.'**
+  String get lessonsTryDifferentFilterSubtitle;
+
+  /// Accessibility label shown while the course list is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading courses'**
+  String get lessonsLoadingCoursesSemantic;
+
+  /// Empty-state title shown when there are no published courses.
+  ///
+  /// In en, this message translates to:
+  /// **'No courses available'**
+  String get lessonsNoCoursesTitle;
+
+  /// Empty-state subtitle shown when there are no published courses.
+  ///
+  /// In en, this message translates to:
+  /// **'Published courses will appear here.'**
+  String get lessonsNoCoursesSubtitle;
+
+  /// Heading at the top of the course list screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses'**
+  String get lessonsCoursesPageTitle;
+
+  /// Level badge shown next to the course list heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Level {level}'**
+  String lessonsLevelBadge(String level);
+
+  /// Subtitle shown under the course list heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Level up your English, step by step'**
+  String get lessonsCoursesSubtitle;
+
+  /// Filter chip label showing every course.
+  ///
+  /// In en, this message translates to:
+  /// **'All courses'**
+  String get lessonsFilterAllCourses;
+
+  /// Message shown when the selected course filter has no matches.
+  ///
+  /// In en, this message translates to:
+  /// **'No courses match this filter yet.'**
+  String get lessonsNoCoursesFilterMessage;
+
+  /// Accessibility label shown while the lesson list is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading lessons'**
+  String get lessonsLoadingLessonsSemantic;
+
+  /// Small eyebrow label above the chapter title on the lesson list header.
+  ///
+  /// In en, this message translates to:
+  /// **'CHAPTER {number}'**
+  String lessonsChapterEyebrowLabel(int number);
+
+  /// Empty-state title shown when a chapter has no published lessons.
+  ///
+  /// In en, this message translates to:
+  /// **'No lessons available'**
+  String get lessonsNoLessonsTitle;
+
+  /// Empty-state subtitle shown when a chapter has no published lessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Published lessons will appear here.'**
+  String get lessonsNoLessonsSubtitle;
+
+  /// Accessibility label shown while a single lesson's detail is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading lesson'**
+  String get lessonsLoadingLessonSemantic;
+
+  /// App bar title on the lesson detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson'**
+  String get lessonsLessonAppBarTitle;
+
+  /// Accessibility label for the disabled bookmark/save-lesson action on the lesson detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Save lesson (coming soon)'**
+  String get lessonsSaveLessonComingSoonSemantic;
+
+  /// Section header above the step list on the lesson detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s inside'**
+  String get lessonsWhatsInsideTitle;
+
+  /// Step count shown next to the 'What's inside' section header.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 step} other{{count} steps}}'**
+  String lessonsStepsCountLabel(int count);
+
+  /// Empty-state title shown when a lesson has no published assets.
+  ///
+  /// In en, this message translates to:
+  /// **'No content yet'**
+  String get lessonsNoContentTitle;
+
+  /// Empty-state subtitle shown when a lesson has no published assets.
+  ///
+  /// In en, this message translates to:
+  /// **'Published lesson content will appear here.'**
+  String get lessonsNoContentSubtitle;
+
+  /// Button label that opens the AI Teacher chat for this lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Start practice'**
+  String get lessonsStartPracticeButton;
+
+  /// Context label passed along to the AI Teacher chat screen when starting practice from a lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson practice'**
+  String get lessonsPracticeContextLabel;
+
+  /// Pill on the lesson detail hero banner showing the lesson's position within its chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson {number}'**
+  String lessonsLessonNumberPill(int number);
+
+  /// Total duration pill on the lesson detail hero banner.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 min} other{{count} min}}'**
+  String lessonsMinutesLabel(int count);
+
+  /// Content-block count pill on the lesson detail hero banner.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 block} other{{count} blocks}}'**
+  String lessonsBlocksCountLabel(int count);
+
+  /// XP-earned badge on the lesson detail hero banner.
+  ///
+  /// In en, this message translates to:
+  /// **'+{xp} XP'**
+  String lessonsXpBadge(int xp);
+
+  /// Title of the bottom sheet shown when a lesson step is tapped.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {number}'**
+  String lessonsStepTitleLabel(int number);
+
+  /// Accessibility label for a step row on the lesson detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {number}: {title}'**
+  String lessonsStepSemantic(int number, String title);
+
+  /// Accessibility label for a lesson asset entry. type is a backend-supplied value (e.g. image, audio, video).
+  ///
+  /// In en, this message translates to:
+  /// **'{type} asset: {title}'**
+  String lessonsAssetSemantic(String type, String title);
+
+  /// Accessibility label for a course card when the course has no level code.
+  ///
+  /// In en, this message translates to:
+  /// **'Course: {title}, {percent} percent complete'**
+  String lessonsCourseSemanticBase(String title, int percent);
+
+  /// Accessibility label for a course card when the course has a level code.
+  ///
+  /// In en, this message translates to:
+  /// **'Course: {title}, level {level}, {percent} percent complete'**
+  String lessonsCourseSemanticWithLevel(
+      String title, String level, int percent);
+
+  /// Lesson count caption shown on course and chapter cards.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 lesson} other{{count} lessons}}'**
+  String lessonsLessonsCountLabel(int count);
+
+  /// Accessibility label for a lesson card.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson: {title}'**
+  String lessonsLessonSemantic(String title);
+
+  /// XP-value badge shown on a lesson card.
+  ///
+  /// In en, this message translates to:
+  /// **'{xp} XP'**
+  String lessonsXpValueLabel(int xp);
+
+  /// Accessibility label for the trailing play button on the current lesson's card.
+  ///
+  /// In en, this message translates to:
+  /// **'Start lesson'**
+  String get lessonsStartLessonSemantic;
+
+  /// Accessibility label for a chapter card.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter: {title}'**
+  String lessonsChapterSemantic(String title);
+
+  /// Error card message shown when an image lesson asset has no URL.
+  ///
+  /// In en, this message translates to:
+  /// **'Image URL is missing for asset: {title}'**
+  String lessonsImageUrlMissingError(String title);
+
+  /// Error card message shown when an image lesson asset fails to load.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load image: {title}'**
+  String lessonsImageLoadFailedError(String title);
+
+  /// Word-count subtitle shown on a vocabulary lesson asset card.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 new word} other{{count} new words}}'**
+  String lessonsNewWordsCountLabel(int count);
+
+  /// Item-count subtitle shown on an exercise lesson asset card.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 item} other{{count} items}}'**
+  String lessonsItemsCountLabel(int count);
 }
 
 class _AppLocalizationsDelegate

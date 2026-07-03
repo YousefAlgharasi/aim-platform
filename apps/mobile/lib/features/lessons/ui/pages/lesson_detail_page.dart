@@ -45,6 +45,7 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart'
 import 'package:aim_mobile/features/lessons/logic/entity/lesson_asset.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lesson_detail.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../widgets/lessons_widgets.dart';
 
 /// Lesson detail screen MVP.
@@ -99,7 +100,7 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
       extra: {
         'contextRef': 'lesson:${detail.lesson.id}',
         'lessonTitle': detail.lesson.title,
-        'contextLabel': 'Lesson practice',
+        'contextLabel': AppLocalizations.of(context).lessonsPracticeContextLabel,
       },
     );
   }
@@ -119,26 +120,27 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(lessonDetailProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AIMTopAppBar(
-        title: 'Lesson',
+        title: l10n.lessonsLessonAppBarTitle,
         onBack: () {
           if (context.canPop()) context.pop();
         },
-        actions: const [
+        actions: [
           // Visual only — no bookmark/save-lesson endpoint exists yet, so
           // this action is disabled rather than a dead-end tap.
-           AIMIconButton(
-            icon: Icon(Icons.bookmark_border_rounded),
-            semanticLabel: 'Save lesson (coming soon)',
+          AIMIconButton(
+            icon: const Icon(Icons.bookmark_border_rounded),
+            semanticLabel: l10n.lessonsSaveLessonComingSoonSemantic,
             onPressed: null,
           ),
         ],
       ),
       body: switch (state) {
-        AppAsyncLoading() => const AIMFullScreenLoading(
-            semanticLabel: 'Loading lesson',
+        AppAsyncLoading() => AIMFullScreenLoading(
+            semanticLabel: l10n.lessonsLoadingLessonSemantic,
           ),
         AppAsyncFailure(:final message) => AIMFullScreenError(
             message: message,
@@ -150,8 +152,8 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
             onStartPractice: () => _startPractice(data),
             onOpenStep: _openStep,
           ),
-        AppAsyncIdle() => const AIMFullScreenLoading(
-            semanticLabel: 'Loading lesson',
+        AppAsyncIdle() => AIMFullScreenLoading(
+            semanticLabel: l10n.lessonsLoadingLessonSemantic,
           ),
       },
     );
@@ -178,6 +180,7 @@ class _LessonDetailContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return Column(
       children: [
@@ -196,13 +199,13 @@ class _LessonDetailContent extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "What's inside",
+                      l10n.lessonsWhatsInsideTitle,
                       style: AimTextStyles.h3.copyWith(
                         color: surfaces.textPrimary,
                       ),
                     ),
                     Text(
-                      '${detail.assets.length} steps',
+                      l10n.lessonsStepsCountLabel(detail.assets.length),
                       style: AimTextStyles.bodySm.copyWith(
                         color: surfaces.textSecondary,
                       ),
@@ -211,10 +214,10 @@ class _LessonDetailContent extends StatelessWidget {
                 ),
                 const SizedBox(height: AimSpacing.componentGap),
                 if (detail.hasNoContent)
-                  const AIMEmptyState(
-                    icon: Icon(Icons.play_lesson_outlined),
-                    title: 'No content yet',
-                    subtitle: 'Published lesson content will appear here.',
+                  AIMEmptyState(
+                    icon: const Icon(Icons.play_lesson_outlined),
+                    title: l10n.lessonsNoContentTitle,
+                    subtitle: l10n.lessonsNoContentSubtitle,
                   )
                 else
                   ...detail.assets.asMap().entries.map(
@@ -244,7 +247,7 @@ class _LessonDetailContent extends StatelessWidget {
               onPressed: detail.hasNoContent ? null : onStartPractice,
               fullWidth: true,
               leadingIcon: const Icon(Icons.play_arrow, color: Colors.white),
-              child: const Text('Start practice'),
+              child: Text(l10n.lessonsStartPracticeButton),
             ),
           ),
         ),
@@ -264,6 +267,7 @@ class _LessonHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final totalSeconds = detail.assets.fold<int>(
       0,
       (sum, asset) => sum + (asset.durationSeconds ?? 0),
@@ -285,7 +289,7 @@ class _LessonHero extends StatelessWidget {
           // level field exists on this endpoint's Lesson entity, so it is
           // intentionally omitted rather than fabricated (see the
           // real-data-only precedent in lesson_list_tile.dart).
-          _HeroPill(text: 'Lesson ${detail.lesson.sortOrder}'),
+          _HeroPill(text: l10n.lessonsLessonNumberPill(detail.lesson.sortOrder)),
           const SizedBox(height: AimSpacing.space8),
           Text(
             detail.lesson.title,
@@ -302,14 +306,15 @@ class _LessonHero extends StatelessWidget {
             spacing: AimSpacing.space8,
             runSpacing: AimSpacing.space8,
             children: [
-              if (totalSeconds > 0) _HeroPill(text: _formatMinutes(totalSeconds)),
-              _HeroPill(text: '${detail.assets.length} blocks'),
+              if (totalSeconds > 0)
+                _HeroPill(text: _formatMinutes(l10n, totalSeconds)),
+              _HeroPill(text: l10n.lessonsBlocksCountLabel(detail.assets.length)),
               if (detail.lesson.xpValue > 0)
                 AIMBadge(
                   tone: AIMBadgeTone.success,
                   variant: AIMBadgeVariant.solid,
                   pill: true,
-                  child: Text('+${detail.lesson.xpValue} XP'),
+                  child: Text(l10n.lessonsXpBadge(detail.lesson.xpValue)),
                 ),
             ],
           ),
@@ -318,9 +323,9 @@ class _LessonHero extends StatelessWidget {
     );
   }
 
-  String _formatMinutes(int seconds) {
+  String _formatMinutes(AppLocalizations l10n, int seconds) {
     final minutes = (seconds / 60).ceil();
-    return '$minutes min';
+    return l10n.lessonsMinutesLabel(minutes);
   }
 }
 
@@ -372,6 +377,7 @@ class _LessonStepSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
     final shadows = aimShadowsOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -417,7 +423,7 @@ class _LessonStepSheet extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        'Step $stepNumber',
+                        l10n.lessonsStepTitleLabel(stepNumber),
                         style: AimTextStyles.h3.copyWith(
                           color: surfaces.textPrimary,
                         ),
@@ -425,7 +431,7 @@ class _LessonStepSheet extends StatelessWidget {
                     ),
                     AIMIconButton(
                       icon: const Icon(Icons.close_rounded),
-                      semanticLabel: 'Close',
+                      semanticLabel: l10n.commonClose,
                       onPressed: () => context.pop(),
                     ),
                   ],
