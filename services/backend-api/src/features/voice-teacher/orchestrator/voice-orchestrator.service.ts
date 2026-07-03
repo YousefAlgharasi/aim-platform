@@ -16,11 +16,11 @@
  *      adds nothing to that context and computes no mastery/level/weakness/
  *      difficulty/recommendation/review-schedule value of its own.
  *
- *   3. TTS (Group G, not yet wired) — placeholder seam for the TTS Gateway
- *      (P9-058+). When Group G tasks are complete, the AI Teacher reply text
- *      will be forwarded to `TtsGateway.synthesize()` here; until then, the
- *      orchestrator returns `audioRef: null` and marks `isFallback: true` so
- *      downstream callers (P9-049+) can handle the no-audio case gracefully.
+ *   3. TTS (Group G) — backend-only: the safety-filtered AI Teacher reply
+ *      text is forwarded to the TTS Gateway to produce spoken audio. If
+ *      TTS_GATEWAY is not bound or the provider call fails, the orchestrator
+ *      returns `audioRef: null` and marks `isFallback: true` so downstream
+ *      callers can fall back to text-only gracefully.
  *
  * Authority boundary rules enforced here:
  *   - `studentId` and `sessionId` are backend-resolved and ownership-
@@ -46,6 +46,11 @@ import {
   SttGateway,
 } from '../stt-gateway/stt-gateway.interface';
 import { SttSafeFailureService } from '../stt-gateway/stt-safe-failure.service';
+import {
+  TTS_GATEWAY,
+  TtsGateway,
+} from '../tts-gateway/tts-gateway.interface';
+import { TtsSafeFailureService } from '../tts-gateway/tts-safe-failure.service';
 import { VoiceTurnInput, VoiceTurnResult } from './voice-orchestrator.types';
 
 /**
@@ -77,6 +82,19 @@ export class VoiceOrchestratorService {
     private readonly sttGateway: SttGateway | null,
 
     private readonly sttSafeFailure: SttSafeFailureService,
+
+    /**
+     * TTS Gateway — resolved via the `TTS_GATEWAY` Symbol token bound by
+     * `TtsGatewayModule`. Declared `@Optional()` for the same reason as
+     * `sttGateway`: callers that don't import `TtsGatewayModule` still
+     * compile. When null, the orchestrator returns `audioRef: null` and
+     * marks `isFallback: true`.
+     */
+    @Optional()
+    @Inject(TTS_GATEWAY)
+    private readonly ttsGateway: TtsGateway | null,
+
+    private readonly ttsSafeFailure: TtsSafeFailureService,
 
     /**
      * Phase 8 AI Teacher Orchestrator (P8-062). Drives context assembly
@@ -153,13 +171,36 @@ export class VoiceOrchestratorService {
       studentMessage: transcript,
     });
 
-    // ── Step 3: TTS (placeholder — Group G tasks P9-058+) ────────────────
-    // Once TtsGateway is wired, the AI Teacher reply text will be forwarded
-    // to TtsGateway.synthesize() here to produce the audio response.
-    // Until then, audioRef is null and we mark isFallback=true so callers
-    // can handle the no-audio case without errors.
-    const audioRef: string | null = null;
-    const ttsIsFallback = true; // Group G not yet wired
+    // ── Step 3: TTS ───────────────────────────────────────────────────────
+    // Forward the safety-filtered AI Teacher reply text to the TTS Gateway
+    // to produce the spoken audio response. If TTS_GATEWAY is not bound, or
+    // the provider call fails, audioRef stays null and isFallback is true —
+    // the student still gets the text reply either way.
+    let audioRef: string | null = null;
+    let ttsIsFallback = true;
+
+    if (this.ttsGateway) {
+      const ttsResponse = await this.ttsGateway.synthesize({
+        text: aiResult.text,
+        languageCode: input.languageCode,
+        sessionId: input.sessionId,
+        studentId: input.studentId,
+      });
+
+      const safeOutcome = this.ttsSafeFailure.toSafeOutcome(ttsResponse);
+      audioRef = safeOutcome.audioRef;
+      ttsIsFallback = safeOutcome.isFallback;
+
+      if (ttsIsFallback) {
+        this.logger.warn(
+          `VoiceOrchestratorService.handleTurn: TTS safe-failure for session=${input.sessionId}`,
+        );
+      }
+    } else {
+      this.logger.warn(
+        `VoiceOrchestratorService.handleTurn: TTS_GATEWAY not bound; returning text-only reply for session=${input.sessionId}`,
+      );
+    }
 
     const latencyMs = Date.now() - turnStart;
 

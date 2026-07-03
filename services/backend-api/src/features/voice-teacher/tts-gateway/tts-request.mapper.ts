@@ -23,8 +23,8 @@ export class TtsRequestMapperService {
 
   mapRequest(request: TtsProviderRequest): TtsCompletionRequest {
     const { model } = this.ttsGatewayConfig.getConfig();
-    const { text, languageCode } = request;
+    const { text, languageCode, sessionId, studentId } = request;
 
-    return { model, text, languageCode };
+    return { model, text, languageCode, sessionId, studentId };
   }
 }

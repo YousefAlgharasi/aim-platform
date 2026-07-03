@@ -71,10 +71,31 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
   // STT_PROVIDER_API_KEY is a secret: never logged, never returned to clients.
   const sttProviderApiKey = readRequiredString(env, 'STT_PROVIDER_API_KEY', issues);
   const sttProviderModel = readRequiredString(env, 'STT_PROVIDER_MODEL', issues);
+  // Optional — defaults to Groq's OpenAI-compatible Whisper endpoint (free
+  // tier), same pattern as AI_PROVIDER_BASE_URL. Set STT_PROVIDER_BASE_URL to
+  // point at any other multipart-upload transcription endpoint instead.
+  const sttProviderBaseUrl = readOptionalUrl(
+    env,
+    'STT_PROVIDER_BASE_URL',
+    'https://api.groq.com/openai/v1/audio/transcriptions',
+    issues,
+  );
   // P9-059 — TTS provider settings for Group G's TTS Gateway.
   // TTS_PROVIDER_API_KEY is a secret: never logged, never returned to clients.
   const ttsProviderApiKey = readRequiredString(env, 'TTS_PROVIDER_API_KEY', issues);
   const ttsProviderModel = readRequiredString(env, 'TTS_PROVIDER_MODEL', issues);
+  // Optional — no OpenAI-compatible TTS endpoint is free/standardized the way
+  // chat-completions is, so this has no verified default. Falls back to the
+  // tts.ai endpoint the user asked for; the exact request/response contract
+  // there has not been confirmed against real docs/credentials yet (see
+  // tts-audio-generation.service.ts), so double-check this once you have a
+  // real tts.ai API key.
+  const ttsProviderBaseUrl = readOptionalUrl(
+    env,
+    'TTS_PROVIDER_BASE_URL',
+    'https://tts.ai/v1/audio/speech',
+    issues,
+  );
   const corsOriginsValue = readRequiredString(env, 'CORS_ORIGINS', issues);
   // P19-006 — Placement retake cooldown, configurable per environment.
   const placementRetakeCooldownHours = readOptionalPositiveInt(
@@ -122,10 +143,12 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
     sttProvider: {
       apiKey: sttProviderApiKey,
       model: sttProviderModel,
+      baseUrl: sttProviderBaseUrl,
     },
     ttsProvider: {
       apiKey: ttsProviderApiKey,
       model: ttsProviderModel,
+      baseUrl: ttsProviderBaseUrl,
     },
     cors: {
       origins: corsOrigins,

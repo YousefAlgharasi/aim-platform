@@ -13,6 +13,8 @@ export interface LessonRow {
   sort_order: number;
   status: CurriculumContentStatus;
   xp_value: number;
+  /** Optional admin-authored AI Teacher instructions specific to this lesson. */
+  system_prompt: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -26,6 +28,8 @@ export interface LessonSummary {
   sortOrder: number;
   /** Gamification points awarded on completion. Display-only — never read by the AIM Engine. */
   xpValue: number;
+  /** Optional admin-authored AI Teacher instructions specific to this lesson. */
+  systemPrompt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -48,4 +52,5 @@ export interface UpdateLessonInput {
   title?: string;
   description?: string;
   sortOrder?: number;
+  systemPrompt?: string | null;
 }

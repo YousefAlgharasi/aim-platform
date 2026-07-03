@@ -69,6 +69,81 @@ function makeSnapshot(): AiTeacherContextSnapshot {
   };
 }
 
+describe('ContextBuilderService.buildContext — contextRef lesson parsing', () => {
+  it('extracts a lesson id from a "lesson:<uuid>" contextRef and passes it to CurrentLessonContextAdapter', async () => {
+    const LESSON_ID = 'ee0e8400-e29b-41d4-a716-446655440009';
+    const explicitLessonIdsSeen: (string | null | undefined)[] = [];
+
+    const studentProfile = makeMockAdapter<StudentProfileContextAdapter>(
+      'getProfileContext',
+      async () => ({ gradeLevel: 6 }),
+    );
+    const currentLesson = {
+      getCurrentLessonContext: async (_studentId: string, explicitLessonId?: string | null) => {
+        explicitLessonIdsSeen.push(explicitLessonId);
+        return { lessonId: explicitLessonId };
+      },
+    } as unknown as CurrentLessonContextAdapter;
+    const curriculumSkill = makeMockAdapter<CurriculumSkillContextAdapter>(
+      'getSkillContext',
+      async () => ({ skillId: 'skill-1' }),
+    );
+
+    const service = new ContextBuilderService(
+      studentProfile,
+      currentLesson,
+      curriculumSkill,
+      makeMockRepository(async () => {
+        throw new Error('not used in buildContext tests');
+      }),
+    );
+
+    await service.buildContext({
+      studentId: STUDENT_ID,
+      sessionId: SESSION_ID,
+      contextRef: `lesson:${LESSON_ID}`,
+    });
+
+    expect(explicitLessonIdsSeen).toEqual([LESSON_ID]);
+  });
+
+  it('passes null when contextRef does not reference a lesson uuid (e.g. "general")', async () => {
+    const explicitLessonIdsSeen: (string | null | undefined)[] = [];
+
+    const studentProfile = makeMockAdapter<StudentProfileContextAdapter>(
+      'getProfileContext',
+      async () => ({ gradeLevel: 6 }),
+    );
+    const currentLesson = {
+      getCurrentLessonContext: async (_studentId: string, explicitLessonId?: string | null) => {
+        explicitLessonIdsSeen.push(explicitLessonId);
+        return null;
+      },
+    } as unknown as CurrentLessonContextAdapter;
+    const curriculumSkill = makeMockAdapter<CurriculumSkillContextAdapter>(
+      'getSkillContext',
+      async () => ({ skillId: 'skill-1' }),
+    );
+
+    const service = new ContextBuilderService(
+      studentProfile,
+      currentLesson,
+      curriculumSkill,
+      makeMockRepository(async () => {
+        throw new Error('not used in buildContext tests');
+      }),
+    );
+
+    await service.buildContext({
+      studentId: STUDENT_ID,
+      sessionId: SESSION_ID,
+      contextRef: 'general',
+    });
+
+    expect(explicitLessonIdsSeen).toEqual([null]);
+  });
+});
+
 describe('ContextBuilderService.buildContext', () => {
   it('scopes every adapter call to the same studentId resolved from input, never a different/client-supplied id', async () => {
     const studentIdsSeen: string[] = [];

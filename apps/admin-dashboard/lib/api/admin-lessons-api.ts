@@ -23,6 +23,8 @@ export type AdminLessonSummary = {
   readonly description: string;
   readonly status: LessonStatus;
   readonly sortOrder: number;
+  /** Optional admin-authored AI Teacher instructions specific to this lesson. */
+  readonly systemPrompt: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
 };
@@ -44,6 +46,7 @@ export type UpdateLessonPayload = {
   readonly title?: string;
   readonly description?: string;
   readonly sortOrder?: number;
+  readonly systemPrompt?: string | null;
 };
 
 function isObject(v: unknown): v is Record<string, unknown> {
@@ -61,6 +64,7 @@ function decodeLessonSummary(value: unknown): AdminLessonSummary {
     description: typeof value.description === 'string' ? value.description : '',
     status: (value.status ?? 'draft') as LessonStatus,
     sortOrder: typeof value.sortOrder === 'number' ? value.sortOrder : 0,
+    systemPrompt: typeof value.systemPrompt === 'string' ? value.systemPrompt : null,
     createdAt: String(value.createdAt ?? ''),
     updatedAt: String(value.updatedAt ?? ''),
   };

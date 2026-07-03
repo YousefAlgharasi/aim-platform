@@ -2,6 +2,7 @@ import { TtsAudioGenerationService } from '../tts-audio-generation.service';
 import { TtsGatewayConfigService } from '../tts-gateway.config';
 import { TtsRequestMapperService } from '../tts-request.mapper';
 import { TtsResponseMapperService } from '../tts-response.mapper';
+import { TtsAudioStorageService } from '../tts-audio-storage.service';
 import { TtsProviderRequest } from '../tts-gateway.types';
 
 describe('TtsAudioGenerationService', () => {
@@ -9,15 +10,22 @@ describe('TtsAudioGenerationService', () => {
   let configService: jest.Mocked<TtsGatewayConfigService>;
   let requestMapper: jest.Mocked<TtsRequestMapperService>;
   let responseMapper: jest.Mocked<TtsResponseMapperService>;
+  let audioStorage: jest.Mocked<TtsAudioStorageService>;
 
   const mockRequest: TtsProviderRequest = {
     text: 'Hello student',
     languageCode: 'ar',
+    sessionId: 'session-1',
+    studentId: 'student-1',
   };
 
   beforeEach(() => {
     configService = {
-      getConfig: jest.fn().mockReturnValue({ apiKey: 'test-key', model: 'tts-1' }),
+      getConfig: jest.fn().mockReturnValue({
+        apiKey: 'test-key',
+        model: 'tts-1',
+        baseUrl: 'https://tts.ai/v1/audio/speech',
+      }),
     } as any;
 
     requestMapper = {
@@ -25,7 +33,13 @@ describe('TtsAudioGenerationService', () => {
         model: 'tts-1',
         text: 'Hello student',
         languageCode: 'ar',
+        sessionId: 'session-1',
+        studentId: 'student-1',
       }),
+    } as any;
+
+    audioStorage = {
+      storeAudio: jest.fn().mockResolvedValue({ audioRef: 'ref', stored: true }),
     } as any;
 
     responseMapper = {
@@ -61,6 +75,7 @@ describe('TtsAudioGenerationService', () => {
       configService,
       requestMapper,
       responseMapper,
+      audioStorage,
     );
   });
 
@@ -160,6 +175,19 @@ describe('TtsAudioGenerationService', () => {
         }),
       }),
     );
+    fetchSpy.mockRestore();
+  });
+
+  it('should return an error response when audio storage fails', async () => {
+    const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      arrayBuffer: () => Promise.resolve(new ArrayBuffer(1000)),
+    } as any);
+    audioStorage.storeAudio.mockResolvedValue({ audioRef: 'ref', stored: false });
+
+    const result = await service.synthesize(mockRequest);
+
+    expect(result.status).toBe('error');
     fetchSpy.mockRestore();
   });
 
