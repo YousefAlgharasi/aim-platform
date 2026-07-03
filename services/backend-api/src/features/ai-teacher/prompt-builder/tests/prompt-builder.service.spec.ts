@@ -14,6 +14,7 @@ function makeSnapshot(
     studentProfile: null,
     currentLesson: null,
     curriculumSkill: null,
+    focusDirective: null,
     ...overrides,
   };
 }
@@ -53,6 +54,42 @@ describe('PromptBuilderService', () => {
       'currentLesson',
       'curriculumSkill',
     ]);
+  });
+
+  it('includes the focusDirective section last, after curriculumSkill, when present (P20-013)', () => {
+    const service = new PromptBuilderService();
+    const prompt = service.buildPrompt({
+      studentMessage: 'Hello',
+      context: makeSnapshot({
+        studentProfile: { displayName: 'Hana' },
+        currentLesson: { lessonId: 'lesson-1' },
+        curriculumSkill: { skillId: 'skill-1' },
+        focusDirective: {
+          skillId: 'skill:english:a1:grammar.past-simple',
+          directiveText: 'Focus on past simple.',
+        },
+      }),
+    });
+
+    expect(prompt.sections.map((section) => section.key)).toEqual([
+      'studentProfile',
+      'currentLesson',
+      'curriculumSkill',
+      'focusDirective',
+    ]);
+    expect(prompt.sections[prompt.sections.length - 1].content).toContain(
+      'Focus on past simple.',
+    );
+  });
+
+  it('omits the focusDirective section when no active directive exists', () => {
+    const service = new PromptBuilderService();
+    const prompt = service.buildPrompt({
+      studentMessage: 'Hello',
+      context: makeSnapshot({ curriculumSkill: { skillId: 'skill-1' } }),
+    });
+
+    expect(prompt.sections.map((section) => section.key)).not.toContain('focusDirective');
   });
 
   it('passes the student message through unchanged', () => {

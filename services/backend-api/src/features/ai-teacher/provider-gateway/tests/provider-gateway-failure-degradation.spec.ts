@@ -28,6 +28,7 @@ function makeContext(): AiTeacherContextSnapshot {
     studentProfile: { name: 'Test' },
     currentLesson: null,
     curriculumSkill: null,
+    focusDirective: null,
   };
 }
 
