@@ -20,8 +20,12 @@ export const AI_TEACHER_PROMPT_SYSTEM_INSTRUCTIONS = [
 // P18-031: Removed skillState/weakness/recentMistakes/recommendation/
 // reviewSchedule/placementResult — those keys no longer exist on
 // AiTeacherContextSnapshot per the AI Authority Rule.
+//
+// P20-013: Added focusDirective last, so it reads as "and specifically
+// focus on..." after the identity context above it.
 export const AI_TEACHER_PROMPT_SECTION_ORDER = [
   'studentProfile',
   'currentLesson',
   'curriculumSkill',
+  'focusDirective',
 ] as const;
