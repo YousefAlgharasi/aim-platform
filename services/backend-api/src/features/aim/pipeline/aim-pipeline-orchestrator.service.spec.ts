@@ -4,7 +4,7 @@
  * Covers:
  *   - Happy path: state assembly → adapter → persistence → ok outcome
  *   - State assembly failure → ok: false, reason: state_assembly_failed
- *   - State assembly null (stub phase) → ok: true (no-op skipped)
+ *   - State assembly insufficient data → ok: true, skippedReason set (clean skip)
  *   - Adapter failure (ok: false) → ok: false, reason: aim_engine_unavailable
  *   - Persistence failure → ok: false, reason: persistence_failed
  *   - backendRequestId is always present in outcome (both ok and failure)
@@ -14,7 +14,7 @@
  */
 
 import { AimPipelineOrchestratorService, AimPipelineContext } from './aim-pipeline-orchestrator.service';
-import { AimStateAssemblyService } from './aim-state-assembly.service';
+import { AimStateAssemblyService, AimStateAssemblyResult } from './aim-state-assembly.service';
 import { AimRequestMapperService } from '../adapter/aim-request-mapper.service';
 import { AimEngineAdapterService } from '../adapter/aim-engine-adapter.service';
 import { AimPersistenceService } from '../persistence/aim-persistence.service';
@@ -39,6 +39,11 @@ const MOCK_MAPPING_CONTEXT = {
   attempts: [],
 } as AimMappingContext;
 
+const MOCK_ASSEMBLED_RESULT: AimStateAssemblyResult = {
+  status: 'assembled',
+  context: MOCK_MAPPING_CONTEXT,
+};
+
 const MOCK_RAW_REQUEST = { backendRequestId: 'br-001' };
 
 const MOCK_VALIDATED_RESPONSE = {
@@ -52,7 +57,7 @@ const MOCK_VALIDATED_RESPONSE = {
 // Mock factory helpers
 // ---------------------------------------------------------------------------
 
-function makeStateAssembly(result: AimMappingContext | null | 'throw') {
+function makeStateAssembly(result: AimStateAssemblyResult | 'throw') {
   return {
     assemble: jest.fn(async () => {
       if (result === 'throw') throw new Error('assembly error');
@@ -97,7 +102,7 @@ function makeOrchestrator(overrides: {
   audit?: AimAuditService;
 } = {}) {
   return new AimPipelineOrchestratorService(
-    overrides.stateAssembly ?? makeStateAssembly(MOCK_MAPPING_CONTEXT),
+    overrides.stateAssembly ?? makeStateAssembly(MOCK_ASSEMBLED_RESULT),
     overrides.requestMapper ?? makeRequestMapper(),
     overrides.adapter ?? makeAdapter(true),
     overrides.persistence ?? makePersistence(),
@@ -132,7 +137,7 @@ describe('AimPipelineOrchestratorService — happy path', () => {
   });
 
   it('calls stateAssembly.assemble with the pipeline context', async () => {
-    const stateAssembly = makeStateAssembly(MOCK_MAPPING_CONTEXT);
+    const stateAssembly = makeStateAssembly(MOCK_ASSEMBLED_RESULT);
     const svc = makeOrchestrator({ stateAssembly });
     await svc.trigger(CTX);
     expect(stateAssembly.assemble).toHaveBeenCalledWith(CTX);
@@ -213,28 +218,47 @@ describe('AimPipelineOrchestratorService — state assembly failure', () => {
 });
 
 // ---------------------------------------------------------------------------
-// State assembly null (stub phase)
+// State assembly insufficient data — a clean, deliberate skip, distinct from
+// both "assembly failed" and "stub not implemented".
 // ---------------------------------------------------------------------------
 
-describe('AimPipelineOrchestratorService — state assembly null', () => {
-  it('returns ok: true when state assembly returns null (stub phase)', async () => {
-    const svc = makeOrchestrator({ stateAssembly: makeStateAssembly(null) });
+const INSUFFICIENT_DATA_RESULT: AimStateAssemblyResult = {
+  status: 'insufficient_data',
+  reason: 'Session has no recorded attempts yet.',
+};
+
+describe('AimPipelineOrchestratorService — state assembly insufficient data', () => {
+  it('returns ok: true when state assembly reports insufficient data', async () => {
+    const svc = makeOrchestrator({ stateAssembly: makeStateAssembly(INSUFFICIENT_DATA_RESULT) });
     const result = await svc.trigger(CTX);
     expect(result.ok).toBe(true);
   });
 
-  it('does NOT call adapter when state assembly returns null', async () => {
+  it('includes the skip reason in the outcome', async () => {
+    const svc = makeOrchestrator({ stateAssembly: makeStateAssembly(INSUFFICIENT_DATA_RESULT) });
+    const result = await svc.trigger(CTX);
+    expect(result.ok && result.skippedReason).toBe(INSUFFICIENT_DATA_RESULT.reason);
+  });
+
+  it('does NOT call adapter when state assembly reports insufficient data', async () => {
     const adapter = makeAdapter(true);
-    const svc = makeOrchestrator({ stateAssembly: makeStateAssembly(null), adapter });
+    const svc = makeOrchestrator({ stateAssembly: makeStateAssembly(INSUFFICIENT_DATA_RESULT), adapter });
     await svc.trigger(CTX);
     expect(adapter.analyze).not.toHaveBeenCalled();
   });
 
-  it('does NOT call persistence when state assembly returns null', async () => {
+  it('does NOT call persistence when state assembly reports insufficient data', async () => {
     const persistence = makePersistence();
-    const svc = makeOrchestrator({ stateAssembly: makeStateAssembly(null), persistence });
+    const svc = makeOrchestrator({ stateAssembly: makeStateAssembly(INSUFFICIENT_DATA_RESULT), persistence });
     await svc.trigger(CTX);
     expect(persistence.persist).not.toHaveBeenCalled();
+  });
+
+  it('still calls audit when state assembly reports insufficient data', async () => {
+    const audit = makeAudit();
+    const svc = makeOrchestrator({ stateAssembly: makeStateAssembly(INSUFFICIENT_DATA_RESULT), audit });
+    await svc.trigger(CTX);
+    expect(audit.record).toHaveBeenCalled();
   });
 });
 
