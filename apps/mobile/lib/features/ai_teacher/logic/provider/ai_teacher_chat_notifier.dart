@@ -208,24 +208,28 @@ class AiTeacherChatNotifier extends AppStateNotifier<AiTeacherChatState> {
   }
 
   /// Reads the student-safe safety status for a session (P18-064).
+  ///
+  /// This is supplementary metadata (drives the safety-limited banner) and
+  /// is called after every send/history-load, alongside an already-visible
+  /// conversation. A transient failure here must never replace that
+  /// conversation with a full-page error — unlike [loadHistory] and
+  /// [startSession], which are the screen's primary data load and should
+  /// surface a failure, this one fails silently and simply leaves
+  /// `safetyStatus` unchanged.
   Future<void> loadSafetyStatus({
     required String bearerToken,
     required String sessionId,
   }) async {
-    final previous = _currentDataOrEmpty();
     try {
       final safetyStatus = await _repository.getSafetyStatus(
         bearerToken: bearerToken,
         sessionId: sessionId,
       );
-      setSuccess(previous.copyWith(safetyStatus: safetyStatus));
-    } on AppException catch (e) {
-      setFailure(message: e.message, code: e.code);
+      final current = _currentDataOrEmpty();
+      setSuccess(current.copyWith(safetyStatus: safetyStatus));
     } catch (_) {
-      setFailure(
-        message: 'Failed to load AI Teacher safety status',
-        code: 'AI_TEACHER_SAFETY_STATUS_FAILED',
-      );
+      // Swallow: safety status is advisory-only display metadata, not the
+      // conversation itself. The next successful load will pick it up.
     }
   }
 
