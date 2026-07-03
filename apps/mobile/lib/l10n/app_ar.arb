@@ -21,6 +21,7 @@
   "commonSeeAll": "عرض الكل",
   "commonJustNow": "الآن",
   "commonYesterday": "أمس",
+  "commonAiTypingSemantic": "الذكاء الاصطناعي يكتب الآن",
   "commonFocusAreas": "مجالات التركيز",
   "commonDoneProgress": "{done}/{total} مكتمل",
   "commonWeaknessSemantic": "ضعف في {skillId}: {severity}",

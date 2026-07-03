@@ -361,6 +361,7 @@ class _QuietHoursSectionState extends State<_QuietHoursSection> {
     }
 
     final isLoading = widget.state is AppAsyncLoading<QuietHoursModel>;
+    final l10n = AppLocalizations.of(context);
 
     return AIMCard(
       variant: AIMCardVariant.standard,
@@ -368,29 +369,29 @@ class _QuietHoursSectionState extends State<_QuietHoursSection> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AIMSwitch(
-            label: 'Enable quiet hours',
+            label: l10n.notificationsEnableQuietHoursLabel,
             value: _enabled,
             disabled: isLoading,
-            semanticLabel: 'Enable quiet hours',
+            semanticLabel: l10n.notificationsEnableQuietHoursLabel,
             onChanged: (value) => setState(() => _enabled = value),
           ),
           const SizedBox(height: AimSpacing.componentGap),
           _TimeRow(
-            label: 'Start',
+            label: l10n.notificationsQuietHoursStartLabel,
             time: _startTime,
             disabled: isLoading,
             onTap: () => _pickTime(true),
           ),
           const SizedBox(height: AimSpacing.innerGap),
           _TimeRow(
-            label: 'End',
+            label: l10n.notificationsQuietHoursEndLabel,
             time: _endTime,
             disabled: isLoading,
             onTap: () => _pickTime(false),
           ),
           const SizedBox(height: AimSpacing.sectionGap),
           AIMGradientButton(
-            label: 'Save quiet hours',
+            label: l10n.notificationsSaveQuietHoursLabel,
             onPressed: isLoading
                 ? null
                 : () => widget.onSave(
@@ -401,7 +402,7 @@ class _QuietHoursSectionState extends State<_QuietHoursSection> {
                     ),
             loading: isLoading,
             fullWidth: true,
-            semanticLabel: 'Save quiet hours',
+            semanticLabel: l10n.notificationsSaveQuietHoursLabel,
           ),
         ],
       ),

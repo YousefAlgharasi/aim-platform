@@ -69,6 +69,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonYesterday => 'Yesterday';
 
   @override
+  String get commonAiTypingSemantic => 'AI is typing';
+
+  @override
   String get commonFocusAreas => 'Focus Areas';
 
   @override

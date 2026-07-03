@@ -69,6 +69,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get commonYesterday => 'أمس';
 
   @override
+  String get commonAiTypingSemantic => 'الذكاء الاصطناعي يكتب الآن';
+
+  @override
   String get commonFocusAreas => 'مجالات التركيز';
 
   @override

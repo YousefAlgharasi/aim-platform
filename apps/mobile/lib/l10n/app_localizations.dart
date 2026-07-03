@@ -218,6 +218,12 @@ abstract class AppLocalizations {
   /// **'Yesterday'**
   String get commonYesterday;
 
+  /// Accessibility label for the streaming-response typing indicator in the shared AIMAIFeedbackBubble widget.
+  ///
+  /// In en, this message translates to:
+  /// **'AI is typing'**
+  String get commonAiTypingSemantic;
+
   /// Section header for the weakness/focus-areas list, shown on both the Home and Learning Path screens.
   ///
   /// In en, this message translates to:

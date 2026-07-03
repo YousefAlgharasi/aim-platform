@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 import '../../logic/provider/notification_providers.dart';
 
@@ -46,11 +47,12 @@ class _NotificationBellButtonState
     final unreadState = ref.watch(notificationUnreadCountProvider);
     final unreadCount =
         unreadState is AppAsyncSuccess<int> ? unreadState.data : 0;
+    final l10n = AppLocalizations.of(context);
 
     return Semantics(
       label: unreadCount > 0
-          ? 'Notifications, $unreadCount unread'
-          : 'Notifications',
+          ? l10n.notificationsBellUnreadSemantic(unreadCount)
+          : l10n.shellNotifications,
       button: true,
       child: IconButton(
         icon: Badge(
@@ -58,7 +60,7 @@ class _NotificationBellButtonState
           label: Text(unreadCount > 99 ? '99+' : '$unreadCount'),
           child: const Icon(Icons.notifications_outlined),
         ),
-        tooltip: 'Notifications',
+        tooltip: l10n.shellNotifications,
         onPressed: _openInbox,
       ),
     );

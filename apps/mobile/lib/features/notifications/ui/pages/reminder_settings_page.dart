@@ -17,32 +17,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 import '../../logic/entity/notification_entities.dart';
 import '../../logic/provider/notification_providers.dart';
 
-const _kReminderTypeLabels = {
-  'learning_plan': 'Learning plan',
-  'review': 'Review',
-  'deadline': 'Deadline',
-  'streak': 'Streak',
-  'custom': 'Custom',
-};
-
-const _kWeekdayNames = [
-  'Sundays', 'Mondays', 'Tuesdays', 'Wednesdays',
-  'Thursdays', 'Fridays', 'Saturdays',
-];
+String _reminderTypeLabel(AppLocalizations l10n, String reminderType) {
+  switch (reminderType) {
+    case 'learning_plan':
+      return l10n.notificationsReminderTypeLearningPlan;
+    case 'review':
+      return l10n.notificationsReminderTypeReview;
+    case 'deadline':
+      return l10n.notificationsReminderTypeDeadline;
+    case 'streak':
+      return l10n.notificationsReminderTypeStreak;
+    case 'custom':
+      return l10n.notificationsReminderTypeCustom;
+    default:
+      return reminderType;
+  }
+}
 
 /// Formats a real 5-field cron expression ("min hour dom month dow") into a
 /// short human label, e.g. "Every day · 7:00 PM" or "Sundays · 9:00 AM".
 /// Returns null for null/unparseable/complex expressions — the caller then
-/// shows no subtitle rather than fabricating one.
-String? _formatCronSchedule(String? cron) {
+/// shows no subtitle rather than fabricating one. Weekday and time are
+/// rendered via `intl` so they're locale-correct (e.g. Arabic weekday
+/// names/digits).
+String? _formatCronSchedule(AppLocalizations l10n, String locale, String? cron) {
   if (cron == null) return null;
   final parts = cron.trim().split(RegExp(r'\s+'));
   if (parts.length != 5) return null;
@@ -54,17 +62,21 @@ String? _formatCronSchedule(String? cron) {
   final dayOfWeek = parts[4];
   if (minute == null || hour == null || month != '*') return null;
 
-  final period = hour < 12 ? 'AM' : 'PM';
-  final displayHour = hour % 12 == 0 ? 12 : hour % 12;
-  final timeStr = '$displayHour:${minute.toString().padLeft(2, '0')} $period';
+  // 2023-01-01 was a Sunday, so DateTime.utc(2023, 1, 1 + dow) maps a cron
+  // day-of-week (0=Sunday..6=Saturday) onto a real date purely to borrow
+  // intl's locale-aware weekday/time formatting.
+  final timeStr =
+      DateFormat.jm(locale).format(DateTime.utc(2023, 1, 1, hour, minute));
 
   if (dayOfMonth == '*' && dayOfWeek == '*') {
-    return 'Every day · $timeStr';
+    return l10n.notificationsEveryDayLabel(timeStr);
   }
   if (dayOfMonth == '*') {
     final dow = int.tryParse(dayOfWeek);
     if (dow != null && dow >= 0 && dow <= 6) {
-      return '${_kWeekdayNames[dow]} · $timeStr';
+      final weekday =
+          DateFormat.EEEE(locale).format(DateTime.utc(2023, 1, 1 + dow));
+      return l10n.notificationsEveryWeekdayLabel(weekday, timeStr);
     }
   }
   return null;
@@ -122,6 +134,7 @@ class _ReminderSettingsPageState extends ConsumerState<ReminderSettingsPage> {
   Widget build(BuildContext context) {
     final remindersState = ref.watch(notificationRemindersProvider);
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: surfaces.background,
@@ -133,18 +146,18 @@ class _ReminderSettingsPageState extends ConsumerState<ReminderSettingsPage> {
             child: switch (remindersState) {
               AppAsyncLoading() ||
               AppAsyncIdle() =>
-                const AIMFullScreenLoading(
-                  semanticLabel: 'Loading reminder schedules',
+                AIMFullScreenLoading(
+                  semanticLabel: l10n.notificationsRemindersLoadingSemantic,
                 ),
               AppAsyncFailure(:final message) => AIMFullScreenError(
                   message: message,
                   onRetry: _load,
                 ),
               AppAsyncSuccess(:final data) => data.isEmpty
-                  ? const AIMEmptyState(
-                      title: 'No reminders yet',
-                      subtitle: 'Reminders you enable will appear here.',
-                      semanticLabel: 'No reminder schedules',
+                  ? AIMEmptyState(
+                      title: l10n.notificationsNoRemindersTitle,
+                      subtitle: l10n.notificationsNoRemindersSubtitle,
+                      semanticLabel: l10n.notificationsNoRemindersSemantic,
                     )
                   : ListView.separated(
                       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -179,6 +192,7 @@ class _ReminderSettingsHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -194,7 +208,7 @@ class _ReminderSettingsHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: l10n.commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -220,7 +234,7 @@ class _ReminderSettingsHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Reminders',
+              l10n.notificationsRemindersTitle,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],
@@ -261,16 +275,20 @@ class _ReminderScheduleTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
+    final locale = Localizations.localeOf(context).toString();
     final isCancelled = schedule.status == 'cancelled';
     final isCompleted = schedule.status == 'completed';
     final isPaused = schedule.status == 'paused';
     final isActionable = !isCancelled && !isCompleted;
-    final scheduleLabel = _formatCronSchedule(schedule.cronExpression);
+    final scheduleLabel =
+        _formatCronSchedule(l10n, locale, schedule.cronExpression);
+    final typeLabel = _reminderTypeLabel(l10n, schedule.reminderType);
 
     return AIMCard(
       variant: AIMCardVariant.standard,
       semanticLabel:
-          '${_kReminderTypeLabels[schedule.reminderType] ?? schedule.reminderType} reminder, status ${schedule.status}',
+          l10n.notificationsReminderSemantic(typeLabel, schedule.status),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -278,8 +296,7 @@ class _ReminderScheduleTile extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                _kReminderTypeLabels[schedule.reminderType] ??
-                    schedule.reminderType,
+                typeLabel,
                 style: AimTextStyles.bodyMd.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -309,8 +326,8 @@ class _ReminderScheduleTile extends StatelessWidget {
                     child: AIMButton(
                       variant: AIMButtonVariant.secondary,
                       onPressed: onResume,
-                      semanticLabel: 'Resume reminder',
-                      child: const Text('Resume'),
+                      semanticLabel: l10n.notificationsResumeSemantic,
+                      child: Text(l10n.notificationsResumeLabel),
                     ),
                   )
                 else
@@ -318,8 +335,8 @@ class _ReminderScheduleTile extends StatelessWidget {
                     child: AIMButton(
                       variant: AIMButtonVariant.secondary,
                       onPressed: onPause,
-                      semanticLabel: 'Pause reminder',
-                      child: const Text('Pause'),
+                      semanticLabel: l10n.notificationsPauseSemantic,
+                      child: Text(l10n.notificationsPauseLabel),
                     ),
                   ),
                 const SizedBox(width: AimSpacing.innerGap),
@@ -327,8 +344,8 @@ class _ReminderScheduleTile extends StatelessWidget {
                   child: AIMButton(
                     variant: AIMButtonVariant.ghost,
                     onPressed: onCancel,
-                    semanticLabel: 'Cancel reminder',
-                    child: const Text('Cancel'),
+                    semanticLabel: l10n.notificationsCancelSemantic,
+                    child: Text(l10n.commonCancel),
                   ),
                 ),
               ],

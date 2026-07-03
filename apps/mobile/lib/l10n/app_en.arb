@@ -24,6 +24,10 @@
   "commonSeeAll": "See all",
   "commonJustNow": "Just now",
   "commonYesterday": "Yesterday",
+  "commonAiTypingSemantic": "AI is typing",
+  "@commonAiTypingSemantic": {
+    "description": "Accessibility label for the streaming-response typing indicator in the shared AIMAIFeedbackBubble widget."
+  },
   "commonFocusAreas": "Focus Areas",
   "@commonFocusAreas": {
     "description": "Section header for the weakness/focus-areas list, shown on both the Home and Learning Path screens."

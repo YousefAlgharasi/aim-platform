@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../theme/theme.dart';
 
 /// Bubble tint for [AIMAIFeedbackBubble].
@@ -129,7 +130,7 @@ class AIMAIFeedbackBubble extends StatelessWidget {
                 // Content or typing dots
                 if (typing)
                   Semantics(
-                    label: 'AI is typing',
+                    label: AppLocalizations.of(context).commonAiTypingSemantic,
                     child: const ExcludeSemantics(child: _TypingIndicator()),
                   )
                 else if (child != null)
