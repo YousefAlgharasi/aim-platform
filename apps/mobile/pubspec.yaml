@@ -19,6 +19,11 @@ dependencies:
   http_parser: ^4.0.2
   app_links: ^6.3.2
   url_launcher: ^6.3.1
+  # Runtime API (FlutterNativeSplash.preserve/remove) is called from
+  # main.dart and splash_page.dart, so this is a regular dependency even
+  # though its CLI generator (`dart run flutter_native_splash:create`) is
+  # dev-tooling.
+  flutter_native_splash: ^2.4.8
 
 dev_dependencies:
   flutter_test:
@@ -27,3 +32,30 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/splash/
+
+# Native splash-screen config, consumed by `dart run
+# flutter_native_splash:create` to generate the Android/iOS launch resources.
+# The background_image/image are renders of the exact same AimGradients.gzHero
+# gradient and icon badge SplashPage (lib/features/onboarding/ui/pages/
+# splash_page.dart) uses, so the native splash and the first Flutter frame
+# match. `color` and `background_image` are mutually exclusive in this
+# package (setting both silently drops background_image) — background_image
+# is used here so pre-Android-12/iOS show the real gradient, not a flat
+# color. Android 12+'s native SplashScreen API only supports a solid
+# background/icon color (no images) — android_12.color/icon_background_color
+# below are the closest single-color approximation of the gradient, a
+# platform limitation, not a simplification we chose. icon_background_color
+# matches color exactly so the icon's own translucent badge doesn't sit on
+# top of a second, visibly-different circle.
+flutter_native_splash:
+  background_image: "assets/splash/splash_background.png"
+  image: assets/splash/splash_logo.png
+  android_12:
+    image: assets/splash/splash_logo.png
+    color: "#6C63FF"
+    icon_background_color: "#6C63FF"
+  android: true
+  ios: true
+  web: false
