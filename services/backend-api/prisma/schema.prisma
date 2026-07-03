@@ -239,3 +239,29 @@ model AiContextSnapshot {
   @@index([studentId, createdAt(sort: Desc)])
   @@map("ai_context_snapshots")
 }
+
+model Course {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String
+  slug        String?  @unique
+  description String?
+
+  sortOrder   Int      @default(0) @map("sort_order")
+  status      String   @default("draft")
+
+  trackSlug   String   @default("english") @map("track_slug")
+  cefrCode    String?  @map("cefr_code")
+  cefrRank    Int?     @map("cefr_rank") @db.SmallInt
+
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // (trackSlug, cefrRank) is enforced unique at the DB level by a partial
+  // index (WHERE cefr_rank IS NOT NULL) — see migration
+  // 20260703150000_add_course_cefr_rank. Prisma's schema language has no
+  // partial-index syntax without the extendedIndexes preview feature, so
+  // it isn't declared here.
+  @@index([status])
+  @@index([sortOrder])
+  @@map("courses")
+}
