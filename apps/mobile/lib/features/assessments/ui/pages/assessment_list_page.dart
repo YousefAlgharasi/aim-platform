@@ -14,6 +14,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
 import 'package:aim_mobile/features/assessments/logic/provider/assessment_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../widgets/assessment_widgets.dart';
 
 class AssessmentListPage extends ConsumerStatefulWidget {
@@ -62,8 +63,8 @@ class _AssessmentListPageState extends ConsumerState<AssessmentListPage> {
           const _AssessmentListHeader(),
           Expanded(
             child: switch (state) {
-              AppAsyncLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading assessments',
+              AppAsyncLoading() => AIMFullScreenLoading(
+                  semanticLabel: AppLocalizations.of(context).assessmentsLoadingListSemantic,
                 ),
               AppAsyncFailure(:final message) => AIMFullScreenError(
                   message: message,
@@ -74,8 +75,8 @@ class _AssessmentListPageState extends ConsumerState<AssessmentListPage> {
                   onRefresh: _refresh,
                   onTap: _onAssessmentTap,
                 ),
-              AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading assessments',
+              AppAsyncIdle() => AIMFullScreenLoading(
+                  semanticLabel: AppLocalizations.of(context).assessmentsLoadingListSemantic,
                 ),
             },
           ),
@@ -110,7 +111,7 @@ class _AssessmentListHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -137,7 +138,7 @@ class _AssessmentListHeader extends StatelessWidget {
             const SizedBox(width: AimSpacing.space12),
             Expanded(
               child: Text(
-                'Assessments',
+                AppLocalizations.of(context).assessmentsListTitle,
                 style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -145,7 +146,7 @@ class _AssessmentListHeader extends StatelessWidget {
             ),
             Semantics(
               button: true,
-              label: 'Deadlines',
+              label: AppLocalizations.of(context).assessmentsDeadlinesTitle,
               child: InkWell(
                 onTap: () => context.push(AppRoutePaths.assessmentDeadlines),
                 borderRadius: AimRadius.borderSm,
@@ -155,7 +156,7 @@ class _AssessmentListHeader extends StatelessWidget {
                     vertical: AimSpacing.space4,
                   ),
                   child: Text(
-                    'Deadlines',
+                    AppLocalizations.of(context).assessmentsDeadlinesTitle,
                     style: AimTextStyles.label.copyWith(
                       color: AimColors.neutral0,
                       fontWeight: AimFontWeights.semibold,
@@ -185,10 +186,11 @@ class _AssessmentListContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return const AIMEmptyState(
-        icon: Icon(Icons.quiz_outlined),
-        title: 'No assessments available',
-        subtitle: 'Published quizzes and exams will appear here.',
+      final loc = AppLocalizations.of(context);
+      return AIMEmptyState(
+        icon: const Icon(Icons.quiz_outlined),
+        title: loc.assessmentsEmptyTitle,
+        subtitle: loc.assessmentsEmptySubtitle,
       );
     }
 

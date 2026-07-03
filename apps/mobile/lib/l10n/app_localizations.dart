@@ -2235,6 +2235,1034 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{title}, locked'**
   String achievementsLockedSemantic(String title);
+
+  /// Gradient header title on the start-attempt confirmation screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Start attempt'**
+  String get assessmentsStartAttemptTitle;
+
+  /// Heading on the start-attempt confirmation screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to begin?'**
+  String get assessmentsReadyToBeginTitle;
+
+  /// Body copy on the start-attempt screen when the assessment has a real time limit.
+  ///
+  /// In en, this message translates to:
+  /// **'Once you start, the {minutes}-minute timer runs continuously — even if you leave the app. Make sure you have time to finish.'**
+  String assessmentsTimedBodyCopy(String minutes);
+
+  /// Body copy on the start-attempt screen when the assessment has no time limit.
+  ///
+  /// In en, this message translates to:
+  /// **'Once you start, the attempt will be recorded. Make sure you are ready before proceeding.'**
+  String get assessmentsUntimedBodyCopy;
+
+  /// Label for the button that starts an assessment attempt, shown on the start-attempt and detail screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Attempt'**
+  String get assessmentsStartAttemptButton;
+
+  /// Accessibility label for the start-attempt button, shown on the start-attempt and detail screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Start attempt for {title}'**
+  String assessmentsStartAttemptSemantic(String title);
+
+  /// Label for the secondary outline button that returns to the previous screen, on the start-attempt and submit-attempt confirmation screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Go Back'**
+  String get assessmentsGoBackButton;
+
+  /// Accessibility label shown while the assessment result screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading result'**
+  String get assessmentsLoadingResultSemantic;
+
+  /// Status badge label for a passed assessment attempt.
+  ///
+  /// In en, this message translates to:
+  /// **'Passed'**
+  String get assessmentsStatusPassed;
+
+  /// Status badge label for a failed assessment attempt.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get assessmentsStatusFailed;
+
+  /// Accessibility label for the score hero badge on the assessment result screen.
+  ///
+  /// In en, this message translates to:
+  /// **'{statusLabel}: {score} of {maxScore} points'**
+  String assessmentsScoreSemantic(
+      String statusLabel, String score, String maxScore);
+
+  /// Warning label shown when a late penalty was applied to an assessment attempt's score.
+  ///
+  /// In en, this message translates to:
+  /// **'Late penalty applied'**
+  String get assessmentsLatePenaltyApplied;
+
+  /// Caption showing when an assessment attempt was graded.
+  ///
+  /// In en, this message translates to:
+  /// **'Graded {date}'**
+  String assessmentsGradedLabel(String date);
+
+  /// Section header above the per-item score breakdown on the assessment result screen.
+  ///
+  /// In en, this message translates to:
+  /// **'BREAKDOWN'**
+  String get assessmentsBreakdownLabel;
+
+  /// Accessibility label for the Done button on the assessment result screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Done viewing result'**
+  String get assessmentsDoneViewingResultSemantic;
+
+  /// Points-awarded-of-possible label on a breakdown item card.
+  ///
+  /// In en, this message translates to:
+  /// **'{awarded} / {possible} pts'**
+  String assessmentsPointsFraction(String awarded, String possible);
+
+  /// Accessibility label shown while the result history screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading result history'**
+  String get assessmentsLoadingResultHistorySemantic;
+
+  /// Gradient header title on the result history screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Result history'**
+  String get assessmentsResultHistoryTitle;
+
+  /// Empty-state title shown when an assessment has no past results.
+  ///
+  /// In en, this message translates to:
+  /// **'No results yet'**
+  String get assessmentsNoResultsTitle;
+
+  /// Empty-state subtitle shown when an assessment has no past results.
+  ///
+  /// In en, this message translates to:
+  /// **'Your past attempt results will appear here.'**
+  String get assessmentsNoResultsSubtitle;
+
+  /// Accessibility label for a result history row.
+  ///
+  /// In en, this message translates to:
+  /// **'Attempt {attemptNumber}, {scoreLabel}, {statusWord}{lateSuffix}'**
+  String assessmentsAttemptResultSemantic(int attemptNumber, String scoreLabel,
+      String statusWord, String lateSuffix);
+
+  /// Lowercase 'passed' word used inside the result history row's accessibility label.
+  ///
+  /// In en, this message translates to:
+  /// **'passed'**
+  String get assessmentsPassedWord;
+
+  /// Lowercase 'failed' word used inside the result history row's accessibility label.
+  ///
+  /// In en, this message translates to:
+  /// **'failed'**
+  String get assessmentsFailedWord;
+
+  /// Suffix appended to the result history row's accessibility label when a late penalty was applied.
+  ///
+  /// In en, this message translates to:
+  /// **', late penalty applied'**
+  String get assessmentsLatePenaltySemanticSuffix;
+
+  /// Accessibility label shown while the assessment detail screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading assessment'**
+  String get assessmentsLoadingAssessmentSemantic;
+
+  /// Gradient header title on the assessment detail screen when the assessment is an exam.
+  ///
+  /// In en, this message translates to:
+  /// **'Exam details'**
+  String get assessmentsExamDetailsTitle;
+
+  /// Gradient header title on the assessment detail screen when the assessment is a quiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz details'**
+  String get assessmentsQuizDetailsTitle;
+
+  /// Fallback gradient header title on the assessment detail screen before the assessment type is known.
+  ///
+  /// In en, this message translates to:
+  /// **'Assessment details'**
+  String get assessmentsDetailsTitle;
+
+  /// Label for the questions-count stat tile on the assessment detail screen, and the placeholder title in the attempt screen's questions empty state.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions'**
+  String get assessmentsQuestionsLabel;
+
+  /// Label for the time-limit stat tile on the assessment detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Time limit'**
+  String get assessmentsTimeLimitLabel;
+
+  /// Label for the max-attempts stat tile on the assessment detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Max attempts'**
+  String get assessmentsMaxAttemptsLabel;
+
+  /// Section heading above the deadline card on the assessment detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Deadline'**
+  String get assessmentsDeadlineHeading;
+
+  /// Section heading above the section list on the assessment detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Sections'**
+  String get assessmentsSectionsHeading;
+
+  /// Title of the tappable past-results card on the assessment detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Past results'**
+  String get assessmentsPastResultsTitle;
+
+  /// Subtitle of the tappable past-results card on the assessment detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'View your attempt history'**
+  String get assessmentsViewAttemptHistorySubtitle;
+
+  /// Accessibility label for the tappable past-results card on the assessment detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Past results, view your attempt history'**
+  String get assessmentsPastResultsSemantic;
+
+  /// Deadline status badge label for an open assessment, shared across the assessments feature.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get assessmentsDeadlineStatusOpen;
+
+  /// Deadline status badge label for an upcoming assessment, shared across the assessments feature.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get assessmentsDeadlineStatusUpcoming;
+
+  /// Deadline status badge label for a closed/expired assessment, shared across the assessments feature.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get assessmentsDeadlineStatusClosed;
+
+  /// Deadline status badge label for a late assessment, shared across the assessments feature.
+  ///
+  /// In en, this message translates to:
+  /// **'Late'**
+  String get assessmentsDeadlineStatusLate;
+
+  /// Deadline status badge label for a missed assessment, shared across the assessments feature.
+  ///
+  /// In en, this message translates to:
+  /// **'Missed'**
+  String get assessmentsDeadlineStatusMissed;
+
+  /// Label for the opens-at date row on the assessment detail screen's deadline card.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens'**
+  String get assessmentsOpensLabel;
+
+  /// Label for the closes-at date row on the assessment detail screen's deadline card.
+  ///
+  /// In en, this message translates to:
+  /// **'Closes'**
+  String get assessmentsClosesLabel;
+
+  /// Label for the extended-close date row on the assessment detail screen's deadline card.
+  ///
+  /// In en, this message translates to:
+  /// **'Extended close'**
+  String get assessmentsExtendedCloseLabel;
+
+  /// Duration label with no leftover seconds, on the assessment detail screen's time-limit stat tile.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String assessmentsDurationMinutes(int minutes);
+
+  /// Duration label with leftover seconds, on the assessment detail screen's time-limit stat tile.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min {seconds} sec'**
+  String assessmentsDurationMinutesSeconds(int minutes, int seconds);
+
+  /// Question count caption on a section tile on the assessment detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 question} other{{count} questions}}'**
+  String assessmentsQuestionCount(int count);
+
+  /// Accessibility label shown while the deadlines screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading deadlines'**
+  String get assessmentsLoadingDeadlinesSemantic;
+
+  /// Gradient header title on the deadlines screen, and the link label on the assessment list screen that opens it.
+  ///
+  /// In en, this message translates to:
+  /// **'Deadlines'**
+  String get assessmentsDeadlinesTitle;
+
+  /// Empty-state title shown when the student has no assessment deadlines.
+  ///
+  /// In en, this message translates to:
+  /// **'No deadlines'**
+  String get assessmentsNoDeadlinesTitle;
+
+  /// Empty-state subtitle shown when the student has no assessment deadlines.
+  ///
+  /// In en, this message translates to:
+  /// **'Your assessment deadlines will appear here.'**
+  String get assessmentsNoDeadlinesSubtitle;
+
+  /// Section heading on the deadlines screen for currently-open deadlines.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get assessmentsSectionActiveLabel;
+
+  /// Relative-day word used inside a deadline tile's subtitle when the deadline closes today.
+  ///
+  /// In en, this message translates to:
+  /// **'today'**
+  String get assessmentsRelativeToday;
+
+  /// Relative-day word used inside a deadline tile's subtitle when the deadline closes tomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'tomorrow'**
+  String get assessmentsRelativeTomorrow;
+
+  /// Relative-day phrase used inside a deadline tile's subtitle when the deadline closes further in the future.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, one{in 1 day} other{in {days} days}}'**
+  String assessmentsRelativeInDays(int days);
+
+  /// Subtitle for an active deadline tile combining a relative-day phrase and a formatted date.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {relative} · {date}'**
+  String assessmentsDueRelativeDate(String relative, String date);
+
+  /// Subtitle for an active deadline tile when no relative-day phrase is available.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String assessmentsDueDate(String date);
+
+  /// Subtitle for an upcoming deadline tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens {date}'**
+  String assessmentsOpensDate(String date);
+
+  /// Subtitle for a late deadline tile that was granted an extension.
+  ///
+  /// In en, this message translates to:
+  /// **'Extended to {date}'**
+  String assessmentsExtendedToDate(String date);
+
+  /// Subtitle for a late deadline tile with no extension.
+  ///
+  /// In en, this message translates to:
+  /// **'Was due {date}'**
+  String assessmentsWasDueDate(String date);
+
+  /// Subtitle for a missed or closed deadline tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed {date}'**
+  String assessmentsClosedDate(String date);
+
+  /// Accessibility label for a deadline tile on the deadlines screen.
+  ///
+  /// In en, this message translates to:
+  /// **'{title}, {subtitle}'**
+  String assessmentsDeadlineTileSemantic(String title, String subtitle);
+
+  /// Accessibility label shown while the attempt screen is resuming an in-progress attempt.
+  ///
+  /// In en, this message translates to:
+  /// **'Resuming attempt'**
+  String get assessmentsResumingAttemptSemantic;
+
+  /// Label for the status row on the attempt screen's status card.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get assessmentsStatusLabel;
+
+  /// Status badge text shown when an assessment attempt's raw status is 'in_progress'.
+  ///
+  /// In en, this message translates to:
+  /// **'In Progress'**
+  String get assessmentsInProgressStatus;
+
+  /// Label for the expiry row on the attempt screen's status card.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires'**
+  String get assessmentsExpiresLabel;
+
+  /// Accessibility label for the countdown pill on the attempt screen's header.
+  ///
+  /// In en, this message translates to:
+  /// **'Time remaining: {time}'**
+  String assessmentsTimeRemainingSemantic(String time);
+
+  /// Empty-state subtitle shown in place of question content on the attempt screen, pending a backend capability.
+  ///
+  /// In en, this message translates to:
+  /// **'Question rendering isn’t available yet for this attempt.'**
+  String get assessmentsQuestionRenderingUnavailable;
+
+  /// Accessibility label for the Submit button on the attempt screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit attempt'**
+  String get assessmentsSubmitAttemptSemantic;
+
+  /// Accessibility label shown while the assessment list screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading assessments'**
+  String get assessmentsLoadingListSemantic;
+
+  /// Gradient header title on the assessment list screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Assessments'**
+  String get assessmentsListTitle;
+
+  /// Empty-state title shown when there are no published assessments.
+  ///
+  /// In en, this message translates to:
+  /// **'No assessments available'**
+  String get assessmentsEmptyTitle;
+
+  /// Empty-state subtitle shown when there are no published assessments.
+  ///
+  /// In en, this message translates to:
+  /// **'Published quizzes and exams will appear here.'**
+  String get assessmentsEmptySubtitle;
+
+  /// Heading on the submit-attempt confirmation screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit your answers?'**
+  String get assessmentsSubmitConfirmTitle;
+
+  /// Body copy on the submit-attempt confirmation screen.
+  ///
+  /// In en, this message translates to:
+  /// **'You cannot change answers after submitting.'**
+  String get assessmentsSubmitConfirmBody;
+
+  /// Finality warning banner on the submit-attempt confirmation screen.
+  ///
+  /// In en, this message translates to:
+  /// **'This action is final and cannot be undone.'**
+  String get assessmentsFinalWarning;
+
+  /// Accessibility label for the Submit button on the submit-attempt confirmation screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit attempt for {title}'**
+  String assessmentsSubmitAttemptForSemantic(String title);
+
+  /// Accessibility label for an assessment list tile.
+  ///
+  /// In en, this message translates to:
+  /// **'{typeLabel}: {title}'**
+  String assessmentsListTileSemantic(String typeLabel, String title);
+
+  /// Type label for an exam-type assessment, used in accessibility labels.
+  ///
+  /// In en, this message translates to:
+  /// **'Exam'**
+  String get assessmentsTypeExam;
+
+  /// Type label for a quiz-type assessment, used in accessibility labels.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz'**
+  String get assessmentsTypeQuiz;
+
+  /// Accessibility label for the standalone DeadlineStatusCard widget.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} — {status}'**
+  String assessmentsDeadlineCardSemantic(String title, String status);
+
+  /// Compact opens/closes date line on the standalone DeadlineStatusCard widget.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens: {opensAt}  •  Closes: {closesAt}'**
+  String assessmentsOpensClosesLabel(String opensAt, String closesAt);
+
+  /// Compact days-remaining countdown label on the standalone DeadlineCountdownText widget.
+  ///
+  /// In en, this message translates to:
+  /// **'{days}d remaining'**
+  String assessmentsDaysRemainingLabel(int days);
+
+  /// Compact hours-remaining countdown label on the standalone DeadlineCountdownText widget.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h remaining'**
+  String assessmentsHoursRemainingLabel(int hours);
+
+  /// Compact minutes-remaining countdown label on the standalone DeadlineCountdownText widget.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes}m remaining'**
+  String assessmentsMinutesRemainingLabel(int minutes);
+
+  /// Countdown label shown on the standalone DeadlineCountdownText widget when under a minute remains.
+  ///
+  /// In en, this message translates to:
+  /// **'Less than a minute'**
+  String get assessmentsLessThanMinuteLabel;
+
+  /// Accessibility label shown while the placement result screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading your result'**
+  String get placementLoadingResultSemantic;
+
+  /// Heading shown while the backend is still scoring a placement attempt.
+  ///
+  /// In en, this message translates to:
+  /// **'Scoring in progress…'**
+  String get placementScoringInProgressTitle;
+
+  /// Accessibility label for the pending-scoring state on the placement result screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Scoring in progress'**
+  String get placementScoringInProgressSemantic;
+
+  /// Subtitle shown while the backend is still scoring a placement attempt.
+  ///
+  /// In en, this message translates to:
+  /// **'The backend is evaluating your answers.'**
+  String get placementScoringInProgressSubtitle;
+
+  /// Section header above the per-section breakdown on the placement result screen.
+  ///
+  /// In en, this message translates to:
+  /// **'SECTION BREAKDOWN'**
+  String get placementSectionBreakdownLabel;
+
+  /// Label and accessibility label for the button that leaves the placement result screen for the main app.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue to AIM'**
+  String get placementContinueButton;
+
+  /// Display name for the backend-supplied 'beginner' placement level.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginner'**
+  String get placementLevelBeginner;
+
+  /// Display name for the backend-supplied 'elementary' placement level.
+  ///
+  /// In en, this message translates to:
+  /// **'Elementary'**
+  String get placementLevelElementary;
+
+  /// Display name for the backend-supplied 'intermediate' placement level.
+  ///
+  /// In en, this message translates to:
+  /// **'Intermediate'**
+  String get placementLevelIntermediate;
+
+  /// Display name for the backend-supplied 'upper_intermediate' placement level.
+  ///
+  /// In en, this message translates to:
+  /// **'Upper Intermediate'**
+  String get placementLevelUpperIntermediate;
+
+  /// Display name for the backend-supplied 'advanced' placement level.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get placementLevelAdvanced;
+
+  /// Display name for the backend-supplied 'grammar' placement skill.
+  ///
+  /// In en, this message translates to:
+  /// **'Grammar'**
+  String get placementSkillGrammar;
+
+  /// Display name for the backend-supplied 'vocabulary' placement skill.
+  ///
+  /// In en, this message translates to:
+  /// **'Vocabulary'**
+  String get placementSkillVocabulary;
+
+  /// Display name for the backend-supplied 'reading' placement skill.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading'**
+  String get placementSkillReading;
+
+  /// Display name for the backend-supplied 'listening' placement skill.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening'**
+  String get placementSkillListening;
+
+  /// Accessibility label for the level hero card on the placement result screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Your level: {displayName}, total score {totalScore} out of 100'**
+  String placementLevelSemantic(String displayName, int totalScore);
+
+  /// Small eyebrow label above the CEFR code on the placement result screen's level hero card.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR LEVEL'**
+  String get placementYourLevelLabel;
+
+  /// Summary caption on the placement result screen's level hero card.
+  ///
+  /// In en, this message translates to:
+  /// **'{displayName} · Total score {totalScore} / 100'**
+  String placementLevelSummary(String displayName, int totalScore);
+
+  /// Accessibility label for a section breakdown row on the placement result screen.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}: {correct} of {total} correct'**
+  String placementSectionCorrectSemantic(String name, int correct, int total);
+
+  /// Correct-of-total fraction label on a section breakdown row on the placement result screen.
+  ///
+  /// In en, this message translates to:
+  /// **'{correct} / {total}'**
+  String placementFractionLabel(int correct, int total);
+
+  /// Label for the sections info row on the placement intro screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Sections'**
+  String get placementSectionsLabel;
+
+  /// Value for the sections info row on the placement intro screen.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 section} other{{count} sections}}'**
+  String placementSectionsValue(int count);
+
+  /// Label for the estimated-time info row on the placement intro screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated time'**
+  String get placementEstimatedTimeLabel;
+
+  /// Value for the estimated-time info row on the placement intro screen.
+  ///
+  /// In en, this message translates to:
+  /// **'~{minutes} min'**
+  String placementEstimatedTimeValue(int minutes);
+
+  /// Boundary note shown on the placement intro and start screens, reassuring that scoring happens server-side.
+  ///
+  /// In en, this message translates to:
+  /// **'Your level is determined by the backend after completion. Results are never calculated on your device.'**
+  String get placementBackendNote;
+
+  /// Accessibility label for the Start button on the placement intro screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Start placement test'**
+  String get placementStartTestSemantic;
+
+  /// Gradient header title on the placement intro screen.
+  ///
+  /// In en, this message translates to:
+  /// **'General English Placement'**
+  String get placementIntroHeaderTitle;
+
+  /// Gradient header subtitle on the placement intro screen.
+  ///
+  /// In en, this message translates to:
+  /// **'A quick check to find your starting level.'**
+  String get placementIntroHeaderSubtitle;
+
+  /// Accessibility label shown while the placement start screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading placement test'**
+  String get placementLoadingTestSemantic;
+
+  /// Accessibility label shown while a placement attempt is being created, on the placement start screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting placement test'**
+  String get placementStartingTestSemantic;
+
+  /// Gradient header title on the placement start screen, and fallback title on the placement section screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Placement Test'**
+  String get placementTestTitle;
+
+  /// Heading on the placement start screen's gradient info card.
+  ///
+  /// In en, this message translates to:
+  /// **'Find your level'**
+  String get placementFindYourLevelTitle;
+
+  /// Subtitle on the placement start screen's gradient info card.
+  ///
+  /// In en, this message translates to:
+  /// **'A short adaptive test places you at the right level so every lesson fits you.'**
+  String get placementFindYourLevelSubtitle;
+
+  /// Label under the sections-count stat cell on the placement start screen's gradient info card.
+  ///
+  /// In en, this message translates to:
+  /// **'sections'**
+  String get placementSectionsStatLabel;
+
+  /// Label under the estimated-minutes stat cell on the placement start screen's gradient info card.
+  ///
+  /// In en, this message translates to:
+  /// **'minutes'**
+  String get placementMinutesStatLabel;
+
+  /// Label and accessibility label for the button that starts a placement attempt, on the placement start screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Placement Test'**
+  String get placementStartTestButton;
+
+  /// Label for the text button that dismisses the placement start screen without starting.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get placementNotNowButton;
+
+  /// Compact question-counter shown in the placement question screen's header.
+  ///
+  /// In en, this message translates to:
+  /// **'{index} of {total}'**
+  String placementQuestionCounter(int index, int total);
+
+  /// Accessibility label shown while the placement question screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading question'**
+  String get placementLoadingQuestionSemantic;
+
+  /// Error message shown on the placement question screen when submitting an answer fails with a specific reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to submit answer: {reason}'**
+  String placementSubmitAnswerFailedWithReason(String reason);
+
+  /// Generic fallback error message shown on the placement question screen when submitting an answer fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to submit answer. Please try again.'**
+  String get placementSubmitAnswerFailedGeneric;
+
+  /// Label for the button on the last question of a placement section.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Final Answer'**
+  String get placementSubmitFinalAnswerButton;
+
+  /// Label for the button on a non-final question of a placement section.
+  ///
+  /// In en, this message translates to:
+  /// **'Next question'**
+  String get placementNextQuestionButton;
+
+  /// Accessibility label for the button on the last question of a placement section.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit final answer'**
+  String get placementSubmitFinalAnswerSemantic;
+
+  /// Accessibility label for the button on a non-final question of a placement section.
+  ///
+  /// In en, this message translates to:
+  /// **'Next question'**
+  String get placementNextQuestionSemantic;
+
+  /// Fallback message shown when a placement question has an unrecognised type.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown question type: {type}'**
+  String placementUnknownQuestionType(String type);
+
+  /// Accessibility label for a multiple-choice placement answer option with backend-supplied text.
+  ///
+  /// In en, this message translates to:
+  /// **'Option {letter}: {text}'**
+  String placementOptionWithTextSemantic(String letter, String text);
+
+  /// Accessibility label for a multiple-choice placement answer option with no backend-supplied text.
+  ///
+  /// In en, this message translates to:
+  /// **'Option {letter}'**
+  String placementOptionSemantic(String letter);
+
+  /// Label and accessibility label for the True answer option on a true/false placement question.
+  ///
+  /// In en, this message translates to:
+  /// **'True'**
+  String get placementTrueOption;
+
+  /// Label and accessibility label for the False answer option on a true/false placement question.
+  ///
+  /// In en, this message translates to:
+  /// **'False'**
+  String get placementFalseOption;
+
+  /// Placeholder text for the fill-in-the-blank answer input on a placement question.
+  ///
+  /// In en, this message translates to:
+  /// **'Type your answer here…'**
+  String get placementAnswerPlaceholder;
+
+  /// Accessibility label for the fill-in-the-blank answer input on a placement question.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answer'**
+  String get placementYourAnswerSemantic;
+
+  /// Gradient header title on the placement submit confirmation screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Almost done'**
+  String get placementAlmostDoneTitle;
+
+  /// Accessibility label shown while a placement attempt is being submitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitting your answers'**
+  String get placementSubmittingAnswersSemantic;
+
+  /// Retry button label on the placement submit and section screens' error states.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get placementRetryLabel;
+
+  /// Headline on the placement submit confirmation screen when the total section count is known.
+  ///
+  /// In en, this message translates to:
+  /// **'All {count} sections complete'**
+  String placementAllSectionsCompleteWithCount(int count);
+
+  /// Headline on the placement submit confirmation screen when the total section count is not known.
+  ///
+  /// In en, this message translates to:
+  /// **'All sections complete'**
+  String get placementAllSectionsCompleteGeneric;
+
+  /// Body copy on the placement submit confirmation screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit your placement test to see your level and a personalised plan.'**
+  String get placementSubmitBody;
+
+  /// Label and accessibility label for the button that submits a completed placement test.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Placement Test'**
+  String get placementSubmitTestButton;
+
+  /// Gradient header title on the placement section screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Section {index} of {total}'**
+  String placementSectionCounterTitle(int index, int total);
+
+  /// Meta line on the placement section screen showing the category, question count, and pacing estimate.
+  ///
+  /// In en, this message translates to:
+  /// **'{category} · {count, plural, one{1 question} other{{count} questions}} · about {minutes} minutes'**
+  String placementSectionMetaLine(String category, int count, int minutes);
+
+  /// Label and accessibility label for the button that starts the last placement section.
+  ///
+  /// In en, this message translates to:
+  /// **'Begin Final Section'**
+  String get placementBeginFinalSectionButton;
+
+  /// Label and accessibility label for the button that starts a non-final placement section.
+  ///
+  /// In en, this message translates to:
+  /// **'Begin Section'**
+  String get placementBeginSectionButton;
+
+  /// Accessibility label for the segmented section-progress indicator on the placement section screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Section {index} of {total}'**
+  String placementSectionProgressSemantic(int index, int total);
+
+  /// Short category label for a 'vocabulary' placement section.
+  ///
+  /// In en, this message translates to:
+  /// **'Lexis'**
+  String get placementCategoryLexis;
+
+  /// Short category label for a 'grammar' placement section.
+  ///
+  /// In en, this message translates to:
+  /// **'Structures'**
+  String get placementCategoryStructures;
+
+  /// Short category label for a 'reading' placement section.
+  ///
+  /// In en, this message translates to:
+  /// **'Comprehension'**
+  String get placementCategoryComprehension;
+
+  /// Short category label for a 'listening' placement section.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio'**
+  String get placementCategoryAudio;
+
+  /// Fallback short category label for a placement section with an empty skill code.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get placementCategoryGeneral;
+
+  /// Accessibility label shown while the practice question screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading question'**
+  String get questionAnswerLoadingQuestionSemantic;
+
+  /// Gradient header title on the practice question screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice'**
+  String get questionAnswerPracticeTitle;
+
+  /// Pending-state message shown while AIM has not yet produced session feedback.
+  ///
+  /// In en, this message translates to:
+  /// **'AIM is analysing your session…'**
+  String get questionAnswerAnalysingSessionText;
+
+  /// Accessibility label for the session feedback card.
+  ///
+  /// In en, this message translates to:
+  /// **'Session feedback from AIM'**
+  String get questionAnswerSessionFeedbackSemantic;
+
+  /// Title on the session feedback card.
+  ///
+  /// In en, this message translates to:
+  /// **'Session Summary'**
+  String get questionAnswerSessionSummaryTitle;
+
+  /// Label for the questions-attempted row on the session feedback card.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions attempted'**
+  String get questionAnswerQuestionsAttemptedLabel;
+
+  /// Label for the backend-scored correct-count row on the session feedback card.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct (backend score)'**
+  String get questionAnswerCorrectScoreLabel;
+
+  /// Label for the mastery-shift row on the session feedback card.
+  ///
+  /// In en, this message translates to:
+  /// **'Mastery shift'**
+  String get questionAnswerMasteryShiftLabel;
+
+  /// Label above the skill badges on the session feedback card.
+  ///
+  /// In en, this message translates to:
+  /// **'Skills covered'**
+  String get questionAnswerSkillsCoveredLabel;
+
+  /// Accessibility label for the attempt-acknowledgement card.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer submitted'**
+  String get questionAnswerAnswerSubmittedSemantic;
+
+  /// Title on the attempt-acknowledgement card.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer submitted'**
+  String get questionAnswerAnswerSubmittedLabel;
+
+  /// Subtitle on the attempt-acknowledgement card.
+  ///
+  /// In en, this message translates to:
+  /// **'AIM is analysing your response.'**
+  String get questionAnswerAnalysingResponseText;
+
+  /// Label for the free-text answer input on a fill-in-the-blank practice question.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answer'**
+  String get questionAnswerYourAnswerLabel;
+
+  /// Helper text below the free-text answer input on a fill-in-the-blank practice question.
+  ///
+  /// In en, this message translates to:
+  /// **'Type your response, then tap Continue to submit.'**
+  String get questionAnswerAnswerHelperText;
+
+  /// Placeholder text for the free-text answer input on a fill-in-the-blank practice question.
+  ///
+  /// In en, this message translates to:
+  /// **'Type your answer here'**
+  String get questionAnswerAnswerPlaceholder;
+
+  /// Accessibility label for the free-text answer input on a fill-in-the-blank practice question.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer input field'**
+  String get questionAnswerAnswerInputSemantic;
 }
 
 class _AppLocalizationsDelegate

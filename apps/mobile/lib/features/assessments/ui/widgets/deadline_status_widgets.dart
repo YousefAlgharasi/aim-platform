@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/student_deadline.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 // ---------------------------------------------------------------------------
 // DeadlineStatusBadge
@@ -18,12 +19,15 @@ class DeadlineStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final (color, label) = switch (status) {
-      'open' => (AimColors.success500, 'Open'),
-      'upcoming' => (AimColors.info500, 'Upcoming'),
-      'closed' || 'expired' => (AimColors.neutral500, 'Closed'),
-      'late' => (AimColors.warning500, 'Late'),
-      'missed' => (AimColors.error500, 'Missed'),
+      'open' => (AimColors.success500, loc.assessmentsDeadlineStatusOpen),
+      'upcoming' => (AimColors.info500, loc.assessmentsDeadlineStatusUpcoming),
+      'closed' ||
+      'expired' =>
+        (AimColors.neutral500, loc.assessmentsDeadlineStatusClosed),
+      'late' => (AimColors.warning500, loc.assessmentsDeadlineStatusLate),
+      'missed' => (AimColors.error500, loc.assessmentsDeadlineStatusMissed),
       _ => (AimColors.neutral500, status),
     };
 
@@ -68,7 +72,8 @@ class DeadlineStatusCard extends StatelessWidget {
     return AIMCard(
       variant: AIMCardVariant.elevated,
       onTap: onTap,
-      semanticLabel: '${item.assessmentTitle} — ${item.status}',
+      semanticLabel: AppLocalizations.of(context)
+          .assessmentsDeadlineCardSemantic(item.assessmentTitle, item.status),
       child: Row(
         children: [
           DecoratedBox(
@@ -99,7 +104,10 @@ class DeadlineStatusCard extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: AimSpacing.space4),
                   child: Text(
-                    'Opens: ${item.opensAt}  •  Closes: ${item.closesAt}',
+                    AppLocalizations.of(context).assessmentsOpensClosesLabel(
+                      item.opensAt,
+                      item.closesAt,
+                    ),
                     style: Theme.of(context).textTheme.bodySmall,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -163,18 +171,19 @@ class DeadlineCountdownText extends StatelessWidget {
 
     final now = DateTime.now().toUtc();
     final difference = closesDate.toUtc().difference(now);
+    final loc = AppLocalizations.of(context);
 
     final String text;
     if (difference.isNegative) {
-      text = 'Closed';
+      text = loc.assessmentsDeadlineStatusClosed;
     } else if (difference.inDays > 0) {
-      text = '${difference.inDays}d remaining';
+      text = loc.assessmentsDaysRemainingLabel(difference.inDays);
     } else if (difference.inHours > 0) {
-      text = '${difference.inHours}h remaining';
+      text = loc.assessmentsHoursRemainingLabel(difference.inHours);
     } else if (difference.inMinutes > 0) {
-      text = '${difference.inMinutes}m remaining';
+      text = loc.assessmentsMinutesRemainingLabel(difference.inMinutes);
     } else {
-      text = 'Less than a minute';
+      text = loc.assessmentsLessThanMinuteLabel;
     }
 
     return Text(

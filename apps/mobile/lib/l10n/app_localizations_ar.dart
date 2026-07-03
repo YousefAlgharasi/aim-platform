@@ -1499,4 +1499,653 @@ class AppLocalizationsAr extends AppLocalizations {
   String achievementsLockedSemantic(String title) {
     return '$title، مقفل';
   }
+
+  @override
+  String get assessmentsStartAttemptTitle => 'بدء المحاولة';
+
+  @override
+  String get assessmentsReadyToBeginTitle => 'هل أنت مستعد للبدء؟';
+
+  @override
+  String assessmentsTimedBodyCopy(String minutes) {
+    return 'بمجرد أن تبدأ، سيعمل مؤقت الـ $minutes دقيقة بشكل متواصل — حتى لو غادرت التطبيق. تأكد من أن لديك الوقت الكافي لإنهاء المحاولة.';
+  }
+
+  @override
+  String get assessmentsUntimedBodyCopy =>
+      'بمجرد أن تبدأ، سيتم تسجيل المحاولة. تأكد من استعدادك قبل المتابعة.';
+
+  @override
+  String get assessmentsStartAttemptButton => 'بدء المحاولة';
+
+  @override
+  String assessmentsStartAttemptSemantic(String title) {
+    return 'بدء محاولة لـ $title';
+  }
+
+  @override
+  String get assessmentsGoBackButton => 'رجوع';
+
+  @override
+  String get assessmentsLoadingResultSemantic => 'جارٍ تحميل النتيجة';
+
+  @override
+  String get assessmentsStatusPassed => 'ناجح';
+
+  @override
+  String get assessmentsStatusFailed => 'راسب';
+
+  @override
+  String assessmentsScoreSemantic(
+      String statusLabel, String score, String maxScore) {
+    return '$statusLabel: $score من $maxScore نقطة';
+  }
+
+  @override
+  String get assessmentsLatePenaltyApplied => 'تم تطبيق غرامة التأخير';
+
+  @override
+  String assessmentsGradedLabel(String date) {
+    return 'تم التصحيح في $date';
+  }
+
+  @override
+  String get assessmentsBreakdownLabel => 'التفصيل';
+
+  @override
+  String get assessmentsDoneViewingResultSemantic =>
+      'تم الانتهاء من عرض النتيجة';
+
+  @override
+  String assessmentsPointsFraction(String awarded, String possible) {
+    return '$awarded / $possible نقطة';
+  }
+
+  @override
+  String get assessmentsLoadingResultHistorySemantic =>
+      'جارٍ تحميل سجل النتائج';
+
+  @override
+  String get assessmentsResultHistoryTitle => 'سجل النتائج';
+
+  @override
+  String get assessmentsNoResultsTitle => 'لا توجد نتائج بعد';
+
+  @override
+  String get assessmentsNoResultsSubtitle =>
+      'ستظهر هنا نتائج محاولاتك السابقة.';
+
+  @override
+  String assessmentsAttemptResultSemantic(int attemptNumber, String scoreLabel,
+      String statusWord, String lateSuffix) {
+    return 'المحاولة $attemptNumber، $scoreLabel، $statusWord$lateSuffix';
+  }
+
+  @override
+  String get assessmentsPassedWord => 'ناجح';
+
+  @override
+  String get assessmentsFailedWord => 'راسب';
+
+  @override
+  String get assessmentsLatePenaltySemanticSuffix => '، مع تطبيق غرامة التأخير';
+
+  @override
+  String get assessmentsLoadingAssessmentSemantic => 'جارٍ تحميل التقييم';
+
+  @override
+  String get assessmentsExamDetailsTitle => 'تفاصيل الاختبار';
+
+  @override
+  String get assessmentsQuizDetailsTitle => 'تفاصيل الاختبار القصير';
+
+  @override
+  String get assessmentsDetailsTitle => 'تفاصيل التقييم';
+
+  @override
+  String get assessmentsQuestionsLabel => 'الأسئلة';
+
+  @override
+  String get assessmentsTimeLimitLabel => 'الوقت المحدد';
+
+  @override
+  String get assessmentsMaxAttemptsLabel => 'الحد الأقصى للمحاولات';
+
+  @override
+  String get assessmentsDeadlineHeading => 'الموعد النهائي';
+
+  @override
+  String get assessmentsSectionsHeading => 'الأقسام';
+
+  @override
+  String get assessmentsPastResultsTitle => 'النتائج السابقة';
+
+  @override
+  String get assessmentsViewAttemptHistorySubtitle => 'عرض سجل محاولاتك';
+
+  @override
+  String get assessmentsPastResultsSemantic =>
+      'النتائج السابقة، عرض سجل محاولاتك';
+
+  @override
+  String get assessmentsDeadlineStatusOpen => 'مفتوح';
+
+  @override
+  String get assessmentsDeadlineStatusUpcoming => 'قادم';
+
+  @override
+  String get assessmentsDeadlineStatusClosed => 'مغلق';
+
+  @override
+  String get assessmentsDeadlineStatusLate => 'متأخر';
+
+  @override
+  String get assessmentsDeadlineStatusMissed => 'فائت';
+
+  @override
+  String get assessmentsOpensLabel => 'يفتح';
+
+  @override
+  String get assessmentsClosesLabel => 'يغلق';
+
+  @override
+  String get assessmentsExtendedCloseLabel => 'الإغلاق الممدد';
+
+  @override
+  String assessmentsDurationMinutes(int minutes) {
+    return '$minutes دقيقة';
+  }
+
+  @override
+  String assessmentsDurationMinutesSeconds(int minutes, int seconds) {
+    return '$minutes دقيقة و$seconds ثانية';
+  }
+
+  @override
+  String assessmentsQuestionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count سؤال',
+      many: '$count سؤالًا',
+      few: '$count أسئلة',
+      two: 'سؤالان',
+      one: 'سؤال واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get assessmentsLoadingDeadlinesSemantic =>
+      'جارٍ تحميل المواعيد النهائية';
+
+  @override
+  String get assessmentsDeadlinesTitle => 'المواعيد النهائية';
+
+  @override
+  String get assessmentsNoDeadlinesTitle => 'لا توجد مواعيد نهائية';
+
+  @override
+  String get assessmentsNoDeadlinesSubtitle =>
+      'ستظهر هنا مواعيد التقييمات النهائية.';
+
+  @override
+  String get assessmentsSectionActiveLabel => 'نشط';
+
+  @override
+  String get assessmentsRelativeToday => 'اليوم';
+
+  @override
+  String get assessmentsRelativeTomorrow => 'غدًا';
+
+  @override
+  String assessmentsRelativeInDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'خلال $days يوم',
+      many: 'خلال $days يومًا',
+      few: 'خلال $days أيام',
+      two: 'خلال يومين',
+      one: 'خلال يوم واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String assessmentsDueRelativeDate(String relative, String date) {
+    return 'يستحق $relative · $date';
+  }
+
+  @override
+  String assessmentsDueDate(String date) {
+    return 'يستحق في $date';
+  }
+
+  @override
+  String assessmentsOpensDate(String date) {
+    return 'يفتح في $date';
+  }
+
+  @override
+  String assessmentsExtendedToDate(String date) {
+    return 'تم التمديد إلى $date';
+  }
+
+  @override
+  String assessmentsWasDueDate(String date) {
+    return 'كان يستحق في $date';
+  }
+
+  @override
+  String assessmentsClosedDate(String date) {
+    return 'أُغلق في $date';
+  }
+
+  @override
+  String assessmentsDeadlineTileSemantic(String title, String subtitle) {
+    return '$title، $subtitle';
+  }
+
+  @override
+  String get assessmentsResumingAttemptSemantic => 'جارٍ استئناف المحاولة';
+
+  @override
+  String get assessmentsStatusLabel => 'الحالة';
+
+  @override
+  String get assessmentsInProgressStatus => 'قيد التنفيذ';
+
+  @override
+  String get assessmentsExpiresLabel => 'تنتهي الصلاحية';
+
+  @override
+  String assessmentsTimeRemainingSemantic(String time) {
+    return 'الوقت المتبقي: $time';
+  }
+
+  @override
+  String get assessmentsQuestionRenderingUnavailable =>
+      'عرض الأسئلة غير متاح بعد لهذه المحاولة.';
+
+  @override
+  String get assessmentsSubmitAttemptSemantic => 'إرسال المحاولة';
+
+  @override
+  String get assessmentsLoadingListSemantic => 'جارٍ تحميل التقييمات';
+
+  @override
+  String get assessmentsListTitle => 'التقييمات';
+
+  @override
+  String get assessmentsEmptyTitle => 'لا توجد تقييمات متاحة';
+
+  @override
+  String get assessmentsEmptySubtitle =>
+      'ستظهر هنا الاختبارات القصيرة والاختبارات المنشورة.';
+
+  @override
+  String get assessmentsSubmitConfirmTitle => 'هل تريد إرسال إجاباتك؟';
+
+  @override
+  String get assessmentsSubmitConfirmBody =>
+      'لا يمكنك تغيير إجاباتك بعد الإرسال.';
+
+  @override
+  String get assessmentsFinalWarning =>
+      'هذا الإجراء نهائي ولا يمكن التراجع عنه.';
+
+  @override
+  String assessmentsSubmitAttemptForSemantic(String title) {
+    return 'إرسال محاولة لـ $title';
+  }
+
+  @override
+  String assessmentsListTileSemantic(String typeLabel, String title) {
+    return '$typeLabel: $title';
+  }
+
+  @override
+  String get assessmentsTypeExam => 'اختبار';
+
+  @override
+  String get assessmentsTypeQuiz => 'اختبار قصير';
+
+  @override
+  String assessmentsDeadlineCardSemantic(String title, String status) {
+    return '$title — $status';
+  }
+
+  @override
+  String assessmentsOpensClosesLabel(String opensAt, String closesAt) {
+    return 'يفتح: $opensAt  •  يغلق: $closesAt';
+  }
+
+  @override
+  String assessmentsDaysRemainingLabel(int days) {
+    return 'متبقٍ $days يوم';
+  }
+
+  @override
+  String assessmentsHoursRemainingLabel(int hours) {
+    return 'متبقٍ $hours ساعة';
+  }
+
+  @override
+  String assessmentsMinutesRemainingLabel(int minutes) {
+    return 'متبقٍ $minutes دقيقة';
+  }
+
+  @override
+  String get assessmentsLessThanMinuteLabel => 'أقل من دقيقة';
+
+  @override
+  String get placementLoadingResultSemantic => 'جارٍ تحميل نتيجتك';
+
+  @override
+  String get placementScoringInProgressTitle => 'التصحيح قيد التنفيذ…';
+
+  @override
+  String get placementScoringInProgressSemantic => 'التصحيح قيد التنفيذ';
+
+  @override
+  String get placementScoringInProgressSubtitle =>
+      'الخادم يقوم بتقييم إجاباتك.';
+
+  @override
+  String get placementSectionBreakdownLabel => 'تفصيل الأقسام';
+
+  @override
+  String get placementContinueButton => 'المتابعة إلى AIM';
+
+  @override
+  String get placementLevelBeginner => 'مبتدئ';
+
+  @override
+  String get placementLevelElementary => 'أساسي';
+
+  @override
+  String get placementLevelIntermediate => 'متوسط';
+
+  @override
+  String get placementLevelUpperIntermediate => 'فوق المتوسط';
+
+  @override
+  String get placementLevelAdvanced => 'متقدم';
+
+  @override
+  String get placementSkillGrammar => 'القواعد';
+
+  @override
+  String get placementSkillVocabulary => 'المفردات';
+
+  @override
+  String get placementSkillReading => 'القراءة';
+
+  @override
+  String get placementSkillListening => 'الاستماع';
+
+  @override
+  String placementLevelSemantic(String displayName, int totalScore) {
+    return 'مستواك: $displayName، مجموع النقاط $totalScore من 100';
+  }
+
+  @override
+  String get placementYourLevelLabel => 'مستواك';
+
+  @override
+  String placementLevelSummary(String displayName, int totalScore) {
+    return '$displayName · مجموع النقاط $totalScore / 100';
+  }
+
+  @override
+  String placementSectionCorrectSemantic(String name, int correct, int total) {
+    return '$name: $correct من $total إجابة صحيحة';
+  }
+
+  @override
+  String placementFractionLabel(int correct, int total) {
+    return '$correct / $total';
+  }
+
+  @override
+  String get placementSectionsLabel => 'الأقسام';
+
+  @override
+  String placementSectionsValue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count قسم',
+      many: '$count قسمًا',
+      few: '$count أقسام',
+      two: 'قسمان',
+      one: 'قسم واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get placementEstimatedTimeLabel => 'الوقت المقدر';
+
+  @override
+  String placementEstimatedTimeValue(int minutes) {
+    return '~$minutes دقيقة';
+  }
+
+  @override
+  String get placementBackendNote =>
+      'يتم تحديد مستواك بواسطة الخادم بعد الانتهاء. لا يتم احتساب النتائج على جهازك أبدًا.';
+
+  @override
+  String get placementStartTestSemantic => 'بدء اختبار تحديد المستوى';
+
+  @override
+  String get placementIntroHeaderTitle => 'تحديد مستوى اللغة الإنجليزية العامة';
+
+  @override
+  String get placementIntroHeaderSubtitle => 'فحص سريع لتحديد مستواك الأولي.';
+
+  @override
+  String get placementLoadingTestSemantic => 'جارٍ تحميل اختبار تحديد المستوى';
+
+  @override
+  String get placementStartingTestSemantic => 'جارٍ بدء اختبار تحديد المستوى';
+
+  @override
+  String get placementTestTitle => 'اختبار تحديد المستوى';
+
+  @override
+  String get placementFindYourLevelTitle => 'اكتشف مستواك';
+
+  @override
+  String get placementFindYourLevelSubtitle =>
+      'اختبار تكيفي قصير يحدد مستواك المناسب حتى يلائمك كل درس.';
+
+  @override
+  String get placementSectionsStatLabel => 'أقسام';
+
+  @override
+  String get placementMinutesStatLabel => 'دقائق';
+
+  @override
+  String get placementStartTestButton => 'بدء اختبار تحديد المستوى';
+
+  @override
+  String get placementNotNowButton => 'ليس الآن';
+
+  @override
+  String placementQuestionCounter(int index, int total) {
+    return '$index من $total';
+  }
+
+  @override
+  String get placementLoadingQuestionSemantic => 'جارٍ تحميل السؤال';
+
+  @override
+  String placementSubmitAnswerFailedWithReason(String reason) {
+    return 'فشل إرسال الإجابة: $reason';
+  }
+
+  @override
+  String get placementSubmitAnswerFailedGeneric =>
+      'فشل إرسال الإجابة. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get placementSubmitFinalAnswerButton => 'إرسال الإجابة الأخيرة';
+
+  @override
+  String get placementNextQuestionButton => 'السؤال التالي';
+
+  @override
+  String get placementSubmitFinalAnswerSemantic => 'إرسال الإجابة الأخيرة';
+
+  @override
+  String get placementNextQuestionSemantic => 'السؤال التالي';
+
+  @override
+  String placementUnknownQuestionType(String type) {
+    return 'نوع سؤال غير معروف: $type';
+  }
+
+  @override
+  String placementOptionWithTextSemantic(String letter, String text) {
+    return 'الخيار $letter: $text';
+  }
+
+  @override
+  String placementOptionSemantic(String letter) {
+    return 'الخيار $letter';
+  }
+
+  @override
+  String get placementTrueOption => 'صح';
+
+  @override
+  String get placementFalseOption => 'خطأ';
+
+  @override
+  String get placementAnswerPlaceholder => 'اكتب إجابتك هنا…';
+
+  @override
+  String get placementYourAnswerSemantic => 'إجابتك';
+
+  @override
+  String get placementAlmostDoneTitle => 'أوشكت على الانتهاء';
+
+  @override
+  String get placementSubmittingAnswersSemantic => 'جارٍ إرسال إجاباتك';
+
+  @override
+  String get placementRetryLabel => 'إعادة المحاولة';
+
+  @override
+  String placementAllSectionsCompleteWithCount(int count) {
+    return 'اكتملت جميع الأقسام الـ $count';
+  }
+
+  @override
+  String get placementAllSectionsCompleteGeneric => 'اكتملت جميع الأقسام';
+
+  @override
+  String get placementSubmitBody =>
+      'أرسل اختبار تحديد المستوى لمعرفة مستواك والحصول على خطة مخصصة.';
+
+  @override
+  String get placementSubmitTestButton => 'إرسال اختبار تحديد المستوى';
+
+  @override
+  String placementSectionCounterTitle(int index, int total) {
+    return 'القسم $index من $total';
+  }
+
+  @override
+  String placementSectionMetaLine(String category, int count, int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count سؤال',
+      many: '$count سؤالًا',
+      few: '$count أسئلة',
+      two: 'سؤالان',
+      one: 'سؤال واحد',
+    );
+    return '$category · $_temp0 · حوالي $minutes دقيقة';
+  }
+
+  @override
+  String get placementBeginFinalSectionButton => 'بدء القسم الأخير';
+
+  @override
+  String get placementBeginSectionButton => 'بدء القسم';
+
+  @override
+  String placementSectionProgressSemantic(int index, int total) {
+    return 'القسم $index من $total';
+  }
+
+  @override
+  String get placementCategoryLexis => 'المفردات';
+
+  @override
+  String get placementCategoryStructures => 'التراكيب';
+
+  @override
+  String get placementCategoryComprehension => 'الاستيعاب';
+
+  @override
+  String get placementCategoryAudio => 'الصوتيات';
+
+  @override
+  String get placementCategoryGeneral => 'عام';
+
+  @override
+  String get questionAnswerLoadingQuestionSemantic => 'جارٍ تحميل السؤال';
+
+  @override
+  String get questionAnswerPracticeTitle => 'تدريب';
+
+  @override
+  String get questionAnswerAnalysingSessionText => 'AIM يقوم بتحليل جلستك…';
+
+  @override
+  String get questionAnswerSessionFeedbackSemantic => 'ملاحظات الجلسة من AIM';
+
+  @override
+  String get questionAnswerSessionSummaryTitle => 'ملخص الجلسة';
+
+  @override
+  String get questionAnswerQuestionsAttemptedLabel => 'الأسئلة المُجابة';
+
+  @override
+  String get questionAnswerCorrectScoreLabel =>
+      'الإجابات الصحيحة (نتيجة الخادم)';
+
+  @override
+  String get questionAnswerMasteryShiftLabel => 'تغيّر الإتقان';
+
+  @override
+  String get questionAnswerSkillsCoveredLabel => 'المهارات المشمولة';
+
+  @override
+  String get questionAnswerAnswerSubmittedSemantic => 'تم إرسال الإجابة';
+
+  @override
+  String get questionAnswerAnswerSubmittedLabel => 'تم إرسال الإجابة';
+
+  @override
+  String get questionAnswerAnalysingResponseText => 'AIM يقوم بتحليل إجابتك.';
+
+  @override
+  String get questionAnswerYourAnswerLabel => 'إجابتك';
+
+  @override
+  String get questionAnswerAnswerHelperText =>
+      'اكتب إجابتك، ثم اضغط متابعة للإرسال.';
+
+  @override
+  String get questionAnswerAnswerPlaceholder => 'اكتب إجابتك هنا';
+
+  @override
+  String get questionAnswerAnswerInputSemantic => 'حقل إدخال الإجابة';
 }

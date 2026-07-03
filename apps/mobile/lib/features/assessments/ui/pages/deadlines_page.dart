@@ -35,27 +35,26 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
 import 'package:aim_mobile/features/assessments/logic/provider/assessment_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 
 /// Which backend-computed bucket a tile belongs to. Set by each
 /// [_DeadlineSection] from the backend's own grouping — never derived
 /// locally from dates.
 enum _DeadlineKind { active, upcoming, late, missed, closed }
 
-const _months = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-];
-
 /// Formats a real backend ISO timestamp as a short month-name date
 /// ('Jun 27'), including the year only when it differs from the current
 /// year ('Jun 27, 2027'). Falls back to the raw string on parse failure —
 /// never fabricates a date.
-String _formatDate(String iso) {
+String _formatDate(BuildContext context, String iso) {
   final date = DateTime.tryParse(iso);
   if (date == null) return iso;
   final local = date.toLocal();
-  final base = '${_months[local.month - 1]} ${local.day}';
-  return local.year == DateTime.now().year ? base : '$base, ${local.year}';
+  final locale = Localizations.localeOf(context).toString();
+  return local.year == DateTime.now().year
+      ? DateFormat.MMMd(locale).format(local)
+      : DateFormat.yMMMd(locale).format(local);
 }
 
 /// Display-only relative-day label for a real backend timestamp: 'today',
@@ -63,7 +62,7 @@ String _formatDate(String iso) {
 /// non-future dates (callers then fall back to the plain date). Mirrors the
 /// relative-date tone of review_page.dart's `_dueDateLabel`; purely
 /// presentational — bucket/status stays backend-computed.
-String? _relativeDays(String iso) {
+String? _relativeDays(AppLocalizations loc, String iso) {
   final date = DateTime.tryParse(iso);
   if (date == null) return null;
   final now = DateTime.now();
@@ -71,9 +70,9 @@ String? _relativeDays(String iso) {
   final startOfToday = DateTime(now.year, now.month, now.day);
   final startOfDate = DateTime(local.year, local.month, local.day);
   final dayDiff = startOfDate.difference(startOfToday).inDays;
-  if (dayDiff == 0) return 'today';
-  if (dayDiff == 1) return 'tomorrow';
-  if (dayDiff > 1) return 'in $dayDiff days';
+  if (dayDiff == 0) return loc.assessmentsRelativeToday;
+  if (dayDiff == 1) return loc.assessmentsRelativeTomorrow;
+  if (dayDiff > 1) return loc.assessmentsRelativeInDays(dayDiff);
   return null;
 }
 
@@ -117,8 +116,9 @@ class _DeadlinesPageState extends ConsumerState<DeadlinesPage> {
           const _DeadlinesHeader(),
           Expanded(
             child: switch (state) {
-              AppAsyncLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading deadlines',
+              AppAsyncLoading() => AIMFullScreenLoading(
+                  semanticLabel:
+                      AppLocalizations.of(context).assessmentsLoadingDeadlinesSemantic,
                 ),
               AppAsyncFailure(:final message) => AIMFullScreenError(
                   message: message,
@@ -128,8 +128,9 @@ class _DeadlinesPageState extends ConsumerState<DeadlinesPage> {
                   deadlines: data,
                   onRefresh: _refresh,
                 ),
-              AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading deadlines',
+              AppAsyncIdle() => AIMFullScreenLoading(
+                  semanticLabel:
+                      AppLocalizations.of(context).assessmentsLoadingDeadlinesSemantic,
                 ),
             },
           ),
@@ -163,7 +164,7 @@ class _DeadlinesHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -190,7 +191,7 @@ class _DeadlinesHeader extends StatelessWidget {
             const SizedBox(width: AimSpacing.space12),
             Expanded(
               child: Text(
-                'Deadlines',
+                AppLocalizations.of(context).assessmentsDeadlinesTitle,
                 style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -223,11 +224,12 @@ class _DeadlinesContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     if (_isEmpty) {
-      return const AIMEmptyState(
-        icon: Icon(Icons.event_available_outlined),
-        title: 'No deadlines',
-        subtitle: 'Your assessment deadlines will appear here.',
+      return AIMEmptyState(
+        icon: const Icon(Icons.event_available_outlined),
+        title: loc.assessmentsNoDeadlinesTitle,
+        subtitle: loc.assessmentsNoDeadlinesSubtitle,
       );
     }
 
@@ -241,35 +243,35 @@ class _DeadlinesContent extends StatelessWidget {
         children: [
           if (deadlines.active.isNotEmpty)
             _DeadlineSection(
-              title: 'Active',
+              title: loc.assessmentsSectionActiveLabel,
               color: AimColors.success500,
               kind: _DeadlineKind.active,
               items: deadlines.active,
             ),
           if (deadlines.upcoming.isNotEmpty)
             _DeadlineSection(
-              title: 'Upcoming',
+              title: loc.assessmentsDeadlineStatusUpcoming,
               color: AimColors.info500,
               kind: _DeadlineKind.upcoming,
               items: deadlines.upcoming,
             ),
           if (deadlines.late.isNotEmpty)
             _DeadlineSection(
-              title: 'Late',
+              title: loc.assessmentsDeadlineStatusLate,
               color: AimColors.warning500,
               kind: _DeadlineKind.late,
               items: deadlines.late,
             ),
           if (deadlines.missed.isNotEmpty)
             _DeadlineSection(
-              title: 'Missed',
+              title: loc.assessmentsDeadlineStatusMissed,
               color: AimColors.error500,
               kind: _DeadlineKind.missed,
               items: deadlines.missed,
             ),
           if (deadlines.closed.isNotEmpty)
             _DeadlineSection(
-              title: 'Closed',
+              title: loc.assessmentsDeadlineStatusClosed,
               color: AimColors.neutral500,
               kind: _DeadlineKind.closed,
               items: deadlines.closed,
@@ -351,36 +353,41 @@ class _DeadlineTile extends StatelessWidget {
   /// One friendly subtitle line per backend bucket (design screen 31), all
   /// formatted from REAL timestamps — the bucket itself is never recomputed
   /// locally.
-  String _subtitle() {
+  String _subtitle(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     switch (kind) {
       case _DeadlineKind.active:
         // "Due in 2 days · Jun 27"; on parse failure _relativeDays returns
         // null and only the (raw-string-fallback) date is shown.
-        final relative = _relativeDays(item.closesAt);
-        final date = _formatDate(item.closesAt);
-        return relative != null ? 'Due $relative · $date' : 'Due $date';
+        final relative = _relativeDays(loc, item.closesAt);
+        final date = _formatDate(context, item.closesAt);
+        return relative != null
+            ? loc.assessmentsDueRelativeDate(relative, date)
+            : loc.assessmentsDueDate(date);
       case _DeadlineKind.upcoming:
-        return 'Opens ${_formatDate(item.opensAt)}';
+        return loc.assessmentsOpensDate(_formatDate(context, item.opensAt));
       case _DeadlineKind.late:
         // extendedClosesAt is a real backend field (a granted extension,
         // previously dropped silently) — surface it when present.
         final extended = item.extendedClosesAt;
         return extended != null
-            ? 'Extended to ${_formatDate(extended)}'
-            : 'Was due ${_formatDate(item.closesAt)}';
+            ? loc.assessmentsExtendedToDate(_formatDate(context, extended))
+            : loc.assessmentsWasDueDate(_formatDate(context, item.closesAt));
       case _DeadlineKind.missed:
       case _DeadlineKind.closed:
         // The design's "Submitted <date>" for closed items cannot be shown —
         // no submission date exists in this payload (see file header). The
         // effective close (extension-aware) is shown instead.
-        return 'Closed ${_formatDate(item.extendedClosesAt ?? item.closesAt)}';
+        return loc.assessmentsClosedDate(
+          _formatDate(context, item.extendedClosesAt ?? item.closesAt),
+        );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
-    final subtitle = _subtitle();
+    final subtitle = _subtitle(context);
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
@@ -392,7 +399,8 @@ class _DeadlineTile extends StatelessWidget {
           'assessmentTitle': item.assessmentTitle,
         },
       ),
-      semanticLabel: '${item.assessmentTitle}, $subtitle',
+      semanticLabel: AppLocalizations.of(context)
+          .assessmentsDeadlineTileSemantic(item.assessmentTitle, subtitle),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

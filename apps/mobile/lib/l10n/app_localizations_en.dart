@@ -1437,4 +1437,643 @@ class AppLocalizationsEn extends AppLocalizations {
   String achievementsLockedSemantic(String title) {
     return '$title, locked';
   }
+
+  @override
+  String get assessmentsStartAttemptTitle => 'Start attempt';
+
+  @override
+  String get assessmentsReadyToBeginTitle => 'Ready to begin?';
+
+  @override
+  String assessmentsTimedBodyCopy(String minutes) {
+    return 'Once you start, the $minutes-minute timer runs continuously — even if you leave the app. Make sure you have time to finish.';
+  }
+
+  @override
+  String get assessmentsUntimedBodyCopy =>
+      'Once you start, the attempt will be recorded. Make sure you are ready before proceeding.';
+
+  @override
+  String get assessmentsStartAttemptButton => 'Start Attempt';
+
+  @override
+  String assessmentsStartAttemptSemantic(String title) {
+    return 'Start attempt for $title';
+  }
+
+  @override
+  String get assessmentsGoBackButton => 'Go Back';
+
+  @override
+  String get assessmentsLoadingResultSemantic => 'Loading result';
+
+  @override
+  String get assessmentsStatusPassed => 'Passed';
+
+  @override
+  String get assessmentsStatusFailed => 'Failed';
+
+  @override
+  String assessmentsScoreSemantic(
+      String statusLabel, String score, String maxScore) {
+    return '$statusLabel: $score of $maxScore points';
+  }
+
+  @override
+  String get assessmentsLatePenaltyApplied => 'Late penalty applied';
+
+  @override
+  String assessmentsGradedLabel(String date) {
+    return 'Graded $date';
+  }
+
+  @override
+  String get assessmentsBreakdownLabel => 'BREAKDOWN';
+
+  @override
+  String get assessmentsDoneViewingResultSemantic => 'Done viewing result';
+
+  @override
+  String assessmentsPointsFraction(String awarded, String possible) {
+    return '$awarded / $possible pts';
+  }
+
+  @override
+  String get assessmentsLoadingResultHistorySemantic =>
+      'Loading result history';
+
+  @override
+  String get assessmentsResultHistoryTitle => 'Result history';
+
+  @override
+  String get assessmentsNoResultsTitle => 'No results yet';
+
+  @override
+  String get assessmentsNoResultsSubtitle =>
+      'Your past attempt results will appear here.';
+
+  @override
+  String assessmentsAttemptResultSemantic(int attemptNumber, String scoreLabel,
+      String statusWord, String lateSuffix) {
+    return 'Attempt $attemptNumber, $scoreLabel, $statusWord$lateSuffix';
+  }
+
+  @override
+  String get assessmentsPassedWord => 'passed';
+
+  @override
+  String get assessmentsFailedWord => 'failed';
+
+  @override
+  String get assessmentsLatePenaltySemanticSuffix => ', late penalty applied';
+
+  @override
+  String get assessmentsLoadingAssessmentSemantic => 'Loading assessment';
+
+  @override
+  String get assessmentsExamDetailsTitle => 'Exam details';
+
+  @override
+  String get assessmentsQuizDetailsTitle => 'Quiz details';
+
+  @override
+  String get assessmentsDetailsTitle => 'Assessment details';
+
+  @override
+  String get assessmentsQuestionsLabel => 'Questions';
+
+  @override
+  String get assessmentsTimeLimitLabel => 'Time limit';
+
+  @override
+  String get assessmentsMaxAttemptsLabel => 'Max attempts';
+
+  @override
+  String get assessmentsDeadlineHeading => 'Deadline';
+
+  @override
+  String get assessmentsSectionsHeading => 'Sections';
+
+  @override
+  String get assessmentsPastResultsTitle => 'Past results';
+
+  @override
+  String get assessmentsViewAttemptHistorySubtitle =>
+      'View your attempt history';
+
+  @override
+  String get assessmentsPastResultsSemantic =>
+      'Past results, view your attempt history';
+
+  @override
+  String get assessmentsDeadlineStatusOpen => 'Open';
+
+  @override
+  String get assessmentsDeadlineStatusUpcoming => 'Upcoming';
+
+  @override
+  String get assessmentsDeadlineStatusClosed => 'Closed';
+
+  @override
+  String get assessmentsDeadlineStatusLate => 'Late';
+
+  @override
+  String get assessmentsDeadlineStatusMissed => 'Missed';
+
+  @override
+  String get assessmentsOpensLabel => 'Opens';
+
+  @override
+  String get assessmentsClosesLabel => 'Closes';
+
+  @override
+  String get assessmentsExtendedCloseLabel => 'Extended close';
+
+  @override
+  String assessmentsDurationMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String assessmentsDurationMinutesSeconds(int minutes, int seconds) {
+    return '$minutes min $seconds sec';
+  }
+
+  @override
+  String assessmentsQuestionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count questions',
+      one: '1 question',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get assessmentsLoadingDeadlinesSemantic => 'Loading deadlines';
+
+  @override
+  String get assessmentsDeadlinesTitle => 'Deadlines';
+
+  @override
+  String get assessmentsNoDeadlinesTitle => 'No deadlines';
+
+  @override
+  String get assessmentsNoDeadlinesSubtitle =>
+      'Your assessment deadlines will appear here.';
+
+  @override
+  String get assessmentsSectionActiveLabel => 'Active';
+
+  @override
+  String get assessmentsRelativeToday => 'today';
+
+  @override
+  String get assessmentsRelativeTomorrow => 'tomorrow';
+
+  @override
+  String assessmentsRelativeInDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'in $days days',
+      one: 'in 1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String assessmentsDueRelativeDate(String relative, String date) {
+    return 'Due $relative · $date';
+  }
+
+  @override
+  String assessmentsDueDate(String date) {
+    return 'Due $date';
+  }
+
+  @override
+  String assessmentsOpensDate(String date) {
+    return 'Opens $date';
+  }
+
+  @override
+  String assessmentsExtendedToDate(String date) {
+    return 'Extended to $date';
+  }
+
+  @override
+  String assessmentsWasDueDate(String date) {
+    return 'Was due $date';
+  }
+
+  @override
+  String assessmentsClosedDate(String date) {
+    return 'Closed $date';
+  }
+
+  @override
+  String assessmentsDeadlineTileSemantic(String title, String subtitle) {
+    return '$title, $subtitle';
+  }
+
+  @override
+  String get assessmentsResumingAttemptSemantic => 'Resuming attempt';
+
+  @override
+  String get assessmentsStatusLabel => 'Status';
+
+  @override
+  String get assessmentsInProgressStatus => 'In Progress';
+
+  @override
+  String get assessmentsExpiresLabel => 'Expires';
+
+  @override
+  String assessmentsTimeRemainingSemantic(String time) {
+    return 'Time remaining: $time';
+  }
+
+  @override
+  String get assessmentsQuestionRenderingUnavailable =>
+      'Question rendering isn’t available yet for this attempt.';
+
+  @override
+  String get assessmentsSubmitAttemptSemantic => 'Submit attempt';
+
+  @override
+  String get assessmentsLoadingListSemantic => 'Loading assessments';
+
+  @override
+  String get assessmentsListTitle => 'Assessments';
+
+  @override
+  String get assessmentsEmptyTitle => 'No assessments available';
+
+  @override
+  String get assessmentsEmptySubtitle =>
+      'Published quizzes and exams will appear here.';
+
+  @override
+  String get assessmentsSubmitConfirmTitle => 'Submit your answers?';
+
+  @override
+  String get assessmentsSubmitConfirmBody =>
+      'You cannot change answers after submitting.';
+
+  @override
+  String get assessmentsFinalWarning =>
+      'This action is final and cannot be undone.';
+
+  @override
+  String assessmentsSubmitAttemptForSemantic(String title) {
+    return 'Submit attempt for $title';
+  }
+
+  @override
+  String assessmentsListTileSemantic(String typeLabel, String title) {
+    return '$typeLabel: $title';
+  }
+
+  @override
+  String get assessmentsTypeExam => 'Exam';
+
+  @override
+  String get assessmentsTypeQuiz => 'Quiz';
+
+  @override
+  String assessmentsDeadlineCardSemantic(String title, String status) {
+    return '$title — $status';
+  }
+
+  @override
+  String assessmentsOpensClosesLabel(String opensAt, String closesAt) {
+    return 'Opens: $opensAt  •  Closes: $closesAt';
+  }
+
+  @override
+  String assessmentsDaysRemainingLabel(int days) {
+    return '${days}d remaining';
+  }
+
+  @override
+  String assessmentsHoursRemainingLabel(int hours) {
+    return '${hours}h remaining';
+  }
+
+  @override
+  String assessmentsMinutesRemainingLabel(int minutes) {
+    return '${minutes}m remaining';
+  }
+
+  @override
+  String get assessmentsLessThanMinuteLabel => 'Less than a minute';
+
+  @override
+  String get placementLoadingResultSemantic => 'Loading your result';
+
+  @override
+  String get placementScoringInProgressTitle => 'Scoring in progress…';
+
+  @override
+  String get placementScoringInProgressSemantic => 'Scoring in progress';
+
+  @override
+  String get placementScoringInProgressSubtitle =>
+      'The backend is evaluating your answers.';
+
+  @override
+  String get placementSectionBreakdownLabel => 'SECTION BREAKDOWN';
+
+  @override
+  String get placementContinueButton => 'Continue to AIM';
+
+  @override
+  String get placementLevelBeginner => 'Beginner';
+
+  @override
+  String get placementLevelElementary => 'Elementary';
+
+  @override
+  String get placementLevelIntermediate => 'Intermediate';
+
+  @override
+  String get placementLevelUpperIntermediate => 'Upper Intermediate';
+
+  @override
+  String get placementLevelAdvanced => 'Advanced';
+
+  @override
+  String get placementSkillGrammar => 'Grammar';
+
+  @override
+  String get placementSkillVocabulary => 'Vocabulary';
+
+  @override
+  String get placementSkillReading => 'Reading';
+
+  @override
+  String get placementSkillListening => 'Listening';
+
+  @override
+  String placementLevelSemantic(String displayName, int totalScore) {
+    return 'Your level: $displayName, total score $totalScore out of 100';
+  }
+
+  @override
+  String get placementYourLevelLabel => 'YOUR LEVEL';
+
+  @override
+  String placementLevelSummary(String displayName, int totalScore) {
+    return '$displayName · Total score $totalScore / 100';
+  }
+
+  @override
+  String placementSectionCorrectSemantic(String name, int correct, int total) {
+    return '$name: $correct of $total correct';
+  }
+
+  @override
+  String placementFractionLabel(int correct, int total) {
+    return '$correct / $total';
+  }
+
+  @override
+  String get placementSectionsLabel => 'Sections';
+
+  @override
+  String placementSectionsValue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sections',
+      one: '1 section',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get placementEstimatedTimeLabel => 'Estimated time';
+
+  @override
+  String placementEstimatedTimeValue(int minutes) {
+    return '~$minutes min';
+  }
+
+  @override
+  String get placementBackendNote =>
+      'Your level is determined by the backend after completion. Results are never calculated on your device.';
+
+  @override
+  String get placementStartTestSemantic => 'Start placement test';
+
+  @override
+  String get placementIntroHeaderTitle => 'General English Placement';
+
+  @override
+  String get placementIntroHeaderSubtitle =>
+      'A quick check to find your starting level.';
+
+  @override
+  String get placementLoadingTestSemantic => 'Loading placement test';
+
+  @override
+  String get placementStartingTestSemantic => 'Starting placement test';
+
+  @override
+  String get placementTestTitle => 'Placement Test';
+
+  @override
+  String get placementFindYourLevelTitle => 'Find your level';
+
+  @override
+  String get placementFindYourLevelSubtitle =>
+      'A short adaptive test places you at the right level so every lesson fits you.';
+
+  @override
+  String get placementSectionsStatLabel => 'sections';
+
+  @override
+  String get placementMinutesStatLabel => 'minutes';
+
+  @override
+  String get placementStartTestButton => 'Start Placement Test';
+
+  @override
+  String get placementNotNowButton => 'Not now';
+
+  @override
+  String placementQuestionCounter(int index, int total) {
+    return '$index of $total';
+  }
+
+  @override
+  String get placementLoadingQuestionSemantic => 'Loading question';
+
+  @override
+  String placementSubmitAnswerFailedWithReason(String reason) {
+    return 'Failed to submit answer: $reason';
+  }
+
+  @override
+  String get placementSubmitAnswerFailedGeneric =>
+      'Failed to submit answer. Please try again.';
+
+  @override
+  String get placementSubmitFinalAnswerButton => 'Submit Final Answer';
+
+  @override
+  String get placementNextQuestionButton => 'Next question';
+
+  @override
+  String get placementSubmitFinalAnswerSemantic => 'Submit final answer';
+
+  @override
+  String get placementNextQuestionSemantic => 'Next question';
+
+  @override
+  String placementUnknownQuestionType(String type) {
+    return 'Unknown question type: $type';
+  }
+
+  @override
+  String placementOptionWithTextSemantic(String letter, String text) {
+    return 'Option $letter: $text';
+  }
+
+  @override
+  String placementOptionSemantic(String letter) {
+    return 'Option $letter';
+  }
+
+  @override
+  String get placementTrueOption => 'True';
+
+  @override
+  String get placementFalseOption => 'False';
+
+  @override
+  String get placementAnswerPlaceholder => 'Type your answer here…';
+
+  @override
+  String get placementYourAnswerSemantic => 'Your answer';
+
+  @override
+  String get placementAlmostDoneTitle => 'Almost done';
+
+  @override
+  String get placementSubmittingAnswersSemantic => 'Submitting your answers';
+
+  @override
+  String get placementRetryLabel => 'Retry';
+
+  @override
+  String placementAllSectionsCompleteWithCount(int count) {
+    return 'All $count sections complete';
+  }
+
+  @override
+  String get placementAllSectionsCompleteGeneric => 'All sections complete';
+
+  @override
+  String get placementSubmitBody =>
+      'Submit your placement test to see your level and a personalised plan.';
+
+  @override
+  String get placementSubmitTestButton => 'Submit Placement Test';
+
+  @override
+  String placementSectionCounterTitle(int index, int total) {
+    return 'Section $index of $total';
+  }
+
+  @override
+  String placementSectionMetaLine(String category, int count, int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count questions',
+      one: '1 question',
+    );
+    return '$category · $_temp0 · about $minutes minutes';
+  }
+
+  @override
+  String get placementBeginFinalSectionButton => 'Begin Final Section';
+
+  @override
+  String get placementBeginSectionButton => 'Begin Section';
+
+  @override
+  String placementSectionProgressSemantic(int index, int total) {
+    return 'Section $index of $total';
+  }
+
+  @override
+  String get placementCategoryLexis => 'Lexis';
+
+  @override
+  String get placementCategoryStructures => 'Structures';
+
+  @override
+  String get placementCategoryComprehension => 'Comprehension';
+
+  @override
+  String get placementCategoryAudio => 'Audio';
+
+  @override
+  String get placementCategoryGeneral => 'General';
+
+  @override
+  String get questionAnswerLoadingQuestionSemantic => 'Loading question';
+
+  @override
+  String get questionAnswerPracticeTitle => 'Practice';
+
+  @override
+  String get questionAnswerAnalysingSessionText =>
+      'AIM is analysing your session…';
+
+  @override
+  String get questionAnswerSessionFeedbackSemantic =>
+      'Session feedback from AIM';
+
+  @override
+  String get questionAnswerSessionSummaryTitle => 'Session Summary';
+
+  @override
+  String get questionAnswerQuestionsAttemptedLabel => 'Questions attempted';
+
+  @override
+  String get questionAnswerCorrectScoreLabel => 'Correct (backend score)';
+
+  @override
+  String get questionAnswerMasteryShiftLabel => 'Mastery shift';
+
+  @override
+  String get questionAnswerSkillsCoveredLabel => 'Skills covered';
+
+  @override
+  String get questionAnswerAnswerSubmittedSemantic => 'Answer submitted';
+
+  @override
+  String get questionAnswerAnswerSubmittedLabel => 'Answer submitted';
+
+  @override
+  String get questionAnswerAnalysingResponseText =>
+      'AIM is analysing your response.';
+
+  @override
+  String get questionAnswerYourAnswerLabel => 'Your answer';
+
+  @override
+  String get questionAnswerAnswerHelperText =>
+      'Type your response, then tap Continue to submit.';
+
+  @override
+  String get questionAnswerAnswerPlaceholder => 'Type your answer here';
+
+  @override
+  String get questionAnswerAnswerInputSemantic => 'Answer input field';
 }

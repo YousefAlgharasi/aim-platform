@@ -23,6 +23,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/question_answer/logic/entity/session_feedback.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class SessionFeedbackCard extends StatelessWidget {
   const SessionFeedbackCard({required this.feedback, super.key});
@@ -32,6 +33,7 @@ class SessionFeedbackCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final loc = AppLocalizations.of(context);
 
     if (!feedback.found) {
       return AIMCard(
@@ -46,7 +48,7 @@ class SessionFeedbackCard extends StatelessWidget {
             const SizedBox(width: AimSpacing.componentGap),
             Expanded(
               child: Text(
-                'AIM is analysing your session…',
+                loc.questionAnswerAnalysingSessionText,
                 style: AimTextStyles.bodySm
                     .copyWith(color: surfaces.textSecondary),
               ),
@@ -58,7 +60,7 @@ class SessionFeedbackCard extends StatelessWidget {
 
     return AIMCard(
       variant: AIMCardVariant.ai,
-      semanticLabel: 'Session feedback from AIM',
+      semanticLabel: loc.questionAnswerSessionFeedbackSemantic,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -71,7 +73,7 @@ class SessionFeedbackCard extends StatelessWidget {
               ),
               const SizedBox(width: AimSpacing.space4),
               Text(
-                'Session Summary',
+                loc.questionAnswerSessionSummaryTitle,
                 style: AimTextStyles.label
                     .copyWith(color: AimColors.primary500),
               ),
@@ -80,7 +82,7 @@ class SessionFeedbackCard extends StatelessWidget {
           const SizedBox(height: AimSpacing.componentGap),
           if (feedback.itemsAttempted != null) ...[
             _SummaryRow(
-              label: 'Questions attempted',
+              label: loc.questionAnswerQuestionsAttemptedLabel,
               value: '${feedback.itemsAttempted}',
               surfaces: surfaces,
             ),
@@ -88,7 +90,7 @@ class SessionFeedbackCard extends StatelessWidget {
           if (feedback.itemsCorrect != null) ...[
             const SizedBox(height: AimSpacing.space4),
             _SummaryRow(
-              label: 'Correct (backend score)',
+              label: loc.questionAnswerCorrectScoreLabel,
               value: '${feedback.itemsCorrect}',
               surfaces: surfaces,
             ),
@@ -96,7 +98,7 @@ class SessionFeedbackCard extends StatelessWidget {
           if (feedback.overallMasteryShift != null) ...[
             const SizedBox(height: AimSpacing.space4),
             _SummaryRow(
-              label: 'Mastery shift',
+              label: loc.questionAnswerMasteryShiftLabel,
               value: feedback.overallMasteryShift!,
               surfaces: surfaces,
             ),
@@ -105,7 +107,7 @@ class SessionFeedbackCard extends StatelessWidget {
               feedback.skillsTouched!.isNotEmpty) ...[
             const SizedBox(height: AimSpacing.componentGap),
             Text(
-              'Skills covered',
+              loc.questionAnswerSkillsCoveredLabel,
               style: AimTextStyles.label
                   .copyWith(color: surfaces.textSecondary),
             ),

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class AssessmentListTile extends StatelessWidget {
   const AssessmentListTile({
@@ -20,11 +21,15 @@ class AssessmentListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final loc = AppLocalizations.of(context);
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
       onTap: onTap,
-      semanticLabel: '${item.type == 'exam' ? 'Exam' : 'Quiz'}: ${item.title}',
+      semanticLabel: loc.assessmentsListTileSemantic(
+        item.type == 'exam' ? loc.assessmentsTypeExam : loc.assessmentsTypeQuiz,
+        item.title,
+      ),
       child: Row(
         children: [
           DecoratedBox(
@@ -89,12 +94,15 @@ class _DeadlineStatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final (color, label) = switch (status) {
-      'open' => (AimColors.success500, 'Open'),
-      'upcoming' => (AimColors.info500, 'Upcoming'),
-      'closed' || 'expired' => (AimColors.neutral500, 'Closed'),
-      'late' => (AimColors.warning500, 'Late'),
-      'missed' => (AimColors.error500, 'Missed'),
+      'open' => (AimColors.success500, loc.assessmentsDeadlineStatusOpen),
+      'upcoming' => (AimColors.info500, loc.assessmentsDeadlineStatusUpcoming),
+      'closed' ||
+      'expired' =>
+        (AimColors.neutral500, loc.assessmentsDeadlineStatusClosed),
+      'late' => (AimColors.warning500, loc.assessmentsDeadlineStatusLate),
+      'missed' => (AimColors.error500, loc.assessmentsDeadlineStatusMissed),
       _ => (AimColors.neutral500, status),
     };
 

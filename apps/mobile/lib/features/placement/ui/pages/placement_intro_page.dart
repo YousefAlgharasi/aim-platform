@@ -27,6 +27,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/routing.dart';
 import '../../../../core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Static introduction screen shown before [PlacementStartPage].
 ///
@@ -41,6 +42,7 @@ class PlacementIntroPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final loc = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: surfaces.background,
@@ -56,16 +58,16 @@ class PlacementIntroPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const _InfoRow(
+                  _InfoRow(
                     icon: Icons.layers_outlined,
-                    label: 'Sections',
-                    value: '3 sections',
+                    label: loc.placementSectionsLabel,
+                    value: loc.placementSectionsValue(3),
                   ),
                   const SizedBox(height: AimSpacing.componentGap),
-                  const _InfoRow(
+                  _InfoRow(
                     icon: Icons.timer_outlined,
-                    label: 'Estimated time',
-                    value: '~15 min',
+                    label: loc.placementEstimatedTimeLabel,
+                    value: loc.placementEstimatedTimeValue(15),
                   ),
                   const SizedBox(height: AimSpacing.sectionGap),
                   Container(
@@ -76,9 +78,7 @@ class PlacementIntroPage extends StatelessWidget {
                       borderRadius: AimRadius.borderSm,
                     ),
                     child: Text(
-                      'Your level is determined by the backend after '
-                      'completion. Results are never calculated on your '
-                      'device.',
+                      loc.placementBackendNote,
                       style: AimTextStyles.bodySm.copyWith(
                         color: surfaces.textSecondary,
                       ),
@@ -86,10 +86,10 @@ class PlacementIntroPage extends StatelessWidget {
                   ),
                   const SizedBox(height: AimSpacing.sectionGap),
                   AIMGradientButton(
-                    label: 'Start',
+                    label: loc.commonStart,
                     gradient: AimGradients.gzHero,
                     fullWidth: true,
-                    semanticLabel: 'Start placement test',
+                    semanticLabel: loc.placementStartTestSemantic,
                     onPressed: () =>
                         context.push(AppRoutePaths.placementStart),
                   ),
@@ -128,7 +128,7 @@ class _IntroHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -154,12 +154,12 @@ class _IntroHeader extends StatelessWidget {
             ),
             const SizedBox(height: AimSpacing.componentGap),
             Text(
-              'General English Placement',
+              AppLocalizations.of(context).placementIntroHeaderTitle,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
             const SizedBox(height: AimSpacing.space4),
             Text(
-              'A quick check to find your starting level.',
+              AppLocalizations.of(context).placementIntroHeaderSubtitle,
               style: AimTextStyles.bodySm.copyWith(
                 color: AimColors.neutral0.withValues(alpha: 0.85),
               ),

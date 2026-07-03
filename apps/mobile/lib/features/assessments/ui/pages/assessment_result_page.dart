@@ -34,6 +34,8 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
 import 'package:aim_mobile/features/assessments/logic/provider/assessment_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 
 /// Display-only formatting of a real backend value: drops the trailing ".0"
 /// when a points double is integral (e.g. "17" instead of "17.0").
@@ -41,14 +43,11 @@ String _fmtPts(double v) => v == v.roundToDouble() ? '${v.round()}' : '$v';
 
 /// Formats an ISO date string as e.g. "Jun 30, 2026"; falls back to the raw
 /// string on parse failure. (Same local pattern as achievements_page.dart.)
-String _formatDate(String dateStr) {
+String _formatDate(BuildContext context, String dateStr) {
   try {
     final date = DateTime.parse(dateStr);
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-    return '${months[date.month - 1]} ${date.day}, ${date.year}';
+    return DateFormat.yMMMd(Localizations.localeOf(context).toString())
+        .format(date);
   } catch (_) {
     return dateStr;
   }
@@ -92,8 +91,8 @@ class _AssessmentResultPageState extends ConsumerState<AssessmentResultPage> {
     return Scaffold(
       appBar: AIMTopAppBar(title: widget.assessmentTitle),
       body: switch (state) {
-        AppAsyncLoading() => const AIMFullScreenLoading(
-            semanticLabel: 'Loading result',
+        AppAsyncLoading() => AIMFullScreenLoading(
+            semanticLabel: AppLocalizations.of(context).assessmentsLoadingResultSemantic,
           ),
         AppAsyncFailure(:final message) => AIMFullScreenError(
             message: message,
@@ -103,8 +102,8 @@ class _AssessmentResultPageState extends ConsumerState<AssessmentResultPage> {
             result: data,
             onDone: () => context.go(AppRoutePaths.assessments),
           ),
-        AppAsyncIdle() => const AIMFullScreenLoading(
-            semanticLabel: 'Loading result',
+        AppAsyncIdle() => AIMFullScreenLoading(
+            semanticLabel: AppLocalizations.of(context).assessmentsLoadingResultSemantic,
           ),
       },
     );
@@ -123,9 +122,11 @@ class _ResultContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final loc = AppLocalizations.of(context);
     final statusColor =
         result.passed ? AimColors.success500 : AimColors.error500;
-    final statusLabel = result.passed ? 'Passed' : 'Failed';
+    final statusLabel =
+        result.passed ? loc.assessmentsStatusPassed : loc.assessmentsStatusFailed;
 
     // Display-only formatting of two backend-supplied values — NOT score
     // computation (the backend remains the grading authority). See
@@ -160,9 +161,11 @@ class _ResultContent extends StatelessWidget {
                 variant: AIMBadgeVariant.solid,
                 pill: true,
                 icon: Icon(result.passed ? Icons.check : Icons.close),
-                semanticLabel: '$statusLabel: '
-                    '${_fmtPts(result.score)} of ${_fmtPts(result.maxScore)} '
-                    'points',
+                semanticLabel: loc.assessmentsScoreSemantic(
+                  statusLabel,
+                  _fmtPts(result.score),
+                  _fmtPts(result.maxScore),
+                ),
                 child: Text(statusLabel),
               ),
             ],
@@ -183,7 +186,7 @@ class _ResultContent extends StatelessWidget {
                 ),
                 const SizedBox(width: AimSpacing.space4),
                 Text(
-                  'Late penalty applied',
+                  loc.assessmentsLatePenaltyApplied,
                   style: AimTextStyles.bodySm
                       .copyWith(color: AimColors.warning500),
                 ),
@@ -196,7 +199,7 @@ class _ResultContent extends StatelessWidget {
         // Graded timestamp
         Center(
           child: Text(
-            'Graded ${_formatDate(result.gradedAt)}',
+            loc.assessmentsGradedLabel(_formatDate(context, result.gradedAt)),
             style:
                 AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
           ),
@@ -206,7 +209,7 @@ class _ResultContent extends StatelessWidget {
         if (result.breakdown.isNotEmpty) ...[
           const SizedBox(height: AimSpacing.sectionGap),
           Text(
-            'BREAKDOWN',
+            loc.assessmentsBreakdownLabel,
             style: AimTextStyles.label.copyWith(
               color: surfaces.textMuted,
               letterSpacing: 1.2,
@@ -227,10 +230,10 @@ class _ResultContent extends StatelessWidget {
 
         const SizedBox(height: AimSpacing.sectionGap),
         AIMGradientButton(
-          label: 'Done',
+          label: loc.commonDone,
           onPressed: onDone,
           fullWidth: true,
-          semanticLabel: 'Done viewing result',
+          semanticLabel: loc.assessmentsDoneViewingResultSemantic,
         ),
       ],
     );
@@ -284,8 +287,10 @@ class _BreakdownCard extends StatelessWidget {
               const SizedBox(width: AimSpacing.componentGap),
               Expanded(
                 child: Text(
-                  '${_fmtPts(item.pointsAwarded)} / '
-                  '${_fmtPts(item.pointsPossible)} pts',
+                  AppLocalizations.of(context).assessmentsPointsFraction(
+                    _fmtPts(item.pointsAwarded),
+                    _fmtPts(item.pointsPossible),
+                  ),
                   style: AimTextStyles.bodyMd
                       .copyWith(color: surfaces.textPrimary),
                 ),

@@ -18,6 +18,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class QuestionFillBlankInput extends StatefulWidget {
   const QuestionFillBlankInput({
@@ -50,15 +51,16 @@ class _QuestionFillBlankInputState extends State<QuestionFillBlankInput> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return AIMInput(
       controller: _controller,
-      label: 'Your answer',
-      helper: 'Type your response, then tap Continue to submit.',
-      placeholder: 'Type your answer here',
+      label: loc.questionAnswerYourAnswerLabel,
+      helper: loc.questionAnswerAnswerHelperText,
+      placeholder: loc.questionAnswerAnswerPlaceholder,
       disabled: widget.disabled,
       onChanged: widget.onChanged,
       textInputAction: TextInputAction.done,
-      semanticLabel: 'Answer input field',
+      semanticLabel: loc.questionAnswerAnswerInputSemantic,
     );
   }
 }

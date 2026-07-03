@@ -22,6 +22,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
 import 'package:aim_mobile/features/assessments/logic/provider/assessment_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class AssessmentDetailPage extends ConsumerStatefulWidget {
   const AssessmentDetailPage({
@@ -79,10 +80,12 @@ class _AssessmentDetailPageState extends ConsumerState<AssessmentDetailPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(assessmentDetailProvider);
     final surfaces = aimSurfacesOf(context);
+    final loc = AppLocalizations.of(context);
     final headerTitle = switch (state) {
-      AppAsyncSuccess(:final data) =>
-        data.type == 'exam' ? 'Exam details' : 'Quiz details',
-      _ => 'Assessment details',
+      AppAsyncSuccess(:final data) => data.type == 'exam'
+          ? loc.assessmentsExamDetailsTitle
+          : loc.assessmentsQuizDetailsTitle,
+      _ => loc.assessmentsDetailsTitle,
     };
 
     return Scaffold(
@@ -93,8 +96,8 @@ class _AssessmentDetailPageState extends ConsumerState<AssessmentDetailPage> {
           _AssessmentDetailHeader(title: headerTitle),
           Expanded(
             child: switch (state) {
-              AppAsyncLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading assessment',
+              AppAsyncLoading() => AIMFullScreenLoading(
+                  semanticLabel: loc.assessmentsLoadingAssessmentSemantic,
                 ),
               AppAsyncFailure(:final message) => AIMFullScreenError(
                   message: message,
@@ -105,8 +108,8 @@ class _AssessmentDetailPageState extends ConsumerState<AssessmentDetailPage> {
                   onStartAttempt: () => _navigateToStartAttempt(data),
                   onViewPastResults: () => _navigateToPastResults(data),
                 ),
-              AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading assessment',
+              AppAsyncIdle() => AIMFullScreenLoading(
+                  semanticLabel: loc.assessmentsLoadingAssessmentSemantic,
                 ),
             },
           ),
@@ -142,7 +145,7 @@ class _AssessmentDetailHeader extends StatelessWidget {
             children: [
               Semantics(
                 button: true,
-                label: 'Back',
+                label: AppLocalizations.of(context).commonBack,
                 child: InkWell(
                   onTap: () {
                     if (context.canPop()) context.pop();
@@ -197,6 +200,7 @@ class _AssessmentDetailContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final loc = AppLocalizations.of(context);
     final totalQuestions =
         detail.sections.fold<int>(0, (sum, s) => sum + s.questionCount);
 
@@ -223,13 +227,19 @@ class _AssessmentDetailContent extends StatelessWidget {
           spacing: AimSpacing.componentGap,
           runSpacing: AimSpacing.componentGap,
           children: [
-            _StatTile(value: '$totalQuestions', label: 'Questions'),
+            _StatTile(
+              value: '$totalQuestions',
+              label: loc.assessmentsQuestionsLabel,
+            ),
             if (detail.timeLimitSeconds != null)
               _StatTile(
-                value: _formatDuration(detail.timeLimitSeconds!),
-                label: 'Time limit',
+                value: _formatDuration(loc, detail.timeLimitSeconds!),
+                label: loc.assessmentsTimeLimitLabel,
               ),
-            _StatTile(value: '${detail.maxAttempts}', label: 'Max attempts'),
+            _StatTile(
+              value: '${detail.maxAttempts}',
+              label: loc.assessmentsMaxAttemptsLabel,
+            ),
           ],
         ),
         const SizedBox(height: AimSpacing.componentGap),
@@ -239,7 +249,7 @@ class _AssessmentDetailContent extends StatelessWidget {
         if (detail.deadline != null) ...[
           const SizedBox(height: AimSpacing.sectionGap),
           Text(
-            'Deadline',
+            loc.assessmentsDeadlineHeading,
             style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
           ),
           const SizedBox(height: AimSpacing.componentGap),
@@ -249,7 +259,7 @@ class _AssessmentDetailContent extends StatelessWidget {
         if (detail.sections.isNotEmpty) ...[
           const SizedBox(height: AimSpacing.sectionGap),
           Text(
-            'Sections',
+            loc.assessmentsSectionsHeading,
             style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
           ),
           const SizedBox(height: AimSpacing.componentGap),
@@ -263,20 +273,20 @@ class _AssessmentDetailContent extends StatelessWidget {
 
         const SizedBox(height: AimSpacing.sectionGap),
         AIMGradientButton(
-          label: 'Start Attempt',
+          label: loc.assessmentsStartAttemptButton,
           fullWidth: true,
           onPressed: onStartAttempt,
-          semanticLabel: 'Start attempt for ${detail.title}',
+          semanticLabel: loc.assessmentsStartAttemptSemantic(detail.title),
         ),
       ],
     );
   }
 
-  String _formatDuration(int seconds) {
+  String _formatDuration(AppLocalizations loc, int seconds) {
     final minutes = seconds ~/ 60;
     final remaining = seconds % 60;
-    if (remaining == 0) return '$minutes min';
-    return '$minutes min $remaining sec';
+    if (remaining == 0) return loc.assessmentsDurationMinutes(minutes);
+    return loc.assessmentsDurationMinutesSeconds(minutes, remaining);
   }
 }
 
@@ -332,12 +342,13 @@ class _PastResultsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final loc = AppLocalizations.of(context);
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
       interactive: true,
       onTap: onTap,
-      semanticLabel: 'Past results, view your attempt history',
+      semanticLabel: loc.assessmentsPastResultsSemantic,
       child: Row(
         children: [
           Expanded(
@@ -345,13 +356,13 @@ class _PastResultsCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Past results',
+                  loc.assessmentsPastResultsTitle,
                   style:
                       AimTextStyles.title.copyWith(color: surfaces.textPrimary),
                 ),
                 const SizedBox(height: AimSpacing.space4),
                 Text(
-                  'View your attempt history',
+                  loc.assessmentsViewAttemptHistorySubtitle,
                   style: AimTextStyles.bodySm.copyWith(
                     color: surfaces.textSecondary,
                   ),
@@ -377,12 +388,15 @@ class _DeadlineCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final (color, label) = switch (deadline.status) {
-      'open' => (AimColors.success500, 'Open'),
-      'upcoming' => (AimColors.info500, 'Upcoming'),
-      'closed' || 'expired' => (AimColors.neutral500, 'Closed'),
-      'late' => (AimColors.warning500, 'Late'),
-      'missed' => (AimColors.error500, 'Missed'),
+      'open' => (AimColors.success500, loc.assessmentsDeadlineStatusOpen),
+      'upcoming' => (AimColors.info500, loc.assessmentsDeadlineStatusUpcoming),
+      'closed' ||
+      'expired' =>
+        (AimColors.neutral500, loc.assessmentsDeadlineStatusClosed),
+      'late' => (AimColors.warning500, loc.assessmentsDeadlineStatusLate),
+      'missed' => (AimColors.error500, loc.assessmentsDeadlineStatusMissed),
       _ => (AimColors.neutral500, deadline.status),
     };
 
@@ -409,11 +423,17 @@ class _DeadlineCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AimSpacing.space8),
-          _DeadlineDateRow(label: 'Opens', value: deadline.opensAt),
-          _DeadlineDateRow(label: 'Closes', value: deadline.closesAt),
+          _DeadlineDateRow(
+            label: loc.assessmentsOpensLabel,
+            value: deadline.opensAt,
+          ),
+          _DeadlineDateRow(
+            label: loc.assessmentsClosesLabel,
+            value: deadline.closesAt,
+          ),
           if (deadline.extendedClosesAt != null)
             _DeadlineDateRow(
-              label: 'Extended close',
+              label: loc.assessmentsExtendedCloseLabel,
               value: deadline.extendedClosesAt!,
             ),
         ],
@@ -490,7 +510,8 @@ class _SectionTile extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 Text(
-                  '${section.questionCount} question${section.questionCount == 1 ? '' : 's'}',
+                  AppLocalizations.of(context)
+                      .assessmentsQuestionCount(section.questionCount),
                   style: AimTextStyles.bodySm
                       .copyWith(color: surfaces.textSecondary),
                 ),

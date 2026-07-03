@@ -1997,5 +1997,960 @@
         "type": "String"
       }
     }
+  },
+  "assessmentsStartAttemptTitle": "Start attempt",
+  "@assessmentsStartAttemptTitle": {
+    "description": "Gradient header title on the start-attempt confirmation screen."
+  },
+  "assessmentsReadyToBeginTitle": "Ready to begin?",
+  "@assessmentsReadyToBeginTitle": {
+    "description": "Heading on the start-attempt confirmation screen."
+  },
+  "assessmentsTimedBodyCopy": "Once you start, the {minutes}-minute timer runs continuously — even if you leave the app. Make sure you have time to finish.",
+  "@assessmentsTimedBodyCopy": {
+    "description": "Body copy on the start-attempt screen when the assessment has a real time limit.",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "assessmentsUntimedBodyCopy": "Once you start, the attempt will be recorded. Make sure you are ready before proceeding.",
+  "@assessmentsUntimedBodyCopy": {
+    "description": "Body copy on the start-attempt screen when the assessment has no time limit."
+  },
+  "assessmentsStartAttemptButton": "Start Attempt",
+  "@assessmentsStartAttemptButton": {
+    "description": "Label for the button that starts an assessment attempt, shown on the start-attempt and detail screens."
+  },
+  "assessmentsStartAttemptSemantic": "Start attempt for {title}",
+  "@assessmentsStartAttemptSemantic": {
+    "description": "Accessibility label for the start-attempt button, shown on the start-attempt and detail screens.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "assessmentsGoBackButton": "Go Back",
+  "@assessmentsGoBackButton": {
+    "description": "Label for the secondary outline button that returns to the previous screen, on the start-attempt and submit-attempt confirmation screens."
+  },
+  "assessmentsLoadingResultSemantic": "Loading result",
+  "@assessmentsLoadingResultSemantic": {
+    "description": "Accessibility label shown while the assessment result screen's data is loading."
+  },
+  "assessmentsStatusPassed": "Passed",
+  "@assessmentsStatusPassed": {
+    "description": "Status badge label for a passed assessment attempt."
+  },
+  "assessmentsStatusFailed": "Failed",
+  "@assessmentsStatusFailed": {
+    "description": "Status badge label for a failed assessment attempt."
+  },
+  "assessmentsScoreSemantic": "{statusLabel}: {score} of {maxScore} points",
+  "@assessmentsScoreSemantic": {
+    "description": "Accessibility label for the score hero badge on the assessment result screen.",
+    "placeholders": {
+      "statusLabel": {
+        "type": "String"
+      },
+      "score": {
+        "type": "String"
+      },
+      "maxScore": {
+        "type": "String"
+      }
+    }
+  },
+  "assessmentsLatePenaltyApplied": "Late penalty applied",
+  "@assessmentsLatePenaltyApplied": {
+    "description": "Warning label shown when a late penalty was applied to an assessment attempt's score."
+  },
+  "assessmentsGradedLabel": "Graded {date}",
+  "@assessmentsGradedLabel": {
+    "description": "Caption showing when an assessment attempt was graded.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "assessmentsBreakdownLabel": "BREAKDOWN",
+  "@assessmentsBreakdownLabel": {
+    "description": "Section header above the per-item score breakdown on the assessment result screen."
+  },
+  "assessmentsDoneViewingResultSemantic": "Done viewing result",
+  "@assessmentsDoneViewingResultSemantic": {
+    "description": "Accessibility label for the Done button on the assessment result screen."
+  },
+  "assessmentsPointsFraction": "{awarded} / {possible} pts",
+  "@assessmentsPointsFraction": {
+    "description": "Points-awarded-of-possible label on a breakdown item card.",
+    "placeholders": {
+      "awarded": {
+        "type": "String"
+      },
+      "possible": {
+        "type": "String"
+      }
+    }
+  },
+  "assessmentsLoadingResultHistorySemantic": "Loading result history",
+  "@assessmentsLoadingResultHistorySemantic": {
+    "description": "Accessibility label shown while the result history screen's data is loading."
+  },
+  "assessmentsResultHistoryTitle": "Result history",
+  "@assessmentsResultHistoryTitle": {
+    "description": "Gradient header title on the result history screen."
+  },
+  "assessmentsNoResultsTitle": "No results yet",
+  "@assessmentsNoResultsTitle": {
+    "description": "Empty-state title shown when an assessment has no past results."
+  },
+  "assessmentsNoResultsSubtitle": "Your past attempt results will appear here.",
+  "@assessmentsNoResultsSubtitle": {
+    "description": "Empty-state subtitle shown when an assessment has no past results."
+  },
+  "assessmentsAttemptResultSemantic": "Attempt {attemptNumber}, {scoreLabel}, {statusWord}{lateSuffix}",
+  "@assessmentsAttemptResultSemantic": {
+    "description": "Accessibility label for a result history row.",
+    "placeholders": {
+      "attemptNumber": {
+        "type": "int"
+      },
+      "scoreLabel": {
+        "type": "String"
+      },
+      "statusWord": {
+        "type": "String"
+      },
+      "lateSuffix": {
+        "type": "String"
+      }
+    }
+  },
+  "assessmentsPassedWord": "passed",
+  "@assessmentsPassedWord": {
+    "description": "Lowercase 'passed' word used inside the result history row's accessibility label."
+  },
+  "assessmentsFailedWord": "failed",
+  "@assessmentsFailedWord": {
+    "description": "Lowercase 'failed' word used inside the result history row's accessibility label."
+  },
+  "assessmentsLatePenaltySemanticSuffix": ", late penalty applied",
+  "@assessmentsLatePenaltySemanticSuffix": {
+    "description": "Suffix appended to the result history row's accessibility label when a late penalty was applied."
+  },
+  "assessmentsLoadingAssessmentSemantic": "Loading assessment",
+  "@assessmentsLoadingAssessmentSemantic": {
+    "description": "Accessibility label shown while the assessment detail screen's data is loading."
+  },
+  "assessmentsExamDetailsTitle": "Exam details",
+  "@assessmentsExamDetailsTitle": {
+    "description": "Gradient header title on the assessment detail screen when the assessment is an exam."
+  },
+  "assessmentsQuizDetailsTitle": "Quiz details",
+  "@assessmentsQuizDetailsTitle": {
+    "description": "Gradient header title on the assessment detail screen when the assessment is a quiz."
+  },
+  "assessmentsDetailsTitle": "Assessment details",
+  "@assessmentsDetailsTitle": {
+    "description": "Fallback gradient header title on the assessment detail screen before the assessment type is known."
+  },
+  "assessmentsQuestionsLabel": "Questions",
+  "@assessmentsQuestionsLabel": {
+    "description": "Label for the questions-count stat tile on the assessment detail screen, and the placeholder title in the attempt screen's questions empty state."
+  },
+  "assessmentsTimeLimitLabel": "Time limit",
+  "@assessmentsTimeLimitLabel": {
+    "description": "Label for the time-limit stat tile on the assessment detail screen."
+  },
+  "assessmentsMaxAttemptsLabel": "Max attempts",
+  "@assessmentsMaxAttemptsLabel": {
+    "description": "Label for the max-attempts stat tile on the assessment detail screen."
+  },
+  "assessmentsDeadlineHeading": "Deadline",
+  "@assessmentsDeadlineHeading": {
+    "description": "Section heading above the deadline card on the assessment detail screen."
+  },
+  "assessmentsSectionsHeading": "Sections",
+  "@assessmentsSectionsHeading": {
+    "description": "Section heading above the section list on the assessment detail screen."
+  },
+  "assessmentsPastResultsTitle": "Past results",
+  "@assessmentsPastResultsTitle": {
+    "description": "Title of the tappable past-results card on the assessment detail screen."
+  },
+  "assessmentsViewAttemptHistorySubtitle": "View your attempt history",
+  "@assessmentsViewAttemptHistorySubtitle": {
+    "description": "Subtitle of the tappable past-results card on the assessment detail screen."
+  },
+  "assessmentsPastResultsSemantic": "Past results, view your attempt history",
+  "@assessmentsPastResultsSemantic": {
+    "description": "Accessibility label for the tappable past-results card on the assessment detail screen."
+  },
+  "assessmentsDeadlineStatusOpen": "Open",
+  "@assessmentsDeadlineStatusOpen": {
+    "description": "Deadline status badge label for an open assessment, shared across the assessments feature."
+  },
+  "assessmentsDeadlineStatusUpcoming": "Upcoming",
+  "@assessmentsDeadlineStatusUpcoming": {
+    "description": "Deadline status badge label for an upcoming assessment, shared across the assessments feature."
+  },
+  "assessmentsDeadlineStatusClosed": "Closed",
+  "@assessmentsDeadlineStatusClosed": {
+    "description": "Deadline status badge label for a closed/expired assessment, shared across the assessments feature."
+  },
+  "assessmentsDeadlineStatusLate": "Late",
+  "@assessmentsDeadlineStatusLate": {
+    "description": "Deadline status badge label for a late assessment, shared across the assessments feature."
+  },
+  "assessmentsDeadlineStatusMissed": "Missed",
+  "@assessmentsDeadlineStatusMissed": {
+    "description": "Deadline status badge label for a missed assessment, shared across the assessments feature."
+  },
+  "assessmentsOpensLabel": "Opens",
+  "@assessmentsOpensLabel": {
+    "description": "Label for the opens-at date row on the assessment detail screen's deadline card."
+  },
+  "assessmentsClosesLabel": "Closes",
+  "@assessmentsClosesLabel": {
+    "description": "Label for the closes-at date row on the assessment detail screen's deadline card."
+  },
+  "assessmentsExtendedCloseLabel": "Extended close",
+  "@assessmentsExtendedCloseLabel": {
+    "description": "Label for the extended-close date row on the assessment detail screen's deadline card."
+  },
+  "assessmentsDurationMinutes": "{minutes} min",
+  "@assessmentsDurationMinutes": {
+    "description": "Duration label with no leftover seconds, on the assessment detail screen's time-limit stat tile.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "assessmentsDurationMinutesSeconds": "{minutes} min {seconds} sec",
+  "@assessmentsDurationMinutesSeconds": {
+    "description": "Duration label with leftover seconds, on the assessment detail screen's time-limit stat tile.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "assessmentsQuestionCount": "{count, plural, one{1 question} other{{count} questions}}",
+  "@assessmentsQuestionCount": {
+    "description": "Question count caption on a section tile on the assessment detail screen.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "assessmentsLoadingDeadlinesSemantic": "Loading deadlines",
+  "@assessmentsLoadingDeadlinesSemantic": {
+    "description": "Accessibility label shown while the deadlines screen's data is loading."
+  },
+  "assessmentsDeadlinesTitle": "Deadlines",
+  "@assessmentsDeadlinesTitle": {
+    "description": "Gradient header title on the deadlines screen, and the link label on the assessment list screen that opens it."
+  },
+  "assessmentsNoDeadlinesTitle": "No deadlines",
+  "@assessmentsNoDeadlinesTitle": {
+    "description": "Empty-state title shown when the student has no assessment deadlines."
+  },
+  "assessmentsNoDeadlinesSubtitle": "Your assessment deadlines will appear here.",
+  "@assessmentsNoDeadlinesSubtitle": {
+    "description": "Empty-state subtitle shown when the student has no assessment deadlines."
+  },
+  "assessmentsSectionActiveLabel": "Active",
+  "@assessmentsSectionActiveLabel": {
+    "description": "Section heading on the deadlines screen for currently-open deadlines."
+  },
+  "assessmentsRelativeToday": "today",
+  "@assessmentsRelativeToday": {
+    "description": "Relative-day word used inside a deadline tile's subtitle when the deadline closes today."
+  },
+  "assessmentsRelativeTomorrow": "tomorrow",
+  "@assessmentsRelativeTomorrow": {
+    "description": "Relative-day word used inside a deadline tile's subtitle when the deadline closes tomorrow."
+  },
+  "assessmentsRelativeInDays": "{days, plural, one{in 1 day} other{in {days} days}}",
+  "@assessmentsRelativeInDays": {
+    "description": "Relative-day phrase used inside a deadline tile's subtitle when the deadline closes further in the future.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "assessmentsDueRelativeDate": "Due {relative} · {date}",
+  "@assessmentsDueRelativeDate": {
+    "description": "Subtitle for an active deadline tile combining a relative-day phrase and a formatted date.",
+    "placeholders": {
+      "relative": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "assessmentsDueDate": "Due {date}",
+  "@assessmentsDueDate": {
+    "description": "Subtitle for an active deadline tile when no relative-day phrase is available.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "assessmentsOpensDate": "Opens {date}",
+  "@assessmentsOpensDate": {
+    "description": "Subtitle for an upcoming deadline tile.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "assessmentsExtendedToDate": "Extended to {date}",
+  "@assessmentsExtendedToDate": {
+    "description": "Subtitle for a late deadline tile that was granted an extension.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "assessmentsWasDueDate": "Was due {date}",
+  "@assessmentsWasDueDate": {
+    "description": "Subtitle for a late deadline tile with no extension.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "assessmentsClosedDate": "Closed {date}",
+  "@assessmentsClosedDate": {
+    "description": "Subtitle for a missed or closed deadline tile.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "assessmentsDeadlineTileSemantic": "{title}, {subtitle}",
+  "@assessmentsDeadlineTileSemantic": {
+    "description": "Accessibility label for a deadline tile on the deadlines screen.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "subtitle": {
+        "type": "String"
+      }
+    }
+  },
+  "assessmentsResumingAttemptSemantic": "Resuming attempt",
+  "@assessmentsResumingAttemptSemantic": {
+    "description": "Accessibility label shown while the attempt screen is resuming an in-progress attempt."
+  },
+  "assessmentsStatusLabel": "Status",
+  "@assessmentsStatusLabel": {
+    "description": "Label for the status row on the attempt screen's status card."
+  },
+  "assessmentsInProgressStatus": "In Progress",
+  "@assessmentsInProgressStatus": {
+    "description": "Status badge text shown when an assessment attempt's raw status is 'in_progress'."
+  },
+  "assessmentsExpiresLabel": "Expires",
+  "@assessmentsExpiresLabel": {
+    "description": "Label for the expiry row on the attempt screen's status card."
+  },
+  "assessmentsTimeRemainingSemantic": "Time remaining: {time}",
+  "@assessmentsTimeRemainingSemantic": {
+    "description": "Accessibility label for the countdown pill on the attempt screen's header.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "assessmentsQuestionRenderingUnavailable": "Question rendering isn’t available yet for this attempt.",
+  "@assessmentsQuestionRenderingUnavailable": {
+    "description": "Empty-state subtitle shown in place of question content on the attempt screen, pending a backend capability."
+  },
+  "assessmentsSubmitAttemptSemantic": "Submit attempt",
+  "@assessmentsSubmitAttemptSemantic": {
+    "description": "Accessibility label for the Submit button on the attempt screen."
+  },
+  "assessmentsLoadingListSemantic": "Loading assessments",
+  "@assessmentsLoadingListSemantic": {
+    "description": "Accessibility label shown while the assessment list screen's data is loading."
+  },
+  "assessmentsListTitle": "Assessments",
+  "@assessmentsListTitle": {
+    "description": "Gradient header title on the assessment list screen."
+  },
+  "assessmentsEmptyTitle": "No assessments available",
+  "@assessmentsEmptyTitle": {
+    "description": "Empty-state title shown when there are no published assessments."
+  },
+  "assessmentsEmptySubtitle": "Published quizzes and exams will appear here.",
+  "@assessmentsEmptySubtitle": {
+    "description": "Empty-state subtitle shown when there are no published assessments."
+  },
+  "assessmentsSubmitConfirmTitle": "Submit your answers?",
+  "@assessmentsSubmitConfirmTitle": {
+    "description": "Heading on the submit-attempt confirmation screen."
+  },
+  "assessmentsSubmitConfirmBody": "You cannot change answers after submitting.",
+  "@assessmentsSubmitConfirmBody": {
+    "description": "Body copy on the submit-attempt confirmation screen."
+  },
+  "assessmentsFinalWarning": "This action is final and cannot be undone.",
+  "@assessmentsFinalWarning": {
+    "description": "Finality warning banner on the submit-attempt confirmation screen."
+  },
+  "assessmentsSubmitAttemptForSemantic": "Submit attempt for {title}",
+  "@assessmentsSubmitAttemptForSemantic": {
+    "description": "Accessibility label for the Submit button on the submit-attempt confirmation screen.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "assessmentsListTileSemantic": "{typeLabel}: {title}",
+  "@assessmentsListTileSemantic": {
+    "description": "Accessibility label for an assessment list tile.",
+    "placeholders": {
+      "typeLabel": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "assessmentsTypeExam": "Exam",
+  "@assessmentsTypeExam": {
+    "description": "Type label for an exam-type assessment, used in accessibility labels."
+  },
+  "assessmentsTypeQuiz": "Quiz",
+  "@assessmentsTypeQuiz": {
+    "description": "Type label for a quiz-type assessment, used in accessibility labels."
+  },
+  "assessmentsDeadlineCardSemantic": "{title} — {status}",
+  "@assessmentsDeadlineCardSemantic": {
+    "description": "Accessibility label for the standalone DeadlineStatusCard widget.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "assessmentsOpensClosesLabel": "Opens: {opensAt}  •  Closes: {closesAt}",
+  "@assessmentsOpensClosesLabel": {
+    "description": "Compact opens/closes date line on the standalone DeadlineStatusCard widget.",
+    "placeholders": {
+      "opensAt": {
+        "type": "String"
+      },
+      "closesAt": {
+        "type": "String"
+      }
+    }
+  },
+  "assessmentsDaysRemainingLabel": "{days}d remaining",
+  "@assessmentsDaysRemainingLabel": {
+    "description": "Compact days-remaining countdown label on the standalone DeadlineCountdownText widget.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "assessmentsHoursRemainingLabel": "{hours}h remaining",
+  "@assessmentsHoursRemainingLabel": {
+    "description": "Compact hours-remaining countdown label on the standalone DeadlineCountdownText widget.",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "assessmentsMinutesRemainingLabel": "{minutes}m remaining",
+  "@assessmentsMinutesRemainingLabel": {
+    "description": "Compact minutes-remaining countdown label on the standalone DeadlineCountdownText widget.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "assessmentsLessThanMinuteLabel": "Less than a minute",
+  "@assessmentsLessThanMinuteLabel": {
+    "description": "Countdown label shown on the standalone DeadlineCountdownText widget when under a minute remains."
+  },
+
+  "placementLoadingResultSemantic": "Loading your result",
+  "@placementLoadingResultSemantic": {
+    "description": "Accessibility label shown while the placement result screen's data is loading."
+  },
+  "placementScoringInProgressTitle": "Scoring in progress…",
+  "@placementScoringInProgressTitle": {
+    "description": "Heading shown while the backend is still scoring a placement attempt."
+  },
+  "placementScoringInProgressSemantic": "Scoring in progress",
+  "@placementScoringInProgressSemantic": {
+    "description": "Accessibility label for the pending-scoring state on the placement result screen."
+  },
+  "placementScoringInProgressSubtitle": "The backend is evaluating your answers.",
+  "@placementScoringInProgressSubtitle": {
+    "description": "Subtitle shown while the backend is still scoring a placement attempt."
+  },
+  "placementSectionBreakdownLabel": "SECTION BREAKDOWN",
+  "@placementSectionBreakdownLabel": {
+    "description": "Section header above the per-section breakdown on the placement result screen."
+  },
+  "placementContinueButton": "Continue to AIM",
+  "@placementContinueButton": {
+    "description": "Label and accessibility label for the button that leaves the placement result screen for the main app."
+  },
+  "placementLevelBeginner": "Beginner",
+  "@placementLevelBeginner": {
+    "description": "Display name for the backend-supplied 'beginner' placement level."
+  },
+  "placementLevelElementary": "Elementary",
+  "@placementLevelElementary": {
+    "description": "Display name for the backend-supplied 'elementary' placement level."
+  },
+  "placementLevelIntermediate": "Intermediate",
+  "@placementLevelIntermediate": {
+    "description": "Display name for the backend-supplied 'intermediate' placement level."
+  },
+  "placementLevelUpperIntermediate": "Upper Intermediate",
+  "@placementLevelUpperIntermediate": {
+    "description": "Display name for the backend-supplied 'upper_intermediate' placement level."
+  },
+  "placementLevelAdvanced": "Advanced",
+  "@placementLevelAdvanced": {
+    "description": "Display name for the backend-supplied 'advanced' placement level."
+  },
+  "placementSkillGrammar": "Grammar",
+  "@placementSkillGrammar": {
+    "description": "Display name for the backend-supplied 'grammar' placement skill."
+  },
+  "placementSkillVocabulary": "Vocabulary",
+  "@placementSkillVocabulary": {
+    "description": "Display name for the backend-supplied 'vocabulary' placement skill."
+  },
+  "placementSkillReading": "Reading",
+  "@placementSkillReading": {
+    "description": "Display name for the backend-supplied 'reading' placement skill."
+  },
+  "placementSkillListening": "Listening",
+  "@placementSkillListening": {
+    "description": "Display name for the backend-supplied 'listening' placement skill."
+  },
+  "placementLevelSemantic": "Your level: {displayName}, total score {totalScore} out of 100",
+  "@placementLevelSemantic": {
+    "description": "Accessibility label for the level hero card on the placement result screen.",
+    "placeholders": {
+      "displayName": {
+        "type": "String"
+      },
+      "totalScore": {
+        "type": "int"
+      }
+    }
+  },
+  "placementYourLevelLabel": "YOUR LEVEL",
+  "@placementYourLevelLabel": {
+    "description": "Small eyebrow label above the CEFR code on the placement result screen's level hero card."
+  },
+  "placementLevelSummary": "{displayName} · Total score {totalScore} / 100",
+  "@placementLevelSummary": {
+    "description": "Summary caption on the placement result screen's level hero card.",
+    "placeholders": {
+      "displayName": {
+        "type": "String"
+      },
+      "totalScore": {
+        "type": "int"
+      }
+    }
+  },
+  "placementSectionCorrectSemantic": "{name}: {correct} of {total} correct",
+  "@placementSectionCorrectSemantic": {
+    "description": "Accessibility label for a section breakdown row on the placement result screen.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "correct": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "placementFractionLabel": "{correct} / {total}",
+  "@placementFractionLabel": {
+    "description": "Correct-of-total fraction label on a section breakdown row on the placement result screen.",
+    "placeholders": {
+      "correct": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "placementSectionsLabel": "Sections",
+  "@placementSectionsLabel": {
+    "description": "Label for the sections info row on the placement intro screen."
+  },
+  "placementSectionsValue": "{count, plural, one{1 section} other{{count} sections}}",
+  "@placementSectionsValue": {
+    "description": "Value for the sections info row on the placement intro screen.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "placementEstimatedTimeLabel": "Estimated time",
+  "@placementEstimatedTimeLabel": {
+    "description": "Label for the estimated-time info row on the placement intro screen."
+  },
+  "placementEstimatedTimeValue": "~{minutes} min",
+  "@placementEstimatedTimeValue": {
+    "description": "Value for the estimated-time info row on the placement intro screen.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "placementBackendNote": "Your level is determined by the backend after completion. Results are never calculated on your device.",
+  "@placementBackendNote": {
+    "description": "Boundary note shown on the placement intro and start screens, reassuring that scoring happens server-side."
+  },
+  "placementStartTestSemantic": "Start placement test",
+  "@placementStartTestSemantic": {
+    "description": "Accessibility label for the Start button on the placement intro screen."
+  },
+  "placementIntroHeaderTitle": "General English Placement",
+  "@placementIntroHeaderTitle": {
+    "description": "Gradient header title on the placement intro screen."
+  },
+  "placementIntroHeaderSubtitle": "A quick check to find your starting level.",
+  "@placementIntroHeaderSubtitle": {
+    "description": "Gradient header subtitle on the placement intro screen."
+  },
+  "placementLoadingTestSemantic": "Loading placement test",
+  "@placementLoadingTestSemantic": {
+    "description": "Accessibility label shown while the placement start screen's data is loading."
+  },
+  "placementStartingTestSemantic": "Starting placement test",
+  "@placementStartingTestSemantic": {
+    "description": "Accessibility label shown while a placement attempt is being created, on the placement start screen."
+  },
+  "placementTestTitle": "Placement Test",
+  "@placementTestTitle": {
+    "description": "Gradient header title on the placement start screen, and fallback title on the placement section screen."
+  },
+  "placementFindYourLevelTitle": "Find your level",
+  "@placementFindYourLevelTitle": {
+    "description": "Heading on the placement start screen's gradient info card."
+  },
+  "placementFindYourLevelSubtitle": "A short adaptive test places you at the right level so every lesson fits you.",
+  "@placementFindYourLevelSubtitle": {
+    "description": "Subtitle on the placement start screen's gradient info card."
+  },
+  "placementSectionsStatLabel": "sections",
+  "@placementSectionsStatLabel": {
+    "description": "Label under the sections-count stat cell on the placement start screen's gradient info card."
+  },
+  "placementMinutesStatLabel": "minutes",
+  "@placementMinutesStatLabel": {
+    "description": "Label under the estimated-minutes stat cell on the placement start screen's gradient info card."
+  },
+  "placementStartTestButton": "Start Placement Test",
+  "@placementStartTestButton": {
+    "description": "Label and accessibility label for the button that starts a placement attempt, on the placement start screen."
+  },
+  "placementNotNowButton": "Not now",
+  "@placementNotNowButton": {
+    "description": "Label for the text button that dismisses the placement start screen without starting."
+  },
+  "placementQuestionCounter": "{index} of {total}",
+  "@placementQuestionCounter": {
+    "description": "Compact question-counter shown in the placement question screen's header.",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "placementLoadingQuestionSemantic": "Loading question",
+  "@placementLoadingQuestionSemantic": {
+    "description": "Accessibility label shown while the placement question screen's data is loading."
+  },
+  "placementSubmitAnswerFailedWithReason": "Failed to submit answer: {reason}",
+  "@placementSubmitAnswerFailedWithReason": {
+    "description": "Error message shown on the placement question screen when submitting an answer fails with a specific reason.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "placementSubmitAnswerFailedGeneric": "Failed to submit answer. Please try again.",
+  "@placementSubmitAnswerFailedGeneric": {
+    "description": "Generic fallback error message shown on the placement question screen when submitting an answer fails."
+  },
+  "placementSubmitFinalAnswerButton": "Submit Final Answer",
+  "@placementSubmitFinalAnswerButton": {
+    "description": "Label for the button on the last question of a placement section."
+  },
+  "placementNextQuestionButton": "Next question",
+  "@placementNextQuestionButton": {
+    "description": "Label for the button on a non-final question of a placement section."
+  },
+  "placementSubmitFinalAnswerSemantic": "Submit final answer",
+  "@placementSubmitFinalAnswerSemantic": {
+    "description": "Accessibility label for the button on the last question of a placement section."
+  },
+  "placementNextQuestionSemantic": "Next question",
+  "@placementNextQuestionSemantic": {
+    "description": "Accessibility label for the button on a non-final question of a placement section."
+  },
+  "placementUnknownQuestionType": "Unknown question type: {type}",
+  "@placementUnknownQuestionType": {
+    "description": "Fallback message shown when a placement question has an unrecognised type.",
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "placementOptionWithTextSemantic": "Option {letter}: {text}",
+  "@placementOptionWithTextSemantic": {
+    "description": "Accessibility label for a multiple-choice placement answer option with backend-supplied text.",
+    "placeholders": {
+      "letter": {
+        "type": "String"
+      },
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "placementOptionSemantic": "Option {letter}",
+  "@placementOptionSemantic": {
+    "description": "Accessibility label for a multiple-choice placement answer option with no backend-supplied text.",
+    "placeholders": {
+      "letter": {
+        "type": "String"
+      }
+    }
+  },
+  "placementTrueOption": "True",
+  "@placementTrueOption": {
+    "description": "Label and accessibility label for the True answer option on a true/false placement question."
+  },
+  "placementFalseOption": "False",
+  "@placementFalseOption": {
+    "description": "Label and accessibility label for the False answer option on a true/false placement question."
+  },
+  "placementAnswerPlaceholder": "Type your answer here…",
+  "@placementAnswerPlaceholder": {
+    "description": "Placeholder text for the fill-in-the-blank answer input on a placement question."
+  },
+  "placementYourAnswerSemantic": "Your answer",
+  "@placementYourAnswerSemantic": {
+    "description": "Accessibility label for the fill-in-the-blank answer input on a placement question."
+  },
+  "placementAlmostDoneTitle": "Almost done",
+  "@placementAlmostDoneTitle": {
+    "description": "Gradient header title on the placement submit confirmation screen."
+  },
+  "placementSubmittingAnswersSemantic": "Submitting your answers",
+  "@placementSubmittingAnswersSemantic": {
+    "description": "Accessibility label shown while a placement attempt is being submitted."
+  },
+  "placementRetryLabel": "Retry",
+  "@placementRetryLabel": {
+    "description": "Retry button label on the placement submit and section screens' error states."
+  },
+  "placementAllSectionsCompleteWithCount": "All {count} sections complete",
+  "@placementAllSectionsCompleteWithCount": {
+    "description": "Headline on the placement submit confirmation screen when the total section count is known.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "placementAllSectionsCompleteGeneric": "All sections complete",
+  "@placementAllSectionsCompleteGeneric": {
+    "description": "Headline on the placement submit confirmation screen when the total section count is not known."
+  },
+  "placementSubmitBody": "Submit your placement test to see your level and a personalised plan.",
+  "@placementSubmitBody": {
+    "description": "Body copy on the placement submit confirmation screen."
+  },
+  "placementSubmitTestButton": "Submit Placement Test",
+  "@placementSubmitTestButton": {
+    "description": "Label and accessibility label for the button that submits a completed placement test."
+  },
+  "placementSectionCounterTitle": "Section {index} of {total}",
+  "@placementSectionCounterTitle": {
+    "description": "Gradient header title on the placement section screen.",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "placementSectionMetaLine": "{category} · {count, plural, one{1 question} other{{count} questions}} · about {minutes} minutes",
+  "@placementSectionMetaLine": {
+    "description": "Meta line on the placement section screen showing the category, question count, and pacing estimate.",
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "placementBeginFinalSectionButton": "Begin Final Section",
+  "@placementBeginFinalSectionButton": {
+    "description": "Label and accessibility label for the button that starts the last placement section."
+  },
+  "placementBeginSectionButton": "Begin Section",
+  "@placementBeginSectionButton": {
+    "description": "Label and accessibility label for the button that starts a non-final placement section."
+  },
+  "placementSectionProgressSemantic": "Section {index} of {total}",
+  "@placementSectionProgressSemantic": {
+    "description": "Accessibility label for the segmented section-progress indicator on the placement section screen.",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "placementCategoryLexis": "Lexis",
+  "@placementCategoryLexis": {
+    "description": "Short category label for a 'vocabulary' placement section."
+  },
+  "placementCategoryStructures": "Structures",
+  "@placementCategoryStructures": {
+    "description": "Short category label for a 'grammar' placement section."
+  },
+  "placementCategoryComprehension": "Comprehension",
+  "@placementCategoryComprehension": {
+    "description": "Short category label for a 'reading' placement section."
+  },
+  "placementCategoryAudio": "Audio",
+  "@placementCategoryAudio": {
+    "description": "Short category label for a 'listening' placement section."
+  },
+  "placementCategoryGeneral": "General",
+  "@placementCategoryGeneral": {
+    "description": "Fallback short category label for a placement section with an empty skill code."
+  },
+
+  "questionAnswerLoadingQuestionSemantic": "Loading question",
+  "@questionAnswerLoadingQuestionSemantic": {
+    "description": "Accessibility label shown while the practice question screen's data is loading."
+  },
+  "questionAnswerPracticeTitle": "Practice",
+  "@questionAnswerPracticeTitle": {
+    "description": "Gradient header title on the practice question screen."
+  },
+  "questionAnswerAnalysingSessionText": "AIM is analysing your session…",
+  "@questionAnswerAnalysingSessionText": {
+    "description": "Pending-state message shown while AIM has not yet produced session feedback."
+  },
+  "questionAnswerSessionFeedbackSemantic": "Session feedback from AIM",
+  "@questionAnswerSessionFeedbackSemantic": {
+    "description": "Accessibility label for the session feedback card."
+  },
+  "questionAnswerSessionSummaryTitle": "Session Summary",
+  "@questionAnswerSessionSummaryTitle": {
+    "description": "Title on the session feedback card."
+  },
+  "questionAnswerQuestionsAttemptedLabel": "Questions attempted",
+  "@questionAnswerQuestionsAttemptedLabel": {
+    "description": "Label for the questions-attempted row on the session feedback card."
+  },
+  "questionAnswerCorrectScoreLabel": "Correct (backend score)",
+  "@questionAnswerCorrectScoreLabel": {
+    "description": "Label for the backend-scored correct-count row on the session feedback card."
+  },
+  "questionAnswerMasteryShiftLabel": "Mastery shift",
+  "@questionAnswerMasteryShiftLabel": {
+    "description": "Label for the mastery-shift row on the session feedback card."
+  },
+  "questionAnswerSkillsCoveredLabel": "Skills covered",
+  "@questionAnswerSkillsCoveredLabel": {
+    "description": "Label above the skill badges on the session feedback card."
+  },
+  "questionAnswerAnswerSubmittedSemantic": "Answer submitted",
+  "@questionAnswerAnswerSubmittedSemantic": {
+    "description": "Accessibility label for the attempt-acknowledgement card."
+  },
+  "questionAnswerAnswerSubmittedLabel": "Answer submitted",
+  "@questionAnswerAnswerSubmittedLabel": {
+    "description": "Title on the attempt-acknowledgement card."
+  },
+  "questionAnswerAnalysingResponseText": "AIM is analysing your response.",
+  "@questionAnswerAnalysingResponseText": {
+    "description": "Subtitle on the attempt-acknowledgement card."
+  },
+  "questionAnswerYourAnswerLabel": "Your answer",
+  "@questionAnswerYourAnswerLabel": {
+    "description": "Label for the free-text answer input on a fill-in-the-blank practice question."
+  },
+  "questionAnswerAnswerHelperText": "Type your response, then tap Continue to submit.",
+  "@questionAnswerAnswerHelperText": {
+    "description": "Helper text below the free-text answer input on a fill-in-the-blank practice question."
+  },
+  "questionAnswerAnswerPlaceholder": "Type your answer here",
+  "@questionAnswerAnswerPlaceholder": {
+    "description": "Placeholder text for the free-text answer input on a fill-in-the-blank practice question."
+  },
+  "questionAnswerAnswerInputSemantic": "Answer input field",
+  "@questionAnswerAnswerInputSemantic": {
+    "description": "Accessibility label for the free-text answer input on a fill-in-the-blank practice question."
   }
 }

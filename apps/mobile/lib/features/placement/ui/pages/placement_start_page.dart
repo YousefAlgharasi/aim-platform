@@ -46,6 +46,7 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart'
 import 'package:aim_mobile/features/placement/data/models/placement_test_model.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_provider.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_start_notifier.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class PlacementStartPage extends ConsumerStatefulWidget {
   const PlacementStartPage({super.key});
@@ -92,8 +93,8 @@ class _PlacementStartPageState extends ConsumerState<PlacementStartPage> {
             child: switch (state) {
               PlacementStartIdle() ||
               PlacementStartLoading() =>
-                const AIMFullScreenLoading(
-                  semanticLabel: 'Loading placement test',
+                AIMFullScreenLoading(
+                  semanticLabel: AppLocalizations.of(context).placementLoadingTestSemantic,
                 ),
               PlacementStartError(:final message) => AIMFullScreenError(
                   message: message,
@@ -113,8 +114,8 @@ class _PlacementStartPageState extends ConsumerState<PlacementStartPage> {
                 ),
               PlacementStarted() =>
                 // Transitioning — show spinner while navigation fires.
-                const AIMFullScreenLoading(
-                  semanticLabel: 'Starting placement test',
+                AIMFullScreenLoading(
+                  semanticLabel: AppLocalizations.of(context).placementStartingTestSemantic,
                 ),
             },
           ),
@@ -152,7 +153,7 @@ class _StartHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -178,7 +179,7 @@ class _StartHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.componentGap),
             Text(
-              'Placement Test',
+              AppLocalizations.of(context).placementTestTitle,
               style: AimTextStyles.h2.copyWith(color: AimColors.neutral0),
             ),
           ],
@@ -204,6 +205,7 @@ class _ReadyBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final loc = AppLocalizations.of(context);
 
     return SafeArea(
       top: false,
@@ -224,13 +226,12 @@ class _ReadyBody extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Find your level',
+                    loc.placementFindYourLevelTitle,
                     style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
                   ),
                   const SizedBox(height: AimSpacing.space8),
                   Text(
-                    'A short adaptive test places you at the right level so '
-                    'every lesson fits you.',
+                    loc.placementFindYourLevelSubtitle,
                     style: AimTextStyles.bodySm.copyWith(
                       color: AimColors.neutral0.withValues(alpha: 0.85),
                     ),
@@ -241,13 +242,13 @@ class _ReadyBody extends StatelessWidget {
                       Expanded(
                         child: _StatCell(
                           value: '${test.totalSections}',
-                          label: 'sections',
+                          label: loc.placementSectionsStatLabel,
                         ),
                       ),
                       Expanded(
                         child: _StatCell(
                           value: '~${test.estimatedMinutes}',
-                          label: 'minutes',
+                          label: loc.placementMinutesStatLabel,
                         ),
                       ),
                     ],
@@ -264,8 +265,7 @@ class _ReadyBody extends StatelessWidget {
                 borderRadius: AimRadius.borderSm,
               ),
               child: Text(
-                'Your level is determined by the backend after completion. '
-                'Results are never calculated on your device.',
+                loc.placementBackendNote,
                 style: AimTextStyles.bodySm.copyWith(
                   color: surfaces.textSecondary,
                 ),
@@ -273,9 +273,9 @@ class _ReadyBody extends StatelessWidget {
             ),
             const Spacer(),
             AIMGradientButton(
-              label: 'Start Placement Test',
+              label: loc.placementStartTestButton,
               fullWidth: true,
-              semanticLabel: 'Start Placement Test',
+              semanticLabel: loc.placementStartTestButton,
               onPressed: onStart,
             ),
             const SizedBox(height: AimSpacing.componentGap),
@@ -284,7 +284,7 @@ class _ReadyBody extends StatelessWidget {
                 onPressed: () {
                   if (context.canPop()) context.pop();
                 },
-                child: const Text('Not now'),
+                child: Text(loc.placementNotNowButton),
               ),
             ),
           ],

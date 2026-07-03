@@ -17,6 +17,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
 import 'package:aim_mobile/features/assessments/logic/provider/assessment_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class StartAttemptPage extends ConsumerStatefulWidget {
   const StartAttemptPage({
@@ -86,20 +87,18 @@ class _StartAttemptPageState extends ConsumerState<StartAttemptPage> {
 
     final surfaces = aimSurfacesOf(context);
     final soft = aimSoftFillsOf(context);
+    final loc = AppLocalizations.of(context);
     final timeLimitSeconds = widget.timeLimitSeconds;
     final bodyCopy = timeLimitSeconds != null
-        ? 'Once you start, the ${_formatMinutes(timeLimitSeconds)}-minute '
-            'timer runs continuously — even if you leave the app. Make sure '
-            'you have time to finish.'
-        : 'Once you start, the attempt will be recorded. Make sure you are '
-            'ready before proceeding.';
+        ? loc.assessmentsTimedBodyCopy(_formatMinutes(timeLimitSeconds))
+        : loc.assessmentsUntimedBodyCopy;
 
     return Scaffold(
       backgroundColor: surfaces.background,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _StartAttemptHeader(title: 'Start attempt'),
+          _StartAttemptHeader(title: loc.assessmentsStartAttemptTitle),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -128,7 +127,7 @@ class _StartAttemptPageState extends ConsumerState<StartAttemptPage> {
                   ),
                   const SizedBox(height: AimSpacing.sectionGap),
                   Text(
-                    'Ready to begin?',
+                    loc.assessmentsReadyToBeginTitle,
                     style: AimTextStyles.h2.copyWith(
                       color: surfaces.textPrimary,
                     ),
@@ -144,19 +143,20 @@ class _StartAttemptPageState extends ConsumerState<StartAttemptPage> {
                   ),
                   const Spacer(),
                   AIMGradientButton(
-                    label: 'Start Attempt',
+                    label: loc.assessmentsStartAttemptButton,
                     loading: _starting,
                     fullWidth: true,
                     onPressed: _startAttempt,
-                    semanticLabel:
-                        'Start attempt for ${widget.assessmentTitle}',
+                    semanticLabel: loc.assessmentsStartAttemptSemantic(
+                      widget.assessmentTitle,
+                    ),
                   ),
                   const SizedBox(height: AimSpacing.componentGap),
                   AIMButton(
                     variant: AIMButtonVariant.outline,
                     onPressed: () => context.pop(),
                     fullWidth: true,
-                    child: const Text('Go Back'),
+                    child: Text(loc.assessmentsGoBackButton),
                   ),
                 ],
               ),
@@ -196,7 +196,7 @@ class _StartAttemptHeader extends StatelessWidget {
             children: [
               Semantics(
                 button: true,
-                label: 'Back',
+                label: AppLocalizations.of(context).commonBack,
                 child: InkWell(
                   onTap: () {
                     if (context.canPop()) context.pop();

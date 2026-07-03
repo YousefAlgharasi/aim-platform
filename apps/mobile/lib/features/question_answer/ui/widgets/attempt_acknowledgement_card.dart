@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/question_answer/logic/entity/attempt_result.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class AttemptAcknowledgementCard extends StatelessWidget {
   const AttemptAcknowledgementCard({required this.result, super.key});
@@ -22,9 +23,10 @@ class AttemptAcknowledgementCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return AIMCard(
       variant: AIMCardVariant.elevated,
-      semanticLabel: 'Answer submitted',
+      semanticLabel: loc.questionAnswerAnswerSubmittedSemantic,
       child: Row(
         children: [
           const Icon(
@@ -38,13 +40,13 @@ class AttemptAcknowledgementCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Answer submitted',
+                  loc.questionAnswerAnswerSubmittedLabel,
                   style: AimTextStyles.label
                       .copyWith(color: AimColors.success500),
                 ),
                 const SizedBox(height: AimSpacing.space2),
                 Text(
-                  'AIM is analysing your response.',
+                  loc.questionAnswerAnalysingResponseText,
                   style: AimTextStyles.bodySm.copyWith(
                     color: aimSurfacesOf(context).textSecondary,
                   ),

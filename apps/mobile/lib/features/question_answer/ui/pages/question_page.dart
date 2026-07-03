@@ -42,6 +42,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/question_answer/logic/entity/question_session_state.dart';
 import 'package:aim_mobile/features/question_answer/logic/provider/question_answer_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../widgets/question_answer_widgets.dart';
 
 class QuestionPage extends ConsumerStatefulWidget {
@@ -115,8 +116,11 @@ class _QuestionPageState extends ConsumerState<QuestionPage> {
   }
 
   Widget _buildBody(QuestionSessionState state) {
+    final loc = AppLocalizations.of(context);
     if (state.isLoadingQuestion) {
-      return const AIMFullScreenLoading(semanticLabel: 'Loading question');
+      return AIMFullScreenLoading(
+        semanticLabel: loc.questionAnswerLoadingQuestionSemantic,
+      );
     }
     if (state.questionError != null) {
       return AIMFullScreenError(
@@ -125,7 +129,9 @@ class _QuestionPageState extends ConsumerState<QuestionPage> {
       );
     }
     if (!state.hasQuestion) {
-      return const AIMFullScreenLoading(semanticLabel: 'Loading question');
+      return AIMFullScreenLoading(
+        semanticLabel: loc.questionAnswerLoadingQuestionSemantic,
+      );
     }
 
     final question = state.question!;
@@ -201,7 +207,7 @@ class _PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -227,7 +233,7 @@ class _PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Practice',
+              AppLocalizations.of(context).questionAnswerPracticeTitle,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],

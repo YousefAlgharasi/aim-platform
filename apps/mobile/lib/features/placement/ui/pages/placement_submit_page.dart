@@ -36,6 +36,7 @@ import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_provider.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_submit_notifier.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class PlacementSubmitPage extends ConsumerStatefulWidget {
   const PlacementSubmitPage({
@@ -73,22 +74,23 @@ class _PlacementSubmitPageState extends ConsumerState<PlacementSubmitPage> {
       }
     });
 
+    final loc = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: surfaces.background,
       body: Column(
         children: [
-          _GradientTopBar(title: 'Almost done'),
+          _GradientTopBar(title: loc.placementAlmostDoneTitle),
           Expanded(
             child: switch (state) {
-              PlacementSubmitLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Submitting your answers',
+              PlacementSubmitLoading() => AIMFullScreenLoading(
+                  semanticLabel: loc.placementSubmittingAnswersSemantic,
                 ),
-              PlacementSubmitSuccess() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading your result',
+              PlacementSubmitSuccess() => AIMFullScreenLoading(
+                  semanticLabel: loc.placementLoadingResultSemantic,
                 ),
               PlacementSubmitError(:final message) => AIMFullScreenError(
                   message: message,
-                  retryLabel: 'Retry',
+                  retryLabel: loc.placementRetryLabel,
                   onRetry: () {
                     ref.read(placementSubmitProvider.notifier).reset();
                   },
@@ -139,7 +141,7 @@ class _GradientTopBar extends StatelessWidget {
               children: [
                 const SizedBox(width: AimSpacing.space8),
                 AIMIconButton(
-                  semanticLabel: 'Back',
+                  semanticLabel: AppLocalizations.of(context).commonBack,
                   icon: Icon(
                     isRtl ? Icons.chevron_right : Icons.chevron_left,
                     color: AimColors.neutral0,
@@ -177,9 +179,10 @@ class _ConfirmBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
     final soft = aimSoftFillsOf(context);
+    final loc = AppLocalizations.of(context);
     final headline = totalSections != null
-        ? 'All $totalSections sections complete'
-        : 'All sections complete';
+        ? loc.placementAllSectionsCompleteWithCount(totalSections!)
+        : loc.placementAllSectionsCompleteGeneric;
 
     return Padding(
       padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
@@ -211,17 +214,16 @@ class _ConfirmBody extends StatelessWidget {
           ),
           const SizedBox(height: AimSpacing.space8),
           Text(
-            'Submit your placement test to see your level and a '
-            'personalised plan.',
+            loc.placementSubmitBody,
             textAlign: TextAlign.center,
             style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
           ),
           const Spacer(),
           AIMGradientButton(
-            label: 'Submit Placement Test',
+            label: loc.placementSubmitTestButton,
             fullWidth: true,
             onPressed: onSubmit,
-            semanticLabel: 'Submit Placement Test',
+            semanticLabel: loc.placementSubmitTestButton,
           ),
         ],
       ),

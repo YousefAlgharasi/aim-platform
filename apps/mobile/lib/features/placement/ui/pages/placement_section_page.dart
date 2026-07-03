@@ -39,6 +39,7 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart'
 import 'package:aim_mobile/features/placement/logic/provider/placement_provider.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_section_notifier.dart';
 import 'package:aim_mobile/features/placement/ui/widgets/placement_skill_display.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class PlacementSectionPage extends ConsumerStatefulWidget {
   const PlacementSectionPage({
@@ -71,9 +72,11 @@ class _PlacementSectionPageState extends ConsumerState<PlacementSectionPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(placementSectionProvider);
     final surfaces = aimSurfacesOf(context);
+    final loc = AppLocalizations.of(context);
     final title = state is PlacementSectionReady
-        ? 'Section ${state.displayIndex} of ${state.totalSections}'
-        : 'Placement Test';
+        ? loc.placementSectionCounterTitle(
+            state.displayIndex, state.totalSections)
+        : loc.placementTestTitle;
 
     return Scaffold(
       backgroundColor: surfaces.background,
@@ -87,7 +90,7 @@ class _PlacementSectionPageState extends ConsumerState<PlacementSectionPage> {
                 const AIMFullScreenLoading(),
               PlacementSectionError(:final message) => AIMFullScreenError(
                   message: message,
-                  retryLabel: 'Retry',
+                  retryLabel: loc.placementRetryLabel,
                   onRetry: () {
                     final token = ref.read(authFlowProvider).accessToken ?? '';
                     ref.read(placementSectionProvider.notifier).loadSections(
@@ -170,7 +173,7 @@ class _GradientTopBar extends StatelessWidget {
               children: [
                 const SizedBox(width: AimSpacing.space8),
                 AIMIconButton(
-                  semanticLabel: 'Back',
+                  semanticLabel: AppLocalizations.of(context).commonBack,
                   icon: Icon(
                     isRtl ? Icons.chevron_right : Icons.chevron_left,
                     color: AimColors.neutral0,
@@ -211,6 +214,7 @@ class _SectionBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
     final soft = aimSoftFillsOf(context);
+    final loc = AppLocalizations.of(context);
     final section = state.currentSection;
     final minutes = placementEstimatedMinutes(section.totalQuestions);
 
@@ -248,8 +252,11 @@ class _SectionBody extends StatelessWidget {
                 ),
                 const SizedBox(height: AimSpacing.space4),
                 Text(
-                  '${placementSkillCategoryLabel(section.skillCode)} · '
-                  '${section.totalQuestions} questions · about $minutes minutes',
+                  loc.placementSectionMetaLine(
+                    placementSkillCategoryLabel(loc, section.skillCode),
+                    section.totalQuestions,
+                    minutes,
+                  ),
                   style: AimTextStyles.bodySm.copyWith(
                     color: surfaces.textSecondary,
                   ),
@@ -260,12 +267,14 @@ class _SectionBody extends StatelessWidget {
           ),
           const Spacer(),
           AIMGradientButton(
-            label:
-                state.isLastSection ? 'Begin Final Section' : 'Begin Section',
+            label: state.isLastSection
+                ? loc.placementBeginFinalSectionButton
+                : loc.placementBeginSectionButton,
             fullWidth: true,
             onPressed: onStartSection,
-            semanticLabel:
-                state.isLastSection ? 'Begin Final Section' : 'Begin Section',
+            semanticLabel: state.isLastSection
+                ? loc.placementBeginFinalSectionButton
+                : loc.placementBeginSectionButton,
           ),
         ],
       ),
@@ -288,7 +297,8 @@ class _SegmentedProgress extends StatelessWidget {
     final surfaces = aimSurfacesOf(context);
 
     return Semantics(
-      label: 'Section ${currentIndex + 1} of $total',
+      label: AppLocalizations.of(context)
+          .placementSectionProgressSemantic(currentIndex + 1, total),
       child: Row(
         children: [
           for (var i = 0; i < total; i++) ...[

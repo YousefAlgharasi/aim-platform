@@ -32,6 +32,7 @@ import '../../data/models/placement_result_model.dart';
 import '../../logic/entity/placement_skill_mastery.dart';
 import '../../logic/provider/placement_provider.dart';
 import '../../logic/provider/placement_result_notifier.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class PlacementResultPage extends ConsumerStatefulWidget {
   const PlacementResultPage({
@@ -72,7 +73,9 @@ class _PlacementResultPageState extends ConsumerState<PlacementResultPage> {
         child: switch (state) {
           PlacementResultIdle() ||
           PlacementResultLoading() =>
-            const AIMFullScreenLoading(semanticLabel: 'Loading your result'),
+            AIMFullScreenLoading(
+              semanticLabel: AppLocalizations.of(context).placementLoadingResultSemantic,
+            ),
           PlacementResultPending() => const _PendingBody(),
           PlacementResultError(:final message) => AIMFullScreenError(
               message: message,
@@ -95,9 +98,10 @@ class _PendingBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final loc = AppLocalizations.of(context);
 
     return Semantics(
-      label: 'Scoring in progress',
+      label: loc.placementScoringInProgressSemantic,
       child: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(
@@ -109,7 +113,7 @@ class _PendingBody extends StatelessWidget {
               const CircularProgressIndicator(color: AimColors.primary500),
               const SizedBox(height: AimSpacing.sectionGap),
               Text(
-                'Scoring in progress…',
+                loc.placementScoringInProgressTitle,
                 style: AimTextStyles.title.copyWith(
                   color: surfaces.textPrimary,
                 ),
@@ -117,7 +121,7 @@ class _PendingBody extends StatelessWidget {
               ),
               const SizedBox(height: AimSpacing.innerGap),
               Text(
-                'The backend is evaluating your answers.',
+                loc.placementScoringInProgressSubtitle,
                 style: AimTextStyles.bodySm.copyWith(
                   color: surfaces.textSecondary,
                 ),
@@ -143,20 +147,28 @@ const _cefrCodes = {
   'advanced': 'C1',
 };
 
-const _displayNames = {
-  'beginner': 'Beginner',
-  'elementary': 'Elementary',
-  'intermediate': 'Intermediate',
-  'upper_intermediate': 'Upper Intermediate',
-  'advanced': 'Advanced',
-};
+/// Display name for a backend-supplied placement level code.
+String _displayNameFor(AppLocalizations loc, String level) {
+  return switch (level) {
+    'beginner' => loc.placementLevelBeginner,
+    'elementary' => loc.placementLevelElementary,
+    'intermediate' => loc.placementLevelIntermediate,
+    'upper_intermediate' => loc.placementLevelUpperIntermediate,
+    'advanced' => loc.placementLevelAdvanced,
+    _ => level,
+  };
+}
 
-const _skillNames = {
-  'grammar': 'Grammar',
-  'vocabulary': 'Vocabulary',
-  'reading': 'Reading',
-  'listening': 'Listening',
-};
+/// Display name for a backend-supplied placement skill code.
+String _skillNameFor(AppLocalizations loc, String skillCode) {
+  return switch (skillCode) {
+    'grammar' => loc.placementSkillGrammar,
+    'vocabulary' => loc.placementSkillVocabulary,
+    'reading' => loc.placementSkillReading,
+    'listening' => loc.placementSkillListening,
+    _ => skillCode,
+  };
+}
 
 class _ResultBody extends StatelessWidget {
   const _ResultBody({required this.result});
@@ -187,7 +199,7 @@ class _ResultBody extends StatelessWidget {
           if (masteries.isNotEmpty) ...[
             const SizedBox(height: AimSpacing.sectionGap),
             Text(
-              'SECTION BREAKDOWN',
+              AppLocalizations.of(context).placementSectionBreakdownLabel,
               style: AimTextStyles.caption.copyWith(
                 color: surfaces.textMuted,
                 fontWeight: AimFontWeights.semibold,
@@ -202,9 +214,9 @@ class _ResultBody extends StatelessWidget {
           ],
           const SizedBox(height: AimSpacing.sectionGap),
           AIMGradientButton(
-            label: 'Continue to AIM',
+            label: AppLocalizations.of(context).placementContinueButton,
             fullWidth: true,
-            semanticLabel: 'Continue to AIM',
+            semanticLabel: AppLocalizations.of(context).placementContinueButton,
             onPressed: () => context.go(AppRoutePaths.mainShell),
           ),
         ],
@@ -225,11 +237,12 @@ class _LevelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final displayName = _displayNames[estimatedLevel] ?? estimatedLevel;
+    final loc = AppLocalizations.of(context);
+    final displayName = _displayNameFor(loc, estimatedLevel);
     final code = _cefrCodes[estimatedLevel] ?? estimatedLevel;
 
     return Semantics(
-      label: 'Your level: $displayName, total score $totalScore out of 100',
+      label: loc.placementLevelSemantic(displayName, totalScore),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(AimSpacing.cardPaddingLg),
@@ -240,7 +253,7 @@ class _LevelCard extends StatelessWidget {
         child: Column(
           children: [
             Text(
-              'YOUR LEVEL',
+              loc.placementYourLevelLabel,
               style: AimTextStyles.caption.copyWith(
                 color: AimColors.neutral0.withValues(alpha: 0.85),
                 fontWeight: AimFontWeights.semibold,
@@ -254,7 +267,7 @@ class _LevelCard extends StatelessWidget {
             ),
             const SizedBox(height: AimSpacing.space4),
             Text(
-              '$displayName · Total score $totalScore / 100',
+              loc.placementLevelSummary(displayName, totalScore),
               style: AimTextStyles.bodySm.copyWith(
                 color: AimColors.neutral0.withValues(alpha: 0.85),
               ),
@@ -285,15 +298,19 @@ class _SectionBreakdownRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
-    final name = _skillNames[skillCode] ?? skillCode;
+    final loc = AppLocalizations.of(context);
+    final name = _skillNameFor(loc, skillCode);
     final color = _signalColors[mastery.signal] ?? AimColors.primary500;
     final progress = mastery.totalQuestions > 0
         ? mastery.correctAnswers / mastery.totalQuestions
         : 0.0;
 
     return Semantics(
-      label: '$name: ${mastery.correctAnswers} of '
-          '${mastery.totalQuestions} correct',
+      label: loc.placementSectionCorrectSemantic(
+        name,
+        mastery.correctAnswers,
+        mastery.totalQuestions,
+      ),
       child: Container(
         padding: const EdgeInsets.all(AimSpacing.cardPadding),
         decoration: BoxDecoration(
@@ -315,7 +332,10 @@ class _SectionBreakdownRow extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '${mastery.correctAnswers} / ${mastery.totalQuestions}',
+                  loc.placementFractionLabel(
+                    mastery.correctAnswers,
+                    mastery.totalQuestions,
+                  ),
                   style: AimTextStyles.bodySm.copyWith(
                     color: surfaces.textSecondary,
                   ),

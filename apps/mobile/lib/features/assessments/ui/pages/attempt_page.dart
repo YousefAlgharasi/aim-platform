@@ -28,6 +28,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
 import 'package:aim_mobile/features/assessments/logic/provider/assessment_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class AttemptPage extends ConsumerStatefulWidget {
   const AttemptPage({
@@ -91,8 +92,9 @@ class _AttemptPageState extends ConsumerState<AttemptPage> {
           ),
           Expanded(
             child: switch (resumeState) {
-              AppAsyncLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Resuming attempt',
+              AppAsyncLoading() => AIMFullScreenLoading(
+                  semanticLabel:
+                      AppLocalizations.of(context).assessmentsResumingAttemptSemantic,
                 ),
               AppAsyncFailure(:final message) => AIMFullScreenError(
                   message: message,
@@ -102,8 +104,9 @@ class _AttemptPageState extends ConsumerState<AttemptPage> {
                   result: data,
                   onSubmit: _openSubmitConfirmation,
                 ),
-              AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Resuming attempt',
+              AppAsyncIdle() => AIMFullScreenLoading(
+                  semanticLabel:
+                      AppLocalizations.of(context).assessmentsResumingAttemptSemantic,
                 ),
             },
           ),
@@ -207,7 +210,7 @@ class _AttemptHeaderState extends State<_AttemptHeader> {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () => context.pop(),
                 customBorder: const CircleBorder(),
@@ -261,7 +264,7 @@ class _CountdownPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Time remaining: $label',
+      label: AppLocalizations.of(context).assessmentsTimeRemainingSemantic(label),
       child: Container(
         constraints: const BoxConstraints(minHeight: AimSizes.touchTarget),
         padding: const EdgeInsetsDirectional.symmetric(
@@ -309,6 +312,7 @@ class _AttemptContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final loc = AppLocalizations.of(context);
 
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -326,7 +330,7 @@ class _AttemptContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _StatusRow(
-                  label: 'Status',
+                  label: loc.assessmentsStatusLabel,
                   trailing: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AimSpacing.space8,
@@ -338,7 +342,7 @@ class _AttemptContent extends StatelessWidget {
                     ),
                     child: Text(
                       result.status == 'in_progress'
-                          ? 'In Progress'
+                          ? loc.assessmentsInProgressStatus
                           : result.status,
                       style: Theme.of(context)
                           .textTheme
@@ -355,7 +359,7 @@ class _AttemptContent extends StatelessWidget {
                 if (result.expiresAt != null) ...[
                   const SizedBox(height: AimSpacing.componentGap),
                   _StatusRow(
-                    label: 'Expires',
+                    label: loc.assessmentsExpiresLabel,
                     trailing: Text(
                       result.expiresAt!,
                       style: AimTextStyles.bodySm.copyWith(
@@ -369,13 +373,11 @@ class _AttemptContent extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AimSpacing.sectionGap),
-          const Expanded(
+          Expanded(
             child: AIMEmptyState(
-              icon: Icon(Icons.quiz_outlined),
-              title: 'Questions',
-              subtitle:
-                  'Question rendering isn’t available yet for this '
-                  'attempt.',
+              icon: const Icon(Icons.quiz_outlined),
+              title: loc.assessmentsQuestionsLabel,
+              subtitle: loc.assessmentsQuestionRenderingUnavailable,
               // ─────────────────────────────────────────────────────────
               // BACKEND GAP — not a UI gap.
               //
@@ -405,10 +407,10 @@ class _AttemptContent extends StatelessWidget {
           ),
           const SizedBox(height: AimSpacing.sectionGap),
           AIMGradientButton(
-            label: 'Submit',
+            label: loc.commonSubmit,
             onPressed: onSubmit,
             fullWidth: true,
-            semanticLabel: 'Submit attempt',
+            semanticLabel: loc.assessmentsSubmitAttemptSemantic,
           ),
         ],
       ),

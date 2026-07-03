@@ -24,6 +24,7 @@ import '../../../auth/logic/provider/auth_flow_provider.dart';
 import '../../data/models/placement_question_model.dart';
 import '../../logic/provider/placement_provider.dart';
 import '../../logic/provider/placement_question_notifier.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class PlacementQuestionPage extends ConsumerStatefulWidget {
   const PlacementQuestionPage({
@@ -75,9 +76,10 @@ class _PlacementQuestionPageState
       }
     });
 
+    final loc = AppLocalizations.of(context);
     final counter = switch (state) {
       PlacementQuestionReady() =>
-        '${state.displayIndex} of ${state.totalQuestions}',
+        loc.placementQuestionCounter(state.displayIndex, state.totalQuestions),
       _ => null,
     };
 
@@ -91,7 +93,7 @@ class _PlacementQuestionPageState
           PlacementQuestionIdle() ||
           PlacementQuestionLoading() ||
           PlacementQuestionSectionComplete() =>
-            const AIMFullScreenLoading(semanticLabel: 'Loading question'),
+            AIMFullScreenLoading(semanticLabel: loc.placementLoadingQuestionSemantic),
           PlacementQuestionError(:final message) => AIMFullScreenError(
               message: message,
               onRetry: () {
@@ -124,10 +126,13 @@ class _PlacementQuestionPageState
           .submitCurrentAnswer(token);
     } catch (e) {
       if (mounted) {
+        final loc = AppLocalizations.of(context);
         setState(() {
           _submitError = e is Exception
-              ? 'Failed to submit answer: ${e.toString().replaceFirst('Exception: ', '')}'
-              : 'Failed to submit answer. Please try again.';
+              ? loc.placementSubmitAnswerFailedWithReason(
+                  e.toString().replaceFirst('Exception: ', ''),
+                )
+              : loc.placementSubmitAnswerFailedGeneric;
         });
       }
     }
@@ -166,7 +171,7 @@ class _PlacementQuestionHeader extends StatelessWidget
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -274,13 +279,16 @@ class _QuestionBody extends StatelessWidget {
           ],
           const SizedBox(height: AimSpacing.componentGap),
           AIMGradientButton(
-            label: state.isLastQuestion ? 'Submit Final Answer' : 'Next question',
+            label: state.isLastQuestion
+                ? AppLocalizations.of(context).placementSubmitFinalAnswerButton
+                : AppLocalizations.of(context).placementNextQuestionButton,
             gradient: AimGradients.gzHero,
             fullWidth: true,
             loading: state.isSubmitting,
             enabled: state.canSubmit,
-            semanticLabel:
-                state.isLastQuestion ? 'Submit final answer' : 'Next question',
+            semanticLabel: state.isLastQuestion
+                ? AppLocalizations.of(context).placementSubmitFinalAnswerSemantic
+                : AppLocalizations.of(context).placementNextQuestionSemantic,
             onPressed: state.canSubmit ? onSubmit : null,
           ),
         ],
@@ -331,7 +339,7 @@ class _AnswerInput extends StatelessWidget {
           isSubmitting: isSubmitting,
         ),
       _ => Text(
-          'Unknown question type: $questionType',
+          AppLocalizations.of(context).placementUnknownQuestionType(questionType),
           style: AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
         ),
     };
@@ -359,6 +367,7 @@ class _MultipleChoiceInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final hasOptionText = questionOptions.isNotEmpty;
     final options = hasOptionText
         ? questionOptions.map((o) => o.id).toList()
@@ -374,8 +383,9 @@ class _MultipleChoiceInput extends StatelessWidget {
                 : AIMAnswerOptionState.defaultState,
             onTap: isSubmitting ? null : () => onSelect(options[i]),
             semanticLabel: hasOptionText
-                ? 'Option ${options[i]}: ${questionOptions[i].text}'
-                : 'Option ${options[i]}',
+                ? loc.placementOptionWithTextSemantic(
+                    options[i], questionOptions[i].text)
+                : loc.placementOptionSemantic(options[i]),
             child: Text(
               hasOptionText
                   ? '${options[i]}) ${questionOptions[i].text}'
@@ -407,6 +417,7 @@ class _TrueFalseInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Row(
       children: [
         Expanded(
@@ -415,8 +426,8 @@ class _TrueFalseInput extends StatelessWidget {
                 ? AIMAnswerOptionState.selected
                 : AIMAnswerOptionState.defaultState,
             onTap: isSubmitting ? null : () => onSelect('true'),
-            semanticLabel: 'True',
-            child: const Text('True'),
+            semanticLabel: loc.placementTrueOption,
+            child: Text(loc.placementTrueOption),
           ),
         ),
         const SizedBox(width: AimSpacing.componentGap),
@@ -426,8 +437,8 @@ class _TrueFalseInput extends StatelessWidget {
                 ? AIMAnswerOptionState.selected
                 : AIMAnswerOptionState.defaultState,
             onTap: isSubmitting ? null : () => onSelect('false'),
-            semanticLabel: 'False',
-            child: const Text('False'),
+            semanticLabel: loc.placementFalseOption,
+            child: Text(loc.placementFalseOption),
           ),
         ),
       ],
@@ -471,12 +482,13 @@ class _FillBlankInputState extends State<_FillBlankInput> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return AIMTextarea(
       controller: _controller,
       disabled: widget.isSubmitting,
-      placeholder: 'Type your answer here…',
+      placeholder: loc.placementAnswerPlaceholder,
       rows: 3,
-      semanticLabel: 'Your answer',
+      semanticLabel: loc.placementYourAnswerSemantic,
       onChanged: widget.onSelect,
     );
   }

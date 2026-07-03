@@ -7,6 +7,8 @@
 // sent to or read from the backend as scored data.
 import 'package:flutter/material.dart';
 
+import 'package:aim_mobile/l10n/app_localizations.dart';
+
 /// Icon shown in a section's avatar circle, keyed by `skillCode`.
 IconData placementSkillIcon(String skillCode) {
   return switch (skillCode) {
@@ -20,14 +22,14 @@ IconData placementSkillIcon(String skillCode) {
 
 /// Short category label shown alongside a section's question count, e.g.
 /// "Lexis · 10 questions" for a `vocabulary` section.
-String placementSkillCategoryLabel(String skillCode) {
+String placementSkillCategoryLabel(AppLocalizations loc, String skillCode) {
   return switch (skillCode) {
-    'vocabulary' => 'Lexis',
-    'grammar' => 'Structures',
-    'reading' => 'Comprehension',
-    'listening' => 'Audio',
+    'vocabulary' => loc.placementCategoryLexis,
+    'grammar' => loc.placementCategoryStructures,
+    'reading' => loc.placementCategoryComprehension,
+    'listening' => loc.placementCategoryAudio,
     _ => skillCode.isEmpty
-        ? 'General'
+        ? loc.placementCategoryGeneral
         : skillCode[0].toUpperCase() + skillCode.substring(1),
   };
 }

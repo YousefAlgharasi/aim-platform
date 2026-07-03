@@ -32,6 +32,8 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
 import 'package:aim_mobile/features/assessments/logic/provider/assessment_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 
 /// Display-only formatting of a real backend value: drops the trailing ".0"
 /// when a points double is integral (e.g. "17" instead of "17.0").
@@ -92,8 +94,9 @@ class _ResultHistoryPageState extends ConsumerState<ResultHistoryPage> {
           _HistoryHeader(assessmentTitle: widget.assessmentTitle),
           Expanded(
             child: switch (state) {
-              AppAsyncLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading result history',
+              AppAsyncLoading() => AIMFullScreenLoading(
+                  semanticLabel: AppLocalizations.of(context)
+                      .assessmentsLoadingResultHistorySemantic,
                 ),
               AppAsyncFailure(:final message) => AIMFullScreenError(
                   message: message,
@@ -103,8 +106,9 @@ class _ResultHistoryPageState extends ConsumerState<ResultHistoryPage> {
                   history: data,
                   onItemTap: _onItemTap,
                 ),
-              AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading result history',
+              AppAsyncIdle() => AIMFullScreenLoading(
+                  semanticLabel: AppLocalizations.of(context)
+                      .assessmentsLoadingResultHistorySemantic,
                 ),
             },
           ),
@@ -142,7 +146,7 @@ class _HistoryHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () => context.pop(),
                 customBorder: const CircleBorder(),
@@ -170,7 +174,7 @@ class _HistoryHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Result history',
+                    AppLocalizations.of(context).assessmentsResultHistoryTitle,
                     style:
                         AimTextStyles.h3.copyWith(color: AimColors.neutral0),
                     maxLines: 1,
@@ -208,10 +212,11 @@ class _ResultHistoryContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (history.results.isEmpty) {
-      return const AIMEmptyState(
-        icon: Icon(Icons.history_outlined),
-        title: 'No results yet',
-        subtitle: 'Your past attempt results will appear here.',
+      final loc = AppLocalizations.of(context);
+      return AIMEmptyState(
+        icon: const Icon(Icons.history_outlined),
+        title: loc.assessmentsNoResultsTitle,
+        subtitle: loc.assessmentsNoResultsSubtitle,
       );
     }
 
@@ -246,17 +251,14 @@ class _ResultHistoryTile extends StatelessWidget {
   /// Formats a real backend ISO timestamp as e.g. "Jun 24, 2026 · 14:02"
   /// (design screen 30's row subtitle: month-name date, then 24-hour time).
   /// Falls back to the raw string on parse failure — never fabricates.
-  String _formatDateTime(String dateStr) {
+  String _formatDateTime(BuildContext context, String dateStr) {
     try {
       final date = DateTime.parse(dateStr);
-      const months = [
-        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-      ];
+      final locale = Localizations.localeOf(context).toString();
+      final datePart = DateFormat.yMMMd(locale).format(date);
       final hour = date.hour.toString().padLeft(2, '0');
       final minute = date.minute.toString().padLeft(2, '0');
-      return '${months[date.month - 1]} ${date.day}, ${date.year}'
-          ' · $hour:$minute';
+      return '$datePart · $hour:$minute';
     } catch (_) {
       return dateStr;
     }
@@ -265,6 +267,7 @@ class _ResultHistoryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final loc = AppLocalizations.of(context);
     final passed = item.passed;
 
     // Display-only formatting of two backend-supplied values — NOT score
@@ -281,14 +284,18 @@ class _ResultHistoryTile extends StatelessWidget {
 
     // Real timestamps only: prefer submittedAt, fall back to gradedAt when
     // the backend sent no submission time (gradedAt is non-nullable).
-    final timestamp = _formatDateTime(item.submittedAt ?? item.gradedAt);
+    final timestamp =
+        _formatDateTime(context, item.submittedAt ?? item.gradedAt);
 
     return AIMCard(
       interactive: true,
       onTap: onTap,
-      semanticLabel: 'Attempt ${item.attemptNumber}, $scoreLabel, '
-          '${passed ? "passed" : "failed"}'
-          '${item.latePenaltyApplied ? ", late penalty applied" : ""}',
+      semanticLabel: loc.assessmentsAttemptResultSemantic(
+        item.attemptNumber,
+        scoreLabel,
+        passed ? loc.assessmentsPassedWord : loc.assessmentsFailedWord,
+        item.latePenaltyApplied ? loc.assessmentsLatePenaltySemanticSuffix : '',
+      ),
       child: Row(
         children: [
           // Leading "#N" attempt-number circle (real attemptNumber) —
@@ -335,9 +342,9 @@ class _ResultHistoryTile extends StatelessWidget {
           // Real backend flag, previously dropped silently — kept subtle
           // (the design shows nothing for it).
           if (item.latePenaltyApplied) ...[
-            const Tooltip(
-              message: 'Late penalty applied',
-              child: Icon(
+            Tooltip(
+              message: loc.assessmentsLatePenaltyApplied,
+              child: const Icon(
                 Icons.warning_amber_rounded,
                 size: AimSizes.iconSm,
                 color: AimColors.warning500,
@@ -348,7 +355,9 @@ class _ResultHistoryTile extends StatelessWidget {
           AIMBadge(
             tone: passed ? AIMBadgeTone.success : AIMBadgeTone.error,
             pill: true,
-            child: Text(passed ? 'Passed' : 'Failed'),
+            child: Text(
+              passed ? loc.assessmentsStatusPassed : loc.assessmentsStatusFailed,
+            ),
           ),
         ],
       ),
