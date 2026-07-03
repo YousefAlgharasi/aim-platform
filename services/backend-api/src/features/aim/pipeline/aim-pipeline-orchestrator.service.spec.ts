@@ -37,6 +37,7 @@ const MOCK_MAPPING_CONTEXT = {
   xRequestId: 'req-001',
   session: {} as AimMappingContext['session'],
   attempts: [],
+  skillMasteryContext: {},
 } as AimMappingContext;
 
 const MOCK_ASSEMBLED_RESULT: AimStateAssemblyResult = {
