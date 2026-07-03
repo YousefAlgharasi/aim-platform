@@ -29,6 +29,14 @@ void main() {
     test('curriculumLessons path is correct', () {
       expect(BackendApiPaths.curriculumLessons, '/curriculum/lessons');
     });
+
+    test('studentChapters path is correct', () {
+      expect(BackendApiPaths.studentChapters, '/student/chapters');
+    });
+
+    test('studentLessons path is correct', () {
+      expect(BackendApiPaths.studentLessons, '/student/lessons');
+    });
   });
 
   // ── CourseModel ────────────────────────────────────────────────────────────
@@ -127,10 +135,61 @@ void main() {
     });
   });
 
+  // ── ChapterProgressModel ───────────────────────────────────────────────────
+
+  group('ChapterProgressModel — fromJson verbatim storage', () {
+    const raw = {
+      'chapterId': 'chapter-1',
+      'title': 'Unit 1',
+      'description': 'First unit.',
+      'levelCode': 'A1',
+      'lessonCount': 4,
+      'completedLessonCount': 2,
+      'percent': 50,
+      'status': 'in_progress',
+    };
+
+    test('percent/completedLessonCount/status stored verbatim — Flutter never computes them', () {
+      final m = ChapterProgressModel.fromJson(raw);
+      expect(m.percent, 50);
+      expect(m.completedLessonCount, 2);
+      expect(m.status, 'in_progress');
+      expect(m.lessonCount, 4);
+      expect(m.levelCode, 'A1');
+    });
+
+    test('levelCode nullable', () {
+      final m = ChapterProgressModel.fromJson({...raw, 'levelCode': null});
+      expect(m.levelCode, isNull);
+    });
+  });
+
+  // ── LessonProgressModel ────────────────────────────────────────────────────
+
+  group('LessonProgressModel — fromJson verbatim storage', () {
+    const raw = {
+      'id': 'lesson-1',
+      'title': 'Lesson 1',
+      'description': 'Intro grammar.',
+      'xpValue': 10,
+      'completed': true,
+      'current': false,
+    };
+
+    test('completed/current stored verbatim — Flutter never computes them', () {
+      final m = LessonProgressModel.fromJson(raw);
+      expect(m.completed, isTrue);
+      expect(m.current, isFalse);
+      expect(m.xpValue, 10);
+    });
+  });
+
   // ── Interface check ────────────────────────────────────────────────────────
 
   group('LessonsRemoteDatasource interface', () {
-    test('interface declares getCourses, getChapters, getLessons', () {
+    test(
+        'interface declares getCourses, getChapters, getLessons, '
+        'getChaptersWithProgress, getLessonsWithProgress', () {
       // Compile-time check: if this builds, the interface is correctly typed.
       // A FakeDatasource implementing the interface validates the contract.
       expect(_FakeDatasource(), isA<LessonsRemoteDatasource>());
@@ -163,6 +222,20 @@ class _FakeDatasource implements LessonsRemoteDatasource {
 
   @override
   Future<List<LessonModel>> getLessons({
+    required String bearerToken,
+    required String chapterId,
+  }) async =>
+      const [];
+
+  @override
+  Future<List<ChapterProgressModel>> getChaptersWithProgress({
+    required String bearerToken,
+    required String levelId,
+  }) async =>
+      const [];
+
+  @override
+  Future<List<LessonProgressModel>> getLessonsWithProgress({
     required String bearerToken,
     required String chapterId,
   }) async =>

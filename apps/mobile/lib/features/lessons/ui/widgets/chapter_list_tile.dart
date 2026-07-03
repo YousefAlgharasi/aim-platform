@@ -1,19 +1,11 @@
 // Phase 6 — P6-074
 // ChapterListTile — renders a single chapter as a tappable card.
 //
-// Displays title and optional description exactly as returned by the backend.
-// Flutter never computes status or sortOrder.
+// Displays title, description, lesson count, progress percent, and status
+// exactly as returned by the backend (GET /student/chapters?levelId=,
+// ChapterProgressModel). Flutter never computes any of these.
 //
 // Design ref: docs/design/ui-for-all-system-mobile/screenshots/light|dark/07-screen.png
-//
-// The design shows a per-chapter progress bar, lesson count, and a
-// completion chip ("Completed"/"In progress"/"Start"). None of those fields
-// exist on the backend's ChapterModel (no per-student progress, no lesson
-// count — see services/backend-api/src/features/curriculum/chapters), so
-// [progress] is a cosmetic [ChapterProgressMock] passed in by the caller —
-// see curriculum_progress_mock.dart and TODO_BACKEND_PROGRESS.md for the
-// real endpoint this should be replaced with. Title/description remain
-// real, backend-supplied fields.
 //
 // RTL/Arabic: Row is directionality-aware; chevron mirrors via
 // Directionality.of(context). Padding uses symmetric EdgeInsets.
@@ -22,7 +14,6 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
-import 'curriculum_progress_mock.dart';
 
 /// Deterministic-but-varied gradient tokens cycled by list index to give
 /// each chapter row a distinct numbered tile. Purely decorative color
@@ -34,31 +25,31 @@ const List<LinearGradient> _kChapterNumberGradients = [
   AimGradients.gzCoral,
 ];
 
-/// Tappable card for a single backend-supplied chapter.
+/// Tappable card for a single backend-supplied chapter with real progress.
 ///
 /// [onTap] is called when tapped. Navigation to the lesson list is driven
-/// by the backend-supplied [model.id] (chapterId).
+/// by the backend-supplied [model.chapterId].
 ///
 /// [index] is the chapter's position in the already backend-ordered list;
 /// it is shown as `index + 1` in the numbered circle (a real value) and
 /// also used to cycle the circle's decorative gradient.
-///
-/// [progress] is a cosmetic, UI-only placeholder (see
-/// curriculum_progress_mock.dart) until a real per-student progress
-/// endpoint exists.
 class ChapterListTile extends StatelessWidget {
   const ChapterListTile({
     required this.model,
     required this.onTap,
-    required this.progress,
     this.index = 0,
     super.key,
   });
 
-  final ChapterModel model;
+  final ChapterProgressModel model;
   final VoidCallback onTap;
-  final ChapterProgressMock progress;
   final int index;
+
+  String get _statusLabel {
+    if (model.isCompleted) return 'Completed';
+    if (model.isInProgress) return 'In progress';
+    return 'Start';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -139,11 +130,11 @@ class ChapterListTile extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AimSpacing.componentGap),
-          // Cosmetic progress bar — see ChapterProgressMock doc comment.
+          // Real, backend-computed progress bar.
           AIMProgressBar(
-            value: progress.percent.toDouble(),
+            value: model.percent.toDouble(),
             showValue: true,
-            tone: progress.completed
+            tone: model.isCompleted
                 ? AIMProgressBarTone.success
                 : AIMProgressBarTone.gradient,
             size: AIMProgressBarSize.sm,
@@ -158,20 +149,20 @@ class ChapterListTile extends StatelessWidget {
               ),
               const SizedBox(width: AimSpacing.space4),
               Text(
-                '${progress.lessonCount} lessons',
+                '${model.lessonCount} lessons',
                 style: AimTextStyles.caption
                     .copyWith(color: surfaces.textSecondary),
               ),
               const Spacer(),
               AIMBadge(
-                tone: progress.completed
+                tone: model.isCompleted
                     ? AIMBadgeTone.success
-                    : progress.inProgress
+                    : model.isInProgress
                         ? AIMBadgeTone.info
                         : AIMBadgeTone.neutral,
                 pill: true,
-                semanticLabel: progress.statusLabel,
-                child: Text(progress.statusLabel),
+                semanticLabel: _statusLabel,
+                child: Text(_statusLabel),
               ),
             ],
           ),

@@ -17,7 +17,9 @@ import { ProfileModule } from './profile/profile.module';
 import { ReportsModule } from './reports/reports.module';
 import { RolesModule } from './roles/roles.module';
 import { SessionsModule } from './sessions/sessions.module';
+import { StudentChaptersModule } from './student-chapters/student-chapters.module';
 import { StudentCoursesModule } from './student-courses/student-courses.module';
+import { StudentLessonsModule } from './student-lessons/student-lessons.module';
 import { StudentsModule } from './students/students.module';
 import { UsersModule } from './users/users.module';
 import { VoiceTeacherModule } from './voice-teacher/voice-teacher.module';
@@ -49,6 +51,8 @@ import { OperationsModule } from './operations/operations.module';
     EngagementModule,
     AchievementsModule,
     StudentCoursesModule,
+    StudentChaptersModule,
+    StudentLessonsModule,
   ],
   exports: [
     AuthModule,
@@ -73,6 +77,8 @@ import { OperationsModule } from './operations/operations.module';
     EngagementModule,
     AchievementsModule,
     StudentCoursesModule,
+    StudentChaptersModule,
+    StudentLessonsModule,
   ],
 })
 export class FeaturesModule {}

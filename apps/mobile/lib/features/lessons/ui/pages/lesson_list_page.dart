@@ -1,7 +1,8 @@
 // Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Lessons" (lessonList)
 //   docs/design/ui-for-all-system-mobile/screenshots/light/08-screen.png
 //   docs/design/ui-for-all-system-mobile/screenshots/dark/08-screen.png
-// Endpoint: GET /curriculum/lessons?chapterId=
+// Endpoint: GET /student/lessons?chapterId= (LessonProgressModel fields,
+//   real per-student progress — see student-lessons.controller.ts)
 // Widgets: AIMIconButton, AIMProgressBar, AIMFullScreenLoading,
 //   AIMFullScreenError, AIMEmptyState, LessonListTile
 //
@@ -14,22 +15,20 @@
 // navigates to [AppRoutePaths.lessonDetail] with the backend-supplied
 // lessonId and lessonTitle as route arguments.
 //
-// Visual parity pass: the design shows a chapter-level progress bar
-// ("2/4 done") and per-lesson type/duration/completion indicators that
-// have no backing field on the backend's LessonModel (see
-// services/backend-api/src/features/curriculum/lessons). Rather than omit
-// them (which left the screen visually mismatched from the design), they
-// are rendered from a deterministic, cosmetic [LessonProgressMock] — see
-// curriculum_progress_mock.dart and TODO_BACKEND_PROGRESS.md for the real
-// endpoints this should be replaced with once available. Title,
-// description, and xpValue remain real, backend-sourced fields.
+// The chapter-level "N/M done" progress bar and each row's
+// completed/current/upcoming indicator are driven by real, backend-computed
+// fields on [LessonProgressModel] (completed, current) — GET
+// /student/lessons?chapterId= joins the student's real lesson_progress rows
+// server-side; Flutter never computes any of these.
 //
 // Security rules:
-// - chapterId is always the backend-supplied value from ChapterModel; never
-//   from user input or local computation. chapterIndex is only used to
+// - chapterId is always the backend-supplied value from ChapterProgressModel;
+//   never from user input or local computation. chapterIndex is only used to
 //   render the "CHAPTER N" eyebrow label — it is the chapter's position in
 //   the previously-loaded, backend-ordered chapter list.
 // - Flutter never computes status, sortOrder, or hierarchy values.
+// - studentId is never sent by this screen; the backend resolves it from
+//   the JWT.
 // - Bearer token from authFlowProvider; never stored here.
 // - No AIM Engine, AI Teacher, or AI provider calls from Flutter.
 // - No secrets here.
@@ -65,15 +64,15 @@ class LessonListPage extends ConsumerStatefulWidget {
     super.key,
   });
 
-  /// Backend-supplied chapter UUID from the prior ChapterModel response.
+  /// Backend-supplied chapter UUID from the prior ChapterProgressModel response.
   final String chapterId;
 
   /// Display title of the parent chapter (for the header).
   final String chapterTitle;
 
   /// Position of this chapter in the previously-loaded chapter list, used
-  /// only to render the cosmetic "CHAPTER N" eyebrow label. Null when the
-  /// screen is reached without that context (e.g. a deep link).
+  /// only to render the "CHAPTER N" eyebrow label. Null when the screen is
+  /// reached without that context (e.g. a deep link).
   final int? chapterIndex;
 
   @override
@@ -108,9 +107,9 @@ class _LessonListPageState extends ConsumerState<LessonListPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(lessonsListProvider);
-    final lessons = state is AppAsyncSuccess<List<LessonModel>>
+    final lessons = state is AppAsyncSuccess<List<LessonProgressModel>>
         ? state.data
-        : const <LessonModel>[];
+        : const <LessonProgressModel>[];
 
     return Scaffold(
       body: SafeArea(
@@ -147,7 +146,7 @@ class _LessonListPageState extends ConsumerState<LessonListPage> {
 }
 
 // ---------------------------------------------------------------------------
-// Header — back button, "CHAPTER N" eyebrow, title, cosmetic progress bar
+// Header — back button, "CHAPTER N" eyebrow, title, real progress bar
 // ---------------------------------------------------------------------------
 
 class _LessonListHeader extends StatelessWidget {
@@ -159,21 +158,14 @@ class _LessonListHeader extends StatelessWidget {
 
   final String chapterTitle;
   final int? chapterIndex;
-  final List<LessonModel> lessons;
+  final List<LessonProgressModel> lessons;
 
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
 
-    // Cosmetic "N/total done" — see LessonProgressMock doc comment; not a
-    // real backend aggregate.
-    final completedCount = lessons.isEmpty
-        ? 0
-        : lessons.indexed
-            .where((entry) =>
-                LessonProgressMock.forIndex(entry.$1, lessons.length)
-                    .completed)
-            .length;
+    // Real "N/total done" — backend-computed LessonProgressModel.completed.
+    final completedCount = lessons.where((lesson) => lesson.completed).length;
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -249,7 +241,7 @@ class _LessonListContent extends StatelessWidget {
     required this.onRefresh,
   });
 
-  final List<LessonModel> lessons;
+  final List<LessonProgressModel> lessons;
   final Future<void> Function() onRefresh;
 
   @override
@@ -277,7 +269,6 @@ class _LessonListContent extends StatelessWidget {
           return LessonListTile(
             model: lesson,
             index: index,
-            progress: LessonProgressMock.forIndex(index, lessons.length),
             onTap: () {
               // Navigate to lesson detail; lessonId is backend-supplied.
               context.push(
