@@ -210,10 +210,36 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     _SocialSignInSection(surfaces: surfaces),
                     const SizedBox(height: AimSpacing.sectionGap),
                     Center(
-                      child: TextButton(
-                        onPressed: _openRegister,
-                        child: const Text(
-                          "Don't have an account? Create one",
+                      child: Semantics(
+                        button: true,
+                        label: "Don't have an account? Create one",
+                        child: InkWell(
+                          onTap: _openRegister,
+                          borderRadius: AimRadius.borderSm,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AimSpacing.space8,
+                              vertical: AimSpacing.space4,
+                            ),
+                            child: Text.rich(
+                              TextSpan(
+                                style: AimTextStyles.bodySm
+                                    .copyWith(color: surfaces.textSecondary),
+                                children: [
+                                  const TextSpan(
+                                    text: "Don't have an account? ",
+                                  ),
+                                  TextSpan(
+                                    text: 'Create one',
+                                    style: TextStyle(
+                                      color: surfaces.textLink,
+                                      fontWeight: AimFontWeights.semibold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -248,53 +274,101 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
 /// The purple-to-blue gradient hero: badge icon, "Welcome back", and the
 /// supporting streak line beneath it.
+///
+/// The mockup also shows two soft, low-opacity decorative circles behind
+/// this content (one large one clipped at the top-right corner, a fainter
+/// one at bottom-left) — [_HeroBlob] reproduces those. Their exact
+/// size/position/opacity can't be extracted precisely from the source
+/// screenshot (924×540, ~244px-wide phone screen — too low-resolution for
+/// pixel measurement); values below are a close visual match, not a
+/// measured one.
 class _WelcomeHeader extends StatelessWidget {
   const _WelcomeHeader();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsetsDirectional.fromSTEB(
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.space64,
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.sectionGap * 2,
-      ),
-      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
-      child: SafeArea(
-        bottom: false,
-        child: Column(
+    return ClipRect(
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsetsDirectional.fromSTEB(
+          AimSpacing.screenPaddingMobile,
+          AimSpacing.space64,
+          AimSpacing.screenPaddingMobile,
+          AimSpacing.sectionGap * 2,
+        ),
+        decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+        child: Stack(
+          clipBehavior: Clip.none,
           children: [
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: AimColors.neutral0.withValues(alpha: 0.18),
-                shape: BoxShape.circle,
-              ),
-              child: const Padding(
-                padding: EdgeInsets.all(AimSpacing.space16),
-                child: Icon(
-                  Icons.school_outlined,
-                  size: AimSizes.iconLg,
-                  color: AimColors.neutral0,
-                ),
-              ),
+            const PositionedDirectional(
+              top: -50,
+              end: -60,
+              child: _HeroBlob(size: 180, opacity: 0.14),
             ),
-            const SizedBox(height: AimSpacing.componentGap),
-            Text(
-              'Welcome back',
-              style: AimTextStyles.h2.copyWith(color: AimColors.neutral0),
-              textAlign: TextAlign.center,
+            const PositionedDirectional(
+              bottom: -60,
+              start: -50,
+              child: _HeroBlob(size: 150, opacity: 0.08),
             ),
-            const SizedBox(height: AimSpacing.space4),
-            Text(
-              'Sign in to keep your streak alive',
-              style: AimTextStyles.bodySm.copyWith(
-                color: AimColors.neutral0.withValues(alpha: 0.85),
+            SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AimColors.neutral0.withValues(alpha: 0.18),
+                      borderRadius: AimRadius.borderXl,
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.all(AimSpacing.space16),
+                      child: Icon(
+                        Icons.school_outlined,
+                        size: AimSizes.iconLg,
+                        color: AimColors.neutral0,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AimSpacing.componentGap),
+                  Text(
+                    'Welcome back',
+                    style:
+                        AimTextStyles.h2.copyWith(color: AimColors.neutral0),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: AimSpacing.space4),
+                  Text(
+                    'Sign in to keep your streak alive',
+                    style: AimTextStyles.bodySm.copyWith(
+                      color: AimColors.neutral0.withValues(alpha: 0.85),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
-              textAlign: TextAlign.center,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A soft, low-opacity decorative circle behind [_WelcomeHeader]'s content.
+class _HeroBlob extends StatelessWidget {
+  const _HeroBlob({required this.size, required this.opacity});
+
+  final double size;
+  final double opacity;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: AimColors.neutral0.withValues(alpha: opacity),
         ),
       ),
     );
