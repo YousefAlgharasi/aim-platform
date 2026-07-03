@@ -3,5 +3,25 @@
   "appTitle": "AIM Mobile",
   "@appTitle": {
     "description": "The application title."
-  }
+  },
+
+  "commonBack": "Back",
+  "commonCancel": "Cancel",
+  "commonSave": "Save",
+  "commonSubmit": "Submit",
+  "commonRetry": "Try again",
+  "commonClose": "Close",
+  "commonContinue": "Continue",
+  "commonStart": "Start",
+  "commonDone": "Done",
+  "commonLoading": "Loading…",
+  "commonError": "Something went wrong",
+  "commonYes": "Yes",
+  "commonNo": "No",
+  "commonOk": "OK",
+  "commonDelete": "Delete",
+  "commonEdit": "Edit",
+  "commonSeeAll": "See all",
+  "commonJustNow": "Just now",
+  "commonYesterday": "Yesterday"
 }
