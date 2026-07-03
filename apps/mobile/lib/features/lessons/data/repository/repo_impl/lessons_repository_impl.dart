@@ -73,6 +73,35 @@ class LessonsRepositoryImpl implements LessonsRepository {
     return ContentStatusGuard.filterLessons(results);
   }
 
+  @override
+  Future<List<ChapterProgressModel>> getChaptersWithProgress({
+    required String bearerToken,
+    required String levelId,
+  }) {
+    // No ContentStatusGuard pass here: GET /student/chapters already filters
+    // to published-only server-side, and ChapterProgressModel.status is a
+    // per-student progress value (not_started/in_progress/completed), not
+    // the draft/published/archived lifecycle status the guard checks.
+    return _wrap(() => _datasource.getChaptersWithProgress(
+          bearerToken: bearerToken,
+          levelId: levelId,
+        ));
+  }
+
+  @override
+  Future<List<LessonProgressModel>> getLessonsWithProgress({
+    required String bearerToken,
+    required String chapterId,
+  }) {
+    // No ContentStatusGuard pass here: GET /student/lessons already filters
+    // to published-only server-side, and LessonProgressModel has no
+    // lifecycle status field at all.
+    return _wrap(() => _datasource.getLessonsWithProgress(
+          bearerToken: bearerToken,
+          chapterId: chapterId,
+        ));
+  }
+
   Future<T> _wrap<T>(Future<T> Function() call) async {
     try {
       return await call();

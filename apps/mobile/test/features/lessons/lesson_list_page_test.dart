@@ -8,8 +8,10 @@
 //   4. Populated state renders lesson titles.
 //   5. RTL layout renders without error.
 //   6. chapterTitle appears in AppBar.
-//   7. xpValue > 0 renders an XP badge; xpValue == 0 renders no badge
-//      (real-data-only redesign — no fabricated type/duration/completion).
+//   7. xpValue > 0 renders an XP badge; xpValue == 0 renders no badge.
+//   8. Chapter progress header and completed/current indicators are driven
+//      by real, backend-computed LessonProgressModel fields (completed,
+//      current), not a client-side mock.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -44,25 +46,21 @@ const _page = LessonListPage(
 );
 
 const _lessons = [
-  LessonModel(
+  LessonProgressModel(
     id: 'lesson-1',
-    chapterId: 'chapter-1',
     title: 'Lesson 1: Introduction',
     description: 'Basic grammar overview.',
-    status: 'published',
-    sortOrder: 1, xpValue: 0,
-    createdAt: '2025-01-01T00:00:00Z',
-    updatedAt: '2025-06-01T00:00:00Z',
+    xpValue: 0,
+    completed: true,
+    current: false,
   ),
-  LessonModel(
+  LessonProgressModel(
     id: 'lesson-2',
-    chapterId: 'chapter-1',
     title: 'Lesson 2: Nouns',
     description: 'Understanding nouns.',
-    status: 'published',
-    sortOrder: 2, xpValue: 20,
-    createdAt: '2025-01-02T00:00:00Z',
-    updatedAt: '2025-06-02T00:00:00Z',
+    xpValue: 20,
+    completed: false,
+    current: true,
   ),
 ];
 
@@ -157,8 +155,7 @@ void main() {
     });
 
     testWidgets(
-        'shows an XP badge only for lessons with xpValue > 0 '
-        '(real-data-only redesign: no fabricated type/duration/completion)',
+        'shows an XP badge only for lessons with xpValue > 0',
         (tester) async {
       await tester.pumpWidget(_wrap(
         _page,
@@ -177,8 +174,8 @@ void main() {
     });
 
     testWidgets(
-        'shows cosmetic chapter progress header and a play affordance on '
-        'the current lesson', (tester) async {
+        'shows real chapter progress header and a play affordance on the '
+        'current lesson (backend-computed completed/current)', (tester) async {
       await tester.pumpWidget(_wrap(
         _page,
         overrides: [
@@ -189,7 +186,7 @@ void main() {
         ],
       ));
       await tester.pump();
-      // 2 lessons → mock marks lesson-1 (index 0) completed, so "1/2 done".
+      // _lessons[0].completed == true, _lessons[1].current == true → "1/2 done".
       expect(find.text('1/2 done'), findsOneWidget);
       expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
       expect(find.byIcon(Icons.check_rounded), findsOneWidget);
@@ -200,7 +197,7 @@ void main() {
 // ── Fake notifier ─────────────────────────────────────────────────────────────
 
 class _FakeLessonsListNotifier extends LessonsListNotifier {
-  _FakeLessonsListNotifier(AppAsyncState<List<LessonModel>> initialState)
+  _FakeLessonsListNotifier(AppAsyncState<List<LessonProgressModel>> initialState)
       : super(repository: _FakeLessonsRepository()) {
     state = initialState;
   }
@@ -239,6 +236,20 @@ class _FakeLessonsRepository implements LessonsRepository {
 
   @override
   Future<List<LessonModel>> getLessons({
+    required String bearerToken,
+    required String chapterId,
+  }) async =>
+      const [];
+
+  @override
+  Future<List<ChapterProgressModel>> getChaptersWithProgress({
+    required String bearerToken,
+    required String levelId,
+  }) async =>
+      const [];
+
+  @override
+  Future<List<LessonProgressModel>> getLessonsWithProgress({
     required String bearerToken,
     required String chapterId,
   }) async =>

@@ -10,6 +10,9 @@
 //   6. levelId is backend-supplied — widget accepts it as a required param.
 //   7. Populated state renders the real, computed '${chapters.length}
 //      chapters' subtitle (real-data-only redesign — not fabricated).
+//   8. Percent-done badge, filter chips, and status chips are driven by
+//      real, backend-computed ChapterProgressModel fields (percent,
+//      status), not a client-side mock.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -44,23 +47,25 @@ const _page = ChapterListPage(
 );
 
 const _chapters = [
-  ChapterModel(
-    id: 'chapter-1',
-    levelId: 'level-1',
+  ChapterProgressModel(
+    chapterId: 'chapter-1',
     title: 'Unit 1: Basics',
-    status: 'published',
-    sortOrder: 1,
-    createdAt: '2025-01-01T00:00:00Z',
-    updatedAt: '2025-06-01T00:00:00Z',
+    description: 'Intro material.',
+    levelCode: 'A1',
+    lessonCount: 4,
+    completedLessonCount: 4,
+    percent: 100,
+    status: 'completed',
   ),
-  ChapterModel(
-    id: 'chapter-2',
-    levelId: 'level-1',
+  ChapterProgressModel(
+    chapterId: 'chapter-2',
     title: 'Unit 2: Grammar',
-    status: 'published',
-    sortOrder: 2,
-    createdAt: '2025-01-02T00:00:00Z',
-    updatedAt: '2025-06-02T00:00:00Z',
+    description: null,
+    levelCode: 'A1',
+    lessonCount: 5,
+    completedLessonCount: 2,
+    percent: 40,
+    status: 'in_progress',
   ),
 ];
 
@@ -170,7 +175,7 @@ void main() {
     });
 
     testWidgets(
-        'shows cosmetic percent-done badge, filter chips, and status chips '
+        'shows real percent-done badge, filter chips, and status chips '
         'when populated', (tester) async {
       await tester.pumpWidget(_wrap(
         _page,
@@ -186,9 +191,13 @@ void main() {
       expect(find.text('In progress'), findsWidgets);
       expect(find.text('Completed'), findsWidgets);
       expect(find.text('DONE'), findsOneWidget);
+      // Overall percent is the real average of backend-computed per-chapter
+      // percent: (100 + 40) / 2 = 70.
+      expect(find.text('70%'), findsOneWidget);
     });
 
-    testWidgets('filter chips narrow the visible chapter list', (tester) async {
+    testWidgets('filter chips narrow the visible chapter list using real status',
+        (tester) async {
       await tester.pumpWidget(_wrap(
         _page,
         overrides: [
@@ -200,8 +209,7 @@ void main() {
       ));
       await tester.pump();
 
-      // _chapters has 2 entries: index 0 mocks as "Completed", index 1 as
-      // "In progress" (see ChapterProgressMock.forIndex).
+      // _chapters[0].status == 'completed', _chapters[1].status == 'in_progress'.
       await tester.tap(find.text('Completed').first);
       await tester.pump();
       expect(find.text('Unit 1: Basics'), findsOneWidget);
@@ -213,7 +221,7 @@ void main() {
 // ── Fake notifier ─────────────────────────────────────────────────────────────
 
 class _FakeChaptersNotifier extends ChaptersNotifier {
-  _FakeChaptersNotifier(AppAsyncState<List<ChapterModel>> initialState)
+  _FakeChaptersNotifier(AppAsyncState<List<ChapterProgressModel>> initialState)
       : super(repository: _FakeLessonsRepository()) {
     state = initialState;
   }
@@ -258,6 +266,20 @@ class _FakeLessonsRepository implements LessonsRepository {
 
   @override
   Future<List<LessonModel>> getLessons({
+    required String bearerToken,
+    required String chapterId,
+  }) async =>
+      const [];
+
+  @override
+  Future<List<ChapterProgressModel>> getChaptersWithProgress({
+    required String bearerToken,
+    required String levelId,
+  }) async =>
+      const [];
+
+  @override
+  Future<List<LessonProgressModel>> getLessonsWithProgress({
     required String bearerToken,
     required String chapterId,
   }) async =>

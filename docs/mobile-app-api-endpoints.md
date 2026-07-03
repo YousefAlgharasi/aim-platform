@@ -46,6 +46,8 @@ All endpoints require `Authorization: Bearer <token>` unless marked as **Public*
 | GET | `/curriculum/lessons/:lessonId` | Get lesson detail |
 | GET | `/curriculum/lesson-assets` | Get lesson assets. Query: `lessonId`, `status=published` |
 | GET | `/curriculum/questions/:questionId` | Get question detail |
+| GET | `/student/chapters` | List published chapters under a level, enriched with the student's real progress (`percent`, `completedLessonCount`, `status`). Query: `levelId`. Distinct from `/curriculum/chapters` (no progress). |
+| GET | `/student/lessons` | List published lessons under a chapter, enriched with the student's real `completed`/`current` markers. Query: `chapterId`. Distinct from `/curriculum/lessons` (no progress). |
 
 ---
 
