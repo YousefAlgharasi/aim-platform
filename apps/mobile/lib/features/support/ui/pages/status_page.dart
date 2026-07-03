@@ -25,6 +25,7 @@
 // a graceful "not available yet" empty state instead.
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -59,8 +60,7 @@ class StatusPage extends StatelessWidget {
                 const SizedBox(height: AimSpacing.sectionGap),
                 AIMCard(
                   interactive: true,
-                  onTap: () => Navigator.of(context)
-                      .pushNamed(AppRoutePaths.releaseNotes),
+                  onTap: () => context.push(AppRoutePaths.releaseNotes),
                   semanticLabel: "Release notes, what's new in AIM",
                   child: Row(
                     children: [
@@ -265,7 +265,9 @@ class _StatusHeader extends StatelessWidget {
               button: true,
               label: 'Back',
               child: InkWell(
-                onTap: () => Navigator.of(context).maybePop(),
+                onTap: () {
+                  if (context.canPop()) context.pop();
+                },
                 customBorder: const CircleBorder(),
                 child: DecoratedBox(
                   decoration: BoxDecoration(

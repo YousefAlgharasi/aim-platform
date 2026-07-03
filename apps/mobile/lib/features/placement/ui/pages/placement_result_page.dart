@@ -23,6 +23,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/routing.dart';
 import '../../../../core/widgets/widgets.dart';
@@ -204,10 +205,7 @@ class _ResultBody extends StatelessWidget {
             label: 'Continue to AIM',
             fullWidth: true,
             semanticLabel: 'Continue to AIM',
-            onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
-              AppRoutePaths.mainShell,
-              (route) => false,
-            ),
+            onPressed: () => context.go(AppRoutePaths.mainShell),
           ),
         ],
       ),

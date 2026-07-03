@@ -35,6 +35,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
@@ -77,11 +78,10 @@ class _SubmitAttemptPageState extends ConsumerState<SubmitAttemptPage> {
     // pushReplacement would leave the already-submitted attempt page in the
     // stack behind the result. Remove back to the assessments list instead —
     // the same predicate the result page's own Done button uses.
-    Navigator.of(context).pushNamedAndRemoveUntil(
+    context.go(AppRoutePaths.assessments);
+    context.push(
       AppRoutePaths.assessmentResult,
-      (route) =>
-          route.settings.name == AppRoutePaths.assessments || route.isFirst,
-      arguments: {
+      extra: {
         'attemptId': result.attemptId,
         'resultId': result.resultId,
         'assessmentTitle': widget.assessmentTitle,
@@ -119,7 +119,7 @@ class _SubmitAttemptPageState extends ConsumerState<SubmitAttemptPage> {
             title: widget.assessmentTitle,
             // Match the Go Back button's disabled-while-submitting behaviour
             // so the user can't leave mid-submit.
-            onBack: _submitting ? null : () => Navigator.of(context).pop(),
+            onBack: _submitting ? null : () => context.pop(),
           ),
           Expanded(
             child: Padding(
@@ -189,8 +189,7 @@ class _SubmitAttemptPageState extends ConsumerState<SubmitAttemptPage> {
                   const SizedBox(height: AimSpacing.componentGap),
                   AIMButton(
                     variant: AIMButtonVariant.outline,
-                    onPressed:
-                        _submitting ? null : () => Navigator.of(context).pop(),
+                    onPressed: _submitting ? null : () => context.pop(),
                     disabled: _submitting,
                     fullWidth: true,
                     child: const Text('Go Back'),

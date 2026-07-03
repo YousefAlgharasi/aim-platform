@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/features/shell/ui/pages/main_shell_page.dart';
 
@@ -9,8 +10,15 @@ void main() {
       (tester) async {
     await tester.pumpWidget(const TestShell(child: MainShellPage()));
 
-    // No bottom tab bar (removed per product direction) — navigation is
-    // exclusively via the AIMAppDrawer opened from the FAB.
+    // The drawer's MENU section mirrors the bottom nav bar's own tab labels
+    // (Home/Learn/Review/Progress/Profile), so lookups here are scoped to
+    // the open Drawer to disambiguate from the bottom nav bar's copies of
+    // the same labels.
+    Finder inDrawer(String text) => find.descendant(
+          of: find.byType(Drawer),
+          matching: find.text(text),
+        );
+
     Future<void> openDrawer() async {
       await tester.tap(find.byIcon(Icons.menu));
       await tester.pump();
@@ -18,28 +26,28 @@ void main() {
     }
 
     await openDrawer();
-    expect(find.text('Home'), findsOneWidget);
-    expect(find.text('Learn'), findsOneWidget);
-    expect(find.text('Review'), findsOneWidget);
-    expect(find.text('Progress'), findsOneWidget);
-    expect(find.text('Profile'), findsOneWidget);
+    expect(inDrawer('Home'), findsOneWidget);
+    expect(inDrawer('Learn'), findsOneWidget);
+    expect(inDrawer('Review'), findsOneWidget);
+    expect(inDrawer('Progress'), findsOneWidget);
+    expect(inDrawer('Profile'), findsOneWidget);
 
-    await tester.tap(find.text('Learn'));
+    await tester.tap(inDrawer('Learn'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
     await openDrawer();
-    await tester.tap(find.text('Review'));
+    await tester.tap(inDrawer('Review'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
     await openDrawer();
-    await tester.tap(find.text('Progress'));
+    await tester.tap(inDrawer('Progress'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
     await openDrawer();
-    await tester.tap(find.text('Profile'));
+    await tester.tap(inDrawer('Profile'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('No profile loaded.'), findsOneWidget);
@@ -53,8 +61,18 @@ class TestShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // MainShellPage's drawer closes itself via `context.pop()` and opens
+    // other routes via `context.push()` — both require a GoRouter ancestor.
     return ProviderScope(
-      child: MaterialApp(home: child),
+      child: MaterialApp.router(
+        routerConfig: GoRouter(
+          initialLocation: '/',
+          routes: [
+            GoRoute(path: '/', builder: (context, state) => child),
+          ],
+          errorBuilder: (context, state) => const SizedBox(),
+        ),
+      ),
     );
   }
 }

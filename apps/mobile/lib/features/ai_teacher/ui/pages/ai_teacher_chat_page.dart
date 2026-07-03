@@ -40,14 +40,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_chat_state.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/provider/ai_teacher_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import '../widgets/ai_teacher_widgets.dart';
-import 'ai_teacher_session_history_page.dart';
 
 /// Main AI Teacher text chat screen.
 ///
@@ -174,11 +175,7 @@ class _AiTeacherChatPageState extends ConsumerState<AiTeacherChatPage> {
   }
 
   void _openHistory() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const AiTeacherSessionHistoryPage(),
-      ),
-    );
+    context.push(AppRoutePaths.aiTeacherHistory);
   }
 
   @override
@@ -364,7 +361,7 @@ class _AiTeacherChatHeader extends StatelessWidget
               button: true,
               label: 'Back',
               child: InkWell(
-                onTap: () => Navigator.of(context).pop(),
+                onTap: () => context.pop(),
                 customBorder: const CircleBorder(),
                 child: DecoratedBox(
                   decoration: BoxDecoration(

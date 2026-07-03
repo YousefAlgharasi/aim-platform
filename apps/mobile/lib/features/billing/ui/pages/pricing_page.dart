@@ -16,13 +16,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/billing/logic/entity/billing_data.dart';
 import 'package:aim_mobile/features/billing/logic/provider/billing_provider.dart';
 import '../widgets/plan_card.dart';
-import 'checkout_start_page.dart';
 
 /// Turns a snake_case backend feature key into a readable label, e.g.
 /// "ai_teacher_access" → "Ai teacher access".
@@ -123,7 +124,7 @@ class _PricingHeader extends StatelessWidget {
               button: true,
               label: 'Back',
               child: InkWell(
-                onTap: () => Navigator.of(context).pop(),
+                onTap: () => context.pop(),
                 customBorder: const CircleBorder(),
                 child: DecoratedBox(
                   decoration: BoxDecoration(
@@ -201,15 +202,14 @@ class PlansList extends ConsumerWidget {
           isRecommended: plan.planType == 'premium',
           onSelect: price == null
               ? null
-              : () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => CheckoutStartPage(
-                        planName: plan.name,
-                        priceId: price.id,
-                        formattedPrice: price.formattedAmount,
-                        interval: price.billingInterval,
-                      ),
-                    ),
+              : () => context.push(
+                    AppRoutePaths.checkoutStart,
+                    extra: {
+                      'planName': plan.name,
+                      'priceId': price.id,
+                      'formattedPrice': price.formattedAmount,
+                      'interval': price.billingInterval,
+                    },
                   ),
         );
       },

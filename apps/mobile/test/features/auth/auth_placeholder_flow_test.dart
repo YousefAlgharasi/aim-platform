@@ -8,15 +8,15 @@ import 'package:aim_mobile/features/auth/logic/entity/auth_flow_state.dart';
 void main() {
   testWidgets('routes signed-out users away from protected app areas',
       (tester) async {
+    final router = AppRouter.buildRouter(
+      initialLocation: AppRoutePaths.mainShell,
+      authState: () => const AuthFlowState.signedOut(),
+      authContextState: () => null,
+    );
+
     await tester.pumpWidget(
       ProviderScope(
-        child: MaterialApp(
-          initialRoute: AppRoutePaths.mainShell,
-          onGenerateRoute: (settings) => AppRouter.onGenerateRoute(
-            settings,
-            authState: const AuthFlowState.signedOut(),
-          ),
-        ),
+        child: MaterialApp.router(routerConfig: router),
       ),
     );
 

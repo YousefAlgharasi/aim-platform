@@ -40,6 +40,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
@@ -142,11 +143,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                 headerIcon: const _NotificationBellAvatar(),
                 subtitle: _unreadSubtitle(data),
                 onTapItem: (item) {
-                  Navigator.of(sheetContext).pop();
+                  sheetContext.pop();
                   final event = data.firstWhere((e) => e.id == item.id);
-                  Navigator.of(context).pushNamed(
+                  context.push(
                     AppRoutePaths.notificationDetail,
-                    arguments: event,
+                    extra: event,
                   );
                 },
                 // onDismissItem intentionally left unset: mirroring
@@ -281,16 +282,16 @@ class _HomeContent extends ConsumerWidget {
   final VoidCallback onOpenNotifications;
 
   void _navigateToLesson(BuildContext context, HomeQuickStartLesson lesson) {
-    Navigator.of(context).pushNamed(
+    context.push(
       AppRoutePaths.lessonDetail,
-      arguments: {'lessonId': lesson.lessonId},
+      extra: {'lessonId': lesson.lessonId},
     );
   }
 
   void _navigateToCourse(BuildContext context, HomeRecommendedCourse course) {
-    Navigator.of(context).pushNamed(
+    context.push(
       AppRoutePaths.courseChapters,
-      arguments: {'courseId': course.courseId},
+      extra: {'courseId': course.courseId},
     );
   }
 
@@ -456,7 +457,7 @@ List<Widget> _gettingStartedCards(BuildContext context, WidgetRef ref) {
     const SizedBox(height: AimSpacing.componentGap),
     AIMCard(
       variant: AIMCardVariant.elevated,
-      onTap: () => Navigator.of(context).pushNamed(
+      onTap: () => context.push(
         AppRoutePaths.placementStart,
       ),
       child: Row(
@@ -536,7 +537,7 @@ List<Widget> _gettingStartedCards(BuildContext context, WidgetRef ref) {
     const SizedBox(height: AimSpacing.componentGap),
     AIMCard(
       variant: AIMCardVariant.elevated,
-      onTap: () => Navigator.of(context).pushNamed(
+      onTap: () => context.push(
         AppRoutePaths.assessments,
       ),
       child: Row(
@@ -940,9 +941,9 @@ class _ContinueLearningHeroCard extends StatelessWidget {
                 AIMGradientButton(
                   label: 'Resume',
                   icon: const Icon(Icons.play_arrow_rounded),
-                  onPressed: () => Navigator.of(context).pushNamed(
+                  onPressed: () => context.push(
                     AppRoutePaths.lessonDetail,
-                    arguments: {'lessonId': lesson.lessonId},
+                    extra: {'lessonId': lesson.lessonId},
                   ),
                 ),
               ],

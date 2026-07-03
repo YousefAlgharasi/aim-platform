@@ -14,7 +14,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
 import 'package:aim_mobile/features/ai_teacher/data/models/ai_teacher_chat_models.dart';
@@ -35,7 +37,30 @@ Widget _wrap(Widget child, {List<Override> overrides = const []}) =>
         authFlowProvider.overrideWith((ref) => _SignedInAuthFlowNotifier()),
         ...overrides,
       ],
-      child: MaterialApp(theme: AppTheme.light, home: child),
+      child: MaterialApp.router(
+        theme: AppTheme.light,
+        routerConfig: GoRouter(
+          initialLocation: '/',
+          routes: [
+            GoRoute(path: '/', builder: (context, state) => child),
+            // Mirrors AppRouter's real aiTeacherChat route so tapping a
+            // session tile actually lands on AiTeacherChatPage, matching
+            // production navigation instead of a blank stand-in.
+            GoRoute(
+              path: AppRoutePaths.aiTeacherChat,
+              builder: (context, state) {
+                final extra = state.extra as Map<String, dynamic>? ?? {};
+                return AiTeacherChatPage(
+                  contextRef: extra['contextRef'] as String? ?? 'general',
+                  sessionId: extra['sessionId'] as String?,
+                  lessonTitle: extra['lessonTitle'] as String?,
+                );
+              },
+            ),
+          ],
+          errorBuilder: (context, state) => const SizedBox(),
+        ),
+      ),
     );
 
 const _sessions = [

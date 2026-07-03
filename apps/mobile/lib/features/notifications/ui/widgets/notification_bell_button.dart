@@ -6,12 +6,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 
 import '../../logic/provider/notification_providers.dart';
-import '../pages/notification_inbox_page.dart';
 
 class NotificationBellButton extends ConsumerStatefulWidget {
   const NotificationBellButton({super.key});
@@ -36,11 +37,7 @@ class _NotificationBellButtonState
   }
 
   Future<void> _openInbox() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const NotificationInboxPage(),
-      ),
-    );
+    await context.push(AppRoutePaths.notificationInbox);
     _load();
   }
 

@@ -35,14 +35,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_chat_session_summary.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_chat_state.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/provider/ai_teacher_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
-import 'ai_teacher_chat_page.dart';
 import '../widgets/ai_chat_error_state.dart';
 
 /// Converts a raw, machine-oriented `contextRef` slug (e.g. `lesson:fractions`
@@ -109,14 +110,13 @@ class _AiTeacherSessionHistoryPageState
   }
 
   void _openSession(AiChatSessionSummary session) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => AiTeacherChatPage(
-          contextRef: session.contextRef,
-          sessionId: session.sessionId,
-          lessonTitle: session.contextTitle,
-        ),
-      ),
+    context.push(
+      AppRoutePaths.aiTeacherChat,
+      extra: {
+        'contextRef': session.contextRef,
+        'sessionId': session.sessionId,
+        'lessonTitle': session.contextTitle,
+      },
     );
   }
 
@@ -174,7 +174,9 @@ class _SessionHistoryHeader extends StatelessWidget {
               button: true,
               label: 'Back',
               child: InkWell(
-                onTap: () => Navigator.of(context).maybePop(),
+                onTap: () {
+                  if (context.canPop()) context.pop();
+                },
                 customBorder: const CircleBorder(),
                 child: DecoratedBox(
                   decoration: BoxDecoration(
