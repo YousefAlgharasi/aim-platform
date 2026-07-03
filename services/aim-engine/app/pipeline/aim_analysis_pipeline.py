@@ -57,7 +57,12 @@ from aim.domain.services.emotional_state_detector import (  # noqa: E402
 from aim.domain.services.mastery_calculator import (  # noqa: E402
     AttemptSnapshot,
     MasteryCalculator,
+    MasteryResult,
     SkillState,
+)
+from aim.domain.services.retention_tracker import (  # noqa: E402
+    RetentionSkillState,
+    RetentionTracker,
 )
 from aim.domain.services.weakness_detector import WeaknessAttempt, WeaknessDetector  # noqa: E402
 
@@ -124,31 +129,78 @@ class _RequestAttemptSnapshotRepository:
 
 
 class _RequestSkillStateRepository:
-    """SkillStateRepository backed by request-supplied prior mastery.
+    """SkillStateRepository backed by request-supplied prior mastery/retention.
 
     ``update_mastery`` intentionally does nothing — the AIM Engine must never
     write to any database (P5-006). The returned mastery_score is persisted
     by the Backend's AimPersistenceService after response validation.
     """
 
-    def __init__(self, previous_mastery_by_skill: dict[str, float]) -> None:
+    def __init__(
+        self,
+        previous_mastery_by_skill: dict[str, float],
+        retention_by_skill: dict[str, float],
+    ) -> None:
         self._previous_mastery_by_skill = previous_mastery_by_skill
+        self._retention_by_skill = retention_by_skill
 
     def get_skill_state(self, student_id: object, skill_id: str) -> SkillState | None:
         if skill_id not in self._previous_mastery_by_skill:
             return None
-        # retention defaults to 100.0 (no personalized retention input exists
-        # yet — that is P20-008's job to port RetentionTracker and supply a
-        # real value here; matches this same file's existing retention
-        # hardcode until then, not a new fabrication).
         return SkillState(
-            retention=100.0,
+            # Real forgetting-curve retention (P20-008, RetentionTracker), not
+            # a hardcode — see _compute_retention.
+            retention=self._retention_by_skill.get(skill_id, 100.0),
             # confidence unused by MasteryCalculator.calculate(); kept for the dataclass contract.
             confidence=0.0,
             mastery=self._previous_mastery_by_skill[skill_id],
         )
 
     def update_mastery(self, student_id: object, skill_id: str, mastery: float) -> None:
+        return None
+
+
+# ---------------------------------------------------------------------------
+# RetentionTracker adapters (P20-008)
+#
+# Same rationale as the MasteryCalculator adapters above: RetentionTracker
+# was written against a repository-injection pattern that reads and writes
+# persisted state. The AIM Engine stays side-effect-free, so this adapter
+# satisfies RetentionRepository using only request-supplied data, and every
+# write method is a deliberate no-op.
+# ---------------------------------------------------------------------------
+
+
+class _RequestRetentionRepository:
+    """RetentionRepository backed by a single request-supplied prior state."""
+
+    def __init__(self, state: RetentionSkillState | None) -> None:
+        self._state = state
+
+    def get_skill_state(self, student_id: object, skill_id: str) -> RetentionSkillState | None:
+        return self._state
+
+    def get_student_skill_states(self, student_id: object) -> list[RetentionSkillState]:
+        return [self._state] if self._state is not None else []
+
+    def update_retention(
+        self, student_id: object, skill_id: str, retention: float, is_due: bool
+    ) -> None:
+        return None
+
+    def update_lambda(
+        self,
+        student_id: object,
+        skill_id: str,
+        retention_lambda: float,
+        retention_history: object,
+    ) -> None:
+        return None
+
+    def update_review_progress(self, student_id: object, skill_id: str, **kwargs: object) -> None:
+        return None
+
+    def upsert_schedule(self, student_id: object, skill_id: str, **kwargs: object) -> None:
         return None
 
 
@@ -280,53 +332,52 @@ class AimAnalysisPipelineEntrypoint:
         Real domain-service calls will be wired here by downstream tasks
         (P5-056 through P5-063 for the actual adaptive logic).
         """
+        # Computed once and shared: the difficulty decision (P20-008) reuses
+        # MasteryCalculator's consistency_score instead of a second,
+        # possibly-inconsistent definition of "consistency".
+        mastery_results = self._compute_mastery_results(
+            request.session, request.attempts, request.skill_mastery_context
+        )
+
         return AimResponseCategories(
-            skill_state=await self._analyze_skill_state(
-                request.session, request.attempts, request.skill_mastery_context
-            ),
+            skill_state=await self._analyze_skill_state(request.attempts, mastery_results),
             weakness_records=await self._analyze_weakness_records(
                 request.session, request.attempts
             ),
-            difficulty_decision=await self._decide_difficulty(request.session, request.attempts),
+            difficulty_decision=await self._decide_difficulty(
+                request.session, request.attempts, mastery_results, request.skill_mastery_context
+            ),
             recommendations=await self._generate_recommendations(request.session, request.attempts),
-            review_schedule=await self._compute_review_schedule(request.session, request.attempts),
+            review_schedule=await self._compute_review_schedule(
+                request.session, request.attempts, request.skill_mastery_context
+            ),
             session_summary=await self._summarize_session(request.session, request.attempts),
         )
 
     # -----------------------------------------------------------------------
-    # Category stages — wired to domain services
-    # Speed and response-time fields must never feed mastery or difficulty here.
+    # Shared mastery computation (P20-007/P20-008)
     # -----------------------------------------------------------------------
 
-    async def _analyze_skill_state(
+    def _compute_mastery_results(
         self,
         session: AimSessionInput,
         attempts: list[AimAttemptInput],
         skill_mastery_context: dict[str, AimSkillMasteryContext],
-    ) -> list[AimSkillStateOutput] | None:
-        """Compute skill-state updates (P5-012) using the real weighted
-        mastery formula (P20-007), ported from
-        ``services/api/src/aim/domain/services/mastery_calculator.py``:
-        ``accuracy*0.40 + consistency*0.20 + retention*0.15 +
-        difficulty*0.20 + evidence_quality*0.05``, blended against previous
-        mastery by a reliability factor and capped for one-session movement.
-
-        Mastery, confidence, and trend are exclusively AIM Engine outputs.
-        Speed and response-time are behavioral context only and must never
-        feed into mastery_score, mastery_confidence, or mastery_trend.
+    ) -> dict[str, MasteryResult]:
+        """Run the real weighted mastery formula (P20-007) once per skill
+        touched in this call, feeding it the real forgetting-curve retention
+        estimate (P20-008) instead of a hardcode. Shared by the skill-state
+        and difficulty-decision stages so they never disagree.
         """
-        if not attempts:
-            return None
-
-        now = datetime.now(UTC)
         skill_attempts: dict[str, list[AimAttemptInput]] = {}
         for attempt in attempts:
             for sid in attempt.skill_ids:
                 skill_attempts.setdefault(sid, []).append(attempt)
 
-        results: list[AimSkillStateOutput] = []
+        results: dict[str, MasteryResult] = {}
         for skill_id, skill_atts in skill_attempts.items():
             context = skill_mastery_context.get(skill_id)
+            retention = self._compute_retention(skill_id, context)
 
             # Prior history (oldest first) + this call's new attempt(s), so
             # MasteryCalculator sees the full evidence set, not just history.
@@ -359,10 +410,130 @@ class AimAnalysisPipelineEntrypoint:
                 if context is not None and context.previous_mastery_score is not None
                 else {}
             )
-            state_repo = _RequestSkillStateRepository(previous_mastery_by_skill)
+            state_repo = _RequestSkillStateRepository(
+                previous_mastery_by_skill, {skill_id: retention}
+            )
 
             calculator = MasteryCalculator(attempt_repo, state_repo)
-            result = calculator.calculate(session.student_id, skill_id)
+            results[skill_id] = calculator.calculate(session.student_id, skill_id)
+
+        return results
+
+    # -----------------------------------------------------------------------
+    # RetentionTracker helpers (P20-008)
+    # -----------------------------------------------------------------------
+
+    def _build_retention_state(
+        self, skill_id: str, context: AimSkillMasteryContext | None
+    ) -> RetentionSkillState | None:
+        if context is None or context.previous_mastery_score is None:
+            return None
+        # RetentionTracker._current_time() returns a naive UTC datetime (its
+        # own internal convention) and diffs it directly against
+        # last_reviewed_at — a tz-aware value (as Pydantic parses our
+        # ISO-8601 "Z" timestamps) would raise "can't subtract offset-naive
+        # and offset-aware datetimes". Normalize to naive UTC to match.
+        last_reviewed_at = (
+            context.last_evaluated_at.astimezone(UTC).replace(tzinfo=None)
+            if context.last_evaluated_at is not None
+            else None
+        )
+
+        return RetentionSkillState(
+            # student_id is unused by the ported retention math beyond
+            # passthrough to the (no-op) repository — same pre-existing
+            # int-typed Protocol mismatch as MasteryCalculator's (P20-007).
+            student_id=0,
+            skill_id=skill_id,
+            mastery=context.previous_mastery_score,
+            retention=context.previous_mastery_score,
+            retention_lambda=None,
+            last_reviewed_at=last_reviewed_at,
+            category=context.category,
+            retention_history=[
+                {"timestamp": point.recorded_at.isoformat(), "mastery": point.mastery_score}
+                for point in context.retention_history
+            ],
+        )
+
+    def _compute_retention(self, skill_id: str, context: AimSkillMasteryContext | None) -> float:
+        """Current forgetting-curve retention estimate for a skill (P20-008),
+        replacing the hardcoded ``retention = 100.0``. Returns 100.0 (full
+        retention — nothing to decay from yet) when there's no prior mastery
+        for this skill, matching this pipeline's pre-P20-008 fallback.
+        """
+        state = self._build_retention_state(skill_id, context)
+        if state is None:
+            return 100.0
+
+        tracker = RetentionTracker(_RequestRetentionRepository(state))
+        try:
+            result = tracker.calculate_current_retention(0, skill_id)
+        except KeyError:
+            return 100.0
+        return result.retention
+
+    def _compute_retention_lambda(
+        self, skill_id: str, context: AimSkillMasteryContext | None
+    ) -> float:
+        """Category-appropriate default retention decay rate, or the
+        personalized least-squares fit once at least 3 real history points
+        exist (P20-008), replacing the hardcoded ``retention_lambda = 0.15``.
+        """
+        category = context.category if context else None
+        history_points = context.retention_history if context else []
+
+        if len(history_points) >= 3:
+            history_dicts = [
+                {"timestamp": point.recorded_at.isoformat(), "mastery": point.mastery_score}
+                for point in history_points
+            ]
+            # _fit_lambda is a private method; reused directly here because it
+            # is pure (no repository I/O) and is the only entry point for a
+            # lambda fit without going through a state-mutating public method.
+            return RetentionTracker(_RequestRetentionRepository(None))._fit_lambda(  # noqa: SLF001
+                history_dicts
+            )
+
+        return RetentionTracker.default_lambda_for_category(category)
+
+    # -----------------------------------------------------------------------
+    # Category stages — wired to domain services
+    # Speed and response-time fields must never feed mastery or difficulty here.
+    # -----------------------------------------------------------------------
+
+    async def _analyze_skill_state(
+        self,
+        attempts: list[AimAttemptInput],
+        mastery_results: dict[str, MasteryResult],
+    ) -> list[AimSkillStateOutput] | None:
+        """Compute skill-state updates (P5-012) from the real weighted
+        mastery formula (P20-007), ported from
+        ``services/api/src/aim/domain/services/mastery_calculator.py``:
+        ``accuracy*0.40 + consistency*0.20 + retention*0.15 +
+        difficulty*0.20 + evidence_quality*0.05``, blended against previous
+        mastery by a reliability factor and capped for one-session movement.
+        Retention (P20-008) is a real forgetting-curve estimate, not a
+        hardcode — see ``_compute_mastery_results``/``_compute_retention``.
+
+        Mastery, confidence, and trend are exclusively AIM Engine outputs.
+        Speed and response-time are behavioral context only and must never
+        feed into mastery_score, mastery_confidence, or mastery_trend.
+        """
+        if not attempts:
+            return None
+
+        now = datetime.now(UTC)
+        skill_attempts: dict[str, list[AimAttemptInput]] = {}
+        for attempt in attempts:
+            for sid in attempt.skill_ids:
+                skill_attempts.setdefault(sid, []).append(attempt)
+
+        results: list[AimSkillStateOutput] = []
+        for skill_id, result in mastery_results.items():
+            skill_atts = skill_attempts.get(skill_id, [])
+            if not skill_atts:
+                continue
 
             if result.valid_attempt_count < 3:
                 trend = AimMasteryTrend.INSUFFICIENT_DATA
@@ -456,6 +627,8 @@ class AimAnalysisPipelineEntrypoint:
         self,
         session: AimSessionInput,
         attempts: list[AimAttemptInput],
+        mastery_results: dict[str, MasteryResult],
+        skill_mastery_context: dict[str, AimSkillMasteryContext],
     ) -> AimDifficultyDecisionOutput | None:
         """Decide next-item difficulty (P5-014).
 
@@ -464,6 +637,11 @@ class AimAnalysisPipelineEntrypoint:
         The one-step change constraint (|next - previous| <= 1) is enforced
         at the schema level (P5-022) and must be respected by any domain
         service wired here.
+
+        ``consistency`` (P20-008) reuses MasteryCalculator's consistency_score
+        for the same skill rather than a second, independently-computed
+        definition. ``retention`` (P20-008) reuses the same real
+        forgetting-curve estimate fed into that same mastery computation.
         """
         if not attempts:
             return None
@@ -476,9 +654,17 @@ class AimAnalysisPipelineEntrypoint:
         total = len(valid)
         correct = sum(1 for a in valid if a.is_correct)
         accuracy = (correct / total) * 100.0 if total > 0 else 0.0
-        consistency = 100.0
         current_diff = valid[-1].presented_difficulty.value
         reliability = min(1.0, total / 10.0)
+
+        primary_skill_id = attempts[0].skill_ids[0] if attempts[0].skill_ids else None
+        mastery_result = mastery_results.get(primary_skill_id) if primary_skill_id else None
+        consistency = mastery_result.consistency_score if mastery_result else 100.0
+        retention = (
+            self._compute_retention(primary_skill_id, skill_mastery_context.get(primary_skill_id))
+            if primary_skill_id
+            else 100.0
+        )
 
         weakness_score = (1.0 - correct / total) * 100.0 if total > 0 else 0.0
         frustration_score = min(100.0, session.behavioral_context.consecutive_incorrect * 20.0)
@@ -490,7 +676,7 @@ class AimAnalysisPipelineEntrypoint:
             reliability=reliability,
             weakness_score=weakness_score,
             frustration_score=frustration_score,
-            retention=100.0,
+            retention=retention,
             repeated_failure_count=session.behavioral_context.consecutive_incorrect,
         )
 
@@ -572,12 +758,15 @@ class AimAnalysisPipelineEntrypoint:
         self,
         session: AimSessionInput,
         attempts: list[AimAttemptInput],
+        skill_mastery_context: dict[str, AimSkillMasteryContext],
     ) -> list[AimReviewScheduleOutput] | None:
         """Compute spaced-repetition review schedule entries (P5-016).
 
         due_at, interval_days, and repetition_count are exclusively AIM
         Engine outputs. Speed and response-time must never directly set
-        due_at.
+        due_at. ``retention_lambda`` (P20-008) is the category-appropriate
+        default (or personalized fit once enough history exists), replacing
+        the previous fixed 0.15 used for every student and skill.
         """
         if not attempts:
             return None
@@ -592,7 +781,9 @@ class AimAnalysisPipelineEntrypoint:
             accuracy = correct / len(skill_atts) if skill_atts else 0.0
 
             mastery_pct = accuracy * 100.0
-            retention_lambda = 0.15
+            retention_lambda = self._compute_retention_lambda(
+                skill_id, skill_mastery_context.get(skill_id)
+            )
             if mastery_pct > 70.0 and retention_lambda > 0:
                 days_until_due = math.log(mastery_pct / 70.0) / retention_lambda
             else:

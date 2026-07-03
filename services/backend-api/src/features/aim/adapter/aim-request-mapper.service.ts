@@ -64,6 +64,12 @@ export class AimRequestMapperService {
             usedHint: a.usedHint,
             skip: a.skip,
           })),
+          category: ctx.category,
+          lastEvaluatedAt: ctx.lastEvaluatedAt,
+          retentionHistory: ctx.retentionHistory.map((h) => ({
+            recordedAt: h.recordedAt,
+            masteryScore: h.masteryScore,
+          })),
         },
       ]),
     );
