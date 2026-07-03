@@ -52,6 +52,7 @@ export default async function AdminLessonEditorPage({ params }: Props) {
     title: string;
     description: string;
     sortOrder?: number;
+    systemPrompt?: string | null;
   }): Promise<{ error?: string }> {
     'use server';
     const cookieStore = await cookies();
