@@ -23,6 +23,13 @@
  * docstring; FrustrationSignalService is left unwired and flagged in the
  * P5-058 completion comment as likely-dead code pending a team decision.
  *
+ * P20-013: AimFocusDirectiveService runs as a best-effort step AFTER the
+ * six-category transaction commits — not as a seventh in-transaction write.
+ * It reads via SkillsService, which is not transaction-scoped, and a
+ * failure to generate an AI Teacher focus directive must never roll back or
+ * fail the already-committed AIM write (mirroring how audit writes are
+ * excluded from the transaction below).
+ *
  * Scope rules:
  * - This service accepts input ONLY from the pipeline orchestrator.
  * - It never accepts client-submitted values for any AIM-owned field.
@@ -63,6 +70,7 @@ import { DifficultyDecisionService } from './difficulty-decision.service';
 import { RecommendationOutputService } from './recommendation-output.service';
 import { ReviewScheduleOutputService } from './review-schedule-output.service';
 import { SessionSummaryService } from './session-summary.service';
+import { AimFocusDirectiveService } from './aim-focus-directive.service';
 import { LearningReminderIntegration } from '../../notifications/learning-reminder.integration';
 
 // ---------------------------------------------------------------------------
@@ -105,6 +113,7 @@ export class AimPersistenceService {
     private readonly reviewScheduleOutput: ReviewScheduleOutputService,
     private readonly sessionSummary: SessionSummaryService,
     private readonly learningReminderIntegration: LearningReminderIntegration,
+    private readonly focusDirective: AimFocusDirectiveService,
   ) {}
 
   /**
@@ -174,5 +183,19 @@ export class AimPersistenceService {
         throw err;
       }
     });
+
+    // P20-013: Best-effort, outside the transaction — see class docstring.
+    // A failure here must not surface as a persist() failure since the AIM
+    // write itself already committed successfully above.
+    try {
+      await this.focusDirective.generateAndPersist(studentId, categories);
+    } catch (err) {
+      this.logger.error('ai_focus_directive_generation_failed', {
+        studentId,
+        backendRequestId: validatedResponse.backendRequestId,
+        sessionId: validatedResponse.sessionId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
   }
 }

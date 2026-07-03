@@ -32,6 +32,7 @@ function makeSnapshot(
     studentProfile: null,
     currentLesson: null,
     curriculumSkill: null,
+    focusDirective: null,
     ...overrides,
   };
 }

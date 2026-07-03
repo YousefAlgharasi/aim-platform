@@ -4,6 +4,7 @@ import { AiContextSnapshotRepository } from '../repositories/ai-context-snapshot
 import { StudentProfileContextAdapter } from './adapters/student-profile-context.adapter';
 import { CurrentLessonContextAdapter } from './adapters/current-lesson-context.adapter';
 import { CurriculumSkillContextAdapter } from './adapters/curriculum-skill-context.adapter';
+import { FocusDirectiveContextAdapter } from './adapters/focus-directive-context.adapter';
 import { AiTeacherContextSnapshot, BuildContextInput } from './context-builder.types';
 
 /**
@@ -12,13 +13,16 @@ import { AiTeacherContextSnapshot, BuildContextInput } from './context-builder.t
  * P8-030: Current lesson context wired in below.
  * P8-031: Curriculum skill context wired in below.
  * P8-039: Context snapshot persistence wired in below.
+ * P20-013: Focus directive context wired in below.
  *
  * P18-031: Removed the placement result, skill state, weakness,
  * recommendation, review schedule, and recent mistakes adapters. The
  * Phase 18 AI Authority Rule forbids AI Teacher from reading those
  * values — they are owned exclusively by the AIM Engine. Only
  * AIM-Engine-chosen identity context (student profile, current lesson,
- * curriculum skill) remains.
+ * curriculum skill) remains, plus (P20-013) the single pre-computed focus
+ * directive string — see context-builder.types.ts for why that one is not
+ * a Rule violation.
  *
  * Read-only assembly point for backend-approved AI Teacher prompt context
  * (docs/phase-8/context-sources.md). This never reads the database
@@ -40,6 +44,7 @@ export class ContextBuilderService {
     private readonly studentProfileContext: StudentProfileContextAdapter,
     private readonly currentLessonContext: CurrentLessonContextAdapter,
     private readonly curriculumSkillContext: CurriculumSkillContextAdapter,
+    private readonly focusDirectiveContext: FocusDirectiveContextAdapter,
     private readonly contextSnapshotRepository: AiContextSnapshotRepository,
   ) {}
 
@@ -53,6 +58,9 @@ export class ContextBuilderService {
       explicitLessonId,
     );
     const curriculumSkill = await this.curriculumSkillContext.getSkillContext(input.studentId);
+    const focusDirective = await this.focusDirectiveContext.getFocusDirectiveContext(
+      input.studentId,
+    );
 
     return {
       studentId: input.studentId,
@@ -60,6 +68,7 @@ export class ContextBuilderService {
       studentProfile: studentProfile as unknown as Record<string, unknown> | null,
       currentLesson: currentLesson as unknown as Record<string, unknown> | null,
       curriculumSkill: curriculumSkill as unknown as Record<string, unknown> | null,
+      focusDirective: focusDirective as unknown as Record<string, unknown> | null,
     };
   }
 
