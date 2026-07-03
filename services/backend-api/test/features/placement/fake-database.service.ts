@@ -525,6 +525,17 @@ export class FakeDatabaseService {
       return toQueryResult([]);
     }
 
+    // ---- course recommendation (P20-014) -----------------------------------
+    // No student_level_state rows are seeded by this fake (course lookups
+    // above always miss), so both reads always return no rows — matches
+    // this fixture's "no course gating exercised" scope above.
+    if (sql.startsWith('SELECT track_slug FROM student_level_state')) {
+      return toQueryResult([]);
+    }
+    if (sql.startsWith('SELECT max_unlocked_cefr_rank FROM student_level_state')) {
+      return toQueryResult([]);
+    }
+
     // ---- initial_learning_path: bulk insert --------------------------------
     if (sql.startsWith('INSERT INTO initial_learning_path')) {
       const columnsPerRow = 9;
