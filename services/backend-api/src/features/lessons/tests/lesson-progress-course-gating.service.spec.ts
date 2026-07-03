@@ -13,6 +13,18 @@ describe('LessonProgressService — course/level gating', () => {
   const makeCourseCompletionService = () =>
     ({ handleLessonCompleted: jest.fn().mockResolvedValue(undefined) }) as unknown as CourseCompletionService;
 
+  // Sequential query results for the full recordProgress/markComplete path:
+  // 1. assertLessonExists
+  // 2. assertCourseUnlockedForLesson — course lookup
+  // 3. assertCourseUnlockedForLesson — student_level_state lookup (only if course has track_slug/cefr_rank)
+  // 4. assertPreviousLessonCompleted — ordered_lessons lookup
+  // 5. assertPreviousLessonCompleted — previous lesson's lesson_progress lookup (only if prev_lesson_id is not null)
+  // 6. the INSERT itself
+  //
+  // Every test here treats the target lesson as the first in its course
+  // (prev_lesson_id: null) so P20-010's gating behavior is exercised in
+  // isolation from P20-012's sequential-ordering check (covered separately
+  // in lesson-progress-sequential-ordering.service.spec.ts).
   const makeDb = (
     lessonExistsRows: unknown[],
     courseGatingRows: unknown[],
@@ -24,6 +36,7 @@ describe('LessonProgressService — course/level gating', () => {
       .mockResolvedValueOnce({ rows: lessonExistsRows })
       .mockResolvedValueOnce({ rows: courseGatingRows })
       .mockResolvedValueOnce({ rows: levelStateRows })
+      .mockResolvedValueOnce({ rows: [{ prev_lesson_id: null }] })
       .mockResolvedValueOnce({ rows: finalRows });
     return { query, db: { query } as unknown as DatabaseService };
   };
@@ -71,17 +84,19 @@ describe('LessonProgressService — course/level gating', () => {
       });
 
       expect(result.lessonId).toBe('lesson-1');
-      expect(query).toHaveBeenCalledTimes(4);
+      expect(query).toHaveBeenCalledTimes(5);
     });
 
     it('allows progress when the course has no track_slug/cefr_rank mapping', async () => {
       // No student_level_state lookup happens when the course itself has no
-      // track_slug/cefr_rank mapping, so only 3 queries are issued (lesson
-      // existence, course gating lookup, the progress INSERT) — not 4.
+      // track_slug/cefr_rank mapping, so only 4 queries are issued (lesson
+      // existence, course gating lookup, the ordered-lessons lookup, the
+      // progress INSERT) — not 5.
       const query = jest
         .fn()
         .mockResolvedValueOnce({ rows: [{ id: 'lesson-1' }] })
         .mockResolvedValueOnce({ rows: [{ track_slug: null, cefr_rank: null }] })
+        .mockResolvedValueOnce({ rows: [{ prev_lesson_id: null }] })
         .mockResolvedValueOnce({
           rows: [{ lesson_id: 'lesson-1', percent: 50, completed: false, updated_at: '2026-06-01T00:00:00Z' }],
         });
@@ -95,6 +110,7 @@ describe('LessonProgressService — course/level gating', () => {
       });
 
       expect(result.lessonId).toBe('lesson-1');
+      expect(query).toHaveBeenCalledTimes(4);
     });
   });
 
