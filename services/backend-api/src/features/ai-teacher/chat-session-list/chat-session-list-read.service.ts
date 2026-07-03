@@ -22,12 +22,15 @@ export class ChatSessionListReadService {
       throw new BadRequestException('Cannot list chat sessions: studentId is missing.');
     }
 
-    const rows = await this.chatSessionRepository.findActiveByStudentId(studentId);
+    const rows = await this.chatSessionRepository.findActiveByStudentIdWithContextTitle(
+      studentId,
+    );
 
     return {
       sessions: rows.map((row) => ({
         sessionId: row.id,
         contextRef: row.context_ref,
+        contextTitle: row.context_title,
         status: row.status,
         createdAt: row.created_at,
         updatedAt: row.updated_at,

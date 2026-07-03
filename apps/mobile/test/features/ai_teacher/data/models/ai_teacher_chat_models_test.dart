@@ -40,6 +40,7 @@ void main() {
     const json = {
       'sessionId': 'session-1',
       'contextRef': 'lesson:fractions',
+      'contextTitle': 'Fractions Basics',
       'status': 'active',
       'createdAt': '2026-06-19T00:00:00.000Z',
       'updatedAt': '2026-06-19T01:00:00.000Z',
@@ -49,6 +50,7 @@ void main() {
       final model = AiChatSessionSummaryModel.fromJson(json);
       expect(model.sessionId, 'session-1');
       expect(model.contextRef, 'lesson:fractions');
+      expect(model.contextTitle, 'Fractions Basics');
       expect(model.status, 'active');
       expect(model.createdAt, '2026-06-19T00:00:00.000Z');
       expect(model.updatedAt, '2026-06-19T01:00:00.000Z');

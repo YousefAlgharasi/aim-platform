@@ -9,6 +9,9 @@
 export interface ChatSessionListItem {
   readonly sessionId: string;
   readonly contextRef: string;
+  /** Display title resolved from contextRef (e.g. the lesson's title for
+   * `lesson:<uuid>` refs); null when no such title exists. */
+  readonly contextTitle: string | null;
   readonly status: 'active' | 'closed';
   readonly createdAt: string;
   readonly updatedAt: string;
