@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/learning_path/data/models/learning_path_models.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Converts a raw, machine-oriented `skillId` slug (e.g. `skill-algebra` or
 /// `past_simple`) into a readable label for display. Same approach as
@@ -53,7 +54,9 @@ class LearningPathSkillStateCard extends StatelessWidget {
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
-      semanticLabel: '$title mastery: $scorePercent%, ${model.masteryTrend}',
+      semanticLabel: AppLocalizations.of(context)
+          .learningPathSkillMasterySemantic(
+              title, scorePercent, model.masteryTrend),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

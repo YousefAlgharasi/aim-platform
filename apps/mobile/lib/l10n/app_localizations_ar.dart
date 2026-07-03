@@ -69,6 +69,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get commonYesterday => 'أمس';
 
   @override
+  String get commonFocusAreas => 'مجالات التركيز';
+
+  @override
+  String commonDoneProgress(int done, int total) {
+    return '$done/$total مكتمل';
+  }
+
+  @override
+  String commonWeaknessSemantic(String skillId, String severity) {
+    return 'ضعف في $skillId: $severity';
+  }
+
+  @override
   String get authEmailLabel => 'البريد الإلكتروني';
 
   @override
@@ -361,4 +374,580 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get onboardingTapToContinue => 'اضغط للمتابعة';
+
+  @override
+  String get homeLoadingSemantic => 'جارٍ تحميل بيانات الرئيسية';
+
+  @override
+  String homeUnreadNotificationsSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count إشعار جديد',
+      many: '$count إشعارًا جديدًا',
+      few: '$count إشعارات جديدة',
+      two: 'إشعاران جديدان',
+      one: 'إشعار جديد واحد',
+      zero: 'لا توجد إشعارات جديدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeMinutesAgoLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'قبل $count دقيقة',
+      many: 'قبل $count دقيقة',
+      few: 'قبل $count دقائق',
+      two: 'قبل دقيقتين',
+      one: 'قبل دقيقة',
+      zero: 'الآن',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeHoursAgoLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'قبل $count ساعة',
+      many: 'قبل $count ساعة',
+      few: 'قبل $count ساعات',
+      two: 'قبل ساعتين',
+      one: 'قبل ساعة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeDaysAgoLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'قبل $count يوم',
+      many: 'قبل $count يومًا',
+      few: 'قبل $count أيام',
+      two: 'قبل يومين',
+      one: 'قبل يوم',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeWeeksAgoLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'قبل $count أسبوع',
+      many: 'قبل $count أسبوعًا',
+      few: 'قبل $count أسابيع',
+      two: 'قبل أسبوعين',
+      one: 'قبل أسبوع',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeContinueLearningTitle => 'متابعة التعلم';
+
+  @override
+  String get homeLibraryLink => 'المكتبة';
+
+  @override
+  String get homeDailyChallengesTitle => 'التحديات اليومية';
+
+  @override
+  String homeDailyChallengeCountLabel(int done, int total) {
+    return '$done / $total مكتمل';
+  }
+
+  @override
+  String get homeQuickStartTitle => 'بداية سريعة';
+
+  @override
+  String get homeRecommendedCourseTitle => 'دورة موصى بها';
+
+  @override
+  String get homeGoalTitle => 'الهدف';
+
+  @override
+  String get homeSkillStatesTitle => 'حالة المهارات';
+
+  @override
+  String get homeReviewScheduleTitle => 'جدول المراجعة';
+
+  @override
+  String get homeRecommendationsTitle => 'توصيات AIM';
+
+  @override
+  String get homeGetStartedTitle => 'ابدأ الآن';
+
+  @override
+  String get homePlacementTestTitle => 'اختبار تحديد المستوى';
+
+  @override
+  String get homePlacementTestSubtitle =>
+      'حدد مستواك واحصل على توصيات مخصصة لك.';
+
+  @override
+  String get homeBrowseCoursesTitle => 'تصفح الدورات';
+
+  @override
+  String get homeBrowseCoursesSubtitle =>
+      'استكشف الدورات المتاحة وابدأ التعلم.';
+
+  @override
+  String get homeAssessmentsTitle => 'التقييمات';
+
+  @override
+  String get homeAssessmentsSubtitle =>
+      'اطّلع على التقييمات المتاحة وابدأ فيها.';
+
+  @override
+  String homeGreetingWeekdayLine(String weekday) {
+    return '$weekday · هيا بنا';
+  }
+
+  @override
+  String homeGreetingHey(String name) {
+    return 'مرحبًا $name ✦';
+  }
+
+  @override
+  String homeStreakDaysSemantic(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'سلسلة $count يوم',
+      many: 'سلسلة $count يومًا',
+      few: 'سلسلة $count أيام',
+      two: 'سلسلة يومين',
+      one: 'سلسلة يوم واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeCrushingGoalsTitle => 'أنت تحقق أهدافك بامتياز 🚀';
+
+  @override
+  String get homeLevelLabel => 'المستوى';
+
+  @override
+  String get homeXpTodayLabel => 'نقاط اليوم';
+
+  @override
+  String homeLevelHeroSemanticNext(
+      int level, int xp, int nextXp, int nextLevel) {
+    return 'المستوى $level، $xp نقطة خبرة، $nextXp نقطة للوصول إلى المستوى $nextLevel';
+  }
+
+  @override
+  String homeLevelHeroSemanticMax(int level, int xp) {
+    return 'المستوى $level، $xp نقطة خبرة (أعلى مستوى)';
+  }
+
+  @override
+  String homeXpProgressWithNext(String xp, String nextXp) {
+    return '$xp / $nextXp نقطة خبرة';
+  }
+
+  @override
+  String homeXpProgressMax(String xp) {
+    return '$xp نقطة خبرة';
+  }
+
+  @override
+  String homeNextLevelCta(int level) {
+    return 'المستوى $level ←';
+  }
+
+  @override
+  String get homeMaxLevelLabel => 'أعلى مستوى';
+
+  @override
+  String homeBadgeCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count شارة',
+      many: '$count شارة',
+      few: '$count شارات',
+      two: 'شارتان',
+      one: 'شارة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeTopPercentLabel(int percent) {
+    return 'الأفضل $percent%';
+  }
+
+  @override
+  String get homeResumeButton => 'استئناف';
+
+  @override
+  String homePercentCompleteLabel(int percent) {
+    return 'اكتمال $percent%';
+  }
+
+  @override
+  String homeContinueSemanticLabel(String title, int percent) {
+    return 'متابعة $title، اكتمال $percent بالمئة';
+  }
+
+  @override
+  String homeDailyChallengeSemantic(String title, int progress, int target) {
+    return 'التحدي اليومي: $title، $progress من $target';
+  }
+
+  @override
+  String homeQuickStartSemantic(String title) {
+    return 'بداية سريعة: $title';
+  }
+
+  @override
+  String homeRecommendedCourseSemantic(String title) {
+    return 'دورة موصى بها: $title';
+  }
+
+  @override
+  String homeRecommendationSemantic(String kind, String skillId) {
+    return 'توصية AIM: $kind $skillId';
+  }
+
+  @override
+  String homeContinueLearningCardSemantic(String title, int percent) {
+    return 'متابعة التعلم: $title، اكتمال $percent%';
+  }
+
+  @override
+  String homeReviewScheduleSemantic(String skillId, String dueAt) {
+    return 'مراجعة $skillId المستحقة في $dueAt';
+  }
+
+  @override
+  String homeSkillMasterySemantic(String skillId, String percent) {
+    return 'إتقان $skillId: $percent%';
+  }
+
+  @override
+  String homeMasteryPercentLabel(String percent) {
+    return 'إتقان $percent%';
+  }
+
+  @override
+  String homeGoalSemantic(int completed, int target, int streak) {
+    return 'الهدف اليومي: $completed من $target دروس، سلسلة $streak يوم';
+  }
+
+  @override
+  String get homeTodaysGoalTitle => 'هدف اليوم';
+
+  @override
+  String homeGoalProgressLabel(int completed, int target) {
+    return 'أكملت $completed من $target دروس اليوم';
+  }
+
+  @override
+  String get learningPathLoadingSemantic => 'جارٍ تحميل بيانات مسار التعلم';
+
+  @override
+  String get learningPathHeaderTitle => 'مسار التعلم';
+
+  @override
+  String get learningPathHeaderSubtitle => 'خارطة طريقك الشخصية';
+
+  @override
+  String get learningPathEmptyTitle => 'مسار التعلم فارغ حاليًا';
+
+  @override
+  String get learningPathEmptySubtitle =>
+      'أكمل اختبار تحديد المستوى لإنشاء مسار تعلم مخصص لك.';
+
+  @override
+  String get learningPathSkillCoverageTitle => 'تغطية المهارات';
+
+  @override
+  String get learningPathNextUpTitle => 'التالي';
+
+  @override
+  String get learningPathAiPickedBadge => 'اختيار الذكاء الاصطناعي';
+
+  @override
+  String learningPathRecommendationSemantic(String kind, String skillId) {
+    return 'توصية AIM: $kind لـ $skillId';
+  }
+
+  @override
+  String learningPathSkillMasterySemantic(
+      String title, String percent, String trend) {
+    return 'إتقان $title: $percent%، $trend';
+  }
+
+  @override
+  String get lessonsLoadingChaptersSemantic => 'جارٍ تحميل الفصول';
+
+  @override
+  String lessonsChapterCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count فصل',
+      many: '$count فصلًا',
+      few: '$count فصول',
+      two: 'فصلان',
+      one: 'فصل واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lessonsPercentDoneSemantic(int percent) {
+    return '$percent بالمئة مكتمل';
+  }
+
+  @override
+  String get lessonsDoneBadge => 'تم';
+
+  @override
+  String get lessonsFilterAllChapters => 'كل الفصول';
+
+  @override
+  String get lessonsInProgressLabel => 'قيد التقدم';
+
+  @override
+  String get lessonsCompletedLabel => 'مكتمل';
+
+  @override
+  String get lessonsNotStartedLabel => 'لم يبدأ';
+
+  @override
+  String get lessonsNoChaptersTitle => 'لا توجد فصول متاحة';
+
+  @override
+  String get lessonsNoChaptersSubtitle => 'ستظهر الفصول المنشورة هنا.';
+
+  @override
+  String get lessonsNoChaptersFilterTitle => 'لا توجد فصول ضمن هذا الفلتر';
+
+  @override
+  String get lessonsTryDifferentFilterSubtitle => 'جرّب فلترًا مختلفًا أعلاه.';
+
+  @override
+  String get lessonsLoadingCoursesSemantic => 'جارٍ تحميل الدورات';
+
+  @override
+  String get lessonsNoCoursesTitle => 'لا توجد دورات متاحة';
+
+  @override
+  String get lessonsNoCoursesSubtitle => 'ستظهر الدورات المنشورة هنا.';
+
+  @override
+  String get lessonsCoursesPageTitle => 'الدورات';
+
+  @override
+  String lessonsLevelBadge(String level) {
+    return 'المستوى $level';
+  }
+
+  @override
+  String get lessonsCoursesSubtitle => 'طوّر لغتك الإنجليزية خطوة بخطوة';
+
+  @override
+  String get lessonsFilterAllCourses => 'كل الدورات';
+
+  @override
+  String get lessonsNoCoursesFilterMessage =>
+      'لا توجد دورات ضمن هذا الفلتر بعد.';
+
+  @override
+  String get lessonsLoadingLessonsSemantic => 'جارٍ تحميل الدروس';
+
+  @override
+  String lessonsChapterEyebrowLabel(int number) {
+    return 'الفصل $number';
+  }
+
+  @override
+  String get lessonsNoLessonsTitle => 'لا توجد دروس متاحة';
+
+  @override
+  String get lessonsNoLessonsSubtitle => 'ستظهر الدروس المنشورة هنا.';
+
+  @override
+  String get lessonsLoadingLessonSemantic => 'جارٍ تحميل الدرس';
+
+  @override
+  String get lessonsLessonAppBarTitle => 'الدرس';
+
+  @override
+  String get lessonsSaveLessonComingSoonSemantic => 'حفظ الدرس (قريبًا)';
+
+  @override
+  String get lessonsWhatsInsideTitle => 'ما الذي يحتويه';
+
+  @override
+  String lessonsStepsCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count خطوة',
+      many: '$count خطوة',
+      few: '$count خطوات',
+      two: 'خطوتان',
+      one: 'خطوة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get lessonsNoContentTitle => 'لا يوجد محتوى بعد';
+
+  @override
+  String get lessonsNoContentSubtitle => 'سيظهر محتوى الدرس المنشور هنا.';
+
+  @override
+  String get lessonsStartPracticeButton => 'ابدأ التدريب';
+
+  @override
+  String get lessonsPracticeContextLabel => 'تدريب الدرس';
+
+  @override
+  String lessonsLessonNumberPill(int number) {
+    return 'الدرس $number';
+  }
+
+  @override
+  String lessonsMinutesLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count دقيقة',
+      many: '$count دقيقة',
+      few: '$count دقائق',
+      two: 'دقيقتان',
+      one: 'دقيقة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lessonsBlocksCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count جزء',
+      many: '$count جزءًا',
+      few: '$count أجزاء',
+      two: 'جزءان',
+      one: 'جزء واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lessonsXpBadge(int xp) {
+    return '+$xp نقطة خبرة';
+  }
+
+  @override
+  String lessonsStepTitleLabel(int number) {
+    return 'الخطوة $number';
+  }
+
+  @override
+  String lessonsStepSemantic(int number, String title) {
+    return 'الخطوة $number: $title';
+  }
+
+  @override
+  String lessonsAssetSemantic(String type, String title) {
+    return 'عنصر $type: $title';
+  }
+
+  @override
+  String lessonsCourseSemanticBase(String title, int percent) {
+    return 'الدورة: $title، اكتمال $percent بالمئة';
+  }
+
+  @override
+  String lessonsCourseSemanticWithLevel(
+      String title, String level, int percent) {
+    return 'الدورة: $title، المستوى $level، اكتمال $percent بالمئة';
+  }
+
+  @override
+  String lessonsLessonsCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count درس',
+      many: '$count درسًا',
+      few: '$count دروس',
+      two: 'درسان',
+      one: 'درس واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lessonsLessonSemantic(String title) {
+    return 'الدرس: $title';
+  }
+
+  @override
+  String lessonsXpValueLabel(int xp) {
+    return '$xp نقطة خبرة';
+  }
+
+  @override
+  String get lessonsStartLessonSemantic => 'ابدأ الدرس';
+
+  @override
+  String lessonsChapterSemantic(String title) {
+    return 'الفصل: $title';
+  }
+
+  @override
+  String lessonsImageUrlMissingError(String title) {
+    return 'رابط الصورة مفقود للعنصر: $title';
+  }
+
+  @override
+  String lessonsImageLoadFailedError(String title) {
+    return 'فشل تحميل الصورة: $title';
+  }
+
+  @override
+  String lessonsNewWordsCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count كلمة جديدة',
+      many: '$count كلمة جديدة',
+      few: '$count كلمات جديدة',
+      two: 'كلمتان جديدتان',
+      one: 'كلمة جديدة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lessonsItemsCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count عنصر',
+      many: '$count عنصرًا',
+      few: '$count عناصر',
+      two: 'عنصران',
+      one: 'عنصر واحد',
+    );
+    return '$_temp0';
+  }
 }

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_engagement.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class HomeGoalCard extends StatelessWidget {
   const HomeGoalCard({required this.goal, super.key});
@@ -17,6 +18,7 @@ class HomeGoalCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final progress = goal.targetLessons == 0
         ? 0.0
         : (goal.completedToday / goal.targetLessons).clamp(0.0, 1.0);
@@ -24,8 +26,11 @@ class HomeGoalCard extends StatelessWidget {
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
-      semanticLabel:
-          'Daily goal: ${goal.completedToday} of ${goal.targetLessons} lessons, ${goal.streakDays} day streak',
+      semanticLabel: l10n.homeGoalSemantic(
+        goal.completedToday,
+        goal.targetLessons,
+        goal.streakDays,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -39,7 +44,7 @@ class HomeGoalCard extends StatelessWidget {
               const SizedBox(width: AimSpacing.componentGap),
               Expanded(
                 child: Text(
-                  "Today's Goal",
+                  l10n.homeTodaysGoalTitle,
                   style:
                       AimTextStyles.title.copyWith(color: surfaces.textPrimary),
                 ),
@@ -55,7 +60,7 @@ class HomeGoalCard extends StatelessWidget {
           ),
           const SizedBox(height: AimSpacing.space8),
           Text(
-            '${goal.completedToday} of ${goal.targetLessons} lessons completed today',
+            l10n.homeGoalProgressLabel(goal.completedToday, goal.targetLessons),
             style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
           ),
           const SizedBox(height: AimSpacing.space8),

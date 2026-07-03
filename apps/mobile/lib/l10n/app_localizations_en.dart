@@ -69,6 +69,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonYesterday => 'Yesterday';
 
   @override
+  String get commonFocusAreas => 'Focus Areas';
+
+  @override
+  String commonDoneProgress(int done, int total) {
+    return '$done/$total done';
+  }
+
+  @override
+  String commonWeaknessSemantic(String skillId, String severity) {
+    return '$skillId weakness: $severity';
+  }
+
+  @override
   String get authEmailLabel => 'Email';
 
   @override
@@ -361,4 +374,539 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingTapToContinue => 'Tap to continue';
+
+  @override
+  String get homeLoadingSemantic => 'Loading home data';
+
+  @override
+  String homeUnreadNotificationsSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new notifications',
+      one: '1 new notification',
+      zero: 'No new notifications',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeMinutesAgoLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '${count}m ago',
+      one: '1m ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeHoursAgoLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '${count}h ago',
+      one: '1h ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeDaysAgoLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '${count}d ago',
+      one: '1d ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeWeeksAgoLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '${count}w ago',
+      one: '1w ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeContinueLearningTitle => 'Continue learning';
+
+  @override
+  String get homeLibraryLink => 'Library';
+
+  @override
+  String get homeDailyChallengesTitle => 'Daily challenges';
+
+  @override
+  String homeDailyChallengeCountLabel(int done, int total) {
+    return '$done / $total done';
+  }
+
+  @override
+  String get homeQuickStartTitle => 'Quick Start';
+
+  @override
+  String get homeRecommendedCourseTitle => 'Recommended Course';
+
+  @override
+  String get homeGoalTitle => 'Goal';
+
+  @override
+  String get homeSkillStatesTitle => 'Skill States';
+
+  @override
+  String get homeReviewScheduleTitle => 'Review Schedule';
+
+  @override
+  String get homeRecommendationsTitle => 'AIM Recommendations';
+
+  @override
+  String get homeGetStartedTitle => 'Get Started';
+
+  @override
+  String get homePlacementTestTitle => 'Placement Test';
+
+  @override
+  String get homePlacementTestSubtitle =>
+      'Find your level and get personalised recommendations.';
+
+  @override
+  String get homeBrowseCoursesTitle => 'Browse Courses';
+
+  @override
+  String get homeBrowseCoursesSubtitle =>
+      'Explore available courses and start learning.';
+
+  @override
+  String get homeAssessmentsTitle => 'Assessments';
+
+  @override
+  String get homeAssessmentsSubtitle => 'View and take available assessments.';
+
+  @override
+  String homeGreetingWeekdayLine(String weekday) {
+    return '$weekday · let\'s go';
+  }
+
+  @override
+  String homeGreetingHey(String name) {
+    return 'Hey $name ✦';
+  }
+
+  @override
+  String homeStreakDaysSemantic(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count day streak',
+      one: '1 day streak',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeCrushingGoalsTitle => 'You\'re crushing your goals 🚀';
+
+  @override
+  String get homeLevelLabel => 'LEVEL';
+
+  @override
+  String get homeXpTodayLabel => 'XP TODAY';
+
+  @override
+  String homeLevelHeroSemanticNext(
+      int level, int xp, int nextXp, int nextLevel) {
+    return 'Level $level, $xp XP, $nextXp XP to level $nextLevel';
+  }
+
+  @override
+  String homeLevelHeroSemanticMax(int level, int xp) {
+    return 'Level $level, $xp XP (max level)';
+  }
+
+  @override
+  String homeXpProgressWithNext(String xp, String nextXp) {
+    return '$xp / $nextXp XP';
+  }
+
+  @override
+  String homeXpProgressMax(String xp) {
+    return '$xp XP';
+  }
+
+  @override
+  String homeNextLevelCta(int level) {
+    return 'Level $level →';
+  }
+
+  @override
+  String get homeMaxLevelLabel => 'Max level';
+
+  @override
+  String homeBadgeCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count badges',
+      one: '1 badge',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeTopPercentLabel(int percent) {
+    return 'Top $percent%';
+  }
+
+  @override
+  String get homeResumeButton => 'Resume';
+
+  @override
+  String homePercentCompleteLabel(int percent) {
+    return '$percent% complete';
+  }
+
+  @override
+  String homeContinueSemanticLabel(String title, int percent) {
+    return 'Continue $title, $percent percent complete';
+  }
+
+  @override
+  String homeDailyChallengeSemantic(String title, int progress, int target) {
+    return 'Daily challenge: $title, $progress of $target';
+  }
+
+  @override
+  String homeQuickStartSemantic(String title) {
+    return 'Quick Start: $title';
+  }
+
+  @override
+  String homeRecommendedCourseSemantic(String title) {
+    return 'Recommended course: $title';
+  }
+
+  @override
+  String homeRecommendationSemantic(String kind, String skillId) {
+    return 'AIM recommendation: $kind $skillId';
+  }
+
+  @override
+  String homeContinueLearningCardSemantic(String title, int percent) {
+    return 'Continue learning: $title, $percent% complete';
+  }
+
+  @override
+  String homeReviewScheduleSemantic(String skillId, String dueAt) {
+    return 'Review $skillId due $dueAt';
+  }
+
+  @override
+  String homeSkillMasterySemantic(String skillId, String percent) {
+    return '$skillId mastery: $percent%';
+  }
+
+  @override
+  String homeMasteryPercentLabel(String percent) {
+    return '$percent% mastery';
+  }
+
+  @override
+  String homeGoalSemantic(int completed, int target, int streak) {
+    return 'Daily goal: $completed of $target lessons, $streak day streak';
+  }
+
+  @override
+  String get homeTodaysGoalTitle => 'Today\'s Goal';
+
+  @override
+  String homeGoalProgressLabel(int completed, int target) {
+    return '$completed of $target lessons completed today';
+  }
+
+  @override
+  String get learningPathLoadingSemantic => 'Loading learning path data';
+
+  @override
+  String get learningPathHeaderTitle => 'Learning Path';
+
+  @override
+  String get learningPathHeaderSubtitle => 'Your personalized roadmap';
+
+  @override
+  String get learningPathEmptyTitle => 'Your learning path is empty';
+
+  @override
+  String get learningPathEmptySubtitle =>
+      'Complete your placement test to generate a personalised learning path.';
+
+  @override
+  String get learningPathSkillCoverageTitle => 'Skill coverage';
+
+  @override
+  String get learningPathNextUpTitle => 'Next up';
+
+  @override
+  String get learningPathAiPickedBadge => 'AI picked';
+
+  @override
+  String learningPathRecommendationSemantic(String kind, String skillId) {
+    return 'AIM recommendation: $kind for $skillId';
+  }
+
+  @override
+  String learningPathSkillMasterySemantic(
+      String title, String percent, String trend) {
+    return '$title mastery: $percent%, $trend';
+  }
+
+  @override
+  String get lessonsLoadingChaptersSemantic => 'Loading chapters';
+
+  @override
+  String lessonsChapterCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count chapters',
+      one: '1 chapter',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lessonsPercentDoneSemantic(int percent) {
+    return '$percent percent done';
+  }
+
+  @override
+  String get lessonsDoneBadge => 'DONE';
+
+  @override
+  String get lessonsFilterAllChapters => 'All chapters';
+
+  @override
+  String get lessonsInProgressLabel => 'In progress';
+
+  @override
+  String get lessonsCompletedLabel => 'Completed';
+
+  @override
+  String get lessonsNotStartedLabel => 'Not started';
+
+  @override
+  String get lessonsNoChaptersTitle => 'No chapters available';
+
+  @override
+  String get lessonsNoChaptersSubtitle =>
+      'Published chapters will appear here.';
+
+  @override
+  String get lessonsNoChaptersFilterTitle => 'No chapters in this filter';
+
+  @override
+  String get lessonsTryDifferentFilterSubtitle =>
+      'Try a different filter above.';
+
+  @override
+  String get lessonsLoadingCoursesSemantic => 'Loading courses';
+
+  @override
+  String get lessonsNoCoursesTitle => 'No courses available';
+
+  @override
+  String get lessonsNoCoursesSubtitle => 'Published courses will appear here.';
+
+  @override
+  String get lessonsCoursesPageTitle => 'Courses';
+
+  @override
+  String lessonsLevelBadge(String level) {
+    return 'Level $level';
+  }
+
+  @override
+  String get lessonsCoursesSubtitle => 'Level up your English, step by step';
+
+  @override
+  String get lessonsFilterAllCourses => 'All courses';
+
+  @override
+  String get lessonsNoCoursesFilterMessage =>
+      'No courses match this filter yet.';
+
+  @override
+  String get lessonsLoadingLessonsSemantic => 'Loading lessons';
+
+  @override
+  String lessonsChapterEyebrowLabel(int number) {
+    return 'CHAPTER $number';
+  }
+
+  @override
+  String get lessonsNoLessonsTitle => 'No lessons available';
+
+  @override
+  String get lessonsNoLessonsSubtitle => 'Published lessons will appear here.';
+
+  @override
+  String get lessonsLoadingLessonSemantic => 'Loading lesson';
+
+  @override
+  String get lessonsLessonAppBarTitle => 'Lesson';
+
+  @override
+  String get lessonsSaveLessonComingSoonSemantic => 'Save lesson (coming soon)';
+
+  @override
+  String get lessonsWhatsInsideTitle => 'What\'s inside';
+
+  @override
+  String lessonsStepsCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count steps',
+      one: '1 step',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get lessonsNoContentTitle => 'No content yet';
+
+  @override
+  String get lessonsNoContentSubtitle =>
+      'Published lesson content will appear here.';
+
+  @override
+  String get lessonsStartPracticeButton => 'Start practice';
+
+  @override
+  String get lessonsPracticeContextLabel => 'Lesson practice';
+
+  @override
+  String lessonsLessonNumberPill(int number) {
+    return 'Lesson $number';
+  }
+
+  @override
+  String lessonsMinutesLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count min',
+      one: '1 min',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lessonsBlocksCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count blocks',
+      one: '1 block',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lessonsXpBadge(int xp) {
+    return '+$xp XP';
+  }
+
+  @override
+  String lessonsStepTitleLabel(int number) {
+    return 'Step $number';
+  }
+
+  @override
+  String lessonsStepSemantic(int number, String title) {
+    return 'Step $number: $title';
+  }
+
+  @override
+  String lessonsAssetSemantic(String type, String title) {
+    return '$type asset: $title';
+  }
+
+  @override
+  String lessonsCourseSemanticBase(String title, int percent) {
+    return 'Course: $title, $percent percent complete';
+  }
+
+  @override
+  String lessonsCourseSemanticWithLevel(
+      String title, String level, int percent) {
+    return 'Course: $title, level $level, $percent percent complete';
+  }
+
+  @override
+  String lessonsLessonsCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lessons',
+      one: '1 lesson',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lessonsLessonSemantic(String title) {
+    return 'Lesson: $title';
+  }
+
+  @override
+  String lessonsXpValueLabel(int xp) {
+    return '$xp XP';
+  }
+
+  @override
+  String get lessonsStartLessonSemantic => 'Start lesson';
+
+  @override
+  String lessonsChapterSemantic(String title) {
+    return 'Chapter: $title';
+  }
+
+  @override
+  String lessonsImageUrlMissingError(String title) {
+    return 'Image URL is missing for asset: $title';
+  }
+
+  @override
+  String lessonsImageLoadFailedError(String title) {
+    return 'Failed to load image: $title';
+  }
+
+  @override
+  String lessonsNewWordsCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new words',
+      one: '1 new word',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lessonsItemsCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0';
+  }
 }

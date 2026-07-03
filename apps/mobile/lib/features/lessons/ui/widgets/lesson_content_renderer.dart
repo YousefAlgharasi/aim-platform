@@ -33,6 +33,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lesson_asset.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Renders a single published [LessonAsset] using safe built-in widgets.
 ///
@@ -78,7 +79,8 @@ class _ImageRenderer extends StatelessWidget {
     // If missing (defensive), show error card instead of crashing.
     if (asset.url == null || asset.url!.isEmpty) {
       return _AssetErrorCard(
-        message: 'Image URL is missing for asset: ${asset.title}',
+        message:
+            AppLocalizations.of(context).lessonsImageUrlMissingError(asset.title),
       );
     }
 
@@ -117,7 +119,8 @@ class _ImageRenderer extends StatelessWidget {
             },
             errorBuilder: (context, error, stackTrace) {
               return _AssetErrorCard(
-                message: 'Failed to load image: ${asset.title}',
+                message: AppLocalizations.of(context)
+                    .lessonsImageLoadFailedError(asset.title),
               );
             },
           ),
@@ -220,7 +223,9 @@ class _VocabularyCard extends StatelessWidget {
     return _MediaInfoCard(
       icon: Icons.menu_book_outlined,
       asset: asset,
-      subtitleSuffix: wordCount is num ? '$wordCount new words' : null,
+      subtitleSuffix: wordCount is num
+          ? AppLocalizations.of(context).lessonsNewWordsCountLabel(wordCount.round())
+          : null,
     );
   }
 }
@@ -239,7 +244,9 @@ class _ExerciseCard extends StatelessWidget {
     return _MediaInfoCard(
       icon: Icons.check_circle_outline,
       asset: asset,
-      subtitleSuffix: itemCount is num ? '$itemCount items' : null,
+      subtitleSuffix: itemCount is num
+          ? AppLocalizations.of(context).lessonsItemsCountLabel(itemCount.round())
+          : null,
     );
   }
 }
@@ -299,7 +306,8 @@ class _MediaInfoCard extends StatelessWidget {
 
     return AIMCard(
       variant: AIMCardVariant.standard,
-      semanticLabel: '${asset.type} asset: ${asset.title}',
+      semanticLabel:
+          AppLocalizations.of(context).lessonsAssetSemantic(asset.type, asset.title),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

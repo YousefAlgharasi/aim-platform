@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_continue_learning.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class HomeContinueLearningCard extends StatelessWidget {
   const HomeContinueLearningCard({required this.lesson, super.key});
@@ -19,11 +20,12 @@ class HomeContinueLearningCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
-      semanticLabel:
-          'Continue learning: ${lesson.lessonTitle}, ${lesson.percent}% complete',
+      semanticLabel: l10n.homeContinueLearningCardSemantic(
+          lesson.lessonTitle, lesson.percent),
       onTap: () => context.push(
         AppRoutePaths.lessonDetail,
         extra: {
@@ -62,7 +64,7 @@ class HomeContinueLearningCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AimSpacing.space4),
                 Text(
-                  '${lesson.percent}% complete',
+                  l10n.homePercentCompleteLabel(lesson.percent),
                   style: AimTextStyles.bodySm.copyWith(
                     color: surfaces.textSecondary,
                   ),

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/home/data/models/home_models.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class HomeRecommendationCard extends StatelessWidget {
   const HomeRecommendationCard({
@@ -21,7 +22,8 @@ class HomeRecommendationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return AIMCard(
       variant: AIMCardVariant.ai,
-      semanticLabel: 'AIM recommendation: ${model.kind} ${model.targetSkillId}',
+      semanticLabel: AppLocalizations.of(context)
+          .homeRecommendationSemantic(model.kind, model.targetSkillId),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

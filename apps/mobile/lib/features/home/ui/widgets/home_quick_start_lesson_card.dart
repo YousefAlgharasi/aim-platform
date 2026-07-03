@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_quick_start_lesson.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class HomeQuickStartLessonCard extends StatelessWidget {
   const HomeQuickStartLessonCard({
@@ -24,7 +25,8 @@ class HomeQuickStartLessonCard extends StatelessWidget {
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
-      semanticLabel: 'Quick Start: ${lesson.lessonTitle}',
+      semanticLabel:
+          AppLocalizations.of(context).homeQuickStartSemantic(lesson.lessonTitle),
       onTap: onTap,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
