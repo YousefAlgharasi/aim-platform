@@ -157,7 +157,9 @@ describe('AimStateAssemblyService.assemble', () => {
       if (sql.includes('FROM learning_sessions')) return { rows: [SESSION_ROW], rowCount: 1 };
       if (sql.includes('FROM lesson_attempts')) return { rows: [makeAttemptRow()], rowCount: 1 };
       if (sql.includes('FROM session_events')) return { rows: [], rowCount: 0 };
-      if (sql.includes('FROM student_skill_states')) return { rows: [{ count: '3' }], rowCount: 1 };
+      if (sql.startsWith('SELECT COUNT(*)::text AS count FROM student_skill_states')) {
+        return { rows: [{ count: '3' }], rowCount: 1 };
+      }
       return { rows: [], rowCount: 0 };
     });
 
@@ -167,5 +169,74 @@ describe('AimStateAssemblyService.assemble', () => {
     expect(result.status).toBe('assembled');
     if (result.status !== 'assembled') return;
     expect(result.context.session.placementContext).toBeNull();
+  });
+
+  // P20-007: skillMasteryContext — prior mastery/attempt history per skill.
+  describe('skillMasteryContext (P20-007)', () => {
+    it('includes previousMasteryScore and a bounded window of prior attempts per skill', async () => {
+      const priorAttempts = Array.from({ length: 12 }, (_, i) =>
+        makeAttemptRow({
+          id: `prior-attempt-${i}`,
+          skill_ids: ['grammar.past_simple.forms'],
+          is_correct: i % 2 === 0,
+          attempt_number_for_item: 1,
+        }),
+      );
+
+      const db = makeMockDb(async (sql) => {
+        if (sql.includes('FROM learning_sessions')) return { rows: [SESSION_ROW], rowCount: 1 };
+        if (sql.includes('FROM lesson_attempts') && sql.includes('WHERE learning_session_id')) {
+          return { rows: [makeAttemptRow()], rowCount: 1 };
+        }
+        if (sql.includes('FROM session_events')) return { rows: [], rowCount: 0 };
+        if (sql.startsWith('SELECT COUNT(*)::text AS count FROM student_skill_states')) {
+          return { rows: [{ count: '1' }], rowCount: 1 };
+        }
+        if (sql.includes('SELECT skill_id, mastery_score')) {
+          return { rows: [{ skill_id: 'grammar.past_simple.forms', mastery_score: '55.5' }], rowCount: 1 };
+        }
+        if (sql.includes('skill_ids ?| $2::text[]')) {
+          return { rows: priorAttempts, rowCount: priorAttempts.length };
+        }
+        return { rows: [], rowCount: 0 };
+      });
+
+      const service = new AimStateAssemblyService(db);
+      const result = await service.assemble(CTX);
+
+      expect(result.status).toBe('assembled');
+      if (result.status !== 'assembled') return;
+
+      const ctx = result.context.skillMasteryContext['grammar.past_simple.forms'];
+      expect(ctx.previousMasteryScore).toBe(55.5);
+      // 12 prior attempts supplied -> capped to the most recent 10.
+      expect(ctx.recentAttempts).toHaveLength(10);
+    });
+
+    it('has previousMasteryScore null and empty recentAttempts for a skill with no history', async () => {
+      const db = makeMockDb(async (sql) => {
+        if (sql.includes('FROM learning_sessions')) return { rows: [SESSION_ROW], rowCount: 1 };
+        if (sql.includes('FROM lesson_attempts') && sql.includes('WHERE learning_session_id')) {
+          return { rows: [makeAttemptRow()], rowCount: 1 };
+        }
+        if (sql.includes('FROM session_events')) return { rows: [], rowCount: 0 };
+        if (sql.startsWith('SELECT COUNT(*)::text AS count FROM student_skill_states')) {
+          return { rows: [{ count: '0' }], rowCount: 1 };
+        }
+        if (sql.includes('SELECT skill_id, mastery_score')) return { rows: [], rowCount: 0 };
+        if (sql.includes('skill_ids ?| $2::text[]')) return { rows: [], rowCount: 0 };
+        return { rows: [], rowCount: 0 };
+      });
+
+      const service = new AimStateAssemblyService(db);
+      const result = await service.assemble(CTX);
+
+      expect(result.status).toBe('assembled');
+      if (result.status !== 'assembled') return;
+
+      const ctx = result.context.skillMasteryContext['grammar.past_simple.forms'];
+      expect(ctx.previousMasteryScore).toBeNull();
+      expect(ctx.recentAttempts).toEqual([]);
+    });
   });
 });

@@ -186,6 +186,30 @@ export interface AimAttemptContextInput {
 }
 
 // ---------------------------------------------------------------------------
+// Skill mastery context — prior history per skill (P20-007)
+// ---------------------------------------------------------------------------
+//
+// Feeds the AIM Engine's ported MasteryCalculator, which needs prior mastery
+// and a window of prior attempts per skill — not just the new attempt(s) in
+// this call. Sourced by the backend from student_skill_states/lesson_attempts.
+
+export interface AimRecentAttemptSnapshotInput {
+  readonly isCorrect: boolean;
+  readonly attemptNumberForItem: number;
+  readonly presentedDifficulty: AimDifficultyLevel;
+  readonly usedHint: boolean;
+  /** Always false today — lesson_attempts has no skip-tracking column yet. */
+  readonly skip: boolean;
+}
+
+export interface AimSkillMasteryContextInput {
+  /** student_skill_states.mastery_score (0-100). Null if no prior state yet. */
+  readonly previousMasteryScore: number | null;
+  /** Most recent prior attempts for this skill, oldest first. */
+  readonly recentAttempts: AimRecentAttemptSnapshotInput[];
+}
+
+// ---------------------------------------------------------------------------
 // Complete pipeline context passed to the mapper (Stage 3)
 // ---------------------------------------------------------------------------
 
@@ -200,4 +224,6 @@ export interface AimMappingContext {
   readonly session: AimSessionContextInput;
   /** One or more attempts for this analysis call. */
   readonly attempts: AimAttemptContextInput[];
+  /** Prior mastery/attempt-history context per skill_id (P20-007). */
+  readonly skillMasteryContext: Record<string, AimSkillMasteryContextInput>;
 }
