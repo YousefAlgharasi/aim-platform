@@ -156,7 +156,7 @@ void main() {
       expect(find.text('2 chapters'), findsOneWidget);
     });
 
-    testWidgets('courseTitle appears in AppBar', (tester) async {
+    testWidgets('courseTitle appears in header', (tester) async {
       await tester.pumpWidget(_wrap(
         _page,
         overrides: [
@@ -167,6 +167,45 @@ void main() {
       ));
       await tester.pump();
       expect(find.text('English B1'), findsOneWidget);
+    });
+
+    testWidgets(
+        'shows cosmetic percent-done badge, filter chips, and status chips '
+        'when populated', (tester) async {
+      await tester.pumpWidget(_wrap(
+        _page,
+        overrides: [
+          chaptersProvider.overrideWith(
+            (ref) =>
+                _FakeChaptersNotifier(const AppAsyncState.success(_chapters)),
+          ),
+        ],
+      ));
+      await tester.pump();
+      expect(find.text('All chapters'), findsOneWidget);
+      expect(find.text('In progress'), findsWidgets);
+      expect(find.text('Completed'), findsWidgets);
+      expect(find.text('DONE'), findsOneWidget);
+    });
+
+    testWidgets('filter chips narrow the visible chapter list', (tester) async {
+      await tester.pumpWidget(_wrap(
+        _page,
+        overrides: [
+          chaptersProvider.overrideWith(
+            (ref) =>
+                _FakeChaptersNotifier(const AppAsyncState.success(_chapters)),
+          ),
+        ],
+      ));
+      await tester.pump();
+
+      // _chapters has 2 entries: index 0 mocks as "Completed", index 1 as
+      // "In progress" (see ChapterProgressMock.forIndex).
+      await tester.tap(find.text('Completed').first);
+      await tester.pump();
+      expect(find.text('Unit 1: Basics'), findsOneWidget);
+      expect(find.text('Unit 2: Grammar'), findsNothing);
     });
   });
 }

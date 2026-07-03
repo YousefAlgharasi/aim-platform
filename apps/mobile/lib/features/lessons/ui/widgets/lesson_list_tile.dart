@@ -10,15 +10,15 @@
 // Displays title, description, and xpValue exactly as returned by the
 // backend. Flutter never computes status or sortOrder.
 //
-// Real-data-only redesign: the design screenshots show a type label
-// (e.g. "Grammar"), a duration, and a per-lesson completion indicator
-// (checkmark / play / lock). None of those fields exist on the backend's
-// LessonModel (no lesson "type", no duration, no per-student completion
-// flag — see services/backend-api/src/features/curriculum/lessons).
-// Rather than fabricate placeholder values for them, this tile omits them
-// entirely and only surfaces real fields: title, description, and xpValue.
-// The icon tile below is decorative only (a deterministic gradient cycled
-// by list index) — it does not encode a real lesson "type".
+// The design shows a type label (e.g. "Grammar"), a duration, and a
+// per-lesson completion indicator (checkmark / play / lock). None of those
+// fields exist on the backend's LessonModel (no lesson "type", no
+// duration, no per-student completion flag — see
+// services/backend-api/src/features/curriculum/lessons), so [progress] is
+// a cosmetic [LessonProgressMock] passed in by the caller — see
+// curriculum_progress_mock.dart and TODO_BACKEND_PROGRESS.md for the real
+// endpoint this should be replaced with. Title, description, and xpValue
+// remain real, backend-supplied fields.
 //
 // RTL/Arabic: Row is directionality-aware; chevron mirrors via
 // Directionality.of(context). Padding uses symmetric EdgeInsets.
@@ -27,41 +27,33 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
-
-/// Deterministic-but-varied gradient tokens cycled by list index to give
-/// each lesson row a distinct icon tile. Purely decorative — does not
-/// encode any real per-lesson "type", which the backend does not provide.
-const List<LinearGradient> _kLessonIconGradients = [
-  AimGradients.gzHero,
-  AimGradients.gzFire,
-  AimGradients.gzLime,
-  AimGradients.gzCoral,
-];
+import 'curriculum_progress_mock.dart';
 
 /// Tappable card for a single backend-supplied lesson.
 ///
 /// [onTap] is called when tapped. The lesson ID is backend-supplied
 /// from [LessonModel]; never constructed from user input.
 ///
-/// [index] is only used to pick a decorative icon-tile gradient (cycled
-/// deterministically); it carries no semantic meaning.
+/// [progress] is a cosmetic, UI-only placeholder (see
+/// curriculum_progress_mock.dart) until a real per-student progress
+/// endpoint exists.
 class LessonListTile extends StatelessWidget {
   const LessonListTile({
     required this.model,
     required this.onTap,
+    required this.progress,
     this.index = 0,
     super.key,
   });
 
   final LessonModel model;
   final VoidCallback onTap;
+  final LessonProgressMock progress;
   final int index;
 
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
-    final gradient =
-        _kLessonIconGradients[index % _kLessonIconGradients.length];
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
@@ -70,27 +62,37 @@ class LessonListTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Decorative gradient icon tile (no real per-lesson "type" exists).
+          // Cosmetic type icon tile — see LessonProgressMock doc comment;
+          // the backend has no real per-lesson "type" field.
           DecoratedBox(
             decoration: BoxDecoration(
-              gradient: gradient,
+              gradient: progress.gradient,
               borderRadius: AimRadius.borderX2l,
             ),
-            child: const Padding(
-              padding: EdgeInsets.all(AimSpacing.space12),
+            child: Padding(
+              padding: const EdgeInsets.all(AimSpacing.space12),
               child: Icon(
-                Icons.play_lesson_outlined,
+                progress.typeIcon,
                 size: AimSizes.iconMd,
                 color: AimColors.neutral0,
               ),
             ),
           ),
           const SizedBox(width: AimSpacing.componentGap),
-          // Title, description, and (if present) an XP badge.
+          // Type/duration caption, title, description, and (if present)
+          // an XP badge.
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  '${progress.typeLabel} · ${progress.durationMinutes} min',
+                  style: AimTextStyles.caption.copyWith(
+                    color: surfaces.textSecondary,
+                    fontWeight: AimFontWeights.semibold,
+                  ),
+                ),
+                const SizedBox(height: AimSpacing.space2),
                 Text(
                   model.title,
                   style: AimTextStyles.title
@@ -122,15 +124,69 @@ class LessonListTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: AimSpacing.innerGap),
-          // RTL-mirrored chevron
-          Icon(
-            Icons.chevron_right,
-            color: surfaces.textSecondary,
-            size: AimSizes.iconMd,
-            textDirection: Directionality.of(context),
-          ),
+          _LessonTrailingIndicator(progress: progress),
         ],
       ),
+    );
+  }
+}
+
+/// Cosmetic trailing state: checkmark (done), gradient play button
+/// (current lesson), or a plain chevron (upcoming). See
+/// [LessonProgressMock] doc comment — completion/current are UI-only
+/// placeholders, not backend fields.
+class _LessonTrailingIndicator extends StatelessWidget {
+  const _LessonTrailingIndicator({required this.progress});
+
+  final LessonProgressMock progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final soft = aimSoftFillsOf(context);
+    final direction = Directionality.of(context);
+
+    if (progress.completed) {
+      return Semantics(
+        label: 'Completed',
+        child: CircleAvatar(
+          radius: 16,
+          backgroundColor: soft.success,
+          child: Icon(
+            Icons.check_rounded,
+            color: AimColors.success500,
+            size: AimSizes.iconSm,
+          ),
+        ),
+      );
+    }
+
+    if (progress.current) {
+      return Semantics(
+        button: true,
+        label: 'Start lesson',
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            gradient: AimGradients.gzHero,
+            shape: BoxShape.circle,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(AimSpacing.space8),
+            child: Icon(
+              Icons.play_arrow_rounded,
+              color: AimColors.neutral0,
+              size: AimSizes.iconMd,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Icon(
+      Icons.chevron_right,
+      color: surfaces.textSecondary,
+      size: AimSizes.iconMd,
+      textDirection: direction,
     );
   }
 }
