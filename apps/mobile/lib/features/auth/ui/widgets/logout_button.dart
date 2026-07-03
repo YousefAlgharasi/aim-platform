@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../logic/provider/auth_flow_provider.dart';
 import '../../logic/provider/logout_provider.dart';
@@ -38,18 +39,19 @@ class LogoutButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final logoutState = ref.watch(logoutProvider);
     final isLoggingOut = logoutState.isLoading;
+    final l10n = AppLocalizations.of(context);
 
     return AIMButton(
       variant: AIMButtonVariant.destructive,
       fullWidth: fullWidth,
       size: size,
       loading: isLoggingOut,
-      semanticLabel: 'Sign out',
+      semanticLabel: l10n.authSignOutSemantic,
       onPressed: isLoggingOut ? null : () => _logout(ref),
       leadingIcon: isLoggingOut
           ? null
           : const Icon(Icons.logout),
-      child: const Text('Sign Out'),
+      child: Text(l10n.authSignOutButton),
     );
   }
 

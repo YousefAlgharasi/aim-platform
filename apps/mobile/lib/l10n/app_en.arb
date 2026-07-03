@@ -23,5 +23,385 @@
   "commonEdit": "Edit",
   "commonSeeAll": "See all",
   "commonJustNow": "Just now",
-  "commonYesterday": "Yesterday"
+  "commonYesterday": "Yesterday",
+
+  "authEmailLabel": "Email",
+  "@authEmailLabel": {
+    "description": "Label for the email input field on the login/register forms."
+  },
+  "authEmailPlaceholder": "you@example.com",
+  "@authEmailPlaceholder": {
+    "description": "Example placeholder text shown inside the empty email field."
+  },
+  "authEmailSemantic": "Email address",
+  "@authEmailSemantic": {
+    "description": "Accessibility label for the email input field."
+  },
+  "authPasswordLabel": "Password",
+  "@authPasswordLabel": {
+    "description": "Label for the password input field."
+  },
+  "authPasswordSemantic": "Password",
+  "@authPasswordSemantic": {
+    "description": "Accessibility label for the password input field."
+  },
+  "authForgotPassword": "Forgot password?",
+  "@authForgotPassword": {
+    "description": "Non-interactive 'forgot password' link text shown on the login form."
+  },
+  "authSignInButton": "Sign In",
+  "@authSignInButton": {
+    "description": "Label for the primary sign-in submit button."
+  },
+  "authSignInSemantic": "Sign in",
+  "@authSignInSemantic": {
+    "description": "Accessibility label for the sign-in submit button."
+  },
+  "authNoAccountPrompt": "Don't have an account? ",
+  "@authNoAccountPrompt": {
+    "description": "Prompt shown before the 'Create one' link on the login page."
+  },
+  "authCreateOneLink": "Create one",
+  "@authCreateOneLink": {
+    "description": "Link text that opens the registration page."
+  },
+  "authOpenEndpointTester": "Open API Endpoint Tester",
+  "@authOpenEndpointTester": {
+    "description": "Developer-only button on the login page that opens the API endpoint tester."
+  },
+  "authWelcomeBackTitle": "Welcome back",
+  "@authWelcomeBackTitle": {
+    "description": "Heading shown in the login page's gradient hero header."
+  },
+  "authWelcomeBackSubtitle": "Sign in to keep your streak alive",
+  "@authWelcomeBackSubtitle": {
+    "description": "Subtitle shown beneath the welcome-back heading on the login page."
+  },
+  "authOrContinueWith": "OR CONTINUE WITH",
+  "@authOrContinueWith": {
+    "description": "Divider label above the social sign-in buttons on the login page."
+  },
+  "authContinueWithGoogle": "Continue with Google",
+  "@authContinueWithGoogle": {
+    "description": "Label for the (visual-only) Google sign-in button on the login page."
+  },
+  "authContinueWithGoogleSemantic": "Continue with Google (coming soon)",
+  "@authContinueWithGoogleSemantic": {
+    "description": "Accessibility label for the disabled Google sign-in button on the login page."
+  },
+  "authAppleButton": "Apple",
+  "@authAppleButton": {
+    "description": "Label for the (visual-only) Apple sign-in/sign-up button."
+  },
+  "authFacebookButton": "Facebook",
+  "@authFacebookButton": {
+    "description": "Label for the (visual-only) Facebook sign-in/sign-up button."
+  },
+  "authContinueWithAppleSemantic": "Continue with Apple (coming soon)",
+  "@authContinueWithAppleSemantic": {
+    "description": "Accessibility label for the disabled Apple sign-in button on the login page."
+  },
+  "authContinueWithFacebookSemantic": "Continue with Facebook (coming soon)",
+  "@authContinueWithFacebookSemantic": {
+    "description": "Accessibility label for the disabled Facebook sign-in button on the login page."
+  },
+  "authTestModeLabel": "Test mode",
+  "@authTestModeLabel": {
+    "description": "Divider label above the developer test-mode shortcuts on the login page."
+  },
+  "authEnterAsTestStudentSemantic": "Enter as test student",
+  "@authEnterAsTestStudentSemantic": {
+    "description": "Accessibility label for the developer test-mode 'Student' shortcut button."
+  },
+  "authStudentButton": "Student",
+  "@authStudentButton": {
+    "description": "Label for the developer test-mode 'Student' shortcut button."
+  },
+  "authEnterAsTestParentSemantic": "Enter as test parent",
+  "@authEnterAsTestParentSemantic": {
+    "description": "Accessibility label for the developer test-mode 'Parent' shortcut button."
+  },
+  "authParentButton": "Parent",
+  "@authParentButton": {
+    "description": "Label for the developer test-mode 'Parent' shortcut button."
+  },
+  "authEnterAsTestAdminSemantic": "Enter as test admin",
+  "@authEnterAsTestAdminSemantic": {
+    "description": "Accessibility label for the developer test-mode 'Admin' shortcut button."
+  },
+  "authAdminButton": "Admin",
+  "@authAdminButton": {
+    "description": "Label for the developer test-mode 'Admin' shortcut button."
+  },
+  "authCreateAccount": "Create account",
+  "@authCreateAccount": {
+    "description": "Register page heading, submit button label, and its accessibility label."
+  },
+  "authStartLearningTagline": "Start learning English the fun way",
+  "@authStartLearningTagline": {
+    "description": "Subtitle shown beneath the create-account heading on the register page."
+  },
+  "authConfirmPasswordLabel": "Confirm Password",
+  "@authConfirmPasswordLabel": {
+    "description": "Label for the confirm-password input field on the register page."
+  },
+  "authConfirmPasswordSemantic": "Confirm password",
+  "@authConfirmPasswordSemantic": {
+    "description": "Accessibility label for the confirm-password input field."
+  },
+  "authPasswordsDoNotMatch": "Passwords do not match",
+  "@authPasswordsDoNotMatch": {
+    "description": "Validation error shown when password and confirm-password fields differ."
+  },
+  "authOrSignUpWith": "OR SIGN UP WITH",
+  "@authOrSignUpWith": {
+    "description": "Divider label above the social sign-up buttons on the register page."
+  },
+  "authSignUpWithGoogle": "Sign up with Google",
+  "@authSignUpWithGoogle": {
+    "description": "Label for the (visual-only) Google sign-up button on the register page."
+  },
+  "authSignUpWithGoogleSemantic": "Sign up with Google (coming soon)",
+  "@authSignUpWithGoogleSemantic": {
+    "description": "Accessibility label for the disabled Google sign-up button on the register page."
+  },
+  "authSignUpWithAppleSemantic": "Sign up with Apple (coming soon)",
+  "@authSignUpWithAppleSemantic": {
+    "description": "Accessibility label for the disabled Apple sign-up button on the register page."
+  },
+  "authSignUpWithFacebookSemantic": "Sign up with Facebook (coming soon)",
+  "@authSignUpWithFacebookSemantic": {
+    "description": "Accessibility label for the disabled Facebook sign-up button on the register page."
+  },
+  "authAgreeToTermsPrefix": "By signing up you agree to AIM's ",
+  "@authAgreeToTermsPrefix": {
+    "description": "Prefix of the terms/privacy-policy notice on the register page."
+  },
+  "authTermsLink": "Terms",
+  "@authTermsLink": {
+    "description": "Non-interactive 'Terms' link text on the register page's terms notice."
+  },
+  "authAndConnector": " and ",
+  "@authAndConnector": {
+    "description": "Connector word between the Terms and Privacy Policy links."
+  },
+  "authPrivacyPolicyLink": "Privacy Policy",
+  "@authPrivacyPolicyLink": {
+    "description": "Non-interactive 'Privacy Policy' link text on the register page's terms notice."
+  },
+  "authAlreadyHaveAccount": "Already have an account? Sign in",
+  "@authAlreadyHaveAccount": {
+    "description": "Link back to the login page shown at the bottom of the register page."
+  },
+  "authCheckYourEmailTitle": "Check Your Email",
+  "@authCheckYourEmailTitle": {
+    "description": "App bar title for the email-confirmation-sent screen."
+  },
+  "authConfirmationEmailSentTitle": "Confirmation email sent",
+  "@authConfirmationEmailSentTitle": {
+    "description": "Heading on the email-confirmation-sent screen."
+  },
+  "authConfirmationEmailBody": "We sent a confirmation link to:\n{email}\n\nOpen the link to activate your account, then sign in.",
+  "@authConfirmationEmailBody": {
+    "description": "Body text on the email-confirmation-sent screen, includes the address the link was sent to.",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "authGoToSignInButton": "Go to Sign In",
+  "@authGoToSignInButton": {
+    "description": "Button label that returns the user to the login page after registering."
+  },
+  "authGoToSignInSemantic": "Go to sign in",
+  "@authGoToSignInSemantic": {
+    "description": "Accessibility label for the 'Go to Sign In' button."
+  },
+  "authPasswordStrengthWeak": "Weak",
+  "@authPasswordStrengthWeak": {
+    "description": "Password-strength meter label for a weak password."
+  },
+  "authPasswordStrengthMedium": "Medium",
+  "@authPasswordStrengthMedium": {
+    "description": "Password-strength meter label for a medium-strength password."
+  },
+  "authPasswordStrengthStrong": "Strong",
+  "@authPasswordStrengthStrong": {
+    "description": "Password-strength meter label for a strong password."
+  },
+  "authPasswordStrengthSemantic": "Password strength: {strength}",
+  "@authPasswordStrengthSemantic": {
+    "description": "Accessibility label announcing the current password strength.",
+    "placeholders": {
+      "strength": {
+        "type": "String"
+      }
+    }
+  },
+  "authSignOutSemantic": "Sign out",
+  "@authSignOutSemantic": {
+    "description": "Accessibility label for the sign-out button."
+  },
+  "authSignOutButton": "Sign Out",
+  "@authSignOutButton": {
+    "description": "Label for the sign-out button."
+  },
+  "authFailedToLoadUser": "Failed to load user",
+  "@authFailedToLoadUser": {
+    "description": "Fallback error message shown when the current user's profile fails to load."
+  },
+  "authFailedToSyncUser": "Failed to sync and load user",
+  "@authFailedToSyncUser": {
+    "description": "Fallback error message shown when syncing and loading the current user fails."
+  },
+  "authSessionExpiredError": "Your session has expired. Please sign in again.",
+  "@authSessionExpiredError": {
+    "description": "Error message shown when the user's session has expired and they must sign in again."
+  },
+  "authSignInFailedGeneric": "Sign in failed. Please try again.",
+  "@authSignInFailedGeneric": {
+    "description": "Generic fallback error message shown when sign-in fails for an unknown reason."
+  },
+  "authTestLoginFailedGeneric": "Test login failed. Please try again.",
+  "@authTestLoginFailedGeneric": {
+    "description": "Generic fallback error message shown when the developer test-login shortcut fails."
+  },
+  "authRegistrationFailedGeneric": "Registration failed. Please try again.",
+  "@authRegistrationFailedGeneric": {
+    "description": "Generic fallback error message shown when registration fails for an unknown reason."
+  },
+
+  "devToolsEndpointTesterTitle": "API Endpoint Tester",
+  "@devToolsEndpointTesterTitle": {
+    "description": "App bar title for the developer API endpoint tester screen."
+  },
+  "devToolsBodyLabel": "Body:",
+  "@devToolsBodyLabel": {
+    "description": "Label above a request's default JSON body preview in the endpoint tester."
+  },
+  "devToolsSendRequestButton": "Send Request",
+  "@devToolsSendRequestButton": {
+    "description": "Button label that sends the selected API request in the endpoint tester."
+  },
+  "devToolsNoAuthTokenError": "Error: No auth token found. Please login first.",
+  "@devToolsNoAuthTokenError": {
+    "description": "Error shown in the endpoint tester when an authenticated request is attempted without a signed-in session."
+  },
+
+  "shellOpenMenuTooltip": "Open menu",
+  "@shellOpenMenuTooltip": {
+    "description": "Tooltip for the floating action button that opens the navigation drawer."
+  },
+  "shellNavHome": "Home",
+  "@shellNavHome": {
+    "description": "Label for the Home destination in the bottom nav and drawer."
+  },
+  "shellNavHomeSemantic": "Home tab",
+  "@shellNavHomeSemantic": {
+    "description": "Accessibility label for the Home bottom-nav tab."
+  },
+  "shellNavLearn": "Learn",
+  "@shellNavLearn": {
+    "description": "Label for the Learn destination in the bottom nav and drawer."
+  },
+  "shellNavLearnSemantic": "Learn tab",
+  "@shellNavLearnSemantic": {
+    "description": "Accessibility label for the Learn bottom-nav tab."
+  },
+  "shellNavReview": "Review",
+  "@shellNavReview": {
+    "description": "Label for the Review destination in the bottom nav and drawer."
+  },
+  "shellNavReviewSemantic": "Review tab",
+  "@shellNavReviewSemantic": {
+    "description": "Accessibility label for the Review bottom-nav tab."
+  },
+  "shellNavProgress": "Progress",
+  "@shellNavProgress": {
+    "description": "Label for the Progress destination in the bottom nav and drawer."
+  },
+  "shellNavProgressSemantic": "Progress tab",
+  "@shellNavProgressSemantic": {
+    "description": "Accessibility label for the Progress bottom-nav tab."
+  },
+  "shellNavProfile": "Profile",
+  "@shellNavProfile": {
+    "description": "Label for the Profile destination in the bottom nav and drawer."
+  },
+  "shellNavProfileSemantic": "Profile tab",
+  "@shellNavProfileSemantic": {
+    "description": "Accessibility label for the Profile bottom-nav tab."
+  },
+  "shellMenuSectionLabel": "MENU",
+  "@shellMenuSectionLabel": {
+    "description": "Section heading above the primary navigation items in the drawer."
+  },
+  "shellMoreSectionLabel": "MORE",
+  "@shellMoreSectionLabel": {
+    "description": "Section heading above the secondary navigation items in the drawer."
+  },
+  "shellNotifications": "Notifications",
+  "@shellNotifications": {
+    "description": "Drawer item label for the notifications inbox."
+  },
+  "shellAchievements": "Achievements",
+  "@shellAchievements": {
+    "description": "Drawer item label for the achievements screen."
+  },
+  "shellAimPlus": "AIM Plus",
+  "@shellAimPlus": {
+    "description": "Drawer item label for the premium subscription / pricing screen."
+  },
+  "shellSupport": "Support",
+  "@shellSupport": {
+    "description": "Drawer item label for the help center."
+  },
+  "shellUnreadNotificationsSemantic": "{count, plural, zero{No unread notifications} one{{count} unread notification} two{{count} unread notifications} few{{count} unread notifications} many{{count} unread notifications} other{{count} unread notifications}}",
+  "@shellUnreadNotificationsSemantic": {
+    "description": "Accessibility label announcing the number of unread notifications on the drawer's Notifications badge.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shellBrandName": "AIM Learning",
+  "@shellBrandName": {
+    "description": "App brand name shown in the navigation drawer header."
+  },
+  "shellBrandTagline": "English, smarter",
+  "@shellBrandTagline": {
+    "description": "Tagline shown beneath the brand name in the navigation drawer header."
+  },
+  "shellThemeLight": "Light",
+  "@shellThemeLight": {
+    "description": "Label for the light-theme toggle option in the drawer."
+  },
+  "shellThemeDark": "Dark",
+  "@shellThemeDark": {
+    "description": "Label for the dark-theme toggle option in the drawer."
+  },
+  "shellThemeSemantic": "{theme} theme",
+  "@shellThemeSemantic": {
+    "description": "Accessibility label for a theme toggle option, e.g. 'Light theme'.",
+    "placeholders": {
+      "theme": {
+        "type": "String"
+      }
+    }
+  },
+
+  "onboardingBrandName": "AIM",
+  "@onboardingBrandName": {
+    "description": "App brand name shown on the splash screen."
+  },
+  "onboardingTagline": "Adaptive Intelligence for Mastery",
+  "@onboardingTagline": {
+    "description": "Tagline shown beneath the brand name on the splash screen."
+  },
+  "onboardingTapToContinue": "Tap to continue",
+  "@onboardingTapToContinue": {
+    "description": "Static hint text shown alongside the splash screen's progress bar while the session check runs."
+  }
 }

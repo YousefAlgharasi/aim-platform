@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:aim_mobile/core/localization/app_locale.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/logout_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/logout_notifier.dart';
@@ -54,7 +55,11 @@ class _NoOpAuthRepository implements AuthRepository {
 Widget _wrap(Widget child, {List<Override> overrides = const []}) {
   return ProviderScope(
     overrides: overrides,
-    child: MaterialApp(home: Scaffold(body: Center(child: child))),
+    child: MaterialApp(
+      localizationsDelegates: AppLocale.delegates,
+      supportedLocales: AppLocale.supportedLocales,
+      home: Scaffold(body: Center(child: child)),
+    ),
   );
 }
 
@@ -113,6 +118,8 @@ void main() {
       const ProviderScope(
         child: MaterialApp(
           locale: Locale('ar'),
+          localizationsDelegates: AppLocale.delegates,
+          supportedLocales: AppLocale.supportedLocales,
           home: Scaffold(body: Center(child: LogoutButton())),
         ),
       ),
