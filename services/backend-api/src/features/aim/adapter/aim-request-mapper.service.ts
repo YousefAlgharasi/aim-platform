@@ -41,7 +41,32 @@ export class AimRequestMapperService {
       backendRequestId: context.backendRequestId,
       session: this.mapSession(context.session),
       attempts: context.attempts.map((a) => this.mapAttempt(a)),
+      skillMasteryContext: this.mapSkillMasteryContext(context.skillMasteryContext),
     };
+  }
+
+  // -------------------------------------------------------------------------
+  // Skill mastery context segment (P20-007)
+  // -------------------------------------------------------------------------
+
+  private mapSkillMasteryContext(
+    skillMasteryContext: AimMappingContext['skillMasteryContext'],
+  ): Record<string, unknown> {
+    return Object.fromEntries(
+      Object.entries(skillMasteryContext).map(([skillId, ctx]) => [
+        skillId,
+        {
+          previousMasteryScore: ctx.previousMasteryScore,
+          recentAttempts: ctx.recentAttempts.map((a) => ({
+            isCorrect: a.isCorrect,
+            attemptNumberForItem: a.attemptNumberForItem,
+            presentedDifficulty: a.presentedDifficulty,
+            usedHint: a.usedHint,
+            skip: a.skip,
+          })),
+        },
+      ]),
+    );
   }
 
   // -------------------------------------------------------------------------

@@ -463,6 +463,85 @@ class AimAttemptInput(AimCamelCaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Skill mastery context — prior history per skill (P20-007)
+# ---------------------------------------------------------------------------
+#
+# MasteryCalculator (ported from services/api/src/aim/domain/services/
+# mastery_calculator.py in P20-007) needs the student's *prior* mastery and a
+# window of *prior* attempts per skill to compute consistency/reliability —
+# not just the single new attempt this analysis call is triggered by. The AIM
+# Engine stays side-effect-free (it never queries a database itself, per this
+# module's scope rules), so the Backend supplies this history as part of the
+# request payload, sourced from student_skill_states and lesson_attempts.
+
+
+class AimRecentAttemptSnapshot(AimCamelCaseModel):
+    """One backend-supplied *historical* attempt for a skill (P20-007).
+
+    Distinct from ``AimAttemptInput``: that's the new attempt(s) this call is
+    triggered by; this is prior history feeding MasteryCalculator's
+    consistency/difficulty/evidence-quality inputs.
+    """
+
+    is_correct: bool = Field(
+        ...,
+        description="Backend-evaluated correctness of this historical attempt.",
+    )
+    attempt_number_for_item: int = Field(
+        ...,
+        ge=1,
+        description="Backend-counted ordinal of this attempt for its item at the time.",
+    )
+    presented_difficulty: AimDifficultyLevel = Field(
+        ...,
+        description="Difficulty this historical attempt was presented at.",
+    )
+    used_hint: bool = Field(
+        ...,
+        description="Whether a backend-provided hint was shown for this historical attempt.",
+    )
+    skip: bool = Field(
+        False,
+        description=(
+            "Whether this historical attempt was skipped. Always False today — "
+            "lesson_attempts has no skip-tracking column yet, so this is never "
+            "fabricated as True; it exists only to satisfy MasteryCalculator's "
+            "existing AttemptSnapshot contract."
+        ),
+    )
+
+
+class AimSkillMasteryContext(AimCamelCaseModel):
+    """Prior mastery/attempt history for one skill (P20-007).
+
+    Sourced from ``student_skill_states`` (previous_mastery_score) and
+    ``lesson_attempts`` (recent_attempts), both Backend-only queries. Absent
+    for a skill the student has no history for yet — MasteryCalculator
+    bootstraps such a skill from mastery 0.
+    """
+
+    previous_mastery_score: float | None = Field(
+        None,
+        ge=0.0,
+        le=100.0,
+        description=(
+            "student_skill_states.mastery_score (0-100 scale, matching "
+            "MasteryCalculator's internal scale) at the time of this call. "
+            "None if the student has no persisted skill state for this skill yet."
+        ),
+    )
+    recent_attempts: list[AimRecentAttemptSnapshot] = Field(
+        default_factory=list,
+        description=(
+            "Backend-supplied window of the student's most recent prior attempts "
+            "for this skill (oldest first), excluding the new attempt(s) in this "
+            "call's `attempts` list. Empty if this is the student's first attempt "
+            "at this skill."
+        ),
+    )
+
+
+# ---------------------------------------------------------------------------
 # Top-level request envelope
 # ---------------------------------------------------------------------------
 
@@ -500,6 +579,15 @@ class AimAnalysisRequest(AimCamelCaseModel):
         ...,
         min_length=1,
         description="One or more attempt entries for this analysis call (P5-010).",
+    )
+    skill_mastery_context: dict[str, AimSkillMasteryContext] = Field(
+        default_factory=dict,
+        description=(
+            "Backend-supplied prior mastery/attempt-history context per skill_id "
+            "(P20-007), keyed by skill_id. A skill_id from `attempts[].skill_ids` "
+            "with no entry here means no prior history — MasteryCalculator "
+            "bootstraps from mastery 0."
+        ),
     )
 
     @field_validator("attempts")

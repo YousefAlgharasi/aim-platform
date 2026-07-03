@@ -37,7 +37,17 @@ import {
 // alias_generator=to_camel.
 // ---------------------------------------------------------------------------
 
-const EXPECTED_ENVELOPE_FIELDS = ['backendRequestId', 'session', 'attempts'];
+const EXPECTED_ENVELOPE_FIELDS = ['backendRequestId', 'session', 'attempts', 'skillMasteryContext'];
+
+const EXPECTED_SKILL_MASTERY_CONTEXT_FIELDS = ['previousMasteryScore', 'recentAttempts'];
+
+const EXPECTED_RECENT_ATTEMPT_FIELDS = [
+  'isCorrect',
+  'attemptNumberForItem',
+  'presentedDifficulty',
+  'usedHint',
+  'skip',
+];
 
 const EXPECTED_SESSION_FIELDS = [
   'sessionId',
@@ -156,6 +166,20 @@ const MAPPING_CONTEXT: AimMappingContext = {
   xRequestId: 'req-test-001',
   session: SESSION_INPUT,
   attempts: [ATTEMPT_INPUT],
+  skillMasteryContext: {
+    'skill:english:a1:vocab.daily-routines': {
+      previousMasteryScore: 62,
+      recentAttempts: [
+        {
+          isCorrect: true,
+          attemptNumberForItem: 1,
+          presentedDifficulty: 2,
+          usedHint: false,
+          skip: false,
+        },
+      ],
+    },
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -211,6 +235,21 @@ describe('AIM Engine request contract (P5-076)', () => {
     const attempts = rawRequest.attempts as Record<string, unknown>[];
     const ctx = attempts[0].behavioralContext;
     expect(keysOf(ctx)).toEqual(EXPECTED_ATTEMPT_BEHAVIORAL_CONTEXT_FIELDS.slice().sort());
+  });
+
+  it('skill_mastery_context entry keys match the AIM Engine AimSkillMasteryContext schema (P20-007)', () => {
+    const skillMasteryContext = rawRequest.skillMasteryContext as Record<string, unknown>;
+    const entry = skillMasteryContext['skill:english:a1:vocab.daily-routines'];
+    expect(keysOf(entry)).toEqual(EXPECTED_SKILL_MASTERY_CONTEXT_FIELDS.slice().sort());
+  });
+
+  it('skill_mastery_context recent attempt keys match the AIM Engine AimRecentAttemptSnapshot schema (P20-007)', () => {
+    const skillMasteryContext = rawRequest.skillMasteryContext as Record<
+      string,
+      { recentAttempts: Record<string, unknown>[] }
+    >;
+    const recentAttempt = skillMasteryContext['skill:english:a1:vocab.daily-routines'].recentAttempts[0];
+    expect(keysOf(recentAttempt)).toEqual(EXPECTED_RECENT_ATTEMPT_FIELDS.slice().sort());
   });
 
   it('a JSON.stringify of the raw request is accepted by the AIM Engine schema field names', () => {
