@@ -16,13 +16,13 @@ import 'package:aim_mobile/core/state/app_state_notifier.dart';
 import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
 import 'package:aim_mobile/features/lessons/logic/repository/lessons_repository.dart';
 
-class ChaptersNotifier extends AppStateNotifier<List<ChapterModel>> {
+class ChaptersNotifier extends AppStateNotifier<List<ChapterProgressModel>> {
   ChaptersNotifier({required LessonsRepository repository})
       : _repository = repository;
 
   final LessonsRepository _repository;
 
-  /// Load chapters for the given [levelId].
+  /// Load chapters (with real per-student progress) for the given [levelId].
   ///
   /// [levelId] must be a backend-supplied value from a prior API response.
   /// Never pass a user-constructed ID here.
@@ -32,7 +32,7 @@ class ChaptersNotifier extends AppStateNotifier<List<ChapterModel>> {
   }) async {
     setLoading();
     try {
-      final chapters = await _repository.getChapters(
+      final chapters = await _repository.getChaptersWithProgress(
         bearerToken: bearerToken,
         levelId: levelId,
       );
@@ -53,10 +53,11 @@ class ChaptersNotifier extends AppStateNotifier<List<ChapterModel>> {
   }) =>
       load(bearerToken: bearerToken, levelId: levelId);
 
-  /// Load chapters for the given [courseId] by first resolving the course's
-  /// levels and using the first one. A course's chapters are stored under
-  /// its level(s), not directly under the course, so the levelId must be
-  /// resolved before chapters can be fetched.
+  /// Load chapters (with real per-student progress) for the given
+  /// [courseId] by first resolving the course's levels and using the first
+  /// one. A course's chapters are stored under its level(s), not directly
+  /// under the course, so the levelId must be resolved before chapters can
+  /// be fetched.
   ///
   /// [courseId] must be a backend-supplied value from a prior CourseModel
   /// response. Never pass a user-constructed ID here.
@@ -74,7 +75,7 @@ class ChaptersNotifier extends AppStateNotifier<List<ChapterModel>> {
         setSuccess(const []);
         return;
       }
-      final chapters = await _repository.getChapters(
+      final chapters = await _repository.getChaptersWithProgress(
         bearerToken: bearerToken,
         levelId: levels.first.id,
       );

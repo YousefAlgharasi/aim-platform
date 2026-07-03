@@ -16,13 +16,14 @@ import 'package:aim_mobile/core/state/app_state_notifier.dart';
 import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
 import 'package:aim_mobile/features/lessons/logic/repository/lessons_repository.dart';
 
-class LessonsListNotifier extends AppStateNotifier<List<LessonModel>> {
+class LessonsListNotifier extends AppStateNotifier<List<LessonProgressModel>> {
   LessonsListNotifier({required LessonsRepository repository})
       : _repository = repository;
 
   final LessonsRepository _repository;
 
-  /// Load lessons for the given [chapterId].
+  /// Load lessons (with real per-student completed/current markers) for the
+  /// given [chapterId].
   ///
   /// [chapterId] must be a backend-supplied value from a prior ChapterModel
   /// response. Never pass a user-constructed ID here.
@@ -32,7 +33,7 @@ class LessonsListNotifier extends AppStateNotifier<List<LessonModel>> {
   }) async {
     setLoading();
     try {
-      final lessons = await _repository.getLessons(
+      final lessons = await _repository.getLessonsWithProgress(
         bearerToken: bearerToken,
         chapterId: chapterId,
       );

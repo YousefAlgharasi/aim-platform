@@ -95,6 +95,16 @@ class BackendApiPaths {
   /// GET /student/courses
   static const String studentCourses = '/student/courses';
 
+  /// GET /student/chapters?levelId= — published chapters under a level with
+  /// real per-student progress (percent, completedLessonCount, status).
+  /// Distinct from /curriculum/chapters (admin-facing content listing).
+  static const String studentChapters = '/student/chapters';
+
+  /// GET /student/lessons?chapterId= — published lessons under a chapter
+  /// with real per-student completed/current markers. Distinct from
+  /// /curriculum/lessons (admin-facing content listing).
+  static const String studentLessons = '/student/lessons';
+
   // ---------------------------------------------------------------------------
   // Engagement — daily goal, streak, and daily challenge.
   // Read-only summary; goal target is the only client-writable field.

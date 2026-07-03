@@ -61,6 +61,30 @@ class _FakeDatasource implements LessonsRemoteDatasource {
     ),
   ];
 
+  static const _chaptersProgress = [
+    ChapterProgressModel(
+      chapterId: 'chapter-1',
+      title: 'Unit 1',
+      description: null,
+      levelCode: 'A1',
+      lessonCount: 3,
+      completedLessonCount: 1,
+      percent: 33,
+      status: 'in_progress',
+    ),
+  ];
+
+  static const _lessonsProgress = [
+    LessonProgressModel(
+      id: 'lesson-1',
+      title: 'Lesson 1',
+      description: 'Intro.',
+      xpValue: 10,
+      completed: true,
+      current: false,
+    ),
+  ];
+
   void _maybeThrow() {
     if (shouldFail) {
       throw const ApiClientException(
@@ -113,6 +137,24 @@ class _FakeDatasource implements LessonsRemoteDatasource {
     _maybeThrow();
     return _lessons;
   }
+
+  @override
+  Future<List<ChapterProgressModel>> getChaptersWithProgress({
+    required String bearerToken,
+    required String levelId,
+  }) async {
+    _maybeThrow();
+    return _chaptersProgress;
+  }
+
+  @override
+  Future<List<LessonProgressModel>> getLessonsWithProgress({
+    required String bearerToken,
+    required String chapterId,
+  }) async {
+    _maybeThrow();
+    return _lessonsProgress;
+  }
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -154,6 +196,34 @@ void main() {
       expect(result.length, 1);
       expect(result.first.chapterId, 'chapter-1');
       expect(result.first.sortOrder, 1);
+    });
+
+    test('getChaptersWithProgress returns list verbatim for given levelId', () async {
+      const repo = LessonsRepositoryImpl(
+        datasource: _FakeDatasource(),
+      );
+      final result = await repo.getChaptersWithProgress(
+        bearerToken: 'tok',
+        levelId: 'level-1',
+      );
+      expect(result.length, 1);
+      expect(result.first.chapterId, 'chapter-1');
+      expect(result.first.percent, 33);
+      expect(result.first.status, 'in_progress');
+    });
+
+    test('getLessonsWithProgress returns list verbatim for given chapterId', () async {
+      const repo = LessonsRepositoryImpl(
+        datasource: _FakeDatasource(),
+      );
+      final result = await repo.getLessonsWithProgress(
+        bearerToken: 'tok',
+        chapterId: 'chapter-1',
+      );
+      expect(result.length, 1);
+      expect(result.first.id, 'lesson-1');
+      expect(result.first.completed, isTrue);
+      expect(result.first.current, isFalse);
     });
 
     test('ApiClientException is mapped to AppException', () async {
