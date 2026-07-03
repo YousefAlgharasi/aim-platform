@@ -15,12 +15,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:intl/intl.dart' hide TextDirection;
+
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/billing/data/models/billing_models.dart';
 import 'package:aim_mobile/features/billing/logic/entity/billing_data.dart';
 import 'package:aim_mobile/features/billing/logic/provider/billing_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'pricing_page.dart';
 
 class SubscriptionPage extends ConsumerStatefulWidget {
@@ -48,6 +51,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(subscriptionProvider);
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: surfaces.background,
@@ -57,8 +61,8 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage> {
           const _SubscriptionHeader(),
           Expanded(
             child: switch (state) {
-              AppAsyncLoading() || AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading subscription data',
+              AppAsyncLoading() || AppAsyncIdle() => AIMFullScreenLoading(
+                  semanticLabel: l10n.billingLoadingSubscriptionSemantic,
                 ),
               AppAsyncFailure(:final message) => AIMFullScreenError(
                   message: message,
@@ -81,6 +85,7 @@ class _SubscriptionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -96,7 +101,7 @@ class _SubscriptionHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: l10n.commonBack,
               child: InkWell(
                 onTap: () => context.pop(),
                 customBorder: const CircleBorder(),
@@ -120,7 +125,7 @@ class _SubscriptionHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Subscription',
+              l10n.billingSubscriptionTitle,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],
@@ -139,6 +144,7 @@ class _SubscriptionContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final subscription = data.currentSubscription;
 
     if (subscription == null) {
@@ -146,8 +152,8 @@ class _SubscriptionContent extends ConsumerWidget {
       return RefreshIndicator(
         onRefresh: onRefresh,
         child: switch (pricingState) {
-          AppAsyncLoading() || AppAsyncIdle() => const AIMFullScreenLoading(
-              semanticLabel: 'Loading plans',
+          AppAsyncLoading() || AppAsyncIdle() => AIMFullScreenLoading(
+              semanticLabel: l10n.billingLoadingPlansSemantic,
             ),
           AppAsyncFailure(:final message) => AIMFullScreenError(
               message: message,
@@ -180,7 +186,7 @@ class _SubscriptionContent extends ConsumerWidget {
           _CurrentPlanCard(plan: plan, subscription: subscription),
           const SizedBox(height: AimSpacing.sectionGap),
           Text(
-            "WHAT'S INCLUDED",
+            l10n.billingWhatsIncludedTitle,
             style: AimTextStyles.label.copyWith(
               color: surfaces.textMuted,
               letterSpacing: 1.2,
@@ -191,7 +197,7 @@ class _SubscriptionContent extends ConsumerWidget {
             AIMCard(
               child: Center(
                 child: Text(
-                  'No entitlements yet.',
+                  l10n.billingNoEntitlementsYet,
                   style:
                       AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
                 ),
@@ -213,14 +219,14 @@ class _SubscriptionContent extends ConsumerWidget {
               Expanded(
                 child: OutlinedButton(
                   onPressed: () => context.push(AppRoutePaths.invoiceHistory),
-                  child: const Text('Invoices'),
+                  child: Text(l10n.billingInvoicesLabel),
                 ),
               ),
               const SizedBox(width: AimSpacing.componentGap),
               Expanded(
                 child: OutlinedButton(
                   onPressed: () => context.push(AppRoutePaths.pricing),
-                  child: const Text('Change plan'),
+                  child: Text(l10n.billingChangePlanButton),
                 ),
               ),
             ],
@@ -230,7 +236,7 @@ class _SubscriptionContent extends ConsumerWidget {
             TextButton(
               onPressed: () => _showCancelDialog(context, ref, subscription.id),
               style: TextButton.styleFrom(foregroundColor: AimColors.error500),
-              child: const Text('Cancel subscription'),
+              child: Text(l10n.billingCancelSubscriptionButton),
             ),
           ],
         ],
@@ -243,17 +249,16 @@ class _SubscriptionContent extends ConsumerWidget {
     WidgetRef ref,
     String subscriptionId,
   ) {
+    final l10n = AppLocalizations.of(context);
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Cancel Subscription?'),
-        content: const Text(
-          'Your subscription will remain active until the end of the current billing period.',
-        ),
+        title: Text(l10n.billingCancelDialogTitle),
+        content: Text(l10n.billingCancelDialogBody),
         actions: [
           TextButton(
             onPressed: () => ctx.pop(),
-            child: const Text('Keep Subscription'),
+            child: Text(l10n.billingKeepSubscriptionButton),
           ),
           TextButton(
             onPressed: () {
@@ -263,7 +268,7 @@ class _SubscriptionContent extends ConsumerWidget {
                   .cancelSubscription(subscriptionId);
             },
             style: TextButton.styleFrom(foregroundColor: AimColors.error500),
-            child: const Text('Cancel'),
+            child: Text(l10n.commonCancel),
           ),
         ],
       ),
@@ -278,22 +283,26 @@ class _CurrentPlanCard extends StatelessWidget {
   final BillingPlanModel? plan;
   final SubscriptionModel subscription;
 
-  String _formatDate(DateTime date) {
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-    return '${months[date.month - 1]} ${date.day}, ${date.year}';
+  String _formatDate(BuildContext context, DateTime date) {
+    return DateFormat.yMMMd(
+      Localizations.localeOf(context).toString(),
+    ).format(date);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final price = plan?.price;
-    final subtitle = subscription.currentPeriodEnd != null
-        ? '${subscription.cancelAtPeriodEnd ? "Cancels" : "Renews"} '
-            '${_formatDate(subscription.currentPeriodEnd!)}'
-            '${price != null ? " · ${price.formattedAmount}/${price.billingInterval}" : ""}'
-        : null;
+    String? subtitle;
+    if (subscription.currentPeriodEnd != null) {
+      final dateStr = _formatDate(context, subscription.currentPeriodEnd!);
+      final base = subscription.cancelAtPeriodEnd
+          ? l10n.billingCancelsOnLabel(dateStr)
+          : l10n.billingRenewsOnLabel(dateStr);
+      subtitle = price != null
+          ? '$base · ${price.formattedAmount}/${price.billingInterval}'
+          : base;
+    }
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -313,14 +322,14 @@ class _CurrentPlanCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Current plan',
+                        l10n.billingCurrentPlanLabel,
                         style: AimTextStyles.bodySm.copyWith(
                           color: AimColors.neutral0.withValues(alpha: 0.85),
                         ),
                       ),
                       const SizedBox(height: AimSpacing.space4),
                       Text(
-                        plan?.name ?? 'Subscription',
+                        plan?.name ?? l10n.billingSubscriptionTitle,
                         style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

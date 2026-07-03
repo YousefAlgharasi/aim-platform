@@ -2148,4 +2148,286 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get questionAnswerAnswerInputSemantic => 'حقل إدخال الإجابة';
+
+  @override
+  String get billingSubscriptionTitle => 'الاشتراك';
+
+  @override
+  String get billingLoadingSubscriptionSemantic => 'جارٍ تحميل بيانات الاشتراك';
+
+  @override
+  String get billingLoadingPlansSemantic => 'جارٍ تحميل الخطط';
+
+  @override
+  String get billingWhatsIncludedTitle => 'المزايا المشمولة';
+
+  @override
+  String get billingNoEntitlementsYet => 'لا توجد مزايا حتى الآن.';
+
+  @override
+  String get billingInvoicesLabel => 'الفواتير';
+
+  @override
+  String get billingChangePlanButton => 'تغيير الخطة';
+
+  @override
+  String get billingCancelSubscriptionButton => 'إلغاء الاشتراك';
+
+  @override
+  String get billingCancelDialogTitle => 'هل تريد إلغاء الاشتراك؟';
+
+  @override
+  String get billingCancelDialogBody =>
+      'سيظل اشتراكك نشطًا حتى نهاية فترة الفوترة الحالية.';
+
+  @override
+  String get billingKeepSubscriptionButton => 'الإبقاء على الاشتراك';
+
+  @override
+  String get billingCurrentPlanLabel => 'الخطة الحالية';
+
+  @override
+  String billingRenewsOnLabel(String date) {
+    return 'يتجدد في $date';
+  }
+
+  @override
+  String billingCancelsOnLabel(String date) {
+    return 'يُلغى في $date';
+  }
+
+  @override
+  String get billingNoPlansTitle => 'لا توجد خطط متاحة';
+
+  @override
+  String get billingNoPlansSubtitle => 'تحقق لاحقًا من الخطط المتاحة.';
+
+  @override
+  String get billingPlansPricingTitle => 'الخطط والأسعار';
+
+  @override
+  String billingUnlimitedFeatureLabel(String feature) {
+    return '$feature بلا حدود';
+  }
+
+  @override
+  String billingFeatureValueLabel(String feature, String value) {
+    return '$feature: $value';
+  }
+
+  @override
+  String get billingPopularBadge => 'الأكثر رواجًا';
+
+  @override
+  String get billingSubscribeButton => 'اشترك';
+
+  @override
+  String billingSubscribeToPlanSemantic(String planName) {
+    return 'الاشتراك في $planName';
+  }
+
+  @override
+  String get billingInvoiceStatusPaid => 'مدفوعة';
+
+  @override
+  String get billingInvoiceStatusPending => 'قيد الانتظار';
+
+  @override
+  String get billingInvoiceStatusFailed => 'فشلت';
+
+  @override
+  String get billingInvoiceStatusRefunded => 'مستردة';
+
+  @override
+  String get billingLoadingInvoicesSemantic => 'جارٍ تحميل الفواتير';
+
+  @override
+  String get billingNoInvoicesTitle => 'لا توجد فواتير بعد';
+
+  @override
+  String get billingNoInvoicesSubtitle =>
+      'ستظهر فواتيرك هنا بعد أول عملية دفع.';
+
+  @override
+  String get billingInvoiceDetailTitle => 'تفاصيل الفاتورة';
+
+  @override
+  String billingQuantityLabel(int quantity) {
+    return 'الكمية: $quantity';
+  }
+
+  @override
+  String get billingPaymentSuccessfulTitle => 'تم الدفع بنجاح!';
+
+  @override
+  String billingWelcomeToPlanBody(String planName) {
+    return 'مرحبًا بك في $planName — جميع الميزات مفعّلة الآن.';
+  }
+
+  @override
+  String get billingSubscriptionActiveBody => 'اشتراكك نشط الآن.';
+
+  @override
+  String get billingPaymentFailedTitle => 'فشل الدفع';
+
+  @override
+  String get billingPaymentFailedBody =>
+      'تعذّرت معالجة عملية الدفع. الرجاء المحاولة مرة أخرى.';
+
+  @override
+  String get billingRetryPaymentSemantic => 'إعادة محاولة الدفع';
+
+  @override
+  String get billingGoBackButton => 'رجوع';
+
+  @override
+  String get billingPaymentPendingTitle => 'الدفع قيد الانتظار';
+
+  @override
+  String get billingPaymentPendingBody =>
+      'جارٍ معالجة عملية الدفع. سنُعلمك عند اكتمالها.';
+
+  @override
+  String get billingCheckingStatusTitle => 'جارٍ التحقق من حالة الدفع...';
+
+  @override
+  String get billingVerifyingPaymentBody =>
+      'يرجى الانتظار بينما نتحقق من عملية الدفع.';
+
+  @override
+  String get billingGoToHomeButton => 'الذهاب إلى الرئيسية';
+
+  @override
+  String get billingGoToHomeSemantic => 'الذهاب إلى الرئيسية';
+
+  @override
+  String get billingCheckoutTitle => 'الدفع';
+
+  @override
+  String get billingBillingIntervalLabel => 'الفوترة';
+
+  @override
+  String get billingTermsAgreementNotice =>
+      'بالمتابعة، فإنك توافق على شروط استخدام AIM وتخوّل خصم رسوم متكررة. يمكنك الإلغاء في أي وقت.';
+
+  @override
+  String get billingPromoCodeLabel => 'رمز العرض الترويجي (اختياري)';
+
+  @override
+  String get billingPromoCodePlaceholder => 'أدخل الرمز';
+
+  @override
+  String get billingCouldNotOpenPaymentPageError =>
+      'تعذّر فتح صفحة الدفع. الرجاء المحاولة مرة أخرى.';
+
+  @override
+  String get billingCheckoutFailedGeneric =>
+      'فشل بدء عملية الدفع. الرجاء المحاولة مرة أخرى.';
+
+  @override
+  String get billingProceedToPaymentButton => 'المتابعة إلى الدفع';
+
+  @override
+  String get billingProceedToPaymentSemantic => 'المتابعة إلى الدفع';
+
+  @override
+  String get profileLoadingSemantic => 'جارٍ تحميل الملف الشخصي';
+
+  @override
+  String profileLoadFailedError(String message) {
+    return 'تعذّر تحميل الملف الشخصي: $message';
+  }
+
+  @override
+  String get profileNoProfileLoaded => 'لم يتم تحميل أي ملف شخصي.';
+
+  @override
+  String get profileAccountSectionTitle => 'الحساب';
+
+  @override
+  String get profileProfileSectionTitle => 'الملف الشخصي';
+
+  @override
+  String get profileRolesSectionTitle => 'الأدوار';
+
+  @override
+  String get profileRolesSectionSubtitle =>
+      'تُعرض للمرجعية فقط، ويتم فرضها من قِبل الخادم.';
+
+  @override
+  String get profileQuickLinksSectionTitle => 'روابط سريعة';
+
+  @override
+  String get profileStatusLabel => 'الحالة';
+
+  @override
+  String get profileTypeLabel => 'النوع';
+
+  @override
+  String get profileDisplayNameLabel => 'اسم العرض';
+
+  @override
+  String get profileLanguageLabel => 'اللغة';
+
+  @override
+  String get profileTimezoneLabel => 'المنطقة الزمنية';
+
+  @override
+  String get profileSubscriptionBillingLabel => 'الاشتراك والفوترة';
+
+  @override
+  String get profileInvoiceHistoryLabel => 'سجل الفواتير';
+
+  @override
+  String get profileAnalyticsSummaryLabel => 'ملخص التحليلات';
+
+  @override
+  String get profileApiEndpointTesterLabel =>
+      'أداة اختبار واجهة برمجة التطبيقات (تطوير)';
+
+  @override
+  String get profileEditProfileTitle => 'تعديل الملف الشخصي';
+
+  @override
+  String get profileDayStreakLabel => 'سلسلة الأيام';
+
+  @override
+  String get profileAchievementsStatLabel => 'إنجازات';
+
+  @override
+  String get profileDisplayNameTooLongError =>
+      'يجب ألا يتجاوز اسم العرض 80 حرفًا.';
+
+  @override
+  String get profileUpdatedSnackbar => 'تم تحديث الملف الشخصي.';
+
+  @override
+  String get profileDisplayNameHint => 'اسم العرض الخاص بك';
+
+  @override
+  String get profileDisplayNameFieldSemantic => 'حقل اسم العرض';
+
+  @override
+  String get profileEditPreferredLanguageLabel => 'اللغة المفضّلة';
+
+  @override
+  String get profileSelectLanguagePlaceholder => 'اختر لغة';
+
+  @override
+  String get profilePreferredLanguageFieldSemantic => 'حقل اللغة المفضّلة';
+
+  @override
+  String get profileSelectTimezonePlaceholder => 'اختر منطقة زمنية';
+
+  @override
+  String get profileTimezoneFieldSemantic => 'حقل المنطقة الزمنية';
+
+  @override
+  String get profileSaveChangesButton => 'حفظ التغييرات';
+
+  @override
+  String get profileLanguageEnglishOption => 'الإنجليزية';
+
+  @override
+  String get profileLanguageArabicOption => 'العربية';
 }

@@ -3263,6 +3263,516 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Answer input field'**
   String get questionAnswerAnswerInputSemantic;
+
+  /// App bar title on the subscription screen, and fallback plan name shown on the current-plan hero card when no plan data has loaded yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription'**
+  String get billingSubscriptionTitle;
+
+  /// Accessibility label shown while the subscription screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading subscription data'**
+  String get billingLoadingSubscriptionSemantic;
+
+  /// Accessibility label shown while the pricing plans are loading, on both the Subscription and Pricing screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading plans'**
+  String get billingLoadingPlansSemantic;
+
+  /// Section header above the entitlement list on the subscription screen.
+  ///
+  /// In en, this message translates to:
+  /// **'WHAT\'S INCLUDED'**
+  String get billingWhatsIncludedTitle;
+
+  /// Message shown when the subscriber's plan has no entitlements to display.
+  ///
+  /// In en, this message translates to:
+  /// **'No entitlements yet.'**
+  String get billingNoEntitlementsYet;
+
+  /// Label for the 'Invoices' button on the subscription screen, and app bar title of the invoice history screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoices'**
+  String get billingInvoicesLabel;
+
+  /// Button label that opens the pricing screen to switch plans.
+  ///
+  /// In en, this message translates to:
+  /// **'Change plan'**
+  String get billingChangePlanButton;
+
+  /// Button label that opens the cancel-subscription confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel subscription'**
+  String get billingCancelSubscriptionButton;
+
+  /// Title of the cancel-subscription confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Subscription?'**
+  String get billingCancelDialogTitle;
+
+  /// Body text of the cancel-subscription confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Your subscription will remain active until the end of the current billing period.'**
+  String get billingCancelDialogBody;
+
+  /// Button label that dismisses the cancel-subscription dialog without cancelling.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep Subscription'**
+  String get billingKeepSubscriptionButton;
+
+  /// Caption above the plan name on the current-plan hero card, and the disabled button label on a plan card that matches the subscriber's active plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Current plan'**
+  String get billingCurrentPlanLabel;
+
+  /// Subtitle on the current-plan hero card showing the renewal date, when the subscription is not set to cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Renews {date}'**
+  String billingRenewsOnLabel(String date);
+
+  /// Subtitle on the current-plan hero card showing the cancellation date, when the subscription is set to cancel at period end.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancels {date}'**
+  String billingCancelsOnLabel(String date);
+
+  /// Empty-state title shown when there are no billing plans to display.
+  ///
+  /// In en, this message translates to:
+  /// **'No plans available'**
+  String get billingNoPlansTitle;
+
+  /// Empty-state subtitle shown when there are no billing plans to display.
+  ///
+  /// In en, this message translates to:
+  /// **'Check back later for available plans.'**
+  String get billingNoPlansSubtitle;
+
+  /// App bar title on the pricing screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Plans & Pricing'**
+  String get billingPlansPricingTitle;
+
+  /// Feature bullet shown on a plan card when a numeric feature value is negative, the backend's convention for 'unlimited'.
+  ///
+  /// In en, this message translates to:
+  /// **'{feature} unlimited'**
+  String billingUnlimitedFeatureLabel(String feature);
+
+  /// Feature bullet shown on a plan card when a feature's value is a descriptive string rather than a boolean or count.
+  ///
+  /// In en, this message translates to:
+  /// **'{feature}: {value}'**
+  String billingFeatureValueLabel(String feature, String value);
+
+  /// Badge shown on the recommended (premium) plan card.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular'**
+  String get billingPopularBadge;
+
+  /// Button label to start checkout for a plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribe'**
+  String get billingSubscribeButton;
+
+  /// Accessibility label for a plan card's subscribe button.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribe to {planName}'**
+  String billingSubscribeToPlanSemantic(String planName);
+
+  /// Status pill label for a paid invoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get billingInvoiceStatusPaid;
+
+  /// Status pill label for a pending invoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get billingInvoiceStatusPending;
+
+  /// Status pill label for a failed invoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get billingInvoiceStatusFailed;
+
+  /// Status pill label for a refunded invoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Refunded'**
+  String get billingInvoiceStatusRefunded;
+
+  /// Accessibility label shown while the invoice history screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading invoices'**
+  String get billingLoadingInvoicesSemantic;
+
+  /// Empty-state title shown when the student has no invoices yet.
+  ///
+  /// In en, this message translates to:
+  /// **'No Invoices Yet'**
+  String get billingNoInvoicesTitle;
+
+  /// Empty-state subtitle shown when the student has no invoices yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Your invoices will appear here after your first payment.'**
+  String get billingNoInvoicesSubtitle;
+
+  /// App bar title on the invoice detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice Detail'**
+  String get billingInvoiceDetailTitle;
+
+  /// Quantity subtitle on an invoice line-item row, shown only when quantity is greater than 1.
+  ///
+  /// In en, this message translates to:
+  /// **'Qty: {quantity}'**
+  String billingQuantityLabel(int quantity);
+
+  /// Heading shown on the checkout status screen when payment completed successfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment successful!'**
+  String get billingPaymentSuccessfulTitle;
+
+  /// Body text shown on a successful checkout when the plan name is known.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to {planName} — all features are now unlocked.'**
+  String billingWelcomeToPlanBody(String planName);
+
+  /// Body text shown on a successful checkout when the plan name is not known.
+  ///
+  /// In en, this message translates to:
+  /// **'Your subscription is now active.'**
+  String get billingSubscriptionActiveBody;
+
+  /// Heading shown on the checkout status screen when payment failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment failed'**
+  String get billingPaymentFailedTitle;
+
+  /// Body text shown on the checkout status screen when payment failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your payment could not be processed. Please try again.'**
+  String get billingPaymentFailedBody;
+
+  /// Accessibility label for the retry-payment button on the checkout failure state.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry payment'**
+  String get billingRetryPaymentSemantic;
+
+  /// Button label that returns to the main app shell from the checkout failure state.
+  ///
+  /// In en, this message translates to:
+  /// **'Go back'**
+  String get billingGoBackButton;
+
+  /// Heading shown on the checkout status screen when payment is still pending.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment pending'**
+  String get billingPaymentPendingTitle;
+
+  /// Body text shown on the checkout status screen when payment is still pending.
+  ///
+  /// In en, this message translates to:
+  /// **'Your payment is being processed. We\'ll notify you when it\'s complete.'**
+  String get billingPaymentPendingBody;
+
+  /// Heading shown on the checkout status screen while the payment status is being fetched.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking payment status...'**
+  String get billingCheckingStatusTitle;
+
+  /// Body text shown on the checkout status screen while the payment status is being fetched.
+  ///
+  /// In en, this message translates to:
+  /// **'Please wait while we verify your payment.'**
+  String get billingVerifyingPaymentBody;
+
+  /// Button label that returns to the main app shell after a successful checkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Home'**
+  String get billingGoToHomeButton;
+
+  /// Accessibility label for the 'Go to Home' button.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to home'**
+  String get billingGoToHomeSemantic;
+
+  /// App bar title on the checkout start screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout'**
+  String get billingCheckoutTitle;
+
+  /// Label for the row showing the plan's billing interval (e.g. Monthly) on the checkout start screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Billing'**
+  String get billingBillingIntervalLabel;
+
+  /// Notice shown above the promo code field on the checkout start screen.
+  ///
+  /// In en, this message translates to:
+  /// **'By continuing you agree to AIM\'s Terms of Service and authorise a recurring charge. Cancel anytime.'**
+  String get billingTermsAgreementNotice;
+
+  /// Label for the promotion code input field on the checkout start screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Promotion code (optional)'**
+  String get billingPromoCodeLabel;
+
+  /// Placeholder text for the promotion code input field.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter code'**
+  String get billingPromoCodePlaceholder;
+
+  /// Error shown when the external payment page fails to launch.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the payment page. Please try again.'**
+  String get billingCouldNotOpenPaymentPageError;
+
+  /// Generic fallback error shown when starting checkout fails for an unknown reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to start checkout. Please try again.'**
+  String get billingCheckoutFailedGeneric;
+
+  /// Primary button label that starts checkout on the checkout start screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Proceed to Payment'**
+  String get billingProceedToPaymentButton;
+
+  /// Accessibility label for the 'Proceed to Payment' button.
+  ///
+  /// In en, this message translates to:
+  /// **'Proceed to payment'**
+  String get billingProceedToPaymentSemantic;
+
+  /// Accessibility label shown while the profile screen's data is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading profile'**
+  String get profileLoadingSemantic;
+
+  /// Error message shown when the profile screen fails to load.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load profile: {message}'**
+  String profileLoadFailedError(String message);
+
+  /// Fallback message shown when the profile screen has no data and is not loading or failed.
+  ///
+  /// In en, this message translates to:
+  /// **'No profile loaded.'**
+  String get profileNoProfileLoaded;
+
+  /// Section header for the account-info card on the profile screen.
+  ///
+  /// In en, this message translates to:
+  /// **'ACCOUNT'**
+  String get profileAccountSectionTitle;
+
+  /// Section header for the student-profile-fields card on the profile screen.
+  ///
+  /// In en, this message translates to:
+  /// **'PROFILE'**
+  String get profileProfileSectionTitle;
+
+  /// Section header for the roles card on the profile screen.
+  ///
+  /// In en, this message translates to:
+  /// **'ROLES'**
+  String get profileRolesSectionTitle;
+
+  /// Subtitle under the roles section header on the profile screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Displayed for reference only. Enforced by backend.'**
+  String get profileRolesSectionSubtitle;
+
+  /// Section header for the quick-links card on the profile screen.
+  ///
+  /// In en, this message translates to:
+  /// **'QUICK LINKS'**
+  String get profileQuickLinksSectionTitle;
+
+  /// Label for the account status row on the profile screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get profileStatusLabel;
+
+  /// Label for the account user-type row on the profile screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get profileTypeLabel;
+
+  /// Label for the display-name row on the profile screen, and for the display-name input field on the edit-profile screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Display Name'**
+  String get profileDisplayNameLabel;
+
+  /// Label for the preferred-language row on the profile screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get profileLanguageLabel;
+
+  /// Label for the timezone row on the profile screen, and for the timezone select field on the edit-profile screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Timezone'**
+  String get profileTimezoneLabel;
+
+  /// Quick-link label that opens the subscription screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription & Billing'**
+  String get profileSubscriptionBillingLabel;
+
+  /// Quick-link label that opens the invoice history screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice History'**
+  String get profileInvoiceHistoryLabel;
+
+  /// Quick-link label that opens the analytics summary screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics Summary'**
+  String get profileAnalyticsSummaryLabel;
+
+  /// Quick-link label that opens the developer API endpoint tester.
+  ///
+  /// In en, this message translates to:
+  /// **'API Endpoint Tester (Dev)'**
+  String get profileApiEndpointTesterLabel;
+
+  /// Tooltip for the edit-profile icon button on the profile screen, and app bar title on the edit-profile screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit profile'**
+  String get profileEditProfileTitle;
+
+  /// Label under the day-streak stat on the profile hero header.
+  ///
+  /// In en, this message translates to:
+  /// **'day streak'**
+  String get profileDayStreakLabel;
+
+  /// Label under the achievements-earned stat on the profile hero header.
+  ///
+  /// In en, this message translates to:
+  /// **'achievements'**
+  String get profileAchievementsStatLabel;
+
+  /// Validation error shown when the display name exceeds the maximum length.
+  ///
+  /// In en, this message translates to:
+  /// **'Display name must be 80 characters or fewer.'**
+  String get profileDisplayNameTooLongError;
+
+  /// Snackbar message shown after successfully saving profile changes.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated.'**
+  String get profileUpdatedSnackbar;
+
+  /// Placeholder text for the display-name input field on the edit-profile screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Your display name'**
+  String get profileDisplayNameHint;
+
+  /// Accessibility label for the display-name input field on the edit-profile screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Display name field'**
+  String get profileDisplayNameFieldSemantic;
+
+  /// Label for the preferred-language select field on the edit-profile screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred Language'**
+  String get profileEditPreferredLanguageLabel;
+
+  /// Placeholder text for the preferred-language select field.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a language'**
+  String get profileSelectLanguagePlaceholder;
+
+  /// Accessibility label for the preferred-language select field on the edit-profile screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred language field'**
+  String get profilePreferredLanguageFieldSemantic;
+
+  /// Placeholder text for the timezone select field.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a timezone'**
+  String get profileSelectTimezonePlaceholder;
+
+  /// Accessibility label for the timezone select field on the edit-profile screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Timezone field'**
+  String get profileTimezoneFieldSemantic;
+
+  /// Label and accessibility label for the primary save button on the edit-profile screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get profileSaveChangesButton;
+
+  /// Label for the English option in the preferred-language select field.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get profileLanguageEnglishOption;
+
+  /// Label for the Arabic option in the preferred-language select field.
+  ///
+  /// In en, this message translates to:
+  /// **'Arabic'**
+  String get profileLanguageArabicOption;
 }
 
 class _AppLocalizationsDelegate

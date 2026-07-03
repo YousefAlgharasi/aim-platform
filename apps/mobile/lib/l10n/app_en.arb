@@ -2952,5 +2952,390 @@
   "questionAnswerAnswerInputSemantic": "Answer input field",
   "@questionAnswerAnswerInputSemantic": {
     "description": "Accessibility label for the free-text answer input on a fill-in-the-blank practice question."
+  },
+
+  "billingSubscriptionTitle": "Subscription",
+  "@billingSubscriptionTitle": {
+    "description": "App bar title on the subscription screen, and fallback plan name shown on the current-plan hero card when no plan data has loaded yet."
+  },
+  "billingLoadingSubscriptionSemantic": "Loading subscription data",
+  "@billingLoadingSubscriptionSemantic": {
+    "description": "Accessibility label shown while the subscription screen's data is loading."
+  },
+  "billingLoadingPlansSemantic": "Loading plans",
+  "@billingLoadingPlansSemantic": {
+    "description": "Accessibility label shown while the pricing plans are loading, on both the Subscription and Pricing screens."
+  },
+  "billingWhatsIncludedTitle": "WHAT'S INCLUDED",
+  "@billingWhatsIncludedTitle": {
+    "description": "Section header above the entitlement list on the subscription screen."
+  },
+  "billingNoEntitlementsYet": "No entitlements yet.",
+  "@billingNoEntitlementsYet": {
+    "description": "Message shown when the subscriber's plan has no entitlements to display."
+  },
+  "billingInvoicesLabel": "Invoices",
+  "@billingInvoicesLabel": {
+    "description": "Label for the 'Invoices' button on the subscription screen, and app bar title of the invoice history screen."
+  },
+  "billingChangePlanButton": "Change plan",
+  "@billingChangePlanButton": {
+    "description": "Button label that opens the pricing screen to switch plans."
+  },
+  "billingCancelSubscriptionButton": "Cancel subscription",
+  "@billingCancelSubscriptionButton": {
+    "description": "Button label that opens the cancel-subscription confirmation dialog."
+  },
+  "billingCancelDialogTitle": "Cancel Subscription?",
+  "@billingCancelDialogTitle": {
+    "description": "Title of the cancel-subscription confirmation dialog."
+  },
+  "billingCancelDialogBody": "Your subscription will remain active until the end of the current billing period.",
+  "@billingCancelDialogBody": {
+    "description": "Body text of the cancel-subscription confirmation dialog."
+  },
+  "billingKeepSubscriptionButton": "Keep Subscription",
+  "@billingKeepSubscriptionButton": {
+    "description": "Button label that dismisses the cancel-subscription dialog without cancelling."
+  },
+  "billingCurrentPlanLabel": "Current plan",
+  "@billingCurrentPlanLabel": {
+    "description": "Caption above the plan name on the current-plan hero card, and the disabled button label on a plan card that matches the subscriber's active plan."
+  },
+  "billingRenewsOnLabel": "Renews {date}",
+  "@billingRenewsOnLabel": {
+    "description": "Subtitle on the current-plan hero card showing the renewal date, when the subscription is not set to cancel.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "billingCancelsOnLabel": "Cancels {date}",
+  "@billingCancelsOnLabel": {
+    "description": "Subtitle on the current-plan hero card showing the cancellation date, when the subscription is set to cancel at period end.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "billingNoPlansTitle": "No plans available",
+  "@billingNoPlansTitle": {
+    "description": "Empty-state title shown when there are no billing plans to display."
+  },
+  "billingNoPlansSubtitle": "Check back later for available plans.",
+  "@billingNoPlansSubtitle": {
+    "description": "Empty-state subtitle shown when there are no billing plans to display."
+  },
+  "billingPlansPricingTitle": "Plans & Pricing",
+  "@billingPlansPricingTitle": {
+    "description": "App bar title on the pricing screen."
+  },
+  "billingUnlimitedFeatureLabel": "{feature} unlimited",
+  "@billingUnlimitedFeatureLabel": {
+    "description": "Feature bullet shown on a plan card when a numeric feature value is negative, the backend's convention for 'unlimited'.",
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      }
+    }
+  },
+  "billingFeatureValueLabel": "{feature}: {value}",
+  "@billingFeatureValueLabel": {
+    "description": "Feature bullet shown on a plan card when a feature's value is a descriptive string rather than a boolean or count.",
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "billingPopularBadge": "Popular",
+  "@billingPopularBadge": {
+    "description": "Badge shown on the recommended (premium) plan card."
+  },
+  "billingSubscribeButton": "Subscribe",
+  "@billingSubscribeButton": {
+    "description": "Button label to start checkout for a plan."
+  },
+  "billingSubscribeToPlanSemantic": "Subscribe to {planName}",
+  "@billingSubscribeToPlanSemantic": {
+    "description": "Accessibility label for a plan card's subscribe button.",
+    "placeholders": {
+      "planName": {
+        "type": "String"
+      }
+    }
+  },
+  "billingInvoiceStatusPaid": "Paid",
+  "@billingInvoiceStatusPaid": {
+    "description": "Status pill label for a paid invoice."
+  },
+  "billingInvoiceStatusPending": "Pending",
+  "@billingInvoiceStatusPending": {
+    "description": "Status pill label for a pending invoice."
+  },
+  "billingInvoiceStatusFailed": "Failed",
+  "@billingInvoiceStatusFailed": {
+    "description": "Status pill label for a failed invoice."
+  },
+  "billingInvoiceStatusRefunded": "Refunded",
+  "@billingInvoiceStatusRefunded": {
+    "description": "Status pill label for a refunded invoice."
+  },
+  "billingLoadingInvoicesSemantic": "Loading invoices",
+  "@billingLoadingInvoicesSemantic": {
+    "description": "Accessibility label shown while the invoice history screen's data is loading."
+  },
+  "billingNoInvoicesTitle": "No Invoices Yet",
+  "@billingNoInvoicesTitle": {
+    "description": "Empty-state title shown when the student has no invoices yet."
+  },
+  "billingNoInvoicesSubtitle": "Your invoices will appear here after your first payment.",
+  "@billingNoInvoicesSubtitle": {
+    "description": "Empty-state subtitle shown when the student has no invoices yet."
+  },
+  "billingInvoiceDetailTitle": "Invoice Detail",
+  "@billingInvoiceDetailTitle": {
+    "description": "App bar title on the invoice detail screen."
+  },
+  "billingQuantityLabel": "Qty: {quantity}",
+  "@billingQuantityLabel": {
+    "description": "Quantity subtitle on an invoice line-item row, shown only when quantity is greater than 1.",
+    "placeholders": {
+      "quantity": {
+        "type": "int"
+      }
+    }
+  },
+  "billingPaymentSuccessfulTitle": "Payment successful!",
+  "@billingPaymentSuccessfulTitle": {
+    "description": "Heading shown on the checkout status screen when payment completed successfully."
+  },
+  "billingWelcomeToPlanBody": "Welcome to {planName} — all features are now unlocked.",
+  "@billingWelcomeToPlanBody": {
+    "description": "Body text shown on a successful checkout when the plan name is known.",
+    "placeholders": {
+      "planName": {
+        "type": "String"
+      }
+    }
+  },
+  "billingSubscriptionActiveBody": "Your subscription is now active.",
+  "@billingSubscriptionActiveBody": {
+    "description": "Body text shown on a successful checkout when the plan name is not known."
+  },
+  "billingPaymentFailedTitle": "Payment failed",
+  "@billingPaymentFailedTitle": {
+    "description": "Heading shown on the checkout status screen when payment failed."
+  },
+  "billingPaymentFailedBody": "Your payment could not be processed. Please try again.",
+  "@billingPaymentFailedBody": {
+    "description": "Body text shown on the checkout status screen when payment failed."
+  },
+  "billingRetryPaymentSemantic": "Retry payment",
+  "@billingRetryPaymentSemantic": {
+    "description": "Accessibility label for the retry-payment button on the checkout failure state."
+  },
+  "billingGoBackButton": "Go back",
+  "@billingGoBackButton": {
+    "description": "Button label that returns to the main app shell from the checkout failure state."
+  },
+  "billingPaymentPendingTitle": "Payment pending",
+  "@billingPaymentPendingTitle": {
+    "description": "Heading shown on the checkout status screen when payment is still pending."
+  },
+  "billingPaymentPendingBody": "Your payment is being processed. We'll notify you when it's complete.",
+  "@billingPaymentPendingBody": {
+    "description": "Body text shown on the checkout status screen when payment is still pending."
+  },
+  "billingCheckingStatusTitle": "Checking payment status...",
+  "@billingCheckingStatusTitle": {
+    "description": "Heading shown on the checkout status screen while the payment status is being fetched."
+  },
+  "billingVerifyingPaymentBody": "Please wait while we verify your payment.",
+  "@billingVerifyingPaymentBody": {
+    "description": "Body text shown on the checkout status screen while the payment status is being fetched."
+  },
+  "billingGoToHomeButton": "Go to Home",
+  "@billingGoToHomeButton": {
+    "description": "Button label that returns to the main app shell after a successful checkout."
+  },
+  "billingGoToHomeSemantic": "Go to home",
+  "@billingGoToHomeSemantic": {
+    "description": "Accessibility label for the 'Go to Home' button."
+  },
+  "billingCheckoutTitle": "Checkout",
+  "@billingCheckoutTitle": {
+    "description": "App bar title on the checkout start screen."
+  },
+  "billingBillingIntervalLabel": "Billing",
+  "@billingBillingIntervalLabel": {
+    "description": "Label for the row showing the plan's billing interval (e.g. Monthly) on the checkout start screen."
+  },
+  "billingTermsAgreementNotice": "By continuing you agree to AIM's Terms of Service and authorise a recurring charge. Cancel anytime.",
+  "@billingTermsAgreementNotice": {
+    "description": "Notice shown above the promo code field on the checkout start screen."
+  },
+  "billingPromoCodeLabel": "Promotion code (optional)",
+  "@billingPromoCodeLabel": {
+    "description": "Label for the promotion code input field on the checkout start screen."
+  },
+  "billingPromoCodePlaceholder": "Enter code",
+  "@billingPromoCodePlaceholder": {
+    "description": "Placeholder text for the promotion code input field."
+  },
+  "billingCouldNotOpenPaymentPageError": "Could not open the payment page. Please try again.",
+  "@billingCouldNotOpenPaymentPageError": {
+    "description": "Error shown when the external payment page fails to launch."
+  },
+  "billingCheckoutFailedGeneric": "Failed to start checkout. Please try again.",
+  "@billingCheckoutFailedGeneric": {
+    "description": "Generic fallback error shown when starting checkout fails for an unknown reason."
+  },
+  "billingProceedToPaymentButton": "Proceed to Payment",
+  "@billingProceedToPaymentButton": {
+    "description": "Primary button label that starts checkout on the checkout start screen."
+  },
+  "billingProceedToPaymentSemantic": "Proceed to payment",
+  "@billingProceedToPaymentSemantic": {
+    "description": "Accessibility label for the 'Proceed to Payment' button."
+  },
+
+  "profileLoadingSemantic": "Loading profile",
+  "@profileLoadingSemantic": {
+    "description": "Accessibility label shown while the profile screen's data is loading."
+  },
+  "profileLoadFailedError": "Could not load profile: {message}",
+  "@profileLoadFailedError": {
+    "description": "Error message shown when the profile screen fails to load.",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "profileNoProfileLoaded": "No profile loaded.",
+  "@profileNoProfileLoaded": {
+    "description": "Fallback message shown when the profile screen has no data and is not loading or failed."
+  },
+  "profileAccountSectionTitle": "ACCOUNT",
+  "@profileAccountSectionTitle": {
+    "description": "Section header for the account-info card on the profile screen."
+  },
+  "profileProfileSectionTitle": "PROFILE",
+  "@profileProfileSectionTitle": {
+    "description": "Section header for the student-profile-fields card on the profile screen."
+  },
+  "profileRolesSectionTitle": "ROLES",
+  "@profileRolesSectionTitle": {
+    "description": "Section header for the roles card on the profile screen."
+  },
+  "profileRolesSectionSubtitle": "Displayed for reference only. Enforced by backend.",
+  "@profileRolesSectionSubtitle": {
+    "description": "Subtitle under the roles section header on the profile screen."
+  },
+  "profileQuickLinksSectionTitle": "QUICK LINKS",
+  "@profileQuickLinksSectionTitle": {
+    "description": "Section header for the quick-links card on the profile screen."
+  },
+  "profileStatusLabel": "Status",
+  "@profileStatusLabel": {
+    "description": "Label for the account status row on the profile screen."
+  },
+  "profileTypeLabel": "Type",
+  "@profileTypeLabel": {
+    "description": "Label for the account user-type row on the profile screen."
+  },
+  "profileDisplayNameLabel": "Display Name",
+  "@profileDisplayNameLabel": {
+    "description": "Label for the display-name row on the profile screen, and for the display-name input field on the edit-profile screen."
+  },
+  "profileLanguageLabel": "Language",
+  "@profileLanguageLabel": {
+    "description": "Label for the preferred-language row on the profile screen."
+  },
+  "profileTimezoneLabel": "Timezone",
+  "@profileTimezoneLabel": {
+    "description": "Label for the timezone row on the profile screen, and for the timezone select field on the edit-profile screen."
+  },
+  "profileSubscriptionBillingLabel": "Subscription & Billing",
+  "@profileSubscriptionBillingLabel": {
+    "description": "Quick-link label that opens the subscription screen."
+  },
+  "profileInvoiceHistoryLabel": "Invoice History",
+  "@profileInvoiceHistoryLabel": {
+    "description": "Quick-link label that opens the invoice history screen."
+  },
+  "profileAnalyticsSummaryLabel": "Analytics Summary",
+  "@profileAnalyticsSummaryLabel": {
+    "description": "Quick-link label that opens the analytics summary screen."
+  },
+  "profileApiEndpointTesterLabel": "API Endpoint Tester (Dev)",
+  "@profileApiEndpointTesterLabel": {
+    "description": "Quick-link label that opens the developer API endpoint tester."
+  },
+  "profileEditProfileTitle": "Edit profile",
+  "@profileEditProfileTitle": {
+    "description": "Tooltip for the edit-profile icon button on the profile screen, and app bar title on the edit-profile screen."
+  },
+  "profileDayStreakLabel": "day streak",
+  "@profileDayStreakLabel": {
+    "description": "Label under the day-streak stat on the profile hero header."
+  },
+  "profileAchievementsStatLabel": "achievements",
+  "@profileAchievementsStatLabel": {
+    "description": "Label under the achievements-earned stat on the profile hero header."
+  },
+  "profileDisplayNameTooLongError": "Display name must be 80 characters or fewer.",
+  "@profileDisplayNameTooLongError": {
+    "description": "Validation error shown when the display name exceeds the maximum length."
+  },
+  "profileUpdatedSnackbar": "Profile updated.",
+  "@profileUpdatedSnackbar": {
+    "description": "Snackbar message shown after successfully saving profile changes."
+  },
+  "profileDisplayNameHint": "Your display name",
+  "@profileDisplayNameHint": {
+    "description": "Placeholder text for the display-name input field on the edit-profile screen."
+  },
+  "profileDisplayNameFieldSemantic": "Display name field",
+  "@profileDisplayNameFieldSemantic": {
+    "description": "Accessibility label for the display-name input field on the edit-profile screen."
+  },
+  "profileEditPreferredLanguageLabel": "Preferred Language",
+  "@profileEditPreferredLanguageLabel": {
+    "description": "Label for the preferred-language select field on the edit-profile screen."
+  },
+  "profileSelectLanguagePlaceholder": "Select a language",
+  "@profileSelectLanguagePlaceholder": {
+    "description": "Placeholder text for the preferred-language select field."
+  },
+  "profilePreferredLanguageFieldSemantic": "Preferred language field",
+  "@profilePreferredLanguageFieldSemantic": {
+    "description": "Accessibility label for the preferred-language select field on the edit-profile screen."
+  },
+  "profileSelectTimezonePlaceholder": "Select a timezone",
+  "@profileSelectTimezonePlaceholder": {
+    "description": "Placeholder text for the timezone select field."
+  },
+  "profileTimezoneFieldSemantic": "Timezone field",
+  "@profileTimezoneFieldSemantic": {
+    "description": "Accessibility label for the timezone select field on the edit-profile screen."
+  },
+  "profileSaveChangesButton": "Save changes",
+  "@profileSaveChangesButton": {
+    "description": "Label and accessibility label for the primary save button on the edit-profile screen."
+  },
+  "profileLanguageEnglishOption": "English",
+  "@profileLanguageEnglishOption": {
+    "description": "Label for the English option in the preferred-language select field."
+  },
+  "profileLanguageArabicOption": "Arabic",
+  "@profileLanguageArabicOption": {
+    "description": "Label for the Arabic option in the preferred-language select field."
   }
 }

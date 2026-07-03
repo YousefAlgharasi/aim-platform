@@ -21,6 +21,7 @@ import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/billing/logic/provider/billing_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class CheckoutStatusPage extends ConsumerStatefulWidget {
   final String sessionId;
@@ -38,6 +39,7 @@ class CheckoutStatusPage extends ConsumerStatefulWidget {
 
   static Widget buildSuccessState(BuildContext context, {String? planName}) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -53,14 +55,14 @@ class CheckoutStatusPage extends ConsumerStatefulWidget {
         ),
         const SizedBox(height: AimSpacing.sectionGap),
         Text(
-          'Payment successful!',
+          l10n.billingPaymentSuccessfulTitle,
           style: AimTextStyles.h2.copyWith(color: surfaces.textPrimary),
         ),
         const SizedBox(height: AimSpacing.space8),
         Text(
           planName != null
-              ? 'Welcome to $planName — all features are now unlocked.'
-              : 'Your subscription is now active.',
+              ? l10n.billingWelcomeToPlanBody(planName)
+              : l10n.billingSubscriptionActiveBody,
           style: AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
           textAlign: TextAlign.center,
         ),
@@ -70,6 +72,7 @@ class CheckoutStatusPage extends ConsumerStatefulWidget {
 
   static Widget buildFailureState(BuildContext context, {VoidCallback? onRetry}) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -85,22 +88,22 @@ class CheckoutStatusPage extends ConsumerStatefulWidget {
         ),
         const SizedBox(height: AimSpacing.sectionGap),
         Text(
-          'Payment failed',
+          l10n.billingPaymentFailedTitle,
           style: AimTextStyles.h2.copyWith(color: surfaces.textPrimary),
         ),
         const SizedBox(height: AimSpacing.space8),
         Text(
-          'Your payment could not be processed. Please try again.',
+          l10n.billingPaymentFailedBody,
           style: AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
           textAlign: TextAlign.center,
         ),
         if (onRetry != null) ...[
           const SizedBox(height: AimSpacing.sectionGap),
           AIMGradientButton(
-            label: 'Try again',
+            label: l10n.commonRetry,
             onPressed: onRetry,
             fullWidth: true,
-            semanticLabel: 'Retry payment',
+            semanticLabel: l10n.billingRetryPaymentSemantic,
           ),
         ],
         const SizedBox(height: AimSpacing.componentGap),
@@ -109,7 +112,7 @@ class CheckoutStatusPage extends ConsumerStatefulWidget {
           onPressed: () =>
               context.go(AppRoutePaths.mainShell),
           fullWidth: true,
-          child: const Text('Go back'),
+          child: Text(l10n.billingGoBackButton),
         ),
       ],
     );
@@ -117,6 +120,7 @@ class CheckoutStatusPage extends ConsumerStatefulWidget {
 
   static Widget buildPendingState(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -136,13 +140,12 @@ class CheckoutStatusPage extends ConsumerStatefulWidget {
         ),
         const SizedBox(height: AimSpacing.sectionGap),
         Text(
-          'Payment pending',
+          l10n.billingPaymentPendingTitle,
           style: AimTextStyles.h2.copyWith(color: surfaces.textPrimary),
         ),
         const SizedBox(height: AimSpacing.space8),
         Text(
-          "Your payment is being processed. We'll notify you when it's "
-          'complete.',
+          l10n.billingPaymentPendingBody,
           style: AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
           textAlign: TextAlign.center,
         ),
@@ -192,6 +195,7 @@ class _CheckoutStatusPageState extends ConsumerState<CheckoutStatusPage> {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final isSuccess = !_isLoading && _errorMessage == null && _status == 'completed';
 
     return Scaffold(
@@ -211,11 +215,11 @@ class _CheckoutStatusPageState extends ConsumerState<CheckoutStatusPage> {
               Padding(
                 padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
                 child: AIMGradientButton(
-                  label: 'Go to Home',
+                  label: l10n.billingGoToHomeButton,
                   onPressed: () =>
                       context.go(AppRoutePaths.mainShell),
                   fullWidth: true,
-                  semanticLabel: 'Go to home',
+                  semanticLabel: l10n.billingGoToHomeSemantic,
                 ),
               ),
           ],
@@ -226,6 +230,7 @@ class _CheckoutStatusPageState extends ConsumerState<CheckoutStatusPage> {
 
   Widget _buildStatusContent(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     if (_isLoading) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -233,12 +238,12 @@ class _CheckoutStatusPageState extends ConsumerState<CheckoutStatusPage> {
           const CircularProgressIndicator(),
           const SizedBox(height: AimSpacing.sectionGap),
           Text(
-            'Checking payment status...',
+            l10n.billingCheckingStatusTitle,
             style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
           ),
           const SizedBox(height: AimSpacing.space8),
           Text(
-            'Please wait while we verify your payment.',
+            l10n.billingVerifyingPaymentBody,
             style:
                 AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
             textAlign: TextAlign.center,

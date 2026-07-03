@@ -18,6 +18,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/l10n/app_localizations.dart';
+
 import '../../../../core/state/app_async_state.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../auth/data/models/auth_context_model.dart';
@@ -52,10 +54,10 @@ class EditProfilePage extends ConsumerStatefulWidget {
 }
 
 /// Selectable preferred-language options shown in the Edit Profile dropdown.
-const List<AIMSelectOption> _kLanguageOptions = [
-  AIMSelectOption(value: 'en', label: 'English'),
-  AIMSelectOption(value: 'ar', label: 'Arabic'),
-];
+List<AIMSelectOption> _languageOptions(AppLocalizations l10n) => [
+      AIMSelectOption(value: 'en', label: l10n.profileLanguageEnglishOption),
+      AIMSelectOption(value: 'ar', label: l10n.profileLanguageArabicOption),
+    ];
 
 /// Curated IANA timezone options relevant to the platform's user base, plus
 /// UTC.
@@ -125,10 +127,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   }
 
   bool _validate() {
+    final l10n = AppLocalizations.of(context);
     final dn = _displayNameController.text.trim();
     String? dnErr;
     if (dn.length > 80) {
-      dnErr = 'Display name must be 80 characters or fewer.';
+      dnErr = l10n.profileDisplayNameTooLongError;
     }
     setState(() => _displayNameError = dnErr);
     return dnErr == null;
@@ -137,6 +140,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   Future<void> _submit() async {
     if (!_validate()) return;
 
+    final l10n = AppLocalizations.of(context);
     final dn = _displayNameController.text.trim();
 
     final payload = SafeStudentProfileUpdatePayloadModel(
@@ -149,7 +153,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
     if (bearerToken == null || bearerToken.isEmpty) {
       if (!mounted) return;
-      _showSnack('Your session has expired. Please sign in again.');
+      _showSnack(l10n.authSessionExpiredError);
       return;
     }
 
@@ -159,7 +163,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
     if (!mounted) return;
     if (success) {
-      _showSnack('Profile updated.');
+      _showSnack(l10n.profileUpdatedSnackbar);
       context.pop();
     }
   }
@@ -173,6 +177,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final profileState = ref.watch(profileProvider);
     final isSubmitting = profileState is AppAsyncLoading;
     final canSave = _dirty && !isSubmitting;
@@ -213,20 +218,20 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
                   // Display Name
                   AIMInput(
-                    label: 'Display Name',
-                    placeholder: 'Your display name',
+                    label: l10n.profileDisplayNameLabel,
+                    placeholder: l10n.profileDisplayNameHint,
                     controller: _displayNameController,
                     error: _displayNameError,
                     textInputAction: TextInputAction.next,
-                    semanticLabel: 'Display name field',
+                    semanticLabel: l10n.profileDisplayNameFieldSemantic,
                   ),
                   const SizedBox(height: AimSpacing.componentGap),
 
                   // Preferred Language
                   AIMSelect(
-                    label: 'Preferred Language',
-                    placeholder: 'Select a language',
-                    options: _kLanguageOptions,
+                    label: l10n.profileEditPreferredLanguageLabel,
+                    placeholder: l10n.profileSelectLanguagePlaceholder,
+                    options: _languageOptions(l10n),
                     value: _preferredLanguage,
                     onChanged: (value) {
                       setState(() {
@@ -234,14 +239,14 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                         _dirty = true;
                       });
                     },
-                    semanticLabel: 'Preferred language field',
+                    semanticLabel: l10n.profilePreferredLanguageFieldSemantic,
                   ),
                   const SizedBox(height: AimSpacing.componentGap),
 
                   // Timezone
                   AIMSelect(
-                    label: 'Timezone',
-                    placeholder: 'Select a timezone',
+                    label: l10n.profileTimezoneLabel,
+                    placeholder: l10n.profileSelectTimezonePlaceholder,
                     options: _kTimezoneOptions,
                     value: _timezone,
                     onChanged: (value) {
@@ -250,18 +255,18 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                         _dirty = true;
                       });
                     },
-                    semanticLabel: 'Timezone field',
+                    semanticLabel: l10n.profileTimezoneFieldSemantic,
                   ),
                   const SizedBox(height: AimSpacing.sectionGap),
 
                   // ── Save changes CTA ─────────────────────────────────
                   AIMGradientButton(
-                    label: 'Save changes',
+                    label: l10n.profileSaveChangesButton,
                     fullWidth: true,
                     loading: isSubmitting,
                     enabled: canSave,
                     onPressed: _submit,
-                    semanticLabel: 'Save changes',
+                    semanticLabel: l10n.profileSaveChangesButton,
                   ),
                 ],
               ),
@@ -297,6 +302,7 @@ class _EditProfileGradientHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(gradient: AimGradients.gzHero),
@@ -312,7 +318,7 @@ class _EditProfileGradientHeader extends StatelessWidget {
               children: [
                 Semantics(
                   button: true,
-                  label: 'Back',
+                  label: l10n.commonBack,
                   child: InkWell(
                     onTap: () => context.pop(),
                     customBorder: const CircleBorder(),
@@ -342,7 +348,7 @@ class _EditProfileGradientHeader extends StatelessWidget {
                     child: Align(
                       alignment: AlignmentDirectional.centerStart,
                       child: Text(
-                        'Edit profile',
+                        l10n.profileEditProfileTitle,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         style: AimTextStyles.h3.copyWith(
@@ -371,7 +377,7 @@ class _EditProfileGradientHeader extends StatelessWidget {
                             ),
                           )
                         : Text(
-                            'Save',
+                            l10n.commonSave,
                             style: AimTextStyles.button.copyWith(
                               color: AimColors.neutral0,
                             ),

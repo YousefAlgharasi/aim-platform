@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class PlanCard extends StatelessWidget {
   final String planName;
@@ -27,6 +28,7 @@ class PlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return AIMCard(
       variant: isRecommended ? AIMCardVariant.elevated : AIMCardVariant.standard,
@@ -41,10 +43,10 @@ class PlanCard extends StatelessWidget {
               ),
               if (isRecommended) ...[
                 const SizedBox(width: AimSpacing.space8),
-                const AIMBadge(
+                AIMBadge(
                   tone: AIMBadgeTone.primary,
                   pill: true,
-                  child: Text('Popular'),
+                  child: Text(l10n.billingPopularBadge),
                 ),
               ],
             ],
@@ -101,16 +103,16 @@ class PlanCard extends StatelessWidget {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: null,
-                child: const Text('Current plan'),
+                child: Text(l10n.billingCurrentPlanLabel),
               ),
             )
           else
             AIMGradientButton(
-              label: 'Subscribe',
+              label: l10n.billingSubscribeButton,
               onPressed: onSelect,
               enabled: onSelect != null,
               fullWidth: true,
-              semanticLabel: 'Subscribe to $planName',
+              semanticLabel: l10n.billingSubscribeToPlanSemantic(planName),
             ),
         ],
       ),

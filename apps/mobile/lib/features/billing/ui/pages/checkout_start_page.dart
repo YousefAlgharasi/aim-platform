@@ -23,6 +23,7 @@ import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/billing/logic/provider/billing_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class CheckoutStartPage extends ConsumerStatefulWidget {
   final String planName;
@@ -54,6 +55,7 @@ class _CheckoutStartPageState extends ConsumerState<CheckoutStartPage> {
   }
 
   Future<void> _startCheckout() async {
+    final l10n = AppLocalizations.of(context);
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -79,7 +81,7 @@ class _CheckoutStartPageState extends ConsumerState<CheckoutStartPage> {
         if (!launched) {
           if (!mounted) return;
           setState(() {
-            _errorMessage = 'Could not open the payment page. Please try again.';
+            _errorMessage = l10n.billingCouldNotOpenPaymentPageError;
           });
           return;
         }
@@ -99,7 +101,7 @@ class _CheckoutStartPageState extends ConsumerState<CheckoutStartPage> {
       });
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to start checkout. Please try again.';
+        _errorMessage = l10n.billingCheckoutFailedGeneric;
       });
     } finally {
       if (mounted) {
@@ -113,6 +115,7 @@ class _CheckoutStartPageState extends ConsumerState<CheckoutStartPage> {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: surfaces.background,
@@ -154,7 +157,7 @@ class _CheckoutStartPageState extends ConsumerState<CheckoutStartPage> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Billing',
+                              l10n.billingBillingIntervalLabel,
                               style: AimTextStyles.bodySm
                                   .copyWith(color: surfaces.textSecondary),
                             ),
@@ -170,16 +173,15 @@ class _CheckoutStartPageState extends ConsumerState<CheckoutStartPage> {
                   ),
                   const SizedBox(height: AimSpacing.componentGap),
                   Text(
-                    "By continuing you agree to AIM's Terms of Service and "
-                    'authorise a recurring charge. Cancel anytime.',
+                    l10n.billingTermsAgreementNotice,
                     style: AimTextStyles.bodySm
                         .copyWith(color: surfaces.textSecondary),
                   ),
                   const SizedBox(height: AimSpacing.sectionGap),
                   AIMInput(
                     controller: _promoController,
-                    label: 'Promotion code (optional)',
-                    placeholder: 'Enter code',
+                    label: l10n.billingPromoCodeLabel,
+                    placeholder: l10n.billingPromoCodePlaceholder,
                   ),
                   if (_errorMessage != null) ...[
                     const SizedBox(height: AimSpacing.componentGap),
@@ -191,11 +193,11 @@ class _CheckoutStartPageState extends ConsumerState<CheckoutStartPage> {
                   ],
                   const SizedBox(height: AimSpacing.sectionGap),
                   AIMGradientButton(
-                    label: 'Proceed to Payment',
+                    label: l10n.billingProceedToPaymentButton,
                     onPressed: _isLoading ? null : _startCheckout,
                     loading: _isLoading,
                     fullWidth: true,
-                    semanticLabel: 'Proceed to payment',
+                    semanticLabel: l10n.billingProceedToPaymentSemantic,
                   ),
                 ],
               ),
@@ -215,6 +217,7 @@ class _CheckoutHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -230,7 +233,7 @@ class _CheckoutHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: l10n.commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -256,7 +259,7 @@ class _CheckoutHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Checkout',
+              l10n.billingCheckoutTitle,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],

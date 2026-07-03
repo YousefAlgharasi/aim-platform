@@ -2076,4 +2076,287 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get questionAnswerAnswerInputSemantic => 'Answer input field';
+
+  @override
+  String get billingSubscriptionTitle => 'Subscription';
+
+  @override
+  String get billingLoadingSubscriptionSemantic => 'Loading subscription data';
+
+  @override
+  String get billingLoadingPlansSemantic => 'Loading plans';
+
+  @override
+  String get billingWhatsIncludedTitle => 'WHAT\'S INCLUDED';
+
+  @override
+  String get billingNoEntitlementsYet => 'No entitlements yet.';
+
+  @override
+  String get billingInvoicesLabel => 'Invoices';
+
+  @override
+  String get billingChangePlanButton => 'Change plan';
+
+  @override
+  String get billingCancelSubscriptionButton => 'Cancel subscription';
+
+  @override
+  String get billingCancelDialogTitle => 'Cancel Subscription?';
+
+  @override
+  String get billingCancelDialogBody =>
+      'Your subscription will remain active until the end of the current billing period.';
+
+  @override
+  String get billingKeepSubscriptionButton => 'Keep Subscription';
+
+  @override
+  String get billingCurrentPlanLabel => 'Current plan';
+
+  @override
+  String billingRenewsOnLabel(String date) {
+    return 'Renews $date';
+  }
+
+  @override
+  String billingCancelsOnLabel(String date) {
+    return 'Cancels $date';
+  }
+
+  @override
+  String get billingNoPlansTitle => 'No plans available';
+
+  @override
+  String get billingNoPlansSubtitle => 'Check back later for available plans.';
+
+  @override
+  String get billingPlansPricingTitle => 'Plans & Pricing';
+
+  @override
+  String billingUnlimitedFeatureLabel(String feature) {
+    return '$feature unlimited';
+  }
+
+  @override
+  String billingFeatureValueLabel(String feature, String value) {
+    return '$feature: $value';
+  }
+
+  @override
+  String get billingPopularBadge => 'Popular';
+
+  @override
+  String get billingSubscribeButton => 'Subscribe';
+
+  @override
+  String billingSubscribeToPlanSemantic(String planName) {
+    return 'Subscribe to $planName';
+  }
+
+  @override
+  String get billingInvoiceStatusPaid => 'Paid';
+
+  @override
+  String get billingInvoiceStatusPending => 'Pending';
+
+  @override
+  String get billingInvoiceStatusFailed => 'Failed';
+
+  @override
+  String get billingInvoiceStatusRefunded => 'Refunded';
+
+  @override
+  String get billingLoadingInvoicesSemantic => 'Loading invoices';
+
+  @override
+  String get billingNoInvoicesTitle => 'No Invoices Yet';
+
+  @override
+  String get billingNoInvoicesSubtitle =>
+      'Your invoices will appear here after your first payment.';
+
+  @override
+  String get billingInvoiceDetailTitle => 'Invoice Detail';
+
+  @override
+  String billingQuantityLabel(int quantity) {
+    return 'Qty: $quantity';
+  }
+
+  @override
+  String get billingPaymentSuccessfulTitle => 'Payment successful!';
+
+  @override
+  String billingWelcomeToPlanBody(String planName) {
+    return 'Welcome to $planName — all features are now unlocked.';
+  }
+
+  @override
+  String get billingSubscriptionActiveBody =>
+      'Your subscription is now active.';
+
+  @override
+  String get billingPaymentFailedTitle => 'Payment failed';
+
+  @override
+  String get billingPaymentFailedBody =>
+      'Your payment could not be processed. Please try again.';
+
+  @override
+  String get billingRetryPaymentSemantic => 'Retry payment';
+
+  @override
+  String get billingGoBackButton => 'Go back';
+
+  @override
+  String get billingPaymentPendingTitle => 'Payment pending';
+
+  @override
+  String get billingPaymentPendingBody =>
+      'Your payment is being processed. We\'ll notify you when it\'s complete.';
+
+  @override
+  String get billingCheckingStatusTitle => 'Checking payment status...';
+
+  @override
+  String get billingVerifyingPaymentBody =>
+      'Please wait while we verify your payment.';
+
+  @override
+  String get billingGoToHomeButton => 'Go to Home';
+
+  @override
+  String get billingGoToHomeSemantic => 'Go to home';
+
+  @override
+  String get billingCheckoutTitle => 'Checkout';
+
+  @override
+  String get billingBillingIntervalLabel => 'Billing';
+
+  @override
+  String get billingTermsAgreementNotice =>
+      'By continuing you agree to AIM\'s Terms of Service and authorise a recurring charge. Cancel anytime.';
+
+  @override
+  String get billingPromoCodeLabel => 'Promotion code (optional)';
+
+  @override
+  String get billingPromoCodePlaceholder => 'Enter code';
+
+  @override
+  String get billingCouldNotOpenPaymentPageError =>
+      'Could not open the payment page. Please try again.';
+
+  @override
+  String get billingCheckoutFailedGeneric =>
+      'Failed to start checkout. Please try again.';
+
+  @override
+  String get billingProceedToPaymentButton => 'Proceed to Payment';
+
+  @override
+  String get billingProceedToPaymentSemantic => 'Proceed to payment';
+
+  @override
+  String get profileLoadingSemantic => 'Loading profile';
+
+  @override
+  String profileLoadFailedError(String message) {
+    return 'Could not load profile: $message';
+  }
+
+  @override
+  String get profileNoProfileLoaded => 'No profile loaded.';
+
+  @override
+  String get profileAccountSectionTitle => 'ACCOUNT';
+
+  @override
+  String get profileProfileSectionTitle => 'PROFILE';
+
+  @override
+  String get profileRolesSectionTitle => 'ROLES';
+
+  @override
+  String get profileRolesSectionSubtitle =>
+      'Displayed for reference only. Enforced by backend.';
+
+  @override
+  String get profileQuickLinksSectionTitle => 'QUICK LINKS';
+
+  @override
+  String get profileStatusLabel => 'Status';
+
+  @override
+  String get profileTypeLabel => 'Type';
+
+  @override
+  String get profileDisplayNameLabel => 'Display Name';
+
+  @override
+  String get profileLanguageLabel => 'Language';
+
+  @override
+  String get profileTimezoneLabel => 'Timezone';
+
+  @override
+  String get profileSubscriptionBillingLabel => 'Subscription & Billing';
+
+  @override
+  String get profileInvoiceHistoryLabel => 'Invoice History';
+
+  @override
+  String get profileAnalyticsSummaryLabel => 'Analytics Summary';
+
+  @override
+  String get profileApiEndpointTesterLabel => 'API Endpoint Tester (Dev)';
+
+  @override
+  String get profileEditProfileTitle => 'Edit profile';
+
+  @override
+  String get profileDayStreakLabel => 'day streak';
+
+  @override
+  String get profileAchievementsStatLabel => 'achievements';
+
+  @override
+  String get profileDisplayNameTooLongError =>
+      'Display name must be 80 characters or fewer.';
+
+  @override
+  String get profileUpdatedSnackbar => 'Profile updated.';
+
+  @override
+  String get profileDisplayNameHint => 'Your display name';
+
+  @override
+  String get profileDisplayNameFieldSemantic => 'Display name field';
+
+  @override
+  String get profileEditPreferredLanguageLabel => 'Preferred Language';
+
+  @override
+  String get profileSelectLanguagePlaceholder => 'Select a language';
+
+  @override
+  String get profilePreferredLanguageFieldSemantic =>
+      'Preferred language field';
+
+  @override
+  String get profileSelectTimezonePlaceholder => 'Select a timezone';
+
+  @override
+  String get profileTimezoneFieldSemantic => 'Timezone field';
+
+  @override
+  String get profileSaveChangesButton => 'Save changes';
+
+  @override
+  String get profileLanguageEnglishOption => 'English';
+
+  @override
+  String get profileLanguageArabicOption => 'Arabic';
 }

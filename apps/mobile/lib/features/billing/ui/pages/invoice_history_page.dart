@@ -14,10 +14,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:intl/intl.dart' hide TextDirection;
+
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/billing/data/models/billing_models.dart';
 import 'package:aim_mobile/features/billing/logic/provider/billing_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class InvoiceHistoryPage extends ConsumerStatefulWidget {
   const InvoiceHistoryPage({super.key});
@@ -35,6 +38,7 @@ class InvoiceHistoryPage extends ConsumerStatefulWidget {
     VoidCallback? onTap,
   }) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     return AIMCard(
       interactive: onTap != null,
       onTap: onTap,
@@ -76,7 +80,7 @@ class InvoiceHistoryPage extends ConsumerStatefulWidget {
           AIMBadge(
             tone: _toneForStatus(status),
             pill: true,
-            child: Text(_capitalize(status)),
+            child: Text(_statusLabel(l10n, status)),
           ),
         ],
       ),
@@ -98,14 +102,30 @@ class InvoiceHistoryPage extends ConsumerStatefulWidget {
     }
   }
 
+  static String _statusLabel(AppLocalizations l10n, String status) {
+    switch (status) {
+      case 'paid':
+        return l10n.billingInvoiceStatusPaid;
+      case 'pending':
+        return l10n.billingInvoiceStatusPending;
+      case 'failed':
+        return l10n.billingInvoiceStatusFailed;
+      case 'refunded':
+        return l10n.billingInvoiceStatusRefunded;
+      default:
+        return _capitalize(status);
+    }
+  }
+
   static String _capitalize(String value) =>
       value.isEmpty ? value : '${value[0].toUpperCase()}${value.substring(1)}';
 
   static Widget buildEmptyState(BuildContext context) {
-    return const AIMEmptyState(
-      icon: Icon(Icons.receipt_long_outlined),
-      title: 'No Invoices Yet',
-      subtitle: 'Your invoices will appear here after your first payment.',
+    final l10n = AppLocalizations.of(context);
+    return AIMEmptyState(
+      icon: const Icon(Icons.receipt_long_outlined),
+      title: l10n.billingNoInvoicesTitle,
+      subtitle: l10n.billingNoInvoicesSubtitle,
     );
   }
 }
@@ -125,6 +145,7 @@ class _InvoiceHistoryPageState extends ConsumerState<InvoiceHistoryPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(invoiceProvider);
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: surfaces.background,
@@ -134,8 +155,8 @@ class _InvoiceHistoryPageState extends ConsumerState<InvoiceHistoryPage> {
           const _InvoiceHistoryHeader(),
           Expanded(
             child: switch (state) {
-              AppAsyncLoading() || AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading invoices',
+              AppAsyncLoading() || AppAsyncIdle() => AIMFullScreenLoading(
+                  semanticLabel: l10n.billingLoadingInvoicesSemantic,
                 ),
               AppAsyncFailure(:final message) => AIMFullScreenError(
                   message: message,
@@ -167,6 +188,7 @@ class _InvoiceHistoryHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -182,7 +204,7 @@ class _InvoiceHistoryHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: l10n.commonBack,
               child: InkWell(
                 onTap: () => context.pop(),
                 customBorder: const CircleBorder(),
@@ -206,7 +228,7 @@ class _InvoiceHistoryHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Invoices',
+              l10n.billingInvoicesLabel,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],
@@ -241,7 +263,7 @@ class _InvoiceList extends StatelessWidget {
             invoiceId: invoice.id,
             status: invoice.status,
             amountFormatted: '\$${(invoice.total / 100).toStringAsFixed(2)}',
-            dateFormatted: _formatDate(invoice.createdAt),
+            dateFormatted: _formatDate(context, invoice.createdAt),
           );
         },
       ),
@@ -250,12 +272,10 @@ class _InvoiceList extends StatelessWidget {
 
   /// Formats a real backend timestamp as e.g. "Jun 25, 2026" (design screen
   /// 47's row subtitle).
-  String _formatDate(DateTime date) {
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-    return '${months[date.month - 1]} ${date.day}, ${date.year}';
+  String _formatDate(BuildContext context, DateTime date) {
+    return DateFormat.yMMMd(
+      Localizations.localeOf(context).toString(),
+    ).format(date);
   }
 }
 
@@ -270,7 +290,7 @@ class InvoiceDetailPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Invoice Detail'),
+        title: Text(AppLocalizations.of(context).billingInvoiceDetailTitle),
       ),
       body: SafeArea(
         child: _buildInvoiceDetail(context, theme),
@@ -325,7 +345,9 @@ class InvoiceDetailPage extends StatelessWidget {
     final theme = Theme.of(context);
     return ListTile(
       title: Text(description),
-      subtitle: quantity > 1 ? Text('Qty: $quantity') : null,
+      subtitle: quantity > 1
+          ? Text(AppLocalizations.of(context).billingQuantityLabel(quantity))
+          : null,
       trailing: Text(
         amountFormatted,
         style: theme.textTheme.bodyMedium?.copyWith(

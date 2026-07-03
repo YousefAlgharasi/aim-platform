@@ -23,6 +23,7 @@ import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/billing/logic/entity/billing_data.dart';
 import 'package:aim_mobile/features/billing/logic/provider/billing_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../widgets/plan_card.dart';
 
 /// Turns a snake_case backend feature key into a readable label, e.g.
@@ -38,7 +39,10 @@ String _humanizeFeatureKey(String key) {
 /// entries are shown: `false`/`0` means the feature is not included, so it
 /// must not render a checkmark. Negative numbers are the backend's
 /// convention for "unlimited".
-List<String> _includedFeatureLabels(Map<String, dynamic> features) {
+List<String> _includedFeatureLabels(
+  Map<String, dynamic> features,
+  AppLocalizations l10n,
+) {
   final labels = <String>[];
   for (final entry in features.entries) {
     final label = _humanizeFeatureKey(entry.key);
@@ -46,9 +50,13 @@ List<String> _includedFeatureLabels(Map<String, dynamic> features) {
     if (value == true) {
       labels.add(label);
     } else if (value is num && value != 0) {
-      labels.add(value < 0 ? 'Unlimited $label' : '$value $label');
+      labels.add(
+        value < 0
+            ? l10n.billingUnlimitedFeatureLabel(label)
+            : '$value $label',
+      );
     } else if (value is String && value.isNotEmpty) {
-      labels.add('$label: $value');
+      labels.add(l10n.billingFeatureValueLabel(label, value));
     }
   }
   return labels;
@@ -77,6 +85,7 @@ class _PricingPageState extends ConsumerState<PricingPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(pricingProvider);
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: surfaces.background,
@@ -86,8 +95,8 @@ class _PricingPageState extends ConsumerState<PricingPage> {
           const _PricingHeader(),
           Expanded(
             child: switch (state) {
-              AppAsyncLoading() || AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading plans',
+              AppAsyncLoading() || AppAsyncIdle() => AIMFullScreenLoading(
+                  semanticLabel: l10n.billingLoadingPlansSemantic,
                 ),
               AppAsyncFailure(:final message) => AIMFullScreenError(
                   message: message,
@@ -107,6 +116,7 @@ class _PricingHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -122,7 +132,7 @@ class _PricingHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: l10n.commonBack,
               child: InkWell(
                 onTap: () => context.pop(),
                 customBorder: const CircleBorder(),
@@ -146,7 +156,7 @@ class _PricingHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Plans & Pricing',
+              l10n.billingPlansPricingTitle,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],
@@ -166,11 +176,12 @@ class PlansList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     if (data.plans.isEmpty) {
-      return const AIMEmptyState(
-        icon: Icon(Icons.storefront_outlined),
-        title: 'No plans available',
-        subtitle: 'Check back later for available plans.',
+      return AIMEmptyState(
+        icon: const Icon(Icons.storefront_outlined),
+        title: l10n.billingNoPlansTitle,
+        subtitle: l10n.billingNoPlansSubtitle,
       );
     }
 
@@ -197,7 +208,7 @@ class PlansList extends ConsumerWidget {
           description: plan.description,
           price: price?.formattedAmount ?? '\$0.00',
           interval: price?.billingInterval ?? 'month',
-          features: _includedFeatureLabels(plan.features),
+          features: _includedFeatureLabels(plan.features, l10n),
           isCurrentPlan: plan.id == currentPlanId,
           isRecommended: plan.planType == 'premium',
           onSelect: price == null
