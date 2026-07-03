@@ -39,7 +39,15 @@ import {
 
 const EXPECTED_ENVELOPE_FIELDS = ['backendRequestId', 'session', 'attempts', 'skillMasteryContext'];
 
-const EXPECTED_SKILL_MASTERY_CONTEXT_FIELDS = ['previousMasteryScore', 'recentAttempts'];
+const EXPECTED_SKILL_MASTERY_CONTEXT_FIELDS = [
+  'previousMasteryScore',
+  'recentAttempts',
+  'category',
+  'lastEvaluatedAt',
+  'retentionHistory',
+];
+
+const EXPECTED_RETENTION_HISTORY_POINT_FIELDS = ['recordedAt', 'masteryScore'];
 
 const EXPECTED_RECENT_ATTEMPT_FIELDS = [
   'isCorrect',
@@ -178,6 +186,14 @@ const MAPPING_CONTEXT: AimMappingContext = {
           skip: false,
         },
       ],
+      category: 'vocabulary',
+      lastEvaluatedAt: '2026-06-16T09:00:00Z',
+      retentionHistory: [
+        {
+          recordedAt: '2026-06-10T09:00:00Z',
+          masteryScore: 55,
+        },
+      ],
     },
   },
 };
@@ -250,6 +266,15 @@ describe('AIM Engine request contract (P5-076)', () => {
     >;
     const recentAttempt = skillMasteryContext['skill:english:a1:vocab.daily-routines'].recentAttempts[0];
     expect(keysOf(recentAttempt)).toEqual(EXPECTED_RECENT_ATTEMPT_FIELDS.slice().sort());
+  });
+
+  it('skill_mastery_context retention_history point keys match the AIM Engine AimRetentionHistoryPoint schema (P20-008)', () => {
+    const skillMasteryContext = rawRequest.skillMasteryContext as Record<
+      string,
+      { retentionHistory: Record<string, unknown>[] }
+    >;
+    const point = skillMasteryContext['skill:english:a1:vocab.daily-routines'].retentionHistory[0];
+    expect(keysOf(point)).toEqual(EXPECTED_RETENTION_HISTORY_POINT_FIELDS.slice().sort());
   });
 
   it('a JSON.stringify of the raw request is accepted by the AIM Engine schema field names', () => {

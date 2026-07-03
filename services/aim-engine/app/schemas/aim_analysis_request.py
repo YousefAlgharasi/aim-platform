@@ -511,6 +511,26 @@ class AimRecentAttemptSnapshot(AimCamelCaseModel):
     )
 
 
+class AimRetentionHistoryPoint(AimCamelCaseModel):
+    """One timestamped mastery/retention reading for a skill (P20-008).
+
+    Feeds RetentionTracker's least-squares personalized-lambda fit, which
+    needs at least 3 points. See ``AimSkillMasteryContext.retention_history``
+    for why the Backend cannot supply real ones yet.
+    """
+
+    recorded_at: datetime = Field(
+        ...,
+        description="ISO-8601 UTC timestamp this mastery/retention reading was taken.",
+    )
+    mastery_score: float = Field(
+        ...,
+        ge=0.0,
+        le=100.0,
+        description="Mastery/retention reading (0-100 scale) at recorded_at.",
+    )
+
+
 class AimSkillMasteryContext(AimCamelCaseModel):
     """Prior mastery/attempt history for one skill (P20-007).
 
@@ -537,6 +557,37 @@ class AimSkillMasteryContext(AimCamelCaseModel):
             "for this skill (oldest first), excluding the new attempt(s) in this "
             "call's `attempts` list. Empty if this is the student's first attempt "
             "at this skill."
+        ),
+    )
+    category: str | None = Field(
+        None,
+        description=(
+            "The skill's curriculum domain (P20-008), sourced from skills.domain "
+            "(e.g. 'grammar', 'vocabulary', 'reading', 'listening', "
+            "'functional_language'). Used to pick a category-appropriate default "
+            "retention decay rate before enough personalized history exists. "
+            "None if the skill_id could not be resolved against the skills table."
+        ),
+    )
+    last_evaluated_at: datetime | None = Field(
+        None,
+        description=(
+            "student_skill_states.last_evaluated_at (P20-008) — when this skill "
+            "was last analyzed, used to compute days-since-review for the "
+            "forgetting-curve retention estimate. None if no prior state exists."
+        ),
+    )
+    retention_history: list[AimRetentionHistoryPoint] = Field(
+        default_factory=list,
+        description=(
+            "Backend-supplied timestamped mastery/retention readings for this "
+            "skill (P20-008), oldest first, used to fit a personalized retention "
+            "decay rate once at least 3 points exist. Always empty today — the "
+            "Backend does not yet persist a rolling per-skill retention history "
+            "(student_skill_states stores only the current and one prior "
+            "mastery_score, not a timestamped series) — this is a known data gap, "
+            "not a fabricated value. The category-based default lambda is used "
+            "until a future task adds that persistence."
         ),
     )
 

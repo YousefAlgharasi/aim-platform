@@ -238,5 +238,76 @@ describe('AimStateAssemblyService.assemble', () => {
       expect(ctx.previousMasteryScore).toBeNull();
       expect(ctx.recentAttempts).toEqual([]);
     });
+
+    // P20-008: retention inputs (category, lastEvaluatedAt) sourced alongside
+    // mastery context; retentionHistory is always empty (documented data gap).
+    it('includes category (skills.domain) and lastEvaluatedAt when prior skill state exists', async () => {
+      const db = makeMockDb(async (sql) => {
+        if (sql.includes('FROM learning_sessions')) return { rows: [SESSION_ROW], rowCount: 1 };
+        if (sql.includes('FROM lesson_attempts') && sql.includes('WHERE learning_session_id')) {
+          return { rows: [makeAttemptRow()], rowCount: 1 };
+        }
+        if (sql.includes('FROM session_events')) return { rows: [], rowCount: 0 };
+        if (sql.startsWith('SELECT COUNT(*)::text AS count FROM student_skill_states')) {
+          return { rows: [{ count: '1' }], rowCount: 1 };
+        }
+        if (sql.includes('SELECT skill_id, mastery_score')) {
+          return {
+            rows: [
+              {
+                skill_id: 'grammar.past_simple.forms',
+                mastery_score: '55.5',
+                last_evaluated_at: '2026-01-01T09:00:00.000Z',
+              },
+            ],
+            rowCount: 1,
+          };
+        }
+        if (sql.includes('FROM skills WHERE key')) {
+          return { rows: [{ key: 'grammar.past_simple.forms', domain: 'grammar' }], rowCount: 1 };
+        }
+        if (sql.includes('skill_ids ?| $2::text[]')) return { rows: [], rowCount: 0 };
+        return { rows: [], rowCount: 0 };
+      });
+
+      const service = new AimStateAssemblyService(db);
+      const result = await service.assemble(CTX);
+
+      expect(result.status).toBe('assembled');
+      if (result.status !== 'assembled') return;
+
+      const ctx = result.context.skillMasteryContext['grammar.past_simple.forms'];
+      expect(ctx.category).toBe('grammar');
+      expect(ctx.lastEvaluatedAt).toBe('2026-01-01T09:00:00.000Z');
+      expect(ctx.retentionHistory).toEqual([]);
+    });
+
+    it('has category and lastEvaluatedAt null when no skill row/state is resolvable', async () => {
+      const db = makeMockDb(async (sql) => {
+        if (sql.includes('FROM learning_sessions')) return { rows: [SESSION_ROW], rowCount: 1 };
+        if (sql.includes('FROM lesson_attempts') && sql.includes('WHERE learning_session_id')) {
+          return { rows: [makeAttemptRow()], rowCount: 1 };
+        }
+        if (sql.includes('FROM session_events')) return { rows: [], rowCount: 0 };
+        if (sql.startsWith('SELECT COUNT(*)::text AS count FROM student_skill_states')) {
+          return { rows: [{ count: '0' }], rowCount: 1 };
+        }
+        if (sql.includes('SELECT skill_id, mastery_score')) return { rows: [], rowCount: 0 };
+        if (sql.includes('FROM skills WHERE key')) return { rows: [], rowCount: 0 };
+        if (sql.includes('skill_ids ?| $2::text[]')) return { rows: [], rowCount: 0 };
+        return { rows: [], rowCount: 0 };
+      });
+
+      const service = new AimStateAssemblyService(db);
+      const result = await service.assemble(CTX);
+
+      expect(result.status).toBe('assembled');
+      if (result.status !== 'assembled') return;
+
+      const ctx = result.context.skillMasteryContext['grammar.past_simple.forms'];
+      expect(ctx.category).toBeNull();
+      expect(ctx.lastEvaluatedAt).toBeNull();
+      expect(ctx.retentionHistory).toEqual([]);
+    });
   });
 });
