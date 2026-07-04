@@ -26,6 +26,29 @@ const ERROR_CATEGORY_TIMEOUT = 'STT_TIMEOUT';
 const ERROR_CATEGORY_NETWORK = 'STT_NETWORK_ERROR';
 const ERROR_CATEGORY_PROVIDER = 'STT_PROVIDER_ERROR';
 
+/**
+ * Bugfix: Groq's (OpenAI-compatible) transcription endpoint validates the
+ * uploaded file's type from the multipart filename's extension, not from
+ * the part's Content-Type header — confirmed directly from a real 400
+ * response: `"file must be one of the following types: [flac mp3 mp4 mpeg
+ * mpga m4a ogg opus wav webm]"`, returned even when the actual bytes were a
+ * real, valid WAV recording sent with the correct audio/wav content type.
+ * The upload previously used the literal filename 'audio' with no
+ * extension at all, so Groq could never recognize it as any allowed type —
+ * every single real recording was rejected, regardless of format.
+ */
+const CONTENT_TYPE_TO_FILE_EXTENSION: Record<string, string> = {
+  'audio/wav': 'wav',
+  'audio/x-wav': 'wav',
+  'audio/webm': 'webm',
+  'audio/ogg': 'ogg',
+  'audio/mp4': 'mp4',
+  'audio/mpeg': 'mp3',
+  'audio/flac': 'flac',
+  'audio/x-flac': 'flac',
+};
+const DEFAULT_FILE_EXTENSION = 'wav';
+
 @Injectable()
 export class SttTranscriptionService extends SttGateway {
   private readonly logger = new Logger(SttTranscriptionService.name);
@@ -76,7 +99,13 @@ export class SttTranscriptionService extends SttGateway {
       // `{ text }` response.
       const form = new FormData();
       const audioBytes = new Uint8Array(request.audio);
-      form.append('file', new Blob([audioBytes], { type: request.contentType }), 'audio');
+      const extension =
+        CONTENT_TYPE_TO_FILE_EXTENSION[request.contentType] ?? DEFAULT_FILE_EXTENSION;
+      form.append(
+        'file',
+        new Blob([audioBytes], { type: request.contentType }),
+        `audio.${extension}`,
+      );
       form.append('model', request.model);
 
       const response = await fetch(baseUrl, {
