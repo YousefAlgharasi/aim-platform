@@ -105,12 +105,22 @@ function makeDeps(options: {
       ? ({ synthesize: jest.fn().mockResolvedValue(ttsResponse) } as unknown as TtsGateway)
       : options.ttsGateway;
 
+  const focusRecapService = {
+    getFocusRecap: jest.fn().mockResolvedValue(null),
+  } as unknown as import('../focus-recap.service').FocusRecapService;
+
+  const lastSessionRecapService = {
+    getRecapForNewSession: jest.fn().mockResolvedValue(null),
+  } as unknown as import('../last-session-recap.service').LastSessionRecapService;
+
   const service = new ChatSessionStartService(
     chatSessionRepository,
     chatMessageRepository,
     aiTeacherOrchestrator,
     contextBuilder,
     ttsGateway,
+    focusRecapService,
+    lastSessionRecapService,
   );
 
   return {
@@ -120,6 +130,7 @@ function makeDeps(options: {
     aiTeacherOrchestrator,
     contextBuilder,
     ttsGateway,
+    lastSessionRecapService,
   };
 }
 
@@ -158,6 +169,8 @@ describe('ChatSessionStartService', () => {
       contextRef: 'lesson:fractions',
       status: 'active',
       createdAt: '2026-06-19T00:00:00.000Z',
+      focusRecap: null,
+      lastSessionRecap: null,
     });
   });
 
@@ -232,6 +245,12 @@ describe('ChatSessionStartService', () => {
       } as unknown as AiTeacherOrchestratorService;
       const contextBuilder = { persistSnapshot: jest.fn() } as unknown as ContextBuilderService;
       const ttsGateway = { synthesize: jest.fn() } as unknown as TtsGateway;
+      const focusRecapService = {
+        getFocusRecap: jest.fn().mockResolvedValue(null),
+      } as unknown as import('../focus-recap.service').FocusRecapService;
+      const lastSessionRecapService = {
+        getRecapForNewSession: jest.fn().mockResolvedValue(null),
+      } as unknown as import('../last-session-recap.service').LastSessionRecapService;
 
       const service = new ChatSessionStartService(
         chatSessionRepository,
@@ -239,6 +258,8 @@ describe('ChatSessionStartService', () => {
         aiTeacherOrchestrator,
         contextBuilder,
         ttsGateway,
+        focusRecapService,
+        lastSessionRecapService,
       );
 
       await expect(
@@ -249,6 +270,8 @@ describe('ChatSessionStartService', () => {
         contextRef: 'lesson:fractions',
         status: 'active',
         createdAt: '2026-06-19T00:00:00.000Z',
+        focusRecap: null,
+        lastSessionRecap: null,
       });
       await flush();
 
@@ -322,6 +345,155 @@ describe('ChatSessionStartService', () => {
 
       expect(result.sessionId).toBe('session-1');
       expect(chatMessageRepository.updateAudio).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('P21-012: focusRecap field', () => {
+    it('is null when no active focus directive exists', async () => {
+      const { service } = makeDeps({ created: false });
+
+      const result = await service.startSession({
+        studentId: 'student-1',
+        contextRef: 'lesson:fractions',
+      });
+
+      expect(result.focusRecap).toBeNull();
+    });
+
+    it('is populated from FocusRecapService when an active directive exists', async () => {
+      const chatSessionRepository = {
+        getOrCreateForContext: jest
+          .fn()
+          .mockResolvedValue({ session: makeSessionRow(), created: false }),
+      } as unknown as AiChatSessionRepository;
+      const chatMessageRepository = { create: jest.fn(), updateAudio: jest.fn() } as unknown as AiChatMessageRepository;
+      const aiTeacherOrchestrator = { generateGreeting: jest.fn() } as unknown as AiTeacherOrchestratorService;
+      const contextBuilder = { persistSnapshot: jest.fn() } as unknown as ContextBuilderService;
+      const ttsGateway = { synthesize: jest.fn() } as unknown as TtsGateway;
+      const focusRecapService = {
+        getFocusRecap: jest.fn().mockResolvedValue("Today we're focusing on: Past tense irregular verbs"),
+      } as unknown as import('../focus-recap.service').FocusRecapService;
+      const lastSessionRecapService = {
+        getRecapForNewSession: jest.fn().mockResolvedValue(null),
+      } as unknown as import('../last-session-recap.service').LastSessionRecapService;
+
+      const service = new ChatSessionStartService(
+        chatSessionRepository,
+        chatMessageRepository,
+        aiTeacherOrchestrator,
+        contextBuilder,
+        ttsGateway,
+        focusRecapService,
+        lastSessionRecapService,
+      );
+
+      const result = await service.startSession({
+        studentId: 'student-1',
+        contextRef: 'lesson:fractions',
+      });
+
+      expect(result.focusRecap).toBe("Today we're focusing on: Past tense irregular verbs");
+    });
+  });
+
+  describe('P21-013: lastSessionRecap field', () => {
+    it('is null on a same-session resume (created=false), never calling LastSessionRecapService', async () => {
+      const { service, lastSessionRecapService } = makeDeps({ created: false });
+
+      const result = await service.startSession({
+        studentId: 'student-1',
+        contextRef: 'lesson:fractions',
+      });
+
+      expect(result.lastSessionRecap).toBeNull();
+      expect((lastSessionRecapService as any).getRecapForNewSession).not.toHaveBeenCalled();
+    });
+
+    it('is populated from LastSessionRecapService when a new session is created', async () => {
+      const chatSessionRepository = {
+        getOrCreateForContext: jest
+          .fn()
+          .mockResolvedValue({ session: makeSessionRow(), created: true }),
+      } as unknown as AiChatSessionRepository;
+      const chatMessageRepository = {
+        create: jest.fn().mockResolvedValue(makeGreetingMessageRow()),
+        updateAudio: jest.fn().mockResolvedValue(makeGreetingMessageRow()),
+      } as unknown as AiChatMessageRepository;
+      const aiTeacherOrchestrator = {
+        generateGreeting: jest.fn().mockResolvedValue(makeGreetingResult()),
+      } as unknown as AiTeacherOrchestratorService;
+      const contextBuilder = { persistSnapshot: jest.fn() } as unknown as ContextBuilderService;
+      const ttsGateway = { synthesize: jest.fn().mockResolvedValue({ status: 'error', audioRef: null, durationMs: null, contentType: null }) } as unknown as TtsGateway;
+      const focusRecapService = {
+        getFocusRecap: jest.fn().mockResolvedValue(null),
+      } as unknown as import('../focus-recap.service').FocusRecapService;
+      const lastSessionRecapService = {
+        getRecapForNewSession: jest
+          .fn()
+          .mockResolvedValue('Welcome back! Last time we were working on fractions.'),
+      } as unknown as import('../last-session-recap.service').LastSessionRecapService;
+
+      const service = new ChatSessionStartService(
+        chatSessionRepository,
+        chatMessageRepository,
+        aiTeacherOrchestrator,
+        contextBuilder,
+        ttsGateway,
+        focusRecapService,
+        lastSessionRecapService,
+      );
+
+      const result = await service.startSession({
+        studentId: 'student-1',
+        contextRef: 'lesson:fractions',
+      });
+
+      expect(lastSessionRecapService.getRecapForNewSession).toHaveBeenCalledWith(
+        'student-1',
+        'lesson:fractions',
+      );
+      expect(result.lastSessionRecap).toBe('Welcome back! Last time we were working on fractions.');
+    });
+
+    it('a recap-generation failure is swallowed and never breaks session creation', async () => {
+      const chatSessionRepository = {
+        getOrCreateForContext: jest
+          .fn()
+          .mockResolvedValue({ session: makeSessionRow(), created: true }),
+      } as unknown as AiChatSessionRepository;
+      const chatMessageRepository = {
+        create: jest.fn().mockResolvedValue(makeGreetingMessageRow()),
+        updateAudio: jest.fn().mockResolvedValue(makeGreetingMessageRow()),
+      } as unknown as AiChatMessageRepository;
+      const aiTeacherOrchestrator = {
+        generateGreeting: jest.fn().mockResolvedValue(makeGreetingResult()),
+      } as unknown as AiTeacherOrchestratorService;
+      const contextBuilder = { persistSnapshot: jest.fn() } as unknown as ContextBuilderService;
+      const ttsGateway = { synthesize: jest.fn().mockResolvedValue({ status: 'error', audioRef: null, durationMs: null, contentType: null }) } as unknown as TtsGateway;
+      const focusRecapService = {
+        getFocusRecap: jest.fn().mockResolvedValue(null),
+      } as unknown as import('../focus-recap.service').FocusRecapService;
+      const lastSessionRecapService = {
+        getRecapForNewSession: jest.fn().mockRejectedValue(new Error('db exploded')),
+      } as unknown as import('../last-session-recap.service').LastSessionRecapService;
+
+      const service = new ChatSessionStartService(
+        chatSessionRepository,
+        chatMessageRepository,
+        aiTeacherOrchestrator,
+        contextBuilder,
+        ttsGateway,
+        focusRecapService,
+        lastSessionRecapService,
+      );
+
+      const result = await service.startSession({
+        studentId: 'student-1',
+        contextRef: 'lesson:fractions',
+      });
+
+      expect(result.lastSessionRecap).toBeNull();
+      expect(result.sessionId).toBe('session-1');
     });
   });
 

@@ -21,6 +21,12 @@ import { CurrentUser } from '../../../auth/current-user.decorator';
 import { AuthenticatedUser } from '../../../auth/authenticated-user';
 import { TtsAudioStorageService } from '../tts-gateway/tts-audio-storage.service';
 
+// P21-011: lazy on-demand TTS for text-originated ai_chat_messages rows is
+// implemented by VoiceMessageAudioController
+// (../message-audio/voice-message-audio.controller.ts, GET
+// voice-teacher/messages/:messageId/audio) rather than here, to keep this
+// controller scoped to streaming an already-known opaque audioRef.
+
 @ApiTags('Voice Teacher')
 @ApiBearerAuth()
 @UseGuards(SupabaseJwtAuthGuard)

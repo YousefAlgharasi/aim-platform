@@ -156,4 +156,45 @@ describe('VoiceMessageSubmitService', () => {
     expect(codeOnly).not.toMatch(/process\.env/);
     expect(codeOnly).not.toMatch(/sk-[a-zA-Z0-9]/);
   });
+
+  // P21-014: barge-in requires the backend to accept a new voice submission
+  // for a session without waiting for the previous turn to be marked
+  // "played"/"done" client-side first. Grepping this service (and
+  // VoiceOrchestratorService) turned up no in-flight lock, no
+  // "previous message must be completed" status check, and no per-session
+  // mutex — AudioUploadService.upload() always creates a fresh
+  // voice_messages placeholder row and VoiceOrchestratorService always runs
+  // a fresh STT->AI Teacher->TTS pipeline, regardless of any other
+  // submission's state. This test is therefore verification-only, proving
+  // two rapid, overlapping submissions for the same session both succeed
+  // and persist in the order their upload step completes.
+  it('accepts two rapid submissions for the same session and persists them in order (barge-in safe)', async () => {
+    const audioUploadService = {
+      upload: jest
+        .fn()
+        .mockResolvedValueOnce({ messageId: 'voice-message-1', status: 'pending' })
+        .mockResolvedValueOnce({ messageId: 'voice-message-2', status: 'pending' }),
+    } as unknown as AudioUploadService;
+
+    const voiceOrchestrator = {
+      handleTurn: jest
+        .fn()
+        .mockResolvedValueOnce(makeTurnResult({ text: 'First reply' }))
+        .mockResolvedValueOnce(makeTurnResult({ text: 'Second reply (barge-in)' })),
+    } as unknown as VoiceOrchestratorService;
+
+    const service = new VoiceMessageSubmitService(audioUploadService, voiceOrchestrator);
+
+    const [first, second] = await Promise.all([
+      service.submitMessage(makeInput({ sessionId: 'voice-session-1' })),
+      service.submitMessage(makeInput({ sessionId: 'voice-session-1' })),
+    ]);
+
+    expect(audioUploadService.upload).toHaveBeenCalledTimes(2);
+    expect(voiceOrchestrator.handleTurn).toHaveBeenCalledTimes(2);
+    expect('reply' in first && first.reply).toBe('First reply');
+    expect('reply' in second && second.reply).toBe('Second reply (barge-in)');
+    expect('messageId' in first && first.messageId).toBe('voice-message-1');
+    expect('messageId' in second && second.messageId).toBe('voice-message-2');
+  });
 });

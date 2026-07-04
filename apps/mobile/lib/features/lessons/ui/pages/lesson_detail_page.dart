@@ -105,6 +105,20 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
     );
   }
 
+  // P21-017: the same contextRef used for the chat entry point above — the
+  // backend's get-or-create-by-(studentId, contextRef) path (P21-007)
+  // resolves both to the identical ai_chat_sessions row, so a lesson's chat
+  // and voice turns share one conversation regardless of which entry point
+  // the student taps first.
+  void _startVoicePractice(LessonDetail detail) {
+    context.push(
+      AppRoutePaths.voiceTeacher,
+      extra: {
+        'contextRef': 'lesson:${detail.lesson.id}',
+      },
+    );
+  }
+
   void _openStep(LessonAsset asset, int stepNumber) {
     showModalBottomSheet<void>(
       context: context,
@@ -150,6 +164,7 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
             detail: data,
             onRefresh: _refresh,
             onStartPractice: () => _startPractice(data),
+            onStartVoicePractice: () => _startVoicePractice(data),
             onOpenStep: _openStep,
           ),
         AppAsyncIdle() => AIMFullScreenLoading(
@@ -169,12 +184,14 @@ class _LessonDetailContent extends StatelessWidget {
     required this.detail,
     required this.onRefresh,
     required this.onStartPractice,
+    required this.onStartVoicePractice,
     required this.onOpenStep,
   });
 
   final LessonDetail detail;
   final Future<void> Function() onRefresh;
   final VoidCallback onStartPractice;
+  final VoidCallback onStartVoicePractice;
   final void Function(LessonAsset asset, int stepNumber) onOpenStep;
 
   @override
@@ -243,11 +260,25 @@ class _LessonDetailContent extends StatelessWidget {
               horizontal: AimSpacing.screenPaddingMobile,
               vertical: AimSpacing.componentGap,
             ),
-            child: AIMButton(
-              onPressed: detail.hasNoContent ? null : onStartPractice,
-              fullWidth: true,
-              leadingIcon: const Icon(Icons.play_arrow, color: Colors.white),
-              child: Text(l10n.lessonsStartPracticeButton),
+            child: Row(
+              children: [
+                Expanded(
+                  child: AIMButton(
+                    onPressed: detail.hasNoContent ? null : onStartPractice,
+                    fullWidth: true,
+                    leadingIcon: const Icon(Icons.play_arrow, color: Colors.white),
+                    child: Text(l10n.lessonsStartPracticeButton),
+                  ),
+                ),
+                const SizedBox(width: AimSpacing.space8),
+                // P21-017: voice entry point, same contextRef as the text
+                // chat CTA above.
+                AIMIconButton(
+                  icon: const Icon(Icons.mic_rounded),
+                  semanticLabel: 'Practice by voice',
+                  onPressed: detail.hasNoContent ? null : onStartVoicePractice,
+                ),
+              ],
             ),
           ),
         ),

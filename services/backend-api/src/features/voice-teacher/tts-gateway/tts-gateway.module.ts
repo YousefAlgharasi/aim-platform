@@ -20,6 +20,6 @@ import { TtsAudioGenerationService } from './tts-audio-generation.service';
     TtsAudioGenerationService,
     { provide: TTS_GATEWAY, useExisting: TtsAudioGenerationService },
   ],
-  exports: [TTS_GATEWAY, TtsSafeFailureService, TtsAudioStorageService],
+  exports: [TTS_GATEWAY, TtsSafeFailureService, TtsAudioStorageService, TtsAudioGenerationService],
 })
 export class TtsGatewayModule {}

@@ -12,8 +12,13 @@ class AiChatHistory {
   const AiChatHistory({
     required this.sessionId,
     required this.messages,
+    this.focusRecap,
   });
 
   final String sessionId;
   final List<AiChatMessage> messages;
+
+  /// P21-012: short "today we're focusing on" recap line, distinct from any
+  /// message's prose. Null when no active focus directive exists.
+  final String? focusRecap;
 }

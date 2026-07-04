@@ -22,3 +22,5 @@ export 'ai_suggested_prompts_row.dart';
 export 'ai_reply_feedback_actions.dart';
 export 'ai_streaming_message_bubble.dart';
 export 'ai_safety_block_banner.dart';
+// Phase 21 — P21-020 adds AiFocusRecapCallout and AiWelcomeBackCard.
+export 'ai_session_recap_banner.dart';

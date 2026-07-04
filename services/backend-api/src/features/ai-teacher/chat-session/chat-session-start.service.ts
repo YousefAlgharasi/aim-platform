@@ -32,6 +32,8 @@ import {
   TtsGateway,
 } from '../../voice-teacher/tts-gateway/tts-gateway.interface';
 import { StartChatSessionInput, StartChatSessionResult } from './chat-session-start.types';
+import { FocusRecapService } from './focus-recap.service';
+import { LastSessionRecapService } from './last-session-recap.service';
 
 // P21-009: same default used by the Voice Teacher audio-submit API
 // (voice-audio-submit.controller.ts) for this codebase's Arabic-speaking
@@ -58,6 +60,8 @@ export class ChatSessionStartService {
     @Optional()
     @Inject(TTS_GATEWAY)
     private readonly ttsGateway: TtsGateway | null,
+    private readonly focusRecap: FocusRecapService,
+    private readonly lastSessionRecap: LastSessionRecapService,
   ) {}
 
   async startSession(input: StartChatSessionInput): Promise<StartChatSessionResult> {
@@ -79,6 +83,8 @@ export class ChatSessionStartService {
       contextRef,
     );
 
+    let lastSessionRecap: string | null = null;
+
     if (created) {
       // Awaited so the greeting exists before the response is returned, but
       // any failure here must never fail session creation — it's caught and
@@ -90,7 +96,26 @@ export class ChatSessionStartService {
           }`,
         );
       });
+
+      // P21-013: only ever considered when a genuinely new session was just
+      // created — a same-session resume (created===false) never shows a
+      // "last session" recap, since the student never actually left.
+      lastSessionRecap = await this.lastSessionRecap
+        .getRecapForNewSession(studentId, contextRef)
+        .catch((error) => {
+          this.logger.error(
+            `Failed to build last-session recap for session ${session.id}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+          return null;
+        });
     }
+
+    // P21-012: derived independently of greeting generation — the recap is
+    // shown on every session-start response, not only when a new session
+    // was just created.
+    const focusRecap = await this.focusRecap.getFocusRecap(studentId);
 
     return {
       sessionId: session.id,
@@ -98,6 +123,8 @@ export class ChatSessionStartService {
       contextRef: session.context_ref,
       status: session.status,
       createdAt: session.created_at,
+      focusRecap,
+      lastSessionRecap,
     };
   }
 
