@@ -17,6 +17,16 @@
  *      This service no longer writes the reply/transcript into
  *      `voice_messages`/`voice_transcripts` — those tables receive no new
  *      turn data going forward (historical rows only).
+ *
+ * P21-014 (barge-in verification): this service and VoiceOrchestratorService
+ * hold no in-flight/per-session lock and no "previous turn must be
+ * completed" status check — each submitMessage() call always creates a
+ * fresh voice_messages placeholder row and runs a fresh STT->AI Teacher->TTS
+ * pipeline independent of any other in-flight submission for the same
+ * session. Two overlapping submissions for the same session are both
+ * accepted and persist in the order their upload step completes (see
+ * `voice-message-submit.service.spec.ts`'s barge-in test). No lock was
+ * found or removed — this is a documented, tested confirmation only.
  */
 import { Injectable, BadRequestException } from '@nestjs/common';
 
