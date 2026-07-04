@@ -4,6 +4,16 @@
 // must always be resolved by the caller from the authenticated JWT — this
 // repository never validates ownership itself, it only persists what it is
 // given.
+//
+// P21-021: this is a distinct class from
+// `../repositories/voice-session.repository.ts` (same table, duplicated
+// abstraction — pre-existing, not introduced by Phase 21). As of P21-007,
+// `VoiceSessionStartService` no longer calls this repository at all (it
+// delegates session creation to `ChatSessionStartService` against
+// `ai_chat_sessions`) — every method here, including `create()`, is dead
+// code with no runtime caller (grep-verified). `voice_sessions` receives no
+// new writes going forward; see the sibling repository's file header for
+// the current inventory of what still reads the table historically.
 
 import { Injectable } from '@nestjs/common';
 

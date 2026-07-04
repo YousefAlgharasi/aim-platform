@@ -1,3 +1,24 @@
+/**
+ * P21-021: `voice_sessions` no longer receives new writes as of Phase 21.
+ * `VoiceSessionStartService` (P21-007) now delegates session creation to
+ * `ChatSessionStartService`'s get-or-create-by-(studentId, contextRef) path
+ * against `ai_chat_sessions` — new voice conversations live there, not
+ * here. `create()`/`endSession()` below are dead code paths kept only so
+ * this repository still compiles against its existing read call sites;
+ * nothing in this codebase calls them anymore (verified by grep).
+ *
+ * What still reads this table (inventory, current as of this comment):
+ *   - `parent-ai-usage-summary.service.ts` (`findByStudentId`) — parent
+ *     activity summary still surfaces historical voice session counts.
+ *   - `voice-session-context-link.service.ts` (`findById`) — resolves a
+ *     legacy voice_sessions row's contextRef for old audio/session links.
+ *   - `admin-stats.service.ts` reads a raw `voice_sessions` count directly
+ *     (not through this repository) for admin analytics.
+ * All of the above are read-only historical reporting; none of them
+ * expect this table to grow going forward. Do not delete this table, its
+ * rows, or these read paths — that is a separate future cleanup decision,
+ * not this task's scope.
+ */
 import { Injectable } from '@nestjs/common';
 
 import { DatabaseService } from '../../../database/database.service';

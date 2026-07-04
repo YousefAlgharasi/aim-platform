@@ -1,3 +1,24 @@
+/**
+ * P21-021: `voice_messages` is NOT fully read-only, unlike `voice_sessions`
+ * and `voice_transcripts` — flag this, don't gloss over it. `create()` is
+ * still actively called by `audio-upload.service.ts` on every voice
+ * submission to make a placeholder row that `voice_audio_assets.message_id`
+ * has a hard FK to (the raw-audio-storage pipeline is a separate concern
+ * from where conversational turn text/reply live — see
+ * `voice-message-submit.service.ts`'s file header). What stopped as of
+ * P21-010 is writing the *conversation* fields (`transcript`, `reply`,
+ * `audio_ref`) onto that row — those now live in `ai_chat_messages`
+ * instead. `updateTranscript`/`updateReply` below are effectively dead:
+ * their only caller, `VoiceMessagePersistenceService`, is not wired into
+ * any module (see its own file header) and is never invoked at runtime.
+ * `updateAudioRef` has no caller at all.
+ *
+ * Still-active reads: `countBySessionId`/`countByStudentIdSince`/
+ * `findLastCreatedAtBySessionId` back the voice rate-limit policy
+ * (`voice-rate-limit-policy.service.ts`) — this is a live functional
+ * dependency, not historical reporting, and must not be removed without
+ * replacing that rate-limit source first.
+ */
 import { Injectable } from '@nestjs/common';
 
 import { DatabaseService } from '../../../database/database.service';
