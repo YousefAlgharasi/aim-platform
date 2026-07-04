@@ -30,6 +30,8 @@ import {
   AimMappingContext,
   AimSessionContextInput,
 } from '../adapter/aim-request-mapper.types';
+import { AimResponseMapperService } from './aim-response-mapper.service';
+import { AimAnalysisRawResponse } from '../aim-engine-client.types';
 
 // ---------------------------------------------------------------------------
 // Reference contract field sets — camelCase wire format, accepted by the
@@ -326,5 +328,246 @@ describe('AIM Engine response contract (P5-076)', () => {
         'studentId',
       ].sort(),
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// P20-016: full per-category response contract.
+//
+// The above only documented the envelope's own keys — it never asserted the
+// shape of what's *inside* categories. That gap let a real defect through:
+// AimResponseMapperService.mapSessionSummary read frustrationLevel/
+// engagementLevel/signalBasis flat off the session summary object, but the
+// AIM Engine's real AimSessionSummaryOutput nests all three under a
+// behavioralSignal sub-object (AimSessionBehavioralSignal). Every real
+// session summary was silently dropped (SESSION_SUMMARY_INVALID) in
+// production. Fixed in this same task (see aim-response-mapper.service.ts);
+// this section is the regression guard, generalized to every category so
+// the same class of bug in any other category is caught here too.
+//
+// Field lists below are transcribed directly from
+// services/aim-engine/app/schemas/aim_analysis_response.py (verified against
+// that file's current contents, not assumed).
+// ---------------------------------------------------------------------------
+
+const EXPECTED_CATEGORIES_FIELDS = [
+  'skillState',
+  'weaknessRecords',
+  'difficultyDecision',
+  'recommendations',
+  'reviewSchedule',
+  'sessionSummary',
+];
+
+const EXPECTED_SKILL_STATE_OUTPUT_FIELDS = [
+  'skillId',
+  'masteryScore',
+  'masteryConfidence',
+  'masteryTrend',
+  'attemptsConsideredCount',
+  'lastAttemptId',
+  'evaluatedAt',
+];
+
+const EXPECTED_WEAKNESS_RECORD_OUTPUT_FIELDS = [
+  'weaknessId',
+  'skillId',
+  'severity',
+  'status',
+  'triggerAttemptIds',
+  'detectedAt',
+  'resolvedAt',
+];
+
+const EXPECTED_DIFFICULTY_DECISION_OUTPUT_FIELDS = [
+  'decisionId',
+  'skillId',
+  'nextDifficulty',
+  'previousDifficulty',
+  'rationale',
+  'basedOnAttemptIds',
+  'decidedAt',
+];
+
+const EXPECTED_RECOMMENDATION_OUTPUT_FIELDS = [
+  'recommendationId',
+  'kind',
+  'targetSkillId',
+  'targetLessonId',
+  'rank',
+  'reason',
+  'basedOnWeaknessId',
+  'generatedAt',
+  'expiresAt',
+];
+
+const EXPECTED_REVIEW_SCHEDULE_OUTPUT_FIELDS = [
+  'scheduleId',
+  'skillId',
+  'dueAt',
+  'intervalDays',
+  'repetitionCount',
+  'basedOnAttemptId',
+  'scheduledAt',
+];
+
+const EXPECTED_BEHAVIORAL_SIGNAL_FIELDS = ['frustrationLevel', 'engagementLevel', 'signalBasis'];
+
+const EXPECTED_SESSION_SUMMARY_OUTPUT_FIELDS = [
+  'sessionId',
+  'itemsAttempted',
+  'itemsCorrect',
+  'skillsTouched',
+  'overallMasteryShift',
+  'behavioralSignal',
+  'closedOutAt',
+];
+
+const FULL_RAW_RESPONSE: AimAnalysisRawResponse = {
+  backendRequestId: '550e8400-e29b-41d4-a716-446655440000',
+  contractVersion: '1.0',
+  studentId: '770e8400-e29b-41d4-a716-446655440002',
+  sessionId: '660e8400-e29b-41d4-a716-446655440001',
+  generatedAt: '2026-06-17T10:00:00Z',
+  categories: {
+    skillState: [
+      {
+        skillId: 'skill:english:a1:vocab.daily-routines',
+        masteryScore: 0.72,
+        masteryConfidence: 0.85,
+        masteryTrend: 'improving',
+        attemptsConsideredCount: 5,
+        lastAttemptId: '880e8400-e29b-41d4-a716-446655440003',
+        evaluatedAt: '2026-06-17T10:00:00Z',
+      },
+    ],
+    weaknessRecords: [
+      {
+        weaknessId: 'aaa00000-e29b-41d4-a716-446655440010',
+        skillId: 'skill:english:a1:vocab.daily-routines',
+        severity: 'developing',
+        status: 'open',
+        triggerAttemptIds: ['880e8400-e29b-41d4-a716-446655440003'],
+        detectedAt: '2026-06-17T10:00:00Z',
+        resolvedAt: null,
+      },
+    ],
+    difficultyDecision: {
+      decisionId: 'bbb00000-e29b-41d4-a716-446655440011',
+      skillId: 'skill:english:a1:vocab.daily-routines',
+      nextDifficulty: 3,
+      previousDifficulty: 2,
+      rationale: 'mastery_increase',
+      basedOnAttemptIds: ['880e8400-e29b-41d4-a716-446655440003'],
+      decidedAt: '2026-06-17T10:00:00Z',
+    },
+    recommendations: [
+      {
+        recommendationId: 'ccc00000-e29b-41d4-a716-446655440012',
+        kind: 'targeted_practice',
+        targetSkillId: 'skill:english:a1:vocab.daily-routines',
+        targetLessonId: null,
+        rank: 1,
+        reason: 'reinforces_recent_skill',
+        basedOnWeaknessId: null,
+        generatedAt: '2026-06-17T10:00:00Z',
+        expiresAt: null,
+      },
+    ],
+    reviewSchedule: [
+      {
+        scheduleId: 'ddd00000-e29b-41d4-a716-446655440013',
+        skillId: 'skill:english:a1:vocab.daily-routines',
+        dueAt: '2026-06-24T10:00:00Z',
+        intervalDays: 7,
+        repetitionCount: 1,
+        basedOnAttemptId: '880e8400-e29b-41d4-a716-446655440003',
+        scheduledAt: '2026-06-17T10:00:00Z',
+      },
+    ],
+    sessionSummary: {
+      sessionId: '660e8400-e29b-41d4-a716-446655440001',
+      itemsAttempted: 5,
+      itemsCorrect: 4,
+      skillsTouched: ['skill:english:a1:vocab.daily-routines'],
+      overallMasteryShift: 'positive',
+      behavioralSignal: {
+        frustrationLevel: 'none',
+        engagementLevel: 'high',
+        signalBasis: ['sustained_correct_streak'],
+      },
+      closedOutAt: '2026-06-17T10:00:00Z',
+    },
+  },
+};
+
+describe('AIM Engine response contract — per-category shape (P20-016)', () => {
+  const categories = FULL_RAW_RESPONSE.categories as Record<string, unknown>;
+
+  it('categories container keys match AimResponseCategories', () => {
+    expect(keysOf(categories)).toEqual(EXPECTED_CATEGORIES_FIELDS.slice().sort());
+  });
+
+  it('skillState entry keys match AimSkillStateOutput', () => {
+    const entry = (categories.skillState as Record<string, unknown>[])[0];
+    expect(keysOf(entry)).toEqual(EXPECTED_SKILL_STATE_OUTPUT_FIELDS.slice().sort());
+  });
+
+  it('weaknessRecords entry keys match AimWeaknessRecordOutput', () => {
+    const entry = (categories.weaknessRecords as Record<string, unknown>[])[0];
+    expect(keysOf(entry)).toEqual(EXPECTED_WEAKNESS_RECORD_OUTPUT_FIELDS.slice().sort());
+  });
+
+  it('difficultyDecision keys match AimDifficultyDecisionOutput', () => {
+    expect(keysOf(categories.difficultyDecision)).toEqual(
+      EXPECTED_DIFFICULTY_DECISION_OUTPUT_FIELDS.slice().sort(),
+    );
+  });
+
+  it('recommendations entry keys match AimRecommendationOutput', () => {
+    const entry = (categories.recommendations as Record<string, unknown>[])[0];
+    expect(keysOf(entry)).toEqual(EXPECTED_RECOMMENDATION_OUTPUT_FIELDS.slice().sort());
+  });
+
+  it('reviewSchedule entry keys match AimReviewScheduleOutput', () => {
+    const entry = (categories.reviewSchedule as Record<string, unknown>[])[0];
+    expect(keysOf(entry)).toEqual(EXPECTED_REVIEW_SCHEDULE_OUTPUT_FIELDS.slice().sort());
+  });
+
+  it('sessionSummary keys match AimSessionSummaryOutput, with behavioralSignal nested (not flat)', () => {
+    expect(keysOf(categories.sessionSummary)).toEqual(
+      EXPECTED_SESSION_SUMMARY_OUTPUT_FIELDS.slice().sort(),
+    );
+    const summary = categories.sessionSummary as Record<string, unknown>;
+    expect(keysOf(summary.behavioralSignal)).toEqual(
+      EXPECTED_BEHAVIORAL_SIGNAL_FIELDS.slice().sort(),
+    );
+  });
+
+  it('a realistic full response with every category populated is accepted end-to-end with zero drops', () => {
+    // This is the actual regression guard: if any category's field names or
+    // nesting drift from the real Pydantic schema again, AimResponseMapperService
+    // will drop that category and this assertion catches it here instead of
+    // in production (exactly what happened with sessionSummary before this task).
+    const mapper = new AimResponseMapperService();
+    const origin = {
+      backendRequestId: FULL_RAW_RESPONSE.backendRequestId,
+      studentId: FULL_RAW_RESPONSE.studentId,
+      sessionId: FULL_RAW_RESPONSE.sessionId,
+    };
+    const result = mapper.map(FULL_RAW_RESPONSE, origin);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.response.droppedValidationCodes).toEqual([]);
+    expect(result.response.categories.skillState).toHaveLength(1);
+    expect(result.response.categories.weaknessRecords).toHaveLength(1);
+    expect(result.response.categories.difficultyDecision).not.toBeNull();
+    expect(result.response.categories.recommendations).toHaveLength(1);
+    expect(result.response.categories.reviewSchedule).toHaveLength(1);
+    expect(result.response.categories.sessionSummary).not.toBeNull();
+    expect(result.response.categories.sessionSummary?.frustrationLevel).toBe('none');
+    expect(result.response.categories.sessionSummary?.engagementLevel).toBe('high');
   });
 });
