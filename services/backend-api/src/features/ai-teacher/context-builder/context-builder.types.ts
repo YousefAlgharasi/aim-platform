@@ -25,6 +25,13 @@
  * (difficulty_decisions, P5-059) that the backend wrote via
  * DifficultyDecisionService. AI Teacher only ever restates this
  * pre-computed rationale, never computes a difficulty value itself.
+ *
+ * P20-020: Added emotionalState. Surfaces only the coarse
+ * frustrationLevel/engagementLevel enum values already persisted to
+ * session_summaries (P5-017) — never the raw numeric frustration_score
+ * computed by aim-engine's EmotionalStateDetector, and never a fabricated
+ * clinical/diagnostic label. These are documented as coarse EDUCATIONAL
+ * signals only (docs/phase-18/ai-teacher-authority-rules.md).
  */
 export interface AiTeacherContextSnapshot {
   studentId: string;
@@ -35,6 +42,7 @@ export interface AiTeacherContextSnapshot {
   curriculumSkill: Record<string, unknown> | null;
   focusDirective: Record<string, unknown> | null;
   difficultyDecision: Record<string, unknown> | null;
+  emotionalState: Record<string, unknown> | null;
 }
 
 export interface BuildContextInput {
