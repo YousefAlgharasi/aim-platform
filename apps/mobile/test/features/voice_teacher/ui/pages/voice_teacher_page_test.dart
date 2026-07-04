@@ -249,6 +249,14 @@ void main() {
         ));
         await tester.pump();
 
+        // Bugfix: the transcript is no longer shown automatically — the
+        // call view (status pill/waveform/record button) is the default
+        // every time this session is opened, with a "Messages" button to
+        // opt into the transcript.
+        expect(find.text('How do you say hello?'), findsNothing);
+        await tester.tap(find.text('Messages'));
+        await tester.pump();
+
         expect(find.text('How do you say hello?'), findsOneWidget);
         expect(find.text('You say "hello".'), findsOneWidget);
 
@@ -384,7 +392,7 @@ void main() {
     );
 
     testWidgets(
-      'once the auto-played greeting finishes, the transcript is revealed '
+      'once the auto-played greeting finishes, the call view is shown '
       'and hands-free listening begins automatically',
       (tester) async {
         final playbackNotifier =
@@ -431,17 +439,26 @@ void main() {
         });
         await tester.pump();
 
-        expect(
-          find.text('Welcome! Today we will focus on greetings.'),
-          findsOneWidget,
-          reason: 'once speaking finishes, the greeting must still be '
-              'visible in the transcript',
-        );
+        // The transcript itself is opt-in (via the "Messages" button), not
+        // shown automatically — but the call view (with the record button
+        // now listening) must be showing in its place.
+        expect(find.text('Your teacher is speaking…'), findsNothing);
+        expect(find.byType(VoiceRecordButton), findsOneWidget);
         expect(
           fakeRecorder.startedPath,
           isNotNull,
           reason: 'hands-free listening must start automatically once the '
               'greeting finishes playing, with no tap required',
+        );
+
+        // The greeting is still reachable via the opt-in transcript.
+        await tester.tap(find.text('Messages'));
+        await tester.pump();
+        expect(
+          find.text('Welcome! Today we will focus on greetings.'),
+          findsOneWidget,
+          reason: 'once speaking finishes, the greeting must still be '
+              'visible in the transcript',
         );
       },
     );
@@ -477,6 +494,11 @@ void main() {
         await tester.pump();
 
         expect(find.text('Your teacher is speaking…'), findsNothing);
+        expect(find.byType(VoiceRecordButton), findsOneWidget);
+
+        // The greeting is still reachable via the opt-in transcript.
+        await tester.tap(find.text('Messages'));
+        await tester.pump();
         expect(
           find.text('Welcome! Today we will focus on greetings.'),
           findsOneWidget,
