@@ -960,6 +960,14 @@
   "@lessonsCoursesPageTitle": {
     "description": "Heading at the top of the course list screen."
   },
+  "lessonsCourseLockedMessage": "Finish your current level to unlock this course",
+  "@lessonsCourseLockedMessage": {
+    "description": "Snackbar message shown when a student taps a locked course tile."
+  },
+  "lessonsCourseLockedSemantic": "Locked",
+  "@lessonsCourseLockedSemantic": {
+    "description": "Accessibility label for the lock icon/badge shown on a locked course tile."
+  },
   "lessonsLevelBadge": "Level {level}",
   "@lessonsLevelBadge": {
     "description": "Level badge shown next to the course list heading.",

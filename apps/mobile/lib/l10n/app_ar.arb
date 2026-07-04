@@ -197,6 +197,8 @@
   "lessonsNoCoursesTitle": "لا توجد دورات متاحة",
   "lessonsNoCoursesSubtitle": "ستظهر الدورات المنشورة هنا.",
   "lessonsCoursesPageTitle": "الدورات",
+  "lessonsCourseLockedMessage": "أكمل مستواك الحالي لفتح هذه الدورة",
+  "lessonsCourseLockedSemantic": "مقفلة",
   "lessonsLevelBadge": "المستوى {level}",
   "lessonsCoursesSubtitle": "طوّر لغتك الإنجليزية خطوة بخطوة",
   "lessonsFilterAllCourses": "كل الدورات",
