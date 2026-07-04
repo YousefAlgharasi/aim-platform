@@ -8,19 +8,26 @@ import {
 
 import { ApiErrorCode } from '../../../../common/errors/api-error-code';
 import { AppError } from '../../../../common/errors/app-error';
-import { VoiceSessionRepository } from '../../repositories/voice-session.repository';
+import { AiChatSessionRepository } from '../../../ai-teacher/repositories/ai-chat-session.repository';
 
 interface VoiceSessionRequest {
   readonly user?: { id: string };
   readonly params?: Record<string, string | undefined>;
 }
 
+/**
+ * P21-007/P21-010: voice sessions are now `ai_chat_sessions` rows (created
+ * via VoiceSessionStartService -> ChatSessionStartService's get-or-create
+ * path), not `voice_sessions` rows — this guard's ownership check must look
+ * up the same table the session was actually created in, or every voice
+ * turn submitted against a post-P21-007 session would 403 as "not found".
+ */
 @Injectable()
 export class VoiceSessionOwnershipGuard implements CanActivate {
   private readonly logger = new Logger(VoiceSessionOwnershipGuard.name);
 
   constructor(
-    private readonly voiceSessionRepository: VoiceSessionRepository,
+    private readonly chatSessionRepository: AiChatSessionRepository,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -40,7 +47,7 @@ export class VoiceSessionOwnershipGuard implements CanActivate {
       return true;
     }
 
-    const session = await this.voiceSessionRepository.findById(sessionId);
+    const session = await this.chatSessionRepository.findById(sessionId);
 
     if (!session) {
       this.logger.warn(
