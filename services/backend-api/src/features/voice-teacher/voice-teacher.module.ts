@@ -12,6 +12,7 @@ import { VoiceSessionOwnershipGuard } from './api/guards/voice-session-ownership
 import { VoiceAudioSubmitController } from './api/voice-audio-submit.controller';
 import { VoiceAudioPlaybackController } from './api/voice-audio-playback.controller';
 import { AiChatRepositoriesModule } from '../ai-teacher/repositories/ai-chat-repositories.module';
+import { TtsGatewayModule } from './tts-gateway/tts-gateway.module';
 
 @Module({
   imports: [
@@ -24,6 +25,8 @@ import { AiChatRepositoriesModule } from '../ai-teacher/repositories/ai-chat-rep
     // P21-007/P21-010: AiChatSessionRepository, for session ownership checks
     // and contextRef lookups now that voice sessions live in ai_chat_sessions.
     AiChatRepositoriesModule,
+    // P21-011: lazy on-demand TTS synthesis for text-originated turns.
+    TtsGatewayModule,
   ],
   controllers: [VoiceAudioSubmitController, VoiceAudioPlaybackController],
   providers: [VoiceTeacherService, SttTranscriptPersistenceService, VoiceSessionOwnershipGuard],
