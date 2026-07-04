@@ -83,6 +83,7 @@ All endpoints require `Authorization: Bearer <token>` unless marked as **Public*
 | GET | `/aim/students/:studentId/review-schedules` | Get student review schedules |
 | GET | `/aim/students/:studentId/recommendations` | Get student recommendations |
 | GET | `/aim/students/:studentId/sessions/:sessionId/state` | Get session state/feedback |
+| GET | `/aim/students/:studentId/difficulty-decisions` | Get latest AIM difficulty decision |
 
 ---
 

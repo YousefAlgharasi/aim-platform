@@ -131,7 +131,7 @@ describe('AimResultController.getWeaknessRecords (P5-070)', () => {
     const weaknessRecordsSvc = {
       getWeaknessRecordsForStudent: jest.fn().mockResolvedValue({ studentId: STUDENT_ID, weaknessRecords: [] }),
     } as unknown as WeaknessRecordsReadService;
-    const ctrl = new AimResultController(skillStateSvc, reviewScheduleSvc, sessionStateSvc, weaknessRecordsSvc, {} as unknown as import('./recommendation-read.service').RecommendationReadService);
+    const ctrl = new AimResultController(skillStateSvc, reviewScheduleSvc, sessionStateSvc, weaknessRecordsSvc, {} as unknown as import('./recommendation-read.service').RecommendationReadService, {} as unknown as import('./difficulty-decision-read.service').DifficultyDecisionReadService);
 
     await ctrl.getWeaknessRecords(STUDENT_ID);
 
@@ -156,7 +156,7 @@ describe('AimResultController.getWeaknessRecords (P5-070)', () => {
     const weaknessRecordsSvc = {
       getWeaknessRecordsForStudent: jest.fn().mockResolvedValue(response),
     } as unknown as WeaknessRecordsReadService;
-    const ctrl = new AimResultController(skillStateSvc, reviewScheduleSvc, sessionStateSvc, weaknessRecordsSvc, {} as unknown as import('./recommendation-read.service').RecommendationReadService);
+    const ctrl = new AimResultController(skillStateSvc, reviewScheduleSvc, sessionStateSvc, weaknessRecordsSvc, {} as unknown as import('./recommendation-read.service').RecommendationReadService, {} as unknown as import('./difficulty-decision-read.service').DifficultyDecisionReadService);
 
     const result = await ctrl.getWeaknessRecords(STUDENT_ID);
 
@@ -168,7 +168,7 @@ describe('AimResultController.getWeaknessRecords (P5-070)', () => {
     const weaknessRecordsSvc = {
       getWeaknessRecordsForStudent: jest.fn().mockRejectedValue(new Error('db error')),
     } as unknown as WeaknessRecordsReadService;
-    const ctrl = new AimResultController(skillStateSvc, reviewScheduleSvc, sessionStateSvc, weaknessRecordsSvc, {} as unknown as import('./recommendation-read.service').RecommendationReadService);
+    const ctrl = new AimResultController(skillStateSvc, reviewScheduleSvc, sessionStateSvc, weaknessRecordsSvc, {} as unknown as import('./recommendation-read.service').RecommendationReadService, {} as unknown as import('./difficulty-decision-read.service').DifficultyDecisionReadService);
 
     await expect(ctrl.getWeaknessRecords(STUDENT_ID)).rejects.toThrow('db error');
   });

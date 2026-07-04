@@ -13,6 +13,7 @@ import { StudentProfileContextAdapter } from '../adapters/student-profile-contex
 import { CurrentLessonContextAdapter } from '../adapters/current-lesson-context.adapter';
 import { CurriculumSkillContextAdapter } from '../adapters/curriculum-skill-context.adapter';
 import { FocusDirectiveContextAdapter } from '../adapters/focus-directive-context.adapter';
+import { DifficultyDecisionContextAdapter } from '../adapters/difficulty-decision-context.adapter';
 
 const STUDENT_ID = '770e8400-e29b-41d4-a716-446655440002';
 const SESSION_ID = '880e8400-e29b-41d4-a716-446655440003';
@@ -51,12 +52,17 @@ function buildServiceWithAdapterSpies(studentIdsSeen: string[]) {
     'getFocusDirectiveContext',
     recordCall({ skillId: 'skill-1', directiveText: 'Focus on skill-1.' }),
   );
+  const difficultyDecision = makeMockAdapter<DifficultyDecisionContextAdapter>(
+    'getDifficultyDecisionContext',
+    recordCall({ skillId: 'skill-1', rationale: 'consistent_performance' }),
+  );
 
   const service = new ContextBuilderService(
     studentProfile,
     currentLesson,
     curriculumSkill,
     focusDirective,
+    difficultyDecision,
     makeMockRepository(async () => {
       throw new Error('not used in buildContext tests');
     }),
@@ -73,6 +79,7 @@ function makeSnapshot(): AiTeacherContextSnapshot {
     currentLesson: { lessonId: 'lesson-1' },
     curriculumSkill: { skillId: 'skill-1' },
     focusDirective: { skillId: 'skill-1', directiveText: 'Focus on skill-1.' },
+    difficultyDecision: { skillId: 'skill-1', rationale: 'consistent_performance' },
   };
 }
 
@@ -99,12 +106,17 @@ describe('ContextBuilderService.buildContext — contextRef lesson parsing', () 
       'getFocusDirectiveContext',
       async () => null,
     );
+    const difficultyDecision = makeMockAdapter<DifficultyDecisionContextAdapter>(
+      'getDifficultyDecisionContext',
+      async () => null,
+    );
 
     const service = new ContextBuilderService(
       studentProfile,
       currentLesson,
       curriculumSkill,
       focusDirective,
+      difficultyDecision,
       makeMockRepository(async () => {
         throw new Error('not used in buildContext tests');
       }),
@@ -140,12 +152,17 @@ describe('ContextBuilderService.buildContext — contextRef lesson parsing', () 
       'getFocusDirectiveContext',
       async () => null,
     );
+    const difficultyDecision = makeMockAdapter<DifficultyDecisionContextAdapter>(
+      'getDifficultyDecisionContext',
+      async () => null,
+    );
 
     const service = new ContextBuilderService(
       studentProfile,
       currentLesson,
       curriculumSkill,
       focusDirective,
+      difficultyDecision,
       makeMockRepository(async () => {
         throw new Error('not used in buildContext tests');
       }),
@@ -172,12 +189,12 @@ describe('ContextBuilderService.buildContext', () => {
       contextRef: 'lesson:p1:l3',
     });
 
-    expect(studentIdsSeen).toHaveLength(4);
+    expect(studentIdsSeen).toHaveLength(5);
     expect(studentIdsSeen.every((id) => id === STUDENT_ID)).toBe(true);
     expect(studentIdsSeen).not.toContain(OTHER_STUDENT_ID);
   });
 
-  it('assembles all four context fields plus studentId/sessionId into a single snapshot', async () => {
+  it('assembles all five context fields plus studentId/sessionId into a single snapshot', async () => {
     const service = buildServiceWithAdapterSpies([]);
 
     const snapshot = await service.buildContext({
@@ -193,6 +210,7 @@ describe('ContextBuilderService.buildContext', () => {
       currentLesson: { lessonId: 'lesson-1' },
       curriculumSkill: { skillId: 'skill-1' },
       focusDirective: { skillId: 'skill-1', directiveText: 'Focus on skill-1.' },
+      difficultyDecision: { skillId: 'skill-1', rationale: 'consistent_performance' },
     });
   });
 
@@ -224,6 +242,7 @@ describe('ContextBuilderService.persistSnapshot', () => {
       };
     });
     const service = new ContextBuilderService(
+      undefined as never,
       undefined as never,
       undefined as never,
       undefined as never,

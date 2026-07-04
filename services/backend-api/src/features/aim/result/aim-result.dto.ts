@@ -192,3 +192,37 @@ export class RecommendationReadResponseDto {
   @ApiProperty({ type: [RecommendationEntryDto] })
   recommendations!: RecommendationEntryDto[];
 }
+
+export class DifficultyDecisionEntryDto {
+  @ApiProperty()
+  skillId!: string;
+
+  @ApiProperty()
+  currentDifficulty!: number;
+
+  @ApiProperty()
+  previousDifficulty!: number;
+
+  @ApiProperty()
+  rationale!: string;
+
+  @ApiProperty({ type: [String] })
+  basedOnAttemptIds!: string[];
+
+  @ApiProperty({ format: 'date-time' })
+  decidedAt!: string;
+
+  @ApiProperty({ format: 'date-time' })
+  updatedAt!: string;
+}
+
+export class DifficultyDecisionReadResponseDto {
+  @ApiProperty()
+  studentId!: string;
+
+  @ApiProperty()
+  found!: boolean;
+
+  @ApiProperty({ type: DifficultyDecisionEntryDto, nullable: true })
+  difficultyDecision!: DifficultyDecisionEntryDto | null;
+}
