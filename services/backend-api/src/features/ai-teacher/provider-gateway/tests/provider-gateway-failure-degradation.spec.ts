@@ -30,6 +30,7 @@ function makeContext(): AiTeacherContextSnapshot {
     curriculumSkill: null,
     focusDirective: null,
     difficultyDecision: null,
+    emotionalState: null,
   };
 }
 

@@ -16,6 +16,7 @@ function makeSnapshot(
     curriculumSkill: null,
     focusDirective: null,
     difficultyDecision: null,
+    emotionalState: null,
     ...overrides,
   };
 }
@@ -132,6 +133,50 @@ describe('PromptBuilderService', () => {
     });
 
     expect(prompt.sections.map((section) => section.key)).not.toContain('difficultyDecision');
+  });
+
+  it('includes the emotionalState section last, after difficultyDecision, when present (P20-020)', () => {
+    const service = new PromptBuilderService();
+    const prompt = service.buildPrompt({
+      studentMessage: 'Hello',
+      context: makeSnapshot({
+        studentProfile: { displayName: 'Hana' },
+        currentLesson: { lessonId: 'lesson-1' },
+        curriculumSkill: { skillId: 'skill-1' },
+        focusDirective: {
+          skillId: 'skill:english:a1:grammar.past-simple',
+          directiveText: 'Focus on past simple.',
+        },
+        difficultyDecision: {
+          skillId: 'skill:english:a1:vocab.daily-routines',
+          rationale: 'consistent_performance',
+        },
+        emotionalState: {
+          frustrationLevel: 'moderate',
+          engagementLevel: 'typical',
+        },
+      }),
+    });
+
+    expect(prompt.sections.map((section) => section.key)).toEqual([
+      'studentProfile',
+      'currentLesson',
+      'curriculumSkill',
+      'focusDirective',
+      'difficultyDecision',
+      'emotionalState',
+    ]);
+    expect(prompt.sections[prompt.sections.length - 1].content).toContain('moderate');
+  });
+
+  it('omits the emotionalState section when no recent session summary exists', () => {
+    const service = new PromptBuilderService();
+    const prompt = service.buildPrompt({
+      studentMessage: 'Hello',
+      context: makeSnapshot({ curriculumSkill: { skillId: 'skill-1' } }),
+    });
+
+    expect(prompt.sections.map((section) => section.key)).not.toContain('emotionalState');
   });
 
   it('passes the student message through unchanged', () => {

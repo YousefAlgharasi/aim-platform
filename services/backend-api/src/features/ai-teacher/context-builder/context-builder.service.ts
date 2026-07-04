@@ -6,6 +6,7 @@ import { CurrentLessonContextAdapter } from './adapters/current-lesson-context.a
 import { CurriculumSkillContextAdapter } from './adapters/curriculum-skill-context.adapter';
 import { FocusDirectiveContextAdapter } from './adapters/focus-directive-context.adapter';
 import { DifficultyDecisionContextAdapter } from './adapters/difficulty-decision-context.adapter';
+import { EmotionalStateContextAdapter } from './adapters/emotional-state-context.adapter';
 import { AiTeacherContextSnapshot, BuildContextInput } from './context-builder.types';
 
 /**
@@ -47,6 +48,7 @@ export class ContextBuilderService {
     private readonly curriculumSkillContext: CurriculumSkillContextAdapter,
     private readonly focusDirectiveContext: FocusDirectiveContextAdapter,
     private readonly difficultyDecisionContext: DifficultyDecisionContextAdapter,
+    private readonly emotionalStateContext: EmotionalStateContextAdapter,
     private readonly contextSnapshotRepository: AiContextSnapshotRepository,
   ) {}
 
@@ -66,6 +68,10 @@ export class ContextBuilderService {
     const difficultyDecision = await this.difficultyDecisionContext.getDifficultyDecisionContext(
       input.studentId,
     );
+    const emotionalState = await this.emotionalStateContext.getEmotionalStateContext(
+      input.studentId,
+      input.sessionId,
+    );
 
     return {
       studentId: input.studentId,
@@ -75,6 +81,7 @@ export class ContextBuilderService {
       curriculumSkill: curriculumSkill as unknown as Record<string, unknown> | null,
       focusDirective: focusDirective as unknown as Record<string, unknown> | null,
       difficultyDecision: difficultyDecision as unknown as Record<string, unknown> | null,
+      emotionalState: emotionalState as unknown as Record<string, unknown> | null,
     };
   }
 
