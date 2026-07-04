@@ -228,9 +228,11 @@ describe('AimResponseMapperService (P5-048)', () => {
           itemsCorrect: 10, // itemsCorrect > itemsAttempted — invalid
           skillsTouched: [],
           overallMasteryShift: 'positive',
-          frustrationLevel: 'none',
-          engagementLevel: 'typical',
-          signalBasis: [],
+          behavioralSignal: {
+            frustrationLevel: 'none',
+            engagementLevel: 'typical',
+            signalBasis: [],
+          },
           closedOutAt: '2026-06-17T10:00:00Z',
         },
       },
@@ -255,9 +257,11 @@ describe('AimResponseMapperService (P5-048)', () => {
           itemsCorrect: 4,
           skillsTouched: ['skill:arabic:p1:vocab'],
           overallMasteryShift: 'positive',
-          frustrationLevel: 'none',
-          engagementLevel: 'high',
-          signalBasis: ['sustained_correct_streak'],
+          behavioralSignal: {
+            frustrationLevel: 'none',
+            engagementLevel: 'high',
+            signalBasis: ['sustained_correct_streak'],
+          },
           closedOutAt: '2026-06-17T10:00:00Z',
         },
       },
@@ -269,5 +273,35 @@ describe('AimResponseMapperService (P5-048)', () => {
     expect(summary).not.toBeNull();
     expect(summary!.frustrationLevel).toBe('none');
     expect(summary!.engagementLevel).toBe('high');
+  });
+
+  it('P20-016 regression: drops a session summary with frustration/engagement/signalBasis flat instead of nested under behavioralSignal', () => {
+    // The AIM Engine's real AimSessionSummaryOutput nests these three fields
+    // under behavioralSignal (AimSessionBehavioralSignal). A flat shape is
+    // exactly the bug this mapper previously had — every real response was
+    // silently dropped as SESSION_SUMMARY_INVALID. This proves the mapper
+    // now correctly rejects the wrong (flat) shape rather than accepting it.
+    const raw = {
+      ...VALID_RAW,
+      categories: {
+        ...VALID_RAW.categories,
+        sessionSummary: {
+          sessionId: ORIGIN.sessionId,
+          itemsAttempted: 5,
+          itemsCorrect: 4,
+          skillsTouched: ['skill:arabic:p1:vocab'],
+          overallMasteryShift: 'positive',
+          frustrationLevel: 'none',
+          engagementLevel: 'high',
+          signalBasis: ['sustained_correct_streak'],
+          closedOutAt: '2026-06-17T10:00:00Z',
+        },
+      },
+    };
+    const result = mapper.map(raw, ORIGIN);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.response.categories.sessionSummary).toBeNull();
+    expect(result.response.droppedValidationCodes).toContain('SESSION_SUMMARY_INVALID');
   });
 });

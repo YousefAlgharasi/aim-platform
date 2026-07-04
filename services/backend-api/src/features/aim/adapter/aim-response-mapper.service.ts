@@ -347,7 +347,15 @@ export class AimResponseMapperService {
   ): AimValidatedSessionSummary | null {
     if (raw === undefined || raw === null) return null;
     const e = raw as Record<string, unknown>;
-    const signalBasis = e['signalBasis'];
+    // P20-016: the AIM Engine's AimSessionSummaryOutput nests frustration/
+    // engagement/signal-basis under behavioralSignal (AimSessionBehavioralSignal)
+    // — they are NOT flat on the session summary object. Reading them flat
+    // here previously meant every real session summary failed validation
+    // (SESSION_SUMMARY_INVALID) and was silently dropped in production; this
+    // was caught only when the contract test was extended to cover this
+    // category's exact shape.
+    const behavioralSignal = e['behavioralSignal'] as Record<string, unknown> | undefined;
+    const signalBasis = behavioralSignal?.['signalBasis'];
     if (
       !isString(e['sessionId']) ||
       !isNonNegInt(e['itemsAttempted']) ||
@@ -355,8 +363,9 @@ export class AimResponseMapperService {
       (e['itemsCorrect'] as number) > (e['itemsAttempted'] as number) ||
       !Array.isArray(e['skillsTouched']) ||
       !isOneOf(e['overallMasteryShift'], MASTERY_SHIFT_VALUES) ||
-      !isOneOf(e['frustrationLevel'], FRUSTRATION_LEVEL_VALUES) ||
-      !isOneOf(e['engagementLevel'], ENGAGEMENT_LEVEL_VALUES) ||
+      !behavioralSignal ||
+      !isOneOf(behavioralSignal['frustrationLevel'], FRUSTRATION_LEVEL_VALUES) ||
+      !isOneOf(behavioralSignal['engagementLevel'], ENGAGEMENT_LEVEL_VALUES) ||
       !Array.isArray(signalBasis) ||
       !(signalBasis as unknown[]).every((b) => isOneOf(b, SIGNAL_BASIS_VALUES)) ||
       !isValidIso(e['closedOutAt'] as string)
@@ -370,8 +379,8 @@ export class AimResponseMapperService {
       itemsCorrect: e['itemsCorrect'] as number,
       skillsTouched: e['skillsTouched'] as string[],
       overallMasteryShift: e['overallMasteryShift'] as AimMasteryShiftDirection,
-      frustrationLevel: e['frustrationLevel'] as AimFrustrationLevel,
-      engagementLevel: e['engagementLevel'] as AimEngagementLevel,
+      frustrationLevel: behavioralSignal['frustrationLevel'] as AimFrustrationLevel,
+      engagementLevel: behavioralSignal['engagementLevel'] as AimEngagementLevel,
       signalBasis: signalBasis as AimSignalBasis[],
       closedOutAt: e['closedOutAt'] as string,
     };
