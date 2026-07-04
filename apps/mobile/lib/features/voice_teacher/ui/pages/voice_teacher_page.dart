@@ -21,14 +21,6 @@
 // history), [voiceRecordSubmitProvider] (record → submit turn) and
 // [voicePlaybackProvider] (AI Teacher audio playback).
 //
-// Pre-conversation (no history yet, not recording/processing/erroring) shows
-// a full-bleed gradient hero with a status pill, "Tap to speak" heading, the
-// centered record button, and a static subtitle — matching the design
-// screenshot. Once real history exists, or while an error/fallback is
-// showing, the screen keeps the functional transcript-list layout (a
-// full-bleed gradient behind a scrolling chat history would not read well),
-// with just a shorter gradient header bar for visual continuity.
-//
 // Security rules:
 // - studentId is never supplied by this screen; the backend always resolves
 //   it from the verified JWT (see voice-session-start.controller.ts).
@@ -38,14 +30,23 @@
 //   [VoiceTeacherSessionNotifier] and [VoiceRecordSubmitNotifier].
 // - Bearer token is read from authFlowProvider on demand; never stored here.
 //
-// Bugfix: microphone capture is now wired to a real recorder plugin (the
+// Bugfix: microphone capture is wired to a real recorder plugin (the
 // `record` package) — see _startRecordingAsync/_onStopRecording below. Audio
 // is captured as WAV (audio/wav is in the backend's ALLOWED_AUDIO_TYPES
 // allow-list, voice-audio-submit.controller.ts), read into memory, and the
 // temp file is deleted immediately after. Permission is requested via the
 // recorder's own hasPermission(); denial drives the existing microphone
 // error state (VoiceErrorState) rather than failing silently.
-
+//
+// Hands-free conversation flow: every AI reply (the opening greeting and
+// every subsequent turn) plays automatically the instant it's ready — no
+// tap required. Once the AI finishes speaking, the mic starts listening
+// automatically too: recording begins right away, a simple amplitude-based
+// voice-activity check detects when the student starts talking, and once
+// they go quiet again for a short pause, the turn is stopped and submitted
+// automatically. The manual record button stays available the whole time
+// as a fallback/override — tap it to stop early, or to (re)start manually
+// if auto-listening didn't kick in for some reason.
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
@@ -87,6 +88,23 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
   late final VoiceRecorderClient _audioRecorder =
       widget.recorder ?? RealVoiceRecorderClient();
 
+  // ── Voice-activity detection (hands-free auto-record) ─────────────────
+  //
+  // Heuristic thresholds — dBFS amplitude (very negative = silence, closer
+  // to 0 = louder). These are a starting point, not calibrated against real
+  // devices/environments; they may need tuning once tested for real.
+  static const _speechOnsetDb = -35.0;
+  static const _silenceDb = -42.0;
+  static const _silenceDuration = Duration(milliseconds: 1400);
+  static const _maxListenDuration = Duration(seconds: 25);
+
+  StreamSubscription<double>? _amplitudeSub;
+  Timer? _silenceTimer;
+  Timer? _maxListenTimer;
+  bool _voiceDetected = false;
+  bool _stoppingTurn = false;
+  bool _greetingHandled = false;
+
   @override
   void initState() {
     super.initState();
@@ -95,6 +113,7 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
 
   @override
   void dispose() {
+    _teardownVoiceActivityDetection();
     _audioRecorder.dispose();
     super.dispose();
   }
@@ -118,7 +137,40 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
         await notifier.loadHistory(bearerToken: token, sessionId: sessionId);
       }
     }
+
+    _handleInitialGreeting();
   }
+
+  /// The session starts with exactly one message — the auto-generated
+  /// greeting — before the student has said anything. Play it
+  /// automatically (no tap), then start listening automatically once it
+  /// finishes. If this is a resumed conversation (more than just the
+  /// greeting already present), skip straight to listening.
+  void _handleInitialGreeting() {
+    if (!mounted) return;
+    final state = ref.read(voiceTeacherSessionProvider);
+    if (state is! AppAsyncSuccess<VoiceTeacherSessionState>) return;
+
+    final history = state.data.history;
+    if (history.length == 1 && history.first.isGreeting) {
+      final greeting = history.first;
+      if (greeting.audioRef != null) {
+        unawaited(_onPlayReply(greeting.audioRef!, onFinished: _onGreetingFinished));
+        return;
+      }
+    }
+    _onGreetingFinished();
+  }
+
+  void _onGreetingFinished() {
+    if (!mounted) return;
+    if (!_greetingHandled) {
+      setState(() => _greetingHandled = true);
+    }
+    unawaited(_beginHandsFreeListening());
+  }
+
+  // ── Recording (manual tap and hands-free auto-start share this) ───────
 
   // P21-018: barge-in. The record button stays tappable while AI audio is
   // playing (VoiceRecordButton only disables during `processing`), so a tap
@@ -143,6 +195,10 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
     }
 
     final recordNotifier = ref.read(voiceRecordSubmitProvider);
+    if (recordNotifier.state == RecordSubmitState.recording ||
+        recordNotifier.state == RecordSubmitState.submitting) {
+      return;
+    }
 
     final hasPermission = await _audioRecorder.hasPermission();
     if (!hasPermission) {
@@ -167,69 +223,156 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
     // started — never optimistically, or a start() failure above would
     // leave the button showing "recording" with nothing actually happening.
     recordNotifier.startRecording();
+    _armVoiceActivityDetection();
+  }
+
+  /// Starts listening for the student's next turn without requiring a tap —
+  /// called once the AI's current reply finishes speaking. No-ops if
+  /// already recording/submitting (avoids double-starts if triggered twice
+  /// in quick succession).
+  Future<void> _beginHandsFreeListening() async {
+    if (!mounted) return;
+    await _startRecordingAsync();
+  }
+
+  void _armVoiceActivityDetection() {
+    _teardownVoiceActivityDetection();
+    _voiceDetected = false;
+
+    _amplitudeSub = _audioRecorder
+        .onAmplitudeChanged(const Duration(milliseconds: 200))
+        .listen(_onAmplitudeSample);
+
+    // Safety net: if nobody ever speaks, don't record forever — discard and
+    // start listening again instead of submitting silence or hanging.
+    _maxListenTimer = Timer(_maxListenDuration, () {
+      if (!_voiceDetected) {
+        _cancelListeningAndRestart();
+      }
+    });
+  }
+
+  void _onAmplitudeSample(double db) {
+    if (!_voiceDetected) {
+      if (db > _speechOnsetDb) {
+        _voiceDetected = true;
+        _maxListenTimer?.cancel();
+        _maxListenTimer = null;
+      }
+      return;
+    }
+
+    if (db <= _silenceDb) {
+      _silenceTimer ??= Timer(_silenceDuration, () {
+        unawaited(_onStopRecording());
+      });
+    } else {
+      _silenceTimer?.cancel();
+      _silenceTimer = null;
+    }
+  }
+
+  void _cancelListeningAndRestart() {
+    _teardownVoiceActivityDetection();
+    unawaited(_audioRecorder.stop());
+    ref.read(voiceRecordSubmitProvider).cancelRecording();
+    unawaited(_beginHandsFreeListening());
+  }
+
+  void _teardownVoiceActivityDetection() {
+    unawaited(_amplitudeSub?.cancel());
+    _amplitudeSub = null;
+    _silenceTimer?.cancel();
+    _silenceTimer = null;
+    _maxListenTimer?.cancel();
+    _maxListenTimer = null;
   }
 
   Future<void> _onStopRecording() async {
-    final recordNotifier = ref.read(voiceRecordSubmitProvider);
-
-    Uint8List audioBytes = Uint8List(0);
-    const mimeType = 'audio/wav';
+    if (_stoppingTurn) return;
+    _stoppingTurn = true;
+    _teardownVoiceActivityDetection();
 
     try {
-      final path = await _audioRecorder.stop();
-      if (path != null) {
-        final file = File(path);
-        if (await file.exists()) {
-          audioBytes = await file.readAsBytes();
-          unawaited(file.delete());
+      final recordNotifier = ref.read(voiceRecordSubmitProvider);
+
+      Uint8List audioBytes = Uint8List(0);
+      const mimeType = 'audio/wav';
+
+      try {
+        final path = await _audioRecorder.stop();
+        if (path != null) {
+          final file = File(path);
+          if (await file.exists()) {
+            audioBytes = await file.readAsBytes();
+            unawaited(file.delete());
+          }
         }
+      } catch (error) {
+        recordNotifier.reportError('Could not read recorded audio: $error');
+        return;
       }
-    } catch (error) {
-      recordNotifier.reportError('Could not read recorded audio: $error');
-      return;
-    }
 
-    if (audioBytes.isEmpty) {
-      recordNotifier.reportError(
-        'No audio was recorded. Please try again.',
+      if (audioBytes.isEmpty) {
+        recordNotifier.reportError(
+          'No audio was recorded. Please try again.',
+        );
+        return;
+      }
+
+      recordNotifier.stopRecording(audioBytes, mimeType: mimeType);
+
+      final token = _token;
+      final sessionState = ref.read(voiceTeacherSessionProvider);
+      if (token == null ||
+          token.isEmpty ||
+          sessionState is! AppAsyncSuccess<VoiceTeacherSessionState>) {
+        return;
+      }
+      final sessionId = sessionState.data.sessionId;
+      if (sessionId == null) return;
+
+      final sessionNotifier = ref.read(voiceTeacherSessionProvider.notifier);
+      await recordNotifier.submitToBackend(
+        sessionId: sessionId,
+        submitFn: (turnSessionId, audio, mimeType) async {
+          await sessionNotifier.submitTurn(
+            bearerToken: token,
+            sessionId: turnSessionId,
+            audioBytes: audio,
+            mimeType: mimeType,
+          );
+          final updated = ref.read(voiceTeacherSessionProvider);
+          final turn = updated is AppAsyncSuccess<VoiceTeacherSessionState>
+              ? updated.data.lastTurn
+              : null;
+          return (
+            transcript: '',
+            aiResponseText: turn?.text ?? '',
+            audioRef: turn?.audioRef,
+            fallbackText: turn?.isFallback == true ? turn?.text : null,
+          );
+        },
       );
-      return;
+
+      // Auto-play the AI's reply, then automatically start listening again
+      // for the student's next turn once it finishes — no taps anywhere in
+      // this loop. If there's no audio (TTS failed), just start listening
+      // right away instead of waiting on nothing.
+      final latest = ref.read(voiceTeacherSessionProvider);
+      final replyAudioRef = latest is AppAsyncSuccess<VoiceTeacherSessionState>
+          ? latest.data.lastTurn?.audioRef
+          : null;
+      if (replyAudioRef != null) {
+        unawaited(_onPlayReply(replyAudioRef, onFinished: () {
+          unawaited(_beginHandsFreeListening());
+        }));
+      } else {
+        unawaited(_beginHandsFreeListening());
+      }
+    } finally {
+      _stoppingTurn = false;
     }
-
-    recordNotifier.stopRecording(audioBytes, mimeType: mimeType);
-
-    final token = _token;
-    final sessionState = ref.read(voiceTeacherSessionProvider);
-    if (token == null ||
-        token.isEmpty ||
-        sessionState is! AppAsyncSuccess<VoiceTeacherSessionState>) {
-      return;
-    }
-    final sessionId = sessionState.data.sessionId;
-    if (sessionId == null) return;
-
-    final sessionNotifier = ref.read(voiceTeacherSessionProvider.notifier);
-    await recordNotifier.submitToBackend(
-      sessionId: sessionId,
-      submitFn: (turnSessionId, audio, mimeType) async {
-        await sessionNotifier.submitTurn(
-          bearerToken: token,
-          sessionId: turnSessionId,
-          audioBytes: audio,
-          mimeType: mimeType,
-        );
-        final updated = ref.read(voiceTeacherSessionProvider);
-        final turn = updated is AppAsyncSuccess<VoiceTeacherSessionState>
-            ? updated.data.lastTurn
-            : null;
-        return (
-          transcript: '',
-          aiResponseText: turn?.text ?? '',
-          audioRef: turn?.audioRef,
-          fallbackText: turn?.isFallback == true ? turn?.text : null,
-        );
-      },
-    );
   }
 
   Future<void> _onFeedback(
@@ -256,7 +399,7 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
         );
   }
 
-  Future<void> _onPlayReply(String audioRef) async {
+  Future<void> _onPlayReply(String audioRef, {VoidCallback? onFinished}) async {
     final token = _token;
     if (token == null || token.isEmpty) return;
     await ref.read(voicePlaybackProvider).loadAndPlay(
@@ -270,6 +413,7 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
                 );
             return Uint8List.fromList(bytes);
           },
+          onFinished: onFinished,
         );
   }
 
@@ -300,6 +444,7 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
                 sessionState: data,
                 recordState: recordState,
                 playbackState: playbackState,
+                greetingHandled: _greetingHandled,
                 onStartRecording: _onStartRecording,
                 onStopRecording: _onStopRecording,
                 onPlayReply: _onPlayReply,
@@ -384,11 +529,12 @@ class _VoiceTeacherHeader extends StatelessWidget
   }
 }
 
-class _VoiceTutorContent extends StatefulWidget {
+class _VoiceTutorContent extends StatelessWidget {
   const _VoiceTutorContent({
     required this.sessionState,
     required this.recordState,
     required this.playbackState,
+    required this.greetingHandled,
     required this.onStartRecording,
     required this.onStopRecording,
     required this.onPlayReply,
@@ -399,46 +545,16 @@ class _VoiceTutorContent extends StatefulWidget {
   final VoiceTeacherSessionState sessionState;
   final VoiceRecordSubmitNotifier recordState;
   final VoicePlaybackNotifier playbackState;
+  final bool greetingHandled;
   final VoidCallback onStartRecording;
   final Future<void> Function() onStopRecording;
-  final Future<void> Function(String audioRef) onPlayReply;
+  final Future<void> Function(String audioRef, {VoidCallback? onFinished}) onPlayReply;
   final void Function(String messageId, String rating, String? comment)
       onFeedback;
   final Future<void> Function() onRetry;
 
   @override
-  State<_VoiceTutorContent> createState() => _VoiceTutorContentState();
-}
-
-class _VoiceTutorContentState extends State<_VoiceTutorContent> {
-  // P21-017: the opening greeting (P21-008/P21-009) is ready to play the
-  // instant this screen loads — per the agreed "ready immediately, plays
-  // on first tap" behavior (never true autoplay, to avoid OS/browser
-  // autoplay-with-sound restrictions and not starting audio without any
-  // user gesture). Tracks whether the student has already dismissed/heard
-  // it, so the ready state only ever shows once per session.
-  bool _greetingDismissed = false;
-
-  void _onPlayGreeting(String audioRef) {
-    setState(() => _greetingDismissed = true);
-    widget.onPlayReply(audioRef);
-  }
-
-  void _onSkipGreeting() {
-    setState(() => _greetingDismissed = true);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final sessionState = widget.sessionState;
-    final recordState = widget.recordState;
-    final playbackState = widget.playbackState;
-    final onStartRecording = widget.onStartRecording;
-    final onStopRecording = widget.onStopRecording;
-    final onPlayReply = widget.onPlayReply;
-    final onFeedback = widget.onFeedback;
-    final onRetry = widget.onRetry;
-
     final isRecording = recordState.state == RecordSubmitState.recording;
     final isSubmitting = recordState.state == RecordSubmitState.submitting;
     final isError = recordState.state == RecordSubmitState.error;
@@ -453,29 +569,23 @@ class _VoiceTutorContentState extends State<_VoiceTutorContent> {
             ? VoiceRecordState.recording
             : VoiceRecordState.idle;
 
-    // P21-017: the session starts with exactly one message — the
-    // auto-generated greeting (P21-008) — before the student has said
-    // anything. Offer a "ready to hear your teacher" state instead of
-    // silently dropping straight into the transcript view with no audio
-    // ever played, which is what happened before this fix (the greeting
-    // text rendered, but nothing ever surfaced its audio).
-    final unplayedGreeting = !_greetingDismissed &&
-            sessionState.history.length == 1 &&
-            sessionState.history.first.isGreeting
-        ? sessionState.history.first
-        : null;
+    // The session starts with exactly one message — the auto-generated
+    // greeting — before the student has said anything. It plays
+    // automatically (VoiceTeacherPage._handleInitialGreeting), so this is a
+    // passive "your teacher is speaking" state, not a tap target.
+    final showGreetingSpeaking = !greetingHandled &&
+        sessionState.history.length == 1 &&
+        sessionState.history.first.isGreeting;
 
-    if (unplayedGreeting != null) {
-      return _VoiceHeroGreetingReady(
-        hasAudio: unplayedGreeting.hasAudio,
-        onPlay: () => _onPlayGreeting(unplayedGreeting.audioRef!),
-        onSkip: _onSkipGreeting,
-      );
+    if (showGreetingSpeaking) {
+      return const _VoiceHeroGreetingSpeaking();
     }
 
     // Pre-conversation hero: no history yet and nothing currently in
     // progress (recording/processing/erroring/fallback) — matches the
-    // design screenshot's full-bleed gradient "Tap to speak" treatment.
+    // design screenshot's full-bleed gradient treatment. In the normal
+    // hands-free flow this is only ever visible for a brief instant before
+    // auto-listening kicks in; the manual record button remains a fallback.
     final showHero = sessionState.history.isEmpty &&
         !isRecording &&
         !isSubmitting &&
@@ -553,41 +663,14 @@ class _VoiceTutorContentState extends State<_VoiceTutorContent> {
   }
 }
 
-/// P21-017: shown once, the instant a new voice session loads, when the
-/// auto-generated opening greeting (P21-008) hasn't been heard yet. Mirrors
-/// `_VoiceHeroIdle`'s full-bleed gradient treatment so the transition
-/// between the two feels like one continuous hero rather than a jump cut.
-///
-/// "Ready immediately, plays on first tap" — never true autoplay (avoids
-/// OS/browser autoplay-with-sound restrictions and starting audio without
-/// a user gesture). If eager TTS synthesis failed for this greeting
-/// (`hasAudio == false`), there's nothing to play — go straight to the
-/// normal record flow instead of showing a play button with nothing behind
-/// it.
-class _VoiceHeroGreetingReady extends StatelessWidget {
-  const _VoiceHeroGreetingReady({
-    required this.hasAudio,
-    required this.onPlay,
-    required this.onSkip,
-  });
-
-  final bool hasAudio;
-  final VoidCallback onPlay;
-  final VoidCallback onSkip;
+/// Passive "your teacher is speaking" hero shown while the auto-played
+/// opening greeting is playing — no tap target, since playback and the
+/// hands-free listening that follows it are both fully automatic.
+class _VoiceHeroGreetingSpeaking extends StatelessWidget {
+  const _VoiceHeroGreetingSpeaking();
 
   @override
   Widget build(BuildContext context) {
-    if (!hasAudio) {
-      // Nothing to play (TTS synthesis failed or is still pending) — the
-      // greeting's text already rendered via the transcript once we fall
-      // through, so just dismiss straight into the normal record flow
-      // rather than showing a dead play button.
-      WidgetsBinding.instance.addPostFrameCallback((_) => onSkip());
-      return const AIMFullScreenLoading(
-        semanticLabel: 'Starting Voice Teacher session',
-      );
-    }
-
     return Center(
       child: Padding(
         padding: const EdgeInsetsDirectional.symmetric(
@@ -596,46 +679,15 @@ class _VoiceHeroGreetingReady extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const _VoiceStatusPill(label: 'Ready'),
+            const _VoiceStatusPill(label: 'Speaking'),
             const SizedBox(height: AimSpacing.sectionGap),
             Text(
-              'Tap to hear your teacher',
+              'Your teacher is speaking…',
               style: AimTextStyles.h2.copyWith(color: AimColors.neutral0),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AimSpacing.sectionGap),
-            Semantics(
-              button: true,
-              label: 'Play greeting',
-              child: InkWell(
-                onTap: onPlay,
-                customBorder: const CircleBorder(),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AimColors.neutral0.withValues(alpha: 0.18),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AimSpacing.space24),
-                    child: Icon(
-                      Icons.play_arrow_rounded,
-                      size: AimSizes.iconLg,
-                      color: AimColors.neutral0,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: AimSpacing.sectionGap),
-            TextButton(
-              onPressed: onSkip,
-              child: Text(
-                'Skip',
-                style: AimTextStyles.bodySm.copyWith(
-                  color: AimColors.neutral0.withValues(alpha: 0.85),
-                ),
-              ),
-            ),
+            const VoiceWaveformIndicator(active: true),
           ],
         ),
       ),
@@ -646,6 +698,8 @@ class _VoiceHeroGreetingReady extends StatelessWidget {
 /// Pre-conversation idle hero — full-bleed gradient background, status
 /// pill, heading, centered record button, and static subtitle. Matches
 /// `docs/design/ui-for-all-system-mobile/screenshots/{light,dark}/36-screen.png`.
+/// Only ever briefly visible in the normal hands-free flow (before
+/// auto-listening kicks in) — the record button remains a manual fallback.
 ///
 /// The "Tap anywhere to change state" hint visible in the mockup is a
 /// Figma/prototyping-tool artifact for whoever is clicking through the
@@ -664,7 +718,7 @@ class _VoiceHeroIdle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (label, heading) = switch (recordButtonState) {
-      VoiceRecordState.recording => ('Recording', 'Listening...'),
+      VoiceRecordState.recording => ('Listening', 'Listening...'),
       VoiceRecordState.processing => ('Processing', 'Processing...'),
       VoiceRecordState.idle => ('Ready', 'Tap to speak'),
     };

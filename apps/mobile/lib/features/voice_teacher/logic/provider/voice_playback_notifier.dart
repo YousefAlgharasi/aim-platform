@@ -29,6 +29,12 @@ class VoicePlaybackNotifier extends ChangeNotifier {
   String? _duration;
   String? _errorMessage;
 
+  /// Fires once, the instant *this specific* playback finishes naturally
+  /// (never on an explicit stop()/pause()) — lets a caller chain "and then
+  /// start listening for the student's next turn" without the caller
+  /// needing to diff provider state externally.
+  VoidCallback? _onFinished;
+
   PlaybackState get state => _state;
   String? get currentAudioRef => _currentAudioRef;
   double get progress => _progress;
@@ -38,12 +44,14 @@ class VoicePlaybackNotifier extends ChangeNotifier {
   Future<void> loadAndPlay({
     required String audioRef,
     required Future<Uint8List> Function(String audioRef) fetchAudioFn,
+    VoidCallback? onFinished,
   }) async {
     if (_currentAudioRef == audioRef && _state == PlaybackState.paused) {
       resume();
       return;
     }
 
+    _onFinished = onFinished;
     _currentAudioRef = audioRef;
     _state = PlaybackState.loading;
     _progress = 0.0;
@@ -56,6 +64,7 @@ class VoicePlaybackNotifier extends ChangeNotifier {
       _state = PlaybackState.playing;
       notifyListeners();
     } catch (e) {
+      _onFinished = null;
       _state = PlaybackState.error;
       _errorMessage = e.toString();
       notifyListeners();
@@ -91,7 +100,10 @@ class VoicePlaybackNotifier extends ChangeNotifier {
   void complete() {
     _state = PlaybackState.completed;
     _progress = 1.0;
+    final callback = _onFinished;
+    _onFinished = null;
     notifyListeners();
+    callback?.call();
   }
 
   void replay() {
@@ -101,6 +113,10 @@ class VoicePlaybackNotifier extends ChangeNotifier {
   }
 
   void stop() {
+    // An explicit stop (e.g. barge-in) is not a natural finish — never fire
+    // a pending onFinished continuation (e.g. "start listening next") for
+    // audio that was deliberately cut off instead of allowed to end.
+    _onFinished = null;
     unawaited(_player.stop());
     _state = PlaybackState.idle;
     _currentAudioRef = null;
