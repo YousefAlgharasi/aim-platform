@@ -213,6 +213,14 @@ model AiChatMessage {
   role        String
   text        String
 
+  // P21-006: unified text+voice conversation turns. `channel` is the turn's
+  // origin ('text' or 'voice'); a non-null `audioRef` is the actual signal
+  // that voice playback is available, regardless of origin channel.
+  channel         String  @default("text")
+  audioRef        String? @map("audio_ref")
+  audioDurationMs Int?    @map("audio_duration_ms")
+  isGreeting      Boolean @default(false) @map("is_greeting")
+
   createdAt   DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
 
   session     AiChatSession      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
