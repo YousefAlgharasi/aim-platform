@@ -19,4 +19,10 @@ export interface StartChatSessionResult {
   readonly contextRef: string;
   readonly status: 'active' | 'closed';
   readonly createdAt: string;
+  /**
+   * P21-012: short, separately-labelled "today we're focusing on" recap
+   * line, derived from the student's active ai_focus_directives row. Null
+   * when no active directive exists — never fabricated.
+   */
+  readonly focusRecap: string | null;
 }
