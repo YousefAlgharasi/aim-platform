@@ -1,0 +1,202 @@
+{
+  "meta": {
+    "project_name": "AIM Platform",
+    "repo": "YousefAlgharasi/aim-platform",
+    "supabase_project_id": "yrarpdkvdxszgxxondkt",
+    "last_full_audit_at": null,
+    "last_verified_at": "2026-07-04T00:00:00Z",
+    "note": "No full chief-architect-repo-understanding audit has been run yet as of this file's creation. Everything below is seeded from incidental verification during Phase 20/21 execution and the apps/web episode, not a systematic pass. Treat unlisted areas as unknown, not as 'checked and fine'."
+  },
+
+  "architecture": [
+    {
+      "path": "services/backend-api",
+      "kind": "backend",
+      "stack": "NestJS/TypeScript",
+      "status": "live",
+      "wired_into_ci": true,
+      "notes": "Owns all state, persistence, orchestration. Feature modules under src/features/. Real jest suite, 298 suites / 3154 tests passing as of last run.",
+      "verified_at": "2026-07-04T00:00:00Z",
+      "confidence": "verified"
+    },
+    {
+      "path": "services/aim-engine",
+      "kind": "ai-engine",
+      "stack": "Python/FastAPI",
+      "status": "live",
+      "wired_into_ci": true,
+      "notes": "Stateless analysis service. Receives fully-assembled requests from backend, never queries a DB directly. Real mastery/retention/recommendation logic ported in during Phase 20 (P20-007/008/009).",
+      "verified_at": "2026-07-04T00:00:00Z",
+      "confidence": "verified"
+    },
+    {
+      "path": "services/api",
+      "kind": "reference-only",
+      "stack": "unknown language/stack, not deeply inspected",
+      "status": "legacy",
+      "wired_into_ci": "unknown",
+      "notes": "Marked reference-only as of P20-015. Held the original weighted-mastery/retention/recommendation algorithms later ported into services/aim-engine. Not verified whether zero live imports remain repo-wide as of this memory's creation -- last explicit check was during P20-007/008/009 work, not re-verified since.",
+      "verified_at": "2026-07-04T00:00:00Z",
+      "confidence": "stale"
+    },
+    {
+      "path": "apps/mobile",
+      "kind": "mobile",
+      "stack": "Flutter/Dart",
+      "status": "live",
+      "wired_into_ci": true,
+      "notes": "Real Flutter SDK pinned via .metadata (3.44.1 / Dart 3.12.1 at last check). 838 tests passing as of last full run. Voice Teacher + AI Teacher chat unified onto ai_chat_messages as of Phase 21.",
+      "verified_at": "2026-07-04T00:00:00Z",
+      "confidence": "verified"
+    },
+    {
+      "path": "apps/admin-dashboard",
+      "kind": "frontend",
+      "stack": "Next.js",
+      "status": "live",
+      "wired_into_ci": true,
+      "notes": "Has its own admin/notifications, admin/analytics, admin/ai-teacher sections -- confirmed to overlap with apps/web's admin-* features.",
+      "verified_at": "2026-07-04T00:00:00Z",
+      "confidence": "verified"
+    },
+    {
+      "path": "apps/student-web",
+      "kind": "frontend",
+      "stack": "React (CRA), package name @aim/student-web",
+      "status": "live",
+      "wired_into_ci": true,
+      "notes": "Has its own CI workflow (student-web.yml). No parent-dashboard equivalent found inside it.",
+      "verified_at": "2026-07-04T00:00:00Z",
+      "confidence": "verified"
+    },
+    {
+      "path": "apps/web",
+      "kind": "frontend",
+      "stack": "React (CRA), package name \"frontend\"",
+      "status": "live",
+      "wired_into_ci": false,
+      "notes": "~132-144 files: Parent Dashboard (billing/reports/checkout/notifications) + admin-notifications/admin-ai/admin-analytics + a status page. NO CI workflow exists for it (unlike admin-dashboard.yml and student-web.yml). Deleted on chore/remove-apps-web (merged PR #1306), then restored verbatim on chore/restore-apps-web from archive/apps-web-backup after the user asked to restore it. As of last check, current state on main depends on whether chore/restore-apps-web has since been merged -- re-verify before assuming either way. Admin-* features here likely duplicate apps/admin-dashboard's; parent-dashboard has no known equivalent elsewhere in this repo.",
+      "verified_at": "2026-07-04T00:00:00Z",
+      "confidence": "verified-but-branch-state-may-have-changed"
+    }
+  ],
+
+  "database": {
+    "schema_source_of_truth": "live Supabase project yrarpdkvdxszgxxondkt, cross-checked against services/backend-api/prisma/schema.prisma",
+    "known_drift": [],
+    "rls_status": [
+      { "table": "student_learning_goals", "rls_enabled": false, "should_be_enabled": "unknown, flagged not fixed", "notes": "Surfaced by Supabase advisor as critical: fully exposed to anon/authenticated roles." },
+      { "table": "daily_challenge_templates", "rls_enabled": false, "should_be_enabled": "unknown, flagged not fixed", "notes": "Same advisory batch." },
+      { "table": "admin_broadcast_schedules", "rls_enabled": false, "should_be_enabled": "unknown, flagged not fixed", "notes": "Same advisory batch." },
+      { "table": "achievement_definitions", "rls_enabled": false, "should_be_enabled": "unknown, flagged not fixed", "notes": "Same advisory batch." },
+      { "table": "student_achievements", "rls_enabled": false, "should_be_enabled": "unknown, flagged not fixed", "notes": "Same advisory batch." },
+      { "table": "xp_levels", "rls_enabled": false, "should_be_enabled": "unknown, flagged not fixed", "notes": "Same advisory batch." },
+      { "table": "student_level_state", "rls_enabled": false, "should_be_enabled": "unknown, flagged not fixed", "notes": "Same advisory batch -- notable since this table drives course-gating decisions." },
+      { "table": "ai_focus_directives", "rls_enabled": false, "should_be_enabled": "unknown, flagged not fixed", "notes": "Same advisory batch." }
+    ],
+    "migration_history_notes": "Chronological through 20260704020000_decouple_voice_audio_assets_from_voice_messages as of this memory's creation. Deployed via mcp__Supabase__apply_migration in this environment (no local DATABASE_URL available; npx prisma migrate deploy was the documented house-style command but not what was actually run in this session). schema.prisma kept in sync manually after each apply."
+  },
+
+  "apis": {
+    "documented_vs_actual_drift": [],
+    "contract_sync_status": "aim-engine-contract.spec.ts confirmed to already cover all P20-005..P20-009 request/response field additions as of P20-016 (skill_mastery_context, recentAttempts, retentionHistory, etc.) -- verified by direct reading, not just trusting a doc."
+  },
+
+  "ai_engine": {
+    "ported_modules": [
+      { "name": "MasteryCalculator (weighted formula)", "verified_at": "2026-07-04T00:00:00Z", "notes": "Ported P20-007." },
+      { "name": "RetentionTracker (category defaults + personalized lambda fit)", "verified_at": "2026-07-04T00:00:00Z", "notes": "Ported P20-008." },
+      { "name": "RecommendationEngine (12-action cascade)", "verified_at": "2026-07-04T00:00:00Z", "notes": "Ported P20-009; response schema kind enum stayed 3-value, mapped down from the 12 action types via _ACTION_TYPE_TO_KIND_REASON in aim_analysis_pipeline.py." }
+    ],
+    "services_api_status": "Documented reference-only as of P20-015. Not independently re-verified in this session that zero live imports remain repo-wide."
+  },
+
+  "decisions_log": [
+    { "date": "2026-07-04T00:00:00Z", "decision": "Git identity for all commits/pushes on this repo is GHOST3030 / ahmedalalawi41@gmail.com, never Claude/Anthropic attribution.", "made_by": "user", "context": "Set explicitly at start of Phase 21 work; applies to all subsequent sessions." },
+    { "date": "2026-07-04T00:00:00Z", "decision": "Agent must never open PRs -- user opens/merges all PRs manually.", "made_by": "user", "context": "Stated alongside the git-identity instruction." },
+    { "date": "2026-07-04T00:00:00Z", "decision": "Any multi-task batch of work must be fully tested (build + full test suite) before pushing; failures must not be discovered after landing.", "made_by": "user", "context": "Stated before Phase 21 batch 1 (P21-001..010)." }
+  ],
+
+  "phase_history": [
+    {
+      "phase": "phase-20",
+      "task_range": "P20-001..P20-023",
+      "status": "fully merged",
+      "merged_at": "2026-07-04T00:00:00Z",
+      "source_doc": "docs/phase-20/aim-engine-adaptive-rollout-tasks.md",
+      "notes": "All 23 tasks merged to main via individual PRs (#1278-#1302 range, plus #1294 for P20-016). P20-016 (contract test + e2e smoke test) confirmed the root-cause pipeline fix actually works end-to-end."
+    },
+    {
+      "phase": "phase-21",
+      "task_range": "P21-001..P21-021",
+      "status": "fully merged",
+      "merged_at": "2026-07-04T00:00:00Z",
+      "source_doc": "local planning file (not committed to repo): phase21fluttervoicesynctasks.md, uploaded by user",
+      "notes": "Executed in two batches: P21-001..010 (PR #1303) and P21-011..021 (PR #1304). A follow-up task P21-021b (not in the original plan) fixed a real latent bug found while decoupling voice_audio_assets from voice_messages: AudioUploadService was still checking session ownership against the frozen voice_sessions table. Merged as PR #1305. Note: one background-agent run during this phase reported completion prematurely while still actively working -- verify agent completion claims against actual git log/status, don't trust the report alone."
+    }
+  ],
+
+  "known_issues": [
+    {
+      "id": "voice-audio-assets-fk-decoupled",
+      "summary": "voice_audio_assets.message_id (FK to legacy voice_messages) made nullable; new rows use ai_chat_message_id instead.",
+      "found_at": "2026-07-04T00:00:00Z",
+      "status": "fixed",
+      "fixed_in": "PR #1305 (P21-021b)"
+    },
+    {
+      "id": "audio-upload-service-stale-session-check",
+      "summary": "AudioUploadService checked ownership against voice_sessions, which stopped receiving new rows as of P21-007 -- would 403 every upload for a post-P21-007 session once VoiceMessageSubmitModule gets wired into the live app (it is currently NOT wired into VoiceTeacherModule, so this was latent, not an active incident).",
+      "found_at": "2026-07-04T00:00:00Z",
+      "status": "fixed",
+      "fixed_in": "PR #1305 (P21-021b)"
+    },
+    {
+      "id": "rls-disabled-eight-tables",
+      "summary": "8 tables have RLS disabled and are fully exposed to anon/authenticated Supabase roles (see database.rls_status above).",
+      "found_at": "2026-07-04T00:00:00Z",
+      "status": "open"
+    },
+    {
+      "id": "dependabot-config-malformed-filename",
+      "summary": ".github/dependabotggggggg.yml has a typo'd filename so GitHub never actually reads it as a dependabot config; it still references a directory: \"/apps/web\" entry for npm ecosystem monitoring.",
+      "found_at": "2026-07-04T00:00:00Z",
+      "status": "open"
+    },
+    {
+      "id": "apps-web-no-ci-coverage",
+      "summary": "apps/web has no CI workflow at all, unlike admin-dashboard and student-web.",
+      "found_at": "2026-07-04T00:00:00Z",
+      "status": "open"
+    }
+  ],
+
+  "open_questions": [
+    { "question": "Is apps/web's Parent Dashboard actually the live, in-production parent-facing UI, or has it already been superseded by something outside this repo?", "raised_at": "2026-07-04T00:00:00Z", "blocking": true },
+    { "question": "Current merge state of chore/restore-apps-web -- was it merged after being pushed?", "raised_at": "2026-07-04T00:00:00Z", "blocking": false },
+    { "question": "Does services/api genuinely have zero live imports repo-wide today, or has that drifted since P20-015/017?", "raised_at": "2026-07-04T00:00:00Z", "blocking": false },
+    { "question": "prisma generate fails in this sandbox environment due to a @prisma/client@7.8.0 vs prisma@6.19.3 version mismatch -- is this environment-specific or does it affect real deploys? App uses raw pg queries via DatabaseService, so it hasn't blocked anything yet.", "raised_at": "2026-07-04T00:00:00Z", "blocking": false }
+  ],
+
+  "environment": {
+    "note": "Not systematically audited yet. Only incidentally confirmed: services/backend-api requires DATABASE_URL for prisma CLI operations (not required for the app itself, which uses raw pg via DatabaseService); AIM_ENGINE_SERVICE_TOKEN, STT/TTS provider keys required for some backend e2e test setups (test-only placeholder values used in test env)."
+  },
+
+  "ci_cd": {
+    "workflows_seen": [
+      "admin-dashboard.yml", "aim-engine.yml", "backend-api.yml", "docs.yml",
+      "mobile-build.yml", "mobile.yml", "run-migrations.yml", "security.yml",
+      "student-web.yml"
+    ],
+    "apps_without_ci": ["apps/web"],
+    "notes": "List of workflow filenames only -- contents/triggers of each not individually audited yet."
+  },
+
+  "change_log": [
+    {
+      "date": "2026-07-04T00:00:00Z",
+      "summary": "Initial creation of project-memory.json, seeded from facts verified incidentally during Phase 20/21 execution and the apps/web deletion/restoration episode. No systematic full-repo audit has been run yet.",
+      "session_context": "User asked to convert the Chief Architect onboarding prompt into a persistent system prompt + memory schema + project state engine."
+    }
+  ]
+}
