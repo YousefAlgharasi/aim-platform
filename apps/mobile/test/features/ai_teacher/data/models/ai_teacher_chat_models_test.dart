@@ -172,14 +172,23 @@ void main() {
           'role': 'student',
           'text': 'hello',
           'createdAt': '2026-06-19T00:00:00.000Z',
+          'channel': 'text',
+          'audioRef': null,
+          'audioDurationMs': null,
+          'isGreeting': false,
         },
         {
           'id': 'message-2',
           'role': 'ai_teacher',
           'text': 'hi there',
           'createdAt': '2026-06-19T00:00:01.000Z',
+          'channel': 'text',
+          'audioRef': null,
+          'audioDurationMs': null,
+          'isGreeting': false,
         },
       ],
+      'focusRecap': null,
     };
 
     test('parses sessionId and messages in order', () {
@@ -188,6 +197,7 @@ void main() {
       expect(model.messages, hasLength(2));
       expect(model.messages[0].id, 'message-1');
       expect(model.messages[1].id, 'message-2');
+      expect(model.focusRecap, isNull);
     });
 
     test('round-trips through toJson without data loss', () {
@@ -199,6 +209,26 @@ void main() {
       final model = AiChatHistoryModel.fromJson(const {'sessionId': 'session-1'});
       expect(model.messages, isEmpty);
     });
+
+    test('parses a non-null focusRecap when present', () {
+      final model = AiChatHistoryModel.fromJson({
+        ...json,
+        'focusRecap': "Today we're focusing on: past tense irregular verbs",
+      });
+      expect(
+        model.focusRecap,
+        "Today we're focusing on: past tense irregular verbs",
+      );
+    });
+
+    test(
+      'a message with audioRef: null (not yet synthesized) still parses its text (P21-019)',
+      () {
+        final model = AiChatHistoryModel.fromJson(json);
+        expect(model.messages[1].text, 'hi there');
+        expect(model.messages[1].audioRef, isNull);
+      },
+    );
   });
 
   group('AiTeacherReplyModel', () {

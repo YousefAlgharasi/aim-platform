@@ -22,6 +22,7 @@ import 'package:aim_mobile/features/ai_teacher/logic/provider/ai_teacher_chat_no
 import 'package:aim_mobile/features/ai_teacher/logic/provider/ai_teacher_provider.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/repository/ai_teacher_chat_repository.dart';
 import 'package:aim_mobile/features/ai_teacher/ui/pages/ai_teacher_chat_page.dart';
+import 'package:aim_mobile/features/ai_teacher/ui/widgets/ai_teacher_widgets.dart';
 import 'package:aim_mobile/features/auth/logic/entity/auth_flow_state.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -188,6 +189,103 @@ void main() {
       await tester.pump();
       expect(find.text('What is the past tense of go?'), findsOneWidget);
       expect(find.text('The past tense of "go" is "went".'), findsOneWidget);
+    });
+
+    testWidgets('P21-020: shows the focusRecap callout when present',
+        (tester) async {
+      const historyWithRecap = AiChatHistoryModel(
+        sessionId: 'session-1',
+        focusRecap: "Today we're focusing on: Past tense irregular verbs",
+        messages: [],
+      );
+      await tester.pumpWidget(_wrap(
+        const AiTeacherChatPage(contextRef: 'lesson-1', sessionId: 'session-1'),
+        overrides: [
+          aiTeacherChatProvider.overrideWith(
+            (ref) => _FakeAiTeacherChatNotifier(
+              const AppAsyncState.success(
+                AiTeacherChatState(history: historyWithRecap),
+              ),
+            ),
+          ),
+        ],
+      ));
+      await tester.pump();
+
+      expect(
+        find.text("Today we're focusing on: Past tense irregular verbs"),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('P21-020: hides the focusRecap callout when absent',
+        (tester) async {
+      await tester.pumpWidget(_wrap(
+        const AiTeacherChatPage(contextRef: 'lesson-1', sessionId: 'session-1'),
+        overrides: [
+          aiTeacherChatProvider.overrideWith(
+            (ref) => _FakeAiTeacherChatNotifier(
+              const AppAsyncState.success(AiTeacherChatState(history: _history)),
+            ),
+          ),
+        ],
+      ));
+      await tester.pump();
+
+      expect(find.byType(AiFocusRecapCallout), findsNothing);
+    });
+
+    testWidgets(
+        'P21-020: shows a distinct Welcome back card when lastSessionRecap is present',
+        (tester) async {
+      const sessionWithRecap = AiChatSessionModel(
+        sessionId: 'session-1',
+        studentId: 'student-1',
+        contextRef: 'lesson-1',
+        status: 'active',
+        createdAt: '2025-01-01T00:00:00Z',
+        lastSessionRecap: 'Welcome back! Last time we were working on fractions.',
+      );
+      await tester.pumpWidget(_wrap(
+        const AiTeacherChatPage(contextRef: 'lesson-1', sessionId: 'session-1'),
+        overrides: [
+          aiTeacherChatProvider.overrideWith(
+            (ref) => _FakeAiTeacherChatNotifier(
+              const AppAsyncState.success(
+                AiTeacherChatState(
+                  history: _history,
+                  activeSession: sessionWithRecap,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ));
+      await tester.pump();
+
+      expect(find.byType(AiWelcomeBackCard), findsOneWidget);
+      expect(find.text('Welcome back'), findsOneWidget);
+      expect(
+        find.text('Welcome back! Last time we were working on fractions.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('P21-020: hides the Welcome back card when lastSessionRecap is absent',
+        (tester) async {
+      await tester.pumpWidget(_wrap(
+        const AiTeacherChatPage(contextRef: 'lesson-1', sessionId: 'session-1'),
+        overrides: [
+          aiTeacherChatProvider.overrideWith(
+            (ref) => _FakeAiTeacherChatNotifier(
+              const AppAsyncState.success(AiTeacherChatState(history: _history)),
+            ),
+          ),
+        ],
+      ));
+      await tester.pump();
+
+      expect(find.byType(AiWelcomeBackCard), findsNothing);
     });
 
     testWidgets('renders without error under RTL directionality',
