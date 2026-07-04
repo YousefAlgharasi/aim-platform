@@ -18,7 +18,12 @@ export interface StartVoiceSessionResult {
   readonly sessionId: string;
   readonly studentId: string;
   readonly contextRef: string;
-  readonly status: 'active' | 'ended';
+  /**
+   * P21-007: this is now an ai_chat_sessions row's status ('active' |
+   * 'closed'), not a voice_sessions row's ('active' | 'ended') — voice
+   * session start delegates to ChatSessionStartService.
+   */
+  readonly status: 'active' | 'closed';
   readonly createdAt: string;
 }
 
