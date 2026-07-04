@@ -145,8 +145,12 @@ export class AimPersistenceService {
         // Category 1 — Skill state (P5-057)
         await txSkillState.upsertMany(studentId, categories.skillState);
 
-        // Category 2 — Weakness records (P5-058)
-        await txWeakness.upsertMany(studentId, categories.weaknessRecords);
+        // Category 2 — Weakness records (P5-058, auto-resolve P20-022)
+        await txWeakness.upsertMany(
+          studentId,
+          categories.weaknessRecords,
+          categories.skillState.map((s) => s.skillId),
+        );
 
         // Category 3 — Difficulty decision (P5-059)
         await txDifficulty.persist(studentId, categories.difficultyDecision);
