@@ -9,7 +9,11 @@ import { TtsAudioStorageService } from './tts-audio-storage.service';
 import { TtsCompletionRequest } from './tts-request-mapper.types';
 import { TtsCompletionResponse } from './tts-response-mapper.types';
 
-const TTS_TIMEOUT_MS = 30_000;
+// tts.ai's synthesis job is async (submit -> poll -> download), so the
+// overall budget has to cover polling, not just one network round trip.
+const TTS_TIMEOUT_MS = 45_000;
+const TTS_POLL_INTERVAL_MS = 1_500;
+const TTS_MAX_POLL_ATTEMPTS = 20;
 const ERROR_CATEGORY_TIMEOUT = 'TTS_TIMEOUT';
 const ERROR_CATEGORY_NETWORK = 'TTS_NETWORK_ERROR';
 const ERROR_CATEGORY_PROVIDER = 'TTS_PROVIDER_ERROR';
@@ -30,13 +34,13 @@ export class TtsAudioGenerationService extends TtsGateway {
 
   async synthesize(request: TtsProviderRequest): Promise<TtsProviderResponse> {
     const completionRequest = this.requestMapper.mapRequest(request);
-    const { apiKey, baseUrl } = this.configService.getConfig();
+    const { apiKey, baseUrl, resultsUrl } = this.configService.getConfig();
 
     let raw: TtsCompletionResponse | null = null;
     let errorCategory: string | null = null;
 
     try {
-      raw = await this.callProvider(apiKey, baseUrl, completionRequest);
+      raw = await this.callProvider(apiKey, baseUrl, resultsUrl, completionRequest);
     } catch (error: unknown) {
       errorCategory = this.classifyError(error);
       this.logger.warn(
@@ -47,40 +51,26 @@ export class TtsAudioGenerationService extends TtsGateway {
     return this.responseMapper.mapResponse({ raw, errorCategory });
   }
 
+  /**
+   * tts.ai's real, documented /v1/tts/ contract is an async job:
+   *   1. POST baseUrl -> { uuid, job_id, status: "queued", ... }
+   *   2. Poll GET `${resultsUrl}?uuid=...` until status is "completed" or "failed".
+   *   3. GET the completed response's `result_url` to download the audio bytes.
+   */
   private async callProvider(
     apiKey: string,
     baseUrl: string,
+    resultsUrl: string,
     request: TtsCompletionRequest,
   ): Promise<TtsCompletionResponse> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), TTS_TIMEOUT_MS);
 
     try {
-      // Contract assumed for tts.ai (no verified docs yet): JSON body with
-      // Bearer auth, raw audio bytes back. OpenAI's /v1/audio/speech shape
-      // is used as the request/response template since it's the closest
-      // documented reference; confirm and adjust once real tts.ai
-      // credentials/docs are available.
-      const response = await fetch(baseUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: request.model,
-          input: request.text,
-          voice: 'alloy',
-          response_format: 'mp3',
-        }),
-        signal: controller.signal,
-      });
+      const uuid = await this.submitJob(apiKey, baseUrl, request, controller.signal);
+      const resultUrl = await this.pollForResult(resultsUrl, uuid, controller.signal);
+      const audioBuffer = await this.downloadAudio(resultUrl, controller.signal);
 
-      if (!response.ok) {
-        throw new BadGatewayException(`TTS provider returned HTTP ${response.status}`);
-      }
-
-      const audioBuffer = Buffer.from(await response.arrayBuffer());
       const audioRef = this.generateAudioRef();
       const contentType = 'audio/mpeg';
       const durationMs = this.estimateDurationMs(audioBuffer.length, contentType);
@@ -106,6 +96,92 @@ export class TtsAudioGenerationService extends TtsGateway {
     } finally {
       clearTimeout(timeout);
     }
+  }
+
+  private async submitJob(
+    apiKey: string,
+    baseUrl: string,
+    request: TtsCompletionRequest,
+    signal: AbortSignal,
+  ): Promise<string> {
+    const response = await fetch(baseUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: request.model,
+        text: request.text,
+        voice: request.voice,
+        format: 'mp3',
+      }),
+      signal,
+    });
+
+    if (!response.ok) {
+      throw new BadGatewayException(`TTS provider returned HTTP ${response.status}`);
+    }
+
+    const submitted = (await response.json()) as { uuid?: string };
+
+    if (!submitted.uuid) {
+      throw new BadGatewayException('TTS provider submit response missing uuid');
+    }
+
+    return submitted.uuid;
+  }
+
+  private async pollForResult(
+    resultsUrl: string,
+    uuid: string,
+    signal: AbortSignal,
+  ): Promise<string> {
+    const pollUrl = `${resultsUrl}?uuid=${encodeURIComponent(uuid)}`;
+
+    for (let attempt = 0; attempt < TTS_MAX_POLL_ATTEMPTS; attempt++) {
+      const response = await fetch(pollUrl, { signal });
+
+      if (!response.ok) {
+        throw new BadGatewayException(`TTS provider returned HTTP ${response.status}`);
+      }
+
+      const poll = (await response.json()) as {
+        status?: string;
+        result_url?: string;
+        error?: string;
+      };
+
+      if (poll.status === 'completed') {
+        if (!poll.result_url) {
+          throw new BadGatewayException('TTS provider completed response missing result_url');
+        }
+        return poll.result_url;
+      }
+
+      if (poll.status === 'failed') {
+        throw new BadGatewayException(poll.error ?? 'TTS provider job failed');
+      }
+
+      // status is "queued"/"processing" (or unknown) — wait and poll again.
+      await this.sleep(TTS_POLL_INTERVAL_MS);
+    }
+
+    throw new BadGatewayException('TTS provider job did not complete before max poll attempts');
+  }
+
+  private async downloadAudio(resultUrl: string, signal: AbortSignal): Promise<Buffer> {
+    const response = await fetch(resultUrl, { signal });
+
+    if (!response.ok) {
+      throw new BadGatewayException(`TTS provider returned HTTP ${response.status}`);
+    }
+
+    return Buffer.from(await response.arrayBuffer());
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private generateAudioRef(): string {
