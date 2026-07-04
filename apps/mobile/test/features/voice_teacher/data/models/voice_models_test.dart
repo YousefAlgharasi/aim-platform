@@ -71,5 +71,54 @@ void main() {
       expect(entity.role, VoiceMessageRole.student);
       expect(entity.createdAt, '2026-06-01T12:00:00Z');
     });
+
+    // P21-015: unified text+voice conversation turn fields.
+    test('fromJson parses channel/audioDurationMs/isGreeting', () {
+      final model = VoiceMessageModel.fromJson({
+        'id': 'm-3',
+        'role': 'teacher',
+        'text': 'Welcome!',
+        'audioRef': 'audio:greeting',
+        'audioDurationMs': 1500,
+        'channel': 'voice',
+        'isGreeting': true,
+        'createdAt': '2026-01-01T00:00:00Z',
+      });
+
+      expect(model.channel, 'voice');
+      expect(model.audioDurationMs, 1500);
+      expect(model.isGreeting, true);
+    });
+
+    test('fromJson defaults channel to text and isGreeting to false', () {
+      final model = VoiceMessageModel.fromJson({
+        'id': 'm-4',
+        'role': 'student',
+        'text': 'hi',
+        'createdAt': '2026-01-01T00:00:00Z',
+      });
+
+      expect(model.channel, 'text');
+      expect(model.audioDurationMs, isNull);
+      expect(model.isGreeting, false);
+    });
+
+    test('toEntity carries channel/audioDurationMs/isGreeting through, and hasAudio reflects audioRef', () {
+      final entity = VoiceMessageModel.fromJson({
+        'id': 'm-5',
+        'role': 'teacher',
+        'text': 'Welcome!',
+        'audioRef': 'audio:greeting',
+        'audioDurationMs': 1500,
+        'channel': 'text',
+        'isGreeting': true,
+        'createdAt': '2026-01-01T00:00:00Z',
+      }).toEntity();
+
+      expect(entity.channel, 'text');
+      expect(entity.audioDurationMs, 1500);
+      expect(entity.isGreeting, true);
+      expect(entity.hasAudio, true);
+    });
   });
 }

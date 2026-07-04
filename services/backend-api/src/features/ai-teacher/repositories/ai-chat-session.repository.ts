@@ -58,6 +58,32 @@ export class AiChatSessionRepository {
     return { session, created: true };
   }
 
+  /**
+   * P21-013: the most recently updated *closed* session for
+   * (studentId, contextRef), if one exists — used to decide whether a
+   * "last session" recap should be shown when a genuinely new session is
+   * created for a context the student has visited before. Returns null for
+   * a brand-new context (no prior session at all) as well as when the only
+   * prior session is still active (that's a same-session resume, handled
+   * by getOrCreateForContext returning it directly rather than creating a
+   * new row).
+   */
+  async findMostRecentClosedForContext(
+    studentId: string,
+    contextRef: string,
+  ): Promise<AiChatSessionRow | null> {
+    const result = await this.db.query<AiChatSessionRow>(
+      `SELECT id, student_id, context_ref, status, created_at, updated_at
+       FROM ai_chat_sessions
+       WHERE student_id = $1 AND context_ref = $2 AND status = 'closed'
+       ORDER BY updated_at DESC
+       LIMIT 1`,
+      [studentId, contextRef],
+    );
+
+    return result.rows[0] ?? null;
+  }
+
   async findById(sessionId: string): Promise<AiChatSessionRow | null> {
     const result = await this.db.query<AiChatSessionRow>(
       `SELECT id, student_id, context_ref, status, created_at, updated_at

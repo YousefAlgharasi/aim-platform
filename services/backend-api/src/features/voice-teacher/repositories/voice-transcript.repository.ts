@@ -1,3 +1,15 @@
+/**
+ * P21-021: `voice_transcripts` no longer receives new writes as of Phase
+ * 21. `create()`'s only caller, `VoiceMessagePersistenceService`, is not
+ * wired into any module (see that service's own file header) and is
+ * never invoked at runtime — new voice-turn transcripts are persisted
+ * directly onto `ai_chat_messages` rows via
+ * `AiTeacherOrchestratorService.handleTurn()` (P21-010) instead.
+ * `findByMessageId`/`findBySessionId` currently have no callers either
+ * (grep-verified) — this table is fully historical/read-only, retained
+ * for its existing rows only. Do not delete this table, its rows, or this
+ * repository — that is a separate future cleanup decision.
+ */
 import { Injectable } from '@nestjs/common';
 
 import { DatabaseService } from '../../../database/database.service';

@@ -257,6 +257,12 @@ class _ChatContent extends StatelessWidget {
     final showLessonHeader =
         safeLessonTitle != null && safeLessonTitle.isNotEmpty;
 
+    // P21-020: focusRecap/lastSessionRecap are ephemeral fields on the
+    // session/history response, never persisted ai_chat_messages rows —
+    // rendered as distinct callouts here, never as chat bubbles.
+    final focusRecap = chatState.history?.focusRecap;
+    final lastSessionRecap = chatState.activeSession?.lastSessionRecap;
+
     final streamingText = chatState.isStreaming ? chatState.streamingText ?? '' : null;
     final streamItemCount = itemCount + (streamingText != null ? 1 : 0);
     final isEmpty = messages.isEmpty && !isSending && streamingText == null;
@@ -289,6 +295,26 @@ class _ChatContent extends StatelessWidget {
               lessonTitle: safeLessonTitle,
               contextLabel: contextLabel,
             ),
+          ),
+        if (focusRecap != null && focusRecap.isNotEmpty)
+          Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(
+              AimSpacing.screenPaddingMobile,
+              AimSpacing.sectionGap,
+              AimSpacing.screenPaddingMobile,
+              0,
+            ),
+            child: AiFocusRecapCallout(focusRecap: focusRecap),
+          ),
+        if (lastSessionRecap != null && lastSessionRecap.isNotEmpty)
+          Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(
+              AimSpacing.screenPaddingMobile,
+              AimSpacing.sectionGap,
+              AimSpacing.screenPaddingMobile,
+              0,
+            ),
+            child: AiWelcomeBackCard(lastSessionRecap: lastSessionRecap),
           ),
         Expanded(
           child: isEmpty

@@ -14,6 +14,8 @@ class AiChatSession {
     required this.contextRef,
     required this.status,
     required this.createdAt,
+    this.focusRecap,
+    this.lastSessionRecap,
   });
 
   final String sessionId;
@@ -24,4 +26,13 @@ class AiChatSession {
   final String status;
 
   final String createdAt;
+
+  /// P21-012: short "today we're focusing on" recap line. Null when no
+  /// active focus directive exists.
+  final String? focusRecap;
+
+  /// P21-013: short "welcome back" recap of real skill-state/weakness
+  /// progress, present only when reopening a lesson after a prior closed
+  /// session. Null on a same-session resume or a brand-new context.
+  final String? lastSessionRecap;
 }

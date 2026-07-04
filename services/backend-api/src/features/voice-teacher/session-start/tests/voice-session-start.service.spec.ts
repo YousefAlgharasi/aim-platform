@@ -14,6 +14,8 @@ function makeResult(overrides: Partial<StartChatSessionResult> = {}): StartChatS
     contextRef: 'lesson:fractions',
     status: 'active',
     createdAt: '2026-06-19T00:00:00.000Z',
+    focusRecap: null,
+    lastSessionRecap: null,
     ...overrides,
   };
 }
@@ -52,6 +54,8 @@ describe('VoiceSessionStartService', () => {
       contextRef: 'lesson:fractions',
       status: 'active',
       createdAt: '2026-06-19T00:00:00.000Z',
+      focusRecap: null,
+    lastSessionRecap: null,
     });
   });
 

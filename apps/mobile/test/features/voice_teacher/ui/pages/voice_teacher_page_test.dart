@@ -13,6 +13,9 @@
 //      (covers permission-denied style failures).
 //   6. A fallback (TTS-unavailable) turn renders the text-fallback widget.
 
+import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -27,12 +30,14 @@ import 'package:aim_mobile/features/voice_teacher/logic/entity/voice_message.dar
 import 'package:aim_mobile/features/voice_teacher/logic/entity/voice_session.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/entity/voice_teacher_session_state.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/entity/voice_turn_result.dart';
+import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_playback_notifier.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_record_submit_notifier.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_teacher_provider.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_teacher_session_notifier.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/repository/voice_teacher_repository.dart';
 import 'package:aim_mobile/features/voice_teacher/ui/pages/voice_teacher_page.dart';
 import 'package:aim_mobile/features/voice_teacher/ui/widgets/voice_error_state.dart';
+import 'package:aim_mobile/features/voice_teacher/ui/widgets/voice_record_button.dart';
 
 Widget _wrap(Widget child, {List<Override> overrides = const []}) =>
     ProviderScope(
@@ -221,6 +226,56 @@ void main() {
 
       expect(find.text('Fallback reply text'), findsOneWidget);
     });
+
+    // P21-018: tapping the record button while AI audio is actively playing
+    // must stop local playback immediately and start recording — the mic
+    // button stays tappable at all times (VoiceRecordButton only disables
+    // during `processing`), so this is about what _onStartRecording does on
+    // tap, not about un-disabling anything.
+    testWidgets(
+      'tapping the record button during playback stops playback and starts recording',
+      (tester) async {
+        final playbackNotifier = VoicePlaybackNotifier();
+        // Drive it into a "playing" state without a real audio backend.
+        unawaited(playbackNotifier.loadAndPlay(
+          audioRef: 'audio-1',
+          fetchAudioFn: (_) async => Uint8List(0),
+        ));
+        await tester.pump();
+        expect(playbackNotifier.state, PlaybackState.playing);
+
+        final recordNotifier = VoiceRecordSubmitNotifier();
+
+        await tester.pumpWidget(_wrap(
+          const VoiceTeacherPage(contextRef: 'lesson-1'),
+          overrides: [
+            voiceTeacherSessionProvider.overrideWith(
+              (ref) => _FakeVoiceTeacherSessionNotifier(
+                const AppAsyncState.success(VoiceTeacherSessionState(
+                  sessionId: 'session-1',
+                  history: _history,
+                )),
+              ),
+            ),
+            voicePlaybackProvider.overrideWith((ref) => playbackNotifier),
+            voiceRecordSubmitProvider.overrideWith((ref) => recordNotifier),
+          ],
+        ));
+        await tester.pump();
+
+        expect(recordNotifier.state, RecordSubmitState.idle);
+
+        await tester.tap(find.byType(VoiceRecordButton));
+        await tester.pump();
+
+        expect(
+          playbackNotifier.state,
+          isNot(PlaybackState.playing),
+          reason: 'barge-in must stop local playback immediately',
+        );
+        expect(recordNotifier.state, RecordSubmitState.recording);
+      },
+    );
   });
 }
 
