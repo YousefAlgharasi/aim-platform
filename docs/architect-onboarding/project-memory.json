@@ -85,14 +85,14 @@
     "schema_source_of_truth": "live Supabase project yrarpdkvdxszgxxondkt, cross-checked against services/backend-api/prisma/schema.prisma",
     "known_drift": [],
     "rls_status": [
-      { "table": "student_learning_goals", "rls_enabled": false, "should_be_enabled": "unknown, flagged not fixed", "notes": "Surfaced by Supabase advisor as critical: fully exposed to anon/authenticated roles." },
-      { "table": "daily_challenge_templates", "rls_enabled": false, "should_be_enabled": "unknown, flagged not fixed", "notes": "Same advisory batch." },
-      { "table": "admin_broadcast_schedules", "rls_enabled": false, "should_be_enabled": "unknown, flagged not fixed", "notes": "Same advisory batch." },
-      { "table": "achievement_definitions", "rls_enabled": false, "should_be_enabled": "unknown, flagged not fixed", "notes": "Same advisory batch." },
-      { "table": "student_achievements", "rls_enabled": false, "should_be_enabled": "unknown, flagged not fixed", "notes": "Same advisory batch." },
-      { "table": "xp_levels", "rls_enabled": false, "should_be_enabled": "unknown, flagged not fixed", "notes": "Same advisory batch." },
-      { "table": "student_level_state", "rls_enabled": false, "should_be_enabled": "unknown, flagged not fixed", "notes": "Same advisory batch -- notable since this table drives course-gating decisions." },
-      { "table": "ai_focus_directives", "rls_enabled": false, "should_be_enabled": "unknown, flagged not fixed", "notes": "Same advisory batch." }
+      { "table": "student_learning_goals", "rls_enabled": true, "notes": "Fixed 2026-07-04: migration 20260704030000_apply_rls_missing_tables, verified live via pg_tables.rowsecurity." },
+      { "table": "daily_challenge_templates", "rls_enabled": true, "notes": "Fixed 2026-07-04, same migration." },
+      { "table": "admin_broadcast_schedules", "rls_enabled": true, "notes": "Fixed 2026-07-04, same migration." },
+      { "table": "achievement_definitions", "rls_enabled": true, "notes": "Fixed 2026-07-04, same migration." },
+      { "table": "student_achievements", "rls_enabled": true, "notes": "Fixed 2026-07-04, same migration." },
+      { "table": "xp_levels", "rls_enabled": true, "notes": "Fixed 2026-07-04, same migration." },
+      { "table": "student_level_state", "rls_enabled": true, "notes": "Fixed 2026-07-04, same migration -- notable since this table drives course-gating decisions." },
+      { "table": "ai_focus_directives", "rls_enabled": true, "notes": "Fixed 2026-07-04, same migration." }
     ],
     "migration_history_notes": "Chronological through 20260704020000_decouple_voice_audio_assets_from_voice_messages as of this memory's creation. Deployed via mcp__Supabase__apply_migration in this environment (no local DATABASE_URL available; npx prisma migrate deploy was the documented house-style command but not what was actually run in this session). schema.prisma kept in sync manually after each apply."
   },
@@ -114,7 +114,11 @@
   "decisions_log": [
     { "date": "2026-07-04T00:00:00Z", "decision": "Git identity for all commits/pushes on this repo is GHOST3030 / ahmedalalawi41@gmail.com, never Claude/Anthropic attribution.", "made_by": "user", "context": "Set explicitly at start of Phase 21 work; applies to all subsequent sessions." },
     { "date": "2026-07-04T00:00:00Z", "decision": "Agent must never open PRs -- user opens/merges all PRs manually.", "made_by": "user", "context": "Stated alongside the git-identity instruction." },
-    { "date": "2026-07-04T00:00:00Z", "decision": "Any multi-task batch of work must be fully tested (build + full test suite) before pushing; failures must not be discovered after landing.", "made_by": "user", "context": "Stated before Phase 21 batch 1 (P21-001..010)." }
+    { "date": "2026-07-04T00:00:00Z", "decision": "Any multi-task batch of work must be fully tested (build + full test suite) before pushing; failures must not be discovered after landing.", "made_by": "user", "context": "Stated before Phase 21 batch 1 (P21-001..010)." },
+    { "date": "2026-07-04T00:00:00Z", "decision": "Enable RLS on the 8 previously-exposed tables (student_learning_goals, daily_challenge_templates, admin_broadcast_schedules, achievement_definitions, student_achievements, xp_levels, student_level_state, ai_focus_directives), applied live and committed as a migration.", "made_by": "user", "context": "Confirmed via AskUserQuestion before applying to the live Supabase project; no permissive policies added, matching the existing default-deny pattern." },
+    { "date": "2026-07-04T00:00:00Z", "decision": "Reconcile _prisma_migrations for the 11 migrations applied out-of-band via mcp__Supabase__apply_migration but never recorded in the Prisma ledger.", "made_by": "agent (user approved the batch of 3 fixes)", "context": "Done alongside the RLS fix and the backend.env untracking, in the same session." },
+    { "date": "2026-07-04T00:00:00Z", "decision": "Stop tracking services/backend-api/backend.env (contained a live Supabase service-role key, DB URL, JWT secret, AI/STT provider keys); harden .gitignore with *.env / !.env.example.", "made_by": "agent, flagged to user", "context": "The exposed keys remain in git history and still need rotation -- not done, only the tracking was stopped." },
+    { "date": "2026-07-04T00:00:00Z", "decision": "Installed Flutter 3.44.1 / Dart 3.12.1 (exact match to apps/mobile/.metadata's pinned hash) into this environment at /opt/flutter, added to PATH persistently.", "made_by": "user request", "context": "Closed the 'mobile test pass/fail count Unknown' gap from the full inventory -- 838/838 tests confirmed passing." }
   ],
 
   "phase_history": [
@@ -153,9 +157,54 @@
     },
     {
       "id": "rls-disabled-eight-tables",
-      "summary": "8 tables have RLS disabled and are fully exposed to anon/authenticated Supabase roles (see database.rls_status above).",
+      "summary": "8 tables had RLS disabled and were fully exposed to anon/authenticated Supabase roles (see database.rls_status above).",
+      "found_at": "2026-07-04T00:00:00Z",
+      "status": "fixed",
+      "fixed_in": "Migration 20260704030000_apply_rls_missing_tables, applied live 2026-07-04"
+    },
+    {
+      "id": "backend-env-committed-secrets",
+      "summary": "services/backend-api/backend.env was tracked in git and contained a real Supabase service-role key, DATABASE_URL, JWT secret, and AI/STT provider keys.",
+      "found_at": "2026-07-04T00:00:00Z",
+      "status": "partially fixed",
+      "fixed_in": "git rm --cached + .gitignore hardening (*.env / !.env.example) this session -- the exposed keys remain in git history and still need rotation, which was NOT done."
+    },
+    {
+      "id": "migration-ledger-out-of-band-gaps",
+      "summary": "11 migrations (achievements through the 2026-07-04 voice/chat schema changes) were applied to the live DB via mcp__Supabase__apply_migration but were missing from _prisma_migrations, meaning prisma migrate deploy would have tried to re-run already-applied SQL.",
+      "found_at": "2026-07-04T00:00:00Z",
+      "status": "fixed",
+      "fixed_in": "Real sha256 checksums inserted into _prisma_migrations this session, matching each migration's actual .sql file."
+    },
+    {
+      "id": "services-api-not-actually-reference-only",
+      "summary": "services/api is NOT reference-only as PROJECT_STATE.md/project-memory.json previously (and still, pending this update) claimed -- services/aim-engine live-imports 6 domain services from services/api/src/aim/domain/services/* via a sys.path hack at runtime. This is a real, current dependency, not dead reference code.",
+      "found_at": "2026-07-04T00:00:00Z",
+      "status": "open (documentation/architecture-boundary question, not a bug -- flagging that the 'reference-only' framing across multiple docs is stale)"
+    },
+    {
+      "id": "voice-message-submit-module-unwired",
+      "summary": "VoiceMessageSubmitModule and 4 other services (AiTeacherFallbackService, AnswerSubmissionService, QuestionDeliveryService in assessments, ParentAccessAuditService, AudioUploadSafeFailureService) are built but never imported by any module -- confirmed by exhaustive grep across every *.module.ts this session.",
+      "found_at": "2026-07-04T00:00:00Z",
+      "status": "open -- VoiceMessageSubmitModule is self-documented as intentionally unwired pending a future controller (P9-068+); the other 4 orphans are not documented as intentional."
+    },
+    {
+      "id": "notification-delivery-worker-never-invoked",
+      "summary": "NotificationDeliveryWorker.processQueue() is registered as a provider and exercised only in unit tests -- no cron or controller in production code actually calls it. Notifications get enqueued (DB row written) but nothing dispatches them. Compounded by push/email adapters both being no-op stubs (NoopPushProviderAdapter/NoopEmailProviderAdapter) with no real FCM/APNs/SMTP/SendGrid SDK anywhere in the codebase.",
       "found_at": "2026-07-04T00:00:00Z",
       "status": "open"
+    },
+    {
+      "id": "payment-provider-adapter-stubbed-empty",
+      "summary": "PAYMENT_PROVIDER_ADAPTER is bound to a literal empty object ({}) in billing.module.ts. The interface is Stripe-shaped but no Stripe SDK or any other payment SDK import exists anywhere outside test mocks. Calling any adapter method at runtime would throw.",
+      "found_at": "2026-07-04T00:00:00Z",
+      "status": "open"
+    },
+    {
+      "id": "student-web-api-prefix-mismatch-reopened",
+      "summary": "notifications/parents backend controllers hardcode their own api/v1/... prefix while every other controller is bare (no global prefix set). No single REACT_APP_API_BASE_URL value makes both groups resolve correctly at once. This reopens the old AUDIT_REPORT.md TASK-3 concern thought previously fixed.",
+      "found_at": "2026-07-04T00:00:00Z",
+      "status": "open -- whether this is actually broken in the deployed environment depends on the real env var value, which is Unknown from the repo alone."
     },
     {
       "id": "dependabot-config-malformed-filename",
