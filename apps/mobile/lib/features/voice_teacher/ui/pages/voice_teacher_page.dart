@@ -100,7 +100,18 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
     }
   }
 
+  // P21-018: barge-in. The record button stays tappable while AI audio is
+  // playing (VoiceRecordButton only disables during `processing`), so a tap
+  // here can arrive mid-playback. Stop local playback immediately before
+  // starting to record — the backend already accepts overlapping
+  // submissions for the same session with no in-flight lock (P21-014), so
+  // no extra backend call is needed beyond the existing submit flow.
   void _onStartRecording() {
+    final playback = ref.read(voicePlaybackProvider);
+    if (playback.state == PlaybackState.playing ||
+        playback.state == PlaybackState.loading) {
+      playback.stop();
+    }
     ref.read(voiceRecordSubmitProvider).startRecording();
   }
 
