@@ -15,13 +15,10 @@
  *   no new business logic (each underlying service is already implemented
  *   and independently tested).
  *
- * Deliberately NOT wired: FrustrationSignalService (P5-062). Its own
- * docstring states it "writes the same row" as SessionSummaryService
- * (P5-063) and "may be superseded or composed by P5-063" — calling both
- * here would double-write session_summaries from two independent code
- * paths. SessionSummaryService is treated as the canonical owner per its
- * docstring; FrustrationSignalService is left unwired and flagged in the
- * P5-058 completion comment as likely-dead code pending a team decision.
+ * P20-017: FrustrationSignalService (P5-062) was never wired here — it was
+ * a byte-for-byte duplicate writer of the same session_summaries row as
+ * SessionSummaryService (P5-063), which is the canonical owner. It has
+ * been deleted; SessionSummaryService is the sole writer of that table.
  *
  * P20-013: AimFocusDirectiveService runs as a best-effort step AFTER the
  * six-category transaction commits — not as a seventh in-transaction write.
