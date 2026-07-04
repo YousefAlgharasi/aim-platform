@@ -38,6 +38,25 @@
 //     talks to the AIM Engine. Only the adapter (P5-051) does.
 //   - No secrets, service-role keys, database credentials, or AI provider
 //     keys are stored or logged here.
+//
+// P20-022 — auto-resolving weaknesses that have genuinely improved:
+//   aim-engine's WeaknessDetector.calculate_by_skill() mints a brand-new
+//   weaknessId (uuid4) every pipeline run for every skill it still flags as
+//   weak (aim_analysis_pipeline.py's _analyze_weakness_records), and simply
+//   omits a skill from its weaknessRecords output once weakness_score drops
+//   below its own 10.0 "still weak" cutoff — it never emits an explicit
+//   "resolved" entry, since the engine is stateless and has no notion of a
+//   prior weakness_records row to reference. That means the only way to
+//   detect "this skill is no longer weak" is on the backend, by comparing
+//   which skills the engine actually evaluated this run (skillState, since
+//   every attempted skill gets a mastery evaluation) against which of those
+//   skills still appear in the incoming weaknessRecords output. A skill that
+//   was evaluated this run but is absent from weaknessRecords fell below
+//   aim-engine's own weakness_score < 10.0 threshold — the exact same
+//   signal that flagged it as weak in the first place, not a second,
+//   independently-invented definition of "resolved". Any of the student's
+//   existing non-resolved weakness_records rows for such a skill are marked
+//   status='resolved', resolved_at=now().
 
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '../../../database/database.service';
@@ -51,6 +70,11 @@ interface WeaknessRecordCurrentRow {
   readonly trigger_attempt_ids: string[];
 }
 
+interface OpenWeaknessRow {
+  readonly id: string;
+  readonly skill_id: string;
+}
+
 // ---------------------------------------------------------------------------
 // Service
 // ---------------------------------------------------------------------------
@@ -62,7 +86,9 @@ export class WeaknessUpdateService {
   constructor(private readonly db: DatabaseService) {}
 
   /**
-   * Persist validated weakness record updates from the AIM Engine.
+   * Persist validated weakness record updates from the AIM Engine, then
+   * auto-resolve (P20-022) any existing non-resolved weakness for a skill
+   * that was evaluated this run but no longer appears in weaknessRecords.
    *
    * Each entry in weaknessRecords is inserted or updated in weakness_records
    * keyed by id = weaknessId, per the P5-013 contract's five-step update
@@ -70,13 +96,17 @@ export class WeaknessUpdateService {
    * never accepted from a client payload.
    *
    * Skips any entry where weaknessId or skillId is empty (defensive guard).
+   *
+   * evaluatedSkillIds should be every skillId the AIM Engine actually
+   * evaluated this run (i.e. skillState[].skillId from the same response) —
+   * the set of skills for which "absent from weaknessRecords" reliably means
+   * "no longer weak" rather than merely "not attempted this session".
    */
   async upsertMany(
     studentId: string,
     weaknessRecords: AimValidatedWeaknessRecord[],
+    evaluatedSkillIds: readonly string[] = [],
   ): Promise<void> {
-    if (weaknessRecords.length === 0) return;
-
     for (const record of weaknessRecords) {
       if (!record.weaknessId || record.weaknessId.trim().length === 0) {
         this.logger.warn('weakness_update_skipped_empty_weakness_id', {
@@ -94,6 +124,54 @@ export class WeaknessUpdateService {
       }
 
       await this.upsertOne(studentId, record);
+    }
+
+    await this.autoResolveImprovedSkills(studentId, weaknessRecords, evaluatedSkillIds);
+  }
+
+  // -------------------------------------------------------------------------
+  // Private: auto-resolve weaknesses for skills evaluated this run that no
+  // longer appear in the AIM Engine's weaknessRecords output (P20-022).
+  // -------------------------------------------------------------------------
+
+  private async autoResolveImprovedSkills(
+    studentId: string,
+    weaknessRecords: AimValidatedWeaknessRecord[],
+    evaluatedSkillIds: readonly string[],
+  ): Promise<void> {
+    if (evaluatedSkillIds.length === 0) return;
+
+    const stillWeakSkillIds = new Set(weaknessRecords.map((r) => r.skillId));
+    const improvedSkillIds = [...new Set(evaluatedSkillIds)].filter(
+      (skillId) => !stillWeakSkillIds.has(skillId),
+    );
+
+    if (improvedSkillIds.length === 0) return;
+
+    const openRows = await this.db.query<OpenWeaknessRow>(
+      `SELECT id, skill_id
+         FROM weakness_records
+        WHERE student_id = $1
+          AND status <> 'resolved'
+          AND skill_id = ANY($2::text[])`,
+      [studentId, improvedSkillIds],
+    );
+
+    for (const row of openRows.rows) {
+      await this.db.query(
+        `UPDATE weakness_records
+            SET status       = 'resolved',
+                resolved_at  = now(),
+                updated_at   = now()
+          WHERE id = $1`,
+        [row.id],
+      );
+
+      this.logger.log('weakness_record_auto_resolved', {
+        studentId,
+        weaknessId: row.id,
+        skillId: row.skill_id,
+      });
     }
   }
 

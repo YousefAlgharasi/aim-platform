@@ -227,3 +227,96 @@ describe('WeaknessUpdateService.upsertMany', () => {
     expect(insertCalls[0][4]).toBe('open');
   });
 });
+
+// ---------------------------------------------------------------------------
+// P20-022: auto-resolving weaknesses for skills that are no longer weak
+// ---------------------------------------------------------------------------
+
+describe('WeaknessUpdateService.upsertMany — auto-resolve improved skills (P20-022)', () => {
+  it('is a no-op when no evaluatedSkillIds are given (default empty array)', async () => {
+    const calls: string[] = [];
+    const db = makeMockDb(async (sql) => {
+      calls.push(sql);
+      return { rows: [], rowCount: 0 };
+    });
+    const svc = new WeaknessUpdateService(db);
+    await svc.upsertMany(STUDENT_ID, []);
+    expect(calls).toHaveLength(0);
+  });
+
+  it('resolves an existing open weakness when its skill was evaluated this run but is absent from weaknessRecords', async () => {
+    const calls: { sql: string; params: unknown[] }[] = [];
+    const db = makeMockDb(async (sql, params) => {
+      calls.push({ sql, params });
+      if (sql.includes('SELECT id, skill_id')) {
+        return {
+          rows: [{ id: 'weakness-1', skill_id: 'skill:arabic:p1:grammar' }],
+          rowCount: 1,
+        };
+      }
+      return { rows: [], rowCount: 0 };
+    });
+    const svc = new WeaknessUpdateService(db);
+
+    // weaknessRecords is empty (aim-engine no longer flags this skill), but
+    // it WAS evaluated this run (present in skillState), so any existing
+    // open row for it should resolve.
+    await svc.upsertMany(STUDENT_ID, [], ['skill:arabic:p1:grammar']);
+
+    const selectCall = calls.find((c) => c.sql.includes('SELECT id, skill_id'));
+    expect(selectCall?.params).toEqual([STUDENT_ID, ['skill:arabic:p1:grammar']]);
+    expect(selectCall?.sql).toContain("status <> 'resolved'");
+
+    const updateCall = calls.find((c) => c.sql.includes('UPDATE weakness_records'));
+    expect(updateCall?.sql).toContain("status       = 'resolved'");
+    expect(updateCall?.sql).toContain('resolved_at  = now()');
+    expect(updateCall?.params).toEqual(['weakness-1']);
+  });
+
+  it('does not resolve a weakness whose skill still appears in weaknessRecords', async () => {
+    const calls: { sql: string }[] = [];
+    const db = makeMockDb(async (sql) => {
+      calls.push({ sql });
+      return { rows: [], rowCount: 0 };
+    });
+    const svc = new WeaknessUpdateService(db);
+    const record = makeWeaknessRecord({ skillId: 'skill:arabic:p1:grammar' });
+
+    await svc.upsertMany(STUDENT_ID, [record], ['skill:arabic:p1:grammar']);
+
+    // still weak this run — no auto-resolve SELECT/UPDATE should fire
+    const autoResolveSelect = calls.find((c) => c.sql.includes('SELECT id, skill_id'));
+    expect(autoResolveSelect).toBeUndefined();
+  });
+
+  it('does not touch a skill absent from weaknessRecords if it was never evaluated this run', async () => {
+    const calls: { sql: string }[] = [];
+    const db = makeMockDb(async (sql) => {
+      calls.push({ sql });
+      return { rows: [], rowCount: 0 };
+    });
+    const svc = new WeaknessUpdateService(db);
+
+    // No evaluatedSkillIds passed at all — nothing to compare, so no
+    // auto-resolve query should ever run (matches default-empty no-op above).
+    await svc.upsertMany(STUDENT_ID, []);
+
+    expect(calls.find((c) => c.sql.includes('SELECT id, skill_id'))).toBeUndefined();
+  });
+
+  it('only issues the auto-resolve UPDATE for rows actually returned as still-open', async () => {
+    const updateCalls: unknown[][] = [];
+    const db = makeMockDb(async (sql, params) => {
+      if (sql.includes('SELECT id, skill_id')) {
+        return { rows: [], rowCount: 0 }; // no open rows for this skill
+      }
+      if (sql.includes('UPDATE weakness_records')) updateCalls.push(params);
+      return { rows: [], rowCount: 0 };
+    });
+    const svc = new WeaknessUpdateService(db);
+
+    await svc.upsertMany(STUDENT_ID, [], ['skill:already-resolved-or-never-flagged']);
+
+    expect(updateCalls).toHaveLength(0);
+  });
+});
