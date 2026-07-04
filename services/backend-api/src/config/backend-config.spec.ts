@@ -28,6 +28,7 @@ const BASE_ENV: NodeJS.ProcessEnv = {
   STT_PROVIDER_MODEL: 'whisper-1',
   TTS_PROVIDER_API_KEY: 'tts-key',
   TTS_PROVIDER_MODEL: 'tts-1',
+  TTS_PROVIDER_VOICE: 'af_bella',
   CORS_ORIGINS: 'http://localhost:3000',
 };
 

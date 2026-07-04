@@ -38,6 +38,12 @@ services:
         sync: false
       - key: STT_PROVIDER_MODEL
         sync: false
+      - key: TTS_PROVIDER_API_KEY
+        sync: false
+      - key: TTS_PROVIDER_MODEL
+        sync: false
+      - key: TTS_PROVIDER_VOICE
+        sync: false
       - key: CORS_ORIGINS
         sync: false
 

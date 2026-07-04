@@ -22,9 +22,9 @@ export class TtsRequestMapperService {
   constructor(private readonly ttsGatewayConfig: TtsGatewayConfigService) {}
 
   mapRequest(request: TtsProviderRequest): TtsCompletionRequest {
-    const { model } = this.ttsGatewayConfig.getConfig();
+    const { model, voice } = this.ttsGatewayConfig.getConfig();
     const { text, languageCode, sessionId, studentId } = request;
 
-    return { model, text, languageCode, sessionId, studentId };
+    return { model, text, languageCode, sessionId, studentId, voice };
   }
 }
