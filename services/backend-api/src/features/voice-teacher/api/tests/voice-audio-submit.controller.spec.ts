@@ -1,14 +1,14 @@
 import { VoiceAudioSubmitController } from '../voice-audio-submit.controller';
-import { VoiceSessionRepository } from '../../repositories/voice-session.repository';
+import { AiChatSessionRepository } from '../../../ai-teacher/repositories/ai-chat-session.repository';
 import { VoiceOrchestratorService } from '../../orchestrator/voice-orchestrator.service';
 
 describe('VoiceAudioSubmitController', () => {
   let controller: VoiceAudioSubmitController;
-  let voiceSessionRepository: jest.Mocked<VoiceSessionRepository>;
+  let chatSessionRepository: jest.Mocked<AiChatSessionRepository>;
   let voiceOrchestrator: jest.Mocked<VoiceOrchestratorService>;
 
   beforeEach(() => {
-    voiceSessionRepository = {
+    chatSessionRepository = {
       findById: jest.fn().mockResolvedValue({
         id: 'session-1',
         student_id: 'student-1',
@@ -28,7 +28,7 @@ describe('VoiceAudioSubmitController', () => {
         latencyMs: 250,
       }),
     } as any;
-    controller = new VoiceAudioSubmitController(voiceSessionRepository, voiceOrchestrator);
+    controller = new VoiceAudioSubmitController(chatSessionRepository, voiceOrchestrator);
   });
 
   const mockUser = { id: 'student-1', email: 'test@test.com' } as any;

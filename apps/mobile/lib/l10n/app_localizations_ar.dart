@@ -751,6 +751,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get lessonsCoursesPageTitle => 'الدورات';
 
   @override
+  String get lessonsCourseLockedMessage => 'أكمل مستواك الحالي لفتح هذه الدورة';
+
+  @override
+  String get lessonsCourseLockedSemantic => 'مقفلة';
+
+  @override
   String lessonsLevelBadge(String level) {
     return 'المستوى $level';
   }

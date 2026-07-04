@@ -15,6 +15,7 @@
 import { Module } from '@nestjs/common';
 
 import { AiTeacherOrchestratorModule } from '../../ai-teacher/orchestrator/ai-teacher-orchestrator.module';
+import { AiChatRepositoriesModule } from '../../ai-teacher/repositories/ai-chat-repositories.module';
 import { AudioStorageModule } from '../audio-storage/audio-storage.module';
 import { AudioMetadataPersistenceService } from '../audio-upload/audio-metadata-persistence.service';
 import { AudioUploadService } from '../audio-upload/audio-upload.service';
@@ -24,7 +25,12 @@ import { SttSafeFailureService } from '../stt-gateway/stt-safe-failure.service';
 import { VoiceMessageSubmitService } from './voice-message-submit.service';
 
 @Module({
-  imports: [VoiceRepositoriesModule, AiTeacherOrchestratorModule, AudioStorageModule],
+  imports: [
+    VoiceRepositoriesModule,
+    AiTeacherOrchestratorModule,
+    AiChatRepositoriesModule,
+    AudioStorageModule,
+  ],
   providers: [
     AudioMetadataPersistenceService,
     AudioUploadService,

@@ -14,6 +14,7 @@
 import { Logger } from '@nestjs/common';
 
 import { AiTeacherOrchestratorService } from '../../../ai-teacher/orchestrator/ai-teacher-orchestrator.service';
+import { AiChatMessageRepository } from '../../../ai-teacher/repositories/ai-chat-message.repository';
 import { SttGateway } from '../../stt-gateway/stt-gateway.interface';
 import { SttSafeFailureService } from '../../stt-gateway/stt-safe-failure.service';
 import { SttProviderResponse } from '../../stt-gateway/stt-gateway.types';
@@ -43,6 +44,7 @@ const makeAiResult = (overrides: Record<string, unknown> = {}) => ({
   provider: 'anthropic',
   model: 'claude-3-haiku',
   latencyMs: 120,
+  messageId: 'ai-message-1',
   ...overrides,
 });
 
@@ -70,6 +72,9 @@ const buildMockAiOrchestrator = (
   result: ReturnType<typeof makeAiResult>,
 ): jest.Mocked<AiTeacherOrchestratorService> =>
   ({ handleTurn: jest.fn().mockResolvedValue(result) } as unknown as jest.Mocked<AiTeacherOrchestratorService>);
+
+const buildMockChatMessageRepository = (): jest.Mocked<AiChatMessageRepository> =>
+  ({ updateAudio: jest.fn().mockResolvedValue(undefined) } as unknown as jest.Mocked<AiChatMessageRepository>);
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -110,6 +115,7 @@ describe('VoiceOrchestratorService', () => {
         ttsGateway,
         ttsSafeFailure,
         buildMockAiOrchestrator(aiResult),
+        buildMockChatMessageRepository(),
       );
 
       const result = await svc.handleTurn(makeInput());
@@ -122,6 +128,81 @@ describe('VoiceOrchestratorService', () => {
       expect(ttsGateway.synthesize).toHaveBeenCalledWith(
         expect.objectContaining({ text: 'AI Teacher reply', languageCode: 'ar' }),
       );
+    });
+
+    it("passes channel: 'voice' to the AI Teacher orchestrator so both persisted rows are voice-origin", async () => {
+      const sttResponse: SttProviderResponse = {
+        status: 'success',
+        transcript: 'test',
+        durationMs: 300,
+      };
+      const aiOrchestrator = buildMockAiOrchestrator(makeAiResult());
+      const svc = new VoiceOrchestratorService(
+        buildMockSttGateway(sttResponse),
+        sttSafeFailure,
+        buildMockTtsGateway(),
+        ttsSafeFailure,
+        aiOrchestrator,
+        buildMockChatMessageRepository(),
+      );
+
+      await svc.handleTurn(makeInput());
+
+      expect(aiOrchestrator.handleTurn).toHaveBeenCalledWith(
+        expect.objectContaining({ channel: 'voice' }),
+      );
+    });
+
+    it('attaches the synthesized audio_ref/audio_duration_ms onto the AI Teacher reply row (P21-010)', async () => {
+      const sttResponse: SttProviderResponse = {
+        status: 'success',
+        transcript: 'test',
+        durationMs: 300,
+      };
+      const ttsGateway = buildMockTtsGateway({
+        status: 'success',
+        audioRef: 'tts_ref_999',
+        durationMs: 750,
+        contentType: 'audio/mpeg',
+      });
+      const chatMessageRepository = buildMockChatMessageRepository();
+      const svc = new VoiceOrchestratorService(
+        buildMockSttGateway(sttResponse),
+        sttSafeFailure,
+        ttsGateway,
+        ttsSafeFailure,
+        buildMockAiOrchestrator(makeAiResult({ messageId: 'ai-message-42' })),
+        chatMessageRepository,
+      );
+
+      await svc.handleTurn(makeInput());
+
+      expect(chatMessageRepository.updateAudio).toHaveBeenCalledWith(
+        'ai-message-42',
+        'tts_ref_999',
+        750,
+      );
+    });
+
+    it('does not attach audio when TTS fails', async () => {
+      const sttResponse: SttProviderResponse = {
+        status: 'success',
+        transcript: 'test',
+        durationMs: 300,
+      };
+      const chatMessageRepository = buildMockChatMessageRepository();
+      const svc = new VoiceOrchestratorService(
+        buildMockSttGateway(sttResponse),
+        sttSafeFailure,
+        buildMockTtsGateway(),
+        ttsSafeFailure,
+        buildMockAiOrchestrator(makeAiResult()),
+        chatMessageRepository,
+      );
+
+      await svc.handleTurn(makeInput());
+
+      expect(chatMessageRepository.updateAudio).not.toHaveBeenCalled();
     });
 
     it('forwards the STT transcript as studentMessage to AI Teacher', async () => {
@@ -137,6 +218,7 @@ describe('VoiceOrchestratorService', () => {
         buildMockTtsGateway(),
         ttsSafeFailure,
         aiOrchestrator,
+        buildMockChatMessageRepository(),
       );
 
       await svc.handleTurn(makeInput());
@@ -159,6 +241,7 @@ describe('VoiceOrchestratorService', () => {
         buildMockTtsGateway(),
         ttsSafeFailure,
         aiOrchestrator,
+        buildMockChatMessageRepository(),
       );
       const input = makeInput({
         studentId: 'student-xyz',
@@ -190,6 +273,7 @@ describe('VoiceOrchestratorService', () => {
         buildMockTtsGateway(),
         ttsSafeFailure,
         buildMockAiOrchestrator(aiResult),
+        buildMockChatMessageRepository(),
       );
 
       const result = await svc.handleTurn(makeInput());
@@ -211,6 +295,7 @@ describe('VoiceOrchestratorService', () => {
         null,
         ttsSafeFailure,
         buildMockAiOrchestrator(aiResult),
+        buildMockChatMessageRepository(),
       );
 
       const result = await svc.handleTurn(makeInput());
@@ -238,6 +323,7 @@ describe('VoiceOrchestratorService', () => {
         buildMockTtsGateway(),
         ttsSafeFailure,
         aiOrchestrator,
+        buildMockChatMessageRepository(),
       );
 
       const result = await svc.handleTurn(makeInput());
@@ -262,6 +348,7 @@ describe('VoiceOrchestratorService', () => {
         buildMockTtsGateway(),
         ttsSafeFailure,
         aiOrchestrator,
+        buildMockChatMessageRepository(),
       );
 
       await svc.handleTurn(makeInput());
@@ -280,6 +367,7 @@ describe('VoiceOrchestratorService', () => {
         buildMockTtsGateway(),
         ttsSafeFailure,
         aiOrchestrator,
+        buildMockChatMessageRepository(),
       );
 
       const result = await svc.handleTurn(makeInput());
@@ -306,6 +394,7 @@ describe('VoiceOrchestratorService', () => {
         buildMockTtsGateway(),
         ttsSafeFailure,
         buildMockAiOrchestrator(makeAiResult()),
+        buildMockChatMessageRepository(),
       );
 
       const result = await svc.handleTurn(makeInput());
@@ -339,6 +428,7 @@ describe('VoiceOrchestratorService', () => {
         buildMockTtsGateway(),
         ttsSafeFailure,
         buildMockAiOrchestrator(makeAiResult()),
+        buildMockChatMessageRepository(),
       );
 
       const result = await svc.handleTurn(makeInput());
@@ -365,7 +455,8 @@ describe('VoiceOrchestratorService', () => {
       buildMockTtsGateway(),
       ttsSafeFailure,
       buildMockAiOrchestrator(makeAiResult()),
-    );
+        buildMockChatMessageRepository(),
+      );
 
     const result = await svc.handleTurn(makeInput());
 

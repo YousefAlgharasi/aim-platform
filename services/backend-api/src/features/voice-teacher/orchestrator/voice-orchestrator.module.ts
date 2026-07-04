@@ -9,6 +9,7 @@
 import { Module } from '@nestjs/common';
 
 import { AiTeacherOrchestratorModule } from '../../ai-teacher/orchestrator/ai-teacher-orchestrator.module';
+import { AiChatRepositoriesModule } from '../../ai-teacher/repositories/ai-chat-repositories.module';
 import { SttGatewayModule } from '../stt-gateway/stt-gateway.module';
 import { TtsGatewayModule } from '../tts-gateway/tts-gateway.module';
 import { VoiceOrchestratorService } from './voice-orchestrator.service';
@@ -22,6 +23,9 @@ import { VoiceOrchestratorService } from './voice-orchestrator.service';
      * All learning-decision authority remains here, never in the Voice layer.
      */
     AiTeacherOrchestratorModule,
+    // P21-010: AiChatMessageRepository, to attach synthesized TTS audio onto
+    // the ai_teacher reply row already persisted for a voice turn.
+    AiChatRepositoriesModule,
     SttGatewayModule,
     TtsGatewayModule,
   ],

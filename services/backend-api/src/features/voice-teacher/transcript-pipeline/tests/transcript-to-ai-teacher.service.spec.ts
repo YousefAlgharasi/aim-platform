@@ -22,6 +22,7 @@ function makeChatTurnResult(overrides: Partial<ChatTurnResult> = {}): ChatTurnRe
     provider: 'fake-provider',
     model: 'fake-model',
     latencyMs: 10,
+    messageId: 'message-ai-1',
     ...overrides,
   };
 }

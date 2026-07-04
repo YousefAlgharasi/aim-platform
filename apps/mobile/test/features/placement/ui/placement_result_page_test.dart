@@ -24,6 +24,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart';
@@ -32,6 +33,11 @@ import 'package:aim_mobile/features/placement/logic/entity/placement_submit_answ
 import 'package:aim_mobile/features/placement/logic/provider/placement_provider.dart';
 import 'package:aim_mobile/features/placement/logic/repository/placement_repository.dart';
 import 'package:aim_mobile/features/placement/ui/pages/placement_result_page.dart';
+import 'package:aim_mobile/features/student_courses/data/models/student_course_model.dart';
+import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
+import 'package:aim_mobile/features/student_courses/logic/provider/student_courses_notifier.dart';
+import 'package:aim_mobile/features/student_courses/logic/provider/student_courses_provider.dart';
+import 'package:aim_mobile/features/student_courses/logic/repository/student_courses_repository.dart';
 
 // ── Fake repository ───────────────────────────────────────────────────────────
 
@@ -106,11 +112,34 @@ class _FakePlacementRepository implements PlacementRepository {
       throw UnimplementedError();
 }
 
+// ── Fake student courses (avoids any real network call in tests) ────────────
+
+class _FakeStudentCoursesNotifier extends StudentCoursesNotifier {
+  _FakeStudentCoursesNotifier(List<StudentCourseModel> initial)
+      : super(repository: _FakeStudentCoursesRepository()) {
+    state = AppAsyncState.success(initial);
+  }
+
+  @override
+  Future<void> load({required String bearerToken}) async {}
+  @override
+  Future<void> refresh({required String bearerToken}) async {}
+}
+
+class _FakeStudentCoursesRepository implements StudentCoursesRepository {
+  @override
+  Future<List<StudentCourseModel>> getCourses({
+    required String bearerToken,
+  }) async =>
+      const [];
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 Widget _wrap(
   Widget child, {
   required PlacementRepository repository,
+  List<StudentCourseModel> courses = const [],
   TextDirection dir = TextDirection.ltr,
 }) {
   return ProviderScope(
@@ -121,6 +150,9 @@ Widget _wrap(
         notifier.signIn('student@example.com', accessToken: 'test-token');
         return notifier;
       }),
+      studentCoursesProvider.overrideWith(
+        (ref) => _FakeStudentCoursesNotifier(courses),
+      ),
     ],
     child: MaterialApp.router(
       theme: AppTheme.light,
@@ -229,6 +261,106 @@ void main() {
 
       expect(find.byType(PlacementResultPage), findsOneWidget);
       expect(find.text('B1'), findsOneWidget);
+    });
+
+    testWidgets(
+        'shows a "Start with {title}" CTA when recommendedCourseId is present',
+        (tester) async {
+      final result = PlacementResultModel.fromJson({
+        ..._resultModel.toJson(),
+        'recommended_course_id': 'course-1',
+        'unlocked_course_ids': ['course-1'],
+      });
+
+      await tester.pumpWidget(
+        _wrap(
+          _page,
+          repository: _FakePlacementRepository(result: result),
+          courses: const [
+            StudentCourseModel(
+              courseId: 'course-1',
+              title: 'English B1',
+              lessonCount: 10,
+              completedLessonCount: 0,
+              percent: 0,
+              status: StudentCourseStatus.notStarted,
+              locked: false,
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('Start with English B1'), findsOneWidget);
+    });
+
+    testWidgets('shows the note when present (no course available yet)',
+        (tester) async {
+      final result = PlacementResultModel.fromJson({
+        ..._resultModel.toJson(),
+        'recommended_course_id': null,
+        'unlocked_course_ids': <String>[],
+        'note': 'No course is available yet at your level.',
+      });
+
+      await tester.pumpWidget(
+        _wrap(
+          _page,
+          repository: _FakePlacementRepository(result: result),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      expect(
+        find.text('No course is available yet at your level.'),
+        findsOneWidget,
+      );
+      // Falls back to the generic CTA since there's no recommendation.
+      expect(find.text('Continue to AIM'), findsOneWidget);
+    });
+
+    testWidgets('shows secondary courses when multiple are unlocked',
+        (tester) async {
+      final result = PlacementResultModel.fromJson({
+        ..._resultModel.toJson(),
+        'recommended_course_id': 'course-1',
+        'unlocked_course_ids': ['course-1', 'course-2'],
+      });
+
+      await tester.pumpWidget(
+        _wrap(
+          _page,
+          repository: _FakePlacementRepository(result: result),
+          courses: const [
+            StudentCourseModel(
+              courseId: 'course-1',
+              title: 'English B1',
+              lessonCount: 10,
+              completedLessonCount: 0,
+              percent: 0,
+              status: StudentCourseStatus.notStarted,
+              locked: false,
+            ),
+            StudentCourseModel(
+              courseId: 'course-2',
+              title: 'English A2',
+              lessonCount: 8,
+              completedLessonCount: 0,
+              percent: 0,
+              status: StudentCourseStatus.notStarted,
+              locked: false,
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('Start with English B1'), findsOneWidget);
+      expect(find.text('OR START HERE INSTEAD'), findsOneWidget);
+      expect(find.text('English A2'), findsOneWidget);
     });
   });
 }

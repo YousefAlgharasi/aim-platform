@@ -22,6 +22,7 @@ class StudentCourse {
     required this.completedLessonCount,
     required this.percent,
     required this.status,
+    required this.locked,
     this.description,
     this.levelCode,
   });
@@ -42,4 +43,9 @@ class StudentCourse {
 
   /// Backend-computed from completedLessonCount vs lessonCount.
   final StudentCourseStatus status;
+
+  /// Backend-computed: true when the course's cefr_rank exceeds the
+  /// student's max_unlocked_cefr_rank for its track. Never derived
+  /// client-side — always read verbatim from the backend response.
+  final bool locked;
 }

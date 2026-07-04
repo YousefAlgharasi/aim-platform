@@ -14,6 +14,7 @@ class StudentCourseModel extends StudentCourse {
     required super.completedLessonCount,
     required super.percent,
     required super.status,
+    required super.locked,
     super.description,
     super.levelCode,
   });
@@ -28,6 +29,7 @@ class StudentCourseModel extends StudentCourse {
       completedLessonCount: json['completedLessonCount'] as int,
       percent: json['percent'] as int,
       status: studentCourseStatusFromString(json['status'] as String),
+      locked: json['locked'] as bool,
     );
   }
 }

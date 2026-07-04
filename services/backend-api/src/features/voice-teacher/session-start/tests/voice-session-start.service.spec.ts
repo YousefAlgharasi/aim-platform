@@ -1,41 +1,45 @@
 // P9-049: Build Voice Session Start Service
-// VoiceSessionStartService tests.
+// P21-007: VoiceSessionStartService now delegates to ChatSessionStartService
+// (get-or-create by (studentId, contextRef) against ai_chat_sessions)
+// instead of creating its own voice_sessions row.
 
 import { VoiceSessionStartService } from '../voice-session-start.service';
-import { VoiceSessionRepository } from '../voice-session.repository';
-import { VoiceSessionRow } from '../voice-session-start.types';
+import { ChatSessionStartService } from '../../../ai-teacher/chat-session/chat-session-start.service';
+import { StartChatSessionResult } from '../../../ai-teacher/chat-session/chat-session-start.types';
 
-function makeRow(overrides: Partial<VoiceSessionRow> = {}): VoiceSessionRow {
+function makeResult(overrides: Partial<StartChatSessionResult> = {}): StartChatSessionResult {
   return {
-    id: 'voice-session-1',
-    student_id: 'student-1',
-    context_ref: 'lesson:fractions',
+    sessionId: 'session-1',
+    studentId: 'student-1',
+    contextRef: 'lesson:fractions',
     status: 'active',
-    created_at: '2026-06-19T00:00:00.000Z',
-    updated_at: '2026-06-19T00:00:00.000Z',
+    createdAt: '2026-06-19T00:00:00.000Z',
     ...overrides,
   };
 }
 
-function makeRepository(row: VoiceSessionRow = makeRow()) {
+function makeChatSessionStartService(result: StartChatSessionResult = makeResult()) {
   return {
-    create: jest.fn().mockResolvedValue(row),
-  } as unknown as VoiceSessionRepository;
+    startSession: jest.fn().mockResolvedValue(result),
+  } as unknown as ChatSessionStartService;
 }
 
 describe('VoiceSessionStartService', () => {
-  it('creates a new voice session via the repository with the given studentId and contextRef', async () => {
-    const repository = makeRepository();
-    const service = new VoiceSessionStartService(repository);
+  it('delegates to ChatSessionStartService.startSession with the given studentId and contextRef', async () => {
+    const chatSessionStartService = makeChatSessionStartService();
+    const service = new VoiceSessionStartService(chatSessionStartService);
 
     await service.startSession({ studentId: 'student-1', contextRef: 'lesson:fractions' });
 
-    expect(repository.create).toHaveBeenCalledWith('student-1', 'lesson:fractions');
+    expect(chatSessionStartService.startSession).toHaveBeenCalledWith({
+      studentId: 'student-1',
+      contextRef: 'lesson:fractions',
+    });
   });
 
-  it('returns the created session mapped from the repository row', async () => {
-    const repository = makeRepository();
-    const service = new VoiceSessionStartService(repository);
+  it('returns the session mapped from ChatSessionStartService', async () => {
+    const chatSessionStartService = makeChatSessionStartService();
+    const service = new VoiceSessionStartService(chatSessionStartService);
 
     const result = await service.startSession({
       studentId: 'student-1',
@@ -43,7 +47,7 @@ describe('VoiceSessionStartService', () => {
     });
 
     expect(result).toEqual({
-      sessionId: 'voice-session-1',
+      sessionId: 'session-1',
       studentId: 'student-1',
       contextRef: 'lesson:fractions',
       status: 'active',
@@ -51,39 +55,29 @@ describe('VoiceSessionStartService', () => {
     });
   });
 
-  it('throws and never calls the repository when studentId is missing', async () => {
-    const repository = makeRepository();
-    const service = new VoiceSessionStartService(repository);
+  it('starting chat then voice for the same contextRef resolves to the same session id', async () => {
+    const sharedResult = makeResult({ sessionId: 'shared-session-1' });
+    const chatSessionStartService = makeChatSessionStartService(sharedResult);
+    const service = new VoiceSessionStartService(chatSessionStartService);
 
-    await expect(
-      service.startSession({ studentId: '', contextRef: 'lesson:fractions' }),
-    ).rejects.toThrow(/studentId is missing/);
-    expect(repository.create).not.toHaveBeenCalled();
-  });
+    const voiceResult = await service.startSession({
+      studentId: 'student-1',
+      contextRef: 'lesson:fractions',
+    });
 
-  it('throws and never calls the repository when studentId is whitespace-only', async () => {
-    const repository = makeRepository();
-    const service = new VoiceSessionStartService(repository);
-
-    await expect(
-      service.startSession({ studentId: '   ', contextRef: 'lesson:fractions' }),
-    ).rejects.toThrow(/studentId is missing/);
-    expect(repository.create).not.toHaveBeenCalled();
-  });
-
-  it('throws and never calls the repository when contextRef is missing', async () => {
-    const repository = makeRepository();
-    const service = new VoiceSessionStartService(repository);
-
-    await expect(
-      service.startSession({ studentId: 'student-1', contextRef: '' }),
-    ).rejects.toThrow(/contextRef is missing/);
-    expect(repository.create).not.toHaveBeenCalled();
+    expect(voiceResult.sessionId).toBe('shared-session-1');
+    // Both entry points call the same underlying service/method — the
+    // get-or-create dedup itself is covered by AiChatSessionRepository's
+    // and ChatSessionStartService's own tests.
+    expect(chatSessionStartService.startSession).toHaveBeenCalledWith({
+      studentId: 'student-1',
+      contextRef: 'lesson:fractions',
+    });
   });
 
   it('never computes a mastery, level, weakness, difficulty, recommendation, or review-schedule value', async () => {
-    const repository = makeRepository();
-    const service = new VoiceSessionStartService(repository);
+    const chatSessionStartService = makeChatSessionStartService();
+    const service = new VoiceSessionStartService(chatSessionStartService);
 
     const result = await service.startSession({
       studentId: 'student-1',
