@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:aim_mobile/core/localization/localization.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/ai_teacher/data/preferences/ai_teacher_preferences_store.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_preferences.dart';
@@ -22,7 +23,12 @@ import 'package:aim_mobile/features/ai_teacher/ui/pages/ai_teacher_settings_page
 Widget _wrap(Widget child, {List<Override> overrides = const []}) =>
     ProviderScope(
       overrides: overrides,
-      child: MaterialApp(theme: AppTheme.light, home: child),
+      child: MaterialApp(
+        theme: AppTheme.light,
+        localizationsDelegates: AppLocale.delegates,
+        supportedLocales: AppLocale.supportedLocales,
+        home: child,
+      ),
     );
 
 void main() {

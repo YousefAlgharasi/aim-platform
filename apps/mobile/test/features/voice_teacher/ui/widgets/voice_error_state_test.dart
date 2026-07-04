@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/core/theme/theme.dart';
+import 'package:aim_mobile/core/localization/localization.dart';
 import 'package:aim_mobile/features/voice_teacher/ui/widgets/voice_error_state.dart';
 
 void main() {
@@ -16,6 +17,11 @@ void main() {
     return tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.light,
+        locale: dir == TextDirection.rtl
+            ? const Locale(AppLocale.arabic)
+            : const Locale(AppLocale.english),
+        localizationsDelegates: AppLocale.delegates,
+        supportedLocales: AppLocale.supportedLocales,
         home: Directionality(
           textDirection: dir,
           child: Scaffold(
@@ -57,7 +63,7 @@ void main() {
     var retries = 0;
     await pumpError(tester, onRetry: () => retries++);
 
-    await tester.tap(find.text('Try Again'));
+    await tester.tap(find.text('Try again'));
     expect(retries, 1);
   });
 
@@ -72,6 +78,6 @@ void main() {
   testWidgets('hides retry button when onRetry is null', (tester) async {
     await pumpError(tester);
 
-    expect(find.text('Try Again'), findsNothing);
+    expect(find.text('Try again'), findsNothing);
   });
 }

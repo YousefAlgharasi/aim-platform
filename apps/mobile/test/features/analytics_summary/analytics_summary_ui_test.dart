@@ -25,6 +25,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/core/errors/app_exception.dart';
+import 'package:aim_mobile/core/localization/localization.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/analytics_summary/data/models/analytics_summary_report_model.dart';
@@ -223,6 +224,8 @@ void main() {
         ],
         child: MaterialApp(
           theme: AppTheme.light,
+          localizationsDelegates: AppLocale.delegates,
+          supportedLocales: AppLocale.supportedLocales,
           home: Directionality(
             textDirection: dir,
             child: child,

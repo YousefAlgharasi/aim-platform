@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/core/theme/theme.dart';
+import 'package:aim_mobile/core/localization/localization.dart';
 import 'package:aim_mobile/features/voice_teacher/ui/widgets/voice_teacher_entry_card.dart';
 
 void main() {
@@ -13,6 +14,11 @@ void main() {
     return tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.light,
+        locale: dir == TextDirection.rtl
+            ? const Locale(AppLocale.arabic)
+            : const Locale(AppLocale.english),
+        localizationsDelegates: AppLocale.delegates,
+        supportedLocales: AppLocale.supportedLocales,
         home: Directionality(
           textDirection: dir,
           child: Scaffold(body: Center(child: VoiceTeacherEntryCard(onTap: onTap))),

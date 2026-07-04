@@ -19,6 +19,7 @@ import 'package:go_router/go_router.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
+import 'package:aim_mobile/core/localization/localization.dart';
 import 'package:aim_mobile/features/ai_teacher/data/models/ai_teacher_chat_models.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_chat_state.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_stream_event.dart';
@@ -39,6 +40,8 @@ Widget _wrap(Widget child, {List<Override> overrides = const []}) =>
       ],
       child: MaterialApp.router(
         theme: AppTheme.light,
+        localizationsDelegates: AppLocale.delegates,
+        supportedLocales: AppLocale.supportedLocales,
         routerConfig: GoRouter(
           initialLocation: '/',
           routes: [

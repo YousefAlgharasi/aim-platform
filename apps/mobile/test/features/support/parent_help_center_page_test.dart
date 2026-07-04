@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:aim_mobile/core/localization/localization.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/support/ui/pages/parent_help_center_page.dart';
 import 'package:aim_mobile/features/support/ui/pages/parent_ticket_list_page.dart';
@@ -9,14 +10,22 @@ void main() {
   group('ParentHelpCenterPage', () {
     testWidgets('renders scaffold with title', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(home: ParentHelpCenterPage()),
+        MaterialApp(
+        localizationsDelegates: AppLocale.delegates,
+        supportedLocales: AppLocale.supportedLocales,
+        home: const ParentHelpCenterPage(),
+      ),
       );
       expect(find.text('Parent Help'), findsOneWidget);
     });
 
     testWidgets('shows parent-specific help categories', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(home: ParentHelpCenterPage()),
+        MaterialApp(
+        localizationsDelegates: AppLocale.delegates,
+        supportedLocales: AppLocale.supportedLocales,
+        home: const ParentHelpCenterPage(),
+      ),
       );
       expect(find.text('Student Progress'), findsOneWidget);
       expect(find.text('Courses & Content'), findsOneWidget);
@@ -33,7 +42,11 @@ void main() {
 
     testWidgets('shows create ticket button', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(home: ParentHelpCenterPage()),
+        MaterialApp(
+        localizationsDelegates: AppLocale.delegates,
+        supportedLocales: AppLocale.supportedLocales,
+        home: const ParentHelpCenterPage(),
+      ),
       );
       expect(find.text('Create Ticket'), findsOneWidget);
       expect(find.byType(AIMGradientButton), findsOneWidget);
@@ -43,7 +56,11 @@ void main() {
   group('ParentTicketListPage', () {
     testWidgets('renders scaffold with title', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(home: ParentTicketListPage()),
+        MaterialApp(
+        localizationsDelegates: AppLocale.delegates,
+        supportedLocales: AppLocale.supportedLocales,
+        home: const ParentTicketListPage(),
+      ),
       );
       expect(find.text('Parent tickets'), findsOneWidget);
     });
@@ -51,7 +68,11 @@ void main() {
     testWidgets('shows empty state (no live backend to load tickets from)',
         (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(home: ParentTicketListPage()),
+        MaterialApp(
+        localizationsDelegates: AppLocale.delegates,
+        supportedLocales: AppLocale.supportedLocales,
+        home: const ParentTicketListPage(),
+      ),
       );
       expect(find.text('No Support Tickets'), findsOneWidget);
     });
@@ -59,6 +80,8 @@ void main() {
     testWidgets('buildEmptyState shows no tickets message', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocale.delegates,
+          supportedLocales: AppLocale.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (context) =>
@@ -78,6 +101,8 @@ void main() {
     testWidgets('buildTicketTile renders ticket info', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocale.delegates,
+          supportedLocales: AppLocale.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (context) => ParentTicketListPage.buildTicketTile(

@@ -10,6 +10,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:aim_mobile/core/localization/localization.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/ai_teacher/ui/widgets/ai_chat_input_bar.dart';
 
@@ -115,6 +116,8 @@ extension on WidgetTester {
     return pumpWidget(
       MaterialApp(
         theme: AppTheme.light,
+        localizationsDelegates: AppLocale.delegates,
+        supportedLocales: AppLocale.supportedLocales,
         home: Directionality(
           textDirection: textDirection,
           child: Scaffold(body: Center(child: child)),

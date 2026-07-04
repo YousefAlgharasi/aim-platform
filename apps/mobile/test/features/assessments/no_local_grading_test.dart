@@ -238,11 +238,13 @@ void main() {
       // Allow display of penalty values received from server, including
       // the `latePenaltyApplied` flag, which is a server-computed boolean
       // plumbed through entities/models/UI rather than computed locally.
+      // Case-insensitive so it also matches localized-string identifiers
+      // like `assessmentsLatePenaltyApplied` (the ARB key for this flag).
       return !line.contains('fromJson') &&
           !line.contains('json[') &&
           !line.contains("json['") &&
           !line.contains('map[') &&
-          !line.contains('latePenaltyApplied');
+          !line.toLowerCase().contains('latepenaltyapplied');
     }).toList();
 
     expect(

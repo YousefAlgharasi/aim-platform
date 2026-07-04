@@ -19,6 +19,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
+import 'package:aim_mobile/core/localization/localization.dart';
 import 'package:aim_mobile/features/auth/logic/entity/auth_flow_state.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -40,7 +41,12 @@ Widget _wrap(Widget child, {List<Override> overrides = const []}) =>
         authFlowProvider.overrideWith((ref) => _SignedInAuthFlowNotifier()),
         ...overrides,
       ],
-      child: MaterialApp(theme: AppTheme.light, home: child),
+      child: MaterialApp(
+        theme: AppTheme.light,
+        localizationsDelegates: AppLocale.delegates,
+        supportedLocales: AppLocale.supportedLocales,
+        home: child,
+      ),
     );
 
 const _history = [

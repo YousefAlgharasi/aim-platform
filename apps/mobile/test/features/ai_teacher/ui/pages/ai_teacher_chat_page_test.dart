@@ -15,6 +15,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
+import 'package:aim_mobile/core/localization/localization.dart';
 import 'package:aim_mobile/features/ai_teacher/data/models/ai_teacher_chat_models.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_chat_state.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_stream_event.dart';
@@ -42,6 +43,8 @@ Widget _wrap(
       ],
       child: MaterialApp(
         theme: AppTheme.light,
+        localizationsDelegates: AppLocale.delegates,
+        supportedLocales: AppLocale.supportedLocales,
         home: Directionality(textDirection: dir, child: child),
       ),
     );

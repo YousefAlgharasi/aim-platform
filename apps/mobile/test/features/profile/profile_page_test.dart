@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:aim_mobile/core/localization/localization.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
@@ -88,7 +89,11 @@ Widget _wrap(AppAsyncState<AuthContextModel> authState) {
         return notifier;
       }),
     ],
-    child: const MaterialApp(home: ProfilePage()),
+    child: MaterialApp(
+      localizationsDelegates: AppLocale.delegates,
+      supportedLocales: AppLocale.supportedLocales,
+      home: const ProfilePage(),
+    ),
   );
 }
 
@@ -147,9 +152,11 @@ void main() {
             return n;
           }),
         ],
-        child: const MaterialApp(
-          locale: Locale('ar'),
-          home: ProfilePage(),
+        child: MaterialApp(
+          locale: const Locale('ar'),
+          localizationsDelegates: AppLocale.delegates,
+          supportedLocales: AppLocale.supportedLocales,
+          home: const ProfilePage(),
         ),
       ),
     );

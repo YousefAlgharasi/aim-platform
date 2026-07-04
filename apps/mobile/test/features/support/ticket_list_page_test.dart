@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:aim_mobile/core/localization/localization.dart';
 import 'package:aim_mobile/features/support/ui/pages/ticket_list_page.dart';
 import 'package:aim_mobile/features/support/ui/pages/create_ticket_page.dart';
 
@@ -8,7 +9,11 @@ void main() {
   group('TicketListPage', () {
     testWidgets('renders scaffold with title', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(home: TicketListPage()),
+        MaterialApp(
+        localizationsDelegates: AppLocale.delegates,
+        supportedLocales: AppLocale.supportedLocales,
+        home: const TicketListPage(),
+      ),
       );
       expect(find.text('My tickets'), findsOneWidget);
     });
@@ -16,7 +21,11 @@ void main() {
     testWidgets('shows empty state (no live backend to load tickets from)',
         (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(home: TicketListPage()),
+        MaterialApp(
+        localizationsDelegates: AppLocale.delegates,
+        supportedLocales: AppLocale.supportedLocales,
+        home: const TicketListPage(),
+      ),
       );
       expect(find.text('No Tickets Yet'), findsOneWidget);
     });
@@ -24,6 +33,8 @@ void main() {
     testWidgets('buildEmptyState shows no tickets message', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocale.delegates,
+          supportedLocales: AppLocale.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (context) => TicketListPage.buildEmptyState(context),
@@ -42,6 +53,8 @@ void main() {
     testWidgets('buildTicketTile renders ticket info', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocale.delegates,
+          supportedLocales: AppLocale.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (context) => TicketListPage.buildTicketTile(
@@ -66,14 +79,22 @@ void main() {
   group('CreateTicketPage', () {
     testWidgets('renders scaffold with title', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(home: CreateTicketPage()),
+        MaterialApp(
+        localizationsDelegates: AppLocale.delegates,
+        supportedLocales: AppLocale.supportedLocales,
+        home: const CreateTicketPage(),
+      ),
       );
       expect(find.text('New ticket'), findsOneWidget);
     });
 
     testWidgets('shows form fields', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(home: CreateTicketPage()),
+        MaterialApp(
+        localizationsDelegates: AppLocale.delegates,
+        supportedLocales: AppLocale.supportedLocales,
+        home: const CreateTicketPage(),
+      ),
       );
       expect(find.text('Category'), findsOneWidget);
       expect(find.text('Severity'), findsOneWidget);
@@ -84,7 +105,11 @@ void main() {
 
     testWidgets('validates empty subject field', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(home: CreateTicketPage()),
+        MaterialApp(
+        localizationsDelegates: AppLocale.delegates,
+        supportedLocales: AppLocale.supportedLocales,
+        home: const CreateTicketPage(),
+      ),
       );
 
       // Tap submit without filling fields
