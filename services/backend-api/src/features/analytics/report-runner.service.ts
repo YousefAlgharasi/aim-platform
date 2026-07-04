@@ -11,6 +11,10 @@ import {
   MetricAggregate,
 } from './analytics.entities';
 import { MetricDefinitionService } from './metric-definition.service';
+import {
+  StudentAimProgressReportService,
+  STUDENT_AIM_PROGRESS_REPORT_KEY,
+} from './student-aim-progress-report.service';
 
 interface ReportCategoryConfig {
   metricKeys: string[];
@@ -74,6 +78,7 @@ export class ReportRunnerService {
     private readonly analyticsRepository: AnalyticsRepository,
     private readonly reportDefinitionService: ReportDefinitionService,
     private readonly metricDefinitionService: MetricDefinitionService,
+    private readonly studentAimProgressReport: StudentAimProgressReportService,
   ) {}
 
   async runReport(params: {
@@ -94,7 +99,7 @@ export class ReportRunnerService {
       parameters: params.parameters,
     });
 
-    return this.execute(run.id, definition, params.parameters);
+    return this.execute(run.id, definition, params.parameters, params.requestedByUserId);
   }
 
   async getRunStatus(id: string): Promise<ReportRun> {
@@ -111,6 +116,7 @@ export class ReportRunnerService {
     reportRunId: string,
     definition: ReportDefinition,
     parameters: Record<string, unknown>,
+    requestedByUserId: string,
   ): Promise<ReportRun> {
     const startedAt = new Date();
 
@@ -120,7 +126,7 @@ export class ReportRunnerService {
     });
 
     try {
-      const resultData = await this.assembleResultData(definition, parameters);
+      const resultData = await this.assembleResultData(definition, parameters, requestedByUserId);
       const resultRef = `report-run:${reportRunId}`;
 
       const completed = await this.analyticsRepository.updateReportRunStatus(reportRunId, {
@@ -151,7 +157,33 @@ export class ReportRunnerService {
   private async assembleResultData(
     definition: ReportDefinition,
     parameters: Record<string, unknown>,
+    requestedByUserId: string,
   ): Promise<ReportRunResultData> {
+    // P20-023: student_aim_progress reads real, already-persisted per-student
+    // AIM output (student_skill_states/weakness_records/review_schedules) —
+    // structured, per-skill records with no meaningful mapping onto the
+    // generic platform-scoped metric_aggregates/analytics_events mechanism
+    // below, so it bypasses that mechanism entirely rather than forcing a
+    // per-skill "metric" into a system built for scalar time series.
+    const sections =
+      definition.key === STUDENT_AIM_PROGRESS_REPORT_KEY
+        ? await this.studentAimProgressReport.buildSections(requestedByUserId)
+        : await this.assembleMetricDrivenSections(definition, parameters);
+
+    return {
+      reportKey: definition.key,
+      reportName: definition.name,
+      category: definition.category,
+      generatedAt: new Date().toISOString(),
+      parameters,
+      sections,
+    };
+  }
+
+  private async assembleMetricDrivenSections(
+    definition: ReportDefinition,
+    parameters: Record<string, unknown>,
+  ): Promise<ReportSection[]> {
     const { from, to } = this.resolvePeriodRange(parameters);
     const config = REPORT_CATEGORY_CONFIG[definition.category] ?? REPORT_CATEGORY_CONFIG['admin'];
 
@@ -167,14 +199,7 @@ export class ReportRunnerService {
       sections.push(eventsSection);
     }
 
-    return {
-      reportKey: definition.key,
-      reportName: definition.name,
-      category: definition.category,
-      generatedAt: new Date().toISOString(),
-      parameters,
-      sections,
-    };
+    return sections;
   }
 
   private async buildMetricsSection(
