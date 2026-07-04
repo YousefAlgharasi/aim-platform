@@ -89,6 +89,40 @@ describe('SttTranscriptionService', () => {
     fetchSpy.mockRestore();
   });
 
+  it.each([
+    ['audio/webm', 'webm'],
+    ['audio/wav', 'wav'],
+    ['audio/mp4', 'mp4'],
+    ['audio/mpeg', 'mp3'],
+    ['audio/ogg', 'ogg'],
+  ])(
+    // Bugfix: Groq validates file type from the multipart filename's
+    // extension, not the Content-Type header — confirmed via a real 400
+    // response ("file must be one of the following types: [...]") returned
+    // even for a genuinely valid WAV recording uploaded with no extension
+    // in its filename. Every content type this app can actually produce
+    // must map to a filename Groq recognizes.
+    'uploads the file with a %s -> .%s extension in the filename, never a bare "audio"',
+    async (contentType, expectedExtension) => {
+      requestMapper.mapRequest.mockReturnValue({
+        model: 'whisper-large-v3',
+        audio: mockRequest.audio,
+        contentType,
+      });
+      const fetchSpy = jest
+        .spyOn(global, 'fetch')
+        .mockResolvedValue({ ok: true, json: () => Promise.resolve({ text: 'hi' }) } as any);
+
+      await service.transcribe({ ...mockRequest, contentType });
+
+      const [, init] = fetchSpy.mock.calls[0];
+      const form = init?.body as FormData;
+      const file = form.get('file') as File;
+      expect(file.name).toBe(`audio.${expectedExtension}`);
+      fetchSpy.mockRestore();
+    },
+  );
+
   it('should return an error response when the provider returns non-ok HTTP', async () => {
     const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({
       ok: false,
