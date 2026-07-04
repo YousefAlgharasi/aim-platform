@@ -19,22 +19,52 @@ describe('TtsAudioGenerationService', () => {
     studentId: 'student-1',
   };
 
+  // A single successful round trip: submit -> immediately-completed poll -> download.
+  const mockHappyPathFetch = () =>
+    jest
+      .spyOn(global, 'fetch')
+      .mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ uuid: 'job-uuid-1', status: 'queued' }),
+        } as any),
+      )
+      .mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              status: 'completed',
+              result_url: 'https://api.tts.ai/static/downloads/job-uuid-1/output.mp3',
+            }),
+        } as any),
+      )
+      .mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          arrayBuffer: () => Promise.resolve(new ArrayBuffer(1000)),
+        } as any),
+      );
+
   beforeEach(() => {
     configService = {
       getConfig: jest.fn().mockReturnValue({
         apiKey: 'test-key',
-        model: 'tts-1',
-        baseUrl: 'https://tts.ai/v1/audio/speech',
+        model: 'kokoro',
+        baseUrl: 'https://api.tts.ai/v1/tts/',
+        voice: 'af_bella',
+        resultsUrl: 'https://api.tts.ai/v1/speech/results/',
       }),
     } as any;
 
     requestMapper = {
       mapRequest: jest.fn().mockReturnValue({
-        model: 'tts-1',
+        model: 'kokoro',
         text: 'Hello student',
         languageCode: 'ar',
         sessionId: 'session-1',
         studentId: 'student-1',
+        voice: 'af_bella',
       }),
     } as any;
 
@@ -84,10 +114,7 @@ describe('TtsAudioGenerationService', () => {
   });
 
   it('should call requestMapper.mapRequest with the input request', async () => {
-    const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({
-      ok: true,
-      arrayBuffer: () => Promise.resolve(new ArrayBuffer(1000)),
-    } as any);
+    const fetchSpy = mockHappyPathFetch();
 
     await service.synthesize(mockRequest);
 
@@ -96,10 +123,7 @@ describe('TtsAudioGenerationService', () => {
   });
 
   it('should call configService.getConfig for the API key', async () => {
-    const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({
-      ok: true,
-      arrayBuffer: () => Promise.resolve(new ArrayBuffer(1000)),
-    } as any);
+    const fetchSpy = mockHappyPathFetch();
 
     await service.synthesize(mockRequest);
 
@@ -107,11 +131,96 @@ describe('TtsAudioGenerationService', () => {
     fetchSpy.mockRestore();
   });
 
-  it('should return a success response when provider call succeeds', async () => {
-    const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({
-      ok: true,
-      arrayBuffer: () => Promise.resolve(new ArrayBuffer(1000)),
-    } as any);
+  it('submits the job with model/text/voice/format, then polls, then downloads result_url', async () => {
+    const fetchSpy = mockHappyPathFetch();
+
+    await service.synthesize(mockRequest);
+
+    expect(fetchSpy).toHaveBeenCalledTimes(3);
+
+    const [submitUrl, submitInit] = fetchSpy.mock.calls[0];
+    expect(submitUrl).toBe('https://api.tts.ai/v1/tts/');
+    expect(JSON.parse((submitInit as any).body)).toEqual({
+      model: 'kokoro',
+      text: 'Hello student',
+      voice: 'af_bella',
+      format: 'mp3',
+    });
+    expect((submitInit as any).headers.Authorization).toBe('Bearer test-key');
+
+    const [pollUrl] = fetchSpy.mock.calls[1];
+    expect(pollUrl).toBe('https://api.tts.ai/v1/speech/results/?uuid=job-uuid-1');
+
+    const [downloadUrl] = fetchSpy.mock.calls[2];
+    expect(downloadUrl).toBe('https://api.tts.ai/static/downloads/job-uuid-1/output.mp3');
+
+    fetchSpy.mockRestore();
+  });
+
+  it('polls again while status is queued/processing before completing', async () => {
+    const fetchSpy = jest
+      .spyOn(global, 'fetch')
+      .mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ uuid: 'job-uuid-1', status: 'queued' }),
+        } as any),
+      )
+      .mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ status: 'processing' }),
+        } as any),
+      )
+      .mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              status: 'completed',
+              result_url: 'https://api.tts.ai/static/downloads/job-uuid-1/output.mp3',
+            }),
+        } as any),
+      )
+      .mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          arrayBuffer: () => Promise.resolve(new ArrayBuffer(1000)),
+        } as any),
+      );
+
+    const result = await service.synthesize(mockRequest);
+
+    expect(fetchSpy).toHaveBeenCalledTimes(4);
+    expect(result.status).toBe('success');
+    fetchSpy.mockRestore();
+  }, 10_000);
+
+  it('should return an error response when the job status is failed', async () => {
+    const fetchSpy = jest
+      .spyOn(global, 'fetch')
+      .mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ uuid: 'job-uuid-1', status: 'queued' }),
+        } as any),
+      )
+      .mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ status: 'failed', error: 'synthesis error' }),
+        } as any),
+      );
+
+    const result = await service.synthesize(mockRequest);
+
+    expect(result.status).toBe('error');
+    expect(result.errorCategory).toBe('TTS_PROVIDER_ERROR');
+    fetchSpy.mockRestore();
+  });
+
+  it('should return a success response when the full submit/poll/download flow succeeds', async () => {
+    const fetchSpy = mockHappyPathFetch();
 
     const result = await service.synthesize(mockRequest);
 
@@ -121,7 +230,7 @@ describe('TtsAudioGenerationService', () => {
     fetchSpy.mockRestore();
   });
 
-  it('should return an error response when provider returns non-ok HTTP', async () => {
+  it('should return an error response when the submit call returns non-ok HTTP', async () => {
     const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({
       ok: false,
       status: 500,
@@ -147,10 +256,7 @@ describe('TtsAudioGenerationService', () => {
   });
 
   it('should never include provider credentials in the response', async () => {
-    const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({
-      ok: true,
-      arrayBuffer: () => Promise.resolve(new ArrayBuffer(1000)),
-    } as any);
+    const fetchSpy = mockHappyPathFetch();
 
     const result = await service.synthesize(mockRequest);
 
@@ -160,10 +266,7 @@ describe('TtsAudioGenerationService', () => {
   });
 
   it('should pass response through responseMapper', async () => {
-    const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({
-      ok: true,
-      arrayBuffer: () => Promise.resolve(new ArrayBuffer(1000)),
-    } as any);
+    const fetchSpy = mockHappyPathFetch();
 
     await service.synthesize(mockRequest);
 
@@ -179,10 +282,7 @@ describe('TtsAudioGenerationService', () => {
   });
 
   it('should return an error response when audio storage fails', async () => {
-    const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({
-      ok: true,
-      arrayBuffer: () => Promise.resolve(new ArrayBuffer(1000)),
-    } as any);
+    const fetchSpy = mockHappyPathFetch();
     audioStorage.storeAudio.mockResolvedValue({ audioRef: 'ref', stored: false });
 
     const result = await service.synthesize(mockRequest);
@@ -192,10 +292,7 @@ describe('TtsAudioGenerationService', () => {
   });
 
   it('should generate opaque audioRef values', async () => {
-    const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({
-      ok: true,
-      arrayBuffer: () => Promise.resolve(new ArrayBuffer(1000)),
-    } as any);
+    const fetchSpy = mockHappyPathFetch();
 
     await service.synthesize(mockRequest);
 

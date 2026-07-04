@@ -14,4 +14,6 @@ export interface TtsCompletionRequest {
   readonly languageCode: string;
   readonly sessionId: string;
   readonly studentId: string;
+  /** tts.ai requires a voice id on every /v1/tts/ request. */
+  readonly voice: string;
 }

@@ -82,18 +82,29 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
   );
   // P9-059 — TTS provider settings for Group G's TTS Gateway.
   // TTS_PROVIDER_API_KEY is a secret: never logged, never returned to clients.
+  // Confirmed against tts.ai's real published API docs: POST /v1/tts/ is an
+  // async job submission (returns a uuid), the result is fetched by polling
+  // GET /v1/speech/results/?uuid=... until status=completed, then the actual
+  // audio bytes are downloaded from the returned result_url. See
+  // tts-audio-generation.service.ts for the full request/poll/download flow.
   const ttsProviderApiKey = readRequiredString(env, 'TTS_PROVIDER_API_KEY', issues);
   const ttsProviderModel = readRequiredString(env, 'TTS_PROVIDER_MODEL', issues);
-  // Optional — no OpenAI-compatible TTS endpoint is free/standardized the way
-  // chat-completions is, so this has no verified default. Falls back to the
-  // tts.ai endpoint the user asked for; the exact request/response contract
-  // there has not been confirmed against real docs/credentials yet (see
-  // tts-audio-generation.service.ts), so double-check this once you have a
-  // real tts.ai API key.
   const ttsProviderBaseUrl = readOptionalUrl(
     env,
     'TTS_PROVIDER_BASE_URL',
-    'https://tts.ai/v1/audio/speech',
+    'https://api.tts.ai/v1/tts/',
+    issues,
+  );
+  // Required — tts.ai's /v1/tts/ request requires a voice id (e.g. "af_bella",
+  // see GET /v1/voices/ on tts.ai for the full list).
+  const ttsProviderVoice = readRequiredString(env, 'TTS_PROVIDER_VOICE', issues);
+  // Optional — defaults to tts.ai's job-results polling endpoint. Only set
+  // TTS_PROVIDER_RESULTS_URL if you point TTS_PROVIDER_BASE_URL at a
+  // different, non-tts.ai provider with its own polling endpoint.
+  const ttsProviderResultsUrl = readOptionalUrl(
+    env,
+    'TTS_PROVIDER_RESULTS_URL',
+    'https://api.tts.ai/v1/speech/results/',
     issues,
   );
   const corsOriginsValue = readRequiredString(env, 'CORS_ORIGINS', issues);
@@ -149,6 +160,8 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
       apiKey: ttsProviderApiKey,
       model: ttsProviderModel,
       baseUrl: ttsProviderBaseUrl,
+      voice: ttsProviderVoice,
+      resultsUrl: ttsProviderResultsUrl,
     },
     cors: {
       origins: corsOrigins,

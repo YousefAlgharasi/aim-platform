@@ -49,8 +49,15 @@ export interface BackendConfig {
   readonly ttsProvider: {
     readonly apiKey: string;
     readonly model: string;
-    /** Speech-synthesis endpoint URL. No standardized free default exists. */
+    /** Speech-synthesis submission endpoint URL (e.g. tts.ai's POST /v1/tts/). */
     readonly baseUrl: string;
+    /** Voice ID required by tts.ai's synthesis request (e.g. "af_bella"). */
+    readonly voice: string;
+    /**
+     * Polling endpoint for tts.ai's async job result (GET .../v1/speech/results/?uuid=...).
+     * Defaults to the tts.ai results endpoint derived from `baseUrl`'s origin.
+     */
+    readonly resultsUrl: string;
   };
   readonly cors: {
     readonly origins: readonly string[];

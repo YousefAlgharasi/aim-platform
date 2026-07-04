@@ -61,6 +61,7 @@ describe('Placement integration (P19-009)', () => {
       STT_PROVIDER_MODEL: 'whisper-1',
       TTS_PROVIDER_API_KEY: 'test-tts-key',
       TTS_PROVIDER_MODEL: 'tts-1',
+      TTS_PROVIDER_VOICE: 'af_bella',
     };
 
     db = new FakeDatabaseService();

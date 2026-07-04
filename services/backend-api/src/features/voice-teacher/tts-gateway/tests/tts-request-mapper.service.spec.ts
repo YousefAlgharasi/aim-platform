@@ -3,7 +3,7 @@ import { TtsProviderRequest } from '../tts-gateway.types';
 
 describe('TtsRequestMapperService', () => {
   const mockConfig = {
-    getConfig: jest.fn().mockReturnValue({ apiKey: 'key', model: 'tts-1' }),
+    getConfig: jest.fn().mockReturnValue({ apiKey: 'key', model: 'tts-1', voice: 'af_bella' }),
   } as any;
 
   let service: TtsRequestMapperService;
@@ -26,6 +26,7 @@ describe('TtsRequestMapperService', () => {
     expect(result.model).toBe('tts-1');
     expect(result.sessionId).toBe('session-1');
     expect(result.studentId).toBe('student-1');
+    expect(result.voice).toBe('af_bella');
   });
 
   it('should never include apiKey in the mapped request', () => {
@@ -41,7 +42,7 @@ describe('TtsRequestMapperService', () => {
   });
 
   it('should read model from config, not hardcode it', () => {
-    mockConfig.getConfig.mockReturnValue({ apiKey: 'k', model: 'tts-2-hd' });
+    mockConfig.getConfig.mockReturnValue({ apiKey: 'k', model: 'tts-2-hd', voice: 'af_bella' });
     const result = service.mapRequest({
       text: 't',
       languageCode: 'ar',
