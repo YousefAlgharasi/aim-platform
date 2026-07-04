@@ -14,12 +14,14 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { AiChatSessionRepository } from '../repositories/ai-chat-session.repository';
 import { AiChatMessageRepository } from '../repositories/ai-chat-message.repository';
 import { GetChatHistoryInput, GetChatHistoryResult } from './chat-history-read.types';
+import { FocusRecapService } from '../chat-session/focus-recap.service';
 
 @Injectable()
 export class ChatHistoryReadService {
   constructor(
     private readonly chatSessionRepository: AiChatSessionRepository,
     private readonly chatMessageRepository: AiChatMessageRepository,
+    private readonly focusRecap: FocusRecapService,
   ) {}
 
   async getHistory(input: GetChatHistoryInput): Promise<GetChatHistoryResult | null> {
@@ -41,6 +43,7 @@ export class ChatHistoryReadService {
     }
 
     const rows = await this.chatMessageRepository.findBySessionId(sessionId);
+    const focusRecap = await this.focusRecap.getFocusRecap(studentId);
 
     return {
       sessionId: session.id,
@@ -49,7 +52,12 @@ export class ChatHistoryReadService {
         role: row.role,
         text: row.text,
         createdAt: row.created_at,
+        channel: row.channel,
+        audioRef: row.audio_ref,
+        audioDurationMs: row.audio_duration_ms,
+        isGreeting: row.is_greeting,
       })),
+      focusRecap,
     };
   }
 }

@@ -19,6 +19,7 @@ function makeResult(overrides: Partial<StartVoiceSessionResult> = {}): StartVoic
     contextRef: 'lesson:fractions',
     status: 'active',
     createdAt: '2026-06-19T00:00:00.000Z',
+    focusRecap: null,
     ...overrides,
   };
 }

@@ -32,6 +32,7 @@ import {
   TtsGateway,
 } from '../../voice-teacher/tts-gateway/tts-gateway.interface';
 import { StartChatSessionInput, StartChatSessionResult } from './chat-session-start.types';
+import { FocusRecapService } from './focus-recap.service';
 
 // P21-009: same default used by the Voice Teacher audio-submit API
 // (voice-audio-submit.controller.ts) for this codebase's Arabic-speaking
@@ -58,6 +59,7 @@ export class ChatSessionStartService {
     @Optional()
     @Inject(TTS_GATEWAY)
     private readonly ttsGateway: TtsGateway | null,
+    private readonly focusRecap: FocusRecapService,
   ) {}
 
   async startSession(input: StartChatSessionInput): Promise<StartChatSessionResult> {
@@ -92,12 +94,18 @@ export class ChatSessionStartService {
       });
     }
 
+    // P21-012: derived independently of greeting generation — the recap is
+    // shown on every session-start response, not only when a new session
+    // was just created.
+    const focusRecap = await this.focusRecap.getFocusRecap(studentId);
+
     return {
       sessionId: session.id,
       studentId: session.student_id,
       contextRef: session.context_ref,
       status: session.status,
       createdAt: session.created_at,
+      focusRecap,
     };
   }
 

@@ -14,6 +14,7 @@ import { ContextBuilderModule } from '../context-builder/context-builder.module'
 import { TtsGatewayModule } from '../../voice-teacher/tts-gateway/tts-gateway.module';
 import { ChatSessionStartService } from './chat-session-start.service';
 import { ChatSessionStartController } from './chat-session-start.controller';
+import { FocusRecapModule } from './focus-recap.module';
 
 @Module({
   imports: [
@@ -26,6 +27,8 @@ import { ChatSessionStartController } from './chat-session-start.controller';
     AiTeacherOrchestratorModule,
     ContextBuilderModule,
     TtsGatewayModule,
+    // P21-012: focusRecap field on the session-start response.
+    FocusRecapModule,
   ],
   controllers: [ChatSessionStartController],
   providers: [ChatSessionStartService],

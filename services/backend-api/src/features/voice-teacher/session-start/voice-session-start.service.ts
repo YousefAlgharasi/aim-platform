@@ -36,6 +36,7 @@ export class VoiceSessionStartService {
       contextRef: result.contextRef,
       status: result.status,
       createdAt: result.createdAt,
+      focusRecap: result.focusRecap,
     };
   }
 }
