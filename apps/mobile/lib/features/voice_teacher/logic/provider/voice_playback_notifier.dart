@@ -1,9 +1,28 @@
+import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+
+import '../voice_player_client.dart';
 
 enum PlaybackState { idle, loading, playing, paused, completed, error }
 
 class VoicePlaybackNotifier extends ChangeNotifier {
+  // Bugfix: loadAndPlay previously only fetched the audio bytes and flipped
+  // the state to "playing" without ever actually playing them through any
+  // audio output — there was no audio player anywhere in this class. stop/
+  // pause/resume had the same problem: they mutated state but never
+  // controlled real playback, so barge-in's "stop playback immediately"
+  // never actually stopped any sound either. [player] is injectable for
+  // widget tests, which have no real platform channel to back
+  // audioplayers' AudioPlayer (its own constructor already calls one).
+  VoicePlaybackNotifier({VoicePlayerClient? player})
+      : _player = player ?? RealVoicePlayerClient() {
+    _completeSubscription = _player.onComplete.listen((_) => complete());
+  }
+
+  final VoicePlayerClient _player;
+  late final StreamSubscription<void> _completeSubscription;
+
   PlaybackState _state = PlaybackState.idle;
   String? _currentAudioRef;
   double _progress = 0.0;
@@ -32,7 +51,8 @@ class VoicePlaybackNotifier extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await fetchAudioFn(audioRef);
+      final bytes = await fetchAudioFn(audioRef);
+      await _player.playBytes(bytes);
       _state = PlaybackState.playing;
       notifyListeners();
     } catch (e) {
@@ -54,6 +74,7 @@ class VoicePlaybackNotifier extends ChangeNotifier {
 
   void pause() {
     if (_state == PlaybackState.playing) {
+      unawaited(_player.pause());
       _state = PlaybackState.paused;
       notifyListeners();
     }
@@ -61,6 +82,7 @@ class VoicePlaybackNotifier extends ChangeNotifier {
 
   void resume() {
     if (_state == PlaybackState.paused) {
+      unawaited(_player.resume());
       _state = PlaybackState.playing;
       notifyListeners();
     }
@@ -79,6 +101,7 @@ class VoicePlaybackNotifier extends ChangeNotifier {
   }
 
   void stop() {
+    unawaited(_player.stop());
     _state = PlaybackState.idle;
     _currentAudioRef = null;
     _progress = 0.0;
@@ -89,4 +112,11 @@ class VoicePlaybackNotifier extends ChangeNotifier {
   bool isPlayingRef(String audioRef) =>
       _currentAudioRef == audioRef &&
       (_state == PlaybackState.playing || _state == PlaybackState.loading);
+
+  @override
+  void dispose() {
+    unawaited(_completeSubscription.cancel());
+    _player.dispose();
+    super.dispose();
+  }
 }
