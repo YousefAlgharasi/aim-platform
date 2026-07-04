@@ -125,13 +125,29 @@ export class AiTeacherOrchestratorService {
 
     const channel = input.channel ?? 'text';
 
-    const studentMessageRecord = await this.chatMessageRepository.create(
-      input.sessionId,
-      input.studentId,
-      'student',
-      input.studentMessage,
-      { channel },
-    );
+    // P21-021b: a voice turn's student message row already exists (created
+    // empty by AudioUploadService as the voice_audio_assets FK anchor,
+    // before STT ran) — fill it in rather than inserting a second row.
+    // Every text-chat caller omits existingStudentMessageId and keeps
+    // today's insert behavior.
+    const studentMessageRecord = input.existingStudentMessageId
+      ? await this.chatMessageRepository.updateText(
+          input.existingStudentMessageId,
+          input.studentMessage,
+        )
+      : await this.chatMessageRepository.create(
+          input.sessionId,
+          input.studentId,
+          'student',
+          input.studentMessage,
+          { channel },
+        );
+
+    if (!studentMessageRecord) {
+      throw new Error(
+        `AiTeacherOrchestratorService.handleTurn: existingStudentMessageId=${input.existingStudentMessageId} not found`,
+      );
+    }
 
     // P18-fix: input-side safety check BEFORE any provider call, per
     // docs/phase-18/ai-safety-policy.md — fails closed on a moderation

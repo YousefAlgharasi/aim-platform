@@ -12,21 +12,35 @@
  * backend validation sequence from docs/phase-9/audio-upload-contract.md
  * (steps 3–8: field presence, file size, declared MIME type, actual MIME
  * type via magic-byte sniffing, declared duration, and actual duration
- * decoded from the container header), creates a pending voice message
- * record via VoiceMessageRepository, persists audio + metadata via
- * AudioMetadataPersistenceService, and returns messageId + assetId.
- * Steps 1–2 (auth + session ownership) are handled by the API
- * controller/guard layer before this service is called. Both the
- * declared and actual duration checks delegate to
+ * decoded from the container header), creates a placeholder student turn
+ * record, persists audio + metadata via AudioMetadataPersistenceService,
+ * and returns messageId + assetId. Steps 1–2 (auth + session ownership)
+ * are handled by the API controller/guard layer before this service is
+ * called (this service's own ownership/status check is a second,
+ * defense-in-depth layer for any caller that reaches it directly). Both
+ * the declared and actual duration checks delegate to
  * evaluateAudioDurationPolicy so the min/max rule lives in one place.
  * The STT Gateway call is wired by a later orchestration task. This
  * service never calls an STT/TTS/AI provider, never holds provider
  * credentials, and never computes any AIM Engine-owned value.
+ *
+ * P21-021b: session ownership/status is now checked against
+ * `ai_chat_sessions` via `AiChatSessionRepository`, not the legacy
+ * `voice_sessions` table — `VoiceSessionStartService` (P21-007) stopped
+ * creating new `voice_sessions` rows, so checking there would have 403'd
+ * every audio upload for a post-P21-007 session (the ownership check
+ * would always find no row). The placeholder turn row this service
+ * creates to anchor the `voice_audio_assets` row is now an `ai_chat_messages`
+ * row (role='student', channel='voice', empty text) instead of a
+ * `voice_messages` row — `VoiceOrchestratorService` fills in the real
+ * transcript on this same row once STT completes (see
+ * `AiTeacherOrchestratorService.handleTurn`'s `existingStudentMessageId`),
+ * rather than inserting a second student turn.
  */
 import { Injectable } from '@nestjs/common';
 
-import { VoiceMessageRepository } from '../repositories/voice-message.repository';
-import { VoiceSessionRepository } from '../repositories/voice-session.repository';
+import { AiChatMessageRepository } from '../../ai-teacher/repositories/ai-chat-message.repository';
+import { AiChatSessionRepository } from '../../ai-teacher/repositories/ai-chat-session.repository';
 import {
   AUDIO_UPLOAD_ALLOWED_MIME_TYPES,
   AUDIO_UPLOAD_MAX_FILE_SIZE_BYTES,
@@ -54,8 +68,8 @@ type ValidationFail = { ok: false; error: AudioUploadValidationError };
 @Injectable()
 export class AudioUploadService {
   constructor(
-    private readonly voiceSessionRepo: VoiceSessionRepository,
-    private readonly voiceMessageRepo: VoiceMessageRepository,
+    private readonly chatSessionRepo: AiChatSessionRepository,
+    private readonly chatMessageRepo: AiChatMessageRepository,
     private readonly audioMetadataPersistence: AudioMetadataPersistenceService,
   ) {}
 
@@ -67,7 +81,7 @@ export class AudioUploadService {
       return validation.error;
     }
 
-    const session = await this.voiceSessionRepo.findById(input.sessionId);
+    const session = await this.chatSessionRepo.findById(input.sessionId);
     if (!session || session.student_id !== input.studentId) {
       return { statusCode: 403, error: 'Forbidden' };
     }
@@ -76,14 +90,21 @@ export class AudioUploadService {
       return { statusCode: 403, error: 'Forbidden' };
     }
 
-    const message = await this.voiceMessageRepo.create(
+    // P21-021b: placeholder student turn row, empty until STT fills in the
+    // real transcript in place (see AiTeacherOrchestratorService.handleTurn's
+    // existingStudentMessageId) — this is purely the voice_audio_assets FK
+    // anchor, not yet the real conversation turn.
+    const message = await this.chatMessageRepo.create(
       input.sessionId,
       input.studentId,
+      'student',
+      '',
+      { channel: 'voice' },
     );
 
     // P9-032: Persist bytes to opaque storage + write voice_audio_assets row.
     const { assetId } = await this.audioMetadataPersistence.persist({
-      messageId: message.id,
+      aiChatMessageId: message.id,
       studentId: input.studentId,
       audio: input.audio,
       contentType: input.mimeType,

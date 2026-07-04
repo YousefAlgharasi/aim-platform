@@ -20,15 +20,20 @@ const activeSession = {
   status: 'active',
 };
 
+// P21-021b: AudioUploadService's first two dependencies are now
+// AiChatSessionRepository and AiChatMessageRepository (not the legacy
+// VoiceSessionRepository/VoiceMessageRepository) — renamed here for
+// accuracy, same mock shapes since both repos' findById()/create() rows
+// expose the same fields this service reads (student_id/status; an id).
 function buildService(overrides?: {
   findById?: jest.Mock;
   create?: jest.Mock;
   persist?: jest.Mock;
 }) {
-  const voiceSessionRepo = {
+  const chatSessionRepo = {
     findById: overrides?.findById ?? jest.fn().mockResolvedValue(activeSession),
   } as any;
-  const voiceMessageRepo = {
+  const chatMessageRepo = {
     create:
       overrides?.create ??
       jest.fn().mockResolvedValue({ id: 'message-1' }),
@@ -38,7 +43,7 @@ function buildService(overrides?: {
       overrides?.persist ??
       jest.fn().mockResolvedValue({ assetId: 'asset-1', storageKey: 'key-1' }),
   } as any;
-  return new AudioUploadService(voiceSessionRepo, voiceMessageRepo, audioMetadataPersistence);
+  return new AudioUploadService(chatSessionRepo, chatMessageRepo, audioMetadataPersistence);
 }
 
 describe('AudioUploadService — edge cases (P9-035)', () => {

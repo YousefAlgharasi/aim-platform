@@ -53,6 +53,21 @@ export interface VoiceTurnInput {
    * client-provided string used as an AIM authority signal.
    */
   readonly languageCode: string;
+
+  /**
+   * P21-021b: id of the placeholder ai_chat_messages student row
+   * AudioUploadService already created (as the voice_audio_assets FK
+   * anchor) before this turn's STT ran. Forwarded to
+   * AiTeacherOrchestratorService.handleTurn() as
+   * existingStudentMessageId so the real transcript fills in that same
+   * row instead of a second one. Optional: `VoiceAudioSubmitController`
+   * (the live `POST voice-teacher/sessions/:sessionId/audio` endpoint)
+   * calls this orchestrator directly without going through
+   * AudioUploadService first, so it has no placeholder id to pass —
+   * omitted there, which keeps today's insert-a-new-row behavior for
+   * that path unchanged.
+   */
+  readonly studentMessageId?: string;
 }
 
 export interface VoiceTurnResult {

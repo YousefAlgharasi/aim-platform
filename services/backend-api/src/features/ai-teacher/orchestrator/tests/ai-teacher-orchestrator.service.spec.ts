@@ -253,6 +253,57 @@ describe('AiTeacherOrchestratorService', () => {
     );
   });
 
+  // P21-021b: a voice turn's student message row already exists (the
+  // voice_audio_assets FK anchor created by AudioUploadService). Passing
+  // existingStudentMessageId must fill in that row's text instead of
+  // inserting a second student row.
+  it('fills in an existing student message row instead of inserting a new one when existingStudentMessageId is set', async () => {
+    const { service, chatMessageRepository } = makeOrchestrator();
+    (chatMessageRepository.updateText as jest.Mock) = jest.fn().mockResolvedValue({
+      id: 'placeholder-1',
+      session_id: 'session-1',
+      student_id: 'student-1',
+      role: 'student',
+      text: 'How do I add fractions?',
+      created_at: 'now',
+      channel: 'voice',
+      audio_ref: null,
+      audio_duration_ms: null,
+      is_greeting: false,
+    });
+
+    await service.handleTurn({ ...makeInput(), existingStudentMessageId: 'placeholder-1' });
+
+    expect(chatMessageRepository.updateText).toHaveBeenCalledWith(
+      'placeholder-1',
+      'How do I add fractions?',
+    );
+    expect((chatMessageRepository.create as jest.Mock).mock.calls.length).toBe(1); // only the ai_teacher reply row
+  });
+
+  it('throws if existingStudentMessageId does not resolve to a real row', async () => {
+    const { service, chatMessageRepository } = makeOrchestrator();
+    (chatMessageRepository.updateText as jest.Mock) = jest.fn().mockResolvedValue(null);
+
+    await expect(
+      service.handleTurn({ ...makeInput(), existingStudentMessageId: 'missing-id' }),
+    ).rejects.toThrow(/existingStudentMessageId=missing-id not found/);
+  });
+
+  it('inserts a new student row (unchanged behavior) when existingStudentMessageId is omitted', async () => {
+    const { service, chatMessageRepository } = makeOrchestrator();
+
+    await service.handleTurn(makeInput());
+
+    expect(chatMessageRepository.create).toHaveBeenCalledWith(
+      'session-1',
+      'student-1',
+      'student',
+      'How do I add fractions?',
+      { channel: 'text' },
+    );
+  });
+
   it('persists the context snapshot against the ai_teacher message id', async () => {
     const { service, contextBuilder } = makeOrchestrator();
 

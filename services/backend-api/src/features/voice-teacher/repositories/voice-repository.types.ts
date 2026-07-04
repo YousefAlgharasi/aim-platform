@@ -29,9 +29,13 @@ export interface VoiceMessageRow {
   readonly created_at: string;
 }
 
+// P21-021b: message_id is null on every row written after this task;
+// ai_chat_message_id is null only on historical rows written before it.
+// Exactly one of the two is ever set.
 export interface VoiceAudioAssetRow {
   readonly id: string;
-  readonly message_id: string;
+  readonly message_id: string | null;
+  readonly ai_chat_message_id: string | null;
   readonly student_id: string;
   readonly storage_key: string;
   readonly content_type: string;
