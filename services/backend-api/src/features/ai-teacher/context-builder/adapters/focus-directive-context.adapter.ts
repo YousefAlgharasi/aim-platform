@@ -39,4 +39,22 @@ export class FocusDirectiveContextAdapter {
       directiveText: directive.directiveText,
     };
   }
+
+  /**
+   * P21-012: Short, templated one-line label built from the same
+   * `directive_text` this adapter already reads — distinct from the
+   * flowing greeting prose so Flutter can render it with its own styling
+   * (a small callout, not a chat bubble) separately from the greeting
+   * message itself. Returns null when no active directive exists; this
+   * never fabricates a directive.
+   */
+  async getFocusRecap(studentId: string): Promise<string | null> {
+    const context = await this.getFocusDirectiveContext(studentId);
+
+    if (!context) {
+      return null;
+    }
+
+    return `Today we're focusing on: ${context.directiveText}`;
+  }
 }

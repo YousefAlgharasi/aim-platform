@@ -5,6 +5,7 @@ import { ChatHistoryReadService } from '../chat-history-read.service';
 import { AiChatSessionRepository } from '../../repositories/ai-chat-session.repository';
 import { AiChatMessageRepository } from '../../repositories/ai-chat-message.repository';
 import { AiChatMessageRow, AiChatSessionRow } from '../../repositories/ai-chat-repository.types';
+import { FocusRecapService } from '../../chat-session/focus-recap.service';
 
 function makeSessionRow(overrides: Partial<AiChatSessionRow> = {}): AiChatSessionRow {
   return {
@@ -44,13 +45,16 @@ function makeRepositories(
   const messageRepository = {
     findBySessionId: jest.fn().mockResolvedValue(messageRows),
   } as unknown as AiChatMessageRepository;
-  return { sessionRepository, messageRepository };
+  const focusRecapService = {
+    getFocusRecap: jest.fn().mockResolvedValue(null),
+  } as unknown as FocusRecapService;
+  return { sessionRepository, messageRepository, focusRecapService };
 }
 
 describe('ChatHistoryReadService', () => {
   it('returns mapped messages for an owned, existing session', async () => {
-    const { sessionRepository, messageRepository } = makeRepositories();
-    const service = new ChatHistoryReadService(sessionRepository, messageRepository);
+    const { sessionRepository, messageRepository, focusRecapService } = makeRepositories();
+    const service = new ChatHistoryReadService(sessionRepository, messageRepository, focusRecapService);
 
     const result = await service.getHistory({ studentId: 'student-1', sessionId: 'session-1' });
 
@@ -58,14 +62,24 @@ describe('ChatHistoryReadService', () => {
     expect(result).toEqual({
       sessionId: 'session-1',
       messages: [
-        { id: 'message-1', role: 'student', text: 'hello', createdAt: '2026-06-19T00:00:00.000Z' },
+        {
+          id: 'message-1',
+          role: 'student',
+          text: 'hello',
+          createdAt: '2026-06-19T00:00:00.000Z',
+          channel: 'text',
+          audioRef: null,
+          audioDurationMs: null,
+          isGreeting: false,
+        },
       ],
+      focusRecap: null,
     });
   });
 
   it('returns null when the session does not exist', async () => {
-    const { sessionRepository, messageRepository } = makeRepositories(null);
-    const service = new ChatHistoryReadService(sessionRepository, messageRepository);
+    const { sessionRepository, messageRepository, focusRecapService } = makeRepositories(null);
+    const service = new ChatHistoryReadService(sessionRepository, messageRepository, focusRecapService);
 
     const result = await service.getHistory({ studentId: 'student-1', sessionId: 'missing' });
 
@@ -74,10 +88,10 @@ describe('ChatHistoryReadService', () => {
   });
 
   it('returns null when the session belongs to another student', async () => {
-    const { sessionRepository, messageRepository } = makeRepositories(
+    const { sessionRepository, messageRepository, focusRecapService } = makeRepositories(
       makeSessionRow({ student_id: 'other-student' }),
     );
-    const service = new ChatHistoryReadService(sessionRepository, messageRepository);
+    const service = new ChatHistoryReadService(sessionRepository, messageRepository, focusRecapService);
 
     const result = await service.getHistory({ studentId: 'student-1', sessionId: 'session-1' });
 
@@ -86,8 +100,8 @@ describe('ChatHistoryReadService', () => {
   });
 
   it('throws when studentId is missing', async () => {
-    const { sessionRepository, messageRepository } = makeRepositories();
-    const service = new ChatHistoryReadService(sessionRepository, messageRepository);
+    const { sessionRepository, messageRepository, focusRecapService } = makeRepositories();
+    const service = new ChatHistoryReadService(sessionRepository, messageRepository, focusRecapService);
 
     await expect(
       service.getHistory({ studentId: '', sessionId: 'session-1' }),
@@ -95,8 +109,8 @@ describe('ChatHistoryReadService', () => {
   });
 
   it('throws when sessionId is missing', async () => {
-    const { sessionRepository, messageRepository } = makeRepositories();
-    const service = new ChatHistoryReadService(sessionRepository, messageRepository);
+    const { sessionRepository, messageRepository, focusRecapService } = makeRepositories();
+    const service = new ChatHistoryReadService(sessionRepository, messageRepository, focusRecapService);
 
     await expect(
       service.getHistory({ studentId: 'student-1', sessionId: '' }),

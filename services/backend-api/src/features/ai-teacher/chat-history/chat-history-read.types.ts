@@ -13,6 +13,13 @@ export interface ChatHistoryMessage {
   readonly role: 'student' | 'ai_teacher';
   readonly text: string;
   readonly createdAt: string;
+  // P21-006/P21-015: unified text+voice conversation turn fields, so both
+  // the chat screen and the voice screen can render one shared message
+  // shape from the same ai_chat_messages history.
+  readonly channel: 'text' | 'voice';
+  readonly audioRef: string | null;
+  readonly audioDurationMs: number | null;
+  readonly isGreeting: boolean;
 }
 
 export interface GetChatHistoryInput {
@@ -23,4 +30,9 @@ export interface GetChatHistoryInput {
 export interface GetChatHistoryResult {
   readonly sessionId: string;
   readonly messages: readonly ChatHistoryMessage[];
+  /**
+   * P21-012: short "today we're focusing on" recap line, distinct from any
+   * message's prose. Null when no active focus directive exists.
+   */
+  readonly focusRecap: string | null;
 }

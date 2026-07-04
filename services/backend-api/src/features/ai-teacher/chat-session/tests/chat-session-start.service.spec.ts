@@ -105,12 +105,17 @@ function makeDeps(options: {
       ? ({ synthesize: jest.fn().mockResolvedValue(ttsResponse) } as unknown as TtsGateway)
       : options.ttsGateway;
 
+  const focusRecapService = {
+    getFocusRecap: jest.fn().mockResolvedValue(null),
+  } as unknown as import('../focus-recap.service').FocusRecapService;
+
   const service = new ChatSessionStartService(
     chatSessionRepository,
     chatMessageRepository,
     aiTeacherOrchestrator,
     contextBuilder,
     ttsGateway,
+    focusRecapService,
   );
 
   return {
@@ -158,6 +163,7 @@ describe('ChatSessionStartService', () => {
       contextRef: 'lesson:fractions',
       status: 'active',
       createdAt: '2026-06-19T00:00:00.000Z',
+      focusRecap: null,
     });
   });
 
@@ -232,6 +238,9 @@ describe('ChatSessionStartService', () => {
       } as unknown as AiTeacherOrchestratorService;
       const contextBuilder = { persistSnapshot: jest.fn() } as unknown as ContextBuilderService;
       const ttsGateway = { synthesize: jest.fn() } as unknown as TtsGateway;
+      const focusRecapService = {
+        getFocusRecap: jest.fn().mockResolvedValue(null),
+      } as unknown as import('../focus-recap.service').FocusRecapService;
 
       const service = new ChatSessionStartService(
         chatSessionRepository,
@@ -239,6 +248,7 @@ describe('ChatSessionStartService', () => {
         aiTeacherOrchestrator,
         contextBuilder,
         ttsGateway,
+        focusRecapService,
       );
 
       await expect(
@@ -249,6 +259,7 @@ describe('ChatSessionStartService', () => {
         contextRef: 'lesson:fractions',
         status: 'active',
         createdAt: '2026-06-19T00:00:00.000Z',
+        focusRecap: null,
       });
       await flush();
 
@@ -322,6 +333,50 @@ describe('ChatSessionStartService', () => {
 
       expect(result.sessionId).toBe('session-1');
       expect(chatMessageRepository.updateAudio).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('P21-012: focusRecap field', () => {
+    it('is null when no active focus directive exists', async () => {
+      const { service } = makeDeps({ created: false });
+
+      const result = await service.startSession({
+        studentId: 'student-1',
+        contextRef: 'lesson:fractions',
+      });
+
+      expect(result.focusRecap).toBeNull();
+    });
+
+    it('is populated from FocusRecapService when an active directive exists', async () => {
+      const chatSessionRepository = {
+        getOrCreateForContext: jest
+          .fn()
+          .mockResolvedValue({ session: makeSessionRow(), created: false }),
+      } as unknown as AiChatSessionRepository;
+      const chatMessageRepository = { create: jest.fn(), updateAudio: jest.fn() } as unknown as AiChatMessageRepository;
+      const aiTeacherOrchestrator = { generateGreeting: jest.fn() } as unknown as AiTeacherOrchestratorService;
+      const contextBuilder = { persistSnapshot: jest.fn() } as unknown as ContextBuilderService;
+      const ttsGateway = { synthesize: jest.fn() } as unknown as TtsGateway;
+      const focusRecapService = {
+        getFocusRecap: jest.fn().mockResolvedValue("Today we're focusing on: Past tense irregular verbs"),
+      } as unknown as import('../focus-recap.service').FocusRecapService;
+
+      const service = new ChatSessionStartService(
+        chatSessionRepository,
+        chatMessageRepository,
+        aiTeacherOrchestrator,
+        contextBuilder,
+        ttsGateway,
+        focusRecapService,
+      );
+
+      const result = await service.startSession({
+        studentId: 'student-1',
+        contextRef: 'lesson:fractions',
+      });
+
+      expect(result.focusRecap).toBe("Today we're focusing on: Past tense irregular verbs");
     });
   });
 

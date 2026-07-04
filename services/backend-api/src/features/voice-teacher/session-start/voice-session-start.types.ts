@@ -25,6 +25,8 @@ export interface StartVoiceSessionResult {
    */
   readonly status: 'active' | 'closed';
   readonly createdAt: string;
+  /** P21-012: same focusRecap surfaced by the chat entry point. */
+  readonly focusRecap: string | null;
 }
 
 /** Row shape for voice_sessions (P9-018 migration). */

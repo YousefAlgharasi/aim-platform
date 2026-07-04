@@ -14,7 +14,19 @@ function makeUser(overrides: Partial<AuthenticatedUser> = {}): AuthenticatedUser
 function makeResult(overrides: Partial<GetChatHistoryResult> = {}): GetChatHistoryResult {
   return {
     sessionId: 'session-1',
-    messages: [{ id: 'message-1', role: 'student', text: 'hello', createdAt: '2026-06-19T00:00:00.000Z' }],
+    messages: [
+      {
+        id: 'message-1',
+        role: 'student',
+        text: 'hello',
+        createdAt: '2026-06-19T00:00:00.000Z',
+        channel: 'text',
+        audioRef: null,
+        audioDurationMs: null,
+        isGreeting: false,
+      },
+    ],
+    focusRecap: null,
     ...overrides,
   };
 }

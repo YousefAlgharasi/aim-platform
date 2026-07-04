@@ -10,11 +10,12 @@ import { AuthModule } from '../../../auth/auth.module';
 import { RolesModule } from '../../roles';
 import { UsersModule } from '../../users';
 import { AiChatRepositoriesModule } from '../repositories/ai-chat-repositories.module';
+import { FocusRecapModule } from '../chat-session/focus-recap.module';
 import { ChatHistoryReadService } from './chat-history-read.service';
 import { ChatHistoryReadController } from './chat-history-read.controller';
 
 @Module({
-  imports: [AuthModule, RolesModule, UsersModule, AiChatRepositoriesModule],
+  imports: [AuthModule, RolesModule, UsersModule, AiChatRepositoriesModule, FocusRecapModule],
   controllers: [ChatHistoryReadController],
   providers: [ChatHistoryReadService],
   exports: [ChatHistoryReadService],
