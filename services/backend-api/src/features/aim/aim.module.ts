@@ -44,7 +44,6 @@ import { WeaknessUpdateService } from './persistence/weakness-update.service';
 import { DifficultyDecisionService } from './persistence/difficulty-decision.service';
 import { RecommendationOutputService } from './persistence/recommendation-output.service';
 import { ReviewScheduleOutputService } from './persistence/review-schedule-output.service';
-import { FrustrationSignalService } from './persistence/frustration-signal.service';
 import { SessionSummaryService } from './persistence/session-summary.service';
 import { AimFocusDirectiveService } from './persistence/aim-focus-directive.service';
 import { AimResultService } from './result/aim-result.service';
@@ -109,10 +108,9 @@ import { AimResultController } from './result/aim-result.controller';
     // Phase 5 — review schedule output persistence (P5-061)
     ReviewScheduleOutputService,
 
-    // Phase 5 — frustration signal persistence (P5-062)
-    FrustrationSignalService,
-
     // Phase 5 — session summary persistence (P5-063)
+    // (P5-062's FrustrationSignalService was a dead duplicate writer of the
+    // same session_summaries row and was removed in P20-017.)
     SessionSummaryService,
 
     // Phase 20 — AI Teacher focus directive generation (P20-013)
