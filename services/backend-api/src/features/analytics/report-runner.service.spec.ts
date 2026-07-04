@@ -3,6 +3,7 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ReportRunnerService } from './report-runner.service';
 import { ReportDefinitionService } from './report-definition.service';
 import { MetricDefinitionService } from './metric-definition.service';
+import { StudentAimProgressReportService } from './student-aim-progress-report.service';
 import { AnalyticsRepository } from './analytics.repository';
 import { ReportDefinition, ReportRun, MetricDefinition } from './analytics.entities';
 
@@ -72,6 +73,7 @@ describe('ReportRunnerService', () => {
   >;
   let reportDefinitionService: jest.Mocked<Pick<ReportDefinitionService, 'getByKeyForRole'>>;
   let metricDefinitionService: jest.Mocked<Pick<MetricDefinitionService, 'getByKey'>>;
+  let studentAimProgressReportService: jest.Mocked<Pick<StudentAimProgressReportService, 'buildSections'>>;
   let service: ReportRunnerService;
 
   beforeEach(() => {
@@ -85,11 +87,13 @@ describe('ReportRunnerService', () => {
     };
     reportDefinitionService = { getByKeyForRole: jest.fn() };
     metricDefinitionService = { getByKey: jest.fn() };
+    studentAimProgressReportService = { buildSections: jest.fn().mockResolvedValue([]) };
 
     service = new ReportRunnerService(
       analyticsRepository as unknown as AnalyticsRepository,
       reportDefinitionService as unknown as ReportDefinitionService,
       metricDefinitionService as unknown as MetricDefinitionService,
+      studentAimProgressReportService as unknown as StudentAimProgressReportService,
     );
   });
 
@@ -289,6 +293,39 @@ describe('ReportRunnerService', () => {
       const metricsSection = resultData.sections.find((s) => s.type === 'metrics');
       expect(metricsSection).toBeDefined();
       expect(metricsSection!.data.length).toBeGreaterThan(0);
+    });
+
+    it('dispatches student_aim_progress to StudentAimProgressReportService, scoped to requestedByUserId, bypassing the generic metric mechanism (P20-023)', async () => {
+      const definition = makeDefinition({
+        key: 'student_aim_progress',
+        category: 'student',
+        allowedRoles: ['student'],
+      });
+      reportDefinitionService.getByKeyForRole.mockResolvedValue(definition);
+      analyticsRepository.createReportRun.mockResolvedValue(makeRun({ status: 'queued' }));
+
+      let capturedResultData: unknown;
+      analyticsRepository.updateReportRunStatus.mockImplementation(async (_id, update) => {
+        if (update.status === 'completed') {
+          capturedResultData = update.resultData;
+        }
+        return makeRun({ status: update.status, resultData: update.resultData ?? null });
+      });
+
+      const aimSections = [{ title: 'Skill Mastery', type: 'table' as const, data: [{ skillId: 'skill:a' }] }];
+      (studentAimProgressReportService.buildSections as jest.Mock).mockResolvedValue(aimSections);
+
+      await service.runReport({
+        reportKey: 'student_aim_progress',
+        requestedByUserId: 'student-42',
+        requestedRole: 'student',
+        parameters: {},
+      });
+
+      expect(studentAimProgressReportService.buildSections).toHaveBeenCalledWith('student-42');
+      expect(metricDefinitionService.getByKey).not.toHaveBeenCalled();
+      const resultData = capturedResultData as { sections: unknown[] };
+      expect(resultData.sections).toEqual(aimSections);
     });
   });
 

@@ -10,6 +10,7 @@ import { MetricDefinitionService } from './metric-definition.service';
 import { MetricAggregationService } from './metric-aggregation.service';
 import { ReportDefinitionService } from './report-definition.service';
 import { ReportRunnerService } from './report-runner.service';
+import { StudentAimProgressReportService } from './student-aim-progress-report.service';
 import { DashboardService } from './dashboard.service';
 import { AnalyticsExportService } from './analytics-export.service';
 import { CohortService } from './cohort.service';
@@ -46,6 +47,7 @@ import { AnalyticsExportController } from './analytics-export.controller';
     MetricAggregationService,
     ReportDefinitionService,
     ReportRunnerService,
+    StudentAimProgressReportService,
     DashboardService,
     AnalyticsExportService,
     CohortService,
