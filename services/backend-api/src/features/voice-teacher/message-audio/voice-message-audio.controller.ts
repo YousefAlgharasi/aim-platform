@@ -19,8 +19,8 @@ import {
 import { Response } from 'express';
 
 import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
-import { CurrentUser } from '../../../auth/current-user.decorator';
-import { AuthenticatedUser } from '../../../auth/authenticated-user';
+import { ResolveInternalUserIdGuard } from '../../../auth/authorization/resolve-internal-user-id.guard';
+import { ResolvedInternalUserId } from '../../../auth/current-user.decorator';
 import { TtsAudioStorageService } from '../tts-gateway/tts-audio-storage.service';
 import { VoiceMessageAudioService } from './voice-message-audio.service';
 
@@ -34,7 +34,7 @@ const DEFAULT_LANGUAGE_CODE = 'ar';
  */
 @ApiTags('Voice Teacher')
 @ApiBearerAuth()
-@UseGuards(SupabaseJwtAuthGuard)
+@UseGuards(SupabaseJwtAuthGuard, ResolveInternalUserIdGuard)
 @Controller('voice-teacher/messages')
 export class VoiceMessageAudioController {
   constructor(
@@ -50,12 +50,10 @@ export class VoiceMessageAudioController {
   @ApiOkResponse({ description: 'Audio stream' })
   async getMessageAudio(
     @Param('messageId') messageId: string,
-    @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() studentId: string,
     @Res() res: Response,
     @Query('languageCode') languageCode?: string,
   ): Promise<void> {
-    const studentId = user.id;
-
     const result = await this.messageAudioService.ensureAudio(
       messageId,
       studentId,

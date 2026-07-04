@@ -6,7 +6,7 @@ describe('VoiceMessageAudioController', () => {
   let controller: VoiceMessageAudioController;
   let messageAudioService: jest.Mocked<VoiceMessageAudioService>;
   let audioStorage: jest.Mocked<TtsAudioStorageService>;
-  const mockUser = { id: 'student-1', email: 'test@test.com' } as any;
+  const studentId = 'student-1';
 
   const mockRes = () =>
     ({
@@ -35,7 +35,7 @@ describe('VoiceMessageAudioController', () => {
     });
     const res = mockRes();
 
-    await controller.getMessageAudio('msg-1', mockUser, res, undefined);
+    await controller.getMessageAudio('msg-1', studentId, res, undefined);
 
     expect(messageAudioService.ensureAudio).toHaveBeenCalledWith('msg-1', 'student-1', 'ar');
     expect(audioStorage.retrieveAudio).toHaveBeenCalledWith('tts_new_ref', 'student-1');
@@ -56,7 +56,7 @@ describe('VoiceMessageAudioController', () => {
     });
     const res = mockRes();
 
-    await controller.getMessageAudio('msg-1', mockUser, res, undefined);
+    await controller.getMessageAudio('msg-1', studentId, res, undefined);
 
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalledWith(Buffer.from('existing-bytes'));
@@ -71,7 +71,7 @@ describe('VoiceMessageAudioController', () => {
     });
     const res = mockRes();
 
-    await controller.getMessageAudio('msg-1', mockUser, res, undefined);
+    await controller.getMessageAudio('msg-1', studentId, res, undefined);
 
     expect(res.status).toHaveBeenCalledWith(404);
     expect(audioStorage.retrieveAudio).not.toHaveBeenCalled();
@@ -87,7 +87,7 @@ describe('VoiceMessageAudioController', () => {
     audioStorage.retrieveAudio.mockResolvedValue(null);
     const res = mockRes();
 
-    await controller.getMessageAudio('msg-1', mockUser, res, undefined);
+    await controller.getMessageAudio('msg-1', studentId, res, undefined);
 
     expect(res.status).toHaveBeenCalledWith(404);
   });
@@ -102,7 +102,7 @@ describe('VoiceMessageAudioController', () => {
     audioStorage.retrieveAudio.mockResolvedValue({ data: Buffer.from('x'), contentType: 'audio/mpeg' });
     const res = mockRes();
 
-    await controller.getMessageAudio('msg-1', mockUser, res, 'en');
+    await controller.getMessageAudio('msg-1', studentId, res, 'en');
 
     expect(messageAudioService.ensureAudio).toHaveBeenCalledWith('msg-1', 'student-1', 'en');
   });

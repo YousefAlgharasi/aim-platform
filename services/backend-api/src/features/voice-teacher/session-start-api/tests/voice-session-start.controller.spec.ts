@@ -1,21 +1,20 @@
 // P9-068: Create Start Voice Session API
 // VoiceSessionStartController + StartVoiceSessionRequestDto tests.
+//
+// Bugfix: studentId is now resolved via ResolveInternalUserIdGuard to the
+// internal users.id (never the raw Supabase Auth UID) — the controller
+// method takes the resolved id directly, not an AuthenticatedUser object.
 
 import { VoiceSessionStartController } from '../voice-session-start.controller';
 import { VoiceSessionStartService } from '../../session-start/voice-session-start.service';
 import { StartVoiceSessionRequestDto } from '../voice-session-start.dto';
 import { StartVoiceSessionResult } from '../../session-start/voice-session-start.types';
 import { AppError } from '../../../../common/errors/app-error';
-import { AuthenticatedUser } from '../../../../auth/authenticated-user';
-
-function makeUser(overrides: Partial<AuthenticatedUser> = {}): AuthenticatedUser {
-  return { id: 'student-1', email: 'student@example.com', ...overrides } as AuthenticatedUser;
-}
 
 function makeResult(overrides: Partial<StartVoiceSessionResult> = {}): StartVoiceSessionResult {
   return {
     sessionId: 'voice-session-1',
-    studentId: 'student-1',
+    studentId: 'internal-user-1',
     contextRef: 'lesson:fractions',
     status: 'active',
     createdAt: '2026-06-19T00:00:00.000Z',
@@ -58,17 +57,16 @@ describe('VoiceSessionStartController', () => {
     return { controller, service };
   }
 
-  it('resolves studentId from the authenticated user, never from the body', async () => {
+  it('resolves studentId from ResolveInternalUserIdGuard, never from the body', async () => {
     const { controller, service } = makeController();
-    const user = makeUser({ id: 'student-1' });
 
-    await controller.startSession(user, {
+    await controller.startSession('internal-user-1', {
       contextRef: 'lesson:fractions',
       studentId: 'attacker-supplied-id',
     });
 
     expect(service.startSession).toHaveBeenCalledWith({
-      studentId: 'student-1',
+      studentId: 'internal-user-1',
       contextRef: 'lesson:fractions',
     });
   });
@@ -78,14 +76,14 @@ describe('VoiceSessionStartController', () => {
     const { controller } = makeController(result);
 
     await expect(
-      controller.startSession(makeUser(), { contextRef: 'lesson:fractions' }),
+      controller.startSession('internal-user-1', { contextRef: 'lesson:fractions' }),
     ).resolves.toEqual(result);
   });
 
   it('rejects before calling the service when contextRef is missing', async () => {
     const { controller, service } = makeController();
 
-    await expect(controller.startSession(makeUser(), {})).rejects.toThrow(AppError);
+    await expect(controller.startSession('internal-user-1', {})).rejects.toThrow(AppError);
     expect(service.startSession).not.toHaveBeenCalled();
   });
 
@@ -93,7 +91,7 @@ describe('VoiceSessionStartController', () => {
     const result = makeResult();
     const { controller } = makeController(result);
 
-    const response = await controller.startSession(makeUser(), { contextRef: 'lesson:fractions' });
+    const response = await controller.startSession('internal-user-1', { contextRef: 'lesson:fractions' });
     const serialized = JSON.stringify(response);
 
     expect(serialized).not.toMatch(/mastery/i);
