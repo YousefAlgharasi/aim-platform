@@ -146,6 +146,23 @@ void main() {
       expect(find.text('Grammar Diagram'), findsOneWidget);
     });
 
+    // P21-017: voice entry point next to "Start practice".
+    testWidgets('shows a voice-practice entry point next to Start practice',
+        (tester) async {
+      await tester.pumpWidget(_wrap(
+        _page,
+        overrides: [
+          lessonDetailProvider.overrideWith(
+            (ref) =>
+                _FakeLessonDetailNotifier(AppAsyncState.success(_populated)),
+          ),
+        ],
+      ));
+      await tester.pump();
+
+      expect(find.byIcon(Icons.mic_rounded), findsOneWidget);
+    });
+
     testWidgets('renders without error under RTL directionality',
         (tester) async {
       await tester.pumpWidget(_wrap(
