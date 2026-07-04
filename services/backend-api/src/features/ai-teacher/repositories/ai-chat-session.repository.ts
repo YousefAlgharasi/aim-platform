@@ -24,6 +24,40 @@ export class AiChatSessionRepository {
     return result.rows[0] ?? null;
   }
 
+  /**
+   * P21-007: Single source of truth for "which ai_chat_sessions row does
+   * this (student, contextRef) pair map to". Both the AI Teacher chat entry
+   * point and the Voice Teacher entry point call this instead of each
+   * creating their own session row, so a lesson's chat and voice turns
+   * resolve to one conversation.
+   *
+   * Returns the most recent *active* session for (studentId, contextRef) if
+   * one exists; otherwise creates a new one, identical to create()'s
+   * behavior. `created` tells the caller whether a brand-new session was
+   * made (used by P21-008 to decide whether to generate an opening
+   * greeting).
+   */
+  async getOrCreateForContext(
+    studentId: string,
+    contextRef: string,
+  ): Promise<{ session: AiChatSessionRow; created: boolean }> {
+    const existing = await this.db.query<AiChatSessionRow>(
+      `SELECT id, student_id, context_ref, status, created_at, updated_at
+       FROM ai_chat_sessions
+       WHERE student_id = $1 AND context_ref = $2 AND status = 'active'
+       ORDER BY created_at DESC
+       LIMIT 1`,
+      [studentId, contextRef],
+    );
+
+    if (existing.rows[0]) {
+      return { session: existing.rows[0], created: false };
+    }
+
+    const session = await this.create(studentId, contextRef);
+    return { session, created: true };
+  }
+
   async findById(sessionId: string): Promise<AiChatSessionRow | null> {
     const result = await this.db.query<AiChatSessionRow>(
       `SELECT id, student_id, context_ref, status, created_at, updated_at
