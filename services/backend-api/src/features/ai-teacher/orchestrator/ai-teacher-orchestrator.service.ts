@@ -53,7 +53,13 @@ import { AiCostQuotaService } from '../governance/ai-cost-quota.service';
 import { ModelConfigService } from '../governance/model-config.service';
 import { AiInputBlockedError } from '../governance/ai-input-blocked.error';
 import { AiQuotaExceededError } from '../governance/ai-quota-exceeded.error';
-import { ChatTurnInput, ChatTurnResult } from './ai-teacher-orchestrator.types';
+import { AI_TEACHER_GREETING_INSTRUCTION } from '../prompt-builder/prompt-builder.constants';
+import {
+  ChatTurnInput,
+  ChatTurnResult,
+  GenerateGreetingInput,
+  GenerateGreetingResult,
+} from './ai-teacher-orchestrator.types';
 
 // P18-fix: fixed per-turn cost estimate used for the pre-call quota check
 // and the post-call usage record. No token-based cost calculator exists
@@ -117,11 +123,14 @@ export class AiTeacherOrchestratorService {
       context,
     });
 
+    const channel = input.channel ?? 'text';
+
     const studentMessageRecord = await this.chatMessageRepository.create(
       input.sessionId,
       input.studentId,
       'student',
       input.studentMessage,
+      { channel },
     );
 
     // P18-fix: input-side safety check BEFORE any provider call, per
@@ -167,6 +176,7 @@ export class AiTeacherOrchestratorService {
       input.studentId,
       'ai_teacher',
       filteredReply.text,
+      { channel },
     );
 
     await this.contextBuilder.persistSnapshot(aiMessage.id, context);
@@ -179,6 +189,57 @@ export class AiTeacherOrchestratorService {
       provider: outcome.response.provider,
       model: outcome.response.model,
       latencyMs: outcome.response.latencyMs,
+      messageId: aiMessage.id,
+    };
+  }
+
+  /**
+   * P21-008: Generate a new session's opening greeting. Reuses this same
+   * AI-call path (context assembly, prompt building, provider gateway call,
+   * response safety filter) rather than a second, parallel AI-call
+   * mechanism — the only difference from handleTurn() is that there is no
+   * real student message yet, so no student-authored message is persisted
+   * and no input-safety/rate-limit/quota gate (those exist to bound
+   * student-submitted turns) is applied here. The caller (P21-007's
+   * get-or-create path) is responsible for persisting the returned text as
+   * the first ai_chat_messages row (role='assistant', is_greeting=true).
+   */
+  async generateGreeting(input: GenerateGreetingInput): Promise<GenerateGreetingResult> {
+    this.noSecretCheck.assertConfigIsSafe();
+
+    const context = await this.contextBuilder.buildContext({
+      studentId: input.studentId,
+      sessionId: input.sessionId,
+      contextRef: input.contextRef,
+    });
+
+    const prompt = this.promptBuilder.buildPrompt({
+      studentMessage: AI_TEACHER_GREETING_INSTRUCTION,
+      context,
+    });
+
+    const outcome = await this.timeoutPolicy.execute(() =>
+      this.providerGateway.complete({ sessionId: input.sessionId, prompt }),
+    );
+
+    await this.providerLogging.logAttempt(input.sessionId, outcome.response);
+
+    const safeReply = this.safeFailure.toSafeReply(outcome.response);
+
+    const filteredReply = await this.responseSafetyFilter.filterResponse({
+      sessionId: input.sessionId,
+      text: safeReply.text,
+    });
+
+    this.logger.log(`Generated opening greeting for session ${input.sessionId}`);
+
+    return {
+      text: filteredReply.text,
+      isFallback: safeReply.isFallback || filteredReply.wasFiltered,
+      provider: outcome.response.provider,
+      model: outcome.response.model,
+      latencyMs: outcome.response.latencyMs,
+      context,
     };
   }
 }

@@ -26,6 +26,10 @@ function makeMessageRow(overrides: Partial<AiChatMessageRow> = {}): AiChatMessag
     role: 'student',
     text: 'hello',
     created_at: '2026-06-19T00:00:00.000Z',
+    channel: 'text',
+    audio_ref: null,
+    audio_duration_ms: null,
+    is_greeting: false,
     ...overrides,
   };
 }

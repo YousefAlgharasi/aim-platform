@@ -41,6 +41,7 @@
 import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 
 import { AiTeacherOrchestratorService } from '../../ai-teacher/orchestrator/ai-teacher-orchestrator.service';
+import { AiChatMessageRepository } from '../../ai-teacher/repositories/ai-chat-message.repository';
 import {
   STT_GATEWAY,
   SttGateway,
@@ -107,6 +108,14 @@ export class VoiceOrchestratorService {
      * Engine authority.
      */
     private readonly aiTeacherOrchestrator: AiTeacherOrchestratorService,
+
+    /**
+     * P21-010: used to attach the synthesized TTS audio_ref/audio_duration_ms
+     * onto the ai_teacher reply row that aiTeacherOrchestrator.handleTurn()
+     * already persisted for this voice turn — voice turns no longer write a
+     * separate voice_messages row for their transcript/reply text.
+     */
+    private readonly chatMessageRepository: AiChatMessageRepository,
   ) {}
 
   /**
@@ -169,6 +178,10 @@ export class VoiceOrchestratorService {
       sessionId: input.sessionId,
       contextRef: input.contextRef,
       studentMessage: transcript,
+      // P21-010: mark both persisted rows (student + ai_teacher) for this
+      // turn as voice-originated, so they show up correctly when the chat
+      // screen and voice screen both read the same ai_chat_messages history.
+      channel: 'voice',
     });
 
     // ── Step 3: TTS ───────────────────────────────────────────────────────
@@ -190,6 +203,17 @@ export class VoiceOrchestratorService {
       const safeOutcome = this.ttsSafeFailure.toSafeOutcome(ttsResponse);
       audioRef = safeOutcome.audioRef;
       ttsIsFallback = safeOutcome.isFallback;
+
+      if (audioRef) {
+        // P21-010: attach the synthesized audio onto the ai_teacher reply
+        // row already persisted by aiTeacherOrchestrator.handleTurn(),
+        // instead of writing a separate voice_messages row for it.
+        await this.chatMessageRepository.updateAudio(
+          aiResult.messageId,
+          audioRef,
+          ttsResponse.durationMs ?? null,
+        );
+      }
 
       if (ttsIsFallback) {
         this.logger.warn(

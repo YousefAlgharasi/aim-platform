@@ -1,10 +1,10 @@
 import { VoiceSessionOwnershipGuard } from '../voice-session-ownership.guard';
-import { VoiceSessionRepository } from '../../../repositories/voice-session.repository';
+import { AiChatSessionRepository } from '../../../../ai-teacher/repositories/ai-chat-session.repository';
 
-function makeRepository(overrides: Partial<jest.Mocked<Pick<VoiceSessionRepository, 'findById'>>> = {}) {
+function makeRepository(overrides: Partial<jest.Mocked<Pick<AiChatSessionRepository, 'findById'>>> = {}) {
   return {
     findById: overrides.findById ?? jest.fn().mockResolvedValue(null),
-  } as unknown as VoiceSessionRepository;
+  } as unknown as AiChatSessionRepository;
 }
 
 function createContext(user: any, params: any) {

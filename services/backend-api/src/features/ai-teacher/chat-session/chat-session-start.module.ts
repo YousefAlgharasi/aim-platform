@@ -9,11 +9,24 @@ import { AuthModule } from '../../../auth/auth.module';
 import { RolesModule } from '../../roles';
 import { UsersModule } from '../../users';
 import { AiChatRepositoriesModule } from '../repositories/ai-chat-repositories.module';
+import { AiTeacherOrchestratorModule } from '../orchestrator/ai-teacher-orchestrator.module';
+import { ContextBuilderModule } from '../context-builder/context-builder.module';
+import { TtsGatewayModule } from '../../voice-teacher/tts-gateway/tts-gateway.module';
 import { ChatSessionStartService } from './chat-session-start.service';
 import { ChatSessionStartController } from './chat-session-start.controller';
 
 @Module({
-  imports: [AuthModule, RolesModule, UsersModule, AiChatRepositoriesModule],
+  imports: [
+    AuthModule,
+    RolesModule,
+    UsersModule,
+    AiChatRepositoriesModule,
+    // P21-008/P21-009: greeting generation + eager TTS synthesis on new
+    // session creation.
+    AiTeacherOrchestratorModule,
+    ContextBuilderModule,
+    TtsGatewayModule,
+  ],
   controllers: [ChatSessionStartController],
   providers: [ChatSessionStartService],
   exports: [ChatSessionStartService],

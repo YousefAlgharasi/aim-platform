@@ -105,6 +105,10 @@ function makeOrchestrator(overrides: {
         role: 'student',
         text: 'How do I add fractions?',
         created_at: 'now',
+        channel: 'text',
+        audio_ref: null,
+        audio_duration_ms: null,
+        is_greeting: false,
       })
       .mockResolvedValueOnce({
         id: 'message-ai-1',
@@ -113,6 +117,10 @@ function makeOrchestrator(overrides: {
         role: 'ai_teacher',
         text: (overrides.safetyFilterResult ?? defaultSafetyFilterResult).text,
         created_at: 'now',
+        channel: 'text',
+        audio_ref: null,
+        audio_duration_ms: null,
+        is_greeting: false,
       }),
   } as unknown as AiChatMessageRepository;
 
@@ -233,6 +241,7 @@ describe('AiTeacherOrchestratorService', () => {
       'student-1',
       'student',
       'How do I add fractions?',
+      { channel: 'text' },
     );
     expect(chatMessageRepository.create).toHaveBeenNthCalledWith(
       2,
@@ -240,6 +249,7 @@ describe('AiTeacherOrchestratorService', () => {
       'student-1',
       'ai_teacher',
       'Add the numerators when denominators match.',
+      { channel: 'text' },
     );
   });
 
@@ -273,6 +283,7 @@ describe('AiTeacherOrchestratorService', () => {
       provider: 'fake-provider',
       model: 'fake-model',
       latencyMs: 12,
+      messageId: 'message-ai-1',
     });
   });
 
@@ -298,6 +309,7 @@ describe('AiTeacherOrchestratorService', () => {
       'student-1',
       'ai_teacher',
       result.text,
+      { channel: 'text' },
     );
   });
 
@@ -316,6 +328,7 @@ describe('AiTeacherOrchestratorService', () => {
       'student-1',
       'ai_teacher',
       result.text,
+      { channel: 'text' },
     );
   });
 

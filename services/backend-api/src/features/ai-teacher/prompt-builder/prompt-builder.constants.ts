@@ -39,3 +39,18 @@ export const AI_TEACHER_PROMPT_SECTION_ORDER = [
   'difficultyDecision',
   'emotionalState',
 ] as const;
+
+/**
+ * P21-008: Synthetic "studentMessage" substituted for the opening greeting
+ * generated the moment a new session is created — there is no real student
+ * message yet. Instructs the AI Teacher to introduce the lesson using only
+ * the real context fields already assembled above (currentLesson,
+ * curriculumSkill, focusDirective); it must never invent content not
+ * present in that context.
+ */
+export const AI_TEACHER_GREETING_INSTRUCTION = [
+  'This is the start of a new session — the student has not said anything yet.',
+  'Using only the context above, briefly introduce this lesson and what to',
+  'focus on today. Do not invent any lesson, skill, or directive detail that',
+  'is not present in the context provided.',
+].join(' ');

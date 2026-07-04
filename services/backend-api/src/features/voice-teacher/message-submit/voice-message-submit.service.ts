@@ -4,23 +4,24 @@
  *
  *   1. Audio Upload (P9-028) — validates the upload (field presence, file
  *      size, declared MIME type, declared duration), checks session
- *      ownership/status, and creates a pending `voice_messages` row.
+ *      ownership/status, and stores the raw uploaded audio bytes (a
+ *      `voice_messages` placeholder row + `voice_audio_assets` row — this
+ *      step is unchanged by P21-010: `voice_audio_assets.message_id` has a
+ *      hard FK to `voice_messages`, so the raw-audio-storage pipeline is a
+ *      separate concern from where the conversation text/reply live).
  *   2. Voice Orchestrator (P9-048) — runs STT → AI Teacher (P8-062) for the
- *      uploaded audio and returns a safety-filtered reply.
- *   3. Persists the reply (and audio reference, once TTS is wired) onto the
- *      same `voice_messages` row via `VoiceMessageRepository` (P9-027).
- *
- * `studentId`/`sessionId` ownership is resolved by the caller before this
- * service runs; this service only validates the inputs it is given. Performs
- * no STT/TTS/AI provider call itself and computes no mastery/level/weakness/
- * difficulty/recommendation/review-schedule value
- * (docs/phase-9/no-aim-authority-change-rule.md).
+ *      uploaded audio. As of P21-010, `AiTeacherOrchestratorService.handleTurn()`
+ *      already persists both the transcribed student turn and the AI reply
+ *      as `ai_chat_messages` rows (channel='voice'), and the orchestrator
+ *      attaches the synthesized TTS `audio_ref` onto that same reply row.
+ *      This service no longer writes the reply/transcript into
+ *      `voice_messages`/`voice_transcripts` — those tables receive no new
+ *      turn data going forward (historical rows only).
  */
 import { Injectable, BadRequestException } from '@nestjs/common';
 
 import { AudioUploadService } from '../audio-upload/audio-upload.service';
 import { VoiceOrchestratorService } from '../orchestrator/voice-orchestrator.service';
-import { VoiceMessageRepository } from '../repositories/voice-message.repository';
 import {
   SubmitVoiceMessageInput,
   SubmitVoiceMessageResult,
@@ -32,7 +33,6 @@ export class VoiceMessageSubmitService {
   constructor(
     private readonly audioUploadService: AudioUploadService,
     private readonly voiceOrchestrator: VoiceOrchestratorService,
-    private readonly voiceMessageRepository: VoiceMessageRepository,
   ) {}
 
   async submitMessage(
@@ -80,11 +80,10 @@ export class VoiceMessageSubmitService {
       languageCode,
     });
 
-    if (turnResult.audioRef) {
-      await this.voiceMessageRepository.updateAudioRef(upload.messageId, turnResult.audioRef);
-    } else {
-      await this.voiceMessageRepository.updateReply(upload.messageId, turnResult.text);
-    }
+    // P21-010: the transcript + reply (and, when synthesis succeeds, the
+    // reply's audio_ref) are already persisted as ai_chat_messages rows by
+    // the voice orchestrator's call into AiTeacherOrchestratorService — no
+    // separate write into voice_messages/voice_transcripts here.
 
     return {
       messageId: upload.messageId,
