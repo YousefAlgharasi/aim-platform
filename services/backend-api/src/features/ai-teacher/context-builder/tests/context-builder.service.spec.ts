@@ -14,6 +14,7 @@ import { CurrentLessonContextAdapter } from '../adapters/current-lesson-context.
 import { CurriculumSkillContextAdapter } from '../adapters/curriculum-skill-context.adapter';
 import { FocusDirectiveContextAdapter } from '../adapters/focus-directive-context.adapter';
 import { DifficultyDecisionContextAdapter } from '../adapters/difficulty-decision-context.adapter';
+import { EmotionalStateContextAdapter } from '../adapters/emotional-state-context.adapter';
 
 const STUDENT_ID = '770e8400-e29b-41d4-a716-446655440002';
 const SESSION_ID = '880e8400-e29b-41d4-a716-446655440003';
@@ -56,6 +57,12 @@ function buildServiceWithAdapterSpies(studentIdsSeen: string[]) {
     'getDifficultyDecisionContext',
     recordCall({ skillId: 'skill-1', rationale: 'consistent_performance' }),
   );
+  const emotionalState = {
+    getEmotionalStateContext: async (studentId: string) => {
+      studentIdsSeen.push(studentId);
+      return { frustrationLevel: 'moderate', engagementLevel: 'typical' };
+    },
+  } as unknown as EmotionalStateContextAdapter;
 
   const service = new ContextBuilderService(
     studentProfile,
@@ -63,6 +70,7 @@ function buildServiceWithAdapterSpies(studentIdsSeen: string[]) {
     curriculumSkill,
     focusDirective,
     difficultyDecision,
+    emotionalState,
     makeMockRepository(async () => {
       throw new Error('not used in buildContext tests');
     }),
@@ -80,6 +88,7 @@ function makeSnapshot(): AiTeacherContextSnapshot {
     curriculumSkill: { skillId: 'skill-1' },
     focusDirective: { skillId: 'skill-1', directiveText: 'Focus on skill-1.' },
     difficultyDecision: { skillId: 'skill-1', rationale: 'consistent_performance' },
+    emotionalState: { frustrationLevel: 'moderate', engagementLevel: 'typical' },
   };
 }
 
@@ -110,6 +119,10 @@ describe('ContextBuilderService.buildContext — contextRef lesson parsing', () 
       'getDifficultyDecisionContext',
       async () => null,
     );
+    const emotionalState = makeMockAdapter<EmotionalStateContextAdapter>(
+      'getEmotionalStateContext',
+      async () => null,
+    );
 
     const service = new ContextBuilderService(
       studentProfile,
@@ -117,6 +130,7 @@ describe('ContextBuilderService.buildContext — contextRef lesson parsing', () 
       curriculumSkill,
       focusDirective,
       difficultyDecision,
+      emotionalState,
       makeMockRepository(async () => {
         throw new Error('not used in buildContext tests');
       }),
@@ -156,6 +170,10 @@ describe('ContextBuilderService.buildContext — contextRef lesson parsing', () 
       'getDifficultyDecisionContext',
       async () => null,
     );
+    const emotionalState = makeMockAdapter<EmotionalStateContextAdapter>(
+      'getEmotionalStateContext',
+      async () => null,
+    );
 
     const service = new ContextBuilderService(
       studentProfile,
@@ -163,6 +181,7 @@ describe('ContextBuilderService.buildContext — contextRef lesson parsing', () 
       curriculumSkill,
       focusDirective,
       difficultyDecision,
+      emotionalState,
       makeMockRepository(async () => {
         throw new Error('not used in buildContext tests');
       }),
@@ -189,12 +208,12 @@ describe('ContextBuilderService.buildContext', () => {
       contextRef: 'lesson:p1:l3',
     });
 
-    expect(studentIdsSeen).toHaveLength(5);
+    expect(studentIdsSeen).toHaveLength(6);
     expect(studentIdsSeen.every((id) => id === STUDENT_ID)).toBe(true);
     expect(studentIdsSeen).not.toContain(OTHER_STUDENT_ID);
   });
 
-  it('assembles all five context fields plus studentId/sessionId into a single snapshot', async () => {
+  it('assembles all six context fields plus studentId/sessionId into a single snapshot', async () => {
     const service = buildServiceWithAdapterSpies([]);
 
     const snapshot = await service.buildContext({
@@ -211,6 +230,7 @@ describe('ContextBuilderService.buildContext', () => {
       curriculumSkill: { skillId: 'skill-1' },
       focusDirective: { skillId: 'skill-1', directiveText: 'Focus on skill-1.' },
       difficultyDecision: { skillId: 'skill-1', rationale: 'consistent_performance' },
+      emotionalState: { frustrationLevel: 'moderate', engagementLevel: 'typical' },
     });
   });
 
@@ -242,6 +262,7 @@ describe('ContextBuilderService.persistSnapshot', () => {
       };
     });
     const service = new ContextBuilderService(
+      undefined as never,
       undefined as never,
       undefined as never,
       undefined as never,

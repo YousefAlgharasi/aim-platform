@@ -27,10 +27,15 @@ export const AI_TEACHER_PROMPT_SYSTEM_INSTRUCTIONS = [
 // P20-018: Added difficultyDecision after focusDirective, so the AI Teacher
 // can acknowledge a difficulty change ("since you've been finding this
 // tough, let's slow down") after any focus directive has been stated.
+//
+// P20-020: Added emotionalState last, so the AI Teacher's tone-adjustment
+// guidance (encouragement, pacing) is the final consideration layered on
+// top of all other identity/directive/difficulty context.
 export const AI_TEACHER_PROMPT_SECTION_ORDER = [
   'studentProfile',
   'currentLesson',
   'curriculumSkill',
   'focusDirective',
   'difficultyDecision',
+  'emotionalState',
 ] as const;

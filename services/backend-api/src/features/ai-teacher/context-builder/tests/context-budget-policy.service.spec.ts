@@ -19,6 +19,7 @@ function makeSnapshot(
     curriculumSkill: null,
     focusDirective: null,
     difficultyDecision: null,
+    emotionalState: null,
     ...overrides,
   };
 }
