@@ -28,21 +28,27 @@ export class LearningReminderIntegration {
     this.logger.log(`Learning plan reminder created for user=${userId}, plan=${learningPlanId}`);
   }
 
+  // P20-021: nextRunAt must be the review's actual dueAt, not "now" — the
+  // reminder scheduler's due-check (NotificationRepository.findDueSchedules)
+  // gates strictly on next_run_at <= now(), so passing "now" here fired
+  // every review reminder immediately at creation time instead of on the
+  // real spaced-repetition due date.
   async createReviewReminder(
     userId: string,
     reviewScheduleId: string,
-    cronExpression: string,
+    dueAt: string,
     locale = 'en',
   ): Promise<void> {
-    const nextRunAt = new Date().toISOString();
     await this.scheduleService.createSchedule(
       userId,
       'student',
       'review',
-      cronExpression,
-      nextRunAt,
+      toOneShotCronExpression(dueAt),
+      dueAt,
     );
-    this.logger.log(`Review reminder created for user=${userId}, schedule=${reviewScheduleId}`);
+    this.logger.log(
+      `Review reminder created for user=${userId}, schedule=${reviewScheduleId}, dueAt=${dueAt}`,
+    );
   }
 
   async fireLearningReminder(userId: string, locale = 'en'): Promise<void> {
@@ -66,4 +72,13 @@ export class LearningReminderIntegration {
       variables: {},
     });
   }
+}
+
+// One-shot cron expression (minute hour day month *) firing at dueAt's
+// minute/hour/day/month each year; the reminder scheduler cancels the
+// schedule after it fires once (NotificationReminderScheduler.fireDueReminders),
+// so the yearly recurrence never matters.
+function toOneShotCronExpression(dueAt: string): string {
+  const date = new Date(dueAt);
+  return `${date.getUTCMinutes()} ${date.getUTCHours()} ${date.getUTCDate()} ${date.getUTCMonth() + 1} *`;
 }

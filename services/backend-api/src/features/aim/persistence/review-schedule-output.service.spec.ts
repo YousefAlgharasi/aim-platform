@@ -352,4 +352,99 @@ describe('ReviewScheduleOutputService.upsertMany', () => {
     const svc = new ReviewScheduleOutputService(db, mockLearningReminderIntegration);
     await expect(svc.upsertMany(STUDENT_ID, [makeSched()])).resolves.toBeDefined();
   });
+
+  // -------------------------------------------------------------------------
+  // P20-021: review-due reminder scheduling
+  // -------------------------------------------------------------------------
+
+  describe('review-due reminder scheduling (P20-021)', () => {
+    function makeReminderIntegrationSpy() {
+      return {
+        createReviewReminder: jest.fn().mockResolvedValue(undefined),
+      } as unknown as import('../../notifications/learning-reminder.integration').LearningReminderIntegration;
+    }
+
+    it('creates a review reminder with the schedule id and real dueAt on insert', async () => {
+      const db = makeMockDb(async () => ({ rows: [], rowCount: 0 }));
+      const reminderSpy = makeReminderIntegrationSpy();
+      const svc = new ReviewScheduleOutputService(db, reminderSpy);
+      const sched = makeSched({ scheduleId: 'sch-insert-1', dueAt: FUTURE_DUE_AT });
+
+      await svc.upsertMany(STUDENT_ID, [sched]);
+
+      expect(reminderSpy.createReviewReminder).toHaveBeenCalledWith(
+        STUDENT_ID,
+        'sch-insert-1',
+        FUTURE_DUE_AT,
+      );
+    });
+
+    it('creates a review reminder with the new dueAt on a new spaced-repetition cycle', async () => {
+      const db = makeMockDb(async (sql) => {
+        if (sql.includes('SELECT')) {
+          return { rows: [{ repetition_count: 1, due_at: PAST_DUE_AT }], rowCount: 1 };
+        }
+        return { rows: [], rowCount: 0 };
+      });
+      const reminderSpy = makeReminderIntegrationSpy();
+      const svc = new ReviewScheduleOutputService(db, reminderSpy);
+      const sched = makeSched({
+        scheduleId: 'sch-cycle-1',
+        repetitionCount: 2,
+        dueAt: FUTURE_DUE_AT,
+      });
+
+      await svc.upsertMany(STUDENT_ID, [sched]);
+
+      expect(reminderSpy.createReviewReminder).toHaveBeenCalledWith(
+        STUDENT_ID,
+        'sch-cycle-1',
+        FUTURE_DUE_AT,
+      );
+    });
+
+    it('creates a review reminder with the new dueAt on reschedule (same repetitionCount)', async () => {
+      const db = makeMockDb(async (sql) => {
+        if (sql.includes('SELECT')) {
+          return { rows: [{ repetition_count: 1, due_at: PAST_DUE_AT }], rowCount: 1 };
+        }
+        return { rows: [], rowCount: 0 };
+      });
+      const reminderSpy = makeReminderIntegrationSpy();
+      const svc = new ReviewScheduleOutputService(db, reminderSpy);
+      const sched = makeSched({
+        scheduleId: 'sch-reschedule-1',
+        repetitionCount: 1,
+        dueAt: FUTURE_DUE_AT,
+      });
+
+      await svc.upsertMany(STUDENT_ID, [sched]);
+
+      expect(reminderSpy.createReviewReminder).toHaveBeenCalledWith(
+        STUDENT_ID,
+        'sch-reschedule-1',
+        FUTURE_DUE_AT,
+      );
+    });
+
+    it('does not create a review reminder when nothing meaningfully changed', async () => {
+      const db = makeMockDb(async (sql) => {
+        if (sql.includes('SELECT')) {
+          return { rows: [{ repetition_count: 1, due_at: FUTURE_DUE_AT }], rowCount: 1 };
+        }
+        return { rows: [], rowCount: 0 };
+      });
+      const reminderSpy = makeReminderIntegrationSpy();
+      const svc = new ReviewScheduleOutputService(db, reminderSpy);
+      const sched = makeSched({
+        scheduleId: 'sch-nochange-1',
+        repetitionCount: 1,
+        dueAt: FUTURE_DUE_AT,
+      });
+
+      await svc.upsertMany(STUDENT_ID, [sched]);
+
+      expect(reminderSpy.createReviewReminder).not.toHaveBeenCalled();
+    });
+  });
 });
