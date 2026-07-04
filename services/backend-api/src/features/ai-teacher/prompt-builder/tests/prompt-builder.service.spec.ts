@@ -15,6 +15,7 @@ function makeSnapshot(
     currentLesson: null,
     curriculumSkill: null,
     focusDirective: null,
+    difficultyDecision: null,
     ...overrides,
   };
 }
@@ -90,6 +91,47 @@ describe('PromptBuilderService', () => {
     });
 
     expect(prompt.sections.map((section) => section.key)).not.toContain('focusDirective');
+  });
+
+  it('includes the difficultyDecision section last, after focusDirective, when present (P20-018)', () => {
+    const service = new PromptBuilderService();
+    const prompt = service.buildPrompt({
+      studentMessage: 'Hello',
+      context: makeSnapshot({
+        studentProfile: { displayName: 'Hana' },
+        currentLesson: { lessonId: 'lesson-1' },
+        curriculumSkill: { skillId: 'skill-1' },
+        focusDirective: {
+          skillId: 'skill:english:a1:grammar.past-simple',
+          directiveText: 'Focus on past simple.',
+        },
+        difficultyDecision: {
+          skillId: 'skill:english:a1:vocab.daily-routines',
+          rationale: 'consistent_performance',
+        },
+      }),
+    });
+
+    expect(prompt.sections.map((section) => section.key)).toEqual([
+      'studentProfile',
+      'currentLesson',
+      'curriculumSkill',
+      'focusDirective',
+      'difficultyDecision',
+    ]);
+    expect(prompt.sections[prompt.sections.length - 1].content).toContain(
+      'consistent_performance',
+    );
+  });
+
+  it('omits the difficultyDecision section when no decision exists', () => {
+    const service = new PromptBuilderService();
+    const prompt = service.buildPrompt({
+      studentMessage: 'Hello',
+      context: makeSnapshot({ curriculumSkill: { skillId: 'skill-1' } }),
+    });
+
+    expect(prompt.sections.map((section) => section.key)).not.toContain('difficultyDecision');
   });
 
   it('passes the student message through unchanged', () => {

@@ -76,6 +76,7 @@ const handlers: { name: string; method: Function; paramName: string }[] = [
   { name: 'getSessionState',      method: proto.getSessionState,      paramName: 'studentId' },
   { name: 'getWeaknessRecords',   method: proto.getWeaknessRecords,   paramName: 'studentId' },
   { name: 'getRecommendations',   method: proto.getRecommendations,   paramName: 'studentId' },
+  { name: 'getDifficultyDecision', method: proto.getDifficultyDecision, paramName: 'studentId' },
 ];
 
 const paramValidatedHandlers: { name: string; paramIndexes: number[] }[] = [
@@ -84,6 +85,7 @@ const paramValidatedHandlers: { name: string; paramIndexes: number[] }[] = [
   { name: 'getSessionState', paramIndexes: [0, 1] },
   { name: 'getWeaknessRecords', paramIndexes: [0] },
   { name: 'getRecommendations', paramIndexes: [0] },
+  { name: 'getDifficultyDecision', paramIndexes: [0] },
 ];
 
 function getRouteArgMetadata(
@@ -185,6 +187,7 @@ describe('AimResultController — permission guards (P5-073)', () => {
         { getSessionState: jest.fn() } as never,
         { getWeaknessRecordsForStudent: jest.fn() } as never,
         { getActiveForStudent: jest.fn() } as never,
+      { getLatestForStudent: jest.fn() } as never,
       );
       const result = await ctrl.getSkillStates('stu-001');
       expect(mockService.getSkillStatesForStudent).toHaveBeenCalledWith('stu-001');
@@ -199,6 +202,7 @@ describe('AimResultController — permission guards (P5-073)', () => {
         { getSessionState: jest.fn() } as never,
         { getWeaknessRecordsForStudent: jest.fn() } as never,
         { getActiveForStudent: jest.fn() } as never,
+      { getLatestForStudent: jest.fn() } as never,
       );
       const result = await ctrl.getReviewSchedules('stu-001');
       expect(mockService.getReviewSchedulesForStudent).toHaveBeenCalledWith('stu-001');
@@ -213,6 +217,7 @@ describe('AimResultController — permission guards (P5-073)', () => {
         mockService as never,
         { getWeaknessRecordsForStudent: jest.fn() } as never,
         { getActiveForStudent: jest.fn() } as never,
+      { getLatestForStudent: jest.fn() } as never,
       );
       const result = await ctrl.getSessionState('stu-001', 'ses-001');
       expect(mockService.getSessionState).toHaveBeenCalledWith('stu-001', 'ses-001');
@@ -227,6 +232,7 @@ describe('AimResultController — permission guards (P5-073)', () => {
         { getSessionState: jest.fn() } as never,
         mockService as never,
         { getActiveForStudent: jest.fn() } as never,
+      { getLatestForStudent: jest.fn() } as never,
       );
       const result = await ctrl.getWeaknessRecords('stu-001');
       expect(mockService.getWeaknessRecordsForStudent).toHaveBeenCalledWith('stu-001');
@@ -241,10 +247,30 @@ describe('AimResultController — permission guards (P5-073)', () => {
         { getSessionState: jest.fn() } as never,
         { getWeaknessRecordsForStudent: jest.fn() } as never,
         mockService as never,
+        { getLatestForStudent: jest.fn() } as never,
       );
       const result = await ctrl.getRecommendations('stu-001');
       expect(mockService.getActiveForStudent).toHaveBeenCalledWith('stu-001');
       expect(result).toEqual({ recommendations: [] });
+    });
+
+    it('getDifficultyDecision delegates to service — no local difficulty computation', async () => {
+      const mockService = {
+        getLatestForStudent: jest
+          .fn()
+          .mockResolvedValue({ studentId: 'stu-001', found: false, difficultyDecision: null }),
+      };
+      const ctrl = new AimResultController(
+        { getSkillStatesForStudent: jest.fn() } as never,
+        { getReviewSchedulesForStudent: jest.fn() } as never,
+        { getSessionState: jest.fn() } as never,
+        { getWeaknessRecordsForStudent: jest.fn() } as never,
+        { getActiveForStudent: jest.fn() } as never,
+        mockService as never,
+      );
+      const result = await ctrl.getDifficultyDecision('stu-001');
+      expect(mockService.getLatestForStudent).toHaveBeenCalledWith('stu-001');
+      expect(result).toEqual({ studentId: 'stu-001', found: false, difficultyDecision: null });
     });
   });
 

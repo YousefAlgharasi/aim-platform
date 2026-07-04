@@ -27,6 +27,7 @@ function makeContext(): AiTeacherContextSnapshot {
     currentLesson: null,
     curriculumSkill: null,
     focusDirective: null,
+    difficultyDecision: null,
   };
 }
 

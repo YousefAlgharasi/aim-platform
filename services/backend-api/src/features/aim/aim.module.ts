@@ -52,6 +52,7 @@ import { ReviewScheduleReadService } from './result/review-schedule-read.service
 import { SessionStateReadService } from './result/session-state-read.service';
 import { WeaknessRecordsReadService } from './result/weakness-records-read.service';
 import { RecommendationReadService } from './result/recommendation-read.service';
+import { DifficultyDecisionReadService } from './result/difficulty-decision-read.service';
 import { ErrorPatternsReadService } from './result/error-patterns-read.service';
 import { FocusDirectiveReadService } from './result/focus-directive-read.service';
 import { AimResultController } from './result/aim-result.controller';
@@ -116,6 +117,9 @@ import { AimResultController } from './result/aim-result.controller';
     // Phase 20 — AI Teacher focus directive generation (P20-013)
     AimFocusDirectiveService,
 
+    // Phase 20 — difficulty decision read service (needed by AI Teacher context builder, P20-018)
+    DifficultyDecisionReadService,
+
     // Phase 5 — result read APIs
     AimResultService,
     StudentSkillStateReadService,
@@ -168,6 +172,9 @@ import { AimResultController } from './result/aim-result.controller';
 
     // Phase 20 — focus directive read service (needed by AI Teacher context builder, P20-013)
     FocusDirectiveReadService,
+
+    // Phase 20 — difficulty decision read service (needed by AI Teacher context builder, P20-018)
+    DifficultyDecisionReadService,
   ],
 })
 export class AimModule {}

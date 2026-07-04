@@ -19,6 +19,12 @@
  * restates this pre-computed sentence verbatim, per the Authority Rule's
  * explicit allowance to "restate backend-approved recommendations verbatim,
  * never generate new ones."
+ *
+ * P20-018: Added difficultyDecision. Same shape of allowance as
+ * focusDirective above — a single, already-generated rationale string
+ * (difficulty_decisions, P5-059) that the backend wrote via
+ * DifficultyDecisionService. AI Teacher only ever restates this
+ * pre-computed rationale, never computes a difficulty value itself.
  */
 export interface AiTeacherContextSnapshot {
   studentId: string;
@@ -28,6 +34,7 @@ export interface AiTeacherContextSnapshot {
   currentLesson: Record<string, unknown> | null;
   curriculumSkill: Record<string, unknown> | null;
   focusDirective: Record<string, unknown> | null;
+  difficultyDecision: Record<string, unknown> | null;
 }
 
 export interface BuildContextInput {

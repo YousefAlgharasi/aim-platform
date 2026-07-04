@@ -10,6 +10,7 @@
 //   GET /aim/students/:studentId/sessions/:sessionId/state — Read session AIM state (P5-068).
 //   GET /aim/students/:studentId/weakness-records — Read weakness records (P5-070).
 //   GET /aim/students/:studentId/recommendations — Read recommendations (P5-071).
+//   GET /aim/students/:studentId/difficulty-decisions — Read latest difficulty decision (P20-018).
 //
 // History: a prior merge (PR #317, P5-071) was based on a main commit that
 // predated the P5-072 and P5-068 merges and silently dropped their
@@ -63,6 +64,11 @@ import {
   RecommendationReadResponse,
 } from './recommendation-read.service';
 import {
+  DifficultyDecisionReadService,
+  DifficultyDecisionReadResponse,
+} from './difficulty-decision-read.service';
+import {
+  DifficultyDecisionReadResponseDto,
   RecommendationReadResponseDto,
   ReviewScheduleReadResponseDto,
   SessionStateReadResponseDto,
@@ -79,6 +85,7 @@ export class AimResultController {
     private readonly sessionStateReadService: SessionStateReadService,
     private readonly weaknessRecordsReadService: WeaknessRecordsReadService,
     private readonly recommendationReadService: RecommendationReadService,
+    private readonly difficultyDecisionReadService: DifficultyDecisionReadService,
   ) {}
 
   /**
@@ -236,5 +243,28 @@ export class AimResultController {
     @Param('studentId', ParseUUIDPipe) studentId: string,
   ): Promise<RecommendationReadResponse> {
     return this.recommendationReadService.getActiveForStudent(studentId);
+  }
+
+  /**
+   * GET /aim/students/:studentId/difficulty-decisions  (P20-018)
+   *
+   * Return the student's most recent persisted AIM difficulty decision.
+   * found: false if no decision has been persisted yet. No live AIM call.
+   */
+  @Get('students/:studentId/difficulty-decisions')
+  @UseGuards(SupabaseJwtAuthGuard, StudentOwnershipGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @RequireStudentOwnership({ paramName: 'studentId' })
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Read the latest AIM difficulty decision for a student (student).' })
+  @ApiParam({ name: 'studentId', description: 'UUID of the student.' })
+  @ApiOkResponse({
+    description: 'Latest AIM difficulty decision. found: false if none yet persisted.',
+    type: DifficultyDecisionReadResponseDto,
+  })
+  async getDifficultyDecision(
+    @Param('studentId', ParseUUIDPipe) studentId: string,
+  ): Promise<DifficultyDecisionReadResponse> {
+    return this.difficultyDecisionReadService.getLatestForStudent(studentId);
   }
 }
