@@ -1,3 +1,5 @@
+import { Logger } from '@nestjs/common';
+
 import { SttTranscriptionService } from '../stt-transcription.service';
 import { SttGatewayConfigService } from '../stt-gateway.config';
 import { SttRequestMapperService } from '../stt-request.mapper';
@@ -88,13 +90,34 @@ describe('SttTranscriptionService', () => {
   });
 
   it('should return an error response when the provider returns non-ok HTTP', async () => {
-    const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({ ok: false, status: 500 } as any);
+    const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({
+      ok: false,
+      status: 500,
+      text: () => Promise.resolve('{"error":{"message":"invalid api key"}}'),
+    } as any);
 
     const result = await service.transcribe(mockRequest);
 
     expect(result.status).toBe('error');
     expect(result.errorCategory).toBe('STT_PROVIDER_ERROR');
     fetchSpy.mockRestore();
+  });
+
+  it('logs the provider error body (bugfix — previously discarded, made real failures indistinguishable)', async () => {
+    const errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation();
+    const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({
+      ok: false,
+      status: 401,
+      text: () => Promise.resolve('{"error":{"message":"invalid api key"}}'),
+    } as any);
+
+    await service.transcribe(mockRequest);
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('invalid api key'),
+    );
+    fetchSpy.mockRestore();
+    errorSpy.mockRestore();
   });
 
   it('should return a network error when fetch throws TypeError', async () => {

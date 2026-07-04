@@ -56,12 +56,26 @@ import { VoiceTurnInput, VoiceTurnResult } from './voice-orchestrator.types';
 
 /**
  * Fallback transcript used when the STT Gateway is unavailable (no concrete
- * binding registered yet, or provider returned a non-success response).
- * An empty transcript is forwarded to the AI Teacher, which produces a
- * contextual fallback reply; this matches the "silent/empty recording" path
- * defined in docs/phase-9/stt-output-contract.md.
+ * binding registered yet, or provider returned a non-success response), or
+ * when a real recording was genuinely silent.
  */
 const STT_FALLBACK_TRANSCRIPT = '';
+
+/**
+ * Bugfix: per docs/phase-9/stt-output-contract.md, this orchestrator (not
+ * the STT Gateway) decides what an empty/failed transcript means. Forwarding
+ * STT_FALLBACK_TRANSCRIPT ('') straight through as `studentMessage` used to
+ * reach AiChatMessageRepository.create() and violate the database's
+ * `ai_chat_messages_text_not_empty_check` constraint — an unhandled 500 on
+ * every voice turn where STT failed or the recording was silent (i.e. any
+ * time the STT provider itself is misconfigured/down, every single turn).
+ * This is a real, honest message about what happened, not a guessed
+ * transcript — it's what actually gets shown to the student and sent to
+ * the AI Teacher so it can respond appropriately (e.g. ask them to try
+ * again), never a silent/empty bubble.
+ */
+const STUDENT_MESSAGE_FOR_EMPTY_TRANSCRIPT =
+  "I didn't catch that — no speech was detected in the recording.";
 
 @Injectable()
 export class VoiceOrchestratorService {
@@ -169,15 +183,23 @@ export class VoiceOrchestratorService {
     }
 
     // ── Step 2: AI Teacher ───────────────────────────────────────────────
-    // Pass the mapped transcript as the student message. Context assembly,
+    // Pass the mapped transcript as the student message — but never an
+    // empty string (see STUDENT_MESSAGE_FOR_EMPTY_TRANSCRIPT above; this is
+    // the "decided by Voice Session Orchestration" step
+    // docs/phase-9/stt-output-contract.md calls for). Context assembly,
     // mastery/level/weakness/difficulty/recommendation/review-schedule
     // values, and AI provider credentials are all resolved by the AI Teacher
     // pipeline — this orchestrator adds nothing to those decisions.
+    const studentMessage =
+      transcript.trim().length > 0
+        ? transcript
+        : STUDENT_MESSAGE_FOR_EMPTY_TRANSCRIPT;
+
     const aiResult = await this.aiTeacherOrchestrator.handleTurn({
       studentId: input.studentId,
       sessionId: input.sessionId,
       contextRef: input.contextRef,
-      studentMessage: transcript,
+      studentMessage,
       // P21-010: mark both persisted rows (student + ai_teacher) for this
       // turn as voice-originated, so they show up correctly when the chat
       // screen and voice screen both read the same ai_chat_messages history.
