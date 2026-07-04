@@ -9,13 +9,12 @@
  * only if `audio_ref` is still null, then persist the result on that same
  * row so it is never re-synthesized (cache-on-row, not a separate cache).
  */
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
 
 import { AiChatMessageRepository } from '../../ai-teacher/repositories/ai-chat-message.repository';
 import { AiChatMessageRow } from '../../ai-teacher/repositories/ai-chat-repository.types';
 import { TTS_GATEWAY, TtsGateway } from '../tts-gateway/tts-gateway.interface';
 import { TtsSafeFailureService } from '../tts-gateway/tts-safe-failure.service';
-import { Inject, Optional } from '@nestjs/common';
 
 export interface EnsureAudioResult {
   readonly messageId: string;

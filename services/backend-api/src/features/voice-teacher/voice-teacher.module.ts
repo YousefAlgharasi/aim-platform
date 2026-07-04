@@ -13,6 +13,7 @@ import { VoiceAudioSubmitController } from './api/voice-audio-submit.controller'
 import { VoiceAudioPlaybackController } from './api/voice-audio-playback.controller';
 import { AiChatRepositoriesModule } from '../ai-teacher/repositories/ai-chat-repositories.module';
 import { TtsGatewayModule } from './tts-gateway/tts-gateway.module';
+import { VoiceMessageAudioModule } from './message-audio/voice-message-audio.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { TtsGatewayModule } from './tts-gateway/tts-gateway.module';
     AiChatRepositoriesModule,
     // P21-011: lazy on-demand TTS synthesis for text-originated turns.
     TtsGatewayModule,
+    VoiceMessageAudioModule,
   ],
   controllers: [VoiceAudioSubmitController, VoiceAudioPlaybackController],
   providers: [VoiceTeacherService, SttTranscriptPersistenceService, VoiceSessionOwnershipGuard],
