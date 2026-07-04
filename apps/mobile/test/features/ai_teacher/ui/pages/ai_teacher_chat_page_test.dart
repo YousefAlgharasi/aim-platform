@@ -191,6 +191,52 @@ void main() {
       expect(find.text('The past tense of "go" is "went".'), findsOneWidget);
     });
 
+    // P21-016: a freshly-opened session with an auto-generated greeting
+    // (P21-008) must show that greeting immediately, on load, without the
+    // student sending anything first. P21-019: it must render regardless of
+    // whether its audio has finished synthesizing (audioRef: null here) —
+    // the text is already persisted and fetchable independent of TTS state.
+    testWidgets(
+      'shows a pre-existing greeting message on open, even with audioRef: null (P21-016/P21-019)',
+      (tester) async {
+        const historyWithGreeting = AiChatHistoryModel(
+          sessionId: 'session-1',
+          messages: [
+            AiChatMessageModel(
+              id: 'greeting-1',
+              role: 'ai_teacher',
+              text: "Welcome! Today we'll practice the past tense.",
+              createdAt: '2025-01-01T00:00:00Z',
+              isGreeting: true,
+              audioRef: null,
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(_wrap(
+          const AiTeacherChatPage(
+            contextRef: 'lesson-1',
+            sessionId: 'session-1',
+          ),
+          overrides: [
+            aiTeacherChatProvider.overrideWith(
+              (ref) => _FakeAiTeacherChatNotifier(
+                const AppAsyncState.success(
+                  AiTeacherChatState(history: historyWithGreeting),
+                ),
+              ),
+            ),
+          ],
+        ));
+        await tester.pump();
+
+        expect(
+          find.text("Welcome! Today we'll practice the past tense."),
+          findsOneWidget,
+        );
+      },
+    );
+
     testWidgets('P21-020: shows the focusRecap callout when present',
         (tester) async {
       const historyWithRecap = AiChatHistoryModel(
