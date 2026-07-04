@@ -26,6 +26,7 @@ dependencies:
   # though its CLI generator (`dart run flutter_native_splash:create`) is
   # dev-tooling.
   flutter_native_splash: ^2.4.8
+  record: ^7.1.1
 
 dev_dependencies:
   flutter_test:

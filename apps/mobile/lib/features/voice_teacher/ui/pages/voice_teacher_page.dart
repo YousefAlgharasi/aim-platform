@@ -38,12 +38,16 @@
 //   [VoiceTeacherSessionNotifier] and [VoiceRecordSubmitNotifier].
 // - Bearer token is read from authFlowProvider on demand; never stored here.
 //
-// Known gap (deferred, mirrors the AI Teacher TTS wiring gap): actual
-// microphone capture is not wired to a recorder plugin yet. The state
-// machine, network submission, and transcript rendering are real; only the
-// raw audio byte source is a placeholder until a recorder dependency is
-// added. This UI-only pass does not touch that gap.
+// Bugfix: microphone capture is now wired to a real recorder plugin (the
+// `record` package) — see _startRecordingAsync/_onStopRecording below. Audio
+// is captured as WAV (audio/wav is in the backend's ALLOWED_AUDIO_TYPES
+// allow-list, voice-audio-submit.controller.ts), read into memory, and the
+// temp file is deleted immediately after. Permission is requested via the
+// recorder's own hasPermission(); denial drives the existing microphone
+// error state (VoiceErrorState) rather than failing silently.
 
+import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -57,6 +61,7 @@ import 'package:aim_mobile/features/voice_teacher/logic/entity/voice_teacher_ses
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_playback_notifier.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_record_submit_notifier.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_teacher_provider.dart';
+import 'package:aim_mobile/features/voice_teacher/logic/voice_recorder_client.dart';
 import '../widgets/voice_error_state.dart';
 import '../widgets/voice_record_button.dart';
 import '../widgets/voice_text_fallback.dart';
@@ -64,19 +69,34 @@ import '../widgets/voice_transcript_list.dart';
 import '../widgets/voice_waveform_indicator.dart';
 
 class VoiceTeacherPage extends ConsumerStatefulWidget {
-  const VoiceTeacherPage({required this.contextRef, super.key});
+  const VoiceTeacherPage({required this.contextRef, this.recorder, super.key});
 
   final String contextRef;
+
+  /// Injectable for widget tests, which have no real platform channel to
+  /// back the `record` package's `AudioRecorder` (its own constructor
+  /// already calls into one) — production always uses
+  /// [RealVoiceRecorderClient] when this is left null.
+  final VoiceRecorderClient? recorder;
 
   @override
   ConsumerState<VoiceTeacherPage> createState() => _VoiceTeacherPageState();
 }
 
 class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
+  late final VoiceRecorderClient _audioRecorder =
+      widget.recorder ?? RealVoiceRecorderClient();
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _start());
+  }
+
+  @override
+  void dispose() {
+    _audioRecorder.dispose();
+    super.dispose();
   }
 
   String? get _token => ref.read(authFlowProvider).accessToken;
@@ -106,20 +126,77 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
   // starting to record — the backend already accepts overlapping
   // submissions for the same session with no in-flight lock (P21-014), so
   // no extra backend call is needed beyond the existing submit flow.
+  //
+  // VoiceRecordButton's onStartRecording slot is a plain VoidCallback, so
+  // the real (async) permission-check-then-start work runs fire-and-forget
+  // via _startRecordingAsync — the UI only flips to the "recording" state
+  // once the native recorder has actually started successfully (see below).
   void _onStartRecording() {
+    unawaited(_startRecordingAsync());
+  }
+
+  Future<void> _startRecordingAsync() async {
     final playback = ref.read(voicePlaybackProvider);
     if (playback.state == PlaybackState.playing ||
         playback.state == PlaybackState.loading) {
       playback.stop();
     }
-    ref.read(voiceRecordSubmitProvider).startRecording();
+
+    final recordNotifier = ref.read(voiceRecordSubmitProvider);
+
+    final hasPermission = await _audioRecorder.hasPermission();
+    if (!hasPermission) {
+      recordNotifier.reportError(
+        'Microphone permission was denied. Please allow microphone access '
+        'to speak with the AI teacher.',
+      );
+      return;
+    }
+
+    final tempPath =
+        '${Directory.systemTemp.path}/voice_turn_${DateTime.now().microsecondsSinceEpoch}.wav';
+
+    try {
+      await _audioRecorder.start(tempPath);
+    } catch (error) {
+      recordNotifier.reportError('Could not start recording: $error');
+      return;
+    }
+
+    // Only flip the UI to "recording" once the native recorder has actually
+    // started — never optimistically, or a start() failure above would
+    // leave the button showing "recording" with nothing actually happening.
+    recordNotifier.startRecording();
   }
 
   Future<void> _onStopRecording() async {
     final recordNotifier = ref.read(voiceRecordSubmitProvider);
-    // Placeholder audio payload until a recorder plugin supplies real bytes
-    // (deferred gap — see file header).
-    recordNotifier.stopRecording(Uint8List(0), mimeType: 'audio/webm');
+
+    Uint8List audioBytes = Uint8List(0);
+    const mimeType = 'audio/wav';
+
+    try {
+      final path = await _audioRecorder.stop();
+      if (path != null) {
+        final file = File(path);
+        if (await file.exists()) {
+          audioBytes = await file.readAsBytes();
+          unawaited(file.delete());
+        }
+      }
+    } catch (error) {
+      recordNotifier.reportError('Could not read recorded audio: $error');
+      return;
+    }
+
+    if (audioBytes.isEmpty) {
+      recordNotifier.reportError(
+        'No audio was recorded. Please try again.',
+      );
+      return;
+    }
+
+    recordNotifier.stopRecording(audioBytes, mimeType: mimeType);
 
     final token = _token;
     final sessionState = ref.read(voiceTeacherSessionProvider);

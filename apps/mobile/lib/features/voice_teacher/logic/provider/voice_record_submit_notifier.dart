@@ -49,6 +49,18 @@ class VoiceRecordSubmitNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Drives the notifier straight into [RecordSubmitState.error] without a
+  /// backend round trip — for failures that happen before any audio could
+  /// even be captured (microphone permission denied, recorder failed to
+  /// start). The existing error UI (`VoiceErrorState`) already renders on
+  /// this state regardless of how it was reached.
+  void reportError(String message) {
+    _recordedAudio = null;
+    _result = VoiceRecordSubmitResult(errorMessage: message);
+    _state = RecordSubmitState.error;
+    notifyListeners();
+  }
+
   Future<void> submitToBackend({
     required String sessionId,
     required Future<({String transcript, String aiResponseText, String? audioRef, String? fallbackText})>
