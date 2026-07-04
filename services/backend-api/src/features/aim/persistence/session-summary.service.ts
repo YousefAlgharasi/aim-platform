@@ -15,10 +15,9 @@
 //     2. If a row exists → overwrite all AIM-derived fields, set updatedAt=now().
 //     3. A null/absent session summary leaves the existing row unchanged.
 //
-//   This is the canonical Phase 5 session summary persistence service.
-//   FrustrationSignalService (P5-062) writes the same row from the
-//   behavioral-signal angle; in a composed pipeline (P5-065+) one or the
-//   other is called, not both, to avoid duplicate writes.
+//   This is the canonical, and (as of P20-017) sole, session_summaries
+//   persistence service. FrustrationSignalService (P5-062) was a
+//   byte-for-byte duplicate writer of the same row and has been deleted.
 //
 // Backend authority rules enforced here:
 //   - studentId is always sourced from the pipeline context (JWT-resolved),
