@@ -11,6 +11,7 @@ class AiChatHistoryModel extends AiChatHistory {
   const AiChatHistoryModel({
     required super.sessionId,
     required super.messages,
+    super.focusRecap,
   });
 
   factory AiChatHistoryModel.fromJson(Map<String, dynamic> json) {
@@ -23,6 +24,7 @@ class AiChatHistoryModel extends AiChatHistory {
                 AiChatMessageModel.fromJson(entry as Map<String, dynamic>),
           )
           .toList(),
+      focusRecap: json['focusRecap'] as String?,
     );
   }
 
@@ -31,5 +33,6 @@ class AiChatHistoryModel extends AiChatHistory {
         'messages': messages
             .map((message) => (message as AiChatMessageModel).toJson())
             .toList(),
+        'focusRecap': focusRecap,
       };
 }

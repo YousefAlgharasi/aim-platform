@@ -13,6 +13,8 @@ class AiChatSessionModel extends AiChatSession {
     required super.contextRef,
     required super.status,
     required super.createdAt,
+    super.focusRecap,
+    super.lastSessionRecap,
   });
 
   factory AiChatSessionModel.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,8 @@ class AiChatSessionModel extends AiChatSession {
       contextRef: json['contextRef'] as String,
       status: json['status'] as String,
       createdAt: json['createdAt'] as String,
+      focusRecap: json['focusRecap'] as String?,
+      lastSessionRecap: json['lastSessionRecap'] as String?,
     );
   }
 
@@ -31,5 +35,7 @@ class AiChatSessionModel extends AiChatSession {
         'contextRef': contextRef,
         'status': status,
         'createdAt': createdAt,
+        'focusRecap': focusRecap,
+        'lastSessionRecap': lastSessionRecap,
       };
 }

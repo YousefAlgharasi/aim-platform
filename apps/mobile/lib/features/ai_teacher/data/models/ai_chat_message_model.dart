@@ -13,6 +13,10 @@ class AiChatMessageModel extends AiChatMessage {
     required super.role,
     required super.text,
     required super.createdAt,
+    super.channel = 'text',
+    super.audioRef,
+    super.audioDurationMs,
+    super.isGreeting = false,
   });
 
   factory AiChatMessageModel.fromJson(Map<String, dynamic> json) {
@@ -21,6 +25,10 @@ class AiChatMessageModel extends AiChatMessage {
       role: json['role'] as String,
       text: json['text'] as String,
       createdAt: json['createdAt'] as String,
+      channel: json['channel'] as String? ?? 'text',
+      audioRef: json['audioRef'] as String?,
+      audioDurationMs: json['audioDurationMs'] as int?,
+      isGreeting: json['isGreeting'] as bool? ?? false,
     );
   }
 
@@ -29,5 +37,9 @@ class AiChatMessageModel extends AiChatMessage {
         'role': role,
         'text': text,
         'createdAt': createdAt,
+        'channel': channel,
+        'audioRef': audioRef,
+        'audioDurationMs': audioDurationMs,
+        'isGreeting': isGreeting,
       };
 }

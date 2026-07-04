@@ -19,6 +19,8 @@ void main() {
       'contextRef': 'lesson:fractions',
       'status': 'active',
       'createdAt': '2026-06-19T00:00:00.000Z',
+      'focusRecap': null,
+      'lastSessionRecap': null,
     };
 
     test('parses all contract fields from JSON', () {
@@ -28,11 +30,29 @@ void main() {
       expect(model.contextRef, 'lesson:fractions');
       expect(model.status, 'active');
       expect(model.createdAt, '2026-06-19T00:00:00.000Z');
+      expect(model.focusRecap, isNull);
+      expect(model.lastSessionRecap, isNull);
     });
 
     test('round-trips through toJson without data loss', () {
       final model = AiChatSessionModel.fromJson(json);
       expect(model.toJson(), json);
+    });
+
+    test('parses non-null focusRecap and lastSessionRecap when present', () {
+      final model = AiChatSessionModel.fromJson({
+        ...json,
+        'focusRecap': "Today we're focusing on: past tense irregular verbs",
+        'lastSessionRecap': 'Welcome back! Last time you were working on...',
+      });
+      expect(
+        model.focusRecap,
+        "Today we're focusing on: past tense irregular verbs",
+      );
+      expect(
+        model.lastSessionRecap,
+        'Welcome back! Last time you were working on...',
+      );
     });
   });
 
@@ -79,6 +99,10 @@ void main() {
       'role': 'ai_teacher',
       'text': "Great question! Let's break it down.",
       'createdAt': '2026-06-19T00:00:00.000Z',
+      'channel': 'text',
+      'audioRef': null,
+      'audioDurationMs': null,
+      'isGreeting': false,
     };
 
     test('parses all contract fields from JSON', () {
@@ -87,6 +111,10 @@ void main() {
       expect(model.role, 'ai_teacher');
       expect(model.text, "Great question! Let's break it down.");
       expect(model.createdAt, '2026-06-19T00:00:00.000Z');
+      expect(model.channel, 'text');
+      expect(model.audioRef, isNull);
+      expect(model.audioDurationMs, isNull);
+      expect(model.isGreeting, isFalse);
     });
 
     test('round-trips through toJson without data loss', () {
@@ -105,6 +133,33 @@ void main() {
       });
       expect(studentMessage.isFromStudent, isTrue);
       expect(studentMessage.isFromAiTeacher, isFalse);
+    });
+
+    test('parses a voice-originated turn with audio and defaults channel to text when absent', () {
+      final voiceMessage = AiChatMessageModel.fromJson({
+        ...json,
+        'channel': 'voice',
+        'audioRef': 'tts_abc123',
+        'audioDurationMs': 2400,
+      });
+      expect(voiceMessage.channel, 'voice');
+      expect(voiceMessage.audioRef, 'tts_abc123');
+      expect(voiceMessage.audioDurationMs, 2400);
+      expect(voiceMessage.hasAudio, isTrue);
+
+      final noChannel = AiChatMessageModel.fromJson({
+        'id': 'message-2',
+        'role': 'student',
+        'text': 'hi',
+        'createdAt': '2026-06-19T00:00:00.000Z',
+      });
+      expect(noChannel.channel, 'text');
+      expect(noChannel.hasAudio, isFalse);
+    });
+
+    test('parses is_greeting=true for the opening greeting message', () {
+      final greeting = AiChatMessageModel.fromJson({...json, 'isGreeting': true});
+      expect(greeting.isGreeting, isTrue);
     });
   });
 
