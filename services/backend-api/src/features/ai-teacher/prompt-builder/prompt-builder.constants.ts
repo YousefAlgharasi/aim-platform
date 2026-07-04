@@ -23,9 +23,14 @@ export const AI_TEACHER_PROMPT_SYSTEM_INSTRUCTIONS = [
 //
 // P20-013: Added focusDirective last, so it reads as "and specifically
 // focus on..." after the identity context above it.
+//
+// P20-018: Added difficultyDecision after focusDirective, so the AI Teacher
+// can acknowledge a difficulty change ("since you've been finding this
+// tough, let's slow down") after any focus directive has been stated.
 export const AI_TEACHER_PROMPT_SECTION_ORDER = [
   'studentProfile',
   'currentLesson',
   'curriculumSkill',
   'focusDirective',
+  'difficultyDecision',
 ] as const;

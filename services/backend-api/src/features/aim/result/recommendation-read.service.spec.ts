@@ -193,7 +193,7 @@ describe('AimResultController.getRecommendations (P5-071)', () => {
 
   it('calls RecommendationReadService with studentId from route', async () => {
     const recSvc = makeRecSvc();
-    const ctrl = new AimResultController(makeSkillSvc(), {} as unknown as import('./review-schedule-read.service').ReviewScheduleReadService, {} as unknown as import('./session-state-read.service').SessionStateReadService, {} as unknown as import('./weakness-records-read.service').WeaknessRecordsReadService, recSvc);
+    const ctrl = new AimResultController(makeSkillSvc(), {} as unknown as import('./review-schedule-read.service').ReviewScheduleReadService, {} as unknown as import('./session-state-read.service').SessionStateReadService, {} as unknown as import('./weakness-records-read.service').WeaknessRecordsReadService, recSvc, {} as unknown as import('./difficulty-decision-read.service').DifficultyDecisionReadService);
     await ctrl.getRecommendations(STUDENT_ID);
     expect(recSvc.getActiveForStudent).toHaveBeenCalledWith(STUDENT_ID);
   });
@@ -201,20 +201,20 @@ describe('AimResultController.getRecommendations (P5-071)', () => {
   it('returns service response', async () => {
     const response = { studentId: STUDENT_ID, recommendations: [] };
     const recSvc = { getActiveForStudent: jest.fn().mockResolvedValue(response) } as unknown as RecommendationReadService;
-    const ctrl = new AimResultController(makeSkillSvc(), {} as unknown as import('./review-schedule-read.service').ReviewScheduleReadService, {} as unknown as import('./session-state-read.service').SessionStateReadService, {} as unknown as import('./weakness-records-read.service').WeaknessRecordsReadService, recSvc);
+    const ctrl = new AimResultController(makeSkillSvc(), {} as unknown as import('./review-schedule-read.service').ReviewScheduleReadService, {} as unknown as import('./session-state-read.service').SessionStateReadService, {} as unknown as import('./weakness-records-read.service').WeaknessRecordsReadService, recSvc, {} as unknown as import('./difficulty-decision-read.service').DifficultyDecisionReadService);
     expect(await ctrl.getRecommendations(STUDENT_ID)).toEqual(response);
   });
 
   it('propagates service errors', async () => {
     const recSvc = { getActiveForStudent: jest.fn().mockRejectedValue(new Error('db error')) } as unknown as RecommendationReadService;
-    const ctrl = new AimResultController(makeSkillSvc(), {} as unknown as import('./review-schedule-read.service').ReviewScheduleReadService, {} as unknown as import('./session-state-read.service').SessionStateReadService, {} as unknown as import('./weakness-records-read.service').WeaknessRecordsReadService, recSvc);
+    const ctrl = new AimResultController(makeSkillSvc(), {} as unknown as import('./review-schedule-read.service').ReviewScheduleReadService, {} as unknown as import('./session-state-read.service').SessionStateReadService, {} as unknown as import('./weakness-records-read.service').WeaknessRecordsReadService, recSvc, {} as unknown as import('./difficulty-decision-read.service').DifficultyDecisionReadService);
     await expect(ctrl.getRecommendations(STUDENT_ID)).rejects.toThrow('db error');
   });
 
   it('getSkillStates still delegates to StudentSkillStateReadService', async () => {
     const skillSvc = makeSkillSvc();
     const recSvc = makeRecSvc();
-    const ctrl = new AimResultController(skillSvc, {} as unknown as import('./review-schedule-read.service').ReviewScheduleReadService, {} as unknown as import('./session-state-read.service').SessionStateReadService, {} as unknown as import('./weakness-records-read.service').WeaknessRecordsReadService, recSvc);
+    const ctrl = new AimResultController(skillSvc, {} as unknown as import('./review-schedule-read.service').ReviewScheduleReadService, {} as unknown as import('./session-state-read.service').SessionStateReadService, {} as unknown as import('./weakness-records-read.service').WeaknessRecordsReadService, recSvc, {} as unknown as import('./difficulty-decision-read.service').DifficultyDecisionReadService);
     await ctrl.getSkillStates(STUDENT_ID);
     expect(skillSvc.getSkillStatesForStudent).toHaveBeenCalledWith(STUDENT_ID);
   });

@@ -112,6 +112,7 @@ function makeController(overrides: {
     (overrides.session ?? { getSessionState: noop }) as SessionStateReadService,
     (overrides.weakness ?? { getWeaknessRecordsForStudent: noop }) as WeaknessRecordsReadService,
     (overrides.recommendation ?? { getActiveForStudent: noop }) as RecommendationReadService,
+    {} as unknown as import('./difficulty-decision-read.service').DifficultyDecisionReadService,
   );
 }
 

@@ -20,6 +20,7 @@ function makeSnapshot(
     currentLesson: null,
     curriculumSkill: null,
     focusDirective: null,
+    difficultyDecision: null,
     ...overrides,
   };
 }
