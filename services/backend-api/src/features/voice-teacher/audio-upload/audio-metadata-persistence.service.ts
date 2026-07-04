@@ -9,8 +9,9 @@
  *      decoded duration into the `voice_audio_assets` table via
  *      VoiceAudioAssetRepository (P9-027 / P9-020 migration).
  *
- * This service is the sole place that links a voice_message row to a
- * stored audio file. Callers (AudioUploadService) receive the resulting
+ * This service is the sole place that links a placeholder ai_chat_messages
+ * row (P21-021b; was a voice_messages row before this task) to a stored
+ * audio file. Callers (AudioUploadService) receive the resulting
  * `assetId` and include it in the upload result so the orchestration
  * layer (P9-068+) can hand the opaque reference to the STT gateway
  * without ever exposing raw bytes or a storage path to the client.
@@ -60,7 +61,7 @@ export class AudioMetadataPersistenceService {
     });
 
     const assetRow = await this.audioAssetRepo.create(
-      input.messageId,
+      input.aiChatMessageId,
       input.studentId,
       storageKey,
       input.contentType,

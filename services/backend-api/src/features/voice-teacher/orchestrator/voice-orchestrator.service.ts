@@ -182,6 +182,9 @@ export class VoiceOrchestratorService {
       // turn as voice-originated, so they show up correctly when the chat
       // screen and voice screen both read the same ai_chat_messages history.
       channel: 'voice',
+      // P21-021b: fill in the placeholder student row AudioUploadService
+      // already created, instead of inserting a second one.
+      existingStudentMessageId: input.studentMessageId,
     });
 
     // ── Step 3: TTS ───────────────────────────────────────────────────────

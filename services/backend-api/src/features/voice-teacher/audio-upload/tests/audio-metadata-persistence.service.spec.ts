@@ -46,7 +46,7 @@ describe('AudioMetadataPersistenceService', () => {
   }
 
   const validInput = {
-    messageId: 'message-1',
+    aiChatMessageId: 'message-1',
     studentId: 'student-1',
     audio: Buffer.from([0x52, 0x49, 0x46, 0x46]), // minimal wav-like bytes
     contentType: 'audio/wav',
@@ -75,7 +75,7 @@ describe('AudioMetadataPersistenceService', () => {
 
     expect(createMock).toHaveBeenCalledTimes(1);
     expect(createMock).toHaveBeenCalledWith(
-      'message-1',    // messageId
+      'message-1',    // aiChatMessageId
       'student-1',    // studentId
       STORAGE_KEY,    // storageKey from adapter
       'audio/wav',    // contentType

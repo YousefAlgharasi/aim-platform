@@ -6,8 +6,11 @@
  */
 
 export interface AudioMetadataPersistenceInput {
-  /** ID of the voice_message row created by AudioUploadService. */
-  readonly messageId: string;
+  /**
+   * P21-021b: ID of the ai_chat_messages placeholder row created by
+   * AudioUploadService (was the voice_messages row before this task).
+   */
+  readonly aiChatMessageId: string;
   /** Student who owns the session; verified upstream before this call. */
   readonly studentId: string;
   /** Validated audio bytes (magic-byte + duration checks already passed). */

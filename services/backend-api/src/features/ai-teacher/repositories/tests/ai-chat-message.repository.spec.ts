@@ -149,6 +149,44 @@ describe('AiChatMessageRepository', () => {
     expect(row?.audio_ref).toBe('audio-ref-2');
   });
 
+  // P21-021b: updateText() lets the voice turn path fill in a placeholder
+  // student row's real transcript in place, instead of inserting a second
+  // student row.
+  it('updateText() sets text scoped by id', async () => {
+    const calls: { sql: string; params: readonly unknown[] }[] = [];
+    const db = makeMockDb(async (sql, params) => {
+      calls.push({ sql, params });
+      return {
+        rows: [{
+          id: MESSAGE_ID,
+          session_id: SESSION_ID,
+          student_id: STUDENT_ID,
+          role: 'student',
+          text: 'What is the past tense of go?',
+          created_at: '2026-06-18T00:00:00Z',
+          channel: 'voice',
+          audio_ref: null,
+          audio_duration_ms: null,
+          is_greeting: false,
+        }],
+        rowCount: 1,
+      };
+    });
+    const repo = new AiChatMessageRepository(db);
+    const row = await repo.updateText(MESSAGE_ID, 'What is the past tense of go?');
+
+    expect(calls[0].sql).toContain('UPDATE ai_chat_messages');
+    expect(calls[0].params).toEqual([MESSAGE_ID, 'What is the past tense of go?']);
+    expect(row?.text).toBe('What is the past tense of go?');
+  });
+
+  it('updateText() returns null when no row matches', async () => {
+    const db = makeMockDb(async () => ({ rows: [], rowCount: 0 }));
+    const repo = new AiChatMessageRepository(db);
+    const row = await repo.updateText(MESSAGE_ID, 'text');
+    expect(row).toBeNull();
+  });
+
   it('findById() returns null when no row matches', async () => {
     const db = makeMockDb(async () => ({ rows: [], rowCount: 0 }));
     const repo = new AiChatMessageRepository(db);
@@ -166,5 +204,46 @@ describe('AiChatMessageRepository', () => {
     await repo.findBySessionId(SESSION_ID);
     expect(calls[0].sql).toContain('ORDER BY created_at ASC');
     expect(calls[0].params).toEqual([SESSION_ID]);
+  });
+
+  // P21-021b: voice rate-limit helpers — VoiceRateLimitPolicyService counts
+  // via these instead of the legacy VoiceMessageRepository.
+  describe('voice rate limit helpers (P21-021b)', () => {
+    it("countVoiceStudentTurnsBySession() scopes by session_id, role='student', channel='voice'", async () => {
+      const calls: { sql: string; params: readonly unknown[] }[] = [];
+      const db = makeMockDb(async (sql, params) => {
+        calls.push({ sql, params });
+        return { rows: [{ count: '3' }], rowCount: 1 };
+      });
+      const repo = new AiChatMessageRepository(db);
+      const count = await repo.countVoiceStudentTurnsBySession(SESSION_ID);
+
+      expect(calls[0].sql).toContain("role = 'student'");
+      expect(calls[0].sql).toContain("channel = 'voice'");
+      expect(calls[0].params).toEqual([SESSION_ID]);
+      expect(count).toBe(3);
+    });
+
+    it('countVoiceStudentTurnsSince() scopes by student_id, channel=voice, and the window start', async () => {
+      const calls: { sql: string; params: readonly unknown[] }[] = [];
+      const db = makeMockDb(async (sql, params) => {
+        calls.push({ sql, params });
+        return { rows: [{ count: '5' }], rowCount: 1 };
+      });
+      const repo = new AiChatMessageRepository(db);
+      const windowStart = new Date('2026-06-18T00:00:00Z');
+      const count = await repo.countVoiceStudentTurnsSince(STUDENT_ID, windowStart);
+
+      expect(calls[0].sql).toContain("channel = 'voice'");
+      expect(calls[0].params).toEqual([STUDENT_ID, windowStart]);
+      expect(count).toBe(5);
+    });
+
+    it('findLastVoiceStudentTurnCreatedAt() returns null when no voice student turn exists', async () => {
+      const db = makeMockDb(async () => ({ rows: [], rowCount: 0 }));
+      const repo = new AiChatMessageRepository(db);
+      const result = await repo.findLastVoiceStudentTurnCreatedAt(SESSION_ID);
+      expect(result).toBeNull();
+    });
   });
 });
