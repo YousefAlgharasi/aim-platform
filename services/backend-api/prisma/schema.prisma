@@ -188,10 +188,17 @@ model VoiceProviderLog {
   @@map("voice_provider_logs")
 }
 
+// P21-021b: message_id (legacy FK to voice_messages) is now nullable and
+// only ever populated on historical rows written before this task.
+// New rows use aiChatMessageId (FK to ai_chat_messages) instead --
+// AudioUploadService no longer creates a voice_messages placeholder row
+// per upload. Exactly one of message_id/ai_chat_message_id is set per
+// row, enforced by voice_audio_assets_exactly_one_message_ref_check.
 model VoiceAudioAsset {
-  id          String       @id @default(uuid()) @db.Uuid
-  messageId   String       @unique @map("message_id") @db.Uuid
-  studentId   String       @map("student_id") @db.Uuid
+  id              String         @id @default(uuid()) @db.Uuid
+  messageId       String?        @unique @map("message_id") @db.Uuid
+  aiChatMessageId String?        @unique @map("ai_chat_message_id") @db.Uuid
+  studentId       String         @map("student_id") @db.Uuid
 
   storageKey  String       @map("storage_key")
   contentType String       @map("content_type")
@@ -199,7 +206,8 @@ model VoiceAudioAsset {
 
   createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  message     VoiceMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  message       VoiceMessage?  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  aiChatMessage AiChatMessage? @relation(fields: [aiChatMessageId], references: [id], onDelete: Cascade)
 
   @@index([studentId, createdAt(sort: Desc)])
   @@map("voice_audio_assets")
@@ -225,6 +233,7 @@ model AiChatMessage {
 
   session     AiChatSession      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   snapshot    AiContextSnapshot?
+  voiceAudioAsset VoiceAudioAsset?
 
   @@index([sessionId, createdAt(sort: Asc)])
   @@index([studentId, createdAt(sort: Desc)])

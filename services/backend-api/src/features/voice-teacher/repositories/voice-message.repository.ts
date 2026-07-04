@@ -1,5 +1,20 @@
 /**
- * P21-021: `voice_messages` is NOT fully read-only, unlike `voice_sessions`
+ * P21-021b UPDATE: as of this task, `voice_messages` IS fully historical/
+ * read-only, unlike the state described below when P21-021 was written.
+ * `AudioUploadService` no longer calls `create()` here — it creates its
+ * placeholder row in `ai_chat_messages` instead, and
+ * `voice_audio_assets.ai_chat_message_id` anchors new asset rows (see
+ * `voice-audio-asset.repository.ts`). The voice rate-limit policy also no
+ * longer reads from this repository — it counts `ai_chat_messages`
+ * (channel='voice', role='student') via `AiChatMessageRepository`
+ * instead. Every method below (including the count/debounce helpers) is
+ * now dead code, kept only so any lingering reference still compiles;
+ * nothing in this codebase calls them anymore (verified by grep at the
+ * time of this change). Do not delete this table/data — that is a
+ * separate future cleanup decision.
+ *
+ * Original P21-021 note (superseded by the above, kept for history):
+ * `voice_messages` is NOT fully read-only, unlike `voice_sessions`
  * and `voice_transcripts` — flag this, don't gloss over it. `create()` is
  * still actively called by `audio-upload.service.ts` on every voice
  * submission to make a placeholder row that `voice_audio_assets.message_id`
@@ -13,11 +28,9 @@
  * any module (see its own file header) and is never invoked at runtime.
  * `updateAudioRef` has no caller at all.
  *
- * Still-active reads: `countBySessionId`/`countByStudentIdSince`/
- * `findLastCreatedAtBySessionId` back the voice rate-limit policy
- * (`voice-rate-limit-policy.service.ts`) — this is a live functional
- * dependency, not historical reporting, and must not be removed without
- * replacing that rate-limit source first.
+ * Still-active reads (superseded, see UPDATE above): `countBySessionId`/
+ * `countByStudentIdSince`/`findLastCreatedAtBySessionId` backed the voice
+ * rate-limit policy (`voice-rate-limit-policy.service.ts`).
  */
 import { Injectable } from '@nestjs/common';
 

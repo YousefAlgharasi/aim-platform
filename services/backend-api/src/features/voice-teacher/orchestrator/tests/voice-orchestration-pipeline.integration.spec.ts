@@ -25,6 +25,7 @@
 
 import { VoiceRateLimitPolicyService } from '../../rate-limit-policy/voice-rate-limit-policy.service';
 import { VoiceMessageRepository } from '../../repositories/voice-message.repository';
+import { AiChatMessageRepository } from '../../../ai-teacher/repositories/ai-chat-message.repository';
 import { VoiceSessionContextLinkService } from '../../context-link/voice-session-context-link.service';
 import { VoiceSessionRepository } from '../../repositories/voice-session.repository';
 import { TranscriptToAiTeacherService } from '../../transcript-pipeline/transcript-to-ai-teacher.service';
@@ -85,6 +86,16 @@ function buildPipeline(
     updateReply: jest.fn().mockResolvedValue(undefined),
   } as unknown as VoiceMessageRepository;
 
+  // P21-021b: VoiceRateLimitPolicyService now counts via
+  // AiChatMessageRepository (channel='voice' student turns), not
+  // VoiceMessageRepository — separate mock, mirroring the same "no
+  // breach" defaults as voiceMessageRepository above.
+  const chatMessageRepository = {
+    findLastVoiceStudentTurnCreatedAt: jest.fn().mockResolvedValue(null),
+    countVoiceStudentTurnsBySession: jest.fn().mockResolvedValue(0),
+    countVoiceStudentTurnsSince: jest.fn().mockResolvedValue(0),
+  } as unknown as AiChatMessageRepository;
+
   const voiceSessionRepository = {
     findById: jest.fn().mockResolvedValue(
       options.sessionRow === undefined ? makeSessionRow() : options.sessionRow,
@@ -106,7 +117,7 @@ function buildPipeline(
     create: jest.fn().mockResolvedValue(makeTranscriptRow()),
   } as unknown as VoiceTranscriptRepository;
 
-  const rateLimitPolicy = new VoiceRateLimitPolicyService(voiceMessageRepository);
+  const rateLimitPolicy = new VoiceRateLimitPolicyService(chatMessageRepository);
   const contextLink = new VoiceSessionContextLinkService(voiceSessionRepository);
   const transcriptToAiTeacher = new TranscriptToAiTeacherService(aiTeacherOrchestrator);
   const fallbackPolicy = new VoiceFallbackToTextPolicyService();
@@ -119,6 +130,7 @@ function buildPipeline(
     fallbackPolicy,
     persistence,
     voiceMessageRepository,
+    chatMessageRepository,
     voiceSessionRepository,
     aiTeacherOrchestrator,
     voiceTranscriptRepository,
@@ -214,7 +226,7 @@ describe('Voice orchestration pipeline (P9-048..P9-056 composition)', () => {
 
   it('stops the pipeline before context link, dispatch, or persistence when rate-limited', async () => {
     const pipeline = buildPipeline();
-    pipeline.voiceMessageRepository.countBySessionId = jest.fn().mockResolvedValue(9_999);
+    pipeline.chatMessageRepository.countVoiceStudentTurnsBySession = jest.fn().mockResolvedValue(9_999);
 
     await expect(runPipeline(pipeline, baseInput)).rejects.toThrow();
 

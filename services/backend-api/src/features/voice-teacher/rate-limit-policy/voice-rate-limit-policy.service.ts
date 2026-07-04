@@ -13,9 +13,12 @@
  * - No rate limit state or threshold is ever sent to the Flutter client;
  *   the client receives only a 429-shaped error reply from the
  *   controller.
- * - All counts are derived from the existing `voice_messages` table
- *   (P9-019/P9-027) via the `VoiceMessageRepository`. No new table or
- *   migration is required.
+ * - As of P21-021b, all counts are derived from `ai_chat_messages`
+ *   (channel='voice', role='student') via `AiChatMessageRepository`, not
+ *   the legacy `voice_messages` table. `AudioUploadService` stopped
+ *   writing new voice_messages rows in the same task, so counting there
+ *   would have silently frozen at zero for every new session and
+ *   disabled this rate limiter entirely.
  *
  * Call `assertNotRateLimited(input)` once per voice turn, before the
  * transcript/response/persistence pipeline runs. On any breach it
@@ -24,7 +27,7 @@
  */
 import { Injectable, Logger } from '@nestjs/common';
 
-import { VoiceMessageRepository } from '../repositories/voice-message.repository';
+import { AiChatMessageRepository } from '../../ai-teacher/repositories/ai-chat-message.repository';
 import { VoiceRateLimitExceededError } from './voice-rate-limit-exceeded.error';
 import { VoiceRateLimitCheckInput } from './voice-rate-limit-policy.types';
 import {
@@ -38,7 +41,7 @@ import {
 export class VoiceRateLimitPolicyService {
   private readonly logger = new Logger(VoiceRateLimitPolicyService.name);
 
-  constructor(private readonly voiceMessageRepository: VoiceMessageRepository) {}
+  constructor(private readonly chatMessageRepository: AiChatMessageRepository) {}
 
   /**
    * Assert that the current voice turn is within all configured rate
@@ -60,7 +63,7 @@ export class VoiceRateLimitPolicyService {
   // ---------------------------------------------------------------------------
 
   private async checkDebounce(sessionId: string): Promise<void> {
-    const lastAt = await this.voiceMessageRepository.findLastCreatedAtBySessionId(sessionId);
+    const lastAt = await this.chatMessageRepository.findLastVoiceStudentTurnCreatedAt(sessionId);
     if (lastAt === null) {
       return; // No previous voice message — first turn is always allowed.
     }
@@ -80,7 +83,7 @@ export class VoiceRateLimitPolicyService {
   }
 
   private async checkSessionLimit(sessionId: string): Promise<void> {
-    const count = await this.voiceMessageRepository.countBySessionId(sessionId);
+    const count = await this.chatMessageRepository.countVoiceStudentTurnsBySession(sessionId);
     if (count >= VOICE_RATE_LIMIT_MAX_TURNS_PER_SESSION) {
       this.logger.warn(
         `Rate limit (session): session ${sessionId} has reached ${count} voice turns ` +
@@ -97,7 +100,7 @@ export class VoiceRateLimitPolicyService {
 
   private async checkHourlyLimit(studentId: string): Promise<void> {
     const windowStart = new Date(Date.now() - 60 * 60 * 1_000);
-    const count = await this.voiceMessageRepository.countByStudentIdSince(studentId, windowStart);
+    const count = await this.chatMessageRepository.countVoiceStudentTurnsSince(studentId, windowStart);
     if (count >= VOICE_RATE_LIMIT_MAX_TURNS_PER_STUDENT_HOUR) {
       this.logger.warn(
         `Rate limit (hourly): student ${studentId} has sent ${count} voice turns in the last hour ` +
@@ -114,7 +117,7 @@ export class VoiceRateLimitPolicyService {
 
   private async checkDailyLimit(studentId: string): Promise<void> {
     const windowStart = new Date(Date.now() - 24 * 60 * 60 * 1_000);
-    const count = await this.voiceMessageRepository.countByStudentIdSince(studentId, windowStart);
+    const count = await this.chatMessageRepository.countVoiceStudentTurnsSince(studentId, windowStart);
     if (count >= VOICE_RATE_LIMIT_MAX_TURNS_PER_STUDENT_DAY) {
       this.logger.warn(
         `Rate limit (daily): student ${studentId} has sent ${count} voice turns in the last 24 h ` +
