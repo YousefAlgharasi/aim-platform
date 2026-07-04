@@ -197,6 +197,11 @@
       "date": "2026-07-04T00:00:00Z",
       "summary": "Initial creation of project-memory.json, seeded from facts verified incidentally during Phase 20/21 execution and the apps/web deletion/restoration episode. No systematic full-repo audit has been run yet.",
       "session_context": "User asked to convert the Chief Architect onboarding prompt into a persistent system prompt + memory schema + project state engine."
+    },
+    {
+      "date": "2026-07-04T00:00:00Z",
+      "summary": "User introduced /PROJECT_STATE.md (root-level, updated after every merge: current phase, completion % per component, technical debt, current risks, next priority). Created it seeded with the same verified facts as this memory file, and wired it into cto-persistent-system-prompt.md as bootstrap step 0 (read before project-memory.json) and step 6 (update after every merge).",
+      "session_context": "User's own convention from other projects, added here on request."
     }
   ]
 }
