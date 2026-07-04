@@ -17,8 +17,8 @@ import {
 import { Response } from 'express';
 
 import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
-import { CurrentUser } from '../../../auth/current-user.decorator';
-import { AuthenticatedUser } from '../../../auth/authenticated-user';
+import { ResolveInternalUserIdGuard } from '../../../auth/authorization/resolve-internal-user-id.guard';
+import { ResolvedInternalUserId } from '../../../auth/current-user.decorator';
 import { TtsAudioStorageService } from '../tts-gateway/tts-audio-storage.service';
 
 // P21-011: lazy on-demand TTS for text-originated ai_chat_messages rows is
@@ -29,7 +29,7 @@ import { TtsAudioStorageService } from '../tts-gateway/tts-audio-storage.service
 
 @ApiTags('Voice Teacher')
 @ApiBearerAuth()
-@UseGuards(SupabaseJwtAuthGuard)
+@UseGuards(SupabaseJwtAuthGuard, ResolveInternalUserIdGuard)
 @Controller('voice-teacher/audio')
 export class VoiceAudioPlaybackController {
   constructor(private readonly audioStorage: TtsAudioStorageService) {}
@@ -41,11 +41,9 @@ export class VoiceAudioPlaybackController {
   @ApiOkResponse({ description: 'Audio stream' })
   async getAudio(
     @Param('audioRef') audioRef: string,
-    @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() studentId: string,
     @Res() res: Response,
   ): Promise<void> {
-    const studentId = user.id;
-
     // audioRef is opaque — no provider URL or filesystem path. Ownership is
     // enforced by TtsAudioStorageService.retrieveAudio: only the student who
     // generated this audio (studentId match) can retrieve it. No provider
