@@ -24,6 +24,11 @@ abstract class VoiceRecorderClient {
   /// Stops the current recording, returning the output file path.
   Future<String?> stop();
 
+  /// Current input amplitude in dBFS (very negative = silence, closer to 0
+  /// = louder), sampled at [interval] — used for hands-free voice-activity
+  /// detection (start/stop speaking without tapping a button).
+  Stream<double> onAmplitudeChanged(Duration interval);
+
   void dispose();
 }
 
@@ -42,6 +47,10 @@ class RealVoiceRecorderClient implements VoiceRecorderClient {
 
   @override
   Future<String?> stop() => _instance.stop();
+
+  @override
+  Stream<double> onAmplitudeChanged(Duration interval) =>
+      _instance.onAmplitudeChanged(interval).map((amplitude) => amplitude.current);
 
   @override
   void dispose() {

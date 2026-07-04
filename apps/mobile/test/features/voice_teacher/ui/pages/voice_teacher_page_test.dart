@@ -71,6 +71,8 @@ class _FakeVoiceRecorderClient implements VoiceRecorderClient {
   bool stopped = false;
   bool disposed = false;
 
+  final _amplitudeController = StreamController<double>.broadcast();
+
   @override
   Future<bool> hasPermission() async => permissionGranted;
 
@@ -90,8 +92,13 @@ class _FakeVoiceRecorderClient implements VoiceRecorderClient {
   }
 
   @override
+  Stream<double> onAmplitudeChanged(Duration interval) =>
+      _amplitudeController.stream;
+
+  @override
   void dispose() {
     disposed = true;
+    unawaited(_amplitudeController.close());
   }
 }
 
@@ -188,16 +195,19 @@ void main() {
     });
 
     testWidgets(
-      'shows the pre-conversation idle hero when there is no history',
+      'auto-starts hands-free listening for a fresh session with no history',
       (tester) async {
-        // With no history and nothing in progress, the screen shows the
-        // full-bleed gradient "Tap to speak" hero (see
-        // VoiceTeacherPage's _VoiceHeroIdle) rather than
-        // VoiceTranscriptList's own empty-state text — that empty state is
-        // only reachable once a session has genuinely started producing an
-        // (empty) history list distinct from "no session activity yet".
+        // Bugfix: hands-free listening now starts immediately for a fresh
+        // session with no history at all (no greeting to wait on first),
+        // so by the time this settles it's already recording and showing
+        // the transcript view (with its own empty-state copy) rather than
+        // the static "Tap to speak" idle hero.
+        final fakeRecorder = _FakeVoiceRecorderClient();
         await tester.pumpWidget(_wrap(
-          const VoiceTeacherPage(contextRef: 'lesson-1'),
+          VoiceTeacherPage(
+            contextRef: 'lesson-1',
+            recorder: fakeRecorder,
+          ),
           overrides: [
             voiceTeacherSessionProvider.overrideWith(
               (ref) => _FakeVoiceTeacherSessionNotifier(
@@ -209,14 +219,10 @@ void main() {
           ],
         ));
         await tester.pump();
+        await tester.pump();
 
-        // "Tap to speak" appears twice by design: idle-hero headline +
-        // record-button caption.
-        expect(find.text('Tap to speak'), findsNWidgets(2));
-        expect(
-          find.text('Start talking with your Voice Teacher'),
-          findsNothing,
-        );
+        expect(fakeRecorder.startedPath, isNotNull);
+        expect(find.byType(VoiceRecordButton), findsOneWidget);
       },
     );
 
@@ -226,7 +232,10 @@ void main() {
       'labels',
       (tester) async {
         await tester.pumpWidget(_wrap(
-          const VoiceTeacherPage(contextRef: 'lesson-1'),
+          VoiceTeacherPage(
+            contextRef: 'lesson-1',
+            recorder: _FakeVoiceRecorderClient(),
+          ),
           overrides: [
             voiceTeacherSessionProvider.overrideWith(
               (ref) => _FakeVoiceTeacherSessionNotifier(
@@ -269,7 +278,10 @@ void main() {
       );
 
       await tester.pumpWidget(_wrap(
-        const VoiceTeacherPage(contextRef: 'lesson-1'),
+        VoiceTeacherPage(
+          contextRef: 'lesson-1',
+          recorder: _FakeVoiceRecorderClient(),
+        ),
         overrides: [
           voiceTeacherSessionProvider.overrideWith(
             (ref) => _FakeVoiceTeacherSessionNotifier(
@@ -294,7 +306,10 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(_wrap(
-        const VoiceTeacherPage(contextRef: 'lesson-1'),
+        VoiceTeacherPage(
+          contextRef: 'lesson-1',
+          recorder: _FakeVoiceRecorderClient(),
+        ),
         overrides: [
           voiceTeacherSessionProvider.overrideWith(
             (ref) => _FakeVoiceTeacherSessionNotifier(
@@ -316,53 +331,24 @@ void main() {
       expect(find.text('Fallback reply text'), findsOneWidget);
     });
 
-    // Bugfix (P21-017 was never actually wired up): a fresh session whose
-    // only message is the auto-generated greeting must show a "ready to
-    // hear your teacher" state with a play button, not silently drop
-    // straight into the transcript/record view with no audio ever
-    // surfaced.
+    // Bugfix (P21-017 was never actually wired up), then extended for
+    // hands-free auto-play: a fresh session whose only message is the
+    // auto-generated greeting must play the greeting's audio automatically
+    // (no tap) and show a passive "your teacher is speaking" state while it
+    // plays, not silently drop straight into the transcript/record view
+    // with no audio ever surfaced.
     testWidgets(
-      'shows a ready-to-play greeting state for a session with only the greeting message',
+      'auto-plays the greeting and shows a passive speaking state for a '
+      'session with only the greeting message',
       (tester) async {
-        await tester.pumpWidget(_wrap(
-          const VoiceTeacherPage(contextRef: 'lesson-1'),
-          overrides: [
-            voiceTeacherSessionProvider.overrideWith(
-              (ref) => _FakeVoiceTeacherSessionNotifier(
-                const AppAsyncState.success(VoiceTeacherSessionState(
-                  sessionId: 'session-1',
-                  history: [
-                    VoiceMessage(
-                      id: 'greeting-1',
-                      role: VoiceMessageRole.teacher,
-                      text: 'Welcome! Today we will focus on greetings.',
-                      audioRef: 'greeting-audio-1',
-                      createdAt: '2026-01-01T00:00:00Z',
-                      isGreeting: true,
-                    ),
-                  ],
-                )),
-              ),
-            ),
-          ],
-        ));
-        await tester.pump();
-
-        expect(find.text('Tap to hear your teacher'), findsOneWidget);
-        expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
-        // The greeting hasn't been played yet, so the normal "Tap to
-        // speak" / transcript view must not show underneath it.
-        expect(find.text('Tap to speak'), findsNothing);
-      },
-    );
-
-    testWidgets(
-      'tapping the greeting play button plays the audio and reveals the transcript',
-      (tester) async {
-        final playbackNotifier = VoicePlaybackNotifier(player: _FakeVoicePlayerClient());
+        final playbackNotifier =
+            VoicePlaybackNotifier(player: _FakeVoicePlayerClient());
 
         await tester.pumpWidget(_wrap(
-          const VoiceTeacherPage(contextRef: 'lesson-1'),
+          VoiceTeacherPage(
+            contextRef: 'lesson-1',
+            recorder: _FakeVoiceRecorderClient(),
+          ),
           overrides: [
             voiceTeacherSessionProvider.overrideWith(
               (ref) => _FakeVoiceTeacherSessionNotifier(
@@ -382,17 +368,80 @@ void main() {
               ),
             ),
             voicePlaybackProvider.overrideWith((ref) => playbackNotifier),
+            voiceTeacherRepositoryProvider
+                .overrideWithValue(_FakeVoiceTeacherRepository()),
           ],
         ));
         await tester.pump();
+        await tester.pump();
 
-        await tester.tap(find.byIcon(Icons.play_arrow_rounded));
+        expect(find.text('Your teacher is speaking…'), findsOneWidget);
+        expect(playbackNotifier.state, PlaybackState.playing);
+        // The greeting is auto-playing, so the normal "Tap to speak" /
+        // transcript view must not show underneath it yet.
+        expect(find.text('Tap to speak'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'once the auto-played greeting finishes, the transcript is revealed '
+      'and hands-free listening begins automatically',
+      (tester) async {
+        final playbackNotifier =
+            VoicePlaybackNotifier(player: _FakeVoicePlayerClient());
+        final fakeRecorder = _FakeVoiceRecorderClient();
+
+        await tester.pumpWidget(_wrap(
+          VoiceTeacherPage(
+            contextRef: 'lesson-1',
+            recorder: fakeRecorder,
+          ),
+          overrides: [
+            voiceTeacherSessionProvider.overrideWith(
+              (ref) => _FakeVoiceTeacherSessionNotifier(
+                const AppAsyncState.success(VoiceTeacherSessionState(
+                  sessionId: 'session-1',
+                  history: [
+                    VoiceMessage(
+                      id: 'greeting-1',
+                      role: VoiceMessageRole.teacher,
+                      text: 'Welcome! Today we will focus on greetings.',
+                      audioRef: 'greeting-audio-1',
+                      createdAt: '2026-01-01T00:00:00Z',
+                      isGreeting: true,
+                    ),
+                  ],
+                )),
+              ),
+            ),
+            voicePlaybackProvider.overrideWith((ref) => playbackNotifier),
+            voiceTeacherRepositoryProvider
+                .overrideWithValue(_FakeVoiceTeacherRepository()),
+          ],
+        ));
+        await tester.pump();
+        await tester.pump();
+        expect(playbackNotifier.state, PlaybackState.playing);
+
+        // Simulate the underlying player reporting natural completion —
+        // this is what drives the auto-listen continuation, never a tap.
+        await tester.runAsync(() async {
+          playbackNotifier.complete();
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+        });
         await tester.pump();
 
         expect(
           find.text('Welcome! Today we will focus on greetings.'),
           findsOneWidget,
-          reason: 'after dismissing the ready state, the greeting must still be visible in the transcript',
+          reason: 'once speaking finishes, the greeting must still be '
+              'visible in the transcript',
+        );
+        expect(
+          fakeRecorder.startedPath,
+          isNotNull,
+          reason: 'hands-free listening must start automatically once the '
+              'greeting finishes playing, with no tap required',
         );
       },
     );
@@ -401,7 +450,10 @@ void main() {
       'skips straight to the normal flow when the greeting has no audio (TTS failed)',
       (tester) async {
         await tester.pumpWidget(_wrap(
-          const VoiceTeacherPage(contextRef: 'lesson-1'),
+          VoiceTeacherPage(
+            contextRef: 'lesson-1',
+            recorder: _FakeVoiceRecorderClient(),
+          ),
           overrides: [
             voiceTeacherSessionProvider.overrideWith(
               (ref) => _FakeVoiceTeacherSessionNotifier(
@@ -424,7 +476,7 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        expect(find.text('Tap to hear your teacher'), findsNothing);
+        expect(find.text('Your teacher is speaking…'), findsNothing);
         expect(
           find.text('Welcome! Today we will focus on greetings.'),
           findsOneWidget,
@@ -437,8 +489,15 @@ void main() {
     // button stays tappable at all times (VoiceRecordButton only disables
     // during `processing`), so this is about what _onStartRecording does on
     // tap, not about un-disabling anything.
+    //
+    // Since hands-free auto-listening now also kicks off immediately (this
+    // history isn't just the greeting, so _onGreetingFinished runs right
+    // away), the auto-start itself already exercises the barge-in path: it
+    // must stop whatever was already playing before it starts recording.
+    // A manual tap on an already-recording button must stay a no-op rather
+    // than double-starting.
     testWidgets(
-      'tapping the record button during playback stops playback and starts recording',
+      'starting to listen (auto or via tap) stops playback and starts recording',
       (tester) async {
         final playbackNotifier = VoicePlaybackNotifier(player: _FakeVoicePlayerClient());
         // Drive it into a "playing" state without a real audio backend.
@@ -470,14 +529,10 @@ void main() {
           ],
         ));
         await tester.pump();
-
-        expect(recordNotifier.state, RecordSubmitState.idle);
-
-        await tester.tap(find.byType(VoiceRecordButton));
-        await tester.pump();
-        await tester.pump();
         await tester.pump();
 
+        // Hands-free listening already started automatically on mount,
+        // barging in over the pre-loaded "playing" audio with no tap.
         expect(
           playbackNotifier.state,
           isNot(PlaybackState.playing),
