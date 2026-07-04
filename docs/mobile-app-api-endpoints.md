@@ -133,7 +133,9 @@ All endpoints require `Authorization: Bearer <token>` unless marked as **Public*
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/student/analytics/summary` | Get student analytics summary report |
+| GET | `/student/analytics/summary` | List analytics report definitions visible to the student |
+| POST | `/student/analytics/summary/:reportKey/run` | Run a student-facing report (e.g. `student_aim_progress`) |
+| GET | `/student/analytics/summary/runs/:runId` | Get the status/result of a student report run |
 
 ---
 
@@ -200,7 +202,7 @@ All endpoints require `Authorization: Bearer <token>` unless marked as **Public*
 | AI Teacher | 7 |
 | Voice Teacher | 6 |
 | Assessments | 8 |
-| Analytics | 1 |
+| Analytics | 3 |
 | Notifications | 14 |
-| **Total Active** | **65** |
+| **Total Active** | **67** |
 | Planned (Support + Billing) | 17 |
