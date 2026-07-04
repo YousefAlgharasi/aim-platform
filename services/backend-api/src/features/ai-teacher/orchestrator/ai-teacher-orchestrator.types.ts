@@ -8,11 +8,21 @@
  * weakness/difficulty/recommendation/review-schedule value
  * (docs/phase-8/no-aim-replacement-rule.md).
  */
+import { AiTeacherContextSnapshot } from '../context-builder/context-builder.types';
+
 export interface ChatTurnInput {
   readonly studentId: string;
   readonly sessionId: string;
   readonly contextRef: string;
   readonly studentMessage: string;
+
+  /**
+   * P21-010: origin channel for the two ai_chat_messages rows this turn
+   * persists (student + ai_teacher). Defaults to 'text' when omitted, so
+   * every existing text-chat caller is unaffected. The Voice Teacher path
+   * passes 'voice' so a spoken turn is recorded as such.
+   */
+  readonly channel?: 'text' | 'voice';
 }
 
 export interface ChatTurnResult {
@@ -21,4 +31,38 @@ export interface ChatTurnResult {
   readonly provider: string;
   readonly model: string;
   readonly latencyMs: number;
+
+  /**
+   * P21-010: id of the persisted ai_teacher reply row (ai_chat_messages).
+   * Lets a voice-turn caller attach TTS audio_ref/audio_duration_ms onto
+   * this exact row after synthesis completes.
+   */
+  readonly messageId: string;
+}
+
+/**
+ * P21-008: Input for generating a session's opening greeting — same
+ * identity fields as ChatTurnInput, but with no studentMessage since the
+ * student has not said anything yet.
+ */
+export interface GenerateGreetingInput {
+  readonly studentId: string;
+  readonly sessionId: string;
+  readonly contextRef: string;
+}
+
+/**
+ * P21-008: Same operational shape as ChatTurnResult minus messageId (no
+ * ai_chat_messages row exists yet — the caller persists the greeting text
+ * itself and gets its own row id from that), plus the assembled context
+ * snapshot so the caller can persist it against the greeting message it
+ * saves (mirroring how a normal turn's snapshot is persisted).
+ */
+export interface GenerateGreetingResult {
+  readonly text: string;
+  readonly isFallback: boolean;
+  readonly provider: string;
+  readonly model: string;
+  readonly latencyMs: number;
+  readonly context: AiTeacherContextSnapshot;
 }

@@ -27,6 +27,12 @@ export interface AiChatMessageRow {
   readonly role: 'student' | 'ai_teacher';
   readonly text: string;
   readonly created_at: string;
+
+  // P21-006: unified text+voice conversation turn columns.
+  readonly channel: 'text' | 'voice';
+  readonly audio_ref: string | null;
+  readonly audio_duration_ms: number | null;
+  readonly is_greeting: boolean;
 }
 
 export interface AiContextSnapshotRow {

@@ -562,13 +562,15 @@ describe('AI Teacher Backend Pipeline (P8-070)', () => {
   // 7. Happy-path end-to-end result shape
   // -------------------------------------------------------------------------
   describe('Happy-Path Result', () => {
-    it('returns text, isFallback, provider, model, and latencyMs — nothing more', async () => {
+    it('returns text, isFallback, provider, model, latencyMs, and messageId — nothing more', async () => {
       const { service } = buildPipeline();
 
       const result = await service.handleTurn(PIPELINE_INPUT);
 
+      // P21-010: messageId (the persisted ai_teacher reply row id) was added
+      // so a voice-turn caller can attach TTS audio_ref onto that exact row.
       expect(Object.keys(result).sort()).toEqual(
-        ['isFallback', 'latencyMs', 'model', 'provider', 'text'].sort(),
+        ['isFallback', 'latencyMs', 'messageId', 'model', 'provider', 'text'].sort(),
       );
     });
 

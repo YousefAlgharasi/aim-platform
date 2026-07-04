@@ -82,6 +82,16 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
   }
 
   void _onCourseTap(StudentCourseModel course) {
+    if (course.locked) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).lessonsCourseLockedMessage,
+          ),
+        ),
+      );
+      return;
+    }
     // Navigate to the chapter list, passing the backend-supplied courseId.
     // courseId is never constructed from user input.
     context.push(

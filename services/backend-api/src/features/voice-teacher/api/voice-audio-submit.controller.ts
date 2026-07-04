@@ -24,7 +24,7 @@ import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
 import { CurrentUser } from '../../../auth/current-user.decorator';
 import { AuthenticatedUser } from '../../../auth/authenticated-user';
 import { VoiceSessionOwnershipGuard } from './guards/voice-session-ownership.guard';
-import { VoiceSessionRepository } from '../repositories/voice-session.repository';
+import { AiChatSessionRepository } from '../../ai-teacher/repositories/ai-chat-session.repository';
 import { VoiceOrchestratorService } from '../orchestrator/voice-orchestrator.service';
 
 import { VoiceAudioSubmitResponse } from './voice-audio-submit.types';
@@ -50,7 +50,7 @@ const DEFAULT_LANGUAGE_CODE = 'ar';
 @Controller('voice-teacher/sessions')
 export class VoiceAudioSubmitController {
   constructor(
-    private readonly voiceSessionRepository: VoiceSessionRepository,
+    private readonly chatSessionRepository: AiChatSessionRepository,
     private readonly voiceOrchestrator: VoiceOrchestratorService,
   ) {}
 
@@ -94,7 +94,8 @@ export class VoiceAudioSubmitController {
 
     // VoiceSessionOwnershipGuard has already confirmed this session exists
     // and belongs to studentId; re-fetch here only to read its contextRef.
-    const session = await this.voiceSessionRepository.findById(sessionId);
+    // P21-007/P21-010: sessions live in ai_chat_sessions now.
+    const session = await this.chatSessionRepository.findById(sessionId);
     const contextRef = session?.context_ref ?? '';
 
     const result = await this.voiceOrchestrator.handleTurn({

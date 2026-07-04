@@ -1,9 +1,11 @@
 // P9-050: Build Voice Message Submit Service tests.
+// P21-010: persistence of the transcript/reply moved into ai_chat_messages,
+// driven inside VoiceOrchestratorService/AiTeacherOrchestratorService — this
+// service no longer writes to voice_messages itself.
 
 import { VoiceMessageSubmitService } from '../voice-message-submit.service';
 import { AudioUploadService } from '../../audio-upload/audio-upload.service';
 import { VoiceOrchestratorService } from '../../orchestrator/voice-orchestrator.service';
-import { VoiceMessageRepository } from '../../repositories/voice-message.repository';
 import { VoiceTurnResult } from '../../orchestrator/voice-orchestrator.types';
 
 function makeInput(overrides = {}) {
@@ -40,18 +42,13 @@ function makeServices(turnResult: VoiceTurnResult = makeTurnResult()) {
     handleTurn: jest.fn().mockResolvedValue(turnResult),
   } as unknown as VoiceOrchestratorService;
 
-  const voiceMessageRepository = {
-    updateReply: jest.fn().mockResolvedValue(undefined),
-    updateAudioRef: jest.fn().mockResolvedValue(undefined),
-  } as unknown as VoiceMessageRepository;
-
-  return { audioUploadService, voiceOrchestrator, voiceMessageRepository };
+  return { audioUploadService, voiceOrchestrator };
 }
 
 describe('VoiceMessageSubmitService', () => {
   it('uploads the audio via AudioUploadService with the given session/student', async () => {
-    const { audioUploadService, voiceOrchestrator, voiceMessageRepository } = makeServices();
-    const service = new VoiceMessageSubmitService(audioUploadService, voiceOrchestrator, voiceMessageRepository);
+    const { audioUploadService, voiceOrchestrator } = makeServices();
+    const service = new VoiceMessageSubmitService(audioUploadService, voiceOrchestrator);
 
     await service.submitMessage(makeInput());
 
@@ -65,12 +62,12 @@ describe('VoiceMessageSubmitService', () => {
   });
 
   it('returns the upload validation error and never calls the orchestrator', async () => {
-    const { audioUploadService, voiceOrchestrator, voiceMessageRepository } = makeServices();
+    const { audioUploadService, voiceOrchestrator } = makeServices();
     (audioUploadService.upload as jest.Mock).mockResolvedValue({
       statusCode: 400,
       error: 'Bad Request',
     });
-    const service = new VoiceMessageSubmitService(audioUploadService, voiceOrchestrator, voiceMessageRepository);
+    const service = new VoiceMessageSubmitService(audioUploadService, voiceOrchestrator);
 
     const result = await service.submitMessage(makeInput());
 
@@ -79,8 +76,8 @@ describe('VoiceMessageSubmitService', () => {
   });
 
   it('forwards the uploaded message context to the orchestrator', async () => {
-    const { audioUploadService, voiceOrchestrator, voiceMessageRepository } = makeServices();
-    const service = new VoiceMessageSubmitService(audioUploadService, voiceOrchestrator, voiceMessageRepository);
+    const { audioUploadService, voiceOrchestrator } = makeServices();
+    const service = new VoiceMessageSubmitService(audioUploadService, voiceOrchestrator);
 
     await service.submitMessage(makeInput());
 
@@ -94,38 +91,11 @@ describe('VoiceMessageSubmitService', () => {
     });
   });
 
-  it('persists the reply on the voice message when no audioRef is returned', async () => {
-    const { audioUploadService, voiceOrchestrator, voiceMessageRepository } = makeServices(
-      makeTurnResult({ text: 'Hello there', audioRef: null }),
-    );
-    const service = new VoiceMessageSubmitService(audioUploadService, voiceOrchestrator, voiceMessageRepository);
-
-    await service.submitMessage(makeInput());
-
-    expect(voiceMessageRepository.updateReply).toHaveBeenCalledWith('voice-message-1', 'Hello there');
-    expect(voiceMessageRepository.updateAudioRef).not.toHaveBeenCalled();
-  });
-
-  it('persists the audioRef on the voice message when one is returned', async () => {
-    const { audioUploadService, voiceOrchestrator, voiceMessageRepository } = makeServices(
-      makeTurnResult({ audioRef: 'storage://voice-replies/1' }),
-    );
-    const service = new VoiceMessageSubmitService(audioUploadService, voiceOrchestrator, voiceMessageRepository);
-
-    await service.submitMessage(makeInput());
-
-    expect(voiceMessageRepository.updateAudioRef).toHaveBeenCalledWith(
-      'voice-message-1',
-      'storage://voice-replies/1',
-    );
-    expect(voiceMessageRepository.updateReply).not.toHaveBeenCalled();
-  });
-
-  it('returns the submit result mapped from the upload and orchestrator outputs', async () => {
-    const { audioUploadService, voiceOrchestrator, voiceMessageRepository } = makeServices(
+  it('returns the submit result mapped from the upload and orchestrator outputs, without writing to voice_messages', async () => {
+    const { audioUploadService, voiceOrchestrator } = makeServices(
       makeTurnResult({ text: 'Hi!', audioRef: null, isFallback: true }),
     );
-    const service = new VoiceMessageSubmitService(audioUploadService, voiceOrchestrator, voiceMessageRepository);
+    const service = new VoiceMessageSubmitService(audioUploadService, voiceOrchestrator);
 
     const result = await service.submitMessage(makeInput());
 
@@ -137,11 +107,24 @@ describe('VoiceMessageSubmitService', () => {
     });
   });
 
+  it('returns the audioRef from the orchestrator result unchanged when TTS succeeded', async () => {
+    const { audioUploadService, voiceOrchestrator } = makeServices(
+      makeTurnResult({ audioRef: 'storage://voice-replies/1' }),
+    );
+    const service = new VoiceMessageSubmitService(audioUploadService, voiceOrchestrator);
+
+    const result = await service.submitMessage(makeInput());
+
+    expect(result).toEqual(
+      expect.objectContaining({ audioRef: 'storage://voice-replies/1' }),
+    );
+  });
+
   it.each(['studentId', 'sessionId', 'contextRef', 'languageCode'])(
     'throws and never calls audioUploadService when %s is missing',
     async (field) => {
-      const { audioUploadService, voiceOrchestrator, voiceMessageRepository } = makeServices();
-      const service = new VoiceMessageSubmitService(audioUploadService, voiceOrchestrator, voiceMessageRepository);
+      const { audioUploadService, voiceOrchestrator } = makeServices();
+      const service = new VoiceMessageSubmitService(audioUploadService, voiceOrchestrator);
 
       await expect(service.submitMessage(makeInput({ [field]: '   ' }))).rejects.toThrow(/is missing/);
       expect(audioUploadService.upload).not.toHaveBeenCalled();
@@ -149,8 +132,8 @@ describe('VoiceMessageSubmitService', () => {
   );
 
   it('never computes a mastery, level, weakness, difficulty, recommendation, or review-schedule value', async () => {
-    const { audioUploadService, voiceOrchestrator, voiceMessageRepository } = makeServices();
-    const service = new VoiceMessageSubmitService(audioUploadService, voiceOrchestrator, voiceMessageRepository);
+    const { audioUploadService, voiceOrchestrator } = makeServices();
+    const service = new VoiceMessageSubmitService(audioUploadService, voiceOrchestrator);
 
     const result = await service.submitMessage(makeInput());
     const serialized = JSON.stringify(result);

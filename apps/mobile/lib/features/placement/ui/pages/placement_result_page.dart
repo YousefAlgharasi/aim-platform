@@ -26,8 +26,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/routing.dart';
+import '../../../../core/state/app_async_state.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
+import '../../../student_courses/data/models/student_course_model.dart';
+import '../../../student_courses/logic/provider/student_courses_provider.dart';
 import '../../data/models/placement_result_model.dart';
 import '../../logic/entity/placement_skill_mastery.dart';
 import '../../logic/provider/placement_provider.dart';
@@ -59,12 +62,24 @@ class _PlacementResultPageState extends ConsumerState<PlacementResultPage> {
           token,
           attemptId: widget.attemptId,
         );
+    // Resolve recommendedCourseId/unlockedCourseIds to titles below using the
+    // student courses provider's cache. Only trigger a fetch if nothing has
+    // been loaded yet — avoids a redundant network call when the courses
+    // list was already fetched elsewhere in this session.
+    final coursesState = ref.read(studentCoursesProvider);
+    if (coursesState is AppAsyncIdle && token.isNotEmpty) {
+      ref.read(studentCoursesProvider.notifier).load(bearerToken: token);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(placementResultProvider);
+    final coursesState = ref.watch(studentCoursesProvider);
     final surfaces = aimSurfacesOf(context);
+    final courses = coursesState is AppAsyncSuccess<List<StudentCourseModel>>
+        ? coursesState.data
+        : const <StudentCourseModel>[];
 
     return Scaffold(
       backgroundColor: surfaces.background,
@@ -78,7 +93,8 @@ class _PlacementResultPageState extends ConsumerState<PlacementResultPage> {
               message: message,
               onRetry: _loadResult,
             ),
-          PlacementResultReady(:final result) => _ResultBody(result: result),
+          PlacementResultReady(:final result) =>
+            _ResultBody(result: result, courses: courses),
         },
       ),
     );
@@ -159,9 +175,18 @@ const _skillNames = {
 };
 
 class _ResultBody extends StatelessWidget {
-  const _ResultBody({required this.result});
+  const _ResultBody({required this.result, required this.courses});
 
   final PlacementResultModel result;
+  final List<StudentCourseModel> courses;
+
+  String? _titleFor(String? courseId) {
+    if (courseId == null) return null;
+    for (final course in courses) {
+      if (course.courseId == courseId) return course.title;
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -174,6 +199,11 @@ class _ResultBody extends StatelessWidget {
         masteries.values.fold(0, (sum, m) => sum + m.totalQuestions);
     final totalScore =
         totalQuestions > 0 ? (100 * totalCorrect / totalQuestions).round() : 0;
+
+    final recommendedTitle = _titleFor(result.recommendedCourseId);
+    final secondaryCourseIds = result.unlockedCourseIds
+        .where((id) => id != result.recommendedCourseId)
+        .toList();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
@@ -200,12 +230,107 @@ class _ResultBody extends StatelessWidget {
               const SizedBox(height: AimSpacing.componentGap),
             ],
           ],
+          if (result.note != null) ...[
+            const SizedBox(height: AimSpacing.sectionGap),
+            Container(
+              padding: const EdgeInsets.all(AimSpacing.cardPadding),
+              decoration: BoxDecoration(
+                color: surfaces.surfaceSunken,
+                borderRadius: AimRadius.borderLg,
+              ),
+              child: Text(
+                result.note!,
+                style: AimTextStyles.bodySm.copyWith(
+                  color: surfaces.textSecondary,
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: AimSpacing.sectionGap),
-          AIMGradientButton(
-            label: 'Continue to AIM',
-            fullWidth: true,
-            semanticLabel: 'Continue to AIM',
-            onPressed: () => context.go(AppRoutePaths.mainShell),
+          if (result.recommendedCourseId != null)
+            AIMGradientButton(
+              label: recommendedTitle != null
+                  ? 'Start with $recommendedTitle'
+                  : 'Start recommended course',
+              fullWidth: true,
+              semanticLabel: recommendedTitle != null
+                  ? 'Start with $recommendedTitle'
+                  : 'Start recommended course',
+              onPressed: () => context.push(
+                AppRoutePaths.courseChapters,
+                extra: {
+                  'courseId': result.recommendedCourseId,
+                  'courseTitle': recommendedTitle ?? '',
+                },
+              ),
+            )
+          else
+            AIMGradientButton(
+              label: 'Continue to AIM',
+              fullWidth: true,
+              semanticLabel: 'Continue to AIM',
+              onPressed: () => context.go(AppRoutePaths.mainShell),
+            ),
+          if (secondaryCourseIds.isNotEmpty) ...[
+            const SizedBox(height: AimSpacing.sectionGap),
+            Text(
+              'OR START HERE INSTEAD',
+              style: AimTextStyles.caption.copyWith(
+                color: surfaces.textMuted,
+                fontWeight: AimFontWeights.semibold,
+                letterSpacing: 0.6,
+              ),
+            ),
+            const SizedBox(height: AimSpacing.componentGap),
+            for (final courseId in secondaryCourseIds) ...[
+              _SecondaryCourseRow(
+                courseId: courseId,
+                title: _titleFor(courseId) ?? courseId,
+              ),
+              const SizedBox(height: AimSpacing.innerGap),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Secondary unlocked-course row
+// ---------------------------------------------------------------------------
+
+class _SecondaryCourseRow extends StatelessWidget {
+  const _SecondaryCourseRow({required this.courseId, required this.title});
+
+  final String courseId;
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+
+    return AIMCard(
+      variant: AIMCardVariant.standard,
+      semanticLabel: 'Start $title instead',
+      onTap: () => context.push(
+        AppRoutePaths.courseChapters,
+        extra: {'courseId': courseId, 'courseTitle': title},
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
+            ),
+          ),
+          Icon(
+            Directionality.of(context) == TextDirection.rtl
+                ? Icons.chevron_left
+                : Icons.chevron_right,
+            size: AimSizes.iconSm,
+            color: surfaces.textSecondary,
           ),
         ],
       ),

@@ -63,14 +63,21 @@ class CourseListTile extends StatelessWidget {
     final icon = _kCourseIcons[index % _kCourseIcons.length];
     final completed = model.status == StudentCourseStatus.completed;
     final inProgress = model.status == StudentCourseStatus.inProgress;
+    final locked = model.locked;
 
-    return AIMCard(
+    final baseSemanticLabel = model.levelCode != null
+        ? l10n.lessonsCourseSemanticWithLevel(
+            model.title, model.levelCode!, model.percent)
+        : l10n.lessonsCourseSemanticBase(model.title, model.percent);
+
+    return Opacity(
+      opacity: locked ? 0.5 : 1,
+      child: AIMCard(
       variant: AIMCardVariant.elevated,
       onTap: onTap,
-      semanticLabel: model.levelCode != null
-          ? l10n.lessonsCourseSemanticWithLevel(
-              model.title, model.levelCode!, model.percent)
-          : l10n.lessonsCourseSemanticBase(model.title, model.percent),
+      semanticLabel: locked
+          ? '${l10n.lessonsCourseLockedSemantic}: $baseSemanticLabel'
+          : baseSemanticLabel,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -114,6 +121,17 @@ class CourseListTile extends StatelessWidget {
                             tone: AIMBadgeTone.primary,
                             variant: AIMBadgeVariant.soft,
                             child: Text(model.levelCode!),
+                          ),
+                        ],
+                        if (locked) ...[
+                          const SizedBox(width: AimSpacing.innerGap),
+                          Semantics(
+                            label: l10n.lessonsCourseLockedSemantic,
+                            child: Icon(
+                              Icons.lock_outline,
+                              size: AimSizes.iconSm,
+                              color: surfaces.textMuted,
+                            ),
                           ),
                         ],
                       ],
@@ -218,6 +236,7 @@ class CourseListTile extends StatelessWidget {
             ],
           ),
         ],
+      ),
       ),
     );
   }

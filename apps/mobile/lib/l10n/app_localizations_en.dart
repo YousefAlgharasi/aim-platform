@@ -727,6 +727,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lessonsCoursesPageTitle => 'Courses';
 
   @override
+  String get lessonsCourseLockedMessage =>
+      'Finish your current level to unlock this course';
+
+  @override
+  String get lessonsCourseLockedSemantic => 'Locked';
+
+  @override
   String lessonsLevelBadge(String level) {
     return 'Level $level';
   }

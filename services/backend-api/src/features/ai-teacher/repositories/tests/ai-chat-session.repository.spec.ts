@@ -94,6 +94,104 @@ describe('AiChatSessionRepository', () => {
     expect(calls[0].params).toEqual([STUDENT_ID]);
   });
 
+  describe('getOrCreateForContext()', () => {
+    it('returns the existing active session and created: false when one exists', async () => {
+      const calls: { sql: string; params: readonly unknown[] }[] = [];
+      const existingRow = {
+        id: SESSION_ID,
+        student_id: STUDENT_ID,
+        context_ref: 'lesson:p1:l3',
+        status: 'active',
+        created_at: '2026-06-18T00:00:00Z',
+        updated_at: '2026-06-18T00:00:00Z',
+      };
+      const db = makeMockDb(async (sql, params) => {
+        calls.push({ sql, params });
+        return { rows: [existingRow], rowCount: 1 };
+      });
+      const repo = new AiChatSessionRepository(db);
+
+      const result = await repo.getOrCreateForContext(STUDENT_ID, 'lesson:p1:l3');
+
+      expect(calls).toHaveLength(1);
+      expect(calls[0].sql).toContain('SELECT');
+      expect(calls[0].sql).toContain("status = 'active'");
+      expect(calls[0].params).toEqual([STUDENT_ID, 'lesson:p1:l3']);
+      expect(result).toEqual({ session: existingRow, created: false });
+    });
+
+    it('creates a new session and returns created: true when none exists', async () => {
+      const calls: { sql: string; params: readonly unknown[] }[] = [];
+      const newRow = {
+        id: SESSION_ID,
+        student_id: STUDENT_ID,
+        context_ref: 'lesson:p1:l3',
+        status: 'active',
+        created_at: '2026-06-18T00:00:00Z',
+        updated_at: '2026-06-18T00:00:00Z',
+      };
+      const db = makeMockDb(async (sql, params) => {
+        calls.push({ sql, params });
+        if (sql.includes('SELECT')) {
+          return { rows: [], rowCount: 0 };
+        }
+        return { rows: [newRow], rowCount: 1 };
+      });
+      const repo = new AiChatSessionRepository(db);
+
+      const result = await repo.getOrCreateForContext(STUDENT_ID, 'lesson:p1:l3');
+
+      expect(calls).toHaveLength(2);
+      expect(calls[1].sql).toContain('INSERT INTO ai_chat_sessions');
+      expect(result).toEqual({ session: newRow, created: true });
+    });
+
+    it('resolves the same session id for the same (studentId, contextRef) on repeated calls', async () => {
+      const existingRow = {
+        id: SESSION_ID,
+        student_id: STUDENT_ID,
+        context_ref: 'lesson:p1:l3',
+        status: 'active',
+        created_at: '2026-06-18T00:00:00Z',
+        updated_at: '2026-06-18T00:00:00Z',
+      };
+      const db = makeMockDb(async () => ({ rows: [existingRow], rowCount: 1 }));
+      const repo = new AiChatSessionRepository(db);
+
+      const first = await repo.getOrCreateForContext(STUDENT_ID, 'lesson:p1:l3');
+      const second = await repo.getOrCreateForContext(STUDENT_ID, 'lesson:p1:l3');
+
+      expect(first.session.id).toBe(second.session.id);
+    });
+
+    it('never collides two different contextRef values for the same student', async () => {
+      let insertCount = 0;
+      const db2 = makeMockDb(async (sql, params) => {
+        if (sql.includes('SELECT')) return { rows: [], rowCount: 0 };
+        insertCount += 1;
+        return {
+          rows: [{
+            id: `session-${insertCount}`,
+            student_id: params[0],
+            context_ref: params[1],
+            status: 'active',
+            created_at: '2026-06-18T00:00:00Z',
+            updated_at: '2026-06-18T00:00:00Z',
+          }],
+          rowCount: 1,
+        };
+      });
+      const repo2 = new AiChatSessionRepository(db2);
+
+      const a = await repo2.getOrCreateForContext(STUDENT_ID, 'lesson:a');
+      const b = await repo2.getOrCreateForContext(STUDENT_ID, 'lesson:b');
+
+      expect(a.session.id).not.toBe(b.session.id);
+      expect(a.session.context_ref).toBe('lesson:a');
+      expect(b.session.context_ref).toBe('lesson:b');
+    });
+  });
+
   it('closeSession() updates status to closed scoped by id', async () => {
     const calls: { sql: string; params: readonly unknown[] }[] = [];
     const db = makeMockDb(async (sql, params) => {

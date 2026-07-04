@@ -15,7 +15,7 @@ const SESSION_ID = '880e8400-e29b-41d4-a716-446655440003';
 const MESSAGE_ID = '990e8400-e29b-41d4-a716-446655440004';
 
 describe('AiChatMessageRepository', () => {
-  it('create() inserts session_id, student_id, role, text and returns the row', async () => {
+  it('create() inserts session_id, student_id, role, text and defaults channel/is_greeting/audio and returns the row', async () => {
     const calls: { sql: string; params: readonly unknown[] }[] = [];
     const db = makeMockDb(async (sql, params) => {
       calls.push({ sql, params });
@@ -27,6 +27,10 @@ describe('AiChatMessageRepository', () => {
           role: 'student',
           text: 'How do I conjugate this verb?',
           created_at: '2026-06-18T00:00:00Z',
+          channel: 'text',
+          audio_ref: null,
+          audio_duration_ms: null,
+          is_greeting: false,
         }],
         rowCount: 1,
       };
@@ -35,8 +39,19 @@ describe('AiChatMessageRepository', () => {
     const row = await repo.create(SESSION_ID, STUDENT_ID, 'student', 'How do I conjugate this verb?');
 
     expect(calls[0].sql).toContain('INSERT INTO ai_chat_messages');
-    expect(calls[0].params).toEqual([SESSION_ID, STUDENT_ID, 'student', 'How do I conjugate this verb?']);
+    expect(calls[0].params).toEqual([
+      SESSION_ID,
+      STUDENT_ID,
+      'student',
+      'How do I conjugate this verb?',
+      'text',
+      false,
+      null,
+      null,
+    ]);
     expect(row.role).toBe('student');
+    expect(row.channel).toBe('text');
+    expect(row.is_greeting).toBe(false);
   });
 
   it('create() persists ai_teacher role replies as well', async () => {
@@ -51,6 +66,10 @@ describe('AiChatMessageRepository', () => {
           role: 'ai_teacher',
           text: 'Here is how it works...',
           created_at: '2026-06-18T00:00:00Z',
+          channel: 'text',
+          audio_ref: null,
+          audio_duration_ms: null,
+          is_greeting: false,
         }],
         rowCount: 1,
       };
@@ -59,6 +78,75 @@ describe('AiChatMessageRepository', () => {
     const row = await repo.create(SESSION_ID, STUDENT_ID, 'ai_teacher', 'Here is how it works...');
     expect(calls[0].params[2]).toBe('ai_teacher');
     expect(row.role).toBe('ai_teacher');
+  });
+
+  it('create() accepts channel/isGreeting/audioRef/audioDurationMs options', async () => {
+    const calls: { sql: string; params: readonly unknown[] }[] = [];
+    const db = makeMockDb(async (sql, params) => {
+      calls.push({ sql, params });
+      return {
+        rows: [{
+          id: MESSAGE_ID,
+          session_id: SESSION_ID,
+          student_id: STUDENT_ID,
+          role: 'ai_teacher',
+          text: 'Welcome!',
+          created_at: '2026-06-18T00:00:00Z',
+          channel: 'text',
+          audio_ref: 'audio-ref-1',
+          audio_duration_ms: 1200,
+          is_greeting: true,
+        }],
+        rowCount: 1,
+      };
+    });
+    const repo = new AiChatMessageRepository(db);
+    const row = await repo.create(SESSION_ID, STUDENT_ID, 'ai_teacher', 'Welcome!', {
+      isGreeting: true,
+      audioRef: 'audio-ref-1',
+      audioDurationMs: 1200,
+    });
+
+    expect(calls[0].params).toEqual([
+      SESSION_ID,
+      STUDENT_ID,
+      'ai_teacher',
+      'Welcome!',
+      'text',
+      true,
+      'audio-ref-1',
+      1200,
+    ]);
+    expect(row.is_greeting).toBe(true);
+    expect(row.audio_ref).toBe('audio-ref-1');
+  });
+
+  it('updateAudio() sets audio_ref and audio_duration_ms scoped by id', async () => {
+    const calls: { sql: string; params: readonly unknown[] }[] = [];
+    const db = makeMockDb(async (sql, params) => {
+      calls.push({ sql, params });
+      return {
+        rows: [{
+          id: MESSAGE_ID,
+          session_id: SESSION_ID,
+          student_id: STUDENT_ID,
+          role: 'ai_teacher',
+          text: 'Welcome!',
+          created_at: '2026-06-18T00:00:00Z',
+          channel: 'text',
+          audio_ref: 'audio-ref-2',
+          audio_duration_ms: 900,
+          is_greeting: true,
+        }],
+        rowCount: 1,
+      };
+    });
+    const repo = new AiChatMessageRepository(db);
+    const row = await repo.updateAudio(MESSAGE_ID, 'audio-ref-2', 900);
+
+    expect(calls[0].sql).toContain('UPDATE ai_chat_messages');
+    expect(calls[0].params).toEqual([MESSAGE_ID, 'audio-ref-2', 900]);
+    expect(row?.audio_ref).toBe('audio-ref-2');
   });
 
   it('findById() returns null when no row matches', async () => {

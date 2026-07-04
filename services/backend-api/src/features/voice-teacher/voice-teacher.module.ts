@@ -11,6 +11,7 @@ import { VoiceOrchestratorModule } from './orchestrator/voice-orchestrator.modul
 import { VoiceSessionOwnershipGuard } from './api/guards/voice-session-ownership.guard';
 import { VoiceAudioSubmitController } from './api/voice-audio-submit.controller';
 import { VoiceAudioPlaybackController } from './api/voice-audio-playback.controller';
+import { AiChatRepositoriesModule } from '../ai-teacher/repositories/ai-chat-repositories.module';
 
 @Module({
   imports: [
@@ -20,6 +21,9 @@ import { VoiceAudioPlaybackController } from './api/voice-audio-playback.control
     VoiceSessionStartApiModule,
     VoiceRepositoriesModule,
     VoiceOrchestratorModule,
+    // P21-007/P21-010: AiChatSessionRepository, for session ownership checks
+    // and contextRef lookups now that voice sessions live in ai_chat_sessions.
+    AiChatRepositoriesModule,
   ],
   controllers: [VoiceAudioSubmitController, VoiceAudioPlaybackController],
   providers: [VoiceTeacherService, SttTranscriptPersistenceService, VoiceSessionOwnershipGuard],

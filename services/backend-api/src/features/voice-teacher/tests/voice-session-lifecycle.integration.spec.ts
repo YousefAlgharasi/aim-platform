@@ -9,11 +9,12 @@
 import { evaluateAudioDurationPolicy } from '../audio-upload/audio-duration-policy';
 import { AUDIO_UPLOAD_MAX_DURATION_MS, AUDIO_UPLOAD_MIN_DURATION_MS } from '../audio-upload/audio-upload.constants';
 import { VoiceSessionStartService } from '../session-start/voice-session-start.service';
-import { VoiceSessionRepository } from '../session-start/voice-session.repository';
+import { ChatSessionStartService } from '../../ai-teacher/chat-session/chat-session-start.service';
 import { VoiceRateLimitPolicyService } from '../rate-limit-policy/voice-rate-limit-policy.service';
 import { VoiceRateLimitExceededError } from '../rate-limit-policy/voice-rate-limit-exceeded.error';
 import { VoiceMessageRepository } from '../repositories/voice-message.repository';
 import { VoiceOrchestratorService } from '../orchestrator/voice-orchestrator.service';
+import { AiChatMessageRepository } from '../../ai-teacher/repositories/ai-chat-message.repository';
 import { SttGateway } from '../stt-gateway/stt-gateway.interface';
 import { SttSafeFailureService } from '../stt-gateway/stt-safe-failure.service';
 import { SttProviderResponse } from '../stt-gateway/stt-gateway.types';
@@ -35,32 +36,36 @@ const makeMockTtsGateway = (): TtsGateway =>
 
 describe('Voice tutor — session lifecycle', () => {
   it('starts a voice session owned by the requesting student', async () => {
-    const repository = {
-      create: jest.fn().mockResolvedValue({
-        id: 'voice-session-1',
-        student_id: 'student-1',
-        context_ref: 'lesson:fractions',
+    const chatSessionStartService = {
+      startSession: jest.fn().mockResolvedValue({
+        sessionId: 'session-1',
+        studentId: 'student-1',
+        contextRef: 'lesson:fractions',
         status: 'active',
-        created_at: '2026-06-19T00:00:00.000Z',
+        createdAt: '2026-06-19T00:00:00.000Z',
       }),
-    } as unknown as VoiceSessionRepository;
-    const service = new VoiceSessionStartService(repository);
+    } as unknown as ChatSessionStartService;
+    const service = new VoiceSessionStartService(chatSessionStartService);
 
     const result = await service.startSession({ studentId: 'student-1', contextRef: 'lesson:fractions' });
 
-    expect(result.sessionId).toBe('voice-session-1');
+    expect(result.sessionId).toBe('session-1');
     expect(result.studentId).toBe('student-1');
-    expect(repository.create).toHaveBeenCalledWith('student-1', 'lesson:fractions');
+    expect(chatSessionStartService.startSession).toHaveBeenCalledWith({
+      studentId: 'student-1',
+      contextRef: 'lesson:fractions',
+    });
   });
 
   it('rejects starting a session without a studentId', async () => {
-    const repository = { create: jest.fn() } as unknown as VoiceSessionRepository;
-    const service = new VoiceSessionStartService(repository);
+    const chatSessionStartService = {
+      startSession: jest.fn().mockRejectedValue(new Error('Cannot start an AI chat session: studentId is missing.')),
+    } as unknown as ChatSessionStartService;
+    const service = new VoiceSessionStartService(chatSessionStartService);
 
     await expect(service.startSession({ studentId: '', contextRef: 'lesson:fractions' })).rejects.toThrow(
       /studentId is missing/,
     );
-    expect(repository.create).not.toHaveBeenCalled();
   });
 });
 
@@ -132,7 +137,7 @@ describe('Voice tutor — STT -> AI Teacher safety-checked reply (full turn)', (
       }),
     } as unknown as AiTeacherOrchestratorService;
 
-    const orchestrator = new VoiceOrchestratorService(sttGateway, sttSafeFailure, makeMockTtsGateway(), new TtsSafeFailureService(), aiOrchestrator);
+    const orchestrator = new VoiceOrchestratorService(sttGateway, sttSafeFailure, makeMockTtsGateway(), new TtsSafeFailureService(), aiOrchestrator, { updateAudio: jest.fn() } as unknown as AiChatMessageRepository);
 
     const result = await orchestrator.handleTurn({
       studentId: 'student-1',
@@ -163,7 +168,7 @@ describe('Voice tutor — STT -> AI Teacher safety-checked reply (full turn)', (
       }),
     } as unknown as AiTeacherOrchestratorService;
 
-    const orchestrator = new VoiceOrchestratorService(sttGateway, sttSafeFailure, makeMockTtsGateway(), new TtsSafeFailureService(), aiOrchestrator);
+    const orchestrator = new VoiceOrchestratorService(sttGateway, sttSafeFailure, makeMockTtsGateway(), new TtsSafeFailureService(), aiOrchestrator, { updateAudio: jest.fn() } as unknown as AiChatMessageRepository);
 
     const result = await orchestrator.handleTurn({
       studentId: 'student-1',
@@ -221,7 +226,7 @@ describe('Voice tutor — STT -> AI Teacher safety-checked reply (full turn)', (
       }),
     } as unknown as AiTeacherOrchestratorService;
 
-    const orchestrator = new VoiceOrchestratorService(sttGateway, sttSafeFailure, makeMockTtsGateway(), new TtsSafeFailureService(), aiOrchestrator);
+    const orchestrator = new VoiceOrchestratorService(sttGateway, sttSafeFailure, makeMockTtsGateway(), new TtsSafeFailureService(), aiOrchestrator, { updateAudio: jest.fn() } as unknown as AiChatMessageRepository);
     const result = await orchestrator.handleTurn({
       studentId: 'student-1',
       sessionId: 'voice-session-1',
