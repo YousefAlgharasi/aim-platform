@@ -89,6 +89,16 @@ export class SttTranscriptionService extends SttGateway {
       });
 
       if (!response.ok) {
+        // Bugfix: this previously discarded the provider's error body,
+        // logging only an HTTP status — made a real STT provider failure
+        // (e.g. invalid API key, unsupported model, unsupported audio
+        // format) indistinguishable from any other failure in the logs.
+        // The provider's own error message never contains audio content or
+        // our credentials, so it's safe to log (truncated defensively).
+        const bodyText = await response.text().catch(() => '');
+        this.logger.error(
+          `SttTranscriptionService.callProvider: STT provider returned HTTP ${response.status}: ${bodyText.slice(0, 500)}`,
+        );
         throw new BadGatewayException(`STT provider returned HTTP ${response.status}`);
       }
 

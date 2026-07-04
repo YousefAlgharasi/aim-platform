@@ -328,9 +328,13 @@ describe('VoiceOrchestratorService', () => {
 
       const result = await svc.handleTurn(makeInput());
 
-      // AI Teacher is still called, but with an empty transcript.
+      // AI Teacher is still called, but with the safe non-empty placeholder
+      // (never an empty string — that violates ai_chat_messages' not-empty
+      // check constraint at persistence time).
       expect(aiOrchestrator.handleTurn).toHaveBeenCalledWith(
-        expect.objectContaining({ studentMessage: '' }),
+        expect.objectContaining({
+          studentMessage: "I didn't catch that — no speech was detected in the recording.",
+        }),
       );
       expect(result.isFallback).toBe(true);
     });
@@ -354,7 +358,9 @@ describe('VoiceOrchestratorService', () => {
       await svc.handleTurn(makeInput());
 
       expect(aiOrchestrator.handleTurn).toHaveBeenCalledWith(
-        expect.objectContaining({ studentMessage: '' }),
+        expect.objectContaining({
+          studentMessage: "I didn't catch that — no speech was detected in the recording.",
+        }),
       );
     });
 
@@ -373,7 +379,9 @@ describe('VoiceOrchestratorService', () => {
       const result = await svc.handleTurn(makeInput());
 
       expect(aiOrchestrator.handleTurn).toHaveBeenCalledWith(
-        expect.objectContaining({ studentMessage: '' }),
+        expect.objectContaining({
+          studentMessage: "I didn't catch that — no speech was detected in the recording.",
+        }),
       );
       expect(result.isFallback).toBe(true);
     });
