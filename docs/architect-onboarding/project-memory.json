@@ -142,6 +142,19 @@
 
   "known_issues": [
     {
+      "id": "voice-playback-was-state-only-until-pr-1314",
+      "summary": "VoicePlaybackNotifier.loadAndPlay fetched real synthesized audio from the backend successfully but never actually played it through any audio output; stop()/pause()/resume() mutated state without controlling real playback either. Same class of bug as the pre-PR-1310 microphone gap. Found during the Project Brain gap audit -- the original full-inventory pass verified mic capture in depth but not playback.",
+      "found_at": "2026-07-04T00:00:00Z",
+      "status": "fixed",
+      "fixed_in": "PR #1314 (adds audioplayers package, RealVoicePlayerClient); 12 new tests, mobile suite now 850/850."
+    },
+    {
+      "id": "voice-teacher-io-unverified-on-real-hardware",
+      "summary": "Voice Teacher's mic capture (PR #1310) and audio playback (PR #1314) are both real code paths, but neither has been verified with actual audio hardware/a real device or emulator -- both fixing commits explicitly disclaim this in their own commit messages.",
+      "found_at": "2026-07-04T00:00:00Z (surfaced during the Project Brain gap audit)",
+      "status": "open"
+    },
+    {
       "id": "voice-audio-assets-fk-decoupled",
       "summary": "voice_audio_assets.message_id (FK to legacy voice_messages) made nullable; new rows use ai_chat_message_id instead.",
       "found_at": "2026-07-04T00:00:00Z",
@@ -242,6 +255,11 @@
   },
 
   "change_log": [
+    {
+      "date": "2026-07-04T21:15:00Z",
+      "summary": "Ran a gap audit comparing docs/project-brain/*.md against current origin/main (which had moved ahead by one merged PR, #1314, 'Wire the Voice Teacher screen to real audio playback', since the Brain was authored). Found 11 gaps (0 Critical, 0 High, 5 Medium, 6 Low), the most significant being that Voice Teacher audio playback was a state-only bug of the same class as the pre-PR-1310 microphone gap, now fixed but never logged. Also corrected stale test counts (mobile 838->850, backend 3158->3163) discovered during re-verification. Saved as docs/project-brain/GAP-AUDIT.md.",
+      "session_context": "User asked for a systematic gap audit between the Project Brain and current implementation, generated_at 2026-07-04T21:15:00Z."
+    },
     {
       "date": "2026-07-04T00:00:00Z",
       "summary": "Initial creation of project-memory.json, seeded from facts verified incidentally during Phase 20/21 execution and the apps/web deletion/restoration episode. No systematic full-repo audit has been run yet.",
