@@ -1234,6 +1234,18 @@ abstract class AppLocalizations {
   /// **'Courses'**
   String get lessonsCoursesPageTitle;
 
+  /// Snackbar message shown when a student taps a locked course tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish your current level to unlock this course'**
+  String get lessonsCourseLockedMessage;
+
+  /// Accessibility label for the lock icon/badge shown on a locked course tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get lessonsCourseLockedSemantic;
+
   /// Level badge shown next to the course list heading.
   ///
   /// In en, this message translates to:

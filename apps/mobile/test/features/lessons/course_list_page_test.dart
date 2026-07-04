@@ -12,8 +12,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/localization/localization.dart';
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
 import 'package:aim_mobile/features/lessons/ui/pages/course_list_page.dart';
@@ -49,6 +51,7 @@ const _courses = [
     completedLessonCount: 5,
     percent: 25,
     status: StudentCourseStatus.inProgress,
+    locked: false,
   ),
   StudentCourseModel(
     courseId: 'course-2',
@@ -58,6 +61,7 @@ const _courses = [
     completedLessonCount: 0,
     percent: 0,
     status: StudentCourseStatus.notStarted,
+    locked: false,
   ),
 ];
 
@@ -162,6 +166,108 @@ void main() {
       expect(find.text('English B1'), findsOneWidget);
       expect(find.text('25%'), findsOneWidget);
       expect(find.text('In progress'), findsWidgets);
+    });
+
+    testWidgets('tapping a locked course tile shows a message and does not navigate',
+        (tester) async {
+      final router = GoRouter(routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => const CourseListPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.courseChapters,
+          builder: (context, state) => const Scaffold(body: Text('Chapters')),
+        ),
+      ]);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            studentCoursesProvider.overrideWith(
+              (ref) => _FakeStudentCoursesNotifier(
+                AppAsyncState.success([
+                  const StudentCourseModel(
+                    courseId: 'locked-course',
+                    title: 'Locked Course',
+                    levelCode: 'B2',
+                    lessonCount: 5,
+                    completedLessonCount: 0,
+                    percent: 0,
+                    status: StudentCourseStatus.notStarted,
+                    locked: true,
+                  ),
+                ]),
+              ),
+            ),
+          ],
+          child: MaterialApp.router(
+            theme: AppTheme.light,
+            localizationsDelegates: AppLocale.delegates,
+            supportedLocales: AppLocale.supportedLocales,
+            routerConfig: router,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.text('Locked Course'));
+      await tester.pump();
+
+      expect(find.text('Chapters'), findsNothing);
+      expect(
+        find.text('Finish your current level to unlock this course'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('tapping an unlocked course tile navigates to chapters',
+        (tester) async {
+      final router = GoRouter(routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => const CourseListPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.courseChapters,
+          builder: (context, state) => const Scaffold(body: Text('Chapters')),
+        ),
+      ]);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            studentCoursesProvider.overrideWith(
+              (ref) => _FakeStudentCoursesNotifier(
+                AppAsyncState.success([
+                  const StudentCourseModel(
+                    courseId: 'unlocked-course',
+                    title: 'Unlocked Course',
+                    levelCode: 'A1',
+                    lessonCount: 5,
+                    completedLessonCount: 0,
+                    percent: 0,
+                    status: StudentCourseStatus.notStarted,
+                    locked: false,
+                  ),
+                ]),
+              ),
+            ),
+          ],
+          child: MaterialApp.router(
+            theme: AppTheme.light,
+            localizationsDelegates: AppLocale.delegates,
+            supportedLocales: AppLocale.supportedLocales,
+            routerConfig: router,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.text('Unlocked Course'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Chapters'), findsOneWidget);
     });
   });
 }
