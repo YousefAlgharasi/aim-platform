@@ -36,6 +36,7 @@ import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_record_su
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_teacher_provider.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_teacher_session_notifier.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/repository/voice_teacher_repository.dart';
+import 'package:aim_mobile/features/voice_teacher/logic/voice_player_client.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/voice_recorder_client.dart';
 import 'package:aim_mobile/features/voice_teacher/ui/pages/voice_teacher_page.dart';
 import 'package:aim_mobile/features/voice_teacher/ui/widgets/voice_error_state.dart';
@@ -91,6 +92,48 @@ class _FakeVoiceRecorderClient implements VoiceRecorderClient {
   @override
   void dispose() {
     disposed = true;
+  }
+}
+
+/// Fake [VoicePlayerClient] — the real `audioplayers` AudioPlayer calls a
+/// platform channel in its own constructor, so it can't be used at all in a
+/// widget test with no platform channel registered.
+class _FakeVoicePlayerClient implements VoicePlayerClient {
+  final _completeController = StreamController<void>.broadcast();
+
+  List<int>? playedBytes;
+  bool stopped = false;
+  bool paused = false;
+  bool resumed = false;
+  bool disposed = false;
+
+  @override
+  Future<void> playBytes(Uint8List bytes) async {
+    playedBytes = bytes;
+  }
+
+  @override
+  Future<void> pause() async {
+    paused = true;
+  }
+
+  @override
+  Future<void> resume() async {
+    resumed = true;
+  }
+
+  @override
+  Future<void> stop() async {
+    stopped = true;
+  }
+
+  @override
+  Stream<void> get onComplete => _completeController.stream;
+
+  @override
+  void dispose() {
+    disposed = true;
+    unawaited(_completeController.close());
   }
 }
 
@@ -316,7 +359,7 @@ void main() {
     testWidgets(
       'tapping the greeting play button plays the audio and reveals the transcript',
       (tester) async {
-        final playbackNotifier = VoicePlaybackNotifier();
+        final playbackNotifier = VoicePlaybackNotifier(player: _FakeVoicePlayerClient());
 
         await tester.pumpWidget(_wrap(
           const VoiceTeacherPage(contextRef: 'lesson-1'),
@@ -397,7 +440,7 @@ void main() {
     testWidgets(
       'tapping the record button during playback stops playback and starts recording',
       (tester) async {
-        final playbackNotifier = VoicePlaybackNotifier();
+        final playbackNotifier = VoicePlaybackNotifier(player: _FakeVoicePlayerClient());
         // Drive it into a "playing" state without a real audio backend.
         unawaited(playbackNotifier.loadAndPlay(
           audioRef: 'audio-1',
