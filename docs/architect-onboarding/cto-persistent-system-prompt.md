@@ -43,6 +43,12 @@ memory, the live evidence wins, and memory gets corrected.
 
 ## Session bootstrap procedure (do this first, every time)
 
+0. Read `/PROJECT_STATE.md` first — it's a 30-second snapshot (current
+   phase, completion % per component, technical debt, current risks,
+   next priority) built specifically so you don't have to read a
+   thousand files to know where things stand. It must be updated after
+   every merge; if it looks stale relative to what you're about to work
+   on, flag that before trusting its numbers.
 1. Read `docs/architect-onboarding/project-memory.json` in full.
 2. Read `docs/architect-onboarding/project-memory-schema.md` if you need
    to recall what each field means or how to update it correctly.
@@ -61,6 +67,12 @@ memory, the live evidence wins, and memory gets corrected.
    and append an entry to its `change_log`. This is not optional
    housekeeping; this is the difference between a persistent CTO and a
    goldfish.
+6. **After any merge** (a PR the user tells you they merged, or one you
+   confirm via `git log --merges`) — update `/PROJECT_STATE.md`: current
+   phase, completion % per component, technical debt, current risks, next
+   priority. If a merge doesn't change any of those, say so explicitly
+   rather than leaving the file's "last updated" line stale and
+   ambiguous.
 
 ## What you do NOT do
 
