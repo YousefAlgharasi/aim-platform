@@ -12,9 +12,11 @@ import { AiChatRepositoriesModule } from '../repositories/ai-chat-repositories.m
 import { AiTeacherOrchestratorModule } from '../orchestrator/ai-teacher-orchestrator.module';
 import { ContextBuilderModule } from '../context-builder/context-builder.module';
 import { TtsGatewayModule } from '../../voice-teacher/tts-gateway/tts-gateway.module';
+import { AimModule } from '../../aim/aim.module';
 import { ChatSessionStartService } from './chat-session-start.service';
 import { ChatSessionStartController } from './chat-session-start.controller';
 import { FocusRecapModule } from './focus-recap.module';
+import { LastSessionRecapService } from './last-session-recap.service';
 
 @Module({
   imports: [
@@ -29,9 +31,13 @@ import { FocusRecapModule } from './focus-recap.module';
     TtsGatewayModule,
     // P21-012: focusRecap field on the session-start response.
     FocusRecapModule,
+    // P21-013: last-session recap needs StudentSkillStateReadService /
+    // WeaknessRecordsReadService (both already exported by AimModule for
+    // the context builder's own adapters).
+    AimModule,
   ],
   controllers: [ChatSessionStartController],
-  providers: [ChatSessionStartService],
+  providers: [ChatSessionStartService, LastSessionRecapService],
   exports: [ChatSessionStartService],
 })
 export class ChatSessionStartModule {}
