@@ -14,6 +14,7 @@
 //   6. A fallback (TTS-unavailable) turn renders the text-fallback widget.
 
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -35,6 +36,7 @@ import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_record_su
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_teacher_provider.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_teacher_session_notifier.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/repository/voice_teacher_repository.dart';
+import 'package:aim_mobile/features/voice_teacher/logic/voice_recorder_client.dart';
 import 'package:aim_mobile/features/voice_teacher/ui/pages/voice_teacher_page.dart';
 import 'package:aim_mobile/features/voice_teacher/ui/widgets/voice_error_state.dart';
 import 'package:aim_mobile/features/voice_teacher/ui/widgets/voice_record_button.dart';
@@ -47,6 +49,50 @@ Widget _wrap(Widget child, {List<Override> overrides = const []}) =>
       ],
       child: MaterialApp(theme: AppTheme.light, home: child),
     );
+
+/// Fake [VoiceRecorderClient] — the real `record` package's AudioRecorder
+/// calls a platform channel in its own constructor, so it can't be used at
+/// all in a widget test with no platform channel registered. This lets
+/// tests exercise _onStartRecording/_onStopRecording without ever touching
+/// the real plugin.
+class _FakeVoiceRecorderClient implements VoiceRecorderClient {
+  _FakeVoiceRecorderClient({
+    this.permissionGranted = true,
+    this.startThrows,
+    this.recordedBytes,
+  });
+
+  final bool permissionGranted;
+  final Object? startThrows;
+  final List<int>? recordedBytes;
+
+  String? startedPath;
+  bool stopped = false;
+  bool disposed = false;
+
+  @override
+  Future<bool> hasPermission() async => permissionGranted;
+
+  @override
+  Future<void> start(String path) async {
+    if (startThrows != null) throw startThrows!;
+    startedPath = path;
+  }
+
+  @override
+  Future<String?> stop() async {
+    stopped = true;
+    if (recordedBytes == null) return null;
+    final file = File(startedPath!);
+    await file.writeAsBytes(recordedBytes!);
+    return startedPath;
+  }
+
+  @override
+  void dispose() {
+    disposed = true;
+  }
+}
 
 const _history = [
   VoiceMessage(
@@ -363,7 +409,10 @@ void main() {
         final recordNotifier = VoiceRecordSubmitNotifier();
 
         await tester.pumpWidget(_wrap(
-          const VoiceTeacherPage(contextRef: 'lesson-1'),
+          VoiceTeacherPage(
+            contextRef: 'lesson-1',
+            recorder: _FakeVoiceRecorderClient(),
+          ),
           overrides: [
             voiceTeacherSessionProvider.overrideWith(
               (ref) => _FakeVoiceTeacherSessionNotifier(
@@ -383,6 +432,8 @@ void main() {
 
         await tester.tap(find.byType(VoiceRecordButton));
         await tester.pump();
+        await tester.pump();
+        await tester.pump();
 
         expect(
           playbackNotifier.state,
@@ -390,6 +441,136 @@ void main() {
           reason: 'barge-in must stop local playback immediately',
         );
         expect(recordNotifier.state, RecordSubmitState.recording);
+      },
+    );
+
+    // Bugfix: microphone capture is now wired to a real recorder — these
+    // cover the new permission-denied and successful-recording paths that
+    // never existed while _onStopRecording sent a hardcoded empty buffer.
+    testWidgets(
+      'shows the microphone error state when recording permission is denied',
+      (tester) async {
+        final recordNotifier = VoiceRecordSubmitNotifier();
+
+        await tester.pumpWidget(_wrap(
+          VoiceTeacherPage(
+            contextRef: 'lesson-1',
+            recorder: _FakeVoiceRecorderClient(permissionGranted: false),
+          ),
+          overrides: [
+            voiceTeacherSessionProvider.overrideWith(
+              (ref) => _FakeVoiceTeacherSessionNotifier(
+                const AppAsyncState.success(VoiceTeacherSessionState(
+                  sessionId: 'session-1',
+                  history: _history,
+                )),
+              ),
+            ),
+            voiceRecordSubmitProvider.overrideWith((ref) => recordNotifier),
+          ],
+        ));
+        await tester.pump();
+
+        await tester.tap(find.byType(VoiceRecordButton));
+        await tester.pump();
+        await tester.pump();
+        await tester.pump();
+
+        expect(recordNotifier.state, RecordSubmitState.error);
+        expect(find.byType(VoiceErrorState), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'shows the microphone error state when the recorder fails to start '
+      '(never optimistically shows "recording")',
+      (tester) async {
+        final recordNotifier = VoiceRecordSubmitNotifier();
+
+        await tester.pumpWidget(_wrap(
+          VoiceTeacherPage(
+            contextRef: 'lesson-1',
+            recorder: _FakeVoiceRecorderClient(
+              startThrows: Exception('device busy'),
+            ),
+          ),
+          overrides: [
+            voiceTeacherSessionProvider.overrideWith(
+              (ref) => _FakeVoiceTeacherSessionNotifier(
+                const AppAsyncState.success(VoiceTeacherSessionState(
+                  sessionId: 'session-1',
+                  history: _history,
+                )),
+              ),
+            ),
+            voiceRecordSubmitProvider.overrideWith((ref) => recordNotifier),
+          ],
+        ));
+        await tester.pump();
+
+        await tester.tap(find.byType(VoiceRecordButton));
+        await tester.pump();
+        await tester.pump();
+        await tester.pump();
+
+        expect(recordNotifier.state, RecordSubmitState.error);
+        expect(find.byType(VoiceErrorState), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'recording then stopping reads real captured bytes and submits them',
+      (tester) async {
+        final recordNotifier = VoiceRecordSubmitNotifier();
+        final fakeRecorder = _FakeVoiceRecorderClient(
+          recordedBytes: [1, 2, 3, 4],
+        );
+        List<int>? submittedAudio;
+
+        await tester.pumpWidget(_wrap(
+          VoiceTeacherPage(
+            contextRef: 'lesson-1',
+            recorder: fakeRecorder,
+          ),
+          overrides: [
+            voiceTeacherSessionProvider.overrideWith(
+              (ref) => _FakeVoiceTeacherSessionNotifier(
+                const AppAsyncState.success(VoiceTeacherSessionState(
+                  sessionId: 'session-1',
+                  history: _history,
+                )),
+              )..onSubmitTurn = (audio) => submittedAudio = audio,
+            ),
+            voiceRecordSubmitProvider.overrideWith((ref) => recordNotifier),
+          ],
+        ));
+        await tester.pump();
+
+        // Real dart:io file I/O happens inside _onStopRecording (reading the
+        // fake recorder's temp file back into memory), which needs a real
+        // event-loop tick to complete — plain pump() only drains the fake
+        // test zone's microtask/timer queue, not real system I/O.
+        await tester.runAsync(() async {
+          await tester.tap(find.byType(VoiceRecordButton));
+          await tester.pump();
+          await tester.pump();
+          await tester.pump();
+        });
+        expect(recordNotifier.state, RecordSubmitState.recording);
+        expect(fakeRecorder.startedPath, isNotNull);
+
+        await tester.runAsync(() async {
+          await tester.tap(find.byType(VoiceRecordButton));
+          // _onStopRecording's fire-and-forget async chain (stop() -> real
+          // file read -> delete -> submitToBackend -> submitTurn) needs real
+          // wall-clock time to fully unwind, since VoiceRecordButton's
+          // onStopRecording slot discards the returned Future.
+          await Future<void>.delayed(const Duration(milliseconds: 100));
+          await tester.pump();
+        });
+
+        expect(fakeRecorder.stopped, isTrue);
+        expect(submittedAudio, [1, 2, 3, 4]);
       },
     );
   });
@@ -411,6 +592,10 @@ class _FakeVoiceTeacherSessionNotifier extends VoiceTeacherSessionNotifier {
     state = initialState;
   }
 
+  /// Test hook — lets a test observe the audio bytes _onStopRecording
+  /// actually submitted, without needing a real backend round trip.
+  void Function(List<int> audioBytes)? onSubmitTurn;
+
   @override
   Future<void> startSession({
     required String bearerToken,
@@ -429,7 +614,9 @@ class _FakeVoiceTeacherSessionNotifier extends VoiceTeacherSessionNotifier {
     required String sessionId,
     required List<int> audioBytes,
     required String mimeType,
-  }) async {}
+  }) async {
+    onSubmitTurn?.call(audioBytes);
+  }
 
   @override
   Future<void> submitFeedback({
