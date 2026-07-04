@@ -23,6 +23,19 @@ export interface ChatTurnInput {
    * passes 'voice' so a spoken turn is recorded as such.
    */
   readonly channel?: 'text' | 'voice';
+
+  /**
+   * P21-021b: id of an already-persisted, empty ai_chat_messages student
+   * row to fill in with `studentMessage` instead of inserting a new row.
+   * Only ever set by the Voice Teacher path: AudioUploadService creates
+   * this placeholder row up front (as the voice_audio_assets FK anchor,
+   * before STT has run), so by the time handleTurn() is called the real
+   * transcript needs to land on that same row rather than a second one —
+   * otherwise a voice turn would show two student bubbles (one empty, one
+   * with the real transcript) in chat history. Omitted (undefined) for
+   * every text-chat caller, which keeps today's insert-a-new-row behavior.
+   */
+  readonly existingStudentMessageId?: string;
 }
 
 export interface ChatTurnResult {

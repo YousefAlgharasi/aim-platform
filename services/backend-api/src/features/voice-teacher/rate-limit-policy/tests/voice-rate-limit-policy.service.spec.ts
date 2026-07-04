@@ -1,8 +1,10 @@
 // P9-055: Add Voice Rate Limit Policy tests.
+// P21-021b: counts now come from AiChatMessageRepository (channel='voice',
+// role='student'), not the legacy VoiceMessageRepository.
 
 import { VoiceRateLimitPolicyService } from '../voice-rate-limit-policy.service';
 import { VoiceRateLimitExceededError } from '../voice-rate-limit-exceeded.error';
-import { VoiceMessageRepository } from '../../repositories/voice-message.repository';
+import { AiChatMessageRepository } from '../../../ai-teacher/repositories/ai-chat-message.repository';
 import {
   VOICE_RATE_LIMIT_MAX_TURNS_PER_SESSION,
   VOICE_RATE_LIMIT_MAX_TURNS_PER_STUDENT_DAY,
@@ -10,13 +12,13 @@ import {
   VOICE_RATE_LIMIT_MIN_TURN_GAP_MS,
 } from '../voice-rate-limit-policy.constants';
 
-function makeRepository(overrides: Partial<VoiceMessageRepository> = {}) {
+function makeRepository(overrides: Partial<AiChatMessageRepository> = {}) {
   return {
-    findLastCreatedAtBySessionId: jest.fn().mockResolvedValue(null),
-    countBySessionId: jest.fn().mockResolvedValue(0),
-    countByStudentIdSince: jest.fn().mockResolvedValue(0),
+    findLastVoiceStudentTurnCreatedAt: jest.fn().mockResolvedValue(null),
+    countVoiceStudentTurnsBySession: jest.fn().mockResolvedValue(0),
+    countVoiceStudentTurnsSince: jest.fn().mockResolvedValue(0),
     ...overrides,
-  } as unknown as VoiceMessageRepository;
+  } as unknown as AiChatMessageRepository;
 }
 
 describe('VoiceRateLimitPolicyService', () => {
@@ -31,7 +33,7 @@ describe('VoiceRateLimitPolicyService', () => {
 
   it('throws MIN_TURN_GAP when the last voice message was sent too recently', async () => {
     const repo = makeRepository({
-      findLastCreatedAtBySessionId: jest.fn().mockResolvedValue(new Date(Date.now() - 100)),
+      findLastVoiceStudentTurnCreatedAt: jest.fn().mockResolvedValue(new Date(Date.now() - 100)),
     });
     const service = new VoiceRateLimitPolicyService(repo);
 
@@ -49,7 +51,7 @@ describe('VoiceRateLimitPolicyService', () => {
 
   it('does not throw MIN_TURN_GAP when the gap exceeds the minimum', async () => {
     const repo = makeRepository({
-      findLastCreatedAtBySessionId: jest
+      findLastVoiceStudentTurnCreatedAt: jest
         .fn()
         .mockResolvedValue(new Date(Date.now() - VOICE_RATE_LIMIT_MIN_TURN_GAP_MS - 5_000)),
     });
@@ -62,7 +64,7 @@ describe('VoiceRateLimitPolicyService', () => {
 
   it('throws SESSION_TURN_LIMIT when the session turn count reaches the threshold', async () => {
     const repo = makeRepository({
-      countBySessionId: jest.fn().mockResolvedValue(VOICE_RATE_LIMIT_MAX_TURNS_PER_SESSION),
+      countVoiceStudentTurnsBySession: jest.fn().mockResolvedValue(VOICE_RATE_LIMIT_MAX_TURNS_PER_SESSION),
     });
     const service = new VoiceRateLimitPolicyService(repo);
 
@@ -80,7 +82,7 @@ describe('VoiceRateLimitPolicyService', () => {
 
   it('throws STUDENT_HOURLY_LIMIT when the hourly turn count reaches the threshold', async () => {
     const repo = makeRepository({
-      countByStudentIdSince: jest.fn().mockResolvedValue(VOICE_RATE_LIMIT_MAX_TURNS_PER_STUDENT_HOUR),
+      countVoiceStudentTurnsSince: jest.fn().mockResolvedValue(VOICE_RATE_LIMIT_MAX_TURNS_PER_STUDENT_HOUR),
     });
     const service = new VoiceRateLimitPolicyService(repo);
 
@@ -95,7 +97,7 @@ describe('VoiceRateLimitPolicyService', () => {
 
   it('throws STUDENT_DAILY_LIMIT when only the daily turn count reaches the threshold', async () => {
     const repo = makeRepository({
-      countByStudentIdSince: jest
+      countVoiceStudentTurnsSince: jest
         .fn()
         .mockResolvedValueOnce(0) // hourly check
         .mockResolvedValueOnce(VOICE_RATE_LIMIT_MAX_TURNS_PER_STUDENT_DAY), // daily check
@@ -112,20 +114,24 @@ describe('VoiceRateLimitPolicyService', () => {
   });
 
   it('checks debounce before session limit, hourly, and daily limits', async () => {
-    const findLastCreatedAtBySessionId = jest
+    const findLastVoiceStudentTurnCreatedAt = jest
       .fn()
       .mockResolvedValue(new Date(Date.now() - 100));
-    const countBySessionId = jest.fn().mockResolvedValue(0);
-    const countByStudentIdSince = jest.fn().mockResolvedValue(0);
-    const repo = makeRepository({ findLastCreatedAtBySessionId, countBySessionId, countByStudentIdSince });
+    const countVoiceStudentTurnsBySession = jest.fn().mockResolvedValue(0);
+    const countVoiceStudentTurnsSince = jest.fn().mockResolvedValue(0);
+    const repo = makeRepository({
+      findLastVoiceStudentTurnCreatedAt,
+      countVoiceStudentTurnsBySession,
+      countVoiceStudentTurnsSince,
+    });
     const service = new VoiceRateLimitPolicyService(repo);
 
     await expect(
       service.assertNotRateLimited({ studentId: 'student-1', sessionId: 'session-1' }),
     ).rejects.toThrow(VoiceRateLimitExceededError);
 
-    expect(countBySessionId).not.toHaveBeenCalled();
-    expect(countByStudentIdSince).not.toHaveBeenCalled();
+    expect(countVoiceStudentTurnsBySession).not.toHaveBeenCalled();
+    expect(countVoiceStudentTurnsSince).not.toHaveBeenCalled();
   });
 
   it('never computes a mastery, level, weakness, difficulty, recommendation, or review-schedule value', async () => {

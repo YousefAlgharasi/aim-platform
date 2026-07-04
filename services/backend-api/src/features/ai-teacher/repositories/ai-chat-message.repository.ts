@@ -72,6 +72,29 @@ export class AiChatMessageRepository {
     return result.rows[0] ?? null;
   }
 
+  /**
+   * P21-021b: Replace the text on an already-persisted placeholder message
+   * row instead of inserting a new one. Used by the voice turn path: the
+   * student's turn row is created empty (as a voice_audio_assets anchor,
+   * see AudioUploadService) before STT runs, then updated in place with
+   * the real transcript once STT completes -- avoiding a second, empty
+   * student bubble alongside the real one in chat history.
+   */
+  async updateText(
+    messageId: string,
+    text: string,
+  ): Promise<AiChatMessageRow | null> {
+    const result = await this.db.query<AiChatMessageRow>(
+      `UPDATE ai_chat_messages
+       SET text = $2
+       WHERE id = $1
+       RETURNING ${SELECT_COLUMNS}`,
+      [messageId, text],
+    );
+
+    return result.rows[0] ?? null;
+  }
+
   async findById(messageId: string): Promise<AiChatMessageRow | null> {
     const result = await this.db.query<AiChatMessageRow>(
       `SELECT ${SELECT_COLUMNS}
@@ -135,6 +158,59 @@ export class AiChatMessageRepository {
        FROM ai_chat_messages
        WHERE session_id = $1
          AND role = 'student'
+       ORDER BY created_at DESC
+       LIMIT 1`,
+      [sessionId],
+    );
+    return result.rows[0]?.created_at ?? null;
+  }
+
+  // -------------------------------------------------------------------------
+  // P21-021b: Voice rate limit policy helpers.
+  //
+  // Mirror the three helpers above, scoped to channel='voice' student turns
+  // only, so VoiceRateLimitPolicyService can count voice turns without
+  // depending on the (now write-frozen) voice_messages table.
+  // -------------------------------------------------------------------------
+
+  /** Count voice-channel student-role messages in a given session (one
+   *  per voice turn from the student's side). */
+  async countVoiceStudentTurnsBySession(sessionId: string): Promise<number> {
+    const result = await this.db.query<{ count: string }>(
+      `SELECT COUNT(*) AS count
+       FROM ai_chat_messages
+       WHERE session_id = $1
+         AND role = 'student'
+         AND channel = 'voice'`,
+      [sessionId],
+    );
+    return parseInt(result.rows[0]?.count ?? '0', 10);
+  }
+
+  /** Count voice-channel student-role messages for a given student within
+   *  a rolling time window (defined by `windowStart`). */
+  async countVoiceStudentTurnsSince(studentId: string, windowStart: Date): Promise<number> {
+    const result = await this.db.query<{ count: string }>(
+      `SELECT COUNT(*) AS count
+       FROM ai_chat_messages
+       WHERE student_id = $1
+         AND role = 'student'
+         AND channel = 'voice'
+         AND created_at >= $2`,
+      [studentId, windowStart],
+    );
+    return parseInt(result.rows[0]?.count ?? '0', 10);
+  }
+
+  /** Return the most recent voice-channel student-role message timestamp
+   *  for a given session, or null if no voice student message exists yet. */
+  async findLastVoiceStudentTurnCreatedAt(sessionId: string): Promise<Date | null> {
+    const result = await this.db.query<{ created_at: Date }>(
+      `SELECT created_at
+       FROM ai_chat_messages
+       WHERE session_id = $1
+         AND role = 'student'
+         AND channel = 'voice'
        ORDER BY created_at DESC
        LIMIT 1`,
       [sessionId],

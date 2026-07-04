@@ -88,6 +88,9 @@ describe('VoiceMessageSubmitService', () => {
       audio: Buffer.from('audio-bytes'),
       contentType: 'audio/webm',
       languageCode: 'en-US',
+      // P21-021b: the upload's placeholder message id is forwarded so
+      // the orchestrator fills in the real transcript on that same row.
+      studentMessageId: 'voice-message-1',
     });
   });
 

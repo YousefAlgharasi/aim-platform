@@ -4,19 +4,23 @@
  *
  *   1. Audio Upload (P9-028) — validates the upload (field presence, file
  *      size, declared MIME type, declared duration), checks session
- *      ownership/status, and stores the raw uploaded audio bytes (a
- *      `voice_messages` placeholder row + `voice_audio_assets` row — this
- *      step is unchanged by P21-010: `voice_audio_assets.message_id` has a
- *      hard FK to `voice_messages`, so the raw-audio-storage pipeline is a
- *      separate concern from where the conversation text/reply live).
+ *      ownership/status (against `ai_chat_sessions`, per P21-021b), and
+ *      stores the raw uploaded audio bytes: an empty placeholder
+ *      `ai_chat_messages` row (role='student', channel='voice') +
+ *      `voice_audio_assets` row anchored to it. As of P21-021b, this is no
+ *      longer a `voice_messages` row — `voice_audio_assets.ai_chat_message_id`
+ *      now anchors new rows, decoupling the raw-audio-storage pipeline from
+ *      the legacy table entirely.
  *   2. Voice Orchestrator (P9-048) — runs STT → AI Teacher (P8-062) for the
- *      uploaded audio. As of P21-010, `AiTeacherOrchestratorService.handleTurn()`
- *      already persists both the transcribed student turn and the AI reply
- *      as `ai_chat_messages` rows (channel='voice'), and the orchestrator
- *      attaches the synthesized TTS `audio_ref` onto that same reply row.
- *      This service no longer writes the reply/transcript into
- *      `voice_messages`/`voice_transcripts` — those tables receive no new
- *      turn data going forward (historical rows only).
+ *      uploaded audio, passing along the placeholder row's id
+ *      (`studentMessageId`). As of P21-021b,
+ *      `AiTeacherOrchestratorService.handleTurn()` fills in that same
+ *      placeholder row with the real transcript (rather than inserting a
+ *      second student row) and persists the AI reply as its own
+ *      `ai_chat_messages` row (channel='voice'); the orchestrator attaches
+ *      the synthesized TTS `audio_ref` onto that reply row. This service
+ *      never writes to `voice_messages`/`voice_transcripts` — those tables
+ *      receive no new turn data going forward (historical rows only).
  *
  * P21-014 (barge-in verification): this service and VoiceOrchestratorService
  * hold no in-flight/per-session lock and no "previous turn must be
@@ -88,6 +92,10 @@ export class VoiceMessageSubmitService {
       audio: input.audio,
       contentType: input.mimeType,
       languageCode,
+      // P21-021b: the placeholder ai_chat_messages row upload.messageId
+      // already refers to (created by AudioUploadService, anchoring the
+      // voice_audio_assets row) is where the real transcript belongs.
+      studentMessageId: upload.messageId,
     });
 
     // P21-010: the transcript + reply (and, when synthesis succeeds, the

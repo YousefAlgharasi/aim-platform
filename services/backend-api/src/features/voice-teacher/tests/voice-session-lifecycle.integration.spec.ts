@@ -12,7 +12,6 @@ import { VoiceSessionStartService } from '../session-start/voice-session-start.s
 import { ChatSessionStartService } from '../../ai-teacher/chat-session/chat-session-start.service';
 import { VoiceRateLimitPolicyService } from '../rate-limit-policy/voice-rate-limit-policy.service';
 import { VoiceRateLimitExceededError } from '../rate-limit-policy/voice-rate-limit-exceeded.error';
-import { VoiceMessageRepository } from '../repositories/voice-message.repository';
 import { VoiceOrchestratorService } from '../orchestrator/voice-orchestrator.service';
 import { AiChatMessageRepository } from '../../ai-teacher/repositories/ai-chat-message.repository';
 import { SttGateway } from '../stt-gateway/stt-gateway.interface';
@@ -92,12 +91,12 @@ describe('Voice tutor — duration limits', () => {
 
 describe('Voice tutor — rate limits (cost-protection gate before any provider call)', () => {
   it('allows a turn when no thresholds are breached', async () => {
-    const voiceMessageRepository = {
-      findLastCreatedAtBySessionId: jest.fn().mockResolvedValue(null),
-      countBySessionId: jest.fn().mockResolvedValue(0),
-      countByStudentIdSince: jest.fn().mockResolvedValue(0),
-    } as unknown as VoiceMessageRepository;
-    const policy = new VoiceRateLimitPolicyService(voiceMessageRepository);
+    const chatMessageRepository = {
+      findLastVoiceStudentTurnCreatedAt: jest.fn().mockResolvedValue(null),
+      countVoiceStudentTurnsBySession: jest.fn().mockResolvedValue(0),
+      countVoiceStudentTurnsSince: jest.fn().mockResolvedValue(0),
+    } as unknown as AiChatMessageRepository;
+    const policy = new VoiceRateLimitPolicyService(chatMessageRepository);
 
     await expect(
       policy.assertNotRateLimited({ studentId: 'student-1', sessionId: 'voice-session-1' }),
@@ -105,12 +104,12 @@ describe('Voice tutor — rate limits (cost-protection gate before any provider 
   });
 
   it('blocks a turn once the per-session turn limit is reached, before any STT/AI call would happen', async () => {
-    const voiceMessageRepository = {
-      findLastCreatedAtBySessionId: jest.fn().mockResolvedValue(null),
-      countBySessionId: jest.fn().mockResolvedValue(9999),
-      countByStudentIdSince: jest.fn().mockResolvedValue(0),
-    } as unknown as VoiceMessageRepository;
-    const policy = new VoiceRateLimitPolicyService(voiceMessageRepository);
+    const chatMessageRepository = {
+      findLastVoiceStudentTurnCreatedAt: jest.fn().mockResolvedValue(null),
+      countVoiceStudentTurnsBySession: jest.fn().mockResolvedValue(9999),
+      countVoiceStudentTurnsSince: jest.fn().mockResolvedValue(0),
+    } as unknown as AiChatMessageRepository;
+    const policy = new VoiceRateLimitPolicyService(chatMessageRepository);
 
     await expect(
       policy.assertNotRateLimited({ studentId: 'student-1', sessionId: 'voice-session-1' }),
