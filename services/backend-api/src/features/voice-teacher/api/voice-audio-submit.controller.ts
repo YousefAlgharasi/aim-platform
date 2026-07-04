@@ -21,8 +21,8 @@ import {
 } from '@nestjs/swagger';
 
 import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
-import { CurrentUser } from '../../../auth/current-user.decorator';
-import { AuthenticatedUser } from '../../../auth/authenticated-user';
+import { ResolveInternalUserIdGuard } from '../../../auth/authorization/resolve-internal-user-id.guard';
+import { ResolvedInternalUserId } from '../../../auth/current-user.decorator';
 import { VoiceSessionOwnershipGuard } from './guards/voice-session-ownership.guard';
 import { AiChatSessionRepository } from '../../ai-teacher/repositories/ai-chat-session.repository';
 import { VoiceOrchestratorService } from '../orchestrator/voice-orchestrator.service';
@@ -46,7 +46,7 @@ const DEFAULT_LANGUAGE_CODE = 'ar';
 
 @ApiTags('Voice Teacher')
 @ApiBearerAuth()
-@UseGuards(SupabaseJwtAuthGuard, VoiceSessionOwnershipGuard)
+@UseGuards(SupabaseJwtAuthGuard, ResolveInternalUserIdGuard, VoiceSessionOwnershipGuard)
 @Controller('voice-teacher/sessions')
 export class VoiceAudioSubmitController {
   constructor(
@@ -67,11 +67,10 @@ export class VoiceAudioSubmitController {
   )
   async submitAudio(
     @Param('sessionId') sessionId: string,
-    @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() studentId: string,
     @UploadedFile() file: Express.Multer.File,
     @Body('languageCode') languageCode?: string,
   ): Promise<VoiceAudioSubmitResponse> {
-    const studentId = user.id;
     const turnStart = Date.now();
 
     if (!file || !file.buffer || file.buffer.length === 0) {

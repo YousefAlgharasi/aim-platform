@@ -7,7 +7,13 @@
 //
 // Security rules:
 //   - Requires a valid Supabase JWT (SupabaseJwtAuthGuard).
-//   - studentId is ALWAYS resolved from the verified JWT via @CurrentUser().
+//   - studentId is ALWAYS resolved via ResolveInternalUserIdGuard to the
+//     internal `users.id` — never the raw Supabase Auth UID
+//     (request.user.id). ai_chat_sessions.student_id is a foreign key to
+//     users.id, so passing the raw auth UID here fails with a foreign-key
+//     violation (bugfix: this previously used @CurrentUser()/user.id
+//     directly, which crashed session creation for every real student once
+//     P21-007 routed voice sessions through ai_chat_sessions).
 //     Clients must not and cannot supply a studentId; any such field in the
 //     request body is ignored.
 //   - Restricted to the STUDENT role.
@@ -25,8 +31,8 @@ import { ApiBearerAuth, ApiCreatedResponse, ApiOperation, ApiTags } from '@nestj
 
 import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
 import { RoleGuard } from '../../../auth/authorization/role.guard';
-import { CurrentUser } from '../../../auth/current-user.decorator';
-import { AuthenticatedUser } from '../../../auth/authenticated-user';
+import { ResolveInternalUserIdGuard } from '../../../auth/authorization/resolve-internal-user-id.guard';
+import { ResolvedInternalUserId } from '../../../auth/current-user.decorator';
 import { AuthorizedRole } from '../../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../../auth/authorization/required-roles.decorator';
 import { OPENAPI_TAGS } from '../../../openapi/openapi.tags';
@@ -47,7 +53,7 @@ export class VoiceSessionStartController {
    * studentId is always resolved from the verified JWT — never from the body.
    */
   @Post('sessions')
-  @UseGuards(SupabaseJwtAuthGuard, RoleGuard)
+  @UseGuards(SupabaseJwtAuthGuard, RoleGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()
@@ -59,13 +65,13 @@ export class VoiceSessionStartController {
   })
   @ApiCreatedResponse({ description: 'Voice session created.' })
   async startSession(
-    @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() studentId: string,
     @Body() body: unknown,
   ): Promise<StartVoiceSessionResult> {
     const dto = StartVoiceSessionRequestDto.fromBody(body);
 
     return this.voiceSessionStartService.startSession({
-      studentId: user.id,
+      studentId,
       contextRef: dto.contextRef,
     });
   }

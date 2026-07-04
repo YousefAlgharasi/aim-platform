@@ -4,7 +4,7 @@ import { TtsAudioStorageService } from '../../tts-gateway/tts-audio-storage.serv
 describe('VoiceAudioPlaybackController', () => {
   let controller: VoiceAudioPlaybackController;
   let audioStorage: jest.Mocked<TtsAudioStorageService>;
-  const mockUser = { id: 'student-1', email: 'test@test.com' } as any;
+  const studentId = 'student-1';
 
   beforeEach(() => {
     audioStorage = {
@@ -19,7 +19,7 @@ describe('VoiceAudioPlaybackController', () => {
       json: jest.fn(),
     } as any;
 
-    await controller.getAudio('nonexistent-ref', mockUser, mockRes);
+    await controller.getAudio('nonexistent-ref', studentId, mockRes);
     expect(mockRes.status).toHaveBeenCalledWith(404);
   });
 
@@ -29,7 +29,7 @@ describe('VoiceAudioPlaybackController', () => {
       json: jest.fn(),
     } as any;
 
-    await controller.getAudio('', mockUser, mockRes);
+    await controller.getAudio('', studentId, mockRes);
     expect(mockRes.status).toHaveBeenCalledWith(404);
   });
 
@@ -45,7 +45,7 @@ describe('VoiceAudioPlaybackController', () => {
       json: jest.fn(),
     } as any;
 
-    await controller.getAudio('tts_ref_123', mockUser, mockRes);
+    await controller.getAudio('tts_ref_123', studentId, mockRes);
 
     expect(audioStorage.retrieveAudio).toHaveBeenCalledWith('tts_ref_123', 'student-1');
     expect(mockRes.status).toHaveBeenCalledWith(200);
