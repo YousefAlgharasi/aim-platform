@@ -15,6 +15,7 @@ function makeResult(overrides: Partial<StartChatSessionResult> = {}): StartChatS
     status: 'active',
     createdAt: '2026-06-19T00:00:00.000Z',
     focusRecap: null,
+    lastSessionRecap: null,
     ...overrides,
   };
 }
@@ -54,6 +55,7 @@ describe('VoiceSessionStartService', () => {
       status: 'active',
       createdAt: '2026-06-19T00:00:00.000Z',
       focusRecap: null,
+    lastSessionRecap: null,
     });
   });
 

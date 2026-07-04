@@ -25,4 +25,13 @@ export interface StartChatSessionResult {
    * when no active directive exists — never fabricated.
    */
   readonly focusRecap: string | null;
+  /**
+   * P21-013: short "welcome back" recap of real skill-state/weakness
+   * progress, present only when a genuinely new session was just created
+   * for a context the student has a prior *closed* session for, and that
+   * prior session closed more than an hour ago (see
+   * last-session-recap.service.ts for the full documented rule). Null on a
+   * same-session resume and on a brand-new context with no prior history.
+   */
+  readonly lastSessionRecap: string | null;
 }
