@@ -227,6 +227,122 @@ void main() {
       expect(find.text('Fallback reply text'), findsOneWidget);
     });
 
+    // Bugfix (P21-017 was never actually wired up): a fresh session whose
+    // only message is the auto-generated greeting must show a "ready to
+    // hear your teacher" state with a play button, not silently drop
+    // straight into the transcript/record view with no audio ever
+    // surfaced.
+    testWidgets(
+      'shows a ready-to-play greeting state for a session with only the greeting message',
+      (tester) async {
+        await tester.pumpWidget(_wrap(
+          const VoiceTeacherPage(contextRef: 'lesson-1'),
+          overrides: [
+            voiceTeacherSessionProvider.overrideWith(
+              (ref) => _FakeVoiceTeacherSessionNotifier(
+                const AppAsyncState.success(VoiceTeacherSessionState(
+                  sessionId: 'session-1',
+                  history: [
+                    VoiceMessage(
+                      id: 'greeting-1',
+                      role: VoiceMessageRole.teacher,
+                      text: 'Welcome! Today we will focus on greetings.',
+                      audioRef: 'greeting-audio-1',
+                      createdAt: '2026-01-01T00:00:00Z',
+                      isGreeting: true,
+                    ),
+                  ],
+                )),
+              ),
+            ),
+          ],
+        ));
+        await tester.pump();
+
+        expect(find.text('Tap to hear your teacher'), findsOneWidget);
+        expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
+        // The greeting hasn't been played yet, so the normal "Tap to
+        // speak" / transcript view must not show underneath it.
+        expect(find.text('Tap to speak'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'tapping the greeting play button plays the audio and reveals the transcript',
+      (tester) async {
+        final playbackNotifier = VoicePlaybackNotifier();
+
+        await tester.pumpWidget(_wrap(
+          const VoiceTeacherPage(contextRef: 'lesson-1'),
+          overrides: [
+            voiceTeacherSessionProvider.overrideWith(
+              (ref) => _FakeVoiceTeacherSessionNotifier(
+                const AppAsyncState.success(VoiceTeacherSessionState(
+                  sessionId: 'session-1',
+                  history: [
+                    VoiceMessage(
+                      id: 'greeting-1',
+                      role: VoiceMessageRole.teacher,
+                      text: 'Welcome! Today we will focus on greetings.',
+                      audioRef: 'greeting-audio-1',
+                      createdAt: '2026-01-01T00:00:00Z',
+                      isGreeting: true,
+                    ),
+                  ],
+                )),
+              ),
+            ),
+            voicePlaybackProvider.overrideWith((ref) => playbackNotifier),
+          ],
+        ));
+        await tester.pump();
+
+        await tester.tap(find.byIcon(Icons.play_arrow_rounded));
+        await tester.pump();
+
+        expect(
+          find.text('Welcome! Today we will focus on greetings.'),
+          findsOneWidget,
+          reason: 'after dismissing the ready state, the greeting must still be visible in the transcript',
+        );
+      },
+    );
+
+    testWidgets(
+      'skips straight to the normal flow when the greeting has no audio (TTS failed)',
+      (tester) async {
+        await tester.pumpWidget(_wrap(
+          const VoiceTeacherPage(contextRef: 'lesson-1'),
+          overrides: [
+            voiceTeacherSessionProvider.overrideWith(
+              (ref) => _FakeVoiceTeacherSessionNotifier(
+                const AppAsyncState.success(VoiceTeacherSessionState(
+                  sessionId: 'session-1',
+                  history: [
+                    VoiceMessage(
+                      id: 'greeting-1',
+                      role: VoiceMessageRole.teacher,
+                      text: 'Welcome! Today we will focus on greetings.',
+                      createdAt: '2026-01-01T00:00:00Z',
+                      isGreeting: true,
+                    ),
+                  ],
+                )),
+              ),
+            ),
+          ],
+        ));
+        await tester.pump();
+        await tester.pump();
+
+        expect(find.text('Tap to hear your teacher'), findsNothing);
+        expect(
+          find.text('Welcome! Today we will focus on greetings.'),
+          findsOneWidget,
+        );
+      },
+    );
+
     // P21-018: tapping the record button while AI audio is actively playing
     // must stop local playback immediately and start recording — the mic
     // button stays tappable at all times (VoiceRecordButton only disables

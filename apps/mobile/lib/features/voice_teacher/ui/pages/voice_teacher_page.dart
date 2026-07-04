@@ -307,7 +307,7 @@ class _VoiceTeacherHeader extends StatelessWidget
   }
 }
 
-class _VoiceTutorContent extends StatelessWidget {
+class _VoiceTutorContent extends StatefulWidget {
   const _VoiceTutorContent({
     required this.sessionState,
     required this.recordState,
@@ -330,7 +330,38 @@ class _VoiceTutorContent extends StatelessWidget {
   final Future<void> Function() onRetry;
 
   @override
+  State<_VoiceTutorContent> createState() => _VoiceTutorContentState();
+}
+
+class _VoiceTutorContentState extends State<_VoiceTutorContent> {
+  // P21-017: the opening greeting (P21-008/P21-009) is ready to play the
+  // instant this screen loads — per the agreed "ready immediately, plays
+  // on first tap" behavior (never true autoplay, to avoid OS/browser
+  // autoplay-with-sound restrictions and not starting audio without any
+  // user gesture). Tracks whether the student has already dismissed/heard
+  // it, so the ready state only ever shows once per session.
+  bool _greetingDismissed = false;
+
+  void _onPlayGreeting(String audioRef) {
+    setState(() => _greetingDismissed = true);
+    widget.onPlayReply(audioRef);
+  }
+
+  void _onSkipGreeting() {
+    setState(() => _greetingDismissed = true);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final sessionState = widget.sessionState;
+    final recordState = widget.recordState;
+    final playbackState = widget.playbackState;
+    final onStartRecording = widget.onStartRecording;
+    final onStopRecording = widget.onStopRecording;
+    final onPlayReply = widget.onPlayReply;
+    final onFeedback = widget.onFeedback;
+    final onRetry = widget.onRetry;
+
     final isRecording = recordState.state == RecordSubmitState.recording;
     final isSubmitting = recordState.state == RecordSubmitState.submitting;
     final isError = recordState.state == RecordSubmitState.error;
@@ -344,6 +375,26 @@ class _VoiceTutorContent extends StatelessWidget {
         : isRecording
             ? VoiceRecordState.recording
             : VoiceRecordState.idle;
+
+    // P21-017: the session starts with exactly one message — the
+    // auto-generated greeting (P21-008) — before the student has said
+    // anything. Offer a "ready to hear your teacher" state instead of
+    // silently dropping straight into the transcript view with no audio
+    // ever played, which is what happened before this fix (the greeting
+    // text rendered, but nothing ever surfaced its audio).
+    final unplayedGreeting = !_greetingDismissed &&
+            sessionState.history.length == 1 &&
+            sessionState.history.first.isGreeting
+        ? sessionState.history.first
+        : null;
+
+    if (unplayedGreeting != null) {
+      return _VoiceHeroGreetingReady(
+        hasAudio: unplayedGreeting.hasAudio,
+        onPlay: () => _onPlayGreeting(unplayedGreeting.audioRef!),
+        onSkip: _onSkipGreeting,
+      );
+    }
 
     // Pre-conversation hero: no history yet and nothing currently in
     // progress (recording/processing/erroring/fallback) — matches the
@@ -421,6 +472,96 @@ class _VoiceTutorContent extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// P21-017: shown once, the instant a new voice session loads, when the
+/// auto-generated opening greeting (P21-008) hasn't been heard yet. Mirrors
+/// `_VoiceHeroIdle`'s full-bleed gradient treatment so the transition
+/// between the two feels like one continuous hero rather than a jump cut.
+///
+/// "Ready immediately, plays on first tap" — never true autoplay (avoids
+/// OS/browser autoplay-with-sound restrictions and starting audio without
+/// a user gesture). If eager TTS synthesis failed for this greeting
+/// (`hasAudio == false`), there's nothing to play — go straight to the
+/// normal record flow instead of showing a play button with nothing behind
+/// it.
+class _VoiceHeroGreetingReady extends StatelessWidget {
+  const _VoiceHeroGreetingReady({
+    required this.hasAudio,
+    required this.onPlay,
+    required this.onSkip,
+  });
+
+  final bool hasAudio;
+  final VoidCallback onPlay;
+  final VoidCallback onSkip;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!hasAudio) {
+      // Nothing to play (TTS synthesis failed or is still pending) — the
+      // greeting's text already rendered via the transcript once we fall
+      // through, so just dismiss straight into the normal record flow
+      // rather than showing a dead play button.
+      WidgetsBinding.instance.addPostFrameCallback((_) => onSkip());
+      return const AIMFullScreenLoading(
+        semanticLabel: 'Starting Voice Teacher session',
+      );
+    }
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsetsDirectional.symmetric(
+          horizontal: AimSpacing.screenPaddingMobile,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const _VoiceStatusPill(label: 'Ready'),
+            const SizedBox(height: AimSpacing.sectionGap),
+            Text(
+              'Tap to hear your teacher',
+              style: AimTextStyles.h2.copyWith(color: AimColors.neutral0),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AimSpacing.sectionGap),
+            Semantics(
+              button: true,
+              label: 'Play greeting',
+              child: InkWell(
+                onTap: onPlay,
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AimSpacing.space24),
+                    child: Icon(
+                      Icons.play_arrow_rounded,
+                      size: AimSizes.iconLg,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: AimSpacing.sectionGap),
+            TextButton(
+              onPressed: onSkip,
+              child: Text(
+                'Skip',
+                style: AimTextStyles.bodySm.copyWith(
+                  color: AimColors.neutral0.withValues(alpha: 0.85),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
