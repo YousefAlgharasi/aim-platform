@@ -11,7 +11,7 @@
 //     - option-based: correct by choice id, correct by choice text, incorrect
 //     - text-based: correct via question_answers.value shapes, incorrect
 //     - missing grading data => isCorrect=false (never guessed)
-//     - skillIds resolved from question_skill_links
+//     - skillIds resolved from question_skills -> skills
 //     - answerFormat/presentedDifficulty mapping
 
 import {
@@ -63,11 +63,10 @@ const ACTIVE_SESSION_ROW = [{ id: SESSION_ID }];
 const PUBLISHED_LESSON_ROW = [{ id: LESSON_ID }];
 const QUESTION_ROW = {
   id: QUESTION_ID,
-  key: 'q.a1.grammar.to_be.01',
   type: 'multiple_choice',
-  difficulty: 'easy',
-  prompt: 'He _____ a teacher.',
-  metadata: { tags: ['a1', 'grammar'] },
+  difficulty: 'beginner',
+  stem: 'He _____ a teacher.',
+  tags: ['a1', 'grammar'],
 };
 const CHOICE_ROWS = [
   { id: 'choice-1', question_id: QUESTION_ID, text: 'is', sort_order: 0, is_correct: true },
@@ -128,7 +127,7 @@ describe('SessionQuestionsService.listQuestionsForLesson', () => {
       id: QUESTION_ID,
       type: 'multiple_choice',
       stem: 'He _____ a teacher.',
-      difficulty: 'easy',
+      difficulty: 'beginner',
       tags: ['a1', 'grammar'],
       options: [
         { id: 'choice-1', text: 'is', order: 0 },
@@ -152,11 +151,11 @@ describe('SessionQuestionsService.listQuestionsForLesson', () => {
     expect(result.questions).toEqual([]);
   });
 
-  it('tolerates non-array/missing metadata tags', async () => {
+  it('tolerates non-array/missing tags', async () => {
     const db = makeDb([
       ['FROM learning_sessions', ACTIVE_SESSION_ROW],
       ['FROM lessons', PUBLISHED_LESSON_ROW],
-      ['FROM lesson_skills', [{ ...QUESTION_ROW, metadata: null }]],
+      ['FROM lesson_skills', [{ ...QUESTION_ROW, tags: null }]],
       ['FROM question_choices', []],
     ]);
     const { service } = makeService(db);
@@ -174,15 +173,15 @@ describe('SessionQuestionsService.resolveItemForAttempt', () => {
 
   function choiceDb(extra: Array<[string, unknown[]]> = []) {
     return makeDb([
-      ['FROM questions', [QUESTION_ROW]],
-      ['FROM question_skill_links', SKILL_LINKS],
+      ['FROM question_bank', [QUESTION_ROW]],
+      ['FROM question_skills qs', SKILL_LINKS],
       ['FROM question_choices', CHOICE_ROWS],
       ...extra,
     ]);
   }
 
   it('throws NOT_FOUND for an unknown or unpublished item', async () => {
-    const db = makeDb([['FROM questions', []]]);
+    const db = makeDb([['FROM question_bank', []]]);
     const { service } = makeService(db);
     await expect(
       service.resolveItemForAttempt(QUESTION_ID, 'choice-1'),
@@ -214,8 +213,8 @@ describe('SessionQuestionsService.resolveItemForAttempt', () => {
 
   it('marks incorrect (never guesses) when a choice question has no grading data', async () => {
     const db = makeDb([
-      ['FROM questions', [QUESTION_ROW]],
-      ['FROM question_skill_links', SKILL_LINKS],
+      ['FROM question_bank', [QUESTION_ROW]],
+      ['FROM question_skills qs', SKILL_LINKS],
       ['FROM question_choices', []],
     ]);
     const { service } = makeService(db);
@@ -224,10 +223,10 @@ describe('SessionQuestionsService.resolveItemForAttempt', () => {
     expect(resolved.optionsPresentedCount).toBe(0);
   });
 
-  it('grades fill_in_blank against question_answers.value string', async () => {
+  it('grades fill_in_the_blank against question_answers.value string', async () => {
     const db = makeDb([
-      ['FROM questions', [{ ...QUESTION_ROW, type: 'fill_in_blank', difficulty: 'medium' }]],
-      ['FROM question_skill_links', SKILL_LINKS],
+      ['FROM question_bank', [{ ...QUESTION_ROW, type: 'fill_in_the_blank', difficulty: 'elementary' }]],
+      ['FROM question_skills qs', SKILL_LINKS],
       ['FROM question_answers', [{ value: 'went' }]],
     ]);
     const { service } = makeService(db);
@@ -238,10 +237,10 @@ describe('SessionQuestionsService.resolveItemForAttempt', () => {
     expect(resolved.optionsPresentedCount).toBeNull();
   });
 
-  it('grades fill_in_blank against object/array question_answers.value shapes', async () => {
+  it('grades fill_in_the_blank against object/array question_answers.value shapes', async () => {
     const db = makeDb([
-      ['FROM questions', [{ ...QUESTION_ROW, type: 'fill_in_blank' }]],
-      ['FROM question_skill_links', SKILL_LINKS],
+      ['FROM question_bank', [{ ...QUESTION_ROW, type: 'fill_in_the_blank' }]],
+      ['FROM question_skills qs', SKILL_LINKS],
       ['FROM question_answers', [{ value: [{ text: 'went' }, 'walked'] }]],
     ]);
     const { service } = makeService(db);
@@ -252,8 +251,8 @@ describe('SessionQuestionsService.resolveItemForAttempt', () => {
 
   it('marks incorrect when a text question has no question_answers rows', async () => {
     const db = makeDb([
-      ['FROM questions', [{ ...QUESTION_ROW, type: 'fill_in_blank' }]],
-      ['FROM question_skill_links', SKILL_LINKS],
+      ['FROM question_bank', [{ ...QUESTION_ROW, type: 'fill_in_the_blank' }]],
+      ['FROM question_skills qs', SKILL_LINKS],
       ['FROM question_answers', []],
     ]);
     const { service } = makeService(db);
@@ -263,8 +262,8 @@ describe('SessionQuestionsService.resolveItemForAttempt', () => {
 
   it('resolves an empty skill list when no links exist', async () => {
     const db = makeDb([
-      ['FROM questions', [QUESTION_ROW]],
-      ['FROM question_skill_links', []],
+      ['FROM question_bank', [QUESTION_ROW]],
+      ['FROM question_skills qs', []],
       ['FROM question_choices', CHOICE_ROWS],
     ]);
     const { service } = makeService(db);
