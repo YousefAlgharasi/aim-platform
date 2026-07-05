@@ -216,6 +216,31 @@ void main() {
     expect(notifier.state.currentQuestion, isNull);
   });
 
+  // Bugfix: GET /lessons/continue (Home's "continue where you stopped"
+  // card) only returns a lesson with a partially-done lesson_progress row
+  // (percent < 100, completed = false). Progress must be recorded on every
+  // question answered, not just once at the very end, or a student who
+  // quits mid-lesson leaves no trace and Home always falls back to the
+  // placement-derived "Quick Start" lesson instead.
+  test(
+    '8. answering a non-final question records partial progress (not just at the end)',
+    () async {
+      final repo = _FakeRepository(
+        questions: [_question('q-1'), _question('q-2'), _question('q-3')],
+      );
+      final notifier = PracticeSessionNotifier(repository: repo);
+      await notifier.start(bearerToken: 'tok', lessonId: 'lesson-1');
+
+      await notifier.advance(); // answered q-1, now on q-2 (1 of 3 = 33%)
+      await Future<void>.delayed(Duration.zero);
+
+      expect(repo.recordProgressCalls, 1);
+      expect(repo.lastProgressLessonId, 'lesson-1');
+      expect(repo.lastProgressPercent, 33);
+      expect(repo.markCompleteCalls, 0);
+    },
+  );
+
   test('7. currentQuestion is null outside the active state', () {
     const state = PracticeSessionState();
     expect(state.currentQuestion, isNull);
