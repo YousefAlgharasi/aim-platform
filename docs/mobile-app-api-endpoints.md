@@ -70,6 +70,7 @@ All endpoints require `Authorization: Bearer <token>` unless marked as **Public*
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/sessions/start` | Start a Q&A session |
+| GET | `/sessions/:sessionId/questions?lessonId=` | Deliver published lesson questions for the active session (no correctness data; 403 when the lesson's course is locked) |
 | POST | `/sessions/:sessionId/attempt` | Submit answer attempt in session |
 
 ---

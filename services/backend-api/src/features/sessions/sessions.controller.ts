@@ -24,11 +24,13 @@
 import {
   Body,
   Controller,
+  Get,
   Headers,
   HttpCode,
   HttpStatus,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -37,8 +39,11 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { AppError } from '../../common/errors/app-error';
+import { ApiErrorCode } from '../../common/errors/api-error-code';
 
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { CurrentUser } from '../../auth/current-user.decorator';
@@ -60,6 +65,10 @@ import {
   AimPipelineOrchestratorService,
   AimPipelineOutcome,
 } from '../aim/pipeline/aim-pipeline-orchestrator.service';
+import {
+  SessionQuestionsService,
+  SessionLessonQuestionsResponse,
+} from './session-questions.service';
 
 // ---------------------------------------------------------------------------
 // Request / response body types
@@ -123,7 +132,60 @@ export class SessionsController {
     private readonly sessionsService: SessionsService,
     private readonly lessonAttemptService: LessonAttemptService,
     private readonly aimOrchestrator: AimPipelineOrchestratorService,
+    private readonly sessionQuestionsService: SessionQuestionsService,
   ) {}
+
+  // -------------------------------------------------------------------------
+  // GET /sessions/:sessionId/questions?lessonId=...
+  // -------------------------------------------------------------------------
+
+  /**
+   * GET /sessions/:sessionId/questions?lessonId=...
+   *
+   * Deliver the published questions for a lesson to the student's active
+   * learning session. This is the student-reachable question-delivery path
+   * for the P5-066/P5-067 session flow (no such endpoint previously existed;
+   * the Phase 6 client pointed at the admin-gated /curriculum/questions/:id).
+   *
+   * Security rules:
+   *   - studentId from JWT; session ownership + active status verified.
+   *   - P20-010 course gating enforced (403 for a locked course).
+   *   - is_correct / correct answers are NEVER included in the response.
+   */
+  @Get(':sessionId/questions')
+  @UseGuards(SupabaseJwtAuthGuard, StudentOwnershipGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @RequireStudentOwnership()
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Deliver published lesson questions for an active learning session (student).',
+    description:
+      'Question options never include correctness data. ' +
+      'Returns 403 when the lesson\'s course is locked for the student (P20-010).',
+  })
+  @ApiParam({ name: 'sessionId', description: 'UUID of the active learning session.' })
+  @ApiQuery({ name: 'lessonId', description: 'UUID of the published lesson to practice.' })
+  @ApiOkResponse({
+    description: 'Published questions with student-safe options (no is_correct).',
+  })
+  async getSessionQuestions(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('sessionId') sessionId: string,
+    @Query('lessonId') lessonId?: string,
+  ): Promise<SessionLessonQuestionsResponse> {
+    if (!lessonId || lessonId.trim().length === 0) {
+      throw new AppError({
+        code: ApiErrorCode.VALIDATION_ERROR,
+        message: 'lessonId query parameter is required.',
+        statusCode: HttpStatus.BAD_REQUEST,
+      });
+    }
+    return this.sessionQuestionsService.listQuestionsForLesson(
+      user.id, // JWT-resolved — never from query/body
+      sessionId,
+      lessonId,
+    );
+  }
 
   // -------------------------------------------------------------------------
   // POST /sessions/start  (P5-066)
@@ -202,33 +264,34 @@ export class SessionsController {
     @Headers('x-request-id') xRequestId: string = '',
   ): Promise<SubmitAttemptResponse> {
     // -----------------------------------------------------------------------
-    // Step 1: Record the attempt (backend evaluates correctness, resolves
-    //         itemType, answerFormat, skillIds, presentedDifficulty).
+    // Step 1: Resolve the backend-owned item fields, then record the attempt.
     //
-    // The service resolves all backend-owned fields. Only answerValue,
-    // itemId, and startedAt come from the client body.
-    //
-    // NOTE: RecordLessonAttemptInput requires several backend-resolved fields
-    // (itemType, answerFormat, skillIds, presentedDifficulty, etc.) that the
-    // backend looks up from the item record. The LessonAttemptService handles
-    // this resolution internally. We pass what the client supplies and let
-    // the service fill in the rest.
+    // SessionQuestionsService resolves everything the client must never
+    // supply: isCorrect (evaluated against question_choices/question_answers),
+    // skillIds (from question_skill_links), itemType, answerFormat,
+    // presentedDifficulty, and optionsPresentedCount — all from the item
+    // record the backend delivered. Only answerValue, itemId, and startedAt
+    // come from the client body.
     // -----------------------------------------------------------------------
 
     const now = new Date().toISOString();
+
+    const resolvedItem = await this.sessionQuestionsService.resolveItemForAttempt(
+      body.itemId,
+      body.answerValue,
+    );
 
     const attemptInput: RecordLessonAttemptInput = {
       studentId: user.id,           // JWT-resolved — never from body
       learningSessionId: sessionId,
       itemId: body.itemId,
-      itemType: 'lesson_question',  // backend-classified from item record
-      skillIds: [],                 // backend-resolved from curriculum mapping
-      presentedDifficulty: 1,      // backend-resolved from current difficulty decision
-      answerFormat: 'multiple_choice', // backend-classified from item record
+      itemType: resolvedItem.itemType,                     // backend-classified
+      skillIds: [...resolvedItem.skillIds],                // backend-resolved
+      presentedDifficulty: resolvedItem.presentedDifficulty, // backend-resolved
+      answerFormat: resolvedItem.answerFormat,             // backend-classified
       answerValue: body.answerValue,
-      optionsPresentedCount: null,
-      isCorrect: false,            // backend-evaluated — placeholder here;
-                                    // LessonAttemptService overwrites this
+      optionsPresentedCount: resolvedItem.optionsPresentedCount,
+      isCorrect: resolvedItem.isCorrect,                   // backend-evaluated
       startedAt: body.startedAt,
       submittedAt: now,
       answerChangeCount: 0,
