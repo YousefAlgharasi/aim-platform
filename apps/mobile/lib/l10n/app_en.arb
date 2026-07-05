@@ -4,7 +4,6 @@
   "@appTitle": {
     "description": "The application title."
   },
-
   "commonBack": "Back",
   "commonCancel": "Cancel",
   "commonSave": "Save",
@@ -52,7 +51,6 @@
       }
     }
   },
-
   "authEmailLabel": "Email",
   "@authEmailLabel": {
     "description": "Label for the email input field on the login/register forms."
@@ -299,7 +297,6 @@
   "@authRegistrationFailedGeneric": {
     "description": "Generic fallback error message shown when registration fails for an unknown reason."
   },
-
   "devToolsEndpointTesterTitle": "API Endpoint Tester",
   "@devToolsEndpointTesterTitle": {
     "description": "App bar title for the developer API endpoint tester screen."
@@ -316,7 +313,6 @@
   "@devToolsNoAuthTokenError": {
     "description": "Error shown in the endpoint tester when an authenticated request is attempted without a signed-in session."
   },
-
   "shellOpenMenuTooltip": "Open menu",
   "@shellOpenMenuTooltip": {
     "description": "Tooltip for the floating action button that opens the navigation drawer."
@@ -419,7 +415,6 @@
       }
     }
   },
-
   "onboardingBrandName": "AIM",
   "@onboardingBrandName": {
     "description": "App brand name shown on the splash screen."
@@ -432,7 +427,6 @@
   "@onboardingTapToContinue": {
     "description": "Static hint text shown alongside the splash screen's progress bar while the session check runs."
   },
-
   "homeLoadingSemantic": "Loading home data",
   "@homeLoadingSemantic": {
     "description": "Accessibility label shown while the home screen's data is loading."
@@ -825,7 +819,6 @@
       }
     }
   },
-
   "learningPathLoadingSemantic": "Loading learning path data",
   "@learningPathLoadingSemantic": {
     "description": "Accessibility label shown while the learning path screen's data is loading."
@@ -885,7 +878,6 @@
       }
     }
   },
-
   "lessonsLoadingChaptersSemantic": "Loading chapters",
   "@lessonsLoadingChaptersSemantic": {
     "description": "Accessibility label shown while the chapter list is loading."
@@ -1217,6 +1209,47 @@
   "lessonsItemsCountLabel": "{count, plural, one{1 item} other{{count} items}}",
   "@lessonsItemsCountLabel": {
     "description": "Item-count subtitle shown on an exercise lesson asset card.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonsPracticeQuestionsButton": "Practice questions",
+  "@lessonsPracticeQuestionsButton": {
+    "description": "Button on the lesson detail screen that starts a real question practice session (learning session)."
+  },
+  "practiceNextQuestionButton": "Next question",
+  "@practiceNextQuestionButton": {
+    "description": "Button shown after an answer is acknowledged, advancing to the next delivered question."
+  },
+  "practiceSessionLoadingSemantic": "Starting practice session",
+  "@practiceSessionLoadingSemantic": {
+    "description": "Semantic label for the loading state while the practice session starts."
+  },
+  "practiceSessionFailedMessage": "Could not start the practice session",
+  "@practiceSessionFailedMessage": {
+    "description": "Fallback error message when starting a practice session fails."
+  },
+  "practiceSessionEmptyTitle": "No questions yet",
+  "@practiceSessionEmptyTitle": {
+    "description": "Empty-state title when a lesson has no published practice questions."
+  },
+  "practiceSessionEmptySubtitle": "This lesson has no practice questions yet. Check back soon.",
+  "@practiceSessionEmptySubtitle": {
+    "description": "Empty-state subtitle when a lesson has no published practice questions."
+  },
+  "practiceSessionCompleteTitle": "Practice complete!",
+  "@practiceSessionCompleteTitle": {
+    "description": "Title shown when all delivered questions have been answered."
+  },
+  "practiceSessionDoneButton": "Done",
+  "@practiceSessionDoneButton": {
+    "description": "Button that closes the completed practice session."
+  },
+  "practiceSessionCompleteSubtitle": "{count, plural, =1{You answered 1 question. AIM is analysing your responses.} other{You answered {count} questions. AIM is analysing your responses.}}",
+  "@practiceSessionCompleteSubtitle": {
+    "description": "Subtitle on the practice-complete screen.",
     "placeholders": {
       "count": {
         "type": "int"

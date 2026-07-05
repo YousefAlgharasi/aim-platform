@@ -916,4 +916,41 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get lessonsPracticeQuestionsButton => 'Practice questions';
+
+  @override
+  String get practiceNextQuestionButton => 'Next question';
+
+  @override
+  String get practiceSessionLoadingSemantic => 'Starting practice session';
+
+  @override
+  String get practiceSessionFailedMessage =>
+      'Could not start the practice session';
+
+  @override
+  String get practiceSessionEmptyTitle => 'No questions yet';
+
+  @override
+  String get practiceSessionEmptySubtitle =>
+      'This lesson has no practice questions yet. Check back soon.';
+
+  @override
+  String get practiceSessionCompleteTitle => 'Practice complete!';
+
+  @override
+  String get practiceSessionDoneButton => 'Done';
+
+  @override
+  String practiceSessionCompleteSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'You answered $count questions. AIM is analysing your responses.',
+      one: 'You answered 1 question. AIM is analysing your responses.',
+    );
+    return '$_temp0';
+  }
 }

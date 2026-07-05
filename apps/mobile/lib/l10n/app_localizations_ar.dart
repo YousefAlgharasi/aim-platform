@@ -956,4 +956,40 @@ class AppLocalizationsAr extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get lessonsPracticeQuestionsButton => 'تدرّب على الأسئلة';
+
+  @override
+  String get practiceNextQuestionButton => 'السؤال التالي';
+
+  @override
+  String get practiceSessionLoadingSemantic => 'جارٍ بدء جلسة التدريب';
+
+  @override
+  String get practiceSessionFailedMessage => 'تعذّر بدء جلسة التدريب';
+
+  @override
+  String get practiceSessionEmptyTitle => 'لا توجد أسئلة بعد';
+
+  @override
+  String get practiceSessionEmptySubtitle =>
+      'لا توجد أسئلة تدريب لهذا الدرس حتى الآن. عُد لاحقًا.';
+
+  @override
+  String get practiceSessionCompleteTitle => 'اكتمل التدريب!';
+
+  @override
+  String get practiceSessionDoneButton => 'تم';
+
+  @override
+  String practiceSessionCompleteSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'أجبت عن $count أسئلة. يقوم AIM بتحليل إجاباتك.',
+      one: 'أجبت عن سؤال واحد. يقوم AIM بتحليل إجاباتك.',
+    );
+    return '$_temp0';
+  }
 }

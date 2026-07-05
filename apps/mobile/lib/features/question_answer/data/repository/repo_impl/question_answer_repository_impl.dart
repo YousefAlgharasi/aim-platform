@@ -5,6 +5,7 @@ import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/networking/api_client_exception.dart';
 import 'package:aim_mobile/features/question_answer/data/datasources/attempt_remote_datasource.dart';
 import 'package:aim_mobile/features/question_answer/data/datasources/question_remote_datasource.dart';
+import 'package:aim_mobile/features/question_answer/data/datasources/session_remote_datasource.dart';
 import 'package:aim_mobile/features/question_answer/data/datasources/session_feedback_remote_datasource.dart';
 import 'package:aim_mobile/features/question_answer/data/models/question_answer_models.dart';
 import 'package:aim_mobile/features/question_answer/logic/repository/question_answer_repository.dart';
@@ -14,13 +15,40 @@ class QuestionAnswerRepositoryImpl implements QuestionAnswerRepository {
     required QuestionRemoteDatasource questionDatasource,
     required AttemptRemoteDatasource attemptDatasource,
     required SessionFeedbackRemoteDatasource sessionFeedbackDatasource,
+    required SessionRemoteDatasource sessionDatasource,
   })  : _questionDatasource = questionDatasource,
         _attemptDatasource = attemptDatasource,
-        _sessionFeedbackDatasource = sessionFeedbackDatasource;
+        _sessionFeedbackDatasource = sessionFeedbackDatasource,
+        _sessionDatasource = sessionDatasource;
 
   final QuestionRemoteDatasource _questionDatasource;
   final AttemptRemoteDatasource _attemptDatasource;
   final SessionFeedbackRemoteDatasource _sessionFeedbackDatasource;
+  final SessionRemoteDatasource _sessionDatasource;
+
+  @override
+  Future<SessionStartResponseModel> startSession({
+    required String bearerToken,
+    required String sessionType,
+    List<String> skillFocusIds = const [],
+  }) =>
+      _wrap(() => _sessionDatasource.startSession(
+            bearerToken: bearerToken,
+            sessionType: sessionType,
+            skillFocusIds: skillFocusIds,
+          ));
+
+  @override
+  Future<List<QuestionModel>> getLessonQuestions({
+    required String bearerToken,
+    required String sessionId,
+    required String lessonId,
+  }) =>
+      _wrap(() => _sessionDatasource.getLessonQuestions(
+            bearerToken: bearerToken,
+            sessionId: sessionId,
+            lessonId: lessonId,
+          ));
 
   @override
   Future<QuestionModel> getQuestion({
