@@ -36,6 +36,10 @@ const JWT_USER = {
   expiresAt: Date.now() / 1000 + 3600,
 };
 
+// The internal users.id for the same student — deliberately different from
+// JWT_USER.id (the raw Supabase auth UID) so tests catch any accidental mixup.
+const INTERNAL_USER_ID = 'int0e8400-e29b-41d4-a716-446655440099';
+
 const SESSION_ID = 'ses0e8400-e29b-41d4-a716-446655440070';
 
 function makeSessionsService(resp: Partial<StartSessionResponse> = {}) {
@@ -120,32 +124,44 @@ function makeCtrl(overrides: {
 describe('SessionsController.startSession (P5-066)', () => {
   it('calls sessionsService.startSession with studentId from JWT', async () => {
     const { ctrl, svc } = makeCtrl();
-    await ctrl.startSession(JWT_USER, { sessionType: 'lesson_practice' });
+    await ctrl.startSession(JWT_USER, INTERNAL_USER_ID, { sessionType: 'lesson_practice' });
     expect(svc.startSession).toHaveBeenCalledWith(expect.objectContaining({ studentId: JWT_USER.id }));
   });
 
   it('never uses a studentId from the request body', async () => {
     const { ctrl, svc } = makeCtrl();
-    await ctrl.startSession(JWT_USER, { sessionType: 'lesson_practice', skillFocusIds: [] });
+    await ctrl.startSession(JWT_USER, INTERNAL_USER_ID, { sessionType: 'lesson_practice', skillFocusIds: [] });
     expect(svc.startSession).not.toHaveBeenCalledWith(expect.objectContaining({ studentId: 'attacker-id' }));
+  });
+
+  // Bugfix: analytics_events.actor_id has a real FK to users.id, not the raw
+  // Supabase auth UID used elsewhere for this student (learning_sessions,
+  // placement lookups). Passing the wrong id here crashed every real
+  // session-start request with an unhandled FK-violation 500.
+  it('passes the resolved internalUserId (not the raw JWT id) to the service', async () => {
+    const { ctrl, svc } = makeCtrl();
+    await ctrl.startSession(JWT_USER, INTERNAL_USER_ID, { sessionType: 'lesson_practice' });
+    expect(svc.startSession).toHaveBeenCalledWith(
+      expect.objectContaining({ internalUserId: INTERNAL_USER_ID }),
+    );
   });
 
   it('forwards sessionType to service', async () => {
     const { ctrl, svc } = makeCtrl();
-    await ctrl.startSession(JWT_USER, { sessionType: 'review_practice' });
+    await ctrl.startSession(JWT_USER, INTERNAL_USER_ID, { sessionType: 'review_practice' });
     expect(svc.startSession).toHaveBeenCalledWith(expect.objectContaining({ sessionType: 'review_practice' }));
   });
 
   it('forwards skillFocusIds to service', async () => {
     const { ctrl, svc } = makeCtrl();
     const skills = ['skill:arabic:p1:vocab'];
-    await ctrl.startSession(JWT_USER, { sessionType: 'lesson_practice', skillFocusIds: skills });
+    await ctrl.startSession(JWT_USER, INTERNAL_USER_ID, { sessionType: 'lesson_practice', skillFocusIds: skills });
     expect(svc.startSession).toHaveBeenCalledWith(expect.objectContaining({ skillFocusIds: skills }));
   });
 
   it('returns session response from service', async () => {
     const { ctrl } = makeCtrl();
-    const result = await ctrl.startSession(JWT_USER, { sessionType: 'lesson_practice' });
+    const result = await ctrl.startSession(JWT_USER, INTERNAL_USER_ID, { sessionType: 'lesson_practice' });
     expect(result.id).toBe(SESSION_ID);
     expect(result.status).toBe('active');
   });

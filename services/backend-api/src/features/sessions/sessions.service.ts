@@ -128,7 +128,11 @@ export class SessionsService {
     await this.analyticsEventIngestionService.ingest({
       eventType: 'session.started',
       actorRole: 'student',
-      actorId: session.student_id,
+      // Bugfix: analytics_events.actor_id has a real FK to users.id — must
+      // be the internal id, not session.student_id (the raw Supabase auth
+      // UID used for learning_sessions/placement lookups), or every
+      // session-start request violates the FK constraint and 500s.
+      actorId: input.internalUserId,
       subjectType: 'learning_session',
       subjectId: session.id,
       occurredAt: new Date(session.started_at),
