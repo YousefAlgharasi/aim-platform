@@ -116,9 +116,13 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
         return _shell(
           _PracticeCompleteContent(
             questionCount: state.questions.length,
+            completionSaved: state.completionSaved,
             onDone: () {
               if (context.canPop()) context.pop();
             },
+            onRetrySave: () => ref
+                .read(practiceSessionProvider.notifier)
+                .retryPersistCompletion(),
           ),
         );
     }
@@ -140,11 +144,19 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
 class _PracticeCompleteContent extends StatelessWidget {
   const _PracticeCompleteContent({
     required this.questionCount,
+    required this.completionSaved,
     required this.onDone,
+    required this.onRetrySave,
   });
 
   final int questionCount;
+
+  /// False when POST /lessons/:id/progress + /complete failed — the lesson
+  /// looks finished here but the backend never recorded it, so the next
+  /// lesson/course may still be locked.
+  final bool completionSaved;
   final VoidCallback onDone;
+  final VoidCallback onRetrySave;
 
   @override
   Widget build(BuildContext context) {
@@ -160,10 +172,10 @@ class _PracticeCompleteContent extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Icon(
-            Icons.check_circle_outline,
+          Icon(
+            completionSaved ? Icons.check_circle_outline : Icons.error_outline,
             size: 64,
-            color: AimColors.success500,
+            color: completionSaved ? AimColors.success500 : AimColors.warning500,
           ),
           const SizedBox(height: AimSpacing.componentGap),
           Text(
@@ -177,10 +189,27 @@ class _PracticeCompleteContent extends StatelessWidget {
             textAlign: TextAlign.center,
             style: AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
           ),
+          if (!completionSaved) ...[
+            const SizedBox(height: AimSpacing.space8),
+            Text(
+              l10n.practiceSessionCompletionNotSavedMessage,
+              textAlign: TextAlign.center,
+              style: AimTextStyles.bodySm.copyWith(color: AimColors.warning500),
+            ),
+          ],
           const SizedBox(height: AimSpacing.sectionGap),
+          if (!completionSaved) ...[
+            AIMButton(
+              onPressed: onRetrySave,
+              fullWidth: true,
+              child: Text(l10n.practiceSessionRetrySaveButton),
+            ),
+            const SizedBox(height: AimSpacing.space8),
+          ],
           AIMButton(
             onPressed: onDone,
             fullWidth: true,
+            variant: completionSaved ? AIMButtonVariant.primary : AIMButtonVariant.secondary,
             child: Text(l10n.practiceSessionDoneButton),
           ),
         ],

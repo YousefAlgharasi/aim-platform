@@ -53,4 +53,18 @@ abstract class QuestionAnswerRepository {
     required String studentId,
     required String sessionId,
   });
+
+  /// POST /lessons/:id/progress — record in-progress percent for a lesson.
+  Future<void> recordLessonProgress({
+    required String bearerToken,
+    required String lessonId,
+    required int percent,
+  });
+
+  /// POST /lessons/:id/complete — mark the lesson completed. The only
+  /// backend call that unlocks the next lesson/course (P20-011/P20-012).
+  Future<void> markLessonComplete({
+    required String bearerToken,
+    required String lessonId,
+  });
 }

@@ -992,4 +992,11 @@ class AppLocalizationsAr extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get practiceSessionCompletionNotSavedMessage =>
+      'تعذر حفظ تقدمك. قد يبقى الدرس التالي مقفلاً حتى يتم الحفظ — تحقق من اتصالك وحاول مرة أخرى.';
+
+  @override
+  String get practiceSessionRetrySaveButton => 'إعادة محاولة حفظ التقدم';
 }

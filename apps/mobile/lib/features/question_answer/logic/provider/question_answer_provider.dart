@@ -12,6 +12,8 @@ import 'package:aim_mobile/features/question_answer/data/datasources/session_fee
 import 'package:aim_mobile/features/question_answer/data/datasources/session_feedback_remote_datasource_impl.dart';
 import 'package:aim_mobile/features/question_answer/data/datasources/session_remote_datasource.dart';
 import 'package:aim_mobile/features/question_answer/data/datasources/session_remote_datasource_impl.dart';
+import 'package:aim_mobile/features/question_answer/data/datasources/lesson_progress_remote_datasource.dart';
+import 'package:aim_mobile/features/question_answer/data/datasources/lesson_progress_remote_datasource_impl.dart';
 import 'package:aim_mobile/features/question_answer/data/repository/repo_impl/question_answer_repository_impl.dart';
 import 'package:aim_mobile/features/question_answer/logic/entity/question_session_state.dart';
 import 'package:aim_mobile/features/question_answer/logic/repository/question_answer_repository.dart';
@@ -46,6 +48,13 @@ final sessionRemoteDatasourceProvider =
   );
 });
 
+final lessonProgressRemoteDatasourceProvider =
+    Provider<LessonProgressRemoteDatasource>((ref) {
+  return LessonProgressRemoteDatasourceImpl(
+    apiClient: ref.watch(authenticatedBackendApiClientProvider),
+  );
+});
+
 final questionAnswerRepositoryProvider =
     Provider<QuestionAnswerRepository>((ref) {
   return QuestionAnswerRepositoryImpl(
@@ -54,6 +63,7 @@ final questionAnswerRepositoryProvider =
     sessionFeedbackDatasource:
         ref.watch(sessionFeedbackRemoteDatasourceProvider),
     sessionDatasource: ref.watch(sessionRemoteDatasourceProvider),
+    lessonProgressDatasource: ref.watch(lessonProgressRemoteDatasourceProvider),
   );
 });
 

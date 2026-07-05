@@ -1510,6 +1510,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{You answered 1 question. AIM is analysing your responses.} other{You answered {count} questions. AIM is analysing your responses.}}'**
   String practiceSessionCompleteSubtitle(int count);
+
+  /// Shown on the practice-complete screen when saving lesson progress/completion to the backend failed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t save your progress. The next lesson may stay locked until this is saved — check your connection and try again.'**
+  String get practiceSessionCompletionNotSavedMessage;
+
+  /// Button to retry saving lesson progress/completion after a failure.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry saving progress'**
+  String get practiceSessionRetrySaveButton;
 }
 
 class _AppLocalizationsDelegate

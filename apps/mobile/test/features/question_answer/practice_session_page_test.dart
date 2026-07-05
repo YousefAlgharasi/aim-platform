@@ -86,6 +86,19 @@ class _FakeRepository implements QuestionAnswerRepository {
     required String sessionId,
   }) async =>
       throw UnimplementedError();
+
+  @override
+  Future<void> recordLessonProgress({
+    required String bearerToken,
+    required String lessonId,
+    required int percent,
+  }) async {}
+
+  @override
+  Future<void> markLessonComplete({
+    required String bearerToken,
+    required String lessonId,
+  }) async {}
 }
 
 Widget _wrap(QuestionAnswerRepository repository) => ProviderScope(
