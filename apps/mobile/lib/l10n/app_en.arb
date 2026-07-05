@@ -973,6 +973,47 @@
   "@lessonsCoursesSubtitle": {
     "description": "Subtitle shown under the course list heading."
   },
+  "lessonsCurrentCourseBadge": "Current",
+  "@lessonsCurrentCourseBadge": {
+    "description": "Badge on the course tile that is the student's current active enrollment."
+  },
+  "lessonsStartCourseDialogTitle": "Start this course?",
+  "@lessonsStartCourseDialogTitle": {
+    "description": "Title of the confirmation dialog shown before enrolling in a course."
+  },
+  "lessonsStartCourseDialogMessage": "{courseTitle} will become your active course.",
+  "@lessonsStartCourseDialogMessage": {
+    "description": "Body of the start-course confirmation dialog.",
+    "placeholders": {
+      "courseTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "lessonsSwitchCourseDialogMessage": "You're currently in {currentCourseTitle}. Switching to {courseTitle} will make it your active course instead.",
+  "@lessonsSwitchCourseDialogMessage": {
+    "description": "Body of the confirmation dialog shown when switching from one active course to a different one.",
+    "placeholders": {
+      "currentCourseTitle": {
+        "type": "String"
+      },
+      "courseTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "lessonsStartCourseConfirmButton": "Start course",
+  "@lessonsStartCourseConfirmButton": {
+    "description": "Confirm button on the start-course dialog."
+  },
+  "lessonsStartCourseCancelButton": "Cancel",
+  "@lessonsStartCourseCancelButton": {
+    "description": "Cancel button on the start-course dialog."
+  },
+  "lessonsStartCourseFailedMessage": "Couldn't start this course. Please check your connection and try again.",
+  "@lessonsStartCourseFailedMessage": {
+    "description": "Snackbar shown when the enroll request fails."
+  },
   "lessonsFilterAllCourses": "All courses",
   "@lessonsFilterAllCourses": {
     "description": "Filter chip label showing every course."

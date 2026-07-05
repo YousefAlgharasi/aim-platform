@@ -48,12 +48,17 @@ class CourseListTile extends StatelessWidget {
     required this.model,
     required this.onTap,
     this.index = 0,
+    this.isCurrentEnrollment = false,
     super.key,
   });
 
   final StudentCourse model;
   final VoidCallback onTap;
   final int index;
+
+  /// True when this is the student's current active course (from
+  /// GET /enrollment/current) — shows a small "current course" badge.
+  final bool isCurrentEnrollment;
 
   @override
   Widget build(BuildContext context) {
@@ -121,6 +126,15 @@ class CourseListTile extends StatelessWidget {
                             tone: AIMBadgeTone.primary,
                             variant: AIMBadgeVariant.soft,
                             child: Text(model.levelCode!),
+                          ),
+                        ],
+                        if (isCurrentEnrollment) ...[
+                          const SizedBox(width: AimSpacing.innerGap),
+                          AIMBadge(
+                            tone: AIMBadgeTone.success,
+                            variant: AIMBadgeVariant.soft,
+                            dot: true,
+                            child: Text(l10n.lessonsCurrentCourseBadge),
                           ),
                         ],
                         if (locked) ...[
