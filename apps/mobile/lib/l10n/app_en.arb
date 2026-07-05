@@ -1255,5 +1255,13 @@
         "type": "int"
       }
     }
+  },
+  "practiceSessionCompletionNotSavedMessage": "We couldn't save your progress. The next lesson may stay locked until this is saved — check your connection and try again.",
+  "@practiceSessionCompletionNotSavedMessage": {
+    "description": "Shown on the practice-complete screen when saving lesson progress/completion to the backend failed."
+  },
+  "practiceSessionRetrySaveButton": "Retry saving progress",
+  "@practiceSessionRetrySaveButton": {
+    "description": "Button to retry saving lesson progress/completion after a failure."
   }
 }
