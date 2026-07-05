@@ -44,6 +44,7 @@ import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/features/enrollment/logic/provider/enrollment_provider.dart';
 import 'package:aim_mobile/features/student_courses/data/models/student_course_model.dart';
 import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
 import 'package:aim_mobile/features/student_courses/logic/provider/student_courses_provider.dart';
@@ -73,15 +74,21 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
     final token = ref.read(authFlowProvider).accessToken;
     if (token == null || token.isEmpty) return;
     ref.read(studentCoursesProvider.notifier).load(bearerToken: token);
+    ref.read(currentEnrollmentProvider.notifier).load(bearerToken: token);
   }
 
   Future<void> _refresh() async {
     final token = ref.read(authFlowProvider).accessToken;
     if (token == null || token.isEmpty) return;
     await ref.read(studentCoursesProvider.notifier).refresh(bearerToken: token);
+    await ref.read(currentEnrollmentProvider.notifier).load(bearerToken: token);
   }
 
-  void _onCourseTap(StudentCourseModel course) {
+  /// Explicit "start course" action: a student has one active course at a
+  /// time (course_enrollments), separate from just browsing/opening
+  /// lessons. Confirms before enrolling — switching away from an existing
+  /// active course is a deliberate choice, not an accidental tap.
+  Future<void> _onCourseTap(StudentCourseModel course) async {
     if (course.locked) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -92,6 +99,54 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
       );
       return;
     }
+
+    final l10n = AppLocalizations.of(context);
+    final enrollmentState = ref.read(currentEnrollmentProvider);
+    final current = enrollmentState.valueOrNull;
+    final alreadyActive = current?.found == true && current?.courseId == course.courseId;
+
+    if (!alreadyActive) {
+      final message = current?.found == true
+          ? l10n.lessonsSwitchCourseDialogMessage(current!.courseTitle!, course.title)
+          : l10n.lessonsStartCourseDialogMessage(course.title);
+
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(l10n.lessonsStartCourseDialogTitle),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(l10n.lessonsStartCourseCancelButton),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(l10n.lessonsStartCourseConfirmButton),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+      if (!mounted) return;
+
+      final token = ref.read(authFlowProvider).accessToken;
+      if (token == null || token.isEmpty) return;
+      try {
+        await ref.read(currentEnrollmentProvider.notifier).enroll(
+              bearerToken: token,
+              courseId: course.courseId,
+            );
+      } catch (_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.lessonsStartCourseFailedMessage)),
+        );
+        return;
+      }
+      if (!mounted) return;
+    }
+
     // Navigate to the chapter list, passing the backend-supplied courseId.
     // courseId is never constructed from user input.
     context.push(
@@ -103,6 +158,9 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(studentCoursesProvider);
+    final enrollmentState = ref.watch(currentEnrollmentProvider);
+    final currentCourseId =
+        enrollmentState.valueOrNull?.found == true ? enrollmentState.valueOrNull?.courseId : null;
     final loadingLabel =
         AppLocalizations.of(context).lessonsLoadingCoursesSemantic;
 
@@ -119,6 +177,7 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
             ),
           AppAsyncSuccess(:final data) => _CourseListContent(
               courses: data,
+              currentCourseId: currentCourseId,
               onRefresh: _refresh,
               onTap: _onCourseTap,
             ),
@@ -140,13 +199,17 @@ enum _CourseFilter { all, inProgress, completed }
 class _CourseListContent extends StatefulWidget {
   const _CourseListContent({
     required this.courses,
+    required this.currentCourseId,
     required this.onRefresh,
     required this.onTap,
   });
 
   final List<StudentCourseModel> courses;
+
+  /// The student's current active enrollment's courseId, or null if none.
+  final String? currentCourseId;
   final Future<void> Function() onRefresh;
-  final void Function(StudentCourseModel) onTap;
+  final Future<void> Function(StudentCourseModel) onTap;
 
   @override
   State<_CourseListContent> createState() => _CourseListContentState();
@@ -270,6 +333,8 @@ class _CourseListContentState extends State<_CourseListContent> {
               CourseListTile(
                 model: visibleCourses[i],
                 index: i,
+                isCurrentEnrollment:
+                    widget.currentCourseId == visibleCourses[i].courseId,
                 onTap: () => widget.onTap(visibleCourses[i]),
               ),
               const SizedBox(height: AimSpacing.listItemGap),

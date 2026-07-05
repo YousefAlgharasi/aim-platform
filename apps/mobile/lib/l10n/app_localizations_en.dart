@@ -742,6 +742,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lessonsCoursesSubtitle => 'Level up your English, step by step';
 
   @override
+  String get lessonsCurrentCourseBadge => 'Current';
+
+  @override
+  String get lessonsStartCourseDialogTitle => 'Start this course?';
+
+  @override
+  String lessonsStartCourseDialogMessage(String courseTitle) {
+    return '$courseTitle will become your active course.';
+  }
+
+  @override
+  String lessonsSwitchCourseDialogMessage(
+      String currentCourseTitle, String courseTitle) {
+    return 'You\'re currently in $currentCourseTitle. Switching to $courseTitle will make it your active course instead.';
+  }
+
+  @override
+  String get lessonsStartCourseConfirmButton => 'Start course';
+
+  @override
+  String get lessonsStartCourseCancelButton => 'Cancel';
+
+  @override
+  String get lessonsStartCourseFailedMessage =>
+      'Couldn\'t start this course. Please check your connection and try again.';
+
+  @override
   String get lessonsFilterAllCourses => 'All courses';
 
   @override

@@ -18,6 +18,11 @@ import 'package:aim_mobile/core/localization/localization.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
+import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart';
+import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/features/enrollment/logic/entity/current_enrollment.dart';
+import 'package:aim_mobile/features/enrollment/logic/provider/enrollment_provider.dart';
+import 'package:aim_mobile/features/enrollment/logic/repository/enrollment_repository.dart';
 import 'package:aim_mobile/features/lessons/ui/pages/course_list_page.dart';
 import 'package:aim_mobile/features/student_courses/data/models/student_course_model.dart';
 import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
@@ -237,6 +242,10 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            authFlowProvider.overrideWith(
+              (ref) => AuthFlowNotifier()
+                ..signIn('learner@example.com', accessToken: 'tok-abc'),
+            ),
             studentCoursesProvider.overrideWith(
               (ref) => _FakeStudentCoursesNotifier(
                 AppAsyncState.success([
@@ -253,6 +262,11 @@ void main() {
                 ]),
               ),
             ),
+            currentEnrollmentProvider.overrideWith(
+              (ref) => CurrentEnrollmentNotifier(
+                repository: _FakeEnrollmentRepository(),
+              )..state = const AsyncValue.data(CurrentEnrollment.none),
+            ),
           ],
           child: MaterialApp.router(
             theme: AppTheme.light,
@@ -264,11 +278,88 @@ void main() {
       );
       await tester.pump();
 
+      // Bugfix: tapping an unlocked course no longer navigates immediately —
+      // it's an explicit "start this course" action (course_enrollments),
+      // confirmed via a dialog since the student has no active course yet.
       await tester.tap(find.text('Unlocked Course'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Start course'));
       await tester.pumpAndSettle();
 
       expect(find.text('Chapters'), findsOneWidget);
     });
+
+    testWidgets(
+      'tapping the already-active course navigates straight through, no dialog',
+      (tester) async {
+        final router = GoRouter(routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => const CourseListPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.courseChapters,
+            builder: (context, state) => const Scaffold(body: Text('Chapters')),
+          ),
+        ]);
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              authFlowProvider.overrideWith(
+                (ref) => AuthFlowNotifier()
+                  ..signIn('learner@example.com', accessToken: 'tok-abc'),
+              ),
+              studentCoursesProvider.overrideWith(
+                (ref) => _FakeStudentCoursesNotifier(
+                  AppAsyncState.success([
+                    const StudentCourseModel(
+                      courseId: 'active-course',
+                      title: 'Active Course',
+                      levelCode: 'A1',
+                      lessonCount: 5,
+                      completedLessonCount: 1,
+                      percent: 20,
+                      status: StudentCourseStatus.inProgress,
+                      locked: false,
+                    ),
+                  ]),
+                ),
+              ),
+              currentEnrollmentProvider.overrideWith(
+                (ref) => CurrentEnrollmentNotifier(
+                  repository: _FakeEnrollmentRepository(
+                    current: const CurrentEnrollment(
+                      found: true,
+                      courseId: 'active-course',
+                      courseTitle: 'Active Course',
+                      enrolledAt: '2026-07-01T00:00:00Z',
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            child: MaterialApp.router(
+              theme: AppTheme.light,
+              localizationsDelegates: AppLocale.delegates,
+              supportedLocales: AppLocale.supportedLocales,
+              routerConfig: router,
+            ),
+          ),
+        );
+        await tester.pump();
+        await tester.pump();
+
+        // Already the active enrollment — tapping navigates directly, no
+        // "start course" confirmation needed.
+        expect(find.text('Current'), findsOneWidget);
+        await tester.tap(find.text('Active Course'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Chapters'), findsOneWidget);
+        expect(find.text('Start this course?'), findsNothing);
+      },
+    );
   });
 }
 
@@ -293,4 +384,26 @@ class _FakeStudentCoursesRepository implements StudentCoursesRepository {
     required String bearerToken,
   }) async =>
       const [];
+}
+
+class _FakeEnrollmentRepository implements EnrollmentRepository {
+  _FakeEnrollmentRepository({this.current = CurrentEnrollment.none});
+
+  final CurrentEnrollment current;
+
+  @override
+  Future<CurrentEnrollment> getCurrent({required String bearerToken}) async =>
+      current;
+
+  @override
+  Future<CurrentEnrollment> enroll({
+    required String bearerToken,
+    required String courseId,
+  }) async =>
+      CurrentEnrollment(
+        found: true,
+        courseId: courseId,
+        courseTitle: 'Unlocked Course',
+        enrolledAt: '2026-07-05T00:00:00Z',
+      );
 }
