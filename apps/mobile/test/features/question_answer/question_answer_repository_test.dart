@@ -21,6 +21,7 @@ import 'package:aim_mobile/features/question_answer/data/datasources/attempt_rem
 import 'package:aim_mobile/features/question_answer/data/datasources/question_remote_datasource.dart';
 import 'package:aim_mobile/features/question_answer/data/datasources/session_feedback_remote_datasource.dart';
 import 'package:aim_mobile/features/question_answer/data/datasources/session_remote_datasource.dart';
+import 'package:aim_mobile/features/question_answer/data/datasources/lesson_progress_remote_datasource.dart';
 import 'package:aim_mobile/features/question_answer/data/models/question_answer_models.dart';
 import 'package:aim_mobile/features/question_answer/data/repository/repo_impl/question_answer_repository_impl.dart';
 import 'package:aim_mobile/features/question_answer/logic/entity/question_session_state.dart';
@@ -116,12 +117,30 @@ class _FakeSessionDatasource implements SessionRemoteDatasource {
       [_FakeQuestionDatasource._q];
 }
 
+class _FakeLessonProgressDatasource implements LessonProgressRemoteDatasource {
+  const _FakeLessonProgressDatasource();
+
+  @override
+  Future<void> recordProgress({
+    required String bearerToken,
+    required String lessonId,
+    required int percent,
+  }) async {}
+
+  @override
+  Future<void> markComplete({
+    required String bearerToken,
+    required String lessonId,
+  }) async {}
+}
+
 QuestionAnswerRepositoryImpl _repo({bool qFail = false, bool aFail = false}) =>
     QuestionAnswerRepositoryImpl(
       questionDatasource: _FakeQuestionDatasource(shouldFail: qFail),
       attemptDatasource: _FakeAttemptDatasource(shouldFail: aFail),
       sessionFeedbackDatasource: const _FakeSessionFeedbackDatasource(),
       sessionDatasource: const _FakeSessionDatasource(),
+      lessonProgressDatasource: const _FakeLessonProgressDatasource(),
     );
 
 QuestionAnswerNotifier _notifier({bool qFail = false, bool aFail = false}) =>

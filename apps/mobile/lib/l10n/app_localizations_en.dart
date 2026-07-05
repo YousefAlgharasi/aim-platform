@@ -953,4 +953,11 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get practiceSessionCompletionNotSavedMessage =>
+      'We couldn\'t save your progress. The next lesson may stay locked until this is saved — check your connection and try again.';
+
+  @override
+  String get practiceSessionRetrySaveButton => 'Retry saving progress';
 }

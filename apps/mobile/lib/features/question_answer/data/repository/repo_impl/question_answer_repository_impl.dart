@@ -7,6 +7,7 @@ import 'package:aim_mobile/features/question_answer/data/datasources/attempt_rem
 import 'package:aim_mobile/features/question_answer/data/datasources/question_remote_datasource.dart';
 import 'package:aim_mobile/features/question_answer/data/datasources/session_remote_datasource.dart';
 import 'package:aim_mobile/features/question_answer/data/datasources/session_feedback_remote_datasource.dart';
+import 'package:aim_mobile/features/question_answer/data/datasources/lesson_progress_remote_datasource.dart';
 import 'package:aim_mobile/features/question_answer/data/models/question_answer_models.dart';
 import 'package:aim_mobile/features/question_answer/logic/repository/question_answer_repository.dart';
 
@@ -16,15 +17,18 @@ class QuestionAnswerRepositoryImpl implements QuestionAnswerRepository {
     required AttemptRemoteDatasource attemptDatasource,
     required SessionFeedbackRemoteDatasource sessionFeedbackDatasource,
     required SessionRemoteDatasource sessionDatasource,
+    required LessonProgressRemoteDatasource lessonProgressDatasource,
   })  : _questionDatasource = questionDatasource,
         _attemptDatasource = attemptDatasource,
         _sessionFeedbackDatasource = sessionFeedbackDatasource,
-        _sessionDatasource = sessionDatasource;
+        _sessionDatasource = sessionDatasource,
+        _lessonProgressDatasource = lessonProgressDatasource;
 
   final QuestionRemoteDatasource _questionDatasource;
   final AttemptRemoteDatasource _attemptDatasource;
   final SessionFeedbackRemoteDatasource _sessionFeedbackDatasource;
   final SessionRemoteDatasource _sessionDatasource;
+  final LessonProgressRemoteDatasource _lessonProgressDatasource;
 
   @override
   Future<SessionStartResponseModel> startSession({
@@ -82,6 +86,28 @@ class QuestionAnswerRepositoryImpl implements QuestionAnswerRepository {
             bearerToken: bearerToken,
             studentId: studentId,
             sessionId: sessionId,
+          ));
+
+  @override
+  Future<void> recordLessonProgress({
+    required String bearerToken,
+    required String lessonId,
+    required int percent,
+  }) =>
+      _wrap(() => _lessonProgressDatasource.recordProgress(
+            bearerToken: bearerToken,
+            lessonId: lessonId,
+            percent: percent,
+          ));
+
+  @override
+  Future<void> markLessonComplete({
+    required String bearerToken,
+    required String lessonId,
+  }) =>
+      _wrap(() => _lessonProgressDatasource.markComplete(
+            bearerToken: bearerToken,
+            lessonId: lessonId,
           ));
 
   Future<T> _wrap<T>(Future<T> Function() call) async {

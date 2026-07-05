@@ -35,14 +35,23 @@ class _FakeRepository implements QuestionAnswerRepository {
     this.questions = const [],
     this.startError,
     this.questionsError,
+    this.completionError,
   });
 
   final List<QuestionModel> questions;
   AppException? startError;
   AppException? questionsError;
 
+  /// When set, both recordLessonProgress and markLessonComplete throw this.
+  Object? completionError;
+
   int startCalls = 0;
   int questionCalls = 0;
+  int recordProgressCalls = 0;
+  int markCompleteCalls = 0;
+  String? lastProgressLessonId;
+  int? lastProgressPercent;
+  String? lastCompleteLessonId;
   String? lastSessionId;
   String? lastLessonId;
   String? lastSessionType;
@@ -100,6 +109,28 @@ class _FakeRepository implements QuestionAnswerRepository {
     required String sessionId,
   }) async =>
       throw UnimplementedError();
+
+  @override
+  Future<void> recordLessonProgress({
+    required String bearerToken,
+    required String lessonId,
+    required int percent,
+  }) async {
+    recordProgressCalls++;
+    lastProgressLessonId = lessonId;
+    lastProgressPercent = percent;
+    if (completionError != null) throw completionError!;
+  }
+
+  @override
+  Future<void> markLessonComplete({
+    required String bearerToken,
+    required String lessonId,
+  }) async {
+    markCompleteCalls++;
+    lastCompleteLessonId = lessonId;
+    if (completionError != null) throw completionError!;
+  }
 }
 
 void main() {
@@ -176,11 +207,11 @@ void main() {
     final notifier = PracticeSessionNotifier(repository: repo);
     await notifier.start(bearerToken: 'tok', lessonId: 'lesson-1');
 
-    notifier.advance();
+    await notifier.advance();
     expect(notifier.state.status, PracticeSessionStatus.active);
     expect(notifier.state.currentQuestion!.id, 'q-2');
 
-    notifier.advance();
+    await notifier.advance();
     expect(notifier.state.status, PracticeSessionStatus.finished);
     expect(notifier.state.currentQuestion, isNull);
   });
@@ -188,5 +219,62 @@ void main() {
   test('7. currentQuestion is null outside the active state', () {
     const state = PracticeSessionState();
     expect(state.currentQuestion, isNull);
+  });
+
+  // Bugfix: finishing the run used to only flip a local flag — nothing was
+  // ever sent to the backend, so lesson_progress.percent never updated and
+  // lesson_progress.completed (the only unlock gate for the next lesson/
+  // course) was never set.
+  test(
+    '8. finishing the run records 100% progress and marks the lesson complete',
+    () async {
+      final repo = _FakeRepository(questions: [_question('q-1')]);
+      final notifier = PracticeSessionNotifier(repository: repo);
+      await notifier.start(bearerToken: 'tok', lessonId: 'lesson-1');
+
+      await notifier.advance();
+
+      expect(notifier.state.status, PracticeSessionStatus.finished);
+      expect(repo.recordProgressCalls, 1);
+      expect(repo.lastProgressLessonId, 'lesson-1');
+      expect(repo.lastProgressPercent, 100);
+      expect(repo.markCompleteCalls, 1);
+      expect(repo.lastCompleteLessonId, 'lesson-1');
+      expect(notifier.state.completionSaved, isTrue);
+    },
+  );
+
+  test(
+    '9. completionSaved stays false when persisting progress/completion fails',
+    () async {
+      final repo = _FakeRepository(
+        questions: [_question('q-1')],
+        completionError: Exception('network down'),
+      );
+      final notifier = PracticeSessionNotifier(repository: repo);
+      await notifier.start(bearerToken: 'tok', lessonId: 'lesson-1');
+
+      await notifier.advance();
+
+      expect(notifier.state.status, PracticeSessionStatus.finished);
+      expect(notifier.state.completionSaved, isFalse);
+    },
+  );
+
+  test('10. retryPersistCompletion can succeed after an earlier failure', () async {
+    final repo = _FakeRepository(
+      questions: [_question('q-1')],
+      completionError: Exception('network down'),
+    );
+    final notifier = PracticeSessionNotifier(repository: repo);
+    await notifier.start(bearerToken: 'tok', lessonId: 'lesson-1');
+    await notifier.advance();
+    expect(notifier.state.completionSaved, isFalse);
+
+    repo.completionError = null;
+    await notifier.retryPersistCompletion();
+
+    expect(notifier.state.completionSaved, isTrue);
+    expect(repo.markCompleteCalls, 1);
   });
 }

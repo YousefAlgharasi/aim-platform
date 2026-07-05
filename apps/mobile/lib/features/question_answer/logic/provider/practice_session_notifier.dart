@@ -52,6 +52,7 @@ class PracticeSessionState {
     this.questions = const [],
     this.currentIndex = 0,
     this.errorMessage,
+    this.completionSaved = false,
   });
 
   final PracticeSessionStatus status;
@@ -68,6 +69,12 @@ class PracticeSessionState {
   /// Error message from a failed start/delivery call.
   final String? errorMessage;
 
+  /// True once POST /lessons/:id/progress + /complete both succeeded for
+  /// this run. Only meaningful once [status] is [PracticeSessionStatus.finished] —
+  /// false there means the lesson looked finished locally but the backend
+  /// never actually recorded it (so the next lesson/course stays locked).
+  final bool completionSaved;
+
   QuestionModel? get currentQuestion =>
       status == PracticeSessionStatus.active && currentIndex < questions.length
           ? questions[currentIndex]
@@ -81,6 +88,7 @@ class PracticeSessionState {
     List<QuestionModel>? questions,
     int? currentIndex,
     String? errorMessage,
+    bool? completionSaved,
   }) {
     return PracticeSessionState(
       status: status ?? this.status,
@@ -88,6 +96,7 @@ class PracticeSessionState {
       questions: questions ?? this.questions,
       currentIndex: currentIndex ?? this.currentIndex,
       errorMessage: errorMessage ?? this.errorMessage,
+      completionSaved: completionSaved ?? this.completionSaved,
     );
   }
 }
@@ -99,6 +108,11 @@ class PracticeSessionNotifier extends StateNotifier<PracticeSessionState> {
 
   final QuestionAnswerRepository _repository;
 
+  // Needed only to persist lesson progress/completion once the run
+  // finishes (start()'s own params aren't otherwise retained).
+  String? _bearerToken;
+  String? _lessonId;
+
   /// Start a lesson_practice learning session and load the lesson's
   /// delivered questions. Reuses the already-started session on retry after
   /// a delivery failure.
@@ -106,6 +120,8 @@ class PracticeSessionNotifier extends StateNotifier<PracticeSessionState> {
     required String bearerToken,
     required String lessonId,
   }) async {
+    _bearerToken = bearerToken;
+    _lessonId = lessonId;
     state = state.copyWith(
       status: PracticeSessionStatus.loading,
       errorMessage: null,
@@ -150,14 +166,50 @@ class PracticeSessionNotifier extends StateNotifier<PracticeSessionState> {
   }
 
   /// Advance to the next delivered question, or finish the run.
-  void advance() {
+  ///
+  /// Bugfix: finishing used to only flip a local flag — nothing was ever
+  /// sent to the backend, so the lesson's progress percent never updated
+  /// and lesson_progress.completed (the only gate for unlocking the next
+  /// lesson/course — P20-011/P20-012) was never set. Finishing now records
+  /// 100% progress and marks the lesson complete; [PracticeSessionState.completionSaved]
+  /// reports whether that actually succeeded.
+  Future<void> advance() async {
     if (state.status != PracticeSessionStatus.active) return;
     if (state.hasNext) {
       state = state.copyWith(currentIndex: state.currentIndex + 1);
-    } else {
-      state = state.copyWith(status: PracticeSessionStatus.finished);
+      return;
+    }
+
+    state = state.copyWith(status: PracticeSessionStatus.finished);
+    await _persistCompletion();
+  }
+
+  Future<void> _persistCompletion() async {
+    final bearerToken = _bearerToken;
+    final lessonId = _lessonId;
+    if (bearerToken == null || lessonId == null) return;
+
+    try {
+      await _repository.recordLessonProgress(
+        bearerToken: bearerToken,
+        lessonId: lessonId,
+        percent: 100,
+      );
+      await _repository.markLessonComplete(
+        bearerToken: bearerToken,
+        lessonId: lessonId,
+      );
+      if (mounted) {
+        state = state.copyWith(completionSaved: true);
+      }
+    } catch (_) {
+      // completionSaved stays false — the UI surfaces this so the student
+      // knows the next lesson/course may still be locked and can retry.
     }
   }
+
+  /// Retry persisting completion after a failure (e.g. lost connection).
+  Future<void> retryPersistCompletion() => _persistCompletion();
 
   /// The backend expresses P20-010 course gating as a 403 FORBIDDEN. The
   /// verdict is backend-owned; this only recognises it for display.

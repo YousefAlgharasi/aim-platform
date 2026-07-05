@@ -234,5 +234,7 @@
   "practiceSessionEmptySubtitle": "لا توجد أسئلة تدريب لهذا الدرس حتى الآن. عُد لاحقًا.",
   "practiceSessionCompleteTitle": "اكتمل التدريب!",
   "practiceSessionDoneButton": "تم",
-  "practiceSessionCompleteSubtitle": "{count, plural, =1{أجبت عن سؤال واحد. يقوم AIM بتحليل إجاباتك.} other{أجبت عن {count} أسئلة. يقوم AIM بتحليل إجاباتك.}}"
+  "practiceSessionCompleteSubtitle": "{count, plural, =1{أجبت عن سؤال واحد. يقوم AIM بتحليل إجاباتك.} other{أجبت عن {count} أسئلة. يقوم AIM بتحليل إجاباتك.}}",
+  "practiceSessionCompletionNotSavedMessage": "تعذر حفظ تقدمك. قد يبقى الدرس التالي مقفلاً حتى يتم الحفظ — تحقق من اتصالك وحاول مرة أخرى.",
+  "practiceSessionRetrySaveButton": "إعادة محاولة حفظ التقدم"
 }
