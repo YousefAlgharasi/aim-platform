@@ -25,11 +25,13 @@
 //     This is fire-and-forget: progress recording failures never block the
 //     submission confirmation.
 
+import { randomUUID } from 'crypto';
 import { Injectable, Logger } from '@nestjs/common';
 import { AttemptLifecycleService } from './assessment-attempt.service';
 import { AssessmentGradingService } from './assessment-grading.service';
 import { AssessmentResultService } from './assessment-result.service';
 import { AssessmentProgressIntegrationService } from './assessment-progress-integration.service';
+import { AssessmentAimBridgeService } from './assessment-aim-bridge.service';
 
 export interface SubmitAttemptApiResult {
   readonly attemptId: string;
@@ -48,6 +50,7 @@ export class AssessmentSubmissionFlowService {
     private readonly gradingService: AssessmentGradingService,
     private readonly resultService: AssessmentResultService,
     private readonly progressIntegration: AssessmentProgressIntegrationService,
+    private readonly aimBridge: AssessmentAimBridgeService,
   ) {}
 
   /**
@@ -87,6 +90,18 @@ export class AssessmentSubmissionFlowService {
       });
       // Intentionally swallowed — progress recording must not block submission.
     }
+
+    // Feed every graded question into the AIM pipeline (mastery/weakness/
+    // difficulty/recommendations), the same way lesson-practice session
+    // attempts already do. Fire-and-forget for the same reason as progress
+    // integration above — a bridging failure must never block submission.
+    // AssessmentAimBridgeService already catches its own errors internally;
+    // this .catch is defense-in-depth against an unhandled rejection if
+    // that ever changes.
+    this.aimBridge.bridgeGradedAttempt(gradingResult, randomUUID()).catch((err: unknown) => {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      this.logger.error('assessment_aim_bridge_failed', { attemptId, studentId, error: errorMessage });
+    });
 
     return {
       attemptId,
