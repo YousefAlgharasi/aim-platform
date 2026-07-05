@@ -14,9 +14,17 @@
 //   so the P5-066/P5-067 session flow (and therefore the whole AIM pipeline)
 //   was unreachable from the app. This service closes that gap using the
 //   real content chain that exists in the live schema:
-//     lesson_skills -> skills -> question_skill_links -> questions
-//                                                     -> question_choices
-//                                                     -> question_answers
+//     lesson_skills -> skills -> question_skills -> question_bank
+//                                                -> question_choices
+//                                                -> question_answers
+//
+//   Content-source note: delivery originally read from the `questions` table
+//   via question_skill_links, but question_choices/question_answers FK to
+//   question_bank, and the `questions` rows have no answer data anywhere —
+//   so every delivered question had zero options and every answer graded
+//   incorrect. question_bank is the only table with real choices and answer
+//   keys (verified against the live DB), so delivery and grading both read
+//   from question_bank via question_skills.
 //
 // Security rules (same posture as the rest of features/sessions):
 //   - studentId is always JWT-resolved by the caller; never a client value.
@@ -95,8 +103,8 @@ interface QuestionRow {
   readonly id: string;
   readonly type: string;
   readonly difficulty: string;
-  readonly prompt: string;
-  readonly metadata: { tags?: unknown } | null;
+  readonly stem: string;
+  readonly tags: readonly string[] | null;
 }
 
 interface ChoiceRow {
@@ -115,7 +123,7 @@ interface AnswerValueRow {
   readonly value: unknown;
 }
 
-/** questions.type values with selectable options (delivered via question_choices). */
+/** question_bank.type values with selectable options (delivered via question_choices). */
 const OPTION_BASED_QUESTION_TYPES = new Set([
   'multiple_choice',
   'true_false',
@@ -123,24 +131,30 @@ const OPTION_BASED_QUESTION_TYPES = new Set([
 ]);
 
 /**
- * questions.type -> lesson_attempts.answer_format (P5-032 enum).
- * Live questions.type values verified against Supabase: multiple_choice,
- * true_false, fill_in_blank.
+ * question_bank.type -> lesson_attempts.answer_format (P5-032 enum).
+ * Live question_bank.type values verified against Supabase: multiple_choice,
+ * true_false, fill_in_the_blank.
  */
 const ANSWER_FORMAT_BY_QUESTION_TYPE: Record<string, AttemptAnswerFormat> = {
   multiple_choice: 'multiple_choice',
   true_false: 'true_false',
   listening_choice: 'listening_choice',
+  fill_in_the_blank: 'fill_blank',
   fill_in_blank: 'fill_blank',
   fill_blank: 'fill_blank',
 };
 
 /**
- * questions.difficulty (text: easy/medium/hard) -> presented_difficulty (1–4).
- * The 1–4 scale is the P5-032 lesson_attempts contract; live curriculum
- * content uses the three-word scale, so 4 is never produced from content.
+ * question_bank.difficulty -> presented_difficulty (1–4).
+ * The 1–4 scale is the P5-032 lesson_attempts contract. Live question_bank
+ * rows use beginner/elementary/intermediate; the easy/medium/hard set is
+ * kept for any content that still uses the older three-word scale.
  */
 const DIFFICULTY_BY_LABEL: Record<string, AttemptDifficultyLevel> = {
+  beginner: 1,
+  elementary: 2,
+  intermediate: 3,
+  advanced: 4,
   easy: 1,
   medium: 2,
   hard: 3,
@@ -167,8 +181,9 @@ export class SessionQuestionsService {
    *      (NOT_FOUND otherwise — never leaks session existence).
    *   2. Enforce P20-010 course gating for the lesson (403 when locked).
    *   3. Verify the lesson exists and is published.
-   *   4. Resolve questions via lesson_skills -> skills -> question_skill_links,
-   *      published only, options included with is_correct stripped.
+   *   4. Resolve questions via lesson_skills -> skills -> question_skills ->
+   *      question_bank, published only, options included with is_correct
+   *      stripped.
    */
   async listQuestionsForLesson(
     studentId: string,
@@ -179,15 +194,15 @@ export class SessionQuestionsService {
     await this.lessonProgress.assertCourseUnlockedForLesson(studentId, lessonId);
     await this.assertPublishedLesson(lessonId);
 
-    const questionsResult = await this.db.query<QuestionRow & { key: string }>(
-      `SELECT DISTINCT q.id, q.key, q.type, q.difficulty, q.prompt, q.metadata
+    const questionsResult = await this.db.query<QuestionRow & { created_at: string }>(
+      `SELECT DISTINCT qb.id, qb.type, qb.difficulty, qb.stem, qb.tags, qb.created_at
          FROM lesson_skills ls
          JOIN skills s ON s.id = ls.skill_id
-         JOIN question_skill_links qsl ON qsl.skill_key = s.key
-         JOIN questions q ON q.id = qsl.question_id
+         JOIN question_skills qs ON qs.skill_id = s.id
+         JOIN question_bank qb ON qb.id = qs.question_id
         WHERE ls.lesson_id = $1
-          AND q.status = 'published'
-        ORDER BY q.key ASC`,
+          AND qb.status = 'published'
+        ORDER BY qb.created_at ASC, qb.id ASC`,
       [lessonId],
     );
 
@@ -199,9 +214,9 @@ export class SessionQuestionsService {
       questions: questionsResult.rows.map((q) => ({
         id: q.id,
         type: q.type,
-        stem: q.prompt,
+        stem: q.stem,
         difficulty: q.difficulty,
-        tags: this.extractTags(q.metadata),
+        tags: this.extractTags(q.tags),
         options: (choicesByQuestion.get(q.id) ?? []).map((c, index) => ({
           id: c.id,
           text: c.text,
@@ -234,8 +249,8 @@ export class SessionQuestionsService {
     answerValue: string,
   ): Promise<ResolvedAttemptItem> {
     const questionResult = await this.db.query<QuestionRow>(
-      `SELECT id, type, difficulty, prompt, metadata
-         FROM questions
+      `SELECT id, type, difficulty, stem, tags
+         FROM question_bank
         WHERE id = $1 AND status = 'published'
         LIMIT 1`,
       [itemId],
@@ -250,7 +265,10 @@ export class SessionQuestionsService {
     }
 
     const skillLinksResult = await this.db.query<SkillLinkRow>(
-      `SELECT skill_key FROM question_skill_links WHERE question_id = $1`,
+      `SELECT s.key AS skill_key
+         FROM question_skills qs
+         JOIN skills s ON s.id = qs.skill_id
+        WHERE qs.question_id = $1`,
       [itemId],
     );
     const skillIds = skillLinksResult.rows.map((r) => r.skill_key);
@@ -341,8 +359,7 @@ export class SessionQuestionsService {
     return byQuestion;
   }
 
-  private extractTags(metadata: { tags?: unknown } | null): string[] {
-    const tags = metadata?.tags;
+  private extractTags(tags: readonly string[] | null | undefined): string[] {
     if (!Array.isArray(tags)) return [];
     return tags.filter((t): t is string => typeof t === 'string');
   }
