@@ -103,6 +103,10 @@ function makeMockResultService() {
 // Tests — AssessmentProgressIntegrationService (direct)
 // ---------------------------------------------------------------------------
 
+function makeAimBridge() {
+  return { bridgeGradedAttempt: jest.fn().mockResolvedValue(undefined) };
+}
+
 describe('Assessment Progress Integration — P10-070', () => {
   let svc: AssessmentProgressIntegrationService;
   let logSpy: jest.SpyInstance;
@@ -231,6 +235,7 @@ describe('Assessment Progress Integration — P10-070', () => {
         gradingService,
         makeMockResultService(),
         progressSvc,
+        makeAimBridge() as any,
       );
 
       await expect(flow.submitAndGrade(ATTEMPT_ID, STUDENT_ID)).rejects.toThrow('Grading failed');
@@ -250,6 +255,7 @@ describe('Assessment Progress Integration — P10-070', () => {
         makeMockGradingService(),
         resultService,
         progressSvc,
+        makeAimBridge() as any,
       );
 
       await expect(flow.submitAndGrade(ATTEMPT_ID, STUDENT_ID)).rejects.toThrow('DB constraint');
@@ -283,6 +289,7 @@ describe('Assessment Progress Integration — P10-070', () => {
         makeMockGradingService(),
         makeMockResultService(),
         progressSvc,
+        makeAimBridge() as any,
       );
 
       const result = await flow.submitAndGrade(ATTEMPT_ID, STUDENT_ID);
@@ -302,6 +309,7 @@ describe('Assessment Progress Integration — P10-070', () => {
         makeMockGradingService(),
         makeMockResultService(),
         progressSvc,
+        makeAimBridge() as any,
       );
 
       const result = await flow.submitAndGrade(ATTEMPT_ID, STUDENT_ID);
@@ -380,6 +388,7 @@ describe('Assessment Progress Integration — P10-070', () => {
         makeMockGradingService(),
         makeMockResultService(),
         progressSvc,
+        makeAimBridge() as any,
       );
 
       await flow.submitAndGrade(ATTEMPT_ID, STUDENT_ID);

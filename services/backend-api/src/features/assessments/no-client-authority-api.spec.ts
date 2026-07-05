@@ -158,7 +158,7 @@ describe('No Client Authority API Tests (P10-046)', () => {
 
     it('AssessmentSubmissionFlowService.submitAndGrade takes only (attemptId, studentId)', async () => {
       const { AssessmentSubmissionFlowService } = await import('./assessment-submission-flow.service');
-      const svc = new AssessmentSubmissionFlowService({} as any, {} as any, {} as any, {} as any);
+      const svc = new AssessmentSubmissionFlowService({} as any, {} as any, {} as any, {} as any, {} as any);
       expect(svc.submitAndGrade.length).toBe(2);
     });
   });
