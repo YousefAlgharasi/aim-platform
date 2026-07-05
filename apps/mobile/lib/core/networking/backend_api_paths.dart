@@ -132,6 +132,13 @@ class BackendApiPaths {
   /// GET /lessons/recommended-course — course recommended from placement result.
   static const String lessonsRecommendedCourse = '/lessons/recommended-course';
 
+  /// POST /lessons/:id/progress — record in-progress percent for a lesson.
+  static String lessonProgress(String lessonId) => '/lessons/$lessonId/progress';
+
+  /// POST /lessons/:id/complete — mark a lesson as completed (P20-011/P20-012
+  /// unlock gate). The only place lesson_progress.completed is ever set true.
+  static String lessonComplete(String lessonId) => '/lessons/$lessonId/complete';
+
   // ---------------------------------------------------------------------------
   // Curriculum — Phase 6 P6-022
   // Read-only list endpoints. Write/admin endpoints are forbidden in Flutter.
