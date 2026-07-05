@@ -24,8 +24,11 @@ import { DatabaseModule } from '../../database/database.module';
 import { AuthModule } from '../../auth/auth.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { SkillsModule } from '../curriculum/skills/skills.module';
+import { RolesModule } from '../roles/roles.module';
+import { UsersModule } from '../users/users.module';
 import { AimEngineClientService } from './aim-engine-client.service';
 import { AimService } from './aim.service';
+import { AimDiagnosticsController } from './aim-diagnostics.controller';
 
 // Phase 5 additions (P5-043 skeleton)
 import { AimHealthCheckService } from './aim-health-check.service';
@@ -58,8 +61,8 @@ import { FocusDirectiveReadService } from './result/focus-directive-read.service
 import { AimResultController } from './result/aim-result.controller';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, NotificationsModule, SkillsModule],
-  controllers: [AimResultController],
+  imports: [DatabaseModule, AuthModule, NotificationsModule, SkillsModule, RolesModule, UsersModule],
+  controllers: [AimResultController, AimDiagnosticsController],
   providers: [
     // Existing (pre-Phase 5)
     AimEngineClientService,
