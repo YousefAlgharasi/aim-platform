@@ -10,10 +10,16 @@
 //
 // Security rules:
 //   - All endpoints require a valid Supabase JWT (SupabaseJwtAuthGuard).
-//   - StudentOwnershipGuard enforces that the JWT user owns the resource.
-//   - studentId is ALWAYS resolved from the verified JWT via @CurrentUser().
-//     Clients must not and cannot supply a studentId — any such field in the
-//     request body is ignored.
+//   - studentId is ALWAYS resolved from the verified JWT via @CurrentUser() —
+//     never accepted from the client, so there is no client-supplied
+//     studentId to check ownership of. Neither route below has a
+//     :studentId path param (bugfix: they previously carried
+//     @RequireStudentOwnership() with no matching route param, which made
+//     StudentOwnershipGuard's default paramName lookup always come back
+//     empty and unconditionally reject every real student request with 403
+//     "Student ownership target is missing" — no session could ever be
+//     started or attempted, so the AIM pipeline's only trigger was
+//     unreachable in production).
 //   - is_correct, mastery, difficulty, weakness, recommendations, and all
 //     other AIM-owned values are NEVER returned from these endpoints.
 //   - The AIM Engine is called internally by the orchestrator after the
@@ -48,8 +54,6 @@ import { ApiErrorCode } from '../../common/errors/api-error-code';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { CurrentUser } from '../../auth/current-user.decorator';
 import { AuthenticatedUser } from '../../auth/authenticated-user';
-import { StudentOwnershipGuard } from '../../auth/authorization/student-ownership.guard';
-import { RequireStudentOwnership } from '../../auth/authorization/require-student-ownership.decorator';
 import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../auth/authorization/required-roles.decorator';
 import { OPENAPI_TAGS } from '../../openapi/openapi.tags';
@@ -148,14 +152,22 @@ export class SessionsController {
    * the Phase 6 client pointed at the admin-gated /curriculum/questions/:id).
    *
    * Security rules:
-   *   - studentId from JWT; session ownership + active status verified.
+   *   - studentId from JWT; session ownership + active status verified by
+   *     SessionQuestionsService.verifyActiveSessionOwnership (a real DB
+   *     lookup: session.student_id === JWT-resolved studentId). The route
+   *     param here is :sessionId, not :studentId — bugfix: this previously
+   *     also carried @RequireStudentOwnership() (default paramName
+   *     'studentId'), which doesn't exist on this route either, so it
+   *     unconditionally 403'd every request before the real ownership
+   *     check below ever ran. Same bug family as startSession/
+   *     submitAttempt above; StudentOwnershipGuard only makes sense on
+   *     routes whose URL literally is /students/:studentId/....
    *   - P20-010 course gating enforced (403 for a locked course).
    *   - is_correct / correct answers are NEVER included in the response.
    */
   @Get(':sessionId/questions')
-  @UseGuards(SupabaseJwtAuthGuard, StudentOwnershipGuard)
+  @UseGuards(SupabaseJwtAuthGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
-  @RequireStudentOwnership()
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Deliver published lesson questions for an active learning session (student).',
@@ -200,9 +212,8 @@ export class SessionsController {
    * AIM Engine integration begins on the first attempt submission, not here.
    */
   @Post('start')
-  @UseGuards(SupabaseJwtAuthGuard, StudentOwnershipGuard)
+  @UseGuards(SupabaseJwtAuthGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
-  @RequireStudentOwnership()
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Start a new learning session (student).' })
@@ -240,9 +251,8 @@ export class SessionsController {
    *   - is_correct and AIM-owned values are NOT returned in the response.
    */
   @Post(':sessionId/attempt')
-  @UseGuards(SupabaseJwtAuthGuard, StudentOwnershipGuard)
+  @UseGuards(SupabaseJwtAuthGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
-  @RequireStudentOwnership()
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()
   @ApiOperation({
