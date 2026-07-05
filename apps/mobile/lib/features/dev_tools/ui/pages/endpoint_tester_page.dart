@@ -16,6 +16,13 @@ class ApiEndpointDef {
   final bool requiresAuth;
   final String? defaultBody;
 
+  /// When true, [path] contains a literal `{studentId}` placeholder that
+  /// must be substituted with the signed-in student's real id (the
+  /// Supabase auth UID from the access token's `sub` claim — the same
+  /// value AimResultController's StudentOwnershipGuard checks the route
+  /// param against) before the request is sent.
+  final bool needsStudentId;
+
   const ApiEndpointDef({
     required this.category,
     required this.name,
@@ -23,7 +30,26 @@ class ApiEndpointDef {
     required this.path,
     this.requiresAuth = true,
     this.defaultBody,
+    this.needsStudentId = false,
   });
+}
+
+/// Decodes the `sub` claim out of a JWT access token without validating its
+/// signature — this token was already issued (and will be re-verified
+/// server-side on every request), so this is purely a client-side
+/// convenience to reuse the id the backend already knows, not an auth
+/// decision. Returns null if the token isn't a well-formed JWT.
+String? decodeJwtSubClaim(String jwt) {
+  final parts = jwt.split('.');
+  if (parts.length != 3) return null;
+  try {
+    final normalized = base64Url.normalize(parts[1]);
+    final payload = jsonDecode(utf8.decode(base64Url.decode(normalized)));
+    final sub = payload is Map<String, dynamic> ? payload['sub'] : null;
+    return sub is String ? sub : null;
+  } catch (_) {
+    return null;
+  }
 }
 
 class EndpointTesterPage extends ConsumerStatefulWidget {
@@ -58,8 +84,22 @@ class _EndpointTesterPageState extends ConsumerState<EndpointTesterPage> {
     const ApiEndpointDef(category: 'Placement', name: 'Active Placement', method: 'GET', path: BackendApiPaths.placementActive),
     
     // AIM Engine
-    const ApiEndpointDef(category: 'AIM Engine', name: 'Skill States', method: 'GET', path: '/aim/students/me/skill-states'),
-    const ApiEndpointDef(category: 'AIM Engine', name: 'Recommendations', method: 'GET', path: '/aim/students/me/recommendations'),
+    // Bugfix: these previously hardcoded the literal path segment "me",
+    // which ParseUUIDPipe on the backend always rejected (400) — "me" isn't
+    // a UUID. needsStudentId now substitutes the real id the backend's
+    // StudentOwnershipGuard checks against (the Supabase auth UID from the
+    // access token's own `sub` claim) before sending the request.
+    const ApiEndpointDef(category: 'AIM Engine', name: 'Skill States', method: 'GET', path: '/aim/students/{studentId}/skill-states', needsStudentId: true),
+    const ApiEndpointDef(category: 'AIM Engine', name: 'Weakness Records', method: 'GET', path: '/aim/students/{studentId}/weakness-records', needsStudentId: true),
+    const ApiEndpointDef(category: 'AIM Engine', name: 'Recommendations', method: 'GET', path: '/aim/students/{studentId}/recommendations', needsStudentId: true),
+    const ApiEndpointDef(category: 'AIM Engine', name: 'Review Schedules', method: 'GET', path: '/aim/students/{studentId}/review-schedules', needsStudentId: true),
+    const ApiEndpointDef(category: 'AIM Engine', name: 'Difficulty Decisions', method: 'GET', path: '/aim/students/{studentId}/difficulty-decisions', needsStudentId: true),
+    // Bugfix: these two previously carried a @RequireStudentOwnership()
+    // guard with no matching :studentId route param, so every real request
+    // was unconditionally rejected with 403 before reaching the controller
+    // — the AIM pipeline's only trigger was unreachable. Now fixed
+    // server-side; Start Session should return 201 with a real sessionId.
+    const ApiEndpointDef(category: 'AIM Engine', name: 'Start Session (triggers AIM on next attempt)', method: 'POST', path: BackendApiPaths.sessionsStart, defaultBody: '{"sessionType":"lesson_practice"}'),
 
     // AI Teacher
     const ApiEndpointDef(category: 'AI Teacher', name: 'List Sessions', method: 'GET', path: BackendApiPaths.aiTeacherSessions),
@@ -86,7 +126,22 @@ class _EndpointTesterPageState extends ConsumerState<EndpointTesterPage> {
 
     try {
       final config = AppConfig.fromEnvironment();
-      final uri = Uri.parse('${config.backendApiBaseUrl}${endpoint.path}');
+      final token = ref.read(authFlowProvider).accessToken;
+
+      var path = endpoint.path;
+      if (endpoint.needsStudentId) {
+        final studentId = token != null && token.isNotEmpty ? decodeJwtSubClaim(token) : null;
+        if (studentId == null) {
+          setState(() {
+            _responses[key] = 'Could not resolve studentId from the access token.';
+            _loading[key] = false;
+          });
+          return;
+        }
+        path = path.replaceAll('{studentId}', studentId);
+      }
+
+      final uri = Uri.parse('${config.backendApiBaseUrl}$path');
 
       final headers = <String, String>{
         'Content-Type': 'application/json',
@@ -94,7 +149,6 @@ class _EndpointTesterPageState extends ConsumerState<EndpointTesterPage> {
       };
 
       if (endpoint.requiresAuth) {
-        final token = ref.read(authFlowProvider).accessToken;
         if (token != null && token.isNotEmpty) {
           headers['Authorization'] = 'Bearer $token';
         } else {
