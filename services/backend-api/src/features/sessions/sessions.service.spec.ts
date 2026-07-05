@@ -48,6 +48,7 @@ describe('SessionsService', () => {
       await expect(
         service.startSession({
           studentId: 'student-001',
+        internalUserId: 'internal-user-001',
           sessionType: 'not_a_real_type' as never,
         }),
       ).rejects.toMatchObject({
@@ -65,6 +66,7 @@ describe('SessionsService', () => {
       await expect(
         service.startSession({
           studentId: 'student-001',
+        internalUserId: 'internal-user-001',
           sessionType: 'lesson_practice',
         }),
       ).rejects.toMatchObject({
@@ -82,6 +84,7 @@ describe('SessionsService', () => {
 
       const result = await service.startSession({
         studentId: 'student-001',
+        internalUserId: 'internal-user-001',
         sessionType: 'lesson_practice',
       });
 
@@ -117,6 +120,7 @@ describe('SessionsService', () => {
 
       await service.startSession({
         studentId: 'student-001',
+        internalUserId: 'internal-user-001',
         sessionType: 'lesson_practice',
         skillFocusIds: ['grammar.past_simple.forms', 'not_a_real_skill'],
       });
@@ -140,11 +144,38 @@ describe('SessionsService', () => {
 
       await service.startSession({
         studentId: 'student-001',
+        internalUserId: 'internal-user-001',
         sessionType: 'review_practice',
         skillFocusIds: [],
       });
 
       expect(db.query).toHaveBeenCalledTimes(2);
+    });
+
+    // Bugfix: analytics_events.actor_id has a real FK to users.id — the raw
+    // Supabase auth UID stored as session.student_id (matching the existing
+    // placement_attempts/learning_sessions convention) violates that FK and
+    // crashes the whole request. The analytics event must use internalUserId.
+    it('ingests the session.started analytics event with internalUserId as actorId, not studentId', async () => {
+      const db = makeDatabaseService([
+        { rowCount: 1, rows: [PLACEMENT_ROW] },
+        { rowCount: 1, rows: [SESSION_ROW] },
+      ]);
+      const analytics = makeAnalyticsEventIngestionService();
+      const service = new SessionsService(db as never, analytics as never);
+
+      await service.startSession({
+        studentId: 'student-001',
+        internalUserId: 'internal-user-001',
+        sessionType: 'lesson_practice',
+      });
+
+      expect(analytics.ingest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventType: 'session.started',
+          actorId: 'internal-user-001',
+        }),
+      );
     });
   });
 });

@@ -59,6 +59,15 @@ export interface LatestPlacementResultRow {
 /** Input accepted by SessionsService.startSession. studentId is never client-supplied. */
 export interface StartSessionInput {
   readonly studentId: string;
+  /**
+   * Internal `users.id` for the same student, resolved separately from
+   * `studentId`. Bugfix: `studentId` here is the raw Supabase auth UID
+   * (kept as-is since placement_attempts/learning_sessions already store
+   * that convention), but analytics_events.actor_id has a real FK to
+   * users.id — passing the raw auth UID there violated the FK constraint
+   * and crashed every session-start request with a 500.
+   */
+  readonly internalUserId: string;
   readonly sessionType: SessionType;
   /** Already-validated curriculum skill keys this session focuses on. May be empty. */
   readonly skillFocusIds?: readonly string[];
