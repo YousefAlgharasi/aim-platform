@@ -42,6 +42,10 @@ function makeProgressIntegration(overrides: Partial<Record<string, jest.Mock>> =
   };
 }
 
+function makeAimBridge() {
+  return { bridgeGradedAttempt: jest.fn().mockResolvedValue(undefined) };
+}
+
 describe('AssessmentSubmissionFlowService', () => {
   describe('submitAndGrade', () => {
     it('runs submit -> grade -> persist in order and returns a confirmation shape', async () => {
@@ -54,7 +58,7 @@ describe('AssessmentSubmissionFlowService', () => {
       const grading = makeGradingService({ gradeAttempt: jest.fn().mockResolvedValue(gradingResult) });
       const result = makeResultService();
       const progress = makeProgressIntegration();
-      const svc = new AssessmentSubmissionFlowService(attemptLifecycle as any, grading as any, result as any, progress as any);
+      const svc = new AssessmentSubmissionFlowService(attemptLifecycle as any, grading as any, result as any, progress as any, makeAimBridge() as any);
 
       const out = await svc.submitAndGrade('att-1', 'stu-1');
 
@@ -71,7 +75,7 @@ describe('AssessmentSubmissionFlowService', () => {
 
     it('never returns score, maxScore, passed, or latePenaltyApplied to the caller', async () => {
       const svc = new AssessmentSubmissionFlowService(
-        makeAttemptLifecycle() as any, makeGradingService() as any, makeResultService() as any, makeProgressIntegration() as any,
+        makeAttemptLifecycle() as any, makeGradingService() as any, makeResultService() as any, makeProgressIntegration() as any, makeAimBridge() as any,
       );
       const out = await svc.submitAndGrade('att-1', 'stu-1') as unknown as Record<string, unknown>;
 
@@ -86,7 +90,7 @@ describe('AssessmentSubmissionFlowService', () => {
         submitAttempt: jest.fn().mockRejectedValue(new Error('DEADLINE_BLOCKS_SUBMISSION')),
       });
       const grading = makeGradingService();
-      const svc = new AssessmentSubmissionFlowService(attemptLifecycle as any, grading as any, makeResultService() as any, makeProgressIntegration() as any);
+      const svc = new AssessmentSubmissionFlowService(attemptLifecycle as any, grading as any, makeResultService() as any, makeProgressIntegration() as any, makeAimBridge() as any);
 
       await expect(svc.submitAndGrade('att-1', 'stu-1')).rejects.toThrow('DEADLINE_BLOCKS_SUBMISSION');
       expect(grading.gradeAttempt).not.toHaveBeenCalled();
@@ -96,7 +100,7 @@ describe('AssessmentSubmissionFlowService', () => {
     it('calls progressIntegration.recordAssessmentResult after successful grading', async () => {
       const progress = makeProgressIntegration();
       const svc = new AssessmentSubmissionFlowService(
-        makeAttemptLifecycle() as any, makeGradingService() as any, makeResultService() as any, progress as any,
+        makeAttemptLifecycle() as any, makeGradingService() as any, makeResultService() as any, progress as any, makeAimBridge() as any,
       );
 
       await svc.submitAndGrade('att-1', 'stu-1');
@@ -113,12 +117,42 @@ describe('AssessmentSubmissionFlowService', () => {
       });
     });
 
+    // Bugfix: assessment answers never reached the AIM pipeline at all —
+    // only lesson-practice session attempts did. Every graded question
+    // must now be fed to AimAttemptBridgeService via AssessmentAimBridgeService.
+    it('bridges the grading result into the AIM pipeline', async () => {
+      const aimBridge = makeAimBridge();
+      const gradingResult = {
+        attemptId: 'att-1', assessmentId: 'a-1', studentId: 'stu-1',
+        score: 8, maxScore: 10, passed: true, latePenaltyApplied: false,
+        gradedAt: new Date('2026-01-01T00:00:01Z'), outcomes: [],
+      };
+      const grading = makeGradingService({ gradeAttempt: jest.fn().mockResolvedValue(gradingResult) });
+      const svc = new AssessmentSubmissionFlowService(
+        makeAttemptLifecycle() as any, grading as any, makeResultService() as any, makeProgressIntegration() as any, aimBridge as any,
+      );
+
+      await svc.submitAndGrade('att-1', 'stu-1');
+
+      expect(aimBridge.bridgeGradedAttempt).toHaveBeenCalledWith(gradingResult, expect.any(String));
+    });
+
+    it('still returns confirmation even if the AIM bridge throws', async () => {
+      const aimBridge = { bridgeGradedAttempt: jest.fn().mockRejectedValue(new Error('bridge exploded')) };
+      const svc = new AssessmentSubmissionFlowService(
+        makeAttemptLifecycle() as any, makeGradingService() as any, makeResultService() as any, makeProgressIntegration() as any, aimBridge as any,
+      );
+
+      const out = await svc.submitAndGrade('att-1', 'stu-1');
+      expect(out.status).toBe('graded');
+    });
+
     it('still returns confirmation even if progress integration throws', async () => {
       const progress = makeProgressIntegration({
         recordAssessmentResult: jest.fn().mockRejectedValue(new Error('PROGRESS_UNAVAILABLE')),
       });
       const svc = new AssessmentSubmissionFlowService(
-        makeAttemptLifecycle() as any, makeGradingService() as any, makeResultService() as any, progress as any,
+        makeAttemptLifecycle() as any, makeGradingService() as any, makeResultService() as any, progress as any, makeAimBridge() as any,
       );
 
       const out = await svc.submitAndGrade('att-1', 'stu-1');
