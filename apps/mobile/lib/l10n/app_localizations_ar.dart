@@ -765,6 +765,33 @@ class AppLocalizationsAr extends AppLocalizations {
   String get lessonsCoursesSubtitle => 'طوّر لغتك الإنجليزية خطوة بخطوة';
 
   @override
+  String get lessonsCurrentCourseBadge => 'الحالية';
+
+  @override
+  String get lessonsStartCourseDialogTitle => 'بدء هذه الدورة؟';
+
+  @override
+  String lessonsStartCourseDialogMessage(String courseTitle) {
+    return 'ستصبح $courseTitle دورتك النشطة.';
+  }
+
+  @override
+  String lessonsSwitchCourseDialogMessage(
+      String currentCourseTitle, String courseTitle) {
+    return 'أنت حاليًا في $currentCourseTitle. سيؤدي التبديل إلى $courseTitle إلى جعلها دورتك النشطة بدلاً منها.';
+  }
+
+  @override
+  String get lessonsStartCourseConfirmButton => 'بدء الدورة';
+
+  @override
+  String get lessonsStartCourseCancelButton => 'إلغاء';
+
+  @override
+  String get lessonsStartCourseFailedMessage =>
+      'تعذر بدء هذه الدورة. يرجى التحقق من اتصالك والمحاولة مرة أخرى.';
+
+  @override
   String get lessonsFilterAllCourses => 'كل الدورات';
 
   @override
