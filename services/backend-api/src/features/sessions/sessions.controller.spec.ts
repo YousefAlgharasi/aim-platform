@@ -19,10 +19,12 @@
 //   - pipeline failure does NOT fail the HTTP response
 //   - studentId used for pipeline, not from body
 
+import { Reflector } from '@nestjs/core';
 import { SessionsController } from './sessions.controller';
 import { StartSessionResponse } from './sessions.types';
 import { RecordLessonAttemptResponse } from './lesson-attempt.types';
 import { AimPipelineOutcome } from '../aim/pipeline/aim-pipeline-orchestrator.service';
+import { STUDENT_OWNERSHIP_REQUIREMENT_KEY } from '../../auth/authorization/authorization.constants';
 
 // ---------------------------------------------------------------------------
 // Mock factories
@@ -327,5 +329,43 @@ describe('SessionsController.getSessionQuestions', () => {
     expect(result.questions).toHaveLength(1);
     expect(JSON.stringify(result)).not.toContain('is_correct');
     expect(JSON.stringify(result)).not.toContain('isCorrect');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// None of the routes below have a :studentId path param — studentId is
+// always JWT-resolved, never client-supplied — so an
+// @RequireStudentOwnership() decorator (default paramName 'studentId') has
+// no matching route param to check against. StudentOwnershipGuard's lookup
+// on an absent param always came back empty, so it unconditionally threw
+// 403 "Student ownership target is missing" for every real student
+// request, making POST /sessions/start, POST /sessions/:sessionId/attempt
+// (the AIM pipeline's only trigger), and GET /sessions/:sessionId/questions
+// completely unreachable in production. Real ownership for the latter two
+// is enforced where it actually can be checked: a DB lookup inside
+// LessonAttemptService / SessionQuestionsService.verifyActiveSessionOwnership
+// comparing the session's stored student_id to the JWT-resolved id. Guard
+// against reintroducing the route-level decorator on any of these handlers.
+// ---------------------------------------------------------------------------
+
+describe('SessionsController — no bogus ownership-guard metadata', () => {
+  const reflector = new Reflector();
+
+  it('startSession carries no @RequireStudentOwnership metadata', () => {
+    expect(
+      reflector.get(STUDENT_OWNERSHIP_REQUIREMENT_KEY, SessionsController.prototype.startSession),
+    ).toBeUndefined();
+  });
+
+  it('submitAttempt carries no @RequireStudentOwnership metadata', () => {
+    expect(
+      reflector.get(STUDENT_OWNERSHIP_REQUIREMENT_KEY, SessionsController.prototype.submitAttempt),
+    ).toBeUndefined();
+  });
+
+  it('getSessionQuestions carries no @RequireStudentOwnership metadata', () => {
+    expect(
+      reflector.get(STUDENT_OWNERSHIP_REQUIREMENT_KEY, SessionsController.prototype.getSessionQuestions),
+    ).toBeUndefined();
   });
 });
