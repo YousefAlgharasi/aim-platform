@@ -1258,6 +1258,49 @@ abstract class AppLocalizations {
   /// **'Level up your English, step by step'**
   String get lessonsCoursesSubtitle;
 
+  /// Badge on the course tile that is the student's current active enrollment.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get lessonsCurrentCourseBadge;
+
+  /// Title of the confirmation dialog shown before enrolling in a course.
+  ///
+  /// In en, this message translates to:
+  /// **'Start this course?'**
+  String get lessonsStartCourseDialogTitle;
+
+  /// Body of the start-course confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'{courseTitle} will become your active course.'**
+  String lessonsStartCourseDialogMessage(String courseTitle);
+
+  /// Body of the confirmation dialog shown when switching from one active course to a different one.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re currently in {currentCourseTitle}. Switching to {courseTitle} will make it your active course instead.'**
+  String lessonsSwitchCourseDialogMessage(
+      String currentCourseTitle, String courseTitle);
+
+  /// Confirm button on the start-course dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Start course'**
+  String get lessonsStartCourseConfirmButton;
+
+  /// Cancel button on the start-course dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get lessonsStartCourseCancelButton;
+
+  /// Snackbar shown when the enroll request fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t start this course. Please check your connection and try again.'**
+  String get lessonsStartCourseFailedMessage;
+
   /// Filter chip label showing every course.
   ///
   /// In en, this message translates to:

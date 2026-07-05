@@ -95,6 +95,15 @@ class BackendApiPaths {
   /// GET /student/courses
   static const String studentCourses = '/student/courses';
 
+  /// POST /courses/:id/enroll — explicit "start this course" action, making
+  /// it the student's one active course (any previous active enrollment
+  /// transitions to 'switched').
+  static String courseEnroll(String courseId) => '/courses/$courseId/enroll';
+
+  /// GET /enrollment/current — the student's current active enrollment, or
+  /// found: false if they haven't started any course yet.
+  static const String enrollmentCurrent = '/enrollment/current';
+
   /// GET /student/chapters?levelId= — published chapters under a level with
   /// real per-student progress (percent, completedLessonCount, status).
   /// Distinct from /curriculum/chapters (admin-facing content listing).
