@@ -222,6 +222,14 @@ export class AimPipelineOrchestratorService {
         outcome: 'non_retryable',
         integrationErrorCode: adapterResult.error.code,
         durationMs: Date.now() - startedAt,
+        // Short, user-safe diagnostic text only (AimAdapterError.message is
+        // documented as containing no engine internals, tokens, or stack
+        // traces) — added so a real failure's category/message is visible
+        // via the audit trail without needing application log access.
+        metadata: {
+          errorCategory: adapterResult.error.category,
+          errorMessage: adapterResult.error.message,
+        },
       });
       return {
         ok: false,
