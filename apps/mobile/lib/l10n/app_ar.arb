@@ -1,7 +1,6 @@
 {
   "@@locale": "ar",
   "appTitle": "AIM",
-
   "commonBack": "رجوع",
   "commonCancel": "إلغاء",
   "commonSave": "حفظ",
@@ -24,7 +23,6 @@
   "commonFocusAreas": "مجالات التركيز",
   "commonDoneProgress": "{done}/{total} مكتمل",
   "commonWeaknessSemantic": "ضعف في {skillId}: {severity}",
-
   "authEmailLabel": "البريد الإلكتروني",
   "authEmailPlaceholder": "you@example.com",
   "authEmailSemantic": "عنوان البريد الإلكتروني",
@@ -84,12 +82,10 @@
   "authSignInFailedGeneric": "فشل تسجيل الدخول. حاول مرة أخرى.",
   "authTestLoginFailedGeneric": "فشل تسجيل الدخول التجريبي. حاول مرة أخرى.",
   "authRegistrationFailedGeneric": "فشل إنشاء الحساب. حاول مرة أخرى.",
-
   "devToolsEndpointTesterTitle": "أداة اختبار واجهة برمجة التطبيقات",
   "devToolsBodyLabel": "المحتوى:",
   "devToolsSendRequestButton": "إرسال الطلب",
   "devToolsNoAuthTokenError": "خطأ: لم يتم العثور على رمز الدخول. الرجاء تسجيل الدخول أولاً.",
-
   "shellOpenMenuTooltip": "فتح القائمة",
   "shellNavHome": "الرئيسية",
   "shellNavHomeSemantic": "تبويب الرئيسية",
@@ -113,11 +109,9 @@
   "shellThemeLight": "فاتح",
   "shellThemeDark": "داكن",
   "shellThemeSemantic": "مظهر {theme}",
-
   "onboardingBrandName": "AIM",
   "onboardingTagline": "ذكاء تكيّفي من أجل الإتقان",
   "onboardingTapToContinue": "اضغط للمتابعة",
-
   "homeLoadingSemantic": "جارٍ تحميل بيانات الرئيسية",
   "homeUnreadNotificationsSubtitle": "{count, plural, zero{لا توجد إشعارات جديدة} one{إشعار جديد واحد} two{إشعاران جديدان} few{{count} إشعارات جديدة} many{{count} إشعارًا جديدًا} other{{count} إشعار جديد}}",
   "homeMinutesAgoLabel": "{count, plural, zero{الآن} one{قبل دقيقة} two{قبل دقيقتين} few{قبل {count} دقائق} many{قبل {count} دقيقة} other{قبل {count} دقيقة}}",
@@ -169,7 +163,6 @@
   "homeGoalSemantic": "الهدف اليومي: {completed} من {target} دروس، سلسلة {streak} يوم",
   "homeTodaysGoalTitle": "هدف اليوم",
   "homeGoalProgressLabel": "أكملت {completed} من {target} دروس اليوم",
-
   "learningPathLoadingSemantic": "جارٍ تحميل بيانات مسار التعلم",
   "learningPathHeaderTitle": "مسار التعلم",
   "learningPathHeaderSubtitle": "خارطة طريقك الشخصية",
@@ -180,7 +173,6 @@
   "learningPathAiPickedBadge": "اختيار الذكاء الاصطناعي",
   "learningPathRecommendationSemantic": "توصية AIM: {kind} لـ {skillId}",
   "learningPathSkillMasterySemantic": "إتقان {title}: {percent}%، {trend}",
-
   "lessonsLoadingChaptersSemantic": "جارٍ تحميل الفصول",
   "lessonsChapterCountLabel": "{count, plural, one{فصل واحد} two{فصلان} few{{count} فصول} many{{count} فصلًا} other{{count} فصل}}",
   "lessonsPercentDoneSemantic": "{percent} بالمئة مكتمل",
@@ -233,5 +225,14 @@
   "lessonsImageUrlMissingError": "رابط الصورة مفقود للعنصر: {title}",
   "lessonsImageLoadFailedError": "فشل تحميل الصورة: {title}",
   "lessonsNewWordsCountLabel": "{count, plural, one{كلمة جديدة واحدة} two{كلمتان جديدتان} few{{count} كلمات جديدة} many{{count} كلمة جديدة} other{{count} كلمة جديدة}}",
-  "lessonsItemsCountLabel": "{count, plural, one{عنصر واحد} two{عنصران} few{{count} عناصر} many{{count} عنصرًا} other{{count} عنصر}}"
+  "lessonsItemsCountLabel": "{count, plural, one{عنصر واحد} two{عنصران} few{{count} عناصر} many{{count} عنصرًا} other{{count} عنصر}}",
+  "lessonsPracticeQuestionsButton": "تدرّب على الأسئلة",
+  "practiceNextQuestionButton": "السؤال التالي",
+  "practiceSessionLoadingSemantic": "جارٍ بدء جلسة التدريب",
+  "practiceSessionFailedMessage": "تعذّر بدء جلسة التدريب",
+  "practiceSessionEmptyTitle": "لا توجد أسئلة بعد",
+  "practiceSessionEmptySubtitle": "لا توجد أسئلة تدريب لهذا الدرس حتى الآن. عُد لاحقًا.",
+  "practiceSessionCompleteTitle": "اكتمل التدريب!",
+  "practiceSessionDoneButton": "تم",
+  "practiceSessionCompleteSubtitle": "{count, plural, =1{أجبت عن سؤال واحد. يقوم AIM بتحليل إجاباتك.} other{أجبت عن {count} أسئلة. يقوم AIM بتحليل إجاباتك.}}"
 }

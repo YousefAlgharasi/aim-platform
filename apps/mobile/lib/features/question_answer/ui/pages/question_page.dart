@@ -40,14 +40,18 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/features/question_answer/data/models/question_answer_models.dart';
 import 'package:aim_mobile/features/question_answer/logic/entity/question_session_state.dart';
 import 'package:aim_mobile/features/question_answer/logic/provider/question_answer_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../widgets/question_answer_widgets.dart';
 
 class QuestionPage extends ConsumerStatefulWidget {
   const QuestionPage({
     required this.sessionId,
     required this.questionId,
+    this.initialQuestion,
+    this.onNext,
     super.key,
   });
 
@@ -56,6 +60,17 @@ class QuestionPage extends ConsumerStatefulWidget {
 
   /// Backend-issued question UUID from lesson/session data.
   final String questionId;
+
+  /// Optional backend-delivered question (from
+  /// GET /sessions/:id/questions?lessonId=). When provided, the page presents
+  /// it directly instead of fetching by id — the delivered payload is the
+  /// same student-safe shape (no correctness data).
+  final QuestionModel? initialQuestion;
+
+  /// Optional callback shown as a "Next" action after the backend
+  /// acknowledges the attempt — used by the practice session flow to advance
+  /// to the next delivered question.
+  final VoidCallback? onNext;
 
   @override
   ConsumerState<QuestionPage> createState() => _QuestionPageState();
@@ -69,6 +84,14 @@ class _QuestionPageState extends ConsumerState<QuestionPage> {
   }
 
   void _loadQuestion() {
+    final initial = widget.initialQuestion;
+    if (initial != null) {
+      ref.read(questionAnswerSessionProvider.notifier).presentQuestion(
+            question: initial,
+            itemShownAt: DateTime.now().toUtc().toIso8601String(),
+          );
+      return;
+    }
     final token = ref.read(authFlowProvider).accessToken;
     if (token == null || token.isEmpty) return;
     ref.read(questionAnswerSessionProvider.notifier).loadQuestion(
@@ -86,17 +109,28 @@ class _QuestionPageState extends ConsumerState<QuestionPage> {
     return Scaffold(
       appBar: const _PracticeHeader(),
       body: _buildBody(state),
-      bottomNavigationBar: state.hasQuestion && !state.isSubmitted
+      bottomNavigationBar: state.hasQuestion
           ? SafeArea(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AimSpacing.screenPaddingMobile,
                   vertical: AimSpacing.space16,
                 ),
-                child: AnswerSubmitFlow(
-                  sessionId: widget.sessionId,
-                  bearerToken: token,
-                ),
+                child: state.isSubmitted
+                    ? (widget.onNext != null
+                        ? AIMButton(
+                            onPressed: widget.onNext,
+                            fullWidth: true,
+                            child: Text(
+                              AppLocalizations.of(context)
+                                  .practiceNextQuestionButton,
+                            ),
+                          )
+                        : const SizedBox.shrink())
+                    : AnswerSubmitFlow(
+                        sessionId: widget.sessionId,
+                        bearerToken: token,
+                      ),
               ),
             )
           : null,

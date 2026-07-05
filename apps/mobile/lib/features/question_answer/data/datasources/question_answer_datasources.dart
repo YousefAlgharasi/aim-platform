@@ -6,4 +6,6 @@ export 'attempt_remote_datasource_impl.dart';
 export 'question_remote_datasource.dart';
 export 'question_remote_datasource_impl.dart';
 export 'session_feedback_remote_datasource.dart';
+export 'session_remote_datasource.dart';
+export 'session_remote_datasource_impl.dart';
 export 'session_feedback_remote_datasource_impl.dart';

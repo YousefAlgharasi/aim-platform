@@ -13,6 +13,23 @@
 import 'package:aim_mobile/features/question_answer/data/models/question_answer_models.dart';
 
 abstract class QuestionAnswerRepository {
+  /// Start a learning session for the JWT student (POST /sessions/start).
+  /// The returned session id is backend-issued; Flutter never constructs it.
+  Future<SessionStartResponseModel> startSession({
+    required String bearerToken,
+    required String sessionType,
+    List<String> skillFocusIds,
+  });
+
+  /// Fetch the published questions delivered for a lesson within the active
+  /// session (GET /sessions/:sessionId/questions?lessonId=). No correctness
+  /// data is ever present.
+  Future<List<QuestionModel>> getLessonQuestions({
+    required String bearerToken,
+    required String sessionId,
+    required String lessonId,
+  });
+
   /// Fetch a student-facing question (no correctness information).
   Future<QuestionModel> getQuestion({
     required String bearerToken,
