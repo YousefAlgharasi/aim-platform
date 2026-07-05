@@ -110,6 +110,20 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
   // resolves both to the identical ai_chat_sessions row, so a lesson's chat
   // and voice turns share one conversation regardless of which entry point
   // the student taps first.
+  // AIM pipeline live wiring: real question practice through a learning
+  // session (POST /sessions/start -> question delivery -> attempts, which
+  // trigger the AIM pipeline). Added alongside — never replacing — the AI
+  // Teacher chat and voice entry points above.
+  void _startQuestionPractice(LessonDetail detail) {
+    context.push(
+      AppRoutePaths.practiceSession,
+      extra: {
+        'lessonId': detail.lesson.id,
+        'lessonTitle': detail.lesson.title,
+      },
+    );
+  }
+
   void _startVoicePractice(LessonDetail detail) {
     context.push(
       AppRoutePaths.voiceTeacher,
@@ -164,6 +178,7 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
             detail: data,
             onRefresh: _refresh,
             onStartPractice: () => _startPractice(data),
+            onStartQuestionPractice: () => _startQuestionPractice(data),
             onStartVoicePractice: () => _startVoicePractice(data),
             onOpenStep: _openStep,
           ),
@@ -184,6 +199,7 @@ class _LessonDetailContent extends StatelessWidget {
     required this.detail,
     required this.onRefresh,
     required this.onStartPractice,
+    required this.onStartQuestionPractice,
     required this.onStartVoicePractice,
     required this.onOpenStep,
   });
@@ -191,6 +207,7 @@ class _LessonDetailContent extends StatelessWidget {
   final LessonDetail detail;
   final Future<void> Function() onRefresh;
   final VoidCallback onStartPractice;
+  final VoidCallback onStartQuestionPractice;
   final VoidCallback onStartVoicePractice;
   final void Function(LessonAsset asset, int stepNumber) onOpenStep;
 
@@ -260,7 +277,22 @@ class _LessonDetailContent extends StatelessWidget {
               horizontal: AimSpacing.screenPaddingMobile,
               vertical: AimSpacing.componentGap,
             ),
-            child: Row(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // AIM pipeline live wiring: real question practice via a
+                // learning session. Additional entry point — the AI Teacher
+                // chat and voice buttons below are unchanged.
+                AIMButton(
+                  onPressed: onStartQuestionPractice,
+                  variant: AIMButtonVariant.secondary,
+                  fullWidth: true,
+                  leadingIcon: const Icon(Icons.quiz_outlined),
+                  child: Text(l10n.lessonsPracticeQuestionsButton),
+                ),
+                const SizedBox(height: AimSpacing.space8),
+                Row(
               children: [
                 Expanded(
                   child: AIMButton(
@@ -278,6 +310,8 @@ class _LessonDetailContent extends StatelessWidget {
                   semanticLabel: 'Practice by voice',
                   onPressed: detail.hasNoContent ? null : onStartVoicePractice,
                 ),
+              ],
+            ),
               ],
             ),
           ),

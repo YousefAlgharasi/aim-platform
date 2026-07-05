@@ -11,6 +11,7 @@ import '../../features/lessons/ui/pages/lesson_detail_page.dart';
 import '../../features/lessons/ui/pages/lesson_list_page.dart';
 import '../../features/onboarding/ui/pages/splash_page.dart';
 import '../../features/placement/ui/pages/placement_question_page.dart';
+import '../../features/question_answer/ui/pages/practice_session_page.dart';
 import '../../features/placement/ui/pages/placement_result_page.dart';
 import '../../features/placement/ui/pages/placement_section_page.dart';
 import '../../features/placement/ui/pages/placement_start_page.dart';
@@ -171,6 +172,11 @@ class AppRouter {
         GoRoute(
           path: AppRoutePaths.lessonDetail,
           builder: (context, state) => _buildLessonDetailPage(state.extra),
+        ),
+        // AIM pipeline live wiring: lesson practice (learning session) flow
+        GoRoute(
+          path: AppRoutePaths.practiceSession,
+          builder: (context, state) => _buildPracticeSessionPage(state.extra),
         ),
         GoRoute(
           path: AppRoutePaths.assessments,
@@ -410,6 +416,18 @@ class AppRouter {
     if (attemptId is! String) return const SplashPage();
 
     return PlacementResultPage(attemptId: attemptId);
+  }
+
+  static Widget _buildPracticeSessionPage(Object? arguments) {
+    final args = arguments is Map<String, dynamic>
+        ? arguments
+        : const <String, dynamic>{};
+    final lessonId = args['lessonId'];
+    final lessonTitle = args['lessonTitle'];
+    if (lessonId is! String || lessonTitle is! String) {
+      return const SplashPage();
+    }
+    return PracticeSessionPage(lessonId: lessonId, lessonTitle: lessonTitle);
   }
 
   static Widget _buildLessonDetailPage(Object? arguments) {
@@ -667,6 +685,7 @@ class AppRouter {
     AppRoutePaths.progress,
     AppRoutePaths.profile,
     // P6-021: Placement routes are protected — must be authenticated
+    AppRoutePaths.practiceSession,
     AppRoutePaths.placementStart,
     AppRoutePaths.placementSection,
     AppRoutePaths.placementQuestion,

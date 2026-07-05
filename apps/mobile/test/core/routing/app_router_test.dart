@@ -36,6 +36,27 @@ void main() {
     expect(resolvedRoute, AppRoutePaths.signIn);
   });
 
+  test('redirects the practice session route for unauthenticated users', () {
+    final resolvedRoute = AppRouter.resolveRouteName(
+      AppRoutePaths.practiceSession,
+      authState: const AuthFlowState.signedOut(),
+    );
+
+    expect(resolvedRoute, AppRoutePaths.signIn);
+  });
+
+  test('keeps signed-in users on the practice session route', () {
+    final resolvedRoute = AppRouter.resolveRouteName(
+      AppRoutePaths.practiceSession,
+      authState: const AuthFlowState.signedIn(
+        email: 'learner@example.com',
+        accessToken: 'token-1',
+      ),
+    );
+
+    expect(resolvedRoute, AppRoutePaths.practiceSession);
+  });
+
   test('redirects placement routes for unauthenticated users', () {
     final resolvedRoute = AppRouter.resolveRouteName(
       AppRoutePaths.placementStart,

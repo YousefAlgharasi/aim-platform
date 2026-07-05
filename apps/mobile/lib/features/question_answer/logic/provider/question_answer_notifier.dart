@@ -70,6 +70,20 @@ class QuestionAnswerNotifier extends StateNotifier<QuestionSessionState> {
     }
   }
 
+  /// Present an already-delivered question (from the session question
+  /// delivery endpoint) without a second network fetch. [question] must be
+  /// backend-supplied verbatim; [itemShownAt] is recorded so the backend can
+  /// compute responseTimeMs.
+  void presentQuestion({
+    required QuestionModel question,
+    required String itemShownAt,
+  }) {
+    state = QuestionSessionState(
+      question: question,
+      itemShownAt: itemShownAt,
+    );
+  }
+
   /// Record the student's option tap for MCQ / true_false questions.
   /// Never evaluated locally — stored only for submission.
   void selectOption(String optionId) {
