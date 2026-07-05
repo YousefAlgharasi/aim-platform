@@ -15,6 +15,8 @@
 //   re-derived or overridden locally.
 // - No AIM Engine, AI Teacher, or AI provider calls from Flutter.
 
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/errors/app_exception.dart';
@@ -173,15 +175,45 @@ class PracticeSessionNotifier extends StateNotifier<PracticeSessionState> {
   /// lesson/course — P20-011/P20-012) was never set. Finishing now records
   /// 100% progress and marks the lesson complete; [PracticeSessionState.completionSaved]
   /// reports whether that actually succeeded.
+  ///
+  /// Bugfix: every non-final question answered now also records partial
+  /// progress (not just the 100%-at-the-end call). GET /lessons/continue
+  /// (the Home screen's "continue where you stopped" card) only ever
+  /// returns a lesson with a lesson_progress row that's partially done
+  /// (percent < 100, completed = false) — with progress only ever recorded
+  /// once at the very end, a student who left mid-lesson had no such row,
+  /// so Home always fell back to the placement-derived "Quick Start"
+  /// lesson instead of showing where they actually stopped.
   Future<void> advance() async {
     if (state.status != PracticeSessionStatus.active) return;
     if (state.hasNext) {
-      state = state.copyWith(currentIndex: state.currentIndex + 1);
+      final nextIndex = state.currentIndex + 1;
+      state = state.copyWith(currentIndex: nextIndex);
+      unawaited(_persistPartialProgress(nextIndex));
       return;
     }
 
     state = state.copyWith(status: PracticeSessionStatus.finished);
     await _persistCompletion();
+  }
+
+  Future<void> _persistPartialProgress(int answeredCount) async {
+    final bearerToken = _bearerToken;
+    final lessonId = _lessonId;
+    final totalQuestions = state.questions.length;
+    if (bearerToken == null || lessonId == null || totalQuestions == 0) return;
+
+    final percent = ((answeredCount / totalQuestions) * 100).round().clamp(0, 99);
+    try {
+      await _repository.recordLessonProgress(
+        bearerToken: bearerToken,
+        lessonId: lessonId,
+        percent: percent,
+      );
+    } catch (_) {
+      // Best-effort — a missed partial-progress update doesn't block
+      // practice; the final 100%/complete call at the end still runs.
+    }
   }
 
   Future<void> _persistCompletion() async {
