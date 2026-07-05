@@ -69,16 +69,46 @@ function makeOrchestrator(outcome: AimPipelineOutcome = { ok: true, backendReque
   };
 }
 
+const RESOLVED_ITEM = {
+  itemType: 'lesson_question',
+  answerFormat: 'multiple_choice',
+  skillIds: ['skill.grammar.to_be'],
+  presentedDifficulty: 1,
+  optionsPresentedCount: 4,
+  isCorrect: true, // internally computed — must NOT appear in HTTP response
+};
+
+function makeSessionQuestionsService(resolved: Partial<typeof RESOLVED_ITEM> = {}) {
+  return {
+    resolveItemForAttempt: jest.fn().mockResolvedValue({ ...RESOLVED_ITEM, ...resolved }),
+    listQuestionsForLesson: jest.fn().mockResolvedValue({
+      lessonId: 'les0e8400-e29b-41d4-a716-446655440060',
+      questions: [
+        {
+          id: 'item0e8400-e29b-41d4-a716-446655440090',
+          type: 'multiple_choice',
+          stem: 'He _____ a teacher.',
+          difficulty: 'easy',
+          tags: ['a1', 'grammar'],
+          options: [{ id: 'opt-1', text: 'is', order: 0 }],
+        },
+      ],
+    }),
+  };
+}
+
 function makeCtrl(overrides: {
   sessionsService?: ReturnType<typeof makeSessionsService>;
   lessonAttemptService?: ReturnType<typeof makeLessonAttemptService>;
   orchestrator?: ReturnType<typeof makeOrchestrator>;
+  sessionQuestionsService?: ReturnType<typeof makeSessionQuestionsService>;
 } = {}) {
   const svc = overrides.sessionsService ?? makeSessionsService();
   const las = overrides.lessonAttemptService ?? makeLessonAttemptService();
   const orc = overrides.orchestrator ?? makeOrchestrator();
-  const ctrl = new SessionsController(svc as never, las as never, orc as never);
-  return { ctrl, svc, las, orc };
+  const sqs = overrides.sessionQuestionsService ?? makeSessionQuestionsService();
+  const ctrl = new SessionsController(svc as never, las as never, orc as never, sqs as never);
+  return { ctrl, svc, las, orc, sqs };
 }
 
 // ---------------------------------------------------------------------------
@@ -238,5 +268,64 @@ describe('SessionsController.submitAttempt (P5-067)', () => {
     const result = await ctrl.submitAttempt(JWT_USER, SESSION_ID, BODY, '');
     expect(result.aimPipelineTriggered).toBe(false);
     expect(result.aimOutcome).toBe('deferred');
+  });
+
+  it('resolves item fields backend-side and passes them to recordAttempt', async () => {
+    const { ctrl, las, sqs } = makeCtrl();
+    await ctrl.submitAttempt(JWT_USER, SESSION_ID, BODY, '');
+    expect(sqs.resolveItemForAttempt).toHaveBeenCalledWith(BODY.itemId, BODY.answerValue);
+    expect(las.recordAttempt).toHaveBeenCalledWith(expect.objectContaining({
+      itemType: 'lesson_question',
+      answerFormat: 'multiple_choice',
+      skillIds: ['skill.grammar.to_be'],
+      presentedDifficulty: 1,
+      optionsPresentedCount: 4,
+      isCorrect: true, // backend-evaluated — recorded, never returned
+    }));
+  });
+
+  it('never trusts a client-supplied isCorrect/skillIds — resolver output wins', async () => {
+    const { ctrl, las } = makeCtrl({
+      sessionQuestionsService: makeSessionQuestionsService({ isCorrect: false, skillIds: [] }),
+    });
+    const attackBody = { ...BODY, isCorrect: true, skillIds: ['fake'] } as never;
+    await ctrl.submitAttempt(JWT_USER, SESSION_ID, attackBody, '');
+    const call = (las.recordAttempt as jest.Mock).mock.calls[0][0];
+    expect(call.isCorrect).toBe(false);
+    expect(call.skillIds).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// GET /sessions/:sessionId/questions
+// ---------------------------------------------------------------------------
+
+describe('SessionsController.getSessionQuestions', () => {
+  const LESSON_ID = 'les0e8400-e29b-41d4-a716-446655440060';
+
+  it('passes JWT studentId, sessionId, and lessonId to the service', async () => {
+    const { ctrl, sqs } = makeCtrl();
+    await ctrl.getSessionQuestions(JWT_USER, SESSION_ID, LESSON_ID);
+    expect(sqs.listQuestionsForLesson).toHaveBeenCalledWith(
+      JWT_USER.id,
+      SESSION_ID,
+      LESSON_ID,
+    );
+  });
+
+  it('rejects a missing lessonId with a validation error', async () => {
+    const { ctrl, sqs } = makeCtrl();
+    await expect(ctrl.getSessionQuestions(JWT_USER, SESSION_ID, undefined)).rejects.toMatchObject({
+      statusCode: 400,
+    });
+    expect(sqs.listQuestionsForLesson).not.toHaveBeenCalled();
+  });
+
+  it('returns delivered questions without correctness data', async () => {
+    const { ctrl } = makeCtrl();
+    const result = await ctrl.getSessionQuestions(JWT_USER, SESSION_ID, LESSON_ID);
+    expect(result.questions).toHaveLength(1);
+    expect(JSON.stringify(result)).not.toContain('is_correct');
+    expect(JSON.stringify(result)).not.toContain('isCorrect');
   });
 });

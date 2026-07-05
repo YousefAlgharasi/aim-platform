@@ -1456,6 +1456,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, one{1 item} other{{count} items}}'**
   String lessonsItemsCountLabel(int count);
+
+  /// Button on the lesson detail screen that starts a real question practice session (learning session).
+  ///
+  /// In en, this message translates to:
+  /// **'Practice questions'**
+  String get lessonsPracticeQuestionsButton;
+
+  /// Button shown after an answer is acknowledged, advancing to the next delivered question.
+  ///
+  /// In en, this message translates to:
+  /// **'Next question'**
+  String get practiceNextQuestionButton;
+
+  /// Semantic label for the loading state while the practice session starts.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting practice session'**
+  String get practiceSessionLoadingSemantic;
+
+  /// Fallback error message when starting a practice session fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not start the practice session'**
+  String get practiceSessionFailedMessage;
+
+  /// Empty-state title when a lesson has no published practice questions.
+  ///
+  /// In en, this message translates to:
+  /// **'No questions yet'**
+  String get practiceSessionEmptyTitle;
+
+  /// Empty-state subtitle when a lesson has no published practice questions.
+  ///
+  /// In en, this message translates to:
+  /// **'This lesson has no practice questions yet. Check back soon.'**
+  String get practiceSessionEmptySubtitle;
+
+  /// Title shown when all delivered questions have been answered.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice complete!'**
+  String get practiceSessionCompleteTitle;
+
+  /// Button that closes the completed practice session.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get practiceSessionDoneButton;
+
+  /// Subtitle on the practice-complete screen.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{You answered 1 question. AIM is analysing your responses.} other{You answered {count} questions. AIM is analysing your responses.}}'**
+  String practiceSessionCompleteSubtitle(int count);
 }
 
 class _AppLocalizationsDelegate

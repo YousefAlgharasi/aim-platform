@@ -330,7 +330,14 @@ export class LessonProgressService {
     }
   }
 
-  private async assertCourseUnlockedForLesson(studentId: string, lessonId: string): Promise<void> {
+  /**
+   * P20-010 course gating check, shared with other student-facing features
+   * (e.g. the sessions feature's lesson question delivery) so the CEFR
+   * unlock ceiling is enforced by one implementation, not duplicated.
+   * Throws 403 when the lesson's course is above the student's unlocked
+   * CEFR rank for its track (default rank 1 when no state row exists).
+   */
+  async assertCourseUnlockedForLesson(studentId: string, lessonId: string): Promise<void> {
     const courseResult = await this.db.query<LessonCourseGatingRow>(
       `SELECT co.track_slug, co.cefr_rank
        FROM lessons l

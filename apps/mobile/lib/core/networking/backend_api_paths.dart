@@ -166,6 +166,10 @@ class BackendApiPaths {
   /// POST /sessions/start
   static const String sessionsStart = '/sessions/start';
 
+  /// GET /sessions/:sessionId/questions?lessonId=
+  static String sessionQuestions(String sessionId) =>
+      '/sessions/$sessionId/questions';
+
   /// POST /sessions/:sessionId/attempt
   static String sessionAttempt(String sessionId) =>
       '/sessions/$sessionId/attempt';

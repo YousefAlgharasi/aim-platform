@@ -20,6 +20,7 @@ import 'package:aim_mobile/core/networking/api_client_exception.dart';
 import 'package:aim_mobile/features/question_answer/data/datasources/attempt_remote_datasource.dart';
 import 'package:aim_mobile/features/question_answer/data/datasources/question_remote_datasource.dart';
 import 'package:aim_mobile/features/question_answer/data/datasources/session_feedback_remote_datasource.dart';
+import 'package:aim_mobile/features/question_answer/data/datasources/session_remote_datasource.dart';
 import 'package:aim_mobile/features/question_answer/data/models/question_answer_models.dart';
 import 'package:aim_mobile/features/question_answer/data/repository/repo_impl/question_answer_repository_impl.dart';
 import 'package:aim_mobile/features/question_answer/logic/entity/question_session_state.dart';
@@ -88,11 +89,39 @@ class _FakeSessionFeedbackDatasource
   }
 }
 
+class _FakeSessionDatasource implements SessionRemoteDatasource {
+  const _FakeSessionDatasource();
+
+  @override
+  Future<SessionStartResponseModel> startSession({
+    required String bearerToken,
+    required String sessionType,
+    List<String> skillFocusIds = const [],
+  }) async {
+    return const SessionStartResponseModel(
+      id: 's',
+      sessionType: 'lesson_practice',
+      status: 'active',
+      startedAt: '2025-06-01T10:00:00Z',
+      currentLevel: 'A1',
+    );
+  }
+
+  @override
+  Future<List<QuestionModel>> getLessonQuestions({
+    required String bearerToken,
+    required String sessionId,
+    required String lessonId,
+  }) async =>
+      [_FakeQuestionDatasource._q];
+}
+
 QuestionAnswerRepositoryImpl _repo({bool qFail = false, bool aFail = false}) =>
     QuestionAnswerRepositoryImpl(
       questionDatasource: _FakeQuestionDatasource(shouldFail: qFail),
       attemptDatasource: _FakeAttemptDatasource(shouldFail: aFail),
       sessionFeedbackDatasource: const _FakeSessionFeedbackDatasource(),
+      sessionDatasource: const _FakeSessionDatasource(),
     );
 
 QuestionAnswerNotifier _notifier({bool qFail = false, bool aFail = false}) =>

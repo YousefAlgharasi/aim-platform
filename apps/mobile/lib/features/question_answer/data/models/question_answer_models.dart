@@ -6,3 +6,4 @@ export 'attempt_submit_request_model.dart';
 export 'attempt_submit_response_model.dart';
 export 'question_model.dart';
 export 'session_feedback_model.dart';
+export 'session_start_response_model.dart';
