@@ -52,8 +52,9 @@ import { AppError } from '../../common/errors/app-error';
 import { ApiErrorCode } from '../../common/errors/api-error-code';
 
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
-import { CurrentUser } from '../../auth/current-user.decorator';
+import { CurrentUser, ResolvedInternalUserId } from '../../auth/current-user.decorator';
 import { AuthenticatedUser } from '../../auth/authenticated-user';
+import { ResolveInternalUserIdGuard } from '../../auth/authorization/resolve-internal-user-id.guard';
 import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../auth/authorization/required-roles.decorator';
 import { OPENAPI_TAGS } from '../../openapi/openapi.tags';
@@ -212,7 +213,7 @@ export class SessionsController {
    * AIM Engine integration begins on the first attempt submission, not here.
    */
   @Post('start')
-  @UseGuards(SupabaseJwtAuthGuard)
+  @UseGuards(SupabaseJwtAuthGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()
@@ -222,10 +223,12 @@ export class SessionsController {
   })
   async startSession(
     @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() internalUserId: string,
     @Body() body: StartSessionRequestBody,
   ): Promise<StartSessionResponse> {
     return this.sessionsService.startSession({
       studentId: user.id,     // JWT-resolved — never from body
+      internalUserId,
       sessionType: body.sessionType as import('./sessions.types').SessionType,
       skillFocusIds: body.skillFocusIds,
     });
