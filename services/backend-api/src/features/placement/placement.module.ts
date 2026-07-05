@@ -4,7 +4,10 @@
 // Scope: Placement Test system only.
 //
 // Security rules:
-//   - No AIM Engine runtime, lesson delivery, AI Teacher, or progress dashboard.
+//   - PlacementAimBridgeService feeds every scored placement answer into
+//     the AIM pipeline via SessionsModule's AimAttemptBridgeService — it
+//     never calls the AIM Engine directly.
+//   - No lesson delivery, AI Teacher, or progress dashboard here.
 //   - No secrets, service-role keys, or privileged config here.
 
 import { Module } from '@nestjs/common';
@@ -12,6 +15,7 @@ import { AuthModule } from '../../auth/auth.module';
 import { DatabaseModule } from '../../database/database.module';
 import { RolesModule } from '../roles/roles.module';
 import { UsersModule } from '../users/users.module';
+import { SessionsModule } from '../sessions/sessions.module';
 import { PlacementController } from './placement.controller';
 import { PlacementAdminController } from './placement-admin.controller';
 import { PlacementAdminTestReadService } from './placement-admin-test-read.service';
@@ -32,9 +36,10 @@ import { PlacementAnalyticsService } from './placement-analytics.service';
 import { PlacementPermissionGuard } from './placement-permission.guard';
 import { PlacementSectionsService } from './placement-sections.service';
 import { PlacementTestReadService } from './placement-test-read.service';
+import { PlacementAimBridgeService } from './placement-aim-bridge.service';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, RolesModule, UsersModule],
+  imports: [DatabaseModule, AuthModule, RolesModule, UsersModule, SessionsModule],
   controllers: [PlacementController, PlacementAdminController],
   providers: [
     PlacementTestReadService,
@@ -55,6 +60,7 @@ import { PlacementTestReadService } from './placement-test-read.service';
     PlacementAuditService,
     PlacementAnalyticsService,
     PlacementPermissionGuard,
+    PlacementAimBridgeService,
   ],
   exports: [
     PlacementTestReadService,

@@ -25,9 +25,14 @@
 //     weakness_map are persisted.
 //   - Flutter receives the result via P4-048 (GET /placement/attempts/:id/result)
 //     only after attempt.status = 'completed'.
-//   - No AIM Engine runtime, AI Teacher, lesson delivery, or progress dashboard.
+//   - PlacementAimBridgeService feeds every scored answer into the AIM
+//     pipeline via SessionsModule's AimAttemptBridgeService — it never
+//     calls the AIM Engine directly, and never recomputes correctness
+//     (is_correct is read as-is, already set by PlacementAnswerValidationService).
+//   - No AI Teacher, lesson delivery, or progress dashboard.
 //   - No secrets, service-role keys, database credentials, or privileged config here.
 
+import { randomUUID } from 'crypto';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AppError } from '../../common/errors/app-error';
@@ -36,6 +41,7 @@ import { PlacementAnswerValidationService } from './placement-answer-validation.
 import { PlacementScoringService } from './placement-scoring.service';
 import { PlacementAttemptRow } from './placement.types';
 import { PlacementAnalyticsService } from './placement-analytics.service';
+import { PlacementAimBridgeService } from './placement-aim-bridge.service';
 
 /** Student-safe result row shape returned by createResult. */
 export interface PlacementResultRow {
@@ -65,6 +71,7 @@ export class PlacementResultService {
     private readonly answerValidation: PlacementAnswerValidationService,
     private readonly scoring: PlacementScoringService,
     private readonly analytics: PlacementAnalyticsService,
+    private readonly aimBridge: PlacementAimBridgeService,
   ) {}
 
   /**
@@ -216,6 +223,27 @@ export class PlacementResultService {
       scoringResult.estimatedLevel,
       totalTimeSeconds,
     );
+
+    // Feed every scored placement answer into the AIM pipeline (mastery/
+    // weakness/difficulty/recommendations), the same way lesson-practice
+    // session attempts already do. Fire-and-forget for the same reason as
+    // the analytics call above — a bridging failure must never block
+    // result creation. PlacementAimBridgeService catches its own errors
+    // internally; this .catch is defense-in-depth against an unhandled
+    // rejection if that ever changes.
+    this.aimBridge
+      .bridgeScoredAttempt({
+        placementAttemptId: attemptId,
+        studentId: attempt.student_id,
+        estimatedLevel: scoringResult.estimatedLevel,
+        placementResultId: result.id,
+        resultCreatedAt: result.created_at,
+        xRequestId: randomUUID(),
+      })
+      .catch((err: unknown) => {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        this.logger.error('placement_aim_bridge_failed', { attemptId, error: errorMessage });
+      });
 
     return {
       resultId: result.id,
