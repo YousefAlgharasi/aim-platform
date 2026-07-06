@@ -14,6 +14,8 @@ import '../../../auth/ui/widgets/logout_button.dart';
 import '../../../home/ui/pages/home_page.dart';
 import '../../../lessons/ui/pages/course_list_page.dart';
 import '../../../notifications/logic/provider/notification_providers.dart';
+import '../../../onboarding/logic/provider/onboarding_walkthrough_provider.dart';
+import '../../../onboarding/ui/widgets/onboarding_walkthrough_overlay.dart';
 import '../../../profile/ui/pages/profile_page.dart';
 import '../../../progress/ui/pages/progress_page.dart';
 import '../../../reviews/ui/pages/review_page.dart';
@@ -70,27 +72,40 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
   Widget build(BuildContext context) {
     final selectedIndex = ref.watch(mainShellTabIndexProvider);
     final l10n = AppLocalizations.of(context);
+    final hasSeenWalkthrough = ref.watch(onboardingWalkthroughProvider);
 
-    return Scaffold(
-      drawer: _buildDrawer(context, ref, selectedIndex),
-      floatingActionButton: Builder(
-        builder: (context) => FloatingActionButton(
-          backgroundColor: AimColors.primary500,
-          foregroundColor: AimColors.neutral0,
-          tooltip: l10n.shellOpenMenuTooltip,
-          onPressed: () => Scaffold.of(context).openDrawer(),
-          child: const Icon(Icons.menu),
+    return Stack(
+      children: [
+        Scaffold(
+          drawer: _buildDrawer(context, ref, selectedIndex),
+          floatingActionButton: Builder(
+            builder: (context) => FloatingActionButton(
+              backgroundColor: AimColors.primary500,
+              foregroundColor: AimColors.neutral0,
+              tooltip: l10n.shellOpenMenuTooltip,
+              onPressed: () => Scaffold.of(context).openDrawer(),
+              child: const Icon(Icons.menu),
+            ),
+          ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+          // No bottomNavigationBar: navigation between tabs is handled entirely
+          // by the drawer's MENU section (see _buildDrawer) opened via the FAB
+          // above, per product direction — the bottom tab bar was redundant
+          // with the drawer and has been removed.
+          body: IndexedStack(
+            index: selectedIndex,
+            children: MainShellPage._screens,
+          ),
         ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-      // No bottomNavigationBar: navigation between tabs is handled entirely
-      // by the drawer's MENU section (see _buildDrawer) opened via the FAB
-      // above, per product direction — the bottom tab bar was redundant
-      // with the drawer and has been removed.
-      body: IndexedStack(
-        index: selectedIndex,
-        children: MainShellPage._screens,
-      ),
+        // Shown at most once per install — see OnboardingWalkthroughStore.
+        // `null` means the local flag hasn't finished loading yet, so
+        // nothing is shown until it's known whether this is a first launch.
+        if (hasSeenWalkthrough == false)
+          OnboardingWalkthroughOverlay(
+            onDone: () =>
+                ref.read(onboardingWalkthroughProvider.notifier).markSeen(),
+          ),
+      ],
     );
   }
 

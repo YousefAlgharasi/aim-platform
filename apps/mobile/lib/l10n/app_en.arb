@@ -448,6 +448,50 @@
   "@onboardingTapToContinue": {
     "description": "Static hint text shown alongside the splash screen's progress bar while the session check runs."
   },
+  "onboardingWalkthroughWelcomeTitle": "Welcome to AIM",
+  "@onboardingWalkthroughWelcomeTitle": {
+    "description": "Title of the first-time walkthrough's welcome slide."
+  },
+  "onboardingWalkthroughWelcomeBody": "Your adaptive English learning companion. Let's take a quick look around.",
+  "@onboardingWalkthroughWelcomeBody": {
+    "description": "Body copy of the first-time walkthrough's welcome slide."
+  },
+  "onboardingWalkthroughPlacementTitle": "Find your level",
+  "@onboardingWalkthroughPlacementTitle": {
+    "description": "Title of the first-time walkthrough's placement test slide."
+  },
+  "onboardingWalkthroughPlacementBody": "Take the Placement Test from the menu to get lessons matched to your real level.",
+  "@onboardingWalkthroughPlacementBody": {
+    "description": "Body copy of the first-time walkthrough's placement test slide."
+  },
+  "onboardingWalkthroughLessonsTitle": "Learn at your pace",
+  "@onboardingWalkthroughLessonsTitle": {
+    "description": "Title of the first-time walkthrough's lessons slide."
+  },
+  "onboardingWalkthroughLessonsBody": "Browse courses and lessons in the Learn tab — each one unlocks as you make progress.",
+  "@onboardingWalkthroughLessonsBody": {
+    "description": "Body copy of the first-time walkthrough's lessons slide."
+  },
+  "onboardingWalkthroughStreakTitle": "Keep your streak going",
+  "@onboardingWalkthroughStreakTitle": {
+    "description": "Title of the first-time walkthrough's streak slide."
+  },
+  "onboardingWalkthroughStreakBody": "Practice a little every day — your Home screen tracks your streak and progress.",
+  "@onboardingWalkthroughStreakBody": {
+    "description": "Body copy of the first-time walkthrough's streak slide."
+  },
+  "onboardingWalkthroughSkip": "Skip",
+  "@onboardingWalkthroughSkip": {
+    "description": "Button label to skip the first-time walkthrough."
+  },
+  "onboardingWalkthroughNext": "Next",
+  "@onboardingWalkthroughNext": {
+    "description": "Button label to advance to the next walkthrough slide."
+  },
+  "onboardingWalkthroughGetStarted": "Get Started",
+  "@onboardingWalkthroughGetStarted": {
+    "description": "Button label on the last walkthrough slide to dismiss it."
+  },
   "homeLoadingSemantic": "Loading home data",
   "@homeLoadingSemantic": {
     "description": "Accessibility label shown while the home screen's data is loading."

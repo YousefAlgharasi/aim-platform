@@ -390,6 +390,43 @@ class AppLocalizationsAr extends AppLocalizations {
   String get onboardingTapToContinue => 'اضغط للمتابعة';
 
   @override
+  String get onboardingWalkthroughWelcomeTitle => 'مرحبًا بك في AIM';
+
+  @override
+  String get onboardingWalkthroughWelcomeBody =>
+      'رفيقك التكيفي لتعلّم اللغة الإنجليزية. لنلقِ نظرة سريعة.';
+
+  @override
+  String get onboardingWalkthroughPlacementTitle => 'اكتشف مستواك';
+
+  @override
+  String get onboardingWalkthroughPlacementBody =>
+      'خذ اختبار تحديد المستوى من القائمة للحصول على دروس تناسب مستواك الحقيقي.';
+
+  @override
+  String get onboardingWalkthroughLessonsTitle => 'تعلّم بالسرعة التي تناسبك';
+
+  @override
+  String get onboardingWalkthroughLessonsBody =>
+      'تصفّح الدورات والدروس في تبويب التعلّم — يفتح كل درس مع تقدّمك.';
+
+  @override
+  String get onboardingWalkthroughStreakTitle => 'حافظ على تتابعك';
+
+  @override
+  String get onboardingWalkthroughStreakBody =>
+      'مارس قليلاً كل يوم — تتابع الشاشة الرئيسية سلسلة أيامك وتقدّمك.';
+
+  @override
+  String get onboardingWalkthroughSkip => 'تخطي';
+
+  @override
+  String get onboardingWalkthroughNext => 'التالي';
+
+  @override
+  String get onboardingWalkthroughGetStarted => 'ابدأ الآن';
+
+  @override
   String get homeLoadingSemantic => 'جارٍ تحميل بيانات الرئيسية';
 
   @override

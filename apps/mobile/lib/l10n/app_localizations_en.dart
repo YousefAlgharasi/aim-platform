@@ -390,6 +390,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingTapToContinue => 'Tap to continue';
 
   @override
+  String get onboardingWalkthroughWelcomeTitle => 'Welcome to AIM';
+
+  @override
+  String get onboardingWalkthroughWelcomeBody =>
+      'Your adaptive English learning companion. Let\'s take a quick look around.';
+
+  @override
+  String get onboardingWalkthroughPlacementTitle => 'Find your level';
+
+  @override
+  String get onboardingWalkthroughPlacementBody =>
+      'Take the Placement Test from the menu to get lessons matched to your real level.';
+
+  @override
+  String get onboardingWalkthroughLessonsTitle => 'Learn at your pace';
+
+  @override
+  String get onboardingWalkthroughLessonsBody =>
+      'Browse courses and lessons in the Learn tab — each one unlocks as you make progress.';
+
+  @override
+  String get onboardingWalkthroughStreakTitle => 'Keep your streak going';
+
+  @override
+  String get onboardingWalkthroughStreakBody =>
+      'Practice a little every day — your Home screen tracks your streak and progress.';
+
+  @override
+  String get onboardingWalkthroughSkip => 'Skip';
+
+  @override
+  String get onboardingWalkthroughNext => 'Next';
+
+  @override
+  String get onboardingWalkthroughGetStarted => 'Get Started';
+
+  @override
   String get homeLoadingSemantic => 'Loading home data';
 
   @override
