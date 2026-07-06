@@ -30,6 +30,7 @@ import {
   Param,
   Post,
   Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -41,6 +42,7 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { Response } from 'express';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { CurrentUser } from '../../auth/current-user.decorator';
 import { AuthenticatedUser } from '../../auth/authenticated-user';
@@ -50,6 +52,8 @@ import { PlacementPermissionGuard } from './placement-permission.guard';
 import { PlacementTestReadService, PlacementTestActiveResponse } from './placement-test-read.service';
 import { PlacementAttemptService } from './placement-attempt.service';
 import { PlacementQuestionDeliveryService } from './placement-question-delivery.service';
+import { PlacementQuestionAudioService } from './placement-question-audio.service';
+import { TtsAudioStorageService } from '../voice-teacher/tts-gateway/tts-audio-storage.service';
 import { PlacementAnswerSubmitService } from './placement-answer-submit.service';
 import { PlacementAttemptCompleteService } from './placement-attempt-complete.service';
 import { PlacementResultReadService, PlacementResultResponse } from './placement-result-read.service';
@@ -79,6 +83,8 @@ export class PlacementController {
     private readonly resultCreate: PlacementResultService,
     private readonly initialPath: PlacementInitialLearningPathService,
     private readonly levelState: PlacementLevelStateService,
+    private readonly questionAudio: PlacementQuestionAudioService,
+    private readonly audioStorage: TtsAudioStorageService,
   ) {}
 
   /**
@@ -167,6 +173,56 @@ export class PlacementController {
     @Query('sectionId') sectionId: string,
   ): Promise<PlacementQuestionDeliveryResponse> {
     return this.questionDelivery.getQuestionsForSection(sectionId);
+  }
+
+  /**
+   * GET /placement/questions/:id/audio
+   * Lazily synthesize and stream a listening_choice question's audio.
+   * 404 when the question does not exist; 400 when it is not a listening
+   * question; 204 No Content when it is a listening question with no
+   * listening_script authored yet — a real content gap, not an error, so
+   * the client can show "not available yet" rather than a generic failure
+   * (204's empty body is distinguishable from real audio bytes without
+   * needing the client to inspect Content-Type).
+   */
+  @Get('questions/:id/audio')
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Synthesize and stream a listening question\'s audio (student).' })
+  @ApiParam({ name: 'id', description: 'UUID of the placement question.' })
+  @ApiQuery({ name: 'languageCode', required: false, type: String })
+  @ApiOkResponse({ description: 'Audio stream. 204 (empty body) when no listening_script is authored yet.' })
+  async getQuestionAudio(
+    @Param('id') questionId: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Res() res: Response,
+    @Query('languageCode') languageCode?: string,
+  ): Promise<void> {
+    const result = await this.questionAudio.ensureAudio(
+      questionId,
+      user.id,
+      languageCode?.trim() || 'en',
+    );
+
+    if (result.scriptMissing) {
+      res.status(HttpStatus.NO_CONTENT).send();
+      return;
+    }
+
+    if (!result.audioRef) {
+      res.status(HttpStatus.NOT_FOUND).json({ error: 'Audio not available' });
+      return;
+    }
+
+    const audio = await this.audioStorage.retrieveAudio(result.audioRef, user.id);
+    if (!audio) {
+      res.status(HttpStatus.NOT_FOUND).json({ error: 'Audio not found' });
+      return;
+    }
+
+    res.status(HttpStatus.OK).set('Content-Type', audio.contentType).send(audio.data);
   }
 
   /**

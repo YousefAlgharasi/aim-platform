@@ -67,6 +67,13 @@ class _FakePlacementRepository implements PlacementRepository {
     required String attemptId,
   }) async =>
       throw UnimplementedError();
+
+  @override
+  Future<List<int>> getQuestionAudio(
+    String bearerToken, {
+    required String questionId,
+  }) async =>
+      throw UnimplementedError();
 }
 
 const _activeTestModel = PlacementTestModel(

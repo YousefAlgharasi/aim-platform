@@ -11,6 +11,7 @@ class PlacementQuestionModel {
     required this.options,
     required this.type,
     this.mediaUrl,
+    this.hasListeningAudio = false,
     this.ordinal,
   });
 
@@ -20,6 +21,11 @@ class PlacementQuestionModel {
   final List<PlacementOptionModel> options;
   final String type;
   final String? mediaUrl;
+
+  /// Whether GET /placement/questions/:id/audio can currently return real
+  /// audio for this question (true only when the backend has a
+  /// listening_script authored). False for every non-listening question.
+  final bool hasListeningAudio;
   final int? ordinal;
 
   factory PlacementQuestionModel.fromJson(Map<String, dynamic> json) {
@@ -32,6 +38,7 @@ class PlacementQuestionModel {
           .toList(),
       type: json['type'] as String,
       mediaUrl: json['media_url'] as String?,
+      hasListeningAudio: json['has_listening_audio'] as bool? ?? false,
       ordinal: json['ordinal'] as int?,
     );
   }
@@ -43,6 +50,7 @@ class PlacementQuestionModel {
         'options': options.map((o) => o.toJson()).toList(),
         'type': type,
         if (mediaUrl != null) 'media_url': mediaUrl,
+        'has_listening_audio': hasListeningAudio,
         if (ordinal != null) 'ordinal': ordinal,
       };
 
@@ -53,6 +61,7 @@ class PlacementQuestionModel {
         options: options.map((o) => o.toEntity()).toList(),
         type: type,
         mediaUrl: mediaUrl,
+        hasListeningAudio: hasListeningAudio,
         ordinal: ordinal,
       );
 }

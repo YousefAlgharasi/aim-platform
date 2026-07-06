@@ -72,4 +72,13 @@ abstract class PlacementRemoteDatasource {
     String bearerToken, {
     required String attemptId,
   });
+
+  /// Fetch a listening_choice question's synthesized audio bytes.
+  /// Returns an empty list when the backend has no listening_script
+  /// authored yet (204 No Content) — a real content gap, not an error.
+  /// Endpoint — GET /placement/questions/:id/audio
+  Future<List<int>> getQuestionAudio(
+    String bearerToken, {
+    required String questionId,
+  });
 }

@@ -35,6 +35,10 @@ class BackendApiPaths {
   static const String placementQuestions = '/placement/questions';
   static const String placementAttempts = '/placement/attempts';
 
+  /// GET /placement/questions/:id/audio
+  static String placementQuestionAudio(String questionId) =>
+      '/placement/questions/$questionId/audio';
+
   /// GET /placement/attempts/:id/result
   static String placementAttemptResult(String attemptId) =>
       '/placement/attempts/$attemptId/result';
