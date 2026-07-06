@@ -424,8 +424,8 @@ void main() {
       // "Due Today / Due Nd ago" formatting has settled into the stable
       // "Due <Mon> <day>" branch regardless of the exact test run date.
       expect(find.textContaining('Due Jun 10'), findsOneWidget);
-      expect(find.textContaining('7d · rep #3'), findsOneWidget);
-      expect(find.text('grammar-articles'), findsOneWidget);
+      expect(find.textContaining('Every 7d · repetition #3'), findsOneWidget);
+      expect(find.text('Grammar Articles'), findsOneWidget);
     });
 
     testWidgets('15. RTL layout does not throw', (tester) async {
