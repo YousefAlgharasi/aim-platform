@@ -103,18 +103,26 @@ function makeSessionQuestionsService(resolved: Partial<typeof RESOLVED_ITEM> = {
   };
 }
 
+function makeAimEngineClient() {
+  return {
+    checkHealth: jest.fn().mockResolvedValue({ reachable: true, checkedAt: '2026-06-17T16:00:00Z' }),
+  };
+}
+
 function makeCtrl(overrides: {
   sessionsService?: ReturnType<typeof makeSessionsService>;
   lessonAttemptService?: ReturnType<typeof makeLessonAttemptService>;
   orchestrator?: ReturnType<typeof makeOrchestrator>;
   sessionQuestionsService?: ReturnType<typeof makeSessionQuestionsService>;
+  aimEngineClient?: ReturnType<typeof makeAimEngineClient>;
 } = {}) {
   const svc = overrides.sessionsService ?? makeSessionsService();
   const las = overrides.lessonAttemptService ?? makeLessonAttemptService();
   const orc = overrides.orchestrator ?? makeOrchestrator();
   const sqs = overrides.sessionQuestionsService ?? makeSessionQuestionsService();
-  const ctrl = new SessionsController(svc as never, las as never, orc as never, sqs as never);
-  return { ctrl, svc, las, orc, sqs };
+  const aec = overrides.aimEngineClient ?? makeAimEngineClient();
+  const ctrl = new SessionsController(svc as never, las as never, orc as never, sqs as never, aec as never);
+  return { ctrl, svc, las, orc, sqs, aec };
 }
 
 // ---------------------------------------------------------------------------
@@ -164,6 +172,26 @@ describe('SessionsController.startSession (P5-066)', () => {
     const result = await ctrl.startSession(JWT_USER, INTERNAL_USER_ID, { sessionType: 'lesson_practice' });
     expect(result.id).toBe(SESSION_ID);
     expect(result.status).toBe('active');
+  });
+
+  // A free/idle-sleeping AIM Engine instance cold-starts on its next real
+  // request, which can 502 the first attempt of a session. Warming it up as
+  // soon as the session starts (well before the student answers) gives that
+  // cold start a head start — fire-and-forget, must never block or fail
+  // session creation even if the ping itself fails.
+  it('fires a fire-and-forget warm-up ping to the AIM Engine health check', async () => {
+    const { ctrl, aec } = makeCtrl();
+    await ctrl.startSession(JWT_USER, INTERNAL_USER_ID, { sessionType: 'lesson_practice' });
+    expect(aec.checkHealth).toHaveBeenCalledTimes(1);
+  });
+
+  it('still returns the session response even if the warm-up ping rejects', async () => {
+    const aec = makeAimEngineClient();
+    aec.checkHealth.mockRejectedValue(new Error('engine unreachable'));
+    const { ctrl } = makeCtrl({ aimEngineClient: aec });
+
+    const result = await ctrl.startSession(JWT_USER, INTERNAL_USER_ID, { sessionType: 'lesson_practice' });
+    expect(result.id).toBe(SESSION_ID);
   });
 });
 
