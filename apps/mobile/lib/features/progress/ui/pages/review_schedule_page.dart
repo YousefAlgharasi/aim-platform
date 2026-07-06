@@ -220,64 +220,70 @@ class _ReviewScheduleRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
-    final soft = aimSoftFillsOf(context);
     final status = _status;
+    final title = _prettifySkillId(model.skillId);
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
       semanticLabel:
           '${model.skillId} review due ${model.dueAt} — ${status.label}',
-      padding: const EdgeInsets.all(AimSpacing.componentGap),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: AimSizes.avatarMd,
-            height: AimSizes.avatarMd,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: soft.primary,
-              borderRadius: AimRadius.borderMd,
-            ),
-            child: Icon(
-              Icons.calendar_today_outlined,
-              size: AimSizes.iconSm,
-              color: soft.onPrimary,
-            ),
-          ),
-          const SizedBox(width: AimSpacing.componentGap),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  model.skillId,
-                  style: AimTextStyles.bodyMd.copyWith(
-                    color: surfaces.textPrimary,
-                    fontWeight: AimFontWeights.semibold,
-                  ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: AimTextStyles.title
+                      .copyWith(color: surfaces.textPrimary),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: AimSpacing.space2),
-                Text(
-                  '${_dueLabel()} · ${formatAimIntervalDays(model.intervalDays)}d · rep #${model.repetitionCount}',
-                  style: AimTextStyles.bodySm
-                      .copyWith(color: surfaces.textSecondary),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
+              ),
+              AIMBadge(
+                tone: status.tone,
+                variant: AIMBadgeVariant.soft,
+                pill: true,
+                child: Text(status.label),
+              ),
+            ],
           ),
-          const SizedBox(width: AimSpacing.componentGap),
-          AIMBadge(
-            tone: status.tone,
-            variant: AIMBadgeVariant.solid,
-            pill: true,
-            child: Text(status.label),
+          const SizedBox(height: AimSpacing.componentGap),
+          Row(
+            children: [
+              const Icon(Icons.calendar_today_outlined,
+                  size: AimSizes.iconSm, color: AimColors.primary500),
+              const SizedBox(width: AimSpacing.space8),
+              Text(
+                _dueLabel(),
+                style: AimTextStyles.bodyMd.copyWith(
+                  color: surfaces.textPrimary,
+                  fontWeight: AimFontWeights.semibold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AimSpacing.space8),
+          Text(
+            'Every ${formatAimIntervalDays(model.intervalDays)}d · repetition #${model.repetitionCount}',
+            style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
           ),
         ],
       ),
     );
   }
+}
+
+/// Converts a raw, machine-oriented `skillId` slug into a readable label —
+/// same real-data display transform used by SkillStatePage, kept consistent
+/// across the two detail views rather than reinvented here.
+String _prettifySkillId(String skillId) {
+  final lastSegment = skillId.split(':').last;
+  final words = lastSegment
+      .split(RegExp(r'[_\-]+'))
+      .where((w) => w.isNotEmpty)
+      .map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase());
+  final label = words.join(' ');
+  return label.isEmpty ? skillId : label;
 }
