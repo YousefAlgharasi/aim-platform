@@ -70,6 +70,7 @@ import {
   AimPipelineOrchestratorService,
   AimPipelineOutcome,
 } from '../aim/pipeline/aim-pipeline-orchestrator.service';
+import { AimEngineClientService } from '../aim/aim-engine-client.service';
 import {
   SessionQuestionsService,
   SessionLessonQuestionsResponse,
@@ -138,6 +139,7 @@ export class SessionsController {
     private readonly lessonAttemptService: LessonAttemptService,
     private readonly aimOrchestrator: AimPipelineOrchestratorService,
     private readonly sessionQuestionsService: SessionQuestionsService,
+    private readonly aimEngineClient: AimEngineClientService,
   ) {}
 
   // -------------------------------------------------------------------------
@@ -226,6 +228,14 @@ export class SessionsController {
     @ResolvedInternalUserId() internalUserId: string,
     @Body() body: StartSessionRequestBody,
   ): Promise<StartSessionResponse> {
+    // Fire-and-forget warm-up ping: on a free/idle-sleeping AIM Engine
+    // instance, the first real POST /aim/v1/analysis call after a period of
+    // inactivity pays a cold-start penalty that can 502. Pinging GET /health
+    // here — as soon as the student starts a session, well before they
+    // answer their first question — gives that cold start a head start.
+    // Never awaited: it must never delay or fail session creation.
+    void this.aimEngineClient.checkHealth().catch(() => undefined);
+
     return this.sessionsService.startSession({
       studentId: user.id,     // JWT-resolved — never from body
       internalUserId,
