@@ -142,6 +142,7 @@ void main() {
       ],
       'type': 'listening_choice',
       'media_url': 'audio/placement/listen-q1-instruction.mp3',
+      'has_listening_audio': true,
       'ordinal': 1,
     };
 
@@ -153,6 +154,7 @@ void main() {
       expect(model.text, 'Choose the correct form of the verb.');
       expect(model.type, 'multiple_choice');
       expect(model.mediaUrl, isNull);
+      expect(model.hasListeningAudio, isFalse);
       expect(model.ordinal, 1);
       expect(model.options, hasLength(4));
       expect(model.options.first.id, 'A');
@@ -164,7 +166,20 @@ void main() {
 
       expect(model.type, 'listening_choice');
       expect(model.mediaUrl, 'audio/placement/listen-q1-instruction.mp3');
+      expect(model.hasListeningAudio, isTrue);
       expect(model.options, hasLength(2));
+    });
+
+    // Bugfix: has_listening_audio tells the client whether
+    // GET /placement/questions/:id/audio can currently return real audio —
+    // true only when the backend has a listening_script authored. A missing
+    // field must default to false (not crash, not assume audio exists).
+    test('hasListeningAudio defaults to false when the backend omits the field', () {
+      final json = Map<String, dynamic>.from(listeningJson)
+        ..remove('has_listening_audio');
+      final model = PlacementQuestionModel.fromJson(json);
+
+      expect(model.hasListeningAudio, isFalse);
     });
 
     test('media_url is nullable — not required for non-listening types', () {

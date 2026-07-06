@@ -1,4 +1,5 @@
 export '../theme/theme.dart';
+export 'audio/question_audio_play_button.dart';
 export 'buttons/buttons.dart';
 export 'feedback/feedback.dart';
 export 'forms/forms.dart';

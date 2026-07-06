@@ -68,6 +68,7 @@ export class PlacementQuestionDeliveryService {
          pq.question_type,
          pq.prompt,
          pq.media_url,
+         pq.listening_script,
          pq.order_index,
          pq.correct_answer,
          pq.created_at,
@@ -148,6 +149,7 @@ export class PlacementQuestionDeliveryService {
       options: parsed.options,
       type: row.question_type,
       media_url: row.media_url,
+      has_listening_audio: Boolean(row.listening_script && row.listening_script.trim().length > 0),
       ordinal: row.order_index,
       // correct_answer: intentionally omitted
       // skill_code: intentionally omitted

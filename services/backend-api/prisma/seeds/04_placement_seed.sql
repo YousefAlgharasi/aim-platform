@@ -225,7 +225,7 @@ ON CONFLICT (placement_section_id, order_index) DO NOTHING;
 -- 6. Listening Questions (Section 4, order_index 0-5)
 -- -----------------------------------------------------------------------
 
-INSERT INTO placement_questions (id, placement_section_id, question_type, prompt, media_url, order_index, correct_answer)
+INSERT INTO placement_questions (id, placement_section_id, question_type, prompt, media_url, listening_script, order_index, correct_answer)
 VALUES
   -- A1: Simple greeting
   (
@@ -234,6 +234,7 @@ VALUES
     'listening_choice',
     'Listen to the conversation and choose the correct answer:\n\nWhat does the man say?\n\nA) Good morning, how are you?\nB) Good night, see you tomorrow.\nC) Goodbye, nice to meet you.\nD) Good afternoon, welcome.',
     '/audio/placement/listening_01.mp3',
+    'Man: Good morning! How are you today?\nWoman: I''m fine, thank you. And you?',
     1,
     'A'
   ),
@@ -244,6 +245,7 @@ VALUES
     'listening_choice',
     'Listen and answer:\n\nWhat time does the class start?\n\nA) 8:00 AM\nB) 9:00 AM\nC) 10:00 AM\nD) 11:00 AM',
     '/audio/placement/listening_02.mp3',
+    'Attention students: please remember that today''s class will start at nine A M, not eight, because of the schedule change.',
     2,
     'B'
   ),
@@ -254,6 +256,7 @@ VALUES
     'listening_choice',
     'Listen to the directions and choose the correct answer:\n\nWhere is the pharmacy?\n\nA) Next to the bank\nB) Across from the school\nC) Behind the hospital\nD) In front of the park',
     '/audio/placement/listening_03.mp3',
+    'Excuse me, could you tell me where the pharmacy is?\nYes, it''s easy to find: it''s right next to the bank, just past the traffic light.',
     3,
     'A'
   ),
@@ -264,6 +267,7 @@ VALUES
     'listening_choice',
     'Listen to the conversation in a shop and answer:\n\nHow much does the shirt cost?\n\nA) 15 dollars\nB) 25 dollars\nC) 35 dollars\nD) 50 dollars',
     '/audio/placement/listening_04.mp3',
+    'Customer: How much is this shirt?\nShop assistant: That one is thirty-five dollars. It''s on sale today.',
     4,
     'C'
   ),
@@ -274,6 +278,7 @@ VALUES
     'listening_choice',
     'Listen to the short news report and answer:\n\nWhat is the main topic of the report?\n\nA) A new school opening in the city\nB) Changes to public transport schedules\nC) A local sports competition\nD) Weather warnings for the weekend',
     '/audio/placement/listening_05.mp3',
+    'In local news today, the city council announced changes to public transport schedules starting next Monday, with several bus routes adjusting their departure times.',
     5,
     'B'
   ),
@@ -284,6 +289,7 @@ VALUES
     'listening_choice',
     'Listen to the lecture excerpt and answer:\n\nAccording to the speaker, what is the most important factor in language acquisition?\n\nA) Living in a foreign country\nB) Starting at a young age\nC) Regular practice and motivation\nD) Having a private tutor',
     '/audio/placement/listening_06.mp3',
+    'According to language experts, while age and environment matter, the most important factor in successfully learning a new language is regular practice combined with strong personal motivation.',
     6,
     'C'
   )

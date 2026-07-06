@@ -10,6 +10,7 @@ class PlacementQuestion {
     required this.options,
     required this.type,
     this.mediaUrl,
+    this.hasListeningAudio = false,
     this.ordinal,
   });
 
@@ -19,6 +20,7 @@ class PlacementQuestion {
   final List<PlacementOption> options;
   final String type;
   final String? mediaUrl;
+  final bool hasListeningAudio;
   final int? ordinal;
 
   @override

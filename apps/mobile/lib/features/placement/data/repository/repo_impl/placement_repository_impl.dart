@@ -122,4 +122,19 @@ class PlacementRepositoryImpl implements PlacementRepository {
       throw AppException(code: e.code, message: e.message);
     }
   }
+
+  @override
+  Future<List<int>> getQuestionAudio(
+    String bearerToken, {
+    required String questionId,
+  }) async {
+    try {
+      return await _datasource.getQuestionAudio(
+        bearerToken,
+        questionId: questionId,
+      );
+    } on ApiClientException catch (e) {
+      throw AppException(code: e.code, message: e.message);
+    }
+  }
 }
