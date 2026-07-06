@@ -21,6 +21,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -83,26 +84,55 @@ class _RecommendationsPageState extends ConsumerState<RecommendationsPage> {
     final state = ref.watch(aimResultsProvider);
 
     return Scaffold(
-      appBar: const AIMTopAppBar(title: 'Recommendations'),
-      body: switch (state) {
-        AppAsyncLoading() => const AIMFullScreenLoading(
-            semanticLabel: 'Loading recommendations'),
-        AppAsyncFailure(:final message) =>
-          AIMFullScreenError(message: message, onRetry: _load),
-        AppAsyncSuccess(:final data) => data.recommendations.isEmpty
-            ? const AIMEmptyState(
-                icon: Icon(Icons.auto_awesome_outlined),
-                title: 'No recommendations yet',
-                subtitle:
-                    'Complete lessons and practice sessions to receive AIM recommendations.',
-              )
-            : _RecommendationsList(
-                recommendations: data.recommendations,
-                onRefresh: _refresh,
+      body: Column(
+        children: [
+          AIMGradientHeroHeader(
+            title: 'Recommendations',
+            // IconButton resolves its own foreground colour from the
+            // Material 3 colour scheme rather than the ambient IconTheme,
+            // so it would otherwise ignore the header's white IconTheme.merge
+            // — force it explicitly here (matches ReviewSchedulePage).
+            leading: IconButtonTheme(
+              data: IconButtonThemeData(
+                style:
+                    IconButton.styleFrom(foregroundColor: AimColors.neutral0),
               ),
-        AppAsyncIdle() => const AIMFullScreenLoading(
-            semanticLabel: 'Loading recommendations'),
-      },
+              child: IconButton(
+                icon: Icon(
+                  Directionality.of(context) == TextDirection.rtl
+                      ? Icons.chevron_right_rounded
+                      : Icons.chevron_left_rounded,
+                ),
+                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                onPressed: () {
+                  if (context.canPop()) context.pop();
+                },
+              ),
+            ),
+          ),
+          Expanded(
+            child: switch (state) {
+              AppAsyncLoading() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading recommendations'),
+              AppAsyncFailure(:final message) =>
+                AIMFullScreenError(message: message, onRetry: _load),
+              AppAsyncSuccess(:final data) => data.recommendations.isEmpty
+                  ? const AIMEmptyState(
+                      icon: Icon(Icons.auto_awesome_outlined),
+                      title: 'No recommendations yet',
+                      subtitle:
+                          'Complete lessons and practice sessions to receive AIM recommendations.',
+                    )
+                  : _RecommendationsList(
+                      recommendations: data.recommendations,
+                      onRefresh: _refresh,
+                    ),
+              AppAsyncIdle() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading recommendations'),
+            },
+          ),
+        ],
+      ),
     );
   }
 }
