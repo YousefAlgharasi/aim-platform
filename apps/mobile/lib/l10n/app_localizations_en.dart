@@ -367,6 +367,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get shellLanguageEnglish => 'English';
+
+  @override
+  String get shellLanguageArabic => 'العربية';
+
+  @override
+  String shellLanguageSemantic(String language) {
+    return '$language language';
+  }
+
+  @override
   String get onboardingBrandName => 'AIM';
 
   @override

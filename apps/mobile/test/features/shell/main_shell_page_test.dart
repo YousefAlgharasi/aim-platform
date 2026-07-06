@@ -4,17 +4,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/localization/app_locale.dart';
+import 'package:aim_mobile/core/localization/locale_provider.dart';
 import 'package:aim_mobile/features/shell/ui/pages/main_shell_page.dart';
 
 void main() {
-  testWidgets('main shell shows all primary tabs via the drawer',
+  testWidgets('main shell shows all primary tabs via the drawer, no bottom nav bar',
       (tester) async {
     await tester.pumpWidget(const TestShell(child: MainShellPage()));
 
-    // The drawer's MENU section mirrors the bottom nav bar's own tab labels
-    // (Home/Learn/Review/Progress/Profile), so lookups here are scoped to
-    // the open Drawer to disambiguate from the bottom nav bar's copies of
-    // the same labels.
+    // Navigation is drawer-only now — the bottom nav bar was removed as
+    // redundant with the drawer's MENU section.
+    expect(find.byType(BottomNavigationBar), findsNothing);
+
     Finder inDrawer(String text) => find.descendant(
           of: find.byType(Drawer),
           matching: find.text(text),
@@ -52,6 +53,30 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('No profile loaded.'), findsOneWidget);
+  });
+
+  testWidgets('drawer language toggle switches the app locale to Arabic and back',
+      (tester) async {
+    await tester.pumpWidget(const TestShell(child: MainShellPage()));
+
+    await tester.tap(find.byIcon(Icons.menu));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('English'), findsOneWidget);
+    expect(find.text('العربية'), findsOneWidget);
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(MainShellPage)),
+    );
+
+    await tester.tap(find.text('العربية'));
+    await tester.pump();
+    expect(container.read(localeProvider).languageCode, AppLocale.arabic);
+
+    await tester.tap(find.text('English'));
+    await tester.pump();
+    expect(container.read(localeProvider).languageCode, AppLocale.english);
   });
 }
 

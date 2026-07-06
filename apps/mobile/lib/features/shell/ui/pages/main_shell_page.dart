@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/state/app_async_state.dart';
+import '../../../../core/localization/app_locale.dart';
+import '../../../../core/localization/locale_provider.dart';
 import '../../../../core/theme/theme_mode_provider.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
@@ -88,48 +90,6 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
       body: IndexedStack(
         index: selectedIndex,
         children: MainShellPage._screens,
-      ),
-      bottomNavigationBar: AIMBottomNav<int>(
-        value: selectedIndex,
-        onChanged: (index) =>
-            ref.read(mainShellTabIndexProvider.notifier).state = index,
-        items: [
-          AIMBottomNavDestination(
-            value: 0,
-            label: l10n.shellNavHome,
-            icon: const Icon(Icons.home_outlined),
-            activeIcon: const Icon(Icons.home),
-            semanticLabel: l10n.shellNavHomeSemantic,
-          ),
-          AIMBottomNavDestination(
-            value: 1,
-            label: l10n.shellNavLearn,
-            icon: const Icon(Icons.menu_book_outlined),
-            activeIcon: const Icon(Icons.menu_book),
-            semanticLabel: l10n.shellNavLearnSemantic,
-          ),
-          AIMBottomNavDestination(
-            value: 2,
-            label: l10n.shellNavReview,
-            icon: const Icon(Icons.replay_outlined),
-            activeIcon: const Icon(Icons.replay),
-            semanticLabel: l10n.shellNavReviewSemantic,
-          ),
-          AIMBottomNavDestination(
-            value: 3,
-            label: l10n.shellNavProgress,
-            icon: const Icon(Icons.insights_outlined),
-            activeIcon: const Icon(Icons.insights),
-            semanticLabel: l10n.shellNavProgressSemantic,
-          ),
-          AIMBottomNavDestination(
-            value: 4,
-            label: l10n.shellNavProfile,
-            icon: const Icon(Icons.person_outline),
-            activeIcon: const Icon(Icons.person),
-            semanticLabel: l10n.shellNavProfileSemantic,
-          ),
-        ],
       ),
     );
   }
@@ -238,6 +198,8 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _AIMThemeToggleRow(),
+          SizedBox(height: AimSpacing.componentGap),
+          _AIMLanguageToggleRow(),
           SizedBox(height: AimSpacing.componentGap),
           LogoutButton(),
         ],
@@ -382,6 +344,48 @@ class _AIMThemeToggleRow extends ConsumerWidget {
   }
 }
 
+/// English/Arabic segmented toggle wired to the app's real [localeProvider].
+/// Switching languages also switches text direction (LTR/RTL) app-wide,
+/// since [AppLocale.directionFor] derives direction from the same locale.
+class _AIMLanguageToggleRow extends ConsumerWidget {
+  const _AIMLanguageToggleRow();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final surfaces = aimSurfacesOf(context);
+    final locale = ref.watch(localeProvider);
+    final l10n = AppLocalizations.of(context);
+
+    return Row(
+      children: [
+        Expanded(
+          child: _ThemeToggleButton(
+            label: l10n.shellLanguageEnglish,
+            icon: Icons.language,
+            selected: locale.languageCode == AppLocale.english,
+            surfaces: surfaces,
+            semanticLabel: l10n.shellLanguageSemantic(l10n.shellLanguageEnglish),
+            onTap: () => ref.read(localeProvider.notifier).state =
+                const Locale(AppLocale.english),
+          ),
+        ),
+        const SizedBox(width: AimSpacing.componentGap),
+        Expanded(
+          child: _ThemeToggleButton(
+            label: l10n.shellLanguageArabic,
+            icon: Icons.translate,
+            selected: locale.languageCode == AppLocale.arabic,
+            surfaces: surfaces,
+            semanticLabel: l10n.shellLanguageSemantic(l10n.shellLanguageArabic),
+            onTap: () => ref.read(localeProvider.notifier).state =
+                const Locale(AppLocale.arabic),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _ThemeToggleButton extends StatelessWidget {
   const _ThemeToggleButton({
     required this.label,
@@ -389,6 +393,7 @@ class _ThemeToggleButton extends StatelessWidget {
     required this.selected,
     required this.surfaces,
     required this.onTap,
+    this.semanticLabel,
   });
 
   final String label;
@@ -396,6 +401,11 @@ class _ThemeToggleButton extends StatelessWidget {
   final bool selected;
   final AimSurfaceTheme surfaces;
   final VoidCallback onTap;
+
+  /// Accessibility label override. Defaults to the theme-toggle semantic
+  /// (`"$label theme"`) for backward compatibility with [_AIMThemeToggleRow];
+  /// [_AIMLanguageToggleRow] passes its own language-toggle semantic.
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -415,7 +425,7 @@ class _ThemeToggleButton extends StatelessWidget {
         child: Semantics(
           button: true,
           selected: selected,
-          label: l10n.shellThemeSemantic(label),
+          label: semanticLabel ?? l10n.shellThemeSemantic(label),
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: AimSizes.touchTarget),
             child: Row(
