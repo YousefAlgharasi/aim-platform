@@ -24,7 +24,7 @@ class AimReviewScheduleModel extends AimReviewSchedule {
       scheduleId: json['scheduleId'] as String,
       skillId: json['skillId'] as String,
       dueAt: json['dueAt'] as String,
-      intervalDays: json['intervalDays'] as int,
+      intervalDays: (json['intervalDays'] as num).toDouble(),
       repetitionCount: json['repetitionCount'] as int,
       status: json['status'] as String,
       basedOnAttemptId: json['basedOnAttemptId'] as String,

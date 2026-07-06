@@ -10,6 +10,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/aim_results/data/models/aim_results_models.dart';
+import 'package:aim_mobile/features/aim_results/logic/entity/aim_review_schedule.dart'
+    show formatAimIntervalDays;
 import 'package:aim_mobile/features/aim_results/logic/provider/aim_results_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -277,7 +279,7 @@ class _ReviewScheduleCard extends StatelessWidget {
                 tone: AIMBadgeTone.neutral,
                 variant: AIMBadgeVariant.soft,
                 pill: true,
-                child: Text('Interval ${model.intervalDays}d'),
+                child: Text('Interval ${formatAimIntervalDays(model.intervalDays)}d'),
               ),
               AIMBadge(
                 tone: AIMBadgeTone.neutral,
