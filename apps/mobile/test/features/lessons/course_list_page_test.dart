@@ -220,9 +220,12 @@ void main() {
       await tester.pump();
 
       expect(find.text('Chapters'), findsNothing);
+      // The locked message now appears twice: once always-visible inline on
+      // the tile (P25 UX pass — locked-content messaging), and once via the
+      // tap-triggered SnackBar (pre-existing behavior).
       expect(
         find.text('Finish your current level to unlock this course'),
-        findsOneWidget,
+        findsNWidgets(2),
       );
     });
 
