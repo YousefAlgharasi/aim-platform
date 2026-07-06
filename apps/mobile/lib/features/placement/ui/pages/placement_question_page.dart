@@ -15,6 +15,8 @@
 // - The only student-supplied value sent to backend is answerValue.
 // - No scoring, CEFR level, mastery, weakness map, or AIM Engine logic here.
 
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -252,6 +254,10 @@ class _QuestionBody extends StatelessWidget {
             question.text,
             style: AimTextStyles.bodyLg.copyWith(color: surfaces.textPrimary),
           ),
+          if (question.type == 'listening_choice') ...[
+            const SizedBox(height: AimSpacing.componentGap),
+            _ListenButton(questionId: question.id),
+          ],
           const SizedBox(height: AimSpacing.sectionGap),
           Expanded(
             child: SingleChildScrollView(
@@ -478,6 +484,32 @@ class _FillBlankInputState extends State<_FillBlankInput> {
       rows: 3,
       semanticLabel: 'Your answer',
       onChanged: widget.onSelect,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Listen button — plays the backend-synthesized audio for a listening_choice
+// question. Fetches fresh bytes on every tap (no client-side caching); the
+// backend itself does not persist audio across requests today either.
+// ---------------------------------------------------------------------------
+
+class _ListenButton extends ConsumerWidget {
+  const _ListenButton({required this.questionId});
+
+  final String questionId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return QuestionAudioPlayButton(
+      fetchAudioBytes: () async {
+        final token = ref.read(authFlowProvider).accessToken ?? '';
+        final bytes = await ref.read(placementRepositoryProvider).getQuestionAudio(
+              token,
+              questionId: questionId,
+            );
+        return Uint8List.fromList(bytes);
+      },
     );
   }
 }

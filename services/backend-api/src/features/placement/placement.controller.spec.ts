@@ -10,6 +10,8 @@ import { PlacementResultReadService } from './placement-result-read.service';
 import { PlacementResultService } from './placement-result.service';
 import { PlacementInitialLearningPathService } from './placement-initial-learning-path.service';
 import { PlacementLevelStateService } from './placement-level-state.service';
+import { PlacementQuestionAudioService } from './placement-question-audio.service';
+import { TtsAudioStorageService } from '../voice-teacher/tts-gateway/tts-audio-storage.service';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { PlacementPermissionGuard } from './placement-permission.guard';
 
@@ -44,6 +46,8 @@ describe('PlacementController', () => {
       resultCreate: { createResult: jest.fn().mockResolvedValue({ resultId: 'res-1', estimatedLevel: 'intermediate', attemptId: 'att-1' }) },
       initialPath: { createInitialPath: jest.fn().mockResolvedValue({ resultId: 'res-1', pathEntryCount: 2, source: 'weakness_map' }) },
       levelState: { upsertFromPlacement: jest.fn().mockResolvedValue(undefined) },
+      questionAudio: { ensureAudio: jest.fn().mockResolvedValue({ audioRef: null, scriptMissing: true }) },
+      audioStorage: { retrieveAudio: jest.fn().mockResolvedValue(null) },
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -59,6 +63,8 @@ describe('PlacementController', () => {
         { provide: PlacementResultService, useValue: mocks.resultCreate },
         { provide: PlacementInitialLearningPathService, useValue: mocks.initialPath },
         { provide: PlacementLevelStateService, useValue: mocks.levelState },
+        { provide: PlacementQuestionAudioService, useValue: mocks.questionAudio },
+        { provide: TtsAudioStorageService, useValue: mocks.audioStorage },
       ],
     })
       .overrideGuard(SupabaseJwtAuthGuard).useValue({ canActivate: () => true })

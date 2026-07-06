@@ -16,6 +16,7 @@ import { DatabaseModule } from '../../database/database.module';
 import { RolesModule } from '../roles/roles.module';
 import { UsersModule } from '../users/users.module';
 import { SessionsModule } from '../sessions/sessions.module';
+import { TtsGatewayModule } from '../voice-teacher/tts-gateway/tts-gateway.module';
 import { PlacementController } from './placement.controller';
 import { PlacementAdminController } from './placement-admin.controller';
 import { PlacementAdminTestReadService } from './placement-admin-test-read.service';
@@ -37,9 +38,10 @@ import { PlacementPermissionGuard } from './placement-permission.guard';
 import { PlacementSectionsService } from './placement-sections.service';
 import { PlacementTestReadService } from './placement-test-read.service';
 import { PlacementAimBridgeService } from './placement-aim-bridge.service';
+import { PlacementQuestionAudioService } from './placement-question-audio.service';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, RolesModule, UsersModule, SessionsModule],
+  imports: [DatabaseModule, AuthModule, RolesModule, UsersModule, SessionsModule, TtsGatewayModule],
   controllers: [PlacementController, PlacementAdminController],
   providers: [
     PlacementTestReadService,
@@ -47,6 +49,7 @@ import { PlacementAimBridgeService } from './placement-aim-bridge.service';
     PlacementAdminWriteService,
     PlacementSectionsService,
     PlacementQuestionDeliveryService,
+    PlacementQuestionAudioService,
     PlacementAttemptService,
     PlacementRetakePolicyService,
     PlacementAnswerSubmitService,

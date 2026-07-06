@@ -55,4 +55,11 @@ abstract class PlacementRepository {
     String bearerToken, {
     required String attemptId,
   });
+
+  /// Fetch a listening_choice question's synthesized audio bytes.
+  /// Returns an empty list when no listening_script is authored yet.
+  Future<List<int>> getQuestionAudio(
+    String bearerToken, {
+    required String questionId,
+  });
 }

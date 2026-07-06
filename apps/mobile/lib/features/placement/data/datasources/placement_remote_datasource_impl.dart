@@ -167,6 +167,23 @@ class PlacementRemoteDatasourceImpl implements PlacementRemoteDatasource {
   }
 
   // ---------------------------------------------------------------------------
+  // GET /placement/questions/:id/audio
+  // Returns an empty list on 204 (no listening_script authored yet) — not an
+  // error; getBytes only throws for a genuine non-2xx status.
+  // ---------------------------------------------------------------------------
+
+  @override
+  Future<List<int>> getQuestionAudio(
+    String bearerToken, {
+    required String questionId,
+  }) {
+    return _apiClient.getBytes(
+      BackendApiPaths.placementQuestionAudio(questionId),
+      headers: _authHeaders(bearerToken),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
 
