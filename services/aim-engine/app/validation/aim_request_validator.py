@@ -52,9 +52,14 @@ from dataclasses import dataclass, field
 
 from app.schemas.aim_analysis_request import AimAnalysisRequest
 
-# UUID v4 pattern — used to validate identifier fields that must be UUIDs.
+# UUID pattern (any RFC 4122 version) — used to validate identifier fields
+# that must be UUIDs. Deliberately not restricted to v4: seeded curriculum
+# content (questions, lessons, skills) uses deterministic, human-readable
+# UUID-shaped ids (e.g. "ab000000-0000-0000-0001-000000000007") that are not
+# version-4 — a v4-only check rejected every attempt referencing seeded
+# content (item_id) even though the id is a structurally valid UUID.
 _UUID_RE = re.compile(
-    r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
     re.IGNORECASE,
 )
 
