@@ -144,6 +144,28 @@ void main() {
       expect(find.byType(HomePage), findsOneWidget);
     });
 
+    testWidgets(
+        'shows a device-local "last updated" label after a load completes while mounted',
+        (tester) async {
+      final notifier = _FakeHomeNotifier(const AppAsyncState.loading());
+      await tester.pumpWidget(
+        _wrap(
+          const HomePage(),
+          overrides: [
+            homeProvider.overrideWith((ref) => notifier),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      expect(find.textContaining('Updated'), findsNothing);
+
+      notifier.emitSuccess(_populated());
+      await tester.pump();
+
+      expect(find.textContaining('Updated'), findsOneWidget);
+    });
+
     testWidgets('shows error state with message', (tester) async {
       const msg = 'Network error';
       await tester.pumpWidget(
@@ -315,6 +337,13 @@ class _FakeHomeNotifier extends HomeNotifier {
 
   @override
   void clear() {}
+
+  /// Test-only helper to simulate a load completing while the widget is
+  /// mounted, so HomePage's ref.listen last-updated tracking has a real
+  /// state transition to react to.
+  void emitSuccess(HomeData data) {
+    state = AppAsyncState.success(data);
+  }
 }
 
 class _FakeHomeRepository implements HomeRepository {

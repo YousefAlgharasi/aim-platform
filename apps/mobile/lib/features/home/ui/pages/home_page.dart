@@ -73,6 +73,13 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
+  /// Device-local timestamp of the last successful load/refresh — shown as
+  /// "Last updated" so the student can tell how fresh the screen is,
+  /// especially useful if a refresh silently fails and stale data is left
+  /// on screen. Never sent to or read from the backend; purely a local UX
+  /// signal derived from this device's own clock at fetch time.
+  DateTime? _lastUpdatedAt;
+
   @override
   void initState() {
     super.initState();
@@ -225,6 +232,12 @@ class _HomePageState extends ConsumerState<HomePage> {
     final state = ref.watch(homeProvider);
     final loadingLabel = AppLocalizations.of(context).homeLoadingSemantic;
 
+    ref.listen<AppAsyncState<HomeData>>(homeProvider, (_, next) {
+      if (next is AppAsyncSuccess) {
+        setState(() => _lastUpdatedAt = DateTime.now());
+      }
+    });
+
     return Scaffold(
       body: SafeArea(
         bottom: false,
@@ -241,6 +254,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               data: data,
               onRefresh: _refresh,
               onOpenNotifications: () => _openNotifications(context, ref),
+              lastUpdatedAt: _lastUpdatedAt,
             ),
           AppAsyncIdle() => Semantics(
               label: loadingLabel,
@@ -286,11 +300,17 @@ class _HomeContent extends ConsumerWidget {
     required this.data,
     required this.onRefresh,
     required this.onOpenNotifications,
+    this.lastUpdatedAt,
   });
 
   final HomeData data;
   final Future<void> Function() onRefresh;
   final VoidCallback onOpenNotifications;
+
+  /// Device-local time of the last successful load/refresh, or null before
+  /// the first one has completed this session. Purely a local UX signal —
+  /// never a backend field.
+  final DateTime? lastUpdatedAt;
 
   void _navigateToLesson(BuildContext context, HomeQuickStartLesson lesson) {
     context.push(
@@ -323,6 +343,10 @@ class _HomeContent extends ConsumerWidget {
             streakDays: data.goal?.streakDays ?? 0,
             onOpenNotifications: onOpenNotifications,
           ),
+          if (lastUpdatedAt != null) ...[
+            const SizedBox(height: AimSpacing.space4),
+            _LastUpdatedLabel(updatedAt: lastUpdatedAt!),
+          ],
           if (data.engagementStats != null) ...[
             const SizedBox(height: AimSpacing.componentGap),
             _HomeLevelHeroCard(stats: data.engagementStats!),
@@ -592,6 +616,38 @@ List<Widget> _gettingStartedCards(BuildContext context, WidgetRef ref) {
       ),
     ),
   ];
+}
+
+// ── Last updated label ──────────────────────────────────────────────────────
+
+/// Small "Last updated Xm ago" caption computed from a device-local
+/// timestamp recorded at the moment the home data last successfully loaded.
+/// This is a local UX signal only — it never reads or fabricates any
+/// backend field, and exists so a student can tell how fresh the screen is
+/// (e.g. after a silent background refresh failure leaves stale data
+/// on-screen).
+class _LastUpdatedLabel extends StatelessWidget {
+  const _LastUpdatedLabel({required this.updatedAt});
+
+  final DateTime updatedAt;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
+    final diff = DateTime.now().difference(updatedAt);
+
+    final label = diff.inMinutes < 1
+        ? l10n.homeLastUpdatedJustNow
+        : diff.inMinutes < 60
+            ? l10n.homeLastUpdatedMinutesAgo(diff.inMinutes)
+            : l10n.homeLastUpdatedHoursAgo(diff.inHours);
+
+    return Text(
+      label,
+      style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
+    );
+  }
 }
 
 // ── Greeting header ─────────────────────────────────────────────────────────

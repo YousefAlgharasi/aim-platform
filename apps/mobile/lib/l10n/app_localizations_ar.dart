@@ -430,6 +430,37 @@ class AppLocalizationsAr extends AppLocalizations {
   String get homeLoadingSemantic => 'جارٍ تحميل بيانات الرئيسية';
 
   @override
+  String get homeLastUpdatedJustNow => 'تم التحديث الآن';
+
+  @override
+  String homeLastUpdatedMinutesAgo(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: 'تم التحديث قبل $minutes دقيقة',
+      many: 'تم التحديث قبل $minutes دقيقة',
+      few: 'تم التحديث قبل $minutes دقائق',
+      two: 'تم التحديث قبل دقيقتين',
+      one: 'تم التحديث قبل دقيقة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeLastUpdatedHoursAgo(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: 'تم التحديث قبل $hours ساعة',
+      many: 'تم التحديث قبل $hours ساعة',
+      few: 'تم التحديث قبل $hours ساعات',
+      two: 'تم التحديث قبل ساعتين',
+      one: 'تم التحديث قبل ساعة',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String homeUnreadNotificationsSubtitle(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
