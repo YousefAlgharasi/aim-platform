@@ -81,7 +81,18 @@ class _NotificationInboxPageState
 
   void _load() {
     final token = ref.read(authFlowProvider).accessToken;
-    if (token == null || token.isEmpty) return;
+    if (token == null || token.isEmpty) {
+      // No session yet (e.g. auth state not restored when this page's first
+      // frame fires) — surface a retryable failure instead of silently
+      // returning, which previously left the state stuck at its initial
+      // AppAsyncIdle() forever (rendered identically to a loading spinner,
+      // with no error and no retry affordance).
+      ref.read(notificationInboxProvider.notifier).setFailure(
+            message: 'Please sign in again to view notifications.',
+            code: 'NO_SESSION',
+          );
+      return;
+    }
     ref.read(notificationInboxProvider.notifier).load(bearerToken: token);
   }
 

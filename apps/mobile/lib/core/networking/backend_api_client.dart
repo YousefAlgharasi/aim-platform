@@ -22,13 +22,31 @@ class BackendApiClient {
     required AppConfig config,
     http.Client? httpClient,
     AuthInterceptor? authInterceptor,
+    Duration requestTimeout = const Duration(seconds: 20),
   })  : _config = config,
         _httpClient = httpClient ?? http.Client(),
-        _authInterceptor = authInterceptor;
+        _authInterceptor = authInterceptor,
+        _requestTimeout = requestTimeout;
 
   final AppConfig _config;
   final http.Client _httpClient;
   final AuthInterceptor? _authInterceptor;
+
+  /// Bound on every outbound call so a slow or cold-starting backend
+  /// surfaces as a catchable [ApiClientException] instead of leaving the
+  /// awaiting notifier (and its UI) stuck on an unresolved loading state
+  /// forever.
+  final Duration _requestTimeout;
+
+  Future<T> _withTimeout<T>(Future<T> Function() send) {
+    return send().timeout(
+      _requestTimeout,
+      onTimeout: () => throw const ApiClientException(
+        code: 'REQUEST_TIMEOUT',
+        message: 'The request took too long to respond. Please try again.',
+      ),
+    );
+  }
 
   // ---------------------------------------------------------------------------
   // Auth header helper — P6-022
@@ -67,10 +85,10 @@ class BackendApiClient {
   }) async {
     return _sendWithRefreshRetry<T>(
       decodeData: decodeData,
-      send: (effectiveHeaders) => _httpClient.get(
-        buildUri(path, queryParameters),
-        headers: effectiveHeaders,
-      ),
+      send: (effectiveHeaders) => _withTimeout(() => _httpClient.get(
+            buildUri(path, queryParameters),
+            headers: effectiveHeaders,
+          )),
       buildHeaders: () => _jsonHeaders(headers),
     );
   }
@@ -86,11 +104,11 @@ class BackendApiClient {
 
     return _sendWithRefreshRetry<T>(
       decodeData: decodeData,
-      send: (effectiveHeaders) => _httpClient.post(
-        buildUri(path),
-        headers: effectiveHeaders,
-        body: encodedBody,
-      ),
+      send: (effectiveHeaders) => _withTimeout(() => _httpClient.post(
+            buildUri(path),
+            headers: effectiveHeaders,
+            body: encodedBody,
+          )),
       buildHeaders: () => requiresAuth
           ? _jsonHeaders(headers)
           : _jsonHeadersWithoutAuth(headers),
@@ -110,11 +128,11 @@ class BackendApiClient {
 
     return _sendWithRefreshRetry<T>(
       decodeData: decodeData,
-      send: (effectiveHeaders) => _httpClient.patch(
-        buildUri(path),
-        headers: effectiveHeaders,
-        body: encodedBody,
-      ),
+      send: (effectiveHeaders) => _withTimeout(() => _httpClient.patch(
+            buildUri(path),
+            headers: effectiveHeaders,
+            body: encodedBody,
+          )),
       buildHeaders: () => _jsonHeaders(headers),
     );
   }
@@ -126,10 +144,10 @@ class BackendApiClient {
   }) async {
     return _sendWithRefreshRetry<T>(
       decodeData: decodeData,
-      send: (effectiveHeaders) => _httpClient.delete(
-        buildUri(path),
-        headers: effectiveHeaders,
-      ),
+      send: (effectiveHeaders) => _withTimeout(() => _httpClient.delete(
+            buildUri(path),
+            headers: effectiveHeaders,
+          )),
       buildHeaders: () => _jsonHeaders(headers),
     );
   }
@@ -160,7 +178,8 @@ class BackendApiClient {
         ),
       );
 
-    final streamedResponse = await _httpClient.send(request);
+    final streamedResponse =
+        await _withTimeout(() => _httpClient.send(request));
     final response = await http.Response.fromStream(streamedResponse);
 
     return _parseResponse<T>(response, decodeData: decodeData);
@@ -172,10 +191,10 @@ class BackendApiClient {
     String path, {
     Map<String, String>? headers,
   }) async {
-    final response = await _httpClient.get(
-      buildUri(path),
-      headers: _authHeadersOnly(headers),
-    );
+    final response = await _withTimeout(() => _httpClient.get(
+          buildUri(path),
+          headers: _authHeadersOnly(headers),
+        ));
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw ApiClientException(
@@ -204,7 +223,10 @@ class BackendApiClient {
       ..headers.addAll(_jsonHeaders(headers))
       ..body = body == null ? '' : jsonEncode(body);
 
-    final streamedResponse = await _httpClient.send(request);
+    // Only the initial connection is bounded — once headers arrive the
+    // response is a genuinely long-lived stream of AI Teacher reply chunks.
+    final streamedResponse =
+        await _withTimeout(() => _httpClient.send(request));
 
     if (streamedResponse.statusCode < 200 || streamedResponse.statusCode >= 300) {
       final raw = await streamedResponse.stream.bytesToString();
