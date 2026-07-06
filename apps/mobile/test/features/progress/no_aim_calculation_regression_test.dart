@@ -258,6 +258,31 @@ void main() {
       expect(data.reviewSchedules.first.status, 'pending');
     });
 
+    // Bugfix: the AIM Engine's spaced-repetition math produces a fractional
+    // interval_days (e.g. 2.38, confirmed against real persisted data) — a
+    // hard `as int` cast on that value throws, which the notifier's
+    // catch-all turned into a generic "Failed to load AIM results" error for
+    // every student who had a real review schedule, even though the backend
+    // call itself succeeded.
+    test(
+      '6b. AimReviewScheduleModel.fromJson parses a fractional intervalDays without throwing',
+      () {
+        final model = AimReviewScheduleModel.fromJson(const {
+          'scheduleId': 'rs-2',
+          'skillId': 'en.a1.pho.letter_recognition',
+          'dueAt': '2026-07-09T01:40:30.497362Z',
+          'intervalDays': 2.38,
+          'repetitionCount': 0,
+          'status': 'pending',
+          'basedOnAttemptId': 'att-1',
+          'scheduledAt': '2026-07-06T16:33:18.497362Z',
+          'updatedAt': '2026-07-06T16:33:19.036095Z',
+        });
+
+        expect(model.intervalDays, 2.38);
+      },
+    );
+
     test('7. recommendation rank order preserved — Flutter never re-ranks', () async {
       const reordered = [
         AimRecommendationModel(

@@ -19,7 +19,10 @@ class HomeReviewSchedule {
   final String scheduleId;
   final String skillId;
   final String dueAt;
-  final int intervalDays;
+
+  /// Backend-computed interval in days. Fractional (e.g. spaced-repetition
+  /// math can produce 2.38 days) — never a whole-number assumption.
+  final double intervalDays;
   final int repetitionCount;
   final String status;
   final String basedOnAttemptId;

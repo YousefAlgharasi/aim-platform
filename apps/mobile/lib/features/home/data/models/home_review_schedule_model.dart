@@ -27,7 +27,7 @@ class HomeReviewScheduleModel extends HomeReviewSchedule {
       scheduleId: json['scheduleId'] as String,
       skillId: json['skillId'] as String,
       dueAt: json['dueAt'] as String,
-      intervalDays: (json['intervalDays'] as num).toInt(),
+      intervalDays: (json['intervalDays'] as num).toDouble(),
       repetitionCount: (json['repetitionCount'] as num).toInt(),
       status: json['status'] as String,
       basedOnAttemptId: json['basedOnAttemptId'] as String,
