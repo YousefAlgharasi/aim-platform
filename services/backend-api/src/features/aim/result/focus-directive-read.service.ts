@@ -15,6 +15,8 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '../../../database/database.service';
+import { UsersService } from '../../users/users.service';
+import { StudentProfileService } from '../../students/student-profile.service';
 
 export interface FocusDirectiveEntry {
   readonly skillId: string;
@@ -34,7 +36,11 @@ interface FocusDirectiveRow {
 export class FocusDirectiveReadService {
   private readonly logger = new Logger(FocusDirectiveReadService.name);
 
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly users: UsersService,
+    private readonly studentProfiles: StudentProfileService,
+  ) {}
 
   /**
    * Returns the student's current active focus directive, or null if none
@@ -42,13 +48,22 @@ export class FocusDirectiveReadService {
    * Engine call is made — this returns only the last-persisted value.
    */
   async getActiveForStudent(studentId: string): Promise<FocusDirectiveEntry | null> {
+    // ai_focus_directives.student_id is an FK to student_profiles(id), not
+    // the raw Supabase Auth UID this method receives (see
+    // AimFocusDirectiveService, which persists rows keyed the same way).
+    const user = await this.users.findBySupabaseUid(studentId);
+    const profile = user ? await this.studentProfiles.findByUserId(user.id) : null;
+    if (!profile) {
+      return null;
+    }
+
     const result = await this.db.query<FocusDirectiveRow>(
       `SELECT skill_id, directive_text, source, generated_at
        FROM ai_focus_directives
        WHERE student_id = $1 AND active = true
        ORDER BY generated_at DESC
        LIMIT 1`,
-      [studentId],
+      [profile.id],
     );
 
     const row = result.rows[0];

@@ -52,10 +52,16 @@ import { SessionSummaryService } from '../persistence/session-summary.service';
 import { AimFocusDirectiveService } from '../persistence/aim-focus-directive.service';
 import { LearningReminderIntegration } from '../../notifications/learning-reminder.integration';
 import { SkillsService } from '../../curriculum/skills/skills.service';
+import { UsersService } from '../../users/users.service';
+import { StudentProfileService } from '../../students/student-profile.service';
 import { AimValidatedResponse } from '../adapter/aim-response-mapper.types';
 
 const STUDENT_ID = 'e2e00000-0000-4000-8000-000000000001';
 const SESSION_ID = 'e2e00000-0000-4000-8000-000000000002';
+// ai_focus_directives.student_id is an FK to student_profiles(id), a
+// distinct id space from the STUDENT_ID (Supabase Auth UID) used
+// throughout every other table in this chain — see AimFocusDirectiveService.
+const PROFILE_ID = 'e2e00000-0000-4000-8000-000000000099';
 
 // ---------------------------------------------------------------------------
 // Recording fake DatabaseService — captures every SQL statement + params
@@ -212,6 +218,12 @@ describe('P20-016: placement + lesson-attempt-analysis chain populates every pro
     const learningReminderStub = {
       createReviewReminder: jest.fn().mockResolvedValue(undefined),
     } as unknown as LearningReminderIntegration;
+    const usersServiceStub = {
+      findBySupabaseUid: jest.fn().mockResolvedValue({ id: 'e2e00000-0000-4000-8000-000000000098' }),
+    } as unknown as UsersService;
+    const studentProfileServiceStub = {
+      findByUserId: jest.fn().mockResolvedValue({ id: PROFILE_ID }),
+    } as unknown as StudentProfileService;
 
     const persistence = new AimPersistenceService(
       db,
@@ -222,7 +234,7 @@ describe('P20-016: placement + lesson-attempt-analysis chain populates every pro
       new ReviewScheduleOutputService(db, learningReminderStub),
       new SessionSummaryService(db),
       learningReminderStub,
-      new AimFocusDirectiveService(db, skillsServiceStub),
+      new AimFocusDirectiveService(db, skillsServiceStub, usersServiceStub, studentProfileServiceStub),
     );
 
     await persistence.persist(makeValidatedAimResponse());
@@ -255,11 +267,17 @@ describe('P20-016: placement + lesson-attempt-analysis chain populates every pro
       'weakness_records',
       'recommendations',
       'review_schedules',
-      'ai_focus_directives',
     ]) {
       const writesToTable = calls.filter((c) => tableOf(c.sql) === table);
       expect(writesToTable.length).toBeGreaterThan(0);
       expect(writesToTable.some((c) => c.params.includes(STUDENT_ID))).toBe(true);
     }
+
+    // ai_focus_directives is keyed by student_profiles.id (PROFILE_ID here),
+    // not the raw Supabase Auth UID every other table above uses — the
+    // resolution done by AimFocusDirectiveService, proven correlated here.
+    const focusDirectiveWrites = calls.filter((c) => tableOf(c.sql) === 'ai_focus_directives');
+    expect(focusDirectiveWrites.length).toBeGreaterThan(0);
+    expect(focusDirectiveWrites.some((c) => c.params.includes(PROFILE_ID))).toBe(true);
   });
 });
