@@ -45,6 +45,12 @@ export interface PlacementQuestionWithSkillRow {
   readonly question_type: string;
   readonly prompt: string;
   readonly media_url: string | null;
+  /**
+   * Server-side only. The actual line(s) to read aloud for a
+   * listening_choice question. Never sent to clients — only whether it is
+   * present (has_listening_audio) is exposed, via toSafeResponse().
+   */
+  readonly listening_script: string | null;
   readonly order_index: number;
   /** Server-side only. Never sent to clients. */
   readonly correct_answer: string;
@@ -72,6 +78,13 @@ export interface PlacementQuestionSafeResponse {
   readonly options: Array<{ id: string; text: string }>;
   readonly type: string;
   readonly media_url: string | null;
+  /**
+   * Whether GET /placement/questions/:id/audio can currently return real
+   * audio for this question — true only when listening_script has been
+   * authored. The script text itself is never included here (it would let
+   * a student read the exact listening content instead of hearing it).
+   */
+  readonly has_listening_audio: boolean;
   readonly ordinal: number;
   // Note: skill_code intentionally excluded — internal scoring field.
   // Note: correct_answer intentionally excluded — must never be sent to students.
