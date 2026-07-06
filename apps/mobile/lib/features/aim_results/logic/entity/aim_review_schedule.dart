@@ -24,8 +24,10 @@ class AimReviewSchedule {
   /// When the review is due. AIM Engine output; Flutter displays verbatim.
   final String dueAt;
 
-  /// Backend-computed interval in days. Display only.
-  final int intervalDays;
+  /// Backend-computed interval in days. Fractional (e.g. spaced-repetition
+  /// math can produce 2.38 days) — never a whole-number assumption. Display
+  /// only.
+  final double intervalDays;
 
   /// Backend-counted repetition count. Display only.
   final int repetitionCount;
@@ -35,3 +37,10 @@ class AimReviewSchedule {
   final String scheduledAt;
   final String updatedAt;
 }
+
+/// Pure display formatting of a backend-computed intervalDays value (may be
+/// fractional, e.g. 2.38) — display only, never fed back into any AIM data.
+String formatAimIntervalDays(double intervalDays) =>
+    intervalDays == intervalDays.roundToDouble()
+        ? intervalDays.toStringAsFixed(0)
+        : intervalDays.toStringAsFixed(1);

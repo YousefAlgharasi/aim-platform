@@ -5,6 +5,8 @@
 import 'package:flutter/material.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/aim_results/data/models/aim_results_models.dart';
+import 'package:aim_mobile/features/aim_results/logic/entity/aim_review_schedule.dart'
+    show formatAimIntervalDays;
 
 class ProgressReviewScheduleCard extends StatelessWidget {
   const ProgressReviewScheduleCard({required this.model, super.key});
@@ -47,7 +49,7 @@ class ProgressReviewScheduleCard extends StatelessWidget {
             tone: AIMBadgeTone.primary,
             variant: AIMBadgeVariant.soft,
             pill: true,
-            child: Text('${model.intervalDays}d'),
+            child: Text('${formatAimIntervalDays(model.intervalDays)}d'),
           ),
         ],
       ),
