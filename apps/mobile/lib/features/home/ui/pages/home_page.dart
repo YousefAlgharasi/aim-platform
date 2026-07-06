@@ -229,8 +229,9 @@ class _HomePageState extends ConsumerState<HomePage> {
       body: SafeArea(
         bottom: false,
         child: switch (state) {
-          AppAsyncLoading() => AIMFullScreenLoading(
-              semanticLabel: loadingLabel,
+          AppAsyncLoading() => Semantics(
+              label: loadingLabel,
+              child: const HomePageSkeleton(),
             ),
           AppAsyncFailure(:final message) => AIMFullScreenError(
               message: message,
@@ -241,8 +242,9 @@ class _HomePageState extends ConsumerState<HomePage> {
               onRefresh: _refresh,
               onOpenNotifications: () => _openNotifications(context, ref),
             ),
-          AppAsyncIdle() => AIMFullScreenLoading(
-              semanticLabel: loadingLabel,
+          AppAsyncIdle() => Semantics(
+              label: loadingLabel,
+              child: const HomePageSkeleton(),
             ),
         },
       ),
