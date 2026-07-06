@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ReminderScheduleService } from './reminder-schedule.service';
 import { NotificationQueueService } from './notification-queue.service';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class LearningReminderIntegration {
@@ -9,7 +10,32 @@ export class LearningReminderIntegration {
   constructor(
     private readonly scheduleService: ReminderScheduleService,
     private readonly queueService: NotificationQueueService,
+    private readonly usersService: UsersService,
   ) {}
+
+  /**
+   * Every caller into this integration (the AIM pipeline's review-schedule
+   * persistence, in particular) identifies a student by the raw Supabase
+   * Auth UID — the id convention used throughout learning_sessions,
+   * lesson_attempts, and review_schedules. reminder_schedules.owner_id,
+   * however, has a real FK to users(id) (the internal id), so inserting the
+   * auth UID directly violates fk_reminder_schedules_owner. Resolve here,
+   * once, at the boundary where a student id crosses into the
+   * notifications domain's id space.
+   *
+   * Returns null (logged, not thrown) if no matching user row exists —
+   * a missing reminder must never block or roll back the AIM-owned
+   * skill-state/difficulty/recommendation/review-schedule writes that
+   * already happened in the same transaction.
+   */
+  private async resolveOwnerId(authUid: string): Promise<string | null> {
+    const user = await this.usersService.findBySupabaseUid(authUid);
+    if (user === null) {
+      this.logger.warn(`No user found for supabase auth uid=${authUid}; skipping reminder`);
+      return null;
+    }
+    return user.id;
+  }
 
   async createLearningPlanReminder(
     userId: string,
@@ -17,9 +43,12 @@ export class LearningReminderIntegration {
     cronExpression: string,
     locale = 'en',
   ): Promise<void> {
+    const ownerId = await this.resolveOwnerId(userId);
+    if (ownerId === null) return;
+
     const nextRunAt = new Date().toISOString();
     await this.scheduleService.createSchedule(
-      userId,
+      ownerId,
       'student',
       'learning_plan',
       cronExpression,
@@ -39,8 +68,11 @@ export class LearningReminderIntegration {
     dueAt: string,
     locale = 'en',
   ): Promise<void> {
+    const ownerId = await this.resolveOwnerId(userId);
+    if (ownerId === null) return;
+
     await this.scheduleService.createSchedule(
-      userId,
+      ownerId,
       'student',
       'review',
       toOneShotCronExpression(dueAt),
