@@ -184,6 +184,23 @@ class PlacementRemoteDatasourceImpl implements PlacementRemoteDatasource {
   }
 
   // ---------------------------------------------------------------------------
+  // GET /placement/attempts/latest
+  // ---------------------------------------------------------------------------
+
+  @override
+  Future<PlacementLatestStatusModel> getLatestStatus(
+    String bearerToken,
+  ) async {
+    final envelope = await _apiClient.get<PlacementLatestStatusModel>(
+      BackendApiPaths.placementAttemptsLatest,
+      headers: _authHeaders(bearerToken),
+      decodeData: (json) =>
+          PlacementLatestStatusModel.fromJson(json as Map<String, dynamic>),
+    );
+    return envelope.data!;
+  }
+
+  // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
 

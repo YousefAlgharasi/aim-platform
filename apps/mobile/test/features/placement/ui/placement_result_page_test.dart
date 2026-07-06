@@ -87,6 +87,10 @@ class _FakePlacementRepository implements PlacementRepository {
       throw UnimplementedError();
 
   @override
+  Future<PlacementLatestStatusModel> getLatestStatus(String t) async =>
+      throw UnimplementedError();
+
+  @override
   Future<PlacementTestModel> getActivePlacementTest(String t) async =>
       throw UnimplementedError();
 

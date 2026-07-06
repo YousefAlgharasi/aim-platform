@@ -62,4 +62,8 @@ abstract class PlacementRepository {
     String bearerToken, {
     required String questionId,
   });
+
+  /// Fetch the student's overall placement status ('none'/'active'/
+  /// 'submitted'/'completed') without requiring a known attemptId.
+  Future<PlacementLatestStatusModel> getLatestStatus(String bearerToken);
 }

@@ -12,6 +12,7 @@ import '../../features/lessons/ui/pages/lesson_list_page.dart';
 import '../../features/onboarding/ui/pages/splash_page.dart';
 import '../../features/placement/ui/pages/placement_question_page.dart';
 import '../../features/question_answer/ui/pages/practice_session_page.dart';
+import '../../features/placement/ui/pages/placement_menu_page.dart';
 import '../../features/placement/ui/pages/placement_result_page.dart';
 import '../../features/placement/ui/pages/placement_section_page.dart';
 import '../../features/placement/ui/pages/placement_start_page.dart';
@@ -160,6 +161,10 @@ class AppRouter {
         GoRoute(
           path: AppRoutePaths.placementResult,
           builder: (context, state) => _buildPlacementResult(state.extra),
+        ),
+        GoRoute(
+          path: AppRoutePaths.placementMenu,
+          builder: (context, state) => const PlacementMenuPage(),
         ),
         GoRoute(
           path: AppRoutePaths.courseChapters,
@@ -691,6 +696,7 @@ class AppRouter {
     AppRoutePaths.placementQuestion,
     AppRoutePaths.placementSubmit,
     AppRoutePaths.placementResult,
+    AppRoutePaths.placementMenu,
     AppRoutePaths.assessments,
     AppRoutePaths.assessmentDetail,
     AppRoutePaths.assessmentStart,

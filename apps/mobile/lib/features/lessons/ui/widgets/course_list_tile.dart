@@ -166,6 +166,13 @@ class CourseListTile extends StatelessWidget {
               ),
             ],
           ),
+          if (locked) ...[
+            const SizedBox(height: AimSpacing.space4),
+            Text(
+              l10n.lessonsCourseLockedMessage,
+              style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
+            ),
+          ],
           if (model.lessonCount > 0) ...[
             const SizedBox(height: AimSpacing.componentGap),
             Row(

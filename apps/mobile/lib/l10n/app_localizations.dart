@@ -710,6 +710,12 @@ abstract class AppLocalizations {
   /// **'AIM Plus'**
   String get shellAimPlus;
 
+  /// Label for the Placement Test entry in the navigation drawer's MORE section.
+  ///
+  /// In en, this message translates to:
+  /// **'Placement Test'**
+  String get shellPlacementTest;
+
   /// Drawer item label for the help center.
   ///
   /// In en, this message translates to:
@@ -752,6 +758,24 @@ abstract class AppLocalizations {
   /// **'{theme} theme'**
   String shellThemeSemantic(String theme);
 
+  /// Label for the English language toggle option in the drawer.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get shellLanguageEnglish;
+
+  /// Label for the Arabic language toggle option in the drawer.
+  ///
+  /// In en, this message translates to:
+  /// **'العربية'**
+  String get shellLanguageArabic;
+
+  /// Accessibility label for a language toggle option, e.g. 'English language'.
+  ///
+  /// In en, this message translates to:
+  /// **'{language} language'**
+  String shellLanguageSemantic(String language);
+
   /// App brand name shown on the splash screen.
   ///
   /// In en, this message translates to:
@@ -770,11 +794,95 @@ abstract class AppLocalizations {
   /// **'Tap to continue'**
   String get onboardingTapToContinue;
 
+  /// Title of the first-time walkthrough's welcome slide.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to AIM'**
+  String get onboardingWalkthroughWelcomeTitle;
+
+  /// Body copy of the first-time walkthrough's welcome slide.
+  ///
+  /// In en, this message translates to:
+  /// **'Your adaptive English learning companion. Let\'s take a quick look around.'**
+  String get onboardingWalkthroughWelcomeBody;
+
+  /// Title of the first-time walkthrough's placement test slide.
+  ///
+  /// In en, this message translates to:
+  /// **'Find your level'**
+  String get onboardingWalkthroughPlacementTitle;
+
+  /// Body copy of the first-time walkthrough's placement test slide.
+  ///
+  /// In en, this message translates to:
+  /// **'Take the Placement Test from the menu to get lessons matched to your real level.'**
+  String get onboardingWalkthroughPlacementBody;
+
+  /// Title of the first-time walkthrough's lessons slide.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn at your pace'**
+  String get onboardingWalkthroughLessonsTitle;
+
+  /// Body copy of the first-time walkthrough's lessons slide.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse courses and lessons in the Learn tab — each one unlocks as you make progress.'**
+  String get onboardingWalkthroughLessonsBody;
+
+  /// Title of the first-time walkthrough's streak slide.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your streak going'**
+  String get onboardingWalkthroughStreakTitle;
+
+  /// Body copy of the first-time walkthrough's streak slide.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice a little every day — your Home screen tracks your streak and progress.'**
+  String get onboardingWalkthroughStreakBody;
+
+  /// Button label to skip the first-time walkthrough.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get onboardingWalkthroughSkip;
+
+  /// Button label to advance to the next walkthrough slide.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get onboardingWalkthroughNext;
+
+  /// Button label on the last walkthrough slide to dismiss it.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get onboardingWalkthroughGetStarted;
+
   /// Accessibility label shown while the home screen's data is loading.
   ///
   /// In en, this message translates to:
   /// **'Loading home data'**
   String get homeLoadingSemantic;
+
+  /// Shown under the home greeting when the data was refreshed less than a minute ago.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated just now'**
+  String get homeLastUpdatedJustNow;
+
+  /// Shown under the home greeting with how many minutes since the last successful refresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {minutes, plural, one{1 minute ago} other{{minutes} minutes ago}}'**
+  String homeLastUpdatedMinutesAgo(int minutes);
+
+  /// Shown under the home greeting with how many hours since the last successful refresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {hours, plural, one{1 hour ago} other{{hours} hours ago}}'**
+  String homeLastUpdatedHoursAgo(int hours);
 
   /// Subtitle in the notifications sheet summarizing the number of unread, non-dismissed notifications.
   ///

@@ -377,6 +377,10 @@
   "@shellAimPlus": {
     "description": "Drawer item label for the premium subscription / pricing screen."
   },
+  "shellPlacementTest": "Placement Test",
+  "@shellPlacementTest": {
+    "description": "Label for the Placement Test entry in the navigation drawer's MORE section."
+  },
   "shellSupport": "Support",
   "@shellSupport": {
     "description": "Drawer item label for the help center."
@@ -415,6 +419,23 @@
       }
     }
   },
+  "shellLanguageEnglish": "English",
+  "@shellLanguageEnglish": {
+    "description": "Label for the English language toggle option in the drawer."
+  },
+  "shellLanguageArabic": "العربية",
+  "@shellLanguageArabic": {
+    "description": "Label for the Arabic language toggle option in the drawer."
+  },
+  "shellLanguageSemantic": "{language} language",
+  "@shellLanguageSemantic": {
+    "description": "Accessibility label for a language toggle option, e.g. 'English language'.",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
   "onboardingBrandName": "AIM",
   "@onboardingBrandName": {
     "description": "App brand name shown on the splash screen."
@@ -427,9 +448,75 @@
   "@onboardingTapToContinue": {
     "description": "Static hint text shown alongside the splash screen's progress bar while the session check runs."
   },
+  "onboardingWalkthroughWelcomeTitle": "Welcome to AIM",
+  "@onboardingWalkthroughWelcomeTitle": {
+    "description": "Title of the first-time walkthrough's welcome slide."
+  },
+  "onboardingWalkthroughWelcomeBody": "Your adaptive English learning companion. Let's take a quick look around.",
+  "@onboardingWalkthroughWelcomeBody": {
+    "description": "Body copy of the first-time walkthrough's welcome slide."
+  },
+  "onboardingWalkthroughPlacementTitle": "Find your level",
+  "@onboardingWalkthroughPlacementTitle": {
+    "description": "Title of the first-time walkthrough's placement test slide."
+  },
+  "onboardingWalkthroughPlacementBody": "Take the Placement Test from the menu to get lessons matched to your real level.",
+  "@onboardingWalkthroughPlacementBody": {
+    "description": "Body copy of the first-time walkthrough's placement test slide."
+  },
+  "onboardingWalkthroughLessonsTitle": "Learn at your pace",
+  "@onboardingWalkthroughLessonsTitle": {
+    "description": "Title of the first-time walkthrough's lessons slide."
+  },
+  "onboardingWalkthroughLessonsBody": "Browse courses and lessons in the Learn tab — each one unlocks as you make progress.",
+  "@onboardingWalkthroughLessonsBody": {
+    "description": "Body copy of the first-time walkthrough's lessons slide."
+  },
+  "onboardingWalkthroughStreakTitle": "Keep your streak going",
+  "@onboardingWalkthroughStreakTitle": {
+    "description": "Title of the first-time walkthrough's streak slide."
+  },
+  "onboardingWalkthroughStreakBody": "Practice a little every day — your Home screen tracks your streak and progress.",
+  "@onboardingWalkthroughStreakBody": {
+    "description": "Body copy of the first-time walkthrough's streak slide."
+  },
+  "onboardingWalkthroughSkip": "Skip",
+  "@onboardingWalkthroughSkip": {
+    "description": "Button label to skip the first-time walkthrough."
+  },
+  "onboardingWalkthroughNext": "Next",
+  "@onboardingWalkthroughNext": {
+    "description": "Button label to advance to the next walkthrough slide."
+  },
+  "onboardingWalkthroughGetStarted": "Get Started",
+  "@onboardingWalkthroughGetStarted": {
+    "description": "Button label on the last walkthrough slide to dismiss it."
+  },
   "homeLoadingSemantic": "Loading home data",
   "@homeLoadingSemantic": {
     "description": "Accessibility label shown while the home screen's data is loading."
+  },
+  "homeLastUpdatedJustNow": "Updated just now",
+  "@homeLastUpdatedJustNow": {
+    "description": "Shown under the home greeting when the data was refreshed less than a minute ago."
+  },
+  "homeLastUpdatedMinutesAgo": "Updated {minutes, plural, one{1 minute ago} other{{minutes} minutes ago}}",
+  "@homeLastUpdatedMinutesAgo": {
+    "description": "Shown under the home greeting with how many minutes since the last successful refresh.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "homeLastUpdatedHoursAgo": "Updated {hours, plural, one{1 hour ago} other{{hours} hours ago}}",
+  "@homeLastUpdatedHoursAgo": {
+    "description": "Shown under the home greeting with how many hours since the last successful refresh.",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
   },
   "homeUnreadNotificationsSubtitle": "{count, plural, zero{No new notifications} one{1 new notification} other{{count} new notifications}}",
   "@homeUnreadNotificationsSubtitle": {

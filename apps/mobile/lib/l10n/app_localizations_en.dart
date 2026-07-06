@@ -332,6 +332,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shellAimPlus => 'AIM Plus';
 
   @override
+  String get shellPlacementTest => 'Placement Test';
+
+  @override
   String get shellSupport => 'Support';
 
   @override
@@ -367,6 +370,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get shellLanguageEnglish => 'English';
+
+  @override
+  String get shellLanguageArabic => 'العربية';
+
+  @override
+  String shellLanguageSemantic(String language) {
+    return '$language language';
+  }
+
+  @override
   String get onboardingBrandName => 'AIM';
 
   @override
@@ -376,7 +390,69 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingTapToContinue => 'Tap to continue';
 
   @override
+  String get onboardingWalkthroughWelcomeTitle => 'Welcome to AIM';
+
+  @override
+  String get onboardingWalkthroughWelcomeBody =>
+      'Your adaptive English learning companion. Let\'s take a quick look around.';
+
+  @override
+  String get onboardingWalkthroughPlacementTitle => 'Find your level';
+
+  @override
+  String get onboardingWalkthroughPlacementBody =>
+      'Take the Placement Test from the menu to get lessons matched to your real level.';
+
+  @override
+  String get onboardingWalkthroughLessonsTitle => 'Learn at your pace';
+
+  @override
+  String get onboardingWalkthroughLessonsBody =>
+      'Browse courses and lessons in the Learn tab — each one unlocks as you make progress.';
+
+  @override
+  String get onboardingWalkthroughStreakTitle => 'Keep your streak going';
+
+  @override
+  String get onboardingWalkthroughStreakBody =>
+      'Practice a little every day — your Home screen tracks your streak and progress.';
+
+  @override
+  String get onboardingWalkthroughSkip => 'Skip';
+
+  @override
+  String get onboardingWalkthroughNext => 'Next';
+
+  @override
+  String get onboardingWalkthroughGetStarted => 'Get Started';
+
+  @override
   String get homeLoadingSemantic => 'Loading home data';
+
+  @override
+  String get homeLastUpdatedJustNow => 'Updated just now';
+
+  @override
+  String homeLastUpdatedMinutesAgo(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutes ago',
+      one: '1 minute ago',
+    );
+    return 'Updated $_temp0';
+  }
+
+  @override
+  String homeLastUpdatedHoursAgo(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: '$hours hours ago',
+      one: '1 hour ago',
+    );
+    return 'Updated $_temp0';
+  }
 
   @override
   String homeUnreadNotificationsSubtitle(int count) {

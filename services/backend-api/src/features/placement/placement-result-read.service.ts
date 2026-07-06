@@ -104,6 +104,12 @@ interface LevelStateRankRow {
 // Flutter-safe response shape (matches PlacementResultModel.fromJson())
 // ---------------------------------------------------------------------------
 
+export interface PlacementLatestStatusResponse {
+  readonly status: 'none' | 'active' | 'submitted' | 'completed';
+  readonly attemptId: string | null;
+  readonly result: PlacementResultResponse | null;
+}
+
 export interface PlacementResultResponse {
   readonly id: string;
   readonly placement_attempt_id: string;
@@ -166,6 +172,44 @@ export class PlacementResultReadService {
     }
 
     return this.getResult(latestAttempt.rows[0].id, studentId);
+  }
+
+  /**
+   * P25-XXX: Fetch the student's overall placement status — used by the
+   * mobile app's "Placement Test" menu entry to decide whether to show a
+   * completed result + retake option, an in-progress resume prompt, or the
+   * fresh start flow. Never requires the caller to already know an
+   * attemptId; the backend is the sole authority on which attempt (if any)
+   * is the student's latest.
+   *
+   * @param studentId  Internal student ID — never from client input.
+   */
+  async getLatestAttemptStatus(studentId: string): Promise<PlacementLatestStatusResponse> {
+    const latestAttempt = await this.db.query<{ id: string; status: string }>(
+      `SELECT id, status
+       FROM placement_attempts
+       WHERE student_id = $1
+       ORDER BY started_at DESC
+       LIMIT 1`,
+      [studentId],
+    );
+
+    if ((latestAttempt.rowCount ?? 0) === 0) {
+      return { status: 'none', attemptId: null, result: null };
+    }
+
+    const attempt = latestAttempt.rows[0];
+
+    if (attempt.status !== 'completed') {
+      return {
+        status: attempt.status === 'submitted' ? 'submitted' : 'active',
+        attemptId: attempt.id,
+        result: null,
+      };
+    }
+
+    const result = await this.getResult(attempt.id, studentId);
+    return { status: 'completed', attemptId: attempt.id, result };
   }
 
   /**

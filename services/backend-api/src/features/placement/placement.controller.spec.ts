@@ -42,7 +42,10 @@ describe('PlacementController', () => {
       questionDelivery: { getQuestionsForSection: jest.fn().mockResolvedValue([]) },
       answerSubmit: { submitAnswer: jest.fn().mockResolvedValue({ answerId: 'ans-1' }) },
       attemptComplete: { completeAttempt: jest.fn().mockResolvedValue({ status: 'submitted' }) },
-      resultRead: { getResult: jest.fn().mockResolvedValue({ id: 'res-1', placement_attempt_id: 'att-1', estimated_level: 'A1', skill_mastery_map: {}, weakness_map: { weaknesses: [] }, initial_path_id: null, created_at: '2026-06-01T00:00:00Z' }) },
+      resultRead: {
+        getResult: jest.fn().mockResolvedValue({ id: 'res-1', placement_attempt_id: 'att-1', estimated_level: 'A1', skill_mastery_map: {}, weakness_map: { weaknesses: [] }, initial_path_id: null, created_at: '2026-06-01T00:00:00Z' }),
+        getLatestAttemptStatus: jest.fn().mockResolvedValue({ status: 'none', attemptId: null, result: null }),
+      },
       resultCreate: { createResult: jest.fn().mockResolvedValue({ resultId: 'res-1', estimatedLevel: 'intermediate', attemptId: 'att-1' }) },
       initialPath: { createInitialPath: jest.fn().mockResolvedValue({ resultId: 'res-1', pathEntryCount: 2, source: 'weakness_map' }) },
       levelState: { upsertFromPlacement: jest.fn().mockResolvedValue(undefined) },
@@ -155,6 +158,14 @@ describe('PlacementController', () => {
       const user = { id: 'student-1' } as any;
       await controller.getResult('att-1', user);
       expect(resultRead.getResult).toHaveBeenCalledWith('att-1', 'student-1');
+    });
+  });
+
+  describe('getLatestStatus', () => {
+    it('delegates to PlacementResultReadService.getLatestAttemptStatus with the JWT-resolved student id', async () => {
+      const user = { id: 'student-1' } as any;
+      await controller.getLatestStatus(user);
+      expect(resultRead.getLatestAttemptStatus).toHaveBeenCalledWith('student-1');
     });
   });
 });

@@ -149,7 +149,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
     if (bearerToken == null || bearerToken.isEmpty) {
       if (!mounted) return;
-      _showSnack('Your session has expired. Please sign in again.');
+      AIMToast.show(
+        context,
+        message: 'Your session has expired. Please sign in again.',
+        tone: AIMAlertTone.error,
+      );
       return;
     }
 
@@ -159,15 +163,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
     if (!mounted) return;
     if (success) {
-      _showSnack('Profile updated.');
+      AIMToast.show(context, message: 'Profile updated.');
       context.pop();
     }
-  }
-
-  void _showSnack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
   }
 
   @override
