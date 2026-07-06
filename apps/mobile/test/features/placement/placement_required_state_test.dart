@@ -74,6 +74,10 @@ class _FakePlacementRepository implements PlacementRepository {
     required String questionId,
   }) async =>
       throw UnimplementedError();
+
+  @override
+  Future<PlacementLatestStatusModel> getLatestStatus(String bearerToken) async =>
+      throw UnimplementedError();
 }
 
 const _activeTestModel = PlacementTestModel(

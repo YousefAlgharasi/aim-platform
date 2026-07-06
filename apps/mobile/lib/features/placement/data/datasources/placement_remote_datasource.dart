@@ -81,4 +81,9 @@ abstract class PlacementRemoteDatasource {
     String bearerToken, {
     required String questionId,
   });
+
+  /// Fetch the student's overall placement status without requiring a known
+  /// attemptId — status is one of 'none'/'active'/'submitted'/'completed'.
+  /// Endpoint — GET /placement/attempts/latest
+  Future<PlacementLatestStatusModel> getLatestStatus(String bearerToken);
 }

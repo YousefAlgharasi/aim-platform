@@ -178,6 +178,15 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
         AIMDrawerItemData(
           icon: const _AIMDrawerIconAvatar(
             color: AimColors.primary500,
+            icon: Icons.assignment_outlined,
+          ),
+          label: l10n.shellPlacementTest,
+          onTap: () => navigateTo(AppRoutePaths.placementMenu),
+          trailing: Icon(Icons.chevron_right, color: aimSurfacesOf(context).textMuted),
+        ),
+        AIMDrawerItemData(
+          icon: const _AIMDrawerIconAvatar(
+            color: AimColors.primary500,
             icon: Icons.workspace_premium_outlined,
           ),
           label: l10n.shellAimPlus,

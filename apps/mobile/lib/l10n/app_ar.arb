@@ -102,6 +102,7 @@
   "shellNotifications": "الإشعارات",
   "shellAchievements": "الإنجازات",
   "shellAimPlus": "AIM Plus",
+  "shellPlacementTest": "اختبار تحديد المستوى",
   "shellSupport": "الدعم",
   "shellUnreadNotificationsSemantic": "{count, plural, zero{لا توجد إشعارات غير مقروءة} one{إشعار واحد غير مقروء} two{إشعاران غير مقروءين} few{{count} إشعارات غير مقروءة} many{{count} إشعارًا غير مقروء} other{{count} إشعار غير مقروء}}",
   "shellBrandName": "AIM Learning",
