@@ -166,6 +166,31 @@ void main() {
       expect(find.textContaining('Updated'), findsOneWidget);
     });
 
+    testWidgets(
+        'tapping the notification bell with no session surfaces a retryable message instead of hanging forever',
+        (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          const HomePage(),
+          overrides: [
+            homeProvider.overrideWith(
+              (ref) => _FakeHomeNotifier(AppAsyncState.success(_populated())),
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.byIcon(Icons.notifications_outlined));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(
+        find.text('Please sign in again to view notifications.'),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('shows error state with message', (tester) async {
       const msg = 'Network error';
       await tester.pumpWidget(
