@@ -100,4 +100,34 @@ void main() {
       decodeData: (json) => json! as Map<String, dynamic>,
     );
   });
+
+  test(
+      'get surfaces a slow/hanging backend as a retryable ApiClientException '
+      'instead of hanging forever', () async {
+    final client = BackendApiClient(
+      config: const AppConfig(
+        environment: 'test',
+        backendApiBaseUrl: 'https://api.example.com',
+      ),
+      requestTimeout: const Duration(milliseconds: 20),
+      httpClient: MockClient((request) async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+        return http.Response(
+          '{"success":true,"data":{"ok":true},"meta":{}}',
+          200,
+        );
+      }),
+    );
+
+    await expectLater(
+      client.get<Map<String, dynamic>>(
+        BackendApiPaths.health,
+        decodeData: (json) => json! as Map<String, dynamic>,
+      ),
+      throwsA(
+        isA<ApiClientException>()
+            .having((error) => error.code, 'code', 'REQUEST_TIMEOUT'),
+      ),
+    );
+  });
 }

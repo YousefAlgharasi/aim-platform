@@ -2,6 +2,7 @@
 // Home UI widgets barrel.
 
 export 'home_continue_learning_card.dart';
+export 'home_page_skeleton.dart';
 export 'home_quick_start_lesson_card.dart';
 export 'home_recommended_course_card.dart';
 export 'home_daily_challenge_card.dart';

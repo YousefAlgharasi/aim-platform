@@ -332,6 +332,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get shellAimPlus => 'AIM Plus';
 
   @override
+  String get shellPlacementTest => 'اختبار تحديد المستوى';
+
+  @override
   String get shellSupport => 'الدعم';
 
   @override
@@ -367,6 +370,17 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get shellLanguageEnglish => 'English';
+
+  @override
+  String get shellLanguageArabic => 'العربية';
+
+  @override
+  String shellLanguageSemantic(String language) {
+    return 'لغة $language';
+  }
+
+  @override
   String get onboardingBrandName => 'AIM';
 
   @override
@@ -376,7 +390,75 @@ class AppLocalizationsAr extends AppLocalizations {
   String get onboardingTapToContinue => 'اضغط للمتابعة';
 
   @override
+  String get onboardingWalkthroughWelcomeTitle => 'مرحبًا بك في AIM';
+
+  @override
+  String get onboardingWalkthroughWelcomeBody =>
+      'رفيقك التكيفي لتعلّم اللغة الإنجليزية. لنلقِ نظرة سريعة.';
+
+  @override
+  String get onboardingWalkthroughPlacementTitle => 'اكتشف مستواك';
+
+  @override
+  String get onboardingWalkthroughPlacementBody =>
+      'خذ اختبار تحديد المستوى من القائمة للحصول على دروس تناسب مستواك الحقيقي.';
+
+  @override
+  String get onboardingWalkthroughLessonsTitle => 'تعلّم بالسرعة التي تناسبك';
+
+  @override
+  String get onboardingWalkthroughLessonsBody =>
+      'تصفّح الدورات والدروس في تبويب التعلّم — يفتح كل درس مع تقدّمك.';
+
+  @override
+  String get onboardingWalkthroughStreakTitle => 'حافظ على تتابعك';
+
+  @override
+  String get onboardingWalkthroughStreakBody =>
+      'مارس قليلاً كل يوم — تتابع الشاشة الرئيسية سلسلة أيامك وتقدّمك.';
+
+  @override
+  String get onboardingWalkthroughSkip => 'تخطي';
+
+  @override
+  String get onboardingWalkthroughNext => 'التالي';
+
+  @override
+  String get onboardingWalkthroughGetStarted => 'ابدأ الآن';
+
+  @override
   String get homeLoadingSemantic => 'جارٍ تحميل بيانات الرئيسية';
+
+  @override
+  String get homeLastUpdatedJustNow => 'تم التحديث الآن';
+
+  @override
+  String homeLastUpdatedMinutesAgo(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: 'تم التحديث قبل $minutes دقيقة',
+      many: 'تم التحديث قبل $minutes دقيقة',
+      few: 'تم التحديث قبل $minutes دقائق',
+      two: 'تم التحديث قبل دقيقتين',
+      one: 'تم التحديث قبل دقيقة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeLastUpdatedHoursAgo(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: 'تم التحديث قبل $hours ساعة',
+      many: 'تم التحديث قبل $hours ساعة',
+      few: 'تم التحديث قبل $hours ساعات',
+      two: 'تم التحديث قبل ساعتين',
+      one: 'تم التحديث قبل ساعة',
+    );
+    return '$_temp0';
+  }
 
   @override
   String homeUnreadNotificationsSubtitle(int count) {

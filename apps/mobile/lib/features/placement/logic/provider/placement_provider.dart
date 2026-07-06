@@ -13,6 +13,7 @@
 // - No AIM Engine runtime, AI Teacher, lesson delivery, or progress dashboard logic.
 // - No secrets, service-role keys, or privileged config here.
 
+import 'package:aim_mobile/features/placement/logic/provider/placement_menu_notifier.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_question_notifier.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_required_notifier.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_result_notifier.dart';
@@ -103,6 +104,17 @@ final placementResultProvider = StateNotifierProvider.autoDispose<
 final placementRequiredProvider = StateNotifierProvider<
     PlacementRequiredNotifier, PlacementRequiredState>(
   (ref) => PlacementRequiredNotifier(
+    repository: ref.watch(placementRepositoryProvider),
+  ),
+);
+
+/// Notifier for the drawer's "Placement Test" menu entry.
+/// Checks GET /placement/attempts/latest to decide whether to show a
+/// completed result + retake option, an in-progress resume, or the fresh
+/// start flow.
+final placementMenuProvider =
+    StateNotifierProvider.autoDispose<PlacementMenuNotifier, PlacementMenuState>(
+  (ref) => PlacementMenuNotifier(
     repository: ref.watch(placementRepositoryProvider),
   ),
 );
