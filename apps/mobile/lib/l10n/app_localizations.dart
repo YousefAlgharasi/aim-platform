@@ -794,6 +794,72 @@ abstract class AppLocalizations {
   /// **'Tap to continue'**
   String get onboardingTapToContinue;
 
+  /// Title of the first-time walkthrough's welcome slide.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to AIM'**
+  String get onboardingWalkthroughWelcomeTitle;
+
+  /// Body copy of the first-time walkthrough's welcome slide.
+  ///
+  /// In en, this message translates to:
+  /// **'Your adaptive English learning companion. Let\'s take a quick look around.'**
+  String get onboardingWalkthroughWelcomeBody;
+
+  /// Title of the first-time walkthrough's placement test slide.
+  ///
+  /// In en, this message translates to:
+  /// **'Find your level'**
+  String get onboardingWalkthroughPlacementTitle;
+
+  /// Body copy of the first-time walkthrough's placement test slide.
+  ///
+  /// In en, this message translates to:
+  /// **'Take the Placement Test from the menu to get lessons matched to your real level.'**
+  String get onboardingWalkthroughPlacementBody;
+
+  /// Title of the first-time walkthrough's lessons slide.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn at your pace'**
+  String get onboardingWalkthroughLessonsTitle;
+
+  /// Body copy of the first-time walkthrough's lessons slide.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse courses and lessons in the Learn tab — each one unlocks as you make progress.'**
+  String get onboardingWalkthroughLessonsBody;
+
+  /// Title of the first-time walkthrough's streak slide.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your streak going'**
+  String get onboardingWalkthroughStreakTitle;
+
+  /// Body copy of the first-time walkthrough's streak slide.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice a little every day — your Home screen tracks your streak and progress.'**
+  String get onboardingWalkthroughStreakBody;
+
+  /// Button label to skip the first-time walkthrough.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get onboardingWalkthroughSkip;
+
+  /// Button label to advance to the next walkthrough slide.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get onboardingWalkthroughNext;
+
+  /// Button label on the last walkthrough slide to dismiss it.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get onboardingWalkthroughGetStarted;
+
   /// Accessibility label shown while the home screen's data is loading.
   ///
   /// In en, this message translates to:
