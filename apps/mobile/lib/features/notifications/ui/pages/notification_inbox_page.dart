@@ -107,6 +107,7 @@ class _NotificationInboxPageState
           bearerToken: token,
           eventId: event.id,
         );
+    AIMToast.show(context, message: 'Notification dismissed');
   }
 
   @override
