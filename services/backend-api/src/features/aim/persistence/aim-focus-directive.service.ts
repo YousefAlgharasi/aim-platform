@@ -42,6 +42,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '../../../database/database.service';
 import { SkillsService } from '../../curriculum/skills/skills.service';
+import { UsersService } from '../../users/users.service';
+import { StudentProfileService } from '../../students/student-profile.service';
 import {
   AimValidatedCategories,
   AimValidatedDifficultyDecision,
@@ -69,6 +71,8 @@ export class AimFocusDirectiveService {
   constructor(
     private readonly db: DatabaseService,
     private readonly skills: SkillsService,
+    private readonly users: UsersService,
+    private readonly studentProfiles: StudentProfileService,
   ) {}
 
   async generateAndPersist(studentId: string, categories: AimValidatedCategories): Promise<void> {
@@ -81,16 +85,29 @@ export class AimFocusDirectiveService {
       return;
     }
 
+    // ai_focus_directives.student_id is an FK to student_profiles(id) — a
+    // third id space distinct from both the raw Supabase Auth UID used
+    // throughout the AIM pipeline (this method's studentId parameter) and
+    // the internal users.id. Resolve the full chain here, at the boundary
+    // where the id crosses into this table's FK-enforced space.
+    const user = await this.users.findBySupabaseUid(studentId);
+    const profile = user ? await this.studentProfiles.findByUserId(user.id) : null;
+    if (!profile) {
+      this.logger.warn('ai_focus_directive_skipped_no_student_profile', { studentId });
+      return;
+    }
+    const profileId = profile.id;
+
     await this.db.query(
       `UPDATE ai_focus_directives SET active = false WHERE student_id = $1 AND active = true`,
-      [studentId],
+      [profileId],
     );
 
     await this.db.query(
       `INSERT INTO ai_focus_directives
          (student_id, skill_id, directive_text, source, source_id, generated_at, active)
        VALUES ($1, $2, $3, $4, $5, NOW(), true)`,
-      [studentId, candidate.skillId, candidate.directiveText, candidate.source, candidate.sourceId],
+      [profileId, candidate.skillId, candidate.directiveText, candidate.source, candidate.sourceId],
     );
 
     this.logger.log('ai_focus_directive_generated', {
