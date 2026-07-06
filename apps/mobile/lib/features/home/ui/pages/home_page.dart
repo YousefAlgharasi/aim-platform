@@ -124,108 +124,26 @@ class _HomePageState extends ConsumerState<HomePage> {
         );
   }
 
-  /// Ensures the inbox has been loaded (or is loading) before/while the
-  /// notifications sheet is shown, then presents the sheet so it can react
-  /// to the provider's state as it resolves.
+  /// Presents the notifications sheet. Triggering the load is owned by
+  /// [_NotificationsSheetBody] itself, *after* it has already subscribed via
+  /// ref.watch — [notificationInboxProvider] is autoDispose, so calling
+  /// load()/setFailure() via a bare ref.read() here (before any widget was
+  /// watching it) let the provider be disposed and silently reset back to
+  /// idle before the sheet's own Consumer ever saw the result, leaving the
+  /// sheet stuck on its loading state forever.
   void _openNotifications(BuildContext context, WidgetRef ref) {
-    final state = ref.read(notificationInboxProvider);
-    if (state is! AppAsyncSuccess && state is! AppAsyncLoading) {
-      final token = ref.read(authFlowProvider).accessToken;
-      if (token != null && token.isNotEmpty) {
-        ref.read(notificationInboxProvider.notifier).load(bearerToken: token);
-      }
-    }
-
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (sheetContext) => Consumer(
-        builder: (context, ref, _) {
-          final inboxState = ref.watch(notificationInboxProvider);
-
-          return switch (inboxState) {
-            AppAsyncSuccess(:final data) => AIMNotificationsSheet(
-                notifications: data
-                    .where((event) => event.dismissedAt == null)
-                    .map((event) => _toNotificationItemData(context, event))
-                    .toList(),
-                headerIcon: const _NotificationBellAvatar(),
-                subtitle: _unreadSubtitle(context, data),
-                onTapItem: (item) {
-                  sheetContext.pop();
-                  final event = data.firstWhere((e) => e.id == item.id);
-                  context.push(
-                    AppRoutePaths.notificationDetail,
-                    extra: event,
-                  );
-                },
-                // onDismissItem intentionally left unset: mirroring
-                // NotificationInboxPage's real dismiss flow here would need
-                // this sheet to also own bearer-token lookups + notifier
-                // wiring for a call site that's meant to be a lightweight
-                // preview; the full dismiss flow already exists on the
-                // dedicated inbox page, so it's safer to omit it here than
-                // risk a half-correct reimplementation.
-                // onMarkAllRead intentionally left unset: no bulk
-                // mark-all-as-read method exists on NotificationRepository
-                // or NotificationInboxNotifier today (only per-item
-                // markAsRead) — omitted rather than inventing an endpoint.
-              ),
-            AppAsyncFailure(:final message) => AIMNotificationsSheet(
-                notifications: const [],
-                emptyMessage: message,
-              ),
-            _ => const AIMNotificationsSheet(
-                notifications: [],
-                loading: true,
-              ),
-          };
+      builder: (sheetContext) => _NotificationsSheetBody(
+        onTapItem: (event) {
+          sheetContext.pop();
+          context.push(AppRoutePaths.notificationDetail, extra: event);
         },
       ),
     );
   }
 
-  /// Real subtitle computed from the same backend-returned list shown in
-  /// the sheet — counts unread, non-dismissed events, not a fabricated
-  /// figure.
-  String _unreadSubtitle(
-    BuildContext context,
-    List<NotificationEventModel> events,
-  ) {
-    final unread = events.where((e) => e.isUnread).length;
-    return AppLocalizations.of(context).homeUnreadNotificationsSubtitle(unread);
-  }
-
-  AIMNotificationItemData _toNotificationItemData(
-    BuildContext context,
-    NotificationEventModel event,
-  ) {
-    return AIMNotificationItemData(
-      id: event.id,
-      title: event.title ?? '',
-      body: event.body,
-      timeLabel: _relativeTimeLabel(context, event.createdAt),
-      read: !event.isUnread,
-    );
-  }
-
-  /// Computes a real relative-time label (e.g. "1h ago", "Yesterday") from
-  /// the backend-supplied `createdAt` ISO timestamp. No time-formatting
-  /// utility already existed elsewhere in this codebase (searched), so this
-  /// is a small real computation from real data, not a fabricated value.
-  String _relativeTimeLabel(BuildContext context, String createdAtIso) {
-    final createdAt = DateTime.tryParse(createdAtIso);
-    if (createdAt == null) return '';
-    final l10n = AppLocalizations.of(context);
-
-    final diff = DateTime.now().toUtc().difference(createdAt.toUtc());
-    if (diff.inMinutes < 1) return l10n.commonJustNow;
-    if (diff.inMinutes < 60) return l10n.homeMinutesAgoLabel(diff.inMinutes);
-    if (diff.inHours < 24) return l10n.homeHoursAgoLabel(diff.inHours);
-    if (diff.inDays == 1) return l10n.commonYesterday;
-    if (diff.inDays < 7) return l10n.homeDaysAgoLabel(diff.inDays);
-    return l10n.homeWeeksAgoLabel(diff.inDays ~/ 7);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -264,6 +182,129 @@ class _HomePageState extends ConsumerState<HomePage> {
       ),
     );
   }
+}
+
+/// Notifications sheet body — a real widget (not a bare Consumer) so it can
+/// subscribe to [notificationInboxProvider] via ref.watch in its own build()
+/// *before* triggering a load/failure via ref.read in initState. Doing the
+/// trigger first (the old approach) raced the provider's autoDispose: a
+/// bare ref.read() with no listener yet let Riverpod dispose and silently
+/// reset the notifier back to idle before this sheet ever saw the result,
+/// leaving it stuck on its loading state forever with no error and no retry.
+class _NotificationsSheetBody extends ConsumerStatefulWidget {
+  const _NotificationsSheetBody({required this.onTapItem});
+
+  final void Function(NotificationEventModel event) onTapItem;
+
+  @override
+  ConsumerState<_NotificationsSheetBody> createState() =>
+      _NotificationsSheetBodyState();
+}
+
+class _NotificationsSheetBodyState
+    extends ConsumerState<_NotificationsSheetBody> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureLoaded());
+  }
+
+  void _ensureLoaded() {
+    final state = ref.read(notificationInboxProvider);
+    if (state is AppAsyncSuccess || state is AppAsyncLoading) return;
+
+    final token = ref.read(authFlowProvider).accessToken;
+    if (token != null && token.isNotEmpty) {
+      ref.read(notificationInboxProvider.notifier).load(bearerToken: token);
+    } else {
+      // No token yet — surface a retryable failure instead of silently
+      // doing nothing, which previously left state stuck at its initial
+      // AppAsyncIdle() forever (rendered identically to a loading spinner).
+      ref.read(notificationInboxProvider.notifier).setFailure(
+            message: 'Please sign in again to view notifications.',
+            code: 'NO_SESSION',
+          );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final inboxState = ref.watch(notificationInboxProvider);
+
+    return switch (inboxState) {
+      AppAsyncSuccess(:final data) => AIMNotificationsSheet(
+          notifications: data
+              .where((event) => event.dismissedAt == null)
+              .map((event) => _toNotificationItemData(context, event))
+              .toList(),
+          headerIcon: const _NotificationBellAvatar(),
+          subtitle: _unreadSubtitle(context, data),
+          onTapItem: (item) {
+            final event = data.firstWhere((e) => e.id == item.id);
+            widget.onTapItem(event);
+          },
+          // onDismissItem intentionally left unset: mirroring
+          // NotificationInboxPage's real dismiss flow here would need this
+          // sheet to also own bearer-token lookups + notifier wiring for a
+          // call site that's meant to be a lightweight preview; the full
+          // dismiss flow already exists on the dedicated inbox page, so
+          // it's safer to omit it here than risk a half-correct
+          // reimplementation.
+          // onMarkAllRead intentionally left unset: no bulk
+          // mark-all-as-read method exists on NotificationRepository or
+          // NotificationInboxNotifier today (only per-item markAsRead) —
+          // omitted rather than inventing an endpoint.
+        ),
+      AppAsyncFailure(:final message) => AIMNotificationsSheet(
+          notifications: const [],
+          emptyMessage: message,
+        ),
+      _ => const AIMNotificationsSheet(
+          notifications: [],
+          loading: true,
+        ),
+    };
+  }
+}
+
+/// Real subtitle computed from the same backend-returned list shown in the
+/// sheet — counts unread, non-dismissed events, not a fabricated figure.
+String _unreadSubtitle(
+  BuildContext context,
+  List<NotificationEventModel> events,
+) {
+  final unread = events.where((e) => e.isUnread).length;
+  return AppLocalizations.of(context).homeUnreadNotificationsSubtitle(unread);
+}
+
+AIMNotificationItemData _toNotificationItemData(
+  BuildContext context,
+  NotificationEventModel event,
+) {
+  return AIMNotificationItemData(
+    id: event.id,
+    title: event.title ?? '',
+    body: event.body,
+    timeLabel: _relativeTimeLabel(context, event.createdAt),
+    read: !event.isUnread,
+  );
+}
+
+/// Computes a real relative-time label (e.g. "1h ago", "Yesterday") from the
+/// backend-supplied `createdAt` ISO timestamp — a small real computation
+/// from real data, not a fabricated value.
+String _relativeTimeLabel(BuildContext context, String createdAtIso) {
+  final createdAt = DateTime.tryParse(createdAtIso);
+  if (createdAt == null) return '';
+  final l10n = AppLocalizations.of(context);
+
+  final diff = DateTime.now().toUtc().difference(createdAt.toUtc());
+  if (diff.inMinutes < 1) return l10n.commonJustNow;
+  if (diff.inMinutes < 60) return l10n.homeMinutesAgoLabel(diff.inMinutes);
+  if (diff.inHours < 24) return l10n.homeHoursAgoLabel(diff.inHours);
+  if (diff.inDays == 1) return l10n.commonYesterday;
+  if (diff.inDays < 7) return l10n.homeDaysAgoLabel(diff.inDays);
+  return l10n.homeWeeksAgoLabel(diff.inDays ~/ 7);
 }
 
 /// Small colored bell-icon avatar shown beside the sheet's title, matching
