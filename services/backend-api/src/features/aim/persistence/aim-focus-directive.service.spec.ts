@@ -8,6 +8,8 @@
 import { AimFocusDirectiveService } from './aim-focus-directive.service';
 import { DatabaseService } from '../../../database/database.service';
 import { SkillsService } from '../../curriculum/skills/skills.service';
+import { UsersService } from '../../users/users.service';
+import { StudentProfileService } from '../../students/student-profile.service';
 import {
   AimValidatedCategories,
   AimValidatedDifficultyDecision,
@@ -15,7 +17,14 @@ import {
   AimValidatedWeaknessRecord,
 } from '../adapter/aim-response-mapper.types';
 
+// STUDENT_ID is the raw Supabase Auth UID (this service's studentId
+// parameter, matching every other AIM pipeline caller). PROFILE_ID is the
+// distinct student_profiles.id that ai_focus_directives.student_id's FK
+// actually requires — deliberately different values so a test fails loudly
+// if the resolution step were ever dropped.
 const STUDENT_ID = '770e8400-e29b-41d4-a716-446655440002';
+const INTERNAL_USER_ID = '990e8400-e29b-41d4-a716-446655440099';
+const PROFILE_ID = 'aa0e8400-e29b-41d4-a716-446655440077';
 
 function makeCategories(overrides: Partial<AimValidatedCategories> = {}): AimValidatedCategories {
   return {
@@ -85,7 +94,19 @@ function makeService(skillTitle: string | null = 'Past Simple') {
     }),
   } as unknown as SkillsService;
 
-  return { service: new AimFocusDirectiveService(db, skills), query, skills };
+  const users = {
+    findBySupabaseUid: jest.fn().mockResolvedValue({ id: INTERNAL_USER_ID }),
+  } as unknown as UsersService;
+
+  const studentProfiles = {
+    findByUserId: jest.fn().mockResolvedValue({ id: PROFILE_ID }),
+  } as unknown as StudentProfileService;
+
+  return {
+    service: new AimFocusDirectiveService(db, skills, users, studentProfiles),
+    query,
+    skills,
+  };
 }
 
 describe('AimFocusDirectiveService', () => {
@@ -100,12 +121,12 @@ describe('AimFocusDirectiveService', () => {
     expect(query).toHaveBeenCalledTimes(2);
     const [updateSql, updateParams] = query.mock.calls[0];
     expect(updateSql).toMatch(/UPDATE ai_focus_directives SET active = false/);
-    expect(updateParams).toEqual([STUDENT_ID]);
+    expect(updateParams).toEqual([PROFILE_ID]);
 
     const [insertSql, insertParams] = query.mock.calls[1];
     expect(insertSql).toMatch(/INSERT INTO ai_focus_directives/);
     const [studentId, skillId, directiveText, source, sourceId] = insertParams;
-    expect(studentId).toBe(STUDENT_ID);
+    expect(studentId).toBe(PROFILE_ID);
     expect(skillId).toBe('skill:english:a1:grammar.past-simple');
     expect(source).toBe('weakness_record');
     expect(sourceId).toBe('weak-1');

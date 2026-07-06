@@ -26,6 +26,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
 import { SkillsModule } from '../curriculum/skills/skills.module';
 import { RolesModule } from '../roles/roles.module';
 import { UsersModule } from '../users/users.module';
+import { StudentsModule } from '../students/students.module';
 import { AimEngineClientService } from './aim-engine-client.service';
 import { AimService } from './aim.service';
 import { AimDiagnosticsController } from './aim-diagnostics.controller';
@@ -61,7 +62,7 @@ import { FocusDirectiveReadService } from './result/focus-directive-read.service
 import { AimResultController } from './result/aim-result.controller';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, NotificationsModule, SkillsModule, RolesModule, UsersModule],
+  imports: [DatabaseModule, AuthModule, NotificationsModule, SkillsModule, RolesModule, UsersModule, StudentsModule],
   controllers: [AimResultController, AimDiagnosticsController],
   providers: [
     // Existing (pre-Phase 5)
