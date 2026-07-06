@@ -415,6 +415,23 @@
       }
     }
   },
+  "shellLanguageEnglish": "English",
+  "@shellLanguageEnglish": {
+    "description": "Label for the English language toggle option in the drawer."
+  },
+  "shellLanguageArabic": "العربية",
+  "@shellLanguageArabic": {
+    "description": "Label for the Arabic language toggle option in the drawer."
+  },
+  "shellLanguageSemantic": "{language} language",
+  "@shellLanguageSemantic": {
+    "description": "Accessibility label for a language toggle option, e.g. 'English language'.",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
   "onboardingBrandName": "AIM",
   "@onboardingBrandName": {
     "description": "App brand name shown on the splash screen."
