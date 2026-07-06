@@ -377,6 +377,10 @@
   "@shellAimPlus": {
     "description": "Drawer item label for the premium subscription / pricing screen."
   },
+  "shellPlacementTest": "Placement Test",
+  "@shellPlacementTest": {
+    "description": "Label for the Placement Test entry in the navigation drawer's MORE section."
+  },
   "shellSupport": "Support",
   "@shellSupport": {
     "description": "Drawer item label for the help center."

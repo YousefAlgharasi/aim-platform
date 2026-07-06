@@ -56,7 +56,11 @@ import { PlacementQuestionAudioService } from './placement-question-audio.servic
 import { TtsAudioStorageService } from '../voice-teacher/tts-gateway/tts-audio-storage.service';
 import { PlacementAnswerSubmitService } from './placement-answer-submit.service';
 import { PlacementAttemptCompleteService } from './placement-attempt-complete.service';
-import { PlacementResultReadService, PlacementResultResponse } from './placement-result-read.service';
+import {
+  PlacementResultReadService,
+  PlacementResultResponse,
+  PlacementLatestStatusResponse,
+} from './placement-result-read.service';
 import { PlacementResultService } from './placement-result.service';
 import { PlacementInitialLearningPathService } from './placement-initial-learning-path.service';
 import { PlacementLevelStateService } from './placement-level-state.service';
@@ -296,5 +300,28 @@ export class PlacementController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<PlacementResultResponse> {
     return this.resultRead.getResult(attemptId, user.id);
+  }
+
+  /**
+   * GET /placement/attempts/latest
+   * Fetch the student's overall placement status without requiring a known
+   * attemptId — used by the mobile app's "Placement Test" menu entry to
+   * decide between showing a completed result + retake option, an
+   * in-progress resume, or the fresh start flow.
+   */
+  @Get('attempts/latest')
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Fetch the student's latest placement attempt status." })
+  @ApiOkResponse({
+    description:
+      "status: 'none' | 'active' | 'submitted' | 'completed'. result is only populated when status is 'completed'.",
+  })
+  async getLatestStatus(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<PlacementLatestStatusResponse> {
+    return this.resultRead.getLatestAttemptStatus(user.id);
   }
 }

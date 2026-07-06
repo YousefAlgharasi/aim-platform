@@ -26,6 +26,9 @@ class AppRoutePaths {
   // P4-066: submit route (navigated from section page after last section)
   static const String placementSubmit = '/placement/submit';
   static const String placementResult = '/placement/result';
+  // Drawer "Placement Test" menu entry: checks GET /placement/attempts/latest
+  // and routes to fresh start, resume, or a completed result + retake option.
+  static const String placementMenu = '/placement/menu';
 
   // TASK-1: Assessment flow routes
   static const String assessments = '/student/assessments';

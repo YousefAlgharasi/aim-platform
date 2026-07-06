@@ -332,6 +332,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shellAimPlus => 'AIM Plus';
 
   @override
+  String get shellPlacementTest => 'Placement Test';
+
+  @override
   String get shellSupport => 'Support';
 
   @override

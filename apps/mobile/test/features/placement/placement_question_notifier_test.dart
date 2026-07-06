@@ -118,6 +118,10 @@ class _FakePlacementRepository implements PlacementRepository {
   @override
   Future<List<int>> getQuestionAudio(String t, {required String questionId}) async =>
       throw UnimplementedError();
+
+  @override
+  Future<PlacementLatestStatusModel> getLatestStatus(String t) async =>
+      throw UnimplementedError();
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────

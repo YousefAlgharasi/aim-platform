@@ -710,6 +710,12 @@ abstract class AppLocalizations {
   /// **'AIM Plus'**
   String get shellAimPlus;
 
+  /// Label for the Placement Test entry in the navigation drawer's MORE section.
+  ///
+  /// In en, this message translates to:
+  /// **'Placement Test'**
+  String get shellPlacementTest;
+
   /// Drawer item label for the help center.
   ///
   /// In en, this message translates to:

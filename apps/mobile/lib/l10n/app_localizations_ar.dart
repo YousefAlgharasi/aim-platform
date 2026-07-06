@@ -332,6 +332,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get shellAimPlus => 'AIM Plus';
 
   @override
+  String get shellPlacementTest => 'اختبار تحديد المستوى';
+
+  @override
   String get shellSupport => 'الدعم';
 
   @override

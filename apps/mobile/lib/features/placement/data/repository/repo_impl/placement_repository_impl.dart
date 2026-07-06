@@ -137,4 +137,15 @@ class PlacementRepositoryImpl implements PlacementRepository {
       throw AppException(code: e.code, message: e.message);
     }
   }
+
+  @override
+  Future<PlacementLatestStatusModel> getLatestStatus(
+    String bearerToken,
+  ) async {
+    try {
+      return await _datasource.getLatestStatus(bearerToken);
+    } on ApiClientException catch (e) {
+      throw AppException(code: e.code, message: e.message);
+    }
+  }
 }
