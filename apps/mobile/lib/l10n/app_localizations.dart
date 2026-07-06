@@ -866,6 +866,24 @@ abstract class AppLocalizations {
   /// **'Loading home data'**
   String get homeLoadingSemantic;
 
+  /// Shown under the home greeting when the data was refreshed less than a minute ago.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated just now'**
+  String get homeLastUpdatedJustNow;
+
+  /// Shown under the home greeting with how many minutes since the last successful refresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {minutes, plural, one{1 minute ago} other{{minutes} minutes ago}}'**
+  String homeLastUpdatedMinutesAgo(int minutes);
+
+  /// Shown under the home greeting with how many hours since the last successful refresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {hours, plural, one{1 hour ago} other{{hours} hours ago}}'**
+  String homeLastUpdatedHoursAgo(int hours);
+
   /// Subtitle in the notifications sheet summarizing the number of unread, non-dismissed notifications.
   ///
   /// In en, this message translates to:

@@ -430,6 +430,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeLoadingSemantic => 'Loading home data';
 
   @override
+  String get homeLastUpdatedJustNow => 'Updated just now';
+
+  @override
+  String homeLastUpdatedMinutesAgo(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutes ago',
+      one: '1 minute ago',
+    );
+    return 'Updated $_temp0';
+  }
+
+  @override
+  String homeLastUpdatedHoursAgo(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: '$hours hours ago',
+      one: '1 hour ago',
+    );
+    return 'Updated $_temp0';
+  }
+
+  @override
   String homeUnreadNotificationsSubtitle(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
