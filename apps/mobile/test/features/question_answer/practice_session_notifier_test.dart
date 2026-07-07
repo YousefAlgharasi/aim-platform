@@ -131,6 +131,20 @@ class _FakeRepository implements QuestionAnswerRepository {
     lastCompleteLessonId = lessonId;
     if (completionError != null) throw completionError!;
   }
+
+  @override
+  Future<List<int>> getQuestionAudio({
+    required String bearerToken,
+    required String questionId,
+  }) async =>
+      const [];
+
+  @override
+  Future<List<int>> getLessonAssetAudio({
+    required String bearerToken,
+    required String assetId,
+  }) async =>
+      const [];
 }
 
 void main() {

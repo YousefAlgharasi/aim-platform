@@ -16,18 +16,17 @@
 //
 // P20-014 — course recommendation, ties placement + gating (P20-001/002/010)
 // together:
-//   - recommended_course_id: resolved from the SAME LEVEL_TO_CEFR mapping
-//     PlacementLevelStateService (P20-006) uses, by finding a course whose
-//     cefr_code matches (any status, to learn its intended cefr_rank/track
-//     even if archived/unpublished). If a PUBLISHED course exists at that
-//     exact cefr_rank, that is the recommendation, note is null.
-//   - If no published course exists at that exact rank (a real, currently
-//     live gap: LEVEL_TO_CEFR maps upper_intermediate/advanced -> 'B1', but
-//     this platform's live courses only define cefr_code A1/A2/A3 — no B1
-//     course exists yet), fall back to the highest-ranked published course
-//     below that rank in the same track, and explain via `note`. If the
-//     cefr_code has no course row at all (today's real B1 case), there is
-//     no rank to compare against, so fall back to the single most helpful
+//   - recommended_course_id: resolved from PLACEMENT_BUCKET_TO_CEFR_RANK
+//     (Task 1c of the 17-course build-out), which routes each of the 5
+//     estimated_level buckets to the exact cefr_rank of its intended
+//     starting course — not just "the lowest course with a matching
+//     cefr_code", since several cefr_codes (B1, B2) now span more than one
+//     course. If a PUBLISHED course exists at that exact cefr_rank, that is
+//     the recommendation, note is null.
+//   - If no published course exists at that exact rank (e.g. archived),
+//     fall back to the highest-ranked published course below that rank in
+//     the same track, and explain via `note`. If no course has ever been
+//     authored at that rank at all, fall back to the single most helpful
 //     answer: the highest-ranked published course that exists, in the
 //     track resolved from the student's own student_level_state row (or
 //     the highest-ranked published course sitewide if that row doesn't
@@ -54,7 +53,29 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AppError } from '../../common/errors/app-error';
 import { PlacementErrorCode } from './placement-error-codes';
-import { LEVEL_TO_CEFR } from './placement-initial-learning-path.service';
+
+// Task 1c — routes each of PlacementScoringService's 5 estimated_level
+// buckets to the first course of its corresponding band in the 17-course
+// English track (see docs/plan for the full sequence). This is deliberately
+// NOT the same as LEVEL_TO_CEFR (which maps to the coarse A1/A2/B1 set used
+// only for initial_learning_path's DB-constrained estimated_level column):
+// several of these bands (B1, B2) now contain multiple courses sharing one
+// cefr_code, so routing needs the exact cefr_rank of the intended starting
+// course, not just "the lowest-rank course with a matching cefr_code" (that
+// would land upper_intermediate on Intermediate 2 (B2.1) instead of the
+// intended Upper Intermediate 1 (B2.2)).
+//
+// beginner routes to Beginner 1 (A1.1) rather than Starter: Starter is
+// zero-knowledge onboarding content, not a placement outcome — a student who
+// completed the placement test already has some English, so the lowest real
+// placement destination is the first real A1 course.
+export const PLACEMENT_BUCKET_TO_CEFR_RANK: Record<string, number> = {
+  beginner: 2, // Beginner 1 (A1.1)
+  elementary: 5, // Elementary 1 (A2.1)
+  intermediate: 7, // Pre-Intermediate 1 (B1.1)
+  upper_intermediate: 12, // Upper Intermediate 1 (B2.2)
+  advanced: 14, // Advanced 1 (C1.1)
+};
 
 // ---------------------------------------------------------------------------
 // Internal DB row types
@@ -82,7 +103,7 @@ interface ResultRow {
   readonly created_at: string;
 }
 
-interface CefrCodeCourseRow {
+interface RankAnchorCourseRow {
   readonly track_slug: string;
   readonly cefr_rank: number;
 }
@@ -315,26 +336,25 @@ export class PlacementResultReadService {
     estimatedLevel: string,
     studentId: string,
   ): Promise<{ recommendedCourseId: string | null; note: string | null; trackSlug: string | null }> {
-    const cefrCode = LEVEL_TO_CEFR[estimatedLevel];
-    if (!cefrCode) {
+    const targetRank = PLACEMENT_BUCKET_TO_CEFR_RANK[estimatedLevel];
+    if (!targetRank) {
       return { recommendedCourseId: null, note: null, trackSlug: null };
     }
 
-    // Match by cefr_code regardless of status — this tells us the intended
-    // cefr_rank/track even if the exact-level course is archived/unpublished,
-    // without fabricating a rank ourselves (cefr_rank is always author-set).
-    const anchorResult = await this.db.query<CefrCodeCourseRow>(
-      `SELECT track_slug, cefr_rank FROM courses WHERE cefr_code = $1 AND cefr_rank IS NOT NULL ORDER BY cefr_rank ASC LIMIT 1`,
-      [cefrCode],
+    // Match by the intended course's own cefr_rank regardless of status —
+    // this tells us the intended track even if that exact course is
+    // archived/unpublished, without fabricating a rank ourselves (cefr_rank
+    // is always author-set).
+    const anchorResult = await this.db.query<RankAnchorCourseRow>(
+      `SELECT track_slug, cefr_rank FROM courses WHERE cefr_rank = $1 LIMIT 1`,
+      [targetRank],
     );
     const anchor = anchorResult.rows[0];
 
     if (!anchor) {
-      // No course has ever been authored for this cefr_code (e.g. this
-      // platform's live courses only define A1/A2/A3 — LEVEL_TO_CEFR's 'B1'
-      // has no matching course yet). Fall back to the most advanced course
-      // that exists, in the track resolved from the student's own level
-      // state (or sitewide if no state row exists either).
+      // No course has ever been authored at this rank yet. Fall back to the
+      // most advanced course that exists, in the track resolved from the
+      // student's own level state (or sitewide if no state row exists either).
       const trackSlug = await this.resolveStudentTrackSlug(studentId);
       const fallback = await this.highestRankedPublishedCourse(trackSlug);
       if (!fallback) {

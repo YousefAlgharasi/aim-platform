@@ -37,6 +37,7 @@ import {
   Param,
   Post,
   Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -48,6 +49,7 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { Response } from 'express';
 import { AppError } from '../../common/errors/app-error';
 import { ApiErrorCode } from '../../common/errors/api-error-code';
 
@@ -75,6 +77,9 @@ import {
   SessionQuestionsService,
   SessionLessonQuestionsResponse,
 } from './session-questions.service';
+import { SessionQuestionAudioService } from './session-question-audio.service';
+import { LessonAssetAudioService } from './lesson-asset-audio.service';
+import { TtsAudioStorageService } from '../voice-teacher/tts-gateway/tts-audio-storage.service';
 
 // ---------------------------------------------------------------------------
 // Request / response body types
@@ -140,6 +145,9 @@ export class SessionsController {
     private readonly aimOrchestrator: AimPipelineOrchestratorService,
     private readonly sessionQuestionsService: SessionQuestionsService,
     private readonly aimEngineClient: AimEngineClientService,
+    private readonly questionAudio: SessionQuestionAudioService,
+    private readonly lessonAssetAudio: LessonAssetAudioService,
+    private readonly audioStorage: TtsAudioStorageService,
   ) {}
 
   // -------------------------------------------------------------------------
@@ -373,5 +381,110 @@ export class SessionsController {
       aimPipelineTriggered,
       aimOutcome,
     };
+  }
+
+  // -------------------------------------------------------------------------
+  // GET /sessions/questions/:id/audio
+  // -------------------------------------------------------------------------
+
+  /**
+   * GET /sessions/questions/:id/audio
+   *
+   * Lazily synthesize and stream a `listening_choice` question_bank item's
+   * audio. Mirrors PlacementController's questions/:id/audio endpoint: 404
+   * when the question doesn't exist (or isn't published), 400 when it isn't
+   * a listening question, 204 when it is a listening question with no
+   * listening_script authored yet (a real content gap).
+   */
+  @Get('questions/:id/audio')
+  @UseGuards(SupabaseJwtAuthGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Synthesize and stream a practice question\'s listening audio (student).' })
+  @ApiParam({ name: 'id', description: 'UUID of the question_bank item.' })
+  @ApiQuery({ name: 'languageCode', required: false, type: String })
+  @ApiOkResponse({ description: 'Audio stream. 204 (empty body) when no listening_script is authored yet.' })
+  async getQuestionAudio(
+    @Param('id') questionId: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Res() res: Response,
+    @Query('languageCode') languageCode?: string,
+  ): Promise<void> {
+    const result = await this.questionAudio.ensureAudio(
+      questionId,
+      user.id,
+      languageCode?.trim() || 'en',
+    );
+
+    if (result.scriptMissing) {
+      res.status(HttpStatus.NO_CONTENT).send();
+      return;
+    }
+
+    if (!result.audioRef) {
+      res.status(HttpStatus.NOT_FOUND).json({ error: 'Audio not available' });
+      return;
+    }
+
+    const audio = await this.audioStorage.retrieveAudio(result.audioRef, user.id);
+    if (!audio) {
+      res.status(HttpStatus.NOT_FOUND).json({ error: 'Audio not found' });
+      return;
+    }
+
+    res.status(HttpStatus.OK).set('Content-Type', audio.contentType).send(audio.data);
+  }
+
+  // -------------------------------------------------------------------------
+  // GET /sessions/lesson-assets/:id/audio
+  // -------------------------------------------------------------------------
+
+  /**
+   * GET /sessions/lesson-assets/:id/audio
+   *
+   * Lazily synthesize and stream a listening lesson's spoken-passage audio
+   * from a `lesson_assets` row (`type = 'audio'`, script in
+   * `metadata.script`). Same 404/400/204 contract as the question audio
+   * endpoint above.
+   */
+  @Get('lesson-assets/:id/audio')
+  @UseGuards(SupabaseJwtAuthGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Synthesize and stream a listening lesson asset\'s audio (student).' })
+  @ApiParam({ name: 'id', description: 'UUID of the lesson_assets row.' })
+  @ApiQuery({ name: 'languageCode', required: false, type: String })
+  @ApiOkResponse({ description: 'Audio stream. 204 (empty body) when no script is authored yet.' })
+  async getLessonAssetAudio(
+    @Param('id') assetId: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Res() res: Response,
+    @Query('languageCode') languageCode?: string,
+  ): Promise<void> {
+    const result = await this.lessonAssetAudio.ensureAudio(
+      assetId,
+      user.id,
+      languageCode?.trim() || 'en',
+    );
+
+    if (result.scriptMissing) {
+      res.status(HttpStatus.NO_CONTENT).send();
+      return;
+    }
+
+    if (!result.audioRef) {
+      res.status(HttpStatus.NOT_FOUND).json({ error: 'Audio not available' });
+      return;
+    }
+
+    const audio = await this.audioStorage.retrieveAudio(result.audioRef, user.id);
+    if (!audio) {
+      res.status(HttpStatus.NOT_FOUND).json({ error: 'Audio not found' });
+      return;
+    }
+
+    res.status(HttpStatus.OK).set('Content-Type', audio.contentType).send(audio.data);
   }
 }

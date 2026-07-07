@@ -34,6 +34,8 @@
 // - AIMAnswerOption uses leading-edge text alignment internally.
 // - Column/CrossAxisAlignment: direction-aware.
 
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -185,6 +187,10 @@ class _QuestionPageState extends ConsumerState<QuestionPage> {
           const SizedBox(height: AimSpacing.space8),
         ],
         QuestionStemCard(question: question),
+        if (question.type == 'listening_choice') ...[
+          const SizedBox(height: AimSpacing.componentGap),
+          _QuestionListenButton(questionId: question.id),
+        ],
         const SizedBox(height: AimSpacing.sectionGap),
         if (state.isSubmitted && state.attemptResult != null)
           AttemptAcknowledgementCard(result: state.attemptResult!)
@@ -204,6 +210,32 @@ class _QuestionPageState extends ConsumerState<QuestionPage> {
                 .updateWrittenAnswer(v),
           ),
       ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Listen button — plays backend-synthesized audio for a listening_choice
+// practice question. Fetches fresh bytes on every tap, same pattern as
+// PlacementQuestionPage's _ListenButton.
+// ---------------------------------------------------------------------------
+
+class _QuestionListenButton extends ConsumerWidget {
+  const _QuestionListenButton({required this.questionId});
+
+  final String questionId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return QuestionAudioPlayButton(
+      fetchAudioBytes: () async {
+        final token = ref.read(authFlowProvider).accessToken ?? '';
+        final bytes = await ref.read(questionAnswerRepositoryProvider).getQuestionAudio(
+              bearerToken: token,
+              questionId: questionId,
+            );
+        return Uint8List.fromList(bytes);
+      },
     );
   }
 }

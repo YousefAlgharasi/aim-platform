@@ -99,6 +99,20 @@ class _FakeRepository implements QuestionAnswerRepository {
     required String bearerToken,
     required String lessonId,
   }) async {}
+
+  @override
+  Future<List<int>> getQuestionAudio({
+    required String bearerToken,
+    required String questionId,
+  }) async =>
+      const [];
+
+  @override
+  Future<List<int>> getLessonAssetAudio({
+    required String bearerToken,
+    required String assetId,
+  }) async =>
+      const [];
 }
 
 Widget _wrap(QuestionAnswerRepository repository) => ProviderScope(

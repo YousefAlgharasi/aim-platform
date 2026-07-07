@@ -115,6 +115,20 @@ class _FakeSessionDatasource implements SessionRemoteDatasource {
     required String lessonId,
   }) async =>
       [_FakeQuestionDatasource._q];
+
+  @override
+  Future<List<int>> getQuestionAudio({
+    required String bearerToken,
+    required String questionId,
+  }) async =>
+      const [];
+
+  @override
+  Future<List<int>> getLessonAssetAudio({
+    required String bearerToken,
+    required String assetId,
+  }) async =>
+      const [];
 }
 
 class _FakeLessonProgressDatasource implements LessonProgressRemoteDatasource {

@@ -29,10 +29,15 @@
 // - Icon placement is RTL-safe (no explicit directional icons that require
 //   mirroring beyond what Flutter handles automatically).
 
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lesson_asset.dart';
+import 'package:aim_mobile/features/question_answer/logic/provider/question_answer_provider.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Renders a single published [LessonAsset] using safe built-in widgets.
@@ -142,18 +147,41 @@ class _ImageRenderer extends StatelessWidget {
 // Audio info card (no playback — package not available)
 // ---------------------------------------------------------------------------
 
-class _AudioInfoCard extends StatelessWidget {
+class _AudioInfoCard extends ConsumerWidget {
   const _AudioInfoCard({required this.asset});
   final LessonAsset asset;
 
   @override
-  Widget build(BuildContext context) {
-    return _MediaInfoCard(
-      icon: Icons.headphones_outlined,
-      asset: asset,
-      subtitleSuffix: asset.durationSeconds != null
-          ? _formatDuration(asset.durationSeconds!)
-          : null,
+  Widget build(BuildContext context, WidgetRef ref) {
+    // A listening lesson's spoken-passage script (Task 1b infra) lives in
+    // metadata.script and is synthesized on demand — otherwise this asset
+    // has no playable content, so fall back to the static info card.
+    final hasScript = asset.metadata?['script'] is String &&
+        (asset.metadata!['script'] as String).trim().isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _MediaInfoCard(
+          icon: Icons.headphones_outlined,
+          asset: asset,
+          subtitleSuffix: asset.durationSeconds != null
+              ? _formatDuration(asset.durationSeconds!)
+              : null,
+        ),
+        if (hasScript) ...[
+          const SizedBox(height: AimSpacing.space8),
+          QuestionAudioPlayButton(
+            fetchAudioBytes: () async {
+              final token = ref.read(authFlowProvider).accessToken ?? '';
+              final bytes = await ref
+                  .read(questionAnswerRepositoryProvider)
+                  .getLessonAssetAudio(bearerToken: token, assetId: asset.id);
+              return Uint8List.fromList(bytes);
+            },
+          ),
+        ],
+      ],
     );
   }
 }
