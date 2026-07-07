@@ -123,6 +123,9 @@ class _PlacementMenuPageState extends ConsumerState<PlacementMenuPage> {
                       ),
                     'active' || 'submitted' => _InProgressBody(
                         status: status,
+                        onContinue: () =>
+                            context.push(AppRoutePaths.placementStart),
+                        onCheckAgain: _check,
                       ),
                     _ => _NotTakenBody(
                         onStart: () =>
@@ -245,29 +248,75 @@ class _NotTakenBody extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _InProgressBody extends StatelessWidget {
-  const _InProgressBody({required this.status});
+  const _InProgressBody({
+    required this.status,
+    required this.onContinue,
+    required this.onCheckAgain,
+  });
 
   final String status;
+
+  /// Starts a fresh attempt (the backend auto-abandons the existing
+  /// active one) — there is no mid-section resume flow in this app today,
+  /// so "continue" honestly means "start again," not "pick up exactly
+  /// where you left off."
+  final VoidCallback onContinue;
+
+  /// Re-runs the status check — used while a submitted attempt is still
+  /// being scored server-side, since a new attempt can't be started until
+  /// scoring finishes.
+  final VoidCallback onCheckAgain;
 
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
-    final message = status == 'submitted'
-        ? 'Your placement test has been submitted and is being scored.'
-        : 'You have a placement test in progress.';
+    final isSubmitted = status == 'submitted';
+
+    final title = isSubmitted
+        ? 'Your placement test is being scored'
+        : 'You have a placement test in progress';
+    final body = isSubmitted
+        ? 'This usually only takes a moment. Check again shortly.'
+        : 'Pick up your placement test, or start over — your progress in '
+            'this attempt is not saved section by section.';
 
     return Padding(
       padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(color: AimColors.primary500),
+          Icon(
+            isSubmitted ? Icons.hourglass_top : Icons.assignment_outlined,
+            size: AimSizes.iconLg,
+            color: surfaces.textMuted,
+          ),
           const SizedBox(height: AimSpacing.sectionGap),
           Text(
-            message,
+            title,
             style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
             textAlign: TextAlign.center,
           ),
+          const SizedBox(height: AimSpacing.space8),
+          Text(
+            body,
+            style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AimSpacing.sectionGap),
+          if (isSubmitted)
+            AIMGradientButton(
+              label: 'Check Again',
+              fullWidth: true,
+              semanticLabel: 'Check Again',
+              onPressed: onCheckAgain,
+            )
+          else
+            AIMGradientButton(
+              label: 'Continue Placement Test',
+              fullWidth: true,
+              semanticLabel: 'Continue Placement Test',
+              onPressed: onContinue,
+            ),
         ],
       ),
     );
