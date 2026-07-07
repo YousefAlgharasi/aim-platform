@@ -110,6 +110,26 @@ class QuestionAnswerRepositoryImpl implements QuestionAnswerRepository {
             lessonId: lessonId,
           ));
 
+  @override
+  Future<List<int>> getQuestionAudio({
+    required String bearerToken,
+    required String questionId,
+  }) =>
+      _wrap(() => _sessionDatasource.getQuestionAudio(
+            bearerToken: bearerToken,
+            questionId: questionId,
+          ));
+
+  @override
+  Future<List<int>> getLessonAssetAudio({
+    required String bearerToken,
+    required String assetId,
+  }) =>
+      _wrap(() => _sessionDatasource.getLessonAssetAudio(
+            bearerToken: bearerToken,
+            assetId: assetId,
+          ));
+
   Future<T> _wrap<T>(Future<T> Function() call) async {
     try {
       return await call();

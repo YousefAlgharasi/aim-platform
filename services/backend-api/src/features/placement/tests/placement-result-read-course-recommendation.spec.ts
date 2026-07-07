@@ -50,7 +50,7 @@ function makeDb(handler: (sql: string, params: readonly unknown[]) => QueryResul
 describe('PlacementResultReadService — P20-014 course recommendation', () => {
   it('recommends the exact-rank published course when one exists (beginner -> A1)', async () => {
     const { db } = makeDb((sql) => {
-      if (sql.includes('FROM courses WHERE cefr_code')) {
+      if (sql.includes('FROM courses WHERE cefr_rank = $1')) {
         return { rows: [{ track_slug: 'english', cefr_rank: 1 }], rowCount: 1 };
       }
       if (sql.includes("cefr_rank = $2 AND status = 'published'")) {
@@ -68,7 +68,7 @@ describe('PlacementResultReadService — P20-014 course recommendation', () => {
 
   it('falls back to the closest lower published rank when the exact-rank course is archived', async () => {
     const { db } = makeDb((sql) => {
-      if (sql.includes('FROM courses WHERE cefr_code')) {
+      if (sql.includes('FROM courses WHERE cefr_rank = $1')) {
         return { rows: [{ track_slug: 'english', cefr_rank: 3 }], rowCount: 1 };
       }
       if (sql.includes("cefr_rank = $2 AND status = 'published'")) {
@@ -87,7 +87,7 @@ describe('PlacementResultReadService — P20-014 course recommendation', () => {
     expect(result.note).toContain('closest lower-level course');
   });
 
-  it('falls back to the highest-ranked published course when no course exists at all for the mapped cefr_code (the real advanced/upper_intermediate -> B1 gap)', async () => {
+  it('falls back to the highest-ranked published course when no course exists at all for the mapped rank', async () => {
     const { db } = makeDb((sql) => {
       if (sql.includes('FROM placement_results')) {
         return {
@@ -105,7 +105,7 @@ describe('PlacementResultReadService — P20-014 course recommendation', () => {
           rowCount: 1,
         };
       }
-      if (sql.includes('FROM courses WHERE cefr_code')) {
+      if (sql.includes('FROM courses WHERE cefr_rank = $1')) {
         return { rows: [], rowCount: 0 }; // no course authored for 'B1' at all
       }
       if (sql.includes('FROM student_level_state WHERE student_id = $1 ORDER BY updated_at')) {
@@ -126,7 +126,7 @@ describe('PlacementResultReadService — P20-014 course recommendation', () => {
 
   it('never recommends a course that does not exist: returns null with an explanatory note when no courses exist at all', async () => {
     const { db } = makeDb((sql) => {
-      if (sql.includes('FROM courses WHERE cefr_code')) {
+      if (sql.includes('FROM courses WHERE cefr_rank = $1')) {
         return { rows: [], rowCount: 0 };
       }
       if (sql.includes('FROM student_level_state WHERE student_id = $1 ORDER BY updated_at')) {
@@ -177,7 +177,7 @@ describe('PlacementResultReadService — P20-014 course recommendation', () => {
 
   it('lists every published course at or below the student max_unlocked_cefr_rank', async () => {
     const { db } = makeDb((sql) => {
-      if (sql.includes('FROM courses WHERE cefr_code')) {
+      if (sql.includes('FROM courses WHERE cefr_rank = $1')) {
         return { rows: [{ track_slug: 'english', cefr_rank: 1 }], rowCount: 1 };
       }
       if (sql.includes("cefr_rank = $2 AND status = 'published'")) {
@@ -206,7 +206,7 @@ describe('PlacementResultReadService — P20-014 course recommendation', () => {
 
   it('defaults to only rank-1 unlocked when the student has no student_level_state row yet', async () => {
     const { db } = makeDb((sql) => {
-      if (sql.includes('FROM courses WHERE cefr_code')) {
+      if (sql.includes('FROM courses WHERE cefr_rank = $1')) {
         return { rows: [{ track_slug: 'english', cefr_rank: 1 }], rowCount: 1 };
       }
       if (sql.includes("cefr_rank = $2 AND status = 'published'")) {

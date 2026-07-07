@@ -67,4 +67,19 @@ abstract class QuestionAnswerRepository {
     required String bearerToken,
     required String lessonId,
   });
+
+  /// GET /sessions/questions/:id/audio — synthesized listening audio for a
+  /// listening_choice practice question. Empty bytes means no
+  /// listening_script authored yet (a real content gap, not an error).
+  Future<List<int>> getQuestionAudio({
+    required String bearerToken,
+    required String questionId,
+  });
+
+  /// GET /sessions/lesson-assets/:id/audio — synthesized audio for a
+  /// listening lesson's spoken-passage asset.
+  Future<List<int>> getLessonAssetAudio({
+    required String bearerToken,
+    required String assetId,
+  });
 }

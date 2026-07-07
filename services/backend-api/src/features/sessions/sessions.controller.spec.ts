@@ -121,7 +121,19 @@ function makeCtrl(overrides: {
   const orc = overrides.orchestrator ?? makeOrchestrator();
   const sqs = overrides.sessionQuestionsService ?? makeSessionQuestionsService();
   const aec = overrides.aimEngineClient ?? makeAimEngineClient();
-  const ctrl = new SessionsController(svc as never, las as never, orc as never, sqs as never, aec as never);
+  const questionAudio = { ensureAudio: jest.fn() };
+  const lessonAssetAudio = { ensureAudio: jest.fn() };
+  const audioStorage = { retrieveAudio: jest.fn() };
+  const ctrl = new SessionsController(
+    svc as never,
+    las as never,
+    orc as never,
+    sqs as never,
+    aec as never,
+    questionAudio as never,
+    lessonAssetAudio as never,
+    audioStorage as never,
+  );
   return { ctrl, svc, las, orc, sqs, aec };
 }
 
