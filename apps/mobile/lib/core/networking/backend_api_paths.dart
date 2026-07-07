@@ -193,6 +193,14 @@ class BackendApiPaths {
   static String sessionQuestions(String sessionId) =>
       '/sessions/$sessionId/questions';
 
+  /// GET /sessions/questions/:id/audio
+  static String sessionQuestionAudio(String questionId) =>
+      '/sessions/questions/$questionId/audio';
+
+  /// GET /sessions/lesson-assets/:id/audio
+  static String sessionLessonAssetAudio(String assetId) =>
+      '/sessions/lesson-assets/$assetId/audio';
+
   /// POST /sessions/:sessionId/attempt
   static String sessionAttempt(String sessionId) =>
       '/sessions/$sessionId/attempt';

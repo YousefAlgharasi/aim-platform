@@ -72,4 +72,26 @@ class SessionRemoteDatasourceImpl implements SessionRemoteDatasource {
     );
     return envelope.data!;
   }
+
+  @override
+  Future<List<int>> getQuestionAudio({
+    required String bearerToken,
+    required String questionId,
+  }) {
+    return _apiClient.getBytes(
+      BackendApiPaths.sessionQuestionAudio(questionId),
+      headers: {'authorization': 'Bearer $bearerToken'},
+    );
+  }
+
+  @override
+  Future<List<int>> getLessonAssetAudio({
+    required String bearerToken,
+    required String assetId,
+  }) {
+    return _apiClient.getBytes(
+      BackendApiPaths.sessionLessonAssetAudio(assetId),
+      headers: {'authorization': 'Bearer $bearerToken'},
+    );
+  }
 }
