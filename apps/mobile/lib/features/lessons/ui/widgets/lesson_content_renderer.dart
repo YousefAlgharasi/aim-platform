@@ -35,7 +35,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
-import 'package:aim_mobile/core/widgets/audio/question_audio_play_button.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lesson_asset.dart';
 import 'package:aim_mobile/features/question_answer/logic/provider/question_answer_provider.dart';
