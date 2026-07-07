@@ -45,6 +45,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get commonError => 'حدث خطأ ما';
 
   @override
+  String commonErrorSemantic(String message) {
+    return 'خطأ: $message';
+  }
+
+  @override
   String get commonYes => 'نعم';
 
   @override

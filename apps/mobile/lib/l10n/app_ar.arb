@@ -13,6 +13,7 @@
   "commonDone": "تم",
   "commonLoading": "جارٍ التحميل…",
   "commonError": "حدث خطأ ما",
+  "commonErrorSemantic": "خطأ: {message}",
   "commonYes": "نعم",
   "commonNo": "لا",
   "commonOk": "حسنًا",

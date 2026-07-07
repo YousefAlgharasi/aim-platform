@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../theme/theme.dart';
 
 /// Full-screen error state.
@@ -24,7 +25,7 @@ class AIMFullScreenError extends StatelessWidget {
     required this.message,
     super.key,
     this.onRetry,
-    this.retryLabel = 'Try again',
+    this.retryLabel,
     this.semanticLabel,
   });
 
@@ -34,8 +35,9 @@ class AIMFullScreenError extends StatelessWidget {
   /// Called when the user taps the retry button. If null, no button is shown.
   final VoidCallback? onRetry;
 
-  /// Label for the retry button. Defaults to 'Try again'.
-  final String retryLabel;
+  /// Label for the retry button. Defaults to a localized "Try again" when
+  /// left `null`.
+  final String? retryLabel;
 
   /// Accessibility label for the error state container.
   final String? semanticLabel;
@@ -44,9 +46,10 @@ class AIMFullScreenError extends StatelessWidget {
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
     final softFills = aimSoftFillsOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return Semantics(
-      label: semanticLabel ?? 'Error: $message',
+      label: semanticLabel ?? l10n.commonErrorSemantic(message),
       child: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(
@@ -72,7 +75,7 @@ class AIMFullScreenError extends StatelessWidget {
               ),
               const SizedBox(height: AimSpacing.sectionGap),
               Text(
-                'Something went wrong',
+                l10n.commonError,
                 style: AimTextStyles.h3.copyWith(
                   color: surfaces.textPrimary,
                 ),
@@ -89,7 +92,7 @@ class AIMFullScreenError extends StatelessWidget {
               if (onRetry != null) ...[
                 const SizedBox(height: AimSpacing.sectionGap),
                 _AIMRetryButton(
-                  label: retryLabel,
+                  label: retryLabel ?? l10n.commonRetry,
                   onPressed: onRetry!,
                 ),
               ],

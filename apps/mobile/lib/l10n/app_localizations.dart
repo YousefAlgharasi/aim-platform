@@ -170,6 +170,12 @@ abstract class AppLocalizations {
   /// **'Something went wrong'**
   String get commonError;
 
+  /// Accessibility label for the shared full-screen error state, read by screen readers.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {message}'**
+  String commonErrorSemantic(String message);
+
   /// No description provided for @commonYes.
   ///
   /// In en, this message translates to:

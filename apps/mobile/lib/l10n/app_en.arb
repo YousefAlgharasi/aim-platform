@@ -16,6 +16,15 @@
   "commonDone": "Done",
   "commonLoading": "Loading…",
   "commonError": "Something went wrong",
+  "commonErrorSemantic": "Error: {message}",
+  "@commonErrorSemantic": {
+    "description": "Accessibility label for the shared full-screen error state, read by screen readers.",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "commonYes": "Yes",
   "commonNo": "No",
   "commonOk": "OK",

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../theme/theme.dart';
 import '../feedback/aim_skeleton.dart';
 
@@ -22,19 +23,20 @@ class AIMFullScreenLoading extends StatelessWidget {
   const AIMFullScreenLoading({
     super.key,
     this.skeletonLines = 4,
-    this.semanticLabel = 'Loading',
+    this.semanticLabel,
   });
 
   /// Number of skeleton text lines to render.
   final int skeletonLines;
 
-  /// Accessibility label announced to screen readers.
-  final String semanticLabel;
+  /// Accessibility label announced to screen readers. Defaults to a
+  /// localized "Loading" when left `null`.
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: semanticLabel,
+      label: semanticLabel ?? AppLocalizations.of(context).commonLoading,
       child: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(

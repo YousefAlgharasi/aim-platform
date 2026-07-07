@@ -45,6 +45,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonError => 'Something went wrong';
 
   @override
+  String commonErrorSemantic(String message) {
+    return 'Error: $message';
+  }
+
+  @override
   String get commonYes => 'Yes';
 
   @override
