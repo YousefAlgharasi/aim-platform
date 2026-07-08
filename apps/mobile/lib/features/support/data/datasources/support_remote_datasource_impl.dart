@@ -96,6 +96,10 @@ class SupportRemoteDatasourceImpl implements SupportDatasource {
         if (rating != null) 'rating': rating,
         'title': title,
         'body': body,
+        // Required by the backend's CreateFeedbackDto (sourceSurface enum:
+        // mobile_app/admin_dashboard/parent_dashboard/api) — omitting it
+        // fails class-validator and the request 400s.
+        'sourceSurface': 'mobile_app',
       },
       decodeData: (json) =>
           UserFeedback.fromJson(json as Map<String, dynamic>),
