@@ -127,6 +127,30 @@ export class AssessmentRepository {
     return res.rows[0] ?? null;
   }
 
+  /**
+   * The student's still-open attempt for this assessment (not yet submitted,
+   * and not expired), if any — so startAttempt can resume it instead of
+   * creating a new one and burning an attempt slot on a student who simply
+   * left the app mid-attempt.
+   */
+  async findActiveAttempt(
+    assessmentId: string,
+    studentId: string,
+  ): Promise<AssessmentAttemptRow | null> {
+    const res = await this.db.query<AssessmentAttemptRow>(
+      `SELECT id, assessment_id, student_id, attempt_number, status,
+              started_at, submitted_at, expires_at
+       FROM assessment_attempts
+       WHERE assessment_id = $1 AND student_id = $2
+         AND status IN ('started', 'in_progress')
+         AND (expires_at IS NULL OR expires_at > NOW())
+       ORDER BY started_at DESC
+       LIMIT 1`,
+      [assessmentId, studentId],
+    );
+    return res.rows[0] ?? null;
+  }
+
   async countAttemptsByStudent(assessmentId: string, studentId: string): Promise<number> {
     const res = await this.db.query<{ count: string }>(
       `SELECT COUNT(*)::text AS count FROM assessment_attempts
