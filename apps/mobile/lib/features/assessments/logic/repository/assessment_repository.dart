@@ -9,6 +9,12 @@ abstract class AssessmentRepository {
     required String bearerToken,
   });
 
+  /// The single "current" assessment for the student — the oldest unlocked,
+  /// not-yet-attempted assessment, or null when nothing is currently due.
+  Future<AssessmentListItem?> getNextAssessment({
+    required String bearerToken,
+  });
+
   Future<AssessmentDetail> getAssessmentDetail({
     required String bearerToken,
     required String assessmentId,

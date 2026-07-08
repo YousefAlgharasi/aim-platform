@@ -31,6 +31,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { CourseCompletionService } from './course-completion.service';
+import { ChapterCompletionService } from './chapter-completion.service';
 import {
   ContinueLearningLesson,
   LessonProgressAckResponse,
@@ -93,6 +94,7 @@ export class LessonProgressService {
   constructor(
     private readonly db: DatabaseService,
     private readonly courseCompletionService: CourseCompletionService,
+    private readonly chapterCompletionService: ChapterCompletionService,
   ) {}
 
   async recordProgress(input: RecordLessonProgressInput): Promise<LessonProgressAckResponse> {
@@ -122,8 +124,17 @@ export class LessonProgressService {
     await this.assertCourseUnlockedForLesson(studentId, lessonId);
     await this.assertPreviousLessonCompleted(studentId, lessonId);
 
-    const result = await this.db.query<LessonProgressRow>(
-      `INSERT INTO lesson_progress (student_id, lesson_id, percent, completed, completed_at, last_active_at)
+    // `prior` reads the pre-statement row state (MVCC snapshot), so
+    // was_already_completed reflects whether this lesson was completed
+    // *before* this call's own upsert — used below so the
+    // chapter-assessment-unlock check only ever runs on the transition into
+    // completed, never on a repeat markComplete call for an already-done
+    // lesson (which would otherwise re-send the unlock notification).
+    const result = await this.db.query<LessonProgressRow & { was_already_completed: boolean }>(
+      `WITH prior AS (
+         SELECT completed FROM lesson_progress WHERE student_id = $1 AND lesson_id = $2
+       )
+       INSERT INTO lesson_progress (student_id, lesson_id, percent, completed, completed_at, last_active_at)
             VALUES ($1, $2, 100, TRUE, NOW(), NOW())
        ON CONFLICT (student_id, lesson_id)
          DO UPDATE SET
@@ -132,11 +143,16 @@ export class LessonProgressService {
             completed_at = COALESCE(lesson_progress.completed_at, NOW()),
             last_active_at = NOW(),
             updated_at = NOW()
-       RETURNING lesson_id, percent, completed, updated_at`,
+       RETURNING lesson_id, percent, completed, updated_at,
+         COALESCE((SELECT completed FROM prior), FALSE) AS was_already_completed`,
       [studentId, lessonId],
     );
 
     await this.courseCompletionService.handleLessonCompleted(studentId, lessonId);
+
+    if (!result.rows[0].was_already_completed) {
+      await this.chapterCompletionService.handleLessonNewlyCompleted(studentId, lessonId);
+    }
 
     return this.toAck(result.rows[0]);
   }

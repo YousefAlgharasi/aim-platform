@@ -27,6 +27,20 @@ class AssessmentRemoteDatasourceImpl implements AssessmentRemoteDatasource {
   }
 
   @override
+  Future<AssessmentListItemModel?> getNextAssessment({
+    required String bearerToken,
+  }) async {
+    final envelope = await _apiClient.get<AssessmentListItemModel?>(
+      BackendApiPaths.studentAssessmentNext,
+      headers: _auth(bearerToken),
+      decodeData: (json) => json == null
+          ? null
+          : AssessmentListItemModel.fromJson(json as Map<String, dynamic>),
+    );
+    return envelope.data;
+  }
+
+  @override
   Future<AssessmentDetailModel> getAssessmentDetail({
     required String bearerToken,
     required String assessmentId,

@@ -11,6 +11,7 @@ import 'package:aim_mobile/features/assessments/data/repository/assessment_data_
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
 import 'package:aim_mobile/features/assessments/logic/repository/assessment_repository.dart';
 import 'assessment_list_notifier.dart';
+import 'next_assessment_notifier.dart';
 import 'assessment_detail_notifier.dart';
 import 'attempt_notifier.dart';
 import 'result_notifier.dart';
@@ -33,6 +34,13 @@ final assessmentRepositoryProvider = Provider<AssessmentRepository>((ref) {
 final assessmentListProvider = StateNotifierProvider<AssessmentListNotifier,
     AppAsyncState<List<AssessmentListItem>>>(
   (ref) => AssessmentListNotifier(
+    repository: ref.watch(assessmentRepositoryProvider),
+  ),
+);
+
+final nextAssessmentProvider = StateNotifierProvider<NextAssessmentNotifier,
+    AppAsyncState<AssessmentListItem?>>(
+  (ref) => NextAssessmentNotifier(
     repository: ref.watch(assessmentRepositoryProvider),
   ),
 );
