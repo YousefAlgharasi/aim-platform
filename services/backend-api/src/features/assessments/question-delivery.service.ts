@@ -43,9 +43,11 @@ interface QuestionRow {
 interface OptionRow {
   id: string;
   question_id: string;
-  label: string;
-  option_text: string;
+  text: string;
+  sort_order: number;
 }
+
+const OPTION_LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
 @Injectable()
 export class QuestionDeliveryService {
@@ -79,9 +81,9 @@ export class QuestionDeliveryService {
          aq.\"order\"   AS link_order,
          q.id         AS question_id,
          q.type       AS question_type,
-         q.prompt
+         q.stem       AS prompt
        FROM assessment_questions aq
-       JOIN questions q ON q.id = aq.question_id
+       JOIN question_bank q ON q.id = aq.question_id
        WHERE aq.assessment_id = $1
        ORDER BY aq.\"order\" ASC`,
       [assessmentId],
@@ -94,17 +96,21 @@ export class QuestionDeliveryService {
     const questionIds = qRes.rows.map(r => r.question_id);
 
     const optRes = await this.db.query<OptionRow>(
-      `SELECT id, question_id, label, option_text
+      `SELECT id, question_id, text, sort_order
        FROM question_choices
        WHERE question_id = ANY($1)
-       ORDER BY label ASC`,
+       ORDER BY sort_order ASC`,
       [questionIds],
     );
 
     const optionsByQuestion = new Map<string, DeliveredOption[]>();
     for (const o of optRes.rows) {
       const list = optionsByQuestion.get(o.question_id) ?? [];
-      list.push({ id: o.id, label: o.label, text: o.option_text });
+      list.push({
+        id: o.id,
+        label: OPTION_LABELS[list.length] ?? String(list.length + 1),
+        text: o.text,
+      });
       optionsByQuestion.set(o.question_id, list);
     }
 
