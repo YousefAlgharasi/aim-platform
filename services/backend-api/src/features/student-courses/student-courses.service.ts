@@ -27,12 +27,23 @@ export class StudentCoursesService {
     const courses: StudentCourseSummary[] = rows.map((row) => {
       const lessonCount = parseInt(row.lesson_count, 10) || 0;
       const completedLessonCount = parseInt(row.completed_lesson_count, 10) || 0;
-      const percent = lessonCount === 0 ? 0 : Math.round((completedLessonCount / lessonCount) * 100);
+      const quizCount = parseInt(row.quiz_count, 10) || 0;
+      const examCount = parseInt(row.exam_count, 10) || 0;
+
+      const lessonsComplete = lessonCount > 0 && completedLessonCount === lessonCount;
+      const fullyComplete = lessonsComplete && row.quizzes_passed && row.exam_passed;
+
+      const totalItems = lessonCount + quizCount + examCount;
+      const completedItems =
+        completedLessonCount +
+        (quizCount > 0 && row.quizzes_passed ? quizCount : 0) +
+        (examCount > 0 && row.exam_passed ? examCount : 0);
+      const percent = totalItems === 0 ? 0 : Math.round((completedItems / totalItems) * 100);
 
       let status: StudentCourseStatus;
-      if (lessonCount > 0 && completedLessonCount === lessonCount) {
+      if (fullyComplete) {
         status = 'completed';
-      } else if (completedLessonCount > 0) {
+      } else if (completedItems > 0) {
         status = 'in_progress';
       } else {
         status = 'not_started';
@@ -48,6 +59,8 @@ export class StudentCoursesService {
         levelCode: row.level_code,
         lessonCount,
         completedLessonCount,
+        quizCount,
+        examCount,
         percent,
         status,
         locked,

@@ -57,6 +57,7 @@ const _chapters = [
     levelCode: 'A1',
     lessonCount: 4,
     completedLessonCount: 4,
+    quizCount: 0,
     percent: 100,
     status: 'completed',
   ),
@@ -67,6 +68,7 @@ const _chapters = [
     levelCode: 'A1',
     lessonCount: 5,
     completedLessonCount: 2,
+    quizCount: 0,
     percent: 40,
     status: 'in_progress',
   ),
@@ -287,4 +289,18 @@ class _FakeLessonsRepository implements LessonsRepository {
     required String chapterId,
   }) async =>
       const [];
+
+  @override
+  Future<FinalExamSummaryModel?> getFinalExamForLevel({
+    required String bearerToken,
+    required String levelId,
+  }) async =>
+      null;
+
+  @override
+  Future<ChapterQuizSummaryModel?> getChapterQuiz({
+    required String bearerToken,
+    required String chapterId,
+  }) async =>
+      null;
 }

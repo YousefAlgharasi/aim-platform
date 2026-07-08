@@ -2,7 +2,9 @@
 // Lessons UI widgets barrel.
 
 export 'chapter_list_tile.dart';
+export 'chapter_quiz_tile.dart';
 export 'course_list_tile.dart';
+export 'final_exam_card.dart';
 export 'lesson_asset_tile.dart';
 export 'lesson_content_renderer.dart';
 export 'lesson_list_tile.dart';

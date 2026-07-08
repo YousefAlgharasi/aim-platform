@@ -1566,6 +1566,36 @@ abstract class AppLocalizations {
   /// **'{count, plural, one{1 lesson} other{{count} lessons}}'**
   String lessonsLessonsCountLabel(int count);
 
+  /// Quiz count caption shown on course and chapter cards.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 quiz} other{{count} quizzes}}'**
+  String lessonsQuizzesCountLabel(int count);
+
+  /// Final exam count caption shown on course cards.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 exam} other{{count} exams}}'**
+  String lessonsExamsCountLabel(int count);
+
+  /// Title of the always-shown Final Exam card at the end of the chapter list.
+  ///
+  /// In en, this message translates to:
+  /// **'Final Exam'**
+  String get lessonsFinalExamTitle;
+
+  /// Subtitle on the Final Exam card while it is locked.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete every chapter to unlock'**
+  String get lessonsFinalExamLockedSubtitle;
+
+  /// Label for the tappable quiz row at the end of the lesson list.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz'**
+  String get lessonsQuizRowLabel;
+
   /// Accessibility label for a lesson card.
   ///
   /// In en, this message translates to:

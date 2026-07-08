@@ -14,10 +14,23 @@ export interface StudentCourseSummary {
   /** Count of those lessons the student has completed (lesson_progress.completed = true). */
   readonly completedLessonCount: number;
 
-  /** Backend-computed: round(completedLessonCount / lessonCount * 100), 0 when lessonCount is 0. */
+  /** Count of published quiz assessments across the course's chapters. */
+  readonly quizCount: number;
+
+  /** Count of published final-exam assessments for the course (0 or 1). */
+  readonly examCount: number;
+
+  /**
+   * Backend-computed: round(completed items / total items * 100), where
+   * items = lessons + chapter quizzes + the final exam. 0 when there are no items.
+   */
   readonly percent: number;
 
-  /** Backend-computed from completedLessonCount vs lessonCount. Never derived client-side. */
+  /**
+   * Backend-computed: 'completed' requires every lesson done, every chapter
+   * quiz passed, AND the final exam passed (if the course has one) — not
+   * lessons alone. Never derived client-side.
+   */
   readonly status: StudentCourseStatus;
 
   /**

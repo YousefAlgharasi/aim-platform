@@ -75,4 +75,20 @@ abstract class LessonsRemoteDatasource {
     required String bearerToken,
     required String chapterId,
   });
+
+  /// GET /student/chapters?levelId=:levelId — reads the sibling `finalExam`
+  /// field alongside the chapter list. Null when the course has no
+  /// published final exam.
+  Future<FinalExamSummaryModel?> getFinalExamForLevel({
+    required String bearerToken,
+    required String levelId,
+  });
+
+  /// GET /student/lessons?chapterId=:chapterId — reads the sibling `quiz`
+  /// field alongside the lesson list. Null when the chapter has no linked
+  /// quiz.
+  Future<ChapterQuizSummaryModel?> getChapterQuiz({
+    required String bearerToken,
+    required String chapterId,
+  });
 }

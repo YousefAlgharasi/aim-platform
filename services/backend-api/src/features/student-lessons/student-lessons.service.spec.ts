@@ -2,9 +2,10 @@ import { StudentLessonsRepository } from './student-lessons.repository';
 import { StudentLessonsService } from './student-lessons.service';
 
 describe('StudentLessonsService', () => {
-  const makeRepository = (rows: unknown[]) =>
+  const makeRepository = (rows: unknown[], quiz: unknown = null) =>
     ({
       findLessonsWithProgress: jest.fn().mockResolvedValue(rows),
+      findQuizForChapter: jest.fn().mockResolvedValue(quiz),
     }) as unknown as StudentLessonsRepository;
 
   it('returns an empty list when there are no published lessons', async () => {
@@ -138,5 +139,23 @@ describe('StudentLessonsService', () => {
 
     expect(result.lessons.every((l) => !l.current)).toBe(true);
     expect(result.lessons.every((l) => l.completed)).toBe(true);
+  });
+
+  it('returns null quiz when the chapter has no linked quiz', async () => {
+    const service = new StudentLessonsService(makeRepository([]));
+
+    const result = await service.getLessons('student-1', 'chapter-1');
+
+    expect(result.quiz).toBeNull();
+  });
+
+  it('returns the chapter quiz when one is linked', async () => {
+    const service = new StudentLessonsService(
+      makeRepository([], { assessment_id: 'quiz-1', title: 'Chapter 1 Quiz' }),
+    );
+
+    const result = await service.getLessons('student-1', 'chapter-1');
+
+    expect(result.quiz).toEqual({ assessmentId: 'quiz-1', title: 'Chapter 1 Quiz' });
   });
 });

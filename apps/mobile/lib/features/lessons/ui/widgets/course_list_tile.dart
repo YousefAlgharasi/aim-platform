@@ -215,6 +215,34 @@ class CourseListTile extends StatelessWidget {
                 style:
                     AimTextStyles.caption.copyWith(color: surfaces.textMuted),
               ),
+              if (model.quizCount > 0) ...[
+                const SizedBox(width: AimSpacing.space8),
+                Icon(
+                  Icons.quiz_outlined,
+                  size: AimSizes.iconSm,
+                  color: surfaces.textMuted,
+                ),
+                const SizedBox(width: AimSpacing.space4),
+                Text(
+                  l10n.lessonsQuizzesCountLabel(model.quizCount),
+                  style: AimTextStyles.caption
+                      .copyWith(color: surfaces.textMuted),
+                ),
+              ],
+              if (model.examCount > 0) ...[
+                const SizedBox(width: AimSpacing.space8),
+                Icon(
+                  Icons.emoji_events_outlined,
+                  size: AimSizes.iconSm,
+                  color: surfaces.textMuted,
+                ),
+                const SizedBox(width: AimSpacing.space4),
+                Text(
+                  l10n.lessonsExamsCountLabel(model.examCount),
+                  style: AimTextStyles.caption
+                      .copyWith(color: surfaces.textMuted),
+                ),
+              ],
               const SizedBox(width: AimSpacing.innerGap),
               if (completed)
                 AIMBadge(

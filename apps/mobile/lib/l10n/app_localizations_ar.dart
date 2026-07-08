@@ -1014,6 +1014,43 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String lessonsQuizzesCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count اختبار',
+      many: '$count اختبارًا',
+      few: '$count اختبارات',
+      two: 'اختباران',
+      one: 'اختبار واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lessonsExamsCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count امتحان',
+      many: '$count امتحانًا',
+      few: '$count امتحانات',
+      two: 'امتحانان',
+      one: 'امتحان واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get lessonsFinalExamTitle => 'الامتحان النهائي';
+
+  @override
+  String get lessonsFinalExamLockedSubtitle => 'أكمل جميع الفصول لفتحه';
+
+  @override
+  String get lessonsQuizRowLabel => 'اختبار';
+
+  @override
   String lessonsLessonSemantic(String title) {
     return 'الدرس: $title';
   }
