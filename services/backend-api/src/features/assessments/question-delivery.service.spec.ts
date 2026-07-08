@@ -32,7 +32,7 @@ describe('QuestionDeliveryService', () => {
         .mockResolvedValueOnce({ rows: questionRows })
         .mockResolvedValueOnce({ rows: optionRows }),
     };
-    service = new QuestionDeliveryService(mockDb as any);
+    service = new QuestionDeliveryService(mockDb as any, {} as any);
   });
 
   it('returns questions with options in order', async () => {
@@ -108,5 +108,39 @@ describe('QuestionDeliveryService', () => {
     expect(q.order).toBe(1);
     expect(q.type).toBe('mcq');
     expect(q.options[0]).toEqual({ id: 'opt-1', label: 'A', text: '3' });
+  });
+
+  describe('getQuestionsForAttempt', () => {
+    it('returns the assessment questions when the attempt belongs to the student', async () => {
+      const repo = {
+        findAttemptById: jest.fn().mockResolvedValue({
+          id: 'att-1', assessment_id: ASSESSMENT_ID, student_id: 'stu-1', status: 'started',
+        }),
+      };
+      const svc = new QuestionDeliveryService(mockDb as any, repo as any);
+
+      const result = await svc.getQuestionsForAttempt('att-1', 'stu-1');
+
+      expect(result).toHaveLength(2);
+      expect(repo.findAttemptById).toHaveBeenCalledWith('att-1');
+    });
+
+    it('throws NotFoundException when the attempt does not belong to the student', async () => {
+      const repo = {
+        findAttemptById: jest.fn().mockResolvedValue({
+          id: 'att-1', assessment_id: ASSESSMENT_ID, student_id: 'someone-else', status: 'started',
+        }),
+      };
+      const svc = new QuestionDeliveryService(mockDb as any, repo as any);
+
+      await expect(svc.getQuestionsForAttempt('att-1', 'stu-1')).rejects.toThrow(NotFoundException);
+    });
+
+    it('throws NotFoundException when the attempt does not exist', async () => {
+      const repo = { findAttemptById: jest.fn().mockResolvedValue(null) };
+      const svc = new QuestionDeliveryService(mockDb as any, repo as any);
+
+      await expect(svc.getQuestionsForAttempt('att-missing', 'stu-1')).rejects.toThrow(NotFoundException);
+    });
   });
 });

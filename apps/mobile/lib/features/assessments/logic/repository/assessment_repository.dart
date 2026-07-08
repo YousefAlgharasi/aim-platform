@@ -48,4 +48,16 @@ abstract class AssessmentRepository {
     required String bearerToken,
     required String attemptId,
   });
+
+  Future<List<AttemptQuestion>> getAttemptQuestions({
+    required String bearerToken,
+    required String attemptId,
+  });
+
+  Future<SubmittedAnswer> submitAnswer({
+    required String bearerToken,
+    required String attemptId,
+    required String assessmentQuestionLinkId,
+    required String responseValue,
+  });
 }
