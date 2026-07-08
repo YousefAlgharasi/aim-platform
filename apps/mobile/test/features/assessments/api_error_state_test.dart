@@ -94,6 +94,26 @@ class _FakeAssessmentRemoteDatasource implements AssessmentRemoteDatasource {
     _throwIfNeeded();
     throw UnimplementedError();
   }
+
+  @override
+  Future<List<AttemptQuestionModel>> getAttemptQuestions({
+    required String bearerToken,
+    required String attemptId,
+  }) async {
+    _throwIfNeeded();
+    return const [];
+  }
+
+  @override
+  Future<SubmittedAnswerModel> submitAnswer({
+    required String bearerToken,
+    required String attemptId,
+    required String assessmentQuestionLinkId,
+    required String responseValue,
+  }) async {
+    _throwIfNeeded();
+    throw UnimplementedError();
+  }
 }
 
 /// P10-066: Mobile API error state tests.

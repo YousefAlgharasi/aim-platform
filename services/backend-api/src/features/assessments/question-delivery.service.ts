@@ -13,6 +13,7 @@
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import { AssessmentRepository } from './assessment.repository';
 
 export interface DeliveredOption {
   readonly id: string;
@@ -48,7 +49,27 @@ interface OptionRow {
 
 @Injectable()
 export class QuestionDeliveryService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly assessmentRepository: AssessmentRepository,
+  ) {}
+
+  /**
+   * The question list for the assessment behind [attemptId], ownership-
+   * checked against [studentId] first — the only path through which a
+   * client can reach question content, so ownership must be verified here
+   * too (not just by the guard) in case this is ever called directly.
+   */
+  async getQuestionsForAttempt(
+    attemptId: string,
+    studentId: string,
+  ): Promise<DeliveredQuestion[]> {
+    const attempt = await this.assessmentRepository.findAttemptById(attemptId);
+    if (!attempt || attempt.student_id !== studentId) {
+      throw new NotFoundException(`Assessment attempt not found`);
+    }
+    return this.getQuestionsForAssessment(attempt.assessment_id);
+  }
 
   async getQuestionsForAssessment(assessmentId: string): Promise<DeliveredQuestion[]> {
     const qRes = await this.db.query<QuestionRow>(

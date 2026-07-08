@@ -93,6 +93,30 @@ class AssessmentRepositoryImpl implements AssessmentRepository {
             attemptId: attemptId,
           ));
 
+  @override
+  Future<List<AttemptQuestion>> getAttemptQuestions({
+    required String bearerToken,
+    required String attemptId,
+  }) =>
+      _wrap(() => _datasource.getAttemptQuestions(
+            bearerToken: bearerToken,
+            attemptId: attemptId,
+          ));
+
+  @override
+  Future<SubmittedAnswer> submitAnswer({
+    required String bearerToken,
+    required String attemptId,
+    required String assessmentQuestionLinkId,
+    required String responseValue,
+  }) =>
+      _wrap(() => _datasource.submitAnswer(
+            bearerToken: bearerToken,
+            attemptId: attemptId,
+            assessmentQuestionLinkId: assessmentQuestionLinkId,
+            responseValue: responseValue,
+          ));
+
   Future<T> _wrap<T>(Future<T> Function() call) async {
     try {
       return await call();

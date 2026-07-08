@@ -20,6 +20,8 @@ import { AttemptLifecycleService, StartAttemptResult, ResumeAttemptResult } from
 import { AssessmentSubmissionFlowService, SubmitAttemptApiResult } from './assessment-submission-flow.service';
 import { AssessmentFeedbackService, FeedbackSummary } from './assessment-feedback.service';
 import { AssessmentResultService, ResultHistoryResponse } from './assessment-result.service';
+import { QuestionDeliveryService, DeliveredQuestion } from './question-delivery.service';
+import { AnswerSubmissionService, SubmittedAnswerDto } from './answer-submission.service';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { AssessmentPermissionGuard } from './guards/assessment-permission.guard';
 import { AssessmentAttemptOwnershipGuard } from './guards/assessment-attempt-ownership.guard';
@@ -33,6 +35,8 @@ describe('AssessmentController', () => {
   let submissionFlowService: jest.Mocked<Pick<AssessmentSubmissionFlowService, 'submitAndGrade'>>;
   let feedbackService: jest.Mocked<Pick<AssessmentFeedbackService, 'getFeedback'>>;
   let resultService: jest.Mocked<Pick<AssessmentResultService, 'listByAssessment'>>;
+  let questionDeliveryService: jest.Mocked<Pick<QuestionDeliveryService, 'getQuestionsForAttempt'>>;
+  let answerSubmissionService: jest.Mocked<Pick<AnswerSubmissionService, 'submitAnswer'>>;
 
   const mockListItems: AssessmentListItem[] = [
     { id: 'assessment-1', type: 'quiz', title: 'Quiz 1', description: null, deadlineStatus: 'open' },
@@ -102,6 +106,16 @@ describe('AssessmentController', () => {
     resultService = {
       listByAssessment: jest.fn().mockResolvedValue(mockResultHistory),
     };
+    questionDeliveryService = {
+      getQuestionsForAttempt: jest.fn().mockResolvedValue([
+        { id: 'q-1', assessmentQuestionLinkId: 'link-1', sectionId: null, order: 1, type: 'mcq', prompt: 'Prompt?', options: [] },
+      ] as DeliveredQuestion[]),
+    };
+    answerSubmissionService = {
+      submitAnswer: jest.fn().mockResolvedValue({
+        answerId: 'answer-1', assessmentQuestionLinkId: 'link-1', submittedAt: new Date(),
+      } as SubmittedAnswerDto),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AssessmentController],
@@ -111,6 +125,8 @@ describe('AssessmentController', () => {
         { provide: AssessmentSubmissionFlowService, useValue: submissionFlowService },
         { provide: AssessmentFeedbackService, useValue: feedbackService },
         { provide: AssessmentResultService, useValue: resultService },
+        { provide: QuestionDeliveryService, useValue: questionDeliveryService },
+        { provide: AnswerSubmissionService, useValue: answerSubmissionService },
       ],
     })
       .overrideGuard(SupabaseJwtAuthGuard)
@@ -243,6 +259,57 @@ describe('AssessmentController', () => {
       expect(result).not.toHaveProperty('pass_threshold');
       expect(result).not.toHaveProperty('late_penalty_percent');
       expect(result).not.toHaveProperty('correct_answer');
+    });
+  });
+
+  describe('getAttemptQuestions', () => {
+    it('delegates to QuestionDeliveryService.getQuestionsForAttempt with the JWT-derived user id', async () => {
+      const user = makeUser('student-1');
+      const result = await controller.getAttemptQuestions('att-1', user);
+
+      expect(questionDeliveryService.getQuestionsForAttempt).toHaveBeenCalledWith('att-1', 'student-1');
+      expect(result).toHaveLength(1);
+    });
+
+    it('never trusts a client-supplied student id — only the JWT-derived user.id is used', async () => {
+      const user = makeUser('student-from-jwt');
+      await controller.getAttemptQuestions('att-2', user);
+
+      expect(questionDeliveryService.getQuestionsForAttempt).toHaveBeenCalledWith('att-2', 'student-from-jwt');
+    });
+  });
+
+  describe('submitAnswer', () => {
+    it('delegates to AnswerSubmissionService.submitAnswer with the JWT-derived user id and request body', async () => {
+      const user = makeUser('student-1');
+      const result = await controller.submitAnswer(
+        'att-1',
+        { assessmentQuestionLinkId: 'link-1', responseValue: 'opt-a' },
+        user,
+      );
+
+      expect(answerSubmissionService.submitAnswer).toHaveBeenCalledWith({
+        attemptId: 'att-1',
+        studentId: 'student-1',
+        assessmentQuestionLinkId: 'link-1',
+        responseValue: 'opt-a',
+      });
+      expect(result).toEqual({
+        answerId: 'answer-1', assessmentQuestionLinkId: 'link-1', submittedAt: expect.any(Date),
+      });
+    });
+
+    it('response never includes isCorrect or score', async () => {
+      const user = makeUser('student-1');
+      const result = await controller.submitAnswer(
+        'att-1',
+        { assessmentQuestionLinkId: 'link-1', responseValue: 'opt-a' },
+        user,
+      ) as unknown as Record<string, unknown>;
+
+      expect(result).not.toHaveProperty('isCorrect');
+      expect(result).not.toHaveProperty('score');
+      expect(result).not.toHaveProperty('pointsAwarded');
     });
   });
 
