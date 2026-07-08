@@ -1,9 +1,71 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/features/support/data/models/support_models.dart';
+import 'package:aim_mobile/features/support/logic/provider/support_provider.dart';
+import 'package:aim_mobile/features/support/logic/repository/support_repository.dart';
 import 'package:aim_mobile/features/support/ui/pages/parent_help_center_page.dart';
 import 'package:aim_mobile/features/support/ui/pages/parent_ticket_list_page.dart';
+
+class _FakeSupportRepository implements SupportRepository {
+  @override
+  Future<List<SupportTicket>> getTickets() async => const [];
+
+  @override
+  Future<SupportTicket> getTicket(String ticketId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<SupportTicket> createTicket({
+    required String category,
+    required String severity,
+    required String subject,
+    required String description,
+  }) =>
+      throw UnimplementedError();
+
+  @override
+  Future<List<TicketComment>> getTicketComments(String ticketId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<TicketComment> addTicketComment({
+    required String ticketId,
+    required String body,
+  }) =>
+      throw UnimplementedError();
+
+  @override
+  Future<UserFeedback> submitFeedback({
+    required String category,
+    int? rating,
+    required String title,
+    required String body,
+  }) =>
+      throw UnimplementedError();
+
+  @override
+  Future<List<ReleaseNote>> getReleaseNotes() => throw UnimplementedError();
+
+  @override
+  Future<ReleaseNote> getReleaseNote(String noteId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<List<OperationalStatus>> getOperationalStatus() =>
+      throw UnimplementedError();
+}
+
+Widget _wrap(Widget child) {
+  return ProviderScope(
+    overrides: [
+      supportRepositoryProvider.overrideWithValue(_FakeSupportRepository()),
+    ],
+    child: MaterialApp(home: child),
+  );
+}
 
 void main() {
   group('ParentHelpCenterPage', () {
@@ -42,17 +104,14 @@ void main() {
 
   group('ParentTicketListPage', () {
     testWidgets('renders scaffold with title', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(home: ParentTicketListPage()),
-      );
+      await tester.pumpWidget(_wrap(const ParentTicketListPage()));
       expect(find.text('Parent tickets'), findsOneWidget);
     });
 
-    testWidgets('shows empty state (no live backend to load tickets from)',
+    testWidgets('shows empty state when there are no tickets',
         (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(home: ParentTicketListPage()),
-      );
+      await tester.pumpWidget(_wrap(const ParentTicketListPage()));
+      await tester.pump();
       expect(find.text('No Support Tickets'), findsOneWidget);
     });
 
