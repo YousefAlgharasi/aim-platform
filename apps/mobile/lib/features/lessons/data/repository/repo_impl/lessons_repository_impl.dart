@@ -102,6 +102,28 @@ class LessonsRepositoryImpl implements LessonsRepository {
         ));
   }
 
+  @override
+  Future<FinalExamSummaryModel?> getFinalExamForLevel({
+    required String bearerToken,
+    required String levelId,
+  }) {
+    return _wrap(() => _datasource.getFinalExamForLevel(
+          bearerToken: bearerToken,
+          levelId: levelId,
+        ));
+  }
+
+  @override
+  Future<ChapterQuizSummaryModel?> getChapterQuiz({
+    required String bearerToken,
+    required String chapterId,
+  }) {
+    return _wrap(() => _datasource.getChapterQuiz(
+          bearerToken: bearerToken,
+          chapterId: chapterId,
+        ));
+  }
+
   Future<T> _wrap<T>(Future<T> Function() call) async {
     try {
       return await call();

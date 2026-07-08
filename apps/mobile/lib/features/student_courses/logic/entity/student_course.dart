@@ -20,6 +20,8 @@ class StudentCourse {
     required this.title,
     required this.lessonCount,
     required this.completedLessonCount,
+    required this.quizCount,
+    required this.examCount,
     required this.percent,
     required this.status,
     required this.locked,
@@ -38,10 +40,18 @@ class StudentCourse {
   final int lessonCount;
   final int completedLessonCount;
 
-  /// Backend-computed: round(completedLessonCount / lessonCount * 100).
+  /// Count of published quiz assessments across the course's chapters.
+  final int quizCount;
+
+  /// Count of published final-exam assessments for the course (0 or 1).
+  final int examCount;
+
+  /// Backend-computed: round(completed items / total items * 100), where
+  /// items = lessons + chapter quizzes + the final exam.
   final int percent;
 
-  /// Backend-computed from completedLessonCount vs lessonCount.
+  /// Backend-computed: 'completed' requires lessons, chapter quizzes, and
+  /// the final exam (if any) all done — not lessons alone.
   final StudentCourseStatus status;
 
   /// Backend-computed: true when the course's cefr_rank exceeds the

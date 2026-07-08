@@ -22,6 +22,7 @@ export interface AssessmentRow {
   id: string; type: string; title: string; description: string | null;
   status: string; created_by: string; created_at: Date; updated_at: Date;
   chapter_id: string | null;
+  course_id: string | null;
 }
 export interface AssessmentSectionRow {
   id: string; assessment_id: string; title: string; order: number;
@@ -49,7 +50,7 @@ export class AssessmentRepository {
 
   async findPublishedById(id: string): Promise<AssessmentRow> {
     const res = await this.db.query<AssessmentRow>(
-      `SELECT id, type, title, description, status, created_by, created_at, updated_at, chapter_id
+      `SELECT id, type, title, description, status, created_by, created_at, updated_at, chapter_id, course_id
        FROM assessments WHERE id = $1 AND status = 'published'`,
       [id],
     );
@@ -59,7 +60,7 @@ export class AssessmentRepository {
 
   async findAllPublished(): Promise<AssessmentRow[]> {
     const res = await this.db.query<AssessmentRow>(
-      `SELECT id, type, title, description, status, created_by, created_at, updated_at, chapter_id
+      `SELECT id, type, title, description, status, created_by, created_at, updated_at, chapter_id, course_id
        FROM assessments WHERE status = 'published' ORDER BY created_at DESC`,
     );
     return res.rows;

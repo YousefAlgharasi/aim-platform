@@ -23,6 +23,10 @@ interface StudentCourseRow {
   readonly level_code: string | null;
   readonly lesson_count: string;
   readonly completed_lesson_count: string;
+  readonly quiz_count: string;
+  readonly quizzes_passed: boolean;
+  readonly exam_count: string;
+  readonly exam_passed: boolean;
   readonly track_slug: string | null;
   readonly cefr_rank: number | null;
   readonly max_unlocked_cefr_rank: number | null;
@@ -60,6 +64,34 @@ export class StudentCoursesRepository {
          cl.level_code AS level_code,
          COUNT(DISTINCT clsn.lesson_id) AS lesson_count,
          COUNT(DISTINCT CASE WHEN lp.completed THEN clsn.lesson_id END) AS completed_lesson_count,
+         (
+           SELECT COUNT(*) FROM assessments a
+           JOIN chapters ch ON ch.id = a.chapter_id
+           JOIN levels lv2 ON lv2.id = ch.level_id
+           WHERE lv2.course_id = co.id AND a.type = 'quiz' AND a.status = 'published'
+         ) AS quiz_count,
+         NOT EXISTS (
+           SELECT 1 FROM assessments a
+           JOIN chapters ch ON ch.id = a.chapter_id
+           JOIN levels lv2 ON lv2.id = ch.level_id
+           WHERE lv2.course_id = co.id AND a.type = 'quiz' AND a.status = 'published'
+             AND NOT EXISTS (
+               SELECT 1 FROM assessment_results ar
+               WHERE ar.assessment_id = a.id AND ar.student_id = $1 AND ar.passed = true
+             )
+         ) AS quizzes_passed,
+         (
+           SELECT COUNT(*) FROM assessments a
+           WHERE a.course_id = co.id AND a.type = 'exam' AND a.status = 'published'
+         ) AS exam_count,
+         NOT EXISTS (
+           SELECT 1 FROM assessments a
+           WHERE a.course_id = co.id AND a.type = 'exam' AND a.status = 'published'
+             AND NOT EXISTS (
+               SELECT 1 FROM assessment_results ar
+               WHERE ar.assessment_id = a.id AND ar.student_id = $1 AND ar.passed = true
+             )
+         ) AS exam_passed,
          co.track_slug AS track_slug,
          co.cefr_rank AS cefr_rank,
          ls.max_unlocked_cefr_rank AS max_unlocked_cefr_rank

@@ -23,6 +23,11 @@ interface StudentLessonRow {
   readonly completed: boolean;
 }
 
+export interface ChapterQuizRow {
+  readonly assessment_id: string;
+  readonly title: string;
+}
+
 @Injectable()
 export class StudentLessonsRepository {
   constructor(private readonly db: DatabaseService) {}
@@ -44,5 +49,17 @@ export class StudentLessonsRepository {
       [chapterId, studentId],
     );
     return result.rows;
+  }
+
+  /** The published quiz assessment linked to this chapter (assessments.chapter_id), or null. */
+  async findQuizForChapter(chapterId: string): Promise<ChapterQuizRow | null> {
+    const result = await this.db.query<ChapterQuizRow>(
+      `SELECT id AS assessment_id, title
+       FROM assessments
+       WHERE chapter_id = $1 AND type = 'quiz' AND status = 'published'
+       LIMIT 1`,
+      [chapterId],
+    );
+    return result.rows[0] ?? null;
   }
 }

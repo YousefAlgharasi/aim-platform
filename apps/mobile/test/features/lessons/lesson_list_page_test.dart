@@ -257,4 +257,18 @@ class _FakeLessonsRepository implements LessonsRepository {
     required String chapterId,
   }) async =>
       const [];
+
+  @override
+  Future<FinalExamSummaryModel?> getFinalExamForLevel({
+    required String bearerToken,
+    required String levelId,
+  }) async =>
+      null;
+
+  @override
+  Future<ChapterQuizSummaryModel?> getChapterQuiz({
+    required String bearerToken,
+    required String chapterId,
+  }) async =>
+      null;
 }

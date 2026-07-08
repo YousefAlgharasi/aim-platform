@@ -81,10 +81,15 @@ class LessonListPage extends ConsumerStatefulWidget {
 }
 
 class _LessonListPageState extends ConsumerState<LessonListPage> {
+  ChapterQuizSummaryModel? _quiz;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _load();
+      _loadQuiz();
+    });
   }
 
   void _load() {
@@ -96,6 +101,16 @@ class _LessonListPageState extends ConsumerState<LessonListPage> {
         );
   }
 
+  Future<void> _loadQuiz() async {
+    final token = ref.read(authFlowProvider).accessToken;
+    if (token == null || token.isEmpty) return;
+    final quiz = await ref.read(lessonsRepositoryProvider).getChapterQuiz(
+          bearerToken: token,
+          chapterId: widget.chapterId,
+        );
+    if (mounted) setState(() => _quiz = quiz);
+  }
+
   Future<void> _refresh() async {
     final token = ref.read(authFlowProvider).accessToken;
     if (token == null || token.isEmpty) return;
@@ -103,6 +118,19 @@ class _LessonListPageState extends ConsumerState<LessonListPage> {
           bearerToken: token,
           chapterId: widget.chapterId,
         );
+    await _loadQuiz();
+  }
+
+  void _onQuizTap() {
+    final quiz = _quiz;
+    if (quiz == null) return;
+    context.push(
+      '/student/assessments/detail',
+      extra: {
+        'assessmentId': quiz.assessmentId,
+        'assessmentTitle': quiz.title,
+      },
+    );
   }
 
   @override
@@ -135,6 +163,8 @@ class _LessonListPageState extends ConsumerState<LessonListPage> {
                 AppAsyncSuccess(:final data) => _LessonListContent(
                     lessons: data,
                     onRefresh: _refresh,
+                    quiz: _quiz,
+                    onQuizTap: _onQuizTap,
                   ),
                 AppAsyncIdle() => AIMFullScreenLoading(
                     semanticLabel: loadingLabel,
@@ -244,14 +274,18 @@ class _LessonListContent extends StatelessWidget {
   const _LessonListContent({
     required this.lessons,
     required this.onRefresh,
+    required this.quiz,
+    required this.onQuizTap,
   });
 
   final List<LessonProgressModel> lessons;
   final Future<void> Function() onRefresh;
+  final ChapterQuizSummaryModel? quiz;
+  final VoidCallback onQuizTap;
 
   @override
   Widget build(BuildContext context) {
-    if (lessons.isEmpty) {
+    if (lessons.isEmpty && quiz == null) {
       final l10n = AppLocalizations.of(context);
       return AIMEmptyState(
         icon: const Icon(Icons.play_lesson_outlined),
@@ -260,6 +294,8 @@ class _LessonListContent extends StatelessWidget {
       );
     }
 
+    final itemCount = lessons.length + (quiz != null ? 1 : 0);
+
     return RefreshIndicator(
       onRefresh: onRefresh,
       child: ListView.separated(
@@ -267,10 +303,13 @@ class _LessonListContent extends StatelessWidget {
           horizontal: AimSpacing.screenPaddingMobile,
           vertical: AimSpacing.sectionGap,
         ),
-        itemCount: lessons.length,
+        itemCount: itemCount,
         separatorBuilder: (_, __) =>
             const SizedBox(height: AimSpacing.listItemGap),
         itemBuilder: (context, index) {
+          if (index >= lessons.length) {
+            return ChapterQuizTile(model: quiz!, onTap: onQuizTap);
+          }
           final lesson = lessons[index];
           return LessonListTile(
             model: lesson,

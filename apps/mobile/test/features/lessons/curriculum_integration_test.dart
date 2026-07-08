@@ -100,6 +100,20 @@ class _FakeLessonsDatasource implements LessonsRemoteDatasource {
     _maybeThrow();
     return lessonsProgress;
   }
+
+  @override
+  Future<FinalExamSummaryModel?> getFinalExamForLevel(
+      {required String bearerToken, required String levelId}) async {
+    _maybeThrow();
+    return null;
+  }
+
+  @override
+  Future<ChapterQuizSummaryModel?> getChapterQuiz(
+      {required String bearerToken, required String chapterId}) async {
+    _maybeThrow();
+    return null;
+  }
 }
 
 class _FakeLessonDetailDatasource implements LessonDetailRemoteDatasource {
@@ -179,6 +193,7 @@ const _publishedChapterProgress = ChapterProgressModel(
     levelCode: 'A1',
     lessonCount: 4,
     completedLessonCount: 1,
+    quizCount: 0,
     percent: 25,
     status: 'in_progress');
 

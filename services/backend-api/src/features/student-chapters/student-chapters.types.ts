@@ -14,13 +14,35 @@ export interface StudentChapterSummary {
   /** Count of those lessons the student has completed (lesson_progress.completed = true). */
   readonly completedLessonCount: number;
 
-  /** Backend-computed: round(completedLessonCount / lessonCount * 100), 0 when lessonCount is 0. */
+  /** Count of published quiz assessments linked to this chapter (assessments.chapter_id). */
+  readonly quizCount: number;
+
+  /**
+   * Backend-computed: round(completed items / total items * 100), where
+   * items = lessons + this chapter's quiz(zes). 0 when there are no items.
+   */
   readonly percent: number;
 
-  /** Backend-computed from completedLessonCount vs lessonCount. Never derived client-side. */
+  /**
+   * Backend-computed: 'completed' requires every lesson done AND every
+   * chapter quiz passed (assessment_results.passed) — not lessons alone.
+   * Never derived client-side.
+   */
   readonly status: StudentChapterStatus;
+}
+
+/** The course's final exam, gated behind every chapter being fully complete. */
+export interface StudentFinalExamSummary {
+  readonly assessmentId: string;
+  readonly title: string;
+
+  /** True once every chapter in the course is fully complete (lessons + quizzes passed). */
+  readonly unlocked: boolean;
 }
 
 export interface StudentChaptersResponse {
   readonly chapters: StudentChapterSummary[];
+
+  /** Null when the course has no published final exam. */
+  readonly finalExam: StudentFinalExamSummary | null;
 }
