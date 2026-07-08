@@ -11,10 +11,14 @@ import { ForbiddenException } from '@nestjs/common';
 import { LessonProgressService } from '../lesson-progress.service';
 import { DatabaseService } from '../../../database/database.service';
 import { CourseCompletionService } from '../course-completion.service';
+import { ChapterCompletionService } from '../chapter-completion.service';
 
 describe('LessonProgressService — sequential lesson ordering', () => {
   const makeCourseCompletionService = () =>
     ({ handleLessonCompleted: jest.fn().mockResolvedValue(undefined) }) as unknown as CourseCompletionService;
+
+  const makeChapterCompletionService = () =>
+    ({ handleLessonNewlyCompleted: jest.fn().mockResolvedValue(undefined) }) as unknown as ChapterCompletionService;
 
   // Full query sequence for a course-unlocked lesson with no track/cefr
   // mapping (so P20-010's gating short-circuits after one query), isolating
@@ -44,7 +48,7 @@ describe('LessonProgressService — sequential lesson ordering', () => {
   describe('recordProgress', () => {
     it('rejects lesson N+1 while the immediately preceding lesson is incomplete', async () => {
       const { db } = makeDb('lesson-1', false);
-      const service = new LessonProgressService(db, makeCourseCompletionService());
+      const service = new LessonProgressService(db, makeCourseCompletionService(), makeChapterCompletionService());
 
       await expect(
         service.recordProgress({ studentId: 'student-1', lessonId: 'lesson-2', percent: 10 }),
@@ -59,7 +63,7 @@ describe('LessonProgressService — sequential lesson ordering', () => {
         .mockResolvedValueOnce({ rows: [{ prev_lesson_id: 'lesson-1' }] })
         .mockResolvedValueOnce({ rows: [] }); // no lesson_progress row for the previous lesson
       const db = { query } as unknown as DatabaseService;
-      const service = new LessonProgressService(db, makeCourseCompletionService());
+      const service = new LessonProgressService(db, makeCourseCompletionService(), makeChapterCompletionService());
 
       await expect(
         service.recordProgress({ studentId: 'student-1', lessonId: 'lesson-2', percent: 10 }),
@@ -70,7 +74,7 @@ describe('LessonProgressService — sequential lesson ordering', () => {
       const { db } = makeDb('lesson-1', true, [
         { lesson_id: 'lesson-2', percent: 10, completed: false, updated_at: '2026-06-01T00:00:00Z' },
       ]);
-      const service = new LessonProgressService(db, makeCourseCompletionService());
+      const service = new LessonProgressService(db, makeCourseCompletionService(), makeChapterCompletionService());
 
       const result = await service.recordProgress({
         studentId: 'student-1',
@@ -85,7 +89,7 @@ describe('LessonProgressService — sequential lesson ordering', () => {
       const { db } = makeDb(null, false, [
         { lesson_id: 'lesson-2', percent: 10, completed: false, updated_at: '2026-06-01T00:00:00Z' },
       ]);
-      const service = new LessonProgressService(db, makeCourseCompletionService());
+      const service = new LessonProgressService(db, makeCourseCompletionService(), makeChapterCompletionService());
 
       const result = await service.recordProgress({
         studentId: 'student-1',
@@ -100,7 +104,7 @@ describe('LessonProgressService — sequential lesson ordering', () => {
   describe('markComplete', () => {
     it('rejects completing lesson N+1 while lesson N is incomplete', async () => {
       const { db } = makeDb('lesson-1', false);
-      const service = new LessonProgressService(db, makeCourseCompletionService());
+      const service = new LessonProgressService(db, makeCourseCompletionService(), makeChapterCompletionService());
 
       await expect(service.markComplete('student-1', 'lesson-2')).rejects.toBeInstanceOf(
         ForbiddenException,
@@ -111,7 +115,7 @@ describe('LessonProgressService — sequential lesson ordering', () => {
       const { db } = makeDb('lesson-1', true, [
         { lesson_id: 'lesson-2', percent: 100, completed: true, updated_at: '2026-06-01T00:00:00Z' },
       ]);
-      const service = new LessonProgressService(db, makeCourseCompletionService());
+      const service = new LessonProgressService(db, makeCourseCompletionService(), makeChapterCompletionService());
 
       const result = await service.markComplete('student-1', 'lesson-2');
 

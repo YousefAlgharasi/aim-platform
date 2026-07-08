@@ -16,6 +16,7 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AssessmentRepository } from './assessment.repository';
 import { AssessmentDeadlineService, DeadlineStatusResult } from './assessment-deadline.service';
+import { isChapterLessonsComplete } from './assessment-chapter-gate.util';
 
 // Inlined until P10-020 merges
 type DeadlineStatus = 'upcoming' | 'open' | 'closed' | 'missed' | 'late' | 'extended' | 'expired';
@@ -68,10 +69,20 @@ export class AssessmentService {
     private readonly deadlineService?: AssessmentDeadlineService,
   ) {}
 
+  /**
+   * Assessments tied to a chapter (chapter_id set) are hidden entirely from
+   * this list until every published lesson in that chapter is completed for
+   * this student — a locked assessment must not appear to exist yet.
+   * Assessments with no chapter_id are never gated.
+   */
   async listForStudent(studentId: string): Promise<AssessmentListItem[]> {
     const assessments = await this.repo.findAllPublished();
-    return Promise.all(
+    const items = await Promise.all(
       assessments.map(async (a) => {
+        if (a.chapter_id) {
+          const unlocked = await isChapterLessonsComplete(this.db, studentId, a.chapter_id);
+          if (!unlocked) return null;
+        }
         const deadline = await this.repo.findEffectiveDeadline(a.id, studentId);
         const deadlineStatus = deadline
           ? this.deriveDeadlineStatus(deadline.opens_at, deadline.closes_at, deadline.extended_closes_at)
@@ -79,6 +90,34 @@ export class AssessmentService {
         return { id: a.id, type: a.type, title: a.title, description: a.description, deadlineStatus };
       }),
     );
+    return items.filter((item): item is AssessmentListItem => item !== null);
+  }
+
+  /**
+   * The single "current" assessment for the student — the oldest unlocked
+   * assessment the student hasn't attempted yet. Used by Home so a student
+   * sees only one assessment at a time, never the whole cross-course list.
+   * Returns null when nothing is currently due.
+   */
+  async getNextAssessment(studentId: string): Promise<AssessmentListItem | null> {
+    const assessments = await this.repo.findAllPublished();
+    // findAllPublished is newest-first; walk oldest-first so "next" roughly
+    // follows curriculum order rather than surfacing the newest assessment.
+    for (const a of [...assessments].reverse()) {
+      if (a.chapter_id) {
+        const unlocked = await isChapterLessonsComplete(this.db, studentId, a.chapter_id);
+        if (!unlocked) continue;
+      }
+      const attemptCount = await this.repo.countAttemptsByStudent(a.id, studentId);
+      if (attemptCount > 0) continue;
+
+      const deadline = await this.repo.findEffectiveDeadline(a.id, studentId);
+      const deadlineStatus = deadline
+        ? this.deriveDeadlineStatus(deadline.opens_at, deadline.closes_at, deadline.extended_closes_at)
+        : null;
+      return { id: a.id, type: a.type, title: a.title, description: a.description, deadlineStatus };
+    }
+    return null;
   }
 
   async getDetail(assessmentId: string, studentId: string): Promise<AssessmentDetail> {

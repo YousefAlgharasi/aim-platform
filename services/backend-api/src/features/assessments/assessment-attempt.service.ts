@@ -22,6 +22,8 @@ import {
 import { DatabaseService } from '../../database/database.service';
 import { AssessmentRepository } from './assessment.repository';
 import { AssessmentDeadlineService } from './assessment-deadline.service';
+import { isChapterLessonsComplete } from './assessment-chapter-gate.util';
+import { chapterNotComplete } from './assessment-errors';
 
 export interface StartAttemptResult {
   readonly attemptId: string;
@@ -62,7 +64,18 @@ export class AttemptLifecycleService {
 
   async startAttempt(assessmentId: string, studentId: string): Promise<StartAttemptResult> {
     // 1. Verify assessment exists and is published.
-    await this.repo.findPublishedById(assessmentId);
+    const assessment = await this.repo.findPublishedById(assessmentId);
+
+    // 1.5. Chapter-gated assessments: reject until every published lesson in
+    // the linked chapter is completed. Mirrors the visibility filter in
+    // AssessmentService.listForStudent — a student must never be able to
+    // attempt an assessment that's hidden from their list by guessing its id.
+    if (assessment.chapter_id) {
+      const unlocked = await isChapterLessonsComplete(this.db, studentId, assessment.chapter_id);
+      if (!unlocked) {
+        throw chapterNotComplete();
+      }
+    }
 
     // 2. Check deadline eligibility — backend authority only.
     const eligibility = await this.deadlineSvc.checkSubmissionEligibility(assessmentId, studentId);

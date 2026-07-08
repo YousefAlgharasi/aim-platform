@@ -26,6 +26,14 @@ class _FakeAssessmentRemoteDatasource implements AssessmentRemoteDatasource {
   }
 
   @override
+  Future<AssessmentListItemModel?> getNextAssessment({
+    required String bearerToken,
+  }) async {
+    _throwIfNeeded();
+    return null;
+  }
+
+  @override
   Future<AssessmentDetailModel> getAssessmentDetail({
     required String bearerToken,
     required String assessmentId,
