@@ -716,6 +716,12 @@ abstract class AppLocalizations {
   /// **'Placement Test'**
   String get shellPlacementTest;
 
+  /// Label for the Assessments entry in the navigation drawer's MORE section.
+  ///
+  /// In en, this message translates to:
+  /// **'Assessments'**
+  String get shellAssessments;
+
   /// Drawer item label for the help center.
   ///
   /// In en, this message translates to:

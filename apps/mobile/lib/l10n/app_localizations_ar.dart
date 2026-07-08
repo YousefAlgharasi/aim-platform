@@ -335,6 +335,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get shellPlacementTest => 'اختبار تحديد المستوى';
 
   @override
+  String get shellAssessments => 'التقييمات';
+
+  @override
   String get shellSupport => 'الدعم';
 
   @override

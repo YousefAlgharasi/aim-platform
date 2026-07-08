@@ -381,6 +381,10 @@
   "@shellPlacementTest": {
     "description": "Label for the Placement Test entry in the navigation drawer's MORE section."
   },
+  "shellAssessments": "Assessments",
+  "@shellAssessments": {
+    "description": "Label for the Assessments entry in the navigation drawer's MORE section."
+  },
   "shellSupport": "Support",
   "@shellSupport": {
     "description": "Drawer item label for the help center."
