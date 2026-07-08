@@ -202,48 +202,81 @@ class CourseListTile extends StatelessWidget {
             ),
           ],
           const SizedBox(height: AimSpacing.componentGap),
+          if (model.quizCount > 0 || model.examCount > 0) ...[
+            Wrap(
+              spacing: AimSpacing.space12,
+              runSpacing: AimSpacing.space4,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.import_contacts_outlined,
+                      size: AimSizes.iconSm,
+                      color: surfaces.textMuted,
+                    ),
+                    const SizedBox(width: AimSpacing.space4),
+                    Text(
+                      l10n.lessonsLessonsCountLabel(model.lessonCount),
+                      style: AimTextStyles.caption
+                          .copyWith(color: surfaces.textMuted),
+                    ),
+                  ],
+                ),
+                if (model.quizCount > 0)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.quiz_outlined,
+                        size: AimSizes.iconSm,
+                        color: surfaces.textMuted,
+                      ),
+                      const SizedBox(width: AimSpacing.space4),
+                      Text(
+                        l10n.lessonsQuizzesCountLabel(model.quizCount),
+                        style: AimTextStyles.caption
+                            .copyWith(color: surfaces.textMuted),
+                      ),
+                    ],
+                  ),
+                if (model.examCount > 0)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.emoji_events_outlined,
+                        size: AimSizes.iconSm,
+                        color: surfaces.textMuted,
+                      ),
+                      const SizedBox(width: AimSpacing.space4),
+                      Text(
+                        l10n.lessonsExamsCountLabel(model.examCount),
+                        style: AimTextStyles.caption
+                            .copyWith(color: surfaces.textMuted),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+            const SizedBox(height: AimSpacing.space8),
+          ],
           Row(
             children: [
-              Icon(
-                Icons.import_contacts_outlined,
-                size: AimSizes.iconSm,
-                color: surfaces.textMuted,
-              ),
-              const SizedBox(width: AimSpacing.space4),
-              Text(
-                l10n.lessonsLessonsCountLabel(model.lessonCount),
-                style:
-                    AimTextStyles.caption.copyWith(color: surfaces.textMuted),
-              ),
-              if (model.quizCount > 0) ...[
-                const SizedBox(width: AimSpacing.space8),
+              if (model.quizCount == 0 && model.examCount == 0) ...[
                 Icon(
-                  Icons.quiz_outlined,
+                  Icons.import_contacts_outlined,
                   size: AimSizes.iconSm,
                   color: surfaces.textMuted,
                 ),
                 const SizedBox(width: AimSpacing.space4),
                 Text(
-                  l10n.lessonsQuizzesCountLabel(model.quizCount),
+                  l10n.lessonsLessonsCountLabel(model.lessonCount),
                   style: AimTextStyles.caption
                       .copyWith(color: surfaces.textMuted),
                 ),
+                const SizedBox(width: AimSpacing.innerGap),
               ],
-              if (model.examCount > 0) ...[
-                const SizedBox(width: AimSpacing.space8),
-                Icon(
-                  Icons.emoji_events_outlined,
-                  size: AimSizes.iconSm,
-                  color: surfaces.textMuted,
-                ),
-                const SizedBox(width: AimSpacing.space4),
-                Text(
-                  l10n.lessonsExamsCountLabel(model.examCount),
-                  style: AimTextStyles.caption
-                      .copyWith(color: surfaces.textMuted),
-                ),
-              ],
-              const SizedBox(width: AimSpacing.innerGap),
               if (completed)
                 AIMBadge(
                   tone: AIMBadgeTone.success,

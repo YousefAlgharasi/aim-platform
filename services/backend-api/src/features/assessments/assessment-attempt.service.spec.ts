@@ -15,6 +15,7 @@ function makeRepo(overrides: Partial<Record<string, jest.Mock>> = {}) {
     countAttemptsByStudent: jest.fn().mockResolvedValue(0),
     createAttempt: jest.fn().mockResolvedValue(ATTEMPT),
     findAttemptById: jest.fn().mockResolvedValue(ATTEMPT),
+    findActiveAttempt: jest.fn().mockResolvedValue(null),
     updateAttemptStatus: jest.fn().mockResolvedValue(undefined),
     ...overrides,
   };
@@ -51,6 +52,32 @@ describe('AttemptLifecycleService', () => {
       const repo = makeRepo({ countAttemptsByStudent: jest.fn().mockResolvedValue(2) });
       const svc = new AttemptLifecycleService(makeDb() as any, repo as any, makeDeadline() as any);
       await expect(svc.startAttempt('a-1', 'stu-1')).rejects.toThrow('MAX_ATTEMPTS_REACHED');
+    });
+
+    it('resumes an existing open attempt instead of creating a new one or burning an attempt slot', async () => {
+      const openAttempt = { ...ATTEMPT, id: 'att-open', attempt_number: 1 };
+      const repo = makeRepo({
+        findActiveAttempt: jest.fn().mockResolvedValue(openAttempt),
+        // Already at the attempt limit — if this were treated as a new
+        // attempt it would hit MAX_ATTEMPTS_REACHED instead of resuming.
+        countAttemptsByStudent: jest.fn().mockResolvedValue(2),
+      });
+      const svc = new AttemptLifecycleService(makeDb() as any, repo as any, makeDeadline() as any);
+
+      const result = await svc.startAttempt('a-1', 'stu-1');
+
+      expect(result.attemptId).toBe('att-open');
+      expect(repo.createAttempt).not.toHaveBeenCalled();
+    });
+
+    it('creates a new attempt when the existing one is expired (findActiveAttempt excludes it)', async () => {
+      const repo = makeRepo({ findActiveAttempt: jest.fn().mockResolvedValue(null) });
+      const svc = new AttemptLifecycleService(makeDb() as any, repo as any, makeDeadline() as any);
+
+      const result = await svc.startAttempt('a-1', 'stu-1');
+
+      expect(result.attemptId).toBe('att-1');
+      expect(repo.createAttempt).toHaveBeenCalled();
     });
 
     it('computes expiresAt from time_limit_seconds (backend-only)', async () => {

@@ -142,34 +142,44 @@ class ChapterListTile extends StatelessWidget {
             size: AIMProgressBarSize.sm,
           ),
           const SizedBox(height: AimSpacing.space8),
-          Row(
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: AimSpacing.space12,
+            runSpacing: AimSpacing.space4,
             children: [
-              Icon(
-                Icons.menu_book_outlined,
-                size: AimSizes.iconSm,
-                color: surfaces.textSecondary,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.menu_book_outlined,
+                    size: AimSizes.iconSm,
+                    color: surfaces.textSecondary,
+                  ),
+                  const SizedBox(width: AimSpacing.space4),
+                  Text(
+                    l10n.lessonsLessonsCountLabel(model.lessonCount),
+                    style: AimTextStyles.caption
+                        .copyWith(color: surfaces.textSecondary),
+                  ),
+                ],
               ),
-              const SizedBox(width: AimSpacing.space4),
-              Text(
-                l10n.lessonsLessonsCountLabel(model.lessonCount),
-                style: AimTextStyles.caption
-                    .copyWith(color: surfaces.textSecondary),
-              ),
-              if (model.quizCount > 0) ...[
-                const SizedBox(width: AimSpacing.space8),
-                Icon(
-                  Icons.quiz_outlined,
-                  size: AimSizes.iconSm,
-                  color: surfaces.textSecondary,
+              if (model.quizCount > 0)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.quiz_outlined,
+                      size: AimSizes.iconSm,
+                      color: surfaces.textSecondary,
+                    ),
+                    const SizedBox(width: AimSpacing.space4),
+                    Text(
+                      l10n.lessonsQuizzesCountLabel(model.quizCount),
+                      style: AimTextStyles.caption
+                          .copyWith(color: surfaces.textSecondary),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: AimSpacing.space4),
-                Text(
-                  l10n.lessonsQuizzesCountLabel(model.quizCount),
-                  style: AimTextStyles.caption
-                      .copyWith(color: surfaces.textSecondary),
-                ),
-              ],
-              const Spacer(),
               AIMBadge(
                 tone: model.isCompleted
                     ? AIMBadgeTone.success
