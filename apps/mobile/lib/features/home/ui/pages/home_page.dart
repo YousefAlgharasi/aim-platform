@@ -57,7 +57,6 @@ import 'package:aim_mobile/features/shell/logic/main_shell_tab_provider.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_continue_learning.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_engagement.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_quick_start_lesson.dart';
-import 'package:aim_mobile/features/home/logic/entity/home_recommended_course.dart';
 import '../widgets/home_widgets.dart';
 
 /// Student home screen MVP.
@@ -356,14 +355,10 @@ class _HomeContent extends ConsumerWidget {
   void _navigateToLesson(BuildContext context, HomeQuickStartLesson lesson) {
     context.push(
       AppRoutePaths.lessonDetail,
-      extra: {'lessonId': lesson.lessonId},
-    );
-  }
-
-  void _navigateToCourse(BuildContext context, HomeRecommendedCourse course) {
-    context.push(
-      AppRoutePaths.courseChapters,
-      extra: {'courseId': course.courseId},
+      extra: {
+        'lessonId': lesson.lessonId,
+        'lessonTitle': lesson.lessonTitle,
+      },
     );
   }
 
@@ -459,15 +454,12 @@ class _HomeContent extends ConsumerWidget {
             ),
             const SizedBox(height: AimSpacing.sectionGap),
           ],
-          if (data.recommendedCourse != null) ...[
-            HomeSectionHeader(title: l10n.homeRecommendedCourseTitle),
-            const SizedBox(height: AimSpacing.componentGap),
-            HomeRecommendedCourseCard(
-              course: data.recommendedCourse!,
-              onTap: () => _navigateToCourse(context, data.recommendedCourse!),
-            ),
-            const SizedBox(height: AimSpacing.sectionGap),
-          ],
+          HomeSectionHeader(title: l10n.homeAssessmentsTitle),
+          const SizedBox(height: AimSpacing.componentGap),
+          _HomeAssessmentsLinkCard(
+            onTap: () => context.push(AppRoutePaths.assessments),
+          ),
+          const SizedBox(height: AimSpacing.sectionGap),
           if (data.goal != null) ...[
             HomeSectionHeader(title: l10n.homeGoalTitle),
             const SizedBox(height: AimSpacing.componentGap),
@@ -615,12 +607,27 @@ List<Widget> _gettingStartedCards(BuildContext context, WidgetRef ref) {
         ],
       ),
     ),
-    const SizedBox(height: AimSpacing.componentGap),
-    AIMCard(
+  ];
+}
+
+// ── Assessments link card ───────────────────────────────────────────────────
+
+/// Always-visible link into the Assessments list — previously only shown
+/// as part of the "getting started" promo cards, which disappear once the
+/// student has any real AIM data, making Assessments unreachable from Home.
+class _HomeAssessmentsLinkCard extends StatelessWidget {
+  const _HomeAssessmentsLinkCard({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
+
+    return AIMCard(
       variant: AIMCardVariant.elevated,
-      onTap: () => context.push(
-        AppRoutePaths.assessments,
-      ),
+      onTap: onTap,
       child: Row(
         children: [
           const Icon(
@@ -649,14 +656,11 @@ List<Widget> _gettingStartedCards(BuildContext context, WidgetRef ref) {
               ],
             ),
           ),
-          Icon(
-            Icons.chevron_right,
-            color: surfaces.textMuted,
-          ),
+          Icon(Icons.chevron_right, color: surfaces.textMuted),
         ],
       ),
-    ),
-  ];
+    );
+  }
 }
 
 // ── Last updated label ──────────────────────────────────────────────────────
