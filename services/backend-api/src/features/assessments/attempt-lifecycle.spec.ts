@@ -24,6 +24,7 @@ function makeRepo(overrides: Partial<Record<string, jest.Mock>> = {}) {
     countAttemptsByStudent: jest.fn().mockResolvedValue(0),
     createAttempt: jest.fn().mockResolvedValue({ ...BASE_ATTEMPT }),
     findAttemptById: jest.fn().mockResolvedValue({ ...BASE_ATTEMPT }),
+    findActiveAttempt: jest.fn().mockResolvedValue(null),
     updateAttemptStatus: jest.fn().mockResolvedValue(undefined),
     ...overrides,
   };
