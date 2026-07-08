@@ -155,6 +155,20 @@ class ChapterListTile extends StatelessWidget {
                 style: AimTextStyles.caption
                     .copyWith(color: surfaces.textSecondary),
               ),
+              if (model.quizCount > 0) ...[
+                const SizedBox(width: AimSpacing.space8),
+                Icon(
+                  Icons.quiz_outlined,
+                  size: AimSizes.iconSm,
+                  color: surfaces.textSecondary,
+                ),
+                const SizedBox(width: AimSpacing.space4),
+                Text(
+                  l10n.lessonsQuizzesCountLabel(model.quizCount),
+                  style: AimTextStyles.caption
+                      .copyWith(color: surfaces.textSecondary),
+                ),
+              ],
               const Spacer(),
               AIMBadge(
                 tone: model.isCompleted

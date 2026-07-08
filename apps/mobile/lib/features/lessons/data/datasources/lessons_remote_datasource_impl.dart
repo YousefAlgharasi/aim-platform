@@ -108,6 +108,42 @@ class LessonsRemoteDatasourceImpl implements LessonsRemoteDatasource {
     return envelope.data ?? const [];
   }
 
+  @override
+  Future<FinalExamSummaryModel?> getFinalExamForLevel({
+    required String bearerToken,
+    required String levelId,
+  }) async {
+    final envelope = await _apiClient.get<FinalExamSummaryModel?>(
+      BackendApiPaths.studentChapters,
+      queryParameters: {'levelId': levelId},
+      headers: _auth(bearerToken),
+      decodeData: (json) => _decodeNestedObject(
+        json,
+        'finalExam',
+        FinalExamSummaryModel.fromJson,
+      ),
+    );
+    return envelope.data;
+  }
+
+  @override
+  Future<ChapterQuizSummaryModel?> getChapterQuiz({
+    required String bearerToken,
+    required String chapterId,
+  }) async {
+    final envelope = await _apiClient.get<ChapterQuizSummaryModel?>(
+      BackendApiPaths.studentLessons,
+      queryParameters: {'chapterId': chapterId},
+      headers: _auth(bearerToken),
+      decodeData: (json) => _decodeNestedObject(
+        json,
+        'quiz',
+        ChapterQuizSummaryModel.fromJson,
+      ),
+    );
+    return envelope.data;
+  }
+
   // ── Helpers ────────────────────────────────────────────────────────────────
 
   Map<String, String> _auth(String bearerToken) =>
@@ -124,5 +160,18 @@ class LessonsRemoteDatasourceImpl implements LessonsRemoteDatasource {
     final list = json[key];
     if (list is! List<dynamic>) return const [];
     return list.whereType<Map<String, dynamic>>().map(fromJson).toList();
+  }
+
+  /// Extracts a nullable nested object from an envelope using [key]
+  /// (e.g. 'finalExam', 'quiz'). Null when absent or not an object.
+  T? _decodeNestedObject<T>(
+    Object? json,
+    String key,
+    T Function(Map<String, dynamic>) fromJson,
+  ) {
+    if (json is! Map<String, dynamic>) return null;
+    final value = json[key];
+    if (value is! Map<String, dynamic>) return null;
+    return fromJson(value);
   }
 }

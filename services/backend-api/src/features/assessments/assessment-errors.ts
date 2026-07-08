@@ -29,6 +29,7 @@ export enum AssessmentErrorCode {
   RESULT_ALREADY_EXISTS = 'RESULT_ALREADY_EXISTS',
   NO_QUESTIONS_FOUND = 'NO_QUESTIONS_FOUND',
   CHAPTER_NOT_COMPLETE = 'CHAPTER_NOT_COMPLETE',
+  COURSE_NOT_COMPLETE = 'COURSE_NOT_COMPLETE',
 }
 
 export function assessmentNotFound(id: string): AppError {
@@ -43,6 +44,14 @@ export function chapterNotComplete(): AppError {
   return new AppError({
     code: AssessmentErrorCode.CHAPTER_NOT_COMPLETE,
     message: 'Complete every lesson in this chapter before starting this assessment.',
+    statusCode: HttpStatus.FORBIDDEN,
+  });
+}
+
+export function courseNotComplete(): AppError {
+  return new AppError({
+    code: AssessmentErrorCode.COURSE_NOT_COMPLETE,
+    message: 'Complete every chapter in this course before starting the final exam.',
     statusCode: HttpStatus.FORBIDDEN,
   });
 }

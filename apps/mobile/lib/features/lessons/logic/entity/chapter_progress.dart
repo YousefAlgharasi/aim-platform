@@ -14,6 +14,7 @@ class ChapterProgress {
     required this.levelCode,
     required this.lessonCount,
     required this.completedLessonCount,
+    required this.quizCount,
     required this.percent,
     required this.status,
   });
@@ -30,6 +31,9 @@ class ChapterProgress {
 
   /// Count of those lessons the student has completed.
   final int completedLessonCount;
+
+  /// Count of published quiz assessments linked to this chapter.
+  final int quizCount;
 
   /// Backend-computed: round(completedLessonCount / lessonCount * 100).
   final int percent;

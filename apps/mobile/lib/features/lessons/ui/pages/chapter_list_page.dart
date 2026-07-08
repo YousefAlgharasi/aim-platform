@@ -82,11 +82,15 @@ class ChapterListPage extends ConsumerStatefulWidget {
 
 class _ChapterListPageState extends ConsumerState<ChapterListPage> {
   ChapterListFilter _filter = ChapterListFilter.all;
+  FinalExamSummaryModel? _finalExam;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _load();
+      _loadFinalExam();
+    });
   }
 
   void _load() {
@@ -98,6 +102,22 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
         );
   }
 
+  Future<void> _loadFinalExam() async {
+    final token = ref.read(authFlowProvider).accessToken;
+    if (token == null || token.isEmpty) return;
+    final repository = ref.read(lessonsRepositoryProvider);
+    final levels = await repository.getLevels(
+      bearerToken: token,
+      courseId: widget.courseId,
+    );
+    if (levels.isEmpty || !mounted) return;
+    final finalExam = await repository.getFinalExamForLevel(
+      bearerToken: token,
+      levelId: levels.first.id,
+    );
+    if (mounted) setState(() => _finalExam = finalExam);
+  }
+
   Future<void> _refresh() async {
     final token = ref.read(authFlowProvider).accessToken;
     if (token == null || token.isEmpty) return;
@@ -105,6 +125,19 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
           bearerToken: token,
           courseId: widget.courseId,
         );
+    await _loadFinalExam();
+  }
+
+  void _onFinalExamTap() {
+    final finalExam = _finalExam;
+    if (finalExam == null || !finalExam.unlocked) return;
+    context.push(
+      '/student/assessments/detail',
+      extra: {
+        'assessmentId': finalExam.assessmentId,
+        'assessmentTitle': finalExam.title,
+      },
+    );
   }
 
   void _onChapterTap(ChapterProgressModel chapter, int index) {
@@ -160,6 +193,8 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
                     filter: _filter,
                     onRefresh: _refresh,
                     onTap: _onChapterTap,
+                    finalExam: _finalExam,
+                    onFinalExamTap: _onFinalExamTap,
                   ),
                 AppAsyncIdle() => AIMFullScreenLoading(
                     semanticLabel: loadingLabel,
@@ -330,15 +365,40 @@ class _ChapterListContent extends StatelessWidget {
     required this.filter,
     required this.onRefresh,
     required this.onTap,
+    required this.finalExam,
+    required this.onFinalExamTap,
   });
 
   final List<ChapterProgressModel> chapters;
   final ChapterListFilter filter;
   final Future<void> Function() onRefresh;
   final void Function(ChapterProgressModel, int) onTap;
+  final FinalExamSummaryModel? finalExam;
+  final VoidCallback onFinalExamTap;
 
   @override
   Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(child: _buildList(context)),
+        if (finalExam != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AimSpacing.screenPaddingMobile,
+              0,
+              AimSpacing.screenPaddingMobile,
+              AimSpacing.sectionGap,
+            ),
+            child: FinalExamCard(
+              model: finalExam!,
+              onTap: onFinalExamTap,
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildList(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
     if (chapters.isEmpty) {

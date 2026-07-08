@@ -14,6 +14,7 @@ class ChapterProgressModel extends ChapterProgress {
     required super.levelCode,
     required super.lessonCount,
     required super.completedLessonCount,
+    required super.quizCount,
     required super.percent,
     required super.status,
   });
@@ -26,6 +27,7 @@ class ChapterProgressModel extends ChapterProgress {
       levelCode: json['levelCode'] as String?,
       lessonCount: (json['lessonCount'] as num).toInt(),
       completedLessonCount: (json['completedLessonCount'] as num).toInt(),
+      quizCount: (json['quizCount'] as num?)?.toInt() ?? 0,
       percent: (json['percent'] as num).toInt(),
       status: json['status'] as String,
     );
@@ -38,6 +40,7 @@ class ChapterProgressModel extends ChapterProgress {
         'levelCode': levelCode,
         'lessonCount': lessonCount,
         'completedLessonCount': completedLessonCount,
+        'quizCount': quizCount,
         'percent': percent,
         'status': status,
       };

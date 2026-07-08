@@ -16,6 +16,14 @@ export interface StudentLessonSummary {
   readonly current: boolean;
 }
 
+export interface ChapterQuizSummary {
+  readonly assessmentId: string;
+  readonly title: string;
+}
+
 export interface StudentLessonsResponse {
   readonly lessons: StudentLessonSummary[];
+
+  /** The chapter's quiz, if it has one — null otherwise. */
+  readonly quiz: ChapterQuizSummary | null;
 }

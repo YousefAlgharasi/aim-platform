@@ -22,8 +22,8 @@ import {
 import { DatabaseService } from '../../database/database.service';
 import { AssessmentRepository } from './assessment.repository';
 import { AssessmentDeadlineService } from './assessment-deadline.service';
-import { isChapterLessonsComplete } from './assessment-chapter-gate.util';
-import { chapterNotComplete } from './assessment-errors';
+import { isChapterLessonsComplete, isCourseChaptersComplete } from './assessment-chapter-gate.util';
+import { chapterNotComplete, courseNotComplete } from './assessment-errors';
 
 export interface StartAttemptResult {
   readonly attemptId: string;
@@ -74,6 +74,16 @@ export class AttemptLifecycleService {
       const unlocked = await isChapterLessonsComplete(this.db, studentId, assessment.chapter_id);
       if (!unlocked) {
         throw chapterNotComplete();
+      }
+    }
+
+    // 1.6. Course-gated assessments (final exams): reject until every
+    // chapter in the linked course is fully complete (lessons + any
+    // chapter quiz, passed). Same defense-in-depth rationale as 1.5.
+    if (assessment.course_id) {
+      const unlocked = await isCourseChaptersComplete(this.db, studentId, assessment.course_id);
+      if (!unlocked) {
+        throw courseNotComplete();
       }
     }
 

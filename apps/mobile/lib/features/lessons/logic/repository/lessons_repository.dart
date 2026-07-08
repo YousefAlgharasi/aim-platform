@@ -63,4 +63,21 @@ abstract class LessonsRepository {
     required String bearerToken,
     required String chapterId,
   });
+
+  /// The course's final exam for a backend-supplied [levelId], or null when
+  /// the course has none or hasn't been unlocked yet. Reads the `finalExam`
+  /// field returned alongside the chapter list by the same endpoint as
+  /// [getChaptersWithProgress].
+  Future<FinalExamSummaryModel?> getFinalExamForLevel({
+    required String bearerToken,
+    required String levelId,
+  });
+
+  /// The quiz linked to a backend-supplied [chapterId], or null when the
+  /// chapter has none. Reads the `quiz` field returned alongside the lesson
+  /// list by the same endpoint as [getLessonsWithProgress].
+  Future<ChapterQuizSummaryModel?> getChapterQuiz({
+    required String bearerToken,
+    required String chapterId,
+  });
 }

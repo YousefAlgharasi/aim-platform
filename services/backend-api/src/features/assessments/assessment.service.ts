@@ -16,7 +16,7 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AssessmentRepository } from './assessment.repository';
 import { AssessmentDeadlineService, DeadlineStatusResult } from './assessment-deadline.service';
-import { isChapterLessonsComplete } from './assessment-chapter-gate.util';
+import { isChapterLessonsComplete, isCourseChaptersComplete } from './assessment-chapter-gate.util';
 
 // Inlined until P10-020 merges
 type DeadlineStatus = 'upcoming' | 'open' | 'closed' | 'missed' | 'late' | 'extended' | 'expired';
@@ -73,7 +73,9 @@ export class AssessmentService {
    * Assessments tied to a chapter (chapter_id set) are hidden entirely from
    * this list until every published lesson in that chapter is completed for
    * this student — a locked assessment must not appear to exist yet.
-   * Assessments with no chapter_id are never gated.
+   * Assessments tied to a course (course_id set — final exams) are hidden
+   * until every chapter in that course is fully complete (lessons + any
+   * chapter quiz, passed). Assessments with neither are never gated.
    */
   async listForStudent(studentId: string): Promise<AssessmentListItem[]> {
     const assessments = await this.repo.findAllPublished();
@@ -81,6 +83,10 @@ export class AssessmentService {
       assessments.map(async (a) => {
         if (a.chapter_id) {
           const unlocked = await isChapterLessonsComplete(this.db, studentId, a.chapter_id);
+          if (!unlocked) return null;
+        }
+        if (a.course_id) {
+          const unlocked = await isCourseChaptersComplete(this.db, studentId, a.course_id);
           if (!unlocked) return null;
         }
         const deadline = await this.repo.findEffectiveDeadline(a.id, studentId);
@@ -106,6 +112,10 @@ export class AssessmentService {
     for (const a of [...assessments].reverse()) {
       if (a.chapter_id) {
         const unlocked = await isChapterLessonsComplete(this.db, studentId, a.chapter_id);
+        if (!unlocked) continue;
+      }
+      if (a.course_id) {
+        const unlocked = await isCourseChaptersComplete(this.db, studentId, a.course_id);
         if (!unlocked) continue;
       }
       const attemptCount = await this.repo.countAttemptsByStudent(a.id, studentId);
