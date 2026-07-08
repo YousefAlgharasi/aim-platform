@@ -379,4 +379,32 @@ class BackendApiPaths {
 
   /// GET /billing/invoices/:id
   static String billingInvoice(String id) => '/billing/invoices/$id';
+
+  // ---------------------------------------------------------------------------
+  // Support — services/backend-api/src/features/operations
+  // ---------------------------------------------------------------------------
+
+  /// GET  /support-tickets — list my tickets
+  /// POST /support-tickets — create a ticket
+  static const String supportTickets = '/support-tickets';
+
+  /// GET /support-tickets/:id
+  static String supportTicket(String ticketId) =>
+      '/support-tickets/$ticketId';
+
+  /// POST /support-tickets/:id/comments
+  static String supportTicketComments(String ticketId) =>
+      '/support-tickets/$ticketId/comments';
+
+  /// POST /feedback
+  static const String feedback = '/feedback';
+
+  /// GET /release-notes
+  static const String releaseNotes = '/release-notes';
+
+  /// GET /release-notes/:id
+  static String releaseNote(String noteId) => '/release-notes/$noteId';
+
+  /// GET /operational-status
+  static const String operationalStatus = '/operational-status';
 }

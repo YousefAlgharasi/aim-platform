@@ -14,37 +14,22 @@
 // empty state is shown directly rather than an infinite loading spinner.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
+import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+
+import '../../logic/provider/support_provider.dart';
 import 'ticket_list_page.dart';
 
-class ParentTicketListPage extends StatelessWidget {
+class ParentTicketListPage extends ConsumerStatefulWidget {
   const ParentTicketListPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-
-    // Parent tickets loaded from backend via GET /support/tickets
-    // filtered by parent role on the backend
-    return Scaffold(
-      backgroundColor: surfaces.background,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const _ParentTicketListHeader(),
-          Expanded(child: buildEmptyState(context)),
-        ],
-      ),
-      floatingActionButton: AIMFab(
-        semanticLabel: 'Create a support ticket',
-        onPressed: () => context.push(AppRoutePaths.createTicket),
-        icon: const Icon(Icons.add),
-      ),
-    );
-  }
+  ConsumerState<ParentTicketListPage> createState() =>
+      _ParentTicketListPageState();
 
   /// Builds an empty state for parent tickets using shared pattern.
   static Widget buildEmptyState(BuildContext context) {
@@ -77,6 +62,75 @@ class ParentTicketListPage extends StatelessWidget {
       onTap: onTap,
     );
   }
+}
+
+class _ParentTicketListPageState extends ConsumerState<ParentTicketListPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => ref.read(ticketListProvider.notifier).load(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final state = ref.watch(ticketListProvider);
+
+    // Parent tickets loaded from backend via GET /support-tickets —
+    // scoped server-side to the signed-in account, same as the student view.
+    return Scaffold(
+      backgroundColor: surfaces.background,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _ParentTicketListHeader(),
+          Expanded(
+            child: switch (state) {
+              AppAsyncLoading() || AppAsyncIdle() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading your tickets',
+                ),
+              AppAsyncFailure(:final message) => AIMFullScreenError(
+                  message: message,
+                  onRetry: () => ref.read(ticketListProvider.notifier).load(),
+                ),
+              AppAsyncSuccess(:final data) => data.isEmpty
+                  ? ParentTicketListPage.buildEmptyState(context)
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AimSpacing.sectionGap,
+                      ),
+                      itemCount: data.length,
+                      itemBuilder: (context, index) {
+                        final ticket = data[index];
+                        return ParentTicketListPage.buildTicketTile(
+                          context: context,
+                          ticketId: ticket.id,
+                          subject: ticket.subject,
+                          status: ticket.status,
+                          category: ticket.category,
+                          severity: ticket.severity,
+                          createdAt: ticket.createdAt,
+                          onTap: () => context.push(
+                            AppRoutePaths.ticketDetail,
+                            extra: {'ticketId': ticket.id},
+                          ),
+                        );
+                      },
+                    ),
+            },
+          ),
+        ],
+      ),
+      floatingActionButton: AIMFab(
+        semanticLabel: 'Create a support ticket',
+        onPressed: () => context.push(AppRoutePaths.createTicket),
+        icon: const Icon(Icons.add),
+      ),
+    );
+  }
+
 }
 
 class _ParentTicketListHeader extends StatelessWidget {

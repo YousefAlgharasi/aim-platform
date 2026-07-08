@@ -12,90 +12,27 @@
 // Status"), a "Release notes" navigation card (real, working route to
 // AppRoutePaths.releaseNotes).
 //
-// Note on which endpoint this calls: this screen's data comes from
-// SupportDatasource.getOperationalStatus() (GET /status) — the SAME
-// unimplemented interface as the other support screens (createTicket,
-// feedback, ticketList, ticketDetail), NOT the backend's real /health
-// endpoint (services/backend-api/src/health/health.controller.ts), which
-// this screen never calls. So it's blocked the same way as the rest, not
-// exempt — confirmed per this task's note to check before assuming.
-// SupportDatasource has no concrete implementation (out of scope for this
-// UI-only verification task). The body previously showed a permanent
-// CircularProgressIndicator that never resolved — a real bug. It now shows
-// a graceful "not available yet" empty state instead.
+// Wired to the real GET /operational-status endpoint via
+// operationalStatusProvider (SupportRemoteDatasourceImpl). That endpoint
+// has no maintenance-windows list (see support_models.dart), so
+// buildMaintenanceCard below is kept for a future maintenance-windows
+// endpoint but is unused today rather than fed fabricated data.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
+import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 
-class StatusPage extends StatelessWidget {
+import '../../logic/provider/support_provider.dart';
+
+class StatusPage extends ConsumerStatefulWidget {
   const StatusPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-
-    // Status data loaded from backend via GET /status
-    return Scaffold(
-      backgroundColor: surfaces.background,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const _StatusHeader(),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AimSpacing.screenPaddingMobile,
-                vertical: AimSpacing.sectionGap,
-              ),
-              children: [
-                const AIMEmptyState(
-                  icon: Icon(Icons.monitor_heart_outlined),
-                  title: 'Status is not available yet',
-                  subtitle: 'Live system status will appear here once '
-                      'status tracking is live.',
-                ),
-                const SizedBox(height: AimSpacing.sectionGap),
-                AIMCard(
-                  interactive: true,
-                  onTap: () => context.push(AppRoutePaths.releaseNotes),
-                  semanticLabel: "Release notes, what's new in AIM",
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Release notes',
-                              style: AimTextStyles.title
-                                  .copyWith(color: surfaces.textPrimary),
-                            ),
-                            const SizedBox(height: AimSpacing.space2),
-                            Text(
-                              "What's new in AIM",
-                              style: AimTextStyles.bodySm
-                                  .copyWith(color: surfaces.textSecondary),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Icon(
-                        Icons.chevron_right,
-                        color: surfaces.textMuted,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  ConsumerState<StatusPage> createState() => _StatusPageState();
 
   /// Builds a component status row with colored indicator.
   static Widget buildComponentStatus({
@@ -240,6 +177,104 @@ class StatusPage extends StatelessWidget {
     final hour = local.hour.toString().padLeft(2, '0');
     final minute = local.minute.toString().padLeft(2, '0');
     return '${_months[local.month - 1]} ${local.day} · $hour:$minute';
+  }
+}
+
+class _StatusPageState extends ConsumerState<StatusPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => ref.read(operationalStatusProvider.notifier).load(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final state = ref.watch(operationalStatusProvider);
+
+    return Scaffold(
+      backgroundColor: surfaces.background,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _StatusHeader(),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AimSpacing.screenPaddingMobile,
+                vertical: AimSpacing.sectionGap,
+              ),
+              children: [
+                switch (state) {
+                  AppAsyncLoading() || AppAsyncIdle() => const AIMFullScreenLoading(
+                      semanticLabel: 'Loading system status',
+                    ),
+                  AppAsyncFailure(:final message) => AIMFullScreenError(
+                      message: message,
+                      onRetry: () =>
+                          ref.read(operationalStatusProvider.notifier).load(),
+                    ),
+                  AppAsyncSuccess(:final data) => data.isEmpty
+                      ? const AIMEmptyState(
+                          icon: Icon(Icons.monitor_heart_outlined),
+                          title: 'No components reported',
+                          subtitle: 'Nothing to show yet.',
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (data.every((s) => s.isOperational))
+                              StatusPage.buildAllOperationalBanner(context),
+                            for (final component in data)
+                              StatusPage.buildComponentStatus(
+                                context: context,
+                                component: component.component,
+                                status: component.status,
+                                message: component.message,
+                              ),
+                          ],
+                        ),
+                },
+                const SizedBox(height: AimSpacing.sectionGap),
+                AIMCard(
+                  interactive: true,
+                  onTap: () => context.push(AppRoutePaths.releaseNotes),
+                  semanticLabel: "Release notes, what's new in AIM",
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Release notes',
+                              style: AimTextStyles.title
+                                  .copyWith(color: surfaces.textPrimary),
+                            ),
+                            const SizedBox(height: AimSpacing.space2),
+                            Text(
+                              "What's new in AIM",
+                              style: AimTextStyles.bodySm
+                                  .copyWith(color: surfaces.textSecondary),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.chevron_right,
+                        color: surfaces.textMuted,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

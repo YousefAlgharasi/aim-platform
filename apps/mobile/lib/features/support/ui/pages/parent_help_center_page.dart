@@ -96,6 +96,31 @@ class ParentHelpCenterPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const _ParentHelpCenterHeader(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AimSpacing.screenPaddingMobile,
+              AimSpacing.sectionGap,
+              AimSpacing.screenPaddingMobile,
+              0,
+            ),
+            child: AIMCard(
+              variant: AIMCardVariant.standard,
+              interactive: true,
+              onTap: () => context.push(AppRoutePaths.parentTicketList),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('My Tickets', style: AimTextStyles.bodyMd),
+                  Icon(
+                    Directionality.of(context) == TextDirection.rtl
+                        ? Icons.chevron_left_rounded
+                        : Icons.chevron_right_rounded,
+                    color: surfaces.textMuted,
+                  ),
+                ],
+              ),
+            ),
+          ),
           Expanded(
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(
