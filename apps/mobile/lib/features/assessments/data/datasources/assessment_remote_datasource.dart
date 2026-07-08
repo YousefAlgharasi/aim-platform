@@ -55,4 +55,18 @@ abstract class AssessmentRemoteDatasource {
     required String bearerToken,
     required String attemptId,
   });
+
+  /// GET /student/assessments/attempts/:attemptId/questions
+  Future<List<AttemptQuestionModel>> getAttemptQuestions({
+    required String bearerToken,
+    required String attemptId,
+  });
+
+  /// POST /student/assessments/attempts/:attemptId/answers
+  Future<SubmittedAnswerModel> submitAnswer({
+    required String bearerToken,
+    required String attemptId,
+    required String assessmentQuestionLinkId,
+    required String responseValue,
+  });
 }

@@ -28,6 +28,8 @@ import { AttemptLifecycleService } from './assessment-attempt.service';
 import { AssessmentSubmissionFlowService } from './assessment-submission-flow.service';
 import { AssessmentProgressIntegrationService } from './assessment-progress-integration.service';
 import { AssessmentAimBridgeService } from './assessment-aim-bridge.service';
+import { QuestionDeliveryService } from './question-delivery.service';
+import { AnswerSubmissionService } from './answer-submission.service';
 import { AssessmentController } from './assessment.controller';
 import { AssessmentPermissionGuard } from './guards/assessment-permission.guard';
 import { AssessmentAttemptOwnershipGuard } from './guards/assessment-attempt-ownership.guard';
@@ -49,6 +51,8 @@ import { AssessmentAuditService } from './assessment-audit.service';
     AssessmentSubmissionFlowService,
     AssessmentProgressIntegrationService,
     AssessmentAimBridgeService,
+    QuestionDeliveryService,
+    AnswerSubmissionService,
     AssessmentPermissionGuard,
     AssessmentAttemptOwnershipGuard,
     AssessmentResultOwnershipGuard,
@@ -66,6 +70,8 @@ import { AssessmentAuditService } from './assessment-audit.service';
     AssessmentSubmissionFlowService,
     AssessmentProgressIntegrationService,
     AssessmentAimBridgeService,
+    QuestionDeliveryService,
+    AnswerSubmissionService,
     AssessmentPermissionGuard,
     AssessmentAttemptOwnershipGuard,
     AssessmentResultOwnershipGuard,
