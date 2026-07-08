@@ -25,6 +25,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -165,6 +166,38 @@ class _NotificationPreferencesPageState
                       _QuietHoursSection(
                         state: quietHoursState,
                         onSave: _onSaveQuietHours,
+                      ),
+                      const SizedBox(height: AimSpacing.sectionGap),
+                      Text(
+                        'REMINDERS',
+                        style: AimTextStyles.label.copyWith(
+                          color: surfaces.textMuted,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: AimSpacing.componentGap),
+                      AIMCard(
+                        variant: AIMCardVariant.standard,
+                        onTap: () =>
+                            context.push(AppRoutePaths.reminderSettings),
+                        interactive: true,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Manage lesson reminders',
+                              style: AimTextStyles.bodyMd.copyWith(
+                                color: surfaces.textPrimary,
+                              ),
+                            ),
+                            Icon(
+                              Directionality.of(context) == TextDirection.rtl
+                                  ? Icons.chevron_left_rounded
+                                  : Icons.chevron_right_rounded,
+                              color: surfaces.textMuted,
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),

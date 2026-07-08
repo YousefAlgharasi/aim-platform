@@ -193,12 +193,19 @@ class _AiTeacherChatPageState extends ConsumerState<AiTeacherChatPage> {
     context.push(AppRoutePaths.aiTeacherHistory);
   }
 
+  void _openSettings() {
+    context.push(AppRoutePaths.aiTeacherSettings);
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(aiTeacherChatProvider);
 
     return Scaffold(
-      appBar: _AiTeacherChatHeader(onOpenHistory: _openHistory),
+      appBar: _AiTeacherChatHeader(
+        onOpenHistory: _openHistory,
+        onOpenSettings: _openSettings,
+      ),
       body: SafeArea(
         child: switch (state) {
           AppAsyncLoading() => const AIMFullScreenLoading(
@@ -375,9 +382,13 @@ class _ChatContent extends StatelessWidget {
 /// claim) and a history action that opens [AiTeacherSessionHistoryPage].
 class _AiTeacherChatHeader extends StatelessWidget
     implements PreferredSizeWidget {
-  const _AiTeacherChatHeader({required this.onOpenHistory});
+  const _AiTeacherChatHeader({
+    required this.onOpenHistory,
+    required this.onOpenSettings,
+  });
 
   final VoidCallback onOpenHistory;
+  final VoidCallback onOpenSettings;
 
   @override
   Size get preferredSize => const Size.fromHeight(88);
@@ -496,6 +507,29 @@ class _AiTeacherChatHeader extends StatelessWidget
                     padding: EdgeInsets.all(AimSpacing.space12),
                     child: Icon(
                       Icons.history_rounded,
+                      size: AimSizes.iconMd,
+                      color: AimColors.neutral0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AimSpacing.space4),
+            Semantics(
+              button: true,
+              label: 'AI Teacher settings',
+              child: InkWell(
+                onTap: onOpenSettings,
+                customBorder: const CircleBorder(),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AimColors.neutral0.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.all(AimSpacing.space12),
+                    child: Icon(
+                      Icons.settings_outlined,
                       size: AimSizes.iconMd,
                       color: AimColors.neutral0,
                     ),

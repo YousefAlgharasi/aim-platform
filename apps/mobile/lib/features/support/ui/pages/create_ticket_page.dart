@@ -12,42 +12,42 @@
 // ticket"), AIMSelect/AIMInput/AIMTextarea form fields, gradient "Submit
 // Ticket" button.
 //
-// Note: POST /support/tickets is "Planned / Not Yet Active" and
-// SupportDatasource has no concrete implementation (out of scope for this
-// UI-only verification task — see the task note). Submitting now shows a
-// graceful "not available yet" message instead of either faking a success
-// response or leaving the button stuck in a permanent loading spinner
-// (the previous behavior: `_isSubmitting` was set to true and never reset).
+// Wired to the real POST /support-tickets endpoint via createTicketProvider
+// (SupportRemoteDatasourceImpl). Category options match the backend's
+// CreateSupportTicketDto enum exactly (bug_report/account_issue/
+// learning_issue/billing_issue/general/other).
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 
-class CreateTicketPage extends StatefulWidget {
+import '../../logic/provider/support_provider.dart';
+
+class CreateTicketPage extends ConsumerStatefulWidget {
   const CreateTicketPage({super.key});
 
   @override
-  State<CreateTicketPage> createState() => _CreateTicketPageState();
+  ConsumerState<CreateTicketPage> createState() => _CreateTicketPageState();
 }
 
-class _CreateTicketPageState extends State<CreateTicketPage> {
+class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
   String _category = 'general';
   String _severity = 'medium';
   final _subjectController = TextEditingController();
   final _descriptionController = TextEditingController();
-  bool _isSubmitting = false;
   String? _subjectError;
   String? _descriptionError;
-  String? _submitError;
 
   static const _categoryOptions = [
-    AIMSelectOption(value: 'technical', label: 'Technical Issue'),
-    AIMSelectOption(value: 'billing', label: 'Billing'),
-    AIMSelectOption(value: 'account', label: 'Account'),
-    AIMSelectOption(value: 'content', label: 'Content'),
-    AIMSelectOption(value: 'feedback', label: 'Feedback'),
+    AIMSelectOption(value: 'bug_report', label: 'Bug Report'),
+    AIMSelectOption(value: 'account_issue', label: 'Account Issue'),
+    AIMSelectOption(value: 'learning_issue', label: 'Learning Issue'),
+    AIMSelectOption(value: 'billing_issue', label: 'Billing Issue'),
     AIMSelectOption(value: 'general', label: 'General'),
+    AIMSelectOption(value: 'other', label: 'Other'),
   ];
 
   static const _severityOptions = [
@@ -67,6 +67,21 @@ class _CreateTicketPageState extends State<CreateTicketPage> {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final submitState = ref.watch(createTicketProvider);
+    final isSubmitting = switch (submitState) {
+      AppAsyncLoading() => true,
+      _ => false,
+    };
+    final submitError = switch (submitState) {
+      AppAsyncFailure(:final message) => message,
+      _ => null,
+    };
+
+    ref.listen(createTicketProvider, (previous, next) {
+      if (next is AppAsyncSuccess<dynamic> && context.canPop()) {
+        context.pop();
+      }
+    });
 
     return Scaffold(
       backgroundColor: surfaces.background,
@@ -113,10 +128,10 @@ class _CreateTicketPageState extends State<CreateTicketPage> {
                   rows: 5,
                   error: _descriptionError,
                 ),
-                if (_submitError != null) ...[
+                if (submitError != null) ...[
                   const SizedBox(height: AimSpacing.componentGap),
                   Text(
-                    _submitError!,
+                    submitError,
                     style: AimTextStyles.bodySm
                         .copyWith(color: AimColors.error500),
                   ),
@@ -124,8 +139,8 @@ class _CreateTicketPageState extends State<CreateTicketPage> {
                 const SizedBox(height: AimSpacing.sectionGap),
                 AIMGradientButton(
                   label: 'Submit Ticket',
-                  onPressed: _isSubmitting ? null : _handleSubmit,
-                  loading: _isSubmitting,
+                  onPressed: isSubmitting ? null : _handleSubmit,
+                  loading: isSubmitting,
                   fullWidth: true,
                   semanticLabel: 'Submit ticket',
                 ),
@@ -144,21 +159,15 @@ class _CreateTicketPageState extends State<CreateTicketPage> {
       _subjectError = subject.isEmpty ? 'Subject is required' : null;
       _descriptionError =
           description.isEmpty ? 'Description is required' : null;
-      _submitError = null;
     });
     if (_subjectError != null || _descriptionError != null) return;
 
-    setState(() => _isSubmitting = true);
-
-    // POST /support/tickets is "Planned / Not Yet Active" and
-    // SupportDatasource has no concrete implementation yet — a real
-    // submission can't be attempted here without inventing backend
-    // behavior. Show a graceful, honest message instead of faking success.
-    setState(() {
-      _isSubmitting = false;
-      _submitError = 'Ticket submission is not available yet. Please try '
-          'again later.';
-    });
+    ref.read(createTicketProvider.notifier).submit(
+          category: _category,
+          severity: _severity,
+          subject: subject,
+          description: description,
+        );
   }
 }
 
