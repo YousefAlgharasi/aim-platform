@@ -20,10 +20,10 @@ describe('QuestionDeliveryService', () => {
   ];
 
   const optionRows = [
-    { id: 'opt-1', question_id: 'q-1', label: 'A', option_text: '3' },
-    { id: 'opt-2', question_id: 'q-1', label: 'B', option_text: '4' },
-    { id: 'opt-3', question_id: 'q-2', label: 'A', option_text: 'London' },
-    { id: 'opt-4', question_id: 'q-2', label: 'B', option_text: 'Paris' },
+    { id: 'opt-1', question_id: 'q-1', text: '3', sort_order: 0 },
+    { id: 'opt-2', question_id: 'q-1', text: '4', sort_order: 1 },
+    { id: 'opt-3', question_id: 'q-2', text: 'London', sort_order: 0 },
+    { id: 'opt-4', question_id: 'q-2', text: 'Paris', sort_order: 1 },
   ];
 
   beforeEach(() => {
