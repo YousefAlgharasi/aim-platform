@@ -9,12 +9,8 @@ import 'package:aim_mobile/features/support/ui/pages/ticket_list_page.dart';
 import 'package:aim_mobile/features/support/ui/pages/create_ticket_page.dart';
 
 class _FakeSupportRepository implements SupportRepository {
-  _FakeSupportRepository({this.tickets = const []});
-
-  final List<SupportTicket> tickets;
-
   @override
-  Future<List<SupportTicket>> getTickets() async => tickets;
+  Future<List<SupportTicket>> getTickets() async => const [];
 
   @override
   Future<SupportTicket> getTicket(String ticketId) =>
