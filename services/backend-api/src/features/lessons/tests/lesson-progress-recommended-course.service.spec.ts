@@ -11,6 +11,7 @@
 import { LessonProgressService } from '../lesson-progress.service';
 import { DatabaseService } from '../../../database/database.service';
 import { CourseCompletionService } from '../course-completion.service';
+import { ChapterCompletionService } from '../chapter-completion.service';
 
 describe('LessonProgressService.findRecommendedCourse — fallback query', () => {
   it('calls the fallback query with no bind parameters', async () => {
@@ -31,7 +32,10 @@ describe('LessonProgressService.findRecommendedCourse — fallback query', () =>
     const courseCompletionService = {
       handleLessonCompleted: jest.fn().mockResolvedValue(undefined),
     } as unknown as CourseCompletionService;
-    const service = new LessonProgressService(db, courseCompletionService);
+    const chapterCompletionService = {
+      handleLessonNewlyCompleted: jest.fn().mockResolvedValue(undefined),
+    } as unknown as ChapterCompletionService;
+    const service = new LessonProgressService(db, courseCompletionService, chapterCompletionService);
 
     const result = await service.findRecommendedCourse('student-1');
 

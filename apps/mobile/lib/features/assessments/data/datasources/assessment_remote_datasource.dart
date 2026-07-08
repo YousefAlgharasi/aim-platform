@@ -10,6 +10,11 @@ abstract class AssessmentRemoteDatasource {
     required String bearerToken,
   });
 
+  /// GET /student/assessments/next
+  Future<AssessmentListItemModel?> getNextAssessment({
+    required String bearerToken,
+  });
+
   /// GET /student/assessments/:id
   Future<AssessmentDetailModel> getAssessmentDetail({
     required String bearerToken,

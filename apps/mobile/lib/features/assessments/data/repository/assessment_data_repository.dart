@@ -22,6 +22,12 @@ class AssessmentRepositoryImpl implements AssessmentRepository {
       _wrap(() => _datasource.getAssessments(bearerToken: bearerToken));
 
   @override
+  Future<AssessmentListItem?> getNextAssessment({
+    required String bearerToken,
+  }) =>
+      _wrap(() => _datasource.getNextAssessment(bearerToken: bearerToken));
+
+  @override
   Future<AssessmentDetail> getAssessmentDetail({
     required String bearerToken,
     required String assessmentId,

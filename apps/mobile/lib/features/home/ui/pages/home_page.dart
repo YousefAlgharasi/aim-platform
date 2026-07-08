@@ -57,6 +57,8 @@ import 'package:aim_mobile/features/shell/logic/main_shell_tab_provider.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_continue_learning.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_engagement.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_quick_start_lesson.dart';
+import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
+import 'package:aim_mobile/features/assessments/logic/provider/assessment_provider.dart';
 import '../widgets/home_widgets.dart';
 
 /// Student home screen MVP.
@@ -454,12 +456,7 @@ class _HomeContent extends ConsumerWidget {
             ),
             const SizedBox(height: AimSpacing.sectionGap),
           ],
-          HomeSectionHeader(title: l10n.homeAssessmentsTitle),
-          const SizedBox(height: AimSpacing.componentGap),
-          _HomeAssessmentsLinkCard(
-            onTap: () => context.push(AppRoutePaths.assessments),
-          ),
-          const SizedBox(height: AimSpacing.sectionGap),
+          const _HomeCurrentAssessmentSection(),
           if (data.goal != null) ...[
             HomeSectionHeader(title: l10n.homeGoalTitle),
             const SizedBox(height: AimSpacing.componentGap),
@@ -610,20 +607,77 @@ List<Widget> _gettingStartedCards(BuildContext context, WidgetRef ref) {
   ];
 }
 
-// ── Assessments link card ───────────────────────────────────────────────────
+// ── Current assessment section ──────────────────────────────────────────────
 
-/// Always-visible link into the Assessments list — previously only shown
-/// as part of the "getting started" promo cards, which disappear once the
-/// student has any real AIM data, making Assessments unreachable from Home.
-class _HomeAssessmentsLinkCard extends StatelessWidget {
-  const _HomeAssessmentsLinkCard({required this.onTap});
+/// Shows at most the student's single "current" assessment (backend-picked
+/// via GET /student/assessments/next — the oldest unlocked, not-yet-attempted
+/// one), never the full cross-course assessment list. Renders nothing when
+/// there's no current assessment, so it never displaces the sections below
+/// it with an empty placeholder.
+class _HomeCurrentAssessmentSection extends ConsumerStatefulWidget {
+  const _HomeCurrentAssessmentSection();
 
+  @override
+  ConsumerState<_HomeCurrentAssessmentSection> createState() =>
+      _HomeCurrentAssessmentSectionState();
+}
+
+class _HomeCurrentAssessmentSectionState
+    extends ConsumerState<_HomeCurrentAssessmentSection> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+  }
+
+  void _load() {
+    final token = ref.read(authFlowProvider).accessToken;
+    if (token == null || token.isEmpty) return;
+    ref.read(nextAssessmentProvider.notifier).load(bearerToken: token);
+  }
+
+  void _openAssessment(AssessmentListItem item) {
+    context.push(
+      '/student/assessments/detail',
+      extra: {'assessmentId': item.id, 'assessmentTitle': item.title},
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(nextAssessmentProvider);
+    final l10n = AppLocalizations.of(context);
+
+    final item = switch (state) {
+      AppAsyncSuccess(:final data) => data,
+      _ => null,
+    };
+    if (item == null) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        HomeSectionHeader(title: l10n.homeAssessmentsTitle),
+        const SizedBox(height: AimSpacing.componentGap),
+        _HomeAssessmentCard(
+          item: item,
+          onTap: () => _openAssessment(item),
+        ),
+        const SizedBox(height: AimSpacing.sectionGap),
+      ],
+    );
+  }
+}
+
+class _HomeAssessmentCard extends StatelessWidget {
+  const _HomeAssessmentCard({required this.item, required this.onTap});
+
+  final AssessmentListItem item;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
-    final l10n = AppLocalizations.of(context);
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
@@ -641,18 +695,24 @@ class _HomeAssessmentsLinkCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  l10n.homeAssessmentsTitle,
+                  item.title,
                   style: AimTextStyles.title.copyWith(
                     color: surfaces.textPrimary,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: AimSpacing.space4),
-                Text(
-                  l10n.homeAssessmentsSubtitle,
-                  style: AimTextStyles.bodySm.copyWith(
-                    color: surfaces.textSecondary,
+                if (item.description != null) ...[
+                  const SizedBox(height: AimSpacing.space4),
+                  Text(
+                    item.description!,
+                    style: AimTextStyles.bodySm.copyWith(
+                      color: surfaces.textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
+                ],
               ],
             ),
           ),

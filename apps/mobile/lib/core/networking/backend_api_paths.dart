@@ -244,6 +244,9 @@ class BackendApiPaths {
   /// GET /student/assessments
   static const String studentAssessments = '/student/assessments';
 
+  /// GET /student/assessments/next
+  static const String studentAssessmentNext = '/student/assessments/next';
+
   /// GET /student/assessments/deadlines
   static const String studentAssessmentDeadlines =
       '/student/assessments/deadlines';
