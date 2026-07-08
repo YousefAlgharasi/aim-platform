@@ -11,7 +11,16 @@
 //                                                      to the authenticated
 //                                                      student, with
 //                                                      backend-derived deadline
-//                                                      status.
+//                                                      status. Chapter-gated
+//                                                      assessments not yet
+//                                                      unlocked are omitted.
+//   GET  /student/assessments/next                   — The single current
+//                                                      assessment (oldest
+//                                                      unlocked, not yet
+//                                                      attempted), or null.
+//                                                      Used by Home so a
+//                                                      student only ever sees
+//                                                      one assessment there.
 //   GET  /student/assessments/deadlines              — List the authenticated
 //                                                      student's deadlines
 //                                                      across all published
@@ -124,6 +133,29 @@ export class AssessmentController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<AssessmentListItem[]> {
     return this.assessmentService.listForStudent(user.id);
+  }
+
+  /**
+   * GET /student/assessments/next
+   * The single "current" assessment for the student — the oldest unlocked,
+   * not-yet-attempted assessment, or null when nothing is currently due.
+   * Declared before the ':id' route so 'next' is never matched as an
+   * assessment id.
+   */
+  @Get('next')
+  @UseGuards(SupabaseJwtAuthGuard, AssessmentPermissionGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "The authenticated student's single current assessment, or null." })
+  @ApiOkResponse({
+    description:
+      'The oldest unlocked, not-yet-attempted assessment for this student, or null if none is due.',
+  })
+  async getNextAssessment(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<AssessmentListItem | null> {
+    return this.assessmentService.getNextAssessment(user.id);
   }
 
   /**
