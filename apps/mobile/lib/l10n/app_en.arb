@@ -1280,6 +1280,36 @@
       }
     }
   },
+  "lessonsQuizzesCountLabel": "{count, plural, one{1 quiz} other{{count} quizzes}}",
+  "@lessonsQuizzesCountLabel": {
+    "description": "Quiz count caption shown on course and chapter cards.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonsExamsCountLabel": "{count, plural, one{1 exam} other{{count} exams}}",
+  "@lessonsExamsCountLabel": {
+    "description": "Final exam count caption shown on course cards.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonsFinalExamTitle": "Final Exam",
+  "@lessonsFinalExamTitle": {
+    "description": "Title of the always-shown Final Exam card at the end of the chapter list."
+  },
+  "lessonsFinalExamLockedSubtitle": "Complete every chapter to unlock",
+  "@lessonsFinalExamLockedSubtitle": {
+    "description": "Subtitle on the Final Exam card while it is locked."
+  },
+  "lessonsQuizRowLabel": "Quiz",
+  "@lessonsQuizRowLabel": {
+    "description": "Label for the tappable quiz row at the end of the lesson list."
+  },
   "lessonsLessonSemantic": "Lesson: {title}",
   "@lessonsLessonSemantic": {
     "description": "Accessibility label for a lesson card.",

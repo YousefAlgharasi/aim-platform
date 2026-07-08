@@ -22,6 +22,14 @@ interface StudentChapterRow {
   readonly level_code: string | null;
   readonly lesson_count: string;
   readonly completed_lesson_count: string;
+  readonly quiz_count: string;
+  readonly quizzes_passed: boolean;
+}
+
+export interface FinalExamRow {
+  readonly assessment_id: string;
+  readonly title: string;
+  readonly course_id: string;
 }
 
 @Injectable()
@@ -46,7 +54,19 @@ export class StudentChaptersRepository {
          ch.sort_order AS sort_order,
          lv.code AS level_code,
          COUNT(DISTINCT cl.lesson_id) AS lesson_count,
-         COUNT(DISTINCT CASE WHEN lp.completed THEN cl.lesson_id END) AS completed_lesson_count
+         COUNT(DISTINCT CASE WHEN lp.completed THEN cl.lesson_id END) AS completed_lesson_count,
+         (
+           SELECT COUNT(*) FROM assessments a
+           WHERE a.chapter_id = ch.id AND a.type = 'quiz' AND a.status = 'published'
+         ) AS quiz_count,
+         NOT EXISTS (
+           SELECT 1 FROM assessments a
+           WHERE a.chapter_id = ch.id AND a.type = 'quiz' AND a.status = 'published'
+             AND NOT EXISTS (
+               SELECT 1 FROM assessment_results ar
+               WHERE ar.assessment_id = a.id AND ar.student_id = $2 AND ar.passed = true
+             )
+         ) AS quizzes_passed
        FROM chapters ch
        JOIN levels lv ON lv.id = ch.level_id
        LEFT JOIN chapter_lessons cl ON cl.chapter_id = ch.id
@@ -58,5 +78,18 @@ export class StudentChaptersRepository {
       [levelId, studentId],
     );
     return result.rows;
+  }
+
+  /** The published final exam (course_id-linked) for the course this level belongs to, or null. */
+  async findFinalExamForLevel(levelId: string): Promise<FinalExamRow | null> {
+    const result = await this.db.query<FinalExamRow>(
+      `SELECT a.id AS assessment_id, a.title AS title, lv.course_id AS course_id
+       FROM levels lv
+       JOIN assessments a ON a.course_id = lv.course_id AND a.type = 'exam' AND a.status = 'published'
+       WHERE lv.id = $1
+       LIMIT 1`,
+      [levelId],
+    );
+    return result.rows[0] ?? null;
   }
 }

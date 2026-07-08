@@ -27,6 +27,9 @@ export class StudentLessonsService {
       current: index === firstIncompleteIndex,
     }));
 
-    return { lessons };
+    const quizRow = await this.repository.findQuizForChapter(chapterId);
+    const quiz = quizRow ? { assessmentId: quizRow.assessment_id, title: quizRow.title } : null;
+
+    return { lessons, quiz };
   }
 }

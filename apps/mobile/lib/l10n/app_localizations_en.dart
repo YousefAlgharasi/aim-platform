@@ -974,6 +974,37 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String lessonsQuizzesCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count quizzes',
+      one: '1 quiz',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lessonsExamsCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count exams',
+      one: '1 exam',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get lessonsFinalExamTitle => 'Final Exam';
+
+  @override
+  String get lessonsFinalExamLockedSubtitle => 'Complete every chapter to unlock';
+
+  @override
+  String get lessonsQuizRowLabel => 'Quiz';
+
+  @override
   String lessonsLessonSemantic(String title) {
     return 'Lesson: $title';
   }

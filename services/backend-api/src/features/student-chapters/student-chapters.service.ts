@@ -22,15 +22,26 @@ export class StudentChaptersService {
   async getChapters(studentId: string, levelId: string): Promise<StudentChaptersResponse> {
     const rows = await this.repository.findChaptersWithProgress(studentId, levelId);
 
+    let everyChapterFullyComplete = rows.length > 0;
+
     const chapters: StudentChapterSummary[] = rows.map((row) => {
       const lessonCount = parseInt(row.lesson_count, 10) || 0;
       const completedLessonCount = parseInt(row.completed_lesson_count, 10) || 0;
-      const percent = lessonCount === 0 ? 0 : Math.round((completedLessonCount / lessonCount) * 100);
+      const quizCount = parseInt(row.quiz_count, 10) || 0;
+      const quizzesPassed = row.quizzes_passed;
+
+      const lessonsComplete = lessonCount > 0 && completedLessonCount === lessonCount;
+      const fullyComplete = lessonsComplete && quizzesPassed;
+      if (!fullyComplete) everyChapterFullyComplete = false;
+
+      const totalItems = lessonCount + quizCount;
+      const completedItems = completedLessonCount + (quizCount > 0 && quizzesPassed ? quizCount : 0);
+      const percent = totalItems === 0 ? 0 : Math.round((completedItems / totalItems) * 100);
 
       let status: StudentChapterStatus;
-      if (lessonCount > 0 && completedLessonCount === lessonCount) {
+      if (fullyComplete) {
         status = 'completed';
-      } else if (completedLessonCount > 0) {
+      } else if (completedItems > 0) {
         status = 'in_progress';
       } else {
         status = 'not_started';
@@ -43,11 +54,21 @@ export class StudentChaptersService {
         levelCode: row.level_code,
         lessonCount,
         completedLessonCount,
+        quizCount,
         percent,
         status,
       };
     });
 
-    return { chapters };
+    const finalExamRow = await this.repository.findFinalExamForLevel(levelId);
+    const finalExam = finalExamRow
+      ? {
+          assessmentId: finalExamRow.assessment_id,
+          title: finalExamRow.title,
+          unlocked: everyChapterFullyComplete,
+        }
+      : null;
+
+    return { chapters, finalExam };
   }
 }
