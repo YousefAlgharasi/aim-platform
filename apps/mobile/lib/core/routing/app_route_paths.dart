@@ -74,6 +74,9 @@ class AppRoutePaths {
   // TASK-14: Placement intro route
   static const String placementIntro = '/placement/intro';
 
+  // Learning Path
+  static const String learningPath = '/learning-path';
+
   // TASK-14: Assessment deadlines route
   static const String assessmentDeadlines = '/student/assessments/deadlines';
 

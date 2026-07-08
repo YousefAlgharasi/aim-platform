@@ -116,6 +116,41 @@ class HelpCenterPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const _HelpCenterHeader(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AimSpacing.screenPaddingMobile,
+              AimSpacing.sectionGap,
+              AimSpacing.screenPaddingMobile,
+              0,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _HelpQuickLink(
+                    icon: Icons.confirmation_number_outlined,
+                    label: 'My Tickets',
+                    onTap: () => context.push(AppRoutePaths.ticketList),
+                  ),
+                ),
+                const SizedBox(width: AimSpacing.space12),
+                Expanded(
+                  child: _HelpQuickLink(
+                    icon: Icons.feedback_outlined,
+                    label: 'Feedback',
+                    onTap: () => context.push(AppRoutePaths.feedback),
+                  ),
+                ),
+                const SizedBox(width: AimSpacing.space12),
+                Expanded(
+                  child: _HelpQuickLink(
+                    icon: Icons.info_outline,
+                    label: 'Status',
+                    onTap: () => context.push(AppRoutePaths.supportStatus),
+                  ),
+                ),
+              ],
+            ),
+          ),
           Expanded(
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(
@@ -143,6 +178,56 @@ class HelpCenterPage extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _HelpQuickLink extends StatelessWidget {
+  const _HelpQuickLink({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    return Semantics(
+      button: true,
+      label: label,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AimRadius.md),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            vertical: AimSpacing.space12,
+            horizontal: AimSpacing.space8,
+          ),
+          decoration: BoxDecoration(
+            color: surfaces.surface,
+            borderRadius: BorderRadius.circular(AimRadius.md),
+            border: Border.all(color: surfaces.border),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: AimSizes.iconMd, color: AimColors.primary500),
+              const SizedBox(height: AimSpacing.space4),
+              Text(
+                label,
+                style: AimTextStyles.caption,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
