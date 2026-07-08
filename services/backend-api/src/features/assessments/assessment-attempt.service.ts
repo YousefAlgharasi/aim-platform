@@ -87,6 +87,26 @@ export class AttemptLifecycleService {
       }
     }
 
+    // 1.7. Resume-in-place: if the student already has an open (not
+    // submitted, not expired) attempt for this assessment — e.g. they
+    // started it, left the app, and came back — return that attempt
+    // instead of creating a new one. Without this, leaving mid-attempt and
+    // tapping "Start" again would burn a second attempt slot and could
+    // strand the student behind MAX_ATTEMPTS_REACHED with no way back into
+    // their original attempt.
+    const activeAttempt = await this.repo.findActiveAttempt(assessmentId, studentId);
+    if (activeAttempt) {
+      this.logger.log(`Resuming existing attempt ${activeAttempt.id} for student ${studentId}`);
+      return {
+        attemptId: activeAttempt.id,
+        assessmentId,
+        attemptNumber: activeAttempt.attempt_number,
+        status: 'started',
+        startedAt: activeAttempt.started_at,
+        expiresAt: activeAttempt.expires_at,
+      };
+    }
+
     // 2. Check deadline eligibility — backend authority only.
     const eligibility = await this.deadlineSvc.checkSubmissionEligibility(assessmentId, studentId);
     if (!eligibility.eligible) {
