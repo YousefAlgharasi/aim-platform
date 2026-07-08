@@ -335,6 +335,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shellPlacementTest => 'Placement Test';
 
   @override
+  String get shellAssessments => 'Assessments';
+
+  @override
   String get shellSupport => 'Support';
 
   @override
