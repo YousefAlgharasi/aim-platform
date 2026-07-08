@@ -46,13 +46,12 @@ class AttemptPage extends ConsumerStatefulWidget {
 }
 
 class _AttemptPageState extends ConsumerState<AttemptPage> {
+  bool _questionsRequested = false;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _resumeAttempt();
-      _loadQuestions();
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _resumeAttempt());
   }
 
   void _resumeAttempt() {
@@ -103,6 +102,16 @@ class _AttemptPageState extends ConsumerState<AttemptPage> {
   @override
   Widget build(BuildContext context) {
     final resumeState = ref.watch(resumeAttemptProvider);
+    // Keep attemptQuestionsProvider alive for the page's lifetime — it's
+    // autoDispose, so it must be watched continuously from the moment the
+    // load is kicked off, otherwise Riverpod tears it down (no listener)
+    // before the network response arrives and the result is lost.
+    ref.watch(attemptQuestionsProvider);
+
+    if (resumeState is AppAsyncSuccess && !_questionsRequested) {
+      _questionsRequested = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadQuestions());
+    }
 
     final surfaces = aimSurfacesOf(context);
 
