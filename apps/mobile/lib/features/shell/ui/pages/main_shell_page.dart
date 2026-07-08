@@ -9,6 +9,7 @@ import '../../../../core/localization/app_locale.dart';
 import '../../../../core/localization/locale_provider.dart';
 import '../../../../core/theme/theme_mode_provider.dart';
 import '../../../../core/widgets/widgets.dart';
+import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
 import '../../../auth/ui/widgets/logout_button.dart';
 import '../../../home/ui/pages/home_page.dart';
@@ -119,6 +120,11 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
       AppAsyncSuccess<int>(:final data) => data,
       _ => 0,
     };
+    final authContextState = ref.watch(authContextProvider);
+    final isParent = switch (authContextState) {
+      AppAsyncSuccess(:final data) => data.hasRole('parent'),
+      _ => false,
+    };
 
     void selectTab(int index) {
       context.pop();
@@ -214,7 +220,11 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
             icon: Icons.help_outline,
           ),
           label: l10n.shellSupport,
-          onTap: () => navigateTo(AppRoutePaths.helpCenter),
+          onTap: () => navigateTo(
+            isParent
+                ? AppRoutePaths.parentHelpCenter
+                : AppRoutePaths.helpCenter,
+          ),
           trailing: Icon(Icons.chevron_right, color: aimSurfacesOf(context).textMuted),
         ),
       ],

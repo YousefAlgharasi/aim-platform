@@ -129,7 +129,7 @@ class _PlacementMenuPageState extends ConsumerState<PlacementMenuPage> {
                       ),
                     _ => _NotTakenBody(
                         onStart: () =>
-                            context.push(AppRoutePaths.placementStart),
+                            context.push(AppRoutePaths.placementIntro),
                       ),
                   },
               },

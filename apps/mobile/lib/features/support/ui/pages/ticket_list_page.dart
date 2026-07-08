@@ -12,44 +12,24 @@
 // old header icon button) to create a new ticket, wired to
 // AppRoutePaths.createTicket.
 //
-// Note: GET /support/tickets is "Planned / Not Yet Active" and
-// SupportDatasource has no concrete implementation (out of scope for this
-// UI-only verification task). Previously `_buildTicketList` returned a
-// permanent `CircularProgressIndicator` that never resolved to anything —
-// a real bug, not a "loading state." Since there's no way to load real
-// tickets, the empty state is shown directly instead of an infinite
-// spinner, which is the honest state absent live data.
+// Wired to the real GET /support-tickets endpoint via ticketListProvider
+// (SupportRemoteDatasourceImpl).
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
+import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 
-class TicketListPage extends StatelessWidget {
+import '../../logic/provider/support_provider.dart';
+
+class TicketListPage extends ConsumerStatefulWidget {
   const TicketListPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-
-    // Ticket data loaded from backend via GET /support/tickets
-    return Scaffold(
-      backgroundColor: surfaces.background,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const _TicketListHeader(title: 'My tickets'),
-          Expanded(child: buildEmptyState(context)),
-        ],
-      ),
-      floatingActionButton: AIMFab(
-        semanticLabel: 'Create a support ticket',
-        onPressed: () => context.push(AppRoutePaths.createTicket),
-        icon: const Icon(Icons.add),
-      ),
-    );
-  }
+  ConsumerState<TicketListPage> createState() => _TicketListPageState();
 
   /// Builds a single ticket list item card.
   static Widget buildTicketTile({
@@ -143,6 +123,72 @@ class TicketListPage extends StatelessWidget {
 
   static String _formatDate(DateTime date) =>
       '${_months[date.month - 1]} ${date.day}, ${date.year}';
+}
+
+class _TicketListPageState extends ConsumerState<TicketListPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => ref.read(ticketListProvider.notifier).load(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final state = ref.watch(ticketListProvider);
+
+    return Scaffold(
+      backgroundColor: surfaces.background,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _TicketListHeader(title: 'My tickets'),
+          Expanded(
+            child: switch (state) {
+              AppAsyncLoading() || AppAsyncIdle() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading your tickets',
+                ),
+              AppAsyncFailure(:final message) => AIMFullScreenError(
+                  message: message,
+                  onRetry: () => ref.read(ticketListProvider.notifier).load(),
+                ),
+              AppAsyncSuccess(:final data) => data.isEmpty
+                  ? TicketListPage.buildEmptyState(context)
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AimSpacing.sectionGap,
+                      ),
+                      itemCount: data.length,
+                      itemBuilder: (context, index) {
+                        final ticket = data[index];
+                        return TicketListPage.buildTicketTile(
+                          context: context,
+                          ticketId: ticket.id,
+                          subject: ticket.subject,
+                          status: ticket.status,
+                          category: ticket.category,
+                          severity: ticket.severity,
+                          createdAt: ticket.createdAt,
+                          onTap: () => context.push(
+                            AppRoutePaths.ticketDetail,
+                            extra: {'ticketId': ticket.id},
+                          ),
+                        );
+                      },
+                    ),
+            },
+          ),
+        ],
+      ),
+      floatingActionButton: AIMFab(
+        semanticLabel: 'Create a support ticket',
+        onPressed: () => context.push(AppRoutePaths.createTicket),
+        icon: const Icon(Icons.add),
+      ),
+    );
+  }
 }
 
 class _TicketListHeader extends StatelessWidget {

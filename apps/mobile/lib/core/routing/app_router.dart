@@ -39,6 +39,7 @@ import '../../features/progress/ui/pages/weakness_summary_page.dart';
 import '../../features/progress/ui/pages/recommendations_page.dart';
 import '../../features/progress/ui/pages/review_schedule_page.dart';
 import '../../features/placement/ui/pages/placement_intro_page.dart';
+import '../../features/learning_path/ui/pages/learning_path_page.dart';
 import '../../features/assessments/ui/pages/deadlines_page.dart';
 import '../../features/ai_teacher/ui/pages/ai_teacher_settings_page.dart';
 import '../../features/ai_teacher/ui/pages/ai_teacher_session_history_page.dart';
@@ -269,6 +270,10 @@ class AppRouter {
         GoRoute(
           path: AppRoutePaths.placementIntro,
           builder: (context, state) => const PlacementIntroPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.learningPath,
+          builder: (context, state) => const LearningPathPage(),
         ),
         // TASK-14: Assessment deadlines route
         GoRoute(
@@ -718,6 +723,7 @@ class AppRouter {
     AppRoutePaths.recommendations,
     AppRoutePaths.reviewSchedule,
     AppRoutePaths.placementIntro,
+    AppRoutePaths.learningPath,
     AppRoutePaths.assessmentDeadlines,
     AppRoutePaths.voiceTeacher,
     AppRoutePaths.aiTeacherSettings,

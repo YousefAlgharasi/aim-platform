@@ -289,6 +289,12 @@ class _ProfileBody extends StatelessWidget {
                 surfaces: surfaces,
                 children: [
                   _ProfileNavItem(
+                    icon: Icons.route_outlined,
+                    label: 'Learning Path',
+                    surfaces: surfaces,
+                    onTap: () => context.push(AppRoutePaths.learningPath),
+                  ),
+                  _ProfileNavItem(
                     icon: Icons.credit_card_outlined,
                     label: 'Subscription & Billing',
                     surfaces: surfaces,

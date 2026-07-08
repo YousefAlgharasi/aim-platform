@@ -12,41 +12,41 @@
 // feedback"), AIMSelect/AIMInput/AIMTextarea fields, real star rating
 // labeled "How would you rate AIM?", gradient "Submit" button.
 //
-// Note: POST /feedback is "Planned / Not Yet Active" and SupportDatasource
-// has no concrete implementation (out of scope for this UI-only
-// verification task). Submitting shows a graceful "not available yet"
-// message instead of faking success or leaving the button stuck in a
-// permanent loading spinner (the previous behavior never reset
-// `_isSubmitting`).
+// Wired to the real POST /feedback endpoint via submitFeedbackProvider
+// (SupportRemoteDatasourceImpl). Category options match the backend's
+// CreateFeedbackDto enum exactly (bug_report/suggestion/compliment/
+// complaint/other).
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 
-class FeedbackPage extends StatefulWidget {
+import '../../logic/provider/support_provider.dart';
+
+class FeedbackPage extends ConsumerStatefulWidget {
   const FeedbackPage({super.key});
 
   @override
-  State<FeedbackPage> createState() => _FeedbackPageState();
+  ConsumerState<FeedbackPage> createState() => _FeedbackPageState();
 }
 
-class _FeedbackPageState extends State<FeedbackPage> {
-  String _category = 'general';
+class _FeedbackPageState extends ConsumerState<FeedbackPage> {
+  String _category = 'suggestion';
   int? _rating;
   final _titleController = TextEditingController();
   final _bodyController = TextEditingController();
-  bool _isSubmitting = false;
   String? _titleError;
   String? _bodyError;
-  String? _submitError;
 
   static const _categoryOptions = [
-    AIMSelectOption(value: 'general', label: 'General'),
-    AIMSelectOption(value: 'feature', label: 'Feature request'),
-    AIMSelectOption(value: 'bug', label: 'Bug report'),
-    AIMSelectOption(value: 'content', label: 'Content'),
-    AIMSelectOption(value: 'ux', label: 'User experience'),
+    AIMSelectOption(value: 'suggestion', label: 'Suggestion'),
+    AIMSelectOption(value: 'bug_report', label: 'Bug report'),
+    AIMSelectOption(value: 'compliment', label: 'Compliment'),
+    AIMSelectOption(value: 'complaint', label: 'Complaint'),
+    AIMSelectOption(value: 'other', label: 'Other'),
   ];
 
   @override
@@ -59,6 +59,21 @@ class _FeedbackPageState extends State<FeedbackPage> {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final submitState = ref.watch(submitFeedbackProvider);
+    final isSubmitting = switch (submitState) {
+      AppAsyncLoading() => true,
+      _ => false,
+    };
+    final submitError = switch (submitState) {
+      AppAsyncFailure(:final message) => message,
+      _ => null,
+    };
+
+    ref.listen(submitFeedbackProvider, (previous, next) {
+      if (next is AppAsyncSuccess<dynamic> && context.canPop()) {
+        context.pop();
+      }
+    });
 
     return Scaffold(
       backgroundColor: surfaces.background,
@@ -107,10 +122,10 @@ class _FeedbackPageState extends State<FeedbackPage> {
                   rows: 5,
                   error: _bodyError,
                 ),
-                if (_submitError != null) ...[
+                if (submitError != null) ...[
                   const SizedBox(height: AimSpacing.componentGap),
                   Text(
-                    _submitError!,
+                    submitError,
                     style: AimTextStyles.bodySm
                         .copyWith(color: AimColors.error500),
                   ),
@@ -118,8 +133,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
                 const SizedBox(height: AimSpacing.sectionGap),
                 AIMGradientButton(
                   label: 'Submit',
-                  onPressed: _isSubmitting ? null : _handleSubmit,
-                  loading: _isSubmitting,
+                  onPressed: isSubmitting ? null : _handleSubmit,
+                  loading: isSubmitting,
                   fullWidth: true,
                   semanticLabel: 'Submit feedback',
                 ),
@@ -137,21 +152,15 @@ class _FeedbackPageState extends State<FeedbackPage> {
     setState(() {
       _titleError = title.isEmpty ? 'Title is required' : null;
       _bodyError = body.isEmpty ? 'Feedback details are required' : null;
-      _submitError = null;
     });
     if (_titleError != null || _bodyError != null) return;
 
-    setState(() => _isSubmitting = true);
-
-    // POST /feedback is "Planned / Not Yet Active" and SupportDatasource
-    // has no concrete implementation yet — a real submission can't be
-    // attempted here without inventing backend behavior. Show a graceful,
-    // honest message instead of faking success.
-    setState(() {
-      _isSubmitting = false;
-      _submitError = 'Feedback submission is not available yet. Please try '
-          'again later.';
-    });
+    ref.read(submitFeedbackProvider.notifier).submit(
+          category: _category,
+          rating: _rating,
+          title: title,
+          body: body,
+        );
   }
 }
 
