@@ -80,7 +80,7 @@
 //   - No AIM Engine, AI Teacher, payments, parent dashboard, or voice AI.
 //   - No secrets, service-role keys, DB credentials, or AI provider keys.
 
-import { Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
@@ -101,6 +101,9 @@ import { AttemptLifecycleService, StartAttemptResult, ResumeAttemptResult } from
 import { AssessmentSubmissionFlowService, SubmitAttemptApiResult } from './assessment-submission-flow.service';
 import { AssessmentFeedbackService, FeedbackSummary } from './assessment-feedback.service';
 import { AssessmentResultService, ResultHistoryResponse } from './assessment-result.service';
+import { QuestionDeliveryService, DeliveredQuestion } from './question-delivery.service';
+import { AnswerSubmissionService, SubmittedAnswerDto } from './answer-submission.service';
+import { SubmitAnswerDto } from './submit-answer.dto';
 
 @ApiTags('assessments')
 @Controller('student/assessments')
@@ -111,6 +114,8 @@ export class AssessmentController {
     private readonly submissionFlowService: AssessmentSubmissionFlowService,
     private readonly feedbackService: AssessmentFeedbackService,
     private readonly resultService: AssessmentResultService,
+    private readonly questionDeliveryService: QuestionDeliveryService,
+    private readonly answerSubmissionService: AnswerSubmissionService,
   ) {}
 
   /**
@@ -254,6 +259,63 @@ export class AssessmentController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<StartAttemptResult> {
     return this.attemptLifecycleService.startAttempt(assessmentId, user.id);
+  }
+
+  /**
+   * GET /student/assessments/attempts/:attemptId/questions
+   * The question list (prompt + options, all grading metadata stripped)
+   * for the assessment behind this attempt. This is the only path through
+   * which question content reaches Flutter during an active attempt —
+   * correct_answer, is_correct, points, and weight are never included.
+   */
+  @Get('attempts/:attemptId/questions')
+  @UseGuards(SupabaseJwtAuthGuard, AssessmentPermissionGuard, AssessmentAttemptOwnershipGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get the question list for an assessment attempt, with all grading metadata stripped.' })
+  @ApiParam({ name: 'attemptId', description: 'UUID of the attempt owned by the authenticated student.' })
+  @ApiOkResponse({
+    description:
+      'Question list (prompt + options) for this attempt\'s assessment. correct_answer, is_correct, ' +
+      'points, weight, grading_mode, and pass_threshold are never included.',
+  })
+  async getAttemptQuestions(
+    @Param('attemptId') attemptId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<DeliveredQuestion[]> {
+    return this.questionDeliveryService.getQuestionsForAttempt(attemptId, user.id);
+  }
+
+  /**
+   * POST /student/assessments/attempts/:attemptId/answers
+   * Save (or update) the student's answer to one question within this
+   * attempt. Only an opaque responseValue is ever accepted — no
+   * isCorrect/score/correctAnswer field exists on the request DTO, so
+   * correctness can never be client-supplied. Grading happens later, at
+   * submit time, entirely backend-side.
+   */
+  @Post('attempts/:attemptId/answers')
+  @UseGuards(SupabaseJwtAuthGuard, AssessmentPermissionGuard, AssessmentAttemptOwnershipGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Save the student\'s answer to one question within an active attempt.' })
+  @ApiParam({ name: 'attemptId', description: 'UUID of the attempt owned by the authenticated student.' })
+  @ApiOkResponse({
+    description: 'Answer confirmation (answerId, assessmentQuestionLinkId, submittedAt). Never includes isCorrect or score.',
+  })
+  async submitAnswer(
+    @Param('attemptId') attemptId: string,
+    @Body() body: SubmitAnswerDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<SubmittedAnswerDto> {
+    return this.answerSubmissionService.submitAnswer({
+      attemptId,
+      studentId: user.id,
+      assessmentQuestionLinkId: body.assessmentQuestionLinkId,
+      responseValue: body.responseValue,
+    });
   }
 
   /**

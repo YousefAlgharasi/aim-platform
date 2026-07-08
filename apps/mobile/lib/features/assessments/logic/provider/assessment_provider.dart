@@ -17,6 +17,7 @@ import 'attempt_notifier.dart';
 import 'result_notifier.dart';
 import 'deadlines_notifier.dart';
 import 'answer_draft_notifier.dart';
+import 'attempt_questions_notifier.dart';
 
 final assessmentRemoteDatasourceProvider =
     Provider<AssessmentRemoteDatasource>((ref) {
@@ -104,4 +105,20 @@ final deadlinesProvider = StateNotifierProvider<DeadlinesNotifier,
 final answerDraftProvider = StateNotifierProvider.autoDispose
     .family<AnswerDraftNotifier, AnswerDraftState, String>(
   (ref, attemptId) => AnswerDraftNotifier(attemptId: attemptId),
+);
+
+/// P10-058: Question list for an active assessment attempt.
+final attemptQuestionsProvider = StateNotifierProvider.autoDispose<
+    AttemptQuestionsNotifier, AppAsyncState<List<AttemptQuestion>>>(
+  (ref) => AttemptQuestionsNotifier(
+    repository: ref.watch(assessmentRepositoryProvider),
+  ),
+);
+
+/// P10-058: Tracks the in-flight/last answer submission for an attempt.
+final submitAnswerProvider = StateNotifierProvider.autoDispose<
+    SubmitAnswerNotifier, AppAsyncState<SubmittedAnswer>>(
+  (ref) => SubmitAnswerNotifier(
+    repository: ref.watch(assessmentRepositoryProvider),
+  ),
 );

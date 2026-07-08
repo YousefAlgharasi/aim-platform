@@ -1,16 +1,16 @@
 // Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Attempt" (27)
 //   docs/design/ui-for-all-system-mobile/screenshots/light/27-screen.png
 //   docs/design/ui-for-all-system-mobile/screenshots/dark/27-screen.png
-// Endpoint: GET /student/assessments/attempts/:attemptId/resume
-//   NOTE: response has no question content; question rendering is blocked
-//   on a backend gap, see code comment below.
+// Endpoints: GET /student/assessments/attempts/:attemptId/resume
+//   GET /student/assessments/attempts/:attemptId/questions
+//   POST /student/assessments/attempts/:attemptId/answers
 // Widgets: AIMFullScreenLoading, AIMFullScreenError, AIMCard, AIMEmptyState,
 //   AIMGradientButton
 //
 // P10-058: AttemptPage — displays an active assessment attempt.
-// Resumes the attempt on load, shows status and a live countdown, and
-// allows submission. Question rendering is blocked on a backend gap
-// (see comment in _AttemptContent below) — a placeholder is shown instead.
+// Resumes the attempt on load, loads the question list, shows status and a
+// live countdown, and allows submission. Selecting an option submits the
+// answer to the backend immediately — Flutter never grades or scores it.
 //
 // TASK-23: Submit no longer fires inline — it pushes the SubmitAttemptPage
 // confirmation screen (design screen 28), which owns the actual submission
@@ -49,7 +49,10 @@ class _AttemptPageState extends ConsumerState<AttemptPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _resumeAttempt());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _resumeAttempt();
+      _loadQuestions();
+    });
   }
 
   void _resumeAttempt() {
@@ -58,6 +61,29 @@ class _AttemptPageState extends ConsumerState<AttemptPage> {
     ref.read(resumeAttemptProvider.notifier).resume(
           bearerToken: token,
           attemptId: widget.attemptId,
+        );
+  }
+
+  void _loadQuestions() {
+    final token = ref.read(authFlowProvider).accessToken;
+    if (token == null || token.isEmpty) return;
+    ref.read(attemptQuestionsProvider.notifier).load(
+          bearerToken: token,
+          attemptId: widget.attemptId,
+        );
+  }
+
+  void _submitAnswer({
+    required String assessmentQuestionLinkId,
+    required String responseValue,
+  }) {
+    final token = ref.read(authFlowProvider).accessToken;
+    if (token == null || token.isEmpty) return;
+    ref.read(submitAnswerProvider.notifier).submit(
+          bearerToken: token,
+          attemptId: widget.attemptId,
+          assessmentQuestionLinkId: assessmentQuestionLinkId,
+          responseValue: responseValue,
         );
   }
 
@@ -100,7 +126,9 @@ class _AttemptPageState extends ConsumerState<AttemptPage> {
                 ),
               AppAsyncSuccess(:final data) => _AttemptContent(
                   result: data,
+                  attemptId: widget.attemptId,
                   onSubmit: _openSubmitConfirmation,
+                  onAnswerSelect: _submitAnswer,
                 ),
               AppAsyncIdle() => const AIMFullScreenLoading(
                   semanticLabel: 'Resuming attempt',
@@ -297,18 +325,28 @@ class _CountdownPill extends StatelessWidget {
 
 // ── Body content ────────────────────────────────────────────────────────────
 
-class _AttemptContent extends StatelessWidget {
+class _AttemptContent extends ConsumerWidget {
   const _AttemptContent({
     required this.result,
+    required this.attemptId,
     required this.onSubmit,
+    required this.onAnswerSelect,
   });
 
   final ResumeAttemptResult result;
+  final String attemptId;
   final VoidCallback onSubmit;
+  final void Function({
+    required String assessmentQuestionLinkId,
+    required String responseValue,
+  }) onAnswerSelect;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final surfaces = aimSurfacesOf(context);
+    final questionsState = ref.watch(attemptQuestionsProvider);
+    final draftState = ref.watch(answerDraftProvider(attemptId));
+    final draftNotifier = ref.read(answerDraftProvider(attemptId).notifier);
 
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -369,39 +407,55 @@ class _AttemptContent extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AimSpacing.sectionGap),
-          const Expanded(
-            child: AIMEmptyState(
-              icon: Icon(Icons.quiz_outlined),
-              title: 'Questions',
-              subtitle:
-                  'Question rendering isn’t available yet for this '
-                  'attempt.',
-              // ─────────────────────────────────────────────────────────
-              // BACKEND GAP — not a UI gap.
-              //
-              // Question rendering cannot be implemented: `ResumeAttemptResult`
-              // (the model for `GET /student/assessments/attempts/:attemptId
-              // /resume`) has exactly three fields — `attemptId`, `status`,
-              // `expiresAt` — see
-              // apps/mobile/lib/features/assessments/logic/entity/attempt_result.dart.
-              // There is no question-content field on this response, and no
-              // endpoint anywhere in this backend (confirmed against
-              // docs/mobile-app-api-endpoints.md, June 2026 snapshot) returns
-              // question stems/options/type for an assessment attempt — no
-              // `.../attempts/:id/questions` or equivalent exists.
-              //
-              // The `question_answer` and `placement` features' question
-              // widgets are NOT a substitute: they consume unrelated
-              // endpoints (`/sessions/*`, `/placement/questions`) that have
-              // nothing to do with assessment attempts, and wiring them here
-              // would silently fabricate content the backend never sent.
-              //
-              // Until the backend adds an attempt-questions endpoint (and a
-              // corresponding field/model), this placeholder is the correct,
-              // honest UI state. A future engineer should treat this as
-              // blocked-on-backend, not as unfinished frontend work.
-              // ─────────────────────────────────────────────────────────
-            ),
+          Expanded(
+            child: switch (questionsState) {
+              AppAsyncLoading() || AppAsyncIdle() => const AIMFullScreenLoading(
+                  semanticLabel: 'Loading questions',
+                ),
+              AppAsyncFailure(:final message) => AIMFullScreenError(
+                  message: message,
+                  onRetry: () => ref
+                      .read(attemptQuestionsProvider.notifier)
+                      .load(
+                        bearerToken:
+                            ref.read(authFlowProvider).accessToken ?? '',
+                        attemptId: attemptId,
+                      ),
+                ),
+              AppAsyncSuccess(:final data) => data.isEmpty
+                  ? const AIMEmptyState(
+                      icon: Icon(Icons.quiz_outlined),
+                      title: 'Questions',
+                      subtitle: 'No questions found for this attempt.',
+                    )
+                  : ListView.separated(
+                      itemCount: data.length,
+                      separatorBuilder: (_, __) =>
+                          const SizedBox(height: AimSpacing.componentGap),
+                      itemBuilder: (context, index) {
+                        final question = data[index];
+                        final selectedOptionId = draftState
+                            .drafts[question.assessmentQuestionLinkId]
+                            ?.selectedOptionId;
+                        return _QuestionCard(
+                          index: index,
+                          question: question,
+                          selectedOptionId: selectedOptionId,
+                          onOptionSelected: (optionId) {
+                            draftNotifier.setAnswer(
+                              question.assessmentQuestionLinkId,
+                              selectedOptionId: optionId,
+                            );
+                            onAnswerSelect(
+                              assessmentQuestionLinkId:
+                                  question.assessmentQuestionLinkId,
+                              responseValue: optionId,
+                            );
+                          },
+                        );
+                      },
+                    ),
+            },
           ),
           const SizedBox(height: AimSpacing.sectionGap),
           AIMGradientButton(
@@ -410,6 +464,68 @@ class _AttemptContent extends StatelessWidget {
             fullWidth: true,
             semanticLabel: 'Submit attempt',
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Renders a single question with its options. Selecting an option submits
+/// the answer to the backend immediately — Flutter never grades or scores
+/// it locally, only collects and forwards the selection verbatim.
+class _QuestionCard extends StatelessWidget {
+  const _QuestionCard({
+    required this.index,
+    required this.question,
+    required this.selectedOptionId,
+    required this.onOptionSelected,
+  });
+
+  final int index;
+  final AttemptQuestion question;
+  final String? selectedOptionId;
+  final ValueChanged<String> onOptionSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+
+    return AIMCard(
+      variant: AIMCardVariant.elevated,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Question ${index + 1}',
+            style: AimTextStyles.bodySm.copyWith(
+              color: surfaces.textSecondary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: AimSpacing.space4),
+          Text(
+            question.prompt,
+            style: AimTextStyles.bodyMd.copyWith(
+              color: surfaces.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          if (question.options.isNotEmpty) ...[
+            const SizedBox(height: AimSpacing.componentGap),
+            for (final option in question.options)
+              Padding(
+                padding: const EdgeInsets.only(bottom: AimSpacing.space8),
+                child: AIMAnswerOption(
+                  optionKey: option.label,
+                  state: option.id == selectedOptionId
+                      ? AIMAnswerOptionState.selected
+                      : AIMAnswerOptionState.defaultState,
+                  onTap: () => onOptionSelected(option.id),
+                  semanticLabel: option.text,
+                  child: Text(option.text),
+                ),
+              ),
+          ],
         ],
       ),
     );

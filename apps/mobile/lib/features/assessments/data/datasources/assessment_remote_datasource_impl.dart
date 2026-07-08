@@ -137,6 +137,39 @@ class AssessmentRemoteDatasourceImpl implements AssessmentRemoteDatasource {
     return envelope.data!;
   }
 
+  @override
+  Future<List<AttemptQuestionModel>> getAttemptQuestions({
+    required String bearerToken,
+    required String attemptId,
+  }) async {
+    final envelope = await _apiClient.get<List<AttemptQuestionModel>>(
+      BackendApiPaths.studentAttemptQuestions(attemptId),
+      headers: _auth(bearerToken),
+      decodeData: (json) => _decodeList(json, AttemptQuestionModel.fromJson),
+    );
+    return envelope.data ?? const [];
+  }
+
+  @override
+  Future<SubmittedAnswerModel> submitAnswer({
+    required String bearerToken,
+    required String attemptId,
+    required String assessmentQuestionLinkId,
+    required String responseValue,
+  }) async {
+    final envelope = await _apiClient.post<SubmittedAnswerModel>(
+      BackendApiPaths.studentSubmitAnswer(attemptId),
+      headers: _auth(bearerToken),
+      body: {
+        'assessmentQuestionLinkId': assessmentQuestionLinkId,
+        'responseValue': responseValue,
+      },
+      decodeData: (json) =>
+          SubmittedAnswerModel.fromJson(json as Map<String, dynamic>),
+    );
+    return envelope.data!;
+  }
+
   Map<String, String> _auth(String bearerToken) =>
       {'authorization': 'Bearer $bearerToken'};
 
