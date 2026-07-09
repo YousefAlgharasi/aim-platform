@@ -219,7 +219,7 @@ describe('LessonTeachingStageService', () => {
       expect(updateLessonTeachingStage).not.toHaveBeenCalled();
     });
 
-    it('never lets a lesson_progress write failure surface as a broken turn', async () => {
+    it('never lets a lesson_progress write failure surface as a broken turn, and leaves the stage at teaching so a later attempt can still succeed', async () => {
       const markComplete = jest.fn().mockRejectedValue(new Error('db down'));
       const updateLessonTeachingStage = jest.fn().mockResolvedValue(undefined);
       const sessionRepository = {
@@ -239,7 +239,12 @@ describe('LessonTeachingStageService', () => {
           `Done! ${LESSON_COMPLETE_MARKER}`,
         ),
       ).resolves.toBe('Done!');
-      expect(updateLessonTeachingStage).toHaveBeenCalledWith('session-1', 'complete');
+      // Bugfix: the stage must NOT flip to 'complete' when the underlying
+      // write failed (e.g. LessonProgressService's sequential-lesson-order
+      // gate rejected it) — otherwise the session permanently claims the
+      // lesson is done with no lesson_progress row to back it up, and
+      // practice never unlocks.
+      expect(updateLessonTeachingStage).not.toHaveBeenCalled();
     });
   });
 });
