@@ -22,7 +22,7 @@
 //     ContextBuilderService's own (contextRef -> explicit lesson, else the
 //     AIM Engine's top recommendation's targetLessonId).
 
-import { Injectable, Logger } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 
 import { AiChatSessionRepository } from '../repositories/ai-chat-session.repository';
 import { AiChatSessionRow } from '../repositories/ai-chat-repository.types';
@@ -106,7 +106,7 @@ export class LessonTeachingStageService {
       return replyText;
     }
 
-    const cleaned = replyText.split(LESSON_COMPLETE_MARKER).join('').trim();
+    let cleaned = replyText.split(LESSON_COMPLETE_MARKER).join('').trim();
 
     if (session.resolved_lesson_id) {
       // Bugfix: the session's stage must only ever flip to 'complete' when
@@ -131,10 +131,52 @@ export class LessonTeachingStageService {
               error instanceof Error ? error.message : String(error)
             }`,
         );
+        // Improvement: a ForbiddenException here means a known, expected
+        // content-gating rule (course locked / previous lesson not done)
+        // blocked completion — tell the student honestly instead of
+        // silently leaving them wondering why practice never unlocked.
+        if (error instanceof ForbiddenException) {
+          const note = this.explanationForGateFailure(this.forbiddenMessage(error));
+          if (note) {
+            cleaned = `${cleaned}\n\n${note}`;
+          }
+        }
       }
     }
 
     return cleaned;
+  }
+
+  private forbiddenMessage(error: ForbiddenException): string {
+    const response = error.getResponse();
+    if (typeof response === 'string') {
+      return response;
+    }
+    if (response && typeof response === 'object' && 'message' in response) {
+      const message = (response as { message?: unknown }).message;
+      if (typeof message === 'string') {
+        return message;
+      }
+    }
+    return error.message;
+  }
+
+  private explanationForGateFailure(message: string): string | null {
+    if (message === 'Complete the previous lesson before starting this one') {
+      return (
+        "By the way — I can't officially mark this lesson complete yet " +
+        "because an earlier lesson in your course isn't finished. Once " +
+        "that one's done, come back here and I'll mark this one complete too."
+      );
+    }
+    if (message === 'This course is locked for this student') {
+      return (
+        "By the way — I can't officially mark this lesson complete yet " +
+        'because this course is currently locked for your account. Please ' +
+        'check with your course access before we continue.'
+      );
+    }
+    return null;
   }
 
   private parseLessonIdFromContextRef(contextRef: string): string | null {

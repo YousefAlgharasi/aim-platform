@@ -15,6 +15,8 @@ export interface LessonRow {
   xp_value: number;
   /** Optional admin-authored AI Teacher instructions specific to this lesson. */
   system_prompt: string | null;
+  /** Optional admin-authored checklist of discrete points the AI Teacher must cover. */
+  teaching_outline: string[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -30,6 +32,8 @@ export interface LessonSummary {
   xpValue: number;
   /** Optional admin-authored AI Teacher instructions specific to this lesson. */
   systemPrompt: string | null;
+  /** Optional admin-authored checklist of discrete points the AI Teacher must cover. */
+  teachingOutline: string[] | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -53,4 +57,5 @@ export interface UpdateLessonInput {
   description?: string;
   sortOrder?: number;
   systemPrompt?: string | null;
+  teachingOutline?: string[] | null;
 }
