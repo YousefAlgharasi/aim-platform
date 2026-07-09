@@ -144,7 +144,7 @@ export class AssessmentGradingService {
     if (questionIds.length > 0) {
       const placeholders = questionIds.map((_, i) => `$${i + 1}`).join(', ');
       const choicesResult = await this.db.query<ChoiceRow>(
-        `SELECT question_id, is_correct, label
+        `SELECT question_id, is_correct, id
          FROM question_choices
          WHERE question_id IN (${placeholders})
            AND is_correct = TRUE`,
@@ -153,13 +153,15 @@ export class AssessmentGradingService {
       correctChoices = choicesResult.rows;
     }
 
-    // Build a lookup: question_id → Set of correct labels
+    // Build a lookup: question_id → Set of correct choice ids
+    // (Flutter submits the chosen option's `id` as responseValue — see
+    // attempt_page.dart's responseValue: optionId.)
     const correctLabelsByQuestion = new Map<string, Set<string>>();
     for (const choice of correctChoices) {
       if (!correctLabelsByQuestion.has(choice.question_id)) {
         correctLabelsByQuestion.set(choice.question_id, new Set());
       }
-      correctLabelsByQuestion.get(choice.question_id)!.add(choice.label);
+      correctLabelsByQuestion.get(choice.question_id)!.add(choice.id);
     }
 
     // -----------------------------------------------------------------------
