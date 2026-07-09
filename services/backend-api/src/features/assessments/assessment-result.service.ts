@@ -17,6 +17,7 @@
 import { Injectable, ConflictException, Logger } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AnalyticsEventIngestionService } from '../analytics/analytics-event-ingestion.service';
+import { UsersService } from '../users/users.service';
 // Inline until P10-027/P10-028 branches merge to main
 export interface AssessmentGradingResult {
   readonly attemptId: string;
@@ -72,6 +73,7 @@ export class AssessmentResultService {
   constructor(
     private readonly db: DatabaseService,
     private readonly analyticsEventIngestionService: AnalyticsEventIngestionService,
+    private readonly usersService: UsersService,
   ) {}
 
   /**
@@ -152,19 +154,36 @@ export class AssessmentResultService {
           `ResultService: persisted result ${resultId} for attempt ${gradingResult.attemptId}`,
         );
 
-        await this.analyticsEventIngestionService.ingest({
-          eventType: 'assessment.scored',
-          actorRole: 'student',
-          actorId: gradingResult.studentId,
-          subjectType: 'assessment',
-          subjectId: gradingResult.assessmentId,
-          occurredAt: gradingResult.gradedAt,
-          metadata: {
-            assessment_id: gradingResult.assessmentId,
-            score: gradingResult.score,
-            passed: gradingResult.passed,
-          },
-        });
+        // Analytics is a side effect of an already-committed result — never
+        // let it fail the submission response. gradingResult.studentId is
+        // the Supabase Auth UID (the id convention throughout the
+        // assessments domain), but analytics_events.actor_id has a real FK
+        // to users(id) (the internal id), so it must be resolved here at
+        // the boundary where a student id crosses into the analytics
+        // domain's id space — same pattern as
+        // LearningReminderIntegration.resolveOwnerId.
+        try {
+          const user = await this.usersService.findBySupabaseUid(gradingResult.studentId);
+          await this.analyticsEventIngestionService.ingest({
+            eventType: 'assessment.scored',
+            actorRole: 'student',
+            actorId: user?.id ?? null,
+            subjectType: 'assessment',
+            subjectId: gradingResult.assessmentId,
+            occurredAt: gradingResult.gradedAt,
+            metadata: {
+              assessment_id: gradingResult.assessmentId,
+              score: gradingResult.score,
+              passed: gradingResult.passed,
+            },
+          });
+        } catch (analyticsErr: unknown) {
+          this.logger.warn(
+            `ResultService: analytics ingest failed for attempt ${gradingResult.attemptId} — ${
+              analyticsErr instanceof Error ? analyticsErr.message : String(analyticsErr)
+            }`,
+          );
+        }
 
         return {
           resultId,

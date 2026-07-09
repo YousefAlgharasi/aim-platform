@@ -52,23 +52,56 @@ function makeAnalyticsEventIngestion() {
   return { ingest: jest.fn().mockResolvedValue(undefined) };
 }
 
+function makeUsersService(internalId: string | null = 'user-internal-1') {
+  return {
+    findBySupabaseUid: jest.fn().mockResolvedValue(internalId ? { id: internalId } : null),
+  };
+}
+
 describe('AssessmentResultService', () => {
   it('persists result and returns resultId', async () => {
-    const svc = new AssessmentResultService(makeDb() as any, makeAnalyticsEventIngestion() as any);
+    const svc = new AssessmentResultService(
+      makeDb() as any,
+      makeAnalyticsEventIngestion() as any,
+      makeUsersService() as any,
+    );
     const result = await svc.persistResult(makeGrading());
     expect(result.resultId).toBe('result-1');
     expect(result.passed).toBe(true);
     expect(result.score).toBe(80);
   });
 
+  it('resolves the Supabase auth uid to the internal user id for the analytics actor', async () => {
+    const analytics = makeAnalyticsEventIngestion();
+    const users = makeUsersService('user-internal-1');
+    const svc = new AssessmentResultService(makeDb() as any, analytics as any, users as any);
+    await svc.persistResult(makeGrading({ studentId: 'auth-uid-1' }));
+
+    expect(users.findBySupabaseUid).toHaveBeenCalledWith('auth-uid-1');
+    expect(analytics.ingest).toHaveBeenCalledWith(
+      expect.objectContaining({ actorId: 'user-internal-1' }),
+    );
+  });
+
+  it('does not fail persistResult when analytics ingest throws (fire-and-forget)', async () => {
+    const analytics = { ingest: jest.fn().mockRejectedValue(new Error('FK violation')) };
+    const svc = new AssessmentResultService(makeDb() as any, analytics as any, makeUsersService() as any);
+    const result = await svc.persistResult(makeGrading());
+    expect(result.resultId).toBe('result-1');
+  });
+
   it('throws ConflictException on duplicate result', async () => {
-    const svc = new AssessmentResultService(makeDb({ conflict: true }) as any, makeAnalyticsEventIngestion() as any);
+    const svc = new AssessmentResultService(
+      makeDb({ conflict: true }) as any,
+      makeAnalyticsEventIngestion() as any,
+      makeUsersService() as any,
+    );
     await expect(svc.persistResult(makeGrading())).rejects.toThrow(ConflictException);
   });
 
   it('findByAttemptId returns null when no result', async () => {
     const db = { withClient: jest.fn(), query: jest.fn().mockResolvedValue({ rows: [] }) };
-    const svc = new AssessmentResultService(db as any, makeAnalyticsEventIngestion() as any);
+    const svc = new AssessmentResultService(db as any, makeAnalyticsEventIngestion() as any, makeUsersService() as any);
     const result = await svc.findByAttemptId('att-x', 'stu-1');
     expect(result).toBeNull();
   });
@@ -84,7 +117,7 @@ describe('AssessmentResultService', () => {
         }],
       }),
     };
-    const svc = new AssessmentResultService(db as any, makeAnalyticsEventIngestion() as any);
+    const svc = new AssessmentResultService(db as any, makeAnalyticsEventIngestion() as any, makeUsersService() as any);
     const result = await svc.findByAttemptId('att-1', 'stu-1');
     expect(result?.resultId).toBe('r-1');
     expect(result?.score).toBe(75);
