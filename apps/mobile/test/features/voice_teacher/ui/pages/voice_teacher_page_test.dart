@@ -40,7 +40,7 @@ import 'package:aim_mobile/features/voice_teacher/logic/voice_player_client.dart
 import 'package:aim_mobile/features/voice_teacher/logic/voice_recorder_client.dart';
 import 'package:aim_mobile/features/voice_teacher/ui/pages/voice_teacher_page.dart';
 import 'package:aim_mobile/features/voice_teacher/ui/widgets/voice_error_state.dart';
-import 'package:aim_mobile/features/voice_teacher/ui/widgets/voice_record_button.dart';
+import 'package:aim_mobile/features/voice_teacher/ui/widgets/voice_push_to_talk_button.dart';
 
 Widget _wrap(Widget child, {List<Override> overrides = const []}) =>
     ProviderScope(
@@ -195,13 +195,12 @@ void main() {
     });
 
     testWidgets(
-      'auto-starts hands-free listening for a fresh session with no history',
+      'does not auto-start recording for a fresh session with no history — '
+      'push-to-talk requires a press',
       (tester) async {
-        // Bugfix: hands-free listening now starts immediately for a fresh
-        // session with no history at all (no greeting to wait on first),
-        // so by the time this settles it's already recording and showing
-        // the transcript view (with its own empty-state copy) rather than
-        // the static "Tap to speak" idle hero.
+        // Push-to-talk: the student controls exactly when their turn starts
+        // by pressing and holding the mic — the app never starts recording
+        // on its own.
         final fakeRecorder = _FakeVoiceRecorderClient();
         await tester.pumpWidget(_wrap(
           VoiceTeacherPage(
@@ -221,8 +220,8 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        expect(fakeRecorder.startedPath, isNotNull);
-        expect(find.byType(VoiceRecordButton), findsOneWidget);
+        expect(fakeRecorder.startedPath, isNull);
+        expect(find.byType(VoicePushToTalkButton), findsOneWidget);
       },
     );
 
@@ -385,15 +384,15 @@ void main() {
 
         expect(find.text('Your teacher is speaking…'), findsOneWidget);
         expect(playbackNotifier.state, PlaybackState.playing);
-        // The greeting is auto-playing, so the normal "Tap to speak" /
-        // transcript view must not show underneath it yet.
-        expect(find.text('Tap to speak'), findsNothing);
+        // The greeting is auto-playing, so the normal "press and hold to
+        // speak" call view must not show underneath it yet.
+        expect(find.text('Your turn — press and hold to speak'), findsNothing);
       },
     );
 
     testWidgets(
       'once the auto-played greeting finishes, the call view is shown '
-      'and hands-free listening begins automatically',
+      'with the push-to-talk button ready — no auto-listening',
       (tester) async {
         final playbackNotifier =
             VoicePlaybackNotifier(player: _FakeVoicePlayerClient());
@@ -440,15 +439,15 @@ void main() {
         await tester.pump();
 
         // The transcript itself is opt-in (via the "Messages" button), not
-        // shown automatically — but the call view (with the record button
-        // now listening) must be showing in its place.
+        // shown automatically — but the call view (with the push-to-talk
+        // button ready) must be showing in its place.
         expect(find.text('Your teacher is speaking…'), findsNothing);
-        expect(find.byType(VoiceRecordButton), findsOneWidget);
+        expect(find.byType(VoicePushToTalkButton), findsOneWidget);
         expect(
           fakeRecorder.startedPath,
-          isNotNull,
-          reason: 'hands-free listening must start automatically once the '
-              'greeting finishes playing, with no tap required',
+          isNull,
+          reason: 'push-to-talk must never auto-start recording — the '
+              'student presses the mic themselves',
         );
 
         // The greeting is still reachable via the opt-in transcript.
@@ -494,7 +493,7 @@ void main() {
         await tester.pump();
 
         expect(find.text('Your teacher is speaking…'), findsNothing);
-        expect(find.byType(VoiceRecordButton), findsOneWidget);
+        expect(find.byType(VoicePushToTalkButton), findsOneWidget);
 
         // The greeting is still reachable via the opt-in transcript.
         await tester.tap(find.text('Messages'));
@@ -506,20 +505,14 @@ void main() {
       },
     );
 
-    // P21-018: tapping the record button while AI audio is actively playing
-    // must stop local playback immediately and start recording — the mic
-    // button stays tappable at all times (VoiceRecordButton only disables
-    // during `processing`), so this is about what _onStartRecording does on
-    // tap, not about un-disabling anything.
-    //
-    // Since hands-free auto-listening now also kicks off immediately (this
-    // history isn't just the greeting, so _onGreetingFinished runs right
-    // away), the auto-start itself already exercises the barge-in path: it
-    // must stop whatever was already playing before it starts recording.
-    // A manual tap on an already-recording button must stay a no-op rather
-    // than double-starting.
+    // P21-018: pressing the mic while AI audio is actively playing must stop
+    // local playback immediately and start recording (barge-in) — the mic
+    // button stays pressable while the AI is speaking (only disabled during
+    // `processing`), so a press can arrive mid-playback and must interrupt
+    // it rather than being ignored.
     testWidgets(
-      'starting to listen (auto or via tap) stops playback and starts recording',
+      'pressing the push-to-talk button mid-playback (barge-in) stops '
+      'playback and starts recording',
       (tester) async {
         final playbackNotifier = VoicePlaybackNotifier(player: _FakeVoicePlayerClient());
         // Drive it into a "playing" state without a real audio backend.
@@ -553,14 +546,37 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        // Hands-free listening already started automatically on mount,
-        // barging in over the pre-loaded "playing" audio with no tap.
+        // Nothing recording yet — push-to-talk never auto-starts.
+        expect(playbackNotifier.state, PlaybackState.playing);
+        expect(recordNotifier.state, isNot(RecordSubmitState.recording));
+        await tester.ensureVisible(find.byType(VoicePushToTalkButton));
+        await tester.pump();
+
+        // Press down (not a full tap) — hold the mic while the AI is still
+        // speaking, exercising the barge-in path. The permission-check-
+        // then-start chain is real async work, so it needs a real
+        // event-loop tick via runAsync + a real delay.
+        late final TestGesture gesture;
+        await tester.runAsync(() async {
+          gesture = await tester.startGesture(
+            tester.getCenter(find.byType(VoicePushToTalkButton)),
+          );
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          await tester.pump();
+        });
+
         expect(
           playbackNotifier.state,
           isNot(PlaybackState.playing),
-          reason: 'barge-in must stop local playback immediately',
+          reason: 'barge-in must stop local playback immediately on press',
         );
         expect(recordNotifier.state, RecordSubmitState.recording);
+
+        await tester.runAsync(() async {
+          await gesture.up();
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          await tester.pump();
+        });
       },
     );
 
@@ -590,8 +606,13 @@ void main() {
           ],
         ));
         await tester.pump();
+        await tester.ensureVisible(find.byType(VoicePushToTalkButton));
+        await tester.pump();
 
-        await tester.tap(find.byType(VoiceRecordButton));
+        // A single tap (down+up together) is enough here: onPressStart
+        // fires on the down phase and hits the permission check, which
+        // reports the error before onPressEnd's release ever runs.
+        await tester.tap(find.byType(VoicePushToTalkButton));
         await tester.pump();
         await tester.pump();
         await tester.pump();
@@ -627,8 +648,10 @@ void main() {
           ],
         ));
         await tester.pump();
+        await tester.ensureVisible(find.byType(VoicePushToTalkButton));
+        await tester.pump();
 
-        await tester.tap(find.byType(VoiceRecordButton));
+        await tester.tap(find.byType(VoicePushToTalkButton));
         await tester.pump();
         await tester.pump();
         await tester.pump();
@@ -639,7 +662,7 @@ void main() {
     );
 
     testWidgets(
-      'recording then stopping reads real captured bytes and submits them',
+      'press-and-hold then release reads real captured bytes and submits them',
       (tester) async {
         final recordNotifier = VoiceRecordSubmitNotifier();
         final fakeRecorder = _FakeVoiceRecorderClient(
@@ -665,26 +688,34 @@ void main() {
           ],
         ));
         await tester.pump();
+        await tester.ensureVisible(find.byType(VoicePushToTalkButton));
+        await tester.pump();
+
+        // Press down (not a full tap) — starts recording and holds. The
+        // press handler's permission-check-then-start chain is real async
+        // work (not fake-test-zone timers), so it needs a real event-loop
+        // tick via runAsync + a real delay, same as the release side below.
+        late final TestGesture gesture;
+        await tester.runAsync(() async {
+          gesture = await tester.startGesture(
+            tester.getCenter(find.byType(VoicePushToTalkButton)),
+          );
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          await tester.pump();
+        });
+        expect(recordNotifier.state, RecordSubmitState.recording);
+        expect(fakeRecorder.startedPath, isNotNull);
 
         // Real dart:io file I/O happens inside _onStopRecording (reading the
         // fake recorder's temp file back into memory), which needs a real
         // event-loop tick to complete — plain pump() only drains the fake
         // test zone's microtask/timer queue, not real system I/O.
         await tester.runAsync(() async {
-          await tester.tap(find.byType(VoiceRecordButton));
-          await tester.pump();
-          await tester.pump();
-          await tester.pump();
-        });
-        expect(recordNotifier.state, RecordSubmitState.recording);
-        expect(fakeRecorder.startedPath, isNotNull);
-
-        await tester.runAsync(() async {
-          await tester.tap(find.byType(VoiceRecordButton));
+          await gesture.up();
           // _onStopRecording's fire-and-forget async chain (stop() -> real
           // file read -> delete -> submitToBackend -> submitTurn) needs real
-          // wall-clock time to fully unwind, since VoiceRecordButton's
-          // onStopRecording slot discards the returned Future.
+          // wall-clock time to fully unwind, since the button's onPressEnd
+          // slot discards the returned Future.
           await Future<void>.delayed(const Duration(milliseconds: 100));
           await tester.pump();
         });
