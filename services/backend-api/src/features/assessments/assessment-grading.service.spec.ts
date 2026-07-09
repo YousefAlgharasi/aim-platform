@@ -100,6 +100,56 @@ describe('AssessmentGradingService', () => {
       expect(result.outcomes[1].pointsAwarded).toBe(0);
     });
 
+    // Regression: node-postgres returns NUMERIC columns as strings (e.g.
+    // "1.00"), not JS numbers — even though AnswerRow.points is typed
+    // `number`. Summing string points with `+` silently produced string
+    // concatenation instead of arithmetic (rawScore/maxScore came out as
+    // NaN), which then failed the assessment_results.max_score CHECK
+    // constraint at persist time with a generic 500 on every submit for
+    // any assessment with more than one question.
+    it('computes correct numeric score/maxScore when points come back as strings, as the real pg driver returns them', async () => {
+      const db = makeDb({
+        assessment_attempts: { rows: [makeAttemptRow()] },
+        assessment_settings: {
+          rows: [{ pass_threshold: 60, late_penalty_percent: 0 }],
+        },
+        assessment_attempt_answers: {
+          rows: [
+            {
+              assessment_question_link_id: Q_LINK_1,
+              question_id: Q1_ID,
+              response_value: 'A', // correct
+              points: '1.00',
+            },
+            {
+              assessment_question_link_id: Q_LINK_2,
+              question_id: Q2_ID,
+              response_value: 'B', // wrong (correct is 'A')
+              points: '1.00',
+            },
+          ],
+        },
+        question_choices: {
+          rows: [
+            { question_id: Q1_ID, is_correct: true, label: 'A' },
+            { question_id: Q2_ID, is_correct: true, label: 'A' },
+          ],
+        },
+        assessment_deadlines: { rows: [] },
+      });
+
+      const service = new AssessmentGradingService(db as any);
+      const result = await service.gradeAttempt(ATTEMPT_ID);
+
+      expect(result.score).toBe(1);
+      expect(result.maxScore).toBe(2);
+      expect(Number.isNaN(result.score)).toBe(false);
+      expect(Number.isNaN(result.maxScore)).toBe(false);
+      expect(result.outcomes[0].pointsAwarded).toBe(1);
+      expect(result.outcomes[0].pointsPossible).toBe(1);
+      expect(result.outcomes[1].pointsPossible).toBe(1);
+    });
+
     it('marks passed=true when score meets pass_threshold', async () => {
       const db = makeDb({
         assessment_attempts: { rows: [makeAttemptRow()] },
