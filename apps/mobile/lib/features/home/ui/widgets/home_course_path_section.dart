@@ -257,11 +257,21 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AimSpacing.cardPaddingLg),
+      padding: const EdgeInsets.symmetric(
+        vertical: AimSpacing.cardPaddingLg,
+        horizontal: AimSpacing.space8,
+      ),
       decoration: BoxDecoration(
-        color: surfaces.surface,
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            surfaces.surface,
+            Color.lerp(surfaces.surface, AimColors.gzPurple, 0.05)!,
+          ],
+        ),
         borderRadius: AimRadius.borderX2l,
-        border: Border.all(color: surfaces.border),
+        boxShadow: AimShadows.card,
       ),
       child: Column(
         children: [
@@ -273,12 +283,27 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: AimSpacing.space4),
-          Text(
-            _subtitle ?? '',
-            textAlign: TextAlign.center,
-            style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: aimSoftFillsOf(context).primary,
+              borderRadius: AimRadius.borderPill,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AimSpacing.space12,
+                vertical: AimSpacing.space4,
+              ),
+              child: Text(
+                _subtitle ?? '',
+                textAlign: TextAlign.center,
+                style: AimTextStyles.bodySm.copyWith(
+                  color: aimSoftFillsOf(context).onPrimary,
+                  fontWeight: AimFontWeights.semibold,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ),
           const SizedBox(height: AimSpacing.sectionGap),
           _CoursePathTrail(
@@ -294,8 +319,10 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
   }
 }
 
-/// Zigzag node trail: alternating left/center/right offsets connected by a
-/// thin vertical line, matching the reference app's winding lesson path.
+/// Winding node trail: nodes alternate across three horizontal lanes,
+/// connected by a smooth curved line (solid + lit where the path has been
+/// walked, dashed + muted ahead) — a livelier, Duolingo-style skill path
+/// instead of a plain straight connector.
 class _CoursePathTrail extends StatelessWidget {
   const _CoursePathTrail({
     required this.nodes,
@@ -311,42 +338,130 @@ class _CoursePathTrail extends StatelessWidget {
   final String finalExamLabel;
   final String lockedSemantic;
 
-  static const List<Alignment> _offsets = [
-    Alignment.center,
-    Alignment(-0.55, 0),
-    Alignment(0.55, 0),
+  static const double _nodeSize = 76;
+  static const double _nodeBoxWidth = 108;
+  static const double _rowHeight = 132;
+  static const List<double> _laneFractions = [0.5, 0.21, 0.79];
+
+  // A distinct, lively color per lesson node so completed steps don't all
+  // look identical — cycled by index. Quiz/final-exam nodes always use
+  // their own coral/purple treatment so they read as the chapter's "boss"
+  // step regardless of where they land in this cycle.
+  static const List<Gradient> _lessonPalette = [
+    AimGradients.gzFire,
+    AimGradients.growth,
+    AimGradients.gzCoral,
+    AimGradients.ai,
+    AimGradients.gzLime,
   ];
+
+  Offset _centerFor(int index, double width) {
+    final lane = _laneFractions[index % _laneFractions.length];
+    return Offset(lane * width, _rowHeight * index + _nodeSize / 2);
+  }
 
   @override
   Widget build(BuildContext context) {
     if (nodes.isEmpty) return const SizedBox.shrink();
 
-    return Column(
-      children: [
-        for (var i = 0; i < nodes.length; i++) ...[
-          if (i > 0)
-            Container(
-              width: 3,
-              height: AimSpacing.space24,
-              color: AimColors.neutral200,
-            ),
-          Align(
-            alignment: _offsets[i % _offsets.length],
-            child: _CoursePathNode(
-              node: nodes[i],
-              label: switch (nodes[i].kind) {
-                _NodeKind.lesson => nodes[i].title,
-                _NodeKind.quiz => quizLabel,
-                _NodeKind.finalExam => finalExamLabel,
-              },
-              lockedSemantic: lockedSemantic,
-              onTap: () => onTapNode(nodes[i]),
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final centers = [
+          for (var i = 0; i < nodes.length; i++) _centerFor(i, width),
+        ];
+        final height = _rowHeight * (nodes.length - 1) + _nodeSize + 56;
+
+        return SizedBox(
+          width: width,
+          height: height,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _TrailPainter(centers: centers, nodes: nodes),
+                ),
+              ),
+              for (var i = 0; i < nodes.length; i++)
+                Positioned(
+                  left: centers[i].dx - _nodeBoxWidth / 2,
+                  top: centers[i].dy - _nodeSize / 2,
+                  width: _nodeBoxWidth,
+                  child: _CoursePathNode(
+                    node: nodes[i],
+                    label: switch (nodes[i].kind) {
+                      _NodeKind.lesson => nodes[i].title,
+                      _NodeKind.quiz => quizLabel,
+                      _NodeKind.finalExam => finalExamLabel,
+                    },
+                    lockedSemantic: lockedSemantic,
+                    nodeSize: _nodeSize,
+                    gradient: _lessonPalette[i % _lessonPalette.length],
+                    onTap: () => onTapNode(nodes[i]),
+                  ),
+                ),
+            ],
           ),
-        ],
-      ],
+        );
+      },
     );
   }
+}
+
+/// Draws the winding connector line through node centers as a sequence of
+/// smooth S-curves. A completed node's outgoing segment is a solid, lit
+/// gradient line; everything ahead of the student is a muted dashed line.
+class _TrailPainter extends CustomPainter {
+  const _TrailPainter({required this.centers, required this.nodes});
+
+  final List<Offset> centers;
+  final List<_PathNode> nodes;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (var i = 0; i < centers.length - 1; i++) {
+      final p0 = centers[i];
+      final p1 = centers[i + 1];
+      final midY = (p0.dy + p1.dy) / 2;
+      final path = Path()
+        ..moveTo(p0.dx, p0.dy)
+        ..cubicTo(p0.dx, midY, p1.dx, midY, p1.dx, p1.dy);
+
+      final walked = nodes[i].completed;
+      final paint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5
+        ..strokeCap = StrokeCap.round;
+
+      if (walked) {
+        paint.shader = const LinearGradient(
+          colors: [AimColors.gzLime, AimColors.accent500],
+        ).createShader(Rect.fromPoints(p0, p1));
+        canvas.drawPath(path, paint);
+      } else {
+        paint.color = AimColors.neutral300;
+        _drawDashedPath(canvas, path, paint);
+      }
+    }
+  }
+
+  void _drawDashedPath(Canvas canvas, Path path, Paint paint) {
+    const dashWidth = 9.0;
+    const dashSpace = 7.0;
+    for (final metric in path.computeMetrics()) {
+      var distance = 0.0;
+      while (distance < metric.length) {
+        final next = (distance + dashWidth).clamp(0.0, metric.length);
+        canvas.drawPath(metric.extractPath(distance, next), paint);
+        distance = next + dashSpace;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _TrailPainter oldDelegate) =>
+      oldDelegate.centers != centers || oldDelegate.nodes != nodes;
 }
 
 class _CoursePathNode extends StatelessWidget {
@@ -354,67 +469,78 @@ class _CoursePathNode extends StatelessWidget {
     required this.node,
     required this.label,
     required this.lockedSemantic,
+    required this.nodeSize,
+    required this.gradient,
     required this.onTap,
   });
 
   final _PathNode node;
   final String label;
   final String lockedSemantic;
+  final double nodeSize;
+  final Gradient gradient;
   final VoidCallback onTap;
+
+  Gradient get _bossGradient =>
+      node.kind == _NodeKind.finalExam ? AimGradients.gzHero : AimGradients.gzCoral;
 
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final isBossNode = node.kind != _NodeKind.lesson;
 
     final Widget circle;
     if (node.completed) {
       circle = _NodeCircle(
-        gradient: node.kind == _NodeKind.lesson ? AimGradients.gzFire : AimGradients.gzLime,
+        size: nodeSize,
+        gradient: isBossNode ? _bossGradient : gradient,
         icon: Icons.check_rounded,
         iconColor: AimColors.neutral0,
+        glow: false,
       );
     } else if (node.current) {
       circle = _NodeCircle(
+        size: nodeSize,
         gradient: AimGradients.gzHero,
         icon: node.kind == _NodeKind.lesson ? Icons.play_arrow_rounded : Icons.quiz_rounded,
         iconColor: AimColors.neutral0,
+        glow: true,
+        ringed: true,
       );
     } else {
-      circle = const _NodeCircle(
+      circle = _NodeCircle(
+        size: nodeSize * 0.86,
         color: AimColors.neutral200,
         icon: Icons.lock_outline_rounded,
         iconColor: AimColors.neutral500,
+        glow: false,
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AimSpacing.space4),
-      child: Semantics(
-        button: node.unlocked,
-        label: node.unlocked ? label : '$label — $lockedSemantic',
-        child: InkWell(
-          onTap: node.unlocked ? onTap : null,
-          borderRadius: AimRadius.borderPill,
-          child: Column(
-            children: [
-              circle,
-              const SizedBox(height: AimSpacing.space4),
-              SizedBox(
-                width: 88,
-                child: Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: AimTextStyles.caption.copyWith(
-                    color: node.unlocked ? surfaces.textPrimary : surfaces.textMuted,
-                    fontWeight:
-                        node.current ? AimFontWeights.bold : AimFontWeights.regular,
-                  ),
-                ),
+    return Semantics(
+      button: node.unlocked,
+      label: node.unlocked ? label : '$label — $lockedSemantic',
+      child: InkWell(
+        onTap: node.unlocked ? onTap : null,
+        borderRadius: AimRadius.borderPill,
+        child: Column(
+          children: [
+            SizedBox(
+              height: nodeSize + AimSpacing.space8,
+              child: Center(child: circle),
+            ),
+            const SizedBox(height: AimSpacing.space4),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AimTextStyles.caption.copyWith(
+                color: node.unlocked ? surfaces.textPrimary : surfaces.textMuted,
+                fontWeight: node.current ? AimFontWeights.bold : AimFontWeights.regular,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -425,27 +551,58 @@ class _NodeCircle extends StatelessWidget {
   const _NodeCircle({
     required this.icon,
     required this.iconColor,
+    required this.size,
+    required this.glow,
     this.gradient,
     this.color,
+    this.ringed = false,
   });
 
   final IconData icon;
   final Color iconColor;
+  final double size;
+  final bool glow;
+  final bool ringed;
   final Gradient? gradient;
   final Color? color;
 
   @override
   Widget build(BuildContext context) {
+    final glowColor = gradient == AimGradients.gzHero
+        ? AimColors.gzPurple
+        : AimColors.accent500;
+
     return Container(
-      width: AimSizes.avatarLg,
-      height: AimSizes.avatarLg,
+      width: size,
+      height: size,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        gradient: gradient,
-        color: gradient == null ? color : null,
         shape: BoxShape.circle,
+        border: ringed ? Border.all(color: AimColors.neutral0, width: 4) : null,
+        boxShadow: [
+          if (glow)
+            BoxShadow(
+              color: glowColor.withValues(alpha: 0.45),
+              blurRadius: 20,
+              spreadRadius: 2,
+            )
+          else if (gradient != null)
+            const BoxShadow(
+              color: Color(0x1F181C26),
+              offset: Offset(0, 3),
+              blurRadius: 6,
+            ),
+        ],
       ),
-      child: Icon(icon, color: iconColor, size: AimSizes.iconMd),
+      child: Container(
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          gradient: gradient,
+          color: gradient == null ? color : null,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: iconColor, size: size * 0.42),
+      ),
     );
   }
 }
