@@ -62,4 +62,16 @@ export class StudentLessonsRepository {
     );
     return result.rows[0] ?? null;
   }
+
+  /** True when the student has a passing assessment_results row for this assessment. */
+  async hasPassingResult(studentId: string, assessmentId: string): Promise<boolean> {
+    const result = await this.db.query<{ exists: boolean }>(
+      `SELECT EXISTS (
+         SELECT 1 FROM assessment_results
+         WHERE assessment_id = $1 AND student_id = $2 AND passed = true
+       ) AS exists`,
+      [assessmentId, studentId],
+    );
+    return result.rows[0]?.exists ?? false;
+  }
 }
