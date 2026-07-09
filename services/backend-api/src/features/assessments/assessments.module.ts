@@ -17,6 +17,7 @@ import { AuthModule } from '../../auth/auth.module';
 import { DatabaseModule } from '../../database/database.module';
 import { AnalyticsModule } from '../analytics/analytics.module';
 import { SessionsModule } from '../sessions/sessions.module';
+import { UsersModule } from '../users/users.module';
 import { TtsGatewayModule } from '../voice-teacher/tts-gateway/tts-gateway.module';
 import { AssessmentGradingService } from './assessment-grading.service';
 import { AssessmentScorePolicyService } from './assessment-score-policy.service';
@@ -39,7 +40,7 @@ import { AssessmentResultOwnershipGuard } from './guards/assessment-result-owner
 import { AssessmentAuditService } from './assessment-audit.service';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, AnalyticsModule, SessionsModule, TtsGatewayModule],
+  imports: [DatabaseModule, AuthModule, AnalyticsModule, SessionsModule, TtsGatewayModule, UsersModule],
   controllers: [AssessmentController],
   providers: [
     AssessmentRepository,
