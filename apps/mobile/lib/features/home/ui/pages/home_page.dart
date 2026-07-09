@@ -56,10 +56,10 @@ import 'package:aim_mobile/features/notifications/logic/provider/notification_pr
 import 'package:aim_mobile/features/shell/logic/main_shell_tab_provider.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_continue_learning.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_engagement.dart';
-import 'package:aim_mobile/features/home/logic/entity/home_quick_start_lesson.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
 import 'package:aim_mobile/features/assessments/logic/provider/assessment_provider.dart';
 import '../widgets/home_widgets.dart';
+import '../widgets/home_course_path_section.dart';
 
 /// Student home screen MVP.
 ///
@@ -354,16 +354,6 @@ class _HomeContent extends ConsumerWidget {
   /// never a backend field.
   final DateTime? lastUpdatedAt;
 
-  void _navigateToLesson(BuildContext context, HomeQuickStartLesson lesson) {
-    context.push(
-      AppRoutePaths.lessonDetail,
-      extra: {
-        'lessonId': lesson.lessonId,
-        'lessonTitle': lesson.lessonTitle,
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final surfaces = aimSurfacesOf(context);
@@ -447,15 +437,8 @@ class _HomeContent extends ConsumerWidget {
             ),
             const SizedBox(height: AimSpacing.sectionGap),
           ],
-          if (data.quickStartLesson != null) ...[
-            HomeSectionHeader(title: l10n.homeQuickStartTitle),
-            const SizedBox(height: AimSpacing.componentGap),
-            HomeQuickStartLessonCard(
-              lesson: data.quickStartLesson!,
-              onTap: () => _navigateToLesson(context, data.quickStartLesson!),
-            ),
-            const SizedBox(height: AimSpacing.sectionGap),
-          ],
+          const HomeCoursePathSection(),
+          const SizedBox(height: AimSpacing.sectionGap),
           const _HomeCurrentAssessmentSection(),
           if (data.goal != null) ...[
             HomeSectionHeader(title: l10n.homeGoalTitle),
@@ -464,40 +447,6 @@ class _HomeContent extends ConsumerWidget {
             const SizedBox(height: AimSpacing.sectionGap),
           ],
           if (data.isEmpty) ..._gettingStartedCards(context, ref),
-          if (data.skillStates.isNotEmpty) ...[
-            HomeSectionHeader(title: l10n.homeSkillStatesTitle),
-            const SizedBox(height: AimSpacing.componentGap),
-            ...data.skillStates.map(
-              (m) => Padding(
-                padding: const EdgeInsets.only(bottom: AimSpacing.listItemGap),
-                child: HomeSkillStateCard(model: m),
-              ),
-            ),
-            const SizedBox(height: AimSpacing.sectionGap),
-          ],
-          if (data.weaknessRecords.isNotEmpty) ...[
-            HomeSectionHeader(title: l10n.commonFocusAreas),
-            const SizedBox(height: AimSpacing.componentGap),
-            Wrap(
-              spacing: AimSpacing.space8,
-              runSpacing: AimSpacing.space8,
-              children: data.weaknessRecords
-                  .map((m) => HomeWeaknessChip(model: m))
-                  .toList(),
-            ),
-            const SizedBox(height: AimSpacing.sectionGap),
-          ],
-          if (data.reviewSchedules.isNotEmpty) ...[
-            HomeSectionHeader(title: l10n.homeReviewScheduleTitle),
-            const SizedBox(height: AimSpacing.componentGap),
-            ...data.reviewSchedules.map(
-              (m) => Padding(
-                padding: const EdgeInsets.only(bottom: AimSpacing.listItemGap),
-                child: HomeReviewScheduleCard(model: m),
-              ),
-            ),
-            const SizedBox(height: AimSpacing.sectionGap),
-          ],
           if (data.recommendations.isNotEmpty) ...[
             HomeSectionHeader(title: l10n.homeRecommendationsTitle),
             const SizedBox(height: AimSpacing.componentGap),

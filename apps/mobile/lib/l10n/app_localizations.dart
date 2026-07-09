@@ -950,6 +950,24 @@ abstract class AppLocalizations {
   /// **'Quick Start'**
   String get homeQuickStartTitle;
 
+  /// Label under the chapter-quiz node in the home course path.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz'**
+  String get homeCoursePathChapterQuizLabel;
+
+  /// Label under the final-exam node in the home course path, and subtitle once the course's chapters are all complete.
+  ///
+  /// In en, this message translates to:
+  /// **'Final Exam'**
+  String get homeCoursePathFinalExamLabel;
+
+  /// Subtitle shown under the course title in the home course path once every chapter and the final exam are complete.
+  ///
+  /// In en, this message translates to:
+  /// **'Course complete'**
+  String get homeCoursePathCompletedSubtitle;
+
   /// Section header above the recommended-course card on the home screen.
   ///
   /// In en, this message translates to:
