@@ -183,38 +183,51 @@ describe('Attempt Lifecycle (P10-043)', () => {
       expect(result.status).toBe('submitted');
     });
 
-    it('rejects duplicate submit (already submitted)', async () => {
-      const repo = makeRepo({ findAttemptById: jest.fn().mockResolvedValue({ ...BASE_ATTEMPT, status: 'submitted' }) });
+    it('recovers an already-submitted attempt with its existing submittedAt instead of throwing — the flow service (not attempt status alone) decides whether a result already exists', async () => {
+      const submittedAt = new Date('2026-01-01T00:00:00.000Z');
+      const repo = makeRepo({
+        findAttemptById: jest.fn().mockResolvedValue({ ...BASE_ATTEMPT, status: 'submitted', submitted_at: submittedAt }),
+      });
       const svc = new AttemptLifecycleService(makeDb() as any, repo as any, makeDeadline() as any);
-      await expect(svc.submitAttempt('att-1', 'stu-1')).rejects.toThrow('ATTEMPT_ALREADY_SUBMITTED');
+      const result = await svc.submitAttempt('att-1', 'stu-1');
+      expect(result).toEqual({ attemptId: 'att-1', status: 'submitted', submittedAt, resultId: null });
     });
 
-    it('rejects duplicate submit (already graded)', async () => {
-      const repo = makeRepo({ findAttemptById: jest.fn().mockResolvedValue({ ...BASE_ATTEMPT, status: 'graded' }) });
+    it('recovers an already-graded attempt the same way', async () => {
+      const submittedAt = new Date('2026-01-01T00:00:00.000Z');
+      const repo = makeRepo({
+        findAttemptById: jest.fn().mockResolvedValue({ ...BASE_ATTEMPT, status: 'graded', submitted_at: submittedAt }),
+      });
       const svc = new AttemptLifecycleService(makeDb() as any, repo as any, makeDeadline() as any);
-      await expect(svc.submitAttempt('att-1', 'stu-1')).rejects.toThrow('ATTEMPT_ALREADY_SUBMITTED');
+      const result = await svc.submitAttempt('att-1', 'stu-1');
+      expect(result).toEqual({ attemptId: 'att-1', status: 'submitted', submittedAt, resultId: null });
     });
 
     it('rejects submit of expired attempt', async () => {
       const repo = makeRepo({ findAttemptById: jest.fn().mockResolvedValue({ ...BASE_ATTEMPT, status: 'expired' }) });
       const svc = new AttemptLifecycleService(makeDb() as any, repo as any, makeDeadline() as any);
-      await expect(svc.submitAttempt('att-1', 'stu-1')).rejects.toThrow('INVALID_ATTEMPT');
+      const call = svc.submitAttempt('att-1', 'stu-1');
+      await expect(call).rejects.toMatchObject({ code: 'ATTEMPT_INVALID', statusCode: 409 });
     });
 
     it('rejects submit when deadline blocks it', async () => {
       const svc = new AttemptLifecycleService(makeDb() as any, makeRepo() as any, makeDeadline(false) as any);
-      await expect(svc.submitAttempt('att-1', 'stu-1')).rejects.toThrow('DEADLINE_BLOCKS_SUBMISSION');
+      const call = svc.submitAttempt('att-1', 'stu-1');
+      await expect(call).rejects.toMatchObject({ code: 'DEADLINE_BLOCKS_SUBMISSION', statusCode: 409 });
     });
 
-    it('rejects wrong student (ownership enforcement)', async () => {
+    it('rejects wrong student (ownership enforcement) with a not-found error, not forbidden — avoids leaking attempt existence', async () => {
       const svc = new AttemptLifecycleService(makeDb() as any, makeRepo() as any, makeDeadline() as any);
-      await expect(svc.submitAttempt('att-1', 'stu-OTHER')).rejects.toThrow(ForbiddenException);
+      const call = svc.submitAttempt('att-1', 'stu-OTHER');
+      await expect(call).rejects.toThrow('Assessment attempt not found');
+      await expect(call).rejects.toMatchObject({ statusCode: 404 });
     });
 
-    it('throws NotFoundException for missing attempt', async () => {
+    it('throws a not-found error for missing attempt', async () => {
       const repo = makeRepo({ findAttemptById: jest.fn().mockResolvedValue(null) });
       const svc = new AttemptLifecycleService(makeDb() as any, repo as any, makeDeadline() as any);
-      await expect(svc.submitAttempt('att-x', 'stu-1')).rejects.toThrow(NotFoundException);
+      const call = svc.submitAttempt('att-x', 'stu-1');
+      await expect(call).rejects.toMatchObject({ code: 'ATTEMPT_NOT_FOUND', statusCode: 404 });
     });
 
     it('only accepts (attemptId, studentId) — no client score params', () => {

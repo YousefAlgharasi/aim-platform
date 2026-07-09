@@ -32,6 +32,7 @@ import { AssessmentGradingService } from './assessment-grading.service';
 import { AssessmentResultService } from './assessment-result.service';
 import { AssessmentProgressIntegrationService } from './assessment-progress-integration.service';
 import { AssessmentAimBridgeService } from './assessment-aim-bridge.service';
+import { attemptAlreadySubmitted } from './assessment-errors';
 
 export interface SubmitAttemptApiResult {
   readonly attemptId: string;
@@ -61,8 +62,21 @@ export class AssessmentSubmissionFlowService {
    * P10-069: After persistence, the grading result is forwarded to the
    * progress integration service. This is fire-and-forget — a failure
    * in progress recording never blocks the submission confirmation.
+   *
+   * Recovery: a truly duplicate submission is only rejected when a result
+   * already exists for this attempt — checked here, up front, rather than
+   * relying on attempt status alone. If a prior call already flipped the
+   * attempt to 'submitted'/'graded' but crashed before grading/persistence
+   * finished, no result exists yet, so this call is allowed to proceed and
+   * (re)run the grading pipeline instead of leaving the student
+   * permanently stuck with an unresolvable "already submitted" error.
    */
   async submitAndGrade(attemptId: string, studentId: string): Promise<SubmitAttemptApiResult> {
+    const existingResult = await this.resultService.findByAttemptId(attemptId, studentId);
+    if (existingResult) {
+      throw attemptAlreadySubmitted(attemptId);
+    }
+
     const submitResult = await this.attemptLifecycleService.submitAttempt(attemptId, studentId);
     const gradingResult = await this.gradingService.gradeAttempt(attemptId);
     const persisted = await this.resultService.persistResult(gradingResult);
