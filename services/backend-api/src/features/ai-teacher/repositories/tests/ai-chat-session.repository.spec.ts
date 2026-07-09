@@ -95,30 +95,13 @@ describe('AiChatSessionRepository', () => {
   });
 
   describe('getOrCreateForContext()', () => {
-    it('returns the existing active session and created: false when one exists', async () => {
-      const calls: { sql: string; params: readonly unknown[] }[] = [];
-      const existingRow = {
-        id: SESSION_ID,
-        student_id: STUDENT_ID,
-        context_ref: 'lesson:p1:l3',
-        status: 'active',
-        created_at: '2026-06-18T00:00:00Z',
-        updated_at: '2026-06-18T00:00:00Z',
-      };
-      const db = makeMockDb(async (sql, params) => {
-        calls.push({ sql, params });
-        return { rows: [existingRow], rowCount: 1 };
-      });
-      const repo = new AiChatSessionRepository(db);
-
-      const result = await repo.getOrCreateForContext(STUDENT_ID, 'lesson:p1:l3');
-
-      expect(calls).toHaveLength(1);
-      expect(calls[0].sql).toContain('SELECT');
-      expect(calls[0].sql).toContain("status = 'active'");
-      expect(calls[0].params).toEqual([STUDENT_ID, 'lesson:p1:l3']);
-      expect(result).toEqual({ session: existingRow, created: false });
-    });
+    // Bugfix: this is now INSERT ... ON CONFLICT DO NOTHING (atomic, backed
+    // by the ai_chat_sessions_one_active_per_context partial unique index)
+    // followed by a SELECT fallback only when the insert found a conflict
+    // — not the old SELECT-then-INSERT, which raced under concurrent/retried
+    // calls. Mocks below simulate the two outcomes: INSERT returns a row
+    // (created), or INSERT returns nothing because a row already exists
+    // (not created, so the SELECT fallback finds it).
 
     it('creates a new session and returns created: true when none exists', async () => {
       const calls: { sql: string; params: readonly unknown[] }[] = [];
@@ -132,18 +115,45 @@ describe('AiChatSessionRepository', () => {
       };
       const db = makeMockDb(async (sql, params) => {
         calls.push({ sql, params });
-        if (sql.includes('SELECT')) {
-          return { rows: [], rowCount: 0 };
-        }
         return { rows: [newRow], rowCount: 1 };
       });
       const repo = new AiChatSessionRepository(db);
 
       const result = await repo.getOrCreateForContext(STUDENT_ID, 'lesson:p1:l3');
 
-      expect(calls).toHaveLength(2);
-      expect(calls[1].sql).toContain('INSERT INTO ai_chat_sessions');
+      expect(calls).toHaveLength(1);
+      expect(calls[0].sql).toContain('INSERT INTO ai_chat_sessions');
+      expect(calls[0].sql).toContain('ON CONFLICT');
+      expect(calls[0].params).toEqual([STUDENT_ID, 'lesson:p1:l3']);
       expect(result).toEqual({ session: newRow, created: true });
+    });
+
+    it('returns the existing active session and created: false when one already exists (insert conflicts)', async () => {
+      const calls: { sql: string; params: readonly unknown[] }[] = [];
+      const existingRow = {
+        id: SESSION_ID,
+        student_id: STUDENT_ID,
+        context_ref: 'lesson:p1:l3',
+        status: 'active',
+        created_at: '2026-06-18T00:00:00Z',
+        updated_at: '2026-06-18T00:00:00Z',
+      };
+      const db = makeMockDb(async (sql, params) => {
+        calls.push({ sql, params });
+        if (sql.includes('INSERT')) {
+          return { rows: [], rowCount: 0 }; // conflict — no row inserted
+        }
+        return { rows: [existingRow], rowCount: 1 };
+      });
+      const repo = new AiChatSessionRepository(db);
+
+      const result = await repo.getOrCreateForContext(STUDENT_ID, 'lesson:p1:l3');
+
+      expect(calls).toHaveLength(2);
+      expect(calls[0].sql).toContain('INSERT INTO ai_chat_sessions');
+      expect(calls[1].sql).toContain('SELECT');
+      expect(calls[1].sql).toContain("status = 'active'");
+      expect(result).toEqual({ session: existingRow, created: false });
     });
 
     it('resolves the same session id for the same (studentId, contextRef) on repeated calls', async () => {
@@ -155,7 +165,17 @@ describe('AiChatSessionRepository', () => {
         created_at: '2026-06-18T00:00:00Z',
         updated_at: '2026-06-18T00:00:00Z',
       };
-      const db = makeMockDb(async () => ({ rows: [existingRow], rowCount: 1 }));
+      let firstCallDone = false;
+      const db = makeMockDb(async (sql) => {
+        if (sql.includes('INSERT')) {
+          if (!firstCallDone) {
+            firstCallDone = true;
+            return { rows: [existingRow], rowCount: 1 };
+          }
+          return { rows: [], rowCount: 0 };
+        }
+        return { rows: [existingRow], rowCount: 1 };
+      });
       const repo = new AiChatSessionRepository(db);
 
       const first = await repo.getOrCreateForContext(STUDENT_ID, 'lesson:p1:l3');
