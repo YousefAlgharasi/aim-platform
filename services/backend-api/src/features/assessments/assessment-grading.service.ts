@@ -170,13 +170,20 @@ export class AssessmentGradingService {
       const isCorrect = correctLabels
         ? correctLabels.has(answer.response_value)
         : false;
-      const pointsAwarded = isCorrect ? answer.points : 0;
+      // node-postgres returns NUMERIC columns as strings (to avoid float
+      // precision loss), despite AnswerRow.points being typed `number` —
+      // coerce explicitly here so the reduce() sums below do real
+      // arithmetic instead of string concatenation (which silently
+      // produced NaN/garbled scores and a downstream CHECK-constraint
+      // violation on assessment_results.max_score at persist time).
+      const points = Number(answer.points);
+      const pointsAwarded = isCorrect ? points : 0;
 
       return {
         assessmentQuestionLinkId: answer.assessment_question_link_id,
         isCorrect,
         pointsAwarded,
-        pointsPossible: answer.points,
+        pointsPossible: points,
       };
     });
 
