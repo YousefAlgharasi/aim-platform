@@ -23,7 +23,10 @@ import { DatabaseService } from '../../database/database.service';
 import { AssessmentRepository } from './assessment.repository';
 import { AssessmentDeadlineService } from './assessment-deadline.service';
 import { isChapterLessonsComplete, isCourseChaptersComplete } from './assessment-chapter-gate.util';
-import { chapterNotComplete, courseNotComplete } from './assessment-errors';
+import {
+  chapterNotComplete, courseNotComplete,
+  attemptNotFound, attemptNotOwned, attemptInvalid, deadlineBlocksSubmission,
+} from './assessment-errors';
 
 export interface StartAttemptResult {
   readonly attemptId: string;
@@ -174,13 +177,28 @@ export class AttemptLifecycleService {
 
   async submitAttempt(attemptId: string, studentId: string): Promise<SubmitAttemptResult> {
     const attempt = await this.repo.findAttemptById(attemptId);
-    if (!attempt) throw new NotFoundException(`Attempt ${attemptId} not found`);
-    if (attempt.student_id !== studentId) throw new ForbiddenException('ATTEMPT_NOT_OWNED');
+    if (!attempt) throw attemptNotFound(attemptId);
+    if (attempt.student_id !== studentId) throw attemptNotOwned();
+
     if (attempt.status === 'submitted' || attempt.status === 'graded') {
-      throw new ConflictException('ATTEMPT_ALREADY_SUBMITTED');
+      // Recovery path, not a hard stop: this attempt was already marked
+      // submitted by a prior call, but grading/result-persistence may
+      // never have completed (e.g. the process crashed mid-pipeline,
+      // leaving the attempt permanently stuck with no result and no way
+      // to retry). The caller (AssessmentSubmissionFlowService) checks
+      // whether a result actually exists before deciding whether this is
+      // a genuine duplicate submission or a safe-to-resume retry — so we
+      // simply hand back the already-recorded submittedAt here instead of
+      // throwing, letting the grading pipeline run again.
+      return {
+        attemptId,
+        status: 'submitted',
+        submittedAt: attempt.submitted_at ?? new Date(),
+        resultId: null,
+      };
     }
     if (!['started', 'in_progress'].includes(attempt.status)) {
-      throw new ConflictException('INVALID_ATTEMPT');
+      throw attemptInvalid(attemptId);
     }
 
     // Backend checks deadline/late policy before accepting submission.
@@ -188,7 +206,7 @@ export class AttemptLifecycleService {
       attempt.assessment_id, studentId,
     );
     if (!eligibility.eligible) {
-      throw new ConflictException('DEADLINE_BLOCKS_SUBMISSION');
+      throw deadlineBlocksSubmission();
     }
 
     const submittedAt = new Date();

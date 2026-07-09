@@ -126,15 +126,44 @@ describe('AttemptLifecycleService', () => {
       expect(result.status).toBe('submitted');
     });
 
-    it('throws ATTEMPT_ALREADY_SUBMITTED', async () => {
-      const repo = makeRepo({ findAttemptById: jest.fn().mockResolvedValue({ ...ATTEMPT, status: 'submitted' }) });
+    it('returns the existing submittedAt for an already-submitted attempt instead of throwing — a recoverable retry, not a hard stop (the caller decides whether a result already exists)', async () => {
+      const existingSubmittedAt = new Date('2026-01-01T00:00:00.000Z');
+      const repo = makeRepo({
+        findAttemptById: jest.fn().mockResolvedValue({
+          ...ATTEMPT, status: 'submitted', submitted_at: existingSubmittedAt,
+        }),
+      });
       const svc = new AttemptLifecycleService(makeDb() as any, repo as any, makeDeadline() as any);
-      await expect(svc.submitAttempt('att-1', 'stu-1')).rejects.toThrow('ATTEMPT_ALREADY_SUBMITTED');
+
+      const result = await svc.submitAttempt('att-1', 'stu-1');
+
+      expect(result).toEqual({
+        attemptId: 'att-1',
+        status: 'submitted',
+        submittedAt: existingSubmittedAt,
+        resultId: null,
+      });
+    });
+
+    it('returns the existing submittedAt for an already-graded attempt too', async () => {
+      const existingSubmittedAt = new Date('2026-01-01T00:00:00.000Z');
+      const repo = makeRepo({
+        findAttemptById: jest.fn().mockResolvedValue({
+          ...ATTEMPT, status: 'graded', submitted_at: existingSubmittedAt,
+        }),
+      });
+      const svc = new AttemptLifecycleService(makeDb() as any, repo as any, makeDeadline() as any);
+
+      const result = await svc.submitAttempt('att-1', 'stu-1');
+
+      expect(result.status).toBe('submitted');
+      expect(result.submittedAt).toEqual(existingSubmittedAt);
     });
 
     it('throws DEADLINE_BLOCKS_SUBMISSION when deadline closed', async () => {
       const svc = new AttemptLifecycleService(makeDb() as any, makeRepo() as any, makeDeadline(false) as any);
-      await expect(svc.submitAttempt('att-1', 'stu-1')).rejects.toThrow('DEADLINE_BLOCKS_SUBMISSION');
+      const call = svc.submitAttempt('att-1', 'stu-1');
+      await expect(call).rejects.toMatchObject({ code: 'DEADLINE_BLOCKS_SUBMISSION', statusCode: 409 });
     });
 
     it('submitAttempt never accepts score or correctness fields', () => {

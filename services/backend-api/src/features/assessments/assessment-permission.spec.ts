@@ -199,8 +199,10 @@ describe('Assessment Permission Tests (P10-045)', () => {
         }),
       };
       const svc = new AttemptLifecycleService({} as any, repo as any, {} as any);
-      await expect(svc.submitAttempt('att-1', 'stu-ATTACKER'))
-        .rejects.toThrow('ATTEMPT_NOT_OWNED');
+      const call = svc.submitAttempt('att-1', 'stu-ATTACKER');
+      // Returns a not-found error (never FORBIDDEN) to avoid leaking
+      // attempt existence — still carries the ATTEMPT_NOT_OWNED code.
+      await expect(call).rejects.toMatchObject({ code: 'ATTEMPT_NOT_OWNED', statusCode: 404 });
     });
 
     it('AssessmentResultService.findByAttemptId scopes by studentId in SQL', async () => {
