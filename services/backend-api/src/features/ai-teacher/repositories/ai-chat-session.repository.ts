@@ -32,16 +32,39 @@ export class AiChatSessionRepository {
    * creating their own session row, so a lesson's chat and voice turns
    * resolve to one conversation.
    *
+   * Bugfix: this used to be a plain SELECT-then-INSERT, which is not
+   * atomic — two concurrent/retried calls (e.g. a client retry after a
+   * transient error) could both miss the existing active session and each
+   * insert their own, silently splitting one conversation into a second,
+   * empty-looking session with the same context. The
+   * ai_chat_sessions_one_active_per_context partial unique index
+   * (student_id, context_ref WHERE status='active') makes that impossible
+   * now: INSERT ... ON CONFLICT DO NOTHING either creates the row or, if a
+   * concurrent caller already won, cleanly no-ops and the SELECT below
+   * finds their row instead.
+   *
    * Returns the most recent *active* session for (studentId, contextRef) if
-   * one exists; otherwise creates a new one, identical to create()'s
-   * behavior. `created` tells the caller whether a brand-new session was
-   * made (used by P21-008 to decide whether to generate an opening
-   * greeting).
+   * one exists; otherwise creates a new one. `created` tells the caller
+   * whether a brand-new session was made (used by P21-008 to decide
+   * whether to generate an opening greeting).
    */
   async getOrCreateForContext(
     studentId: string,
     contextRef: string,
   ): Promise<{ session: AiChatSessionRow; created: boolean }> {
+    const inserted = await this.db.query<AiChatSessionRow>(
+      `INSERT INTO ai_chat_sessions (student_id, context_ref)
+       VALUES ($1, $2)
+       ON CONFLICT (student_id, context_ref) WHERE status = 'active' DO NOTHING
+       RETURNING id, student_id, context_ref, status, created_at, updated_at,
+                 lesson_teaching_stage, resolved_lesson_id`,
+      [studentId, contextRef],
+    );
+
+    if (inserted.rows[0]) {
+      return { session: inserted.rows[0], created: true };
+    }
+
     const existing = await this.db.query<AiChatSessionRow>(
       `SELECT id, student_id, context_ref, status, created_at, updated_at,
               lesson_teaching_stage, resolved_lesson_id
@@ -52,12 +75,16 @@ export class AiChatSessionRepository {
       [studentId, contextRef],
     );
 
-    if (existing.rows[0]) {
-      return { session: existing.rows[0], created: false };
+    if (!existing.rows[0]) {
+      // Extremely unlikely (the row we just conflicted on would have to be
+      // closed by something else in the instant between these two
+      // queries) — fall back to a normal create rather than returning
+      // nothing.
+      const session = await this.create(studentId, contextRef);
+      return { session, created: true };
     }
 
-    const session = await this.create(studentId, contextRef);
-    return { session, created: true };
+    return { session: existing.rows[0], created: false };
   }
 
   /**
