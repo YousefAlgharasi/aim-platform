@@ -34,6 +34,8 @@
 // - AIMTopAppBar handles back-arrow mirroring internally.
 // - EdgeInsets.symmetric mirrors correctly under RTL.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -42,6 +44,7 @@ import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/features/lessons/data/models/lesson_progress_model.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lesson_asset.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lesson_detail.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
@@ -70,6 +73,14 @@ class LessonDetailPage extends ConsumerStatefulWidget {
 }
 
 class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
+  // Locked-by-default: the "Practice questions" CTA only unlocks once the
+  // backend confirms this lesson is complete (lesson_progress.completed —
+  // set by LessonTeachingStageService when the AI Teacher/Voice Teacher
+  // finishes teaching it). Starts false so the button never briefly shows
+  // enabled before the real state is known.
+  bool _practiceUnlocked = false;
+  bool _practiceCheckStarted = false;
+
   @override
   void initState() {
     super.initState();
@@ -85,9 +96,45 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
         );
   }
 
+  /// Reads this lesson's real per-student completed flag (backend-computed,
+  /// StudentLessonSummary.completed from GET /student/lessons?chapterId=)
+  /// to decide whether "Practice questions" unlocks. Fetched via the same
+  /// chapter-lessons endpoint the chapter/lesson-list screens already use —
+  /// no new endpoint needed. Failure leaves the CTA locked rather than
+  /// failing the whole page.
+  Future<void> _checkPracticeUnlock(LessonDetail detail) async {
+    if (_practiceCheckStarted) return;
+    _practiceCheckStarted = true;
+
+    final token = ref.read(authFlowProvider).accessToken;
+    if (token == null || token.isEmpty) return;
+
+    try {
+      final lessons = await ref.read(lessonsRepositoryProvider).getLessonsWithProgress(
+            bearerToken: token,
+            chapterId: detail.lesson.chapterId,
+          );
+      LessonProgressModel? match;
+      for (final l in lessons) {
+        if (l.id == detail.lesson.id) {
+          match = l;
+          break;
+        }
+      }
+      if (mounted && match != null) {
+        setState(() => _practiceUnlocked = match!.completed);
+      }
+    } catch (_) {
+      // Leave _practiceUnlocked at its current (locked-by-default) value.
+    }
+  }
+
   Future<void> _refresh() async {
     final token = ref.read(authFlowProvider).accessToken;
     if (token == null || token.isEmpty) return;
+    // Re-check practice-unlock on pull-to-refresh too — the student may
+    // have just finished the lesson with the AI/Voice Teacher.
+    _practiceCheckStarted = false;
     await ref.read(lessonDetailProvider.notifier).refresh(
           bearerToken: token,
           lessonId: widget.lessonId,
@@ -174,13 +221,24 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
             message: message,
             onRetry: _load,
           ),
-        AppAsyncSuccess(:final data) => _LessonDetailContent(
-            detail: data,
-            onRefresh: _refresh,
-            onStartPractice: () => _startPractice(data),
-            onStartQuestionPractice: () => _startQuestionPractice(data),
-            onStartVoicePractice: () => _startVoicePractice(data),
-            onOpenStep: _openStep,
+        AppAsyncSuccess(:final data) => Builder(
+            builder: (_) {
+              // Fire-and-forget: triggers once per successful load (the
+              // widget rebuilds on setState, not on this call itself, so
+              // this doesn't re-fetch every frame).
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) unawaited(_checkPracticeUnlock(data));
+              });
+              return _LessonDetailContent(
+                detail: data,
+                practiceUnlocked: _practiceUnlocked,
+                onRefresh: _refresh,
+                onStartPractice: () => _startPractice(data),
+                onStartQuestionPractice: () => _startQuestionPractice(data),
+                onStartVoicePractice: () => _startVoicePractice(data),
+                onOpenStep: _openStep,
+              );
+            },
           ),
         AppAsyncIdle() => AIMFullScreenLoading(
             semanticLabel: l10n.lessonsLoadingLessonSemantic,
@@ -197,6 +255,7 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
 class _LessonDetailContent extends StatelessWidget {
   const _LessonDetailContent({
     required this.detail,
+    required this.practiceUnlocked,
     required this.onRefresh,
     required this.onStartPractice,
     required this.onStartQuestionPractice,
@@ -205,6 +264,11 @@ class _LessonDetailContent extends StatelessWidget {
   });
 
   final LessonDetail detail;
+
+  /// True once the backend confirms this lesson's AI/Voice Teacher
+  /// explanation is complete (lesson_progress.completed). Locked (false)
+  /// by default until confirmed — see LessonDetailPage._checkPracticeUnlock.
+  final bool practiceUnlocked;
   final Future<void> Function() onRefresh;
   final VoidCallback onStartPractice;
   final VoidCallback onStartQuestionPractice;
@@ -283,14 +347,27 @@ class _LessonDetailContent extends StatelessWidget {
               children: [
                 // AIM pipeline live wiring: real question practice via a
                 // learning session. Additional entry point — the AI Teacher
-                // chat and voice buttons below are unchanged.
+                // chat and voice buttons below are unchanged. Locked until
+                // the AI/Voice Teacher has actually finished teaching this
+                // lesson (practiceUnlocked, backend-computed — see
+                // LessonDetailPage._checkPracticeUnlock).
                 AIMButton(
-                  onPressed: onStartQuestionPractice,
+                  onPressed: practiceUnlocked ? onStartQuestionPractice : null,
                   variant: AIMButtonVariant.secondary,
                   fullWidth: true,
-                  leadingIcon: const Icon(Icons.quiz_outlined),
+                  leadingIcon: Icon(
+                    practiceUnlocked ? Icons.quiz_outlined : Icons.lock_outline_rounded,
+                  ),
                   child: Text(l10n.lessonsPracticeQuestionsButton),
                 ),
+                if (!practiceUnlocked) ...[
+                  const SizedBox(height: AimSpacing.space4),
+                  Text(
+                    l10n.lessonsPracticeLockedHint,
+                    textAlign: TextAlign.center,
+                    style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
+                  ),
+                ],
                 const SizedBox(height: AimSpacing.space8),
                 Row(
               children: [

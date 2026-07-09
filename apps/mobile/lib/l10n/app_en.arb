@@ -1393,6 +1393,10 @@
   "@lessonsPracticeQuestionsButton": {
     "description": "Button on the lesson detail screen that starts a real question practice session (learning session)."
   },
+  "lessonsPracticeLockedHint": "Finish the lesson with your AI teacher first to unlock practice.",
+  "@lessonsPracticeLockedHint": {
+    "description": "Caption shown under the disabled Practice questions button until the AI Teacher marks this lesson complete."
+  },
   "practiceNextQuestionButton": "Next question",
   "@practiceNextQuestionButton": {
     "description": "Button shown after an answer is acknowledged, advancing to the next delivered question."

@@ -1068,6 +1068,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lessonsPracticeQuestionsButton => 'Practice questions';
 
   @override
+  String get lessonsPracticeLockedHint =>
+      'Finish the lesson with your AI teacher first to unlock practice.';
+
+  @override
   String get practiceNextQuestionButton => 'Next question';
 
   @override

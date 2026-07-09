@@ -17,7 +17,8 @@ export class AiChatSessionRepository {
     const result = await this.db.query<AiChatSessionRow>(
       `INSERT INTO ai_chat_sessions (student_id, context_ref)
        VALUES ($1, $2)
-       RETURNING id, student_id, context_ref, status, created_at, updated_at`,
+       RETURNING id, student_id, context_ref, status, created_at, updated_at,
+                 lesson_teaching_stage, resolved_lesson_id`,
       [studentId, contextRef],
     );
 
@@ -42,7 +43,8 @@ export class AiChatSessionRepository {
     contextRef: string,
   ): Promise<{ session: AiChatSessionRow; created: boolean }> {
     const existing = await this.db.query<AiChatSessionRow>(
-      `SELECT id, student_id, context_ref, status, created_at, updated_at
+      `SELECT id, student_id, context_ref, status, created_at, updated_at,
+              lesson_teaching_stage, resolved_lesson_id
        FROM ai_chat_sessions
        WHERE student_id = $1 AND context_ref = $2 AND status = 'active'
        ORDER BY created_at DESC
@@ -73,7 +75,8 @@ export class AiChatSessionRepository {
     contextRef: string,
   ): Promise<AiChatSessionRow | null> {
     const result = await this.db.query<AiChatSessionRow>(
-      `SELECT id, student_id, context_ref, status, created_at, updated_at
+      `SELECT id, student_id, context_ref, status, created_at, updated_at,
+              lesson_teaching_stage, resolved_lesson_id
        FROM ai_chat_sessions
        WHERE student_id = $1 AND context_ref = $2 AND status = 'closed'
        ORDER BY updated_at DESC
@@ -86,7 +89,8 @@ export class AiChatSessionRepository {
 
   async findById(sessionId: string): Promise<AiChatSessionRow | null> {
     const result = await this.db.query<AiChatSessionRow>(
-      `SELECT id, student_id, context_ref, status, created_at, updated_at
+      `SELECT id, student_id, context_ref, status, created_at, updated_at,
+              lesson_teaching_stage, resolved_lesson_id
        FROM ai_chat_sessions
        WHERE id = $1
        LIMIT 1`,
@@ -98,7 +102,8 @@ export class AiChatSessionRepository {
 
   async findActiveByStudentId(studentId: string): Promise<AiChatSessionRow[]> {
     const result = await this.db.query<AiChatSessionRow>(
-      `SELECT id, student_id, context_ref, status, created_at, updated_at
+      `SELECT id, student_id, context_ref, status, created_at, updated_at,
+              lesson_teaching_stage, resolved_lesson_id
        FROM ai_chat_sessions
        WHERE student_id = $1 AND status = 'active'
        ORDER BY updated_at DESC`,
@@ -134,7 +139,8 @@ export class AiChatSessionRepository {
 
   async findByStudentId(studentId: string): Promise<AiChatSessionRow[]> {
     const result = await this.db.query<AiChatSessionRow>(
-      `SELECT id, student_id, context_ref, status, created_at, updated_at
+      `SELECT id, student_id, context_ref, status, created_at, updated_at,
+              lesson_teaching_stage, resolved_lesson_id
        FROM ai_chat_sessions
        WHERE student_id = $1
        ORDER BY updated_at DESC`,
@@ -150,6 +156,34 @@ export class AiChatSessionRepository {
        SET status = 'closed', updated_at = now()
        WHERE id = $1`,
       [sessionId],
+    );
+  }
+
+  /**
+   * Persists the lesson this session teaches, resolved once at session
+   * start (see LessonTeachingStageService.resolveAndPersistLesson). A
+   * no-op write when the session already has a resolved_lesson_id — never
+   * overwrites an already-resolved lesson with a later, possibly-stale
+   * recommendation-based resolution.
+   */
+  async setResolvedLessonId(sessionId: string, lessonId: string): Promise<void> {
+    await this.db.query(
+      `UPDATE ai_chat_sessions
+       SET resolved_lesson_id = $2, updated_at = now()
+       WHERE id = $1 AND resolved_lesson_id IS NULL`,
+      [sessionId, lessonId],
+    );
+  }
+
+  async updateLessonTeachingStage(
+    sessionId: string,
+    stage: 'greeting' | 'teaching' | 'complete',
+  ): Promise<void> {
+    await this.db.query(
+      `UPDATE ai_chat_sessions
+       SET lesson_teaching_stage = $2, updated_at = now()
+       WHERE id = $1`,
+      [sessionId, stage],
     );
   }
 }

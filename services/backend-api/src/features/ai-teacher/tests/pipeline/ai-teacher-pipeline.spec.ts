@@ -175,7 +175,27 @@ function buildPipeline(overrides: {
         created_at: new Date(),
       })
       .mockResolvedValueOnce(AI_MSG_ROW),
+    findRecentBySessionId: jest.fn().mockResolvedValue([]),
   } as unknown as jest.Mocked<Pick<AiChatMessageRepository, 'create'>>;
+
+  const sessionRepository = {
+    findById: jest.fn().mockResolvedValue({
+      id: PIPELINE_INPUT.sessionId,
+      student_id: PIPELINE_INPUT.studentId,
+      context_ref: PIPELINE_INPUT.contextRef,
+      status: 'active',
+      created_at: 'now',
+      updated_at: 'now',
+      lesson_teaching_stage: 'teaching',
+      resolved_lesson_id: 'lesson-1',
+    }),
+  } as any;
+
+  const lessonStageService = {
+    resolveAndPersistLesson: jest.fn().mockResolvedValue(undefined),
+    advanceFromGreetingIfNeeded: jest.fn().mockResolvedValue('teaching'),
+    handleReply: jest.fn().mockImplementation(async (_s: string, _sess: unknown, text: string) => text),
+  } as any;
 
   const providerGateway = {
     complete: jest.fn().mockResolvedValue(providerResponse),
@@ -215,6 +235,8 @@ function buildPipeline(overrides: {
     providerLogging as any,
     responseSafetyFilter as any,
     chatMessageRepository as any,
+    sessionRepository as any,
+    lessonStageService as any,
     rateLimitPolicy as any,
     { checkInput: jest.fn().mockResolvedValue({ action: 'allowed', category: 'none', record: {} }), checkOutput: jest.fn().mockResolvedValue({ action: 'allowed', category: 'none', record: {} }) } as any,
     { checkQuota: jest.fn().mockResolvedValue({ allowed: true }), recordUsage: jest.fn().mockResolvedValue(undefined) } as any,

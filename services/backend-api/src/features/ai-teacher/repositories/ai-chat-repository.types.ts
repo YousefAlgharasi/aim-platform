@@ -14,6 +14,22 @@ export interface AiChatSessionRow {
   readonly status: 'active' | 'closed';
   readonly created_at: string;
   readonly updated_at: string;
+
+  /**
+   * Backend-enforced lesson-delivery stage: greeting -> teaching ->
+   * complete. See LessonTeachingStageService for the state machine that
+   * owns transitions — this repository only persists/reads the value.
+   */
+  readonly lesson_teaching_stage: 'greeting' | 'teaching' | 'complete';
+
+  /**
+   * The lesson this session teaches, resolved once at session start from
+   * context_ref (CurrentLessonContextAdapter's own resolution logic) and
+   * persisted so later turns and the completion trigger never re-resolve
+   * context_ref's loose format. Null for a session with no resolvable
+   * lesson (e.g. general chat with no active recommendation either).
+   */
+  readonly resolved_lesson_id: string | null;
 }
 
 export interface AiChatSessionWithContextTitleRow extends AiChatSessionRow {

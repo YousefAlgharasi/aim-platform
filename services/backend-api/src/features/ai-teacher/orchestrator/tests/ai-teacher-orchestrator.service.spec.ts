@@ -10,6 +10,8 @@ import { ProviderGatewaySafeFailureService } from '../../provider-gateway/provid
 import { ProviderGatewayLoggingService } from '../../provider-gateway/provider-gateway-logging.service';
 import { ResponseSafetyFilterService } from '../../response-safety/response-safety-filter.service';
 import { AiChatMessageRepository } from '../../repositories/ai-chat-message.repository';
+import { AiChatSessionRepository } from '../../repositories/ai-chat-session.repository';
+import { LessonTeachingStageService } from '../lesson-teaching-stage.service';
 import { AiProviderGateway } from '../../provider-gateway/ai-provider-gateway.interface';
 import { AiTeacherContextSnapshot } from '../../context-builder/context-builder.types';
 import { AiProviderResponse } from '../../provider-gateway/provider-gateway.types';
@@ -122,7 +124,27 @@ function makeOrchestrator(overrides: {
         audio_duration_ms: null,
         is_greeting: false,
       }),
+    findRecentBySessionId: jest.fn().mockResolvedValue([]),
   } as unknown as AiChatMessageRepository;
+
+  const sessionRepository = {
+    findById: jest.fn().mockResolvedValue({
+      id: 'session-1',
+      student_id: 'student-1',
+      context_ref: 'lesson:fractions',
+      status: 'active',
+      created_at: 'now',
+      updated_at: 'now',
+      lesson_teaching_stage: 'teaching',
+      resolved_lesson_id: 'lesson-1',
+    }),
+  } as unknown as AiChatSessionRepository;
+
+  const lessonStageService = {
+    resolveAndPersistLesson: jest.fn().mockResolvedValue(undefined),
+    advanceFromGreetingIfNeeded: jest.fn().mockResolvedValue('teaching'),
+    handleReply: jest.fn().mockImplementation(async (_studentId: string, _session: unknown, text: string) => text),
+  } as unknown as LessonTeachingStageService;
 
   const safetyService = {
     checkInput: jest.fn().mockResolvedValue(
@@ -161,6 +183,8 @@ function makeOrchestrator(overrides: {
     providerLogging,
     responseSafetyFilter,
     chatMessageRepository,
+    sessionRepository,
+    lessonStageService,
     { assertNotRateLimited: jest.fn().mockResolvedValue(undefined) } as any,
     safetyService,
     costQuotaService,
@@ -178,6 +202,8 @@ function makeOrchestrator(overrides: {
     providerLogging,
     responseSafetyFilter,
     chatMessageRepository,
+    sessionRepository,
+    lessonStageService,
     safetyService,
     costQuotaService,
     modelConfigService,
@@ -468,6 +494,53 @@ describe('AiTeacherOrchestratorService', () => {
         modelConfigId: 'config-1',
         quotaPeriod: 'daily',
       }),
+    );
+  });
+
+  it('advances a greeting-stage session to teaching and passes that stage to the prompt builder', async () => {
+    const { service, promptBuilder, lessonStageService } = makeOrchestrator();
+    (lessonStageService.advanceFromGreetingIfNeeded as jest.Mock).mockResolvedValue('teaching');
+
+    await service.handleTurn(makeInput());
+
+    expect(lessonStageService.advanceFromGreetingIfNeeded).toHaveBeenCalled();
+    expect(promptBuilder.buildPrompt).toHaveBeenCalledWith(
+      expect.objectContaining({ lessonStage: 'teaching' }),
+    );
+  });
+
+  it('passes recent conversation history to the prompt builder for memory', async () => {
+    const { service, promptBuilder, chatMessageRepository } = makeOrchestrator();
+    (chatMessageRepository.findRecentBySessionId as jest.Mock).mockResolvedValue([
+      { role: 'ai_teacher', text: 'Today we learn greetings.' },
+      { role: 'student', text: 'Okay!' },
+    ]);
+
+    await service.handleTurn(makeInput());
+
+    expect(promptBuilder.buildPrompt).toHaveBeenCalledWith(
+      expect.objectContaining({
+        history: [
+          { role: 'ai_teacher', text: 'Today we learn greetings.' },
+          { role: 'student', text: 'Okay!' },
+        ],
+      }),
+    );
+  });
+
+  it('strips the LESSON_COMPLETE marker from the returned/persisted text via LessonTeachingStageService', async () => {
+    const { service, chatMessageRepository, lessonStageService } = makeOrchestrator();
+    (lessonStageService.handleReply as jest.Mock).mockResolvedValue('Great job — all done!');
+
+    const result = await service.handleTurn(makeInput());
+
+    expect(result.text).toBe('Great job — all done!');
+    expect(chatMessageRepository.create).toHaveBeenLastCalledWith(
+      'session-1',
+      'student-1',
+      'ai_teacher',
+      'Great job — all done!',
+      expect.anything(),
     );
   });
 
