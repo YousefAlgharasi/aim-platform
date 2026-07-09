@@ -62,6 +62,7 @@ describe('CurrentLessonContextAdapter', () => {
       sortOrder: 1,
       xpValue: 0,
       systemPrompt: null,
+        teachingOutline: null,
       createdAt: '2026-06-01T00:00:00Z',
       updatedAt: '2026-06-01T00:00:00Z',
     }));
@@ -73,6 +74,7 @@ describe('CurrentLessonContextAdapter', () => {
       title: 'Fractions',
       description: 'Intro to fractions',
       systemPrompt: null,
+        teachingOutline: null,
       chapterTitle: 'Greetings',
       levelCode: 'A1',
       levelTitle: 'Beginner',
@@ -138,6 +140,7 @@ describe('CurrentLessonContextAdapter', () => {
       sortOrder: 1,
       xpValue: 0,
       systemPrompt: 'Focus on present-tense verbs and keep examples food-related.',
+        teachingOutline: null,
       createdAt: '2026-06-01T00:00:00Z',
       updatedAt: '2026-06-01T00:00:00Z',
     }));
@@ -150,6 +153,7 @@ describe('CurrentLessonContextAdapter', () => {
       title: 'Explicit Lesson',
       description: 'Opened directly from the lesson detail screen',
       systemPrompt: 'Focus on present-tense verbs and keep examples food-related.',
+        teachingOutline: null,
       chapterTitle: 'Greetings',
       levelCode: 'A1',
       levelTitle: 'Beginner',
@@ -172,6 +176,7 @@ describe('CurrentLessonContextAdapter', () => {
       sortOrder: 1,
       xpValue: 0,
       systemPrompt: null,
+        teachingOutline: null,
       createdAt: '2026-06-01T00:00:00Z',
       updatedAt: '2026-06-01T00:00:00Z',
     }));
@@ -187,6 +192,7 @@ describe('CurrentLessonContextAdapter', () => {
       title: 'Fractions',
       description: 'Intro to fractions',
       systemPrompt: null,
+        teachingOutline: null,
       chapterTitle: null,
       levelCode: null,
       levelTitle: null,

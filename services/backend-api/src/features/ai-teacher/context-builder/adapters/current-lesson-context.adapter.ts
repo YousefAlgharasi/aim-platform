@@ -41,6 +41,8 @@ export interface CurrentLessonContext {
   readonly description: string;
   /** Optional admin-authored AI Teacher instructions specific to this lesson. */
   readonly systemPrompt: string | null;
+  /** Optional admin-authored checklist of discrete points the AI Teacher must cover before completing the lesson. */
+  readonly teachingOutline: string[] | null;
   /** The lesson's chapter/level/course — identity fields only (titles/codes), never mastery. */
   readonly chapterTitle: string | null;
   readonly levelCode: string | null;
@@ -83,6 +85,7 @@ export class CurrentLessonContextAdapter {
         title: lesson.title,
         description: lesson.description,
         systemPrompt: lesson.systemPrompt,
+        teachingOutline: lesson.teachingOutline,
         chapterTitle: courseContext?.chapter_title ?? null,
         levelCode: courseContext?.level_code ?? null,
         levelTitle: courseContext?.level_title ?? null,

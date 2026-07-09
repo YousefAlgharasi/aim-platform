@@ -60,6 +60,14 @@ const GREETING_STAGE_INSTRUCTIONS = [
 ].join(' ');
 
 const TEACHING_STAGE_INSTRUCTIONS = [
+  'If currentLesson.teachingOutline is present below, treat it as the',
+  'authoritative, ordered checklist of every point this lesson requires —',
+  'work through its items in order, one at a time, and rely on',
+  'conversationHistory to know exactly which items you have already',
+  'covered. Only append the completion marker described below once every',
+  'item in that checklist has actually been taught and checked. If',
+  'teachingOutline is absent, use your own judgment of the lesson content',
+  'below to decide what "fully taught" means.',
   "This turn's job: continue teaching the lesson using only the",
   'currentLesson/curriculumSkill/focusDirective context below — stay',
   'strictly on that lesson\'s actual content and vocabulary. Do not drift',
