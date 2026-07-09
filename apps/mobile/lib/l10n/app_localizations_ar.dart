@@ -553,6 +553,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get homeQuickStartTitle => 'بداية سريعة';
 
   @override
+  String get homeCoursePathChapterQuizLabel => 'اختبار';
+
+  @override
+  String get homeCoursePathFinalExamLabel => 'الاختبار النهائي';
+
+  @override
+  String get homeCoursePathCompletedSubtitle => 'الدورة مكتملة';
+
+  @override
   String get homeRecommendedCourseTitle => 'دورة موصى بها';
 
   @override
