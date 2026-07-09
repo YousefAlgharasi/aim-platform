@@ -48,6 +48,26 @@ def test_health_endpoint_returns_503_when_not_ready() -> None:
     assert "token" not in serialized
 
 
+def test_root_endpoint_returns_ok() -> None:
+    client = TestClient(create_app())
+
+    response = client.get("/")
+
+    assert response.status_code == 200
+    payload = response.json()
+
+    assert payload["service"] == "aim-engine"
+    assert payload["status"] == "ok"
+    assert payload["health"] == "/health"
+    assert payload["version"] == "/version"
+
+    serialized = str(payload).lower()
+    assert "secret" not in serialized
+    assert "password" not in serialized
+    assert "database" not in serialized
+    assert "token" not in serialized
+
+
 def test_version_endpoint_returns_safe_metadata() -> None:
     client = TestClient(create_app())
 
