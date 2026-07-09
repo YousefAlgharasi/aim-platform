@@ -531,6 +531,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeQuickStartTitle => 'Quick Start';
 
   @override
+  String get homeCoursePathChapterQuizLabel => 'Quiz';
+
+  @override
+  String get homeCoursePathFinalExamLabel => 'Final Exam';
+
+  @override
+  String get homeCoursePathCompletedSubtitle => 'Course complete';
+
+  @override
   String get homeRecommendedCourseTitle => 'Recommended Course';
 
   @override
@@ -999,7 +1008,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lessonsFinalExamTitle => 'Final Exam';
 
   @override
-  String get lessonsFinalExamLockedSubtitle => 'Complete every chapter to unlock';
+  String get lessonsFinalExamLockedSubtitle =>
+      'Complete every chapter to unlock';
 
   @override
   String get lessonsQuizRowLabel => 'Quiz';

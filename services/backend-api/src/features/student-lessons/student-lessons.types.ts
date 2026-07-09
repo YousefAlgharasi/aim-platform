@@ -19,6 +19,12 @@ export interface StudentLessonSummary {
 export interface ChapterQuizSummary {
   readonly assessmentId: string;
   readonly title: string;
+
+  /** True when the student has a passing assessment_results row for this quiz. */
+  readonly completed: boolean;
+
+  /** True until every published lesson in the chapter is completed. */
+  readonly locked: boolean;
 }
 
 export interface StudentLessonsResponse {

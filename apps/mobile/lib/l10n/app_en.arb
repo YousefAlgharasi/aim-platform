@@ -595,6 +595,18 @@
   "@homeQuickStartTitle": {
     "description": "Section header above the quick-start lesson card on the home screen."
   },
+  "homeCoursePathChapterQuizLabel": "Quiz",
+  "@homeCoursePathChapterQuizLabel": {
+    "description": "Label under the chapter-quiz node in the home course path."
+  },
+  "homeCoursePathFinalExamLabel": "Final Exam",
+  "@homeCoursePathFinalExamLabel": {
+    "description": "Label under the final-exam node in the home course path, and subtitle once the course's chapters are all complete."
+  },
+  "homeCoursePathCompletedSubtitle": "Course complete",
+  "@homeCoursePathCompletedSubtitle": {
+    "description": "Subtitle shown under the course title in the home course path once every chapter and the final exam are complete."
+  },
   "homeRecommendedCourseTitle": "Recommended Course",
   "@homeRecommendedCourseTitle": {
     "description": "Section header above the recommended-course card on the home screen."

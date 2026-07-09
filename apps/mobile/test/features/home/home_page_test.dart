@@ -254,10 +254,9 @@ void main() {
 
       // The greeting header + level hero card sit above these sections now,
       // so scroll each one into view before asserting (ListView is lazy).
+      // Skill States / Focus Areas / Review Schedule / Quick Start were
+      // replaced by HomeCoursePathSection.
       for (final section in [
-        'Skill States',
-        'Focus Areas',
-        'Review Schedule',
         'AIM Recommendations',
       ]) {
         await tester.scrollUntilVisible(
@@ -333,7 +332,6 @@ void main() {
 
       // No layout exceptions; page renders.
       expect(find.byType(HomePage), findsOneWidget);
-      expect(find.text('Skill States'), findsOneWidget);
     });
   });
 }
