@@ -117,6 +117,16 @@ class AssessmentRepositoryImpl implements AssessmentRepository {
             responseValue: responseValue,
           ));
 
+  @override
+  Future<List<int>> getQuestionAudio({
+    required String bearerToken,
+    required String questionId,
+  }) =>
+      _wrap(() => _datasource.getQuestionAudio(
+            bearerToken: bearerToken,
+            questionId: questionId,
+          ));
+
   Future<T> _wrap<T>(Future<T> Function() call) async {
     try {
       return await call();
