@@ -96,6 +96,7 @@ function makeMockGradingService(result = makeGradingResult()) {
 function makeMockResultService() {
   return {
     persistResult: jest.fn().mockResolvedValue({ resultId: RESULT_ID }),
+    findByAttemptId: jest.fn().mockResolvedValue(null),
   } as any;
 }
 
@@ -248,6 +249,7 @@ describe('Assessment Progress Integration — P10-070', () => {
 
       const resultService = {
         persistResult: jest.fn().mockRejectedValue(new Error('DB constraint violation')),
+        findByAttemptId: jest.fn().mockResolvedValue(null),
       } as any;
 
       const flow = new AssessmentSubmissionFlowService(
