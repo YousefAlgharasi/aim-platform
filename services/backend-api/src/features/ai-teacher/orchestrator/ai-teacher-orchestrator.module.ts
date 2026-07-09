@@ -18,7 +18,9 @@ import { AiChatRepositoriesModule } from '../repositories/ai-chat-repositories.m
 import { ProviderGatewayLoggingService } from '../provider-gateway/provider-gateway-logging.service';
 import { RateLimitPolicyModule } from '../rate-limit-policy/rate-limit-policy.module';
 import { AiTeacherGovernanceModule } from '../governance/governance.module';
+import { LessonsModule } from '../../lessons/lessons.module';
 import { AiTeacherOrchestratorService } from './ai-teacher-orchestrator.service';
+import { LessonTeachingStageService } from './lesson-teaching-stage.service';
 
 @Module({
   imports: [
@@ -29,8 +31,10 @@ import { AiTeacherOrchestratorService } from './ai-teacher-orchestrator.service'
     AiChatRepositoriesModule,
     RateLimitPolicyModule,
     AiTeacherGovernanceModule,
+    // LessonTeachingStageService's completion-write hook — see that file.
+    LessonsModule,
   ],
-  providers: [AiTeacherOrchestratorService, ProviderGatewayLoggingService],
-  exports: [AiTeacherOrchestratorService],
+  providers: [AiTeacherOrchestratorService, ProviderGatewayLoggingService, LessonTeachingStageService],
+  exports: [AiTeacherOrchestratorService, LessonTeachingStageService],
 })
 export class AiTeacherOrchestratorModule {}

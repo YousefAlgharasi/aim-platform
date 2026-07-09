@@ -18,6 +18,8 @@ function makeSessionRow(overrides: Partial<AiChatSessionRow> = {}): AiChatSessio
     student_id: 'student-1',
     context_ref: 'lesson:fractions',
     status: 'active',
+    lesson_teaching_stage: 'greeting',
+    resolved_lesson_id: null,
     created_at: '2026-06-19T00:00:00.000Z',
     updated_at: '2026-06-19T00:00:00.000Z',
     ...overrides,

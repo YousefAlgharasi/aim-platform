@@ -9,6 +9,7 @@
 
 import { Module } from '@nestjs/common';
 
+import { DatabaseModule } from '../../../database/database.module';
 import { StudentsModule } from '../../students/students.module';
 import { AimModule } from '../../aim/aim.module';
 import { LessonsModule } from '../../curriculum/lessons/lessons.module';
@@ -24,7 +25,14 @@ import { ContextBuilderService } from './context-builder.service';
 import { ContextBudgetPolicyService } from './context-budget-policy.service';
 
 @Module({
-  imports: [StudentsModule, AimModule, LessonsModule, SkillsModule, AiChatRepositoriesModule],
+  imports: [
+    DatabaseModule,
+    StudentsModule,
+    AimModule,
+    LessonsModule,
+    SkillsModule,
+    AiChatRepositoriesModule,
+  ],
   providers: [
     ContextBuilderService,
     ContextBudgetPolicyService,

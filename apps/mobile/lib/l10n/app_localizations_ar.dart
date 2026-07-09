@@ -1119,6 +1119,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get lessonsPracticeQuestionsButton => 'تدرّب على الأسئلة';
 
   @override
+  String get lessonsPracticeLockedHint =>
+      'أنهِ الدرس مع معلمك الذكي أولاً لفتح التدريب.';
+
+  @override
   String get practiceNextQuestionButton => 'السؤال التالي';
 
   @override

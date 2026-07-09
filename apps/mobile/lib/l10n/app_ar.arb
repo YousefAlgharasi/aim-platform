@@ -261,6 +261,7 @@
   "lessonsNewWordsCountLabel": "{count, plural, one{كلمة جديدة واحدة} two{كلمتان جديدتان} few{{count} كلمات جديدة} many{{count} كلمة جديدة} other{{count} كلمة جديدة}}",
   "lessonsItemsCountLabel": "{count, plural, one{عنصر واحد} two{عنصران} few{{count} عناصر} many{{count} عنصرًا} other{{count} عنصر}}",
   "lessonsPracticeQuestionsButton": "تدرّب على الأسئلة",
+  "lessonsPracticeLockedHint": "أنهِ الدرس مع معلمك الذكي أولاً لفتح التدريب.",
   "practiceNextQuestionButton": "السؤال التالي",
   "practiceSessionLoadingSemantic": "جارٍ بدء جلسة التدريب",
   "practiceSessionFailedMessage": "تعذّر بدء جلسة التدريب",

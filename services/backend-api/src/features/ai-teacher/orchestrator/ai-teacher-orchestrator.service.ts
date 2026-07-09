@@ -38,6 +38,8 @@ import { randomUUID } from 'crypto';
 import { ContextBuilderService } from '../context-builder/context-builder.service';
 import { PromptBuilderService } from '../prompt-builder/prompt-builder.service';
 import { AiChatMessageRepository } from '../repositories/ai-chat-message.repository';
+import { AiChatSessionRepository } from '../repositories/ai-chat-session.repository';
+import { LessonTeachingStageService } from './lesson-teaching-stage.service';
 import {
   AI_PROVIDER_GATEWAY,
   AiProviderGateway,
@@ -67,6 +69,12 @@ import {
 // monthly budget gate without inventing a new costing engine out of scope.
 const ESTIMATED_COST_PER_TURN_USD = 0.01;
 
+// Bounds how many recent turns are re-sent as conversation memory on every
+// call — enough for the AI Teacher to remember what it already
+// taught/asked this session without prompt size growing unbounded on a
+// long-running conversation.
+const CONVERSATION_HISTORY_TURN_LIMIT = 20;
+
 @Injectable()
 export class AiTeacherOrchestratorService {
   private readonly logger = new Logger(AiTeacherOrchestratorService.name);
@@ -80,6 +88,8 @@ export class AiTeacherOrchestratorService {
     private readonly providerLogging: ProviderGatewayLoggingService,
     private readonly responseSafetyFilter: ResponseSafetyFilterService,
     private readonly chatMessageRepository: AiChatMessageRepository,
+    private readonly sessionRepository: AiChatSessionRepository,
+    private readonly lessonStageService: LessonTeachingStageService,
     private readonly rateLimitPolicy: RateLimitPolicyService,
     private readonly safetyService: AiTeacherSafetyService,
     private readonly costQuotaService: AiCostQuotaService,
@@ -112,15 +122,50 @@ export class AiTeacherOrchestratorService {
       throw new AiQuotaExceededError('daily');
     }
 
+    const session = await this.sessionRepository.findById(input.sessionId);
+    if (!session) {
+      throw new Error(`AiTeacherOrchestratorService.handleTurn: session not found: ${input.sessionId}`);
+    }
+
+    // Lazily resolve+persist for any session that predates this feature
+    // (resolved_lesson_id still null) — a no-op write once already set.
+    if (!session.resolved_lesson_id) {
+      await this.lessonStageService.resolveAndPersistLesson(
+        input.studentId,
+        input.sessionId,
+        input.contextRef,
+      );
+    }
+
+    // A real student turn arriving while still in 'greeting' is the
+    // student's answer to "shall we start?" — move into 'teaching' before
+    // this turn's reply is generated, so the reply already teaches rather
+    // than greeting again.
+    const lessonStage = await this.lessonStageService.advanceFromGreetingIfNeeded(session);
+
     const context = await this.contextBuilder.buildContext({
       studentId: input.studentId,
       sessionId: input.sessionId,
       contextRef: input.contextRef,
     });
 
+    // Conversation memory: recent prior turns, oldest first, fetched
+    // before this turn's own student message is persisted below (so it
+    // isn't duplicated between history and the current studentMessage).
+    const recentMessages = await this.chatMessageRepository.findRecentBySessionId(
+      input.sessionId,
+      CONVERSATION_HISTORY_TURN_LIMIT,
+    );
+    const history = recentMessages.map((message) => ({
+      role: message.role,
+      text: message.text,
+    }));
+
     const prompt = this.promptBuilder.buildPrompt({
       studentMessage: input.studentMessage,
       context,
+      lessonStage,
+      history,
     });
 
     const channel = input.channel ?? 'text';
@@ -187,11 +232,23 @@ export class AiTeacherOrchestratorService {
       text: safeReply.text,
     });
 
+    // Strip the backend-only LESSON_COMPLETE marker (if present) before the
+    // reply is ever persisted or returned, and — only when it was actually
+    // present — write lesson_progress.completed + flip the session to
+    // 'complete'. Re-fetches the session since resolveAndPersistLesson()
+    // above may have just set resolved_lesson_id for the first time.
+    const sessionForCompletion = (await this.sessionRepository.findById(input.sessionId)) ?? session;
+    const finalReplyText = await this.lessonStageService.handleReply(
+      input.studentId,
+      sessionForCompletion,
+      filteredReply.text,
+    );
+
     const aiMessage = await this.chatMessageRepository.create(
       input.sessionId,
       input.studentId,
       'ai_teacher',
-      filteredReply.text,
+      finalReplyText,
       { channel },
     );
 
@@ -200,7 +257,7 @@ export class AiTeacherOrchestratorService {
     this.logger.log(`Completed AI Teacher turn for session ${input.sessionId}`);
 
     return {
-      text: filteredReply.text,
+      text: finalReplyText,
       isFallback: safeReply.isFallback || filteredReply.wasFiltered,
       provider: outcome.response.provider,
       model: outcome.response.model,
@@ -223,6 +280,15 @@ export class AiTeacherOrchestratorService {
   async generateGreeting(input: GenerateGreetingInput): Promise<GenerateGreetingResult> {
     this.noSecretCheck.assertConfigIsSafe();
 
+    // Resolve+persist this session's lesson right away, at the same point
+    // the session itself is created, so every later turn (and the
+    // completion trigger) already has it.
+    await this.lessonStageService.resolveAndPersistLesson(
+      input.studentId,
+      input.sessionId,
+      input.contextRef,
+    );
+
     const context = await this.contextBuilder.buildContext({
       studentId: input.studentId,
       sessionId: input.sessionId,
@@ -232,6 +298,7 @@ export class AiTeacherOrchestratorService {
     const prompt = this.promptBuilder.buildPrompt({
       studentMessage: AI_TEACHER_GREETING_INSTRUCTION,
       context,
+      lessonStage: 'greeting',
     });
 
     const outcome = await this.timeoutPolicy.execute(() =>

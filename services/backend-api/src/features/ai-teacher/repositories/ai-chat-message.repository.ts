@@ -119,6 +119,27 @@ export class AiChatMessageRepository {
     return result.rows;
   }
 
+  /**
+   * The most recent `limit` messages for a session, in chronological
+   * (oldest-first) order — used to give the AI Teacher/Voice Teacher
+   * conversation memory (PromptBuilderService renders these as a
+   * transcript section) instead of every turn being generated with no
+   * awareness of what it already taught. Bounded by `limit` so prompt size
+   * stays predictable regardless of how long a session runs.
+   */
+  async findRecentBySessionId(sessionId: string, limit: number): Promise<AiChatMessageRow[]> {
+    const result = await this.db.query<AiChatMessageRow>(
+      `SELECT ${SELECT_COLUMNS}
+       FROM ai_chat_messages
+       WHERE session_id = $1
+       ORDER BY created_at DESC
+       LIMIT $2`,
+      [sessionId, limit],
+    );
+
+    return result.rows.reverse();
+  }
+
   // -------------------------------------------------------------------------
   // P8-069: Rate limit policy helpers
   // -------------------------------------------------------------------------

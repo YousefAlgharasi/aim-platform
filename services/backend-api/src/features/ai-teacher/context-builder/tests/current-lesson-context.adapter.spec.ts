@@ -4,6 +4,7 @@
 import { CurrentLessonContextAdapter } from '../adapters/current-lesson-context.adapter';
 import { RecommendationReadService } from '../../../aim/result/recommendation-read.service';
 import { LessonsService } from '../../../curriculum/lessons/lessons.service';
+import { DatabaseService } from '../../../../database/database.service';
 
 function makeMockRecommendations(
   getActiveForStudent: RecommendationReadService['getActiveForStudent'],
@@ -13,6 +14,20 @@ function makeMockRecommendations(
 
 function makeMockLessons(getLesson: LessonsService['getLesson']) {
   return { getLesson } as unknown as LessonsService;
+}
+
+const COURSE_CONTEXT_ROW = {
+  chapter_title: 'Greetings',
+  level_code: 'A1',
+  level_title: 'Beginner',
+  course_title: 'English Starter',
+  cefr_code: 'A1',
+};
+
+function makeMockDb(row: unknown = COURSE_CONTEXT_ROW) {
+  return {
+    query: jest.fn(async () => ({ rows: row ? [row] : [] })),
+  } as unknown as DatabaseService;
 }
 
 const STUDENT_ID = '770e8400-e29b-41d4-a716-446655440002';
@@ -50,7 +65,7 @@ describe('CurrentLessonContextAdapter', () => {
       createdAt: '2026-06-01T00:00:00Z',
       updatedAt: '2026-06-01T00:00:00Z',
     }));
-    const adapter = new CurrentLessonContextAdapter(recommendations, lessons);
+    const adapter = new CurrentLessonContextAdapter(recommendations, lessons, makeMockDb());
     const context = await adapter.getCurrentLessonContext(STUDENT_ID);
 
     expect(context).toEqual({
@@ -58,6 +73,11 @@ describe('CurrentLessonContextAdapter', () => {
       title: 'Fractions',
       description: 'Intro to fractions',
       systemPrompt: null,
+      chapterTitle: 'Greetings',
+      levelCode: 'A1',
+      levelTitle: 'Beginner',
+      courseTitle: 'English Starter',
+      cefrCode: 'A1',
     });
     // Recommendation-adjacent fields must not leak through.
     expect(context).not.toHaveProperty('reason');
@@ -73,7 +93,7 @@ describe('CurrentLessonContextAdapter', () => {
     const lessons = makeMockLessons(async () => {
       throw new Error('should not be called');
     });
-    const adapter = new CurrentLessonContextAdapter(recommendations, lessons);
+    const adapter = new CurrentLessonContextAdapter(recommendations, lessons, makeMockDb());
     const context = await adapter.getCurrentLessonContext(STUDENT_ID);
     expect(context).toBeNull();
   });
@@ -86,7 +106,7 @@ describe('CurrentLessonContextAdapter', () => {
     const lessons = makeMockLessons(async () => {
       throw new Error('should not be called');
     });
-    const adapter = new CurrentLessonContextAdapter(recommendations, lessons);
+    const adapter = new CurrentLessonContextAdapter(recommendations, lessons, makeMockDb());
     const context = await adapter.getCurrentLessonContext(STUDENT_ID);
     expect(context).toBeNull();
   });
@@ -99,7 +119,7 @@ describe('CurrentLessonContextAdapter', () => {
     const lessons = makeMockLessons(async () => {
       throw new Error('Lesson not found');
     });
-    const adapter = new CurrentLessonContextAdapter(recommendations, lessons);
+    const adapter = new CurrentLessonContextAdapter(recommendations, lessons, makeMockDb());
     const context = await adapter.getCurrentLessonContext(STUDENT_ID);
     expect(context).toBeNull();
   });
@@ -121,7 +141,7 @@ describe('CurrentLessonContextAdapter', () => {
       createdAt: '2026-06-01T00:00:00Z',
       updatedAt: '2026-06-01T00:00:00Z',
     }));
-    const adapter = new CurrentLessonContextAdapter(recommendations, lessons);
+    const adapter = new CurrentLessonContextAdapter(recommendations, lessons, makeMockDb());
 
     const context = await adapter.getCurrentLessonContext(STUDENT_ID, EXPLICIT_LESSON_ID);
 
@@ -130,6 +150,48 @@ describe('CurrentLessonContextAdapter', () => {
       title: 'Explicit Lesson',
       description: 'Opened directly from the lesson detail screen',
       systemPrompt: 'Focus on present-tense verbs and keep examples food-related.',
+      chapterTitle: 'Greetings',
+      levelCode: 'A1',
+      levelTitle: 'Beginner',
+      courseTitle: 'English Starter',
+      cefrCode: 'A1',
+    });
+  });
+
+  it('leaves course fields null when the chapter/level/course chain is incomplete', async () => {
+    const recommendations = makeMockRecommendations(async () => ({
+      studentId: STUDENT_ID,
+      recommendations: [baseRecommendation],
+    }));
+    const lessons = makeMockLessons(async (id) => ({
+      id,
+      chapterId: 'chapter-orphaned',
+      title: 'Fractions',
+      description: 'Intro to fractions',
+      status: 'published',
+      sortOrder: 1,
+      xpValue: 0,
+      systemPrompt: null,
+      createdAt: '2026-06-01T00:00:00Z',
+      updatedAt: '2026-06-01T00:00:00Z',
+    }));
+    const adapter = new CurrentLessonContextAdapter(
+      recommendations,
+      lessons,
+      makeMockDb(null),
+    );
+    const context = await adapter.getCurrentLessonContext(STUDENT_ID);
+
+    expect(context).toEqual({
+      lessonId: LESSON_ID,
+      title: 'Fractions',
+      description: 'Intro to fractions',
+      systemPrompt: null,
+      chapterTitle: null,
+      levelCode: null,
+      levelTitle: null,
+      courseTitle: null,
+      cefrCode: null,
     });
   });
 });
