@@ -170,6 +170,17 @@ class AssessmentRemoteDatasourceImpl implements AssessmentRemoteDatasource {
     return envelope.data!;
   }
 
+  @override
+  Future<List<int>> getQuestionAudio({
+    required String bearerToken,
+    required String questionId,
+  }) {
+    return _apiClient.getBytes(
+      BackendApiPaths.studentAssessmentQuestionAudio(questionId),
+      headers: _auth(bearerToken),
+    );
+  }
+
   Map<String, String> _auth(String bearerToken) =>
       {'authorization': 'Bearer $bearerToken'};
 

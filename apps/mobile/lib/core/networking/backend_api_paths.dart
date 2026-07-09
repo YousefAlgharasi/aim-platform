@@ -283,6 +283,10 @@ class BackendApiPaths {
   static String studentSubmitAnswer(String attemptId) =>
       '/student/assessments/attempts/$attemptId/answers';
 
+  /// GET /student/assessments/questions/:questionId/audio
+  static String studentAssessmentQuestionAudio(String questionId) =>
+      '/student/assessments/questions/$questionId/audio';
+
   // ---------------------------------------------------------------------------
   // Notifications — Phase 13 P13-042..P13-046
   // Backend is the final authority for eligibility, delivery state, quiet

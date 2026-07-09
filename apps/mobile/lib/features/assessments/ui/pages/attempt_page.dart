@@ -17,6 +17,7 @@
 // and its loading state, per the design flow 27 → 28 → 29.
 
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -443,13 +444,13 @@ class _AttemptContent extends ConsumerWidget {
                           const SizedBox(height: AimSpacing.componentGap),
                       itemBuilder: (context, index) {
                         final question = data[index];
-                        final selectedOptionId = draftState
-                            .drafts[question.assessmentQuestionLinkId]
-                            ?.selectedOptionId;
+                        final draft =
+                            draftState.drafts[question.assessmentQuestionLinkId];
                         return _QuestionCard(
                           index: index,
                           question: question,
-                          selectedOptionId: selectedOptionId,
+                          selectedOptionId: draft?.selectedOptionId,
+                          textAnswer: draft?.textAnswer,
                           onOptionSelected: (optionId) {
                             draftNotifier.setAnswer(
                               question.assessmentQuestionLinkId,
@@ -459,6 +460,17 @@ class _AttemptContent extends ConsumerWidget {
                               assessmentQuestionLinkId:
                                   question.assessmentQuestionLinkId,
                               responseValue: optionId,
+                            );
+                          },
+                          onTextAnswerSubmitted: (text) {
+                            draftNotifier.setAnswer(
+                              question.assessmentQuestionLinkId,
+                              textAnswer: text,
+                            );
+                            onAnswerSelect(
+                              assessmentQuestionLinkId:
+                                  question.assessmentQuestionLinkId,
+                              responseValue: text,
                             );
                           },
                         );
@@ -482,22 +494,28 @@ class _AttemptContent extends ConsumerWidget {
 /// Renders a single question with its options. Selecting an option submits
 /// the answer to the backend immediately — Flutter never grades or scores
 /// it locally, only collects and forwards the selection verbatim.
-class _QuestionCard extends StatelessWidget {
+class _QuestionCard extends ConsumerWidget {
   const _QuestionCard({
     required this.index,
     required this.question,
     required this.selectedOptionId,
+    required this.textAnswer,
     required this.onOptionSelected,
+    required this.onTextAnswerSubmitted,
   });
 
   final int index;
   final AttemptQuestion question;
   final String? selectedOptionId;
+  final String? textAnswer;
   final ValueChanged<String> onOptionSelected;
+  final ValueChanged<String> onTextAnswerSubmitted;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final surfaces = aimSurfacesOf(context);
+    final isListening = question.type == 'listening_choice';
+    final isFreeResponse = question.options.isEmpty;
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
@@ -519,6 +537,21 @@ class _QuestionCard extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
+          if (isListening) ...[
+            const SizedBox(height: AimSpacing.space8),
+            QuestionAudioPlayButton(
+              fetchAudioBytes: () async {
+                final token = ref.read(authFlowProvider).accessToken ?? '';
+                final bytes = await ref
+                    .read(assessmentRepositoryProvider)
+                    .getQuestionAudio(
+                      bearerToken: token,
+                      questionId: question.id,
+                    );
+                return Uint8List.fromList(bytes);
+              },
+            ),
+          ],
           if (question.options.isNotEmpty) ...[
             const SizedBox(height: AimSpacing.componentGap),
             for (final option in question.options)
@@ -534,9 +567,62 @@ class _QuestionCard extends StatelessWidget {
                   child: Text(option.text),
                 ),
               ),
+          ] else if (isFreeResponse) ...[
+            const SizedBox(height: AimSpacing.componentGap),
+            _FreeResponseInput(
+              initialValue: textAnswer,
+              onSubmitted: onTextAnswerSubmitted,
+            ),
           ],
         ],
       ),
+    );
+  }
+}
+
+/// Text entry for fill-in-the-blank / free-text questions (no options).
+/// Submits on every change, mirroring the immediate-submit behavior of
+/// option selection — Flutter never grades or scores the text locally.
+class _FreeResponseInput extends StatefulWidget {
+  const _FreeResponseInput({
+    required this.initialValue,
+    required this.onSubmitted,
+  });
+
+  final String? initialValue;
+  final ValueChanged<String> onSubmitted;
+
+  @override
+  State<_FreeResponseInput> createState() => _FreeResponseInputState();
+}
+
+class _FreeResponseInputState extends State<_FreeResponseInput> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.initialValue);
+  Timer? _debounce;
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onChanged(String value) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      widget.onSubmitted(value);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AIMTextarea(
+      controller: _controller,
+      placeholder: 'Type your answer here…',
+      rows: 2,
+      semanticLabel: 'Your answer',
+      onChanged: _onChanged,
     );
   }
 }
