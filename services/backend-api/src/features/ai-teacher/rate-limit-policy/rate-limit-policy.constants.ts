@@ -15,16 +15,24 @@
  */
 
 /** Maximum number of student AI Teacher turns (student messages) allowed
- *  within a single chat session. */
-export const AI_TEACHER_RATE_LIMIT_MAX_TURNS_PER_SESSION = 20;
+ *  within a single chat session.
+ *
+ *  Raised from 20 to 60: the structured lesson-delivery flow
+ *  (LessonTeachingStageService) intentionally teaches one idea at a time
+ *  with periodic comprehension questions rather than one long monologue,
+ *  which uses more turns per lesson than the old free-form chat did. 20
+ *  was getting hit mid-lesson, before the AI ever reached
+ *  LESSON_COMPLETE, which surfaced as a generic "temporarily unavailable"
+ *  error with no way to finish the lesson in that session. */
+export const AI_TEACHER_RATE_LIMIT_MAX_TURNS_PER_SESSION = 60;
 
 /** Maximum number of student AI Teacher turns (student messages) allowed
  *  per student across all sessions within a rolling 24-hour window. */
-export const AI_TEACHER_RATE_LIMIT_MAX_TURNS_PER_STUDENT_DAY = 100;
+export const AI_TEACHER_RATE_LIMIT_MAX_TURNS_PER_STUDENT_DAY = 200;
 
 /** Maximum number of student AI Teacher turns (student messages) allowed
  *  per student across all sessions within a rolling 1-hour window. */
-export const AI_TEACHER_RATE_LIMIT_MAX_TURNS_PER_STUDENT_HOUR = 30;
+export const AI_TEACHER_RATE_LIMIT_MAX_TURNS_PER_STUDENT_HOUR = 60;
 
 /** Minimum gap in milliseconds enforced between two consecutive student
  *  messages within the same session (debounce / spam protection). */

@@ -1,9 +1,15 @@
 // P8-064: Build Student Message Submit Service
 // ChatMessageSubmitService tests.
 
+import { HttpStatus } from '@nestjs/common';
 import { ChatMessageSubmitService } from '../chat-message-submit.service';
 import { AiTeacherOrchestratorService } from '../../orchestrator/ai-teacher-orchestrator.service';
 import { ChatTurnResult } from '../../orchestrator/ai-teacher-orchestrator.types';
+import { AppError } from '../../../../common/errors/app-error';
+import { ApiErrorCode } from '../../../../common/errors/api-error-code';
+import { RateLimitExceededError } from '../../rate-limit-policy/rate-limit-exceeded.error';
+import { AiQuotaExceededError } from '../../governance/ai-quota-exceeded.error';
+import { AiInputBlockedError } from '../../governance/ai-input-blocked.error';
 
 function makeResult(overrides: Partial<ChatTurnResult> = {}): ChatTurnResult {
   return {
@@ -156,6 +162,96 @@ describe('ChatMessageSubmitService', () => {
     expect(serialized).not.toMatch(/difficulty/i);
     expect(serialized).not.toMatch(/recommendation/i);
     expect(serialized).not.toMatch(/reviewSchedule/i);
+  });
+
+  it('translates a RateLimitExceededError into a clean 429 AppError, not a generic 500', async () => {
+    const orchestrator = {
+      handleTurn: jest.fn().mockRejectedValue(
+        new RateLimitExceededError('SESSION_TURN_LIMIT', 'Please slow down.', 30),
+      ),
+    } as unknown as AiTeacherOrchestratorService;
+    const service = new ChatMessageSubmitService(orchestrator);
+
+    let caught: unknown;
+    try {
+      await service.submitMessage({
+        studentId: 'student-1',
+        sessionId: 'session-1',
+        contextRef: 'lesson:fractions',
+        studentMessage: 'Hello',
+      });
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).toBeInstanceOf(AppError);
+    const appError = caught as AppError;
+    expect(appError.statusCode).toBe(HttpStatus.TOO_MANY_REQUESTS);
+    expect(appError.code).toBe(ApiErrorCode.RATE_LIMITED);
+    expect(appError.message).toBe('Please slow down.');
+    expect(appError.details).toEqual({ retryAfterSeconds: 30 });
+  });
+
+  it('translates an AiQuotaExceededError into a clean 429 AppError', async () => {
+    const orchestrator = {
+      handleTurn: jest.fn().mockRejectedValue(new AiQuotaExceededError('daily')),
+    } as unknown as AiTeacherOrchestratorService;
+    const service = new ChatMessageSubmitService(orchestrator);
+
+    let caught: unknown;
+    try {
+      await service.submitMessage({
+        studentId: 'student-1',
+        sessionId: 'session-1',
+        contextRef: 'lesson:fractions',
+        studentMessage: 'Hello',
+      });
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).toBeInstanceOf(AppError);
+    expect((caught as AppError).statusCode).toBe(HttpStatus.TOO_MANY_REQUESTS);
+    expect((caught as AppError).code).toBe(ApiErrorCode.RATE_LIMITED);
+  });
+
+  it('translates an AiInputBlockedError into a clean 403 AppError', async () => {
+    const orchestrator = {
+      handleTurn: jest.fn().mockRejectedValue(new AiInputBlockedError()),
+    } as unknown as AiTeacherOrchestratorService;
+    const service = new ChatMessageSubmitService(orchestrator);
+
+    let caught: unknown;
+    try {
+      await service.submitMessage({
+        studentId: 'student-1',
+        sessionId: 'session-1',
+        contextRef: 'lesson:fractions',
+        studentMessage: 'Hello',
+      });
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).toBeInstanceOf(AppError);
+    expect((caught as AppError).statusCode).toBe(HttpStatus.FORBIDDEN);
+    expect((caught as AppError).code).toBe(ApiErrorCode.FORBIDDEN);
+  });
+
+  it('lets an unrelated orchestrator error propagate unchanged', async () => {
+    const orchestrator = {
+      handleTurn: jest.fn().mockRejectedValue(new Error('boom')),
+    } as unknown as AiTeacherOrchestratorService;
+    const service = new ChatMessageSubmitService(orchestrator);
+
+    await expect(
+      service.submitMessage({
+        studentId: 'student-1',
+        sessionId: 'session-1',
+        contextRef: 'lesson:fractions',
+        studentMessage: 'Hello',
+      }),
+    ).rejects.toThrow('boom');
   });
 
   it('never hard-codes a provider API key or reads process.env directly', () => {
