@@ -17,6 +17,7 @@ import { AuthModule } from '../../auth/auth.module';
 import { DatabaseModule } from '../../database/database.module';
 import { AnalyticsModule } from '../analytics/analytics.module';
 import { SessionsModule } from '../sessions/sessions.module';
+import { TtsGatewayModule } from '../voice-teacher/tts-gateway/tts-gateway.module';
 import { AssessmentGradingService } from './assessment-grading.service';
 import { AssessmentScorePolicyService } from './assessment-score-policy.service';
 import { AssessmentResultService } from './assessment-result.service';
@@ -30,6 +31,7 @@ import { AssessmentProgressIntegrationService } from './assessment-progress-inte
 import { AssessmentAimBridgeService } from './assessment-aim-bridge.service';
 import { QuestionDeliveryService } from './question-delivery.service';
 import { AnswerSubmissionService } from './answer-submission.service';
+import { AssessmentQuestionAudioService } from './assessment-question-audio.service';
 import { AssessmentController } from './assessment.controller';
 import { AssessmentPermissionGuard } from './guards/assessment-permission.guard';
 import { AssessmentAttemptOwnershipGuard } from './guards/assessment-attempt-ownership.guard';
@@ -37,7 +39,7 @@ import { AssessmentResultOwnershipGuard } from './guards/assessment-result-owner
 import { AssessmentAuditService } from './assessment-audit.service';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, AnalyticsModule, SessionsModule],
+  imports: [DatabaseModule, AuthModule, AnalyticsModule, SessionsModule, TtsGatewayModule],
   controllers: [AssessmentController],
   providers: [
     AssessmentRepository,
@@ -53,6 +55,7 @@ import { AssessmentAuditService } from './assessment-audit.service';
     AssessmentAimBridgeService,
     QuestionDeliveryService,
     AnswerSubmissionService,
+    AssessmentQuestionAudioService,
     AssessmentPermissionGuard,
     AssessmentAttemptOwnershipGuard,
     AssessmentResultOwnershipGuard,
@@ -72,6 +75,7 @@ import { AssessmentAuditService } from './assessment-audit.service';
     AssessmentAimBridgeService,
     QuestionDeliveryService,
     AnswerSubmissionService,
+    AssessmentQuestionAudioService,
     AssessmentPermissionGuard,
     AssessmentAttemptOwnershipGuard,
     AssessmentResultOwnershipGuard,

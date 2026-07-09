@@ -69,4 +69,12 @@ abstract class AssessmentRemoteDatasource {
     required String assessmentQuestionLinkId,
     required String responseValue,
   });
+
+  /// GET /student/assessments/questions/:questionId/audio
+  /// Returns an empty list when the backend has no audio available yet
+  /// (e.g. no listening_script authored) — a real content gap, not an error.
+  Future<List<int>> getQuestionAudio({
+    required String bearerToken,
+    required String questionId,
+  });
 }

@@ -60,4 +60,10 @@ abstract class AssessmentRepository {
     required String assessmentQuestionLinkId,
     required String responseValue,
   });
+
+  /// Returns an empty list when the backend has no audio available yet.
+  Future<List<int>> getQuestionAudio({
+    required String bearerToken,
+    required String questionId,
+  });
 }

@@ -80,8 +80,9 @@
 //   - No AIM Engine, AI Teacher, payments, parent dashboard, or voice AI.
 //   - No secrets, service-role keys, DB credentials, or AI provider keys.
 
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Res, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
 
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { CurrentUser } from '../../auth/current-user.decorator';
@@ -104,6 +105,8 @@ import { AssessmentResultService, ResultHistoryResponse } from './assessment-res
 import { QuestionDeliveryService, DeliveredQuestion } from './question-delivery.service';
 import { AnswerSubmissionService, SubmittedAnswerDto } from './answer-submission.service';
 import { SubmitAnswerDto } from './submit-answer.dto';
+import { AssessmentQuestionAudioService } from './assessment-question-audio.service';
+import { TtsAudioStorageService } from '../voice-teacher/tts-gateway/tts-audio-storage.service';
 
 @ApiTags('assessments')
 @Controller('student/assessments')
@@ -116,6 +119,8 @@ export class AssessmentController {
     private readonly resultService: AssessmentResultService,
     private readonly questionDeliveryService: QuestionDeliveryService,
     private readonly answerSubmissionService: AnswerSubmissionService,
+    private readonly questionAudioService: AssessmentQuestionAudioService,
+    private readonly audioStorage: TtsAudioStorageService,
   ) {}
 
   /**
@@ -285,6 +290,53 @@ export class AssessmentController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<DeliveredQuestion[]> {
     return this.questionDeliveryService.getQuestionsForAttempt(attemptId, user.id);
+  }
+
+  /**
+   * GET /student/assessments/questions/:questionId/audio
+   * Lazily synthesize and stream a listening_choice question's audio.
+   * 404 when the question does not exist; 400 when it is not a listening
+   * question; 204 No Content when it is a listening question with no
+   * listening_script authored yet — a real content gap, not an error.
+   */
+  @Get('questions/:questionId/audio')
+  @UseGuards(SupabaseJwtAuthGuard, AssessmentPermissionGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Synthesize and stream a listening question\'s audio (student).' })
+  @ApiParam({ name: 'questionId', description: 'UUID of the question.' })
+  @ApiQuery({ name: 'languageCode', required: false, type: String })
+  @ApiOkResponse({ description: 'Audio stream. 204 (empty body) when no listening_script is authored yet.' })
+  async getQuestionAudio(
+    @Param('questionId') questionId: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Res() res: Response,
+    @Query('languageCode') languageCode?: string,
+  ): Promise<void> {
+    const result = await this.questionAudioService.ensureAudio(
+      questionId,
+      user.id,
+      languageCode?.trim() || 'en',
+    );
+
+    if (result.scriptMissing) {
+      res.status(HttpStatus.NO_CONTENT).send();
+      return;
+    }
+
+    if (!result.audioRef) {
+      res.status(HttpStatus.NOT_FOUND).json({ error: 'Audio not available' });
+      return;
+    }
+
+    const audio = await this.audioStorage.retrieveAudio(result.audioRef, user.id);
+    if (!audio) {
+      res.status(HttpStatus.NOT_FOUND).json({ error: 'Audio not found' });
+      return;
+    }
+
+    res.status(HttpStatus.OK).set('Content-Type', audio.contentType).send(audio.data);
   }
 
   /**
