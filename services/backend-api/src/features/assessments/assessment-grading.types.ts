@@ -17,7 +17,7 @@ export interface AnswerRow {
 export interface ChoiceRow {
   readonly question_id: string;
   readonly is_correct: boolean;
-  readonly label: string;
+  readonly id: string;
 }
 
 /** Per-answer grading outcome (internal; not exposed to Flutter). */

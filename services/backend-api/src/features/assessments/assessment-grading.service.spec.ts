@@ -79,8 +79,8 @@ describe('AssessmentGradingService', () => {
         },
         question_choices: {
           rows: [
-            { question_id: Q1_ID, is_correct: true, label: 'A' },
-            { question_id: Q2_ID, is_correct: true, label: 'A' },
+            { question_id: Q1_ID, is_correct: true, id: 'A' },
+            { question_id: Q2_ID, is_correct: true, id: 'A' },
           ],
         },
         assessment_deadlines: { rows: [] }, // no deadline
@@ -131,8 +131,8 @@ describe('AssessmentGradingService', () => {
         },
         question_choices: {
           rows: [
-            { question_id: Q1_ID, is_correct: true, label: 'A' },
-            { question_id: Q2_ID, is_correct: true, label: 'A' },
+            { question_id: Q1_ID, is_correct: true, id: 'A' },
+            { question_id: Q2_ID, is_correct: true, id: 'A' },
           ],
         },
         assessment_deadlines: { rows: [] },
@@ -167,7 +167,7 @@ describe('AssessmentGradingService', () => {
           ],
         },
         question_choices: {
-          rows: [{ question_id: Q1_ID, is_correct: true, label: 'A' }],
+          rows: [{ question_id: Q1_ID, is_correct: true, id: 'A' }],
         },
         assessment_deadlines: { rows: [] },
       });
@@ -211,7 +211,7 @@ describe('AssessmentGradingService', () => {
           ],
         },
         question_choices: {
-          rows: [{ question_id: Q1_ID, is_correct: true, label: 'A' }],
+          rows: [{ question_id: Q1_ID, is_correct: true, id: 'A' }],
         },
         assessment_deadlines: {
           rows: [
@@ -251,7 +251,7 @@ describe('AssessmentGradingService', () => {
           ],
         },
         question_choices: {
-          rows: [{ question_id: Q1_ID, is_correct: true, label: 'A' }],
+          rows: [{ question_id: Q1_ID, is_correct: true, id: 'A' }],
         },
         assessment_deadlines: {
           rows: [
@@ -299,8 +299,8 @@ describe('AssessmentGradingService', () => {
         },
         question_choices: {
           rows: [
-            { question_id: Q1_ID, is_correct: true, label: 'A' },
-            { question_id: Q2_ID, is_correct: true, label: 'A' },
+            { question_id: Q1_ID, is_correct: true, id: 'A' },
+            { question_id: Q2_ID, is_correct: true, id: 'A' },
           ],
         },
         assessment_deadlines: { rows: [] },
