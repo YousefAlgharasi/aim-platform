@@ -117,7 +117,27 @@ describe('AiTeacherOrchestratorService — timeout status path', () => {
           text: safeReply.text,
           created_at: 'now',
         }),
+      findRecentBySessionId: jest.fn().mockResolvedValue([]),
     } as unknown as AiChatMessageRepository;
+
+    const sessionRepository = {
+      findById: jest.fn().mockResolvedValue({
+        id: 'session-1',
+        student_id: 'student-1',
+        context_ref: 'lesson:fractions',
+        status: 'active',
+        created_at: 'now',
+        updated_at: 'now',
+        lesson_teaching_stage: 'teaching',
+        resolved_lesson_id: 'lesson-1',
+      }),
+    } as any;
+
+    const lessonStageService = {
+      resolveAndPersistLesson: jest.fn().mockResolvedValue(undefined),
+      advanceFromGreetingIfNeeded: jest.fn().mockResolvedValue('teaching'),
+      handleReply: jest.fn().mockImplementation(async (_s: string, _sess: unknown, text: string) => text),
+    } as any;
 
     const safetyService = {
       checkInput: jest.fn().mockResolvedValue({ action: 'allowed' }),
@@ -153,6 +173,8 @@ describe('AiTeacherOrchestratorService — timeout status path', () => {
       providerLogging,
       responseSafetyFilter,
       chatMessageRepository,
+      sessionRepository,
+      lessonStageService,
       { assertNotRateLimited: jest.fn().mockResolvedValue(undefined) } as any,
       { checkInput: jest.fn().mockResolvedValue({ action: 'allowed', category: 'none', record: {} }), checkOutput: jest.fn().mockResolvedValue({ action: 'allowed', category: 'none', record: {} }) } as any,
       { checkQuota: jest.fn().mockResolvedValue({ allowed: true }), recordUsage: jest.fn().mockResolvedValue(undefined) } as any,

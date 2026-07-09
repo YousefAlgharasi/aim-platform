@@ -200,4 +200,68 @@ describe('PromptBuilderService', () => {
     expect(serialized).not.toMatch(/"mastery":\s*\d/);
     expect(serialized).not.toMatch(/"difficulty":\s*\d/);
   });
+
+  it('uses greeting-stage instructions when lessonStage is greeting', () => {
+    const service = new PromptBuilderService();
+    const prompt = service.buildPrompt({
+      studentMessage: 'Hello',
+      context: makeSnapshot(),
+      lessonStage: 'greeting',
+    });
+
+    expect(prompt.systemInstructions).toContain('ask whether they');
+    expect(prompt.systemInstructions).not.toContain('LESSON_COMPLETE');
+  });
+
+  it('uses teaching-stage instructions with the completion-marker protocol when lessonStage is teaching', () => {
+    const service = new PromptBuilderService();
+    const prompt = service.buildPrompt({
+      studentMessage: 'Hello',
+      context: makeSnapshot(),
+      lessonStage: 'teaching',
+    });
+
+    expect(prompt.systemInstructions).toContain('[[LESSON_COMPLETE]]');
+    expect(prompt.systemInstructions).toContain('wait for their reply');
+  });
+
+  it('uses complete-stage instructions that forbid re-emitting the marker', () => {
+    const service = new PromptBuilderService();
+    const prompt = service.buildPrompt({
+      studentMessage: 'Can you explain that again?',
+      context: makeSnapshot(),
+      lessonStage: 'complete',
+    });
+
+    expect(prompt.systemInstructions).toContain('already been marked finished');
+    expect(prompt.systemInstructions).toContain('never write [[LESSON_COMPLETE]]');
+  });
+
+  it('omits the conversationHistory section when no history is given', () => {
+    const service = new PromptBuilderService();
+    const prompt = service.buildPrompt({
+      studentMessage: 'Hello',
+      context: makeSnapshot(),
+    });
+
+    expect(prompt.sections.map((s) => s.key)).not.toContain('conversationHistory');
+  });
+
+  it('renders prior turns as a conversationHistory section, oldest first, for memory', () => {
+    const service = new PromptBuilderService();
+    const prompt = service.buildPrompt({
+      studentMessage: 'And after that?',
+      context: makeSnapshot(),
+      history: [
+        { role: 'ai_teacher', text: 'Today we will learn the verb "to be".' },
+        { role: 'student', text: 'Okay!' },
+      ],
+    });
+
+    const historySection = prompt.sections.find((s) => s.key === 'conversationHistory');
+    expect(historySection).toBeDefined();
+    expect(historySection?.content).toBe(
+      'AI Teacher: Today we will learn the verb "to be".\nStudent: Okay!',
+    );
+  });
 });
