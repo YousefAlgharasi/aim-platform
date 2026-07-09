@@ -73,7 +73,13 @@ const ESTIMATED_COST_PER_TURN_USD = 0.01;
 // call — enough for the AI Teacher to remember what it already
 // taught/asked this session without prompt size growing unbounded on a
 // long-running conversation.
-const CONVERSATION_HISTORY_TURN_LIMIT = 20;
+//
+// Raised from 20 to 50 alongside AI_TEACHER_RATE_LIMIT_MAX_TURNS_PER_SESSION
+// (rate-limit-policy.constants.ts, now 60): at 20, a lesson running past
+// ~10 exchanges scrolled its own early turns out of the model's memory,
+// which is exactly what caused it to re-explain/re-ask things it already
+// covered earlier in the same session.
+const CONVERSATION_HISTORY_TURN_LIMIT = 50;
 
 @Injectable()
 export class AiTeacherOrchestratorService {

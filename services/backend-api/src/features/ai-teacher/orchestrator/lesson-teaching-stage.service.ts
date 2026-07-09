@@ -109,21 +109,29 @@ export class LessonTeachingStageService {
     const cleaned = replyText.split(LESSON_COMPLETE_MARKER).join('').trim();
 
     if (session.resolved_lesson_id) {
+      // Bugfix: the session's stage must only ever flip to 'complete' when
+      // the completion write actually lands. It previously flipped
+      // unconditionally, so a legitimate policy rejection (e.g.
+      // LessonProgressService's sequential-lesson-order gate — this lesson
+      // isn't actually next for this student yet) left the session
+      // permanently claiming "this lesson is done" with no
+      // lesson_progress row to back it up: practice never unlocked, and
+      // every later turn used the 'complete' stage prompt ("this lesson
+      // has already been marked finished") even though it hadn't been.
+      // Leaving the stage at 'teaching' on failure means a later
+      // completion attempt (a future marker) can still succeed once the
+      // real blocker is resolved.
       try {
         await this.lessonProgressService.markComplete(studentId, session.resolved_lesson_id);
+        await this.sessionRepository.updateLessonTeachingStage(session.id, 'complete');
       } catch (error) {
-        // A completion-write failure must never surface as a broken chat
-        // turn — the student still gets their reply; the lesson simply
-        // stays not-yet-unlocked and a future turn (or a client retry of
-        // the same "did you get it?" exchange) can complete it.
         this.logger.warn(
           `LessonTeachingStageService: failed to mark lesson ${session.resolved_lesson_id} ` +
-            `complete for session=${session.id}: ${
+            `complete for session=${session.id} — stage left at 'teaching': ${
               error instanceof Error ? error.message : String(error)
             }`,
         );
       }
-      await this.sessionRepository.updateLessonTeachingStage(session.id, 'complete');
     }
 
     return cleaned;
