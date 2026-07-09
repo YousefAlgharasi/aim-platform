@@ -22,6 +22,8 @@ import { AssessmentFeedbackService, FeedbackSummary } from './assessment-feedbac
 import { AssessmentResultService, ResultHistoryResponse } from './assessment-result.service';
 import { QuestionDeliveryService, DeliveredQuestion } from './question-delivery.service';
 import { AnswerSubmissionService, SubmittedAnswerDto } from './answer-submission.service';
+import { AssessmentQuestionAudioService } from './assessment-question-audio.service';
+import { TtsAudioStorageService } from '../voice-teacher/tts-gateway/tts-audio-storage.service';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { AssessmentPermissionGuard } from './guards/assessment-permission.guard';
 import { AssessmentAttemptOwnershipGuard } from './guards/assessment-attempt-ownership.guard';
@@ -37,6 +39,8 @@ describe('AssessmentController', () => {
   let resultService: jest.Mocked<Pick<AssessmentResultService, 'listByAssessment'>>;
   let questionDeliveryService: jest.Mocked<Pick<QuestionDeliveryService, 'getQuestionsForAttempt'>>;
   let answerSubmissionService: jest.Mocked<Pick<AnswerSubmissionService, 'submitAnswer'>>;
+  let questionAudioService: jest.Mocked<Pick<AssessmentQuestionAudioService, 'ensureAudio'>>;
+  let audioStorage: jest.Mocked<Pick<TtsAudioStorageService, 'retrieveAudio'>>;
 
   const mockListItems: AssessmentListItem[] = [
     { id: 'assessment-1', type: 'quiz', title: 'Quiz 1', description: null, deadlineStatus: 'open' },
@@ -116,6 +120,12 @@ describe('AssessmentController', () => {
         answerId: 'answer-1', assessmentQuestionLinkId: 'link-1', submittedAt: new Date(),
       } as SubmittedAnswerDto),
     };
+    questionAudioService = {
+      ensureAudio: jest.fn().mockResolvedValue({ audioRef: 'tts_abc', scriptMissing: false }),
+    };
+    audioStorage = {
+      retrieveAudio: jest.fn().mockResolvedValue({ data: Buffer.from('audio'), contentType: 'audio/mpeg' }),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AssessmentController],
@@ -127,6 +137,8 @@ describe('AssessmentController', () => {
         { provide: AssessmentResultService, useValue: resultService },
         { provide: QuestionDeliveryService, useValue: questionDeliveryService },
         { provide: AnswerSubmissionService, useValue: answerSubmissionService },
+        { provide: AssessmentQuestionAudioService, useValue: questionAudioService },
+        { provide: TtsAudioStorageService, useValue: audioStorage },
       ],
     })
       .overrideGuard(SupabaseJwtAuthGuard)
@@ -276,6 +288,39 @@ describe('AssessmentController', () => {
       await controller.getAttemptQuestions('att-2', user);
 
       expect(questionDeliveryService.getQuestionsForAttempt).toHaveBeenCalledWith('att-2', 'student-from-jwt');
+    });
+  });
+
+  describe('getQuestionAudio', () => {
+    function makeRes() {
+      const res: Record<string, jest.Mock> = {};
+      res.status = jest.fn().mockReturnValue(res);
+      res.set = jest.fn().mockReturnValue(res);
+      res.send = jest.fn().mockReturnValue(res);
+      res.json = jest.fn().mockReturnValue(res);
+      return res as unknown as import('express').Response;
+    }
+
+    it('streams audio bytes with the JWT-derived user id, never a client-supplied id', async () => {
+      const user = makeUser('student-1');
+      const res = makeRes();
+
+      await controller.getQuestionAudio('question-1', user, res);
+
+      expect(questionAudioService.ensureAudio).toHaveBeenCalledWith('question-1', 'student-1', 'en');
+      expect(audioStorage.retrieveAudio).toHaveBeenCalledWith('tts_abc', 'student-1');
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.set).toHaveBeenCalledWith('Content-Type', 'audio/mpeg');
+    });
+
+    it('returns 204 when the question has no listening_script authored yet', async () => {
+      questionAudioService.ensureAudio.mockResolvedValueOnce({ audioRef: null, scriptMissing: true });
+      const res = makeRes();
+
+      await controller.getQuestionAudio('question-1', makeUser('student-1'), res);
+
+      expect(res.status).toHaveBeenCalledWith(204);
+      expect(audioStorage.retrieveAudio).not.toHaveBeenCalled();
     });
   });
 
