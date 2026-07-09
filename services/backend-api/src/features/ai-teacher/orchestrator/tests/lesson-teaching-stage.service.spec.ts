@@ -246,5 +246,59 @@ describe('LessonTeachingStageService', () => {
       // practice never unlocks.
       expect(updateLessonTeachingStage).not.toHaveBeenCalled();
     });
+
+    it('appends an honest explanation when a ForbiddenException blocks completion due to lesson order', async () => {
+      const { ForbiddenException } = require('@nestjs/common');
+      const markComplete = jest
+        .fn()
+        .mockRejectedValue(new ForbiddenException('Complete the previous lesson before starting this one'));
+      const updateLessonTeachingStage = jest.fn().mockResolvedValue(undefined);
+      const sessionRepository = {
+        updateLessonTeachingStage,
+      } as unknown as AiChatSessionRepository;
+      const lessonProgressService = { markComplete } as unknown as LessonProgressService;
+      const service = new LessonTeachingStageService(
+        sessionRepository,
+        {} as unknown as CurrentLessonContextAdapter,
+        lessonProgressService,
+      );
+
+      const result = await service.handleReply(
+        'student-1',
+        makeSession({ resolved_lesson_id: 'lesson-1' }),
+        `Done! ${LESSON_COMPLETE_MARKER}`,
+      );
+
+      expect(result).toContain('Done!');
+      expect(result).toContain("earlier lesson in your course isn't finished");
+      expect(updateLessonTeachingStage).not.toHaveBeenCalled();
+    });
+
+    it('appends an honest explanation when a ForbiddenException blocks completion due to course lock', async () => {
+      const { ForbiddenException } = require('@nestjs/common');
+      const markComplete = jest
+        .fn()
+        .mockRejectedValue(new ForbiddenException('This course is locked for this student'));
+      const updateLessonTeachingStage = jest.fn().mockResolvedValue(undefined);
+      const sessionRepository = {
+        updateLessonTeachingStage,
+      } as unknown as AiChatSessionRepository;
+      const lessonProgressService = { markComplete } as unknown as LessonProgressService;
+      const service = new LessonTeachingStageService(
+        sessionRepository,
+        {} as unknown as CurrentLessonContextAdapter,
+        lessonProgressService,
+      );
+
+      const result = await service.handleReply(
+        'student-1',
+        makeSession({ resolved_lesson_id: 'lesson-1' }),
+        `Done! ${LESSON_COMPLETE_MARKER}`,
+      );
+
+      expect(result).toContain('Done!');
+      expect(result).toContain('locked for your account');
+      expect(updateLessonTeachingStage).not.toHaveBeenCalled();
+    });
   });
 });
