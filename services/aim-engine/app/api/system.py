@@ -82,3 +82,20 @@ def get_version(request: Request) -> AimEngineVersionResponse:
         phase=SERVICE_PHASE,
         environment=settings.env,
     )
+
+
+@router.get("/")
+def get_root() -> dict[str, str]:
+    """Minimal root response.
+
+    Nothing calls this internally — it exists only so external pings /
+    manual visits to the bare service URL (which otherwise 404 and show
+    up as log noise next to real traffic) get a safe, informative reply
+    instead. No secrets or internals; points to /health and /version.
+    """
+    return {
+        "service": SERVICE_NAME,
+        "status": "ok",
+        "health": "/health",
+        "version": "/version",
+    }
