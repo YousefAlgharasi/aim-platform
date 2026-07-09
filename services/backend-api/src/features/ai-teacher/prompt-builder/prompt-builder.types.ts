@@ -11,9 +11,39 @@
  */
 import { AiTeacherContextSnapshot } from '../context-builder/context-builder.types';
 
+/**
+ * Mirrors LessonTeachingStageService's LessonTeachingStage — defined
+ * locally (not imported from orchestrator/) so prompt-builder never
+ * depends on the orchestrator module, keeping the existing Group
+ * E-depends-on-D-only layering intact.
+ */
+export type PromptLessonStage = 'greeting' | 'teaching' | 'complete';
+
+export interface PromptHistoryTurn {
+  readonly role: 'student' | 'ai_teacher';
+  readonly text: string;
+}
+
 export interface BuildPromptInput {
   readonly studentMessage: string;
   readonly context: AiTeacherContextSnapshot;
+
+  /**
+   * The session's backend-enforced lesson-delivery stage. Drives which
+   * system instructions are used (greeting vs. teaching vs. complete) —
+   * see prompt-builder.constants.ts. Defaults to 'teaching' when omitted
+   * (e.g. general chat with no lesson-delivery flow).
+   */
+  readonly lessonStage?: PromptLessonStage;
+
+  /**
+   * Recent prior turns in this session (oldest first), so the AI Teacher
+   * has memory of what it already taught/asked instead of generating each
+   * reply in isolation. Rendered as a transcript section, never persisted
+   * or computed here — the caller (orchestrator) fetches it read-only from
+   * AiChatMessageRepository.
+   */
+  readonly history?: readonly PromptHistoryTurn[];
 }
 
 export interface PromptSection {

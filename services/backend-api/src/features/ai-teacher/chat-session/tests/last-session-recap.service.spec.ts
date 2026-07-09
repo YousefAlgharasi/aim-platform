@@ -13,6 +13,8 @@ function makeClosedSession(overrides: Partial<AiChatSessionRow> = {}): AiChatSes
     student_id: 'student-1',
     context_ref: 'lesson:fractions',
     status: 'closed',
+    lesson_teaching_stage: 'greeting',
+    resolved_lesson_id: null,
     created_at: '2026-06-01T00:00:00.000Z',
     updated_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2h ago
     ...overrides,

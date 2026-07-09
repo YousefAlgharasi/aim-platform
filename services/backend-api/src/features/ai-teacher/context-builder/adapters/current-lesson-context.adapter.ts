@@ -31,6 +31,7 @@
 
 import { Injectable } from '@nestjs/common';
 
+import { DatabaseService } from '../../../../database/database.service';
 import { RecommendationReadService } from '../../../aim/result/recommendation-read.service';
 import { LessonsService } from '../../../curriculum/lessons/lessons.service';
 
@@ -40,6 +41,20 @@ export interface CurrentLessonContext {
   readonly description: string;
   /** Optional admin-authored AI Teacher instructions specific to this lesson. */
   readonly systemPrompt: string | null;
+  /** The lesson's chapter/level/course — identity fields only (titles/codes), never mastery. */
+  readonly chapterTitle: string | null;
+  readonly levelCode: string | null;
+  readonly levelTitle: string | null;
+  readonly courseTitle: string | null;
+  readonly cefrCode: string | null;
+}
+
+interface CourseContextRow {
+  readonly chapter_title: string;
+  readonly level_code: string;
+  readonly level_title: string;
+  readonly course_title: string;
+  readonly cefr_code: string | null;
 }
 
 @Injectable()
@@ -47,6 +62,7 @@ export class CurrentLessonContextAdapter {
   constructor(
     private readonly recommendations: RecommendationReadService,
     private readonly lessons: LessonsService,
+    private readonly db: DatabaseService,
   ) {}
 
   async getCurrentLessonContext(
@@ -61,15 +77,42 @@ export class CurrentLessonContextAdapter {
 
     try {
       const lesson = await this.lessons.getLesson(targetLessonId);
+      const courseContext = await this.getCourseContext(lesson.chapterId);
       return {
         lessonId: lesson.id,
         title: lesson.title,
         description: lesson.description,
         systemPrompt: lesson.systemPrompt,
+        chapterTitle: courseContext?.chapter_title ?? null,
+        levelCode: courseContext?.level_code ?? null,
+        levelTitle: courseContext?.level_title ?? null,
+        courseTitle: courseContext?.course_title ?? null,
+        cefrCode: courseContext?.cefr_code ?? null,
       };
     } catch {
       return null;
     }
+  }
+
+  /**
+   * Course/level/chapter identity fields for a lesson's chapter — titles
+   * and the course's CEFR code only, the same kind of AIM-Engine-chosen
+   * identity context as lesson title/description above, never a
+   * mastery/level *value* the AI Teacher would be computing itself.
+   * Returns null (never throws) if the chapter/level/course chain is
+   * incomplete — this context is optional for a teaching turn.
+   */
+  private async getCourseContext(chapterId: string): Promise<CourseContextRow | null> {
+    const result = await this.db.query<CourseContextRow>(
+      `SELECT ch.title AS chapter_title, lv.code AS level_code, lv.title AS level_title,
+              co.title AS course_title, co.cefr_code
+       FROM chapters ch
+       JOIN levels lv ON lv.id = ch.level_id
+       JOIN courses co ON co.id = lv.course_id
+       WHERE ch.id = $1`,
+      [chapterId],
+    );
+    return result.rows[0] ?? null;
   }
 
   private async resolveRecommendedLessonId(studentId: string): Promise<string | null> {

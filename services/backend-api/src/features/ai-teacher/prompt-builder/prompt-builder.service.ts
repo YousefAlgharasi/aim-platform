@@ -12,7 +12,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { AiTeacherContextSnapshot } from '../context-builder/context-builder.types';
 import {
   AI_TEACHER_PROMPT_SECTION_ORDER,
-  AI_TEACHER_PROMPT_SYSTEM_INSTRUCTIONS,
+  buildLessonStageInstructions,
+  buildStudentIdentityInstructions,
 } from './prompt-builder.constants';
 import { AiTeacherPrompt, BuildPromptInput, PromptSection } from './prompt-builder.types';
 
@@ -27,11 +28,40 @@ export class PromptBuilderService {
       this.buildSection(key, input.context),
     ).filter((section): section is PromptSection => section !== null);
 
+    const historySection = this.buildHistorySection(input.history);
+    if (historySection) {
+      sections.push(historySection);
+    }
+
+    const systemInstructions = [
+      buildStudentIdentityInstructions(),
+      buildLessonStageInstructions(input.lessonStage),
+    ].join(' ');
+
     return {
-      systemInstructions: AI_TEACHER_PROMPT_SYSTEM_INSTRUCTIONS,
+      systemInstructions,
       sections,
       studentMessage: input.studentMessage,
     };
+  }
+
+  /**
+   * Renders recent prior turns (BuildPromptInput.history, already fetched
+   * read-only by the orchestrator) as a single transcript section so the
+   * model has memory of what it already taught/asked. Returns null when
+   * there is no history yet (a session's very first real turn), matching
+   * every other optional section's null-omits-the-section behavior.
+   */
+  private buildHistorySection(history: BuildPromptInput['history']): PromptSection | null {
+    if (!history || history.length === 0) {
+      return null;
+    }
+
+    const transcript = history
+      .map((turn) => `${turn.role === 'student' ? 'Student' : 'AI Teacher'}: ${turn.text}`)
+      .join('\n');
+
+    return { key: 'conversationHistory', content: transcript };
   }
 
   private buildSection(

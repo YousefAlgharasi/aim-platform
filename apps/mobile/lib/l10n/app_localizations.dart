@@ -1668,6 +1668,12 @@ abstract class AppLocalizations {
   /// **'Practice questions'**
   String get lessonsPracticeQuestionsButton;
 
+  /// Caption shown under the disabled Practice questions button until the AI Teacher marks this lesson complete.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish the lesson with your AI teacher first to unlock practice.'**
+  String get lessonsPracticeLockedHint;
+
   /// Button shown after an answer is acknowledged, advancing to the next delivered question.
   ///
   /// In en, this message translates to:
