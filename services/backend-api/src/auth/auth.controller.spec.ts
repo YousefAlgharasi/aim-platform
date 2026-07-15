@@ -15,6 +15,7 @@ const makeAuthLoginMock = (): jest.Mocked<AuthLoginService> =>
     login: jest.fn(),
     refresh: jest.fn(),
     register: jest.fn(),
+    forgotPassword: jest.fn(),
     logout: jest.fn(),
   } as unknown as jest.Mocked<AuthLoginService>);
 
