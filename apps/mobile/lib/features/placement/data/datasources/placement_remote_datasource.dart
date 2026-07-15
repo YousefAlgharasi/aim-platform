@@ -86,4 +86,26 @@ abstract class PlacementRemoteDatasource {
   /// attemptId — status is one of 'none'/'active'/'submitted'/'completed'.
   /// Endpoint — GET /placement/attempts/latest
   Future<PlacementLatestStatusModel> getLatestStatus(String bearerToken);
+
+  /// Submit a SPEAKING answer's recorded audio. Transcribed server-side via
+  /// the same STT pipeline used for voice teacher, then AI-graded.
+  /// Endpoint — POST /placement/attempts/:id/answers/speaking
+  Future<PlacementSpeakingAnswerModel> submitSpeakingAnswer(
+    String bearerToken, {
+    required String attemptId,
+    required String questionId,
+    required List<int> audioBytes,
+    required String mimeType,
+  });
+
+  /// First-login placement gate status.
+  /// Endpoint — GET /placement/decision
+  Future<PlacementDecisionModel> getPlacementDecision(String bearerToken);
+
+  /// Persist the student's one-time first-login placement gate choice.
+  /// Endpoint — POST /placement/decision
+  Future<PlacementDecisionModel> setPlacementDecision(
+    String bearerToken, {
+    required String decision,
+  });
 }

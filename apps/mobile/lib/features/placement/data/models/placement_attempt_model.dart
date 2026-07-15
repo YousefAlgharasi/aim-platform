@@ -11,6 +11,8 @@ class PlacementAttemptModel extends PlacementAttempt {
     required super.startedAt,
     super.submittedAt,
     super.completedAt,
+    super.expiresAt,
+    super.durationSeconds,
   });
 
   factory PlacementAttemptModel.fromJson(Map<String, dynamic> json) {
@@ -21,6 +23,8 @@ class PlacementAttemptModel extends PlacementAttempt {
       startedAt: json['started_at'] as String,
       submittedAt: json['submitted_at'] as String?,
       completedAt: json['completed_at'] as String?,
+      expiresAt: json['expires_at'] as String?,
+      durationSeconds: json['duration_seconds'] as int?,
     );
   }
 
@@ -31,5 +35,7 @@ class PlacementAttemptModel extends PlacementAttempt {
         'started_at': startedAt,
         'submitted_at': submittedAt,
         'completed_at': completedAt,
+        if (expiresAt != null) 'expires_at': expiresAt,
+        if (durationSeconds != null) 'duration_seconds': durationSeconds,
       };
 }

@@ -201,6 +201,63 @@ class PlacementRemoteDatasourceImpl implements PlacementRemoteDatasource {
   }
 
   // ---------------------------------------------------------------------------
+  // POST /placement/attempts/:id/answers/speaking
+  // Mirrors VoiceTeacherRemoteDatasourceImpl.submitAudio's multipart pattern.
+  // ---------------------------------------------------------------------------
+
+  @override
+  Future<PlacementSpeakingAnswerModel> submitSpeakingAnswer(
+    String bearerToken, {
+    required String attemptId,
+    required String questionId,
+    required List<int> audioBytes,
+    required String mimeType,
+  }) async {
+    final envelope = await _apiClient.postMultipart<PlacementSpeakingAnswerModel>(
+      BackendApiPaths.placementAttemptSpeakingAnswer(attemptId),
+      headers: _authHeaders(bearerToken),
+      fileBytes: audioBytes,
+      fieldName: 'audio',
+      fileName: 'audio.wav',
+      mimeType: mimeType,
+      fields: {'placement_question_id': questionId},
+      decodeData: (json) =>
+          PlacementSpeakingAnswerModel.fromJson(json as Map<String, dynamic>),
+    );
+    return envelope.data!;
+  }
+
+  // ---------------------------------------------------------------------------
+  // GET/POST /placement/decision — first-login placement gate.
+  // ---------------------------------------------------------------------------
+
+  @override
+  Future<PlacementDecisionModel> getPlacementDecision(String bearerToken) async {
+    final envelope = await _apiClient.get<PlacementDecisionModel>(
+      BackendApiPaths.placementDecision,
+      headers: _authHeaders(bearerToken),
+      decodeData: (json) =>
+          PlacementDecisionModel.fromJson(json as Map<String, dynamic>),
+    );
+    return envelope.data!;
+  }
+
+  @override
+  Future<PlacementDecisionModel> setPlacementDecision(
+    String bearerToken, {
+    required String decision,
+  }) async {
+    final envelope = await _apiClient.post<PlacementDecisionModel>(
+      BackendApiPaths.placementDecision,
+      headers: _authHeaders(bearerToken),
+      body: {'decision': decision},
+      decodeData: (json) =>
+          PlacementDecisionModel.fromJson(json as Map<String, dynamic>),
+    );
+    return envelope.data!;
+  }
+
+  // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
 

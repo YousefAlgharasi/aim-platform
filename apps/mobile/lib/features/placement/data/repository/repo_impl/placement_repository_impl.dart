@@ -148,4 +148,46 @@ class PlacementRepositoryImpl implements PlacementRepository {
       throw AppException(code: e.code, message: e.message);
     }
   }
+
+  @override
+  Future<PlacementSpeakingAnswerModel> submitSpeakingAnswer(
+    String bearerToken, {
+    required String attemptId,
+    required String questionId,
+    required List<int> audioBytes,
+    required String mimeType,
+  }) async {
+    try {
+      return await _datasource.submitSpeakingAnswer(
+        bearerToken,
+        attemptId: attemptId,
+        questionId: questionId,
+        audioBytes: audioBytes,
+        mimeType: mimeType,
+      );
+    } on ApiClientException catch (e) {
+      throw AppException(code: e.code, message: e.message);
+    }
+  }
+
+  @override
+  Future<PlacementDecisionModel> getPlacementDecision(String bearerToken) async {
+    try {
+      return await _datasource.getPlacementDecision(bearerToken);
+    } on ApiClientException catch (e) {
+      throw AppException(code: e.code, message: e.message);
+    }
+  }
+
+  @override
+  Future<PlacementDecisionModel> setPlacementDecision(
+    String bearerToken, {
+    required String decision,
+  }) async {
+    try {
+      return await _datasource.setPlacementDecision(bearerToken, decision: decision);
+    } on ApiClientException catch (e) {
+      throw AppException(code: e.code, message: e.message);
+    }
+  }
 }

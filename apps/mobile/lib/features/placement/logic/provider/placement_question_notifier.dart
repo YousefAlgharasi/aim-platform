@@ -197,4 +197,41 @@ class PlacementQuestionNotifier
       rethrow;
     }
   }
+
+  /// P4-052: Submit a SPEAKING answer's recorded audio, then advance exactly
+  /// like [submitCurrentAnswer] — the backend transcribes + AI-grades it
+  /// server-side; Flutter never scores it.
+  Future<void> submitSpeakingAnswer(
+    String bearerToken, {
+    required List<int> audioBytes,
+    required String mimeType,
+  }) async {
+    final current = state;
+    if (current is! PlacementQuestionReady || current.isSubmitting) return;
+
+    state = current.copyWith(isSubmitting: true);
+
+    try {
+      await _repository.submitSpeakingAnswer(
+        bearerToken,
+        attemptId: current.attemptId,
+        questionId: current.currentQuestion.id,
+        audioBytes: audioBytes,
+        mimeType: mimeType,
+      );
+
+      if (current.isLastQuestion) {
+        state = PlacementQuestionSectionComplete(attemptId: current.attemptId);
+      } else {
+        state = current.copyWith(
+          currentIndex: current.currentIndex + 1,
+          clearSelectedAnswer: true,
+          isSubmitting: false,
+        );
+      }
+    } catch (e) {
+      state = current.copyWith(isSubmitting: false);
+      rethrow;
+    }
+  }
 }
