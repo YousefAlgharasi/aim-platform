@@ -12,11 +12,12 @@ import { SupabaseJwtAuthGuard } from './supabase-jwt-auth.guard';
 import { PublicRoute } from './public-route.decorator';
 import { AuthLoginService } from './auth-login.service';
 import {
+  AuthForgotPasswordResult,
   AuthLoginResult,
   AuthRegisterResult,
   AuthTokenResult,
 } from './auth-login.types';
-import { AuthLoginDto, AuthRefreshDto, AuthRegisterDto } from './auth-login.dto';
+import { AuthForgotPasswordDto, AuthLoginDto, AuthRefreshDto, AuthRegisterDto } from './auth-login.dto';
 import { extractBearerToken } from './bearer-token';
 import { AuthenticatedRequest } from './authenticated-user';
 import { RolesService } from '../features/roles/roles.service';
@@ -89,6 +90,21 @@ export class AuthController {
     }
 
     return result;
+  }
+
+  /**
+   * POST /auth/forgot-password
+   *
+   * Sends a password reset email via Supabase. Always reports success so
+   * the response never reveals whether an account exists for the email.
+   */
+  @Post('forgot-password')
+  @PublicRoute()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Send a password reset email.' })
+  @ApiOkResponse({ description: 'Reset email sent (if the account exists).' })
+  async forgotPassword(@Body() body: AuthForgotPasswordDto): Promise<AuthForgotPasswordResult> {
+    return this.authLogin.forgotPassword(body);
   }
 
   /**

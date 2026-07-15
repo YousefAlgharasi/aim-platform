@@ -128,6 +128,38 @@ describe('AuthLoginService', () => {
     });
   });
 
+  describe('forgotPassword', () => {
+    it('reports success when Supabase accepts the recover request', async () => {
+      mockFetch(200, {});
+
+      await expect(service.forgotPassword({ email: 'a@b.com' })).resolves.toEqual({ sent: true });
+    });
+
+    it('reports success even when the email does not match an account', async () => {
+      mockFetch(400, { error_code: 'user_not_found', msg: 'User not found' });
+
+      await expect(service.forgotPassword({ email: 'nobody@b.com' })).resolves.toEqual({ sent: true });
+    });
+
+    it('maps rate limiting to too many requests', async () => {
+      mockFetch(429, { error_code: 'over_email_send_rate_limit', msg: 'rate limit exceeded' });
+
+      await expect(service.forgotPassword({ email: 'a@b.com' })).rejects.toMatchObject({
+        code: ApiErrorCode.TOO_MANY_REQUESTS,
+        statusCode: HttpStatus.TOO_MANY_REQUESTS,
+      });
+    });
+
+    it('maps unreachable Supabase to a service unavailable error', async () => {
+      global.fetch = jest.fn().mockRejectedValue(new Error('network down')) as unknown as typeof fetch;
+
+      await expect(service.forgotPassword({ email: 'a@b.com' })).rejects.toMatchObject({
+        code: ApiErrorCode.SERVICE_UNAVAILABLE,
+        statusCode: HttpStatus.SERVICE_UNAVAILABLE,
+      });
+    });
+  });
+
   describe('register', () => {
     it('maps duplicate email registration to a conflict error', async () => {
       mockFetch(422, { error_code: 'user_already_exists', msg: 'User already registered' });

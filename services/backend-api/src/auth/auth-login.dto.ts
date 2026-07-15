@@ -34,3 +34,14 @@ export class AuthRefreshDto {
   @MinLength(1)
   refreshToken!: string;
 }
+
+export class AuthForgotPasswordDto {
+  @ApiProperty()
+  @IsEmail()
+  email!: string;
+
+  @ApiProperty({ required: false, description: 'Web origin to redirect to after the reset link is followed. Must match an allowed CORS origin.' })
+  @IsOptional()
+  @IsUrl({ require_tld: false })
+  redirectUrl?: string;
+}

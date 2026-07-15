@@ -11,6 +11,8 @@ import { BackendConfigService } from '../config/backend-config.service';
 import { AppError } from '../common/errors/app-error';
 import { ApiErrorCode } from '../common/errors/api-error-code';
 import {
+  AuthForgotPasswordInput,
+  AuthForgotPasswordResult,
   AuthLoginInput,
   AuthLoginResult,
   AuthRefreshInput,
@@ -26,6 +28,7 @@ type AuthOperation = 'login' | 'refresh' | 'register';
 
 const SUPABASE_TOKEN_PATH = '/auth/v1/token';
 const SUPABASE_SIGNUP_PATH = '/auth/v1/signup';
+const SUPABASE_RECOVER_PATH = '/auth/v1/recover';
 const SUPABASE_LOGOUT_PATH = '/auth/v1/logout';
 const SUPABASE_ADMIN_USERS_PATH = '/auth/v1/admin/users';
 const SUPABASE_REQUEST_TIMEOUT_MS = 8000;
@@ -134,6 +137,48 @@ export class AuthLoginService {
         email: freshTokens.user?.email ?? body.email ?? input.email,
       },
     };
+  }
+
+  // Always reports success regardless of whether the email matches an
+  // account, so the response never reveals account existence to a caller.
+  async forgotPassword(input: AuthForgotPasswordInput): Promise<AuthForgotPasswordResult> {
+    const redirectTo = this.resolveEmailConfirmationRedirect(input.redirectUrl);
+    const url = `${this.buildSupabaseUrl(SUPABASE_RECOVER_PATH)}?redirect_to=${encodeURIComponent(
+      redirectTo,
+    )}`;
+
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: 'POST',
+        headers: this.buildHeaders(),
+        body: JSON.stringify({ email: input.email }),
+        signal: AbortSignal.timeout(SUPABASE_REQUEST_TIMEOUT_MS),
+      });
+    } catch (error) {
+      this.logger.warn(`Supabase recover call failed: ${this.toSafeErrorMessage(error)}`);
+      throw new AppError({
+        code: ApiErrorCode.SERVICE_UNAVAILABLE,
+        message: 'Unable to reach the authentication service.',
+        statusCode: HttpStatus.SERVICE_UNAVAILABLE,
+      });
+    }
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        throw new AppError({
+          code: ApiErrorCode.TOO_MANY_REQUESTS,
+          message: 'Too many attempts. Please wait a moment and try again.',
+          statusCode: HttpStatus.TOO_MANY_REQUESTS,
+        });
+      }
+
+      // Any other failure (including "no user found") is intentionally
+      // swallowed here rather than surfaced to the caller.
+      this.logger.warn(`Supabase recover call returned status ${response.status}`);
+    }
+
+    return { sent: true };
   }
 
   async logout(accessToken: string): Promise<void> {

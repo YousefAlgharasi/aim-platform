@@ -26,6 +26,15 @@ export interface AuthRegisterInput {
   readonly redirectUrl?: string;
 }
 
+export interface AuthForgotPasswordInput {
+  readonly email: string;
+  readonly redirectUrl?: string;
+}
+
+export interface AuthForgotPasswordResult {
+  readonly sent: true;
+}
+
 export interface AuthRegisterResult {
   readonly requiresEmailConfirmation: boolean;
   readonly accessToken?: string;
