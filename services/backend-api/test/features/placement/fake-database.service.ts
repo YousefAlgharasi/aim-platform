@@ -415,6 +415,29 @@ export class FakeDatabaseService {
       return toQueryResult(rows as unknown as T[]);
     }
 
+    // ---- P4-052: writing/speaking AI-graded additional signals ------------
+    if (
+      sql.startsWith('SELECT') &&
+      sql.includes('FROM placement_answers pa') &&
+      sql.includes("question_type IN ('writing', 'speaking')")
+    ) {
+      const [attemptId] = params as [string];
+      const rows = this.answers
+        .filter((a) => a.placement_attempt_id === attemptId)
+        .map((a) => {
+          const question = this.questions.find((q) => q.id === a.placement_question_id);
+          return { question, answer: a };
+        })
+        .filter(({ question }) => question && (question.question_type === 'writing' || question.question_type === 'speaking'))
+        .map(({ question, answer }) => ({
+          question_type: question!.question_type,
+          ai_score: (answer as any).ai_score ?? null,
+          ai_feedback: (answer as any).ai_feedback ?? null,
+          transcript: (answer as any).transcript ?? null,
+        }));
+      return toQueryResult(rows as unknown as T[]);
+    }
+
     // ---- answer validation: bulk mark correct / incorrect -----------------
     if (sql.startsWith('UPDATE placement_answers') && sql.includes('is_correct = true')) {
       const [ids] = params as [string[]];

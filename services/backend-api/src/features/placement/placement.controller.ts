@@ -21,6 +21,7 @@
 //   - No AIM Engine runtime, AI Teacher, lesson delivery, or progress dashboard.
 //   - No secrets, service-role keys, or privileged config here.
 
+/// <reference types="multer" />
 import {
   Body,
   Controller,
@@ -31,10 +32,14 @@ import {
   Post,
   Query,
   Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
@@ -66,12 +71,31 @@ import { PlacementInitialLearningPathService } from './placement-initial-learnin
 import { PlacementLevelStateService } from './placement-level-state.service';
 import { PlacementSectionsService, PlacementSectionSafeResponse } from './placement-sections.service';
 import { SubmitPlacementAnswerDto } from './submit-placement-answer.dto';
+import { SetPlacementDecisionDto } from './set-placement-decision.dto';
 import {
   PlacementQuestionDeliveryResponse,
   PlacementAttemptStartResponse,
   SubmitPlacementAnswerResponse,
+  SubmitPlacementSpeakingAnswerResponse,
   PlacementAttemptCompleteResponse,
 } from './placement.types';
+import { PlacementSpeakingAnswerSubmitService } from './placement-speaking-answer-submit.service';
+import {
+  PlacementDecisionService,
+  PlacementGateStatusResponse,
+} from './placement-decision.service';
+import { AppError } from '../../common/errors/app-error';
+import { PlacementErrorCode } from './placement-error-codes';
+
+const ALLOWED_SPEAKING_AUDIO_TYPES = new Set([
+  'audio/webm',
+  'audio/ogg',
+  'audio/mpeg',
+  'audio/wav',
+  'audio/x-wav',
+  'audio/mp4',
+]);
+const MAX_SPEAKING_AUDIO_SIZE_BYTES = 15 * 1024 * 1024; // 15 MB, ~3 minutes of audio
 
 @ApiTags('placement')
 @Controller('placement')
@@ -89,7 +113,44 @@ export class PlacementController {
     private readonly levelState: PlacementLevelStateService,
     private readonly questionAudio: PlacementQuestionAudioService,
     private readonly audioStorage: TtsAudioStorageService,
+    private readonly speakingAnswerSubmit: PlacementSpeakingAnswerSubmitService,
+    private readonly decision: PlacementDecisionService,
   ) {}
+
+  /**
+   * GET /placement/decision
+   * First-login gate: whether to show "Take the placement test" vs "Start
+   * from scratch", and the student's prior choice (if any).
+   */
+  @Get('decision')
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get first-login placement gate status for the authenticated student.' })
+  @ApiOkResponse({ description: 'should_show_gate + prior decision (if any).' })
+  async getDecision(@CurrentUser() user: AuthenticatedUser): Promise<PlacementGateStatusResponse> {
+    return this.decision.getGateStatus(user.id);
+  }
+
+  /**
+   * POST /placement/decision
+   * Persist the student's one-time first-login choice so the gate is never
+   * shown again.
+   */
+  @Post('decision')
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Record the student\'s first-login placement gate decision.' })
+  @ApiOkResponse({ description: 'Decision persisted; should_show_gate is now false.' })
+  async setDecision(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() body: SetPlacementDecisionDto,
+  ): Promise<PlacementGateStatusResponse> {
+    return this.decision.setDecision(user.id, body.decision);
+  }
 
   /**
    * GET /placement/active
@@ -248,6 +309,52 @@ export class PlacementController {
     @Body() body: SubmitPlacementAnswerDto,
   ): Promise<SubmitPlacementAnswerResponse> {
     return this.answerSubmit.submitAnswer(attemptId, user.id, body);
+  }
+
+  /**
+   * POST /placement/attempts/:id/answers/speaking
+   * Submit a SPEAKING answer's recorded audio. Transcribed via the same STT
+   * pipeline used for voice teacher, then AI-graded. Rejected once the
+   * attempt's server-enforced timer has expired.
+   */
+  @Post('attempts/:id/answers/speaking')
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.CREATED)
+  @ApiBearerAuth()
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Submit a placement speaking answer (audio upload, student).' })
+  @ApiParam({ name: 'id', description: 'UUID of the active placement attempt.' })
+  @ApiCreatedResponse({ description: 'Audio transcribed + AI-graded. Transcript returned; score/feedback not exposed here.' })
+  @UseInterceptors(
+    FileInterceptor('audio', { limits: { fileSize: MAX_SPEAKING_AUDIO_SIZE_BYTES } }),
+  )
+  async submitSpeakingAnswer(
+    @Param('id') attemptId: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @UploadedFile() file: Express.Multer.File,
+    @Body('placement_question_id') placementQuestionId: string,
+  ): Promise<SubmitPlacementSpeakingAnswerResponse> {
+    if (!file || !file.buffer || file.buffer.length === 0) {
+      throw new AppError({
+        code: PlacementErrorCode.INVALID_ANSWER_VALUE,
+        message: 'No audio file was received.',
+        statusCode: HttpStatus.BAD_REQUEST,
+      });
+    }
+    if (!ALLOWED_SPEAKING_AUDIO_TYPES.has(file.mimetype)) {
+      throw new AppError({
+        code: PlacementErrorCode.INVALID_ANSWER_VALUE,
+        message: `Unsupported audio type: ${file.mimetype}.`,
+        statusCode: HttpStatus.BAD_REQUEST,
+      });
+    }
+
+    return this.speakingAnswerSubmit.submitSpeakingAnswer(attemptId, user.id, {
+      placement_question_id: placementQuestionId,
+      audio: file.buffer,
+      contentType: file.mimetype,
+    });
   }
 
   /**

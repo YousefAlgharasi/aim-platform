@@ -89,8 +89,24 @@ export class PlacementAttemptCompleteService {
 
     // -----------------------------------------------------------------------
     // 2. Validate status — only 'active' attempts may be submitted.
+    //    Exception: an attempt the server-side timer already auto-submitted
+    //    (PlacementAttemptTimerService, on expiry) is treated as already in
+    //    the desired end state here rather than a client error — the
+    //    student's "I'm done" signal and the timer both converge on
+    //    'submitted', so this call is idempotent in that case.
     // -----------------------------------------------------------------------
-    if (attempt.status === 'submitted' || attempt.status === 'completed') {
+    if (attempt.status === 'submitted') {
+      return {
+        id: attempt.id,
+        placement_test_id: attempt.placement_test_id,
+        status: 'submitted',
+        started_at: attempt.started_at,
+        submitted_at: attempt.submitted_at as string,
+        completed_at: null,
+      };
+    }
+
+    if (attempt.status === 'completed') {
       throw new AppError({
         code: PlacementErrorCode.ATTEMPT_ALREADY_SUBMITTED,
         message: `Placement attempt has already been submitted (status: ${attempt.status}).`,

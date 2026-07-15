@@ -30,6 +30,13 @@ import {
 import { PlacementAuditService } from './placement-audit.service';
 import { PlacementAnalyticsService } from './placement-analytics.service';
 
+/**
+ * Total time budget for the whole placement attempt, in seconds (45 minutes).
+ * Matches the placement_attempts.duration_seconds column default. Kept as a
+ * backend constant (not client-configurable) — P4-052 timer enforcement.
+ */
+export const PLACEMENT_ATTEMPT_DURATION_SECONDS = 2700;
+
 @Injectable()
 export class PlacementAttemptService {
   constructor(
@@ -85,13 +92,16 @@ export class PlacementAttemptService {
       void this.analytics.recordAttemptAbandoned(studentId, abandoned.id, test.id);
     }
 
-    // 3. Insert a new attempt — backend sets all fields.
+    // 3. Insert a new attempt — backend sets all fields, including the
+    //    server-enforced timer (duration_seconds/expires_at).
     const insertResult = await this.db.query<PlacementAttemptRow>(
-      `INSERT INTO placement_attempts (student_id, placement_test_id, status, started_at)
-       VALUES ($1, $2, 'active', now())
+      `INSERT INTO placement_attempts
+         (student_id, placement_test_id, status, started_at, duration_seconds, expires_at)
+       VALUES ($1, $2, 'active', now(), $3, now() + ($3 || ' seconds')::interval)
        RETURNING id, student_id, placement_test_id, status, started_at,
-                 submitted_at, completed_at, created_at, updated_at`,
-      [studentId, test.id],
+                 submitted_at, completed_at, created_at, updated_at,
+                 duration_seconds, expires_at`,
+      [studentId, test.id, PLACEMENT_ATTEMPT_DURATION_SECONDS],
     );
 
     const attempt = insertResult.rows[0];
@@ -107,6 +117,8 @@ export class PlacementAttemptService {
       started_at: attempt.started_at,
       submitted_at: null,
       completed_at: null,
+      expires_at: attempt.expires_at as string,
+      duration_seconds: attempt.duration_seconds as number,
     };
   }
 }

@@ -17,6 +17,9 @@ import { RolesModule } from '../roles/roles.module';
 import { UsersModule } from '../users/users.module';
 import { SessionsModule } from '../sessions/sessions.module';
 import { TtsGatewayModule } from '../voice-teacher/tts-gateway/tts-gateway.module';
+import { SttGatewayModule } from '../voice-teacher/stt-gateway/stt-gateway.module';
+import { AiTeacherGovernanceModule } from '../ai-teacher/governance/governance.module';
+import { ProviderGatewayModule } from '../ai-teacher/provider-gateway/provider-gateway.module';
 import { PlacementController } from './placement.controller';
 import { PlacementAdminController } from './placement-admin.controller';
 import { PlacementAdminTestReadService } from './placement-admin-test-read.service';
@@ -39,9 +42,23 @@ import { PlacementSectionsService } from './placement-sections.service';
 import { PlacementTestReadService } from './placement-test-read.service';
 import { PlacementAimBridgeService } from './placement-aim-bridge.service';
 import { PlacementQuestionAudioService } from './placement-question-audio.service';
+import { PlacementAttemptTimerService } from './placement-attempt-timer.service';
+import { PlacementAiGradingService } from './placement-ai-grading.service';
+import { PlacementSpeakingAnswerSubmitService } from './placement-speaking-answer-submit.service';
+import { PlacementDecisionService } from './placement-decision.service';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, RolesModule, UsersModule, SessionsModule, TtsGatewayModule],
+  imports: [
+    DatabaseModule,
+    AuthModule,
+    RolesModule,
+    UsersModule,
+    SessionsModule,
+    TtsGatewayModule,
+    SttGatewayModule,
+    AiTeacherGovernanceModule,
+    ProviderGatewayModule,
+  ],
   controllers: [PlacementController, PlacementAdminController],
   providers: [
     PlacementTestReadService,
@@ -64,6 +81,10 @@ import { PlacementQuestionAudioService } from './placement-question-audio.servic
     PlacementAnalyticsService,
     PlacementPermissionGuard,
     PlacementAimBridgeService,
+    PlacementAttemptTimerService,
+    PlacementAiGradingService,
+    PlacementSpeakingAnswerSubmitService,
+    PlacementDecisionService,
   ],
   exports: [
     PlacementTestReadService,
@@ -80,6 +101,9 @@ import { PlacementQuestionAudioService } from './placement-question-audio.servic
     PlacementResultReadService,
     PlacementAuditService,
     PlacementPermissionGuard,
+    PlacementAttemptTimerService,
+    PlacementAiGradingService,
+    PlacementDecisionService,
   ],
 })
 export class PlacementModule {}

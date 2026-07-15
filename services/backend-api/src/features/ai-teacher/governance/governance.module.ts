@@ -50,6 +50,10 @@ import { PromptTemplateService } from './prompt-template.service';
     AiCostQuotaService,
     AiTeacherAuditService,
     AiTeacherStreamingService,
+    // Exported so other features (e.g. placement writing/speaking AI
+    // grading, P4-052) can reuse the same OpenAI-compatible provider
+    // instead of standing up a second provider seam.
+    AiTeacherProviderGateway,
   ],
 })
 export class AiTeacherGovernanceModule {}
