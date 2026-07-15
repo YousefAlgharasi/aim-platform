@@ -26,6 +26,8 @@ import '../../../auth/logic/provider/auth_flow_provider.dart';
 import '../../data/models/placement_question_model.dart';
 import '../../logic/provider/placement_provider.dart';
 import '../../logic/provider/placement_question_notifier.dart';
+import '../widgets/placement_countdown_timer.dart';
+import '../widgets/placement_speaking_answer_input.dart';
 
 class PlacementQuestionPage extends ConsumerStatefulWidget {
   const PlacementQuestionPage({
@@ -35,6 +37,7 @@ class PlacementQuestionPage extends ConsumerStatefulWidget {
     required this.sectionTitle,
     required this.sectionIndex,
     required this.totalSections,
+    this.expiresAt,
   });
 
   final String sectionId;
@@ -42,6 +45,11 @@ class PlacementQuestionPage extends ConsumerStatefulWidget {
   final String sectionTitle;
   final int sectionIndex;
   final int totalSections;
+
+  /// Server-computed absolute expiry timestamp for the whole attempt
+  /// (P4-052) — drives [PlacementCountdownTimer]. Null for legacy/untimed
+  /// attempts (no countdown shown).
+  final String? expiresAt;
 
   @override
   ConsumerState<PlacementQuestionPage> createState() =>
@@ -89,32 +97,82 @@ class _PlacementQuestionPageState
         counter: counter,
       ),
       body: SafeArea(
-        child: switch (state) {
-          PlacementQuestionIdle() ||
-          PlacementQuestionLoading() ||
-          PlacementQuestionSectionComplete() =>
-            const AIMFullScreenLoading(semanticLabel: 'Loading question'),
-          PlacementQuestionError(:final message) => AIMFullScreenError(
-              message: message,
-              onRetry: () {
-                setState(() => _submitError = null);
-                _loadQuestions();
+        child: Column(
+          children: [
+            if (widget.expiresAt != null)
+              Padding(
+                padding: const EdgeInsets.only(
+                  top: AimSpacing.space8,
+                  right: AimSpacing.screenPaddingMobile,
+                ),
+                child: Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: PlacementCountdownTimer(
+                    expiresAt: widget.expiresAt!,
+                    onExpired: _onTimerExpired,
+                  ),
+                ),
+              ),
+            Expanded(
+              child: switch (state) {
+                PlacementQuestionIdle() ||
+                PlacementQuestionLoading() ||
+                PlacementQuestionSectionComplete() =>
+                  const AIMFullScreenLoading(semanticLabel: 'Loading question'),
+                PlacementQuestionError(:final message) => AIMFullScreenError(
+                    message: message,
+                    onRetry: () {
+                      setState(() => _submitError = null);
+                      _loadQuestions();
+                    },
+                  ),
+                PlacementQuestionReady() => _QuestionBody(
+                    state: state,
+                    submitError: _submitError,
+                    onSelectAnswer: (answer) {
+                      setState(() => _submitError = null);
+                      ref
+                          .read(placementQuestionProvider.notifier)
+                          .selectAnswer(answer);
+                    },
+                    onSubmit: () => _submitAnswer(state),
+                    onSubmitSpeaking: (bytes, mimeType) =>
+                        _submitSpeakingAnswer(bytes, mimeType),
+                  ),
               },
             ),
-          PlacementQuestionReady() => _QuestionBody(
-              state: state,
-              submitError: _submitError,
-              onSelectAnswer: (answer) {
-                setState(() => _submitError = null);
-                ref
-                    .read(placementQuestionProvider.notifier)
-                    .selectAnswer(answer);
-              },
-              onSubmit: () => _submitAnswer(state),
-            ),
-        },
+          ],
+        ),
       ),
     );
+  }
+
+  /// Server enforces attempt expiry independently (PlacementAttemptTimerService)
+  /// — this only surfaces the state to the student and returns them to the
+  /// section list, where the backend's own rejection/auto-submit takes over.
+  void _onTimerExpired() {
+    if (!mounted) return;
+    setState(() => _submitError = 'Time is up — this attempt has been submitted.');
+  }
+
+  Future<void> _submitSpeakingAnswer(List<int> audioBytes, String mimeType) async {
+    setState(() => _submitError = null);
+    try {
+      final token = ref.read(authFlowProvider).accessToken ?? '';
+      await ref.read(placementQuestionProvider.notifier).submitSpeakingAnswer(
+            token,
+            audioBytes: audioBytes,
+            mimeType: mimeType,
+          );
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _submitError = e is Exception
+              ? 'Failed to submit recording: ${e.toString().replaceFirst('Exception: ', '')}'
+              : 'Failed to submit recording. Please try again.';
+        });
+      }
+    }
   }
 
   Future<void> _submitAnswer(PlacementQuestionReady state) async {
@@ -224,18 +282,21 @@ class _QuestionBody extends StatelessWidget {
     required this.state,
     required this.onSelectAnswer,
     required this.onSubmit,
+    required this.onSubmitSpeaking,
     this.submitError,
   });
 
   final PlacementQuestionReady state;
   final ValueChanged<String> onSelectAnswer;
   final VoidCallback onSubmit;
+  final void Function(List<int> audioBytes, String mimeType) onSubmitSpeaking;
   final String? submitError;
 
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
     final question = state.currentQuestion;
+    final isSpeaking = question.type == 'speaking';
 
     return Padding(
       padding: const EdgeInsetsDirectional.all(AimSpacing.screenPaddingMobile),
@@ -261,14 +322,21 @@ class _QuestionBody extends StatelessWidget {
           const SizedBox(height: AimSpacing.sectionGap),
           Expanded(
             child: SingleChildScrollView(
-              child: _AnswerInput(
-                key: ValueKey(question.id),
-                questionType: question.type,
-                questionOptions: question.options,
-                selectedAnswer: state.selectedAnswer,
-                onSelect: onSelectAnswer,
-                isSubmitting: state.isSubmitting,
-              ),
+              child: isSpeaking
+                  ? PlacementSpeakingAnswerInput(
+                      key: ValueKey(question.id),
+                      prompt: question.text,
+                      isSubmitting: state.isSubmitting,
+                      onRecordingComplete: onSubmitSpeaking,
+                    )
+                  : _AnswerInput(
+                      key: ValueKey(question.id),
+                      questionType: question.type,
+                      questionOptions: question.options,
+                      selectedAnswer: state.selectedAnswer,
+                      onSelect: onSelectAnswer,
+                      isSubmitting: state.isSubmitting,
+                    ),
             ),
           ),
           if (submitError != null) ...[
@@ -278,17 +346,21 @@ class _QuestionBody extends StatelessWidget {
               child: Text(submitError!),
             ),
           ],
-          const SizedBox(height: AimSpacing.componentGap),
-          AIMGradientButton(
-            label: state.isLastQuestion ? 'Submit Final Answer' : 'Next question',
-            gradient: AimGradients.gzHero,
-            fullWidth: true,
-            loading: state.isSubmitting,
-            enabled: state.canSubmit,
-            semanticLabel:
-                state.isLastQuestion ? 'Submit final answer' : 'Next question',
-            onPressed: state.canSubmit ? onSubmit : null,
-          ),
+          // Speaking questions submit themselves once recording stops
+          // (PlacementSpeakingAnswerInput) — no separate Next/Submit button.
+          if (!isSpeaking) ...[
+            const SizedBox(height: AimSpacing.componentGap),
+            AIMGradientButton(
+              label: state.isLastQuestion ? 'Submit Final Answer' : 'Next question',
+              gradient: AimGradients.gzHero,
+              fullWidth: true,
+              loading: state.isSubmitting,
+              enabled: state.canSubmit,
+              semanticLabel:
+                  state.isLastQuestion ? 'Submit final answer' : 'Next question',
+              onPressed: state.canSubmit ? onSubmit : null,
+            ),
+          ],
         ],
       ),
     );
@@ -331,10 +403,14 @@ class _AnswerInput extends StatelessWidget {
           onSelect: onSelect,
           isSubmitting: isSubmitting,
         ),
-      'fill_blank' => _FillBlankInput(
+      'fill_blank' || 'writing' => _FillBlankInput(
           selectedAnswer: selectedAnswer,
           onSelect: onSelect,
           isSubmitting: isSubmitting,
+          placeholder: questionType == 'writing'
+              ? 'Write your response here…'
+              : 'Type your answer here…',
+          rows: questionType == 'writing' ? 8 : 3,
         ),
       _ => Text(
           'Unknown question type: $questionType',
@@ -450,11 +526,15 @@ class _FillBlankInput extends StatefulWidget {
     required this.selectedAnswer,
     required this.onSelect,
     required this.isSubmitting,
+    this.placeholder = 'Type your answer here…',
+    this.rows = 3,
   });
 
   final String? selectedAnswer;
   final ValueChanged<String> onSelect;
   final bool isSubmitting;
+  final String placeholder;
+  final int rows;
 
   @override
   State<_FillBlankInput> createState() => _FillBlankInputState();
@@ -480,8 +560,8 @@ class _FillBlankInputState extends State<_FillBlankInput> {
     return AIMTextarea(
       controller: _controller,
       disabled: widget.isSubmitting,
-      placeholder: 'Type your answer here…',
-      rows: 3,
+      placeholder: widget.placeholder,
+      rows: widget.rows,
       semanticLabel: 'Your answer',
       onChanged: widget.onSelect,
     );

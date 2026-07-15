@@ -17,6 +17,8 @@ import '../../../lessons/ui/pages/course_list_page.dart';
 import '../../../notifications/logic/provider/notification_providers.dart';
 import '../../../onboarding/logic/provider/onboarding_walkthrough_provider.dart';
 import '../../../onboarding/ui/widgets/onboarding_walkthrough_overlay.dart';
+import '../../../placement/logic/provider/placement_gate_notifier.dart';
+import '../../../placement/ui/pages/placement_gate_page.dart' show placementGateProvider;
 import '../../../profile/ui/pages/profile_page.dart';
 import '../../../progress/ui/pages/progress_page.dart';
 import '../../../reviews/ui/pages/review_page.dart';
@@ -59,6 +61,25 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
     // HomePage._load) — calling a provider's .load() synchronously during
     // build/initState would risk a "setState during build" error.
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadUnreadCount());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkPlacementGate());
+  }
+
+  /// P4-052: first-login gate. Checked once per shell mount (not on every
+  /// tab switch — this widget is only built once per app session, the tabs
+  /// live in an IndexedStack) so a student who has never taken the
+  /// placement test and has no learning progress yet is offered the choice
+  /// exactly once. The backend is the sole authority on whether to show it.
+  void _checkPlacementGate() {
+    final token = ref.read(authFlowProvider).accessToken;
+    if (token == null || token.isEmpty) return;
+
+    final notifier = ref.read(placementGateProvider.notifier);
+    notifier.check(token).then((_) {
+      if (!mounted) return;
+      if (ref.read(placementGateProvider) is PlacementGateShouldShow) {
+        context.push(AppRoutePaths.placementGate);
+      }
+    });
   }
 
   void _loadUnreadCount() {
