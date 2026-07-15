@@ -63,6 +63,29 @@ export interface PlacementScoringResult {
   readonly weaknessMap: WeaknessMapEntry[];
   /** skill_mastery_map JSONB for placement_results. Flutter sees only skillId/skillName/signal. */
   readonly skillMasteryMap: SkillMasteryMapEntry[];
+  /**
+   * Writing/speaking AI-graded signals (P4-052). Additive — does not affect
+   * overallScore/estimatedLevel/weaknessMap computed above from objectively
+   * scored MCQ/listening/etc. questions. Null when the attempt had no
+   * question of that type. Student-safe (score + brief feedback only, no
+   * internal mastery/weighting) — clearly labeled as a distinct signal.
+   */
+  readonly additionalSignals: PlacementAdditionalSignals;
+}
+
+/** One AI-graded writing/speaking signal, clearly labeled and student-safe. */
+export interface PlacementAiSignal {
+  /** 0-10 AI-graded score. */
+  readonly score: number;
+  /** Brief, student-safe feedback text. */
+  readonly feedback: string;
+}
+
+/** Writing/speaking AI-graded signals attached to a placement result. */
+export interface PlacementAdditionalSignals {
+  readonly writing: PlacementAiSignal | null;
+  /** Speaking additionally carries the STT transcript for the student to review. */
+  readonly speaking: (PlacementAiSignal & { readonly transcript: string }) | null;
 }
 
 /** One entry in the weakness map (P4-033). */

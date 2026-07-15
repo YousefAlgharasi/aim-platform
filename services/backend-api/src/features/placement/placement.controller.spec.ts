@@ -12,6 +12,8 @@ import { PlacementInitialLearningPathService } from './placement-initial-learnin
 import { PlacementLevelStateService } from './placement-level-state.service';
 import { PlacementQuestionAudioService } from './placement-question-audio.service';
 import { TtsAudioStorageService } from '../voice-teacher/tts-gateway/tts-audio-storage.service';
+import { PlacementSpeakingAnswerSubmitService } from './placement-speaking-answer-submit.service';
+import { PlacementDecisionService } from './placement-decision.service';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { PlacementPermissionGuard } from './placement-permission.guard';
 
@@ -51,6 +53,11 @@ describe('PlacementController', () => {
       levelState: { upsertFromPlacement: jest.fn().mockResolvedValue(undefined) },
       questionAudio: { ensureAudio: jest.fn().mockResolvedValue({ audioRef: null, scriptMissing: true }) },
       audioStorage: { retrieveAudio: jest.fn().mockResolvedValue(null) },
+      speakingAnswerSubmit: { submitSpeakingAnswer: jest.fn().mockResolvedValue({ id: 'ans-1', placement_attempt_id: 'att-1', placement_question_id: 'q-1', transcript: '', created_at: '2026-06-01T00:00:00Z' }) },
+      decision: {
+        getGateStatus: jest.fn().mockResolvedValue({ should_show_gate: true, decision: null }),
+        setDecision: jest.fn().mockResolvedValue({ should_show_gate: false, decision: 'take_placement' }),
+      },
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -68,6 +75,8 @@ describe('PlacementController', () => {
         { provide: PlacementLevelStateService, useValue: mocks.levelState },
         { provide: PlacementQuestionAudioService, useValue: mocks.questionAudio },
         { provide: TtsAudioStorageService, useValue: mocks.audioStorage },
+        { provide: PlacementSpeakingAnswerSubmitService, useValue: mocks.speakingAnswerSubmit },
+        { provide: PlacementDecisionService, useValue: mocks.decision },
       ],
     })
       .overrideGuard(SupabaseJwtAuthGuard).useValue({ canActivate: () => true })

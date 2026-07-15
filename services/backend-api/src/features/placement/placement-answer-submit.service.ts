@@ -35,6 +35,8 @@ import {
 } from './placement.types';
 import { PlacementAuditService } from './placement-audit.service';
 import { PlacementAnalyticsService } from './placement-analytics.service';
+import { PlacementAttemptTimerService } from './placement-attempt-timer.service';
+import { PlacementAiGradingService } from './placement-ai-grading.service';
 
 /** Allowed answer_value formats per question type (P4-012 §2.3). */
 const VALID_OPTION_LETTERS = new Set(['A', 'B', 'C', 'D']);
@@ -46,6 +48,8 @@ export class PlacementAnswerSubmitService {
     private readonly db: DatabaseService,
     private readonly audit: PlacementAuditService,
     private readonly analytics: PlacementAnalyticsService,
+    private readonly timer: PlacementAttemptTimerService,
+    private readonly grading: PlacementAiGradingService,
   ) {}
 
   /**
@@ -74,7 +78,7 @@ export class PlacementAnswerSubmitService {
     //    Ownership is enforced by requiring student_id = $2 in the query.
     // -----------------------------------------------------------------------
     const attemptResult = await this.db.query<PlacementAttemptRow>(
-      `SELECT id, student_id, placement_test_id, status, started_at
+      `SELECT id, student_id, placement_test_id, status, started_at, expires_at
        FROM placement_attempts
        WHERE id = $1 AND student_id = $2
        LIMIT 1`,
@@ -99,6 +103,9 @@ export class PlacementAnswerSubmitService {
       });
     }
 
+    // 1b. Server-enforced timer — reject (and auto-submit) if time is up.
+    await this.timer.assertNotExpired(attemptId, attempt.expires_at);
+
     // -----------------------------------------------------------------------
     // 2. Verify the question belongs to this placement test.
     //    JOIN through placement_sections to confirm the question is part of
@@ -108,10 +115,11 @@ export class PlacementAnswerSubmitService {
     const questionResult = await this.db.query<{
       id: string;
       question_type: string;
+      prompt: string;
       skill_code: string | null;
       placement_section_id: string;
     }>(
-      `SELECT pq.id, pq.question_type, ps.skill_code, pq.placement_section_id
+      `SELECT pq.id, pq.question_type, pq.prompt, ps.skill_code, pq.placement_section_id
        FROM placement_questions pq
        JOIN placement_sections ps ON ps.id = pq.placement_section_id
        WHERE pq.id = $1
@@ -195,6 +203,23 @@ export class PlacementAnswerSubmitService {
       attempt.started_at,
       question.placement_section_id,
     );
+
+    // -----------------------------------------------------------------------
+    // 6b. Writing answers are AI-graded (0-10 score + brief feedback) using
+    //     the same provider as AI Teacher. Graded inline so a graded result
+    //     is available by the time placement scoring runs; a grading
+    //     failure never blocks the student's answer submission (defensive
+    //     defaults are used inside PlacementAiGradingService).
+    // -----------------------------------------------------------------------
+    if (question.question_type === 'writing') {
+      const graded = await this.grading.gradeWriting(question.prompt, answer.answer_value);
+      await this.db.query(
+        `UPDATE placement_answers
+         SET ai_score = $2, ai_feedback = $3, graded_at = now()
+         WHERE id = $1`,
+        [answer.id, graded.score, graded.feedback],
+      );
+    }
 
     // -----------------------------------------------------------------------
     // 7. Return student-safe fields only (P4-012 §4).
@@ -327,8 +352,19 @@ export class PlacementAnswerSubmitService {
         break;
 
       case 'fill_blank':
+      case 'writing':
         // Any non-empty string is valid — no format restriction beyond length.
+        // 'writing' is AI-graded (not compared against correct_answer).
         break;
+
+      case 'speaking':
+        // Speaking answers must go through POST .../answers/speaking
+        // (multipart audio upload), never this text endpoint.
+        throw new AppError({
+          code: PlacementErrorCode.INVALID_ANSWER_VALUE,
+          message: 'Speaking questions must be submitted via the speaking audio endpoint.',
+          statusCode: HttpStatus.BAD_REQUEST,
+        });
 
       default:
         throw new AppError({
