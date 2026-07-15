@@ -49,9 +49,21 @@ class MainShellPage extends ConsumerStatefulWidget {
 }
 
 class _MainShellPageState extends ConsumerState<MainShellPage> {
+  // P4-052: blocks the real shell content (Home, etc.) from ever being
+  // rendered until the first-login gate check has resolved. Starts `true`
+  // whenever a token is present so the very first frame this widget draws
+  // is a loading placeholder, not Home — the gate check then either clears
+  // this flag (gate hidden / already decided) or navigates away entirely
+  // (gate should show), but Home itself is never built in the interim.
+  bool _blockedByGateCheck = false;
+
   @override
   void initState() {
     super.initState();
+    final token = ref.read(authFlowProvider).accessToken;
+    if (token != null && token.isNotEmpty) {
+      _blockedByGateCheck = true;
+    }
     // Eagerly load the unread notification count so the drawer's
     // Notifications badge (see _buildDrawer) reflects real data as soon as
     // the shell mounts, rather than only after some other screen (e.g.
@@ -69,16 +81,33 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
   /// live in an IndexedStack) so a student who has never taken the
   /// placement test and has no learning progress yet is offered the choice
   /// exactly once. The backend is the sole authority on whether to show it.
+  ///
+  /// While this is in flight, [build] renders a blocking loader instead of
+  /// Home (see [_blockedByGateCheck]) — the student must never be able to
+  /// see or reach Home before the gate has been resolved or answered. If
+  /// the gate should show, we navigate with `context.go` (replacing this
+  /// route) rather than `context.push`, so Home is never left underneath
+  /// in the navigation stack where a back-swipe could reveal it.
   void _checkPlacementGate() {
     final token = ref.read(authFlowProvider).accessToken;
-    if (token == null || token.isEmpty) return;
+    if (token == null || token.isEmpty) {
+      if (mounted && _blockedByGateCheck) {
+        setState(() => _blockedByGateCheck = false);
+      }
+      return;
+    }
 
     final notifier = ref.read(placementGateProvider.notifier);
     notifier.check(token).then((_) {
       if (!mounted) return;
-      if (ref.read(placementGateProvider) is PlacementGateShouldShow) {
-        context.push(AppRoutePaths.placementGate);
+      final gateState = ref.read(placementGateProvider);
+      if (gateState is PlacementGateShouldShow) {
+        context.go(AppRoutePaths.placementGate);
+        return;
       }
+      // Hidden, or a transient check error — fail open rather than
+      // blocking the student indefinitely on a network hiccup.
+      setState(() => _blockedByGateCheck = false);
     });
   }
 
@@ -92,6 +121,14 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_blockedByGateCheck) {
+      final surfaces = aimSurfacesOf(context);
+      return Scaffold(
+        backgroundColor: surfaces.background,
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     final selectedIndex = ref.watch(mainShellTabIndexProvider);
     final l10n = AppLocalizations.of(context);
     final hasSeenWalkthrough = ref.watch(onboardingWalkthroughProvider);

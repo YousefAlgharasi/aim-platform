@@ -48,7 +48,10 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
     ref.listen<PlacementGateState>(placementGateProvider, (_, next) {
       if (next is PlacementGateDecided && context.mounted) {
         if (next.decision == 'take_placement') {
-          context.go(AppRoutePaths.placementIntro);
+          // Goes straight to the live start screen (real section count/time
+          // from the backend) rather than the static PlacementIntroPage,
+          // which shows stale hardcoded figures.
+          context.go(AppRoutePaths.placementStart);
         } else {
           context.go(AppRoutePaths.home);
         }
