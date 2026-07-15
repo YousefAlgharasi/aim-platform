@@ -33,6 +33,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { PlacementScoringConfig } from './placement-scoring.config';
 import {
+  PlacementAdditionalSignals,
   PlacementScoringResult,
   SectionScore,
   SkillMasteryMapEntry,
@@ -151,6 +152,12 @@ export class PlacementScoringService {
     // -----------------------------------------------------------------------
     const weaknessMap = this.buildWeaknessMap(sectionScores, skillScores);
 
+    // -----------------------------------------------------------------------
+    // 9. Writing/speaking AI-graded signals (P4-052) — additive, does not
+    //    affect the objective MCQ/listening/etc. scoring above.
+    // -----------------------------------------------------------------------
+    const additionalSignals = await this.computeAdditionalSignals(attemptId);
+
     this.logger.log(
       `PlacementScoringService: attempt ${attemptId} — ` +
         `score=${overallScore.toFixed(3)}, level=${estimatedLevel}, ` +
@@ -164,7 +171,44 @@ export class PlacementScoringService {
       skillScores,
       skillMasteryMap,
       weaknessMap,
+      additionalSignals,
     };
+  }
+
+  // -------------------------------------------------------------------------
+  // Step 9: Writing/speaking AI-graded signals (P4-052)
+  // -------------------------------------------------------------------------
+
+  private async computeAdditionalSignals(attemptId: string): Promise<PlacementAdditionalSignals> {
+    const result = await this.db.query<{
+      question_type: string;
+      ai_score: string | null;
+      ai_feedback: string | null;
+      transcript: string | null;
+    }>(
+      `SELECT pq.question_type, pa.ai_score, pa.ai_feedback, pa.transcript
+       FROM placement_answers pa
+       JOIN placement_questions pq ON pq.id = pa.placement_question_id
+       WHERE pa.placement_attempt_id = $1
+         AND pq.question_type IN ('writing', 'speaking')`,
+      [attemptId],
+    );
+
+    let writing: PlacementAdditionalSignals['writing'] = null;
+    let speaking: PlacementAdditionalSignals['speaking'] = null;
+
+    for (const row of result.rows) {
+      const score = row.ai_score !== null ? parseFloat(row.ai_score) : 0;
+      const feedback = row.ai_feedback ?? '';
+
+      if (row.question_type === 'writing') {
+        writing = { score, feedback };
+      } else if (row.question_type === 'speaking') {
+        speaking = { score, feedback, transcript: row.transcript ?? '' };
+      }
+    }
+
+    return { writing, speaking };
   }
 
   // -------------------------------------------------------------------------

@@ -12,6 +12,8 @@ class PlacementAttempt {
     required this.startedAt,
     this.submittedAt,
     this.completedAt,
+    this.expiresAt,
+    this.durationSeconds,
   });
 
   /// Backend-generated UUID.
@@ -32,6 +34,14 @@ class PlacementAttempt {
 
   /// Set by backend on attempt completion. Null until completed.
   final String? completedAt;
+
+  /// Server-computed absolute expiry timestamp (started_at + duration_seconds).
+  /// The countdown timer must be derived from this — never from a purely
+  /// client-local timer — to avoid clock skew / pausing-tab cheating.
+  final String? expiresAt;
+
+  /// Total time budget for the whole attempt, in seconds.
+  final int? durationSeconds;
 
   bool get isActive => status == 'active';
   bool get isSubmitted => status == 'submitted';

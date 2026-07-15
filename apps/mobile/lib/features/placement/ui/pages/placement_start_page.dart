@@ -78,6 +78,8 @@ class _PlacementStartPageState extends ConsumerState<PlacementStartPage> {
           extra: {
             'attemptId': next.attempt.id,
             'testId': next.test.id,
+            if (next.attempt.expiresAt != null)
+              'expiresAt': next.attempt.expiresAt!,
           },
         );
       }

@@ -54,6 +54,13 @@ class BackendApiPaths {
   static String placementAttemptComplete(String attemptId) =>
       '/placement/attempts/$attemptId/complete';
 
+  /// POST /placement/attempts/:id/answers/speaking
+  static String placementAttemptSpeakingAnswer(String attemptId) =>
+      '/placement/attempts/$attemptId/answers/speaking';
+
+  /// GET/POST /placement/decision — first-login placement gate.
+  static const String placementDecision = '/placement/decision';
+
   // ---------------------------------------------------------------------------
   // AIM Engine outputs — Phase 6 P6-022
   // Read-only. Flutter never writes to these endpoints.

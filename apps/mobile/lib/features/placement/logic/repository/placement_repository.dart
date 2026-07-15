@@ -66,4 +66,22 @@ abstract class PlacementRepository {
   /// Fetch the student's overall placement status ('none'/'active'/
   /// 'submitted'/'completed') without requiring a known attemptId.
   Future<PlacementLatestStatusModel> getLatestStatus(String bearerToken);
+
+  /// Submit a SPEAKING answer's recorded audio for AI transcription + grading.
+  Future<PlacementSpeakingAnswerModel> submitSpeakingAnswer(
+    String bearerToken, {
+    required String attemptId,
+    required String questionId,
+    required List<int> audioBytes,
+    required String mimeType,
+  });
+
+  /// First-login placement gate status.
+  Future<PlacementDecisionModel> getPlacementDecision(String bearerToken);
+
+  /// Persist the student's one-time first-login placement gate choice.
+  Future<PlacementDecisionModel> setPlacementDecision(
+    String bearerToken, {
+    required String decision,
+  });
 }

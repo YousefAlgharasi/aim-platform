@@ -39,6 +39,7 @@ import '../../features/progress/ui/pages/weakness_summary_page.dart';
 import '../../features/progress/ui/pages/recommendations_page.dart';
 import '../../features/progress/ui/pages/review_schedule_page.dart';
 import '../../features/placement/ui/pages/placement_intro_page.dart';
+import '../../features/placement/ui/pages/placement_gate_page.dart';
 import '../../features/learning_path/ui/pages/learning_path_page.dart';
 import '../../features/assessments/ui/pages/deadlines_page.dart';
 import '../../features/ai_teacher/ui/pages/ai_teacher_settings_page.dart';
@@ -166,6 +167,10 @@ class AppRouter {
         GoRoute(
           path: AppRoutePaths.placementMenu,
           builder: (context, state) => const PlacementMenuPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.placementGate,
+          builder: (context, state) => const PlacementGatePage(),
         ),
         GoRoute(
           path: AppRoutePaths.courseChapters,
@@ -375,10 +380,14 @@ class AppRouter {
   static Widget _buildPlacementSection(Object? arguments) {
     final args = _placementArgs(arguments);
     final attemptId = args['attemptId'];
+    final expiresAt = args['expiresAt'];
 
     if (attemptId is! String) return const SplashPage();
 
-    return PlacementSectionPage(attemptId: attemptId);
+    return PlacementSectionPage(
+      attemptId: attemptId,
+      expiresAt: expiresAt is String ? expiresAt : null,
+    );
   }
 
   static Widget _buildPlacementQuestion(Object? arguments) {
@@ -388,6 +397,7 @@ class AppRouter {
     final sectionTitle = args['sectionTitle'];
     final sectionIndex = args['sectionIndex'];
     final totalSections = args['totalSections'];
+    final expiresAt = args['expiresAt'];
 
     if (sectionId is! String ||
         attemptId is! String ||
@@ -403,6 +413,7 @@ class AppRouter {
       sectionTitle: sectionTitle,
       sectionIndex: sectionIndex,
       totalSections: totalSections,
+      expiresAt: expiresAt is String ? expiresAt : null,
     );
   }
 
@@ -702,6 +713,7 @@ class AppRouter {
     AppRoutePaths.placementSubmit,
     AppRoutePaths.placementResult,
     AppRoutePaths.placementMenu,
+    AppRoutePaths.placementGate,
     AppRoutePaths.assessments,
     AppRoutePaths.assessmentDetail,
     AppRoutePaths.assessmentStart,

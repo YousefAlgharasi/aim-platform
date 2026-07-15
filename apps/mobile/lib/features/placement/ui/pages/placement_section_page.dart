@@ -44,10 +44,16 @@ class PlacementSectionPage extends ConsumerStatefulWidget {
   const PlacementSectionPage({
     super.key,
     required this.attemptId,
+    this.expiresAt,
   });
 
   /// The active placement attempt ID — passed from the start page.
   final String attemptId;
+
+  /// Server-computed absolute expiry timestamp for the attempt's countdown
+  /// timer (P4-052) — forwarded through to the question page. Null for
+  /// legacy/untimed attempts.
+  final String? expiresAt;
 
   @override
   ConsumerState<PlacementSectionPage> createState() =>
@@ -121,6 +127,7 @@ class _PlacementSectionPageState extends ConsumerState<PlacementSectionPage> {
         'sectionTitle': state.currentSection.title,
         'sectionIndex': state.displayIndex,
         'totalSections': state.totalSections,
+        if (widget.expiresAt != null) 'expiresAt': widget.expiresAt!,
       },
     );
 

@@ -125,6 +125,8 @@ export interface PlacementAttemptRow {
   readonly completed_at: string | null;
   readonly created_at: string;
   readonly updated_at: string;
+  readonly duration_seconds?: number;
+  readonly expires_at?: string | null;
 }
 
 /**
@@ -138,6 +140,14 @@ export interface PlacementAttemptStartResponse {
   readonly started_at: string;
   readonly submitted_at: null;
   readonly completed_at: null;
+  /**
+   * Server-computed absolute expiry timestamp (started_at + duration_seconds).
+   * The client MUST derive its countdown from this timestamp (not from a
+   * purely client-local timer) to avoid clock skew / pausing-tab cheating.
+   */
+  readonly expires_at: string;
+  /** Total time budget for the whole attempt, in seconds. */
+  readonly duration_seconds: number;
 }
 
 /**
@@ -190,5 +200,26 @@ export interface SubmitPlacementAnswerResponse {
   readonly placement_attempt_id: string;
   readonly placement_question_id: string;
   readonly answer_value: string;
+  readonly created_at: string;
+}
+
+// ---------------------------------------------------------------------------
+// Writing / Speaking answers + AI grading (P4-052)
+// ---------------------------------------------------------------------------
+
+/** Defensive parse target for the AI grading provider's JSON reply. */
+export interface PlacementAiGradingResult {
+  /** 0-10, clamped and defaulted to 0 if the model reply could not be parsed. */
+  readonly score: number;
+  /** Brief, student-safe feedback text. */
+  readonly feedback: string;
+}
+
+/** Response for POST /placement/attempts/:id/answers/speaking. */
+export interface SubmitPlacementSpeakingAnswerResponse {
+  readonly id: string;
+  readonly placement_attempt_id: string;
+  readonly placement_question_id: string;
+  readonly transcript: string;
   readonly created_at: string;
 }
