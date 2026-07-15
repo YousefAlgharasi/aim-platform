@@ -97,7 +97,7 @@ export class PlacementAttemptService {
     const insertResult = await this.db.query<PlacementAttemptRow>(
       `INSERT INTO placement_attempts
          (student_id, placement_test_id, status, started_at, duration_seconds, expires_at)
-       VALUES ($1, $2, 'active', now(), $3, now() + ($3 || ' seconds')::interval)
+       VALUES ($1, $2, 'active', now(), $3, now() + make_interval(secs => $3))
        RETURNING id, student_id, placement_test_id, status, started_at,
                  submitted_at, completed_at, created_at, updated_at,
                  duration_seconds, expires_at`,
