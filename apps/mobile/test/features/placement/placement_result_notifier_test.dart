@@ -107,6 +107,27 @@ class _FakePlacementRepository implements PlacementRepository {
   Future<PlacementAttemptModel> completeAttempt(String t,
           {required String attemptId}) async =>
       throw UnimplementedError();
+
+  @override
+  Future<PlacementSpeakingAnswerModel> submitSpeakingAnswer(
+    String bearerToken, {
+    required String attemptId,
+    required String questionId,
+    required List<int> audioBytes,
+    required String mimeType,
+  }) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<PlacementDecisionModel> getPlacementDecision(String bearerToken) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<PlacementDecisionModel> setPlacementDecision(
+    String bearerToken, {
+    required String decision,
+  }) async =>
+      throw UnimplementedError();
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────

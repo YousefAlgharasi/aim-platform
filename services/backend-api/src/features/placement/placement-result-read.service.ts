@@ -154,6 +154,19 @@ export interface PlacementResultResponse {
   readonly recommended_course_id: string | null;
   readonly unlocked_course_ids: string[];
   readonly note: string | null;
+  /**
+   * Writing/speaking AI-graded signals (P4-052) — clearly labeled as
+   * distinct, additive signals. Never merged into skill_mastery_map or
+   * estimated_level, and carries no internal mastery/weighting data.
+   */
+  readonly additional_signals: {
+    readonly writing: { readonly score: number; readonly feedback: string } | null;
+    readonly speaking: {
+      readonly score: number;
+      readonly feedback: string;
+      readonly transcript: string;
+    } | null;
+  };
 }
 
 // Signal thresholds — must match P4-045 constants (backend config, never exposed)
@@ -305,6 +318,7 @@ export class PlacementResultReadService {
       studentId,
     );
     const unlockedCourseIds = await this.resolveUnlockedCourseIds(studentId, trackSlug);
+    const additionalSignals = await this.resolveAdditionalSignals(attemptId);
 
     // -----------------------------------------------------------------------
     // 5. Return response shape matching Flutter PlacementResultModel.fromJson().
@@ -320,7 +334,47 @@ export class PlacementResultReadService {
       recommended_course_id: recommendedCourseId,
       unlocked_course_ids: unlockedCourseIds,
       note,
+      additional_signals: additionalSignals,
     };
+  }
+
+  /**
+   * Reads the writing/speaking AI-graded signals directly from
+   * placement_answers (already permanently persisted at grading time by
+   * PlacementAnswerSubmitService/PlacementSpeakingAnswerSubmitService) —
+   * no separate storage on placement_results is needed.
+   */
+  private async resolveAdditionalSignals(
+    attemptId: string,
+  ): Promise<PlacementResultResponse['additional_signals']> {
+    const rows = await this.db.query<{
+      question_type: string;
+      ai_score: string | null;
+      ai_feedback: string | null;
+      transcript: string | null;
+    }>(
+      `SELECT pq.question_type, pa.ai_score, pa.ai_feedback, pa.transcript
+       FROM placement_answers pa
+       JOIN placement_questions pq ON pq.id = pa.placement_question_id
+       WHERE pa.placement_attempt_id = $1
+         AND pq.question_type IN ('writing', 'speaking')`,
+      [attemptId],
+    );
+
+    let writing: PlacementResultResponse['additional_signals']['writing'] = null;
+    let speaking: PlacementResultResponse['additional_signals']['speaking'] = null;
+
+    for (const row of rows.rows) {
+      const score = row.ai_score !== null ? parseFloat(row.ai_score) : 0;
+      const feedback = row.ai_feedback ?? '';
+      if (row.question_type === 'writing') {
+        writing = { score, feedback };
+      } else if (row.question_type === 'speaking') {
+        speaking = { score, feedback, transcript: row.transcript ?? '' };
+      }
+    }
+
+    return { writing, speaking };
   }
 
   // -------------------------------------------------------------------------

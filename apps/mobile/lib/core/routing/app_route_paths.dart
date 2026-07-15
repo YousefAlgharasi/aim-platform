@@ -74,6 +74,10 @@ class AppRoutePaths {
   // TASK-14: Placement intro route
   static const String placementIntro = '/placement/intro';
 
+  /// P4-052: first-login placement gate — "Take the placement test" vs
+  /// "Start from scratch".
+  static const String placementGate = '/placement/gate';
+
   // Learning Path
   static const String learningPath = '/learning-path';
 
