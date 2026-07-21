@@ -788,10 +788,10 @@ abstract class AppLocalizations {
   /// **'AIM'**
   String get onboardingBrandName;
 
-  /// Tagline shown beneath the brand name on the splash screen.
+  /// Tagline shown beneath the brand name on the splash screen. Full expansion of the AIM acronym.
   ///
   /// In en, this message translates to:
-  /// **'Adaptive Intelligence for Mastery'**
+  /// **'Academy of Intelligent Minds'**
   String get onboardingTagline;
 
   /// Static hint text shown alongside the splash screen's progress bar while the session check runs.
