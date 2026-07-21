@@ -444,9 +444,9 @@
   "@onboardingBrandName": {
     "description": "App brand name shown on the splash screen."
   },
-  "onboardingTagline": "Adaptive Intelligence for Mastery",
+  "onboardingTagline": "Academy of Intelligent Minds",
   "@onboardingTagline": {
-    "description": "Tagline shown beneath the brand name on the splash screen."
+    "description": "Tagline shown beneath the brand name on the splash screen. Full expansion of the AIM acronym."
   },
   "onboardingTapToContinue": "Tap to continue",
   "@onboardingTapToContinue": {

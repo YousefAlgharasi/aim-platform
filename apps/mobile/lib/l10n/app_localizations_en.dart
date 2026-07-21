@@ -387,7 +387,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingBrandName => 'AIM';
 
   @override
-  String get onboardingTagline => 'Adaptive Intelligence for Mastery';
+  String get onboardingTagline => 'Academy of Intelligent Minds';
 
   @override
   String get onboardingTapToContinue => 'Tap to continue';

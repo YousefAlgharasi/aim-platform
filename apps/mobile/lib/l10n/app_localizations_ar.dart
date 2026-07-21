@@ -387,7 +387,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get onboardingBrandName => 'AIM';
 
   @override
-  String get onboardingTagline => 'ذكاء تكيّفي من أجل الإتقان';
+  String get onboardingTagline => 'أكاديمية العقول الذكية';
 
   @override
   String get onboardingTapToContinue => 'اضغط للمتابعة';
