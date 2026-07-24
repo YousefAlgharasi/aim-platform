@@ -6,11 +6,13 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 
-import { backendFetch } from '../../../../lib/api/client-api-helpers';
+import { backendFetch } from '../../../../core/api/client-api-helpers';
 
-import { OperationsLoadingSpinner } from '../../../../components/operations/operations-loading-spinner';
-import { OperationsEmptyState } from '../../../../components/operations/operations-empty-state';
-import { OperationsErrorCard } from '../../../../components/operations/operations-error-card';
+import {
+  OperationsLoadingSpinner,
+  OperationsEmptyState,
+  OperationsErrorCard,
+} from '../../../../shared/components/operations';
 
 type FeedbackItem = {
   readonly id: string;

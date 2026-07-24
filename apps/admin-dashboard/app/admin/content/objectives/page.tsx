@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../lib/auth';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../core/auth';
 import {
   fetchAdminObjectives,
   createAdminObjective,
@@ -10,9 +10,9 @@ import {
   type CreateObjectivePayload,
   type UpdateObjectivePayload,
   type ObjectiveStatus,
-} from '../../../../lib/api/admin-objectives-api';
-import { AdminApiClientError } from '../../../../lib/api';
-import { ObjectivesList } from './objectives-list';
+} from '../../../../features/content/api/admin-objectives-api';
+import { AdminApiClientError } from '../../../../core/api';
+import { ObjectivesList } from '../../../../features/content';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;

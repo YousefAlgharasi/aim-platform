@@ -1,7 +1,7 @@
-import { getAdminToken } from '../../../lib/api/admin-token';
-import { AdminApiClientError } from '../../../lib/api';
-import { fetchAdminAuditLogs } from '../../../lib/api/admin-logs-api';
-import { AuditLogClient } from './audit-log-client';
+import { getAdminToken } from '../../../core/api/admin-token';
+import { AdminApiClientError } from '../../../core/api';
+import { fetchAdminAuditLogs } from '../../../core/api/admin-logs-api';
+import { AuditLogClient } from '../../../features/logs';
 
 type Props = {
   searchParams: Promise<{ page?: string; userId?: string; action?: string }>;

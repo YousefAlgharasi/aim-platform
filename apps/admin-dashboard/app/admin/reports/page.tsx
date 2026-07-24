@@ -1,15 +1,15 @@
 import Link from 'next/link';
-import { getAdminToken } from '../../../lib/api/admin-token';
-import { AdminApiClientError } from '../../../lib/api';
+import { getAdminToken } from '../../../core/api/admin-token';
+import { AdminApiClientError } from '../../../core/api';
 import {
   fetchEnrollmentReport,
   fetchAssessmentReport,
   fetchActiveUsersReport,
+  ReportsClient,
   type AdminEnrollmentReport,
   type AdminAssessmentReport,
   type AdminActiveUsersReport,
-} from '../../../lib/api/admin-reports-api';
-import { ReportsClient } from './reports-client';
+} from '../../../features/analytics';
 
 export default async function AdminReportsPage() {
   const token = await getAdminToken();
@@ -51,6 +51,7 @@ export default async function AdminReportsPage() {
           enrollment={enrollment}
           assessment={assessment}
           activeUsers={activeUsers}
+          token={token}
         />
       )}
 

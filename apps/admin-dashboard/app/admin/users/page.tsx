@@ -1,14 +1,14 @@
 import { cookies } from 'next/headers';
 
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../lib/auth';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../core/auth';
 import {
   fetchAdminUsers,
+  UsersPageClient,
   type AdminUserListItem,
   type AdminUserStatus,
   type AdminUserType,
-} from '../../../lib/api/admin-users-api';
-import { AdminApiClientError } from '../../../lib/api';
-import { UsersPageClient } from './users-page-client';
+} from '../../../features/users';
+import { AdminApiClientError } from '../../../core/api';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
@@ -23,6 +23,7 @@ type Props = {
     status?: string;
     userType?: string;
     email?: string;
+    search?: string;
   }>;
 };
 
@@ -39,7 +40,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   const userType = TYPE_OPTIONS.includes(sp.userType as AdminUserType)
     ? (sp.userType as AdminUserType)
     : undefined;
-  const email = sp.email?.trim() || undefined;
+  const email = sp.search?.trim() || sp.email?.trim() || undefined;
 
   const cookieStore = await cookies();
   const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';

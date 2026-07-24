@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
 
+import { QueryProvider } from '../shared/components/providers/query-provider';
+
 export const metadata: Metadata = {
   title: 'AIM Admin Dashboard',
   description: 'Internal Admin Dashboard shell for AIM Phase 1.',
@@ -13,7 +15,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <QueryProvider>{children}</QueryProvider>
+      </body>
     </html>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { backendFetch, backendFetchJson } from '../../../../lib/api/client-api-helpers';
+import { backendFetch, backendFetchJson } from '../../../../core/api/client-api-helpers';
 
 type Product = {
   id: string;

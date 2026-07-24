@@ -1,11 +1,11 @@
-import { render, screen } from '@testing-library/react';
-import { SessionSummaryClient } from '../../app/admin/students/[studentId]/progress/sessions/session-summary-client';
+import { render, screen, renderWithProviders } from '../test-utils';
+import { StudentSessionSummaryClient as SessionSummaryClient } from '../../features/students';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn(), push: jest.fn() }),
 }));
 
-jest.mock('../../lib/api', () => ({
+jest.mock('../../core/api', () => ({
   adminApiClient: { get: jest.fn(), post: jest.fn(), patch: jest.fn() },
   AdminApiClientError: class extends Error { status = 500; },
 }));
@@ -17,22 +17,22 @@ const mockSessions = [
 
 describe('SessionSummaryClient — no authority', () => {
   it('displays feedback summary from backend as-is', () => {
-    render(<SessionSummaryClient sessions={mockSessions} total={2} page={1} totalPages={1} />);
+    renderWithProviders(<SessionSummaryClient sessions={mockSessions} total={2} page={1} totalPages={1} />);
     expect(screen.getByText('Good progress')).toBeInTheDocument();
   });
 
   it('shows in progress for sessions without endedAt', () => {
-    render(<SessionSummaryClient sessions={mockSessions} total={2} page={1} totalPages={1} />);
+    renderWithProviders(<SessionSummaryClient sessions={mockSessions} total={2} page={1} totalPages={1} />);
     expect(screen.getByText('In progress')).toBeInTheDocument();
   });
 
   it('does not contain mutation buttons', () => {
-    render(<SessionSummaryClient sessions={mockSessions} total={2} page={1} totalPages={1} />);
+    renderWithProviders(<SessionSummaryClient sessions={mockSessions} total={2} page={1} totalPages={1} />);
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
   it('shows empty state', () => {
-    render(<SessionSummaryClient sessions={[]} total={0} page={1} totalPages={0} />);
+    renderWithProviders(<SessionSummaryClient sessions={[]} total={0} page={1} totalPages={0} />);
     expect(screen.getByText(/no sessions recorded/i)).toBeInTheDocument();
   });
 });

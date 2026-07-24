@@ -15,19 +15,17 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../../lib/auth';
-import { AdminApiClientError } from '../../../../../../lib/api';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../../core/auth';
+import { AdminApiClientError } from '../../../../../../core/api';
 import {
   fetchLessonSkillLinks,
   addSkillToLesson,
   removeSkillFromLesson,
   type AdminLessonSkillListData,
-} from '../../../../../../lib/api/admin-lesson-skills-api';
-import {
   fetchAdminSkillsForPicker,
   type AdminSkillListData,
-} from '../../../../../../lib/api/admin-skills-api';
-import { SkillLinker } from './skill-linker';
+  SkillLinker,
+} from '../../../../../../features/content';
 
 type Props = {
   params: Promise<{ lessonId: string }>;
@@ -35,7 +33,7 @@ type Props = {
 
 async function getLessonTitle(token: string, lessonId: string): Promise<string> {
   try {
-    const { adminApiClient } = await import('../../../../../../lib/api');
+    const { adminApiClient } = await import('../../../../../../core/api');
 
     function isObj(v: unknown): v is Record<string, unknown> {
       return typeof v === 'object' && v !== null;

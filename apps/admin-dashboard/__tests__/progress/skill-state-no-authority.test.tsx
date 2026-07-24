@@ -1,11 +1,11 @@
-import { render, screen } from '@testing-library/react';
-import { SkillStateClient } from '../../app/admin/students/[studentId]/progress/skills/skill-state-client';
+import { render, screen, renderWithProviders } from '../test-utils';
+import { SkillStateClient } from '../../features/students';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn(), push: jest.fn() }),
 }));
 
-jest.mock('../../lib/api', () => ({
+jest.mock('../../core/api', () => ({
   adminApiClient: { get: jest.fn(), post: jest.fn(), patch: jest.fn() },
   AdminApiClientError: class extends Error { status = 500; },
 }));
@@ -17,30 +17,30 @@ const mockSkills = [
 
 describe('SkillStateClient — no authority', () => {
   it('displays mastery level from backend without recalculating', () => {
-    render(<SkillStateClient skills={mockSkills} />);
+    renderWithProviders(<SkillStateClient skills={mockSkills} />);
     expect(screen.getByText('75')).toBeInTheDocument();
     expect(screen.getByText('90')).toBeInTheDocument();
   });
 
   it('displays state from backend without recalculating', () => {
-    render(<SkillStateClient skills={mockSkills} />);
+    renderWithProviders(<SkillStateClient skills={mockSkills} />);
     expect(screen.getByText('learning')).toBeInTheDocument();
     expect(screen.getByText('mastered')).toBeInTheDocument();
   });
 
   it('does not contain any mutation buttons', () => {
-    render(<SkillStateClient skills={mockSkills} />);
+    renderWithProviders(<SkillStateClient skills={mockSkills} />);
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
   it('does not contain any form inputs', () => {
-    render(<SkillStateClient skills={mockSkills} />);
+    renderWithProviders(<SkillStateClient skills={mockSkills} />);
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
   });
 
   it('shows empty state when no skills', () => {
-    render(<SkillStateClient skills={[]} />);
+    renderWithProviders(<SkillStateClient skills={[]} />);
     expect(screen.getByText(/no skill states/i)).toBeInTheDocument();
   });
 });

@@ -1,8 +1,8 @@
 // P17-064: Operations overview / landing page
 import Link from 'next/link';
 
-import { AdminPageHeader } from '../../../components/layout/admin-page-header';
-import { AdminCard } from '../../../components/common/admin-card';
+import { AdminPageHeader } from '../../../shared/layouts/DashboardLayout/admin-page-header';
+import { AdminCard } from '../../../shared/components/Misc/admin-card';
 
 type OperationsLink = {
   readonly label: string;

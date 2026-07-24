@@ -1,5 +1,5 @@
 // P17-072: Support tickets page tests
-import { render, screen } from '@testing-library/react';
+import { render, screen, renderWithProviders } from '../test-utils';
 import SupportTicketsPage from '../../app/admin/operations/support-tickets/page';
 
 // Mock fetch globally
@@ -34,7 +34,7 @@ const sampleTicket = {
 describe('SupportTicketsPage', () => {
   it('renders loading spinner initially', () => {
     mockFetch.mockReturnValue(new Promise(() => {}));
-    render(<SupportTicketsPage />);
+    renderWithProviders(<SupportTicketsPage />);
     expect(screen.getByRole('status')).toBeInTheDocument();
     expect(screen.getByText('Loading support tickets...')).toBeInTheDocument();
   });
@@ -42,7 +42,7 @@ describe('SupportTicketsPage', () => {
   it('renders empty state when no tickets exist', async () => {
     mockFetch.mockResolvedValueOnce(makeTicketsResponse([], 0));
 
-    render(<SupportTicketsPage />);
+    renderWithProviders(<SupportTicketsPage />);
 
     expect(await screen.findByText('No support tickets found.')).toBeInTheDocument();
   });
@@ -50,7 +50,7 @@ describe('SupportTicketsPage', () => {
   it('renders table with ticket data', async () => {
     mockFetch.mockResolvedValueOnce(makeTicketsResponse([sampleTicket], 1));
 
-    render(<SupportTicketsPage />);
+    renderWithProviders(<SupportTicketsPage />);
 
     expect(await screen.findByText('Cannot access course materials')).toBeInTheDocument();
     expect(screen.getByText('user@example.com')).toBeInTheDocument();
@@ -66,7 +66,7 @@ describe('SupportTicketsPage', () => {
       statusText: 'Service Unavailable',
     });
 
-    render(<SupportTicketsPage />);
+    renderWithProviders(<SupportTicketsPage />);
 
     expect(await screen.findByRole('alert')).toBeInTheDocument();
     expect(screen.getByText(/Backend error 503/)).toBeInTheDocument();
@@ -75,7 +75,7 @@ describe('SupportTicketsPage', () => {
   it('renders status change and assign actions', async () => {
     mockFetch.mockResolvedValueOnce(makeTicketsResponse([sampleTicket], 1));
 
-    render(<SupportTicketsPage />);
+    renderWithProviders(<SupportTicketsPage />);
 
     expect(await screen.findByLabelText('Change status for Cannot access course materials')).toBeInTheDocument();
     expect(screen.getByLabelText('Assign Cannot access course materials')).toBeInTheDocument();
@@ -84,7 +84,7 @@ describe('SupportTicketsPage', () => {
   it('displays total ticket count', async () => {
     mockFetch.mockResolvedValueOnce(makeTicketsResponse([sampleTicket], 1));
 
-    render(<SupportTicketsPage />);
+    renderWithProviders(<SupportTicketsPage />);
 
     expect(await screen.findByText('1 ticket')).toBeInTheDocument();
   });
@@ -92,7 +92,7 @@ describe('SupportTicketsPage', () => {
   it('displays unassigned state with em dash', async () => {
     mockFetch.mockResolvedValueOnce(makeTicketsResponse([sampleTicket], 1));
 
-    render(<SupportTicketsPage />);
+    renderWithProviders(<SupportTicketsPage />);
 
     // The unassigned ticket should show an em dash
     const cells = await screen.findAllByRole('cell');

@@ -1,13 +1,13 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../lib/auth';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../core/auth';
 import {
   fetchAdminAssessmentResults,
   type AdminAssessmentResultItem,
-} from '../../../lib/api/admin-assessment-results-api';
-import { AdminApiClientError } from '../../../lib/api';
-import { AdminPageHeader } from '../../../components/layout';
+} from '../../../features/assessments/api/admin-assessment-results-api';
+import { AdminApiClientError } from '../../../core/api';
+import { AdminPageHeader } from '../../../shared/layouts/DashboardLayout';
 import {
   AdminTable,
   AdminPagination,
@@ -17,9 +17,9 @@ import {
   AdminIdCell,
   AdminDateCell,
   type AdminTableColumn,
-} from '../../../components/common';
-import { AdminApiErrorState } from '../../../components/error-handling';
-import { AdminEmptyState } from '../../../components/layout';
+} from '../../../shared/components/Misc';
+import { AdminApiErrorState } from '../../../shared/components/error-handling';
+import { AdminEmptyState } from '../../../shared/layouts/DashboardLayout';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;

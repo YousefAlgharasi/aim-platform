@@ -1,15 +1,15 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../lib/auth';
-import { AdminApiClientError } from '../../../../../lib/api';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../core/auth';
+import { AdminApiClientError } from '../../../../../core/api';
 import {
   fetchAdminAssessmentResults,
+  fetchAdminAssessmentDetail,
   type AdminAssessmentResultItem,
-} from '../../../../../lib/api/admin-assessment-results-api';
-import { fetchAdminAssessmentDetail } from '../../../../../lib/api/admin-assessments-api';
-import type { AdminPaginatedResponse } from '../../../../../lib/api/admin-paginated-response';
-import { AssessmentResultsList } from './results-list';
+} from '../../../../../features/assessments';
+import { AssessmentResultsList } from '../../../../../features/assessments/pages/results-list';
+import type { AdminPaginatedResponse } from '../../../../../core/api/admin-paginated-response';
 
 type Props = {
   params: Promise<{ assessmentId: string }>;

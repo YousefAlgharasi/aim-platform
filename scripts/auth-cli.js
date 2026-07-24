@@ -13,7 +13,7 @@
 // Config (env vars, all optional):
 //   BACKEND_API_URL   default: http://localhost:3000
 
-const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://localhost:3000';
+const BACKEND_API_URL ='https://aim-platform-gswy.onrender.com';
 
 function fail(message) {
   console.error(`Error: ${message}`);

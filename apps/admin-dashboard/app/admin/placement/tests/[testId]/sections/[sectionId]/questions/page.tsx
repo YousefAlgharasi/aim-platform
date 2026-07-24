@@ -20,13 +20,13 @@
 
 import Link from 'next/link';
 import { cookies } from 'next/headers';
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../../../../lib/auth';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../../../../core/auth';
 import {
   fetchAdminPlacementQuestions,
   AdminApiClientError,
   type AdminPlacementQuestionsData,
-} from '../../../../../../../../lib/api/admin-placement-questions-api';
-import { AdminPlacementQuestionsList } from './placement-questions-list';
+} from '../../../../../../../../core/api/admin-placement-questions-api';
+import { AdminPlacementQuestionsList } from '../../../../../../../../features/placement';
 
 type Props = {
   params: Promise<{ testId: string; sectionId: string }>;

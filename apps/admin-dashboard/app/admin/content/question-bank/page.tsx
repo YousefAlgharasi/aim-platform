@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../lib/auth';
-import { AdminApiClientError } from '../../../../lib/api';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../core/auth';
+import { AdminApiClientError } from '../../../../core/api';
 import {
   fetchAdminQuestions,
   createAdminQuestion,
@@ -12,8 +12,8 @@ import {
   type AdminQuestionListData,
   type QuestionType,
   type QuestionDifficulty,
-} from '../../../../lib/api/admin-question-bank-api';
-import { QuestionList } from './question-list';
+} from '../../../../features/content/api/admin-question-bank-api';
+import { QuestionList } from '../../../../features/content';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;

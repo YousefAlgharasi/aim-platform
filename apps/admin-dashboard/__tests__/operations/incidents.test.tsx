@@ -1,5 +1,5 @@
 // P17-072: Incidents page tests
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, renderWithProviders } from '../test-utils';
 import IncidentsPage from '../../app/admin/operations/incidents/page';
 
 // Mock fetch globally
@@ -41,7 +41,7 @@ const resolvedIncident = {
 describe('IncidentsPage', () => {
   it('renders loading spinner initially', () => {
     mockFetch.mockReturnValue(new Promise(() => {}));
-    render(<IncidentsPage />);
+    renderWithProviders(<IncidentsPage />);
     expect(screen.getByRole('status')).toBeInTheDocument();
     expect(screen.getByText('Loading incidents...')).toBeInTheDocument();
   });
@@ -49,7 +49,7 @@ describe('IncidentsPage', () => {
   it('renders empty state when no incidents exist', async () => {
     mockFetch.mockResolvedValueOnce(makeIncidentsResponse([], 0));
 
-    render(<IncidentsPage />);
+    renderWithProviders(<IncidentsPage />);
 
     expect(await screen.findByText('No incidents found.')).toBeInTheDocument();
   });
@@ -57,7 +57,7 @@ describe('IncidentsPage', () => {
   it('renders table with incident data', async () => {
     mockFetch.mockResolvedValueOnce(makeIncidentsResponse([sampleIncident, resolvedIncident], 2));
 
-    render(<IncidentsPage />);
+    renderWithProviders(<IncidentsPage />);
 
     expect(await screen.findByText('Database connection pool exhaustion')).toBeInTheDocument();
     expect(screen.getByText('critical')).toBeInTheDocument();
@@ -74,7 +74,7 @@ describe('IncidentsPage', () => {
       statusText: 'Internal Server Error',
     });
 
-    render(<IncidentsPage />);
+    renderWithProviders(<IncidentsPage />);
 
     expect(await screen.findByRole('alert')).toBeInTheDocument();
     expect(screen.getByText(/Backend error 500/)).toBeInTheDocument();
@@ -84,7 +84,7 @@ describe('IncidentsPage', () => {
   it('shows create incident button', async () => {
     mockFetch.mockResolvedValueOnce(makeIncidentsResponse([], 0));
 
-    render(<IncidentsPage />);
+    renderWithProviders(<IncidentsPage />);
 
     expect(await screen.findByText('+ New Incident')).toBeInTheDocument();
   });
@@ -92,12 +92,12 @@ describe('IncidentsPage', () => {
   it('opens create incident form on button click', async () => {
     mockFetch.mockResolvedValueOnce(makeIncidentsResponse([], 0));
 
-    render(<IncidentsPage />);
+    renderWithProviders(<IncidentsPage />);
 
     const createBtn = await screen.findByText('+ New Incident');
     fireEvent.click(createBtn);
 
-    expect(screen.getByText('Create Incident')).toBeInTheDocument();
+    expect(screen.getAllByText('Create Incident')[0]).toBeInTheDocument();
     expect(screen.getByLabelText('Title')).toBeInTheDocument();
     expect(screen.getByLabelText('Severity')).toBeInTheDocument();
   });
@@ -105,7 +105,7 @@ describe('IncidentsPage', () => {
   it('renders status update select for each incident', async () => {
     mockFetch.mockResolvedValueOnce(makeIncidentsResponse([sampleIncident], 1));
 
-    render(<IncidentsPage />);
+    renderWithProviders(<IncidentsPage />);
 
     expect(await screen.findByLabelText('Update status for Database connection pool exhaustion')).toBeInTheDocument();
   });
@@ -113,15 +113,15 @@ describe('IncidentsPage', () => {
   it('displays total incident count', async () => {
     mockFetch.mockResolvedValueOnce(makeIncidentsResponse([sampleIncident, resolvedIncident], 2));
 
-    render(<IncidentsPage />);
+    renderWithProviders(<IncidentsPage />);
 
-    expect(await screen.findByText('2 incidents')).toBeInTheDocument();
+    expect((await screen.findAllByText('2 incidents'))[0]).toBeInTheDocument();
   });
 
   it('displays resolved time when incident is resolved', async () => {
     mockFetch.mockResolvedValueOnce(makeIncidentsResponse([resolvedIncident], 1));
 
-    render(<IncidentsPage />);
+    renderWithProviders(<IncidentsPage />);
 
     // The resolved incident should show a resolved date (not just em dash)
     await screen.findByText('Slow API responses');
@@ -133,7 +133,7 @@ describe('IncidentsPage', () => {
   it('displays em dash for unresolved incidents', async () => {
     mockFetch.mockResolvedValueOnce(makeIncidentsResponse([sampleIncident], 1));
 
-    render(<IncidentsPage />);
+    renderWithProviders(<IncidentsPage />);
 
     await screen.findByText('Database connection pool exhaustion');
     const cells = screen.getAllByRole('cell');

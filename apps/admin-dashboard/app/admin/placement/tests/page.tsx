@@ -20,13 +20,13 @@
 
 import Link from 'next/link';
 import { cookies } from 'next/headers';
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../lib/auth';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../core/auth';
 import {
   fetchAdminPlacementTests,
   AdminApiClientError,
   type AdminPlacementTestListData,
-} from '../../../../lib/api/admin-placement-tests-api';
-import { AdminPlacementTestsList } from './placement-tests-list';
+} from '../../../../core/api/admin-placement-tests-api';
+import { AdminPlacementTestsList } from '../../../../features/placement';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;

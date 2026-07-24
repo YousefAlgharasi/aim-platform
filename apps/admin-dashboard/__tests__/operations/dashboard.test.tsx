@@ -1,5 +1,5 @@
 // P17-072: Operations dashboard tests
-import { render, screen } from '@testing-library/react';
+import { render, screen, renderWithProviders } from '../test-utils';
 import OperationsDashboardPage from '../../app/admin/operations/dashboard/page';
 
 // Mock fetch globally
@@ -13,7 +13,7 @@ beforeEach(() => {
 describe('OperationsDashboardPage', () => {
   it('renders loading spinner initially', () => {
     mockFetch.mockReturnValue(new Promise(() => {})); // never resolves
-    render(<OperationsDashboardPage />);
+    renderWithProviders(<OperationsDashboardPage />);
     expect(screen.getByRole('status')).toBeInTheDocument();
     expect(screen.getByText('Loading operations dashboard...')).toBeInTheDocument();
   });
@@ -29,7 +29,7 @@ describe('OperationsDashboardPage', () => {
       }),
     });
 
-    render(<OperationsDashboardPage />);
+    renderWithProviders(<OperationsDashboardPage />);
 
     expect(await screen.findByText('12')).toBeInTheDocument();
     expect(screen.getByText('Open Tickets')).toBeInTheDocument();
@@ -48,7 +48,7 @@ describe('OperationsDashboardPage', () => {
       statusText: 'Internal Server Error',
     });
 
-    render(<OperationsDashboardPage />);
+    renderWithProviders(<OperationsDashboardPage />);
 
     expect(await screen.findByRole('alert')).toBeInTheDocument();
     expect(screen.getByText(/Backend error 500/)).toBeInTheDocument();
@@ -61,7 +61,7 @@ describe('OperationsDashboardPage', () => {
       json: async () => null,
     });
 
-    render(<OperationsDashboardPage />);
+    renderWithProviders(<OperationsDashboardPage />);
 
     expect(await screen.findByText('No dashboard data available.')).toBeInTheDocument();
   });
@@ -77,7 +77,7 @@ describe('OperationsDashboardPage', () => {
       }),
     });
 
-    render(<OperationsDashboardPage />);
+    renderWithProviders(<OperationsDashboardPage />);
 
     expect(await screen.findByText('Dashboard')).toBeInTheDocument();
     expect(screen.getByText('Operations')).toBeInTheDocument();
@@ -94,7 +94,7 @@ describe('OperationsDashboardPage', () => {
       }),
     });
 
-    render(<OperationsDashboardPage />);
+    renderWithProviders(<OperationsDashboardPage />);
 
     const ticketLink = await screen.findByLabelText('Open Tickets: 5');
     expect(ticketLink).toHaveAttribute('href', '/admin/operations/support-tickets');

@@ -1,15 +1,15 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../lib/auth';
-import { AdminApiClientError } from '../../../../../lib/api';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../core/auth';
+import { AdminApiClientError } from '../../../../../core/api';
 import {
   fetchAdminQuestion,
   updateAdminQuestion,
   type AdminQuestionDetail,
   type QuestionDifficulty,
-} from '../../../../../lib/api/admin-question-bank-api';
-import { QuestionEditorClient } from './question-editor-client';
+} from '../../../../../features/content/api/admin-question-bank-api';
+import { QuestionEditorClient } from '../../../../../features/content';
 
 type Props = {
   params: Promise<{ questionId: string }>;

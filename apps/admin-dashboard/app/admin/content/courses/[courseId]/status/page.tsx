@@ -4,17 +4,17 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../../lib/auth';
-import { AdminApiClientError, adminApiClient } from '../../../../../../lib/api';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../../core/auth';
+import { AdminApiClientError, adminApiClient } from '../../../../../../core/api';
 import {
   publishContent,
   archiveContent,
   restoreContent,
   type ContentStatus,
-} from '../../../../../../lib/api/admin-content-status-api';
-import { ContentStatusWorkflow } from '../../../../../../components/content-status-workflow';
-import { AdminPageHeader } from '../../../../../../components/layout';
-import { AdminApiErrorState } from '../../../../../../components/error-handling';
+  ContentStatusWorkflow,
+} from '../../../../../../features/content';
+import { AdminPageHeader } from '../../../../../../shared/layouts/DashboardLayout';
+import { AdminApiErrorState } from '../../../../../../shared/components/error-handling';
 
 type Props = { params: Promise<{ courseId: string }> };
 

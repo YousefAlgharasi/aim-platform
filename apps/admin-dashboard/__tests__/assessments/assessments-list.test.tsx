@@ -1,12 +1,14 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { AssessmentsList } from '../../app/admin/assessments/assessments-list';
-import type { AdminAssessmentListItem } from '../../lib/api/admin-assessments-api';
+import { screen, fireEvent, renderWithProviders } from '../test-utils';
+import { AssessmentsList } from '../../features/assessments/pages/assessments-list';
+import type { AdminAssessmentListItem } from '../../features/assessments/api/admin-assessments-api';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn(), push: jest.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => '/admin/assessments',
 }));
 
-jest.mock('../../lib/api', () => ({
+jest.mock('../../core/api', () => ({
   adminApiClient: { get: jest.fn(), post: jest.fn(), patch: jest.fn() },
   AdminApiClientError: class extends Error { status = 500; },
 }));
@@ -33,44 +35,45 @@ const defaultProps = {
 
 describe('AssessmentsList', () => {
   it('renders assessment title as link', () => {
-    render(<AssessmentsList {...defaultProps} />);
+    renderWithProviders(<AssessmentsList {...defaultProps} />);
     const link = screen.getByText('Unit 1 Quiz');
     expect(link.closest('a')).toHaveAttribute('href', '/admin/assessments/a-1');
   });
 
   it('renders type badge', () => {
-    render(<AssessmentsList {...defaultProps} />);
+    renderWithProviders(<AssessmentsList {...defaultProps} />);
     expect(screen.getAllByText('Quiz').length).toBeGreaterThan(0);
   });
 
   it('renders status badge', () => {
-    render(<AssessmentsList {...defaultProps} />);
+    renderWithProviders(<AssessmentsList {...defaultProps} />);
     expect(screen.getAllByText('draft').length).toBeGreaterThan(0);
   });
 
   it('renders question count', () => {
-    render(<AssessmentsList {...defaultProps} />);
+    renderWithProviders(<AssessmentsList {...defaultProps} />);
     expect(screen.getByText('5')).toBeInTheDocument();
   });
 
   it('shows empty state', () => {
-    render(<AssessmentsList {...defaultProps} assessments={[]} total={0} />);
+    renderWithProviders(<AssessmentsList {...defaultProps} assessments={[]} total={0} />);
     expect(screen.getByText(/no assessments/i)).toBeInTheDocument();
   });
 
   it('opens create form', () => {
-    render(<AssessmentsList {...defaultProps} />);
+    renderWithProviders(<AssessmentsList {...defaultProps} />);
     fireEvent.click(screen.getByText('+ New Assessment'));
     expect(screen.getByText(/cancel/i)).toBeInTheDocument();
   });
 
-  it('renders type filter', () => {
-    render(<AssessmentsList {...defaultProps} />);
+  it('renders type filter and search input', () => {
+    renderWithProviders(<AssessmentsList {...defaultProps} />);
     expect(screen.getByLabelText('Filter by type')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Search assessments...')).toBeInTheDocument();
   });
 
   it('shows total count', () => {
-    render(<AssessmentsList {...defaultProps} total={3} />);
+    renderWithProviders(<AssessmentsList {...defaultProps} total={3} />);
     expect(screen.getByText('3 assessments')).toBeInTheDocument();
   });
 });

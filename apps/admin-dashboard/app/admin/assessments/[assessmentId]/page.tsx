@@ -1,21 +1,21 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../lib/auth';
-import { AdminApiClientError } from '../../../../lib/api';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../core/auth';
+import { AdminApiClientError } from '../../../../core/api';
 import {
   fetchAdminAssessmentDetail,
   updateAdminAssessment,
   publishAdminAssessment,
   unpublishAdminAssessment,
+  AssessmentSettings,
+  DeadlineManagement,
+  AssessmentPublishing,
   type AdminAssessmentSettings,
-} from '../../../../lib/api/admin-assessments-api';
-import { fetchAdminQuestions } from '../../../../lib/api/admin-question-bank-api';
-import { AssessmentEditorClient } from './assessment-editor-client';
-import { AssessmentQuestionBuilder } from './question-builder';
-import { AssessmentSettings } from './assessment-settings';
-import { DeadlineManagement } from './deadline-management';
-import { AssessmentPublishing } from './assessment-publishing';
+} from '../../../../features/assessments';
+import { AssessmentEditorClient } from '../../../../features/assessments/pages/assessment-editor-client';
+import { AssessmentQuestionBuilder } from '../../../../features/assessments/components/question-builder';
+import { fetchAdminQuestions } from '../../../../features/content/api/admin-question-bank-api';
 
 type Props = {
   params: Promise<{ assessmentId: string }>;

@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../lib/auth';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../core/auth';
 import {
   fetchAdminCourses,
   createAdminCourse,
@@ -9,9 +9,9 @@ import {
   type AdminCourseSummary,
   type AdminCourseListData,
   type CourseStatus,
-} from '../../../../lib/api/admin-courses-api';
-import { AdminApiClientError } from '../../../../lib/api';
-import { CoursesList } from './courses-list';
+  CoursesList,
+} from '../../../../features/content';
+import { AdminApiClientError } from '../../../../core/api';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;

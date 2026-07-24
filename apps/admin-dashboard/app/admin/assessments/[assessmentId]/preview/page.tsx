@@ -1,12 +1,12 @@
 import Link from 'next/link';
 import { cookies } from 'next/headers';
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../lib/auth';
-import { AdminApiClientError } from '../../../../../lib/api';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../core/auth';
+import { AdminApiClientError } from '../../../../../core/api';
 import {
   fetchAdminAssessmentDetail,
-} from '../../../../../lib/api/admin-assessments-api';
-import { fetchAdminQuestion } from '../../../../../lib/api/admin-question-bank-api';
-import { AssessmentPreviewClient } from './assessment-preview-client';
+  AssessmentPreviewClient,
+} from '../../../../../features/assessments';
+import { fetchAdminQuestion } from '../../../../../features/content/api/admin-question-bank-api';
 
 type Props = {
   params: Promise<{ assessmentId: string }>;

@@ -1,11 +1,11 @@
 import Link from 'next/link';
-import { getAdminToken } from '../../../../../lib/api/admin-token';
-import { AdminApiClientError } from '../../../../../lib/api';
+import { getAdminToken } from '../../../../../core/api/admin-token';
+import { AdminApiClientError } from '../../../../../core/api';
 import {
   fetchAdminStudentProgress,
   fetchAdminStudentLessons,
-} from '../../../../../lib/api/admin-student-progress-api';
-import { StudentProgressClient } from './student-progress-client';
+} from '../../../../../core/api/admin-student-progress-api';
+import { StudentProgressClient } from '../../../../../features/students';
 
 type Props = {
   params: Promise<{ studentId: string }>;

@@ -1,11 +1,19 @@
 import { cookies } from 'next/headers';
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { getAdminApiConfig } from '../../../../../lib/api/admin-api-config';
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../lib/auth/admin-auth';
+import { getAdminApiConfig } from '../../../../../core/api/admin-api-config';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../core/auth/admin-auth';
 
 async function proxyRequest(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   const { path } = await params;
+
+  if (!path || path.length === 0 || path.some((segment) => segment === '..' || segment.includes('..') || segment.includes('/') || segment.includes('\\'))) {
+    return NextResponse.json(
+      { success: false, error: 'Invalid path parameter for admin proxy.' },
+      { status: 400 },
+    );
+  }
+
   const backendPath = `/admin/${path.join('/')}`;
   const config = getAdminApiConfig();
   const baseUrl = config.backendApiBaseUrl.replace(/\/$/, '');

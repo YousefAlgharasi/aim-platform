@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers';
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { getAdminApiConfig } from '../../../../lib/api/admin-api-config';
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../lib/auth/admin-auth';
+import { getAdminApiConfig } from '../../../../core/api/admin-api-config';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../core/auth/constants';
 
 type LoginRequestBody = {
   readonly email: string;
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
   cookieStore.set(ADMIN_AUTH_TOKEN_COOKIE, accessToken, {
     path: '/',
-    httpOnly: false,
+    httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     maxAge: 60 * 60 * 24,
