@@ -8,6 +8,7 @@ import type {
   AdminAssessmentType,
 } from './admin-assessments-api';
 import { useAdminAssessmentsQuery } from './hooks/use-assessments-query';
+import { useUrlSearchParamsState } from '../../lib/hooks/use-url-search-params-state';
 import {
   AdminButton,
   AdminCard,
@@ -29,6 +30,7 @@ type Props = {
   readonly page: number;
   readonly totalPages: number;
   readonly filterType: string;
+  readonly searchQuery?: string;
   readonly onCreateAssessment: (data: {
     title: string;
     type: AdminAssessmentType;
@@ -46,9 +48,16 @@ export function AssessmentsList({
   page,
   totalPages,
   filterType,
+  searchQuery,
   onCreateAssessment,
 }: Props) {
   const router = useRouter();
+  const { getParam, getNumberParam, setParams } = useUrlSearchParamsState();
+
+  const currentPage = getNumberParam('page', page);
+  const currentType = getParam('type', filterType);
+  const currentSearch = getParam('search', searchQuery ?? '');
+
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newType, setNewType] = useState<AdminAssessmentType>('quiz');
@@ -57,8 +66,9 @@ export function AssessmentsList({
   const [isPending, startTransition] = useTransition();
 
   const queryParams = {
-    page,
-    type: (filterType as AdminAssessmentType) || undefined,
+    page: currentPage,
+    type: (currentType as AdminAssessmentType) || undefined,
+    search: currentSearch || undefined,
   };
   const { data: queryData } = useAdminAssessmentsQuery(queryParams);
 
@@ -68,15 +78,17 @@ export function AssessmentsList({
 
   function buildFilterHref(overrides: Record<string, string>) {
     const params = new URLSearchParams();
-    if (filterType) params.set('type', filterType);
-    Object.entries(overrides).forEach(([k, v]) => v ? params.set(k, v) : params.delete(k));
+    if (currentSearch) params.set('search', currentSearch);
+    if (currentType) params.set('type', currentType);
+    Object.entries(overrides).forEach(([k, v]) => (v ? params.set(k, v) : params.delete(k)));
     params.set('page', '1');
     return `?${params.toString()}`;
   }
 
   function buildPageHref(p: number) {
     const params = new URLSearchParams();
-    if (filterType) params.set('type', filterType);
+    if (currentSearch) params.set('search', currentSearch);
+    if (currentType) params.set('type', currentType);
     params.set('page', String(p));
     return `?${params.toString()}`;
   }
@@ -200,10 +212,20 @@ export function AssessmentsList({
         <AdminButton variant="primary" onClick={() => setShowCreate(true)}>+ New Assessment</AdminButton>
       </div>
 
-      <AdminFilterBar label="Filter assessments">
+      <AdminFilterBar
+        label="Filter assessments"
+        searchValue={currentSearch}
+        onSearchChange={(val) => setParams({ search: val, page: 1 })}
+        searchPlaceholder="Search assessments..."
+        onClearAll={
+          currentSearch || currentType
+            ? () => setParams({ search: '', type: '', page: 1 })
+            : undefined
+        }
+      >
         <AdminSelect
-          value={filterType}
-          onChange={(e) => router.push(buildFilterHref({ type: e.target.value }))}
+          value={currentType}
+          onChange={(e) => setParams({ type: e.target.value, page: 1 })}
           aria-label="Filter by type"
         >
           <option value="">All Types</option>
@@ -224,9 +246,10 @@ export function AssessmentsList({
       )}
 
       <AdminPagination
-        page={page}
+        page={currentPage}
         totalPages={displayTotalPages}
         buildHref={buildPageHref}
+        onPageChange={(p) => setParams({ page: p })}
         label="Assessments pagination"
       />
     </div>

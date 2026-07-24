@@ -10,6 +10,15 @@ import {
   useAssessmentReportQuery,
   useActiveUsersReportQuery,
 } from './hooks/use-analytics-query';
+import { useUrlSearchParamsState } from '../../lib/hooks/use-url-search-params-state';
+
+export type ReportTab = 'enrollment' | 'assessment' | 'active_users';
+
+const TABS: { key: ReportTab; label: string }[] = [
+  { key: 'enrollment', label: 'Enrollments' },
+  { key: 'assessment', label: 'Assessments' },
+  { key: 'active_users', label: 'Active Users' },
+];
 
 type Props = {
   readonly enrollment: AdminEnrollmentReport;
@@ -34,6 +43,12 @@ export function ReportsClient({
   activeUsers: initialActiveUsers,
   token = '',
 }: Props) {
+  const { getParam, setParams } = useUrlSearchParamsState();
+  const rawTab = getParam('tab', 'enrollment');
+  const activeTab: ReportTab = TABS.some((t) => t.key === rawTab)
+    ? (rawTab as ReportTab)
+    : 'enrollment';
+
   const { data: enrollment = initialEnrollment } = useEnrollmentReportQuery(
     token,
     undefined,
@@ -50,47 +65,81 @@ export function ReportsClient({
     initialActiveUsers,
   );
 
+  const handleTabChange = (tabKey: ReportTab) => {
+    setParams({ tab: tabKey });
+  };
+
   return (
     <div className="rc-root">
-      <div className="rc-section">
-        <div className="rc-section-header">
-          <h2 className="rc-section-title">Enrollments</h2>
-          {enrollment.period && <span className="rc-section-period">{enrollment.period}</span>}
-        </div>
-        <div className="rc-stat-grid">
-          <StatCard label="Total Enrollments" value={enrollment.totalEnrollments.toLocaleString()} />
-          <StatCard label="New Enrollments" value={enrollment.newEnrollments.toLocaleString()} />
-          <StatCard label="Active Courses" value={enrollment.activeCourses.toLocaleString()} />
-        </div>
+      <div className="rc-tabs" role="tablist">
+        {TABS.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === tab.key}
+            className={`rc-tab ${activeTab === tab.key ? 'rc-tab--active' : ''}`}
+            onClick={() => handleTabChange(tab.key)}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      <div className="rc-section">
-        <div className="rc-section-header">
-          <h2 className="rc-section-title">Assessments</h2>
-          {assessment.period && <span className="rc-section-period">{assessment.period}</span>}
+      {activeTab === 'enrollment' && (
+        <div className="rc-section">
+          <div className="rc-section-header">
+            <h2 className="rc-section-title">Enrollments</h2>
+            {enrollment.period && <span className="rc-section-period">{enrollment.period}</span>}
+          </div>
+          <div className="rc-stat-grid">
+            <StatCard label="Total Enrollments" value={enrollment.totalEnrollments.toLocaleString()} />
+            <StatCard label="New Enrollments" value={enrollment.newEnrollments.toLocaleString()} />
+            <StatCard label="Active Courses" value={enrollment.activeCourses.toLocaleString()} />
+          </div>
         </div>
-        <div className="rc-stat-grid">
-          <StatCard label="Total Attempts" value={assessment.totalAttempts.toLocaleString()} />
-          <StatCard label="Passed" value={assessment.passed.toLocaleString()} />
-          <StatCard label="Failed" value={assessment.failed.toLocaleString()} />
-          <StatCard label="Avg Score" value={`${assessment.avgScore}%`} sub="Backend-computed" />
-        </div>
-      </div>
+      )}
 
-      <div className="rc-section">
-        <div className="rc-section-header">
-          <h2 className="rc-section-title">Active Users</h2>
-          {activeUsers.period && <span className="rc-section-period">{activeUsers.period}</span>}
+      {activeTab === 'assessment' && (
+        <div className="rc-section">
+          <div className="rc-section-header">
+            <h2 className="rc-section-title">Assessments</h2>
+            {assessment.period && <span className="rc-section-period">{assessment.period}</span>}
+          </div>
+          <div className="rc-stat-grid">
+            <StatCard label="Total Attempts" value={assessment.totalAttempts.toLocaleString()} />
+            <StatCard label="Passed" value={assessment.passed.toLocaleString()} />
+            <StatCard label="Failed" value={assessment.failed.toLocaleString()} />
+            <StatCard label="Avg Score" value={`${assessment.avgScore}%`} sub="Backend-computed" />
+          </div>
         </div>
-        <div className="rc-stat-grid">
-          <StatCard label="Daily Active" value={activeUsers.dailyActiveUsers.toLocaleString()} />
-          <StatCard label="Weekly Active" value={activeUsers.weeklyActiveUsers.toLocaleString()} />
-          <StatCard label="Monthly Active" value={activeUsers.monthlyActiveUsers.toLocaleString()} />
+      )}
+
+      {activeTab === 'active_users' && (
+        <div className="rc-section">
+          <div className="rc-section-header">
+            <h2 className="rc-section-title">Active Users</h2>
+            {activeUsers.period && <span className="rc-section-period">{activeUsers.period}</span>}
+          </div>
+          <div className="rc-stat-grid">
+            <StatCard label="Daily Active" value={activeUsers.dailyActiveUsers.toLocaleString()} />
+            <StatCard label="Weekly Active" value={activeUsers.weeklyActiveUsers.toLocaleString()} />
+            <StatCard label="Monthly Active" value={activeUsers.monthlyActiveUsers.toLocaleString()} />
+          </div>
         </div>
-      </div>
+      )}
 
       <style>{`
         .rc-root { display: flex; flex-direction: column; gap: 16px; }
+        .rc-tabs { display: flex; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+        .rc-tab {
+          padding: 8px 16px; border: none; background: none;
+          font-size: 13px; font-weight: 600; color: var(--text-muted);
+          cursor: pointer; font-family: inherit; border-bottom: 2px solid transparent;
+          margin-bottom: -1px; transition: color 0.15s, border-color 0.15s;
+        }
+        .rc-tab:hover { color: var(--text-primary); }
+        .rc-tab--active { color: var(--color-primary-500); border-bottom-color: var(--color-primary-500); }
         .rc-section {
           background: var(--surface); border: 1px solid var(--border);
           border-radius: var(--radius-lg); padding: 20px;
@@ -116,3 +165,4 @@ export function ReportsClient({
     </div>
   );
 }
+

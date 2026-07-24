@@ -16,6 +16,7 @@ export type FetchAdminAssessmentsParams = {
   page?: number;
   limit?: number;
   type?: AdminAssessmentType;
+  search?: string;
 };
 
 export const ASSESSMENT_QUERY_KEYS = {
@@ -27,7 +28,7 @@ export const ASSESSMENT_QUERY_KEYS = {
 export function useAdminAssessmentsQuery(params: FetchAdminAssessmentsParams = {}) {
   return useQuery({
     queryKey: ASSESSMENT_QUERY_KEYS.list(params),
-    queryFn: () => fetchAdminAssessments(params.token ?? '', params.page ?? 1, params.limit ?? 20, params.type),
+    queryFn: () => fetchAdminAssessments(params.token ?? '', params.page ?? 1, params.limit ?? 20, params.type, params.search),
   });
 }
 

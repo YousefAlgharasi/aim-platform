@@ -4,6 +4,8 @@ import type { AdminAssessmentListItem } from '../../features/assessments/admin-a
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn(), push: jest.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => '/admin/assessments',
 }));
 
 jest.mock('../../lib/api', () => ({
@@ -64,9 +66,10 @@ describe('AssessmentsList', () => {
     expect(screen.getByText(/cancel/i)).toBeInTheDocument();
   });
 
-  it('renders type filter', () => {
+  it('renders type filter and search input', () => {
     renderWithProviders(<AssessmentsList {...defaultProps} />);
     expect(screen.getByLabelText('Filter by type')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Search assessments...')).toBeInTheDocument();
   });
 
   it('shows total count', () => {

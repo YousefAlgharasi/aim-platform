@@ -20,11 +20,12 @@ type Props = {
     page?: string;
     limit?: string;
     type?: string;
+    search?: string;
   }>;
 };
 
 export default async function AdminAssessmentsPage({ searchParams }: Props) {
-  const { page: pageParam, limit: limitParam, type } = await searchParams;
+  const { page: pageParam, limit: limitParam, type, search } = await searchParams;
 
   const page = parseInt(pageParam ?? String(DEFAULT_PAGE), 10) || DEFAULT_PAGE;
   const limit = parseInt(limitParam ?? String(DEFAULT_LIMIT), 10) || DEFAULT_LIMIT;
@@ -41,6 +42,7 @@ export default async function AdminAssessmentsPage({ searchParams }: Props) {
       page,
       limit,
       (type as AdminAssessmentType) || undefined,
+      search,
     );
   } catch (error) {
     fetchError =
@@ -109,6 +111,7 @@ export default async function AdminAssessmentsPage({ searchParams }: Props) {
           page={data.page}
           totalPages={totalPages}
           filterType={type ?? ''}
+          searchQuery={search ?? ''}
           onCreateAssessment={handleCreate}
         />
       )}

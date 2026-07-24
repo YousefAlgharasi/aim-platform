@@ -15,6 +15,7 @@ import {
   AdminButton,
   type AdminTableColumn,
 } from '../../components/common';
+import { useUrlSearchParamsState } from '../../lib/hooks/use-url-search-params-state';
 import { useAdminUsersQuery, USER_QUERY_KEYS } from './hooks/use-users-query';
 import type { AdminUserListItem, FetchAdminUsersParams } from './admin-users-api';
 
@@ -55,25 +56,26 @@ export function UsersPageClient({
   const router = useRouter();
   const queryClient = useQueryClient();
   const [showModal, setShowModal] = useState(false);
-  const [page, setPage] = useState(initialPage);
-  const [filters, setFilters] = useState({
-    email: initialEmail,
-    status: initialStatus,
-    userType: initialUserType,
-  });
+
+  const { getParam, getNumberParam, setParams } = useUrlSearchParamsState();
+
+  const page = getNumberParam('page', initialPage);
+  const search = getParam('search', getParam('email', initialEmail));
+  const status = getParam('status', initialStatus);
+  const userType = getParam('userType', initialUserType);
 
   const isInitialState =
     page === initialPage &&
-    filters.email === initialEmail &&
-    filters.status === initialStatus &&
-    filters.userType === initialUserType;
+    search === initialEmail &&
+    status === initialStatus &&
+    userType === initialUserType;
 
   const queryParams: FetchAdminUsersParams = {
     page,
     limit: initialLimit,
-    ...(filters.email ? { email: filters.email } : {}),
-    ...(filters.status ? { status: filters.status } : {}),
-    ...(filters.userType ? { userType: filters.userType } : {}),
+    ...(search ? { email: search } : {}),
+    ...(status ? { status } : {}),
+    ...(userType ? { userType } : {}),
   };
 
   const { data, isLoading, refetch } = useAdminUsersQuery(queryParams, {
@@ -85,9 +87,16 @@ export function UsersPageClient({
   const users = data?.users ?? [];
   const total = data?.total ?? initialTotal;
 
-  const updateFilter = (key: 'email' | 'status' | 'userType', value: string) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-    setPage(1);
+  const updateFilter = (key: 'search' | 'status' | 'userType', value: string) => {
+    if (key === 'search') {
+      setParams({ search: value || null, email: null, page: 1 });
+    } else {
+      setParams({ [key]: value || null, page: 1 });
+    }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setParams({ page: newPage });
   };
 
   const columns: AdminTableColumn<AdminUserListItem>[] = [
@@ -167,20 +176,20 @@ export function UsersPageClient({
 
       {/* Filter Bar */}
       <AdminFilterBar
-        searchValue={filters.email}
-        onSearchChange={(val: string) => updateFilter('email', val)}
+        searchValue={search}
+        onSearchChange={(val: string) => updateFilter('search', val)}
         searchPlaceholder="Search by email…"
         selectFilters={[
           {
             key: 'status',
-            value: filters.status,
+            value: status,
             onChange: (val: string) => updateFilter('status', val),
             placeholder: 'All statuses',
             options: STATUS_OPTIONS,
           },
           {
             key: 'userType',
-            value: filters.userType,
+            value: userType,
             onChange: (val: string) => updateFilter('userType', val),
             placeholder: 'All types',
             options: TYPE_OPTIONS,
@@ -214,7 +223,7 @@ export function UsersPageClient({
         currentPage={page}
         totalCount={total}
         pageSize={initialLimit}
-        onPageChange={setPage}
+        onPageChange={handlePageChange}
       />
 
       <AddAdminModal

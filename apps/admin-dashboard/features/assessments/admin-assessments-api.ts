@@ -60,11 +60,15 @@ export async function fetchAdminAssessments(
   page = 1,
   limit = 20,
   type?: AdminAssessmentType,
+  search?: string,
 ): Promise<AdminPaginatedResponse<AdminAssessmentListItem>> {
   const envelope = await adminApiClient.get(
     '/admin/assessments',
     (v) => decodePaginatedResponse(v, decodeListItem),
-    { headers: { authorization: `Bearer ${token}` }, query: { page, limit, ...(type ? { type } : {}) } },
+    {
+      headers: { authorization: `Bearer ${token}` },
+      query: { page, limit, ...(type ? { type } : {}), ...(search ? { search } : {}) },
+    },
   );
   return envelope.data;
 }

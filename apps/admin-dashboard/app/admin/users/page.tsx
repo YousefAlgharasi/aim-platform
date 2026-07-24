@@ -23,6 +23,7 @@ type Props = {
     status?: string;
     userType?: string;
     email?: string;
+    search?: string;
   }>;
 };
 
@@ -39,7 +40,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   const userType = TYPE_OPTIONS.includes(sp.userType as AdminUserType)
     ? (sp.userType as AdminUserType)
     : undefined;
-  const email = sp.email?.trim() || undefined;
+  const email = sp.search?.trim() || sp.email?.trim() || undefined;
 
   const cookieStore = await cookies();
   const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';

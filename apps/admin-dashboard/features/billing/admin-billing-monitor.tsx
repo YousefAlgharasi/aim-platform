@@ -1,31 +1,38 @@
 'use client';
 
-import { useState } from 'react';
-import { useAdminFetch } from '../../lib/hooks/use-admin-fetch';
 import { useBillingOverviewQuery } from './hooks/use-billing-query';
-import {
-  AdminDateCell,
-  AdminIdCell,
-  AdminStatusBadge,
-  AdminTable,
-  AdminCard,
-  type AdminTableColumn,
-} from '../../components/common';
+import { useUrlSearchParamsState } from '../../lib/hooks/use-url-search-params-state';
+import { AdminSubscriptionsView } from './admin-subscriptions-view';
+import { AdminInvoicesView } from './admin-invoices-view';
+import { AdminPaymentsView } from './admin-payments-view';
+import { AdminRefundsView } from './admin-refunds-view';
+import { AdminProviderEventsView } from './admin-provider-events-view';
+import { AdminCouponsView } from './admin-coupons-view';
+import { AdminCard } from '../../components/common';
 import { AdminErrorBanner } from '../../components/layout';
 
-type BillingTab = 'overview' | 'subscriptions' | 'payments' | 'invoices' | 'events' | 'audit';
+type BillingTab = 'overview' | 'subscriptions' | 'invoices' | 'payments' | 'refunds' | 'events' | 'coupons';
 
 const TABS: { key: BillingTab; label: string }[] = [
   { key: 'overview', label: 'Overview' },
   { key: 'subscriptions', label: 'Subscriptions' },
-  { key: 'payments', label: 'Payments' },
   { key: 'invoices', label: 'Invoices' },
+  { key: 'payments', label: 'Payments' },
+  { key: 'refunds', label: 'Refunds' },
   { key: 'events', label: 'Provider Events' },
-  { key: 'audit', label: 'Audit Log' },
+  { key: 'coupons', label: 'Coupons' },
 ];
 
 export function AdminBillingMonitor() {
-  const [activeTab, setActiveTab] = useState<BillingTab>('overview');
+  const { getParam, setParams } = useUrlSearchParamsState();
+  const rawTab = getParam('tab', 'overview');
+  const activeTab: BillingTab = TABS.some((t) => t.key === rawTab)
+    ? (rawTab as BillingTab)
+    : 'overview';
+
+  const handleTabChange = (tabKey: BillingTab) => {
+    setParams({ tab: tabKey });
+  };
 
   return (
     <section className="flex flex-col gap-5">
@@ -39,17 +46,19 @@ export function AdminBillingMonitor() {
         </p>
       </div>
 
-      <nav className="flex flex-wrap gap-1.5 border-b border-[var(--border)] pb-2">
+      <nav className="flex flex-wrap gap-1.5 border-b border-[var(--border)] pb-2" role="tablist">
         {TABS.map((tab) => (
           <button
             key={tab.key}
             type="button"
+            role="tab"
+            aria-selected={activeTab === tab.key}
             className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
               activeTab === tab.key
                 ? 'bg-[var(--color-primary-500)] text-white'
                 : 'bg-[var(--surface-sunken)] text-[var(--text-secondary)] hover:bg-[var(--state-hover)]'
             }`}
-            onClick={() => setActiveTab(tab.key)}
+            onClick={() => handleTabChange(tab.key)}
           >
             {tab.label}
           </button>
@@ -58,30 +67,12 @@ export function AdminBillingMonitor() {
 
       <div className="flex flex-col gap-4">
         {activeTab === 'overview' && <BillingOverviewPanel />}
-        {activeTab === 'events' && (
-          <BillingListPanel endpoint="/admin/billing/provider-events" status="pending" type="Provider Events" />
-        )}
-        {activeTab === 'audit' && (
-          <BillingListPanel endpoint="/admin/billing/audit-logs" type="Audit Logs" />
-        )}
-        {activeTab === 'subscriptions' && (
-          <BillingPlaceholderPanel
-            type="Subscriptions"
-            hint="Requires a user ID — use the Users page to view a specific user's subscriptions."
-          />
-        )}
-        {activeTab === 'payments' && (
-          <BillingPlaceholderPanel
-            type="Payments"
-            hint="Requires a user ID — use the Users page to view a specific user's payments."
-          />
-        )}
-        {activeTab === 'invoices' && (
-          <BillingPlaceholderPanel
-            type="Invoices"
-            hint="Requires a user ID — use the Users page to view a specific user's invoices."
-          />
-        )}
+        {activeTab === 'subscriptions' && <AdminSubscriptionsView />}
+        {activeTab === 'invoices' && <AdminInvoicesView />}
+        {activeTab === 'payments' && <AdminPaymentsView />}
+        {activeTab === 'refunds' && <AdminRefundsView />}
+        {activeTab === 'events' && <AdminProviderEventsView />}
+        {activeTab === 'coupons' && <AdminCouponsView />}
       </div>
 
       <div className="mt-4 p-4 rounded-xl bg-[var(--surface-sunken)] border border-[var(--border)] text-xs text-[var(--text-secondary)] flex flex-col gap-1.5">
@@ -174,68 +165,3 @@ function StatCard({ label, value }: { readonly label: string; readonly value: st
   );
 }
 
-type ListRow = Record<string, unknown>;
-
-function BillingListPanel({
-  endpoint,
-  status,
-  type,
-}: {
-  readonly endpoint: string;
-  readonly status?: string;
-  readonly type: string;
-}) {
-  const { data: rows, loading, error } = useAdminFetch<ListRow>(endpoint, status);
-
-  const rawKeys = rows.length > 0 ? Object.keys(rows[0]).slice(0, 5) : ['id', 'status', 'createdAt'];
-
-  const columns: AdminTableColumn<ListRow>[] = rawKeys.map((colKey) => ({
-    key: colKey,
-    header: colKey.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-    render: (row) => {
-      const val = row[colKey];
-      if (colKey.toLowerCase().includes('id') && typeof val === 'string') {
-        return <AdminIdCell id={val} />;
-      }
-      if (colKey.toLowerCase().includes('date') || colKey.toLowerCase().includes('at')) {
-        return <AdminDateCell iso={val != null ? String(val) : null} />;
-      }
-      if (colKey.toLowerCase() === 'status' && typeof val === 'string') {
-        return <AdminStatusBadge status={val} />;
-      }
-      return val != null ? String(val) : '—';
-    },
-  }));
-
-  return (
-    <div className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold text-[var(--text-primary)]">{type}</h2>
-      <p className="text-xs text-[var(--text-muted)]">Data will be loaded from GET {endpoint}.</p>
-      {error && <AdminErrorBanner message={error} />}
-      {loading ? (
-        <AdminCard className="p-8 text-center text-sm text-[var(--text-muted)]">
-          Loading...
-        </AdminCard>
-      ) : rows.length === 0 && !error ? (
-        <AdminCard className="p-8 text-center text-sm text-[var(--text-muted)]">
-          No {type.toLowerCase()} found.
-        </AdminCard>
-      ) : (
-        <AdminTable
-          columns={columns}
-          rows={rows}
-          getRowKey={(row, i) => String(row.id ?? i)}
-        />
-      )}
-    </div>
-  );
-}
-
-function BillingPlaceholderPanel({ type, hint }: { readonly type: string; readonly hint: string }) {
-  return (
-    <AdminCard className="p-6 flex flex-col gap-2">
-      <h2 className="text-lg font-semibold text-[var(--text-primary)]">{type}</h2>
-      <p className="text-xs text-[var(--text-secondary)]">{hint}</p>
-    </AdminCard>
-  );
-}
