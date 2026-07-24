@@ -6,23 +6,17 @@ import { AdminApiClientError } from '../../../../lib/api';
 import {
   fetchAdminCourses,
   type AdminCourseSummary,
-} from '../../../../lib/api/admin-courses-api';
-import {
   fetchAdminLevels,
   type AdminLevelSummary,
-} from '../../../../lib/api/admin-levels-api';
-import {
   fetchAdminChapters,
   type AdminChapterSummary,
-} from '../../../../lib/api/admin-chapters-api';
-import {
   fetchAdminLessons,
   createAdminLesson,
   updateAdminLesson,
   type AdminLessonListData,
   type LessonStatus,
-} from '../../../../lib/api/admin-lessons-api';
-import { LessonsList } from './lessons-list';
+  LessonsList,
+} from '../../../../features/content';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;

@@ -7,17 +7,13 @@ import {
   createAdminChapter,
   updateAdminChapter,
   type AdminChapterListData,
-} from '../../../../lib/api/admin-chapters-api';
-import {
   fetchAdminCourses,
   type AdminCourseSummary,
-} from '../../../../lib/api/admin-courses-api';
-import {
   fetchAdminLevels,
   type AdminLevelSummary,
-} from '../../../../lib/api/admin-levels-api';
+  ChaptersList,
+} from '../../../../features/content';
 import { AdminApiClientError } from '../../../../lib/api';
-import { ChaptersList } from './chapters-list';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;

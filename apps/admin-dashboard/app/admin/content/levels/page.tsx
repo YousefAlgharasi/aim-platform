@@ -7,13 +7,11 @@ import {
   createAdminLevel,
   updateAdminLevel,
   type AdminLevelListData,
-} from '../../../../lib/api/admin-levels-api';
-import {
   fetchAdminCourses,
   type AdminCourseSummary,
-} from '../../../../lib/api/admin-courses-api';
+  LevelsList,
+} from '../../../../features/content';
 import { AdminApiClientError } from '../../../../lib/api';
-import { LevelsList } from './levels-list';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;

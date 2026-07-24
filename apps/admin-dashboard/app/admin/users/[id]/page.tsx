@@ -5,11 +5,11 @@ import { notFound } from 'next/navigation';
 import { AdminApiClientError } from '../../../../lib/api';
 import {
   fetchAdminUserDetail,
+  RoleChangeForm,
+  UserStatusActions,
   type AdminUserDetail,
-} from '../../../../lib/api/admin-users-api';
+} from '../../../../features/users';
 import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../lib/auth';
-import { RoleChangeForm } from './role-change-form';
-import { UserStatusActions } from './user-status-actions';
 
 type Props = {
   params: Promise<{ id: string }>;

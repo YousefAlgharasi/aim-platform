@@ -1,4 +1,4 @@
-import { ExportsClient } from './exports-client';
+import { ExportsClient } from '../../../../features/analytics';
 
 export default function AdminAnalyticsExportsPage() {
   return (

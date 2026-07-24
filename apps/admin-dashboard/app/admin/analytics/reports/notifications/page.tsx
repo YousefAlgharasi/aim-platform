@@ -2,10 +2,10 @@ import { getAdminToken } from '../../../../../lib/api/admin-token';
 import {
   fetchNotificationAuditLogs,
   fetchNotificationTemplates,
+  NotificationReportsClient,
   type NotificationAuditLog,
   type NotificationTemplate,
-} from '../../../../../lib/api/admin-notification-analytics-api';
-import { NotificationReportsClient } from './notification-reports-client';
+} from '../../../../../features/analytics';
 
 export default async function AdminNotificationReportsPage() {
   const token = await getAdminToken();

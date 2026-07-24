@@ -11,9 +11,9 @@ import {
   type UpdateSkillPayload,
   type SkillStatus,
   type SkillDomain,
-} from '../../../../lib/api/admin-skills-api';
+  SkillsList,
+} from '../../../../features/content';
 import { AdminApiClientError } from '../../../../lib/api';
-import { SkillsList } from './skills-list';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;

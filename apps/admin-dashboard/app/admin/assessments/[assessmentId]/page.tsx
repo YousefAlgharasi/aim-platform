@@ -8,14 +8,14 @@ import {
   updateAdminAssessment,
   publishAdminAssessment,
   unpublishAdminAssessment,
+  AssessmentSettings,
+  DeadlineManagement,
+  AssessmentPublishing,
   type AdminAssessmentSettings,
-} from '../../../../lib/api/admin-assessments-api';
-import { fetchAdminQuestions } from '../../../../lib/api/admin-question-bank-api';
-import { AssessmentEditorClient } from './assessment-editor-client';
-import { AssessmentQuestionBuilder } from './question-builder';
-import { AssessmentSettings } from './assessment-settings';
-import { DeadlineManagement } from './deadline-management';
-import { AssessmentPublishing } from './assessment-publishing';
+} from '../../../../features/assessments';
+import { AssessmentEditorClient } from '../../../../features/assessments/assessment-editor-client';
+import { AssessmentQuestionBuilder } from '../../../../features/assessments/question-builder';
+import { fetchAdminQuestions } from '../../../../features/content/admin-question-bank-api';
 
 type Props = {
   params: Promise<{ assessmentId: string }>;

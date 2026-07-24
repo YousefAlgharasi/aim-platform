@@ -12,9 +12,9 @@ import {
   archiveContent,
   restoreContent,
   type ContentStatus,
-} from '../../../../../../lib/api/admin-content-status-api';
-import { fetchLessonSkillLinks } from '../../../../../../lib/api/admin-lesson-skills-api';
-import { ContentStatusWorkflow } from '../../../../../../components/content-status-workflow';
+  fetchLessonSkillLinks,
+  ContentStatusWorkflow,
+} from '../../../../../../features/content';
 import { AdminPageHeader } from '../../../../../../components/layout';
 import { AdminApiErrorState } from '../../../../../../components/error-handling';
 

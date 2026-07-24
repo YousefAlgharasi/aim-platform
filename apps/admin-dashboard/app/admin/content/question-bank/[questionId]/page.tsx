@@ -8,8 +8,8 @@ import {
   updateAdminQuestion,
   type AdminQuestionDetail,
   type QuestionDifficulty,
-} from '../../../../../lib/api/admin-question-bank-api';
-import { QuestionEditorClient } from './question-editor-client';
+} from '../../../../../features/content/admin-question-bank-api';
+import { QuestionEditorClient } from '../../../../../features/content';
 
 type Props = {
   params: Promise<{ questionId: string }>;

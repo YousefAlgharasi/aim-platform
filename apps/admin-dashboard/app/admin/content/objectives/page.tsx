@@ -10,9 +10,9 @@ import {
   type CreateObjectivePayload,
   type UpdateObjectivePayload,
   type ObjectiveStatus,
-} from '../../../../lib/api/admin-objectives-api';
+} from '../../../../features/content/admin-objectives-api';
 import { AdminApiClientError } from '../../../../lib/api';
-import { ObjectivesList } from './objectives-list';
+import { ObjectivesList } from '../../../../features/content';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;

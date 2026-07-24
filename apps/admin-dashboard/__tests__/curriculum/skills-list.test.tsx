@@ -1,6 +1,6 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { SkillsList } from '../../app/admin/content/skills/skills-list';
-import type { AdminSkillSummary } from '../../lib/api/admin-skills-api';
+import { render, screen, fireEvent, renderWithProviders } from '../test-utils';
+import { SkillsList } from '../../features/content/skills-list';
+import type { AdminSkillSummary } from '../../features/content/admin-skills-api';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn() }),
@@ -30,26 +30,26 @@ const defaultProps = {
 
 describe('SkillsList', () => {
   it('renders + New Skill button in idle mode', () => {
-    render(<SkillsList {...defaultProps} />);
+    renderWithProviders(<SkillsList {...defaultProps} />);
     expect(screen.getByText('+ New Skill')).toBeInTheDocument();
   });
 
   it('opens create form when + New Skill clicked', () => {
-    render(<SkillsList {...defaultProps} />);
+    renderWithProviders(<SkillsList {...defaultProps} />);
     fireEvent.click(screen.getByText('+ New Skill'));
     expect(screen.getByText(/cancel/i)).toBeInTheDocument();
     expect(screen.getByText('New Skill')).toBeInTheDocument();
   });
 
   it('validates empty title on create form submission', () => {
-    render(<SkillsList {...defaultProps} />);
+    renderWithProviders(<SkillsList {...defaultProps} />);
     fireEvent.click(screen.getByText('+ New Skill'));
     fireEvent.click(screen.getByText(/create skill/i));
     expect(screen.getByText(/title is required/i)).toBeInTheDocument();
   });
 
   it('validates skill key format', () => {
-    render(<SkillsList {...defaultProps} />);
+    renderWithProviders(<SkillsList {...defaultProps} />);
     fireEvent.click(screen.getByText('+ New Skill'));
     const keyInput = document.getElementById('skill-key') as HTMLInputElement;
     fireEvent.change(keyInput, { target: { value: 'INVALID KEY!' } });
@@ -60,7 +60,7 @@ describe('SkillsList', () => {
   });
 
   it('validates empty key on create form submission', () => {
-    render(<SkillsList {...defaultProps} />);
+    renderWithProviders(<SkillsList {...defaultProps} />);
     fireEvent.click(screen.getByText('+ New Skill'));
     const titleInput = document.getElementById('skill-title') as HTMLInputElement;
     fireEvent.change(titleInput, { target: { value: 'Test' } });
@@ -69,7 +69,7 @@ describe('SkillsList', () => {
   });
 
   it('closes form when Cancel clicked', () => {
-    render(<SkillsList {...defaultProps} />);
+    renderWithProviders(<SkillsList {...defaultProps} />);
     fireEvent.click(screen.getByText('+ New Skill'));
     expect(screen.getByText(/cancel/i)).toBeInTheDocument();
     fireEvent.click(screen.getByText(/cancel/i));

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, renderWithProviders } from '../test-utils';
 import { StudentProgressClient } from '../../app/admin/students/[studentId]/progress/student-progress-client';
 
 jest.mock('next/navigation', () => ({
@@ -27,29 +27,29 @@ const defaultProps = {
 
 describe('StudentProgressClient — no authority', () => {
   it('displays completion percentage from backend without recalculating', () => {
-    render(<StudentProgressClient {...defaultProps} />);
+    renderWithProviders(<StudentProgressClient {...defaultProps} />);
     expect(screen.getByText('40%')).toBeInTheDocument();
   });
 
   it('displays lesson counts from backend', () => {
-    render(<StudentProgressClient {...defaultProps} />);
+    renderWithProviders(<StudentProgressClient {...defaultProps} />);
     expect(screen.getByText('8 / 20 lessons')).toBeInTheDocument();
   });
 
   it('displays completion status from backend', () => {
-    render(<StudentProgressClient {...defaultProps} />);
+    renderWithProviders(<StudentProgressClient {...defaultProps} />);
     expect(screen.getByText('Completed')).toBeInTheDocument();
     expect(screen.getByText('In progress')).toBeInTheDocument();
   });
 
   it('does not contain mutation buttons for progress', () => {
-    render(<StudentProgressClient {...defaultProps} />);
+    renderWithProviders(<StudentProgressClient {...defaultProps} />);
     expect(screen.queryByText(/delete/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/reset/i)).not.toBeInTheDocument();
   });
 
   it('shows empty state for no lessons', () => {
-    render(<StudentProgressClient {...defaultProps} lessons={[]} totalLessonRecords={0} />);
+    renderWithProviders(<StudentProgressClient {...defaultProps} lessons={[]} totalLessonRecords={0} />);
     expect(screen.getByText(/no lesson records/i)).toBeInTheDocument();
   });
 });

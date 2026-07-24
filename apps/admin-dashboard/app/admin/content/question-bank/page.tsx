@@ -12,8 +12,8 @@ import {
   type AdminQuestionListData,
   type QuestionType,
   type QuestionDifficulty,
-} from '../../../../lib/api/admin-question-bank-api';
-import { QuestionList } from './question-list';
+} from '../../../../features/content/admin-question-bank-api';
+import { QuestionList } from '../../../../features/content';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;

@@ -1,6 +1,6 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { ChaptersList } from '../../app/admin/content/chapters/chapters-list';
-import type { AdminChapterSummary } from '../../lib/api/admin-chapters-api';
+import { render, screen, fireEvent, renderWithProviders } from '../test-utils';
+import { ChaptersList } from '../../features/content/chapters-list';
+import type { AdminChapterSummary } from '../../features/content/admin-chapters-api';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn() }),
@@ -34,30 +34,30 @@ const defaultProps = {
 
 describe('ChaptersList', () => {
   it('renders chapter table with title and status', () => {
-    render(<ChaptersList {...defaultProps} />);
+    renderWithProviders(<ChaptersList {...defaultProps} />);
     expect(screen.getByText('Greetings')).toBeInTheDocument();
     expect(screen.getByText('Draft')).toBeInTheDocument();
   });
 
   it('shows empty state when no chapters', () => {
-    render(<ChaptersList {...defaultProps} chapters={[]} total={0} />);
+    renderWithProviders(<ChaptersList {...defaultProps} chapters={[]} total={0} />);
     expect(screen.getByText(/no chapters yet/i)).toBeInTheDocument();
   });
 
   it('shows create form when + New Chapter clicked', () => {
-    render(<ChaptersList {...defaultProps} />);
+    renderWithProviders(<ChaptersList {...defaultProps} />);
     fireEvent.click(screen.getByText('+ New Chapter'));
     expect(screen.getByText(/cancel/i)).toBeInTheDocument();
   });
 
   it('shows edit form when Edit clicked', () => {
-    render(<ChaptersList {...defaultProps} />);
+    renderWithProviders(<ChaptersList {...defaultProps} />);
     fireEvent.click(screen.getByText('Edit'));
     expect(screen.getByText(/cancel/i)).toBeInTheDocument();
   });
 
   it('renders published status badge', () => {
-    render(
+    renderWithProviders(
       <ChaptersList
         {...defaultProps}
         chapters={[makeChapter({ status: 'published' })]}
@@ -68,14 +68,14 @@ describe('ChaptersList', () => {
   });
 
   it('pagination links include courseId and levelId', () => {
-    render(<ChaptersList {...defaultProps} totalPages={2} page={1} />);
+    renderWithProviders(<ChaptersList {...defaultProps} totalPages={2} page={1} />);
     const nextLink = screen.getByText(/next/i);
     expect(nextLink.getAttribute('href')).toContain('courseId=course-1');
     expect(nextLink.getAttribute('href')).toContain('levelId=level-1');
   });
 
   it('renders accessible Actions column header', () => {
-    render(<ChaptersList {...defaultProps} />);
+    renderWithProviders(<ChaptersList {...defaultProps} />);
     expect(document.querySelector('th[aria-label="Actions"]')).toBeInTheDocument();
   });
 });
