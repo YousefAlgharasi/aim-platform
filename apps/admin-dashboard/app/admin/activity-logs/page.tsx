@@ -2,6 +2,7 @@ import { getAdminToken } from '../../../core/api/admin-token';
 import { AdminApiClientError } from '../../../core/api';
 import { fetchAdminActivityLogs } from '../../../core/api/admin-logs-api';
 import { ActivityLogClient } from '../../../features/logs';
+import { AdminPageHeader, AdminErrorBanner } from '../../../shared/layouts/DashboardLayout';
 
 type Props = {
   searchParams: Promise<{ page?: string; userId?: string; eventType?: string }>;
@@ -28,23 +29,19 @@ export default async function AdminActivityLogsPage({ searchParams }: Props) {
   }
 
   return (
-    <section className="admin-curriculum-page">
-      <header className="admin-page-header">
-        <p className="eyebrow">Admin — Activity</p>
-        <h1>Activity Logs</h1>
-        {logs && (
-          <p className="admin-page-meta">{logs.total} log entr{logs.total !== 1 ? 'ies' : 'y'}</p>
-        )}
-      </header>
+    <section className="flex flex-col gap-6 p-6">
+      <AdminPageHeader
+        eyebrow="Admin — Activity"
+        title="Activity Logs"
+        description={logs ? `${logs.total} log entr${logs.total !== 1 ? 'ies' : 'y'}` : undefined}
+      />
 
-      <div className="admin-boundary-note">
-        <strong>Read-only:</strong> Activity logs are recorded server-side by the backend.
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-sunken)] p-4 text-xs text-[var(--text-secondary)] shadow-xs">
+        <strong className="text-[var(--text-primary)] font-semibold">Read-only:</strong> Activity logs are recorded server-side by the backend.
         This view displays safe event metadata only — no raw learner data or AI provider responses.
       </div>
 
-      {fetchError && (
-        <p className="admin-error-banner" role="alert">{fetchError}</p>
-      )}
+      {fetchError && <AdminErrorBanner message={fetchError} />}
 
       {logs && (
         <ActivityLogClient
