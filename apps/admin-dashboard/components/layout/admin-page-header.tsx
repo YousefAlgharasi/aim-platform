@@ -10,64 +10,21 @@ type Props = {
 
 export function AdminPageHeader({ eyebrow, title, description, actions }: Props) {
   return (
-    <header className="aim-page-header">
-      <div className="aim-page-header-text">
+    <header className="flex flex-wrap items-start justify-between gap-4 mb-8">
+      <div className="flex flex-col gap-1">
         {eyebrow && (
-          <p className="aim-page-eyebrow" aria-hidden="true">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-primary-600)]" aria-hidden="true">
             {eyebrow}
           </p>
         )}
-        <h1 className="aim-page-title">{title}</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)] leading-8 tracking-tight">{title}</h1>
         {description && (
-          <p className="aim-page-description">{description}</p>
+          <p className="text-sm text-[var(--text-secondary)] leading-6">{description}</p>
         )}
       </div>
       {actions && (
-        <div className="aim-page-header-actions">{actions}</div>
+        <div className="flex items-center gap-2 shrink-0">{actions}</div>
       )}
-      <style>{`
-        .aim-page-header {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: var(--space-16);
-          margin-block-end: var(--space-32);
-          flex-wrap: wrap;
-        }
-        .aim-page-header-text {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-4);
-        }
-        .aim-page-eyebrow {
-          margin: 0;
-          font-size: 12px;
-          font-weight: var(--weight-semibold);
-          letter-spacing: 0.06em;
-          text-transform: uppercase;
-          color: var(--color-primary-600);
-        }
-        .aim-page-title {
-          margin: 0;
-          font-size: 23px;
-          font-weight: var(--weight-bold);
-          line-height: 30px;
-          letter-spacing: -0.01em;
-          color: var(--text-primary);
-        }
-        .aim-page-description {
-          margin: 0;
-          font-size: 15px;
-          color: var(--text-secondary);
-          line-height: 22px;
-        }
-        .aim-page-header-actions {
-          display: flex;
-          align-items: center;
-          gap: var(--space-8);
-          flex-shrink: 0;
-        }
-      `}</style>
     </header>
   );
 }

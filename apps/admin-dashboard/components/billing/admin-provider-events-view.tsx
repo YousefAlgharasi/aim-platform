@@ -1,8 +1,15 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-
-import { backendFetch } from '../../lib/api/client-api-helpers';
+import { useState } from 'react';
+import { useAdminFetch } from '../../lib/hooks/use-admin-fetch';
+import {
+  AdminDateCell,
+  AdminIdCell,
+  AdminStatusBadge,
+  AdminTable,
+  type AdminTableColumn,
+} from '../common';
+import { AdminErrorBanner } from '../layout';
 
 type ProviderEventFilter = 'all' | 'pending' | 'processed' | 'failed' | 'skipped';
 
@@ -24,64 +31,60 @@ type ProviderEvent = {
   readonly createdAt: string;
 };
 
+const COLUMNS: readonly AdminTableColumn<ProviderEvent>[] = [
+  { key: 'id', header: 'Event ID', render: (e) => <AdminIdCell id={e.id} /> },
+  { key: 'eventType', header: 'Type', render: (e) => e.eventType },
+  { key: 'provider', header: 'Provider', render: (e) => e.provider },
+  { key: 'processingStatus', header: 'Status', render: (e) => <AdminStatusBadge status={e.processingStatus} /> },
+  { key: 'errorMessage', header: 'Error', render: (e) => e.errorMessage ?? '—' },
+  { key: 'processedAt', header: 'Processed', render: (e) => <AdminDateCell iso={e.processedAt} /> },
+  { key: 'createdAt', header: 'Created', render: (e) => <AdminDateCell iso={e.createdAt} /> },
+];
+
 export function AdminProviderEventsView() {
   const [filter, setFilter] = useState<ProviderEventFilter>('all');
-  const [items, setItems] = useState<ProviderEvent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchEvents = useCallback(async (status?: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const query = status && status !== 'all' ? `?status=${status}` : '';
-      const res = await backendFetch(`/admin/billing/provider-events${query}`);
-      if (!res.ok) throw new Error(`Backend error ${res.status}: ${res.statusText}`);
-      const json = await res.json();
-      setItems(Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load provider events.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetchEvents(filter); }, [fetchEvents, filter]);
+  const { data: items, loading, error } = useAdminFetch<ProviderEvent>('/admin/billing/provider-events', filter);
 
   return (
-    <section className="admin-provider-events-view">
-      <p className="eyebrow">Internal admin surface</p>
-      <h1>Provider Events</h1>
-      <p className="hero-copy">Webhook events from payment providers.</p>
-
-      <div className="admin-provider-events-view__controls">
-        <div className="admin-provider-events-view__filters">
-          {FILTERS.map((f) => (
-            <button key={f.key} className={`admin-provider-events-view__filter ${filter === f.key ? 'admin-provider-events-view__filter--active' : ''}`} onClick={() => setFilter(f.key)}>{f.label}</button>
-          ))}
-        </div>
+    <section className="flex flex-col gap-4">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-primary-500)]">
+          Internal admin surface
+        </p>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Provider Events</h1>
+        <p className="text-sm text-[var(--text-secondary)] mt-1">Webhook events from payment providers.</p>
       </div>
 
-      {error && <div style={{ padding: '1rem', background: 'var(--error-soft)', borderRadius: 'var(--radius-md)', color: 'var(--color-error-700)', fontSize: 13, marginBottom: 'var(--space-16)' }}>{error}<button onClick={() => fetchEvents(filter)} style={{ marginLeft: 8, textDecoration: 'underline', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', font: 'inherit' }}>Retry</button></div>}
+      <div className="flex flex-wrap gap-1.5">
+        {FILTERS.map((f) => (
+          <button
+            key={f.key}
+            type="button"
+            onClick={() => setFilter(f.key)}
+            className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
+              filter === f.key
+                ? 'bg-[var(--color-primary-500)] text-white'
+                : 'bg-[var(--surface-sunken)] text-[var(--text-secondary)] hover:bg-[var(--state-hover)]'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
 
-      <table className="admin-provider-events-view__table">
-        <thead><tr><th>Event ID</th><th>Type</th><th>Provider</th><th>Status</th><th>Error</th><th>Processed</th><th>Created</th></tr></thead>
-        <tbody>
-          {loading && <tr><td colSpan={7} style={{ textAlign: 'center', padding: '2rem' }}>Loading...</td></tr>}
-          {!loading && items.length === 0 && !error && <tr><td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>No provider events found.</td></tr>}
-          {!loading && items.map((e) => (
-            <tr key={e.id}>
-              <td><code style={{ fontSize: 12 }}>{e.id.slice(0, 8)}...</code></td>
-              <td>{e.eventType}</td>
-              <td>{e.provider}</td>
-              <td>{e.processingStatus}</td>
-              <td>{e.errorMessage ?? '—'}</td>
-              <td>{e.processedAt ?? '—'}</td>
-              <td>{e.createdAt}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {error && <AdminErrorBanner message={error} />}
+
+      {loading ? (
+        <div className="p-8 text-center text-sm text-[var(--text-muted)] border border-[var(--border)] rounded-xl bg-[var(--surface)]">
+          Loading provider events...
+        </div>
+      ) : items.length === 0 && !error ? (
+        <div className="p-8 text-center text-sm text-[var(--text-muted)] border border-[var(--border)] rounded-xl bg-[var(--surface)]">
+          No provider events found.
+        </div>
+      ) : (
+        <AdminTable columns={COLUMNS} rows={items} getRowKey={(e) => e.id} />
+      )}
     </section>
   );
 }

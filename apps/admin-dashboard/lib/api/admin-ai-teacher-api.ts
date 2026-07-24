@@ -1,9 +1,6 @@
 // Admin AI Teacher API client (read-only)
 import { adminApiClient } from './admin-api-client';
-
-function decodeArray<T>(v: unknown, decodeItem: (item: unknown) => T): T[] {
-  return Array.isArray(v) ? v.map(decodeItem) : [];
-}
+import { decodeArray } from './decoders';
 
 /* ---- Prompt Templates ---- */
 

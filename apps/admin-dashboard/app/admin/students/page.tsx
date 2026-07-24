@@ -8,7 +8,7 @@ import {
   type AdminUserStatus,
 } from '../../../lib/api/admin-users-api';
 import { AdminApiClientError } from '../../../lib/api';
-import { AdminPageHeader } from '../../../components/layout';
+import { AdminPageHeader, AdminEmptyState } from '../../../components/layout';
 import {
   AdminTable,
   AdminPagination,
@@ -18,10 +18,10 @@ import {
   AdminSelect,
   AdminIdCell,
   AdminDateCell,
+  AdminButton,
   type AdminTableColumn,
 } from '../../../components/common';
 import { AdminApiErrorState } from '../../../components/error-handling';
-import { AdminEmptyState } from '../../../components/layout';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
@@ -43,7 +43,7 @@ const columns: AdminTableColumn<AdminUserListItem>[] = [
     header: 'ID',
     width: '120px',
     render: (user) => (
-      <Link href={`/admin/students/${user.id}/progress`} style={{ textDecoration: 'none' }}>
+      <Link href={`/admin/students/${user.id}/progress`} className="no-underline">
         <AdminIdCell id={user.id} />
       </Link>
     ),
@@ -51,8 +51,7 @@ const columns: AdminTableColumn<AdminUserListItem>[] = [
   {
     key: 'email',
     header: 'Email',
-    render: (user) =>
-      user.email ?? <span style={{ color: 'var(--text-muted)' }}>—</span>,
+    render: (user) => user.email ?? <span className="text-[var(--text-muted)]">—</span>,
   },
   {
     key: 'status',
@@ -66,31 +65,19 @@ const columns: AdminTableColumn<AdminUserListItem>[] = [
     width: '160px',
     render: (user) =>
       user.totalLessons === null ? (
-        <span style={{ color: 'var(--text-muted)' }}>—</span>
+        <span className="text-[var(--text-muted)]">—</span>
       ) : (
         <div
-          style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-8)' }}
+          className="flex items-center gap-2"
           aria-label={`${user.completedLessons ?? 0} of ${user.totalLessons} lessons completed`}
         >
-          <div
-            style={{
-              flex: '0 0 64px',
-              height: 6,
-              borderRadius: 3,
-              background: 'var(--surface-sunken)',
-              overflow: 'hidden',
-            }}
-          >
+          <div className="w-16 h-1.5 rounded-full bg-[var(--surface-sunken)] overflow-hidden shrink-0">
             <div
-              style={{
-                height: '100%',
-                width: `${user.completionPct ?? 0}%`,
-                background: 'var(--color-primary-600)',
-                borderRadius: 3,
-              }}
+              className="h-full rounded-full bg-[var(--color-primary-600)] transition-all duration-300"
+              style={{ width: `${user.completionPct ?? 0}%` }}
             />
           </div>
-          <span style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+          <span className="text-xs text-[var(--text-secondary)] whitespace-nowrap">
             {user.completedLessons ?? 0}/{user.totalLessons} ({user.completionPct ?? 0}%)
           </span>
         </div>
@@ -112,7 +99,7 @@ const columns: AdminTableColumn<AdminUserListItem>[] = [
 
 function buildHref(
   page: number,
-  params: { limit: number; status?: string; email?: string },
+  params: { limit: number; status?: string; email?: string }
 ): string {
   const qs = new URLSearchParams();
   qs.set('page', String(page));
@@ -127,7 +114,7 @@ export default async function AdminStudentsPage({ searchParams }: Props) {
   const page = Math.max(parseInt(sp.page ?? String(DEFAULT_PAGE), 10) || DEFAULT_PAGE, 1);
   const limit = Math.min(
     Math.max(parseInt(sp.limit ?? String(DEFAULT_LIMIT), 10) || DEFAULT_LIMIT, 1),
-    100,
+    100
   );
   const status = STATUS_OPTIONS.includes(sp.status as AdminUserStatus)
     ? (sp.status as AdminUserStatus)
@@ -153,18 +140,16 @@ export default async function AdminStudentsPage({ searchParams }: Props) {
   const totalPages = data ? Math.ceil(data.total / data.limit) : 0;
 
   return (
-    <section>
+    <section className="flex flex-col gap-5">
       <AdminPageHeader
         eyebrow="Student Management"
         title="Students"
         description={
-          data
-            ? `${data.total} student${data.total !== 1 ? 's' : ''} enrolled`
-            : undefined
+          data ? `${data.total} student${data.total !== 1 ? 's' : ''} enrolled` : undefined
         }
       />
 
-      <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 'var(--space-16)' }}>
+      <p className="text-xs text-[var(--text-secondary)] mb-4">
         Lesson progress is backend-computed from published lessons and per-student completion
         records — this view never recalculates it. Click a student to see their full progress
         breakdown.
@@ -177,13 +162,13 @@ export default async function AdminStudentsPage({ searchParams }: Props) {
             placeholder="Search by email…"
             defaultValue={email ?? ''}
             aria-label="Search by email"
-            style={{ maxWidth: 240 }}
+            className="max-w-[240px]"
           />
           <AdminSelect
             name="status"
             defaultValue={status ?? ''}
             aria-label="Filter by status"
-            style={{ maxWidth: 160 }}
+            className="max-w-[160px]"
           >
             <option value="">All statuses</option>
             {STATUS_OPTIONS.map((s) => (
@@ -193,44 +178,15 @@ export default async function AdminStudentsPage({ searchParams }: Props) {
             ))}
           </AdminSelect>
           <input type="hidden" name="limit" value={limit} />
-          <button type="submit" className="aim-filter-submit">
+          <AdminButton type="submit" variant="primary">
             Apply
-            <style>{`
-              .aim-filter-submit {
-                display: inline-flex;
-                align-items: center;
-                height: var(--size-input);
-                padding: 0 var(--space-16);
-                border: none;
-                border-radius: var(--radius-sm);
-                background: var(--color-primary-600);
-                color: var(--text-on-primary);
-                font-size: 14px;
-                font-weight: var(--weight-medium);
-                cursor: pointer;
-                transition: background 0.15s;
-              }
-              .aim-filter-submit:hover { background: var(--color-primary-700); }
-              .aim-filter-submit:focus-visible {
-                outline: none;
-                box-shadow: var(--shadow-focus);
-              }
-            `}</style>
-          </button>
+          </AdminButton>
           {(status || email) && (
             <Link
               href={`/admin/students?limit=${limit}`}
-              className="aim-filter-clear"
+              className="text-xs text-[var(--text-link)] hover:underline"
             >
               Clear
-              <style>{`
-                .aim-filter-clear {
-                  font-size: 13px;
-                  color: var(--text-link);
-                  text-decoration: none;
-                }
-                .aim-filter-clear:hover { text-decoration: underline; }
-              `}</style>
             </Link>
           )}
         </AdminFilterBar>
@@ -242,9 +198,7 @@ export default async function AdminStudentsPage({ searchParams }: Props) {
         <AdminEmptyState
           title="No students found"
           description={
-            status || email
-              ? 'Try adjusting the filters above.'
-              : 'No students have enrolled yet.'
+            status || email ? 'Try adjusting the filters above.' : 'No students have enrolled yet.'
           }
         />
       )}

@@ -18,7 +18,13 @@ import type {
   AdminAiAuditLogItem,
   CreatePromptTemplateDraftPayload,
 } from '../../../lib/api/admin-ai-teacher-api';
-import { PromptDraftForm } from './prompt-draft-form';
+import dynamic from 'next/dynamic';
+import { AdminLoadingSkeleton } from '../../../components/layout/admin-loading-skeleton';
+
+const PromptDraftForm = dynamic(
+  () => import('./prompt-draft-form').then((m) => m.PromptDraftForm),
+  { loading: () => <AdminLoadingSkeleton rows={3} /> },
+);
 
 export type AiTeacherSection = 'prompts' | 'model-configs' | 'safety' | 'usage' | 'audit-logs';
 
@@ -44,7 +50,7 @@ function buildPromptColumns(
   pendingId: string | null,
 ): AdminTableColumn<AdminAiPromptTemplateItem>[] {
   return [
-    { key: 'name', header: 'Name', render: (row) => <span style={{ fontSize: '13px' }}>{row.name}</span> },
+    { key: 'name', header: 'Name', render: (row) => <span className="text-xs">{row.name}</span> },
     { key: 'version', header: 'Version', render: (row) => <span>{row.version}</span> },
     { key: 'locale', header: 'Locale', render: (row) => <span>{row.locale}</span> },
     { key: 'audience', header: 'Audience', render: (row) => <span>{row.audience}</span> },
@@ -54,7 +60,7 @@ function buildPromptColumns(
       key: 'actions',
       header: 'Actions',
       render: (row) => (
-        <div style={{ display: 'flex', gap: 'var(--space-8)' }}>
+        <div className="flex gap-2">
           {row.status === 'draft' && (
             <AdminButton size="sm" variant="primary" disabled={pendingId === row.id} onClick={() => onPublish(row)}>
               Publish
@@ -72,10 +78,10 @@ function buildPromptColumns(
 }
 
 const modelConfigColumns: AdminTableColumn<AdminAiModelConfigItem>[] = [
-  { key: 'name', header: 'Name', render: (row) => <span style={{ fontSize: '13px' }}>{row.name}</span> },
-  { key: 'modelId', header: 'Model', render: (row) => <span style={{ fontSize: '13px' }}>{row.modelId}</span> },
+  { key: 'name', header: 'Name', render: (row) => <span className="text-xs">{row.name}</span> },
+  { key: 'modelId', header: 'Model', render: (row) => <span className="text-xs">{row.modelId}</span> },
   { key: 'tier', header: 'Tier', render: (row) => <AdminBadge variant="default">{row.tier}</AdminBadge> },
-  { key: 'providerKeyRef', header: 'Provider Key Ref', render: (row) => <span style={{ fontSize: '12px' }}>{row.providerKeyRef}</span> },
+  { key: 'providerKeyRef', header: 'Provider Key Ref', render: (row) => <span className="text-xs">{row.providerKeyRef}</span> },
   { key: 'status', header: 'Status', render: (row) => <AdminBadge variant={row.status === 'active' ? 'success' : 'default'}>{row.status}</AdminBadge> },
   { key: 'updatedAt', header: 'Updated', render: (row) => <AdminDateCell date={row.updatedAt} /> },
 ];
@@ -103,7 +109,7 @@ const auditColumns: AdminTableColumn<AdminAiAuditLogItem>[] = [
   { key: 'id', header: 'Log ID', render: (row) => <AdminIdCell id={row.id} /> },
   { key: 'actorId', header: 'Actor', render: (row) => row.actorId ? <AdminIdCell id={row.actorId} /> : <span>—</span> },
   { key: 'action', header: 'Action', render: (row) => <AdminBadge variant="default">{row.action.replace(/_/g, ' ')}</AdminBadge> },
-  { key: 'resourceType', header: 'Resource Type', render: (row) => <span style={{ fontSize: '13px' }}>{row.resourceType}</span> },
+  { key: 'resourceType', header: 'Resource Type', render: (row) => <span className="text-xs">{row.resourceType}</span> },
   { key: 'resourceId', header: 'Resource ID', render: (row) => row.resourceId ? <AdminIdCell id={row.resourceId} /> : <span>—</span> },
   { key: 'createdAt', header: 'Time', render: (row) => <AdminDateCell date={row.createdAt} /> },
 ];
@@ -170,7 +176,7 @@ export function AiTeacherClient({ section, rows, onCreateDraft, onPublish, onRet
     : rows;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-16)' }}>
+    <div className="flex flex-col gap-4">
       <div className="ait-uh">
         <div className="ait-uh-left">
           <p className="ait-uh-eyebrow">Admin — AI Management</p>
@@ -235,7 +241,7 @@ export function AiTeacherClient({ section, rows, onCreateDraft, onPublish, onRet
       )}
 
       {filteredRows.length === 0 ? (
-        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No entries to display for this section.</p>
+        <p className="text-sm text-[var(--text-muted)]">No entries to display for this section.</p>
       ) : (
         <>
           {section === 'prompts' && (

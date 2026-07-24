@@ -14,6 +14,7 @@ import {
   AdminBadge,
   AdminButton,
 } from './common';
+import { AdminErrorBanner } from './layout';
 
 type StatusWorkflowProps = {
   readonly entityId: string;
@@ -90,8 +91,8 @@ export function ContentStatusWorkflow({
 
   return (
     <AdminCard title="Status Workflow">
-      <div className="aim-status-workflow-header">
-        <span className="aim-status-workflow-title">{entityTitle}</span>
+      <div className="flex items-center gap-3 mb-4">
+        <span className="text-base font-semibold">{entityTitle}</span>
         <AdminBadge variant={STATUS_VARIANT[currentStatus]}>
           {STATUS_LABELS[currentStatus]}
         </AdminBadge>
@@ -99,11 +100,11 @@ export function ContentStatusWorkflow({
 
       {isLesson && typeof skillLinkCount === 'number' && (
         <div
-          className={
+          className={`p-3 px-4 mb-3 rounded-xl text-sm ${
             skillLinkCount === 0
-              ? 'aim-status-workflow-skill-warning'
-              : 'aim-status-workflow-skill-ok'
-          }
+              ? 'bg-[var(--color-warning-50)] text-[var(--color-warning-700)]'
+              : 'bg-[var(--color-success-50)] text-[var(--color-success-700)]'
+          }`}
         >
           {skillLinkCount === 0 ? (
             <>
@@ -117,23 +118,23 @@ export function ContentStatusWorkflow({
       )}
 
       {actionError && (
-        <div className="admin-error-banner" role="alert" style={{ marginBlock: 'var(--space-12)' }}>
-          {actionError}
+        <div className="my-3">
+          <AdminErrorBanner message={actionError} />
         </div>
       )}
 
       {actionSuccess && (
-        <div className="aim-status-workflow-success" role="status">
+        <div className="p-3 px-4 my-3 rounded-xl bg-[var(--color-success-50)] text-[var(--color-success-700)] text-sm font-medium" role="status">
           {actionSuccess}
         </div>
       )}
 
       {transitions.length === 0 ? (
-        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
+        <p className="text-sm text-[var(--text-muted)]">
           No transitions available for current status.
         </p>
       ) : (
-        <div className="aim-status-workflow-actions">
+        <div className="flex flex-wrap gap-3">
           {transitions.map((t) => (
             <AdminButton
               key={t.action}
@@ -144,74 +145,20 @@ export function ContentStatusWorkflow({
             >
               {t.label}
               {t.superAdminOnly && (
-                <span className="aim-status-workflow-sa-badge">SA</span>
+                <span className="inline-flex items-center justify-center ml-1 px-1.5 py-0.5 rounded-sm bg-amber-100 text-amber-800 text-[10px] font-bold tracking-wider">
+                  SA
+                </span>
               )}
             </AdminButton>
           ))}
         </div>
       )}
 
-      <div className="admin-boundary-note" style={{ marginBlockStart: 'var(--space-16)' }}>
+      <div className="mt-4 p-4 rounded-xl bg-[var(--surface-sunken)] border border-[var(--border)] text-xs text-[var(--text-secondary)]">
         <strong>Backend authority:</strong> All status transitions are validated and
         enforced by backend APIs. Permission checks, skill-link requirements, and
         audit logging are applied server-side.
       </div>
-
-      <style>{`
-        .aim-status-workflow-header {
-          display: flex;
-          align-items: center;
-          gap: var(--space-12);
-          margin-block-end: var(--space-16);
-        }
-        .aim-status-workflow-title {
-          font-size: 16px;
-          font-weight: var(--weight-semibold);
-        }
-        .aim-status-workflow-skill-warning {
-          padding: var(--space-12) var(--space-16);
-          margin-block-end: var(--space-12);
-          border-radius: var(--radius-md);
-          background: var(--color-warning-50);
-          color: var(--color-warning-700);
-          font-size: 14px;
-        }
-        .aim-status-workflow-skill-ok {
-          padding: var(--space-12) var(--space-16);
-          margin-block-end: var(--space-12);
-          border-radius: var(--radius-md);
-          background: var(--color-success-50);
-          color: var(--color-success-700);
-          font-size: 14px;
-        }
-        .aim-status-workflow-success {
-          padding: var(--space-12) var(--space-16);
-          margin-block: var(--space-12);
-          border-radius: var(--radius-md);
-          background: var(--color-success-50);
-          color: var(--color-success-700);
-          font-size: 14px;
-          font-weight: var(--weight-medium);
-        }
-        .aim-status-workflow-actions {
-          display: flex;
-          gap: var(--space-12);
-          flex-wrap: wrap;
-        }
-        .aim-status-workflow-sa-badge {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          margin-inline-start: var(--space-4);
-          padding: 1px 6px;
-          border-radius: var(--radius-sm);
-          background: var(--color-warning-100);
-          color: var(--color-warning-800);
-          font-size: 10px;
-          font-weight: var(--weight-bold);
-          letter-spacing: 0.5px;
-        }
-      `}</style>
     </AdminCard>
   );
 }

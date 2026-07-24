@@ -76,19 +76,19 @@ export function AssessmentPublishing({
   return (
     <AdminCard title="Publishing">
       {error && (
-        <div className="admin-error-banner" role="alert" style={{ marginBlockEnd: 'var(--space-16)' }}>
+        <div className="admin-error-banner mb-4" role="alert">
           {error}
         </div>
       )}
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-12)', marginBlockEnd: 'var(--space-16)' }}>
-        <span style={{ fontSize: '14px', fontWeight: 'var(--weight-semibold)', color: 'var(--text-secondary)' }}>
+      <div className="flex items-center gap-3 mb-4">
+        <span className="text-sm font-semibold text-[var(--text-secondary)]">
           Current Status:
         </span>
         <AdminStatusBadge status={status} />
       </div>
 
-      <div style={{ display: 'flex', gap: 'var(--space-12)', flexWrap: 'wrap' }}>
+      <div className="flex gap-3 flex-wrap">
         {status === 'draft' && (
           <AdminButton
             variant="primary"
@@ -123,13 +123,13 @@ export function AssessmentPublishing({
         )}
 
         {status === 'archived' && (
-          <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+          <p className="text-sm text-[var(--text-secondary)]">
             This assessment is archived. Contact an administrator to restore it.
           </p>
         )}
       </div>
 
-      <div className="admin-boundary-note" style={{ marginBlockStart: 'var(--space-16)' }}>
+      <div className="admin-boundary-note mt-4">
         <strong>Backend authority:</strong> Publishing state transitions are enforced
         by the backend. The UI sends requests only.
       </div>

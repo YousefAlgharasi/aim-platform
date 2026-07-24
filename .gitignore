@@ -35,3 +35,5 @@ services/backend-api/var/
 #pilot_accounts.local.md
 env.json
 .claude/
+scripts/create-superadmin-supabase.js
+

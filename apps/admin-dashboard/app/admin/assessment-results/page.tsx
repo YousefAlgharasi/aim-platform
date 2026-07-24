@@ -130,7 +130,7 @@ export default async function AdminAssessmentResultsPage({ searchParams }: Props
         }
       />
 
-      <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 'var(--space-16)' }}>
+      <p className="text-xs text-[var(--text-secondary)] mb-4">
         Scores and pass/fail status are computed by the backend API. This page displays results only.
       </p>
 

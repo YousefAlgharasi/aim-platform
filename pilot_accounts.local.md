@@ -10,3 +10,4 @@ Created for local/Supabase pilot testing.
 | Student 4 | 4 | `aim.pilot.student4@example.com` | `AimPilot2026!S4igqN8t4w` |
 | Student 5 | 5 | `aim.pilot.student5@example.com` | `AimPilot2026!S5v3Gk06Fm` |
 | Admin | - | `aim.pilot.admin@example.com` | `AimPilot2026!AdmincJeKR1Fs` |
+| Super Admin | - | `Ghost@aim.com` | `aim123` |

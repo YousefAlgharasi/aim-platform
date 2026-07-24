@@ -89,62 +89,62 @@ export function AssessmentEditorClient({ assessment, onUpdate }: Props) {
 
   if (!editing) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-16)' }}>
+      <div className="flex flex-col gap-4">
         <AdminCard title="Assessment Details">
-          <dl className="aim-detail-grid">
-            <div className="aim-detail-row">
-              <dt>Title</dt>
-              <dd>{assessment.title}</dd>
+          <dl className="grid gap-3 m-0">
+            <div className="grid grid-cols-[140px_1fr] gap-2 items-start">
+              <dt className="font-semibold text-xs text-[var(--text-secondary)]">Title</dt>
+              <dd className="m-0 text-sm">{assessment.title}</dd>
             </div>
-            <div className="aim-detail-row">
-              <dt>Type</dt>
-              <dd><AdminBadge variant={assessment.type === 'exam' ? 'primary' : 'info'}>{TYPE_LABELS[assessment.type]}</AdminBadge></dd>
+            <div className="grid grid-cols-[140px_1fr] gap-2 items-start">
+              <dt className="font-semibold text-xs text-[var(--text-secondary)]">Type</dt>
+              <dd className="m-0 text-sm"><AdminBadge variant={assessment.type === 'exam' ? 'primary' : 'info'}>{TYPE_LABELS[assessment.type]}</AdminBadge></dd>
             </div>
-            <div className="aim-detail-row">
-              <dt>Status</dt>
-              <dd><AdminStatusBadge status={assessment.status} /></dd>
+            <div className="grid grid-cols-[140px_1fr] gap-2 items-start">
+              <dt className="font-semibold text-xs text-[var(--text-secondary)]">Status</dt>
+              <dd className="m-0 text-sm"><AdminStatusBadge status={assessment.status} /></dd>
             </div>
-            <div className="aim-detail-row">
-              <dt>Questions</dt>
-              <dd>{assessment.questionIds.length}</dd>
+            <div className="grid grid-cols-[140px_1fr] gap-2 items-start">
+              <dt className="font-semibold text-xs text-[var(--text-secondary)]">Questions</dt>
+              <dd className="m-0 text-sm">{assessment.questionIds.length}</dd>
             </div>
-            <div className="aim-detail-row">
-              <dt>Created</dt>
-              <dd>{new Date(assessment.createdAt).toLocaleDateString()}</dd>
+            <div className="grid grid-cols-[140px_1fr] gap-2 items-start">
+              <dt className="font-semibold text-xs text-[var(--text-secondary)]">Created</dt>
+              <dd className="m-0 text-sm">{new Date(assessment.createdAt).toLocaleDateString()}</dd>
             </div>
-            <div className="aim-detail-row">
-              <dt>Updated</dt>
-              <dd>{new Date(assessment.updatedAt).toLocaleDateString()}</dd>
+            <div className="grid grid-cols-[140px_1fr] gap-2 items-start">
+              <dt className="font-semibold text-xs text-[var(--text-secondary)]">Updated</dt>
+              <dd className="m-0 text-sm">{new Date(assessment.updatedAt).toLocaleDateString()}</dd>
             </div>
           </dl>
-          <div style={{ marginBlockStart: 'var(--space-16)', display: 'flex', gap: 'var(--space-16)' }}>
-            <Link href={`/admin/assessments/${assessment.id}/preview`} style={{ color: 'var(--color-primary-600)', fontSize: '14px' }}>
+          <div className="mt-4 flex gap-4">
+            <Link href={`/admin/assessments/${assessment.id}/preview`} className="text-sm text-[var(--color-primary-600)] hover:underline">
               Preview as Student →
             </Link>
-            <Link href={`/admin/assessments/${assessment.id}/results`} style={{ color: 'var(--color-primary-600)', fontSize: '14px' }}>
+            <Link href={`/admin/assessments/${assessment.id}/results`} className="text-sm text-[var(--color-primary-600)] hover:underline">
               View Results →
             </Link>
           </div>
         </AdminCard>
 
         <AdminCard title="Settings">
-          <dl className="aim-detail-grid">
-            <div className="aim-detail-row">
-              <dt>Time Limit</dt>
-              <dd>{assessment.settings.timeLimitMinutes != null ? `${assessment.settings.timeLimitMinutes} minutes` : 'No limit'}</dd>
+          <dl className="grid gap-3 m-0">
+            <div className="grid grid-cols-[140px_1fr] gap-2 items-start">
+              <dt className="font-semibold text-xs text-[var(--text-secondary)]">Time Limit</dt>
+              <dd className="m-0 text-sm">{assessment.settings.timeLimitMinutes != null ? `${assessment.settings.timeLimitMinutes} minutes` : 'No limit'}</dd>
             </div>
-            <div className="aim-detail-row">
-              <dt>Pass Mark</dt>
-              <dd>{assessment.settings.passMark != null ? `${assessment.settings.passMark}%` : 'Not set'}</dd>
+            <div className="grid grid-cols-[140px_1fr] gap-2 items-start">
+              <dt className="font-semibold text-xs text-[var(--text-secondary)]">Pass Mark</dt>
+              <dd className="m-0 text-sm">{assessment.settings.passMark != null ? `${assessment.settings.passMark}%` : 'Not set'}</dd>
             </div>
-            <div className="aim-detail-row">
-              <dt>Shuffle Questions</dt>
-              <dd>{assessment.settings.shuffleQuestions ? 'Yes' : 'No'}</dd>
+            <div className="grid grid-cols-[140px_1fr] gap-2 items-start">
+              <dt className="font-semibold text-xs text-[var(--text-secondary)]">Shuffle Questions</dt>
+              <dd className="m-0 text-sm">{assessment.settings.shuffleQuestions ? 'Yes' : 'No'}</dd>
             </div>
           </dl>
 
           {assessment.status !== 'archived' && (
-            <div style={{ marginBlockStart: 'var(--space-16)' }}>
+            <div className="mt-4">
               <AdminButton variant="primary" onClick={() => setEditing(true)}>
                 Edit Assessment
               </AdminButton>
@@ -156,29 +156,6 @@ export function AssessmentEditorClient({ assessment, onUpdate }: Props) {
           <strong>Backend authority:</strong> Assessment grading, scoring, deadlines,
           and pass/fail determination are computed by the backend only.
         </div>
-
-        <style>{`
-          .aim-detail-grid {
-            display: grid;
-            gap: var(--space-12);
-            margin: 0;
-          }
-          .aim-detail-row {
-            display: grid;
-            grid-template-columns: 140px 1fr;
-            gap: var(--space-8);
-            align-items: start;
-          }
-          .aim-detail-row dt {
-            font-weight: var(--weight-semibold);
-            font-size: 13px;
-            color: var(--text-secondary);
-          }
-          .aim-detail-row dd {
-            margin: 0;
-            font-size: 14px;
-          }
-        `}</style>
       </div>
     );
   }
@@ -186,12 +163,12 @@ export function AssessmentEditorClient({ assessment, onUpdate }: Props) {
   return (
     <AdminCard title="Edit Assessment">
       {error && (
-        <div className="admin-error-banner" role="alert" style={{ marginBlockEnd: 'var(--space-16)' }}>
+        <div className="admin-error-banner role-alert mb-4" role="alert">
           {error}
         </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-16)' }}>
+      <div className="flex flex-col gap-4">
         <AdminFormField id="a-title" label="Title" required error={fieldErrors.title}>
           <AdminInput
             id="a-title"
@@ -250,7 +227,7 @@ export function AssessmentEditorClient({ assessment, onUpdate }: Props) {
         </AdminFormField>
       </div>
 
-      <div style={{ display: 'flex', gap: 'var(--space-12)', marginBlockStart: 'var(--space-16)' }}>
+      <div className="flex gap-3 mt-4">
         <AdminButton variant="primary" onClick={handleSubmit} disabled={isPending} loading={isPending}>
           Save Changes
         </AdminButton>

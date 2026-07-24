@@ -27,73 +27,52 @@ export function AdminApiErrorState({ status, message, retryAction }: Props) {
   const isPermission = status === 403;
   return (
     <div
-      className="aim-api-error"
+      className="flex flex-col items-center gap-3 p-12 text-center max-w-md mx-auto"
       role="alert"
       aria-live="assertive"
       aria-label={titleFor(status)}
     >
-      <div className="aim-api-error-icon" aria-hidden="true">
+      <div className="flex items-center justify-center shrink-0" aria-hidden="true">
         <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
           <rect
-            width="48" height="48" rx="14"
+            width="48"
+            height="48"
+            rx="14"
             fill={isPermission ? 'var(--warning-soft)' : 'var(--error-soft)'}
           />
           <circle
-            cx="24" cy="24" r="10"
+            cx="24"
+            cy="24"
+            r="10"
             stroke={isPermission ? 'var(--color-warning-600)' : 'var(--color-error-600)'}
-            strokeWidth="2" fill="none"
+            strokeWidth="2"
+            fill="none"
           />
-          <line x1="24" y1="19" x2="24" y2="25"
+          <line
+            x1="24"
+            y1="19"
+            x2="24"
+            y2="25"
             stroke={isPermission ? 'var(--color-warning-600)' : 'var(--color-error-600)'}
-            strokeWidth="2" strokeLinecap="round"
+            strokeWidth="2"
+            strokeLinecap="round"
           />
           <circle
-            cx="24" cy="29" r="1.5"
+            cx="24"
+            cy="29"
+            r="1.5"
             fill={isPermission ? 'var(--color-warning-600)' : 'var(--color-error-600)'}
           />
         </svg>
       </div>
-      <h2 className="aim-api-error-title">{titleFor(status)}</h2>
-      <p className="aim-api-error-desc">{descFor(status, message)}</p>
+      <h2 className="text-lg font-semibold text-[var(--text-primary)]">{titleFor(status)}</h2>
+      <p className="text-sm text-[var(--text-secondary)] leading-5">{descFor(status, message)}</p>
       {status && (
-        <p className="aim-api-error-code" aria-label={`Error status ${status}`}>
+        <p className="text-xs text-[var(--text-muted)] tabular-nums" aria-label={`Error status ${status}`}>
           Status {status}
         </p>
       )}
-      {retryAction && (
-        <div className="aim-api-error-action">{retryAction}</div>
-      )}
-      <style>{`
-        .aim-api-error {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: var(--space-12);
-          padding: var(--space-48) var(--space-24);
-          text-align: center;
-          max-width: 480px;
-          margin-inline: auto;
-        }
-        .aim-api-error-title {
-          margin: 0;
-          font-size: 19px;
-          font-weight: var(--weight-semibold);
-          color: var(--text-primary);
-        }
-        .aim-api-error-desc {
-          margin: 0;
-          font-size: 14px;
-          color: var(--text-secondary);
-          line-height: 20px;
-        }
-        .aim-api-error-code {
-          margin: 0;
-          font-size: 12px;
-          color: var(--text-muted);
-          font-variant-numeric: tabular-nums;
-        }
-        .aim-api-error-action { margin-block-start: var(--space-4); }
-      `}</style>
+      {retryAction && <div className="mt-1">{retryAction}</div>}
     </div>
   );
 }

@@ -75,15 +75,15 @@ export function ActivityLogClient({ logs, total, page, totalPages, filterUserId,
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-16)' }}>
+    <div className="flex flex-col gap-4">
       <AdminCard title="Filters">
-        <div style={{ display: 'flex', gap: 'var(--space-12)', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        <div className="flex gap-3 flex-wrap items-end">
           <div>
-            <label style={{ fontSize: '12px', fontWeight: 'var(--weight-semibold)', color: 'var(--text-secondary)' }}>User ID</label>
+            <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1">User ID</label>
             <AdminInput value={userId} onChange={(e) => setUserId(e.target.value)} placeholder="Filter by user ID" />
           </div>
           <div>
-            <label style={{ fontSize: '12px', fontWeight: 'var(--weight-semibold)', color: 'var(--text-secondary)' }}>Event Type</label>
+            <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1">Event Type</label>
             <AdminInput value={eventType} onChange={(e) => setEventType(e.target.value)} placeholder="Filter by event type" />
           </div>
           <AdminButton onClick={applyFilters} variant="primary" size="sm">Apply</AdminButton>
@@ -92,7 +92,7 @@ export function ActivityLogClient({ logs, total, page, totalPages, filterUserId,
       </AdminCard>
 
       {logs.length === 0 ? (
-        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No activity logs match the current filters.</p>
+        <p className="text-sm text-[var(--text-muted)]">No activity logs match the current filters.</p>
       ) : (
         <>
           <AdminTable

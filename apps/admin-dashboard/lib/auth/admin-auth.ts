@@ -4,17 +4,14 @@ import {
   AdminApiClientError,
   adminApiClient,
 } from '../api';
+import {
+  ADMIN_AUTH_TOKEN_COOKIE,
+  BACKEND_AUTHORIZED_ROLES,
+  type BackendAuthorizedRole,
+} from './constants';
 
-export const ADMIN_AUTH_TOKEN_COOKIE = 'aim_admin_access_token';
-
-export type BackendAuthorizedRole =
-  | 'student'
-  | 'parent'
-  | 'teacher'
-  | 'content_editor'
-  | 'reviewer'
-  | 'admin'
-  | 'super_admin';
+export { ADMIN_AUTH_TOKEN_COOKIE, BACKEND_AUTHORIZED_ROLES };
+export type { BackendAuthorizedRole };
 
 export type AdminAuthUser = {
   readonly id: string;
@@ -146,14 +143,7 @@ function decodeStringArray(value: unknown): readonly string[] {
 }
 
 function isBackendAuthorizedRole(value: string): value is BackendAuthorizedRole {
-  return [
-    'student',
-    'parent',
-    'teacher',
-    'content_editor',
-    'admin',
-    'super_admin',
-  ].includes(value);
+  return (BACKEND_AUTHORIZED_ROLES as readonly string[]).includes(value);
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {

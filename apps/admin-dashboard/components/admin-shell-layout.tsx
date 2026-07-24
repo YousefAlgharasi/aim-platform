@@ -11,44 +11,17 @@ export function AdminShellLayout({
   children: ReactNode;
 }>) {
   return (
-    <div className="aim-admin-shell">
+    <div className="flex flex-col md:flex-row min-h-screen bg-[var(--background)]">
       <AdminNavigation authContext={authContext} />
-      <div className="aim-admin-body">
+      <div className="flex-1 min-w-0 flex flex-col">
         <main
           id="main-content"
-          className="aim-admin-main"
+          className="flex-1 p-4 pt-16 md:p-8 max-w-[1200px] w-full mx-auto outline-none"
           tabIndex={-1}
         >
           {children}
         </main>
       </div>
-      <style>{`
-        .aim-admin-shell {
-          display: flex;
-          min-height: 100vh;
-          background: var(--background);
-        }
-        .aim-admin-body {
-          flex: 1;
-          min-width: 0;
-          display: flex;
-          flex-direction: column;
-        }
-        .aim-admin-main {
-          flex: 1;
-          padding: var(--space-32, 32px) var(--space-24, 24px);
-          max-width: var(--content-max-web);
-          width: 100%;
-          margin-inline: auto;
-          outline: none;
-        }
-        @media (max-width: 768px) {
-          .aim-admin-shell { flex-direction: column; }
-          .aim-admin-main {
-            padding: 60px var(--space-16, 16px) var(--space-16, 16px);
-          }
-        }
-      `}</style>
     </div>
   );
 }
