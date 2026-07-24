@@ -6,12 +6,12 @@ import {
   AdminBadge,
   AdminIdCell,
   AdminDateCell,
-} from '../../../../../../components/common';
-import type { AdminTableColumn } from '../../../../../../components/common';
+} from '../../components/common';
+import type { AdminTableColumn } from '../../components/common';
 import type {
   AdminWeaknessItem,
   AdminRecommendationItem,
-} from '../../../../../../lib/api/admin-aim-data-api';
+} from '../../lib/api/admin-aim-data-api';
 
 type Props = {
   readonly weaknesses: readonly AdminWeaknessItem[];

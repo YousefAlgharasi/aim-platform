@@ -8,8 +8,8 @@ import {
   AdminIdCell,
   AdminDateCell,
   AdminButton,
-} from '../../../components/common';
-import type { AdminTableColumn } from '../../../components/common';
+} from '../../components/common';
+import type { AdminTableColumn } from '../../components/common';
 import type {
   AdminAiPromptTemplateItem,
   AdminAiModelConfigItem,
@@ -17,9 +17,9 @@ import type {
   AdminAiUsageCostItem,
   AdminAiAuditLogItem,
   CreatePromptTemplateDraftPayload,
-} from '../../../lib/api/admin-ai-teacher-api';
+} from '../../lib/api/admin-ai-teacher-api';
 import dynamic from 'next/dynamic';
-import { AdminLoadingSkeleton } from '../../../components/layout/admin-loading-skeleton';
+import { AdminLoadingSkeleton } from '../../components/layout/admin-loading-skeleton';
 
 const PromptDraftForm = dynamic(
   () => import('./prompt-draft-form').then((m) => m.PromptDraftForm),

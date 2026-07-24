@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { AdminCard, AdminFormField, AdminInput, AdminTextarea, AdminButton, AdminSelect } from '../../../components/common';
-import type { CreateBroadcastPayload } from '../../../lib/api/admin-notifications-api';
+import { AdminCard, AdminFormField, AdminInput, AdminTextarea, AdminButton, AdminSelect } from '../../components/common';
+import type { CreateBroadcastPayload } from '../../lib/api/admin-notifications-api';
 
 type Props = {
   readonly onSubmit: (payload: CreateBroadcastPayload) => Promise<{ error?: string }>;

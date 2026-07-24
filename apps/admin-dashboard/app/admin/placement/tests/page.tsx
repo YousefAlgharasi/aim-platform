@@ -26,7 +26,7 @@ import {
   AdminApiClientError,
   type AdminPlacementTestListData,
 } from '../../../../lib/api/admin-placement-tests-api';
-import { AdminPlacementTestsList } from './placement-tests-list';
+import { AdminPlacementTestsList } from '../../../../features/placement';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;

@@ -37,7 +37,7 @@ import {
   type AdminSkillSummary,
 } from '../../../../../../../../../../features/content/admin-skills-api';
 import { fetchAdminPlacementQuestions } from '../../../../../../../../../../lib/api/admin-placement-questions-api';
-import { PlacementQuestionSkillLinker } from './placement-question-skill-linker';
+import { PlacementQuestionSkillLinker } from '../../../../../../../../../../features/placement';
 import type { PlacementQuestionSkillLinksData } from '../../../../../../../../../../lib/api/admin-placement-question-skills-api';
 
 type Props = {

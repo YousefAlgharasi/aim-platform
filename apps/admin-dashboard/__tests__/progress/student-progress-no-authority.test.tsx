@@ -1,5 +1,5 @@
 import { render, screen, renderWithProviders } from '../test-utils';
-import { StudentProgressClient } from '../../app/admin/students/[studentId]/progress/student-progress-client';
+import { StudentProgressClient } from '../../features/students';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn(), push: jest.fn() }),

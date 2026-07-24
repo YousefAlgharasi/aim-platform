@@ -31,7 +31,7 @@ import {
   fetchAdminPlacementTests,
   type AdminPlacementTestSummary,
 } from '../../../../../../lib/api/admin-placement-tests-api';
-import { PlacementTestStatusControl } from './placement-test-status-control';
+import { PlacementTestStatusControl } from '../../../../../../features/placement';
 
 type Props = {
   params: Promise<{ testId: string }>;

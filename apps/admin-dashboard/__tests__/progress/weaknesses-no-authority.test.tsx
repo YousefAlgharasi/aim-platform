@@ -1,5 +1,5 @@
 import { render, screen, renderWithProviders } from '../test-utils';
-import { WeaknessesRecommendationsClient } from '../../app/admin/students/[studentId]/progress/weaknesses/weaknesses-recommendations-client';
+import { WeaknessesRecommendationsClient } from '../../features/students';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn(), push: jest.fn() }),

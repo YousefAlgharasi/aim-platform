@@ -6,8 +6,8 @@ import {
   AdminIdCell,
   AdminDateCell,
   AdminPagination,
-} from '../../../../../../components/common';
-import type { AdminTableColumn } from '../../../../../../components/common';
+} from '../../components/common';
+import type { AdminTableColumn } from '../../components/common';
 
 type SessionRow = {
   readonly id: string;
@@ -54,7 +54,7 @@ const columns: AdminTableColumn<SessionRow>[] = [
   },
 ];
 
-export function SessionSummaryClient({ sessions, total, page, totalPages }: Props) {
+export function StudentSessionSummaryClient({ sessions, total, page, totalPages }: Props) {
   if (sessions.length === 0) {
     return <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No sessions recorded for this student.</p>;
   }

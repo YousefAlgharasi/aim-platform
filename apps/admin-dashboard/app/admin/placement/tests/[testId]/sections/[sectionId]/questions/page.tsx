@@ -26,7 +26,7 @@ import {
   AdminApiClientError,
   type AdminPlacementQuestionsData,
 } from '../../../../../../../../lib/api/admin-placement-questions-api';
-import { AdminPlacementQuestionsList } from './placement-questions-list';
+import { AdminPlacementQuestionsList } from '../../../../../../../../features/placement';
 
 type Props = {
   params: Promise<{ testId: string; sectionId: string }>;

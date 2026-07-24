@@ -11,7 +11,7 @@ import {
   retireAdminAiPromptTemplate,
   type CreatePromptTemplateDraftPayload,
 } from '../../../lib/api/admin-ai-teacher-api';
-import { AiTeacherClient, type AiTeacherSection } from './ai-teacher-client';
+import { AiTeacherClient, type AiTeacherSection } from '../../../features/ai-teacher';
 
 const SECTIONS: AiTeacherSection[] = ['prompts', 'model-configs', 'safety', 'usage', 'audit-logs'];
 

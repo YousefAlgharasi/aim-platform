@@ -17,7 +17,7 @@ import Link from 'next/link';
 import type {
   AdminPlacementQuestionSummary,
   PlacementQuestionType,
-} from '../../../../../../../../lib/api/admin-placement-questions-api';
+} from '../../lib/api/admin-placement-questions-api';
 
 const TYPE_LABELS: Record<PlacementQuestionType, string> = {
   multiple_choice: 'Multiple choice',

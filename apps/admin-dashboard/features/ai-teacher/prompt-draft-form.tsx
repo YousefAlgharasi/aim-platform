@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { AdminCard, AdminFormField, AdminInput, AdminTextarea, AdminButton } from '../../../components/common';
-import type { CreatePromptTemplateDraftPayload } from '../../../lib/api/admin-ai-teacher-api';
+import { AdminCard, AdminFormField, AdminInput, AdminTextarea, AdminButton } from '../../components/common';
+import type { CreatePromptTemplateDraftPayload } from '../../lib/api/admin-ai-teacher-api';
 
 type Props = {
   readonly onSubmit: (payload: CreatePromptTemplateDraftPayload) => Promise<{ error?: string }>;

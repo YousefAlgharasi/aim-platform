@@ -5,7 +5,7 @@ import {
   fetchAdminStudentProgress,
   fetchAdminStudentLessons,
 } from '../../../../../lib/api/admin-student-progress-api';
-import { StudentProgressClient } from './student-progress-client';
+import { StudentProgressClient } from '../../../../../features/students';
 
 type Props = {
   params: Promise<{ studentId: string }>;
