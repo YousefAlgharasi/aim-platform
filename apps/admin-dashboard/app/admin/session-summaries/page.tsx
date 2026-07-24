@@ -1,7 +1,7 @@
 import { getAdminToken } from '../../../lib/api/admin-token';
 import { AdminApiClientError } from '../../../lib/api';
 import { fetchAdminSessionSummaries } from '../../../lib/api/admin-logs-api';
-import { SessionSummaryClient } from './session-summary-client';
+import { SessionSummaryClient } from '../../../features/students';
 
 type Props = {
   searchParams: Promise<{ page?: string; studentId?: string }>;

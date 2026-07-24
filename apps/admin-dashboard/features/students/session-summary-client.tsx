@@ -9,8 +9,8 @@ import {
   AdminInput,
   AdminButton,
   AdminCard,
-} from '../../../components/common';
-import type { AdminTableColumn } from '../../../components/common';
+} from '../../components/common';
+import type { AdminTableColumn } from '../../components/common';
 import { useState } from 'react';
 
 type SessionSummaryRow = {

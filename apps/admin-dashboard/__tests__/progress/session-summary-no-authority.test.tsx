@@ -1,5 +1,5 @@
 import { render, screen, renderWithProviders } from '../test-utils';
-import { SessionSummaryClient } from '../../app/admin/students/[studentId]/progress/sessions/session-summary-client';
+import { StudentSessionSummaryClient as SessionSummaryClient } from '../../features/students';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn(), push: jest.fn() }),

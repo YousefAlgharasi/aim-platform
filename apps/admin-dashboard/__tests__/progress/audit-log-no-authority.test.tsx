@@ -1,5 +1,5 @@
 import { render, screen, renderWithProviders } from '../test-utils';
-import { AuditLogClient } from '../../app/admin/audit-logs/audit-log-client';
+import { AuditLogClient } from '../../features/logs';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn(), push: jest.fn() }),

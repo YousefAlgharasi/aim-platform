@@ -5,7 +5,7 @@ import {
   AdminApiClientError,
   type AdminPlacementResultListData,
 } from '../../../../lib/api/admin-placement-results-api';
-import { AdminPlacementResultsList } from './placement-results-list';
+import { AdminPlacementResultsList } from '../../../../features/placement';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;

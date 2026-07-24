@@ -14,7 +14,7 @@ import {
   deleteAdminBroadcast,
   type CreateBroadcastPayload,
 } from '../../../lib/api/admin-notifications-api';
-import { NotificationsClient, type NotificationsSection } from './notifications-client';
+import { NotificationsClient, type NotificationsSection } from '../../../features/notifications';
 
 const SECTIONS: NotificationsSection[] = ['broadcasts', 'templates', 'queue', 'schedules', 'preferences', 'audit-logs'];
 

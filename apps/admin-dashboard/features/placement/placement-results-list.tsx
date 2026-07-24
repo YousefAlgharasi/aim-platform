@@ -9,9 +9,9 @@ import {
   AdminDateCell,
   AdminCard,
   AdminSelect,
-} from '../../../../components/common';
-import type { AdminTableColumn } from '../../../../components/common';
-import type { AdminPlacementResultSummary } from '../../../../lib/api/admin-placement-results-api';
+} from '../../components/common';
+import type { AdminTableColumn } from '../../components/common';
+import type { AdminPlacementResultSummary } from '../../lib/api/admin-placement-results-api';
 
 type Props = {
   readonly results: readonly AdminPlacementResultSummary[];

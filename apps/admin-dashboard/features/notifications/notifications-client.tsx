@@ -11,8 +11,8 @@ import {
   AdminInput,
   AdminButton,
   AdminCard,
-} from '../../../components/common';
-import type { AdminTableColumn } from '../../../components/common';
+} from '../../components/common';
+import type { AdminTableColumn } from '../../components/common';
 import type {
   AdminNotificationTemplateItem,
   AdminNotificationEventItem,
@@ -21,9 +21,9 @@ import type {
   AdminNotificationAuditLogItem,
   AdminBroadcastItem,
   CreateBroadcastPayload,
-} from '../../../lib/api/admin-notifications-api';
+} from '../../lib/api/admin-notifications-api';
 import dynamic from 'next/dynamic';
-import { AdminLoadingSkeleton } from '../../../components/layout/admin-loading-skeleton';
+import { AdminLoadingSkeleton } from '../../components/layout/admin-loading-skeleton';
 
 const BroadcastForm = dynamic(
   () => import('./broadcast-form').then((m) => m.BroadcastForm),

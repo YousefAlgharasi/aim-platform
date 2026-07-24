@@ -5,9 +5,9 @@ import {
   AdminBadge,
   AdminIdCell,
   AdminDateCell,
-} from '../../../../../../components/common';
-import type { AdminTableColumn } from '../../../../../../components/common';
-import type { AdminSkillStateItem } from '../../../../../../lib/api/admin-aim-data-api';
+} from '../../components/common';
+import type { AdminTableColumn } from '../../components/common';
+import type { AdminSkillStateItem } from '../../lib/api/admin-aim-data-api';
 
 type Props = {
   readonly skills: readonly AdminSkillStateItem[];

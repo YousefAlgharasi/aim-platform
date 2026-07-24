@@ -1,7 +1,7 @@
 import { getAdminToken } from '../../../lib/api/admin-token';
 import { AdminApiClientError } from '../../../lib/api';
 import { fetchAdminActivityLogs } from '../../../lib/api/admin-logs-api';
-import { ActivityLogClient } from './activity-log-client';
+import { ActivityLogClient } from '../../../features/logs';
 
 type Props = {
   searchParams: Promise<{ page?: string; userId?: string; eventType?: string }>;

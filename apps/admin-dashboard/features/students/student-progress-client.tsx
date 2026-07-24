@@ -8,8 +8,8 @@ import {
   AdminPagination,
   AdminDateCell,
   AdminIdCell,
-} from '../../../../../components/common';
-import type { AdminTableColumn } from '../../../../../components/common';
+} from '../../components/common';
+import type { AdminTableColumn } from '../../components/common';
 
 type LessonRow = {
   readonly lessonId: string;

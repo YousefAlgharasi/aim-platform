@@ -5,7 +5,7 @@ import {
   fetchAdminStudentWeaknesses,
   fetchAdminStudentRecommendations,
 } from '../../../../../../lib/api/admin-aim-data-api';
-import { WeaknessesRecommendationsClient } from './weaknesses-recommendations-client';
+import { WeaknessesRecommendationsClient } from '../../../../../../features/students';
 
 type Props = {
   params: Promise<{ studentId: string }>;

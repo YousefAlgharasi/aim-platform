@@ -1,5 +1,5 @@
 import { render, screen, renderWithProviders } from '../test-utils';
-import { SkillStateClient } from '../../app/admin/students/[studentId]/progress/skills/skill-state-client';
+import { SkillStateClient } from '../../features/students';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn(), push: jest.fn() }),

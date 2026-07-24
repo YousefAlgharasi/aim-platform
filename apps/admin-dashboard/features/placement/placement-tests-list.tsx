@@ -18,7 +18,7 @@ import { useRouter } from 'next/navigation';
 import type {
   AdminPlacementTestSummary,
   PlacementTestStatus,
-} from '../../../../lib/api/admin-placement-tests-api';
+} from '../../lib/api/admin-placement-tests-api';
 
 type AdminPlacementTestsListProps = {
   readonly tests: AdminPlacementTestSummary[];
