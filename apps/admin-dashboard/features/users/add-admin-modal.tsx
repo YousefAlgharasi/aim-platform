@@ -2,6 +2,9 @@
 
 import { useState, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { backendFetch } from '../../lib/api/client-api-helpers';
 
 const ROLES = [
@@ -10,6 +13,17 @@ const ROLES = [
   { key: 'reviewer', label: 'Reviewer' },
   { key: 'support', label: 'Support' },
 ] as const;
+
+export const addAdminSchema = z.object({
+  searchEmail: z.string().optional(),
+  selectedUser: z.string().min(1, 'Please select a user'),
+  selectedRole: z.enum(['admin', 'super_admin', 'reviewer', 'support'], {
+    message: 'Please select a valid role',
+  }),
+  reason: z.string().max(200, 'Reason must be at most 200 characters').optional(),
+});
+
+export type AddAdminFormValues = z.infer<typeof addAdminSchema>;
 
 type UserOption = { id: string; email: string };
 
@@ -23,21 +37,39 @@ export function AddAdminModal({ open, onClose }: Props) {
   const [isPending, startTransition] = useTransition();
   const [users, setUsers] = useState<UserOption[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
-  const [searchEmail, setSearchEmail] = useState('');
-  const [selectedUser, setSelectedUser] = useState<string>('');
-  const [selectedRole, setSelectedRole] = useState<string>('admin');
-  const [reason, setReason] = useState('');
   const [result, setResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    getValues,
+    watch,
+    formState: { errors },
+  } = useForm<AddAdminFormValues>({
+    resolver: zodResolver(addAdminSchema),
+    defaultValues: {
+      searchEmail: '',
+      selectedUser: '',
+      selectedRole: 'admin',
+      reason: '',
+    },
+  });
+
+  const selectedUser = watch('selectedUser');
+  const selectedRole = watch('selectedRole');
 
   useEffect(() => {
     if (!open) return;
     setResult(null);
-    setSelectedUser('');
-    setSelectedRole('admin');
-    setReason('');
-    setSearchEmail('');
+    reset({
+      searchEmail: '',
+      selectedUser: '',
+      selectedRole: 'admin',
+      reason: '',
+    });
     loadUsers('');
-  }, [open]);
+  }, [open, reset]);
 
   async function loadUsers(email: string) {
     setLoadingUsers(true);
@@ -61,21 +93,20 @@ export function AddAdminModal({ open, onClose }: Props) {
   }
 
   function handleSearch() {
+    const searchEmail = getValues('searchEmail') || '';
     loadUsers(searchEmail.trim());
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!selectedUser || !selectedRole) return;
+  const onSubmit = handleSubmit((data) => {
     setResult(null);
 
     startTransition(async () => {
       try {
-        const res = await backendFetch(`/admin/users/${selectedUser}/roles`, {
+        const res = await backendFetch(`/admin/users/${data.selectedUser}/roles`, {
           method: 'PUT',
           body: JSON.stringify({
-            roleKey: selectedRole,
-            ...(reason.trim() ? { reason: reason.trim() } : {}),
+            roleKey: data.selectedRole,
+            ...(data.reason?.trim() ? { reason: data.reason.trim() } : {}),
           }),
         });
 
@@ -84,7 +115,7 @@ export function AddAdminModal({ open, onClose }: Props) {
           throw new Error(body?.error?.message ?? body?.message ?? `Failed (${res.status})`);
         }
 
-        setResult({ type: 'success', message: `Role "${selectedRole}" assigned successfully.` });
+        setResult({ type: 'success', message: `Role "${data.selectedRole}" assigned successfully.` });
         router.refresh();
       } catch (err) {
         setResult({
@@ -93,7 +124,7 @@ export function AddAdminModal({ open, onClose }: Props) {
         });
       }
     });
-  }
+  });
 
   if (!open) return null;
 
@@ -108,14 +139,13 @@ export function AddAdminModal({ open, onClose }: Props) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="aim-modal-body">
+        <form onSubmit={onSubmit} className="aim-modal-body">
           <div className="aim-modal-field">
             <label className="aim-modal-label">Search user by email</label>
             <div className="aim-modal-search-row">
               <input
                 type="text"
-                value={searchEmail}
-                onChange={(e) => setSearchEmail(e.target.value)}
+                {...register('searchEmail')}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } }}
                 placeholder="Type email to search…"
                 className="aim-modal-input"
@@ -124,21 +154,21 @@ export function AddAdminModal({ open, onClose }: Props) {
                 {loadingUsers ? '…' : 'Search'}
               </button>
             </div>
+            {errors.searchEmail && <p className="aim-modal-error">{errors.searchEmail.message}</p>}
           </div>
 
           <div className="aim-modal-field">
             <label className="aim-modal-label">Select user</label>
             <select
-              value={selectedUser}
-              onChange={(e) => setSelectedUser(e.target.value)}
+              {...register('selectedUser')}
               className="aim-modal-select"
-              required
             >
               <option value="">— Choose a user —</option>
               {users.map((u) => (
                 <option key={u.id} value={u.id}>{u.email}</option>
               ))}
             </select>
+            {errors.selectedUser && <p className="aim-modal-error">{errors.selectedUser.message}</p>}
             {users.length === 0 && !loadingUsers && (
               <p className="aim-modal-hint">No users found. Try searching by email.</p>
             )}
@@ -147,15 +177,14 @@ export function AddAdminModal({ open, onClose }: Props) {
           <div className="aim-modal-field">
             <label className="aim-modal-label">Assign role</label>
             <select
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
+              {...register('selectedRole')}
               className="aim-modal-select"
-              required
             >
               {ROLES.map((r) => (
                 <option key={r.key} value={r.key}>{r.label}</option>
               ))}
             </select>
+            {errors.selectedRole && <p className="aim-modal-error">{errors.selectedRole.message}</p>}
           </div>
 
           <div className="aim-modal-field">
@@ -164,12 +193,12 @@ export function AddAdminModal({ open, onClose }: Props) {
             </label>
             <input
               type="text"
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
+              {...register('reason')}
               maxLength={200}
               placeholder="Why is this role being assigned?"
               className="aim-modal-input"
             />
+            {errors.reason && <p className="aim-modal-error">{errors.reason.message}</p>}
           </div>
 
           {result && (
@@ -283,6 +312,11 @@ export function AddAdminModal({ open, onClose }: Props) {
           font-size: 12px;
           color: var(--text-muted);
         }
+        .aim-modal-error {
+          margin: 4px 0 0;
+          font-size: 12px;
+          color: #ef4444;
+        }
         .aim-modal-actions {
           display: flex;
           justify-content: flex-end;
@@ -320,3 +354,4 @@ export function AddAdminModal({ open, onClose }: Props) {
     </>
   );
 }
+

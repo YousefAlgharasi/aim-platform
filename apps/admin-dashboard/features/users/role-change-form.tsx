@@ -2,6 +2,9 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 
 import type { AdminUserType } from './admin-users-api';
 import { backendFetch } from '../../lib/api/client-api-helpers';
@@ -13,6 +16,16 @@ const ASSIGNABLE_ROLES = [
   { key: 'admin', label: 'Admin' },
   { key: 'super_admin', label: 'Super Admin' },
 ] as const;
+
+export const roleChangeSchema = z.object({
+  roleKey: z.string().refine(
+    (val) => ['student', 'reviewer', 'support', 'admin', 'super_admin'].includes(val),
+    { message: 'Please select a valid role' }
+  ),
+  reason: z.string().max(200, 'Reason must be at most 200 characters').optional(),
+});
+
+export type RoleChangeFormValues = z.input<typeof roleChangeSchema>;
 
 type Props = {
   readonly userId: string;
@@ -27,16 +40,27 @@ type FormState =
 
 export function RoleChangeForm({ userId, currentRoles, userType }: Props) {
   const router = useRouter();
-  const [selectedRole, setSelectedRole] = useState<string>('');
-  const [reason, setReason] = useState('');
   const [formState, setFormState] = useState<FormState>({ type: 'idle' });
   const [isPending, startTransition] = useTransition();
 
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm<RoleChangeFormValues>({
+    resolver: zodResolver(roleChangeSchema),
+    defaultValues: {
+      roleKey: '',
+      reason: '',
+    },
+  });
+
+  const selectedRole = watch('roleKey');
   const primaryRole = currentRoles[0] ?? '';
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!selectedRole) return;
+  const onSubmit = handleSubmit((data) => {
     setFormState({ type: 'idle' });
 
     startTransition(async () => {
@@ -44,8 +68,8 @@ export function RoleChangeForm({ userId, currentRoles, userType }: Props) {
         const res = await backendFetch(`/admin/users/${userId}/roles`, {
           method: 'PUT',
           body: JSON.stringify({
-            roleKey: selectedRole,
-            ...(reason.trim() ? { reason: reason.trim() } : {}),
+            roleKey: data.roleKey,
+            ...(data.reason?.trim() ? { reason: data.reason.trim() } : {}),
           }),
         });
 
@@ -57,14 +81,13 @@ export function RoleChangeForm({ userId, currentRoles, userType }: Props) {
         }
 
         const json = await res.json().catch(() => ({}));
-        const newRole = json?.data?.role?.key ?? selectedRole;
+        const newRole = json?.data?.role?.key ?? data.roleKey;
 
         setFormState({
           type: 'success',
           message: `Role changed to "${newRole}" successfully.`,
         });
-        setSelectedRole('');
-        setReason('');
+        reset();
         router.refresh();
       } catch (err) {
         const message =
@@ -72,7 +95,7 @@ export function RoleChangeForm({ userId, currentRoles, userType }: Props) {
         setFormState({ type: 'error', message });
       }
     });
-  }
+  });
 
   return (
     <div className="aim-role-form-card">
@@ -87,15 +110,13 @@ export function RoleChangeForm({ userId, currentRoles, userType }: Props) {
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="aim-role-form">
+      <form onSubmit={onSubmit} className="aim-role-form">
         <div className="aim-role-field">
           <label htmlFor="role-select" className="aim-role-label">New role</label>
           <select
             id="role-select"
-            value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value)}
+            {...register('roleKey')}
             disabled={isPending}
-            required
             className="aim-role-select"
           >
             <option value="">Select role…</option>
@@ -105,6 +126,7 @@ export function RoleChangeForm({ userId, currentRoles, userType }: Props) {
               </option>
             ))}
           </select>
+          {errors.roleKey && <p className="aim-role-error">{errors.roleKey.message}</p>}
         </div>
 
         <div className="aim-role-field">
@@ -114,13 +136,13 @@ export function RoleChangeForm({ userId, currentRoles, userType }: Props) {
           <input
             id="reason-input"
             type="text"
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
+            {...register('reason')}
             disabled={isPending}
             maxLength={200}
             placeholder="Brief reason for change"
             className="aim-role-input"
           />
+          {errors.reason && <p className="aim-role-error">{errors.reason.message}</p>}
         </div>
 
         <button type="submit" disabled={!selectedRole || isPending} className="aim-role-submit">
@@ -199,6 +221,11 @@ export function RoleChangeForm({ userId, currentRoles, userType }: Props) {
           border-color: var(--color-primary-500);
           box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary-500) 20%, transparent);
         }
+        .aim-role-error {
+          margin: 4px 0 0;
+          font-size: 12px;
+          color: #ef4444;
+        }
         .aim-role-submit {
           align-self: flex-start;
           height: 36px;
@@ -220,3 +247,4 @@ export function RoleChangeForm({ userId, currentRoles, userType }: Props) {
     </div>
   );
 }
+

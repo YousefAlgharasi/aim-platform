@@ -2,6 +2,9 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import type { AdminAssessmentSettings } from './admin-assessments-api';
 import {
   AdminButton,
@@ -25,6 +28,44 @@ type Props = {
   readonly onUpdateSettings: (settings: Partial<ExtendedSettings>) => Promise<{ error?: string }>;
 };
 
+const assessmentSettingsSchema = z.object({
+  timeLimitMinutes: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? null : (isNaN(Number(val)) ? -1 : Number(val))),
+    z.number({ message: 'Time limit must be a positive number.' })
+      .min(1, 'Time limit must be a positive number.')
+      .nullable()
+  ),
+  passMark: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? null : (isNaN(Number(val)) ? -1 : Number(val))),
+    z.number({ message: 'Pass mark must be between 0 and 100.' })
+      .min(0, 'Pass mark must be between 0 and 100.')
+      .max(100, 'Pass mark must be between 0 and 100.')
+      .nullable()
+  ),
+  shuffleQuestions: z.preprocess(
+    (val) => (typeof val === 'string' ? val === 'yes' : Boolean(val)),
+    z.boolean()
+  ),
+  maxAttempts: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? null : (isNaN(Number(val)) ? -1 : Number(val))),
+    z.number({ message: 'Max attempts must be a positive number.' })
+      .min(1, 'Max attempts must be a positive number.')
+      .nullable()
+  ),
+  showResultsToStudent: z.preprocess(
+    (val) => (typeof val === 'string' ? val === 'yes' : Boolean(val)),
+    z.boolean()
+  ),
+  gradingPolicy: z.enum(['highest', 'latest', 'average']),
+  visibleToStudents: z.preprocess(
+    (val) => (typeof val === 'string' ? val === 'yes' : Boolean(val)),
+    z.boolean()
+  ),
+});
+
+type AssessmentSettingsInput = z.input<typeof assessmentSettingsSchema>;
+type AssessmentSettingsOutput = z.output<typeof assessmentSettingsSchema>;
+
 export function AssessmentSettings({
   assessmentId,
   settings,
@@ -34,61 +75,46 @@ export function AssessmentSettings({
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
 
   const extSettings = settings as Partial<ExtendedSettings> & AdminAssessmentSettings;
 
-  const [timeLimitMinutes, setTimeLimitMinutes] = useState(
-    settings.timeLimitMinutes != null ? String(settings.timeLimitMinutes) : '',
-  );
-  const [passMark, setPassMark] = useState(
-    settings.passMark != null ? String(settings.passMark) : '',
-  );
-  const [shuffleQuestions, setShuffleQuestions] = useState(settings.shuffleQuestions);
-  const [maxAttempts, setMaxAttempts] = useState(
-    extSettings.maxAttempts != null ? String(extSettings.maxAttempts) : '',
-  );
-  const [showResultsToStudent, setShowResultsToStudent] = useState(
-    extSettings.showResultsToStudent ?? true,
-  );
-  const [gradingPolicy, setGradingPolicy] = useState<'highest' | 'latest' | 'average'>(
-    extSettings.gradingPolicy ?? 'highest',
-  );
-  const [visibleToStudents, setVisibleToStudents] = useState(
-    extSettings.visibleToStudents ?? true,
-  );
+  const getDefaultValues = (): AssessmentSettingsInput => ({
+    timeLimitMinutes: settings.timeLimitMinutes != null ? settings.timeLimitMinutes : '',
+    passMark: settings.passMark != null ? settings.passMark : '',
+    shuffleQuestions: settings.shuffleQuestions ? 'yes' : 'no',
+    maxAttempts: extSettings.maxAttempts != null ? extSettings.maxAttempts : '',
+    showResultsToStudent: (extSettings.showResultsToStudent ?? true) ? 'yes' : 'no',
+    gradingPolicy: extSettings.gradingPolicy ?? 'highest',
+    visibleToStudents: (extSettings.visibleToStudents ?? true) ? 'yes' : 'no',
+  });
 
-  function validate(): Record<string, string> {
-    const errors: Record<string, string> = {};
-    if (timeLimitMinutes && (isNaN(Number(timeLimitMinutes)) || Number(timeLimitMinutes) < 1)) {
-      errors.timeLimit = 'Time limit must be a positive number.';
-    }
-    if (passMark && (isNaN(Number(passMark)) || Number(passMark) < 0 || Number(passMark) > 100)) {
-      errors.passMark = 'Pass mark must be between 0 and 100.';
-    }
-    if (maxAttempts && (isNaN(Number(maxAttempts)) || Number(maxAttempts) < 1)) {
-      errors.maxAttempts = 'Max attempts must be a positive number.';
-    }
-    return errors;
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<AssessmentSettingsInput, unknown, AssessmentSettingsOutput>({
+    resolver: zodResolver(assessmentSettingsSchema),
+    defaultValues: getDefaultValues(),
+  });
+
+  function handleStartEdit() {
+    reset(getDefaultValues());
+    setError(null);
+    setEditing(true);
   }
 
-  function handleSave() {
-    const errors = validate();
-    setFieldErrors(errors);
-    if (Object.keys(errors).length > 0) return;
+  function handleCancel() {
+    reset(getDefaultValues());
+    setError(null);
+    setEditing(false);
+  }
 
+  const onFormSubmit = (data: AssessmentSettingsOutput) => {
     setError(null);
     startTransition(async () => {
-      const result = await onUpdateSettings({
-        timeLimitMinutes: timeLimitMinutes ? Number(timeLimitMinutes) : null,
-        passMark: passMark ? Number(passMark) : null,
-        shuffleQuestions,
-        maxAttempts: maxAttempts ? Number(maxAttempts) : null,
-        showResultsToStudent,
-        gradingPolicy,
-        visibleToStudents,
-      });
+      const result = await onUpdateSettings(data);
       if (result.error) {
         setError(result.error);
       } else {
@@ -96,20 +122,7 @@ export function AssessmentSettings({
         router.refresh();
       }
     });
-  }
-
-  function handleCancel() {
-    setTimeLimitMinutes(settings.timeLimitMinutes != null ? String(settings.timeLimitMinutes) : '');
-    setPassMark(settings.passMark != null ? String(settings.passMark) : '');
-    setShuffleQuestions(settings.shuffleQuestions);
-    setMaxAttempts(extSettings.maxAttempts != null ? String(extSettings.maxAttempts) : '');
-    setShowResultsToStudent(extSettings.showResultsToStudent ?? true);
-    setGradingPolicy(extSettings.gradingPolicy ?? 'highest');
-    setVisibleToStudents(extSettings.visibleToStudents ?? true);
-    setFieldErrors({});
-    setError(null);
-    setEditing(false);
-  }
+  };
 
   if (!editing) {
     return (
@@ -147,7 +160,7 @@ export function AssessmentSettings({
 
         {!disabled && (
           <div style={{ marginBlockStart: 'var(--space-16)' }}>
-            <AdminButton variant="primary" onClick={() => setEditing(true)}>
+            <AdminButton variant="primary" onClick={handleStartEdit}>
               Edit Settings
             </AdminButton>
           </div>
@@ -192,115 +205,122 @@ export function AssessmentSettings({
         </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-16)' }}>
-        <AdminFormField id="s-time-limit" label="Time Limit (minutes)" error={fieldErrors.timeLimit}>
-          <AdminInput
-            id="s-time-limit"
-            type="number"
-            value={timeLimitMinutes}
-            onChange={(e) => setTimeLimitMinutes(e.target.value)}
-            placeholder="Leave empty for no limit"
-            disabled={isPending}
-            min={1}
-            hasError={!!fieldErrors.timeLimit}
-          />
+      <form onSubmit={handleSubmit(onFormSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-16)' }}>
+        <AdminFormField label="Time Limit (minutes)" error={errors.timeLimitMinutes?.message}>
+          {(fieldProps) => (
+            <AdminInput
+              type="number"
+              {...fieldProps}
+              {...register('timeLimitMinutes')}
+              placeholder="Leave empty for no limit"
+              disabled={isPending}
+              min={1}
+              hasError={!!errors.timeLimitMinutes}
+            />
+          )}
         </AdminFormField>
 
-        <AdminFormField id="s-pass-mark" label="Pass Mark (%)" error={fieldErrors.passMark}>
-          <AdminInput
-            id="s-pass-mark"
-            type="number"
-            value={passMark}
-            onChange={(e) => setPassMark(e.target.value)}
-            placeholder="e.g. 70"
-            disabled={isPending}
-            min={0}
-            max={100}
-            hasError={!!fieldErrors.passMark}
-          />
+        <AdminFormField label="Pass Mark (%)" error={errors.passMark?.message}>
+          {(fieldProps) => (
+            <AdminInput
+              type="number"
+              {...fieldProps}
+              {...register('passMark')}
+              placeholder="e.g. 70"
+              disabled={isPending}
+              min={0}
+              max={100}
+              hasError={!!errors.passMark}
+            />
+          )}
         </AdminFormField>
 
-        <AdminFormField id="s-shuffle" label="Shuffle Questions">
-          <AdminSelect
-            id="s-shuffle"
-            value={shuffleQuestions ? 'yes' : 'no'}
-            onChange={(e) => setShuffleQuestions(e.target.value === 'yes')}
-            disabled={isPending}
-          >
-            <option value="no">No</option>
-            <option value="yes">Yes</option>
-          </AdminSelect>
+        <AdminFormField label="Shuffle Questions">
+          {(fieldProps) => (
+            <AdminSelect
+              {...fieldProps}
+              {...register('shuffleQuestions')}
+              disabled={isPending}
+            >
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
+            </AdminSelect>
+          )}
         </AdminFormField>
 
-        <AdminFormField id="s-max-attempts" label="Max Attempts" error={fieldErrors.maxAttempts}>
-          <AdminInput
-            id="s-max-attempts"
-            type="number"
-            value={maxAttempts}
-            onChange={(e) => setMaxAttempts(e.target.value)}
-            placeholder="Leave empty for unlimited"
-            disabled={isPending}
-            min={1}
-            hasError={!!fieldErrors.maxAttempts}
-          />
+        <AdminFormField label="Max Attempts" error={errors.maxAttempts?.message}>
+          {(fieldProps) => (
+            <AdminInput
+              type="number"
+              {...fieldProps}
+              {...register('maxAttempts')}
+              placeholder="Leave empty for unlimited"
+              disabled={isPending}
+              min={1}
+              hasError={!!errors.maxAttempts}
+            />
+          )}
         </AdminFormField>
 
-        <AdminFormField id="s-show-results" label="Show Results to Student">
-          <AdminSelect
-            id="s-show-results"
-            value={showResultsToStudent ? 'yes' : 'no'}
-            onChange={(e) => setShowResultsToStudent(e.target.value === 'yes')}
-            disabled={isPending}
-          >
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-          </AdminSelect>
+        <AdminFormField label="Show Results to Student">
+          {(fieldProps) => (
+            <AdminSelect
+              {...fieldProps}
+              {...register('showResultsToStudent')}
+              disabled={isPending}
+            >
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </AdminSelect>
+          )}
         </AdminFormField>
 
         <AdminFormField
-          id="s-grading-policy"
           label="Grading Policy"
           hint="How the final grade is determined when multiple attempts are allowed."
         >
-          <AdminSelect
-            id="s-grading-policy"
-            value={gradingPolicy}
-            onChange={(e) => setGradingPolicy(e.target.value as 'highest' | 'latest' | 'average')}
-            disabled={isPending}
-          >
-            <option value="highest">Highest Score</option>
-            <option value="latest">Latest Attempt</option>
-            <option value="average">Average of All Attempts</option>
-          </AdminSelect>
+          {(fieldProps) => (
+            <AdminSelect
+              {...fieldProps}
+              {...register('gradingPolicy')}
+              disabled={isPending}
+            >
+              <option value="highest">Highest Score</option>
+              <option value="latest">Latest Attempt</option>
+              <option value="average">Average of All Attempts</option>
+            </AdminSelect>
+          )}
         </AdminFormField>
 
-        <AdminFormField id="s-visible" label="Visible to Students">
-          <AdminSelect
-            id="s-visible"
-            value={visibleToStudents ? 'yes' : 'no'}
-            onChange={(e) => setVisibleToStudents(e.target.value === 'yes')}
-            disabled={isPending}
-          >
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-          </AdminSelect>
+        <AdminFormField label="Visible to Students">
+          {(fieldProps) => (
+            <AdminSelect
+              {...fieldProps}
+              {...register('visibleToStudents')}
+              disabled={isPending}
+            >
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </AdminSelect>
+          )}
         </AdminFormField>
-      </div>
 
-      <div className="admin-boundary-note" style={{ marginBlock: 'var(--space-16)' }}>
-        <strong>Backend authority:</strong> Grading, scoring, pass/fail determination,
-        and attempt limits are enforced by the backend only. These settings are sent
-        to the backend for enforcement.
-      </div>
+        <div className="admin-boundary-note" style={{ marginBlock: 'var(--space-16)' }}>
+          <strong>Backend authority:</strong> Grading, scoring, pass/fail determination,
+          and attempt limits are enforced by the backend only. These settings are sent
+          to the backend for enforcement.
+        </div>
 
-      <div style={{ display: 'flex', gap: 'var(--space-12)' }}>
-        <AdminButton variant="primary" onClick={handleSave} disabled={isPending} loading={isPending}>
-          Save Settings
-        </AdminButton>
-        <AdminButton variant="secondary" onClick={handleCancel} disabled={isPending}>
-          Cancel
-        </AdminButton>
-      </div>
+        <div style={{ display: 'flex', gap: 'var(--space-12)' }}>
+          <AdminButton type="submit" variant="primary" disabled={isPending} loading={isPending}>
+            Save Settings
+          </AdminButton>
+          <AdminButton type="button" variant="secondary" onClick={handleCancel} disabled={isPending}>
+            Cancel
+          </AdminButton>
+        </div>
+      </form>
     </AdminCard>
   );
 }
+

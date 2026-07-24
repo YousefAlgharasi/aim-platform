@@ -1,36 +1,58 @@
-// P11-009: AIM design system form field wrapper
-import type { ReactNode } from 'react';
+import React, { useId as ReactUseId } from 'react';
 
-type Props = {
-  readonly id: string;
+type AdminFormFieldProps = {
+  readonly id?: string;
   readonly label: string;
+  readonly error?: string;
   readonly required?: boolean;
   readonly hint?: string;
-  readonly error?: string;
-  readonly children: ReactNode;
+  readonly children:
+    | React.ReactNode
+    | ((fieldProps: { id: string; 'aria-invalid'?: boolean; 'aria-describedby'?: string }) => React.ReactNode);
 };
 
-export function AdminFormField({ id, label, required, hint, error, children }: Props) {
-  const hintId = hint ? `${id}-hint` : undefined;
-  const errorId = error ? `${id}-error` : undefined;
+export function AdminFormField({
+  id: customId,
+  label,
+  error,
+  required = false,
+  hint,
+  children,
+}: AdminFormFieldProps) {
+  const generatedId = ReactUseId();
+  const id = customId || generatedId;
+  const errorId = `${id}-error`;
+  const hintId = `${id}-hint`;
+
+  const describedBy = [error ? errorId : null, hint ? hintId : null]
+    .filter(Boolean)
+    .join(' ');
+
+  const fieldProps = {
+    id,
+    'aria-invalid': Boolean(error),
+    'aria-describedby': describedBy || undefined,
+  };
 
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium text-[var(--text-primary)] leading-5" htmlFor={id}>
+    <div className="flex flex-col gap-1.5 w-full">
+      <label htmlFor={id} className="text-xs font-semibold text-[var(--text-secondary)] flex items-center gap-1">
         {label}
-        {required && <span className="text-red-500" aria-hidden="true"> *</span>}
+        {required && <span className="text-red-500 font-bold">*</span>}
       </label>
-      <div
-        className="flex flex-col"
-        aria-describedby={[hintId, errorId].filter(Boolean).join(' ') || undefined}
-      >
-        {children}
-      </div>
+
+      {typeof children === 'function' ? children(fieldProps) : children}
+
       {hint && !error && (
-        <p id={hintId} className="text-xs text-[var(--text-muted)]">{hint}</p>
+        <p id={hintId} className="text-xs text-[var(--text-muted)]">
+          {hint}
+        </p>
       )}
+
       {error && (
-        <p id={errorId} className="text-xs text-red-600 font-medium" role="alert">{error}</p>
+        <p id={errorId} className="text-xs text-red-500 font-medium">
+          {error}
+        </p>
       )}
     </div>
   );

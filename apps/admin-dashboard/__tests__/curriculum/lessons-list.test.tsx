@@ -47,7 +47,7 @@ describe('LessonsList', () => {
 
   it('shows create form when + New Lesson clicked', () => {
     renderWithProviders(<LessonsList {...defaultProps} />);
-    fireEvent.click(screen.getByText('+ New Lesson'));
+    fireEvent.click(screen.getByText(/New Lesson/i));
     expect(screen.getByText(/cancel/i)).toBeInTheDocument();
   });
 

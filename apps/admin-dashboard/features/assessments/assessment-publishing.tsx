@@ -2,6 +2,9 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import type { AdminAssessmentStatus } from './admin-assessments-api';
 import { usePublishAssessmentMutation } from './hooks/use-assessments-query';
 import {
@@ -10,6 +13,12 @@ import {
   AdminStatusBadge,
   AdminConfirmDialog,
 } from '../../components/common';
+
+const statusConfirmationSchema = z.object({
+  action: z.enum(['publish', 'unpublish', 'archive']),
+});
+
+type StatusConfirmationFormValues = z.infer<typeof statusConfirmationSchema>;
 
 type Props = {
   readonly assessmentId: string;
@@ -31,8 +40,13 @@ export function AssessmentPublishing({
   const router = useRouter();
   const publishMutation = usePublishAssessmentMutation();
   const [error, setError] = useState<string | null>(null);
-  const [confirmAction, setConfirmAction] = useState<'publish' | 'unpublish' | 'archive' | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const { handleSubmit, setValue, watch, reset } = useForm<StatusConfirmationFormValues>({
+    resolver: zodResolver(statusConfirmationSchema),
+  });
+
+  const selectedAction = watch('action');
 
   const confirmConfig = {
     publish: {
@@ -67,9 +81,8 @@ export function AssessmentPublishing({
     },
   };
 
-  function handleConfirm() {
-    if (!confirmAction) return;
-    const config = confirmConfig[confirmAction];
+  const onSubmit = (data: StatusConfirmationFormValues) => {
+    const config = confirmConfig[data.action];
     setError(null);
     startTransition(async () => {
       try {
@@ -82,10 +95,10 @@ export function AssessmentPublishing({
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to perform action.');
       } finally {
-        setConfirmAction(null);
+        reset();
       }
     });
-  }
+  };
 
   const isBusy = isPending || publishMutation.isPending;
 
@@ -108,9 +121,9 @@ export function AssessmentPublishing({
         {status === 'draft' && (
           <AdminButton
             variant="primary"
-            onClick={() => setConfirmAction('publish')}
+            onClick={() => setValue('action', 'publish')}
             disabled={isBusy}
-            loading={isBusy && confirmAction === 'publish'}
+            loading={isBusy && selectedAction === 'publish'}
           >
             Publish
           </AdminButton>
@@ -119,9 +132,9 @@ export function AssessmentPublishing({
         {status === 'published' && (
           <AdminButton
             variant="secondary"
-            onClick={() => setConfirmAction('unpublish')}
+            onClick={() => setValue('action', 'unpublish')}
             disabled={isBusy}
-            loading={isBusy && confirmAction === 'unpublish'}
+            loading={isBusy && selectedAction === 'unpublish'}
           >
             Unpublish
           </AdminButton>
@@ -130,9 +143,9 @@ export function AssessmentPublishing({
         {status !== 'archived' && (
           <AdminButton
             variant="destructive"
-            onClick={() => setConfirmAction('archive')}
+            onClick={() => setValue('action', 'archive')}
             disabled={isBusy}
-            loading={isBusy && confirmAction === 'archive'}
+            loading={isBusy && selectedAction === 'archive'}
           >
             Archive
           </AdminButton>
@@ -150,17 +163,18 @@ export function AssessmentPublishing({
         by the backend. The UI sends requests only.
       </div>
 
-      {confirmAction && (
+      {selectedAction && confirmConfig[selectedAction] && (
         <AdminConfirmDialog
           open
-          title={confirmConfig[confirmAction].title}
-          description={confirmConfig[confirmAction].description}
-          confirmLabel={confirmConfig[confirmAction].confirmLabel}
-          variant={confirmConfig[confirmAction].variant}
-          onConfirm={handleConfirm}
-          onCancel={() => setConfirmAction(null)}
+          title={confirmConfig[selectedAction].title}
+          description={confirmConfig[selectedAction].description}
+          confirmLabel={confirmConfig[selectedAction].confirmLabel}
+          variant={confirmConfig[selectedAction].variant}
+          onConfirm={handleSubmit(onSubmit)}
+          onCancel={() => reset()}
         />
       )}
     </AdminCard>
   );
 }
+
