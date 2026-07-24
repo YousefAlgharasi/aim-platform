@@ -1,6 +1,6 @@
-import { getAdminToken } from '../../../lib/api/admin-token';
-import { AdminApiClientError } from '../../../lib/api';
-import { fetchAdminActivityLogs } from '../../../lib/api/admin-logs-api';
+import { getAdminToken } from '../../../core/api/admin-token';
+import { AdminApiClientError } from '../../../core/api';
+import { fetchAdminActivityLogs } from '../../../core/api/admin-logs-api';
 import { ActivityLogClient } from '../../../features/logs';
 
 type Props = {

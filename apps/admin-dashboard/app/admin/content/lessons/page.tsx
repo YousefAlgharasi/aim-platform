@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../lib/auth';
-import { AdminApiClientError } from '../../../../lib/api';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../core/auth';
+import { AdminApiClientError } from '../../../../core/api';
 import {
   fetchAdminCourses,
   type AdminCourseSummary,

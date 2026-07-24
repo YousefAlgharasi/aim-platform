@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, renderWithProviders } from '../test-utils';
-import { AdminProviderEventsView } from '../../features/billing/admin-provider-events-view';
+import { AdminProviderEventsView } from '../../features/billing/components/admin-provider-events-view';
 
 describe('AdminProviderEventsView', () => {
   it('renders the provider events heading', () => {

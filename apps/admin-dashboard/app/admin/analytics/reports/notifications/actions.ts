@@ -1,8 +1,8 @@
 'use server';
 
-import { getAdminToken } from '../../../../../lib/api/admin-token';
-import { requireAdminServerActionAuth } from '../../../../../lib/auth';
-import { fetchNotificationAuditLogs, fetchNotificationTemplates, type NotificationAuditLog, type NotificationTemplate } from '../../../../../lib/api/admin-notification-analytics-api';
+import { getAdminToken } from '../../../../../core/api/admin-token';
+import { requireAdminServerActionAuth } from '../../../../../core/auth';
+import { fetchNotificationAuditLogs, fetchNotificationTemplates, type NotificationAuditLog, type NotificationTemplate } from '../../../../../features/analytics/api/admin-notification-analytics-api';
 
 export async function loadNotificationAuditLogs(limit = 50, offset = 0, eventType?: string): Promise<NotificationAuditLog[]> {
   await requireAdminServerActionAuth();

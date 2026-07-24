@@ -1,12 +1,12 @@
 'use server';
 
-import { getAdminToken } from '../../../../../lib/api/admin-token';
-import { requireAdminServerActionAuth } from '../../../../../lib/auth';
+import { getAdminToken } from '../../../../../core/api/admin-token';
+import { requireAdminServerActionAuth } from '../../../../../core/auth';
 import {
   runAdminReport,
   fetchAdminReportRunStatus,
   type AdminReportRun,
-} from '../../../../../lib/api/admin-analytics-reports-api';
+} from '../../../../../features/analytics/api/admin-analytics-reports-api';
 
 const BASE_PATH = '/admin/analytics/reports/curriculum';
 

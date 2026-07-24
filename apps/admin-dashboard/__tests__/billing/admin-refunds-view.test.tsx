@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, renderWithProviders } from '../test-utils';
-import { AdminRefundsView } from '../../features/billing/admin-refunds-view';
+import { AdminRefundsView } from '../../features/billing/components/admin-refunds-view';
 
 describe('AdminRefundsView', () => {
   it('renders the refunds heading', () => {

@@ -1,11 +1,11 @@
 import { render, screen, fireEvent, renderWithProviders } from '../test-utils';
-import { DeadlineManagement } from '../../features/assessments/deadline-management';
+import { DeadlineManagement } from '../../features/assessments/components/deadline-management';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn() }),
 }));
 
-jest.mock('../../lib/api', () => ({
+jest.mock('../../core/api', () => ({
   adminApiClient: { get: jest.fn(), post: jest.fn(), patch: jest.fn() },
   AdminApiClientError: class extends Error { status = 500; },
 }));

@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import { getAdminToken } from '../../../../lib/api/admin-token';
+import { getAdminToken } from '../../../../core/api/admin-token';
 import {
   fetchAdminPlacementResults,
   AdminApiClientError,
   type AdminPlacementResultListData,
-} from '../../../../lib/api/admin-placement-results-api';
+} from '../../../../core/api/admin-placement-results-api';
 import { AdminPlacementResultsList } from '../../../../features/placement';
 
 const DEFAULT_PAGE = 1;

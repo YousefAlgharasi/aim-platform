@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { getAdminToken } from '../../../lib/api/admin-token';
-import { AdminApiClientError } from '../../../lib/api';
+import { getAdminToken } from '../../../core/api/admin-token';
+import { AdminApiClientError } from '../../../core/api';
 import {
   fetchEnrollmentReport,
   fetchAssessmentReport,

@@ -1,2 +1,2 @@
-export * from './prompt-draft-form';
-export * from './ai-teacher-client';
+export * from './components/prompt-draft-form';
+export * from './pages/ai-teacher-client';

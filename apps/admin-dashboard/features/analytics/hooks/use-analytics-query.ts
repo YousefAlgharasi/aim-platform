@@ -8,30 +8,30 @@ import {
   type AdminEnrollmentReport,
   type AdminAssessmentReport,
   type AdminActiveUsersReport,
-} from '../admin-reports-api';
+} from '../api/admin-reports-api';
 import {
   fetchAdminReportDefinitions,
   fetchAdminReportRunStatus,
   runAdminReport,
   type AdminReportDefinition,
   type AdminReportRun,
-} from '../admin-analytics-reports-api';
+} from '../api/admin-analytics-reports-api';
 import {
   fetchAdminOverviewDashboard,
   type AdminDashboardWidget,
-} from '../admin-analytics-dashboard-api';
+} from '../api/admin-analytics-dashboard-api';
 import {
   fetchNotificationAuditLogs,
   fetchNotificationTemplates,
   type NotificationAuditLog,
   type NotificationTemplate,
-} from '../admin-notification-analytics-api';
+} from '../api/admin-notification-analytics-api';
 import {
   requestExport,
   fetchExportStatus,
   type AdminExportJob,
   type ExportType,
-} from '../admin-analytics-exports-api';
+} from '../api/admin-analytics-exports-api';
 
 export const ANALYTICS_QUERY_KEYS = {
   all: ['analytics'] as const,

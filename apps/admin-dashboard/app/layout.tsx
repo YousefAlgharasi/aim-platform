@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 
-import { QueryProvider } from '../components/providers/query-provider';
+import { QueryProvider } from '../shared/components/providers/query-provider';
 
 export const metadata: Metadata = {
   title: 'AIM Admin Dashboard',

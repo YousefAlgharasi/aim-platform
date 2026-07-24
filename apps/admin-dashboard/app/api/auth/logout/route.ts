@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../lib/auth/admin-auth';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../core/auth/admin-auth';
 
 export async function POST() {
   const cookieStore = await cookies();

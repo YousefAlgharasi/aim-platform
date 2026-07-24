@@ -2,18 +2,18 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { backendFetch } from '../../lib/api/client-api-helpers';
-import { DASHBOARD_ICONS } from '../../components/dashboard/dashboard-icon-paths';
+import { backendFetch } from '../../core/api/client-api-helpers';
+import { DASHBOARD_ICONS } from '../../shared/components/dashboard/dashboard-icon-paths';
 import dynamic from 'next/dynamic';
-import { KpiCard } from '../../components/dashboard/kpi-card';
+import { KpiCard } from '../../shared/components/dashboard/kpi-card';
 
-const DonutChart = dynamic(() => import('../../components/dashboard/donut-chart').then((m) => m.DonutChart), {
+const DonutChart = dynamic(() => import('../../shared/components/dashboard/donut-chart').then((m) => m.DonutChart), {
   loading: () => <div className="h-32 w-full animate-pulse bg-neutral-100 rounded-md" />,
 });
-const HBar = dynamic(() => import('../../components/dashboard/h-bar').then((m) => m.HBar), {
+const HBar = dynamic(() => import('../../shared/components/dashboard/h-bar').then((m) => m.HBar), {
   loading: () => <div className="h-4 w-full animate-pulse bg-neutral-100 rounded-md" />,
 });
-const ScoreGauge = dynamic(() => import('../../components/dashboard/score-gauge').then((m) => m.ScoreGauge), {
+const ScoreGauge = dynamic(() => import('../../shared/components/dashboard/score-gauge').then((m) => m.ScoreGauge), {
   loading: () => <div className="h-24 w-full animate-pulse bg-neutral-100 rounded-md" />,
 });
 

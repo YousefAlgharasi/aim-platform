@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../lib/auth';
-import { AdminApiClientError } from '../../../../lib/api';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../core/auth';
+import { AdminApiClientError } from '../../../../core/api';
 import {
   fetchAdminAssessmentDetail,
   updateAdminAssessment,
@@ -13,9 +13,9 @@ import {
   AssessmentPublishing,
   type AdminAssessmentSettings,
 } from '../../../../features/assessments';
-import { AssessmentEditorClient } from '../../../../features/assessments/assessment-editor-client';
-import { AssessmentQuestionBuilder } from '../../../../features/assessments/question-builder';
-import { fetchAdminQuestions } from '../../../../features/content/admin-question-bank-api';
+import { AssessmentEditorClient } from '../../../../features/assessments/pages/assessment-editor-client';
+import { AssessmentQuestionBuilder } from '../../../../features/assessments/components/question-builder';
+import { fetchAdminQuestions } from '../../../../features/content/api/admin-question-bank-api';
 
 type Props = {
   params: Promise<{ assessmentId: string }>;

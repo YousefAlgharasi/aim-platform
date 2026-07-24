@@ -1,15 +1,15 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../../lib/auth';
-import { AdminApiClientError, adminApiClient } from '../../../../../../lib/api';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../../core/auth';
+import { AdminApiClientError, adminApiClient } from '../../../../../../core/api';
 import {
   publishContent,
   archiveContent,
   restoreContent,
   type ContentStatus,
-} from '../../../../../../features/content/admin-content-status-api';
-import { ContentStatusWorkflow } from '../../../../../../features/content/content-status-workflow';
+} from '../../../../../../features/content/api/admin-content-status-api';
+import { ContentStatusWorkflow } from '../../../../../../features/content/components/content-status-workflow';
 
 type Props = { params: Promise<{ objectiveId: string }> };
 

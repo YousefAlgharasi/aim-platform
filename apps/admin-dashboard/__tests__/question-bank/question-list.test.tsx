@@ -1,12 +1,12 @@
 import { render, screen, fireEvent, renderWithProviders } from '../test-utils';
-import { QuestionList } from '../../features/content/question-list';
-import type { AdminQuestionSummary } from '../../features/content/admin-question-bank-api';
+import { QuestionList } from '../../features/content/pages/question-list';
+import type { AdminQuestionSummary } from '../../features/content/api/admin-question-bank-api';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn(), push: jest.fn() }),
 }));
 
-jest.mock('../../lib/api', () => ({
+jest.mock('../../core/api', () => ({
   adminApiClient: { get: jest.fn(), post: jest.fn(), patch: jest.fn() },
   AdminApiClientError: class extends Error { status = 500; },
 }));

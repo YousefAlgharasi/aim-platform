@@ -22,15 +22,15 @@
 
 import Link from 'next/link';
 import { cookies } from 'next/headers';
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../../lib/auth';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../../core/auth';
 import {
   updatePlacementTestStatus,
   AdminApiClientError,
-} from '../../../../../../lib/api/admin-placement-test-status-api';
+} from '../../../../../../core/api/admin-placement-test-status-api';
 import {
   fetchAdminPlacementTests,
   type AdminPlacementTestSummary,
-} from '../../../../../../lib/api/admin-placement-tests-api';
+} from '../../../../../../core/api/admin-placement-tests-api';
 import { PlacementTestStatusControl } from '../../../../../../features/placement';
 
 type Props = {

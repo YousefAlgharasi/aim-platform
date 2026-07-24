@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { backendFetch } from '../../../lib/api/client-api-helpers';
+import { backendFetch } from '../../../core/api/client-api-helpers';
 
 export const BILLING_QUERY_KEYS = {
   all: ['billing'] as const,

@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import { redirect } from 'next/navigation';
 
-import { AdminShellLayout } from '../../components/admin-shell-layout';
-import { getAdminAuthState } from '../../lib/auth';
+import { AdminShellLayout } from '../../shared/layouts/DashboardLayout';
+import { getAdminAuthState } from '../../core/auth';
 
 export default async function AdminLayout({
   children,

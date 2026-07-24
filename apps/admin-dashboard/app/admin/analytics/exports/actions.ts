@@ -1,13 +1,13 @@
 'use server';
 
-import { getAdminToken } from '../../../../lib/api/admin-token';
-import { requireAdminServerActionAuth } from '../../../../lib/auth';
+import { getAdminToken } from '../../../../core/api/admin-token';
+import { requireAdminServerActionAuth } from '../../../../core/auth';
 import {
   requestExport,
   fetchExportStatus,
   type AdminExportJob,
   type ExportType,
-} from '../../../../lib/api/admin-analytics-exports-api';
+} from '../../../../features/analytics/api/admin-analytics-exports-api';
 
 export async function createExportAction(reportRunId: string, exportType: ExportType): Promise<AdminExportJob> {
   await requireAdminServerActionAuth();

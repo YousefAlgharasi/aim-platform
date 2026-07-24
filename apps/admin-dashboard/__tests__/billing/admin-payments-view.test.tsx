@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, renderWithProviders } from '../test-utils';
-import { AdminPaymentsView } from '../../features/billing/admin-payments-view';
+import { AdminPaymentsView } from '../../features/billing/components/admin-payments-view';
 
 describe('AdminPaymentsView', () => {
   it('renders the payments heading', () => {

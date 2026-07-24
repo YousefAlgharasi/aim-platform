@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, renderWithProviders } from '../test-utils';
-import { SkillsList } from '../../features/content/skills-list';
-import type { AdminSkillSummary } from '../../features/content/admin-skills-api';
+import { SkillsList } from '../../features/content/pages/skills-list';
+import type { AdminSkillSummary } from '../../features/content/api/admin-skills-api';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn() }),

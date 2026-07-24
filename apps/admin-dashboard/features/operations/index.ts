@@ -1,3 +1,3 @@
-export * from './operations-status-components';
-export * from './operations-dashboard-client';
-export * from './incidents-client';
+export * from './components/operations-status-components';
+export * from './pages/incidents-client';
+export * from './pages/operations-dashboard-client';
