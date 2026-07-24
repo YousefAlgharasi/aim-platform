@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import { QuestionValidationPanel } from '../../app/admin/content/question-bank/[questionId]/question-validation-panel';
-import type { AdminQuestionDetail } from '../../lib/api/admin-question-bank-api';
+import { QuestionValidationPanel } from '../../features/content/question-validation-panel';
+import type { AdminQuestionDetail } from '../../features/content/admin-question-bank-api';
 
 const makeQuestion = (overrides: Partial<AdminQuestionDetail> = {}): AdminQuestionDetail => ({
   id: 'q-1',

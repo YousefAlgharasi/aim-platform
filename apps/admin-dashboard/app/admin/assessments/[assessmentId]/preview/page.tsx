@@ -4,9 +4,9 @@ import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../lib/auth';
 import { AdminApiClientError } from '../../../../../lib/api';
 import {
   fetchAdminAssessmentDetail,
-} from '../../../../../lib/api/admin-assessments-api';
-import { fetchAdminQuestion } from '../../../../../lib/api/admin-question-bank-api';
-import { AssessmentPreviewClient } from './assessment-preview-client';
+  AssessmentPreviewClient,
+} from '../../../../../features/assessments';
+import { fetchAdminQuestion } from '../../../../../features/content/admin-question-bank-api';
 
 type Props = {
   params: Promise<{ assessmentId: string }>;

@@ -3,7 +3,7 @@ import {
   fetchAdminReportDefinitions,
   type AdminReportDefinition,
 } from '../../../../../lib/api/admin-analytics-reports-api';
-import { ReportRunnerPanel } from '../../_components/report-runner-panel';
+import { ReportRunnerPanel } from '../../../../../features/analytics';
 import { runRevenueReport, pollRevenueReportRunStatus } from './actions';
 
 const BASE_PATH = '/admin/analytics/reports/revenue';

@@ -3,7 +3,7 @@ import {
   fetchAdminOverviewDashboard,
   AdminApiClientError,
   type AdminDashboardWidget,
-} from '../../../lib/api/admin-analytics-dashboard-api';
+} from '../../../features/analytics';
 import { fetchAdminStats, type DashboardStats } from '../../../lib/api/admin-stats-api';
 
 export default async function AdminAnalyticsOverviewPage() {

@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { DeadlineManagement } from '../../app/admin/assessments/[assessmentId]/deadline-management';
+import { DeadlineManagement } from '../../features/assessments/deadline-management';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn() }),

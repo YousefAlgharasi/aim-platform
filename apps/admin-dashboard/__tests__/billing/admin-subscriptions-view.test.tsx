@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { AdminSubscriptionsView } from '../../components/billing/admin-subscriptions-view';
+import { AdminSubscriptionsView } from '../../features/billing/admin-subscriptions-view';
 
 describe('AdminSubscriptionsView', () => {
   it('renders the subscriptions heading', () => {

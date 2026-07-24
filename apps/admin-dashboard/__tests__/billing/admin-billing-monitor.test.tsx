@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { AdminBillingMonitor } from '../../components/billing/admin-billing-monitor';
+import { AdminBillingMonitor } from '../../features/billing/admin-billing-monitor';
 
 describe('AdminBillingMonitor', () => {
   it('renders the overview tab by default', () => {

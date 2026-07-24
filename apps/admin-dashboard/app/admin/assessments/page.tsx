@@ -8,9 +8,9 @@ import {
   createAdminAssessment,
   type AdminAssessmentType,
   type AdminAssessmentListItem,
-} from '../../../lib/api/admin-assessments-api';
+  AssessmentsList,
+} from '../../../features/assessments';
 import type { AdminPaginatedResponse } from '../../../lib/api/admin-paginated-response';
-import { AssessmentsList } from './assessments-list';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;

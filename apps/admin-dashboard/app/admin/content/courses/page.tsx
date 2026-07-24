@@ -9,9 +9,9 @@ import {
   type AdminCourseSummary,
   type AdminCourseListData,
   type CourseStatus,
-} from '../../../../lib/api/admin-courses-api';
+  CoursesList,
+} from '../../../../features/content';
 import { AdminApiClientError } from '../../../../lib/api';
-import { CoursesList } from './courses-list';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;

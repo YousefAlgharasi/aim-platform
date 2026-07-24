@@ -1,6 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { AssessmentEditorClient } from '../../app/admin/assessments/[assessmentId]/assessment-editor-client';
-import type { AdminAssessmentDetail } from '../../lib/api/admin-assessments-api';
+import { AssessmentEditorClient, type AdminAssessmentDetail } from '../../features/assessments';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn(), push: jest.fn() }),

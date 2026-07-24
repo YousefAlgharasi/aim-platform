@@ -8,8 +8,8 @@ import {
   archiveContent,
   restoreContent,
   type ContentStatus,
-} from '../../../../../../lib/api/admin-content-status-api';
-import { ContentStatusWorkflow } from '../../../../../../components/content-status-workflow';
+  ContentStatusWorkflow,
+} from '../../../../../../features/content';
 
 type Props = { params: Promise<{ skillId: string }> };
 

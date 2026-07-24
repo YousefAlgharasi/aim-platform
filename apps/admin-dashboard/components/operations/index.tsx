@@ -1,36 +1,6 @@
-// P17-064: Operations shared components — re-exports standard layout design system components.
-// Duplicated OperationsEmptyState, OperationsErrorCard, OperationsLoadingSpinner eliminated in favor of unified Admin design system elements.
-
-import type { ReactNode } from 'react';
-import { AdminEmptyState, AdminErrorBanner, AdminLoadingSkeleton } from '../layout';
-
-export function OperationsEmptyState({ message = 'No data available.' }: { readonly message?: string }) {
-  return <AdminEmptyState title="No Data" description={message} />;
-}
-
-export function OperationsErrorCard({
-  message,
-  onRetry,
-}: {
-  readonly message: string;
-  readonly onRetry?: () => void;
-}) {
-  return (
-    <div className="flex flex-col items-center gap-2">
-      <AdminErrorBanner variant="error" message={message} />
-      {onRetry && (
-        <button
-          type="button"
-          onClick={onRetry}
-          className="text-xs font-semibold text-[var(--color-error-700)] underline cursor-pointer"
-        >
-          Retry
-        </button>
-      )}
-    </div>
-  );
-}
-
-export function OperationsLoadingSpinner({ message = 'Loading...' }: { readonly message?: string }) {
-  return <AdminLoadingSkeleton label={message} rows={3} />;
-}
+// Operations layout & state components re-exported from features/operations
+export {
+  OperationsEmptyState,
+  OperationsErrorCard,
+  OperationsLoadingSpinner,
+} from '../../features/operations';

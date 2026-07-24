@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { AdminInvoicesView } from '../../components/billing/admin-invoices-view';
+import { AdminInvoicesView } from '../../features/billing/admin-invoices-view';
 
 describe('AdminInvoicesView', () => {
   it('renders the invoices heading', () => {

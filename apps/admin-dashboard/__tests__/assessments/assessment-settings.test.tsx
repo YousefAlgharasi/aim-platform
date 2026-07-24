@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { AssessmentSettings } from '../../app/admin/assessments/[assessmentId]/assessment-settings';
+import { AssessmentSettings } from '../../features/assessments';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn() }),

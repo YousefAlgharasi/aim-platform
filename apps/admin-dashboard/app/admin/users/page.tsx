@@ -3,12 +3,12 @@ import { cookies } from 'next/headers';
 import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../lib/auth';
 import {
   fetchAdminUsers,
+  UsersPageClient,
   type AdminUserListItem,
   type AdminUserStatus,
   type AdminUserType,
-} from '../../../lib/api/admin-users-api';
+} from '../../../features/users';
 import { AdminApiClientError } from '../../../lib/api';
-import { UsersPageClient } from './users-page-client';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;

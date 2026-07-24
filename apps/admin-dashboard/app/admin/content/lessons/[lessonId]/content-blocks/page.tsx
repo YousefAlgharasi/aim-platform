@@ -9,21 +9,17 @@ import { AdminApiClientError } from '../../../../../../lib/api';
 import {
   fetchAdminLesson,
   type AdminLessonSummary,
-} from '../../../../../../lib/api/admin-lessons-api';
-import {
   fetchLessonContentBlocks,
   createLessonContentBlock,
   updateLessonContentBlock,
   deleteLessonContentBlock,
   type AdminContentBlockListData,
   type ContentBlockType,
-} from '../../../../../../lib/api/admin-lesson-content-api';
-import {
-  AdminBadge,
-} from '../../../../../../components/common';
+  ContentBlocksList,
+} from '../../../../../../features/content';
+import { AdminBadge } from '../../../../../../components/common';
 import { AdminPageHeader } from '../../../../../../components/layout';
 import { AdminApiErrorState, AdminNotFoundState } from '../../../../../../components/error-handling';
-import { ContentBlocksList } from './content-blocks-list';
 
 type Props = { params: Promise<{ lessonId: string }> };
 

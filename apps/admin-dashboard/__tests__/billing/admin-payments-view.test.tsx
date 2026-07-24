@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { AdminPaymentsView } from '../../components/billing/admin-payments-view';
+import { AdminPaymentsView } from '../../features/billing/admin-payments-view';
 
 describe('AdminPaymentsView', () => {
   it('renders the payments heading', () => {

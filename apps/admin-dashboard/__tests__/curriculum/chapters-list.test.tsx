@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ChaptersList } from '../../app/admin/content/chapters/chapters-list';
-import type { AdminChapterSummary } from '../../lib/api/admin-chapters-api';
+import { ChaptersList } from '../../features/content/chapters-list';
+import type { AdminChapterSummary } from '../../features/content/admin-chapters-api';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn() }),

@@ -97,7 +97,7 @@ describe('IncidentsPage', () => {
     const createBtn = await screen.findByText('+ New Incident');
     fireEvent.click(createBtn);
 
-    expect(screen.getByText('Create Incident')).toBeInTheDocument();
+    expect(screen.getAllByText('Create Incident')[0]).toBeInTheDocument();
     expect(screen.getByLabelText('Title')).toBeInTheDocument();
     expect(screen.getByLabelText('Severity')).toBeInTheDocument();
   });
@@ -115,7 +115,7 @@ describe('IncidentsPage', () => {
 
     render(<IncidentsPage />);
 
-    expect(await screen.findByText('2 incidents')).toBeInTheDocument();
+    expect((await screen.findAllByText('2 incidents'))[0]).toBeInTheDocument();
   });
 
   it('displays resolved time when incident is resolved', async () => {

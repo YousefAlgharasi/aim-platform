@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { AdminProviderEventsView } from '../../components/billing/admin-provider-events-view';
+import { AdminProviderEventsView } from '../../features/billing/admin-provider-events-view';
 
 describe('AdminProviderEventsView', () => {
   it('renders the provider events heading', () => {

@@ -10,10 +10,10 @@ import {
   fetchAdminLesson,
   updateAdminLesson,
   type AdminLessonSummary,
-} from '../../../../../lib/api/admin-lessons-api';
+} from '../../../../../features/content';
+import { LessonEditorForm } from '../../../../../features/content';
 import { AdminPageHeader } from '../../../../../components/layout';
 import { AdminApiErrorState, AdminNotFoundState } from '../../../../../components/error-handling';
-import { LessonEditorForm } from './lesson-editor-form';
 
 type Props = { params: Promise<{ lessonId: string }> };
 

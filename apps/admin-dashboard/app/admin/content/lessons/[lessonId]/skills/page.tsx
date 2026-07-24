@@ -22,12 +22,10 @@ import {
   addSkillToLesson,
   removeSkillFromLesson,
   type AdminLessonSkillListData,
-} from '../../../../../../lib/api/admin-lesson-skills-api';
-import {
   fetchAdminSkillsForPicker,
   type AdminSkillListData,
-} from '../../../../../../lib/api/admin-skills-api';
-import { SkillLinker } from './skill-linker';
+  SkillLinker,
+} from '../../../../../../features/content';
 
 type Props = {
   params: Promise<{ lessonId: string }>;

@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { QuestionPreview } from '../../app/admin/content/question-bank/[questionId]/question-preview';
-import type { AdminQuestionDetail } from '../../lib/api/admin-question-bank-api';
+import { QuestionPreview } from '../../features/content/question-preview';
+import type { AdminQuestionDetail } from '../../features/content/admin-question-bank-api';
 
 const makeQuestion = (overrides: Partial<AdminQuestionDetail> = {}): AdminQuestionDetail => ({
   id: 'q-1',

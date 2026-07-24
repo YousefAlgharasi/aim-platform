@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { CoursesList } from '../../app/admin/content/courses/courses-list';
-import type { AdminCourseSummary } from '../../lib/api/admin-courses-api';
+import { CoursesList } from '../../features/content/courses-list';
+import type { AdminCourseSummary } from '../../features/content/admin-courses-api';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn() }),

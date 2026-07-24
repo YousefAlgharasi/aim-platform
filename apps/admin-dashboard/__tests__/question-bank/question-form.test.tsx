@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { QuestionForm } from '../../app/admin/content/question-bank/question-form';
+import { QuestionForm } from '../../features/content/question-form';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn() }),

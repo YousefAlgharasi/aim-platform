@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import { AssessmentResultsList } from '../../app/admin/assessments/[assessmentId]/results/results-list';
-import type { AdminAssessmentResultItem } from '../../lib/api/admin-assessment-results-api';
+import { AssessmentResultsList } from '../../features/assessments/results-list';
+import { type AdminAssessmentResultItem } from '../../features/assessments/admin-assessment-results-api';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn() }),

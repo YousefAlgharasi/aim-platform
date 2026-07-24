@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { AdminRefundsView } from '../../components/billing/admin-refunds-view';
+import { AdminRefundsView } from '../../features/billing/admin-refunds-view';
 
 describe('AdminRefundsView', () => {
   it('renders the refunds heading', () => {

@@ -11,8 +11,8 @@ import {
   archiveContent,
   restoreContent,
   type ContentStatus,
-} from '../../../../../../lib/api/admin-content-status-api';
-import { ContentStatusWorkflow } from '../../../../../../components/content-status-workflow';
+  ContentStatusWorkflow,
+} from '../../../../../../features/content';
 import { AdminPageHeader } from '../../../../../../components/layout';
 import { AdminApiErrorState } from '../../../../../../components/error-handling';
 

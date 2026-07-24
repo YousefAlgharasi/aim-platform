@@ -5,11 +5,11 @@ import {
   fetchEnrollmentReport,
   fetchAssessmentReport,
   fetchActiveUsersReport,
+  ReportsClient,
   type AdminEnrollmentReport,
   type AdminAssessmentReport,
   type AdminActiveUsersReport,
-} from '../../../lib/api/admin-reports-api';
-import { ReportsClient } from './reports-client';
+} from '../../../features/analytics';
 
 export default async function AdminReportsPage() {
   const token = await getAdminToken();

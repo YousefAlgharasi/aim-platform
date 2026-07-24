@@ -20,7 +20,7 @@ type AdminApiBodyRequestOptions = AdminApiRequestOptions & {
 export class AdminApiClient {
   constructor(
     private readonly config: AdminApiConfig = getAdminApiConfig(),
-    private readonly fetcher: Fetcher = fetch,
+    private readonly fetcher: Fetcher = typeof fetch !== 'undefined' ? fetch : ((...args: Parameters<Fetcher>) => globalThis.fetch(...args)),
   ) {}
 
   buildUrl(path: string, query?: AdminApiRequestOptions['query']): string {
