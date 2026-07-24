@@ -22,7 +22,6 @@
 // Security:
 //   No service-role keys, JWT secrets, or direct Supabase calls here.
 //   Backend is the sole auth authority.
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -56,18 +55,22 @@ class RegisterPage extends ConsumerStatefulWidget {
 }
 
 class _RegisterPageState extends ConsumerState<RegisterPage> {
+  final _fullNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
+  final _fullNameFocus = FocusNode();
   final _emailFocus = FocusNode();
   final _passwordFocus = FocusNode();
   final _confirmFocus = FocusNode();
 
   @override
   void dispose() {
+    _fullNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmController.dispose();
+    _fullNameFocus.dispose();
     _emailFocus.dispose();
     _passwordFocus.dispose();
     _confirmFocus.dispose();
@@ -89,6 +92,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   Future<void> _submit() async {
     final l10n = AppLocalizations.of(context);
+    _fullNameFocus.unfocus();
     _emailFocus.unfocus();
     _passwordFocus.unfocus();
     _confirmFocus.unfocus();
@@ -97,12 +101,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final formState = ref.watch(registerProvider);
     final notifier = ref.read(registerProvider.notifier);
-    final surfaces = aimSurfacesOf(context);
-    final shadows = aimShadowsOf(context);
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
+    final size = MediaQuery.sizeOf(context);
 
     // Show email-confirmation screen after successful signup.
     if (notifier.outcome == RegisterOutcome.awaitingEmailConfirmation) {
@@ -110,268 +111,252 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     }
 
     final password = _passwordController.text;
-    final confirm = _confirmController.text;
-    final passwordsMatch = confirm.isEmpty || password == confirm;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: SystemUiOverlayStyle.dark,
       child: Scaffold(
-        backgroundColor: surfaces.surfaceSunken,
-        body: AutofillGroup(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              // ── Gradient hero header ─────────────────────────────────
-              _RegisterHeader(isRtl: isRtl),
+        // ── Figma Screen 3: bg-[#f8fafc] ────────────────────────────────
+        backgroundColor: const Color(0xFFF8FAFC),
+        body: SafeArea(
+          child: AutofillGroup(
+            child: ListView(
+              padding: EdgeInsets.fromLTRB(
+                24,
+                size.height * 0.05, // responsive top padding (~42px)
+                24,
+                40,
+              ),
+              children: [
+                // ── Title: "Create an account" — IBM Plex Sans Bold 30px #0F172A ──
+                const Text(
+                  'Create an account',
+                  style: TextStyle(
+                    fontFamily: 'IBMPlexSans',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 30,
+                    color: Color(0xFF0F172A),
+                    letterSpacing: -0.3,
+                    height: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 12),
 
-              // ── Card + content pulled up -40px over the header ───────
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, -40, 20, 28),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                // ── Subtitle: #94A3B8, 14px ─────────────────────────────────
+                const Text(
+                  'Create your account, it takes less than a minute. Enter your email and password',
+                  style: TextStyle(
+                    fontFamily: 'IBMPlexSans',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 14,
+                    color: Color(0xFF94A3B8),
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 28),
+
+                // ── Error Banner ───────────────────────────────────────────
+                if (formState.errorMessage != null) ...[
+                  AIMAlertBanner(
+                    tone: AIMAlertTone.error,
+                    child: Text(formState.errorMessage!),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // ── Full Name Input — bg:#E2E8F0, border:#CBD5E1, radius:12 ────
+                _RegFigmaInputField(
+                  controller: _fullNameController,
+                  focusNode: _fullNameFocus,
+                  placeholder: 'Full name',
+                  textInputAction: TextInputAction.next,
+                  autofillHints: const [AutofillHints.name],
+                  disabled: formState.isSubmitting,
+                  onSubmitted: (_) => _emailFocus.requestFocus(),
+                ),
+                const SizedBox(height: 16),
+
+                // ── Email Input Field ───────────────────────────────────────
+                _RegFigmaInputField(
+                  controller: _emailController,
+                  focusNode: _emailFocus,
+                  placeholder: 'Email',
+                  keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.next,
+                  autofillHints: const [AutofillHints.newUsername],
+                  disabled: formState.isSubmitting,
+                  onChanged: _onEmailChanged,
+                  onSubmitted: (_) => _passwordFocus.requestFocus(),
+                ),
+                const SizedBox(height: 16),
+
+                // ── Password Input Field ────────────────────────────────────
+                _RegFigmaInputField(
+                  controller: _passwordController,
+                  focusNode: _passwordFocus,
+                  placeholder: 'Password',
+                  obscureText: true,
+                  textInputAction: TextInputAction.next,
+                  autofillHints: const [AutofillHints.newPassword],
+                  disabled: formState.isSubmitting,
+                  onChanged: _onPasswordChanged,
+                  onSubmitted: (_) => _confirmFocus.requestFocus(),
+                ),
+
+                // Password strength meter
+                if (password.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  _PasswordStrengthMeter(password: password),
+                ],
+                const SizedBox(height: 16),
+
+                // ── Confirm Password Input Field ───────────────────────────
+                _RegFigmaInputField(
+                  controller: _confirmController,
+                  focusNode: _confirmFocus,
+                  placeholder: 'Confirm password',
+                  obscureText: true,
+                  textInputAction: TextInputAction.done,
+                  autofillHints: const [AutofillHints.newPassword],
+                  disabled: formState.isSubmitting,
+                  onChanged: _onConfirmChanged,
+                  onSubmitted: (_) => _submit(),
+                ),
+                const SizedBox(height: 24),
+
+                // ── Primary Button: "Create an account" (Indigo height 52) ─
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: DecoratedBox(
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF4F46E5), // solid indigo per Figma
+                      borderRadius: BorderRadius.all(Radius.circular(12)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0x334F46E5),
+                          blurRadius: 6,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                      child: InkWell(
+                        onTap: formState.isSubmitting ? null : _submit,
+                        borderRadius: BorderRadius.circular(12),
+                        child: Center(
+                          child: formState.isSubmitting
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
+                                )
+                              : const Text(
+                                  'Create an account',
+                                  style: TextStyle(
+                                    fontFamily: 'IBMPlexSans',
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16,
+                                    color: Color(0xFFF8FAFC),
+                                    height: 1.5,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // ── "or" Divider ────────────────────────────────────────────
+                const Row(
                   children: [
-                    // Form card
-                    Container(
-                      decoration: BoxDecoration(
-                        color: surfaces.surface,
-                        border: Border.all(color: surfaces.border),
-                        borderRadius: AimRadius.borderX2l,
-                        boxShadow: shadows.cardHover,
-                      ),
-                      padding: const EdgeInsets.all(18),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Error banner
-                          if (formState.errorMessage != null) ...[
-                            AIMAlertBanner(
-                              tone: AIMAlertTone.error,
-                              child: Text(formState.errorMessage!),
-                            ),
-                            const SizedBox(height: AimSpacing.formFieldGap),
-                          ],
-
-                          // Email
-                          AIMInput(
-                            controller: _emailController,
-                            focusNode: _emailFocus,
-                            label: l10n.authEmailLabel,
-                            placeholder: l10n.authEmailPlaceholder,
-                            type: AIMInputType.email,
-                            disabled: formState.isSubmitting,
-                            leadingIcon: const Icon(Icons.email_outlined),
-                            onChanged: _onEmailChanged,
-                            onSubmitted: (_) => _passwordFocus.requestFocus(),
-                            textInputAction: TextInputAction.next,
-                            autofillHints: const [AutofillHints.newUsername],
-                            semanticLabel: l10n.authEmailSemantic,
-                          ),
-                          const SizedBox(height: 15),
-
-                          // Password
-                          AIMInput(
-                            controller: _passwordController,
-                            focusNode: _passwordFocus,
-                            label: l10n.authPasswordLabel,
-                            type: AIMInputType.password,
-                            disabled: formState.isSubmitting,
-                            leadingIcon: const Icon(Icons.lock_outline),
-                            onChanged: _onPasswordChanged,
-                            onSubmitted: (_) => _confirmFocus.requestFocus(),
-                            textInputAction: TextInputAction.next,
-                            autofillHints: const [AutofillHints.newPassword],
-                            semanticLabel: l10n.authPasswordSemantic,
-                          ),
-
-                          // Password strength meter (shown as soon as user types)
-                          if (password.isNotEmpty) ...[
-                            const SizedBox(height: 8),
-                            _PasswordStrengthMeter(password: password),
-                          ],
-                          const SizedBox(height: 15),
-
-                          // Confirm password
-                          AIMInput(
-                            controller: _confirmController,
-                            focusNode: _confirmFocus,
-                            label: l10n.authConfirmPasswordLabel,
-                            type: AIMInputType.password,
-                            disabled: formState.isSubmitting,
-                            leadingIcon: const Icon(Icons.lock_outline),
-                            error: passwordsMatch
-                                ? null
-                                : l10n.authPasswordsDoNotMatch,
-                            trailingIcon:
-                                (confirm.isNotEmpty && passwordsMatch)
-                                    ? const Icon(
-                                        Icons.check_circle,
-                                        color: AimColors.success500,
-                                      )
-                                    : null,
-                            onChanged: _onConfirmChanged,
-                            onSubmitted: (_) => _submit(),
-                            textInputAction: TextInputAction.done,
-                            autofillHints: const [AutofillHints.newPassword],
-                            semanticLabel: l10n.authConfirmPasswordSemantic,
-                          ),
-                          const SizedBox(height: 4 + 15),
-
-                          // Create account — 52px pill, gz-hero + glow
-                          _RegGzPillButton(
-                            label: l10n.authCreateAccount,
-                            loading: formState.isSubmitting,
-                            enabled:
-                                formState.isValid && !formState.isSubmitting,
-                            onPressed: _submit,
-                          ),
-                        ],
+                    Expanded(
+                      child: Divider(
+                        color: Color(0xFF94A3B8),
+                        height: 1,
+                        thickness: 1,
                       ),
                     ),
-                    const SizedBox(height: 16),
-
-                    // "OR SIGN UP WITH" divider
-                    _RegSocialDivider(label: l10n.authOrSignUpWith),
-                    const SizedBox(height: 11),
-
-                    // Google (full width, 52px pill)
-                    _RegSocialPillButton(
-                      onPressed: () {},
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const _RegGoogleLogo(),
-                          const SizedBox(width: 11),
-                          Text(
-                            l10n.authSignUpWithGoogle,
-                            style: const TextStyle(
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 11),
-
-                    // Apple + Facebook (half-width)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _RegSocialPillButton(
-                            onPressed: () {},
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.apple,
-                                  size: 19,
-                                  color: surfaces.textPrimary,
-                                ),
-                                const SizedBox(width: 9),
-                                Text(
-                                  l10n.authAppleButton,
-                                  style: const TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 11),
-                        Expanded(
-                          child: _RegSocialPillButton(
-                            onPressed: () {},
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const _RegFacebookLogo(),
-                                const SizedBox(width: 9),
-                                Text(
-                                  l10n.authFacebookButton,
-                                  style: const TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Terms and Privacy Policy
-                    Text.rich(
-                      TextSpan(
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 14),
+                      child: Text(
+                        'or',
                         style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 11.5,
-                          color: surfaces.textMuted,
-                          height: 1.5,
+                          fontFamily: 'IBMPlexSans',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xFF94A3B8),
                         ),
-                        children: [
-                          TextSpan(text: l10n.authAgreeToTermsPrefix),
-                          TextSpan(
-                            text: l10n.authTermsLink,
-                            style: const TextStyle(
-                              color: Color(0xFF6C63FF),
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          TextSpan(text: l10n.authAndConnector),
-                          TextSpan(
-                            text: l10n.authPrivacyPolicyLink,
-                            style: const TextStyle(
-                              color: Color(0xFF6C63FF),
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
                       ),
-                      textAlign: TextAlign.center,
-                      textDirection: Directionality.of(context),
                     ),
-                    const SizedBox(height: 12),
-
-                    // "Already have an account? Sign in"
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          l10n.authAlreadyHaveAccount,
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w500,
-                            color: surfaces.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        GestureDetector(
-                          onTap: () => context.pop(),
-                          child: const Text(
-                            'Sign in',
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFF6C63FF),
-                            ),
-                          ),
-                        ),
-                      ],
+                    Expanded(
+                      child: Divider(
+                        color: Color(0xFF94A3B8),
+                        height: 1,
+                        thickness: 1,
+                      ),
                     ),
-                    const SizedBox(height: 12),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+
+                // ── Social Buttons Row (Google & Facebook) ──────────────────
+                Row(
+                  children: [
+                    Expanded(
+                      child: _RegFigmaSocialButton(
+                        icon: const _RegGoogleLogo(),
+                        label: 'Google',
+                        onPressed: () {},
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _RegFigmaSocialButton(
+                        icon: const _RegFacebookLogo(),
+                        label: 'Facebook',
+                        onPressed: () {},
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+
+                // ── Footer: "Already have an account? Log in" ───────────────
+                Center(
+                  child: GestureDetector(
+                    onTap: () => context.go(AppRoutePaths.signIn),
+                    child: RichText(
+                      text: const TextSpan(
+                        style: TextStyle(
+                          fontFamily: 'IBMPlexSans',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF0F172A),
+                        ),
+                        children: [
+                          TextSpan(text: 'Already have an account? '),
+                          TextSpan(
+                            text: 'Log in',
+                            style: TextStyle(
+                              color: Color(0xFF4F46E5),
+                              decoration: TextDecoration.underline,
+                              decorationColor: Color(0xFF4F46E5),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -380,336 +365,171 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Header: gz-hero gradient, rounded bottom (34px), purple glow shadow,
-// Blob 1 on TOP-LEFT (white), Blob 2 on BOTTOM-RIGHT (lime),
-// glass back button (42×42, radius 13), title + subtitle — NO badge.
+// Figma Screen 3 — Input field: bg #E2E8F0, border #CBD5E1, radius 12.
+// Focuses changes border to indigo. Eye toggle for password fields.
 // ─────────────────────────────────────────────────────────────────────────────
-class _RegisterHeader extends StatefulWidget {
-  const _RegisterHeader({required this.isRtl});
-  final bool isRtl;
+class _RegFigmaInputField extends StatefulWidget {
+  const _RegFigmaInputField({
+    required this.controller,
+    required this.focusNode,
+    required this.placeholder,
+    this.obscureText = false,
+    this.keyboardType,
+    this.textInputAction,
+    this.autofillHints,
+    this.disabled = false,
+    this.onChanged,
+    this.onSubmitted,
+  });
+
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final String placeholder;
+  final bool obscureText;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final Iterable<String>? autofillHints;
+  final bool disabled;
+  final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
 
   @override
-  State<_RegisterHeader> createState() => _RegisterHeaderState();
+  State<_RegFigmaInputField> createState() => _RegFigmaInputFieldState();
 }
 
-class _RegisterHeaderState extends State<_RegisterHeader>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _blobCtrl;
+class _RegFigmaInputFieldState extends State<_RegFigmaInputField> {
+  bool _showText = false;
+  bool _focused = false;
 
   @override
   void initState() {
     super.initState();
-    _blobCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 9000),
-    )..repeat(reverse: true);
+    widget.focusNode.addListener(_onFocusChange);
+  }
+
+  void _onFocusChange() {
+    setState(() => _focused = widget.focusNode.hasFocus);
   }
 
   @override
   void dispose() {
-    _blobCtrl.dispose();
+    widget.focusNode.removeListener(_onFocusChange);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(34)),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(20, 18, 20, 64),
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment(-0.74, -1.0),
-            end: Alignment(0.74, 1.0),
-            stops: [0.0, 0.46, 1.0],
-            colors: [Color(0xFF8B5CF6), Color(0xFF6C63FF), Color(0xFF5AC8FA)],
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      height: 52,
+      decoration: BoxDecoration(
+        color: const Color(0xFFE2E8F0),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: _focused ? const Color(0xFF4F46E5) : const Color(0xFFCBD5E1),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextField(
+                controller: widget.controller,
+                focusNode: widget.focusNode,
+                obscureText: widget.obscureText && !_showText,
+                keyboardType: widget.keyboardType,
+                textInputAction: widget.textInputAction,
+                autofillHints: widget.autofillHints,
+                enabled: !widget.disabled,
+                onChanged: widget.onChanged,
+                onSubmitted: widget.onSubmitted,
+                style: const TextStyle(
+                  fontFamily: 'IBMPlexSans',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF0F172A),
+                ),
+                decoration: InputDecoration(
+                  hintText: widget.placeholder,
+                  hintStyle: const TextStyle(
+                    fontFamily: 'IBMPlexSans',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xFF64748B),
+                  ),
+                  filled: true,
+                  fillColor: Colors.transparent,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Color(0xCB6C63FF),
-              blurRadius: 38,
-              spreadRadius: -18,
-              offset: Offset(0, 16),
-            ),
-          ],
-        ),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            // Blob 1: TOP-LEFT, white, animated morph (register flips vs login)
-            PositionedDirectional(
-              top: -40,
-              start: -30,
-              child: AnimatedBuilder(
-                animation: _blobCtrl,
-                builder: (_, __) {
-                  final r = BorderRadius.lerp(
-                    const BorderRadius.only(
-                      topLeft: Radius.circular(52),
-                      topRight: Radius.circular(46),
-                      bottomRight: Radius.circular(42),
-                      bottomLeft: Radius.circular(58),
-                    ),
-                    const BorderRadius.only(
-                      topLeft: Radius.circular(40),
-                      topRight: Radius.circular(60),
-                      bottomRight: Radius.circular(56),
-                      bottomLeft: Radius.circular(44),
-                    ),
-                    _blobCtrl.value,
-                  )!;
-                  return Container(
-                    width: 150,
-                    height: 150,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.14),
-                      borderRadius: r,
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            // Blob 2: BOTTOM-RIGHT, lime, blurred (register flips vs login)
-            PositionedDirectional(
-              bottom: -20,
-              end: -30,
-              child: Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFC8FF3D).withValues(alpha: 0.16),
-                  shape: BoxShape.circle,
-                ),
-                child: ClipOval(
-                  child: BackdropFilter(
-                    filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                    child: const SizedBox.expand(),
-                  ),
+          if (widget.obscureText)
+            GestureDetector(
+              onTap: () => setState(() => _showText = !_showText),
+              child: Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Icon(
+                  _showText
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  size: 20,
+                  color: const Color(0xFF64748B),
                 ),
               ),
             ),
-
-            // Content: back button + title + subtitle
-            SafeArea(
-              bottom: false,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Back button: 42×42, radius 13, glass
-                  Semantics(
-                    button: true,
-                    label: AppLocalizations.of(context).commonBack,
-                    child: GestureDetector(
-                      onTap: () => context.pop(),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(13),
-                        child: BackdropFilter(
-                          filter:
-                              ui.ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-                          child: Container(
-                            width: 42,
-                            height: 42,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(13),
-                            ),
-                            child: Center(
-                              child: Icon(
-                                widget.isRtl
-                                    ? Icons.chevron_right
-                                    : Icons.chevron_left,
-                                size: 22,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // "Create account"
-                  Text(
-                    l10n.authCreateAccount,
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w800,
-                      fontSize: 26,
-                      letterSpacing: -0.26,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-
-                  // "Start learning English the fun way"
-                  Text(
-                    l10n.authStartLearningTagline,
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w500,
-                      fontSize: 13.5,
-                      color: Colors.white.withValues(alpha: 0.9),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 52px pill button — gz-hero gradient + glow shadow (register variant).
+// Figma Screen 3 — Social button: bg #0F172A, h 48, radius 16, white text.
 // ─────────────────────────────────────────────────────────────────────────────
-class _RegGzPillButton extends StatelessWidget {
-  const _RegGzPillButton({
+class _RegFigmaSocialButton extends StatelessWidget {
+  const _RegFigmaSocialButton({
+    required this.icon,
     required this.label,
     required this.onPressed,
-    this.loading = false,
-    this.enabled = true,
   });
 
+  final Widget icon;
   final String label;
   final VoidCallback onPressed;
-  final bool loading;
-  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 52,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: enabled
-              ? const LinearGradient(
-                  begin: Alignment(-0.74, -1.0),
-                  end: Alignment(0.74, 1.0),
-                  stops: [0.0, 0.46, 1.0],
-                  colors: [
-                    Color(0xFF8B5CF6),
-                    Color(0xFF6C63FF),
-                    Color(0xFF5AC8FA),
-                  ],
-                )
-              : null,
-          color: enabled ? null : const Color(0xFFCDD2DD),
-          borderRadius: BorderRadius.circular(999),
-          boxShadow: enabled
-              ? const [
-                  BoxShadow(
-                    color: Color(0x996C63FF),
-                    blurRadius: 22,
-                    spreadRadius: -6,
-                    offset: Offset(0, 10),
-                  ),
-                ]
-              : null,
-        ),
-        child: Material(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(999),
-          child: InkWell(
-            onTap: enabled && !loading ? onPressed : null,
-            borderRadius: BorderRadius.circular(999),
-            child: Center(
-              child: loading
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Text(
-                      label,
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16,
-                        color: Colors.white,
-                      ),
-                    ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// "—— OR SIGN UP WITH ——" divider (register variant).
-// ─────────────────────────────────────────────────────────────────────────────
-class _RegSocialDivider extends StatelessWidget {
-  const _RegSocialDivider({required this.label});
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final dividerColor = aimSurfacesOf(context).divider;
-    return Row(
-      children: [
-        Expanded(child: Container(height: 1, color: dividerColor)),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text(
-            label.toUpperCase(),
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontWeight: FontWeight.w700,
-              fontSize: 11,
-              letterSpacing: 0.04 * 11,
-              color: aimSurfacesOf(context).textMuted,
-            ),
-          ),
-        ),
-        Expanded(child: Container(height: 1, color: dividerColor)),
-      ],
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 52px pill social button (register variant).
-// ─────────────────────────────────────────────────────────────────────────────
-class _RegSocialPillButton extends StatelessWidget {
-  const _RegSocialPillButton({required this.child, required this.onPressed});
-  final Widget child;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-    final shadows = aimShadowsOf(context);
-
-    return AbsorbPointer(
-      child: SizedBox(
-        height: 52,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: surfaces.surface,
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: surfaces.borderStrong),
-            boxShadow: shadows.card,
-          ),
-          child: Material(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(999),
-            child: InkWell(
-              onTap: onPressed,
-              borderRadius: BorderRadius.circular(999),
-              child: Center(child: child),
-            ),
+      height: 48,
+      child: Material(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              icon,
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontFamily: 'IBMPlexSans',
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                  color: Color(0xFFF8FAFC),
+                ),
+              ),
+            ],
           ),
         ),
       ),

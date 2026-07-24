@@ -1,0 +1,10 @@
+{
+  "description": "Provides AI-powered modern authentication pages tailored for e-learning institutes to enhance secure and seamless user access.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

@@ -1,26 +1,25 @@
-// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Login"
+// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md â†’ "Login"
 //   docs/design/ui-for-all-system-mobile/screenshots/light/02-screen.png
 //   docs/design/ui-for-all-system-mobile/design/AIM Mobile - Gen Z.dc.html
-//   (lines 113-173 — canonical HTML source for screen 2)
+//   (lines 113-173 â€” canonical HTML source for screen 2)
 //
 // Key design decisions from HTML source:
-//   • Page bg: --surface-sunken
-//   • Header: gz-hero gradient, padding 40/24/70, border-radius 0 0 34 34,
+//   â€¢ Page bg: --surface-sunken
+//   â€¢ Header: gz-hero gradient, padding 40/24/70, border-radius 0 0 34 34,
 //     box-shadow 0 16px 38px -18px rgba(108,99,255,.8)
-//   • Blob 1 (top-right): white circle 170×170, rgba(255,255,255,.14), animated
-//   • Blob 2 (bottom-left): lime circle 130×130, rgba(200,255,61,.16), blur 8px
-//   • Badge: 62×62, radius 18, rgba(255,255,255,.2), 1.5px border, backdrop-blur 6px
-//   • "Welcome back": 26px/800, letter-spacing -.01em
-//   • Card: margin-top -28px, padding 32/18/22, radius-2xl, shadow-card-hover
-//   • Sign In button: 52px pill, gz-hero, shadow 0 10px 22px -6px rgba(108,99,255,.6)
-//   • Social divider: Row [—— text ——] layout
-//   • Social buttons: 52px pill, border-strong, surface bg, shadow-card
-//   • Footer: "Don't have an account?" + gz-purple link, 13.5px
+//   â€¢ Blob 1 (top-right): white circle 170Ã—170, rgba(255,255,255,.14), animated
+//   â€¢ Blob 2 (bottom-left): lime circle 130Ã—130, rgba(200,255,61,.16), blur 8px
+//   â€¢ Badge: 62Ã—62, radius 18, rgba(255,255,255,.2), 1.5px border, backdrop-blur 6px
+//   â€¢ "Welcome back": 26px/800, letter-spacing -.01em
+//   â€¢ Card: margin-top -28px, padding 32/18/22, radius-2xl, shadow-card-hover
+//   â€¢ Sign In button: 52px pill, gz-hero, shadow 0 10px 22px -6px rgba(108,99,255,.6)
+//   â€¢ Social divider: Row [â€”â€” text â€”â€”] layout
+//   â€¢ Social buttons: 52px pill, border-strong, surface bg, shadow-card
+//   â€¢ Footer: "Don't have an account?" + gz-purple link, 13.5px
 //
 // Security (unchanged):
 //   The backend (NestJS) is the sole auth authority. No service-role keys,
 //   JWT secrets, or direct Supabase calls here.
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -33,7 +32,7 @@ import '../../../../core/routing/routing.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../logic/provider/login_provider.dart';
 
-/// Login screen — Student Mobile App MVP.
+/// Login screen â€” Student Mobile App MVP.
 ///
 /// A student enters their email and password, [LoginNotifier] validates the
 /// input locally and then calls the backend's `POST /auth/login`. On
@@ -89,228 +88,434 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final formState = ref.watch(loginProvider);
-    final surfaces = aimSurfacesOf(context);
-    final shadows = aimShadowsOf(context);
     final isTestModeAvailable = !ref.watch(appConfigProvider).isProduction;
+    final size = MediaQuery.sizeOf(context);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: SystemUiOverlayStyle.dark,
       child: Scaffold(
-        backgroundColor: surfaces.surfaceSunken,
-        body: AutofillGroup(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              // ── Gradient hero header ─────────────────────────────────
-              const _LoginHeader(),
+        // â”€â”€ Figma Screen 2: bg-[#f8fafc] â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        backgroundColor: const Color(0xFFF8FAFC),
+        body: SafeArea(
+          child: AutofillGroup(
+            child: ListView(
+              padding: EdgeInsets.fromLTRB(
+                24,
+                size.height * 0.065, // ~55px on 852 â€” matches Figma top:190px minus safe area
+                24,
+                40,
+              ),
+              children: [
+                // â”€â”€ Title: "Welcome back," â€” IBM Plex Sans Bold 30px #0F172A â”€â”€
+                const Text(
+                  'Welcome back,',
+                  style: TextStyle(
+                    fontFamily: 'IBMPlexSans',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 30,
+                    color: Color(0xFF0F172A),
+                    letterSpacing: -0.3,
+                    height: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 12),
 
-              // ── Card + content pulled up -28px over the header ───────
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, -28, 20, 28),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                // â”€â”€ Subtitle: #94A3B8, 14px â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                const Text(
+                  'We are happy to see you here again. Enter your email address and password',
+                  style: TextStyle(
+                    fontFamily: 'IBMPlexSans',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 14,
+                    color: Color(0xFF94A3B8),
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 36),
+
+                // â”€â”€ Error Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                if (formState.errorMessage != null) ...[
+                  AIMAlertBanner(
+                    tone: AIMAlertTone.error,
+                    child: Text(formState.errorMessage!),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // â”€â”€ Email Input â€” bg:#E2E8F0, border:#CBD5E1, radius:12 â”€â”€â”€â”€
+                _FigmaInputField(
+                  controller: _emailController,
+                  focusNode: _emailFocus,
+                  placeholder: 'Email',
+                  keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.next,
+                  autofillHints: const [AutofillHints.email],
+                  disabled: formState.isSubmitting,
+                  onChanged: _onEmailChanged,
+                  onSubmitted: (_) => _passwordFocus.requestFocus(),
+                ),
+                const SizedBox(height: 16),
+
+                // â”€â”€ Password Input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                _FigmaInputField(
+                  controller: _passwordController,
+                  focusNode: _passwordFocus,
+                  placeholder: 'Password',
+                  obscureText: true,
+                  textInputAction: TextInputAction.done,
+                  autofillHints: const [AutofillHints.password],
+                  disabled: formState.isSubmitting,
+                  onChanged: _onPasswordChanged,
+                  onSubmitted: (_) => _submit(),
+                ),
+                const SizedBox(height: 12),
+
+                // ——— Forgot password? — centered, #0F172A SemiBold 16px —————
+                Center(
+                  child: TextButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Password reset — coming soon'),
+                          behavior: SnackBarBehavior.floating,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
+                      tapTargetSize: MaterialTapTargetSize.padded,
+                      overlayColor: const Color(0xFF4F46E5).withValues(alpha: 0.12),
+                    ),
+                    child: const Text(
+                      'Forget password?',
+                      style: TextStyle(
+                        fontFamily: 'IBMPlexSans',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // ── Login Button — Figma: bg #4F46E5, shadow rgba(79,70,229,0.2) ─
+                // Always shows indigo; onTap is gated by validation.
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: DecoratedBox(
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF4F46E5), // always indigo per Figma
+                      borderRadius: BorderRadius.all(Radius.circular(12)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0x334F46E5), // rgba(79,70,229,0.2)
+                          blurRadius: 6,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                      child: InkWell(
+                        onTap: formState.isSubmitting ? null : _submit,
+                        borderRadius: BorderRadius.circular(12),
+                        child: Center(
+                          child: formState.isSubmitting
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
+                                )
+                              : Text(
+                                  l10n.authSignInButton,
+                                  style: const TextStyle(
+                                    fontFamily: 'IBMPlexSans',
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16,
+                                    color: Color(0xFFF8FAFC),
+                                    height: 1.5,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // ——— "or" Divider — lines in #94A3B8 ————————————————————————
+                const Row(
                   children: [
-                    // Form card
-                    Container(
-                      decoration: BoxDecoration(
-                        color: surfaces.surface,
-                        border: Border.all(color: surfaces.border),
-                        borderRadius: AimRadius.borderX2l,
-                        boxShadow: shadows.cardHover,
-                      ),
-                      padding: const EdgeInsets.fromLTRB(18, 32, 18, 22),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Error banner
-                          if (formState.errorMessage != null) ...[
-                            AIMAlertBanner(
-                              tone: AIMAlertTone.error,
-                              child: Text(formState.errorMessage!),
-                            ),
-                            const SizedBox(height: AimSpacing.formFieldGap),
-                          ],
-
-                          // Email input
-                          AIMInput(
-                            controller: _emailController,
-                            focusNode: _emailFocus,
-                            label: l10n.authEmailLabel,
-                            placeholder: l10n.authEmailPlaceholder,
-                            type: AIMInputType.email,
-                            disabled: formState.isSubmitting,
-                            leadingIcon: const Icon(Icons.email_outlined),
-                            onChanged: _onEmailChanged,
-                            onSubmitted: (_) => _passwordFocus.requestFocus(),
-                            textInputAction: TextInputAction.next,
-                            autofillHints: const [AutofillHints.email],
-                            semanticLabel: l10n.authEmailSemantic,
-                          ),
-                          const SizedBox(height: AimSpacing.formFieldGap),
-
-                          // Password input
-                          AIMInput(
-                            controller: _passwordController,
-                            focusNode: _passwordFocus,
-                            label: l10n.authPasswordLabel,
-                            type: AIMInputType.password,
-                            disabled: formState.isSubmitting,
-                            leadingIcon: const Icon(Icons.lock_outline),
-                            onChanged: _onPasswordChanged,
-                            onSubmitted: (_) => _submit(),
-                            textInputAction: TextInputAction.done,
-                            autofillHints: const [AutofillHints.password],
-                            semanticLabel: l10n.authPasswordSemantic,
-                          ),
-                          const SizedBox(height: AimSpacing.space8),
-
-                          // Forgot password (right-aligned, gz-purple)
-                          Align(
-                            alignment: AlignmentDirectional.centerEnd,
-                            child: Text(
-                              l10n.authForgotPassword,
-                              style: const TextStyle(
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w700,
-                                fontSize: 12.5,
-                                color: Color(0xFF6C63FF),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: AimSpacing.sectionGap),
-
-                          // Sign In — 52px pill, gz-hero gradient + glow
-                          _GzPillButton(
-                            label: l10n.authSignInButton,
-                            loading: formState.isSubmitting,
-                            enabled: formState.isValid && !formState.isSubmitting,
-                            onPressed: _submit,
-                          ),
-                        ],
+                    Expanded(
+                      child: Divider(
+                        color: Color(0xFF94A3B8),
+                        height: 1,
+                        thickness: 1,
                       ),
                     ),
-                    const SizedBox(height: 18),
-
-                    // "OR CONTINUE WITH" divider row
-                    _SocialDivider(label: l10n.authOrContinueWith),
-                    const SizedBox(height: 11),
-
-                    // Google (full width, 52px pill)
-                    _SocialPillButton(
-                      onPressed: () {},
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const _GoogleLogo(),
-                          const SizedBox(width: 11),
-                          Text(
-                            l10n.authContinueWithGoogle,
-                            style: const TextStyle(
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15,
-                              color: Color(0xFF181C26),
-                            ),
-                          ),
-                        ],
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 14),
+                      child: Text(
+                        'or',
+                        style: TextStyle(
+                          fontFamily: 'IBMPlexSans',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xFF94A3B8),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 11),
-
-                    // Apple + Facebook (half-width each)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _SocialPillButton(
-                            onPressed: () {},
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const _AppleLogo(),
-                                const SizedBox(width: 9),
-                                Text(
-                                  l10n.authAppleButton,
-                                  style: const TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 11),
-                        Expanded(
-                          child: _SocialPillButton(
-                            onPressed: () {},
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const _FacebookLogo(),
-                                const SizedBox(width: 9),
-                                Text(
-                                  l10n.authFacebookButton,
-                                  style: const TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-
-                    // "Don't have an account? Create one"
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          l10n.authNoAccountPrompt,
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w500,
-                            color: surfaces.textSecondary,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: _openRegister,
-                          child: const Text(
-                            'Create one',
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFF6C63FF),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    // Developer test mode (non-production only)
-                    if (isTestModeAvailable) ...[
-                      const SizedBox(height: AimSpacing.sectionGap),
-                      const _DeveloperTestModeDivider(),
-                      const SizedBox(height: AimSpacing.formFieldGap),
-                      _DeveloperTestModeRoleButtons(
-                        isSubmitting: formState.isSubmitting,
-                        onSelectRole: _enterAsTestRole,
+                    Expanded(
+                      child: Divider(
+                        color: Color(0xFF94A3B8),
+                        height: 1,
+                        thickness: 1,
                       ),
-                      const SizedBox(height: AimSpacing.formFieldGap),
-                      AIMButton(
-                        onPressed: _openEndpointTester,
-                        variant: AIMButtonVariant.outline,
-                        fullWidth: true,
-                        child: Text(l10n.authOpenEndpointTester),
-                      ),
-                    ],
+                    ),
                   ],
+                ),
+                const SizedBox(height: 16),
+
+                // â”€â”€ Social Buttons â€” bg:#0F172A, h:48, radius:16 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                Row(
+                  children: [
+                    Expanded(
+                      child: _FigmaSocialButton(
+                        icon: const _GoogleLogo(),
+                        label: 'Google',
+                        onPressed: () {},
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _FigmaSocialButton(
+                        icon: const _FacebookLogo(),
+                        label: 'Facebook',
+                        onPressed: () {},
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+
+                // â”€â”€ Footer: "Create an account" underline, #0F172A â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                Center(
+                  child: GestureDetector(
+                    onTap: _openRegister,
+                    child: const Text(
+                      'Create an account',
+                      style: TextStyle(
+                        fontFamily: 'IBMPlexSans',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF0F172A),
+                        decoration: TextDecoration.underline,
+                        decorationColor: Color(0xFF0F172A),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // â”€â”€ Developer test mode (non-production only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                if (isTestModeAvailable) ...[
+                  const SizedBox(height: 32),
+                  const _DeveloperTestModeDivider(),
+                  const SizedBox(height: 12),
+                  _DeveloperTestModeRoleButtons(
+                    isSubmitting: formState.isSubmitting,
+                    onSelectRole: _enterAsTestRole,
+                  ),
+                  const SizedBox(height: 12),
+                  AIMButton(
+                    onPressed: _openEndpointTester,
+                    variant: AIMButtonVariant.outline,
+                    fullWidth: true,
+                    child: Text(l10n.authOpenEndpointTester),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Figma Screen 2 â€” Input field: bg #E2E8F0, border #CBD5E1, radius 12.
+// Focuses changes border to indigo. Eye toggle for password fields.
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+class _FigmaInputField extends StatefulWidget {
+  const _FigmaInputField({
+    required this.controller,
+    required this.focusNode,
+    required this.placeholder,
+    this.obscureText = false,
+    this.keyboardType,
+    this.textInputAction,
+    this.autofillHints,
+    this.disabled = false,
+    this.onChanged,
+    this.onSubmitted,
+  });
+
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final String placeholder;
+  final bool obscureText;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final Iterable<String>? autofillHints;
+  final bool disabled;
+  final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
+
+  @override
+  State<_FigmaInputField> createState() => _FigmaInputFieldState();
+}
+
+class _FigmaInputFieldState extends State<_FigmaInputField> {
+  bool _showText = false;
+  bool _focused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.focusNode.addListener(_onFocusChange);
+  }
+
+  void _onFocusChange() {
+    setState(() => _focused = widget.focusNode.hasFocus);
+  }
+
+  @override
+  void dispose() {
+    widget.focusNode.removeListener(_onFocusChange);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      height: 52,
+      decoration: BoxDecoration(
+        color: const Color(0xFFE2E8F0),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: _focused ? const Color(0xFF4F46E5) : const Color(0xFFCBD5E1),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextField(
+                controller: widget.controller,
+                focusNode: widget.focusNode,
+                obscureText: widget.obscureText && !_showText,
+                keyboardType: widget.keyboardType,
+                textInputAction: widget.textInputAction,
+                autofillHints: widget.autofillHints,
+                enabled: !widget.disabled,
+                onChanged: widget.onChanged,
+                onSubmitted: widget.onSubmitted,
+                style: const TextStyle(
+                  fontFamily: 'IBMPlexSans',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF0F172A),
+                ),
+                decoration: InputDecoration(
+                  hintText: widget.placeholder,
+                  hintStyle: const TextStyle(
+                    fontFamily: 'IBMPlexSans',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xFF64748B),
+                  ),
+                  // filled + transparent prevents Material dark-theme from
+                  // painting the TextField's own background (shows black).
+                  filled: true,
+                  fillColor: Colors.transparent,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ),
+          ),
+          if (widget.obscureText)
+            GestureDetector(
+              onTap: () => setState(() => _showText = !_showText),
+              child: Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Icon(
+                  _showText
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  size: 20,
+                  color: const Color(0xFF64748B),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Figma Screen 2 â€” Social button: bg #0F172A, h 48, radius 16, white text.
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+class _FigmaSocialButton extends StatelessWidget {
+  const _FigmaSocialButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final Widget icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 48,
+      child: Material(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              icon,
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontFamily: 'IBMPlexSans',
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                  color: Color(0xFFF8FAFC),
                 ),
               ),
             ],
@@ -321,385 +526,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Header: gz-hero gradient, rounded bottom corners (34px), purple drop shadow,
-// two animated decorative blobs, glass badge, title + subtitle.
-// ─────────────────────────────────────────────────────────────────────────────
-class _LoginHeader extends StatefulWidget {
-  const _LoginHeader();
-
-  @override
-  State<_LoginHeader> createState() => _LoginHeaderState();
-}
-
-class _LoginHeaderState extends State<_LoginHeader>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _blobCtrl;
-
-  @override
-  void initState() {
-    super.initState();
-    _blobCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 9000),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _blobCtrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(34)),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(24, 40, 24, 70),
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment(-0.74, -1.0),
-            end: Alignment(0.74, 1.0),
-            stops: [0.0, 0.46, 1.0],
-            colors: [Color(0xFF8B5CF6), Color(0xFF6C63FF), Color(0xFF5AC8FA)],
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Color(0xCB6C63FF), // rgba(108,99,255,.8)
-              blurRadius: 38,
-              spreadRadius: -18,
-              offset: Offset(0, 16),
-            ),
-          ],
-        ),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            // Blob 1: top-right, white circle 170×170, animating
-            PositionedDirectional(
-              top: -50,
-              end: -30,
-              child: AnimatedBuilder(
-                animation: _blobCtrl,
-                builder: (_, __) {
-                  final r = BorderRadius.lerp(
-                    const BorderRadius.only(
-                      topLeft: Radius.circular(46),
-                      topRight: Radius.circular(54),
-                      bottomRight: Radius.circular(60),
-                      bottomLeft: Radius.circular(40),
-                    ),
-                    const BorderRadius.only(
-                      topLeft: Radius.circular(58),
-                      topRight: Radius.circular(42),
-                      bottomRight: Radius.circular(38),
-                      bottomLeft: Radius.circular(62),
-                    ),
-                    _blobCtrl.value,
-                  )!;
-                  return Container(
-                    width: 170,
-                    height: 170,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.14),
-                      borderRadius: r,
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            // Blob 2: bottom-left, lime circle 130×130, blurred
-            PositionedDirectional(
-              bottom: -30,
-              start: -40,
-              child: Container(
-                width: 130,
-                height: 130,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFC8FF3D).withValues(alpha: 0.16),
-                  shape: BoxShape.circle,
-                ),
-                child: ClipOval(
-                  child: BackdropFilter(
-                    filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                    child: const SizedBox.expand(),
-                  ),
-                ),
-              ),
-            ),
-
-            // Content column: badge + title + subtitle
-            SafeArea(
-              bottom: false,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Glass badge: 62×62, radius 18, backdrop-blur
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(18),
-                    child: BackdropFilter(
-                      filter: ui.ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-                      child: Container(
-                        width: 62,
-                        height: 62,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.4),
-                            width: 1.5,
-                          ),
-                        ),
-                        child: const Center(
-                          child: _MiniGradCap(size: 32),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // "Welcome back"
-                  Text(
-                    l10n.authWelcomeBackTitle,
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w800,
-                      fontSize: 26,
-                      letterSpacing: -0.26,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 4),
-
-                  // "Sign in to keep your streak alive"
-                  Text(
-                    l10n.authWelcomeBackSubtitle,
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w500,
-                      fontSize: 13.5,
-                      color: Colors.white.withValues(alpha: 0.9),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Shared gz-hero pill button (Sign In, Create account).
-// height:52, border-radius:pill, gz-hero gradient, glow shadow, 800/16px.
-// ─────────────────────────────────────────────────────────────────────────────
-class _GzPillButton extends StatelessWidget {
-  const _GzPillButton({
-    required this.label,
-    required this.onPressed,
-    this.loading = false,
-    this.enabled = true,
-  });
-
-  final String label;
-  final VoidCallback onPressed;
-  final bool loading;
-  final bool enabled;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 52,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: enabled
-              ? const LinearGradient(
-                  begin: Alignment(-0.74, -1.0),
-                  end: Alignment(0.74, 1.0),
-                  stops: [0.0, 0.46, 1.0],
-                  colors: [
-                    Color(0xFF8B5CF6),
-                    Color(0xFF6C63FF),
-                    Color(0xFF5AC8FA),
-                  ],
-                )
-              : null,
-          color: enabled ? null : const Color(0xFFCDD2DD),
-          borderRadius: BorderRadius.circular(999),
-          boxShadow: enabled
-              ? const [
-                  BoxShadow(
-                    color: Color(0x996C63FF), // rgba(108,99,255,.6)
-                    blurRadius: 22,
-                    spreadRadius: -6,
-                    offset: Offset(0, 10),
-                  ),
-                ]
-              : null,
-        ),
-        child: Material(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(999),
-          child: InkWell(
-            onTap: enabled && !loading ? onPressed : null,
-            borderRadius: BorderRadius.circular(999),
-            child: Center(
-              child: loading
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Text(
-                      label,
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16,
-                        color: Colors.white,
-                      ),
-                    ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// "—— OR CONTINUE WITH ——" divider row.
-// ─────────────────────────────────────────────────────────────────────────────
-class _SocialDivider extends StatelessWidget {
-  const _SocialDivider({required this.label});
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final dividerColor = aimSurfacesOf(context).divider;
-    return Row(
-      children: [
-        Expanded(child: Container(height: 1, color: dividerColor)),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text(
-            label.toUpperCase(),
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontWeight: FontWeight.w700,
-              fontSize: 11,
-              letterSpacing: 0.04 * 11,
-              color: aimSurfacesOf(context).textMuted,
-            ),
-          ),
-        ),
-        Expanded(child: Container(height: 1, color: dividerColor)),
-      ],
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Social button: 52px pill, border-strong, surface bg, shadow-card.
-// IgnorePointer (no backend yet) but still in accessibility tree.
-// ─────────────────────────────────────────────────────────────────────────────
-class _SocialPillButton extends StatelessWidget {
-  const _SocialPillButton({required this.child, required this.onPressed});
-  final Widget child;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-    final shadows = aimShadowsOf(context);
-
-    return AbsorbPointer(
-      child: SizedBox(
-        height: 52,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: surfaces.surface,
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: surfaces.borderStrong),
-            boxShadow: shadows.card,
-          ),
-          child: Material(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(999),
-            child: InkWell(
-              onTap: onPressed,
-              borderRadius: BorderRadius.circular(999),
-              child: Center(child: child),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Small graduation cap SVG painted into a 32×32 box (for the login header badge).
-// ─────────────────────────────────────────────────────────────────────────────
-class _MiniGradCap extends StatelessWidget {
-  const _MiniGradCap({required this.size});
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(size, size),
-      painter: _GradCapPainter(),
-    );
-  }
-}
-
-class _GradCapPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white
-      ..strokeWidth = 2.0 * (size.width / 24)
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    final s = size.width / 24;
-    final hat = Path()
-      ..moveTo(22 * s, 10 * s)
-      ..lineTo(12 * s, 5 * s)
-      ..lineTo(2 * s, 10 * s)
-      ..lineTo(12 * s, 15 * s)
-      ..lineTo(22 * s, 10 * s)
-      ..close();
-    canvas.drawPath(hat, paint);
-    final gown = Path()
-      ..moveTo(6 * s, 12 * s)
-      ..lineTo(6 * s, 17 * s)
-      ..cubicTo(6 * s, 18 * s, 8.7 * s, 20 * s, 12 * s, 20 * s)
-      ..cubicTo(15.3 * s, 20 * s, 18 * s, 18 * s, 18 * s, 17 * s)
-      ..lineTo(18 * s, 12 * s);
-    canvas.drawPath(gown, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Brand logos for social buttons (painted SVG paths from HTML source).
+// Brand logos for social buttons.
 // ─────────────────────────────────────────────────────────────────────────────
 class _GoogleLogo extends StatelessWidget {
   const _GoogleLogo();
@@ -789,15 +618,6 @@ class _GooglePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-class _AppleLogo extends StatelessWidget {
-  const _AppleLogo();
-  @override
-  Widget build(BuildContext context) {
-    final color = aimSurfacesOf(context).textPrimary;
-    return Icon(Icons.apple, size: 19, color: color);
-  }
-}
-
 class _FacebookLogo extends StatelessWidget {
   const _FacebookLogo();
   @override
@@ -846,9 +666,9 @@ class _FacebookPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Developer test mode (non-production builds only).
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class _DeveloperTestModeDivider extends StatelessWidget {
   const _DeveloperTestModeDivider();
 

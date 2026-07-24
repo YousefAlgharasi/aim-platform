@@ -689,10 +689,14 @@ class AppRouter {
     // AuthGate/login/register listeners that used to drive this exact
     // transition forwarded signed-in users to mainShell as soon as
     // authFlowProvider flipped, without waiting on authContextProvider.
-    if (authState.isSignedIn &&
-        (routeName == AppRoutePaths.splash ||
-            routeName == AppRoutePaths.signIn)) {
-      return AppRoutePaths.mainShell;
+    if (authState.isSignedIn) {
+      if (routeName == AppRoutePaths.signIn ||
+          routeName == AppRoutePaths.register) {
+        return AppRoutePaths.placementGate;
+      }
+      if (routeName == AppRoutePaths.splash) {
+        return AppRoutePaths.mainShell;
+      }
     }
 
     return routeName;

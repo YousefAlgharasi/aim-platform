@@ -7,7 +7,6 @@ import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/state/app_async_state.dart';
 import '../../../../core/localization/app_locale.dart';
 import '../../../../core/localization/locale_provider.dart';
-import '../../../../core/theme/theme_mode_provider.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
@@ -98,7 +97,17 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
     }
 
     final notifier = ref.read(placementGateProvider.notifier);
-    notifier.check(token).then((_) {
+    notifier
+        .check(token)
+        .timeout(
+          const Duration(seconds: 2),
+          onTimeout: () {
+            if (mounted && _blockedByGateCheck) {
+              setState(() => _blockedByGateCheck = false);
+            }
+          },
+        )
+        .then((_) {
       if (!mounted) return;
       final gateState = ref.read(placementGateProvider);
       if (gateState is PlacementGateShouldShow) {
@@ -107,7 +116,13 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
       }
       // Hidden, or a transient check error — fail open rather than
       // blocking the student indefinitely on a network hiccup.
-      setState(() => _blockedByGateCheck = false);
+      if (_blockedByGateCheck) {
+        setState(() => _blockedByGateCheck = false);
+      }
+    }).catchError((_) {
+      if (mounted && _blockedByGateCheck) {
+        setState(() => _blockedByGateCheck = false);
+      }
     });
   }
 
