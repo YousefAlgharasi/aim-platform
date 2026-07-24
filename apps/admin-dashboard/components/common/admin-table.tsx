@@ -1,32 +1,33 @@
-// P11-009: AIM design system admin table component
-import type { ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 
 export type AdminTableColumn<T> = {
   readonly key: string;
   readonly header: string;
   readonly render: (row: T) => ReactNode;
   readonly width?: string;
+  readonly className?: string;
 };
 
 type Props<T> = {
   readonly columns: readonly AdminTableColumn<T>[];
   readonly rows: readonly T[];
-  readonly getRowKey: (row: T) => string;
+  readonly getRowKey: (row: T, index: number) => string;
   readonly caption?: string;
+  readonly onRowClick?: (row: T) => void;
 };
 
-export function AdminTable<T>({ columns, rows, getRowKey, caption }: Props<T>) {
+function AdminTableBase<T>({ columns, rows, getRowKey, caption, onRowClick }: Props<T>) {
   return (
-    <div className="aim-table-wrapper" role="region" aria-label={caption ?? 'Data table'}>
-      <table className="aim-table">
-        {caption && <caption className="aim-table-caption">{caption}</caption>}
+    <div className="w-full overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-xs" role="region" aria-label={caption ?? 'Data table'}>
+      <table className="w-full border-collapse text-left text-sm text-[var(--text-primary)]">
+        {caption && <caption className="caption-top text-start text-xs font-semibold text-[var(--text-secondary)] p-4 pt-3 pb-1">{caption}</caption>}
         <thead>
-          <tr>
+          <tr className="border-b border-[var(--border)] bg-[var(--surface-sunken)]">
             {columns.map((col) => (
               <th
                 key={col.key}
                 scope="col"
-                className="aim-table-th"
+                className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] whitespace-nowrap ${col.className ?? ''}`}
                 style={col.width ? { width: col.width } : undefined}
               >
                 {col.header}
@@ -34,64 +35,41 @@ export function AdminTable<T>({ columns, rows, getRowKey, caption }: Props<T>) {
             ))}
           </tr>
         </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={getRowKey(row)} className="aim-table-row">
-              {columns.map((col) => (
-                <td key={col.key} className="aim-table-td">
-                  {col.render(row)}
-                </td>
-              ))}
-            </tr>
-          ))}
+        <tbody className="divide-y divide-[var(--divider)]">
+          {rows.map((row, index) => {
+            const isClickable = typeof onRowClick === 'function';
+            return (
+              <tr
+                key={getRowKey(row, index)}
+                onClick={isClickable ? () => onRowClick(row) : undefined}
+                onKeyDown={
+                  isClickable
+                    ? (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onRowClick(row);
+                        }
+                      }
+                    : undefined
+                }
+                tabIndex={isClickable ? 0 : undefined}
+                role={isClickable ? 'button' : undefined}
+                className={`transition-colors duration-150 ${
+                  isClickable ? 'cursor-pointer hover:bg-[var(--state-hover)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)]' : 'hover:bg-[var(--state-hover)]'
+                }`}
+              >
+                {columns.map((col) => (
+                  <td key={col.key} className={`px-4 py-3 align-middle text-[var(--text-primary)] ${col.className ?? ''}`}>
+                    {col.render(row)}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
-      <style>{`
-        .aim-table-wrapper {
-          width: 100%;
-          overflow-x: auto;
-          border: 1px solid var(--border);
-          border-radius: var(--radius-md);
-          background: var(--surface);
-        }
-        .aim-table {
-          width: 100%;
-          border-collapse: collapse;
-          font-size: 14px;
-          line-height: 20px;
-        }
-        .aim-table-caption {
-          caption-side: top;
-          text-align: start;
-          font-size: 13px;
-          font-weight: var(--weight-semibold);
-          color: var(--text-secondary);
-          padding: var(--space-12) var(--space-16) var(--space-4);
-        }
-        .aim-table-th {
-          padding: var(--space-12) var(--space-16);
-          text-align: start;
-          font-size: 12px;
-          font-weight: var(--weight-semibold);
-          letter-spacing: 0.05em;
-          text-transform: uppercase;
-          color: var(--text-muted);
-          border-block-end: 1px solid var(--border);
-          white-space: nowrap;
-          background: var(--surface-sunken);
-        }
-        .aim-table-row {
-          border-block-end: 1px solid var(--divider);
-          transition: background var(--duration-fast) var(--ease-standard);
-        }
-        .aim-table-row:last-child { border-block-end: none; }
-        .aim-table-row:hover { background: var(--state-hover); }
-        .aim-table-td {
-          padding: var(--space-12) var(--space-16);
-          color: var(--text-primary);
-          vertical-align: middle;
-        }
-      `}</style>
     </div>
   );
 }
+
+export const AdminTable = memo(AdminTableBase) as typeof AdminTableBase;

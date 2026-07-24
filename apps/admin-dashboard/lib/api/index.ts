@@ -12,9 +12,9 @@ export type {
 } from './api-response-envelope';
 export { parseApiResponseEnvelope } from './api-response-envelope';
 
-// P11-010: Phase 11 additions
 export type { AdminPaginatedResponse } from './admin-paginated-response';
 export { decodePaginatedResponse } from './admin-paginated-response';
+export * from './decoders';
 export * from './admin-assessments-api';
 export * from './admin-deadlines-api';
 export * from './admin-assessment-results-api';

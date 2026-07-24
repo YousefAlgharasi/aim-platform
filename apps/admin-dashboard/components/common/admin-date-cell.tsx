@@ -3,7 +3,7 @@ type Props = { readonly iso?: string | null | undefined; readonly date?: string 
 
 export function AdminDateCell({ iso, date }: Props) {
   const value = iso ?? date;
-  if (!value) return <span style={{ color: 'var(--text-muted)' }}>—</span>;
+  if (!value) return <span className="text-[var(--text-muted)]">—</span>;
   try {
     const formatted = new Intl.DateTimeFormat('en-GB', {
       year: 'numeric',
@@ -11,11 +11,8 @@ export function AdminDateCell({ iso, date }: Props) {
       day: 'numeric',
     }).format(new Date(value));
     return (
-      <time dateTime={value} className="aim-date-cell">
+      <time dateTime={value} className="text-xs text-[var(--text-secondary)] whitespace-nowrap">
         {formatted}
-        <style>{`
-          .aim-date-cell { font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
-        `}</style>
       </time>
     );
   } catch {

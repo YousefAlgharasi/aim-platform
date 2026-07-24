@@ -9,3 +9,8 @@ export type {
   AdminAuthUser,
   BackendAuthorizedRole,
 } from './admin-auth';
+export {
+  requireAdminServerActionAuth,
+  AdminServerActionAuthError,
+} from './server-action-auth';
+

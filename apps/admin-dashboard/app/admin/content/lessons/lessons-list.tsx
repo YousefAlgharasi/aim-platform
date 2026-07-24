@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { LessonForm } from './lesson-form';
 import type { AdminLessonSummary } from '../../../../lib/api/admin-lessons-api';
+import { AdminTable, type AdminTableColumn } from '../../../../components/common/admin-table';
 
 type Props = {
   readonly lessons: AdminLessonSummary[];
@@ -33,7 +34,7 @@ function skillLinkHref(lessonId: string, courseId: string, levelId: string, chap
 }
 
 export function LessonsList({
-  lessons, total, page, totalPages,
+  lessons, page, totalPages,
   courseId, levelId, chapterId, statusFilter, searchQuery,
   onCreateLesson, onUpdateLesson,
 }: Props) {
@@ -71,146 +72,134 @@ export function LessonsList({
     return `/admin/content/lessons?${params.toString()}`;
   }
 
+  const columns: AdminTableColumn<AdminLessonSummary>[] = [
+    {
+      key: 'lesson',
+      header: 'Lesson',
+      render: (lesson) => (
+        <div className="flex flex-col gap-0.5">
+          <span className="font-semibold text-sm text-[var(--text-primary)]">{lesson.title}</span>
+          {lesson.description && (
+            <span className="text-xs text-[var(--text-secondary)] truncate max-w-xs hidden sm:block">
+              {lesson.description}
+            </span>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      width: '110px',
+      render: (lesson) => (
+        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] capitalize">
+          <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: STATUS_DOT[lesson.status] ?? 'var(--text-muted)' }} />
+          {lesson.status.replace('_', ' ')}
+        </span>
+      ),
+    },
+    {
+      key: 'skills',
+      header: 'Skills',
+      width: '100px',
+      className: 'hidden sm:table-cell',
+      render: (lesson) => {
+        if (lesson.status === 'archived') {
+          return <span className="text-xs text-[var(--text-muted)]">—</span>;
+        }
+        if (lesson.status === 'published') {
+          return (
+            <Link
+              href={skillLinkHref(lesson.id, courseId, levelId, chapterId)}
+              className="inline-block px-2 py-0.5 rounded-xs text-[11px] font-semibold bg-[color-mix(in_srgb,var(--color-success-500)_12%,transparent)] text-[var(--color-success-700,#15803d)] hover:opacity-80"
+            >
+              Linked
+            </Link>
+          );
+        }
+        return (
+          <Link
+            href={skillLinkHref(lesson.id, courseId, levelId, chapterId)}
+            className="inline-block px-2 py-0.5 rounded-xs text-[11px] font-semibold bg-[color-mix(in_srgb,var(--color-warning-500,#f59e0b)_12%,transparent)] text-[var(--color-warning-700,#a16207)] hover:opacity-80"
+            title="Link skills before publishing"
+          >
+            Link skills
+          </Link>
+        );
+      },
+    },
+    {
+      key: 'sortOrder',
+      header: 'Order',
+      width: '70px',
+      className: 'hidden sm:table-cell text-center',
+      render: (lesson) => <span className="text-xs font-semibold text-[var(--text-secondary)]">{lesson.sortOrder}</span>,
+    },
+    {
+      key: 'updatedAt',
+      header: 'Updated',
+      width: '110px',
+      render: (lesson) => <span className="text-xs text-[var(--text-secondary)]">{fmtDate(lesson.updatedAt)}</span>,
+    },
+    {
+      key: 'actions',
+      header: '',
+      width: '70px',
+      render: (lesson) => (
+        <button
+          type="button"
+          className="px-2.5 py-1 text-xs font-medium border border-[var(--border)] rounded-md text-[var(--text-secondary)] hover:bg-[var(--surface-sunken)] hover:text-[var(--text-primary)] cursor-pointer"
+          onClick={(e) => { e.stopPropagation(); setEditing(lesson); }}
+        >
+          Edit
+        </button>
+      ),
+    },
+  ];
+
   return (
-    <div className="ll-root">
-      <div className="ll-toolbar">
-        <button type="button" className="ll-create-btn" onClick={() => setShowCreate(true)}>
+    <div className="flex flex-col gap-3.5">
+      <div className="flex justify-end">
+        <button
+          type="button"
+          className="inline-flex items-center gap-1.5 h-9 px-4 rounded-xl bg-[var(--color-primary-500)] text-white text-xs font-semibold hover:bg-[var(--color-primary-600)] transition-colors cursor-pointer"
+          onClick={() => setShowCreate(true)}
+        >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14m-7-7h14"/></svg>
           New Lesson
         </button>
       </div>
 
-      {lessons.length === 0 && (
-        <div className="ll-empty">
-          <p className="ll-empty-title">No lessons found</p>
-          <p className="ll-empty-desc">{statusFilter || searchQuery ? 'Try adjusting your filters.' : 'Create the first lesson for this chapter.'}</p>
+      {lessons.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-1.5 py-10 px-5 text-center">
+          <p className="text-sm font-semibold text-[var(--text-primary)]">No lessons found</p>
+          <p className="text-xs text-[var(--text-muted)]">
+            {statusFilter || searchQuery ? 'Try adjusting your filters.' : 'Create the first lesson for this chapter.'}
+          </p>
         </div>
-      )}
-
-      {lessons.length > 0 && (
-        <div className="ll-table-wrap">
-          <table className="ll-table">
-            <thead>
-              <tr>
-                <th className="ll-th">Lesson</th>
-                <th className="ll-th ll-th--status">Status</th>
-                <th className="ll-th ll-th--skills">Skills</th>
-                <th className="ll-th ll-th--order">Order</th>
-                <th className="ll-th ll-th--date">Updated</th>
-                <th className="ll-th ll-th--actions" />
-              </tr>
-            </thead>
-            <tbody>
-              {lessons.map((lesson) => (
-                <tr key={lesson.id} className="ll-row">
-                  <td className="ll-td">
-                    <div className="ll-info">
-                      <span className="ll-name">{lesson.title}</span>
-                      {lesson.description && <span className="ll-desc">{lesson.description}</span>}
-                    </div>
-                  </td>
-                  <td className="ll-td">
-                    <span className="ll-status">
-                      <span className="ll-status-dot" style={{ background: STATUS_DOT[lesson.status] ?? 'var(--text-muted)' }} />
-                      {lesson.status.replace('_', ' ')}
-                    </span>
-                  </td>
-                  <td className="ll-td ll-td--skills">
-                    {lesson.status === 'archived' ? (
-                      <span className="ll-muted">—</span>
-                    ) : lesson.status === 'published' ? (
-                      <a href={skillLinkHref(lesson.id, courseId, levelId, chapterId)} className="ll-skill-badge ll-skill-badge--ok">Linked</a>
-                    ) : (
-                      <a href={skillLinkHref(lesson.id, courseId, levelId, chapterId)} className="ll-skill-badge ll-skill-badge--warn" title="Link skills before publishing">Link skills</a>
-                    )}
-                  </td>
-                  <td className="ll-td ll-td--order">{lesson.sortOrder}</td>
-                  <td className="ll-td ll-td--date">{fmtDate(lesson.updatedAt)}</td>
-                  <td className="ll-td ll-td--actions">
-                    <button type="button" className="ll-edit-btn" onClick={() => setEditing(lesson)}>Edit</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      ) : (
+        <AdminTable
+          columns={columns}
+          rows={lessons}
+          getRowKey={(l) => l.id}
+        />
       )}
 
       {totalPages > 1 && (
-        <nav className="ll-pagination">
-          {page > 1 && <Link href={buildHref(page - 1)} className="ll-page-btn">← Previous</Link>}
-          <span className="ll-page-info">Page {page} of {totalPages}</span>
-          {page < totalPages && <Link href={buildHref(page + 1)} className="ll-page-btn">Next →</Link>}
+        <nav className="flex items-center justify-center gap-3.5 py-1" aria-label="Lessons pagination">
+          {page > 1 && (
+            <Link href={buildHref(page - 1)} className="text-xs font-semibold text-[var(--color-primary-500)] hover:bg-[color-mix(in_srgb,var(--color-primary-500)_8%,transparent)] px-3 py-1.5 rounded-md">
+              ← Previous
+            </Link>
+          )}
+          <span className="text-xs text-[var(--text-secondary)]">Page {page} of {totalPages}</span>
+          {page < totalPages && (
+            <Link href={buildHref(page + 1)} className="text-xs font-semibold text-[var(--color-primary-500)] hover:bg-[color-mix(in_srgb,var(--color-primary-500)_8%,transparent)] px-3 py-1.5 rounded-md">
+              Next →
+            </Link>
+          )}
         </nav>
       )}
-
-      <style>{`
-        .ll-root { display: flex; flex-direction: column; gap: 14px; }
-        .ll-toolbar { display: flex; justify-content: flex-end; }
-        .ll-create-btn {
-          display: inline-flex; align-items: center; gap: 6px; height: 38px;
-          padding: 0 16px; border: none; border-radius: var(--radius-md);
-          background: var(--color-primary-500); color: white;
-          font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
-        }
-        .ll-create-btn:hover { background: var(--color-primary-600); }
-        .ll-table-wrap {
-          background: var(--surface); border: 1px solid var(--border);
-          border-radius: var(--radius-lg); overflow-x: auto;
-        }
-        .ll-table { width: 100%; border-collapse: collapse; min-width: 560px; }
-        .ll-th {
-          text-align: left; padding: 10px 16px; font-size: 11px; font-weight: 600;
-          text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);
-          background: var(--surface-sunken); border-bottom: 1px solid var(--border);
-        }
-        .ll-th--status { width: 110px; }
-        .ll-th--skills { width: 100px; }
-        .ll-th--order { width: 70px; text-align: center; }
-        .ll-th--date { width: 110px; }
-        .ll-th--actions { width: 70px; }
-        .ll-row { transition: background 0.1s; }
-        .ll-row:hover { background: color-mix(in srgb, var(--color-primary-500) 3%, transparent); }
-        .ll-row:not(:last-child) .ll-td { border-bottom: 1px solid var(--border); }
-        .ll-td { padding: 12px 16px; font-size: 14px; color: var(--text-primary); vertical-align: top; }
-        .ll-td--order { text-align: center; font-weight: 600; color: var(--text-secondary); font-size: 13px; }
-        .ll-td--date { font-size: 12px; color: var(--text-secondary); }
-        .ll-td--actions { text-align: right; }
-        .ll-td--skills { font-size: 12px; }
-        .ll-info { display: flex; flex-direction: column; gap: 2px; }
-        .ll-name { font-weight: 600; color: var(--text-primary); }
-        .ll-desc { font-size: 12px; color: var(--text-secondary); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; max-width: 300px; }
-        .ll-muted { color: var(--text-muted); }
-        .ll-status {
-          display: inline-flex; align-items: center; gap: 6px;
-          font-size: 12px; font-weight: 500; color: var(--text-secondary); text-transform: capitalize;
-        }
-        .ll-status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-        .ll-skill-badge {
-          display: inline-block; padding: 2px 8px; border-radius: var(--radius-sm);
-          font-size: 11px; font-weight: 600; text-decoration: none;
-        }
-        .ll-skill-badge--ok { background: color-mix(in srgb, var(--color-success-500) 12%, transparent); color: var(--color-success-700, #15803d); }
-        .ll-skill-badge--warn { background: color-mix(in srgb, var(--color-warning-500, #f59e0b) 12%, transparent); color: var(--color-warning-700, #a16207); }
-        .ll-skill-badge:hover { opacity: 0.8; }
-        .ll-edit-btn {
-          background: none; border: 1px solid var(--border); border-radius: var(--radius-sm);
-          padding: 4px 12px; font-size: 12px; font-weight: 500; color: var(--text-secondary);
-          cursor: pointer; font-family: inherit;
-        }
-        .ll-edit-btn:hover { background: var(--surface-sunken); color: var(--text-primary); }
-        .ll-pagination { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 4px 0; }
-        .ll-page-btn { font-size: 13px; font-weight: 600; color: var(--color-primary-500); text-decoration: none; padding: 6px 12px; border-radius: var(--radius-sm); }
-        .ll-page-btn:hover { background: color-mix(in srgb, var(--color-primary-500) 8%, transparent); }
-        .ll-page-info { font-size: 13px; color: var(--text-secondary); }
-        .ll-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 40px 20px; text-align: center; }
-        .ll-empty-title { margin: 0; font-size: 15px; font-weight: 600; color: var(--text-primary); }
-        .ll-empty-desc { margin: 0; font-size: 13px; color: var(--text-muted); }
-        @media (max-width: 640px) {
-          .ll-th--skills, .ll-td--skills, .ll-th--order, .ll-td--order { display: none; }
-          .ll-desc { display: none; }
-        }
-      `}</style>
     </div>
   );
 }

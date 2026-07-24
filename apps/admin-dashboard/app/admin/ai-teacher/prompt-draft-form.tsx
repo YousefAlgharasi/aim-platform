@@ -50,17 +50,17 @@ export function PromptDraftForm({ onSubmit, onDone }: Props) {
   return (
     <AdminCard title="New Prompt Template Draft" description="Drafts start in 'draft' status. Publish a draft to make it active.">
       {error && <p className="admin-error-banner" role="alert">{error}</p>}
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-16)' }}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <AdminFormField id="pdf-name" label="Name" required error={fieldErrors.name}>
           <AdminInput id="pdf-name" value={name} onChange={(e) => setName(e.target.value)} disabled={isPending} maxLength={255} placeholder="e.g. lesson-intro" />
         </AdminFormField>
-        <div style={{ display: 'flex', gap: 'var(--space-16)' }}>
-          <div style={{ flex: 1 }}>
+        <div className="flex gap-4">
+          <div className="flex-1">
             <AdminFormField id="pdf-locale" label="Locale" required error={fieldErrors.locale}>
               <AdminInput id="pdf-locale" value={locale} onChange={(e) => setLocale(e.target.value)} disabled={isPending} maxLength={20} placeholder="e.g. en" />
             </AdminFormField>
           </div>
-          <div style={{ flex: 1 }}>
+          <div className="flex-1">
             <AdminFormField id="pdf-audience" label="Audience" required error={fieldErrors.audience}>
               <AdminInput id="pdf-audience" value={audience} onChange={(e) => setAudience(e.target.value)} disabled={isPending} maxLength={50} placeholder="e.g. student" />
             </AdminFormField>
@@ -69,7 +69,7 @@ export function PromptDraftForm({ onSubmit, onDone }: Props) {
         <AdminFormField id="pdf-body" label="Prompt Body" required error={fieldErrors.body}>
           <AdminTextarea id="pdf-body" value={body} onChange={(e) => setBody(e.target.value)} disabled={isPending} rows={8} placeholder="Prompt template body…" />
         </AdminFormField>
-        <div style={{ display: 'flex', gap: 'var(--space-8)' }}>
+        <div className="flex gap-2">
           <AdminButton type="submit" variant="primary" disabled={isPending}>
             {isPending ? 'Saving…' : 'Create Draft'}
           </AdminButton>

@@ -1,5 +1,5 @@
-// P11-009: AIM design system button component
 import type { ButtonHTMLAttributes } from 'react';
+import { cva } from '../../lib/utils/cva';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'destructive';
 type Size = 'sm' | 'md' | 'lg';
@@ -10,18 +10,32 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   readonly loading?: boolean;
 };
 
-const VARIANT_STYLES: Record<Variant, string> = {
-  primary:     'aim-btn--primary',
-  secondary:   'aim-btn--secondary',
-  ghost:       'aim-btn--ghost',
-  destructive: 'aim-btn--destructive',
-};
-
-const SIZE_STYLES: Record<Size, string> = {
-  sm: 'aim-btn--sm',
-  md: 'aim-btn--md',
-  lg: 'aim-btn--lg',
-};
+const buttonVariants = cva(
+  'inline-flex items-center justify-center gap-2 rounded-xl font-semibold cursor-pointer select-none whitespace-nowrap transition-all active:enabled:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:bg-[var(--disabled-bg)] disabled:text-[var(--disabled-fg)] disabled:cursor-not-allowed',
+  {
+    variants: {
+      variant: {
+        primary:
+          'bg-[var(--color-primary-500)] text-[var(--text-on-primary)] hover:enabled:bg-[var(--color-primary-600)]',
+        secondary:
+          'bg-[var(--primary-soft)] text-[var(--color-primary-700)] hover:enabled:bg-[var(--color-primary-100)]',
+        ghost:
+          'bg-transparent text-[var(--text-secondary)] border border-[var(--border)] hover:enabled:bg-[var(--state-hover)] hover:enabled:text-[var(--text-primary)]',
+        destructive:
+          'bg-[var(--error-soft)] text-[var(--color-error-700)] hover:enabled:bg-[var(--color-error-100)]',
+      },
+      size: {
+        sm: 'h-9 px-3 text-xs',
+        md: 'h-11 px-5 text-sm',
+        lg: 'h-13 px-6 text-base',
+      },
+    },
+    defaultVariants: {
+      variant: 'primary',
+      size: 'md',
+    },
+  }
+);
 
 export function AdminButton({
   variant = 'primary',
@@ -29,87 +43,23 @@ export function AdminButton({
   loading = false,
   disabled,
   children,
-  className = '',
+  className,
   ...rest
 }: Props) {
   return (
-    <>
-      <button
-        className={`aim-btn ${VARIANT_STYLES[variant]} ${SIZE_STYLES[size]} ${className}`}
-        disabled={disabled || loading}
-        aria-busy={loading || undefined}
-        {...rest}
-      >
-        {loading && <span className="aim-btn-spinner" aria-hidden="true" />}
-        {children}
-      </button>
-      <style>{`
-        .aim-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: var(--space-8);
-          border: none;
-          border-radius: var(--radius-md);
-          font-family: inherit;
-          font-weight: var(--weight-semibold);
-          cursor: pointer;
-          text-decoration: none;
-          white-space: nowrap;
-          transition: background var(--duration-fast) var(--ease-standard),
-                      box-shadow var(--duration-fast) var(--ease-standard),
-                      transform var(--duration-fast) var(--ease-standard);
-        }
-        .aim-btn:active:not(:disabled) { transform: scale(0.98); }
-        .aim-btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
-        .aim-btn:disabled { background: var(--disabled-bg); color: var(--disabled-fg); cursor: not-allowed; }
-
-        /* Sizes */
-        .aim-btn--sm { height: var(--size-btn-sm); padding: 0 var(--space-12); font-size: 13px; }
-        .aim-btn--md { height: var(--size-btn-md); padding: 0 var(--space-20); font-size: 14px; }
-        .aim-btn--lg { height: 52px;               padding: 0 var(--space-24); font-size: 15px; }
-
-        /* Variants */
-        .aim-btn--primary {
-          background: var(--color-primary-500);
-          color: var(--text-on-primary);
-        }
-        .aim-btn--primary:hover:not(:disabled) { background: var(--color-primary-600); }
-
-        .aim-btn--secondary {
-          background: var(--primary-soft);
-          color: var(--color-primary-700);
-        }
-        .aim-btn--secondary:hover:not(:disabled) { background: var(--color-primary-100); }
-
-        .aim-btn--ghost {
-          background: transparent;
-          color: var(--text-secondary);
-          border: 1px solid var(--border);
-        }
-        .aim-btn--ghost:hover:not(:disabled) { background: var(--state-hover); color: var(--text-primary); }
-
-        .aim-btn--destructive {
-          background: var(--error-soft);
-          color: var(--color-error-700);
-        }
-        .aim-btn--destructive:hover:not(:disabled) { background: var(--color-error-100); }
-
-        /* Spinner */
-        @keyframes aim-spin { to { transform: rotate(360deg); } }
-        .aim-btn-spinner {
-          display: inline-block;
-          width: 14px;
-          height: 14px;
-          border: 2px solid currentColor;
-          border-block-start-color: transparent;
-          border-radius: 50%;
-          animation: aim-spin 0.6s linear infinite;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .aim-btn-spinner { animation: none; }
-        }
-      `}</style>
-    </>
+    <button
+      className={buttonVariants({ variant, size, className })}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
+      {...rest}
+    >
+      {loading && (
+        <span
+          className="inline-block w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin shrink-0"
+          aria-hidden="true"
+        />
+      )}
+      {children}
+    </button>
   );
 }

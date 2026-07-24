@@ -12,3 +12,4 @@ export { AdminConfirmDialog } from './admin-confirm-dialog';
 export { AdminFilterBar } from './admin-filter-bar';
 export { AdminIdCell } from './admin-id-cell';
 export { AdminDateCell } from './admin-date-cell';
+export { AdminSvgIcon } from './admin-svg-icon';

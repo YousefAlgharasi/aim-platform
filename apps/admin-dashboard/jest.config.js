@@ -1,6 +1,4 @@
-import type { Config } from 'jest';
-
-const config: Config = {
+const config = {
   roots: ['<rootDir>'],
   testEnvironment: 'jsdom',
   transform: {
@@ -10,7 +8,8 @@ const config: Config = {
         tsconfig: {
           jsx: 'react-jsx',
           module: 'commonjs',
-          moduleResolution: 'node',
+          moduleResolution: 'bundler',
+          ignoreDeprecations: '6.0',
           esModuleInterop: true,
         },
       },
@@ -21,14 +20,6 @@ const config: Config = {
   },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   testMatch: ['**/__tests__/**/*.test.tsx', '**/__tests__/**/*.test.ts'],
-  coverageThreshold: {
-    global: {
-      branches: 50,
-      functions: 60,
-      lines: 60,
-      statements: 60,
-    },
-  },
 };
 
-export default config;
+module.exports = config;

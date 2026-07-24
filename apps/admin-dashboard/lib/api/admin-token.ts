@@ -2,7 +2,8 @@
 // Token is always read from the HTTP-only cookie server-side.
 // Never exposed to the browser or passed as a prop.
 import { cookies } from 'next/headers';
-const ADMIN_AUTH_TOKEN_COOKIE = 'aim_admin_access_token';
+
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../auth/constants';
 
 export async function getAdminToken(): Promise<string> {
   const cookieStore = await cookies();

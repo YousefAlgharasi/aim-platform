@@ -22,7 +22,13 @@ import type {
   AdminBroadcastItem,
   CreateBroadcastPayload,
 } from '../../../lib/api/admin-notifications-api';
-import { BroadcastForm } from './broadcast-form';
+import dynamic from 'next/dynamic';
+import { AdminLoadingSkeleton } from '../../../components/layout/admin-loading-skeleton';
+
+const BroadcastForm = dynamic(
+  () => import('./broadcast-form').then((m) => m.BroadcastForm),
+  { loading: () => <AdminLoadingSkeleton rows={3} /> },
+);
 
 export type NotificationsSection = 'broadcasts' | 'templates' | 'queue' | 'schedules' | 'preferences' | 'audit-logs';
 

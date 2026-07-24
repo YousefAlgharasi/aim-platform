@@ -5,6 +5,7 @@
 import { useState } from 'react';
 
 import { AdminButton, AdminStatusBadge } from '../common';
+import { AdminErrorBanner } from '../layout';
 import type { AdminReportDefinition, AdminReportRun } from '../../lib/api/admin-analytics-reports-api';
 
 type Props = {
@@ -48,27 +49,26 @@ export function AdminReportRunnerPanel({ definitions, runReport, pollRunStatus }
   }
 
   if (definitions.length === 0) {
-    return <p className="aim-report-runner-empty">No report definitions are visible for this role yet.</p>;
+    return <p className="text-sm text-[var(--text-muted)]">No report definitions are visible for this role yet.</p>;
   }
 
   return (
-    <div className="aim-report-runner-panel">
-      {errorMessage && (
-        <p className="admin-error-banner" role="alert">
-          {errorMessage}
-        </p>
-      )}
+    <div className="flex flex-col gap-3">
+      {errorMessage && <AdminErrorBanner message={errorMessage} />}
       {definitions.map((definition) => {
         const run = activeRuns[definition.key];
         return (
-          <div className="aim-report-runner-row" key={definition.id}>
-            <div className="aim-report-runner-row-text">
-              <p className="aim-report-runner-row-title">{definition.name}</p>
+          <div
+            className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-[var(--surface)] border border-[var(--border)]"
+            key={definition.id}
+          >
+            <div className="flex flex-col gap-1">
+              <p className="text-sm font-semibold text-[var(--text-primary)]">{definition.name}</p>
               {definition.description && (
-                <p className="aim-report-runner-row-description">{definition.description}</p>
+                <p className="text-xs text-[var(--text-secondary)]">{definition.description}</p>
               )}
             </div>
-            <div className="aim-report-runner-row-actions">
+            <div className="flex items-center gap-2">
               {run && <AdminStatusBadge status={run.status} />}
               <AdminButton
                 size="sm"
@@ -79,35 +79,10 @@ export function AdminReportRunnerPanel({ definitions, runReport, pollRunStatus }
                 Run report
               </AdminButton>
             </div>
-            {run?.errorMessage && <p className="aim-report-runner-row-error">{run.errorMessage}</p>}
+            {run?.errorMessage && <p className="w-full text-xs text-red-700 mt-1">{run.errorMessage}</p>}
           </div>
         );
       })}
-      <style>{`
-        .aim-report-runner-panel { display: flex; flex-direction: column; gap: var(--space-12); }
-        .aim-report-runner-row {
-          display: flex;
-          flex-wrap: wrap;
-          align-items: center;
-          justify-content: space-between;
-          gap: var(--space-12);
-          padding: var(--space-16);
-          background: var(--surface);
-          border: 1px solid var(--border);
-          border-radius: var(--radius-lg);
-        }
-        .aim-report-runner-row-text { display: flex; flex-direction: column; gap: var(--space-4); }
-        .aim-report-runner-row-title {
-          margin: 0;
-          font-size: 15px;
-          font-weight: var(--weight-semibold);
-          color: var(--text-primary);
-        }
-        .aim-report-runner-row-description { margin: 0; font-size: 13px; color: var(--text-secondary); }
-        .aim-report-runner-row-actions { display: flex; align-items: center; gap: var(--space-8); }
-        .aim-report-runner-row-error { width: 100%; margin: 0; font-size: 13px; color: var(--color-error-700); }
-        .aim-report-runner-empty { margin: 0; color: var(--text-muted); font-size: 14px; }
-      `}</style>
     </div>
   );
 }
