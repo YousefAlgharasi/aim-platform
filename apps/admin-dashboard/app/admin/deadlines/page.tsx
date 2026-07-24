@@ -1,23 +1,23 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../lib/auth';
-import { AdminApiClientError } from '../../../lib/api';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../core/auth';
+import { AdminApiClientError } from '../../../core/api';
 import {
   fetchAdminDeadlines,
   type AdminDeadlineItem,
-} from '../../../lib/api/admin-deadlines-api';
-import type { AdminPaginatedResponse } from '../../../lib/api/admin-paginated-response';
-import { AdminPageHeader } from '../../../components/layout';
+} from '../../../core/api/admin-deadlines-api';
+import type { AdminPaginatedResponse } from '../../../core/api/admin-paginated-response';
+import { AdminPageHeader } from '../../../shared/layouts/DashboardLayout';
 import {
   AdminTable,
   AdminPagination,
   AdminDateCell,
   AdminIdCell,
   type AdminTableColumn,
-} from '../../../components/common';
-import { AdminApiErrorState } from '../../../components/error-handling';
-import { AdminEmptyState } from '../../../components/layout';
+} from '../../../shared/components/Misc';
+import { AdminApiErrorState } from '../../../shared/components/error-handling';
+import { AdminEmptyState } from '../../../shared/layouts/DashboardLayout';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;

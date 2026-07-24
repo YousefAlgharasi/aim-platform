@@ -6,13 +6,13 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 
-import { backendFetch } from '../../../../lib/api/client-api-helpers';
+import { backendFetch } from '../../../../core/api/client-api-helpers';
 
 import {
   OperationsLoadingSpinner,
   OperationsEmptyState,
   OperationsErrorCard,
-} from '../../../../components/operations';
+} from '../../../../shared/components/operations';
 
 type MaintenanceWindow = {
   readonly id: string;

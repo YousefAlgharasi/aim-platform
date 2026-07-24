@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { backendFetchJson } from '../../../../lib/api/client-api-helpers';
+import { backendFetchJson } from '../../../../core/api/client-api-helpers';
 import {
   AdminTable,
   AdminStatusBadge,
@@ -11,7 +11,7 @@ import {
   AdminIdCell,
   AdminDateCell,
   type AdminTableColumn,
-} from '../../../../components/common';
+} from '../../../../shared/components/Misc';
 
 type Subscription = {
   id: string;

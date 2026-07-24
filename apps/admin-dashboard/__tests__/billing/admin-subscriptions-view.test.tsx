@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, renderWithProviders } from '../test-utils';
-import { AdminSubscriptionsView } from '../../features/billing/admin-subscriptions-view';
+import { AdminSubscriptionsView } from '../../features/billing/components/admin-subscriptions-view';
 
 describe('AdminSubscriptionsView', () => {
   it('renders the subscriptions heading', () => {

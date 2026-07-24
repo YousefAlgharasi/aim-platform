@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import { getAdminToken } from '../../../../../../lib/api/admin-token';
-import { AdminApiClientError } from '../../../../../../lib/api';
+import { getAdminToken } from '../../../../../../core/api/admin-token';
+import { AdminApiClientError } from '../../../../../../core/api';
 import {
   fetchAdminStudentWeaknesses,
   fetchAdminStudentRecommendations,
-} from '../../../../../../lib/api/admin-aim-data-api';
+} from '../../../../../../core/api/admin-aim-data-api';
 import { WeaknessesRecommendationsClient } from '../../../../../../features/students';
 
 type Props = {

@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../lib/auth';
-import { AdminApiClientError } from '../../../lib/api';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../core/auth';
+import { AdminApiClientError } from '../../../core/api';
 import { fetchAdminRoles, RolesView, type AdminRole } from '../../../features/roles';
 
 export default async function AdminRolesPage() {

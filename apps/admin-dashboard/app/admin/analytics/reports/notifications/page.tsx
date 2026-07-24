@@ -1,4 +1,4 @@
-import { getAdminToken } from '../../../../../lib/api/admin-token';
+import { getAdminToken } from '../../../../../core/api/admin-token';
 import {
   fetchNotificationAuditLogs,
   fetchNotificationTemplates,

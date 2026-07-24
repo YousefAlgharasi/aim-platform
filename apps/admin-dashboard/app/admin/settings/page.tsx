@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { backendFetch } from '../../../lib/api/client-api-helpers';
+import { backendFetch } from '../../../core/api/client-api-helpers';
 
 type PlatformInfo = {
   appName: string;

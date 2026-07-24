@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../lib/auth';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../core/auth';
 import {
   fetchAdminUsers,
   UsersPageClient,
@@ -8,7 +8,7 @@ import {
   type AdminUserStatus,
   type AdminUserType,
 } from '../../../features/users';
-import { AdminApiClientError } from '../../../lib/api';
+import { AdminApiClientError } from '../../../core/api';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;

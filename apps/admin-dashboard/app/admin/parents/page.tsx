@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { backendFetch } from '../../../lib/api/client-api-helpers';
+import { backendFetch } from '../../../core/api/client-api-helpers';
 import {
   AdminTable,
   AdminPagination,
@@ -11,8 +11,8 @@ import {
   AdminIdCell,
   AdminDateCell,
   type AdminTableColumn,
-} from '../../../components/common';
-import { usePaginatedResource } from '../../../lib/hooks/use-paginated-resource';
+} from '../../../shared/components/Misc';
+import { usePaginatedResource } from '../../../core/hooks/use-paginated-resource';
 
 type Tab = 'links' | 'invitations' | 'consents';
 

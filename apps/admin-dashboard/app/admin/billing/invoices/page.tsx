@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { backendFetchJson } from '../../../../lib/api/client-api-helpers';
+import { backendFetchJson } from '../../../../core/api/client-api-helpers';
 
 type Invoice = {
   id: string;

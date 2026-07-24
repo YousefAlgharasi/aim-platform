@@ -2,14 +2,14 @@ import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { AdminApiClientError } from '../../../../lib/api';
+import { AdminApiClientError } from '../../../../core/api';
 import {
   fetchAdminUserDetail,
   RoleChangeForm,
   UserStatusActions,
   type AdminUserDetail,
 } from '../../../../features/users';
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../lib/auth';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../core/auth';
 
 type Props = {
   params: Promise<{ id: string }>;

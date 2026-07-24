@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../lib/auth';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../core/auth';
 import {
   fetchAdminLevels,
   createAdminLevel,
@@ -11,7 +11,7 @@ import {
   type AdminCourseSummary,
   LevelsList,
 } from '../../../../features/content';
-import { AdminApiClientError } from '../../../../lib/api';
+import { AdminApiClientError } from '../../../../core/api';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;

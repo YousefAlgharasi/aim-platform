@@ -1,2 +1,2 @@
-export * from './activity-log-client';
-export * from './audit-log-client';
+export * from './pages/activity-log-client';
+export * from './pages/audit-log-client';

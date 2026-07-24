@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import { getAdminToken } from '../../../../../../lib/api/admin-token';
-import { AdminApiClientError } from '../../../../../../lib/api';
-import { fetchAdminSessionSummaries } from '../../../../../../lib/api/admin-logs-api';
+import { getAdminToken } from '../../../../../../core/api/admin-token';
+import { AdminApiClientError } from '../../../../../../core/api';
+import { fetchAdminSessionSummaries } from '../../../../../../core/api/admin-logs-api';
 import { StudentSessionSummaryClient as SessionSummaryClient } from '../../../../../../features/students';
 
 type Props = {

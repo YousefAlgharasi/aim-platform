@@ -1,7 +1,6 @@
-export * from './admin-users-api';
-export * from './users-page-client';
-export * from './add-admin-modal';
-export * from './role-change-form';
-export * from './user-status-actions';
+export * from './api/admin-users-api';
 export * from './hooks/use-users-query';
-
+export * from './components/add-admin-modal';
+export * from './components/role-change-form';
+export * from './components/user-status-actions';
+export * from './pages/users-page-client';

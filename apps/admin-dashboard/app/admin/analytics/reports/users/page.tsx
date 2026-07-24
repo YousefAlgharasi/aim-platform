@@ -1,8 +1,8 @@
-import { getAdminToken } from '../../../../../lib/api/admin-token';
+import { getAdminToken } from '../../../../../core/api/admin-token';
 import {
   fetchAdminReportDefinitions,
   type AdminReportDefinition,
-} from '../../../../../lib/api/admin-analytics-reports-api';
+} from '../../../../../features/analytics/api/admin-analytics-reports-api';
 import { ReportRunnerPanel } from '../../../../../features/analytics';
 import { runUserReport, pollUserReportRunStatus } from './actions';
 

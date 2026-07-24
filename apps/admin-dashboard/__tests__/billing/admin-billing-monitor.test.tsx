@@ -1,5 +1,5 @@
 import { screen, fireEvent, renderWithProviders } from '../test-utils';
-import { AdminBillingMonitor } from '../../features/billing/admin-billing-monitor';
+import { AdminBillingMonitor } from '../../features/billing/pages/admin-billing-monitor';
 
 const mockPush = jest.fn();
 let mockSearchParams = new URLSearchParams();

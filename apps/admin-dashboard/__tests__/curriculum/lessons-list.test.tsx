@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, renderWithProviders } from '../test-utils';
-import { LessonsList } from '../../features/content/lessons-list';
-import type { AdminLessonSummary } from '../../features/content/admin-lessons-api';
+import { LessonsList } from '../../features/content/pages/lessons-list';
+import type { AdminLessonSummary } from '../../features/content/api/admin-lessons-api';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn() }),

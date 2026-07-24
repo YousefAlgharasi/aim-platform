@@ -1,5 +1,5 @@
-import { getAdminToken } from '../../../lib/api/admin-token';
-import { AdminApiClientError } from '../../../lib/api';
+import { getAdminToken } from '../../../core/api/admin-token';
+import { AdminApiClientError } from '../../../core/api';
 import {
   fetchAdminNotificationTemplates,
   fetchAdminNotificationQueue,
@@ -13,7 +13,7 @@ import {
   enableAdminBroadcast,
   deleteAdminBroadcast,
   type CreateBroadcastPayload,
-} from '../../../lib/api/admin-notifications-api';
+} from '../../../core/api/admin-notifications-api';
 import { NotificationsClient, type NotificationsSection } from '../../../features/notifications';
 
 const SECTIONS: NotificationsSection[] = ['broadcasts', 'templates', 'queue', 'schedules', 'preferences', 'audit-logs'];

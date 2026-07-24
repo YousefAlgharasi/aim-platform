@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import { getAdminToken } from '../../../../../../lib/api/admin-token';
-import { AdminApiClientError } from '../../../../../../lib/api';
-import { fetchAdminStudentSkillStates } from '../../../../../../lib/api/admin-aim-data-api';
+import { getAdminToken } from '../../../../../../core/api/admin-token';
+import { AdminApiClientError } from '../../../../../../core/api';
+import { fetchAdminStudentSkillStates } from '../../../../../../core/api/admin-aim-data-api';
 import { SkillStateClient } from '../../../../../../features/students';
 
 type Props = {

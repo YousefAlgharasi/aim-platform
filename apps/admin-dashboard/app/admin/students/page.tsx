@@ -1,14 +1,14 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../lib/auth';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../core/auth';
 import {
   fetchAdminUsers,
   type AdminUserListItem,
   type AdminUserStatus,
-} from '../../../lib/api/admin-users-api';
-import { AdminApiClientError } from '../../../lib/api';
-import { AdminPageHeader, AdminEmptyState } from '../../../components/layout';
+} from '../../../features/users/api/admin-users-api';
+import { AdminApiClientError } from '../../../core/api';
+import { AdminPageHeader, AdminEmptyState } from '../../../shared/layouts/DashboardLayout';
 import {
   AdminTable,
   AdminPagination,
@@ -20,8 +20,8 @@ import {
   AdminDateCell,
   AdminButton,
   type AdminTableColumn,
-} from '../../../components/common';
-import { AdminApiErrorState } from '../../../components/error-handling';
+} from '../../../shared/components/Misc';
+import { AdminApiErrorState } from '../../../shared/components/error-handling';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;

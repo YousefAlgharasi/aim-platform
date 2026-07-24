@@ -1,10 +1,10 @@
-import { getAdminToken } from '../../../lib/api/admin-token';
+import { getAdminToken } from '../../../core/api/admin-token';
 import {
   fetchAdminOverviewDashboard,
   AdminApiClientError,
   type AdminDashboardWidget,
 } from '../../../features/analytics';
-import { fetchAdminStats, type DashboardStats } from '../../../lib/api/admin-stats-api';
+import { fetchAdminStats, type DashboardStats } from '../../../core/api/admin-stats-api';
 
 export default async function AdminAnalyticsOverviewPage() {
   const token = await getAdminToken();

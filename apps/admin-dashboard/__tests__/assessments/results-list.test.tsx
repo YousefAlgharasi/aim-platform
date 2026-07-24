@@ -1,12 +1,12 @@
 import { render, screen, renderWithProviders } from '../test-utils';
-import { AssessmentResultsList } from '../../features/assessments/results-list';
-import { type AdminAssessmentResultItem } from '../../features/assessments/admin-assessment-results-api';
+import { AssessmentResultsList } from '../../features/assessments/pages/results-list';
+import { type AdminAssessmentResultItem } from '../../features/assessments/api/admin-assessment-results-api';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn() }),
 }));
 
-jest.mock('../../lib/api', () => ({
+jest.mock('../../core/api', () => ({
   adminApiClient: { get: jest.fn(), post: jest.fn(), patch: jest.fn() },
   AdminApiClientError: class extends Error { status = 500; },
 }));

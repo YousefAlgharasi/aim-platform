@@ -9,7 +9,7 @@ import {
   type AdminAssessmentListItem,
   type AdminAssessmentDetail,
   type AdminAssessmentType,
-} from '../admin-assessments-api';
+} from '../api/admin-assessments-api';
 
 export type FetchAdminAssessmentsParams = {
   token?: string;

@@ -20,12 +20,12 @@
 
 import Link from 'next/link';
 import { cookies } from 'next/headers';
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../../lib/auth';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../../core/auth';
 import {
   fetchAdminPlacementSections,
   AdminApiClientError,
   type AdminPlacementSectionsData,
-} from '../../../../../../lib/api/admin-placement-sections-api';
+} from '../../../../../../core/api/admin-placement-sections-api';
 import { AdminPlacementSectionsList } from '../../../../../../features/placement';
 
 type Props = {

@@ -1,6 +1,6 @@
-import { getAdminToken } from '../../../lib/api/admin-token';
-import { fetchAdminStats, type DashboardStats } from '../../../lib/api/admin-stats-api';
-import { AdminApiClientError } from '../../../lib/api/admin-api-client-error';
+import { getAdminToken } from '../../../core/api/admin-token';
+import { fetchAdminStats, type DashboardStats } from '../../../core/api/admin-stats-api';
+import { AdminApiClientError } from '../../../core/api/admin-api-client-error';
 
 export default async function AdminBillingPage() {
   const token = await getAdminToken();

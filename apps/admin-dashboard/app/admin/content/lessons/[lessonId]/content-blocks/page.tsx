@@ -4,8 +4,8 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../../lib/auth';
-import { AdminApiClientError } from '../../../../../../lib/api';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../../core/auth';
+import { AdminApiClientError } from '../../../../../../core/api';
 import {
   fetchAdminLesson,
   type AdminLessonSummary,
@@ -17,9 +17,9 @@ import {
   type ContentBlockType,
   ContentBlocksList,
 } from '../../../../../../features/content';
-import { AdminBadge } from '../../../../../../components/common';
-import { AdminPageHeader } from '../../../../../../components/layout';
-import { AdminApiErrorState, AdminNotFoundState } from '../../../../../../components/error-handling';
+import { AdminBadge } from '../../../../../../shared/components/Misc';
+import { AdminPageHeader } from '../../../../../../shared/layouts/DashboardLayout';
+import { AdminApiErrorState, AdminNotFoundState } from '../../../../../../shared/components/error-handling';
 
 type Props = { params: Promise<{ lessonId: string }> };
 

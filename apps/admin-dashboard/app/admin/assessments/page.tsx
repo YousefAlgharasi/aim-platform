@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../lib/auth';
-import { AdminApiClientError } from '../../../lib/api';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../core/auth';
+import { AdminApiClientError } from '../../../core/api';
 import {
   fetchAdminAssessments,
   createAdminAssessment,
@@ -10,7 +10,7 @@ import {
   type AdminAssessmentListItem,
   AssessmentsList,
 } from '../../../features/assessments';
-import type { AdminPaginatedResponse } from '../../../lib/api/admin-paginated-response';
+import type { AdminPaginatedResponse } from '../../../core/api/admin-paginated-response';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;

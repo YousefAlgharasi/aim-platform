@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { adminCurriculumNavigationItems } from '../../../lib/admin-curriculum-navigation';
+import { adminCurriculumNavigationItems } from '../../../core/admin-curriculum-navigation';
 
 export default function AdminContentPage() {
   return (

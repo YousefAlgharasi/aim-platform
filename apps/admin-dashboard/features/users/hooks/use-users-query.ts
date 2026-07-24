@@ -8,7 +8,7 @@ import {
   type FetchAdminUsersParams,
   type AdminUserListData,
   type AdminUserStatus,
-} from '../admin-users-api';
+} from '../api/admin-users-api';
 
 export const USER_QUERY_KEYS = {
   all: ['users'] as const,

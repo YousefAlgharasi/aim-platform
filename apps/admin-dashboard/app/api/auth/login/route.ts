@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers';
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { getAdminApiConfig } from '../../../../lib/api/admin-api-config';
-import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../lib/auth/constants';
+import { getAdminApiConfig } from '../../../../core/api/admin-api-config';
+import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../core/auth/constants';
 
 type LoginRequestBody = {
   readonly email: string;

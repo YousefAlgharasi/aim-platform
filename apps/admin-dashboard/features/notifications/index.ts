@@ -1,2 +1,2 @@
-export * from './broadcast-form';
-export * from './notifications-client';
+export * from './components/broadcast-form';
+export * from './pages/notifications-client';
