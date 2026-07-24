@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, renderWithProviders } from '../test-utils';
 import { QuestionList } from '../../features/content/question-list';
 import type { AdminQuestionSummary } from '../../features/content/admin-question-bank-api';
 
@@ -40,52 +40,52 @@ const defaultProps = {
 
 describe('QuestionList', () => {
   it('renders question stem as a link', () => {
-    render(<QuestionList {...defaultProps} />);
+    renderWithProviders(<QuestionList {...defaultProps} />);
     const link = screen.getByText('What is the past tense of "go"?');
     expect(link).toBeInTheDocument();
     expect(link.closest('a')).toHaveAttribute('href', '/admin/content/question-bank/q-1');
   });
 
   it('renders type badge', () => {
-    render(<QuestionList {...defaultProps} />);
+    renderWithProviders(<QuestionList {...defaultProps} />);
     expect(screen.getAllByText('MCQ').length).toBeGreaterThan(0);
   });
 
   it('renders difficulty badge', () => {
-    render(<QuestionList {...defaultProps} />);
+    renderWithProviders(<QuestionList {...defaultProps} />);
     expect(screen.getAllByText('beginner').length).toBeGreaterThan(0);
   });
 
   it('renders tags', () => {
-    render(<QuestionList {...defaultProps} />);
+    renderWithProviders(<QuestionList {...defaultProps} />);
     expect(screen.getAllByText('grammar').length).toBeGreaterThan(0);
     expect(screen.getAllByText('past_tense').length).toBeGreaterThan(0);
   });
 
   it('renders status badge', () => {
-    render(<QuestionList {...defaultProps} />);
+    renderWithProviders(<QuestionList {...defaultProps} />);
     expect(screen.getAllByText('Draft').length).toBeGreaterThan(0);
   });
 
   it('shows empty state when no questions', () => {
-    render(<QuestionList {...defaultProps} questions={[]} total={0} />);
+    renderWithProviders(<QuestionList {...defaultProps} questions={[]} total={0} />);
     expect(screen.getByText(/no questions/i)).toBeInTheDocument();
   });
 
   it('opens create form when + New Question clicked', () => {
-    render(<QuestionList {...defaultProps} />);
+    renderWithProviders(<QuestionList {...defaultProps} />);
     fireEvent.click(screen.getByText('+ New Question'));
     expect(screen.getByText(/cancel/i)).toBeInTheDocument();
   });
 
   it('disables edit button for archived questions', () => {
-    render(<QuestionList {...defaultProps} questions={[makeQuestion({ status: 'archived' })]} />);
+    renderWithProviders(<QuestionList {...defaultProps} questions={[makeQuestion({ status: 'archived' })]} />);
     const editBtn = screen.getByText('Edit');
     expect(editBtn).toBeDisabled();
   });
 
   it('renders filter dropdowns', () => {
-    render(<QuestionList {...defaultProps} />);
+    renderWithProviders(<QuestionList {...defaultProps} />);
     expect(screen.getByLabelText('Filter by type')).toBeInTheDocument();
     expect(screen.getByLabelText('Filter by difficulty')).toBeInTheDocument();
     expect(screen.getByLabelText('Filter by status')).toBeInTheDocument();
@@ -93,7 +93,7 @@ describe('QuestionList', () => {
 
   it('truncates long stems', () => {
     const longStem = 'A'.repeat(100);
-    render(<QuestionList {...defaultProps} questions={[makeQuestion({ stem: longStem })]} />);
+    renderWithProviders(<QuestionList {...defaultProps} questions={[makeQuestion({ stem: longStem })]} />);
     const link = screen.getByText(`${'A'.repeat(80)}…`);
     expect(link).toBeInTheDocument();
   });

@@ -6,3 +6,4 @@ export * from './admin-refunds-view';
 export * from './admin-subscriptions-view';
 export * from './admin-coupons-view';
 export * from './billing-search-table';
+export * from './hooks/use-billing-query';

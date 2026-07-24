@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent, renderWithProviders } from '../test-utils';
 import { AssessmentsList } from '../../features/assessments/assessments-list';
 import type { AdminAssessmentListItem } from '../../features/assessments/admin-assessments-api';
 
@@ -33,44 +33,44 @@ const defaultProps = {
 
 describe('AssessmentsList', () => {
   it('renders assessment title as link', () => {
-    render(<AssessmentsList {...defaultProps} />);
+    renderWithProviders(<AssessmentsList {...defaultProps} />);
     const link = screen.getByText('Unit 1 Quiz');
     expect(link.closest('a')).toHaveAttribute('href', '/admin/assessments/a-1');
   });
 
   it('renders type badge', () => {
-    render(<AssessmentsList {...defaultProps} />);
+    renderWithProviders(<AssessmentsList {...defaultProps} />);
     expect(screen.getAllByText('Quiz').length).toBeGreaterThan(0);
   });
 
   it('renders status badge', () => {
-    render(<AssessmentsList {...defaultProps} />);
+    renderWithProviders(<AssessmentsList {...defaultProps} />);
     expect(screen.getAllByText('draft').length).toBeGreaterThan(0);
   });
 
   it('renders question count', () => {
-    render(<AssessmentsList {...defaultProps} />);
+    renderWithProviders(<AssessmentsList {...defaultProps} />);
     expect(screen.getByText('5')).toBeInTheDocument();
   });
 
   it('shows empty state', () => {
-    render(<AssessmentsList {...defaultProps} assessments={[]} total={0} />);
+    renderWithProviders(<AssessmentsList {...defaultProps} assessments={[]} total={0} />);
     expect(screen.getByText(/no assessments/i)).toBeInTheDocument();
   });
 
   it('opens create form', () => {
-    render(<AssessmentsList {...defaultProps} />);
+    renderWithProviders(<AssessmentsList {...defaultProps} />);
     fireEvent.click(screen.getByText('+ New Assessment'));
     expect(screen.getByText(/cancel/i)).toBeInTheDocument();
   });
 
   it('renders type filter', () => {
-    render(<AssessmentsList {...defaultProps} />);
+    renderWithProviders(<AssessmentsList {...defaultProps} />);
     expect(screen.getByLabelText('Filter by type')).toBeInTheDocument();
   });
 
   it('shows total count', () => {
-    render(<AssessmentsList {...defaultProps} total={3} />);
+    renderWithProviders(<AssessmentsList {...defaultProps} total={3} />);
     expect(screen.getByText('3 assessments')).toBeInTheDocument();
   });
 });

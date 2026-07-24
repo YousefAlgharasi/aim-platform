@@ -1,3 +1,4 @@
+export * from './hooks/use-assessments-query';
 export * from './admin-assessments-api';
 export * from './admin-assessment-results-api';
 export * from './assessments-list';

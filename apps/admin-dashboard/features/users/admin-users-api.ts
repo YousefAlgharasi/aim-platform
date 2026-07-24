@@ -65,41 +65,60 @@ export type AdminUserDetail = {
   readonly updatedAt: string;
 };
 
-export type FetchAdminUsersOptions = {
-  readonly token: string;
-  readonly page: number;
-  readonly limit: number;
-  readonly status?: AdminUserStatus;
-  readonly userType?: AdminUserType;
+export type FetchAdminUsersParams = {
+  readonly page?: number;
+  readonly limit?: number;
+  readonly status?: AdminUserStatus | string;
+  readonly userType?: AdminUserType | string;
   readonly email?: string;
 };
 
+export type FetchAdminUsersOptions = FetchAdminUsersParams & {
+  readonly token?: string;
+};
+
 export async function fetchAdminUsers(
-  tokenOrOptions: string | FetchAdminUsersOptions,
+  tokenOrOptions?: string | FetchAdminUsersOptions,
   page?: number,
   limit?: number,
 ): Promise<AdminUserListData> {
   const opts: FetchAdminUsersOptions =
     typeof tokenOrOptions === 'string'
       ? { token: tokenOrOptions, page: page ?? 1, limit: limit ?? 20 }
-      : tokenOrOptions;
+      : tokenOrOptions ?? {};
 
-  const envelope = await adminApiClient.get<AdminUserListData>(
-    '/admin/users',
-    decodeAdminUserListData,
-    {
-      headers: { authorization: `Bearer ${opts.token}` },
-      query: {
-        page: opts.page,
-        limit: opts.limit,
-        ...(opts.status ? { status: opts.status } : {}),
-        ...(opts.userType ? { userType: opts.userType } : {}),
-        ...(opts.email ? { email: opts.email } : {}),
+  if (opts.token) {
+    const envelope = await adminApiClient.get<AdminUserListData>(
+      '/admin/users',
+      decodeAdminUserListData,
+      {
+        headers: { authorization: `Bearer ${opts.token}` },
+        query: {
+          page: opts.page ?? 1,
+          limit: opts.limit ?? 20,
+          ...(opts.status ? { status: opts.status } : {}),
+          ...(opts.userType ? { userType: opts.userType } : {}),
+          ...(opts.email ? { email: opts.email } : {}),
+        },
       },
-    },
-  );
+    );
 
-  return envelope.data;
+    return envelope.data;
+  }
+
+  const { backendFetch } = await import('../../lib/api/client-api-helpers');
+  const qs = new URLSearchParams();
+  if (opts.page) qs.set('page', String(opts.page));
+  if (opts.limit) qs.set('limit', String(opts.limit));
+  if (opts.status) qs.set('status', opts.status);
+  if (opts.userType) qs.set('userType', opts.userType);
+  if (opts.email) qs.set('email', opts.email);
+
+  const res = await backendFetch(`/admin/users?${qs.toString()}`);
+  if (!res.ok) throw new Error(`Failed to fetch users: ${res.statusText}`);
+  const json = await res.json();
+  const data = json?.data ?? json;
+  return decodeAdminUserListData(data);
 }
 
 export async function fetchAdminUserDetail(
@@ -327,3 +346,64 @@ function decodeRoleChangeResult(value: unknown): AdminRoleChangeResult {
       typeof value.assignedAt === 'string' ? value.assignedAt : '',
   };
 }
+
+export async function assignAdminRole(
+  emailOrUserId: string,
+  roleKey?: string,
+  reason?: string,
+): Promise<unknown> {
+  const { backendFetch } = await import('../../lib/api/client-api-helpers');
+  if (roleKey) {
+    const res = await backendFetch(`/admin/users/${encodeURIComponent(emailOrUserId)}/roles`, {
+      method: 'PUT',
+      body: JSON.stringify({ roleKey, ...(reason ? { reason } : {}) }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      throw new Error(body?.error?.message ?? body?.message ?? `Failed to assign role (${res.status})`);
+    }
+    const json = await res.json();
+    return json?.data ?? json;
+  }
+
+  const res = await backendFetch(`/admin/users?email=${encodeURIComponent(emailOrUserId)}`);
+  if (!res.ok) throw new Error('Failed to find user by email');
+  const json = await res.json();
+  const users = json?.data?.users ?? json?.users ?? [];
+  if (!users.length) throw new Error('User not found with that email');
+  const userId = users[0].id;
+
+  const roleRes = await backendFetch(`/admin/users/${encodeURIComponent(userId)}/roles`, {
+    method: 'PUT',
+    body: JSON.stringify({ roleKey: 'admin' }),
+  });
+  if (!roleRes.ok) throw new Error('Failed to assign admin role');
+  const roleJson = await roleRes.json();
+  return roleJson?.data ?? roleJson;
+}
+
+export async function updateUserRole(
+  userId: string,
+  roleKey: string,
+  reason?: string,
+): Promise<unknown> {
+  return assignAdminRole(userId, roleKey, reason);
+}
+
+export async function updateUserStatus(
+  userId: string,
+  status: string,
+): Promise<unknown> {
+  const { backendFetch } = await import('../../lib/api/client-api-helpers');
+  const res = await backendFetch(`/admin/users/${encodeURIComponent(userId)}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.error?.message ?? body?.message ?? `Failed to update user status (${res.status})`);
+  }
+  const json = await res.json();
+  return json?.data ?? json;
+}
+

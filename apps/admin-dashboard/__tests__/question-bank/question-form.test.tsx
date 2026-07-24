@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, renderWithProviders } from '../test-utils';
 import { QuestionForm } from '../../features/content/question-form';
 
 jest.mock('next/navigation', () => ({
@@ -18,12 +18,12 @@ const defaultProps = {
 
 describe('QuestionForm', () => {
   it('renders create form title', () => {
-    render(<QuestionForm {...defaultProps} />);
+    renderWithProviders(<QuestionForm {...defaultProps} />);
     expect(screen.getByText('New Question')).toBeInTheDocument();
   });
 
   it('renders edit form title with initial data', () => {
-    render(
+    renderWithProviders(
       <QuestionForm
         {...defaultProps}
         mode="edit"
@@ -44,13 +44,13 @@ describe('QuestionForm', () => {
   });
 
   it('validates empty stem on submit', () => {
-    render(<QuestionForm {...defaultProps} />);
+    renderWithProviders(<QuestionForm {...defaultProps} />);
     fireEvent.click(screen.getByText('Create Question'));
     expect(screen.getByText(/question stem is required/i)).toBeInTheDocument();
   });
 
   it('disables type select in edit mode', () => {
-    render(
+    renderWithProviders(
       <QuestionForm
         {...defaultProps}
         mode="edit"
@@ -72,12 +72,12 @@ describe('QuestionForm', () => {
   });
 
   it('shows cancel button', () => {
-    render(<QuestionForm {...defaultProps} />);
+    renderWithProviders(<QuestionForm {...defaultProps} />);
     expect(screen.getByText('Cancel')).toBeInTheDocument();
   });
 
   it('calls onCancel when Cancel clicked', () => {
-    render(<QuestionForm {...defaultProps} />);
+    renderWithProviders(<QuestionForm {...defaultProps} />);
     fireEvent.click(screen.getByText('Cancel'));
     expect(defaultProps.onCancel).toHaveBeenCalled();
   });

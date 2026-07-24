@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { backendFetch } from '../../lib/api/client-api-helpers';
+import { useQueryClient } from '@tanstack/react-query';
 import { AddAdminModal } from './add-admin-modal';
 import {
   AdminTable,
@@ -15,20 +15,11 @@ import {
   AdminButton,
   type AdminTableColumn,
 } from '../../components/common';
-import { usePaginatedResource } from '../../lib/hooks/use-paginated-resource';
-
-type User = {
-  id: string;
-  email: string | null;
-  phone: string | null;
-  userType: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-};
+import { useAdminUsersQuery, USER_QUERY_KEYS } from './hooks/use-users-query';
+import type { AdminUserListItem, FetchAdminUsersParams } from './admin-users-api';
 
 type UsersPageClientProps = {
-  initialUsers: User[];
+  initialUsers: AdminUserListItem[];
   initialTotal: number;
   initialPage: number;
   initialLimit: number;
@@ -62,46 +53,48 @@ export function UsersPageClient({
   initialUserType = '',
 }: UsersPageClientProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [showModal, setShowModal] = useState(false);
-
-  const fetcher = useCallback(
-    async (pg: number, filters: { email: string; status: string; userType: string }) => {
-      const qs = new URLSearchParams({ page: String(pg), limit: String(initialLimit) });
-      if (filters.email) qs.set('email', filters.email);
-      if (filters.status) qs.set('status', filters.status);
-      if (filters.userType) qs.set('userType', filters.userType);
-
-      const res = await backendFetch(`/admin/users?${qs.toString()}`);
-      if (!res.ok) throw new Error('Failed to fetch users');
-      const json = await res.json();
-      const data = json?.data ?? json;
-      return { data: data.users ?? [], total: data.total ?? 0 };
-    },
-    [initialLimit]
-  );
-
-  const {
-    data: users,
-    total,
-    page,
-    loading,
-    filters,
-    updateFilter,
-    setPage,
-    reload,
-  } = usePaginatedResource<User, { email: string; status: string; userType: string }>({
-    initialData: initialUsers,
-    initialTotal,
-    initialPage,
-    initialFilters: { email: initialEmail, status: initialStatus, userType: initialUserType },
-    fetcher,
+  const [page, setPage] = useState(initialPage);
+  const [filters, setFilters] = useState({
+    email: initialEmail,
+    status: initialStatus,
+    userType: initialUserType,
   });
 
-  const columns: AdminTableColumn<User>[] = [
+  const isInitialState =
+    page === initialPage &&
+    filters.email === initialEmail &&
+    filters.status === initialStatus &&
+    filters.userType === initialUserType;
+
+  const queryParams: FetchAdminUsersParams = {
+    page,
+    limit: initialLimit,
+    ...(filters.email ? { email: filters.email } : {}),
+    ...(filters.status ? { status: filters.status } : {}),
+    ...(filters.userType ? { userType: filters.userType } : {}),
+  };
+
+  const { data, isLoading, refetch } = useAdminUsersQuery(queryParams, {
+    initialData: isInitialState
+      ? { users: initialUsers, total: initialTotal, page: initialPage, limit: initialLimit }
+      : undefined,
+  });
+
+  const users = data?.users ?? [];
+  const total = data?.total ?? initialTotal;
+
+  const updateFilter = (key: 'email' | 'status' | 'userType', value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setPage(1);
+  };
+
+  const columns: AdminTableColumn<AdminUserListItem>[] = [
     {
       key: 'user',
       header: 'User',
-      render: (user: User) => (
+      render: (user: AdminUserListItem) => (
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm shrink-0 bg-[var(--surface-raised)] text-[var(--color-primary-600)]">
             {(user.email ?? '?')[0].toUpperCase()}
@@ -120,26 +113,26 @@ export function UsersPageClient({
       header: 'Type',
       width: '110px',
       className: 'hidden sm:table-cell',
-      render: (user: User) => <AdminStatusBadge status={user.userType} />,
+      render: (user: AdminUserListItem) => <AdminStatusBadge status={user.userType} />,
     },
     {
       key: 'status',
       header: 'Status',
       width: '120px',
-      render: (user: User) => <AdminStatusBadge status={user.status} />,
+      render: (user: AdminUserListItem) => <AdminStatusBadge status={user.status} />,
     },
     {
       key: 'createdAt',
       header: 'Created',
       width: '130px',
       className: 'hidden md:table-cell',
-      render: (user: User) => <AdminDateCell iso={user.createdAt} />,
+      render: (user: AdminUserListItem) => <AdminDateCell iso={user.createdAt} />,
     },
     {
       key: 'action',
       header: '',
       width: '80px',
-      render: (user: User) => (
+      render: (user: AdminUserListItem) => (
         <Link
           href={`/admin/users/${user.id}`}
           className="inline-flex items-center gap-1 text-xs font-medium text-[var(--color-primary-500)] hover:underline"
@@ -196,7 +189,11 @@ export function UsersPageClient({
       />
 
       {/* Table Component */}
-      {users.length === 0 ? (
+      {isLoading && users.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
+          <p className="text-sm text-[var(--text-secondary)]">Loading users…</p>
+        </div>
+      ) : users.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
           <p className="font-semibold text-sm text-[var(--text-primary)]">No users found</p>
           <p className="text-xs text-[var(--text-muted)]">
@@ -207,8 +204,8 @@ export function UsersPageClient({
         <AdminTable
           columns={columns}
           rows={users}
-          getRowKey={(u: User) => u.id}
-          onRowClick={(u: User) => router.push(`/admin/users/${u.id}`)}
+          getRowKey={(u: AdminUserListItem) => u.id}
+          onRowClick={(u: AdminUserListItem) => router.push(`/admin/users/${u.id}`)}
         />
       )}
 
@@ -220,7 +217,14 @@ export function UsersPageClient({
         onPageChange={setPage}
       />
 
-      <AddAdminModal open={showModal} onClose={() => { setShowModal(false); reload(); }} />
+      <AddAdminModal
+        open={showModal}
+        onClose={() => {
+          setShowModal(false);
+          queryClient.invalidateQueries({ queryKey: USER_QUERY_KEYS.all });
+          refetch();
+        }}
+      />
     </div>
   );
 }

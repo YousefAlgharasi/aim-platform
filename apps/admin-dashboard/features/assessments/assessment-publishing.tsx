@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import type { AdminAssessmentStatus } from './admin-assessments-api';
+import { usePublishAssessmentMutation } from './hooks/use-assessments-query';
 import {
   AdminButton,
   AdminCard,
@@ -14,9 +15,9 @@ type Props = {
   readonly assessmentId: string;
   readonly status: AdminAssessmentStatus;
   readonly questionCount: number;
-  readonly onPublish: () => Promise<{ error?: string }>;
-  readonly onUnpublish: () => Promise<{ error?: string }>;
-  readonly onArchive: () => Promise<{ error?: string }>;
+  readonly onPublish?: () => Promise<{ error?: string }>;
+  readonly onUnpublish?: () => Promise<{ error?: string }>;
+  readonly onArchive?: () => Promise<{ error?: string }>;
 };
 
 export function AssessmentPublishing({
@@ -28,6 +29,7 @@ export function AssessmentPublishing({
   onArchive,
 }: Props) {
   const router = useRouter();
+  const publishMutation = usePublishAssessmentMutation();
   const [error, setError] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<'publish' | 'unpublish' | 'archive' | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -40,7 +42,14 @@ export function AssessmentPublishing({
         : `Publish this assessment with ${questionCount} question${questionCount !== 1 ? 's' : ''}? Students will be able to access it.`,
       confirmLabel: 'Publish',
       variant: 'default' as const,
-      action: onPublish,
+      action: async () => {
+        if (onPublish) {
+          const res = await onPublish();
+          if (res?.error) return res;
+        }
+        await publishMutation.mutateAsync(assessmentId);
+        return {};
+      },
     },
     unpublish: {
       title: 'Unpublish Assessment',
@@ -63,15 +72,22 @@ export function AssessmentPublishing({
     const config = confirmConfig[confirmAction];
     setError(null);
     startTransition(async () => {
-      const result = await config.action();
-      if (result.error) {
-        setError(result.error);
-      } else {
-        router.refresh();
+      try {
+        const result = await config.action?.();
+        if (result?.error) {
+          setError(result.error);
+        } else {
+          router.refresh();
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to perform action.');
+      } finally {
+        setConfirmAction(null);
       }
-      setConfirmAction(null);
     });
   }
+
+  const isBusy = isPending || publishMutation.isPending;
 
   return (
     <AdminCard title="Publishing">
@@ -93,8 +109,8 @@ export function AssessmentPublishing({
           <AdminButton
             variant="primary"
             onClick={() => setConfirmAction('publish')}
-            disabled={isPending}
-            loading={isPending && confirmAction === 'publish'}
+            disabled={isBusy}
+            loading={isBusy && confirmAction === 'publish'}
           >
             Publish
           </AdminButton>
@@ -104,8 +120,8 @@ export function AssessmentPublishing({
           <AdminButton
             variant="secondary"
             onClick={() => setConfirmAction('unpublish')}
-            disabled={isPending}
-            loading={isPending && confirmAction === 'unpublish'}
+            disabled={isBusy}
+            loading={isBusy && confirmAction === 'unpublish'}
           >
             Unpublish
           </AdminButton>
@@ -115,8 +131,8 @@ export function AssessmentPublishing({
           <AdminButton
             variant="destructive"
             onClick={() => setConfirmAction('archive')}
-            disabled={isPending}
-            loading={isPending && confirmAction === 'archive'}
+            disabled={isBusy}
+            loading={isBusy && confirmAction === 'archive'}
           >
             Archive
           </AdminButton>

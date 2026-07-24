@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAdminFetch } from '../../lib/hooks/use-admin-fetch';
+import { useBillingOverviewQuery } from './hooks/use-billing-query';
 import {
   AdminDateCell,
   AdminIdCell,
@@ -97,16 +98,69 @@ export function AdminBillingMonitor() {
 }
 
 function BillingOverviewPanel() {
+  const { data, isLoading, error } = useBillingOverviewQuery();
+
+  const overview = data as Record<string, unknown> | undefined;
+
   return (
     <div className="flex flex-col gap-4">
       <h2 className="text-lg font-semibold text-[var(--text-primary)]">Billing Overview</h2>
       <p className="text-xs text-[var(--text-secondary)]">Summary statistics loaded from backend admin billing API.</p>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Active Subscriptions" value="—" />
-        <StatCard label="Revenue (MTD)" value="—" />
-        <StatCard label="Pending Refunds" value="—" />
-        <StatCard label="Failed Payments" value="—" />
-      </div>
+      {error && (
+        <AdminErrorBanner
+          message={error instanceof Error ? error.message : String(error)}
+        />
+      )}
+      {isLoading ? (
+        <AdminCard className="p-8 text-center text-sm text-[var(--text-muted)]">
+          Loading...
+        </AdminCard>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <StatCard
+            label="Active Subscriptions"
+            value={
+              overview?.activeSubscriptions != null
+                ? String(overview.activeSubscriptions)
+                : overview?.active_subscriptions != null
+                ? String(overview.active_subscriptions)
+                : '—'
+            }
+          />
+          <StatCard
+            label="Revenue (MTD)"
+            value={
+              overview?.revenueMtd != null
+                ? String(overview.revenueMtd)
+                : overview?.revenue_mtd != null
+                ? String(overview.revenue_mtd)
+                : overview?.revenue != null
+                ? String(overview.revenue)
+                : '—'
+            }
+          />
+          <StatCard
+            label="Pending Refunds"
+            value={
+              overview?.pendingRefunds != null
+                ? String(overview.pendingRefunds)
+                : overview?.pending_refunds != null
+                ? String(overview.pending_refunds)
+                : '—'
+            }
+          />
+          <StatCard
+            label="Failed Payments"
+            value={
+              overview?.failedPayments != null
+                ? String(overview.failedPayments)
+                : overview?.failed_payments != null
+                ? String(overview.failed_payments)
+                : '—'
+            }
+          />
+        </div>
+      )}
     </div>
   );
 }

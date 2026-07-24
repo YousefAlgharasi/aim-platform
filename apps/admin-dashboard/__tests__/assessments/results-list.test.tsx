@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, renderWithProviders } from '../test-utils';
 import { AssessmentResultsList } from '../../features/assessments/results-list';
 import { type AdminAssessmentResultItem } from '../../features/assessments/admin-assessment-results-api';
 
@@ -24,32 +24,32 @@ const makeResult = (overrides: Partial<AdminAssessmentResultItem> = {}): AdminAs
 
 describe('AssessmentResultsList', () => {
   it('renders score', () => {
-    render(<AssessmentResultsList assessmentId="a-1" results={[makeResult()]} total={1} page={1} totalPages={1} />);
+    renderWithProviders(<AssessmentResultsList assessmentId="a-1" results={[makeResult()]} total={1} page={1} totalPages={1} />);
     expect(screen.getByText('85%')).toBeInTheDocument();
   });
 
   it('renders pass badge', () => {
-    render(<AssessmentResultsList assessmentId="a-1" results={[makeResult()]} total={1} page={1} totalPages={1} />);
+    renderWithProviders(<AssessmentResultsList assessmentId="a-1" results={[makeResult()]} total={1} page={1} totalPages={1} />);
     expect(screen.getByText('Pass')).toBeInTheDocument();
   });
 
   it('renders fail badge', () => {
-    render(<AssessmentResultsList assessmentId="a-1" results={[makeResult({ passed: false })]} total={1} page={1} totalPages={1} />);
+    renderWithProviders(<AssessmentResultsList assessmentId="a-1" results={[makeResult({ passed: false })]} total={1} page={1} totalPages={1} />);
     expect(screen.getByText('Fail')).toBeInTheDocument();
   });
 
   it('shows empty state', () => {
-    render(<AssessmentResultsList assessmentId="a-1" results={[]} total={0} page={1} totalPages={0} />);
+    renderWithProviders(<AssessmentResultsList assessmentId="a-1" results={[]} total={0} page={1} totalPages={0} />);
     expect(screen.getByText(/no results/i)).toBeInTheDocument();
   });
 
   it('shows total count', () => {
-    render(<AssessmentResultsList assessmentId="a-1" results={[makeResult()]} total={3} page={1} totalPages={1} />);
+    renderWithProviders(<AssessmentResultsList assessmentId="a-1" results={[makeResult()]} total={3} page={1} totalPages={1} />);
     expect(screen.getByText('3 results total')).toBeInTheDocument();
   });
 
   it('shows in progress for null completedAt', () => {
-    render(<AssessmentResultsList assessmentId="a-1" results={[makeResult({ completedAt: null })]} total={1} page={1} totalPages={1} />);
+    renderWithProviders(<AssessmentResultsList assessmentId="a-1" results={[makeResult({ completedAt: null })]} total={1} page={1} totalPages={1} />);
     expect(screen.getByText('In progress')).toBeInTheDocument();
   });
 });

@@ -51,6 +51,7 @@ export default async function AdminReportsPage() {
           enrollment={enrollment}
           assessment={assessment}
           activeUsers={activeUsers}
+          token={token}
         />
       )}
 

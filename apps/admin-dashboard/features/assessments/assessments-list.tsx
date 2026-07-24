@@ -7,6 +7,7 @@ import type {
   AdminAssessmentListItem,
   AdminAssessmentType,
 } from './admin-assessments-api';
+import { useAdminAssessmentsQuery } from './hooks/use-assessments-query';
 import {
   AdminButton,
   AdminCard,
@@ -54,6 +55,16 @@ export function AssessmentsList({
   const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
+
+  const queryParams = {
+    page,
+    type: (filterType as AdminAssessmentType) || undefined,
+  };
+  const { data: queryData } = useAdminAssessmentsQuery(queryParams);
+
+  const displayAssessments = queryData?.data ?? assessments;
+  const displayTotal = queryData?.total ?? total;
+  const displayTotalPages = queryData ? Math.ceil(queryData.total / queryData.limit) : totalPages;
 
   function buildFilterHref(overrides: Record<string, string>) {
     const params = new URLSearchParams();
@@ -185,7 +196,7 @@ export function AssessmentsList({
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBlockEnd: 'var(--space-16)' }}>
-        <span>{total} assessment{total !== 1 ? 's' : ''}</span>
+        <span>{displayTotal} assessment{displayTotal !== 1 ? 's' : ''}</span>
         <AdminButton variant="primary" onClick={() => setShowCreate(true)}>+ New Assessment</AdminButton>
       </div>
 
@@ -201,12 +212,12 @@ export function AssessmentsList({
         </AdminSelect>
       </AdminFilterBar>
 
-      {assessments.length === 0 ? (
+      {displayAssessments.length === 0 ? (
         <p className="courses-empty">No assessments match the current filters.</p>
       ) : (
         <AdminTable
           columns={columns}
-          rows={assessments as AdminAssessmentListItem[]}
+          rows={displayAssessments as AdminAssessmentListItem[]}
           getRowKey={(a) => a.id}
           caption="Assessments"
         />
@@ -214,7 +225,7 @@ export function AssessmentsList({
 
       <AdminPagination
         page={page}
-        totalPages={totalPages}
+        totalPages={displayTotalPages}
         buildHref={buildPageHref}
         label="Assessments pagination"
       />

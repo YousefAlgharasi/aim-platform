@@ -13,3 +13,5 @@ export * from './report-runner-panel';
 export * from './exports-client';
 export * from './notification-reports-client';
 export * from './reports-client';
+export * from './hooks/use-analytics-query';
+

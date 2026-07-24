@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, renderWithProviders } from '../test-utils';
 import { CoursesList } from '../../features/content/courses-list';
 import type { AdminCourseSummary } from '../../features/content/admin-courses-api';
 
@@ -31,31 +31,31 @@ const defaultProps = {
 
 describe('CoursesList', () => {
   it('renders course table with title, slug, status', () => {
-    render(<CoursesList {...defaultProps} />);
+    renderWithProviders(<CoursesList {...defaultProps} />);
     expect(screen.getByText('English 101')).toBeInTheDocument();
     expect(screen.getByText('english-101')).toBeInTheDocument();
     expect(screen.getByText('Draft')).toBeInTheDocument();
   });
 
   it('shows empty state when no courses', () => {
-    render(<CoursesList {...defaultProps} courses={[]} total={0} />);
+    renderWithProviders(<CoursesList {...defaultProps} courses={[]} total={0} />);
     expect(screen.getByText(/no courses yet/i)).toBeInTheDocument();
   });
 
   it('shows create form when + New Course clicked', () => {
-    render(<CoursesList {...defaultProps} />);
+    renderWithProviders(<CoursesList {...defaultProps} />);
     fireEvent.click(screen.getByText('+ New Course'));
     expect(screen.getByText(/cancel/i)).toBeInTheDocument();
   });
 
   it('shows edit form when Edit clicked', () => {
-    render(<CoursesList {...defaultProps} />);
+    renderWithProviders(<CoursesList {...defaultProps} />);
     fireEvent.click(screen.getByText('Edit'));
     expect(screen.getByText(/cancel/i)).toBeInTheDocument();
   });
 
   it('renders status badge with correct class', () => {
-    render(
+    renderWithProviders(
       <CoursesList
         {...defaultProps}
         courses={[makeCourse({ status: 'published' })]}
@@ -66,31 +66,31 @@ describe('CoursesList', () => {
   });
 
   it('shows pagination when multiple pages', () => {
-    render(<CoursesList {...defaultProps} totalPages={3} page={2} />);
+    renderWithProviders(<CoursesList {...defaultProps} totalPages={3} page={2} />);
     expect(screen.getByText(/page 2 of 3/i)).toBeInTheDocument();
     expect(screen.getByText(/previous/i)).toBeInTheDocument();
     expect(screen.getByText(/next/i)).toBeInTheDocument();
   });
 
   it('hides pagination when single page', () => {
-    render(<CoursesList {...defaultProps} totalPages={1} page={1} />);
+    renderWithProviders(<CoursesList {...defaultProps} totalPages={1} page={1} />);
     expect(screen.queryByText(/page 1 of 1/i)).not.toBeInTheDocument();
   });
 
   it('displays dash for null slug', () => {
-    render(
+    renderWithProviders(
       <CoursesList {...defaultProps} courses={[makeCourse({ slug: null })]} />,
     );
     expect(screen.getByText('—')).toBeInTheDocument();
   });
 
   it('displays course description when present', () => {
-    render(<CoursesList {...defaultProps} />);
+    renderWithProviders(<CoursesList {...defaultProps} />);
     expect(screen.getByText('Intro course')).toBeInTheDocument();
   });
 
   it('renders table with accessible Actions column', () => {
-    render(<CoursesList {...defaultProps} />);
+    renderWithProviders(<CoursesList {...defaultProps} />);
     const actionsHeader = document.querySelector('th[aria-label="Actions"]');
     expect(actionsHeader).toBeInTheDocument();
   });

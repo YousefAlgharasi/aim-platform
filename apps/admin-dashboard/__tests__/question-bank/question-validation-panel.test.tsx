@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, renderWithProviders } from '../test-utils';
 import { QuestionValidationPanel } from '../../features/content/question-validation-panel';
 import type { AdminQuestionDetail } from '../../features/content/admin-question-bank-api';
 
@@ -20,32 +20,32 @@ const makeQuestion = (overrides: Partial<AdminQuestionDetail> = {}): AdminQuesti
 
 describe('QuestionValidationPanel', () => {
   it('shows warning for missing skill links', () => {
-    render(<QuestionValidationPanel question={makeQuestion()} hasSkillLinks={false} />);
+    renderWithProviders(<QuestionValidationPanel question={makeQuestion()} hasSkillLinks={false} />);
     expect(screen.getByText(/no skills linked/i)).toBeInTheDocument();
   });
 
   it('shows warning for missing explanation', () => {
-    render(<QuestionValidationPanel question={makeQuestion({ explanation: null })} hasSkillLinks={true} />);
+    renderWithProviders(<QuestionValidationPanel question={makeQuestion({ explanation: null })} hasSkillLinks={true} />);
     expect(screen.getByText(/no explanation/i)).toBeInTheDocument();
   });
 
   it('shows warning for missing tags', () => {
-    render(<QuestionValidationPanel question={makeQuestion({ tags: [] })} hasSkillLinks={true} />);
+    renderWithProviders(<QuestionValidationPanel question={makeQuestion({ tags: [] })} hasSkillLinks={true} />);
     expect(screen.getByText(/no tags/i)).toBeInTheDocument();
   });
 
   it('shows warning for choice-required types', () => {
-    render(<QuestionValidationPanel question={makeQuestion()} hasSkillLinks={true} />);
+    renderWithProviders(<QuestionValidationPanel question={makeQuestion()} hasSkillLinks={true} />);
     expect(screen.getByText(/require answer choices/i)).toBeInTheDocument();
   });
 
   it('shows error for empty stem', () => {
-    render(<QuestionValidationPanel question={makeQuestion({ stem: '' })} hasSkillLinks={true} />);
+    renderWithProviders(<QuestionValidationPanel question={makeQuestion({ stem: '' })} hasSkillLinks={true} />);
     expect(screen.getByText(/stem is empty/i)).toBeInTheDocument();
   });
 
   it('shows warning count badges', () => {
-    render(<QuestionValidationPanel question={makeQuestion()} hasSkillLinks={false} />);
+    renderWithProviders(<QuestionValidationPanel question={makeQuestion()} hasSkillLinks={false} />);
     const warningBadges = screen.getAllByText(/warning/i);
     expect(warningBadges.length).toBeGreaterThan(0);
   });

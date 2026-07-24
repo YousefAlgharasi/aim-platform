@@ -5,11 +5,17 @@ import type {
   AdminAssessmentReport,
   AdminActiveUsersReport,
 } from './admin-reports-api';
+import {
+  useEnrollmentReportQuery,
+  useAssessmentReportQuery,
+  useActiveUsersReportQuery,
+} from './hooks/use-analytics-query';
 
 type Props = {
   readonly enrollment: AdminEnrollmentReport;
   readonly assessment: AdminAssessmentReport;
   readonly activeUsers: AdminActiveUsersReport;
+  readonly token?: string;
 };
 
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
@@ -22,7 +28,28 @@ function StatCard({ label, value, sub }: { label: string; value: string | number
   );
 }
 
-export function ReportsClient({ enrollment, assessment, activeUsers }: Props) {
+export function ReportsClient({
+  enrollment: initialEnrollment,
+  assessment: initialAssessment,
+  activeUsers: initialActiveUsers,
+  token = '',
+}: Props) {
+  const { data: enrollment = initialEnrollment } = useEnrollmentReportQuery(
+    token,
+    undefined,
+    initialEnrollment,
+  );
+  const { data: assessment = initialAssessment } = useAssessmentReportQuery(
+    token,
+    undefined,
+    initialAssessment,
+  );
+  const { data: activeUsers = initialActiveUsers } = useActiveUsersReportQuery(
+    token,
+    undefined,
+    initialActiveUsers,
+  );
+
   return (
     <div className="rc-root">
       <div className="rc-section">
