@@ -421,12 +421,18 @@ class AppRouter {
     final args = _placementArgs(arguments);
     final attemptId = args['attemptId'];
     final totalSections = args['totalSections'];
+    final completedCount = args['completedCount'];
+    final skippedCount = args['skippedCount'];
+    final totalQuestions = args['totalQuestions'];
 
     if (attemptId is! String) return const SplashPage();
 
     return PlacementSubmitPage(
       attemptId: attemptId,
       totalSections: totalSections is int ? totalSections : null,
+      completedCount: completedCount is int ? completedCount : null,
+      skippedCount: skippedCount is int ? skippedCount : null,
+      totalQuestions: totalQuestions is int ? totalQuestions : null,
     );
   }
 
@@ -695,7 +701,7 @@ class AppRouter {
         return AppRoutePaths.placementGate;
       }
       if (routeName == AppRoutePaths.splash) {
-        return AppRoutePaths.mainShell;
+        return AppRoutePaths.placementGate;
       }
     }
 

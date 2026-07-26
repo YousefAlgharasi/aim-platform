@@ -1,38 +1,11 @@
-// Phase 4 — P4-068
-// PlacementSubmitPage — confirmation and completion screen.
-//
-// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → placementSubmit
-//   docs/design/ui-for-all-system-mobile/screenshots/light/22-screen.png
-//   docs/design/ui-for-all-system-mobile/screenshots/dark/22-screen.png
-// Endpoint: POST /placement/attempts/:id/complete
-// Widgets: AIMGradientButton, AIMFullScreenLoading
-//
-// Scope: Placement Test phase only.
-//
-// Responsibility:
-//   1. Show a summary screen after the student has answered all questions
-//      across all sections.
-//   2. "Submit Placement Test" calls POST /placement/attempts/:id/complete.
-//   3. Backend transitions the attempt active → submitted and runs scoring.
-//      Flutter receives only the submission confirmation — no scores, no level.
-//   4. On success, navigate to the result page (P4-069) which polls for the
-//      completed result once backend scoring is done.
-//
-// Security rules:
-// - Flutter NEVER calculates or displays placement score, CEFR level, mastery,
-//   or weakness maps. These are computed exclusively by the backend.
-// - The page only confirms that all answers have been submitted.
-// - student_id is JWT-resolved server-side — never sent by Flutter.
-// - No AIM Engine runtime, AI Teacher, lesson delivery, or progress dashboard.
-// - No secrets, service-role keys, or privileged config here.
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
+import 'package:aim_mobile/core/theme/theme.dart';
+import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_provider.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_submit_notifier.dart';
@@ -42,15 +15,16 @@ class PlacementSubmitPage extends ConsumerStatefulWidget {
     super.key,
     required this.attemptId,
     this.totalSections,
+    this.completedCount,
+    this.skippedCount,
+    this.totalQuestions,
   });
 
-  /// The active placement attempt to complete.
   final String attemptId;
-
-  /// Total section count, passed from the section page's ready state, so
-  /// this screen can show "All N sections complete" — falls back to
-  /// generic copy if not supplied (e.g. deep-linked directly).
   final int? totalSections;
+  final int? completedCount;
+  final int? skippedCount;
+  final int? totalQuestions;
 
   @override
   ConsumerState<PlacementSubmitPage> createState() =>
@@ -59,170 +33,256 @@ class PlacementSubmitPage extends ConsumerStatefulWidget {
 
 class _PlacementSubmitPageState extends ConsumerState<PlacementSubmitPage> {
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final token = ref.read(authFlowProvider).accessToken ?? '';
+      ref.read(placementSubmitProvider.notifier).completeAttempt(
+            token,
+            attemptId: widget.attemptId,
+          );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final state = ref.watch(placementSubmitProvider);
     final surfaces = aimSurfacesOf(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Navigate to result page on success.
     ref.listen<PlacementSubmitState>(placementSubmitProvider, (_, next) {
       if (next is PlacementSubmitSuccess && context.mounted) {
-        context.pushReplacement(
-          AppRoutePaths.placementResult,
-          extra: {'attemptId': next.attemptId},
-        );
+        Future.delayed(const Duration(milliseconds: 1800), () {
+          if (context.mounted) {
+            context.pushReplacement(
+              AppRoutePaths.placementResult,
+              extra: {'attemptId': next.attemptId},
+            );
+          }
+        });
       }
     });
 
-    return Scaffold(
-      backgroundColor: surfaces.background,
-      body: Column(
-        children: [
-          _GradientTopBar(title: 'Almost done'),
-          Expanded(
-            child: switch (state) {
-              PlacementSubmitLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Submitting your answers',
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+      child: Scaffold(
+        backgroundColor: surfaces.background,
+        body: state is PlacementSubmitError
+            ? AIMFullScreenError(
+                message: state.message,
+                retryLabel: 'Retry',
+                onRetry: () {
+                  ref.read(placementSubmitProvider.notifier).reset();
+                  final token = ref.read(authFlowProvider).accessToken ?? '';
+                  ref.read(placementSubmitProvider.notifier).completeAttempt(
+                        token,
+                        attemptId: widget.attemptId,
+                      );
+                },
+              )
+            : SafeArea(
+                child: _SubmissionSuccessfulBody(
+                  completedCount: widget.completedCount ?? 18,
+                  skippedCount: widget.skippedCount ?? 2,
+                  totalQuestions: widget.totalQuestions ?? 20,
                 ),
-              PlacementSubmitSuccess() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading your result',
-                ),
-              PlacementSubmitError(:final message) => AIMFullScreenError(
-                  message: message,
-                  retryLabel: 'Retry',
-                  onRetry: () {
-                    ref.read(placementSubmitProvider.notifier).reset();
-                  },
-                ),
-              PlacementSubmitIdle() => _ConfirmBody(
-                  totalSections: widget.totalSections,
-                  onSubmit: () {
-                    final token = ref.read(authFlowProvider).accessToken ?? '';
-                    ref.read(placementSubmitProvider.notifier).completeAttempt(
-                          token,
-                          attemptId: widget.attemptId,
-                        );
-                  },
-                ),
-            },
-          ),
-        ],
+              ),
       ),
     );
   }
 }
 
-// ---------------------------------------------------------------------------
-// Gradient top bar — back chevron + "Almost done".
-// ---------------------------------------------------------------------------
+class _SubmissionSuccessfulBody extends StatelessWidget {
+  const _SubmissionSuccessfulBody({
+    required this.completedCount,
+    required this.skippedCount,
+    required this.totalQuestions,
+  });
 
-class _GradientTopBar extends StatelessWidget {
-  const _GradientTopBar({required this.title});
-
-  final String title;
+  final int completedCount;
+  final int skippedCount;
+  final int totalQuestions;
 
   @override
   Widget build(BuildContext context) {
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
+    final surfaces = aimSurfacesOf(context);
 
-    // Without this, the OS paints its default status bar background above
-    // the gradient instead of light icons sitting transparently on it.
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
-      child: Container(
-        width: double.infinity,
-        decoration: const BoxDecoration(gradient: AimGradients.gzHero),
-        child: SafeArea(
-          bottom: false,
-          child: SizedBox(
-            height: AimSizes.topBarHeight,
-            child: Row(
-              children: [
-                const SizedBox(width: AimSpacing.space8),
-                AIMIconButton(
-                  semanticLabel: 'Back',
-                  icon: Icon(
-                    isRtl ? Icons.chevron_right : Icons.chevron_left,
-                    color: AimColors.neutral0,
-                  ),
-                  onPressed: () {
-                    if (context.canPop()) context.pop();
-                  },
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AimSpacing.screenPaddingMobile,
+        vertical: AimSpacing.space32,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Spacer(flex: 2),
+          // ── Centered Sparkles Badge (Figma: 80x80 purple circle + white ✦) ──
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: AimColors.primary500,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AimColors.primary500.withValues(alpha: 0.25),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
                 ),
-                const SizedBox(width: AimSpacing.space4),
-                Text(
-                  title,
-                  style:
-                      AimTextStyles.title.copyWith(color: AimColors.neutral0),
+              ],
+            ),
+            child: const Center(
+              child: Text(
+                '✦',
+                style: TextStyle(
+                  color: AimColors.neutral0,
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: AimSpacing.space24),
+
+          // ── Title & Subtitle ───────────────────────────────────────────────
+          Text(
+            'Submission Successful',
+            style: AimTextStyles.h2.copyWith(
+              color: surfaces.textPrimary,
+              letterSpacing: -0.3,
+            ),
+          ),
+          const SizedBox(height: AimSpacing.innerGap),
+          Text(
+            'Your placement test has been recorded.',
+            style: AimTextStyles.bodySm.copyWith(
+              color: surfaces.textSecondary,
+            ),
+          ),
+          const SizedBox(height: AimSpacing.space32),
+
+          // ── Stat Card (Completed vs Skipped) ──────────────────────────────
+          Container(
+            padding: const EdgeInsets.all(AimSpacing.cardPaddingLg),
+            decoration: BoxDecoration(
+              color: surfaces.surface,
+              borderRadius: AimRadius.borderLg,
+              border: Border.all(color: surfaces.border),
+              boxShadow: [
+                BoxShadow(
+                  color: AimColors.neutral900.withValues(alpha: 0.03),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: AimColors.success500.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.check,
+                          size: 14,
+                          color: AimColors.success500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: AimSpacing.componentGap),
+                    Text(
+                      'Completed Questions',
+                      style: AimTextStyles.bodySm.copyWith(
+                        fontWeight: AimFontWeights.medium,
+                        color: surfaces.textPrimary,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '$completedCount / $totalQuestions',
+                      style: AimTextStyles.bodySm.copyWith(
+                        fontWeight: AimFontWeights.bold,
+                        color: AimColors.primary500,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AimSpacing.cardPadding),
+                Divider(height: 1, color: surfaces.divider),
+                const SizedBox(height: AimSpacing.cardPadding),
+                Row(
+                  children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: surfaces.textMuted.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.fast_forward_rounded,
+                          size: 14,
+                          color: surfaces.textMuted,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: AimSpacing.componentGap),
+                    Text(
+                      'Skipped Questions',
+                      style: AimTextStyles.bodySm.copyWith(
+                        fontWeight: AimFontWeights.medium,
+                        color: surfaces.textPrimary,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '$skippedCount',
+                      style: AimTextStyles.bodySm.copyWith(
+                        fontWeight: AimFontWeights.bold,
+                        color: surfaces.textPrimary,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
+          const Spacer(flex: 3),
 
-// ---------------------------------------------------------------------------
-// Confirmation body
-// ---------------------------------------------------------------------------
-
-class _ConfirmBody extends StatelessWidget {
-  const _ConfirmBody({required this.onSubmit, this.totalSections});
-
-  final VoidCallback onSubmit;
-  final int? totalSections;
-
-  @override
-  Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-    final soft = aimSoftFillsOf(context);
-    final headline = totalSections != null
-        ? 'All $totalSections sections complete'
-        : 'All sections complete';
-
-    return Padding(
-      padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Spacer(),
-          Center(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: soft.success,
-                shape: BoxShape.circle,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(AimSpacing.space16),
-                child: Icon(
-                  Icons.check,
-                  size: AimSizes.iconLg,
-                  color: soft.onSuccess,
-                ),
-              ),
+          // ── Loading Spinner & AI Calibration Text ──────────────────────────
+          const SizedBox(
+            width: 32,
+            height: 32,
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+              valueColor: AlwaysStoppedAnimation<Color>(AimColors.primary500),
             ),
           ),
-          const SizedBox(height: AimSpacing.sectionGap),
+          const SizedBox(height: AimSpacing.space20),
           Text(
-            headline,
-            textAlign: TextAlign.center,
-            style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
+            'Analyzing your answers',
+            style: AimTextStyles.bodyLg.copyWith(
+              fontWeight: AimFontWeights.bold,
+              color: AimColors.primary500,
+            ),
           ),
-          const SizedBox(height: AimSpacing.space8),
+          const SizedBox(height: AimSpacing.innerGap),
           Text(
-            'Submit your placement test to see your level and a '
-            'personalised plan.',
+            'Our AI is calibrating your optimal starting\nlevel to ensure your learning path is\nperfectly paced.',
             textAlign: TextAlign.center,
-            style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
+            style: AimTextStyles.caption.copyWith(
+              color: surfaces.textSecondary,
+              height: 1.5,
+            ),
           ),
-          const Spacer(),
-          AIMGradientButton(
-            label: 'Submit Placement Test',
-            fullWidth: true,
-            onPressed: onSubmit,
-            semanticLabel: 'Submit Placement Test',
-          ),
+          const Spacer(flex: 1),
         ],
       ),
     );

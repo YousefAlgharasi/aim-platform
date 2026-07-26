@@ -1,26 +1,3 @@
-// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md â†’ "Login"
-//   docs/design/ui-for-all-system-mobile/screenshots/light/02-screen.png
-//   docs/design/ui-for-all-system-mobile/design/AIM Mobile - Gen Z.dc.html
-//   (lines 113-173 â€” canonical HTML source for screen 2)
-//
-// Key design decisions from HTML source:
-//   â€¢ Page bg: --surface-sunken
-//   â€¢ Header: gz-hero gradient, padding 40/24/70, border-radius 0 0 34 34,
-//     box-shadow 0 16px 38px -18px rgba(108,99,255,.8)
-//   â€¢ Blob 1 (top-right): white circle 170Ã—170, rgba(255,255,255,.14), animated
-//   â€¢ Blob 2 (bottom-left): lime circle 130Ã—130, rgba(200,255,61,.16), blur 8px
-//   â€¢ Badge: 62Ã—62, radius 18, rgba(255,255,255,.2), 1.5px border, backdrop-blur 6px
-//   â€¢ "Welcome back": 26px/800, letter-spacing -.01em
-//   â€¢ Card: margin-top -28px, padding 32/18/22, radius-2xl, shadow-card-hover
-//   â€¢ Sign In button: 52px pill, gz-hero, shadow 0 10px 22px -6px rgba(108,99,255,.6)
-//   â€¢ Social divider: Row [â€”â€” text â€”â€”] layout
-//   â€¢ Social buttons: 52px pill, border-strong, surface bg, shadow-card
-//   â€¢ Footer: "Don't have an account?" + gz-purple link, 13.5px
-//
-// Security (unchanged):
-//   The backend (NestJS) is the sole auth authority. No service-role keys,
-//   JWT secrets, or direct Supabase calls here.
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,16 +6,11 @@ import 'package:go_router/go_router.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/config/app_config_provider.dart';
 import '../../../../core/routing/routing.dart';
+import '../../../../core/theme/theme.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../logic/provider/login_provider.dart';
 
-/// Login screen â€” Student Mobile App MVP.
-///
-/// A student enters their email and password, [LoginNotifier] validates the
-/// input locally and then calls the backend's `POST /auth/login`. On
-/// success the notifier syncs the auth context, persists the session, and
-/// flips `authFlowProvider` to signed-in; `AppRouter`'s redirect then takes
-/// the user to [AppRoutePaths.mainShell] automatically.
+/// Login screen — Student Mobile App MVP.
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
@@ -90,59 +62,49 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final formState = ref.watch(loginProvider);
     final isTestModeAvailable = !ref.watch(appConfigProvider).isProduction;
     final size = MediaQuery.sizeOf(context);
+    final surfaces = aimSurfacesOf(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.dark,
+      value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Scaffold(
-        // â”€â”€ Figma Screen 2: bg-[#f8fafc] â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        backgroundColor: const Color(0xFFF8FAFC),
+        backgroundColor: surfaces.background,
         body: SafeArea(
           child: AutofillGroup(
             child: ListView(
               padding: EdgeInsets.fromLTRB(
-                24,
-                size.height * 0.065, // ~55px on 852 â€” matches Figma top:190px minus safe area
-                24,
-                40,
+                AimSpacing.screenPaddingMobile,
+                size.height * 0.065,
+                AimSpacing.screenPaddingMobile,
+                AimSpacing.space40,
               ),
               children: [
-                // â”€â”€ Title: "Welcome back," â€” IBM Plex Sans Bold 30px #0F172A â”€â”€
-                const Text(
+                Text(
                   'Welcome back,',
-                  style: TextStyle(
-                    fontFamily: 'IBMPlexSans',
-                    fontWeight: FontWeight.w700,
-                    fontSize: 30,
-                    color: Color(0xFF0F172A),
-                    letterSpacing: -0.3,
+                  style: AimTextStyles.h1.copyWith(
+                    color: surfaces.textPrimary,
                     height: 1.2,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AimSpacing.componentGap),
 
-                // â”€â”€ Subtitle: #94A3B8, 14px â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-                const Text(
+                Text(
                   'We are happy to see you here again. Enter your email address and password',
-                  style: TextStyle(
-                    fontFamily: 'IBMPlexSans',
-                    fontWeight: FontWeight.w400,
-                    fontSize: 14,
-                    color: Color(0xFF94A3B8),
+                  style: AimTextStyles.bodySm.copyWith(
+                    color: surfaces.textSecondary,
                     height: 1.5,
                   ),
                 ),
-                const SizedBox(height: 36),
+                const SizedBox(height: AimSpacing.space32),
 
-                // â”€â”€ Error Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 if (formState.errorMessage != null) ...[
                   AIMAlertBanner(
                     tone: AIMAlertTone.error,
                     child: Text(formState.errorMessage!),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AimSpacing.formFieldGap),
                 ],
 
-                // â”€â”€ Email Input â€” bg:#E2E8F0, border:#CBD5E1, radius:12 â”€â”€â”€â”€
                 _FigmaInputField(
                   controller: _emailController,
                   focusNode: _emailFocus,
@@ -154,9 +116,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   onChanged: _onEmailChanged,
                   onSubmitted: (_) => _passwordFocus.requestFocus(),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AimSpacing.formFieldGap),
 
-                // â”€â”€ Password Input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 _FigmaInputField(
                   controller: _passwordController,
                   focusNode: _passwordFocus,
@@ -168,9 +129,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   onChanged: _onPasswordChanged,
                   onSubmitted: (_) => _submit(),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AimSpacing.componentGap),
 
-                // ——— Forgot password? — centered, #0F172A SemiBold 16px —————
                 Center(
                   child: TextButton(
                     onPressed: () {
@@ -184,65 +144,59 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     },
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 10),
+                        horizontal: AimSpacing.space16,
+                        vertical: AimSpacing.space8,
+                      ),
                       tapTargetSize: MaterialTapTargetSize.padded,
-                      overlayColor: const Color(0xFF4F46E5).withValues(alpha: 0.12),
+                      overlayColor: AimColors.primary500.withValues(alpha: 0.12),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Forget password?',
-                      style: TextStyle(
-                        fontFamily: 'IBMPlexSans',
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                        color: Color(0xFF0F172A),
+                      style: AimTextStyles.button.copyWith(
+                        color: surfaces.textPrimary,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: AimSpacing.space20),
 
-                // ── Login Button — Figma: bg #4F46E5, shadow rgba(79,70,229,0.2) ─
-                // Always shows indigo; onTap is gated by validation.
                 SizedBox(
                   width: double.infinity,
-                  height: 52,
+                  height: AimSizes.buttonLg,
                   child: DecoratedBox(
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF4F46E5), // always indigo per Figma
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
+                    decoration: BoxDecoration(
+                      color: AimColors.primary500,
+                      borderRadius: AimRadius.borderMd,
                       boxShadow: [
                         BoxShadow(
-                          color: Color(0x334F46E5), // rgba(79,70,229,0.2)
+                          color: AimColors.primary500.withValues(alpha: 0.2),
                           blurRadius: 6,
-                          offset: Offset(0, 4),
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
                     child: Material(
                       color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AimRadius.borderMd,
                       child: InkWell(
                         onTap: formState.isSubmitting ? null : _submit,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AimRadius.borderMd,
                         child: Center(
                           child: formState.isSubmitting
-                              ? const SizedBox(
+                              ? SizedBox(
                                   width: 22,
                                   height: 22,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2.5,
                                     valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white),
+                                      surfaces.textOnPrimary,
+                                    ),
                                   ),
                                 )
                               : Text(
                                   l10n.authSignInButton,
-                                  style: const TextStyle(
-                                    fontFamily: 'IBMPlexSans',
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 16,
-                                    color: Color(0xFFF8FAFC),
-                                    height: 1.5,
+                                  style: AimTextStyles.button.copyWith(
+                                    color: surfaces.textOnPrimary,
                                   ),
                                 ),
                         ),
@@ -250,42 +204,37 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AimSpacing.sectionGap),
 
-                // ——— "or" Divider — lines in #94A3B8 ————————————————————————
-                const Row(
+                Row(
                   children: [
                     Expanded(
                       child: Divider(
-                        color: Color(0xFF94A3B8),
+                        color: surfaces.divider,
                         height: 1,
                         thickness: 1,
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 14),
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
                       child: Text(
                         'or',
-                        style: TextStyle(
-                          fontFamily: 'IBMPlexSans',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          color: Color(0xFF94A3B8),
+                        style: AimTextStyles.bodySm.copyWith(
+                          color: surfaces.textMuted,
                         ),
                       ),
                     ),
                     Expanded(
                       child: Divider(
-                        color: Color(0xFF94A3B8),
+                        color: surfaces.divider,
                         height: 1,
                         thickness: 1,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AimSpacing.formFieldGap),
 
-                // â”€â”€ Social Buttons â€” bg:#0F172A, h:48, radius:16 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 Row(
                   children: [
                     Expanded(
@@ -295,51 +244,46 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         onPressed: () {},
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AimSpacing.componentGap),
                     Expanded(
                       child: _FigmaSocialButton(
-                        icon: const _FacebookLogo(),
-                        label: 'Facebook',
+                        icon: const _AppleLogo(),
+                        label: 'Apple',
                         onPressed: () {},
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: AimSpacing.space24),
 
-                // â”€â”€ Footer: "Create an account" underline, #0F172A â”€â”€â”€â”€â”€â”€â”€â”€â”€
-                Center(
-                  child: GestureDetector(
-                    onTap: _openRegister,
-                    child: const Text(
-                      'Create an account',
-                      style: TextStyle(
-                        fontFamily: 'IBMPlexSans',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF0F172A),
-                        decoration: TextDecoration.underline,
-                        decorationColor: Color(0xFF0F172A),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Don't have an account? ",
+                      style: AimTextStyles.bodySm.copyWith(
+                        color: surfaces.textSecondary,
                       ),
                     ),
-                  ),
+                    GestureDetector(
+                      onTap: _openRegister,
+                      child: Text(
+                        'Register',
+                        style: AimTextStyles.bodySm.copyWith(
+                          fontWeight: AimFontWeights.bold,
+                          color: AimColors.primary500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
 
-                // â”€â”€ Developer test mode (non-production only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 if (isTestModeAvailable) ...[
-                  const SizedBox(height: 32),
-                  const _DeveloperTestModeDivider(),
-                  const SizedBox(height: 12),
-                  _DeveloperTestModeRoleButtons(
+                  const SizedBox(height: AimSpacing.space32),
+                  _TestAccountsCard(
                     isSubmitting: formState.isSubmitting,
                     onSelectRole: _enterAsTestRole,
-                  ),
-                  const SizedBox(height: 12),
-                  AIMButton(
-                    onPressed: _openEndpointTester,
-                    variant: AIMButtonVariant.outline,
-                    fullWidth: true,
-                    child: Text(l10n.authOpenEndpointTester),
+                    onOpenEndpointTester: _openEndpointTester,
                   ),
                 ],
               ],
@@ -351,10 +295,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Figma Screen 2 â€” Input field: bg #E2E8F0, border #CBD5E1, radius 12.
-// Focuses changes border to indigo. Eye toggle for password fields.
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class _FigmaInputField extends StatefulWidget {
   const _FigmaInputField({
     required this.controller,
@@ -406,14 +346,16 @@ class _FigmaInputFieldState extends State<_FigmaInputField> {
 
   @override
   Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150),
-      height: 52,
+      height: AimSizes.buttonLg,
       decoration: BoxDecoration(
-        color: const Color(0xFFE2E8F0),
-        borderRadius: BorderRadius.circular(12),
+        color: surfaces.surfaceSunken,
+        borderRadius: AimRadius.borderMd,
         border: Border.all(
-          color: _focused ? const Color(0xFF4F46E5) : const Color(0xFFCBD5E1),
+          color: _focused ? AimColors.primary500 : surfaces.border,
           width: 1,
         ),
       ),
@@ -421,7 +363,7 @@ class _FigmaInputFieldState extends State<_FigmaInputField> {
         children: [
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: AimSpacing.space16),
               child: TextField(
                 controller: widget.controller,
                 focusNode: widget.focusNode,
@@ -432,22 +374,14 @@ class _FigmaInputFieldState extends State<_FigmaInputField> {
                 enabled: !widget.disabled,
                 onChanged: widget.onChanged,
                 onSubmitted: widget.onSubmitted,
-                style: const TextStyle(
-                  fontFamily: 'IBMPlexSans',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  color: Color(0xFF0F172A),
+                style: AimTextStyles.bodyMd.copyWith(
+                  color: surfaces.textPrimary,
                 ),
                 decoration: InputDecoration(
                   hintText: widget.placeholder,
-                  hintStyle: const TextStyle(
-                    fontFamily: 'IBMPlexSans',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    color: Color(0xFF64748B),
+                  hintStyle: AimTextStyles.bodyMd.copyWith(
+                    color: surfaces.textMuted,
                   ),
-                  // filled + transparent prevents Material dark-theme from
-                  // painting the TextField's own background (shows black).
                   filled: true,
                   fillColor: Colors.transparent,
                   border: InputBorder.none,
@@ -464,13 +398,13 @@ class _FigmaInputFieldState extends State<_FigmaInputField> {
             GestureDetector(
               onTap: () => setState(() => _showText = !_showText),
               child: Padding(
-                padding: const EdgeInsets.only(right: 16),
+                padding: const EdgeInsets.only(right: AimSpacing.space16),
                 child: Icon(
                   _showText
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
-                  size: 20,
-                  color: const Color(0xFF64748B),
+                  size: AimSizes.iconMd,
+                  color: surfaces.textMuted,
                 ),
               ),
             ),
@@ -480,9 +414,6 @@ class _FigmaInputFieldState extends State<_FigmaInputField> {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Figma Screen 2 â€” Social button: bg #0F172A, h 48, radius 16, white text.
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class _FigmaSocialButton extends StatelessWidget {
   const _FigmaSocialButton({
     required this.icon,
@@ -496,26 +427,26 @@ class _FigmaSocialButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+
     return SizedBox(
-      height: 48,
+      height: AimSizes.input,
       child: Material(
-        color: const Color(0xFF0F172A),
-        borderRadius: BorderRadius.circular(16),
+        color: surfaces.surfaceRaised,
+        borderRadius: AimRadius.borderLg,
         child: InkWell(
           onTap: onPressed,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AimRadius.borderLg,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               icon,
-              const SizedBox(width: 8),
+              const SizedBox(width: AimSpacing.innerGap),
               Text(
                 label,
-                style: const TextStyle(
-                  fontFamily: 'IBMPlexSans',
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                  color: Color(0xFFF8FAFC),
+                style: AimTextStyles.bodySm.copyWith(
+                  fontWeight: AimFontWeights.medium,
+                  color: surfaces.textPrimary,
                 ),
               ),
             ],
@@ -526,10 +457,116 @@ class _FigmaSocialButton extends StatelessWidget {
   }
 }
 
+class _TestAccountsCard extends StatelessWidget {
+  const _TestAccountsCard({
+    required this.isSubmitting,
+    required this.onSelectRole,
+    required this.onOpenEndpointTester,
+  });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Brand logos for social buttons.
-// ─────────────────────────────────────────────────────────────────────────────
+  final bool isSubmitting;
+  final ValueChanged<String> onSelectRole;
+  final VoidCallback onOpenEndpointTester;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+
+    return Container(
+      padding: const EdgeInsets.all(AimSpacing.cardPadding),
+      decoration: BoxDecoration(
+        color: surfaces.surfaceSunken,
+        borderRadius: AimRadius.borderMd,
+        border: Border.all(color: surfaces.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'DEV / TEST ACCOUNTS',
+            style: AimTextStyles.caption.copyWith(
+              fontWeight: AimFontWeights.bold,
+              color: surfaces.textMuted,
+              letterSpacing: 0.8,
+            ),
+          ),
+          const SizedBox(height: AimSpacing.innerGap),
+          Text(
+            'Quick-login with test credentials:',
+            style: AimTextStyles.bodySm.copyWith(
+              color: surfaces.textSecondary,
+            ),
+          ),
+          const SizedBox(height: AimSpacing.componentGap),
+          Wrap(
+            spacing: AimSpacing.innerGap,
+            runSpacing: AimSpacing.innerGap,
+            children: [
+              _TestRoleChip(
+                label: 'Student',
+                enabled: !isSubmitting,
+                onTap: () => onSelectRole('student'),
+              ),
+              _TestRoleChip(
+                label: 'Parent',
+                enabled: !isSubmitting,
+                onTap: () => onSelectRole('parent'),
+              ),
+              _TestRoleChip(
+                label: 'Teacher',
+                enabled: !isSubmitting,
+                onTap: () => onSelectRole('teacher'),
+              ),
+            ],
+          ),
+          const SizedBox(height: AimSpacing.componentGap),
+          GestureDetector(
+            onTap: onOpenEndpointTester,
+            child: Text(
+              'Open Endpoint Tester →',
+              style: AimTextStyles.caption.copyWith(
+                fontWeight: AimFontWeights.semibold,
+                color: AimColors.primary500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TestRoleChip extends StatelessWidget {
+  const _TestRoleChip({
+    required this.label,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+
+    return ActionChip(
+      label: Text(label),
+      onPressed: enabled ? onTap : null,
+      backgroundColor: surfaces.surface,
+      labelStyle: AimTextStyles.caption.copyWith(
+        color: AimColors.primary500,
+        fontWeight: AimFontWeights.semibold,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: AimRadius.borderSm,
+        side: BorderSide(color: AimColors.primary500.withValues(alpha: 0.3)),
+      ),
+    );
+  }
+}
+
 class _GoogleLogo extends StatelessWidget {
   const _GoogleLogo();
   @override
@@ -606,133 +643,23 @@ class _GooglePainter extends CustomPainter {
           ..lineTo(19.36 * scale, 3.87 * scale)
           ..cubicTo(17.45 * scale, 2.09 * scale, 14.97 * scale, 1 * scale,
               12 * scale, 1 * scale)
-          ..cubicTo(7.7 * scale, 1 * scale, 3.99 * scale, 3.47 * scale,
+          ..cubicTo(7.7 * scale, 1 * scale, 4 * scale, 3.47 * scale,
               2.18 * scale, 7.06 * scale)
           ..lineTo(5.84 * scale, 9.9 * scale)
-          ..cubicTo(6.71 * scale, 7.31 * scale, 9.14 * scale, 5.38 * scale,
+          ..cubicTo(6.71 * scale, 7.3 * scale, 9.14 * scale, 5.38 * scale,
               12 * scale, 5.38 * scale)
           ..close());
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(CustomPainter old) => false;
 }
 
-class _FacebookLogo extends StatelessWidget {
-  const _FacebookLogo();
-  @override
-  Widget build(BuildContext context) => CustomPaint(
-        size: const Size(19, 19),
-        painter: _FacebookPainter(),
-      );
-}
-
-class _FacebookPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size s) {
-    final scale = s.width / 24;
-    final paint = Paint()..color = const Color(0xFF1877F2);
-    final path = Path()
-      ..moveTo(24 * scale, 12.07 * scale)
-      ..cubicTo(24 * scale, 5.4 * scale, 18.63 * scale, 0, 12 * scale, 0)
-      ..cubicTo(5.37 * scale, 0, 0, 5.4 * scale, 0, 12.07 * scale)
-      ..cubicTo(0, 18.09 * scale, 4.39 * scale, 23.08 * scale,
-          10.13 * scale, 24 * scale)
-      ..lineTo(10.13 * scale, 15.56 * scale)
-      ..lineTo(7.08 * scale, 15.56 * scale)
-      ..lineTo(7.08 * scale, 12.07 * scale)
-      ..lineTo(10.13 * scale, 12.07 * scale)
-      ..lineTo(10.13 * scale, 9.41 * scale)
-      ..cubicTo(10.13 * scale, 6.39 * scale, 11.92 * scale, 4.72 * scale,
-          14.66 * scale, 4.72 * scale)
-      ..cubicTo(15.97 * scale, 4.72 * scale, 17.34 * scale, 4.96 * scale,
-          17.34 * scale, 4.96 * scale)
-      ..lineTo(17.34 * scale, 7.93 * scale)
-      ..lineTo(15.84 * scale, 7.93 * scale)
-      ..cubicTo(14.35 * scale, 7.93 * scale, 13.88 * scale, 8.86 * scale,
-          13.88 * scale, 9.82 * scale)
-      ..lineTo(13.88 * scale, 12.07 * scale)
-      ..lineTo(17.21 * scale, 12.07 * scale)
-      ..lineTo(16.68 * scale, 15.56 * scale)
-      ..lineTo(13.88 * scale, 15.56 * scale)
-      ..lineTo(13.88 * scale, 24 * scale)
-      ..cubicTo(19.61 * scale, 23.08 * scale, 24 * scale, 18.09 * scale,
-          24 * scale, 12.07 * scale)
-      ..close();
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Developer test mode (non-production builds only).
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-class _DeveloperTestModeDivider extends StatelessWidget {
-  const _DeveloperTestModeDivider();
-
+class _AppleLogo extends StatelessWidget {
+  const _AppleLogo();
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
-    final l10n = AppLocalizations.of(context);
-    return Row(
-      children: [
-        Expanded(child: Divider(color: surfaces.textSecondary)),
-        Padding(
-          padding: const EdgeInsetsDirectional.symmetric(horizontal: AimSpacing.innerGap),
-          child: Text(
-            l10n.authTestModeLabel,
-            style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
-          ),
-        ),
-        Expanded(child: Divider(color: surfaces.textSecondary)),
-      ],
-    );
-  }
-}
-
-class _DeveloperTestModeRoleButtons extends StatelessWidget {
-  const _DeveloperTestModeRoleButtons({
-    required this.isSubmitting,
-    required this.onSelectRole,
-  });
-
-  final bool isSubmitting;
-  final ValueChanged<String> onSelectRole;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Row(
-      children: [
-        Expanded(
-          child: AIMButton(
-            onPressed: isSubmitting ? null : () => onSelectRole('student'),
-            variant: AIMButtonVariant.secondary,
-            semanticLabel: l10n.authEnterAsTestStudentSemantic,
-            child: Text(l10n.authStudentButton),
-          ),
-        ),
-        const SizedBox(width: AimSpacing.innerGap),
-        Expanded(
-          child: AIMButton(
-            onPressed: isSubmitting ? null : () => onSelectRole('parent'),
-            variant: AIMButtonVariant.secondary,
-            semanticLabel: l10n.authEnterAsTestParentSemantic,
-            child: Text(l10n.authParentButton),
-          ),
-        ),
-        const SizedBox(width: AimSpacing.innerGap),
-        Expanded(
-          child: AIMButton(
-            onPressed: isSubmitting ? null : () => onSelectRole('admin'),
-            variant: AIMButtonVariant.secondary,
-            semanticLabel: l10n.authEnterAsTestAdminSemantic,
-            child: Text(l10n.authAdminButton),
-          ),
-        ),
-      ],
-    );
+    return Icon(Icons.apple, size: 20, color: surfaces.textPrimary);
   }
 }

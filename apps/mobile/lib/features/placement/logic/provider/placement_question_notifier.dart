@@ -234,4 +234,21 @@ class PlacementQuestionNotifier
       rethrow;
     }
   }
+
+  /// Skip the current question and advance to the next question in the section,
+  /// or complete the section if it is the last question.
+  void skipCurrentQuestion() {
+    final current = state;
+    if (current is! PlacementQuestionReady || current.isSubmitting) return;
+
+    if (current.isLastQuestion) {
+      state = PlacementQuestionSectionComplete(attemptId: current.attemptId);
+    } else {
+      state = current.copyWith(
+        currentIndex: current.currentIndex + 1,
+        clearSelectedAnswer: true,
+        isSubmitting: false,
+      );
+    }
+  }
 }

@@ -187,8 +187,8 @@ _AnswerSpec _resolveSpec({
         keyBackground: surfaces.surfaceSunken,
         keyForeground: surfaces.textSecondary,
       ),
-    AIMAnswerOptionState.selected => const _AnswerSpec(
-        backgroundColor: AimColors.primary50,
+    AIMAnswerOptionState.selected => _AnswerSpec(
+        backgroundColor: soft.primary,
         borderColor: AimColors.primary500,
         keyBackground: AimColors.primary500,
         keyForeground: AimColors.neutral0,

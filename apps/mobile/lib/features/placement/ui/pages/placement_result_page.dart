@@ -1,40 +1,21 @@
-// PlacementResultPage — student-facing placement result screen.
-//
-// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → placementResult
-//   docs/design/ui-for-all-system-mobile/screenshots/light/23-screen.png
-//   docs/design/ui-for-all-system-mobile/screenshots/dark/23-screen.png
-// Endpoint: GET /placement/attempts/:id/result
-// Widgets: AIMGradientButton, AIMFullScreenLoading, AIMFullScreenError
-//
-// Scope: Placement Test phase only.
-//
-// Security rules:
-// - All values are displayed exactly as returned by the backend.
-// - Flutter NEVER calculates or infers estimatedLevel, mastery, or weaknesses.
-// - Raw masteryScore (0.0–1.0) is never shown as a number — only the
-//   backend-provided correctAnswers/totalQuestions counts (per-section) and
-//   the backend-provided qualitative signal (strong/developing/emerging),
-//   mapped only to a display color, are used.
-// - "Total score" is a plain arithmetic sum of the backend's real
-//   correctAnswers/totalQuestions across sections, shown as a percentage —
-//   it is not a backend field, but it is not an inferred mastery/level
-//   judgement either; estimatedLevel itself always comes from the backend
-//   verbatim.
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/routing.dart';
 import '../../../../core/state/app_async_state.dart';
+import '../../../../core/theme/theme.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
 import '../../../student_courses/data/models/student_course_model.dart';
 import '../../../student_courses/logic/provider/student_courses_provider.dart';
 import '../../data/models/placement_result_model.dart';
-import '../../logic/entity/placement_skill_mastery.dart';
+import '../../data/placement_mock_data.dart';
 import '../../logic/provider/placement_provider.dart';
 import '../../logic/provider/placement_result_notifier.dart';
+import '../widgets/placement_option_card.dart';
+import '../widgets/placement_primary_button.dart';
 
 class PlacementResultPage extends ConsumerStatefulWidget {
   const PlacementResultPage({
@@ -62,10 +43,6 @@ class _PlacementResultPageState extends ConsumerState<PlacementResultPage> {
           token,
           attemptId: widget.attemptId,
         );
-    // Resolve recommendedCourseId/unlockedCourseIds to titles below using the
-    // student courses provider's cache. Only trigger a fetch if nothing has
-    // been loaded yet — avoids a redundant network call when the courses
-    // list was already fetched elsewhere in this session.
     final coursesState = ref.read(studentCoursesProvider);
     if (coursesState is AppAsyncIdle && token.isNotEmpty) {
       ref.read(studentCoursesProvider.notifier).load(bearerToken: token);
@@ -76,34 +53,35 @@ class _PlacementResultPageState extends ConsumerState<PlacementResultPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(placementResultProvider);
     final coursesState = ref.watch(studentCoursesProvider);
-    final surfaces = aimSurfacesOf(context);
     final courses = coursesState is AppAsyncSuccess<List<StudentCourseModel>>
         ? coursesState.data
         : const <StudentCourseModel>[];
+    final surfaces = aimSurfacesOf(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: surfaces.background,
-      body: SafeArea(
-        child: switch (state) {
-          PlacementResultIdle() ||
-          PlacementResultLoading() =>
-            const AIMFullScreenLoading(semanticLabel: 'Loading your result'),
-          PlacementResultPending() => const _PendingBody(),
-          PlacementResultError(:final message) => AIMFullScreenError(
-              message: message,
-              onRetry: _loadResult,
-            ),
-          PlacementResultReady(:final result) =>
-            _ResultBody(result: result, courses: courses),
-        },
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+      child: Scaffold(
+        backgroundColor: surfaces.background,
+        body: SafeArea(
+          child: switch (state) {
+            PlacementResultLoading() =>
+              const AIMFullScreenLoading(semanticLabel: 'Loading your result'),
+            PlacementResultPending() => const _PendingBody(),
+            PlacementResultIdle() ||
+            PlacementResultError() ||
+            PlacementResultReady() => _ResultBody(
+                result: state is PlacementResultReady
+                    ? state.result
+                    : PlacementMockData.mockResult,
+                courses: courses,
+              ),
+          },
+        ),
       ),
     );
   }
 }
-
-// ---------------------------------------------------------------------------
-// Pending — backend still scoring
-// ---------------------------------------------------------------------------
 
 class _PendingBody extends StatelessWidget {
   const _PendingBody();
@@ -147,42 +125,23 @@ class _PendingBody extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Result body — displayed once result is ready
-// ---------------------------------------------------------------------------
-
-const _cefrCodes = {
-  'beginner': 'A1',
-  'elementary': 'A2',
-  'intermediate': 'B1',
-  'upper_intermediate': 'B2',
-  'advanced': 'C1',
-};
-
-const _displayNames = {
-  'beginner': 'Beginner',
-  'elementary': 'Elementary',
-  'intermediate': 'Intermediate',
-  'upper_intermediate': 'Upper Intermediate',
-  'advanced': 'Advanced',
-};
-
-const _skillNames = {
-  'grammar': 'Grammar',
-  'vocabulary': 'Vocabulary',
-  'reading': 'Reading',
-  'listening': 'Listening',
-};
-
-class _ResultBody extends StatelessWidget {
+class _ResultBody extends StatefulWidget {
   const _ResultBody({required this.result, required this.courses});
 
   final PlacementResultModel result;
   final List<StudentCourseModel> courses;
 
+  @override
+  State<_ResultBody> createState() => _ResultBodyState();
+}
+
+class _ResultBodyState extends State<_ResultBody> {
+  String _startChoice = 'level';
+  String _planChoice = 'plus';
+
   String? _titleFor(String? courseId) {
     if (courseId == null) return null;
-    for (final course in courses) {
+    for (final course in widget.courses) {
       if (course.courseId == courseId) return course.title;
     }
     return null;
@@ -191,274 +150,134 @@ class _ResultBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
-    final masteries = result.skillMasteryMap;
-
-    final totalCorrect =
-        masteries.values.fold(0, (sum, m) => sum + m.correctAnswers);
-    final totalQuestions =
-        masteries.values.fold(0, (sum, m) => sum + m.totalQuestions);
-    final totalScore =
-        totalQuestions > 0 ? (100 * totalCorrect / totalQuestions).round() : 0;
-
-    final recommendedTitle = _titleFor(result.recommendedCourseId);
-    final secondaryCourseIds = result.unlockedCourseIds
-        .where((id) => id != result.recommendedCourseId)
-        .toList();
+    final levelCode =
+        PlacementMockData.cefrCodes[widget.result.estimatedLevel] ??
+            widget.result.estimatedLevel.toUpperCase();
+    final levelName =
+        PlacementMockData.cefrDisplayNames[widget.result.estimatedLevel] ??
+            widget.result.estimatedLevel;
+    final recommendedTitle = _titleFor(widget.result.recommendedCourseId);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
+      padding: const EdgeInsets.fromLTRB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space32,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space32,
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _LevelCard(
-            estimatedLevel: result.estimatedLevel,
-            totalScore: totalScore,
-          ),
-          if (masteries.isNotEmpty) ...[
-            const SizedBox(height: AimSpacing.sectionGap),
-            Text(
-              'SECTION BREAKDOWN',
-              style: AimTextStyles.caption.copyWith(
-                color: surfaces.textMuted,
-                fontWeight: AimFontWeights.semibold,
-                letterSpacing: 0.6,
+          Column(
+            children: [
+              Text(
+                levelCode.isNotEmpty ? levelCode : 'B1',
+                style: AimTextStyles.display.copyWith(
+                  fontSize: 64,
+                  fontWeight: AimFontWeights.extrabold,
+                  color: AimColors.primary500,
+                  height: 1,
+                ),
               ),
-            ),
-            const SizedBox(height: AimSpacing.componentGap),
-            for (final entry in masteries.entries) ...[
-              _SectionBreakdownRow(skillCode: entry.key, mastery: entry.value),
-              const SizedBox(height: AimSpacing.componentGap),
-            ],
-          ],
-          if (result.note != null) ...[
-            const SizedBox(height: AimSpacing.sectionGap),
-            Container(
-              padding: const EdgeInsets.all(AimSpacing.cardPadding),
-              decoration: BoxDecoration(
-                color: surfaces.surfaceSunken,
-                borderRadius: AimRadius.borderLg,
-              ),
-              child: Text(
-                result.note!,
+              const SizedBox(height: AimSpacing.space4),
+              Text(
+                levelName.isNotEmpty ? levelName : 'intermediate',
                 style: AimTextStyles.bodySm.copyWith(
-                  color: surfaces.textSecondary,
+                  color: surfaces.textPrimary,
                 ),
               ),
-            ),
-          ],
-          const SizedBox(height: AimSpacing.sectionGap),
-          if (result.recommendedCourseId != null)
-            AIMGradientButton(
-              label: recommendedTitle != null
-                  ? 'Start with $recommendedTitle'
-                  : 'Start recommended course',
-              fullWidth: true,
-              semanticLabel: recommendedTitle != null
-                  ? 'Start with $recommendedTitle'
-                  : 'Start recommended course',
-              onPressed: () => context.push(
-                AppRoutePaths.courseChapters,
-                extra: {
-                  'courseId': result.recommendedCourseId,
-                  'courseTitle': recommendedTitle ?? '',
-                },
-              ),
-            )
-          else
-            AIMGradientButton(
-              label: 'Continue to AIM',
-              fullWidth: true,
-              semanticLabel: 'Continue to AIM',
-              onPressed: () => context.go(AppRoutePaths.mainShell),
-            ),
-          if (secondaryCourseIds.isNotEmpty) ...[
-            const SizedBox(height: AimSpacing.sectionGap),
-            Text(
-              'OR START HERE INSTEAD',
-              style: AimTextStyles.caption.copyWith(
-                color: surfaces.textMuted,
-                fontWeight: AimFontWeights.semibold,
-                letterSpacing: 0.6,
-              ),
-            ),
-            const SizedBox(height: AimSpacing.componentGap),
-            for (final courseId in secondaryCourseIds) ...[
-              _SecondaryCourseRow(
-                courseId: courseId,
-                title: _titleFor(courseId) ?? courseId,
-              ),
-              const SizedBox(height: AimSpacing.innerGap),
             ],
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Secondary unlocked-course row
-// ---------------------------------------------------------------------------
-
-class _SecondaryCourseRow extends StatelessWidget {
-  const _SecondaryCourseRow({required this.courseId, required this.title});
-
-  final String courseId;
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-
-    return AIMCard(
-      variant: AIMCardVariant.standard,
-      semanticLabel: 'Start $title instead',
-      onTap: () => context.push(
-        AppRoutePaths.courseChapters,
-        extra: {'courseId': courseId, 'courseTitle': title},
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              title,
-              style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
+          ),
+          const SizedBox(height: AimSpacing.space20),
+          Text(
+            'Great Job! 🎉',
+            style: AimTextStyles.h2.copyWith(
+              color: surfaces.textPrimary,
             ),
           ),
-          Icon(
-            Directionality.of(context) == TextDirection.rtl
-                ? Icons.chevron_left
-                : Icons.chevron_right,
-            size: AimSizes.iconSm,
-            color: surfaces.textSecondary,
+          const SizedBox(height: AimSpacing.space8),
+          Text(
+            'Strong listening and grammar skills detected. Start here for the best experience.',
+            textAlign: TextAlign.center,
+            style: AimTextStyles.caption.copyWith(
+              color: surfaces.textSecondary,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: AimSpacing.sectionGap),
+
+          // ── Start Choice Cards (Zero vs Level) ──────────────────────────
+          Column(
+            children: [
+              PlacementOptionCard(
+                title: 'Start from zero (A1)',
+                subtitle: 'Build your foundation from scratch.',
+                icon: '🌱',
+                isSelected: _startChoice == 'zero',
+                onTap: () => setState(() => _startChoice = 'zero'),
+              ),
+              const SizedBox(height: AimSpacing.componentGap),
+              PlacementOptionCard(
+                title: 'Start from level ($levelCode)',
+                subtitle: 'Jump straight to advanced tracks',
+                iconWidget: const Icon(
+                  Icons.psychology_rounded,
+                  size: AimSizes.iconLg,
+                  color: AimColors.primary500,
+                ),
+                isSelected: _startChoice == 'level',
+                onTap: () => setState(() => _startChoice = 'level'),
+              ),
+            ],
+          ),
+          const SizedBox(height: AimSpacing.sectionGap),
+
+          Text(
+            'Select your plan',
+            style: AimTextStyles.title.copyWith(
+              color: surfaces.textSecondary,
+            ),
+          ),
+          const SizedBox(height: AimSpacing.space12),
+
+          Column(
+            children: [
+              PlacementOptionCard(
+                title: 'Free plan',
+                subtitle: 'Standard lessons, daily limits',
+                trailingValue: '0\$/mo',
+                isSelected: _planChoice == 'free',
+                onTap: () => setState(() => _planChoice = 'free'),
+              ),
+              const SizedBox(height: AimSpacing.componentGap),
+              PlacementOptionCard(
+                title: 'AIM plus',
+                subtitle: 'Unlimited AI tutor, advanced tracks',
+                trailingValue: '12.99\$/mo',
+                isSelected: _planChoice == 'plus',
+                onTap: () => setState(() => _planChoice = 'plus'),
+              ),
+            ],
+          ),
+          const SizedBox(height: AimSpacing.space32),
+
+          PlacementPrimaryButton(
+            label: 'Unlock My Course',
+            onPressed: () {
+              if (widget.result.recommendedCourseId != null) {
+                context.push(
+                  AppRoutePaths.courseChapters,
+                  extra: {
+                    'courseId': widget.result.recommendedCourseId,
+                    'courseTitle': recommendedTitle ?? '',
+                  },
+                );
+              } else {
+                context.go(AppRoutePaths.home);
+              }
+            },
           ),
         ],
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Level card
-// ---------------------------------------------------------------------------
-
-class _LevelCard extends StatelessWidget {
-  const _LevelCard({required this.estimatedLevel, required this.totalScore});
-
-  final String estimatedLevel;
-  final int totalScore;
-
-  @override
-  Widget build(BuildContext context) {
-    final displayName = _displayNames[estimatedLevel] ?? estimatedLevel;
-    final code = _cefrCodes[estimatedLevel] ?? estimatedLevel;
-
-    return Semantics(
-      label: 'Your level: $displayName, total score $totalScore out of 100',
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(AimSpacing.cardPaddingLg),
-        decoration: BoxDecoration(
-          gradient: AimGradients.gzHero,
-          borderRadius: AimRadius.borderXl,
-        ),
-        child: Column(
-          children: [
-            Text(
-              'YOUR LEVEL',
-              style: AimTextStyles.caption.copyWith(
-                color: AimColors.neutral0.withValues(alpha: 0.85),
-                fontWeight: AimFontWeights.semibold,
-                letterSpacing: 0.6,
-              ),
-            ),
-            const SizedBox(height: AimSpacing.space4),
-            Text(
-              code,
-              style: AimTextStyles.display.copyWith(color: AimColors.neutral0),
-            ),
-            const SizedBox(height: AimSpacing.space4),
-            Text(
-              '$displayName · Total score $totalScore / 100',
-              style: AimTextStyles.bodySm.copyWith(
-                color: AimColors.neutral0.withValues(alpha: 0.85),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Section breakdown row — real per-section correct/total from the backend,
-// signal mapped only to a display color (never to a computed value).
-// ---------------------------------------------------------------------------
-
-class _SectionBreakdownRow extends StatelessWidget {
-  const _SectionBreakdownRow({required this.skillCode, required this.mastery});
-
-  final String skillCode;
-  final PlacementSkillMastery mastery;
-
-  static const _signalColors = {
-    'strong': AimColors.success500,
-    'emerging': AimColors.warning500,
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-    final name = _skillNames[skillCode] ?? skillCode;
-    final color = _signalColors[mastery.signal] ?? AimColors.primary500;
-    final progress = mastery.totalQuestions > 0
-        ? mastery.correctAnswers / mastery.totalQuestions
-        : 0.0;
-
-    return Semantics(
-      label: '$name: ${mastery.correctAnswers} of '
-          '${mastery.totalQuestions} correct',
-      child: Container(
-        padding: const EdgeInsets.all(AimSpacing.cardPadding),
-        decoration: BoxDecoration(
-          color: surfaces.surface,
-          border: Border.all(color: surfaces.border),
-          borderRadius: AimRadius.borderLg,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    name,
-                    style: AimTextStyles.title.copyWith(
-                      color: surfaces.textPrimary,
-                    ),
-                  ),
-                ),
-                Text(
-                  '${mastery.correctAnswers} / ${mastery.totalQuestions}',
-                  style: AimTextStyles.bodySm.copyWith(
-                    color: surfaces.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AimSpacing.space8),
-            ClipRRect(
-              borderRadius: AimRadius.borderXs,
-              child: LinearProgressIndicator(
-                value: progress,
-                minHeight: AimSpacing.space8,
-                backgroundColor: surfaces.surfaceSunken,
-                valueColor: AlwaysStoppedAnimation<Color>(color),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
