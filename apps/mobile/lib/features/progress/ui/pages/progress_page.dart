@@ -223,7 +223,7 @@ class _ProgressContent extends StatelessWidget {
                 child: _StatCard(
                   value: '${goal?.streakDays ?? 0}',
                   label: 'Day streak',
-                  trailingEmoji: '🔥',
+                  trailingIcon: Icons.local_fire_department_rounded,
                 ),
               ),
             ],
@@ -262,19 +262,16 @@ class _ProgressContent extends StatelessWidget {
   }
 }
 
-/// Small stat card for the hub's top row (average mastery / day streak),
-/// matching the mockup's two side-by-side white cards with a large numeric
-/// value and a small label beneath.
 class _StatCard extends StatelessWidget {
   const _StatCard({
     required this.value,
     required this.label,
-    this.trailingEmoji,
+    this.trailingIcon,
   });
 
   final String value;
   final String label;
-  final String? trailingEmoji;
+  final IconData? trailingIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -286,12 +283,24 @@ class _StatCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            trailingEmoji == null ? value : '$value $trailingEmoji',
-            style:
-                AimTextStyles.h2.copyWith(color: AimColors.primary600),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                value,
+                style: AimTextStyles.h2.copyWith(color: AimColors.primary600),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (trailingIcon != null) ...[
+                const SizedBox(width: AimSpacing.space4),
+                Icon(
+                  trailingIcon,
+                  size: AimSizes.iconMd,
+                  color: AimColors.warning500,
+                ),
+              ],
+            ],
           ),
           const SizedBox(height: AimSpacing.space4),
           Text(

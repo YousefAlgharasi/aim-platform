@@ -276,10 +276,10 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
   // ── Step 2: Goal Focus Calibration ─────────────────────────────────────────
   Widget _buildFocusStep() {
     final options = [
-      {'id': 'career', 'icon': '💼', 'label': 'Career & Work'},
-      {'id': 'exams', 'icon': '🎓', 'label': 'Exams & School'},
-      {'id': 'speaking', 'icon': '💬', 'label': 'Real-life Speaking'},
-      {'id': 'media', 'icon': '🎬', 'label': 'Media & Culture'},
+      {'id': 'career', 'iconData': Icons.work_outline, 'label': 'Career & Work'},
+      {'id': 'exams', 'iconData': Icons.school_outlined, 'label': 'Exams & School'},
+      {'id': 'speaking', 'iconData': Icons.chat_bubble_outline, 'label': 'Real-life Speaking'},
+      {'id': 'media', 'iconData': Icons.movie_outlined, 'label': 'Media & Culture'},
     ];
 
     return Column(
@@ -301,7 +301,11 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
               final isSelected = _selectedFocus == opt['id'];
               return PlacementOptionCard(
                 title: opt['label'] as String,
-                icon: opt['icon'] as String,
+                iconWidget: Icon(
+                  opt['iconData'] as IconData,
+                  size: AimSizes.iconLg,
+                  color: AimColors.primary500,
+                ),
                 isSelected: isSelected,
                 onTap: () => setState(() => _selectedFocus = opt['id'] as String),
               );
@@ -322,19 +326,19 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
     final options = [
       {
         'id': '5min',
-        'icon': '🌱',
+        'iconData': Icons.eco_outlined,
         'label': '5 mins / day',
         'sub': 'Light — great for staying consistent',
       },
       {
         'id': '15min',
-        'icon': '✦',
+        'iconData': Icons.auto_awesome,
         'label': '15 mins / day',
         'sub': 'Balanced — recommended for most learners',
       },
       {
         'id': '30min',
-        'icon': '🔥',
+        'iconData': Icons.local_fire_department_outlined,
         'label': '30 mins / day',
         'sub': 'Intensive — fastest path to fluency',
       },
@@ -360,7 +364,11 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
               return PlacementOptionCard(
                 title: opt['label'] as String,
                 subtitle: opt['sub'] as String,
-                icon: opt['icon'] as String,
+                iconWidget: Icon(
+                  opt['iconData'] as IconData,
+                  size: AimSizes.iconLg,
+                  color: AimColors.primary500,
+                ),
                 isSelected: isSelected,
                 onTap: () => setState(() => _selectedHabit = opt['id'] as String),
               );
@@ -398,7 +406,11 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
                 child: PlacementOptionCard(
                   title: 'Start from Zero',
                   subtitle: 'Skip the test and start from the absolute basics.',
-                  icon: '🌱',
+                  iconWidget: const Icon(
+                    Icons.eco_rounded,
+                    color: AimColors.primary500,
+                    size: AimSizes.iconLg,
+                  ),
                   isSelected: isOptionA,
                   height: 164,
                   onTap: () {

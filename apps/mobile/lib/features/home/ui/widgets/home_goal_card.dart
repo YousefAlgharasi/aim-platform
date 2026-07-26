@@ -54,7 +54,18 @@ class HomeGoalCard extends StatelessWidget {
                   tone: AIMBadgeTone.warning,
                   variant: AIMBadgeVariant.soft,
                   pill: true,
-                  child: Text('🔥 ${goal.streakDays}'),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.local_fire_department_rounded,
+                        size: 14,
+                        color: AimColors.warning500,
+                      ),
+                      const SizedBox(width: 4),
+                      Text('${goal.streakDays}'),
+                    ],
+                  ),
                 ),
             ],
           ),
