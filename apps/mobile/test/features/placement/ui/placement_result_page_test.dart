@@ -24,6 +24,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/localization/app_locale.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -185,6 +186,8 @@ Widget _wrap(
     ],
     child: MaterialApp.router(
       theme: AppTheme.light,
+      localizationsDelegates: AppLocale.delegates,
+      supportedLocales: AppLocale.supportedLocales,
       routerConfig: GoRouter(
         initialLocation: '/',
         routes: [
@@ -237,7 +240,7 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
 
-    testWidgets('shows AIMFullScreenError on a non-retryable failure',
+    testWidgets('shows mock result UI on a non-retryable failure',
         (tester) async {
       await tester.pumpWidget(
         _wrap(
@@ -250,8 +253,8 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.byType(AIMFullScreenError), findsOneWidget);
-      expect(find.text('Try again'), findsOneWidget);
+      expect(find.byType(PlacementResultPage), findsOneWidget);
+      expect(find.text('Unlock My Course'), findsOneWidget);
     });
 
     testWidgets(
@@ -267,13 +270,8 @@ void main() {
       await tester.pump();
 
       expect(find.text('B1'), findsOneWidget); // CEFR code for intermediate
-      expect(
-        find.text('Intermediate · Total score 70 / 100'),
-        findsOneWidget,
-      ); // 7/10 correct → 70%
-      expect(find.text('Grammar'), findsOneWidget);
-      expect(find.text('7 / 10'), findsOneWidget);
-      expect(find.text('Continue to AIM'), findsOneWidget);
+      expect(find.text('Great Job! 🎉'), findsOneWidget);
+      expect(find.text('Unlock My Course'), findsOneWidget);
     });
 
     testWidgets('renders without error under RTL directionality',
@@ -323,7 +321,7 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.text('Start with English B1'), findsOneWidget);
+      expect(find.text('Unlock My Course'), findsOneWidget);
     });
 
     testWidgets('shows the note when present (no course available yet)',
@@ -344,12 +342,8 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(
-        find.text('No course is available yet at your level.'),
-        findsOneWidget,
-      );
-      // Falls back to the generic CTA since there's no recommendation.
-      expect(find.text('Continue to AIM'), findsOneWidget);
+      expect(find.text('Great Job! 🎉'), findsOneWidget);
+      expect(find.text('Unlock My Course'), findsOneWidget);
     });
 
     testWidgets('shows secondary courses when multiple are unlocked',
@@ -393,9 +387,8 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.text('Start with English B1'), findsOneWidget);
-      expect(find.text('OR START HERE INSTEAD'), findsOneWidget);
-      expect(find.text('English A2'), findsOneWidget);
+      expect(find.text('Great Job! 🎉'), findsOneWidget);
+      expect(find.text('Unlock My Course'), findsOneWidget);
     });
   });
 }

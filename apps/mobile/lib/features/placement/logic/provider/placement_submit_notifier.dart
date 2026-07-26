@@ -60,10 +60,13 @@ class PlacementSubmitNotifier extends StateNotifier<PlacementSubmitState> {
     try {
       await _repository.completeAttempt(bearerToken, attemptId: attemptId);
       state = PlacementSubmitSuccess(attemptId: attemptId);
-    } catch (_) {
-      // Fallback in case backend API is offline or returns error locally
-      await Future.delayed(const Duration(milliseconds: 1500));
-      state = PlacementSubmitSuccess(attemptId: attemptId);
+    } catch (e) {
+      state = PlacementSubmitError(
+        message: e is Exception
+            ? e.toString().replaceFirst('Exception: ', '')
+            : 'Failed to complete placement attempt.',
+        code: 'COMPLETE_FAILED',
+      );
     }
   }
 

@@ -1161,4 +1161,223 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get practiceSessionRetrySaveButton => 'إعادة محاولة حفظ التقدم';
+
+  @override
+  String get authFullNameLabel => 'الاسم الكامل';
+
+  @override
+  String get authWelcomeSubtitle =>
+      'يسعدنا رؤيتك هنا مجددًا. أدخل بريدك الإلكتروني وكلمة المرور';
+
+  @override
+  String get authPasswordResetComingSoon => 'إعادة تعيين كلمة المرور — قريبًا';
+
+  @override
+  String get authRegisterSubtitle =>
+      'أنشئ حسابك، يستغرق الأمر أقل من دقيقة. أدخل البريد الإلكتروني وكلمة المرور';
+
+  @override
+  String get authOrConnector => 'أو';
+
+  @override
+  String get placementGateAiAdaptive => 'تكيفي بالذكاء الاصطناعي';
+
+  @override
+  String get placementGateRetention => 'نسبة الاحتفاظ 94%';
+
+  @override
+  String get placementGateVisionTitle =>
+      'معلمك الشخصي بالذكاء الاصطناعي،\nمصمم خصيصًا لك.';
+
+  @override
+  String get placementGateVisionSubtitle =>
+      'مسارات تعلم تكيفية تتطور مع تقدمك — دروس واختبارات وإرشاد مصمم حول احتياجاتك.';
+
+  @override
+  String get placementGateFocusTitle => 'ما هو تركيزك\nالرئيسي؟';
+
+  @override
+  String get placementGateFocusSubtitle => 'اختر الهدف الذي يطابق هدفك الحالي.';
+
+  @override
+  String get placementGateFocusCareer => 'العمل والمهنة';
+
+  @override
+  String get placementGateFocusExams => 'الاختبارات والدراسة';
+
+  @override
+  String get placementGateFocusSpeaking => 'المحادثة اليومية';
+
+  @override
+  String get placementGateFocusMedia => 'الإعلام والثقافة';
+
+  @override
+  String get placementGateHabitTitle => 'حدد هدفك اليومي';
+
+  @override
+  String get placementGateHabitSubtitle => 'كم من الوقت ستخصصه للتعلم كل يوم؟';
+
+  @override
+  String get placementGateHabit5Min => '5 دقائق / يوميًا';
+
+  @override
+  String get placementGateHabit5MinSub => 'خفيف — ممتاز للاستمرارية اليومية';
+
+  @override
+  String get placementGateHabit15Min => '15 دقيقة / يوميًا';
+
+  @override
+  String get placementGateHabit15MinSub => 'متوازن — موصى به لمعظم المتعلمين';
+
+  @override
+  String get placementGateHabit30Min => '30 دقيقة / يوميًا';
+
+  @override
+  String get placementGateHabit30MinSub => 'مكثف — أسرع طريق للإتقان';
+
+  @override
+  String get placementGateStartTitle => 'كيف ترغب\nفي البدء؟';
+
+  @override
+  String get placementGateStartSubtitle =>
+      'اختر بعناية! يمكن إجراء اختبار تحديد المستوى مرة واحدة فقط لمعايرة معلمك الذكي بدقة.';
+
+  @override
+  String get placementGateStartFromZeroTitle => 'البدء من الصفر';
+
+  @override
+  String get placementGateStartFromZeroSub =>
+      'تخطَّ الاختبار وابدأ من القواعد والأساسيات البسيطة.';
+
+  @override
+  String get placementGateTestKnowledgeTitle => 'اختبار مستواي';
+
+  @override
+  String get placementGateTestKnowledgeSub =>
+      'اختبر مهاراتك ليتعرف الذكاء الاصطناعي على مستواك الحقيقي.';
+
+  @override
+  String get placementIntroSectionsLabel => 'الأقسام';
+
+  @override
+  String placementIntroSectionsValue(int count) {
+    return '$count أقسام';
+  }
+
+  @override
+  String get placementIntroEstimatedTimeLabel => 'الوقت المقدر';
+
+  @override
+  String placementIntroEstimatedTimeValue(int minutes) {
+    return '~$minutes دقيقة';
+  }
+
+  @override
+  String get placementIntroNote =>
+      'يتم تحديد مستواك من قبل النظام بعد الإكمال. لا يتم حساب النتائج على جهازك مطلقًا.';
+
+  @override
+  String get placementIntroTitle => 'تحديد مستوى اللغة الإنجليزية';
+
+  @override
+  String get placementIntroSubtitle => 'فحص سريع لمعرفة مستواك الأنسب للبدء.';
+
+  @override
+  String get placementMenuRetakeTitle => 'إعادة اختبار تحديد المستوى؟';
+
+  @override
+  String get placementMenuRetakeMessage =>
+      'ستظل النتيجة الحالية مسجلة، ولكن المحاولة الجديدة ستحل محلها كنتيجتك الأخيرة.';
+
+  @override
+  String get placementMenuRetakeButton => 'إعادة الاختبار';
+
+  @override
+  String get placementMenuCheckingStatusSemantic =>
+      'جارٍ التحقق من حالة اختبار تحديد المستوى';
+
+  @override
+  String get placementMenuLevelBeginner => 'مبتدئ';
+
+  @override
+  String get placementMenuLevelElementary => 'أساسي';
+
+  @override
+  String get placementMenuLevelIntermediate => 'متوسط';
+
+  @override
+  String get placementMenuLevelUpperIntermediate => 'فوق المتوسط';
+
+  @override
+  String get placementMenuLevelAdvanced => 'متقدم';
+
+  @override
+  String get placementStartLoadingGuidelines =>
+      'جارٍ تحميل إرشادات اختبار تحديد المستوى';
+
+  @override
+  String get placementStartStartingTest => 'جارٍ بدء اختبار تحديد المستوى';
+
+  @override
+  String get placementStartTestOverview => 'نظرة عامة على الاختبار';
+
+  @override
+  String get placementStartAssessmentTitle => 'تقييم تحديد المستوى';
+
+  @override
+  String get placementStartAssessmentSubtitle =>
+      'حدد نقطة البدء المثالية لرحلتك التعليمية';
+
+  @override
+  String placementStartLimitTitle(int minutes) {
+    return 'حد زمني $minutes دقيقة';
+  }
+
+  @override
+  String get placementStartLimitDesc =>
+      'اختبار محدد بوقت لقياس الدقة والطلاقة اللغوية.';
+
+  @override
+  String placementStartQuestionsTitle(int count) {
+    return '$count سؤالاً تكيفيًا';
+  }
+
+  @override
+  String get placementStartQuestionsDesc =>
+      'يشمل القواعد، القراءة، الاستماع، التحدث، والكتابة.';
+
+  @override
+  String get placementStartCalibrationTitle => 'معايرة فورية بالذكاء الاصطناعي';
+
+  @override
+  String get placementStartCalibrationDesc =>
+      'يقوم محركنا بتقييم مستواك وفق الإطار الأوروبي (A1 - C1) في الوقت الفعلي.';
+
+  @override
+  String get placementQuestionDefaultTitle => 'سؤال تحديد المستوى';
+
+  @override
+  String placementSectionHeaderTitle(int index, int total) {
+    return 'القسم $index من $total';
+  }
+
+  @override
+  String get placementResultLoadingSemantic => 'جارٍ تحميل نتيجتك';
+
+  @override
+  String get placementResultScoringTitle => 'جارٍ تقييم الإجابات…';
+
+  @override
+  String get placementResultScoringSubtitle =>
+      'يقوم النظام بتحليل إجاباتك الآن.';
+
+  @override
+  String get placementResultScoringSemantic => 'جارٍ التقييم';
+
+  @override
+  String get placementSubmitSuccessfulTitle => 'تم التقديم بنجاح';
+
+  @override
+  String get placementSubmitEvaluatingMessage =>
+      'تم رفع إجاباتك بنجاح. يقوم محرك الذكاء الاصطناعي بمعايرة مستواك.';
 }

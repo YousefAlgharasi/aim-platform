@@ -64,6 +64,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final formState = ref.watch(registerProvider);
     final notifier = ref.read(registerProvider.notifier);
     final size = MediaQuery.sizeOf(context);
@@ -91,7 +92,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               ),
               children: [
                 Text(
-                  'Create an account',
+                  l10n.authCreateAccount,
                   style: AimTextStyles.h1.copyWith(
                     color: surfaces.textPrimary,
                     height: 1.2,
@@ -100,7 +101,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 const SizedBox(height: AimSpacing.componentGap),
 
                 Text(
-                  'Create your account, it takes less than a minute. Enter your email and password',
+                  l10n.authRegisterSubtitle,
                   style: AimTextStyles.bodySm.copyWith(
                     color: surfaces.textSecondary,
                     height: 1.5,
@@ -119,7 +120,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 _RegFigmaInputField(
                   controller: _fullNameController,
                   focusNode: _fullNameFocus,
-                  placeholder: 'Full name',
+                  placeholder: l10n.authFullNameLabel,
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.name],
                   disabled: formState.isSubmitting,
@@ -130,7 +131,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 _RegFigmaInputField(
                   controller: _emailController,
                   focusNode: _emailFocus,
-                  placeholder: 'Email',
+                  placeholder: l10n.authEmailLabel,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.newUsername],
@@ -143,7 +144,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 _RegFigmaInputField(
                   controller: _passwordController,
                   focusNode: _passwordFocus,
-                  placeholder: 'Password',
+                  placeholder: l10n.authPasswordLabel,
                   obscureText: true,
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.newPassword],
@@ -161,7 +162,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 _RegFigmaInputField(
                   controller: _confirmController,
                   focusNode: _confirmFocus,
-                  placeholder: 'Confirm password',
+                  placeholder: l10n.authConfirmPasswordLabel,
                   obscureText: true,
                   textInputAction: TextInputAction.done,
                   autofillHints: const [AutofillHints.newPassword],
@@ -205,7 +206,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                   ),
                                 )
                               : Text(
-                                  'Create an account',
+                                  l10n.authCreateAccount,
                                   style: AimTextStyles.button.copyWith(
                                     color: surfaces.textOnPrimary,
                                   ),
@@ -229,7 +230,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       child: Text(
-                        'or',
+                        l10n.authOrConnector,
                         style: AimTextStyles.bodySm.copyWith(
                           color: surfaces.textMuted,
                         ),
@@ -270,23 +271,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 Center(
                   child: GestureDetector(
                     onTap: () => context.go(AppRoutePaths.signIn),
-                    child: RichText(
-                      text: TextSpan(
-                        style: AimTextStyles.bodyMd.copyWith(
-                          fontWeight: AimFontWeights.semibold,
-                          color: surfaces.textPrimary,
-                        ),
-                        children: [
-                          const TextSpan(text: 'Already have an account? '),
-                          TextSpan(
-                            text: 'Log in',
-                            style: TextStyle(
-                              color: AimColors.primary500,
-                              decoration: TextDecoration.underline,
-                              decorationColor: AimColors.primary500,
-                            ),
-                          ),
-                        ],
+                    child: Text(
+                      l10n.authAlreadyHaveAccount,
+                      style: AimTextStyles.bodyMd.copyWith(
+                        fontWeight: AimFontWeights.semibold,
+                        color: AimColors.primary500,
+                        decoration: TextDecoration.underline,
+                        decorationColor: AimColors.primary500,
                       ),
                     ),
                   ),

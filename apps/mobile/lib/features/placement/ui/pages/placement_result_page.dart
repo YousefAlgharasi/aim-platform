@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/routing/routing.dart';
 import '../../../../core/state/app_async_state.dart';
 import '../../../../core/theme/theme.dart';
@@ -51,6 +52,7 @@ class _PlacementResultPageState extends ConsumerState<PlacementResultPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final state = ref.watch(placementResultProvider);
     final coursesState = ref.watch(studentCoursesProvider);
     final courses = coursesState is AppAsyncSuccess<List<StudentCourseModel>>
@@ -66,7 +68,7 @@ class _PlacementResultPageState extends ConsumerState<PlacementResultPage> {
         body: SafeArea(
           child: switch (state) {
             PlacementResultLoading() =>
-              const AIMFullScreenLoading(semanticLabel: 'Loading your result'),
+              AIMFullScreenLoading(semanticLabel: l10n.placementResultLoadingSemantic),
             PlacementResultPending() => const _PendingBody(),
             PlacementResultIdle() ||
             PlacementResultError() ||
@@ -88,10 +90,11 @@ class _PendingBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
 
     return Semantics(
-      label: 'Scoring in progress',
+      label: l10n.placementResultScoringSemantic,
       child: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(
@@ -103,7 +106,7 @@ class _PendingBody extends StatelessWidget {
               const CircularProgressIndicator(color: AimColors.primary500),
               const SizedBox(height: AimSpacing.sectionGap),
               Text(
-                'Scoring in progress…',
+                l10n.placementResultScoringTitle,
                 style: AimTextStyles.title.copyWith(
                   color: surfaces.textPrimary,
                 ),
@@ -111,7 +114,7 @@ class _PendingBody extends StatelessWidget {
               ),
               const SizedBox(height: AimSpacing.innerGap),
               Text(
-                'The backend is evaluating your answers.',
+                l10n.placementResultScoringSubtitle,
                 style: AimTextStyles.bodySm.copyWith(
                   color: surfaces.textSecondary,
                 ),

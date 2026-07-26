@@ -33,6 +33,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -75,11 +76,12 @@ class _PlacementSectionPageState extends ConsumerState<PlacementSectionPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final state = ref.watch(placementSectionProvider);
     final surfaces = aimSurfacesOf(context);
     final title = state is PlacementSectionReady
-        ? 'Section ${state.displayIndex} of ${state.totalSections}'
-        : 'Placement Test';
+        ? l10n.placementSectionHeaderTitle(state.displayIndex, state.totalSections)
+        : l10n.shellPlacementTest;
 
     return Scaffold(
       backgroundColor: surfaces.background,
@@ -93,7 +95,7 @@ class _PlacementSectionPageState extends ConsumerState<PlacementSectionPage> {
                 const AIMFullScreenLoading(),
               PlacementSectionError(:final message) => AIMFullScreenError(
                   message: message,
-                  retryLabel: 'Retry',
+                  retryLabel: l10n.commonRetry,
                   onRetry: () {
                     final token = ref.read(authFlowProvider).accessToken ?? '';
                     ref.read(placementSectionProvider.notifier).loadSections(

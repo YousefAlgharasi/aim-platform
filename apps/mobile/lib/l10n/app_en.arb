@@ -1441,5 +1441,289 @@
   "practiceSessionRetrySaveButton": "Retry saving progress",
   "@practiceSessionRetrySaveButton": {
     "description": "Button to retry saving lesson progress/completion after a failure."
+  },
+  "authFullNameLabel": "Full name",
+  "@authFullNameLabel": {
+    "description": "Label for full name input field on registration form."
+  },
+  "authWelcomeSubtitle": "We are happy to see you here again. Enter your email address and password",
+  "@authWelcomeSubtitle": {
+    "description": "Subtitle text on the login screen."
+  },
+  "authPasswordResetComingSoon": "Password reset — coming soon",
+  "@authPasswordResetComingSoon": {
+    "description": "Snackbar message shown when clicking forgot password."
+  },
+  "authRegisterSubtitle": "Create your account, it takes less than a minute. Enter your email and password",
+  "@authRegisterSubtitle": {
+    "description": "Subtitle text on the registration screen."
+  },
+  "authOrConnector": "or",
+  "@authOrConnector": {
+    "description": "Or divider connector in sign in / sign up forms."
+  },
+  "placementGateAiAdaptive": "AI Adaptive",
+  "@placementGateAiAdaptive": {
+    "description": "Badge label on the placement gate vision step."
+  },
+  "placementGateRetention": "94% retention",
+  "@placementGateRetention": {
+    "description": "Stat pill text on the placement gate vision step."
+  },
+  "placementGateVisionTitle": "Your personal AI\nTutor, built for you.",
+  "@placementGateVisionTitle": {
+    "description": "Title on the placement gate vision step."
+  },
+  "placementGateVisionSubtitle": "Adaptive AI learning paths that evolve with your progress — lessons, quizzes, and mentorship shaped around you.",
+  "@placementGateVisionSubtitle": {
+    "description": "Subtitle on the placement gate vision step."
+  },
+  "placementGateFocusTitle": "What is your\nprimary focus?",
+  "@placementGateFocusTitle": {
+    "description": "Title on the placement gate goal focus step."
+  },
+  "placementGateFocusSubtitle": "Select the goal that matches your current target.",
+  "@placementGateFocusSubtitle": {
+    "description": "Subtitle on the placement gate goal focus step."
+  },
+  "placementGateFocusCareer": "Career & Work",
+  "@placementGateFocusCareer": {
+    "description": "Focus option label for Career & Work."
+  },
+  "placementGateFocusExams": "Exams & School",
+  "@placementGateFocusExams": {
+    "description": "Focus option label for Exams & School."
+  },
+  "placementGateFocusSpeaking": "Real-life Speaking",
+  "@placementGateFocusSpeaking": {
+    "description": "Focus option label for Real-life Speaking."
+  },
+  "placementGateFocusMedia": "Media & Culture",
+  "@placementGateFocusMedia": {
+    "description": "Focus option label for Media & Culture."
+  },
+  "placementGateHabitTitle": "Set your daily goal",
+  "@placementGateHabitTitle": {
+    "description": "Title on the placement gate habit step."
+  },
+  "placementGateHabitSubtitle": "How much time will you commit to learning each day?",
+  "@placementGateHabitSubtitle": {
+    "description": "Subtitle on the placement gate habit step."
+  },
+  "placementGateHabit5Min": "5 mins / day",
+  "@placementGateHabit5Min": {
+    "description": "Habit option label for 5 minutes."
+  },
+  "placementGateHabit5MinSub": "Light — great for staying consistent",
+  "@placementGateHabit5MinSub": {
+    "description": "Habit option subtitle for 5 minutes."
+  },
+  "placementGateHabit15Min": "15 mins / day",
+  "@placementGateHabit15Min": {
+    "description": "Habit option label for 15 minutes."
+  },
+  "placementGateHabit15MinSub": "Balanced — recommended for most learners",
+  "@placementGateHabit15MinSub": {
+    "description": "Habit option subtitle for 15 minutes."
+  },
+  "placementGateHabit30Min": "30 mins / day",
+  "@placementGateHabit30Min": {
+    "description": "Habit option label for 30 minutes."
+  },
+  "placementGateHabit30MinSub": "Intensive — fastest path to fluency",
+  "@placementGateHabit30MinSub": {
+    "description": "Habit option subtitle for 30 minutes."
+  },
+  "placementGateStartTitle": "How would you\nlike to start?",
+  "@placementGateStartTitle": {
+    "description": "Title on the placement gate start mode step."
+  },
+  "placementGateStartSubtitle": "Choose carefully! The placement test can only be taken once to accurately calibrate your AI tutor.",
+  "@placementGateStartSubtitle": {
+    "description": "Subtitle on the placement gate start mode step."
+  },
+  "placementGateStartFromZeroTitle": "Start from Zero",
+  "@placementGateStartFromZeroTitle": {
+    "description": "Title for start from zero option on placement gate."
+  },
+  "placementGateStartFromZeroSub": "Skip the test and start from the absolute basics.",
+  "@placementGateStartFromZeroSub": {
+    "description": "Subtitle for start from zero option on placement gate."
+  },
+  "placementGateTestKnowledgeTitle": "Test My Knowledge",
+  "@placementGateTestKnowledgeTitle": {
+    "description": "Title for test knowledge option on placement gate."
+  },
+  "placementGateTestKnowledgeSub": "Test your skills to let the AI find your level.",
+  "@placementGateTestKnowledgeSub": {
+    "description": "Subtitle for test knowledge option on placement gate."
+  },
+  "placementIntroSectionsLabel": "Sections",
+  "@placementIntroSectionsLabel": {
+    "description": "Label for sections info row in placement intro."
+  },
+  "placementIntroSectionsValue": "{count} sections",
+  "@placementIntroSectionsValue": {
+    "description": "Value format for sections count in placement intro.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "placementIntroEstimatedTimeLabel": "Estimated time",
+  "@placementIntroEstimatedTimeLabel": {
+    "description": "Label for estimated time info row in placement intro."
+  },
+  "placementIntroEstimatedTimeValue": "~{minutes} min",
+  "@placementIntroEstimatedTimeValue": {
+    "description": "Value format for estimated time in placement intro.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "placementIntroNote": "Your level is determined by the backend after completion. Results are never calculated on your device.",
+  "@placementIntroNote": {
+    "description": "Notice text on placement intro screen."
+  },
+  "placementIntroTitle": "General English Placement",
+  "@placementIntroTitle": {
+    "description": "Header title on placement intro screen."
+  },
+  "placementIntroSubtitle": "A quick check to find your starting level.",
+  "@placementIntroSubtitle": {
+    "description": "Header subtitle on placement intro screen."
+  },
+  "placementMenuRetakeTitle": "Retake the placement test?",
+  "@placementMenuRetakeTitle": {
+    "description": "Dialog title for retaking placement test."
+  },
+  "placementMenuRetakeMessage": "Your current result will stay on record, but a new attempt will replace it as your latest placement result.",
+  "@placementMenuRetakeMessage": {
+    "description": "Dialog message for retaking placement test."
+  },
+  "placementMenuRetakeButton": "Retake",
+  "@placementMenuRetakeButton": {
+    "description": "Button label to confirm retaking placement test."
+  },
+  "placementMenuCheckingStatusSemantic": "Checking placement test status",
+  "@placementMenuCheckingStatusSemantic": {
+    "description": "Accessibility label while checking placement status."
+  },
+  "placementMenuLevelBeginner": "Beginner",
+  "@placementMenuLevelBeginner": {
+    "description": "Display name for Beginner level."
+  },
+  "placementMenuLevelElementary": "Elementary",
+  "@placementMenuLevelElementary": {
+    "description": "Display name for Elementary level."
+  },
+  "placementMenuLevelIntermediate": "Intermediate",
+  "@placementMenuLevelIntermediate": {
+    "description": "Display name for Intermediate level."
+  },
+  "placementMenuLevelUpperIntermediate": "Upper Intermediate",
+  "@placementMenuLevelUpperIntermediate": {
+    "description": "Display name for Upper Intermediate level."
+  },
+  "placementMenuLevelAdvanced": "Advanced",
+  "@placementMenuLevelAdvanced": {
+    "description": "Display name for Advanced level."
+  },
+  "placementStartLoadingGuidelines": "Loading placement test guidelines",
+  "@placementStartLoadingGuidelines": {
+    "description": "Loading semantic label on placement start page."
+  },
+  "placementStartStartingTest": "Starting placement test",
+  "@placementStartStartingTest": {
+    "description": "Starting attempt semantic label on placement start page."
+  },
+  "placementStartTestOverview": "Test Overview",
+  "@placementStartTestOverview": {
+    "description": "Top section label on placement start page."
+  },
+  "placementStartAssessmentTitle": "Placement Assessment",
+  "@placementStartAssessmentTitle": {
+    "description": "Header title on placement start page."
+  },
+  "placementStartAssessmentSubtitle": "Determine your optimal learning starting point",
+  "@placementStartAssessmentSubtitle": {
+    "description": "Header subtitle on placement start page."
+  },
+  "placementStartLimitTitle": "{minutes} Minutes Limit",
+  "@placementStartLimitTitle": {
+    "description": "Timed limit title on placement start page.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "placementStartLimitDesc": "Timed test to measure accuracy and spontaneous language fluency.",
+  "@placementStartLimitDesc": {
+    "description": "Timed limit description on placement start page."
+  },
+  "placementStartQuestionsTitle": "{count} Adaptive Questions",
+  "@placementStartQuestionsTitle": {
+    "description": "Questions count title on placement start page.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "placementStartQuestionsDesc": "Includes Grammar, Reading, Listening, Speaking, and Writing.",
+  "@placementStartQuestionsDesc": {
+    "description": "Questions count description on placement start page."
+  },
+  "placementStartCalibrationTitle": "Instant AI Calibration",
+  "@placementStartCalibrationTitle": {
+    "description": "AI calibration title on placement start page."
+  },
+  "placementStartCalibrationDesc": "Our engine evaluates your CEFR level (A1 - C1) in real time.",
+  "@placementStartCalibrationDesc": {
+    "description": "AI calibration description on placement start page."
+  },
+  "placementQuestionDefaultTitle": "Placement Question",
+  "@placementQuestionDefaultTitle": {
+    "description": "Default title for placement question page."
+  },
+  "placementSectionHeaderTitle": "Section {index} of {total}",
+  "@placementSectionHeaderTitle": {
+    "description": "Header title on placement section page.",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "placementResultLoadingSemantic": "Loading your result",
+  "@placementResultLoadingSemantic": {
+    "description": "Semantic loading label on placement result page."
+  },
+  "placementResultScoringTitle": "Scoring in progress…",
+  "@placementResultScoringTitle": {
+    "description": "Scoring in progress title."
+  },
+  "placementResultScoringSubtitle": "The backend is evaluating your answers.",
+  "@placementResultScoringSubtitle": {
+    "description": "Scoring in progress subtitle."
+  },
+  "placementResultScoringSemantic": "Scoring in progress",
+  "@placementResultScoringSemantic": {
+    "description": "Scoring in progress semantic label."
+  },
+  "placementSubmitSuccessfulTitle": "Submission Successful",
+  "@placementSubmitSuccessfulTitle": {
+    "description": "Submission successful title."
+  },
+  "placementSubmitEvaluatingMessage": "Your responses have been uploaded. The AI engine is calibrating your level.",
+  "@placementSubmitEvaluatingMessage": {
+    "description": "Evaluating message on placement submit page."
   }
 }

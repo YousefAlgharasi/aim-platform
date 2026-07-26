@@ -1733,6 +1733,390 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry saving progress'**
   String get practiceSessionRetrySaveButton;
+
+  /// Label for full name input field on registration form.
+  ///
+  /// In en, this message translates to:
+  /// **'Full name'**
+  String get authFullNameLabel;
+
+  /// Subtitle text on the login screen.
+  ///
+  /// In en, this message translates to:
+  /// **'We are happy to see you here again. Enter your email address and password'**
+  String get authWelcomeSubtitle;
+
+  /// Snackbar message shown when clicking forgot password.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset — coming soon'**
+  String get authPasswordResetComingSoon;
+
+  /// Subtitle text on the registration screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your account, it takes less than a minute. Enter your email and password'**
+  String get authRegisterSubtitle;
+
+  /// Or divider connector in sign in / sign up forms.
+  ///
+  /// In en, this message translates to:
+  /// **'or'**
+  String get authOrConnector;
+
+  /// Badge label on the placement gate vision step.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Adaptive'**
+  String get placementGateAiAdaptive;
+
+  /// Stat pill text on the placement gate vision step.
+  ///
+  /// In en, this message translates to:
+  /// **'94% retention'**
+  String get placementGateRetention;
+
+  /// Title on the placement gate vision step.
+  ///
+  /// In en, this message translates to:
+  /// **'Your personal AI\nTutor, built for you.'**
+  String get placementGateVisionTitle;
+
+  /// Subtitle on the placement gate vision step.
+  ///
+  /// In en, this message translates to:
+  /// **'Adaptive AI learning paths that evolve with your progress — lessons, quizzes, and mentorship shaped around you.'**
+  String get placementGateVisionSubtitle;
+
+  /// Title on the placement gate goal focus step.
+  ///
+  /// In en, this message translates to:
+  /// **'What is your\nprimary focus?'**
+  String get placementGateFocusTitle;
+
+  /// Subtitle on the placement gate goal focus step.
+  ///
+  /// In en, this message translates to:
+  /// **'Select the goal that matches your current target.'**
+  String get placementGateFocusSubtitle;
+
+  /// Focus option label for Career & Work.
+  ///
+  /// In en, this message translates to:
+  /// **'Career & Work'**
+  String get placementGateFocusCareer;
+
+  /// Focus option label for Exams & School.
+  ///
+  /// In en, this message translates to:
+  /// **'Exams & School'**
+  String get placementGateFocusExams;
+
+  /// Focus option label for Real-life Speaking.
+  ///
+  /// In en, this message translates to:
+  /// **'Real-life Speaking'**
+  String get placementGateFocusSpeaking;
+
+  /// Focus option label for Media & Culture.
+  ///
+  /// In en, this message translates to:
+  /// **'Media & Culture'**
+  String get placementGateFocusMedia;
+
+  /// Title on the placement gate habit step.
+  ///
+  /// In en, this message translates to:
+  /// **'Set your daily goal'**
+  String get placementGateHabitTitle;
+
+  /// Subtitle on the placement gate habit step.
+  ///
+  /// In en, this message translates to:
+  /// **'How much time will you commit to learning each day?'**
+  String get placementGateHabitSubtitle;
+
+  /// Habit option label for 5 minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'5 mins / day'**
+  String get placementGateHabit5Min;
+
+  /// Habit option subtitle for 5 minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Light — great for staying consistent'**
+  String get placementGateHabit5MinSub;
+
+  /// Habit option label for 15 minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'15 mins / day'**
+  String get placementGateHabit15Min;
+
+  /// Habit option subtitle for 15 minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Balanced — recommended for most learners'**
+  String get placementGateHabit15MinSub;
+
+  /// Habit option label for 30 minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'30 mins / day'**
+  String get placementGateHabit30Min;
+
+  /// Habit option subtitle for 30 minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Intensive — fastest path to fluency'**
+  String get placementGateHabit30MinSub;
+
+  /// Title on the placement gate start mode step.
+  ///
+  /// In en, this message translates to:
+  /// **'How would you\nlike to start?'**
+  String get placementGateStartTitle;
+
+  /// Subtitle on the placement gate start mode step.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose carefully! The placement test can only be taken once to accurately calibrate your AI tutor.'**
+  String get placementGateStartSubtitle;
+
+  /// Title for start from zero option on placement gate.
+  ///
+  /// In en, this message translates to:
+  /// **'Start from Zero'**
+  String get placementGateStartFromZeroTitle;
+
+  /// Subtitle for start from zero option on placement gate.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip the test and start from the absolute basics.'**
+  String get placementGateStartFromZeroSub;
+
+  /// Title for test knowledge option on placement gate.
+  ///
+  /// In en, this message translates to:
+  /// **'Test My Knowledge'**
+  String get placementGateTestKnowledgeTitle;
+
+  /// Subtitle for test knowledge option on placement gate.
+  ///
+  /// In en, this message translates to:
+  /// **'Test your skills to let the AI find your level.'**
+  String get placementGateTestKnowledgeSub;
+
+  /// Label for sections info row in placement intro.
+  ///
+  /// In en, this message translates to:
+  /// **'Sections'**
+  String get placementIntroSectionsLabel;
+
+  /// Value format for sections count in placement intro.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} sections'**
+  String placementIntroSectionsValue(int count);
+
+  /// Label for estimated time info row in placement intro.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated time'**
+  String get placementIntroEstimatedTimeLabel;
+
+  /// Value format for estimated time in placement intro.
+  ///
+  /// In en, this message translates to:
+  /// **'~{minutes} min'**
+  String placementIntroEstimatedTimeValue(int minutes);
+
+  /// Notice text on placement intro screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Your level is determined by the backend after completion. Results are never calculated on your device.'**
+  String get placementIntroNote;
+
+  /// Header title on placement intro screen.
+  ///
+  /// In en, this message translates to:
+  /// **'General English Placement'**
+  String get placementIntroTitle;
+
+  /// Header subtitle on placement intro screen.
+  ///
+  /// In en, this message translates to:
+  /// **'A quick check to find your starting level.'**
+  String get placementIntroSubtitle;
+
+  /// Dialog title for retaking placement test.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake the placement test?'**
+  String get placementMenuRetakeTitle;
+
+  /// Dialog message for retaking placement test.
+  ///
+  /// In en, this message translates to:
+  /// **'Your current result will stay on record, but a new attempt will replace it as your latest placement result.'**
+  String get placementMenuRetakeMessage;
+
+  /// Button label to confirm retaking placement test.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake'**
+  String get placementMenuRetakeButton;
+
+  /// Accessibility label while checking placement status.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking placement test status'**
+  String get placementMenuCheckingStatusSemantic;
+
+  /// Display name for Beginner level.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginner'**
+  String get placementMenuLevelBeginner;
+
+  /// Display name for Elementary level.
+  ///
+  /// In en, this message translates to:
+  /// **'Elementary'**
+  String get placementMenuLevelElementary;
+
+  /// Display name for Intermediate level.
+  ///
+  /// In en, this message translates to:
+  /// **'Intermediate'**
+  String get placementMenuLevelIntermediate;
+
+  /// Display name for Upper Intermediate level.
+  ///
+  /// In en, this message translates to:
+  /// **'Upper Intermediate'**
+  String get placementMenuLevelUpperIntermediate;
+
+  /// Display name for Advanced level.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get placementMenuLevelAdvanced;
+
+  /// Loading semantic label on placement start page.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading placement test guidelines'**
+  String get placementStartLoadingGuidelines;
+
+  /// Starting attempt semantic label on placement start page.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting placement test'**
+  String get placementStartStartingTest;
+
+  /// Top section label on placement start page.
+  ///
+  /// In en, this message translates to:
+  /// **'Test Overview'**
+  String get placementStartTestOverview;
+
+  /// Header title on placement start page.
+  ///
+  /// In en, this message translates to:
+  /// **'Placement Assessment'**
+  String get placementStartAssessmentTitle;
+
+  /// Header subtitle on placement start page.
+  ///
+  /// In en, this message translates to:
+  /// **'Determine your optimal learning starting point'**
+  String get placementStartAssessmentSubtitle;
+
+  /// Timed limit title on placement start page.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} Minutes Limit'**
+  String placementStartLimitTitle(int minutes);
+
+  /// Timed limit description on placement start page.
+  ///
+  /// In en, this message translates to:
+  /// **'Timed test to measure accuracy and spontaneous language fluency.'**
+  String get placementStartLimitDesc;
+
+  /// Questions count title on placement start page.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Adaptive Questions'**
+  String placementStartQuestionsTitle(int count);
+
+  /// Questions count description on placement start page.
+  ///
+  /// In en, this message translates to:
+  /// **'Includes Grammar, Reading, Listening, Speaking, and Writing.'**
+  String get placementStartQuestionsDesc;
+
+  /// AI calibration title on placement start page.
+  ///
+  /// In en, this message translates to:
+  /// **'Instant AI Calibration'**
+  String get placementStartCalibrationTitle;
+
+  /// AI calibration description on placement start page.
+  ///
+  /// In en, this message translates to:
+  /// **'Our engine evaluates your CEFR level (A1 - C1) in real time.'**
+  String get placementStartCalibrationDesc;
+
+  /// Default title for placement question page.
+  ///
+  /// In en, this message translates to:
+  /// **'Placement Question'**
+  String get placementQuestionDefaultTitle;
+
+  /// Header title on placement section page.
+  ///
+  /// In en, this message translates to:
+  /// **'Section {index} of {total}'**
+  String placementSectionHeaderTitle(int index, int total);
+
+  /// Semantic loading label on placement result page.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading your result'**
+  String get placementResultLoadingSemantic;
+
+  /// Scoring in progress title.
+  ///
+  /// In en, this message translates to:
+  /// **'Scoring in progress…'**
+  String get placementResultScoringTitle;
+
+  /// Scoring in progress subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The backend is evaluating your answers.'**
+  String get placementResultScoringSubtitle;
+
+  /// Scoring in progress semantic label.
+  ///
+  /// In en, this message translates to:
+  /// **'Scoring in progress'**
+  String get placementResultScoringSemantic;
+
+  /// Submission successful title.
+  ///
+  /// In en, this message translates to:
+  /// **'Submission Successful'**
+  String get placementSubmitSuccessfulTitle;
+
+  /// Evaluating message on placement submit page.
+  ///
+  /// In en, this message translates to:
+  /// **'Your responses have been uploaded. The AI engine is calibrating your level.'**
+  String get placementSubmitEvaluatingMessage;
 }
 
 class _AppLocalizationsDelegate

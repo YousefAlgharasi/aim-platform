@@ -23,20 +23,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/placement/data/models/placement_result_model.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_menu_notifier.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_provider.dart';
-
-const _displayNames = {
-  'beginner': 'Beginner',
-  'elementary': 'Elementary',
-  'intermediate': 'Intermediate',
-  'upper_intermediate': 'Upper Intermediate',
-  'advanced': 'Advanced',
-};
 
 const _cefrCodes = {
   'beginner': 'A1',
@@ -66,22 +59,20 @@ class _PlacementMenuPageState extends ConsumerState<PlacementMenuPage> {
   }
 
   Future<void> _confirmRetake() async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Retake the placement test?'),
-        content: const Text(
-          'Your current result will stay on record, but a new attempt will '
-          'replace it as your latest placement result.',
-        ),
+        title: Text(l10n.placementMenuRetakeTitle),
+        content: Text(l10n.placementMenuRetakeMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Retake'),
+            child: Text(l10n.placementMenuRetakeButton),
           ),
         ],
       ),
@@ -94,6 +85,7 @@ class _PlacementMenuPageState extends ConsumerState<PlacementMenuPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final state = ref.watch(placementMenuProvider);
     final surfaces = aimSurfacesOf(context);
 
@@ -108,8 +100,8 @@ class _PlacementMenuPageState extends ConsumerState<PlacementMenuPage> {
               child: switch (state) {
                 PlacementMenuIdle() ||
                 PlacementMenuLoading() =>
-                  const AIMFullScreenLoading(
-                    semanticLabel: 'Checking placement test status',
+                  AIMFullScreenLoading(
+                    semanticLabel: l10n.placementMenuCheckingStatusSemantic,
                   ),
                 PlacementMenuError(:final message) => AIMFullScreenError(
                     message: message,
@@ -335,7 +327,15 @@ class _CompletedBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final displayName = _displayNames[result.estimatedLevel] ?? result.estimatedLevel;
+    final l10n = AppLocalizations.of(context);
+    final displayName = switch (result.estimatedLevel) {
+      'beginner' => l10n.placementMenuLevelBeginner,
+      'elementary' => l10n.placementMenuLevelElementary,
+      'intermediate' => l10n.placementMenuLevelIntermediate,
+      'upper_intermediate' => l10n.placementMenuLevelUpperIntermediate,
+      'advanced' => l10n.placementMenuLevelAdvanced,
+      _ => result.estimatedLevel,
+    };
     final code = _cefrCodes[result.estimatedLevel] ?? result.estimatedLevel;
 
     final masteries = result.skillMasteryMap;

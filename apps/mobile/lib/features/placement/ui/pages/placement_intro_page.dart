@@ -25,6 +25,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/routing/routing.dart';
 import '../../../../core/widgets/widgets.dart';
 
@@ -40,6 +41,7 @@ class PlacementIntroPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
 
     return Scaffold(
@@ -56,16 +58,16 @@ class PlacementIntroPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const _InfoRow(
+                  _InfoRow(
                     icon: Icons.layers_outlined,
-                    label: 'Sections',
-                    value: '3 sections',
+                    label: l10n.placementIntroSectionsLabel,
+                    value: l10n.placementIntroSectionsValue(3),
                   ),
                   const SizedBox(height: AimSpacing.componentGap),
-                  const _InfoRow(
+                  _InfoRow(
                     icon: Icons.timer_outlined,
-                    label: 'Estimated time',
-                    value: '~15 min',
+                    label: l10n.placementIntroEstimatedTimeLabel,
+                    value: l10n.placementIntroEstimatedTimeValue(15),
                   ),
                   const SizedBox(height: AimSpacing.sectionGap),
                   Container(
@@ -76,9 +78,7 @@ class PlacementIntroPage extends StatelessWidget {
                       borderRadius: AimRadius.borderSm,
                     ),
                     child: Text(
-                      'Your level is determined by the backend after '
-                      'completion. Results are never calculated on your '
-                      'device.',
+                      l10n.placementIntroNote,
                       style: AimTextStyles.bodySm.copyWith(
                         color: surfaces.textSecondary,
                       ),
@@ -86,10 +86,10 @@ class PlacementIntroPage extends StatelessWidget {
                   ),
                   const SizedBox(height: AimSpacing.sectionGap),
                   AIMGradientButton(
-                    label: 'Start',
+                    label: l10n.commonStart,
                     gradient: AimGradients.gzHero,
                     fullWidth: true,
-                    semanticLabel: 'Start placement test',
+                    semanticLabel: l10n.placementStartStartingTest,
                     onPressed: () =>
                         context.push(AppRoutePaths.placementStart),
                   ),
@@ -112,6 +112,8 @@ class _IntroHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -128,7 +130,7 @@ class _IntroHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: l10n.commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -154,12 +156,12 @@ class _IntroHeader extends StatelessWidget {
             ),
             const SizedBox(height: AimSpacing.componentGap),
             Text(
-              'General English Placement',
+              l10n.placementIntroTitle,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
             const SizedBox(height: AimSpacing.space4),
             Text(
-              'A quick check to find your starting level.',
+              l10n.placementIntroSubtitle,
               style: AimTextStyles.bodySm.copyWith(
                 color: AimColors.neutral0.withValues(alpha: 0.85),
               ),

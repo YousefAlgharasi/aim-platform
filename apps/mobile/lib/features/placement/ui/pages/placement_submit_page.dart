@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/theme/theme.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -46,6 +47,7 @@ class _PlacementSubmitPageState extends ConsumerState<PlacementSubmitPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final state = ref.watch(placementSubmitProvider);
     final surfaces = aimSurfacesOf(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -70,7 +72,7 @@ class _PlacementSubmitPageState extends ConsumerState<PlacementSubmitPage> {
         body: state is PlacementSubmitError
             ? AIMFullScreenError(
                 message: state.message,
-                retryLabel: 'Retry',
+                retryLabel: l10n.commonRetry,
                 onRetry: () {
                   ref.read(placementSubmitProvider.notifier).reset();
                   final token = ref.read(authFlowProvider).accessToken ?? '';
@@ -105,6 +107,7 @@ class _SubmissionSuccessfulBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
 
     return Padding(
@@ -146,7 +149,7 @@ class _SubmissionSuccessfulBody extends StatelessWidget {
 
           // ── Title & Subtitle ───────────────────────────────────────────────
           Text(
-            'Submission Successful',
+            l10n.placementSubmitSuccessfulTitle,
             style: AimTextStyles.h2.copyWith(
               color: surfaces.textPrimary,
               letterSpacing: -0.3,
@@ -154,7 +157,7 @@ class _SubmissionSuccessfulBody extends StatelessWidget {
           ),
           const SizedBox(height: AimSpacing.innerGap),
           Text(
-            'Your placement test has been recorded.',
+            l10n.placementSubmitEvaluatingMessage,
             style: AimTextStyles.bodySm.copyWith(
               color: surfaces.textSecondary,
             ),
