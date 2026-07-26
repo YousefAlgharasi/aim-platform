@@ -6,13 +6,28 @@
 //   - Supabase error payloads are mapped to safe AppError codes; raw Supabase
 //     error bodies are never forwarded to clients.
 
+import { createHash } from 'crypto';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { BackendConfigService } from '../config/backend-config.service';
 import { AppError } from '../common/errors/app-error';
 import { ApiErrorCode } from '../common/errors/api-error-code';
+import { JwtService } from '@nestjs/jwt';
+import { AuthProfileBootstrapService } from './auth-profile-bootstrap.service';
+import { GoogleUserProfile } from './google.strategy';
+
+function formatDeterministicUuid(input: string): string {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (uuidRegex.test(input)) {
+    return input;
+  }
+  const hash = createHash('sha256').update(input).digest('hex');
+  return `${hash.substring(0, 8)}-${hash.substring(8, 12)}-4${hash.substring(13, 16)}-a${hash.substring(17, 20)}-${hash.substring(20, 32)}`;
+}
 import {
   AuthForgotPasswordInput,
   AuthForgotPasswordResult,
+  AuthGoogleLoginInput,
+  AuthGoogleLoginResult,
   AuthLoginInput,
   AuthLoginResult,
   AuthRefreshInput,
@@ -24,7 +39,7 @@ import {
   SupabaseSignUpResponse,
 } from './auth-login.types';
 
-type AuthOperation = 'login' | 'refresh' | 'register';
+type AuthOperation = 'login' | 'refresh' | 'register' | 'google';
 
 const SUPABASE_TOKEN_PATH = '/auth/v1/token';
 const SUPABASE_SIGNUP_PATH = '/auth/v1/signup';
@@ -39,7 +54,11 @@ const DEFAULT_USER_ROLE = 'student';
 export class AuthLoginService {
   private readonly logger = new Logger(AuthLoginService.name);
 
-  constructor(private readonly config: BackendConfigService) {}
+  constructor(
+    private readonly config: BackendConfigService,
+    private readonly jwtService: JwtService,
+    private readonly profileBootstrap: AuthProfileBootstrapService,
+  ) {}
 
   async login(input: AuthLoginInput): Promise<AuthLoginResult> {
     let response = await this.callSupabase(
@@ -67,6 +86,98 @@ export class AuthLoginService {
       user: {
         id: response.user?.id ?? '',
         email: response.user?.email ?? input.email,
+      },
+    };
+  }
+
+  async googleLogin(input: AuthGoogleLoginInput): Promise<AuthGoogleLoginResult> {
+    const payload: Record<string, string> = {
+      provider: 'google',
+      id_token: input.idToken,
+    };
+    if (input.nonce) {
+      payload.nonce = input.nonce;
+    }
+
+    let response = await this.callSupabase(
+      `${SUPABASE_TOKEN_PATH}?grant_type=id_token`,
+      payload,
+      'google',
+    );
+
+    if (response.user?.id && !response.user.app_metadata?.role) {
+      await this.assignDefaultRole(response.user.id);
+      response = await this.callSupabase(
+        `${SUPABASE_TOKEN_PATH}?grant_type=id_token`,
+        payload,
+        'google',
+      );
+    }
+
+    const tokens = this.toTokenResult(response);
+
+    return {
+      ...tokens,
+      user: {
+        id: response.user?.id ?? '',
+        email: response.user?.email ?? null,
+      },
+    };
+  }
+
+  async processGoogleUser(googleUser: GoogleUserProfile): Promise<AuthLoginResult> {
+    if (!googleUser.email) {
+      throw new AppError({
+        code: ApiErrorCode.BAD_REQUEST,
+        message: 'Google authentication did not return a valid email address.',
+        statusCode: HttpStatus.BAD_REQUEST,
+      });
+    }
+
+    const authUid = formatDeterministicUuid(`google:${googleUser.googleId}`);
+    await this.ensureSupabaseAuthUser(googleUser);
+    const bootstrapResult = await this.profileBootstrap.bootstrap({
+      supabaseAuthUid: authUid,
+      email: googleUser.email,
+    });
+
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const expiresAt = nowSeconds + 3600;
+
+    const accessToken = this.jwtService.sign(
+      {
+        sub: bootstrapResult.internalUserId,
+        email: googleUser.email,
+        role: 'authenticated',
+        app_metadata: { role: 'student', roles: ['student'] },
+        user_metadata: {
+          name: [googleUser.firstName, googleUser.lastName].filter(Boolean).join(' '),
+          avatar_url: googleUser.avatarUrl,
+        },
+      },
+      {
+        issuer: this.config.supabase.jwtIssuer,
+        audience: this.config.supabase.jwtAudience,
+      },
+    );
+
+    const refreshToken = this.jwtService.sign(
+      {
+        sub: bootstrapResult.internalUserId,
+        type: 'refresh',
+      },
+      {
+        expiresIn: '7d',
+      },
+    );
+
+    return {
+      accessToken,
+      refreshToken,
+      expiresAt,
+      user: {
+        id: bootstrapResult.internalUserId,
+        email: googleUser.email,
       },
     };
   }
@@ -236,6 +347,32 @@ export class AuthLoginService {
     }
   }
 
+  private async ensureSupabaseAuthUser(googleUser: GoogleUserProfile): Promise<void> {
+    const url = this.buildSupabaseUrl(SUPABASE_ADMIN_USERS_PATH);
+    try {
+      await fetch(url, {
+        method: 'POST',
+        headers: this.buildHeaders(),
+        body: JSON.stringify({
+          email: googleUser.email,
+          email_confirm: true,
+          user_metadata: {
+            name: `${googleUser.firstName ?? ''} ${googleUser.lastName ?? ''}`.trim() || undefined,
+            avatar_url: googleUser.avatarUrl,
+          },
+          app_metadata: {
+            provider: 'google',
+            providers: ['google'],
+            role: DEFAULT_USER_ROLE,
+          },
+        }),
+        signal: AbortSignal.timeout(SUPABASE_REQUEST_TIMEOUT_MS),
+      });
+    } catch (error) {
+      this.logger.warn(`Failed to provision user in Supabase auth.users: ${this.toSafeErrorMessage(error)}`);
+    }
+  }
+
   private async callSupabase(
     path: string,
     body: Record<string, string>,
@@ -345,13 +482,15 @@ export class AuthLoginService {
       });
     }
 
-    if (operation === 'login' || operation === 'refresh') {
+    if (operation === 'login' || operation === 'refresh' || operation === 'google') {
       if (response.status === 400 || response.status === 401) {
         throw new AppError({
           code: ApiErrorCode.UNAUTHORIZED,
           message:
             operation === 'refresh'
               ? 'Your session has expired. Please sign in again.'
+              : operation === 'google'
+              ? 'Invalid Google authentication token.'
               : 'Incorrect email or password.',
           statusCode: HttpStatus.UNAUTHORIZED,
         });

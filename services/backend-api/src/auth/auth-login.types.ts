@@ -46,6 +46,14 @@ export interface AuthRegisterResult {
   };
 }
 
+export interface AuthGoogleLoginInput {
+  readonly idToken: string;
+  readonly nonce?: string;
+}
+
+export type AuthGoogleLoginResult = AuthLoginResult;
+
+
 // Raw shape returned by Supabase's GoTrue token endpoints.
 export interface SupabaseAuthTokenResponse {
   readonly access_token: string;

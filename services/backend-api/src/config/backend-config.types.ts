@@ -67,4 +67,10 @@ export interface BackendConfig {
     /** Hours a student must wait after a completed attempt before retaking. Default 24. */
     readonly retakeCooldownHours: number;
   };
+  readonly google: {
+    readonly clientId: string;
+    readonly clientSecret: string;
+    readonly callbackUrl: string;
+  };
 }
+

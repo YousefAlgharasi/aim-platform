@@ -3,13 +3,26 @@ import { ApiErrorCode } from '../common/errors/api-error-code';
 import { BackendConfigService } from '../config/backend-config.service';
 import { AuthLoginService } from './auth-login.service';
 
+import { JwtService } from '@nestjs/jwt';
+import { AuthProfileBootstrapService } from './auth-profile-bootstrap.service';
+
 const originalFetch = global.fetch;
+
+const makeJwtMock = () =>
+  ({
+    sign: jest.fn().mockReturnValue('mock_jwt_token'),
+  }) as unknown as jest.Mocked<JwtService>;
+
+const makeBootstrapMock = () =>
+  ({
+    bootstrap: jest.fn().mockResolvedValue({ internalUserId: 'usr_bootstrap_123' }),
+  }) as unknown as jest.Mocked<AuthProfileBootstrapService>;
 
 describe('AuthLoginService', () => {
   let service: AuthLoginService;
 
   beforeEach(() => {
-    service = new AuthLoginService(createConfig());
+    service = new AuthLoginService(createConfig(), makeJwtMock(), makeBootstrapMock());
   });
 
   afterEach(() => {
@@ -257,6 +270,65 @@ describe('AuthLoginService', () => {
       expect(result).toEqual({ requiresEmailConfirmation: true });
       expect(fetchMock).toHaveBeenCalledTimes(2);
       expect(fetchMock.mock.calls[1][0]).toContain('/auth/v1/admin/users/new-user-2');
+    });
+  });
+
+  describe('googleLogin', () => {
+    it('exchanges ID token with Supabase and returns tokens', async () => {
+      const mockTokens = {
+        access_token: 'acc_g123',
+        refresh_token: 'ref_g123',
+        expires_at: 1900000000,
+        user: { id: 'usr_g123', email: 'google@example.com', app_metadata: { role: 'student' } },
+      };
+      mockFetch(200, mockTokens);
+
+      const result = await service.googleLogin({ idToken: 'valid_id_token' });
+      expect(result).toEqual({
+        accessToken: 'acc_g123',
+        refreshToken: 'ref_g123',
+        expiresAt: 1900000000,
+        user: { id: 'usr_g123', email: 'google@example.com' },
+      });
+    });
+
+    it('maps invalid Google token error to clear unauthorized message', async () => {
+      mockFetch(400, { error_code: 'invalid_grant', msg: 'Invalid ID token' });
+
+      await expect(service.googleLogin({ idToken: 'bad_token' })).rejects.toMatchObject({
+        code: ApiErrorCode.UNAUTHORIZED,
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: 'Invalid Google authentication token.',
+      });
+    });
+  });
+
+  describe('processGoogleUser', () => {
+    it('bootstraps user and issues signed JWT tokens for valid Google profile', async () => {
+      const googleProfile = {
+        googleId: 'g_uid_999',
+        email: 'googleuser@example.com',
+        firstName: 'John',
+        lastName: 'Doe',
+      };
+
+      const result = await service.processGoogleUser(googleProfile);
+
+      expect(result.accessToken).toBe('mock_jwt_token');
+      expect(result.refreshToken).toBe('mock_jwt_token');
+      expect(result.user).toEqual({
+        id: 'usr_bootstrap_123',
+        email: 'googleuser@example.com',
+      });
+    });
+
+    it('rejects profile with missing email', async () => {
+      await expect(
+        service.processGoogleUser({ googleId: 'g_123', email: '' }),
+      ).rejects.toMatchObject({
+        code: ApiErrorCode.BAD_REQUEST,
+        statusCode: HttpStatus.BAD_REQUEST,
+      });
     });
   });
 });

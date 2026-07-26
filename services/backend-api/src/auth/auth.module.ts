@@ -1,6 +1,8 @@
-// Phase 2 — P2-025 (AuthProfileBootstrapService and UsersModule added)
 import { Module, forwardRef } from '@nestjs/common';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
 import { BackendConfigModule } from '../config/backend-config.module';
+import { BackendConfigService } from '../config/backend-config.service';
 import { DatabaseModule } from '../database/database.module';
 import { UsersModule } from '../features/users/users.module';
 import { RolesModule } from '../features/roles/roles.module';
@@ -12,6 +14,7 @@ import { AuthController } from './auth.controller';
 import { AuthLoggingService } from './auth-logging.service';
 import { AuthLoginService } from './auth-login.service';
 import { AuthProfileBootstrapService } from './auth-profile-bootstrap.service';
+import { GoogleStrategy } from './google.strategy';
 import { SessionValidationService } from './session-validation.service';
 import { SupabaseJwtAuthGuard } from './supabase-jwt-auth.guard';
 import { SupabaseJwtVerifierService } from './supabase-jwt-verifier.service';
@@ -20,6 +23,15 @@ import { TestLoginService } from './test-login.service';
 
 @Module({
   imports: [
+    PassportModule.register({ defaultStrategy: 'google' }),
+    JwtModule.registerAsync({
+      imports: [BackendConfigModule],
+      useFactory: (config: BackendConfigService) => ({
+        secret: config.supabase.jwtSecret,
+        signOptions: { expiresIn: '1h' },
+      }),
+      inject: [BackendConfigService],
+    }),
     BackendConfigModule,
     DatabaseModule,
     UsersModule,
@@ -31,6 +43,7 @@ import { TestLoginService } from './test-login.service';
   ],
   controllers: [AuthController, TestLoginController],
   providers: [
+    GoogleStrategy,
     SupabaseJwtAuthGuard,
     SupabaseJwtVerifierService,
     SessionValidationService,

@@ -1,4 +1,6 @@
 // Phase 2 — P2-025 (bootstrap endpoint added)
+import { AuthGuard } from '@nestjs/passport';
+import { GoogleUserProfile } from './google.strategy';
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { OPENAPI_TAGS } from '../openapi/openapi.tags';
@@ -13,11 +15,12 @@ import { PublicRoute } from './public-route.decorator';
 import { AuthLoginService } from './auth-login.service';
 import {
   AuthForgotPasswordResult,
+  AuthGoogleLoginResult,
   AuthLoginResult,
   AuthRegisterResult,
   AuthTokenResult,
 } from './auth-login.types';
-import { AuthForgotPasswordDto, AuthLoginDto, AuthRefreshDto, AuthRegisterDto } from './auth-login.dto';
+import { AuthForgotPasswordDto, AuthGoogleLoginDto, AuthLoginDto, AuthRefreshDto, AuthRegisterDto } from './auth-login.dto';
 import { extractBearerToken } from './bearer-token';
 import { AuthenticatedRequest } from './authenticated-user';
 import { RolesService } from '../features/roles/roles.service';
@@ -51,6 +54,48 @@ export class AuthController {
   @ApiOkResponse({ description: 'Session tokens for the authenticated account.' })
   async login(@Body() body: AuthLoginDto): Promise<AuthLoginResult> {
     return this.authLogin.login(body);
+  }
+
+  /**
+   * POST /auth/google
+   *
+   * Authenticates or registers a user using a Google OAuth ID token.
+   */
+  @Post('google')
+  @PublicRoute()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Authenticate or register using a Google ID token.' })
+  @ApiOkResponse({ description: 'Session tokens for the authenticated account.' })
+  async googleLogin(@Body() body: AuthGoogleLoginDto): Promise<AuthGoogleLoginResult> {
+    return this.authLogin.googleLogin(body);
+  }
+
+  /**
+   * GET /auth/google
+   *
+   * Redirects browser to Google OAuth 2.0 authorization page.
+   */
+  @Get('google')
+  @PublicRoute()
+  @UseGuards(AuthGuard('google'))
+  @ApiOperation({ summary: 'Initiate Google OAuth 2.0 login redirection flow.' })
+  async googleAuth(): Promise<void> {
+    // Guard handles redirect to Google
+  }
+
+  /**
+   * GET /auth/google/callback
+   *
+   * Handles Google OAuth 2.0 callback, validates identity, creates/updates profile,
+   * and returns signed session tokens.
+   */
+  @Get('google/callback')
+  @PublicRoute()
+  @UseGuards(AuthGuard('google'))
+  @ApiOperation({ summary: 'Google OAuth 2.0 redirect callback endpoint.' })
+  @ApiOkResponse({ description: 'Session tokens for the authenticated account.' })
+  async googleAuthCallback(@Req() req: { user: GoogleUserProfile }): Promise<AuthGoogleLoginResult> {
+    return this.authLogin.processGoogleUser(req.user);
   }
 
   /**

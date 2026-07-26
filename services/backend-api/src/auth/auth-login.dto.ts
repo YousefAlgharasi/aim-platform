@@ -45,3 +45,16 @@ export class AuthForgotPasswordDto {
   @IsUrl({ require_tld: false })
   redirectUrl?: string;
 }
+
+export class AuthGoogleLoginDto {
+  @ApiProperty({ description: 'Google OAuth ID Token obtained from Google Sign-In SDK.' })
+  @IsString()
+  @MinLength(1)
+  idToken!: string;
+
+  @ApiProperty({ required: false, description: 'Optional nonce used for ID token verification.' })
+  @IsOptional()
+  @IsString()
+  nonce?: string;
+}
+
