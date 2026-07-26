@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/routing/routing.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../auth/logic/provider/auth_flow_provider.dart';
 import '../../logic/provider/placement_gate_notifier.dart';
 import '../../logic/provider/placement_provider.dart';
 import '../widgets/placement_ghost_button.dart';
@@ -35,13 +37,8 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
   String _selectedStartMode = 'take_placement';
 
   void _choose(String decision) {
-    if (decision == 'take_placement') {
-      context.push(AppRoutePaths.placementStart);
-      return;
-    } else {
-      context.go(AppRoutePaths.home);
-      return;
-    }
+    final token = ref.read(authFlowProvider).accessToken ?? '';
+    ref.read(placementGateProvider.notifier).choose(token, decision);
   }
 
   @override
@@ -109,6 +106,7 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
 
   // ── Step 1: Vision Welcome ─────────────────────────────────────────────────
   Widget _buildVisionStep() {
+    final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
 
     return Column(
@@ -119,7 +117,7 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
             padding: const EdgeInsets.symmetric(horizontal: AimSpacing.screenPaddingMobile),
             child: Container(
               width: double.infinity,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: AimGradients.aiSoft,
                 borderRadius: AimRadius.borderX2l,
               ),
@@ -147,7 +145,7 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
                         children: [
                           const Text('✦ ', style: TextStyle(color: AimColors.primary500)),
                           Text(
-                            'AI Adaptive',
+                            l10n.placementGateAiAdaptive,
                             style: AimTextStyles.caption.copyWith(
                               fontWeight: AimFontWeights.semibold,
                               color: AimColors.primary500,
@@ -178,7 +176,7 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
                         Container(
                           height: 6,
                           width: double.infinity,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: AimColors.primary500,
                             borderRadius: AimRadius.borderXs,
                           ),
@@ -195,7 +193,7 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
                         const SizedBox(height: 12),
                         Container(
                           height: 54,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             gradient: AimGradients.aiSoft,
                             borderRadius: AimRadius.borderSm,
                           ),
@@ -245,7 +243,7 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
                         ],
                       ),
                       child: Text(
-                        '📈 94% retention',
+                        l10n.placementGateRetention,
                         style: AimTextStyles.caption.copyWith(
                           fontWeight: AimFontWeights.semibold,
                           color: surfaces.textPrimary,
@@ -259,10 +257,9 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
           ),
         ),
         const SizedBox(height: AimSpacing.sectionGap),
-        const PlacementPageHeader(
-          title: 'Your personal AI\nTutor, built for you.',
-          subtitle:
-              'Adaptive AI learning paths that evolve with your progress — lessons, quizzes, and mentorship shaped around you.',
+        PlacementPageHeader(
+          title: l10n.placementGateVisionTitle,
+          subtitle: l10n.placementGateVisionSubtitle,
         ),
         const SizedBox(height: AimSpacing.sectionGap),
         _buildBottomButtons(
@@ -275,20 +272,21 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
 
   // ── Step 2: Goal Focus Calibration ─────────────────────────────────────────
   Widget _buildFocusStep() {
+    final l10n = AppLocalizations.of(context);
     final options = [
-      {'id': 'career', 'iconData': Icons.work_outline, 'label': 'Career & Work'},
-      {'id': 'exams', 'iconData': Icons.school_outlined, 'label': 'Exams & School'},
-      {'id': 'speaking', 'iconData': Icons.chat_bubble_outline, 'label': 'Real-life Speaking'},
-      {'id': 'media', 'iconData': Icons.movie_outlined, 'label': 'Media & Culture'},
+      {'id': 'career', 'icon': '💼', 'label': l10n.placementGateFocusCareer},
+      {'id': 'exams', 'icon': '🎓', 'label': l10n.placementGateFocusExams},
+      {'id': 'speaking', 'icon': '💬', 'label': l10n.placementGateFocusSpeaking},
+      {'id': 'media', 'icon': '🎬', 'label': l10n.placementGateFocusMedia},
     ];
 
     return Column(
       key: const ValueKey(1),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const PlacementPageHeader(
-          title: 'What is your\nprimary focus?',
-          subtitle: 'Select the goal that matches your current target.',
+        PlacementPageHeader(
+          title: l10n.placementGateFocusTitle,
+          subtitle: l10n.placementGateFocusSubtitle,
         ),
         const SizedBox(height: AimSpacing.sectionGap),
         Expanded(
@@ -323,24 +321,25 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
 
   // ── Step 3: Daily Habit Lock In ────────────────────────────────────────────
   Widget _buildHabitStep() {
+    final l10n = AppLocalizations.of(context);
     final options = [
       {
         'id': '5min',
-        'iconData': Icons.eco_outlined,
-        'label': '5 mins / day',
-        'sub': 'Light — great for staying consistent',
+        'icon': '🌱',
+        'label': l10n.placementGateHabit5Min,
+        'sub': l10n.placementGateHabit5MinSub,
       },
       {
         'id': '15min',
-        'iconData': Icons.auto_awesome,
-        'label': '15 mins / day',
-        'sub': 'Balanced — recommended for most learners',
+        'icon': '✦',
+        'label': l10n.placementGateHabit15Min,
+        'sub': l10n.placementGateHabit15MinSub,
       },
       {
         'id': '30min',
-        'iconData': Icons.local_fire_department_outlined,
-        'label': '30 mins / day',
-        'sub': 'Intensive — fastest path to fluency',
+        'icon': '🔥',
+        'label': l10n.placementGateHabit30Min,
+        'sub': l10n.placementGateHabit30MinSub,
       },
     ];
 
@@ -348,9 +347,9 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
       key: const ValueKey(2),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const PlacementPageHeader(
-          title: 'Set your daily goal',
-          subtitle: 'How much time will you commit to learning each day?',
+        PlacementPageHeader(
+          title: l10n.placementGateHabitTitle,
+          subtitle: l10n.placementGateHabitSubtitle,
         ),
         const SizedBox(height: AimSpacing.sectionGap),
         Expanded(
@@ -385,6 +384,7 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
 
   // ── Step 4: How to Start / Placement Gate Frame ──────────────────────────────
   Widget _buildStartStep(bool isChoosing) {
+    final l10n = AppLocalizations.of(context);
     final isOptionA = _selectedStartMode == 'start_from_scratch';
     final isOptionB = _selectedStartMode == 'take_placement';
 
@@ -392,10 +392,9 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
       key: const ValueKey(3),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const PlacementPageHeader(
-          title: 'How would you\nlike to start?',
-          subtitle:
-              'Choose carefully! The placement test can only be taken once to accurately calibrate your AI tutor.',
+        PlacementPageHeader(
+          title: l10n.placementGateStartTitle,
+          subtitle: l10n.placementGateStartSubtitle,
         ),
         const SizedBox(height: AimSpacing.space32),
         Padding(
@@ -404,26 +403,21 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
             children: [
               Expanded(
                 child: PlacementOptionCard(
-                  title: 'Start from Zero',
-                  subtitle: 'Skip the test and start from the absolute basics.',
-                  iconWidget: const Icon(
-                    Icons.eco_rounded,
-                    color: AimColors.primary500,
-                    size: AimSizes.iconLg,
-                  ),
+                  title: l10n.placementGateStartFromZeroTitle,
+                  subtitle: l10n.placementGateStartFromZeroSub,
+                  icon: '🌱',
                   isSelected: isOptionA,
                   height: 164,
                   onTap: () {
                     setState(() => _selectedStartMode = 'start_from_scratch');
-                    _choose('start_from_scratch');
                   },
                 ),
               ),
               const SizedBox(width: AimSpacing.componentGap),
               Expanded(
                 child: PlacementOptionCard(
-                  title: 'Test My Knowledge',
-                  subtitle: 'Test your skills to let the AI find your level.',
+                  title: l10n.placementGateTestKnowledgeTitle,
+                  subtitle: l10n.placementGateTestKnowledgeSub,
                   iconWidget: const Icon(
                     Icons.psychology_rounded,
                     color: AimColors.primary500,
@@ -433,7 +427,6 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
                   height: 164,
                   onTap: () {
                     setState(() => _selectedStartMode = 'take_placement');
-                    _choose('take_placement');
                   },
                 ),
               ),
@@ -449,7 +442,7 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
             AimSpacing.space24,
           ),
           child: PlacementPrimaryButton(
-            label: 'Continue',
+            label: l10n.commonContinue,
             isLoading: isChoosing,
             onPressed: () => _choose(_selectedStartMode),
           ),
@@ -463,6 +456,7 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
     required VoidCallback onSkip,
     bool enabled = true,
   }) {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AimSpacing.screenPaddingMobile,
@@ -472,14 +466,14 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           PlacementPrimaryButton(
-            label: 'Continue',
+            label: l10n.commonContinue,
             enabled: enabled,
             onPressed: onContinue,
           ),
           const SizedBox(height: AimSpacing.innerGap),
           Center(
             child: PlacementGhostButton(
-              label: 'Skip',
+              label: l10n.onboardingWalkthroughSkip,
               onPressed: onSkip,
             ),
           ),

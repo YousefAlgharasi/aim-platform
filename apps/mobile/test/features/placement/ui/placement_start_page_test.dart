@@ -18,6 +18,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/localization/app_locale.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -157,6 +158,8 @@ Widget _wrap(
     ],
     child: MaterialApp.router(
       theme: AppTheme.light,
+      localizationsDelegates: AppLocale.delegates,
+      supportedLocales: AppLocale.supportedLocales,
       routerConfig: GoRouter(
         initialLocation: '/',
         routes: [
@@ -204,8 +207,6 @@ void main() {
       await tester.pump();
 
       expect(find.byType(AIMFullScreenError), findsOneWidget);
-      // AIMFullScreenError's default retryLabel is "Try again" (matches the
-      // convention used everywhere else in the app), not "Retry".
       expect(find.text('Try again'), findsOneWidget);
     });
 
@@ -220,18 +221,12 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.text('Placement Test'), findsOneWidget); // header title
-      expect(find.text('Find your level'), findsOneWidget);
-      expect(find.text('3'), findsOneWidget); // totalSections
-      expect(find.text('~20'), findsOneWidget); // estimatedMinutes
-      expect(find.text('Start Placement Test'), findsOneWidget);
-      // Backend-authority note must always be visible before starting.
-      expect(
-        find.textContaining('determined by the backend'),
-        findsOneWidget,
-      );
-      expect(find.text('Start Placement Test'), findsOneWidget);
-      expect(find.text('Not now'), findsOneWidget);
+      expect(find.text('Test Overview'), findsOneWidget);
+      expect(find.text('Placement Assessment'), findsOneWidget);
+      expect(find.text('25 Minutes Limit'), findsOneWidget);
+      expect(find.text('20 Adaptive Questions'), findsOneWidget);
+      expect(find.text('Instant AI Calibration'), findsOneWidget);
+      expect(find.text('Start'), findsOneWidget);
     });
 
     testWidgets('renders without error under RTL directionality',
@@ -247,7 +242,7 @@ void main() {
       await tester.pump();
 
       expect(find.byType(PlacementStartPage), findsOneWidget);
-      expect(find.text('Find your level'), findsOneWidget);
+      expect(find.text('Placement Assessment'), findsOneWidget);
     });
   });
 }

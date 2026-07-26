@@ -104,8 +104,12 @@ class PlacementResultNotifier extends StateNotifier<PlacementResultState> {
           }
         });
       } else {
-        // Fallback to mock result when backend API is offline or returns error
-        state = const PlacementResultReady(PlacementMockData.mockResult);
+        state = PlacementResultError(
+          message: e is Exception
+              ? e.toString().replaceFirst('Exception: ', '')
+              : 'Failed to load placement result.',
+          code: 'RESULT_LOAD_FAILED',
+        );
       }
     }
   }

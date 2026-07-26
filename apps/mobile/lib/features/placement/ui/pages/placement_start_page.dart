@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/theme/theme.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -33,13 +34,14 @@ class _PlacementStartPageState extends ConsumerState<PlacementStartPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final state = ref.watch(placementStartProvider);
     final surfaces = aimSurfacesOf(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     ref.listen<PlacementStartState>(placementStartProvider, (_, next) {
       if (next is PlacementStarted && context.mounted) {
-        context.push(
+        context.pushReplacement(
           AppRoutePaths.placementSection,
           extra: {
             'attemptId': next.attempt.id,
@@ -58,10 +60,17 @@ class _PlacementStartPageState extends ConsumerState<PlacementStartPage> {
         body: SafeArea(
           child: switch (state) {
             PlacementStartLoading() =>
-              const AIMFullScreenLoading(
-                semanticLabel: 'Loading placement test guidelines',
+              AIMFullScreenLoading(
+                semanticLabel: l10n.placementStartLoadingGuidelines,
               ),
-            PlacementStartError() ||
+            PlacementStartError(:final message) => AIMFullScreenError(
+                message: message,
+                retryLabel: l10n.commonRetry,
+                onRetry: () {
+                  final token = ref.read(authFlowProvider).accessToken ?? '';
+                  ref.read(placementStartProvider.notifier).loadActivePlacementTest(token);
+                },
+              ),
             PlacementStartIdle() ||
             PlacementStartReady() => _AssessmentIntroBody(
                 test: state is PlacementStartReady
@@ -89,8 +98,8 @@ class _PlacementStartPageState extends ConsumerState<PlacementStartPage> {
                 },
               ),
             PlacementStarted() =>
-              const AIMFullScreenLoading(
-                semanticLabel: 'Starting placement test',
+              AIMFullScreenLoading(
+                semanticLabel: l10n.placementStartStartingTest,
               ),
           },
         ),
@@ -110,22 +119,23 @@ class _AssessmentIntroBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
     final items = [
       {
         'iconData': Icons.timer_outlined,
-        'title': '25 Minutes Limit',
-        'desc': 'Timed test to measure accuracy and spontaneous language fluency.',
+        'title': l10n.placementStartLimitTitle(25),
+        'desc': l10n.placementStartLimitDesc,
       },
       {
         'iconData': Icons.quiz_outlined,
-        'title': '20 Adaptive Questions',
-        'desc': 'Includes Grammar, Reading, Listening, Speaking, and Writing.',
+        'title': l10n.placementStartQuestionsTitle(20),
+        'desc': l10n.placementStartQuestionsDesc,
       },
       {
         'iconData': Icons.auto_awesome,
-        'title': 'Instant AI Calibration',
-        'desc': 'Our engine evaluates your CEFR level (A1 - C1) in real time.',
+        'title': l10n.placementStartCalibrationTitle,
+        'desc': l10n.placementStartCalibrationDesc,
       },
     ];
 
@@ -150,16 +160,16 @@ class _AssessmentIntroBody extends StatelessWidget {
               ),
               const SizedBox(width: AimSpacing.innerGap),
               Text(
-                'Test Overview',
+                l10n.placementStartTestOverview,
                 style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
               ),
             ],
           ),
           const SizedBox(height: AimSpacing.space16),
 
-          const PlacementPageHeader(
-            title: 'Placement Assessment',
-            subtitle: 'Determine your optimal learning starting point',
+          PlacementPageHeader(
+            title: l10n.placementStartAssessmentTitle,
+            subtitle: l10n.placementStartAssessmentSubtitle,
             padding: EdgeInsets.zero,
           ),
           const SizedBox(height: AimSpacing.space24),
@@ -250,7 +260,7 @@ class _AssessmentIntroBody extends StatelessWidget {
           ),
 
           PlacementPrimaryButton(
-            label: 'Start Placement Test',
+            label: l10n.commonStart,
             onPressed: onStart,
           ),
         ],

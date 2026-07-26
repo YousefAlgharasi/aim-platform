@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/widgets/widgets.dart';
@@ -316,6 +317,7 @@ class _QuestionBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final question = state.currentQuestion;
     final isSpeaking = question.type == 'speaking';
 
@@ -366,7 +368,7 @@ class _QuestionBody extends StatelessWidget {
               children: [
                 Expanded(
                   child: PlacementGhostButton(
-                    label: 'Skip',
+                    label: l10n.onboardingWalkthroughSkip,
                     enabled: !state.isSubmitting,
                     onPressed: onSkip,
                   ),
@@ -374,7 +376,7 @@ class _QuestionBody extends StatelessWidget {
                 const SizedBox(width: AimSpacing.componentGap),
                 Expanded(
                   child: PlacementPrimaryButton(
-                    label: 'Submit',
+                    label: l10n.commonSubmit,
                     enabled: state.canSubmit,
                     isLoading: state.isSubmitting,
                     onPressed: onSubmit,

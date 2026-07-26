@@ -1111,4 +1111,229 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get practiceSessionRetrySaveButton => 'Retry saving progress';
+
+  @override
+  String get authFullNameLabel => 'Full name';
+
+  @override
+  String get authWelcomeSubtitle =>
+      'We are happy to see you here again. Enter your email address and password';
+
+  @override
+  String get authPasswordResetComingSoon => 'Password reset — coming soon';
+
+  @override
+  String get authRegisterSubtitle =>
+      'Create your account, it takes less than a minute. Enter your email and password';
+
+  @override
+  String get authOrConnector => 'or';
+
+  @override
+  String get placementGateAiAdaptive => 'AI Adaptive';
+
+  @override
+  String get placementGateRetention => '94% retention';
+
+  @override
+  String get placementGateVisionTitle =>
+      'Your personal AI\nTutor, built for you.';
+
+  @override
+  String get placementGateVisionSubtitle =>
+      'Adaptive AI learning paths that evolve with your progress — lessons, quizzes, and mentorship shaped around you.';
+
+  @override
+  String get placementGateFocusTitle => 'What is your\nprimary focus?';
+
+  @override
+  String get placementGateFocusSubtitle =>
+      'Select the goal that matches your current target.';
+
+  @override
+  String get placementGateFocusCareer => 'Career & Work';
+
+  @override
+  String get placementGateFocusExams => 'Exams & School';
+
+  @override
+  String get placementGateFocusSpeaking => 'Real-life Speaking';
+
+  @override
+  String get placementGateFocusMedia => 'Media & Culture';
+
+  @override
+  String get placementGateHabitTitle => 'Set your daily goal';
+
+  @override
+  String get placementGateHabitSubtitle =>
+      'How much time will you commit to learning each day?';
+
+  @override
+  String get placementGateHabit5Min => '5 mins / day';
+
+  @override
+  String get placementGateHabit5MinSub =>
+      'Light — great for staying consistent';
+
+  @override
+  String get placementGateHabit15Min => '15 mins / day';
+
+  @override
+  String get placementGateHabit15MinSub =>
+      'Balanced — recommended for most learners';
+
+  @override
+  String get placementGateHabit30Min => '30 mins / day';
+
+  @override
+  String get placementGateHabit30MinSub =>
+      'Intensive — fastest path to fluency';
+
+  @override
+  String get placementGateStartTitle => 'How would you\nlike to start?';
+
+  @override
+  String get placementGateStartSubtitle =>
+      'Choose carefully! The placement test can only be taken once to accurately calibrate your AI tutor.';
+
+  @override
+  String get placementGateStartFromZeroTitle => 'Start from Zero';
+
+  @override
+  String get placementGateStartFromZeroSub =>
+      'Skip the test and start from the absolute basics.';
+
+  @override
+  String get placementGateTestKnowledgeTitle => 'Test My Knowledge';
+
+  @override
+  String get placementGateTestKnowledgeSub =>
+      'Test your skills to let the AI find your level.';
+
+  @override
+  String get placementIntroSectionsLabel => 'Sections';
+
+  @override
+  String placementIntroSectionsValue(int count) {
+    return '$count sections';
+  }
+
+  @override
+  String get placementIntroEstimatedTimeLabel => 'Estimated time';
+
+  @override
+  String placementIntroEstimatedTimeValue(int minutes) {
+    return '~$minutes min';
+  }
+
+  @override
+  String get placementIntroNote =>
+      'Your level is determined by the backend after completion. Results are never calculated on your device.';
+
+  @override
+  String get placementIntroTitle => 'General English Placement';
+
+  @override
+  String get placementIntroSubtitle =>
+      'A quick check to find your starting level.';
+
+  @override
+  String get placementMenuRetakeTitle => 'Retake the placement test?';
+
+  @override
+  String get placementMenuRetakeMessage =>
+      'Your current result will stay on record, but a new attempt will replace it as your latest placement result.';
+
+  @override
+  String get placementMenuRetakeButton => 'Retake';
+
+  @override
+  String get placementMenuCheckingStatusSemantic =>
+      'Checking placement test status';
+
+  @override
+  String get placementMenuLevelBeginner => 'Beginner';
+
+  @override
+  String get placementMenuLevelElementary => 'Elementary';
+
+  @override
+  String get placementMenuLevelIntermediate => 'Intermediate';
+
+  @override
+  String get placementMenuLevelUpperIntermediate => 'Upper Intermediate';
+
+  @override
+  String get placementMenuLevelAdvanced => 'Advanced';
+
+  @override
+  String get placementStartLoadingGuidelines =>
+      'Loading placement test guidelines';
+
+  @override
+  String get placementStartStartingTest => 'Starting placement test';
+
+  @override
+  String get placementStartTestOverview => 'Test Overview';
+
+  @override
+  String get placementStartAssessmentTitle => 'Placement Assessment';
+
+  @override
+  String get placementStartAssessmentSubtitle =>
+      'Determine your optimal learning starting point';
+
+  @override
+  String placementStartLimitTitle(int minutes) {
+    return '$minutes Minutes Limit';
+  }
+
+  @override
+  String get placementStartLimitDesc =>
+      'Timed test to measure accuracy and spontaneous language fluency.';
+
+  @override
+  String placementStartQuestionsTitle(int count) {
+    return '$count Adaptive Questions';
+  }
+
+  @override
+  String get placementStartQuestionsDesc =>
+      'Includes Grammar, Reading, Listening, Speaking, and Writing.';
+
+  @override
+  String get placementStartCalibrationTitle => 'Instant AI Calibration';
+
+  @override
+  String get placementStartCalibrationDesc =>
+      'Our engine evaluates your CEFR level (A1 - C1) in real time.';
+
+  @override
+  String get placementQuestionDefaultTitle => 'Placement Question';
+
+  @override
+  String placementSectionHeaderTitle(int index, int total) {
+    return 'Section $index of $total';
+  }
+
+  @override
+  String get placementResultLoadingSemantic => 'Loading your result';
+
+  @override
+  String get placementResultScoringTitle => 'Scoring in progress…';
+
+  @override
+  String get placementResultScoringSubtitle =>
+      'The backend is evaluating your answers.';
+
+  @override
+  String get placementResultScoringSemantic => 'Scoring in progress';
+
+  @override
+  String get placementSubmitSuccessfulTitle => 'Submission Successful';
+
+  @override
+  String get placementSubmitEvaluatingMessage =>
+      'Your responses have been uploaded. The AI engine is calibrating your level.';
 }

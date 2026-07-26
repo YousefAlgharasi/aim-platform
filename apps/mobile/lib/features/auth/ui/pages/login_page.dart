@@ -80,7 +80,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               ),
               children: [
                 Text(
-                  'Welcome back,',
+                  l10n.authWelcomeBackTitle,
                   style: AimTextStyles.h1.copyWith(
                     color: surfaces.textPrimary,
                     height: 1.2,
@@ -89,7 +89,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 const SizedBox(height: AimSpacing.componentGap),
 
                 Text(
-                  'We are happy to see you here again. Enter your email address and password',
+                  l10n.authWelcomeSubtitle,
                   style: AimTextStyles.bodySm.copyWith(
                     color: surfaces.textSecondary,
                     height: 1.5,
@@ -108,7 +108,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 _FigmaInputField(
                   controller: _emailController,
                   focusNode: _emailFocus,
-                  placeholder: 'Email',
+                  placeholder: l10n.authEmailLabel,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.email],
@@ -121,7 +121,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 _FigmaInputField(
                   controller: _passwordController,
                   focusNode: _passwordFocus,
-                  placeholder: 'Password',
+                  placeholder: l10n.authPasswordLabel,
                   obscureText: true,
                   textInputAction: TextInputAction.done,
                   autofillHints: const [AutofillHints.password],
@@ -135,10 +135,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   child: TextButton(
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Password reset — coming soon'),
+                        SnackBar(
+                          content: Text(l10n.authPasswordResetComingSoon),
                           behavior: SnackBarBehavior.floating,
-                          duration: Duration(seconds: 2),
+                          duration: const Duration(seconds: 2),
                         ),
                       );
                     },
@@ -151,7 +151,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       overlayColor: AimColors.primary500.withValues(alpha: 0.12),
                     ),
                     child: Text(
-                      'Forget password?',
+                      l10n.authForgotPassword,
                       style: AimTextStyles.button.copyWith(
                         color: surfaces.textPrimary,
                       ),
@@ -218,7 +218,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       child: Text(
-                        'or',
+                        l10n.authOrConnector,
                         style: AimTextStyles.bodySm.copyWith(
                           color: surfaces.textMuted,
                         ),
@@ -260,7 +260,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Don't have an account? ",
+                      l10n.authNoAccountPrompt,
                       style: AimTextStyles.bodySm.copyWith(
                         color: surfaces.textSecondary,
                       ),
@@ -268,7 +268,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     GestureDetector(
                       onTap: _openRegister,
                       child: Text(
-                        'Register',
+                        l10n.authCreateOneLink,
                         style: AimTextStyles.bodySm.copyWith(
                           fontWeight: AimFontWeights.bold,
                           color: AimColors.primary500,
