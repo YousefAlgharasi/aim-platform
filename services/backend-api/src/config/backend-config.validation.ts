@@ -116,6 +116,15 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
     issues,
   );
 
+  const googleClientId = env.GOOGLE_CLIENT_ID?.trim() ?? 'placeholder-google-client-id';
+  const googleClientSecret = env.GOOGLE_CLIENT_SECRET?.trim() ?? 'placeholder-google-client-secret';
+  const googleCallbackUrl = readOptionalUrl(
+    env,
+    'GOOGLE_CALLBACK_URL',
+    'http://localhost:3000/auth/google/callback',
+    issues,
+  );
+
   const parsedNodeEnv = parseNodeEnv(nodeEnv, issues);
   const port = parsePort(portValue, issues);
   const corsOrigins = parseCorsOrigins(corsOriginsValue, issues);
@@ -168,6 +177,11 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
     },
     placement: {
       retakeCooldownHours: placementRetakeCooldownHours,
+    },
+    google: {
+      clientId: googleClientId,
+      clientSecret: googleClientSecret,
+      callbackUrl: googleCallbackUrl,
     },
   };
 }

@@ -13,6 +13,7 @@ const makeBootstrapMock = (): jest.Mocked<AuthProfileBootstrapService> =>
 const makeAuthLoginMock = (): jest.Mocked<AuthLoginService> =>
   ({
     login: jest.fn(),
+    googleLogin: jest.fn(),
     refresh: jest.fn(),
     register: jest.fn(),
     forgotPassword: jest.fn(),
@@ -63,4 +64,28 @@ describe('AuthController', () => {
       permissions: [],
     });
   });
+
+  it('delegates google login to AuthLoginService.googleLogin', async () => {
+    const authLoginMock = makeAuthLoginMock();
+    const googleResult = {
+      accessToken: 'acc_123',
+      refreshToken: 'ref_123',
+      expiresAt: 1900000000,
+      user: { id: 'usr_123', email: 'test@example.com' },
+    };
+    (authLoginMock.googleLogin as jest.Mock).mockResolvedValue(googleResult);
+
+    const testController = new AuthController(
+      makeBootstrapMock(),
+      authLoginMock,
+      makeRolesMock(),
+      makeUsersMock(),
+      makeStudentsMock(),
+    );
+
+    const result = await testController.googleLogin({ idToken: 'valid_id_token' });
+    expect(authLoginMock.googleLogin).toHaveBeenCalledWith({ idToken: 'valid_id_token' });
+    expect(result).toBe(googleResult);
+  });
 });
+

@@ -46,6 +46,10 @@ export class BackendConfigService {
     return this.config.placement;
   }
 
+  get google(): BackendConfig['google'] {
+    return this.config.google;
+  }
+
   snapshot(): BackendConfig {
     return this.config;
   }
