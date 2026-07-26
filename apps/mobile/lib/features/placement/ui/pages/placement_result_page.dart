@@ -142,14 +142,6 @@ class _ResultBodyState extends State<_ResultBody> {
   String _startChoice = 'level';
   String _planChoice = 'plus';
 
-  String? _titleFor(String? courseId) {
-    if (courseId == null) return null;
-    for (final course in widget.courses) {
-      if (course.courseId == courseId) return course.title;
-    }
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
@@ -159,7 +151,6 @@ class _ResultBodyState extends State<_ResultBody> {
     final levelName =
         PlacementMockData.cefrDisplayNames[widget.result.estimatedLevel] ??
             widget.result.estimatedLevel;
-    final recommendedTitle = _titleFor(widget.result.recommendedCourseId);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(
@@ -193,7 +184,7 @@ class _ResultBodyState extends State<_ResultBody> {
           ),
           const SizedBox(height: AimSpacing.space20),
           Text(
-            'Great Job! 🎉',
+            'Great Job!',
             style: AimTextStyles.h2.copyWith(
               color: surfaces.textPrimary,
             ),
@@ -215,7 +206,11 @@ class _ResultBodyState extends State<_ResultBody> {
               PlacementOptionCard(
                 title: 'Start from zero (A1)',
                 subtitle: 'Build your foundation from scratch.',
-                icon: '🌱',
+                iconWidget: const Icon(
+                  Icons.eco_rounded,
+                  size: AimSizes.iconLg,
+                  color: AimColors.primary500,
+                ),
                 isSelected: _startChoice == 'zero',
                 onTap: () => setState(() => _startChoice = 'zero'),
               ),
@@ -266,19 +261,7 @@ class _ResultBodyState extends State<_ResultBody> {
 
           PlacementPrimaryButton(
             label: 'Unlock My Course',
-            onPressed: () {
-              if (widget.result.recommendedCourseId != null) {
-                context.push(
-                  AppRoutePaths.courseChapters,
-                  extra: {
-                    'courseId': widget.result.recommendedCourseId,
-                    'courseTitle': recommendedTitle ?? '',
-                  },
-                );
-              } else {
-                context.go(AppRoutePaths.home);
-              }
-            },
+            onPressed: () => context.go(AppRoutePaths.home),
           ),
         ],
       ),

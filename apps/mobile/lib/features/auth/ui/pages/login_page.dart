@@ -247,8 +247,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     const SizedBox(width: AimSpacing.componentGap),
                     Expanded(
                       child: _FigmaSocialButton(
-                        icon: const _AppleLogo(),
-                        label: 'Apple',
+                        icon: const _FacebookLogo(),
+                        label: 'Facebook',
                         onPressed: () {},
                       ),
                     ),
@@ -655,11 +655,15 @@ class _GooglePainter extends CustomPainter {
   bool shouldRepaint(CustomPainter old) => false;
 }
 
-class _AppleLogo extends StatelessWidget {
-  const _AppleLogo();
+class _FacebookLogo extends StatelessWidget {
+  const _FacebookLogo();
+
   @override
   Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-    return Icon(Icons.apple, size: 20, color: surfaces.textPrimary);
+    return const Icon(
+      Icons.facebook,
+      size: 20,
+      color: Color(0xFF1877F2),
+    );
   }
 }

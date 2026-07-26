@@ -299,7 +299,11 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
               final isSelected = _selectedFocus == opt['id'];
               return PlacementOptionCard(
                 title: opt['label'] as String,
-                icon: opt['icon'] as String,
+                iconWidget: Icon(
+                  opt['iconData'] as IconData,
+                  size: AimSizes.iconLg,
+                  color: AimColors.primary500,
+                ),
                 isSelected: isSelected,
                 onTap: () => setState(() => _selectedFocus = opt['id'] as String),
               );
@@ -359,7 +363,11 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
               return PlacementOptionCard(
                 title: opt['label'] as String,
                 subtitle: opt['sub'] as String,
-                icon: opt['icon'] as String,
+                iconWidget: Icon(
+                  opt['iconData'] as IconData,
+                  size: AimSizes.iconLg,
+                  color: AimColors.primary500,
+                ),
                 isSelected: isSelected,
                 onTap: () => setState(() => _selectedHabit = opt['id'] as String),
               );

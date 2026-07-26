@@ -496,7 +496,7 @@ class _ProfileHeroHeader extends StatelessWidget {
                       child: _HeroStatCard(
                         value: '$streakDays',
                         label: 'day streak',
-                        trailingEmoji: '🔥',
+                        trailingIcon: Icons.local_fire_department_rounded,
                       ),
                     ),
                     const SizedBox(width: AimSpacing.componentGap),
@@ -517,19 +517,16 @@ class _ProfileHeroHeader extends StatelessWidget {
   }
 }
 
-/// Small semi-transparent white-on-gradient stat card used in the profile
-/// hero header. Not a reuse of progress_page.dart's `_StatCard`, which is
-/// styled for a white/surface background rather than a gradient one.
 class _HeroStatCard extends StatelessWidget {
   const _HeroStatCard({
     required this.value,
     required this.label,
-    this.trailingEmoji,
+    this.trailingIcon,
   });
 
   final String value;
   final String label;
-  final String? trailingEmoji;
+  final IconData? trailingIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -547,11 +544,24 @@ class _HeroStatCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              trailingEmoji == null ? value : '$value $trailingEmoji',
-              style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  value,
+                  style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (trailingIcon != null) ...[
+                  const SizedBox(width: AimSpacing.space4),
+                  Icon(
+                    trailingIcon,
+                    size: AimSizes.iconSm,
+                    color: AimColors.warning500,
+                  ),
+                ],
+              ],
             ),
             const SizedBox(height: AimSpacing.space4),
             Text(
