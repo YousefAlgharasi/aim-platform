@@ -85,20 +85,13 @@ export class PlacementDecisionService {
     }
 
     const updated = await this.db.query<{ placement_decision: PlacementDecision }>(
-      `UPDATE student_profiles
+      `INSERT INTO student_profiles (user_id, placement_decision)
+       VALUES ($1, $2)
+       ON CONFLICT (user_id) DO UPDATE
        SET placement_decision = $2, updated_at = now()
-       WHERE user_id = $1
        RETURNING placement_decision`,
       [studentId, decision],
     );
-
-    if ((updated.rowCount ?? 0) === 0) {
-      throw new AppError({
-        code: PlacementErrorCode.ATTEMPT_NOT_FOUND,
-        message: 'Student profile not found for the authenticated user.',
-        statusCode: HttpStatus.NOT_FOUND,
-      });
-    }
 
     return { should_show_gate: false, decision: updated.rows[0].placement_decision };
   }

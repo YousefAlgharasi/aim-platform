@@ -77,7 +77,13 @@ export class PlacementAttemptService {
 
     const test = testResult.rows[0];
 
-    // 2. Abandon any existing active/submitted attempts so the student can restart freely.
+    // 2. Ensure student profile row exists so foreign key requirements are satisfied.
+    await this.db.query(
+      `INSERT INTO student_profiles (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING`,
+      [studentId],
+    );
+
+    // 3. Abandon any existing active/submitted attempts so the student can restart freely.
     const abandonedResult = await this.db.query<{ id: string }>(
       `UPDATE placement_attempts
        SET status = 'abandoned', updated_at = now()
@@ -89,10 +95,10 @@ export class PlacementAttemptService {
     );
 
     for (const abandoned of abandonedResult.rows) {
-      void this.analytics.recordAttemptAbandoned(studentId, abandoned.id, test.id);
+      void this.analytics.recordAttemptAbandoned(studentId, abandoned.id, test.id).catch(() => {});
     }
 
-    // 3. Insert a new attempt — backend sets all fields, including the
+    // 4. Insert a new attempt — backend sets all fields, including the
     //    server-enforced timer (duration_seconds/expires_at).
     const insertResult = await this.db.query<PlacementAttemptRow>(
       `INSERT INTO placement_attempts
@@ -106,8 +112,8 @@ export class PlacementAttemptService {
 
     const attempt = insertResult.rows[0];
 
-    void this.audit.logAttemptStarted(studentId, attempt.id, test.id);
-    void this.analytics.recordAttemptStarted(studentId, attempt.id, test.id);
+    void this.audit.logAttemptStarted(studentId, attempt.id, test.id).catch(() => {});
+    void this.analytics.recordAttemptStarted(studentId, attempt.id, test.id).catch(() => {});
 
     // 4. Return student-safe fields only.
     return {
