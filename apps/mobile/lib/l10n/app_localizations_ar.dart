@@ -1380,4 +1380,145 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get placementSubmitEvaluatingMessage =>
       'تم رفع إجاباتك بنجاح. يقوم محرك الذكاء الاصطناعي بمعايرة مستواك.';
+
+  @override
+  String get placementResultGreatJob => 'عمل رائع! 🎉';
+
+  @override
+  String get placementResultDetectedSubtitle =>
+      'تم اكتشاف مهارات قوية في الاستماع والقواعد. ابدأ من هنا للحصول على أفضل تجربة.';
+
+  @override
+  String get placementResultStartFromZeroTitle => 'البدء من الصفر (A1)';
+
+  @override
+  String get placementResultStartFromZeroSubtitle =>
+      'ابنِ أساسك اللغوي من الصفر.';
+
+  @override
+  String placementResultStartFromLevelTitle(String level) {
+    return 'البدء من مستوى ($level)';
+  }
+
+  @override
+  String get placementResultStartFromLevelSubtitle =>
+      'انتقل مباشرة إلى المسارات المتقدمة';
+
+  @override
+  String get placementResultSelectPlan => 'اختر خطتك';
+
+  @override
+  String get placementResultFreePlan => 'الخطة المجانية';
+
+  @override
+  String get placementResultFreePlanSub => 'دروس قياسية، حدود يومية';
+
+  @override
+  String get placementResultPlusPlan => 'AIM بلس';
+
+  @override
+  String get placementResultPlusPlanSub =>
+      'معلم ذكاء اصطناعي غير محدود، مسارات متقدمة';
+
+  @override
+  String get placementResultUnlockCourse => 'افتح دورتي التعليمية';
+
+  @override
+  String get placementMenuHeaderTitle => 'اختبار تحديد المستوى';
+
+  @override
+  String get placementMenuNotTakenTitle =>
+      'لم تقم بإجراء اختبار تحديد المستوى بعد';
+
+  @override
+  String get placementMenuNotTakenSub =>
+      'اختبار تكيفي قصير يحدد مستواك المناسب لتناسبك كل الحصص.';
+
+  @override
+  String get placementMenuTakeTestBtn => 'إجراء اختبار تحديد المستوى';
+
+  @override
+  String get placementMenuInScoringTitle => 'جارٍ تقييم اختبار تحديد المستوى';
+
+  @override
+  String get placementMenuInProgressTitle =>
+      'لديك اختبار تحديد مستوى قيد الإجراء';
+
+  @override
+  String get placementMenuInScoringSub =>
+      'يستغرق هذا عادةً لحظات فقط. تحقق مرة أخرى قريباً.';
+
+  @override
+  String get placementMenuInProgressSub =>
+      'واصل الاختبار أو ابدأ من جديد — لا يتم حفظ التقدم قسماً بقسم.';
+
+  @override
+  String get placementMenuCheckAgainBtn => 'التحقق مرة أخرى';
+
+  @override
+  String get placementMenuContinueBtn => 'متابعة اختبار تحديد المستوى';
+
+  @override
+  String get placementMenuYourLevelLabel => 'مستواك';
+
+  @override
+  String placementMenuScoreSummary(String displayName, int score) {
+    return '$displayName · النتيجة الإجمالية $score / 100';
+  }
+
+  @override
+  String get placementMenuViewFullResult => 'عرض النتيجة الكاملة';
+
+  @override
+  String get placementSectionBeginFinal => 'بدء القسم النهائي';
+
+  @override
+  String get placementSectionBegin => 'بدء القسم';
+
+  @override
+  String placementSectionQuestionsCount(int count) {
+    return '$count أسئلة';
+  }
+
+  @override
+  String placementSectionAboutMinutes(int minutes) {
+    return 'حوالي $minutes دقائق';
+  }
+
+  @override
+  String placementSectionProgressSemantic(int current, int total) {
+    return 'القسم $current من $total';
+  }
+
+  @override
+  String get placementStartHonorCodeAgreement =>
+      'ببدء الاختبار، فإنك توافق على ميثاق الشرف لاختبار تحديد المستوى';
+
+  @override
+  String get placementSubmitCompletedQuestions => 'الأسئلة المكتملة';
+
+  @override
+  String get placementSubmitSkippedQuestions => 'الأسئلة المتجاوزة';
+
+  @override
+  String get placementSubmitAnalyzingAnswers => 'جارٍ تحليل إجاباتك';
+
+  @override
+  String get placementSubmitCalibratingBody =>
+      'يقوم الذكاء الاصطناعي بمعايرة مستواك الأنسب لضمان خطة تعليمية متوازنة.';
+
+  @override
+  String get placementQuestionLoadingSemantic => 'جارٍ تحميل السؤال';
+
+  @override
+  String get placementQuestionTimerExpiredError =>
+      'انتهى الوقت — تم تسليم هذه المحاولة.';
+
+  @override
+  String get placementQuestionSubmitSpeakingError =>
+      'فشل تسليم الإجابة الصوتية. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get placementQuestionSubmitAnswerError =>
+      'فشل تسليم الإجابة. يرجى المحاولة مرة أخرى.';
 }

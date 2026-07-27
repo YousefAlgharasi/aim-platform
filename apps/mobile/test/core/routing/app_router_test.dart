@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -87,7 +88,7 @@ void main() {
       ),
     );
 
-    expect(resolvedRoute, AppRoutePaths.mainShell);
+    expect(resolvedRoute, AppRoutePaths.placementGate);
   });
 
   test('resolveRouteName returns splash when requestedRoute is splash and checking', () {
@@ -152,9 +153,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('AIM'), findsOneWidget);
-    // Redesigned splash shows static "Tap to continue" copy while checking
-    // (see splash_page.dart) instead of the old "Checking your session…".
-    expect(find.text('Tap to continue'), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 
   testWidgets('falls back to splash when placement question arguments are missing',

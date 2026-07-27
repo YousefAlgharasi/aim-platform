@@ -8,7 +8,6 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/routing/app_route_paths.dart';
-import '../../../../core/theme/theme.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
 import '../../data/models/placement_question_model.dart';
@@ -153,6 +152,7 @@ class _PlacementQuestionPageState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final state = ref.watch(placementQuestionProvider);
     final surfaces = aimSurfacesOf(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -214,8 +214,8 @@ class _PlacementQuestionPageState
               Expanded(
                 child: switch (state) {
                   PlacementQuestionLoading() =>
-                    const AIMFullScreenLoading(
-                      semanticLabel: 'Loading question',
+                    AIMFullScreenLoading(
+                      semanticLabel: l10n.placementQuestionLoadingSemantic,
                     ),
                   PlacementQuestionIdle() ||
                   PlacementQuestionError() ||
@@ -252,7 +252,8 @@ class _PlacementQuestionPageState
 
   void _onTimerExpired() {
     if (!mounted) return;
-    setState(() => _submitError = 'Time is up — this attempt has been submitted.');
+    final l10n = AppLocalizations.of(context);
+    setState(() => _submitError = l10n.placementQuestionTimerExpiredError);
   }
 
   Future<void> _submitSpeakingAnswer(List<int> audioBytes, String mimeType) async {
@@ -270,10 +271,11 @@ class _PlacementQuestionPageState
           );
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         setState(() {
           _submitError = e is Exception
-              ? 'Failed to submit speaking response: ${e.toString().replaceFirst('Exception: ', '')}'
-              : 'Failed to submit speaking response. Please try again.';
+              ? e.toString().replaceFirst('Exception: ', '')
+              : l10n.placementQuestionSubmitSpeakingError;
         });
       }
     }
@@ -288,10 +290,11 @@ class _PlacementQuestionPageState
           .submitCurrentAnswer(token);
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         setState(() {
           _submitError = e is Exception
-              ? 'Failed to submit answer: ${e.toString().replaceFirst('Exception: ', '')}'
-              : 'Failed to submit answer. Please try again.';
+              ? e.toString().replaceFirst('Exception: ', '')
+              : l10n.placementQuestionSubmitAnswerError;
         });
       }
     }

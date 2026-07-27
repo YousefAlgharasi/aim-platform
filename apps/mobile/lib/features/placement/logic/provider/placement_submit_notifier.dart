@@ -1,3 +1,4 @@
+import 'package:aim_mobile/core/logging/app_logger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/features/placement/logic/repository/placement_repository.dart';
@@ -60,7 +61,8 @@ class PlacementSubmitNotifier extends StateNotifier<PlacementSubmitState> {
     try {
       await _repository.completeAttempt(bearerToken, attemptId: attemptId);
       state = PlacementSubmitSuccess(attemptId: attemptId);
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.e('PlacementSubmitNotifier', 'Failed to complete placement attempt $attemptId', e, st);
       state = PlacementSubmitError(
         message: e is Exception
             ? e.toString().replaceFirst('Exception: ', '')

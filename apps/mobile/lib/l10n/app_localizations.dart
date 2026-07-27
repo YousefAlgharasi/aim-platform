@@ -2117,6 +2117,240 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your responses have been uploaded. The AI engine is calibrating your level.'**
   String get placementSubmitEvaluatingMessage;
+
+  /// Great job header on placement result page.
+  ///
+  /// In en, this message translates to:
+  /// **'Great Job! 🎉'**
+  String get placementResultGreatJob;
+
+  /// Skills detected subtitle on placement result page.
+  ///
+  /// In en, this message translates to:
+  /// **'Strong listening and grammar skills detected. Start here for the best experience.'**
+  String get placementResultDetectedSubtitle;
+
+  /// Start from zero card title.
+  ///
+  /// In en, this message translates to:
+  /// **'Start from zero (A1)'**
+  String get placementResultStartFromZeroTitle;
+
+  /// Start from zero card subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Build your foundation from scratch.'**
+  String get placementResultStartFromZeroSubtitle;
+
+  /// Start from level card title.
+  ///
+  /// In en, this message translates to:
+  /// **'Start from level ({level})'**
+  String placementResultStartFromLevelTitle(String level);
+
+  /// Start from level card subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Jump straight to advanced tracks'**
+  String get placementResultStartFromLevelSubtitle;
+
+  /// Select plan header.
+  ///
+  /// In en, this message translates to:
+  /// **'Select your plan'**
+  String get placementResultSelectPlan;
+
+  /// Free plan card title.
+  ///
+  /// In en, this message translates to:
+  /// **'Free plan'**
+  String get placementResultFreePlan;
+
+  /// Free plan card subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard lessons, daily limits'**
+  String get placementResultFreePlanSub;
+
+  /// Plus plan card title.
+  ///
+  /// In en, this message translates to:
+  /// **'AIM plus'**
+  String get placementResultPlusPlan;
+
+  /// Plus plan card subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited AI tutor, advanced tracks'**
+  String get placementResultPlusPlanSub;
+
+  /// Unlock course button label.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock My Course'**
+  String get placementResultUnlockCourse;
+
+  /// Placement menu top bar header.
+  ///
+  /// In en, this message translates to:
+  /// **'Placement Test'**
+  String get placementMenuHeaderTitle;
+
+  /// Not taken title.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t taken the placement test yet'**
+  String get placementMenuNotTakenTitle;
+
+  /// Not taken subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A short adaptive test places you at the right level so every lesson fits you.'**
+  String get placementMenuNotTakenSub;
+
+  /// Take placement test button.
+  ///
+  /// In en, this message translates to:
+  /// **'Take the Placement Test'**
+  String get placementMenuTakeTestBtn;
+
+  /// In scoring status title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your placement test is being scored'**
+  String get placementMenuInScoringTitle;
+
+  /// In progress status title.
+  ///
+  /// In en, this message translates to:
+  /// **'You have a placement test in progress'**
+  String get placementMenuInProgressTitle;
+
+  /// In scoring status subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This usually only takes a moment. Check again shortly.'**
+  String get placementMenuInScoringSub;
+
+  /// In progress status subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick up your placement test, or start over — your progress in this attempt is not saved section by section.'**
+  String get placementMenuInProgressSub;
+
+  /// Check again button.
+  ///
+  /// In en, this message translates to:
+  /// **'Check Again'**
+  String get placementMenuCheckAgainBtn;
+
+  /// Continue test button.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue Placement Test'**
+  String get placementMenuContinueBtn;
+
+  /// Your level label.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR LEVEL'**
+  String get placementMenuYourLevelLabel;
+
+  /// Score summary line.
+  ///
+  /// In en, this message translates to:
+  /// **'{displayName} · Total score {score} / 100'**
+  String placementMenuScoreSummary(String displayName, int score);
+
+  /// View full result button.
+  ///
+  /// In en, this message translates to:
+  /// **'View Full Result'**
+  String get placementMenuViewFullResult;
+
+  /// Begin final section button.
+  ///
+  /// In en, this message translates to:
+  /// **'Begin Final Section'**
+  String get placementSectionBeginFinal;
+
+  /// Begin section button.
+  ///
+  /// In en, this message translates to:
+  /// **'Begin Section'**
+  String get placementSectionBegin;
+
+  /// Questions count label.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} questions'**
+  String placementSectionQuestionsCount(int count);
+
+  /// About minutes label.
+  ///
+  /// In en, this message translates to:
+  /// **'about {minutes} minutes'**
+  String placementSectionAboutMinutes(int minutes);
+
+  /// Section progress semantic label.
+  ///
+  /// In en, this message translates to:
+  /// **'Section {current} of {total}'**
+  String placementSectionProgressSemantic(int current, int total);
+
+  /// Honor code agreement note.
+  ///
+  /// In en, this message translates to:
+  /// **'By starting, you agree to our Placement Honor Code'**
+  String get placementStartHonorCodeAgreement;
+
+  /// Completed questions stat row label.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed Questions'**
+  String get placementSubmitCompletedQuestions;
+
+  /// Skipped questions stat row label.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped Questions'**
+  String get placementSubmitSkippedQuestions;
+
+  /// Analyzing answers header.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyzing your answers'**
+  String get placementSubmitAnalyzingAnswers;
+
+  /// Calibrating level body copy.
+  ///
+  /// In en, this message translates to:
+  /// **'Our AI is calibrating your optimal starting level to ensure your learning path is perfectly paced.'**
+  String get placementSubmitCalibratingBody;
+
+  /// Loading question semantic label.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading question'**
+  String get placementQuestionLoadingSemantic;
+
+  /// Timer expired error banner.
+  ///
+  /// In en, this message translates to:
+  /// **'Time is up — this attempt has been submitted.'**
+  String get placementQuestionTimerExpiredError;
+
+  /// Submit speaking error banner.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to submit speaking response. Please try again.'**
+  String get placementQuestionSubmitSpeakingError;
+
+  /// Submit answer error banner.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to submit answer. Please try again.'**
+  String get placementQuestionSubmitAnswerError;
 }
 
 class _AppLocalizationsDelegate

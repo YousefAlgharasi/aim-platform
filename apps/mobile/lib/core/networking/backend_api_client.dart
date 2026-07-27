@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart' as http_parser;
 
 import '../config/config.dart';
+import '../logging/app_logger.dart';
 import 'api_client_exception.dart';
 import 'api_response_envelope.dart';
 import 'auth_interceptor.dart';
@@ -38,14 +39,25 @@ class BackendApiClient {
   /// forever.
   final Duration _requestTimeout;
 
-  Future<T> _withTimeout<T>(Future<T> Function() send) {
-    return send().timeout(
-      _requestTimeout,
-      onTimeout: () => throw const ApiClientException(
-        code: 'REQUEST_TIMEOUT',
-        message: 'The request took too long to respond. Please try again.',
-      ),
-    );
+  Future<T> _withTimeout<T>(Future<T> Function() send) async {
+    try {
+      return await send().timeout(
+        _requestTimeout,
+        onTimeout: () {
+          const exc = ApiClientException(
+            code: 'REQUEST_TIMEOUT',
+            message: 'The request took too long to respond. Please try again.',
+          );
+          AppLogger.e('BackendApiClient', 'Request timeout after ${_requestTimeout.inSeconds}s', exc);
+          throw exc;
+        },
+      );
+    } catch (e, st) {
+      if (e is! ApiClientException) {
+        AppLogger.e('BackendApiClient', 'Network request failed with exception', e, st);
+      }
+      rethrow;
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -299,11 +311,13 @@ class BackendApiClient {
     final decoded = jsonDecode(response.body);
 
     if (decoded is! Map<String, dynamic>) {
-      throw ApiClientException(
+      final exc = ApiClientException(
         code: 'INVALID_RESPONSE',
         message: 'Backend API returned a non-object response.',
         statusCode: response.statusCode,
       );
+      AppLogger.e('BackendApiClient', 'HTTP ${response.statusCode} [${response.request?.url}]: Non-object response', exc);
+      throw exc;
     }
 
     final envelope = ApiResponseEnvelope<T>.fromJson(
@@ -313,13 +327,18 @@ class BackendApiClient {
 
     if (!envelope.success) {
       final error = envelope.error;
-
-      throw ApiClientException(
+      final exc = ApiClientException(
         code: error?.code ?? 'UNKNOWN_ERROR',
         message: error?.message ?? 'Unknown API error',
         statusCode: response.statusCode,
         details: error?.details,
       );
+      AppLogger.e(
+        'BackendApiClient',
+        'HTTP ${response.statusCode} [${response.request?.url}] ${exc.code}: ${exc.message}',
+        exc,
+      );
+      throw exc;
     }
 
     return envelope;

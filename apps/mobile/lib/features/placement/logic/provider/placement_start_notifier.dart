@@ -19,6 +19,7 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:aim_mobile/core/logging/app_logger.dart';
 import 'package:aim_mobile/features/placement/data/models/placement_attempt_model.dart';
 import 'package:aim_mobile/features/placement/data/models/placement_section_model.dart';
 import 'package:aim_mobile/features/placement/data/models/placement_test_model.dart';
@@ -87,7 +88,8 @@ class PlacementStartNotifier extends StateNotifier<PlacementStartState> {
       final test = results[0] as PlacementTestModel;
       final sections = results[1] as List<PlacementSectionModel>;
       state = PlacementStartReady(test, sections);
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.e('PlacementStartNotifier', 'Failed to load active placement test', e, st);
       state = PlacementStartError(
         message: e is Exception ? e.toString() : 'Failed to load placement test',
         code: 'PLACEMENT_LOAD_FAILED',
@@ -109,7 +111,8 @@ class PlacementStartNotifier extends StateNotifier<PlacementStartState> {
         placementTestId: test.id,
       );
       state = PlacementStarted(attempt: attempt, test: test);
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.e('PlacementStartNotifier', 'Failed to start placement attempt', e, st);
       state = PlacementStartError(
         message: e is Exception ? e.toString() : 'Failed to start placement',
         code: 'PLACEMENT_START_FAILED',

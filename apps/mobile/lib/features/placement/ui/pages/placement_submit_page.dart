@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
-import 'package:aim_mobile/core/theme/theme.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_provider.dart';
@@ -200,7 +199,7 @@ class _SubmissionSuccessfulBody extends StatelessWidget {
                     ),
                     const SizedBox(width: AimSpacing.componentGap),
                     Text(
-                      'Completed Questions',
+                      l10n.placementSubmitCompletedQuestions,
                       style: AimTextStyles.bodySm.copyWith(
                         fontWeight: AimFontWeights.medium,
                         color: surfaces.textPrimary,
@@ -238,7 +237,7 @@ class _SubmissionSuccessfulBody extends StatelessWidget {
                     ),
                     const SizedBox(width: AimSpacing.componentGap),
                     Text(
-                      'Skipped Questions',
+                      l10n.placementSubmitSkippedQuestions,
                       style: AimTextStyles.bodySm.copyWith(
                         fontWeight: AimFontWeights.medium,
                         color: surfaces.textPrimary,
@@ -270,7 +269,7 @@ class _SubmissionSuccessfulBody extends StatelessWidget {
           ),
           const SizedBox(height: AimSpacing.space20),
           Text(
-            'Analyzing your answers',
+            l10n.placementSubmitAnalyzingAnswers,
             style: AimTextStyles.bodyLg.copyWith(
               fontWeight: AimFontWeights.bold,
               color: AimColors.primary500,
@@ -278,7 +277,7 @@ class _SubmissionSuccessfulBody extends StatelessWidget {
           ),
           const SizedBox(height: AimSpacing.innerGap),
           Text(
-            'Our AI is calibrating your optimal starting\nlevel to ensure your learning path is\nperfectly paced.',
+            l10n.placementSubmitCalibratingBody,
             textAlign: TextAlign.center,
             style: AimTextStyles.caption.copyWith(
               color: surfaces.textSecondary,

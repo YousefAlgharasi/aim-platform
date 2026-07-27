@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
-import 'package:aim_mobile/core/theme/theme.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/placement/data/placement_mock_data.dart';
@@ -59,8 +58,7 @@ class _PlacementStartPageState extends ConsumerState<PlacementStartPage> {
         backgroundColor: surfaces.background,
         body: SafeArea(
           child: switch (state) {
-            PlacementStartLoading() =>
-              AIMFullScreenLoading(
+            PlacementStartLoading() => AIMFullScreenLoading(
                 semanticLabel: l10n.placementStartLoadingGuidelines,
               ),
             PlacementStartError(:final message) => AIMFullScreenError(
@@ -72,7 +70,8 @@ class _PlacementStartPageState extends ConsumerState<PlacementStartPage> {
                 },
               ),
             PlacementStartIdle() ||
-            PlacementStartReady() => _AssessmentIntroBody(
+            PlacementStartReady() =>
+              _AssessmentIntroBody(
                 test: state is PlacementStartReady
                     ? state.test
                     : PlacementMockData.mockTest,
@@ -86,7 +85,8 @@ class _PlacementStartPageState extends ConsumerState<PlacementStartPage> {
                       AppRoutePaths.placementQuestion,
                       extra: {
                         'sectionId': 'mock-section-1',
-                        'attemptId': 'mock-attempt-${DateTime.now().millisecondsSinceEpoch}',
+                        'attemptId':
+                            'mock-attempt-${DateTime.now().millisecondsSinceEpoch}',
                         'sectionTitle': 'Adaptive English Placement Test',
                         'sectionIndex': 1,
                         'totalSections': 1,
@@ -97,8 +97,7 @@ class _PlacementStartPageState extends ConsumerState<PlacementStartPage> {
                   ref.read(placementStartProvider.notifier).startAttempt(token);
                 },
               ),
-            PlacementStarted() =>
-              AIMFullScreenLoading(
+            PlacementStarted() => AIMFullScreenLoading(
                 semanticLabel: l10n.placementStartStartingTest,
               ),
           },
@@ -161,23 +160,23 @@ class _AssessmentIntroBody extends StatelessWidget {
               const SizedBox(width: AimSpacing.innerGap),
               Text(
                 l10n.placementStartTestOverview,
-                style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
+                style:
+                    AimTextStyles.title.copyWith(color: surfaces.textPrimary),
               ),
             ],
           ),
           const SizedBox(height: AimSpacing.space16),
-
           PlacementPageHeader(
             title: l10n.placementStartAssessmentTitle,
             subtitle: l10n.placementStartAssessmentSubtitle,
             padding: EdgeInsets.zero,
           ),
           const SizedBox(height: AimSpacing.space24),
-
           Expanded(
             child: ListView.separated(
               itemCount: items.length,
-              separatorBuilder: (_, __) => const SizedBox(height: AimSpacing.componentGap),
+              separatorBuilder: (_, __) =>
+                  const SizedBox(height: AimSpacing.componentGap),
               itemBuilder: (context, i) {
                 final item = items[i];
                 final iconData = item['iconData'] as IconData;
@@ -245,12 +244,11 @@ class _AssessmentIntroBody extends StatelessWidget {
               },
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.symmetric(vertical: AimSpacing.space16),
             child: Center(
               child: Text(
-                'By starting, you agree to our Placement Honor Code',
+                l10n.placementStartHonorCodeAgreement,
                 textAlign: TextAlign.center,
                 style: AimTextStyles.caption.copyWith(
                   color: surfaces.textMuted,
@@ -258,7 +256,6 @@ class _AssessmentIntroBody extends StatelessWidget {
               ),
             ),
           ),
-
           PlacementPrimaryButton(
             label: l10n.commonStart,
             onPressed: onStart,

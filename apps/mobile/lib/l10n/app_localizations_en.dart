@@ -1336,4 +1336,146 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get placementSubmitEvaluatingMessage =>
       'Your responses have been uploaded. The AI engine is calibrating your level.';
+
+  @override
+  String get placementResultGreatJob => 'Great Job! 🎉';
+
+  @override
+  String get placementResultDetectedSubtitle =>
+      'Strong listening and grammar skills detected. Start here for the best experience.';
+
+  @override
+  String get placementResultStartFromZeroTitle => 'Start from zero (A1)';
+
+  @override
+  String get placementResultStartFromZeroSubtitle =>
+      'Build your foundation from scratch.';
+
+  @override
+  String placementResultStartFromLevelTitle(String level) {
+    return 'Start from level ($level)';
+  }
+
+  @override
+  String get placementResultStartFromLevelSubtitle =>
+      'Jump straight to advanced tracks';
+
+  @override
+  String get placementResultSelectPlan => 'Select your plan';
+
+  @override
+  String get placementResultFreePlan => 'Free plan';
+
+  @override
+  String get placementResultFreePlanSub => 'Standard lessons, daily limits';
+
+  @override
+  String get placementResultPlusPlan => 'AIM plus';
+
+  @override
+  String get placementResultPlusPlanSub =>
+      'Unlimited AI tutor, advanced tracks';
+
+  @override
+  String get placementResultUnlockCourse => 'Unlock My Course';
+
+  @override
+  String get placementMenuHeaderTitle => 'Placement Test';
+
+  @override
+  String get placementMenuNotTakenTitle =>
+      'You haven\'t taken the placement test yet';
+
+  @override
+  String get placementMenuNotTakenSub =>
+      'A short adaptive test places you at the right level so every lesson fits you.';
+
+  @override
+  String get placementMenuTakeTestBtn => 'Take the Placement Test';
+
+  @override
+  String get placementMenuInScoringTitle =>
+      'Your placement test is being scored';
+
+  @override
+  String get placementMenuInProgressTitle =>
+      'You have a placement test in progress';
+
+  @override
+  String get placementMenuInScoringSub =>
+      'This usually only takes a moment. Check again shortly.';
+
+  @override
+  String get placementMenuInProgressSub =>
+      'Pick up your placement test, or start over — your progress in this attempt is not saved section by section.';
+
+  @override
+  String get placementMenuCheckAgainBtn => 'Check Again';
+
+  @override
+  String get placementMenuContinueBtn => 'Continue Placement Test';
+
+  @override
+  String get placementMenuYourLevelLabel => 'YOUR LEVEL';
+
+  @override
+  String placementMenuScoreSummary(String displayName, int score) {
+    return '$displayName · Total score $score / 100';
+  }
+
+  @override
+  String get placementMenuViewFullResult => 'View Full Result';
+
+  @override
+  String get placementSectionBeginFinal => 'Begin Final Section';
+
+  @override
+  String get placementSectionBegin => 'Begin Section';
+
+  @override
+  String placementSectionQuestionsCount(int count) {
+    return '$count questions';
+  }
+
+  @override
+  String placementSectionAboutMinutes(int minutes) {
+    return 'about $minutes minutes';
+  }
+
+  @override
+  String placementSectionProgressSemantic(int current, int total) {
+    return 'Section $current of $total';
+  }
+
+  @override
+  String get placementStartHonorCodeAgreement =>
+      'By starting, you agree to our Placement Honor Code';
+
+  @override
+  String get placementSubmitCompletedQuestions => 'Completed Questions';
+
+  @override
+  String get placementSubmitSkippedQuestions => 'Skipped Questions';
+
+  @override
+  String get placementSubmitAnalyzingAnswers => 'Analyzing your answers';
+
+  @override
+  String get placementSubmitCalibratingBody =>
+      'Our AI is calibrating your optimal starting level to ensure your learning path is perfectly paced.';
+
+  @override
+  String get placementQuestionLoadingSemantic => 'Loading question';
+
+  @override
+  String get placementQuestionTimerExpiredError =>
+      'Time is up — this attempt has been submitted.';
+
+  @override
+  String get placementQuestionSubmitSpeakingError =>
+      'Failed to submit speaking response. Please try again.';
+
+  @override
+  String get placementQuestionSubmitAnswerError =>
+      'Failed to submit answer. Please try again.';
 }

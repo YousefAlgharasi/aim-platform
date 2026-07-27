@@ -162,6 +162,7 @@ class _GradientTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isRtl = Directionality.of(context) == TextDirection.rtl;
 
     // Without this, the OS paints its default status bar background above
@@ -179,7 +180,7 @@ class _GradientTopBar extends StatelessWidget {
               children: [
                 const SizedBox(width: AimSpacing.space8),
                 AIMIconButton(
-                  semanticLabel: 'Back',
+                  semanticLabel: l10n.commonBack,
                   icon: Icon(
                     isRtl ? Icons.chevron_right : Icons.chevron_left,
                     color: AimColors.neutral0,
@@ -218,10 +219,17 @@ class _SectionBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
     final soft = aimSoftFillsOf(context);
     final section = state.currentSection;
     final minutes = placementEstimatedMinutes(section.totalQuestions);
+
+    final questionsText = l10n.placementSectionQuestionsCount(section.totalQuestions);
+    final minutesText = l10n.placementSectionAboutMinutes(minutes);
+    final btnLabel = state.isLastSection
+        ? l10n.placementSectionBeginFinal
+        : l10n.placementSectionBegin;
 
     return Padding(
       padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
@@ -258,7 +266,7 @@ class _SectionBody extends StatelessWidget {
                 const SizedBox(height: AimSpacing.space4),
                 Text(
                   '${placementSkillCategoryLabel(section.skillCode)} · '
-                  '${section.totalQuestions} questions · about $minutes minutes',
+                  '$questionsText · $minutesText',
                   style: AimTextStyles.bodySm.copyWith(
                     color: surfaces.textSecondary,
                   ),
@@ -269,12 +277,10 @@ class _SectionBody extends StatelessWidget {
           ),
           const Spacer(),
           AIMGradientButton(
-            label:
-                state.isLastSection ? 'Begin Final Section' : 'Begin Section',
+            label: btnLabel,
             fullWidth: true,
             onPressed: onStartSection,
-            semanticLabel:
-                state.isLastSection ? 'Begin Final Section' : 'Begin Section',
+            semanticLabel: btnLabel,
           ),
         ],
       ),
@@ -294,10 +300,11 @@ class _SegmentedProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
 
     return Semantics(
-      label: 'Section ${currentIndex + 1} of $total',
+      label: l10n.placementSectionProgressSemantic(currentIndex + 1, total),
       child: Row(
         children: [
           for (var i = 0; i < total; i++) ...[

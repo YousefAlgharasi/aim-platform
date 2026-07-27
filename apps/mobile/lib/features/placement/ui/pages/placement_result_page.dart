@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/routing/routing.dart';
 import '../../../../core/state/app_async_state.dart';
-import '../../../../core/theme/theme.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
 import '../../../student_courses/data/models/student_course_model.dart';
@@ -144,6 +143,7 @@ class _ResultBodyState extends State<_ResultBody> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
     final levelCode =
         PlacementMockData.cefrCodes[widget.result.estimatedLevel] ??
@@ -184,14 +184,14 @@ class _ResultBodyState extends State<_ResultBody> {
           ),
           const SizedBox(height: AimSpacing.space20),
           Text(
-            'Great Job!',
+            l10n.placementResultGreatJob,
             style: AimTextStyles.h2.copyWith(
               color: surfaces.textPrimary,
             ),
           ),
           const SizedBox(height: AimSpacing.space8),
           Text(
-            'Strong listening and grammar skills detected. Start here for the best experience.',
+            l10n.placementResultDetectedSubtitle,
             textAlign: TextAlign.center,
             style: AimTextStyles.caption.copyWith(
               color: surfaces.textSecondary,
@@ -204,8 +204,8 @@ class _ResultBodyState extends State<_ResultBody> {
           Column(
             children: [
               PlacementOptionCard(
-                title: 'Start from zero (A1)',
-                subtitle: 'Build your foundation from scratch.',
+                title: l10n.placementResultStartFromZeroTitle,
+                subtitle: l10n.placementResultStartFromZeroSubtitle,
                 iconWidget: const Icon(
                   Icons.eco_rounded,
                   size: AimSizes.iconLg,
@@ -216,8 +216,8 @@ class _ResultBodyState extends State<_ResultBody> {
               ),
               const SizedBox(height: AimSpacing.componentGap),
               PlacementOptionCard(
-                title: 'Start from level ($levelCode)',
-                subtitle: 'Jump straight to advanced tracks',
+                title: l10n.placementResultStartFromLevelTitle(levelCode),
+                subtitle: l10n.placementResultStartFromLevelSubtitle,
                 iconWidget: const Icon(
                   Icons.psychology_rounded,
                   size: AimSizes.iconLg,
@@ -231,7 +231,7 @@ class _ResultBodyState extends State<_ResultBody> {
           const SizedBox(height: AimSpacing.sectionGap),
 
           Text(
-            'Select your plan',
+            l10n.placementResultSelectPlan,
             style: AimTextStyles.title.copyWith(
               color: surfaces.textSecondary,
             ),
@@ -241,16 +241,16 @@ class _ResultBodyState extends State<_ResultBody> {
           Column(
             children: [
               PlacementOptionCard(
-                title: 'Free plan',
-                subtitle: 'Standard lessons, daily limits',
+                title: l10n.placementResultFreePlan,
+                subtitle: l10n.placementResultFreePlanSub,
                 trailingValue: '0\$/mo',
                 isSelected: _planChoice == 'free',
                 onTap: () => setState(() => _planChoice = 'free'),
               ),
               const SizedBox(height: AimSpacing.componentGap),
               PlacementOptionCard(
-                title: 'AIM plus',
-                subtitle: 'Unlimited AI tutor, advanced tracks',
+                title: l10n.placementResultPlusPlan,
+                subtitle: l10n.placementResultPlusPlanSub,
                 trailingValue: '12.99\$/mo',
                 isSelected: _planChoice == 'plus',
                 onTap: () => setState(() => _planChoice = 'plus'),
@@ -260,7 +260,7 @@ class _ResultBodyState extends State<_ResultBody> {
           const SizedBox(height: AimSpacing.space32),
 
           PlacementPrimaryButton(
-            label: 'Unlock My Course',
+            label: l10n.placementResultUnlockCourse,
             onPressed: () => context.go(AppRoutePaths.home),
           ),
         ],

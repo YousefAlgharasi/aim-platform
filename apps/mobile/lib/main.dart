@@ -1,18 +1,33 @@
 import 'package:aim_mobile/app/aim_mobile_app.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/logging/app_logger.dart';
+import 'core/logging/app_provider_observer.dart';
+
 void main() {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  // Keeps the native splash (Android launch_background / iOS
-  // LaunchScreen.storyboard) on screen — instead of tearing down to a blank
-  // window — until SplashPage explicitly calls FlutterNativeSplash.remove()
-  // once its own first frame (built to match the native splash exactly) has
-  // painted. This is what makes the handoff seamless with no white flash.
+
+  // Attach global uncaught Flutter framework error handler
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    AppLogger.e('FlutterError', details.exceptionAsString(), details.exception, details.stack);
+  };
+
+  // Attach global asynchronous platform error handler
+  PlatformDispatcher.instance.onError = (error, stack) {
+    AppLogger.e('PlatformDispatcher', 'Unhandled asynchronous exception', error, stack);
+    return true;
+  };
+
+  // Keeps the native splash on screen until SplashPage removes it
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
   runApp(
     const ProviderScope(
+      observers: [AppProviderObserver()],
       child: AimMobileApp(),
     ),
   );

@@ -274,10 +274,26 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
   Widget _buildFocusStep() {
     final l10n = AppLocalizations.of(context);
     final options = [
-      {'id': 'career', 'icon': '💼', 'label': l10n.placementGateFocusCareer},
-      {'id': 'exams', 'icon': '🎓', 'label': l10n.placementGateFocusExams},
-      {'id': 'speaking', 'icon': '💬', 'label': l10n.placementGateFocusSpeaking},
-      {'id': 'media', 'icon': '🎬', 'label': l10n.placementGateFocusMedia},
+      {
+        'id': 'career',
+        'iconData': Icons.work_outline_rounded,
+        'label': l10n.placementGateFocusCareer,
+      },
+      {
+        'id': 'exams',
+        'iconData': Icons.school_outlined,
+        'label': l10n.placementGateFocusExams,
+      },
+      {
+        'id': 'speaking',
+        'iconData': Icons.chat_bubble_outline_rounded,
+        'label': l10n.placementGateFocusSpeaking,
+      },
+      {
+        'id': 'media',
+        'iconData': Icons.movie_creation_outlined,
+        'label': l10n.placementGateFocusMedia,
+      },
     ];
 
     return Column(
@@ -325,19 +341,19 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
     final options = [
       {
         'id': '5min',
-        'icon': '🌱',
+        'iconData': Icons.eco_outlined,
         'label': l10n.placementGateHabit5Min,
         'sub': l10n.placementGateHabit5MinSub,
       },
       {
         'id': '15min',
-        'icon': '✦',
+        'iconData': Icons.auto_awesome_outlined,
         'label': l10n.placementGateHabit15Min,
         'sub': l10n.placementGateHabit15MinSub,
       },
       {
         'id': '30min',
-        'icon': '🔥',
+        'iconData': Icons.local_fire_department_outlined,
         'label': l10n.placementGateHabit30Min,
         'sub': l10n.placementGateHabit30MinSub,
       },
@@ -405,7 +421,11 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
                 child: PlacementOptionCard(
                   title: l10n.placementGateStartFromZeroTitle,
                   subtitle: l10n.placementGateStartFromZeroSub,
-                  icon: '🌱',
+                  iconWidget: const Icon(
+                    Icons.eco_rounded,
+                    color: AimColors.primary500,
+                    size: AimSizes.iconLg,
+                  ),
                   isSelected: isOptionA,
                   height: 164,
                   onTap: () {

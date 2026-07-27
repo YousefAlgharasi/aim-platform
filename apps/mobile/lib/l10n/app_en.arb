@@ -1725,5 +1725,192 @@
   "placementSubmitEvaluatingMessage": "Your responses have been uploaded. The AI engine is calibrating your level.",
   "@placementSubmitEvaluatingMessage": {
     "description": "Evaluating message on placement submit page."
+  },
+  "placementResultGreatJob": "Great Job! 🎉",
+  "@placementResultGreatJob": {
+    "description": "Great job header on placement result page."
+  },
+  "placementResultDetectedSubtitle": "Strong listening and grammar skills detected. Start here for the best experience.",
+  "@placementResultDetectedSubtitle": {
+    "description": "Skills detected subtitle on placement result page."
+  },
+  "placementResultStartFromZeroTitle": "Start from zero (A1)",
+  "@placementResultStartFromZeroTitle": {
+    "description": "Start from zero card title."
+  },
+  "placementResultStartFromZeroSubtitle": "Build your foundation from scratch.",
+  "@placementResultStartFromZeroSubtitle": {
+    "description": "Start from zero card subtitle."
+  },
+  "placementResultStartFromLevelTitle": "Start from level ({level})",
+  "@placementResultStartFromLevelTitle": {
+    "description": "Start from level card title.",
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "placementResultStartFromLevelSubtitle": "Jump straight to advanced tracks",
+  "@placementResultStartFromLevelSubtitle": {
+    "description": "Start from level card subtitle."
+  },
+  "placementResultSelectPlan": "Select your plan",
+  "@placementResultSelectPlan": {
+    "description": "Select plan header."
+  },
+  "placementResultFreePlan": "Free plan",
+  "@placementResultFreePlan": {
+    "description": "Free plan card title."
+  },
+  "placementResultFreePlanSub": "Standard lessons, daily limits",
+  "@placementResultFreePlanSub": {
+    "description": "Free plan card subtitle."
+  },
+  "placementResultPlusPlan": "AIM plus",
+  "@placementResultPlusPlan": {
+    "description": "Plus plan card title."
+  },
+  "placementResultPlusPlanSub": "Unlimited AI tutor, advanced tracks",
+  "@placementResultPlusPlanSub": {
+    "description": "Plus plan card subtitle."
+  },
+  "placementResultUnlockCourse": "Unlock My Course",
+  "@placementResultUnlockCourse": {
+    "description": "Unlock course button label."
+  },
+  "placementMenuHeaderTitle": "Placement Test",
+  "@placementMenuHeaderTitle": {
+    "description": "Placement menu top bar header."
+  },
+  "placementMenuNotTakenTitle": "You haven't taken the placement test yet",
+  "@placementMenuNotTakenTitle": {
+    "description": "Not taken title."
+  },
+  "placementMenuNotTakenSub": "A short adaptive test places you at the right level so every lesson fits you.",
+  "@placementMenuNotTakenSub": {
+    "description": "Not taken subtitle."
+  },
+  "placementMenuTakeTestBtn": "Take the Placement Test",
+  "@placementMenuTakeTestBtn": {
+    "description": "Take placement test button."
+  },
+  "placementMenuInScoringTitle": "Your placement test is being scored",
+  "@placementMenuInScoringTitle": {
+    "description": "In scoring status title."
+  },
+  "placementMenuInProgressTitle": "You have a placement test in progress",
+  "@placementMenuInProgressTitle": {
+    "description": "In progress status title."
+  },
+  "placementMenuInScoringSub": "This usually only takes a moment. Check again shortly.",
+  "@placementMenuInScoringSub": {
+    "description": "In scoring status subtitle."
+  },
+  "placementMenuInProgressSub": "Pick up your placement test, or start over — your progress in this attempt is not saved section by section.",
+  "@placementMenuInProgressSub": {
+    "description": "In progress status subtitle."
+  },
+  "placementMenuCheckAgainBtn": "Check Again",
+  "@placementMenuCheckAgainBtn": {
+    "description": "Check again button."
+  },
+  "placementMenuContinueBtn": "Continue Placement Test",
+  "@placementMenuContinueBtn": {
+    "description": "Continue test button."
+  },
+  "placementMenuYourLevelLabel": "YOUR LEVEL",
+  "@placementMenuYourLevelLabel": {
+    "description": "Your level label."
+  },
+  "placementMenuScoreSummary": "{displayName} · Total score {score} / 100",
+  "@placementMenuScoreSummary": {
+    "description": "Score summary line.",
+    "placeholders": {
+      "displayName": {
+        "type": "String"
+      },
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "placementMenuViewFullResult": "View Full Result",
+  "@placementMenuViewFullResult": {
+    "description": "View full result button."
+  },
+  "placementSectionBeginFinal": "Begin Final Section",
+  "@placementSectionBeginFinal": {
+    "description": "Begin final section button."
+  },
+  "placementSectionBegin": "Begin Section",
+  "@placementSectionBegin": {
+    "description": "Begin section button."
+  },
+  "placementSectionQuestionsCount": "{count} questions",
+  "@placementSectionQuestionsCount": {
+    "description": "Questions count label.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "placementSectionAboutMinutes": "about {minutes} minutes",
+  "@placementSectionAboutMinutes": {
+    "description": "About minutes label.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "placementSectionProgressSemantic": "Section {current} of {total}",
+  "@placementSectionProgressSemantic": {
+    "description": "Section progress semantic label.",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "placementStartHonorCodeAgreement": "By starting, you agree to our Placement Honor Code",
+  "@placementStartHonorCodeAgreement": {
+    "description": "Honor code agreement note."
+  },
+  "placementSubmitCompletedQuestions": "Completed Questions",
+  "@placementSubmitCompletedQuestions": {
+    "description": "Completed questions stat row label."
+  },
+  "placementSubmitSkippedQuestions": "Skipped Questions",
+  "@placementSubmitSkippedQuestions": {
+    "description": "Skipped questions stat row label."
+  },
+  "placementSubmitAnalyzingAnswers": "Analyzing your answers",
+  "@placementSubmitAnalyzingAnswers": {
+    "description": "Analyzing answers header."
+  },
+  "placementSubmitCalibratingBody": "Our AI is calibrating your optimal starting level to ensure your learning path is perfectly paced.",
+  "@placementSubmitCalibratingBody": {
+    "description": "Calibrating level body copy."
+  },
+  "placementQuestionLoadingSemantic": "Loading question",
+  "@placementQuestionLoadingSemantic": {
+    "description": "Loading question semantic label."
+  },
+  "placementQuestionTimerExpiredError": "Time is up — this attempt has been submitted.",
+  "@placementQuestionTimerExpiredError": {
+    "description": "Timer expired error banner."
+  },
+  "placementQuestionSubmitSpeakingError": "Failed to submit speaking response. Please try again.",
+  "@placementQuestionSubmitSpeakingError": {
+    "description": "Submit speaking error banner."
+  },
+  "placementQuestionSubmitAnswerError": "Failed to submit answer. Please try again.",
+  "@placementQuestionSubmitAnswerError": {
+    "description": "Submit answer error banner."
   }
 }

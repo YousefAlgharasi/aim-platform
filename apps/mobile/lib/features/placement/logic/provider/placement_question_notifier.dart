@@ -19,6 +19,7 @@
 // - No scoring, CEFR level, mastery, weakness map, or AIM Engine logic here.
 // - No secrets, service-role keys, database credentials, or privileged config.
 
+import 'package:aim_mobile/core/logging/app_logger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/features/placement/data/models/placement_question_model.dart';
@@ -138,7 +139,8 @@ class PlacementQuestionNotifier
         currentIndex: 0,
         attemptId: attemptId,
       );
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.e('PlacementQuestionNotifier', 'Failed to load questions for section $sectionId', e, st);
       state = PlacementQuestionError(
         message: e is Exception
             ? e.toString()
@@ -190,7 +192,8 @@ class PlacementQuestionNotifier
           isSubmitting: false,
         );
       }
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.e('PlacementQuestionNotifier', 'Failed to submit answer for question ${current.currentQuestion.id}', e, st);
       // Reset submitting flag so student can retry.
       state = current.copyWith(isSubmitting: false);
       // Re-throw so the UI can show an error.
@@ -229,7 +232,8 @@ class PlacementQuestionNotifier
           isSubmitting: false,
         );
       }
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.e('PlacementQuestionNotifier', 'Failed to submit speaking answer', e, st);
       state = current.copyWith(isSubmitting: false);
       rethrow;
     }

@@ -142,6 +142,8 @@ class _MenuHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -155,7 +157,7 @@ class _MenuHeader extends StatelessWidget {
         children: [
           Semantics(
             button: true,
-            label: 'Back',
+            label: l10n.commonBack,
             child: InkWell(
               onTap: () {
                 if (context.canPop()) context.pop();
@@ -181,7 +183,7 @@ class _MenuHeader extends StatelessWidget {
           ),
           const SizedBox(width: AimSpacing.componentGap),
           Text(
-            'Placement Test',
+            l10n.placementMenuHeaderTitle,
             style: AimTextStyles.h2.copyWith(color: AimColors.neutral0),
           ),
         ],
@@ -201,6 +203,7 @@ class _NotTakenBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
 
     return Padding(
@@ -211,22 +214,21 @@ class _NotTakenBody extends StatelessWidget {
           Icon(Icons.school_outlined, size: AimSizes.iconLg, color: surfaces.textMuted),
           const SizedBox(height: AimSpacing.sectionGap),
           Text(
-            "You haven't taken the placement test yet",
+            l10n.placementMenuNotTakenTitle,
             style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AimSpacing.space8),
           Text(
-            'A short adaptive test places you at the right level so every '
-            'lesson fits you.',
+            l10n.placementMenuNotTakenSub,
             style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AimSpacing.sectionGap),
           AIMGradientButton(
-            label: 'Take the Placement Test',
+            label: l10n.placementMenuTakeTestBtn,
             fullWidth: true,
-            semanticLabel: 'Take the Placement Test',
+            semanticLabel: l10n.placementMenuTakeTestBtn,
             onPressed: onStart,
           ),
         ],
@@ -261,16 +263,16 @@ class _InProgressBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
     final isSubmitted = status == 'submitted';
 
     final title = isSubmitted
-        ? 'Your placement test is being scored'
-        : 'You have a placement test in progress';
+        ? l10n.placementMenuInScoringTitle
+        : l10n.placementMenuInProgressTitle;
     final body = isSubmitted
-        ? 'This usually only takes a moment. Check again shortly.'
-        : 'Pick up your placement test, or start over — your progress in '
-            'this attempt is not saved section by section.';
+        ? l10n.placementMenuInScoringSub
+        : l10n.placementMenuInProgressSub;
 
     return Padding(
       padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
@@ -297,16 +299,16 @@ class _InProgressBody extends StatelessWidget {
           const SizedBox(height: AimSpacing.sectionGap),
           if (isSubmitted)
             AIMGradientButton(
-              label: 'Check Again',
+              label: l10n.placementMenuCheckAgainBtn,
               fullWidth: true,
-              semanticLabel: 'Check Again',
+              semanticLabel: l10n.placementMenuCheckAgainBtn,
               onPressed: onCheckAgain,
             )
           else
             AIMGradientButton(
-              label: 'Continue Placement Test',
+              label: l10n.placementMenuContinueBtn,
               fullWidth: true,
-              semanticLabel: 'Continue Placement Test',
+              semanticLabel: l10n.placementMenuContinueBtn,
               onPressed: onContinue,
             ),
         ],
@@ -352,7 +354,7 @@ class _CompletedBody extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Semantics(
-            label: 'Your level: $displayName, total score $totalScore out of 100',
+            label: l10n.placementMenuScoreSummary(displayName, totalScore),
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.all(AimSpacing.cardPaddingLg),
@@ -363,7 +365,7 @@ class _CompletedBody extends StatelessWidget {
               child: Column(
                 children: [
                   Text(
-                    'YOUR LEVEL',
+                    l10n.placementMenuYourLevelLabel,
                     style: AimTextStyles.caption.copyWith(
                       color: AimColors.neutral0.withValues(alpha: 0.85),
                       fontWeight: AimFontWeights.semibold,
@@ -377,7 +379,7 @@ class _CompletedBody extends StatelessWidget {
                   ),
                   const SizedBox(height: AimSpacing.space4),
                   Text(
-                    '$displayName · Total score $totalScore / 100',
+                    l10n.placementMenuScoreSummary(displayName, totalScore),
                     style: AimTextStyles.bodySm.copyWith(
                       color: AimColors.neutral0.withValues(alpha: 0.85),
                     ),
@@ -388,9 +390,9 @@ class _CompletedBody extends StatelessWidget {
           ),
           const SizedBox(height: AimSpacing.sectionGap),
           AIMGradientButton(
-            label: 'View Full Result',
+            label: l10n.placementMenuViewFullResult,
             fullWidth: true,
-            semanticLabel: 'View Full Result',
+            semanticLabel: l10n.placementMenuViewFullResult,
             onPressed: () => context.push(
               AppRoutePaths.placementResult,
               extra: {'attemptId': result.placementAttemptId},
@@ -399,7 +401,7 @@ class _CompletedBody extends StatelessWidget {
           const SizedBox(height: AimSpacing.componentGap),
           OutlinedButton(
             onPressed: onRetake,
-            child: const Text('Retake Test?'),
+            child: Text(l10n.placementMenuRetakeButton),
           ),
         ],
       ),
