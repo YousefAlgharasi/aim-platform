@@ -410,12 +410,28 @@ export class PlacementController {
   }
 
   /**
+   * GET /placement/attempts
    * GET /placement/attempts/latest
    * Fetch the student's overall placement status without requiring a known
-   * attemptId — used by the mobile app's "Placement Test" menu entry to
-   * decide between showing a completed result + retake option, an
-   * in-progress resume, or the fresh start flow.
+   * attemptId — used by mobile & web clients to decide between showing a
+   * completed result + retake option, an in-progress resume, or fresh start.
    */
+  @Get('attempts')
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Fetch the student's latest placement attempt status." })
+  @ApiOkResponse({
+    description:
+      "status: 'none' | 'active' | 'submitted' | 'completed'. result is only populated when status is 'completed'.",
+  })
+  async getAttempts(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<PlacementLatestStatusResponse> {
+    return this.resultRead.getLatestAttemptStatus(user.id);
+  }
+
   @Get('attempts/latest')
   @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
