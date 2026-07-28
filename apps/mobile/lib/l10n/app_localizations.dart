@@ -2351,6 +2351,21 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to submit answer. Please try again.'**
   String get placementQuestionSubmitAnswerError;
+
+  /// Title for Daily Missions section.
+  String get homeDailyMissionsTitle;
+
+  /// Missions reset time message.
+  String homeMissionsResetIn(int hours);
+
+  /// Next up badge label.
+  String get homeNextUp;
+
+  /// Overall progress progress bar label.
+  String get homeOverallProgress;
+
+  /// Streak days label.
+  String homeStreakDaysText(int days);
 }
 
 class _AppLocalizationsDelegate

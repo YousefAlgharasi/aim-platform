@@ -406,205 +406,261 @@ class _CoursePathTrail extends StatelessWidget {
         );
       },
     );
+    return Column(
+      children: [
+        for (var i = 0; i < nodes.length; i++) ...[
+          _RoadmapNodeWidget(
+            node: nodes[i],
+            label: switch (nodes[i].kind) {
+              _NodeKind.lesson => nodes[i].title,
+              _NodeKind.quiz => quizLabel,
+              _NodeKind.finalExam => finalExamLabel,
+            },
+            lockedSemantic: lockedSemantic,
+            onTap: () => onTapNode(nodes[i]),
+            isLast: i == nodes.length - 1,
+            nextIsDone: i < nodes.length - 1 && nodes[i + 1].completed,
+          ),
+        ],
+      ],
+    );
   }
 }
 
-/// Draws the winding connector line through node centers as a sequence of
-/// smooth S-curves. A completed node's outgoing segment is a solid, lit
-/// gradient line; everything ahead of the student is a muted dashed line.
-class _TrailPainter extends CustomPainter {
-  const _TrailPainter({required this.centers, required this.nodes});
-
-  final List<Offset> centers;
-  final List<_PathNode> nodes;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    for (var i = 0; i < centers.length - 1; i++) {
-      final p0 = centers[i];
-      final p1 = centers[i + 1];
-      final midY = (p0.dy + p1.dy) / 2;
-      final path = Path()
-        ..moveTo(p0.dx, p0.dy)
-        ..cubicTo(p0.dx, midY, p1.dx, midY, p1.dx, p1.dy);
-
-      final walked = nodes[i].completed;
-      final paint = Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 5
-        ..strokeCap = StrokeCap.round;
-
-      if (walked) {
-        paint.shader = const LinearGradient(
-          colors: [AimColors.gzLime, AimColors.accent500],
-        ).createShader(Rect.fromPoints(p0, p1));
-        canvas.drawPath(path, paint);
-      } else {
-        paint.color = AimColors.neutral300;
-        _drawDashedPath(canvas, path, paint);
-      }
-    }
-  }
-
-  void _drawDashedPath(Canvas canvas, Path path, Paint paint) {
-    const dashWidth = 9.0;
-    const dashSpace = 7.0;
-    for (final metric in path.computeMetrics()) {
-      var distance = 0.0;
-      while (distance < metric.length) {
-        final next = (distance + dashWidth).clamp(0.0, metric.length);
-        canvas.drawPath(metric.extractPath(distance, next), paint);
-        distance = next + dashSpace;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _TrailPainter oldDelegate) =>
-      oldDelegate.centers != centers || oldDelegate.nodes != nodes;
-}
-
-class _CoursePathNode extends StatelessWidget {
-  const _CoursePathNode({
+class _RoadmapNodeWidget extends StatelessWidget {
+  const _RoadmapNodeWidget({
     required this.node,
     required this.label,
     required this.lockedSemantic,
-    required this.nodeSize,
-    required this.gradient,
     required this.onTap,
+    required this.isLast,
+    required this.nextIsDone,
   });
 
   final _PathNode node;
   final String label;
   final String lockedSemantic;
-  final double nodeSize;
-  final Gradient gradient;
   final VoidCallback onTap;
-
-  Gradient get _bossGradient =>
-      node.kind == _NodeKind.finalExam ? AimGradients.gzHero : AimGradients.gzCoral;
+  final bool isLast;
+  final bool nextIsDone;
 
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
-    final isBossNode = node.kind != _NodeKind.lesson;
+    final l10n = AppLocalizations.of(context);
+    final isDone = node.completed;
+    final isCurrent = node.current;
+    final isLocked = !node.unlocked;
 
-    final Widget circle;
-    if (node.completed) {
-      circle = _NodeCircle(
-        size: nodeSize,
-        gradient: isBossNode ? _bossGradient : gradient,
-        icon: Icons.check_rounded,
-        iconColor: AimColors.neutral0,
-        glow: false,
+    final double nodeSize = isCurrent ? 64 : 52;
+
+    Widget circle;
+    if (isDone) {
+      circle = Container(
+        width: nodeSize,
+        height: nodeSize,
+        decoration: const BoxDecoration(
+          color: Color(0xFF22C55E),
+          shape: BoxShape.circle,
+        ),
+        alignment: Alignment.center,
+        child: const Icon(
+          Icons.check_rounded,
+          color: AimColors.neutral0,
+          size: 22,
+        ),
       );
-    } else if (node.current) {
-      circle = _NodeCircle(
-        size: nodeSize,
-        gradient: AimGradients.gzHero,
-        icon: node.kind == _NodeKind.lesson ? Icons.play_arrow_rounded : Icons.quiz_rounded,
-        iconColor: AimColors.neutral0,
-        glow: true,
-        ringed: true,
+    } else if (isCurrent) {
+      circle = Container(
+        width: nodeSize,
+        height: nodeSize,
+        decoration: BoxDecoration(
+          color: AimColors.primary500,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: AimColors.primary500.withValues(alpha: 0.25),
+              blurRadius: 24,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        alignment: Alignment.center,
+        child: const Icon(
+          Icons.play_arrow_rounded,
+          color: AimColors.neutral0,
+          size: 24,
+        ),
       );
     } else {
-      circle = _NodeCircle(
-        size: nodeSize * 0.86,
-        color: AimColors.neutral200,
-        icon: Icons.lock_outline_rounded,
-        iconColor: AimColors.neutral500,
-        glow: false,
+      circle = SizedBox(
+        width: nodeSize,
+        height: nodeSize,
+        child: CustomPaint(
+          painter: _DashedCirclePainter(color: surfaces.border),
+          child: Center(
+            child: Icon(
+              Icons.lock_outline_rounded,
+              color: surfaces.textMuted,
+              size: 20,
+            ),
+          ),
+        ),
       );
     }
+
+    final locale = Localizations.localeOf(context).languageCode;
+    final isAr = locale == 'ar';
+    final String subTranslated = isDone
+        ? (isAr ? 'متقن' : 'Mastered')
+        : isCurrent
+            ? (isAr ? 'الدرس الحالي' : 'Current Lesson')
+            : (isAr ? 'مغلق' : 'Locked');
 
     return Semantics(
       button: node.unlocked,
       label: node.unlocked ? label : '$label — $lockedSemantic',
-      child: InkWell(
+      child: GestureDetector(
         onTap: node.unlocked ? onTap : null,
-        borderRadius: AimRadius.borderPill,
         child: Column(
           children: [
-            SizedBox(
-              height: nodeSize + AimSpacing.space8,
-              child: Center(child: circle),
+            Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
+              children: [
+                circle,
+                if (isCurrent)
+                  Positioned(
+                    top: -22,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AimColors.primary500,
+                        borderRadius: AimRadius.borderPill,
+                      ),
+                      child: Text(
+                        l10n.homeNextUp,
+                        style: AimTextStyles.caption.copyWith(
+                          color: AimColors.neutral0,
+                          fontWeight: AimFontWeights.bold,
+                          fontSize: 10,
+                          letterSpacing: 0.4,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
-            const SizedBox(height: AimSpacing.space4),
+            const SizedBox(height: AimSpacing.space8),
             Text(
               label,
               textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: AimTextStyles.caption.copyWith(
-                color: node.unlocked ? surfaces.textPrimary : surfaces.textMuted,
-                fontWeight: node.current ? AimFontWeights.bold : AimFontWeights.regular,
+              style: AimTextStyles.bodySm.copyWith(
+                color: isLocked ? surfaces.textMuted : surfaces.textPrimary,
+                fontWeight: isCurrent ? AimFontWeights.bold : AimFontWeights.semibold,
+                fontSize: 13,
               ),
             ),
+            const SizedBox(height: AimSpacing.space2),
+            Text(
+              subTranslated,
+              textAlign: TextAlign.center,
+              style: AimTextStyles.caption.copyWith(
+                color: isDone
+                    ? const Color(0xFF22C55E)
+                    : isCurrent
+                        ? AimColors.primary500
+                        : surfaces.textMuted,
+                fontWeight: AimFontWeights.semibold,
+                fontSize: 11,
+              ),
+            ),
+            if (!isLast) _buildLine(isDone, surfaces.border),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildLine(bool isDone, Color borderStrong) {
+    if (isDone) {
+      return Container(
+        width: 2,
+        height: 36,
+        color: const Color(0xFF86EFAC),
+        margin: const EdgeInsets.symmetric(vertical: 6),
+      );
+    } else {
+      return Container(
+        width: 2,
+        height: 36,
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        child: CustomPaint(
+          painter: _DashedLinePainter(color: borderStrong),
+        ),
+      );
+    }
+  }
 }
 
-class _NodeCircle extends StatelessWidget {
-  const _NodeCircle({
-    required this.icon,
-    required this.iconColor,
-    required this.size,
-    required this.glow,
-    this.gradient,
-    this.color,
-    this.ringed = false,
-  });
-
-  final IconData icon;
-  final Color iconColor;
-  final double size;
-  final bool glow;
-  final bool ringed;
-  final Gradient? gradient;
-  final Color? color;
+class _DashedLinePainter extends CustomPainter {
+  _DashedLinePainter({required this.color});
+  final Color color;
 
   @override
-  Widget build(BuildContext context) {
-    final glowColor = gradient == AimGradients.gzHero
-        ? AimColors.gzPurple
-        : AimColors.accent500;
-
-    return Container(
-      width: size,
-      height: size,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: ringed ? Border.all(color: AimColors.neutral0, width: 4) : null,
-        boxShadow: [
-          if (glow)
-            BoxShadow(
-              color: glowColor.withValues(alpha: 0.45),
-              blurRadius: 20,
-              spreadRadius: 2,
-            )
-          else if (gradient != null)
-            const BoxShadow(
-              color: Color(0x1F181C26),
-              offset: Offset(0, 3),
-              blurRadius: 6,
-            ),
-        ],
-      ),
-      child: Container(
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          gradient: gradient,
-          color: gradient == null ? color : null,
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, color: iconColor, size: size * 0.42),
-      ),
-    );
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+    const dashHeight = 5.0;
+    const dashSpace = 5.0;
+    var startY = 0.0;
+    while (startY < size.height) {
+      canvas.drawLine(Offset(size.width / 2, startY), Offset(size.width / 2, startY + dashHeight), paint);
+      startY += dashHeight + dashSpace;
+    }
   }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
+}
+
+class _DashedCirclePainter extends CustomPainter {
+  _DashedCirclePainter({required this.color});
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    final double radius = size.width / 2;
+    const double dashWidth = 6.0;
+    const double dashSpace = 4.0;
+    final double circumference = 2 * 3.1415926535 * radius;
+    final int dashCount = (circumference / (dashWidth + dashSpace)).floor();
+
+    for (var i = 0; i < dashCount; i++) {
+      final double startAngle = (i * (dashWidth + dashSpace) / circumference) * 2 * 3.1415926535;
+      final double sweepAngle = (dashWidth / circumference) * 2 * 3.1415926535;
+      canvas.drawArc(
+        Rect.fromCircle(center: Offset(radius, radius), radius: radius),
+        startAngle,
+        sweepAngle,
+        false,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }
 
 class _CoursePathSkeleton extends StatelessWidget {

@@ -1521,4 +1521,23 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get placementQuestionSubmitAnswerError =>
       'فشل تسليم الإجابة. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get homeDailyMissionsTitle => 'المهام اليومية';
+
+  @override
+  String homeMissionsResetIn(int hours) {
+    return 'تحديث خلال ${hours}س';
+  }
+
+  @override
+  String get homeNextUp => 'التالي';
+
+  @override
+  String get homeOverallProgress => 'التقدم العام';
+
+  @override
+  String homeStreakDaysText(int days) {
+    return '$days أيام';
+  }
 }

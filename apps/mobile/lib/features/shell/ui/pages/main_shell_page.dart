@@ -161,7 +161,7 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
               child: const Icon(Icons.menu),
             ),
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           // No bottomNavigationBar: navigation between tabs is handled entirely
           // by the drawer's MENU section (see _buildDrawer) opened via the FAB
           // above, per product direction — the bottom tab bar was redundant

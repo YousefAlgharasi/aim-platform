@@ -1478,4 +1478,23 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get placementQuestionSubmitAnswerError =>
       'Failed to submit answer. Please try again.';
+
+  @override
+  String get homeDailyMissionsTitle => 'Daily Missions';
+
+  @override
+  String homeMissionsResetIn(int hours) {
+    return 'Reset in ${hours}h';
+  }
+
+  @override
+  String get homeNextUp => 'NEXT UP';
+
+  @override
+  String get homeOverallProgress => 'Overall Progress';
+
+  @override
+  String homeStreakDaysText(int days) {
+    return '$days Days';
+  }
 }

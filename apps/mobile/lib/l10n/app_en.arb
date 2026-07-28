@@ -1912,5 +1912,35 @@
   "placementQuestionSubmitAnswerError": "Failed to submit answer. Please try again.",
   "@placementQuestionSubmitAnswerError": {
     "description": "Submit answer error banner."
+  },
+  "homeDailyMissionsTitle": "Daily Missions",
+  "@homeDailyMissionsTitle": {
+    "description": "Daily missions section title"
+  },
+  "homeMissionsResetIn": "Reset in {hours}h",
+  "@homeMissionsResetIn": {
+    "description": "Daily missions reset time label",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "homeNextUp": "NEXT UP",
+  "@homeNextUp": {
+    "description": "Next up badge label"
+  },
+  "homeOverallProgress": "Overall Progress",
+  "@homeOverallProgress": {
+    "description": "Overall progress section label"
+  },
+  "homeStreakDaysText": "{days} Days",
+  "@homeStreakDaysText": {
+    "description": "Streak days counter text",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   }
 }

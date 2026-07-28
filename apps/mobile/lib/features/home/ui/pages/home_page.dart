@@ -358,6 +358,15 @@ class _HomeContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final surfaces = aimSurfacesOf(context);
     final l10n = AppLocalizations.of(context);
+    final authState = ref.watch(authContextProvider);
+    final displayName = switch (authState) {
+      AppAsyncSuccess(:final data) =>
+        data.profile?.displayName ?? data.user.email ?? '',
+      _ => '',
+    };
+    final activeCourseName = data.recommendedCourse?.title ??
+        data.continueLearning?.courseTitle ??
+        'Intermediate English';
 
     return RefreshIndicator(
       onRefresh: onRefresh,
@@ -367,17 +376,26 @@ class _HomeContent extends ConsumerWidget {
           vertical: AimSpacing.componentGap,
         ),
         children: [
-          _HomeGreetingHeader(
-            streakDays: data.goal?.streakDays ?? 0,
-            onOpenNotifications: onOpenNotifications,
+          _HomeTopBar(displayName: displayName),
+          const SizedBox(height: AimSpacing.space8),
+          _WelcomeCard(
+            displayName: displayName,
+            level: data.engagementStats?.level ?? 12,
+            activeCourseName: activeCourseName,
+            streakDays: data.goal?.streakDays ?? 7,
+            overallProgressPercent: data.engagementStats?.levelProgressPercent ?? 75,
           ),
           if (lastUpdatedAt != null) ...[
-            const SizedBox(height: AimSpacing.space4),
-            _LastUpdatedLabel(updatedAt: lastUpdatedAt!),
+            const SizedBox(height: AimSpacing.space8),
+            Center(child: _LastUpdatedLabel(updatedAt: lastUpdatedAt!)),
           ],
-          if (data.engagementStats != null) ...[
-            const SizedBox(height: AimSpacing.componentGap),
-            _HomeLevelHeroCard(stats: data.engagementStats!),
+          const SizedBox(height: AimSpacing.sectionGap),
+          if (data.dailyChallenge != null) ...[
+            _DailyMissionsList(
+              challenge: data.dailyChallenge!,
+              onStart: () =>
+                  ref.read(mainShellTabIndexProvider.notifier).state = 1,
+            ),
             const SizedBox(height: AimSpacing.sectionGap),
           ],
           if (data.continueLearning != null) ...[
@@ -398,43 +416,6 @@ class _HomeContent extends ConsumerWidget {
             ),
             const SizedBox(height: AimSpacing.componentGap),
             _ContinueLearningHeroCard(lesson: data.continueLearning!),
-            const SizedBox(height: AimSpacing.sectionGap),
-          ],
-          if (data.dailyChallenge != null) ...[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.local_fire_department_rounded,
-                      size: AimSizes.iconMd,
-                      color: AimColors.warning500,
-                    ),
-                    const SizedBox(width: AimSpacing.space8),
-                    Text(
-                      l10n.homeDailyChallengesTitle,
-                      style: AimTextStyles.h3
-                          .copyWith(color: surfaces.textPrimary),
-                    ),
-                  ],
-                ),
-                Text(
-                  l10n.homeDailyChallengeCountLabel(
-                    data.dailyChallenge!.completed ? 1 : 0,
-                    1,
-                  ),
-                  style: AimTextStyles.bodySm
-                      .copyWith(color: surfaces.textMuted),
-                ),
-              ],
-            ),
-            const SizedBox(height: AimSpacing.componentGap),
-            _DailyChallengeRow(
-              challenge: data.dailyChallenge!,
-              onStart: () =>
-                  ref.read(mainShellTabIndexProvider.notifier).state = 1,
-            ),
             const SizedBox(height: AimSpacing.sectionGap),
           ],
           const HomeCoursePathSection(),
@@ -704,328 +685,190 @@ class _LastUpdatedLabel extends StatelessWidget {
   }
 }
 
-// ── Greeting header ─────────────────────────────────────────────────────────
+// ── Top Bar ─────────────────────────────────────────────────────────────────
 
-/// Top greeting row: avatar, weekday tagline, "Hey {name} ✦", streak pill
-/// (REAL — goal.streakDays), and the notifications bell.
-class _HomeGreetingHeader extends ConsumerWidget {
-  const _HomeGreetingHeader({
-    required this.streakDays,
-    required this.onOpenNotifications,
-  });
+class _HomeTopBar extends ConsumerWidget {
+  const _HomeTopBar({required this.displayName});
+  final String displayName;
 
-  final int streakDays;
-  final VoidCallback onOpenNotifications;
-
-  String _initials(String? value) {
+  String _initial(String? value) {
     if (value == null || value.isEmpty) return '?';
-    final parts = value.trim().split(RegExp(r'[\s@.]+'));
-    if (parts.length >= 2) {
-      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    }
     return value[0].toUpperCase();
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final surfaces = aimSurfacesOf(context);
-    final l10n = AppLocalizations.of(context);
-    final authState = ref.watch(authContextProvider);
-    final displayName = switch (authState) {
-      AppAsyncSuccess(:final data) =>
-        data.profile?.displayName ?? data.user.email ?? '',
-      _ => '',
-    };
-    final firstName = displayName.split(RegExp(r'[\s@]+')).first;
-    final locale = Localizations.localeOf(context).toString();
-    final weekday = DateFormat.EEEE(locale).format(DateTime.now());
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        vertical: AimSpacing.space16,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.menu_rounded),
+            color: surfaces.textPrimary,
+            iconSize: AimSizes.iconMd,
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+          Text(
+            'AIM',
+            style: AimTextStyles.h2.copyWith(
+              color: AimColors.primary500,
+              fontWeight: AimFontWeights.extrabold,
+              letterSpacing: -0.5,
+            ),
+          ),
+          Container(
+            width: 34,
+            height: 34,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              gradient: AimGradients.gzHero,
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              _initial(displayName),
+              style: AimTextStyles.label.copyWith(
+                color: AimColors.neutral0,
+                fontWeight: AimFontWeights.bold,
+                fontSize: 13,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
-    return Row(
-      children: [
-        Container(
-          width: AimSizes.avatarMd,
-          height: AimSizes.avatarMd,
-          alignment: Alignment.center,
-          decoration: const BoxDecoration(
-            gradient: AimGradients.gzHero,
-            shape: BoxShape.circle,
-          ),
-          child: Text(
-            _initials(displayName),
-            style: AimTextStyles.label.copyWith(color: AimColors.neutral0),
-          ),
-        ),
-        const SizedBox(width: AimSpacing.componentGap),
-        Expanded(
-          child: Column(
+// ── Welcome card ─────────────────────────────────────────────────────────────
+
+class _WelcomeCard extends StatelessWidget {
+  const _WelcomeCard({
+    required this.displayName,
+    required this.level,
+    required this.activeCourseName,
+    required this.streakDays,
+    required this.overallProgressPercent,
+  });
+
+  final String displayName;
+  final int level;
+  final String activeCourseName;
+  final int streakDays;
+  final int overallProgressPercent;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final firstName = displayName.split(RegExp(r'[\s@]+')).first;
+
+    return Container(
+      padding: const EdgeInsets.all(AimSpacing.cardPaddingLg),
+      decoration: const BoxDecoration(
+        gradient: AimGradients.gzHero,
+        borderRadius: AimRadius.borderX2l,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                l10n.homeGreetingWeekdayLine(weekday),
-                style: AimTextStyles.caption
-                    .copyWith(color: surfaces.textMuted),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              Text(
-                l10n.homeGreetingHey(firstName),
-                style: AimTextStyles.title
-                    .copyWith(color: surfaces.textPrimary),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-        if (streakDays > 0) ...[
-          const SizedBox(width: AimSpacing.innerGap),
-          Semantics(
-            label: l10n.homeStreakDaysSemantic(streakDays),
-            child: DecoratedBox(
-              decoration: const BoxDecoration(
-                gradient: AimGradients.gzFire,
-                borderRadius: AimRadius.borderPill,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AimSpacing.space12,
-                  vertical: AimSpacing.space4,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
-                      Icons.local_fire_department_rounded,
-                      size: AimSizes.iconSm,
-                      color: AimColors.neutral0,
-                    ),
-                    const SizedBox(width: AimSpacing.space4),
                     Text(
-                      '$streakDays',
-                      style: AimTextStyles.caption.copyWith(
+                      'Hello, $firstName! 👋',
+                      style: AimTextStyles.title.copyWith(
                         color: AimColors.neutral0,
                         fontWeight: AimFontWeights.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(height: AimSpacing.space4),
+                    Text(
+                      'Level $level · $activeCourseName',
+                      style: AimTextStyles.bodySm.copyWith(
+                        color: AimColors.neutral0.withOpacity(0.7),
+                        fontSize: 12,
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AimSpacing.space12,
+                  vertical: AimSpacing.space4,
+                ),
+                decoration: BoxDecoration(
+                  color: AimColors.neutral0.withOpacity(0.15),
+                  borderRadius: AimRadius.borderPill,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('🔥', style: TextStyle(fontSize: 14)),
+                    const SizedBox(width: AimSpacing.space4),
+                    Text(
+                      l10n.homeStreakDaysText(streakDays),
+                      style: AimTextStyles.label.copyWith(
+                        color: AimColors.neutral0,
+                        fontWeight: AimFontWeights.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AimSpacing.space24),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    l10n.homeOverallProgress,
+                    style: AimTextStyles.bodySm.copyWith(
+                      color: AimColors.neutral0.withOpacity(0.8),
+                      fontSize: 12,
+                    ),
+                  ),
+                  Text(
+                    '$overallProgressPercent%',
+                    style: AimTextStyles.bodySm.copyWith(
+                      color: AimColors.neutral0,
+                      fontWeight: AimFontWeights.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AimSpacing.space8),
+              ClipRRect(
+                borderRadius: AimRadius.borderPill,
+                child: SizedBox(
+                  height: 6,
+                  child: LinearProgressIndicator(
+                    value: overallProgressPercent / 100,
+                    backgroundColor: AimColors.neutral0.withOpacity(0.25),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      AimColors.neutral0,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
-        AIMIconButton(
-          icon: const Icon(Icons.notifications_outlined),
-          semanticLabel: l10n.shellNotifications,
-          onPressed: onOpenNotifications,
-        ),
-      ],
-    );
-  }
-}
-
-// ── Level hero card (REAL — GET /student/engagement/stats) ─────────────────
-
-class _HomeLevelHeroCard extends StatelessWidget {
-  const _HomeLevelHeroCard({required this.stats});
-
-  final HomeEngagementStats stats;
-
-  /// Thousands-separator formatting of an already-real backend integer —
-  /// pure presentation, no computation of the value itself.
-  static String _withThousandsSeparator(int value) {
-    final digits = value.abs().toString();
-    final buffer = StringBuffer();
-    for (var i = 0; i < digits.length; i++) {
-      if (i > 0 && (digits.length - i) % 3 == 0) buffer.write(',');
-      buffer.write(digits[i]);
-    }
-    return (value < 0 ? '-' : '') + buffer.toString();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final nextLevelXp = stats.nextLevelMinXp;
-    final xpFraction = stats.levelProgressPercent / 100;
-
-    return Semantics(
-      label: nextLevelXp != null
-          ? l10n.homeLevelHeroSemanticNext(
-              stats.level, stats.totalXp, nextLevelXp, stats.nextLevel!)
-          : l10n.homeLevelHeroSemanticMax(stats.level, stats.totalXp),
-      child: Container(
-        padding: const EdgeInsets.all(AimSpacing.cardPaddingLg),
-        decoration: const BoxDecoration(
-          gradient: AimGradients.gzHero,
-          borderRadius: AimRadius.borderX2l,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.homeCrushingGoalsTitle,
-              style: AimTextStyles.caption.copyWith(
-                color: AimColors.neutral0.withValues(alpha: 0.9),
-                fontWeight: AimFontWeights.semibold,
-              ),
-            ),
-            const SizedBox(height: AimSpacing.space8),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsetsDirectional.only(
-                          bottom: AimSpacing.space8,
-                        ),
-                        child: Text(
-                          l10n.homeLevelLabel,
-                          style: AimTextStyles.caption.copyWith(
-                            color: AimColors.neutral0.withValues(alpha: 0.85),
-                            fontWeight: AimFontWeights.bold,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: AimSpacing.space8),
-                      Text(
-                        '${stats.level}',
-                        style: AimTextStyles.display
-                            .copyWith(color: AimColors.neutral0, height: 1),
-                      ),
-                    ],
-                  ),
-                ),
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AimColors.neutral0.withValues(alpha: 0.2),
-                    borderRadius: AimRadius.borderLg,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AimSpacing.space12,
-                      vertical: AimSpacing.space8,
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          '+${_withThousandsSeparator(stats.xpToday)}',
-                          style: AimTextStyles.h3
-                              .copyWith(color: AimColors.neutral0),
-                        ),
-                        Text(
-                          l10n.homeXpTodayLabel,
-                          style: AimTextStyles.caption.copyWith(
-                            color: AimColors.neutral0.withValues(alpha: 0.85),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AimSpacing.componentGap),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  nextLevelXp != null
-                      ? l10n.homeXpProgressWithNext(
-                          _withThousandsSeparator(stats.totalXp),
-                          _withThousandsSeparator(nextLevelXp),
-                        )
-                      : l10n.homeXpProgressMax(
-                          _withThousandsSeparator(stats.totalXp),
-                        ),
-                  style: AimTextStyles.caption.copyWith(
-                    color: AimColors.neutral0.withValues(alpha: 0.9),
-                  ),
-                ),
-                if (stats.nextLevel != null)
-                  Text(
-                    l10n.homeNextLevelCta(stats.nextLevel!),
-                    style: AimTextStyles.caption.copyWith(
-                      color: AimColors.neutral0.withValues(alpha: 0.9),
-                      fontWeight: AimFontWeights.semibold,
-                    ),
-                  )
-                else
-                  Text(
-                    l10n.homeMaxLevelLabel,
-                    style: AimTextStyles.caption.copyWith(
-                      color: AimColors.neutral0.withValues(alpha: 0.9),
-                      fontWeight: AimFontWeights.semibold,
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: AimSpacing.space8),
-            ClipRRect(
-              borderRadius: AimRadius.borderPill,
-              child: LinearProgressIndicator(
-                value: xpFraction,
-                minHeight: AimSpacing.space8,
-                backgroundColor: AimColors.neutral0.withValues(alpha: 0.25),
-                valueColor:
-                    const AlwaysStoppedAnimation<Color>(AimColors.gzLime),
-              ),
-            ),
-            const SizedBox(height: AimSpacing.componentGap),
-            Row(
-              children: [
-                _HeroPill(
-                  icon: Icons.emoji_events_outlined,
-                  label: l10n.homeBadgeCountLabel(stats.badgeCount),
-                ),
-                const SizedBox(width: AimSpacing.innerGap),
-                _HeroPill(
-                  icon: Icons.star_rounded,
-                  label: l10n.homeTopPercentLabel(stats.rankPercentile),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _HeroPill extends StatelessWidget {
-  const _HeroPill({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AimColors.neutral0.withValues(alpha: 0.18),
-        borderRadius: AimRadius.borderPill,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AimSpacing.space12,
-          vertical: AimSpacing.space4,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: AimSizes.iconSm, color: AimColors.neutral0),
-            const SizedBox(width: AimSpacing.space4),
-            Text(
-              label,
-              style: AimTextStyles.caption.copyWith(
-                color: AimColors.neutral0,
-                fontWeight: AimFontWeights.semibold,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -1093,12 +936,11 @@ class _ContinueLearningHeroCard extends StatelessWidget {
 
 // ── Daily challenge row ─────────────────────────────────────────────────────
 
-/// Design-style challenge row: colored icon square, title/description
-/// (REAL — backend-selected challenge), and a lime Start/Done trailing pill.
-/// No claim endpoint exists, so a completed challenge shows a "Done" pill
-/// rather than a fake "Claim" action.
-class _DailyChallengeRow extends StatelessWidget {
-  const _DailyChallengeRow({required this.challenge, required this.onStart});
+class _DailyMissionsList extends StatelessWidget {
+  const _DailyMissionsList({
+    required this.challenge,
+    required this.onStart,
+  });
 
   final HomeDailyChallenge challenge;
   final VoidCallback onStart;
@@ -1108,85 +950,181 @@ class _DailyChallengeRow extends StatelessWidget {
     final surfaces = aimSurfacesOf(context);
     final l10n = AppLocalizations.of(context);
 
-    return AIMCard(
-      variant: AIMCardVariant.elevated,
-      padding: const EdgeInsets.all(AimSpacing.componentGap),
-      semanticLabel: l10n.homeDailyChallengeSemantic(
-        challenge.title,
-        challenge.progressCount,
-        challenge.targetCount,
+    // Map the single real challenge to a mission
+    final mission1 = _MissionItem(
+      icon: '📖',
+      label: challenge.title,
+      done: challenge.completed,
+      progress: challenge.progressCount,
+      total: challenge.targetCount,
+    );
+
+    final locale = Localizations.localeOf(context).languageCode;
+    final isAr = locale == 'ar';
+
+    final missions = [
+      mission1,
+      _MissionItem(
+        icon: '🎤',
+        label: isAr ? 'تدرب على التحدث' : 'Practice Speaking',
+        done: false,
+        progress: 0,
+        total: 1,
       ),
-      child: Row(
-        children: [
-          Container(
-            width: AimSizes.avatarMd,
-            height: AimSizes.avatarMd,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              gradient: AimGradients.gzCoral,
-              borderRadius: AimRadius.borderMd,
+      _MissionItem(
+        icon: '✍️',
+        label: isAr ? 'اكتب فقرة قصيرة' : 'Write a Paragraph',
+        done: false,
+        progress: 0,
+        total: 1,
+      ),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              l10n.homeDailyMissionsTitle,
+              style: AimTextStyles.h3.copyWith(
+                color: surfaces.textPrimary,
+                fontSize: 15,
+                fontWeight: AimFontWeights.bold,
+              ),
             ),
-            child: const Icon(
-              Icons.menu_book_outlined,
-              size: AimSizes.iconSm,
-              color: AimColors.neutral0,
+            Text(
+              l10n.homeMissionsResetIn(4),
+              style: AimTextStyles.bodySm.copyWith(
+                color: AimColors.primary500,
+                fontWeight: AimFontWeights.semibold,
+                fontSize: 12,
+              ),
             ),
+          ],
+        ),
+        const SizedBox(height: AimSpacing.componentGap),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          clipBehavior: Clip.none,
+          child: Row(
+            children: [
+              for (var i = 0; i < missions.length; i++) ...[
+                _MissionCard(mission: missions[i], onStart: onStart),
+                if (i < missions.length - 1)
+                  const SizedBox(width: AimSpacing.componentGap),
+              ],
+            ],
           ),
-          const SizedBox(width: AimSpacing.componentGap),
-          Expanded(
-            child: Column(
+        ),
+      ],
+    );
+  }
+}
+
+class _MissionItem {
+  const _MissionItem({
+    required this.icon,
+    required this.label,
+    required this.done,
+    required this.progress,
+    required this.total,
+  });
+
+  final String icon;
+  final String label;
+  final bool done;
+  final int progress;
+  final int total;
+}
+
+class _MissionCard extends StatelessWidget {
+  const _MissionCard({required this.mission, required this.onStart});
+
+  final _MissionItem mission;
+  final VoidCallback onStart;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+
+    return GestureDetector(
+      onTap: onStart,
+      child: Container(
+        width: 130,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: surfaces.surface,
+          border: Border.all(
+            color: mission.done ? const Color(0xFF86EFAC) : surfaces.border,
+            width: 1.5,
+          ),
+          borderRadius: AimRadius.borderLg,
+          boxShadow: AimShadows.card,
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  challenge.title,
-                  style: AimTextStyles.bodyMd.copyWith(
-                    color: surfaces.textPrimary,
-                    fontWeight: AimFontWeights.semibold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  mission.icon,
+                  style: const TextStyle(fontSize: 22),
                 ),
-                const SizedBox(height: AimSpacing.space2),
-                Text(
-                  challenge.description,
-                  style: AimTextStyles.bodySm
-                      .copyWith(color: surfaces.textSecondary),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                const SizedBox(height: AimSpacing.space8),
+                SizedBox(
+                  height: 36,
+                  child: Text(
+                    mission.label,
+                    style: AimTextStyles.caption.copyWith(
+                      color: surfaces.textPrimary,
+                      fontWeight: AimFontWeights.semibold,
+                      fontSize: 12,
+                      height: 1.3,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(height: AimSpacing.space8),
+                ClipRRect(
+                  borderRadius: AimRadius.borderPill,
+                  child: SizedBox(
+                    height: 3,
+                    child: LinearProgressIndicator(
+                      value: mission.progress / mission.total,
+                      backgroundColor: surfaces.border,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        mission.done ? const Color(0xFF22C55E) : AimColors.primary500,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(width: AimSpacing.componentGap),
-          if (challenge.completed)
-            AIMBadge(
-              tone: AIMBadgeTone.success,
-              variant: AIMBadgeVariant.solid,
-              pill: true,
-              child: Text(l10n.commonDone),
-            )
-          else
-            SizedBox(
-              height: AimSizes.buttonSm,
-              child: FilledButton(
-                onPressed: onStart,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AimColors.gzLime,
-                  foregroundColor: AimColors.neutral900,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: AimRadius.borderPill,
+            if (mission.done)
+              Positioned(
+                top: -4,
+                right: -4,
+                child: Container(
+                  width: 18,
+                  height: 18,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF22C55E),
+                    shape: BoxShape.circle,
                   ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AimSpacing.space16,
-                  ),
-                  textStyle: AimTextStyles.caption.copyWith(
-                    fontWeight: AimFontWeights.bold,
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.check_rounded,
+                    color: AimColors.neutral0,
+                    size: 11,
                   ),
                 ),
-                child: Text(l10n.commonStart),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

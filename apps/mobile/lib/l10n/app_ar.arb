@@ -374,5 +374,10 @@
   "placementQuestionLoadingSemantic": "جارٍ تحميل السؤال",
   "placementQuestionTimerExpiredError": "انتهى الوقت — تم تسليم هذه المحاولة.",
   "placementQuestionSubmitSpeakingError": "فشل تسليم الإجابة الصوتية. يرجى المحاولة مرة أخرى.",
-  "placementQuestionSubmitAnswerError": "فشل تسليم الإجابة. يرجى المحاولة مرة أخرى."
+  "placementQuestionSubmitAnswerError": "فشل تسليم الإجابة. يرجى المحاولة مرة أخرى.",
+  "homeDailyMissionsTitle": "المهام اليومية",
+  "homeMissionsResetIn": "تحديث خلال {hours}س",
+  "homeNextUp": "التالي",
+  "homeOverallProgress": "التقدم العام",
+  "homeStreakDaysText": "{days} أيام"
 }
