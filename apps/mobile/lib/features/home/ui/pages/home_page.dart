@@ -364,8 +364,7 @@ class _HomeContent extends ConsumerWidget {
         data.profile?.displayName ?? data.user.email ?? '',
       _ => '',
     };
-    final activeCourseName = data.recommendedCourse?.title ??
-        data.continueLearning?.courseTitle ??
+    final activeCourseName = data.recommendedCourse?.courseTitle ??
         'Intermediate English';
 
     return RefreshIndicator(

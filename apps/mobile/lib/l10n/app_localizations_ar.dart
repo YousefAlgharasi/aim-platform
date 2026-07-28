@@ -1527,7 +1527,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String homeMissionsResetIn(int hours) {
-    return 'تحديث خلال ${hours}س';
+    return 'تحديث خلال $hoursس';
   }
 
   @override

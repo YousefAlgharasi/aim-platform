@@ -2352,19 +2352,34 @@ abstract class AppLocalizations {
   /// **'Failed to submit answer. Please try again.'**
   String get placementQuestionSubmitAnswerError;
 
-  /// Title for Daily Missions section.
+  /// Daily missions section title
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Missions'**
   String get homeDailyMissionsTitle;
 
-  /// Missions reset time message.
+  /// Daily missions reset time label
+  ///
+  /// In en, this message translates to:
+  /// **'Reset in {hours}h'**
   String homeMissionsResetIn(int hours);
 
-  /// Next up badge label.
+  /// Next up badge label
+  ///
+  /// In en, this message translates to:
+  /// **'NEXT UP'**
   String get homeNextUp;
 
-  /// Overall progress progress bar label.
+  /// Overall progress section label
+  ///
+  /// In en, this message translates to:
+  /// **'Overall Progress'**
   String get homeOverallProgress;
 
-  /// Streak days label.
+  /// Streak days counter text
+  ///
+  /// In en, this message translates to:
+  /// **'{days} Days'**
   String homeStreakDaysText(int days);
 }
 

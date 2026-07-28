@@ -338,74 +338,10 @@ class _CoursePathTrail extends StatelessWidget {
   final String finalExamLabel;
   final String lockedSemantic;
 
-  static const double _nodeSize = 76;
-  static const double _nodeBoxWidth = 108;
-  static const double _rowHeight = 132;
-  static const List<double> _laneFractions = [0.5, 0.21, 0.79];
-
-  // A distinct, lively color per lesson node so completed steps don't all
-  // look identical — cycled by index. Quiz/final-exam nodes always use
-  // their own coral/purple treatment so they read as the chapter's "boss"
-  // step regardless of where they land in this cycle.
-  static const List<Gradient> _lessonPalette = [
-    AimGradients.gzFire,
-    AimGradients.growth,
-    AimGradients.gzCoral,
-    AimGradients.ai,
-    AimGradients.gzLime,
-  ];
-
-  Offset _centerFor(int index, double width) {
-    final lane = _laneFractions[index % _laneFractions.length];
-    return Offset(lane * width, _rowHeight * index + _nodeSize / 2);
-  }
-
   @override
   Widget build(BuildContext context) {
     if (nodes.isEmpty) return const SizedBox.shrink();
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final centers = [
-          for (var i = 0; i < nodes.length; i++) _centerFor(i, width),
-        ];
-        final height = _rowHeight * (nodes.length - 1) + _nodeSize + 56;
-
-        return SizedBox(
-          width: width,
-          height: height,
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: _TrailPainter(centers: centers, nodes: nodes),
-                ),
-              ),
-              for (var i = 0; i < nodes.length; i++)
-                Positioned(
-                  left: centers[i].dx - _nodeBoxWidth / 2,
-                  top: centers[i].dy - _nodeSize / 2,
-                  width: _nodeBoxWidth,
-                  child: _CoursePathNode(
-                    node: nodes[i],
-                    label: switch (nodes[i].kind) {
-                      _NodeKind.lesson => nodes[i].title,
-                      _NodeKind.quiz => quizLabel,
-                      _NodeKind.finalExam => finalExamLabel,
-                    },
-                    lockedSemantic: lockedSemantic,
-                    nodeSize: _nodeSize,
-                    gradient: _lessonPalette[i % _lessonPalette.length],
-                    onTap: () => onTapNode(nodes[i]),
-                  ),
-                ),
-            ],
-          ),
-        );
-      },
-    );
     return Column(
       children: [
         for (var i = 0; i < nodes.length; i++) ...[
