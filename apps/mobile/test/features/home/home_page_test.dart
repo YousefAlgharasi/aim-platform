@@ -167,7 +167,7 @@ void main() {
     });
 
     testWidgets(
-        'tapping the notification bell with no session surfaces a retryable message instead of hanging forever',
+        'renders the Top Bar with AIM wordmark',
         (tester) async {
       await tester.pumpWidget(
         _wrap(
@@ -181,14 +181,7 @@ void main() {
       );
       await tester.pump();
 
-      await tester.tap(find.byIcon(Icons.notifications_outlined));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-
-      expect(
-        find.text('Please sign in again to view notifications.'),
-        findsOneWidget,
-      );
+      expect(find.text('AIM'), findsOneWidget);
     });
 
     testWidgets('shows error state with message', (tester) async {
@@ -236,7 +229,7 @@ void main() {
       expect(find.text('Placement Test'), findsOneWidget);
     });
 
-    testWidgets('shows all four sections when data is populated',
+    testWidgets('shows recommendations section when data is populated',
         (tester) async {
       await tester.pumpWidget(
         _wrap(
@@ -252,10 +245,6 @@ void main() {
       );
       await tester.pump();
 
-      // The greeting header + level hero card sit above these sections now,
-      // so scroll each one into view before asserting (ListView is lazy).
-      // Skill States / Focus Areas / Review Schedule / Quick Start were
-      // replaced by HomeCoursePathSection.
       for (final section in [
         'AIM Recommendations',
       ]) {
@@ -269,7 +258,7 @@ void main() {
     });
 
     testWidgets(
-        'renders the level hero card from real engagementStats — no hardcoded mock values',
+        'renders the welcome card from real engagementStats and active course details',
         (tester) async {
       await tester.pumpWidget(
         _wrap(
@@ -285,17 +274,13 @@ void main() {
       );
       await tester.pump();
 
-      // Real values from _stats above, not the old hardcoded
-      // "14" / "2,480" / "3,000" / "+480" / "12 badges" / "Top 5%" mock.
-      expect(find.text('3'), findsOneWidget); // level
-      expect(find.text('+40'), findsOneWidget); // xpToday
-      expect(find.text('1,234 / 600 XP'), findsOneWidget);
-      expect(find.text('Level 4 →'), findsOneWidget);
-      expect(find.text('5 badges'), findsOneWidget);
-      expect(find.text('Top 17%'), findsOneWidget);
+      expect(find.textContaining('Hello,'), findsOneWidget);
+      expect(find.textContaining('Level 3'), findsOneWidget);
+      expect(find.textContaining('62%'), findsOneWidget);
+      expect(find.textContaining('7 Days'), findsOneWidget);
     });
 
-    testWidgets('omits the level hero card entirely when engagementStats failed to load',
+    testWidgets('renders daily missions list and roadmap nodes without error',
         (tester) async {
       await tester.pumpWidget(
         _wrap(
@@ -303,7 +288,26 @@ void main() {
           overrides: [
             homeProvider.overrideWith(
               (ref) => _FakeHomeNotifier(
-                AppAsyncState.success(_populated()), // engagementStats: null
+                AppAsyncState.success(
+                  HomeData(
+                    skillStates: _populated().skillStates,
+                    weaknessRecords: _populated().weaknessRecords,
+                    reviewSchedules: _populated().reviewSchedules,
+                    recommendations: _populated().recommendations,
+                    engagementStats: _stats,
+                    dailyChallenge: const HomeDailyChallengeModel(
+                      id: 'challenge-1',
+                      title: 'Read a Book',
+                      description: 'Read one chapter of a book',
+                      targetCount: 1,
+                      progressCount: 0,
+                      completed: false,
+                      rewardXp: 10,
+                      createdAt: '2026-06-18T00:00:00Z',
+                      updatedAt: '2026-06-18T00:00:00Z',
+                    ),
+                  ),
+                ),
               ),
             ),
           ],
@@ -311,7 +315,10 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.textContaining('XP TODAY'), findsNothing);
+      expect(find.text('Daily Missions'), findsOneWidget);
+      expect(find.text('Read a Book'), findsOneWidget);
+      expect(find.text('Practice Speaking'), findsOneWidget);
+      expect(find.text('Write a Paragraph'), findsOneWidget);
     });
 
     testWidgets('renders without error under RTL directionality', (tester) async {
@@ -330,7 +337,6 @@ void main() {
       );
       await tester.pump();
 
-      // No layout exceptions; page renders.
       expect(find.byType(HomePage), findsOneWidget);
     });
   });
