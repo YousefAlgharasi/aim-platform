@@ -517,7 +517,7 @@ class AimAnalysisPipelineEntrypoint:
             )
 
             calculator = MasteryCalculator(attempt_repo, state_repo)
-            results[skill_id] = calculator.calculate(session.student_id, skill_id)
+            results[skill_id] = calculator.calculate(int(session.student_id), skill_id)
 
         return results
 

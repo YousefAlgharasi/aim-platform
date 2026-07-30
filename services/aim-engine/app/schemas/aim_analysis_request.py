@@ -33,6 +33,7 @@ from enum import Enum, StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from pydantic.alias_generators import to_camel
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # Wire-format compatibility base (P5-076 contract fix)
@@ -644,7 +645,7 @@ class AimAnalysisRequest(AimCamelCaseModel):
     @field_validator("attempts")
     @classmethod
     def attempts_reference_session(
-        cls, attempts: list[AimAttemptInput], info: any
+        cls, attempts: list[AimAttemptInput], info: Any
     ) -> list[AimAttemptInput]:
         """Every attempt session_id must match the session segment's session_id."""
         # Access session_id from already-validated data if available
