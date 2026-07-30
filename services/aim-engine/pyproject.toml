@@ -31,9 +31,12 @@ include = ["app*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["."]
+pythonpath = [".", "../api/src"]
 asyncio_mode = "auto"
 addopts = "--cov=app --cov-fail-under=60"
+
+[tool.pyright]
+extraPaths = ["../api/src"]
 
 [tool.ruff]
 line-length = 100
@@ -46,3 +49,4 @@ select = ["E", "F", "I", "UP", "B"]
 python_version = "3.11"
 strict = true
 packages = ["app"]
+mypy_path = "../api/src"
