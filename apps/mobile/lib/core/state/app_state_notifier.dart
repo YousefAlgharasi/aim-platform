@@ -33,20 +33,22 @@ abstract class AppStateNotifier<T> extends StateNotifier<AppAsyncState<T>> {
   }
 
   void setLoading() {
-    state = const AppAsyncState.loading();
+    if (mounted) state = const AppAsyncState.loading();
   }
 
   void setSuccess(T data) {
-    state = AppAsyncState.success(data);
+    if (mounted) state = AppAsyncState.success(data);
   }
 
   void setFailure({
     required String message,
     String? code,
   }) {
-    state = AppAsyncState.failure(message: message, code: code);
+    if (mounted) state = AppAsyncState.failure(message: message, code: code);
   }
 
   /// Resets state to idle.
-  void reset() => state = const AppAsyncState.idle();
+  void reset() {
+    if (mounted) state = const AppAsyncState.idle();
+  }
 }
