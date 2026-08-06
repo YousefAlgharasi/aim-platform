@@ -764,110 +764,161 @@ class _WelcomeCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final firstName = displayName.split(RegExp(r'[\s@]+')).first;
 
-    return Container(
-      padding: const EdgeInsets.all(AimSpacing.cardPaddingLg),
-      decoration: const BoxDecoration(
-        gradient: AimGradients.gzHero,
-        borderRadius: AimRadius.borderX2l,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Hello, $firstName! 👋',
-                      style: AimTextStyles.title.copyWith(
-                        color: AimColors.neutral0,
-                        fontWeight: AimFontWeights.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    const SizedBox(height: AimSpacing.space4),
-                    Text(
-                      'Level $level · $activeCourseName',
-                      style: AimTextStyles.bodySm.copyWith(
-                        color: AimColors.neutral0.withOpacity(0.7),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AimSpacing.space12,
-                  vertical: AimSpacing.space4,
-                ),
+    return ClipRRect(
+      borderRadius: AimRadius.borderX2l,
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: AimGradients.gzHero,
+        ),
+        child: Stack(
+          children: [
+            // Top-right blurry white circle
+            Positioned(
+              top: -60,
+              right: -60,
+              child: Container(
+                width: 140,
+                height: 140,
                 decoration: BoxDecoration(
-                  color: AimColors.neutral0.withOpacity(0.15),
-                  borderRadius: AimRadius.borderPill,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('🔥', style: TextStyle(fontSize: 14)),
-                    const SizedBox(width: AimSpacing.space4),
-                    Text(
-                      l10n.homeStreakDaysText(streakDays),
-                      style: AimTextStyles.label.copyWith(
-                        color: AimColors.neutral0,
-                        fontWeight: AimFontWeights.bold,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.08),
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: AimSpacing.space24),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            ),
+            // Bottom-left blurry circle
+            Positioned(
+              bottom: -40,
+              left: -40,
+              child: Container(
+                width: 110,
+                height: 110,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFC7D2FE).withValues(alpha: 0.12),
+                ),
+              ),
+            ),
+            // Content
+            Padding(
+              padding: const EdgeInsets.all(AimSpacing.cardPaddingLg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    l10n.homeOverallProgress,
-                    style: AimTextStyles.bodySm.copyWith(
-                      color: AimColors.neutral0.withOpacity(0.8),
-                      fontSize: 12,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Hello, $firstName! 👋',
+                              style: AimTextStyles.title.copyWith(
+                                color: AimColors.neutral0,
+                                fontWeight: AimFontWeights.bold,
+                                fontSize: 20,
+                              ),
+                            ),
+                            const SizedBox(height: AimSpacing.space4),
+                            Text(
+                              'Level $level · $activeCourseName',
+                              style: AimTextStyles.bodySm.copyWith(
+                                color: AimColors.neutral0.withValues(alpha: 0.75),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AimSpacing.space12,
+                          vertical: AimSpacing.space4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AimColors.neutral0.withValues(alpha: 0.18),
+                          borderRadius: AimRadius.borderPill,
+                          border: Border.all(
+                            color: AimColors.neutral0.withValues(alpha: 0.15),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.local_fire_department_rounded,
+                              color: Color(0xFFFBBF24),
+                              size: 16,
+                            ),
+                            const SizedBox(width: AimSpacing.space4),
+                            Text(
+                              l10n.homeStreakDaysText(streakDays),
+                              style: AimTextStyles.label.copyWith(
+                                color: AimColors.neutral0,
+                                fontWeight: AimFontWeights.extrabold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  Text(
-                    '$overallProgressPercent%',
-                    style: AimTextStyles.bodySm.copyWith(
-                      color: AimColors.neutral0,
-                      fontWeight: AimFontWeights.bold,
-                      fontSize: 12,
-                    ),
+                  const SizedBox(height: AimSpacing.space24),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            l10n.homeOverallProgress,
+                            style: AimTextStyles.bodySm.copyWith(
+                              color: AimColors.neutral0.withValues(alpha: 0.8),
+                              fontSize: 12,
+                            ),
+                          ),
+                          Text(
+                            '$overallProgressPercent%',
+                            style: AimTextStyles.bodySm.copyWith(
+                              color: AimColors.neutral0,
+                              fontWeight: AimFontWeights.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AimSpacing.space8),
+                      Container(
+                        height: 8,
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(1.5),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: FractionallySizedBox(
+                          alignment: AlignmentDirectional.centerStart,
+                          widthFactor: overallProgressPercent / 100,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Colors.white, Color(0xFFC7D2FE)],
+                              ),
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: AimSpacing.space8),
-              ClipRRect(
-                borderRadius: AimRadius.borderPill,
-                child: SizedBox(
-                  height: 6,
-                  child: LinearProgressIndicator(
-                    value: overallProgressPercent / 100,
-                    backgroundColor: AimColors.neutral0.withOpacity(0.25),
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      AimColors.neutral0,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
