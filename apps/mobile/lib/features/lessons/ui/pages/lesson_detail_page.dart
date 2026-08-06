@@ -173,9 +173,9 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
 
   void _startVoicePractice(LessonDetail detail) {
     context.push(
-      AppRoutePaths.voiceTeacher,
+      AppRoutePaths.liveAiLesson,
       extra: {
-        'contextRef': 'lesson:${detail.lesson.id}',
+        'lessonTitle': detail.lesson.title,
       },
     );
   }

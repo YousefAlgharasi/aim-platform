@@ -1908,6 +1908,42 @@ abstract class AppLocalizations {
   /// **'Test your skills to let the AI find your level.'**
   String get placementGateTestKnowledgeSub;
 
+  /// Progress step label on the placement gate onboarding slides.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {current} of {total}'**
+  String placementGateStepLabel(int current, int total);
+
+  /// Subtitle description for Career Focus option.
+  ///
+  /// In en, this message translates to:
+  /// **'Professional vocabulary & business English'**
+  String get placementGateFocusCareerSub;
+
+  /// Subtitle description for Exams Focus option.
+  ///
+  /// In en, this message translates to:
+  /// **'IELTS, TOEFL, and academic prep'**
+  String get placementGateFocusExamsSub;
+
+  /// Subtitle description for Speaking Focus option.
+  ///
+  /// In en, this message translates to:
+  /// **'Fluency in everyday conversations'**
+  String get placementGateFocusSpeakingSub;
+
+  /// Subtitle description for Media Focus option.
+  ///
+  /// In en, this message translates to:
+  /// **'Movies, podcasts, and casual slang'**
+  String get placementGateFocusMediaSub;
+
+  /// Recommended badge text on the placement gate start step.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended'**
+  String get placementGateRecommendedBadge;
+
   /// Label for sections info row in placement intro.
   ///
   /// In en, this message translates to:
@@ -2025,25 +2061,25 @@ abstract class AppLocalizations {
   /// Header title on placement start page.
   ///
   /// In en, this message translates to:
-  /// **'Placement Assessment'**
+  /// **'Level Assessment'**
   String get placementStartAssessmentTitle;
 
   /// Header subtitle on placement start page.
   ///
   /// In en, this message translates to:
-  /// **'Determine your optimal learning starting point'**
+  /// **'Calibrate your AI tutor to find your optimal starting point.'**
   String get placementStartAssessmentSubtitle;
 
   /// Timed limit title on placement start page.
   ///
   /// In en, this message translates to:
-  /// **'{minutes} Minutes Limit'**
+  /// **'{minutes} Minutes'**
   String placementStartLimitTitle(int minutes);
 
   /// Timed limit description on placement start page.
   ///
   /// In en, this message translates to:
-  /// **'Timed test to measure accuracy and spontaneous language fluency.'**
+  /// **'Estimated duration for a full calibrated assessment.'**
   String get placementStartLimitDesc;
 
   /// Questions count title on placement start page.
@@ -2055,19 +2091,19 @@ abstract class AppLocalizations {
   /// Questions count description on placement start page.
   ///
   /// In en, this message translates to:
-  /// **'Includes Grammar, Reading, Listening, Speaking, and Writing.'**
+  /// **'Questions dynamically adapt to your skill level.'**
   String get placementStartQuestionsDesc;
 
   /// AI calibration title on placement start page.
   ///
   /// In en, this message translates to:
-  /// **'Instant AI Calibration'**
+  /// **'Helpful Tip'**
   String get placementStartCalibrationTitle;
 
   /// AI calibration description on placement start page.
   ///
   /// In en, this message translates to:
-  /// **'Our engine evaluates your CEFR level (A1 - C1) in real time.'**
+  /// **'If you don\'t know an answer, it is okay to skip and let the AI adjust.'**
   String get placementStartCalibrationDesc;
 
   /// Default title for placement question page.
@@ -2301,8 +2337,14 @@ abstract class AppLocalizations {
   /// Honor code agreement note.
   ///
   /// In en, this message translates to:
-  /// **'By starting, you agree to our Placement Honor Code'**
+  /// **'By starting, you agree to our Assessment Honor Code'**
   String get placementStartHonorCodeAgreement;
+
+  /// Button label to start the assessment.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Assessment'**
+  String get placementStartBtnLabel;
 
   /// Completed questions stat row label.
   ///
@@ -2381,6 +2423,270 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{days} Days'**
   String homeStreakDaysText(int days);
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Settings'**
+  String get settingsTitle;
+
+  /// No description provided for @settingsSaveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile Saved successfully!'**
+  String get settingsSaveSuccess;
+
+  /// No description provided for @settingsPasswordSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Password Updated successfully!'**
+  String get settingsPasswordSuccess;
+
+  /// No description provided for @settingsLogoutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Logout'**
+  String get settingsLogoutTitle;
+
+  /// No description provided for @settingsLogoutMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to log out of your AIM account?'**
+  String get settingsLogoutMessage;
+
+  /// No description provided for @settingsFullName.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Name'**
+  String get settingsFullName;
+
+  /// No description provided for @settingsEmailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Address'**
+  String get settingsEmailAddress;
+
+  /// No description provided for @settingsVerifiedEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified Email'**
+  String get settingsVerifiedEmail;
+
+  /// No description provided for @settingsDailyCommitment.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Learning Commitment'**
+  String get settingsDailyCommitment;
+
+  /// No description provided for @settingsCommitmentCasual.
+  ///
+  /// In en, this message translates to:
+  /// **'5 Mins/Day (Casual)'**
+  String get settingsCommitmentCasual;
+
+  /// No description provided for @settingsCommitmentRecommended.
+  ///
+  /// In en, this message translates to:
+  /// **'15 Mins/Day (Recommended)'**
+  String get settingsCommitmentRecommended;
+
+  /// No description provided for @settingsCommitmentIntensive.
+  ///
+  /// In en, this message translates to:
+  /// **'30 Mins/Day (Intensive)'**
+  String get settingsCommitmentIntensive;
+
+  /// No description provided for @settingsSaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Profile Changes'**
+  String get settingsSaveButton;
+
+  /// No description provided for @settingsSavingButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving Changes...'**
+  String get settingsSavingButton;
+
+  /// No description provided for @settingsAppThemeHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'APP THEME & DISPLAY'**
+  String get settingsAppThemeHeader;
+
+  /// No description provided for @settingsThemeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark Theme'**
+  String get settingsThemeDark;
+
+  /// No description provided for @settingsThemeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light Theme'**
+  String get settingsThemeLight;
+
+  /// No description provided for @settingsThemeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle to switch between light and dark backgrounds'**
+  String get settingsThemeSubtitle;
+
+  /// No description provided for @settingsNotificationsHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'NOTIFICATION PREFERENCES'**
+  String get settingsNotificationsHeader;
+
+  /// No description provided for @settingsReminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Study Reminders'**
+  String get settingsReminders;
+
+  /// No description provided for @settingsRemindersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your learning streak active with daily push notices'**
+  String get settingsRemindersSubtitle;
+
+  /// No description provided for @settingsDiagnostics.
+  ///
+  /// In en, this message translates to:
+  /// **'Weakness Diagnostic Alerts'**
+  String get settingsDiagnostics;
+
+  /// No description provided for @settingsDiagnosticsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get notified when AIM engine detects a gap to review'**
+  String get settingsDiagnosticsSubtitle;
+
+  /// No description provided for @settingsSecurityHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'SECURITY & PASSWORD'**
+  String get settingsSecurityHeader;
+
+  /// No description provided for @settingsCurrentPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Password'**
+  String get settingsCurrentPassword;
+
+  /// No description provided for @settingsNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'New Password'**
+  String get settingsNewPassword;
+
+  /// No description provided for @settingsUpdatePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Password'**
+  String get settingsUpdatePassword;
+
+  /// No description provided for @settingsUpdatingPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating...'**
+  String get settingsUpdatingPassword;
+
+  /// No description provided for @settingsLogoutButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Out of AIM Account'**
+  String get settingsLogoutButton;
+
+  /// No description provided for @voiceAiTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'LIVE VOICE AI'**
+  String get voiceAiTitle;
+
+  /// No description provided for @voiceAiStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {current}/3'**
+  String voiceAiStep(int current);
+
+  /// No description provided for @voiceAiAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio {time}'**
+  String voiceAiAudio(String time);
+
+  /// No description provided for @voiceAiStatusAiSpeaking.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Tutor Speaking...'**
+  String get voiceAiStatusAiSpeaking;
+
+  /// No description provided for @voiceAiStatusListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening to your voice (00:{secs})'**
+  String voiceAiStatusListening(String secs);
+
+  /// No description provided for @voiceAiStatusEvaluating.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Evaluating Pronunciation...'**
+  String get voiceAiStatusEvaluating;
+
+  /// No description provided for @voiceAiFinishHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap mic when finished speaking'**
+  String get voiceAiFinishHint;
+
+  /// No description provided for @voiceAiStartHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap mic to interrupt or speak'**
+  String get voiceAiStartHint;
+
+  /// No description provided for @voiceAiCompletedBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'LIVE VOICE SESSION COMPLETED!'**
+  String get voiceAiCompletedBadge;
+
+  /// No description provided for @voiceAiMasteredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson Mastered!'**
+  String get voiceAiMasteredTitle;
+
+  /// No description provided for @voiceAiCompletedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You completed the live AI voice lesson for \"{title}\".'**
+  String voiceAiCompletedSubtitle(String title);
+
+  /// No description provided for @voiceAiXpEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'XP EARNED'**
+  String get voiceAiXpEarned;
+
+  /// No description provided for @voiceAiAccuracy.
+  ///
+  /// In en, this message translates to:
+  /// **'VOICE ACCURACY'**
+  String get voiceAiAccuracy;
+
+  /// No description provided for @voiceAiAccuracyScore.
+  ///
+  /// In en, this message translates to:
+  /// **'98% Score'**
+  String get voiceAiAccuracyScore;
+
+  /// No description provided for @voiceAiReturnButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Return to Lesson Detail'**
+  String get voiceAiReturnButton;
 }
 
 class _AppLocalizationsDelegate

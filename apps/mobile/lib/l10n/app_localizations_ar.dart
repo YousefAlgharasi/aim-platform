@@ -1257,6 +1257,30 @@ class AppLocalizationsAr extends AppLocalizations {
       'اختبر مهاراتك ليتعرف الذكاء الاصطناعي على مستواك الحقيقي.';
 
   @override
+  String placementGateStepLabel(int current, int total) {
+    return 'الخطوة $current من $total';
+  }
+
+  @override
+  String get placementGateFocusCareerSub =>
+      'مفردات احترافية ولغة إنجليزية للأعمال';
+
+  @override
+  String get placementGateFocusExamsSub =>
+      'التحضير لاختبارات IELTS و TOEFL والدراسة الأكاديمية';
+
+  @override
+  String get placementGateFocusSpeakingSub =>
+      'الطلاقة في المحادثات اليومية الحقيقية';
+
+  @override
+  String get placementGateFocusMediaSub =>
+      'الأفلام، البودكاست، واللغة العامية اليومية';
+
+  @override
+  String get placementGateRecommendedBadge => 'موصى به';
+
+  @override
   String get placementIntroSectionsLabel => 'الأقسام';
 
   @override
@@ -1322,20 +1346,20 @@ class AppLocalizationsAr extends AppLocalizations {
   String get placementStartTestOverview => 'نظرة عامة على الاختبار';
 
   @override
-  String get placementStartAssessmentTitle => 'تقييم تحديد المستوى';
+  String get placementStartAssessmentTitle => 'تقييم المستوى';
 
   @override
   String get placementStartAssessmentSubtitle =>
-      'حدد نقطة البدء المثالية لرحلتك التعليمية';
+      'عاير معلمك الذكي لتحديد نقطة البدء المثالية لك.';
 
   @override
   String placementStartLimitTitle(int minutes) {
-    return 'حد زمني $minutes دقيقة';
+    return '$minutes دقيقة';
   }
 
   @override
   String get placementStartLimitDesc =>
-      'اختبار محدد بوقت لقياس الدقة والطلاقة اللغوية.';
+      'الوقت المتوقع لإجراء تقييم كامل ومعاير.';
 
   @override
   String placementStartQuestionsTitle(int count) {
@@ -1344,14 +1368,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get placementStartQuestionsDesc =>
-      'يشمل القواعد، القراءة، الاستماع، التحدث، والكتابة.';
+      'تتكيف الأسئلة ديناميكياً مع مستوى مهارتك.';
 
   @override
-  String get placementStartCalibrationTitle => 'معايرة فورية بالذكاء الاصطناعي';
+  String get placementStartCalibrationTitle => 'نصيحة مفيدة';
 
   @override
   String get placementStartCalibrationDesc =>
-      'يقوم محركنا بتقييم مستواك وفق الإطار الأوروبي (A1 - C1) في الوقت الفعلي.';
+      'إذا لم تكن تعرف الإجابة، فلا بأس في تخطيها ليتكيف الذكاء الاصطناعي مع ذلك.';
 
   @override
   String get placementQuestionDefaultTitle => 'سؤال تحديد المستوى';
@@ -1492,7 +1516,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get placementStartHonorCodeAgreement =>
-      'ببدء الاختبار، فإنك توافق على ميثاق الشرف لاختبار تحديد المستوى';
+      'ببدء التقييم، فإنك توافق على ميثاق شرف التقييم الخاص بنا';
+
+  @override
+  String get placementStartBtnLabel => 'ابدأ التقييم';
 
   @override
   String get placementSubmitCompletedQuestions => 'الأسئلة المكتملة';
@@ -1540,4 +1567,148 @@ class AppLocalizationsAr extends AppLocalizations {
   String homeStreakDaysText(int days) {
     return '$days أيام';
   }
+
+  @override
+  String get settingsTitle => 'إعدادات الحساب';
+
+  @override
+  String get settingsSaveSuccess => 'تم حفظ الملف الشخصي بنجاح!';
+
+  @override
+  String get settingsPasswordSuccess => 'تم تحديث كلمة المرور بنجاح!';
+
+  @override
+  String get settingsLogoutTitle => 'تأكيد تسجيل الخروج';
+
+  @override
+  String get settingsLogoutMessage =>
+      'هل أنت متأكد من رغبتك في تسجيل الخروج من حساب AIM؟';
+
+  @override
+  String get settingsFullName => 'الاسم الكامل';
+
+  @override
+  String get settingsEmailAddress => 'البريد الإلكتروني';
+
+  @override
+  String get settingsVerifiedEmail => 'بريد مؤكد';
+
+  @override
+  String get settingsDailyCommitment => 'الالتزام اليومي بالتعلم';
+
+  @override
+  String get settingsCommitmentCasual => '5 دقائق/يوم (عادي)';
+
+  @override
+  String get settingsCommitmentRecommended => '15 دقيقة/يوم (موصى به)';
+
+  @override
+  String get settingsCommitmentIntensive => '30 دقيقة/يوم (مكثف)';
+
+  @override
+  String get settingsSaveButton => 'حفظ تغييرات الملف الشخصي';
+
+  @override
+  String get settingsSavingButton => 'جارٍ الحفظ...';
+
+  @override
+  String get settingsAppThemeHeader => 'مظهر التطبيق والعرض';
+
+  @override
+  String get settingsThemeDark => 'المظهر الداكن';
+
+  @override
+  String get settingsThemeLight => 'المظهر الفاتح';
+
+  @override
+  String get settingsThemeSubtitle =>
+      'بدّل للتحويل بين الخلفية الفاتحة والداكنة';
+
+  @override
+  String get settingsNotificationsHeader => 'تفضيلات الإشعارات';
+
+  @override
+  String get settingsReminders => 'تنبيهات الدراسة اليومية';
+
+  @override
+  String get settingsRemindersSubtitle =>
+      'حافظ على سلسلة تعلمك نشطة مع الإشعارات اليومية';
+
+  @override
+  String get settingsDiagnostics => 'تنبيهات تشخيص نقاط الضعف';
+
+  @override
+  String get settingsDiagnosticsSubtitle =>
+      'تلقى تنبيهاً عندما يكتشف نظام AIM فجوة للمراجعة';
+
+  @override
+  String get settingsSecurityHeader => 'الأمان وكلمة المرور';
+
+  @override
+  String get settingsCurrentPassword => 'كلمة المرور الحالية';
+
+  @override
+  String get settingsNewPassword => 'كلمة المرور الجديدة';
+
+  @override
+  String get settingsUpdatePassword => 'تحديث كلمة المرور';
+
+  @override
+  String get settingsUpdatingPassword => 'جارٍ التحديث...';
+
+  @override
+  String get settingsLogoutButton => 'تسجيل الخروج من حساب AIM';
+
+  @override
+  String get voiceAiTitle => 'المحادثة الصوتية المباشرة';
+
+  @override
+  String voiceAiStep(int current) {
+    return 'الخطوة $current/3';
+  }
+
+  @override
+  String voiceAiAudio(String time) {
+    return 'صوت $time';
+  }
+
+  @override
+  String get voiceAiStatusAiSpeaking => 'المعلم الآلي يتحدث...';
+
+  @override
+  String voiceAiStatusListening(String secs) {
+    return 'يستمع لصوتك (00:$secs)';
+  }
+
+  @override
+  String get voiceAiStatusEvaluating => 'المعلم الآلي يقيم النطق...';
+
+  @override
+  String get voiceAiFinishHint => 'انقر على الميكروفون عند الانتهاء من التحدث';
+
+  @override
+  String get voiceAiStartHint => 'انقر على الميكروفون للمقاطعة أو التحدث';
+
+  @override
+  String get voiceAiCompletedBadge => 'تم إكمال الجلسة الصوتية المباشرة!';
+
+  @override
+  String get voiceAiMasteredTitle => 'تم إتقان الدرس!';
+
+  @override
+  String voiceAiCompletedSubtitle(String title) {
+    return 'لقد أكملت درس الصوت المباشر لـ \"$title\".';
+  }
+
+  @override
+  String get voiceAiXpEarned => 'نقاط الخبرة المكتسبة';
+
+  @override
+  String get voiceAiAccuracy => 'دقة النطق';
+
+  @override
+  String get voiceAiAccuracyScore => 'دقة 98%';
+
+  @override
+  String get voiceAiReturnButton => 'العودة لتفاصيل الدرس';
 }

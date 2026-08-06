@@ -1558,6 +1558,38 @@
   "@placementGateTestKnowledgeSub": {
     "description": "Subtitle for test knowledge option on placement gate."
   },
+  "placementGateStepLabel": "Step {current} of {total}",
+  "@placementGateStepLabel": {
+    "description": "Progress step label on the placement gate onboarding slides.",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "placementGateFocusCareerSub": "Professional vocabulary & business English",
+  "@placementGateFocusCareerSub": {
+    "description": "Subtitle description for Career Focus option."
+  },
+  "placementGateFocusExamsSub": "IELTS, TOEFL, and academic prep",
+  "@placementGateFocusExamsSub": {
+    "description": "Subtitle description for Exams Focus option."
+  },
+  "placementGateFocusSpeakingSub": "Fluency in everyday conversations",
+  "@placementGateFocusSpeakingSub": {
+    "description": "Subtitle description for Speaking Focus option."
+  },
+  "placementGateFocusMediaSub": "Movies, podcasts, and casual slang",
+  "@placementGateFocusMediaSub": {
+    "description": "Subtitle description for Media Focus option."
+  },
+  "placementGateRecommendedBadge": "Recommended",
+  "@placementGateRecommendedBadge": {
+    "description": "Recommended badge text on the placement gate start step."
+  },
   "placementIntroSectionsLabel": "Sections",
   "@placementIntroSectionsLabel": {
     "description": "Label for sections info row in placement intro."
@@ -1644,15 +1676,15 @@
   "@placementStartTestOverview": {
     "description": "Top section label on placement start page."
   },
-  "placementStartAssessmentTitle": "Placement Assessment",
+  "placementStartAssessmentTitle": "Level Assessment",
   "@placementStartAssessmentTitle": {
     "description": "Header title on placement start page."
   },
-  "placementStartAssessmentSubtitle": "Determine your optimal learning starting point",
+  "placementStartAssessmentSubtitle": "Calibrate your AI tutor to find your optimal starting point.",
   "@placementStartAssessmentSubtitle": {
     "description": "Header subtitle on placement start page."
   },
-  "placementStartLimitTitle": "{minutes} Minutes Limit",
+  "placementStartLimitTitle": "{minutes} Minutes",
   "@placementStartLimitTitle": {
     "description": "Timed limit title on placement start page.",
     "placeholders": {
@@ -1661,7 +1693,7 @@
       }
     }
   },
-  "placementStartLimitDesc": "Timed test to measure accuracy and spontaneous language fluency.",
+  "placementStartLimitDesc": "Estimated duration for a full calibrated assessment.",
   "@placementStartLimitDesc": {
     "description": "Timed limit description on placement start page."
   },
@@ -1674,15 +1706,15 @@
       }
     }
   },
-  "placementStartQuestionsDesc": "Includes Grammar, Reading, Listening, Speaking, and Writing.",
+  "placementStartQuestionsDesc": "Questions dynamically adapt to your skill level.",
   "@placementStartQuestionsDesc": {
     "description": "Questions count description on placement start page."
   },
-  "placementStartCalibrationTitle": "Instant AI Calibration",
+  "placementStartCalibrationTitle": "Helpful Tip",
   "@placementStartCalibrationTitle": {
     "description": "AI calibration title on placement start page."
   },
-  "placementStartCalibrationDesc": "Our engine evaluates your CEFR level (A1 - C1) in real time.",
+  "placementStartCalibrationDesc": "If you don't know an answer, it is okay to skip and let the AI adjust.",
   "@placementStartCalibrationDesc": {
     "description": "AI calibration description on placement start page."
   },
@@ -1877,9 +1909,13 @@
       }
     }
   },
-  "placementStartHonorCodeAgreement": "By starting, you agree to our Placement Honor Code",
+  "placementStartHonorCodeAgreement": "By starting, you agree to our Assessment Honor Code",
   "@placementStartHonorCodeAgreement": {
     "description": "Honor code agreement note."
+  },
+  "placementStartBtnLabel": "Start Assessment",
+  "@placementStartBtnLabel": {
+    "description": "Button label to start the assessment."
   },
   "placementSubmitCompletedQuestions": "Completed Questions",
   "@placementSubmitCompletedQuestions": {
@@ -1942,5 +1978,77 @@
         "type": "int"
       }
     }
-  }
+  },
+  "settingsTitle": "Account Settings",
+  "settingsSaveSuccess": "Profile Saved successfully!",
+  "settingsPasswordSuccess": "Password Updated successfully!",
+  "settingsLogoutTitle": "Confirm Logout",
+  "settingsLogoutMessage": "Are you sure you want to log out of your AIM account?",
+  "settingsFullName": "Full Name",
+  "settingsEmailAddress": "Email Address",
+  "settingsVerifiedEmail": "Verified Email",
+  "settingsDailyCommitment": "Daily Learning Commitment",
+  "settingsCommitmentCasual": "5 Mins/Day (Casual)",
+  "settingsCommitmentRecommended": "15 Mins/Day (Recommended)",
+  "settingsCommitmentIntensive": "30 Mins/Day (Intensive)",
+  "settingsSaveButton": "Save Profile Changes",
+  "settingsSavingButton": "Saving Changes...",
+  "settingsAppThemeHeader": "APP THEME & DISPLAY",
+  "settingsThemeDark": "Dark Theme",
+  "settingsThemeLight": "Light Theme",
+  "settingsThemeSubtitle": "Toggle to switch between light and dark backgrounds",
+  "settingsNotificationsHeader": "NOTIFICATION PREFERENCES",
+  "settingsReminders": "Daily Study Reminders",
+  "settingsRemindersSubtitle": "Keep your learning streak active with daily push notices",
+  "settingsDiagnostics": "Weakness Diagnostic Alerts",
+  "settingsDiagnosticsSubtitle": "Get notified when AIM engine detects a gap to review",
+  "settingsSecurityHeader": "SECURITY & PASSWORD",
+  "settingsCurrentPassword": "Current Password",
+  "settingsNewPassword": "New Password",
+  "settingsUpdatePassword": "Update Password",
+  "settingsUpdatingPassword": "Updating...",
+  "settingsLogoutButton": "Log Out of AIM Account",
+  "voiceAiTitle": "LIVE VOICE AI",
+  "voiceAiStep": "Step {current}/3",
+  "@voiceAiStep": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      }
+    }
+  },
+  "voiceAiAudio": "Audio {time}",
+  "@voiceAiAudio": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceAiStatusAiSpeaking": "AI Tutor Speaking...",
+  "voiceAiStatusListening": "Listening to your voice (00:{secs})",
+  "@voiceAiStatusListening": {
+    "placeholders": {
+      "secs": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceAiStatusEvaluating": "AI Evaluating Pronunciation...",
+  "voiceAiFinishHint": "Tap mic when finished speaking",
+  "voiceAiStartHint": "Tap mic to interrupt or speak",
+  "voiceAiCompletedBadge": "LIVE VOICE SESSION COMPLETED!",
+  "voiceAiMasteredTitle": "Lesson Mastered!",
+  "voiceAiCompletedSubtitle": "You completed the live AI voice lesson for \"{title}\".",
+  "@voiceAiCompletedSubtitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceAiXpEarned": "XP EARNED",
+  "voiceAiAccuracy": "VOICE ACCURACY",
+  "voiceAiAccuracyScore": "98% Score",
+  "voiceAiReturnButton": "Return to Lesson Detail"
 }

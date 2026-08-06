@@ -91,23 +91,74 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 AimSpacing.space40,
               ),
               children: [
-                Text(
-                  l10n.authCreateAccount,
-                  style: AimTextStyles.h1.copyWith(
-                    color: surfaces.textPrimary,
-                    height: 1.2,
-                  ),
+                // Sparkle logo header row
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        gradient: AimGradients.gzHero,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AimColors.primary500.withValues(alpha: 0.2),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ShaderMask(
+                      shaderCallback: (bounds) => AimGradients.gzHero.createShader(
+                        Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+                      ),
+                      child: const Text(
+                        'AIM',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: AimSpacing.componentGap),
+                const SizedBox(height: 24),
 
                 Text(
-                  l10n.authRegisterSubtitle,
+                  'Start your journey'.toUpperCase(),
+                  style: AimTextStyles.caption.copyWith(
+                    color: AimColors.primary600,
+                    fontWeight: AimFontWeights.extrabold,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+                const SizedBox(height: 4),
+
+                Text(
+                  'Create an account',
+                  style: AimTextStyles.h1.copyWith(
+                    color: surfaces.textPrimary,
+                    fontSize: 28,
+                    height: 1.15,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                Text(
+                  'Takes less than a minute. Enter your details below.',
                   style: AimTextStyles.bodySm.copyWith(
                     color: surfaces.textSecondary,
                     height: 1.5,
                   ),
                 ),
-                const SizedBox(height: AimSpacing.sectionGap),
+                const SizedBox(height: 24),
 
                 if (formState.errorMessage != null) ...[
                   AIMAlertBanner(

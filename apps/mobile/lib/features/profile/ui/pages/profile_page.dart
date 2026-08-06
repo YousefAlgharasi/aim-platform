@@ -415,10 +415,10 @@ class _ProfileHeroHeader extends StatelessWidget {
                     ),
                     const NotificationBellButton(),
                     IconButton(
-                      icon: const Icon(Icons.edit_outlined),
-                      tooltip: 'Edit profile',
+                      icon: const Icon(Icons.settings_outlined),
+                      tooltip: 'Account Settings',
                       onPressed: () =>
-                          context.push(AppRoutePaths.editProfile),
+                          context.push(AppRoutePaths.accountSettings),
                     ),
                   ],
                 ),

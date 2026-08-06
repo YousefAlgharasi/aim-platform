@@ -59,9 +59,11 @@ import '../../features/support/ui/pages/status_page.dart';
 import '../../features/support/ui/pages/release_notes_page.dart';
 import '../../features/support/ui/pages/release_note_detail_page.dart';
 import '../../features/voice_teacher/ui/pages/voice_teacher_page.dart';
+import '../../features/voice_teacher/ui/pages/live_ai_lesson_chat_page.dart';
 import '../../features/billing/ui/pages/checkout_start_page.dart';
 import '../../features/billing/ui/pages/checkout_status_page.dart';
 import '../../features/design_system_preview/ui/pages/ds_preview_page.dart';
+import '../../features/profile/ui/pages/account_settings_page.dart';
 import 'app_route_paths.dart';
 
 /// Centralised GoRouter configuration for the app.
@@ -372,6 +374,19 @@ class AppRouter {
             fullscreenDialog: true,
             child: DSPreviewPage(),
           ),
+        ),
+        GoRoute(
+          path: AppRoutePaths.liveAiLesson,
+          builder: (context, state) {
+            final args = state.extra as Map<String, dynamic>? ?? {};
+            return LiveAiLessonChatPage(
+              lessonTitle: args['lessonTitle'] as String?,
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutePaths.accountSettings,
+          builder: (context, state) => const AccountSettingsPage(),
         ),
       ],
     );
@@ -766,5 +781,7 @@ class AppRouter {
     AppRoutePaths.checkoutStart,
     AppRoutePaths.checkoutStatus,
     AppRoutePaths.designSystemPreview,
+    AppRoutePaths.liveAiLesson,
+    AppRoutePaths.accountSettings,
   };
 }

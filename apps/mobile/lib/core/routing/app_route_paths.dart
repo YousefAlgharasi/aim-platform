@@ -114,4 +114,9 @@ class AppRoutePaths {
 
   // TASK-14: Dev Tools
   static const String designSystemPreview = '/dev-tools/design-system-preview';
+
+  // Missing screens from Modern Auth Pages prototype
+  static const String liveAiLesson = '/lessons/live-ai-voice';
+  static const String accountSettings = '/profile/settings';
 }
+

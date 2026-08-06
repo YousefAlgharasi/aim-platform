@@ -319,10 +319,8 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
   }
 }
 
-/// Winding node trail: nodes alternate across three horizontal lanes,
-/// connected by a smooth curved line (solid + lit where the path has been
-/// walked, dashed + muted ahead) — a livelier, Duolingo-style skill path
-/// instead of a plain straight connector.
+/// Winding node trail: nodes alternate horizontally, connected by a smooth
+/// curved wavy dashed path. Matches the React mockup's ZigZagRoadmap perfectly.
 class _CoursePathTrail extends StatelessWidget {
   const _CoursePathTrail({
     required this.nodes,
@@ -342,25 +340,105 @@ class _CoursePathTrail extends StatelessWidget {
   Widget build(BuildContext context) {
     if (nodes.isEmpty) return const SizedBox.shrink();
 
-    return Column(
-      children: [
-        for (var i = 0; i < nodes.length; i++) ...[
-          _RoadmapNodeWidget(
-            node: nodes[i],
-            label: switch (nodes[i].kind) {
-              _NodeKind.lesson => nodes[i].title,
-              _NodeKind.quiz => quizLabel,
-              _NodeKind.finalExam => finalExamLabel,
-            },
-            lockedSemantic: lockedSemantic,
-            onTap: () => onTapNode(nodes[i]),
-            isLast: i == nodes.length - 1,
-            nextIsDone: i < nodes.length - 1 && nodes[i + 1].completed,
-          ),
-        ],
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final center = constraints.maxWidth / 2;
+        final List<Offset> nodeOffsets = [];
+
+        // Alternating horizontal offsets like React prototype: 0, 55, -55, 55, -55...
+        double getOffsetX(int index) {
+          if (index == 0) return 0.0;
+          return index % 2 == 1 ? 55.0 : -55.0;
+        }
+
+        // Each node segment has a height spacing of ~135 pixels.
+        const double nodeSpacingY = 135.0;
+        const double initialY = 32.0;
+
+        for (var i = 0; i < nodes.length; i++) {
+          nodeOffsets.add(Offset(center + getOffsetX(i), initialY + (i * nodeSpacingY)));
+        }
+
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned.fill(
+              child: CustomPaint(
+                painter: _WavyPathPainter(
+                  nodeOffsets: nodeOffsets,
+                  color: const Color(0xFFC7D2FE),
+                ),
+              ),
+            ),
+            Column(
+              children: [
+                for (var i = 0; i < nodes.length; i++) ...[
+                  Transform.translate(
+                    offset: Offset(getOffsetX(i), 0),
+                    child: _RoadmapNodeWidget(
+                      node: nodes[i],
+                      label: switch (nodes[i].kind) {
+                        _NodeKind.lesson => nodes[i].title,
+                        _NodeKind.quiz => quizLabel,
+                        _NodeKind.finalExam => finalExamLabel,
+                      },
+                      lockedSemantic: lockedSemantic,
+                      onTap: () => onTapNode(nodes[i]),
+                    ),
+                  ),
+                  if (i < nodes.length - 1)
+                    const SizedBox(height: 52.0), // height spacer to alignment
+                ],
+              ],
+            ),
+          ],
+        );
+      },
     );
   }
+}
+
+class _WavyPathPainter extends CustomPainter {
+  _WavyPathPainter({required this.nodeOffsets, required this.color});
+  final List<Offset> nodeOffsets;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (nodeOffsets.length < 2) return;
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 4
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final path = Path();
+    path.moveTo(nodeOffsets[0].dx, nodeOffsets[0].dy);
+
+    for (var i = 0; i < nodeOffsets.length - 1; i++) {
+      final p0 = nodeOffsets[i];
+      final p1 = nodeOffsets[i + 1];
+      final midY = (p0.dy + p1.dy) / 2;
+      path.cubicTo(p0.dx, midY, p1.dx, midY, p1.dx, p1.dy);
+    }
+
+    // Draw dashed path
+    const dashWidth = 8.0;
+    const dashSpace = 6.0;
+    var distance = 0.0;
+    for (final pathMetric in path.computeMetrics()) {
+      while (distance < pathMetric.length) {
+        canvas.drawPath(
+          pathMetric.extractPath(distance, distance + dashWidth),
+          paint,
+        );
+        distance += dashWidth + dashSpace;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
 class _RoadmapNodeWidget extends StatelessWidget {
@@ -369,16 +447,12 @@ class _RoadmapNodeWidget extends StatelessWidget {
     required this.label,
     required this.lockedSemantic,
     required this.onTap,
-    required this.isLast,
-    required this.nextIsDone,
   });
 
   final _PathNode node;
   final String label;
   final String lockedSemantic;
   final VoidCallback onTap;
-  final bool isLast;
-  final bool nextIsDone;
 
   @override
   Widget build(BuildContext context) {
@@ -388,59 +462,86 @@ class _RoadmapNodeWidget extends StatelessWidget {
     final isCurrent = node.current;
     final isLocked = !node.unlocked;
 
-    final double nodeSize = isCurrent ? 64 : 52;
+    final double nodeSize = isCurrent ? 68 : 56;
 
     Widget circle;
     if (isDone) {
       circle = Container(
         width: nodeSize,
         height: nodeSize,
-        decoration: const BoxDecoration(
-          color: Color(0xFF22C55E),
-          shape: BoxShape.circle,
-        ),
-        alignment: Alignment.center,
-        child: const Icon(
-          Icons.check_rounded,
-          color: AimColors.neutral0,
-          size: 22,
-        ),
-      );
-    } else if (isCurrent) {
-      circle = Container(
-        width: nodeSize,
-        height: nodeSize,
         decoration: BoxDecoration(
-          color: AimColors.primary500,
-          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            colors: [Color(0xFF34D399), Color(0xFF059669)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: AimColors.primary500.withValues(alpha: 0.25),
-              blurRadius: 24,
-              offset: const Offset(0, 6),
+              color: const Color(0xFF10B981).withValues(alpha: 0.2),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
         alignment: Alignment.center,
         child: const Icon(
-          Icons.play_arrow_rounded,
+          Icons.check_rounded,
           color: AimColors.neutral0,
           size: 24,
         ),
       );
+    } else if (isCurrent) {
+      circle = Transform.rotate(
+        angle: 3 * 3.14159 / 180, // rotate-3
+        child: Container(
+          width: nodeSize,
+          height: nodeSize,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF4F46E5), Color(0xFF6366F1)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFC7D2FE), width: 4),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF4F46E5).withValues(alpha: 0.3),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          alignment: Alignment.center,
+          child: const Icon(
+            Icons.play_arrow_rounded,
+            color: AimColors.neutral0,
+            size: 28,
+          ),
+        ),
+      );
     } else {
-      circle = SizedBox(
+      circle = Container(
         width: nodeSize,
         height: nodeSize,
-        child: CustomPaint(
-          painter: _DashedCirclePainter(color: surfaces.border),
-          child: Center(
-            child: Icon(
-              Icons.lock_outline_rounded,
-              color: surfaces.textMuted,
-              size: 20,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE2E8F0), width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
-          ),
+          ],
+        ),
+        alignment: Alignment.center,
+        child: Icon(
+          Icons.lock_outline_rounded,
+          color: surfaces.textMuted,
+          size: 22,
         ),
       );
     }
@@ -458,145 +559,80 @@ class _RoadmapNodeWidget extends StatelessWidget {
       label: node.unlocked ? label : '$label — $lockedSemantic',
       child: GestureDetector(
         onTap: node.unlocked ? onTap : null,
-        child: Column(
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
-              alignment: Alignment.center,
-              children: [
-                circle,
-                if (isCurrent)
-                  Positioned(
-                    top: -22,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AimColors.primary500,
-                        borderRadius: AimRadius.borderPill,
-                      ),
-                      child: Text(
-                        l10n.homeNextUp,
-                        style: AimTextStyles.caption.copyWith(
-                          color: AimColors.neutral0,
-                          fontWeight: AimFontWeights.bold,
-                          fontSize: 10,
-                          letterSpacing: 0.4,
+        child: SizedBox(
+          width: 140, // constraints label size
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  circle,
+                  if (isCurrent)
+                    Positioned(
+                      top: -24,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: AimGradients.gzHero,
+                          borderRadius: AimRadius.borderPill,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AimColors.primary500.withValues(alpha: 0.3),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          l10n.homeNextUp.toUpperCase(),
+                          style: AimTextStyles.caption.copyWith(
+                            color: AimColors.neutral0,
+                            fontWeight: AimFontWeights.extrabold,
+                            fontSize: 9,
+                            letterSpacing: 0.8,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: AimSpacing.space8),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: AimTextStyles.bodySm.copyWith(
-                color: isLocked ? surfaces.textMuted : surfaces.textPrimary,
-                fontWeight: isCurrent ? AimFontWeights.bold : AimFontWeights.semibold,
-                fontSize: 13,
+                ],
               ),
-            ),
-            const SizedBox(height: AimSpacing.space2),
-            Text(
-              subTranslated,
-              textAlign: TextAlign.center,
-              style: AimTextStyles.caption.copyWith(
-                color: isDone
-                    ? const Color(0xFF22C55E)
-                    : isCurrent
-                        ? AimColors.primary500
-                        : surfaces.textMuted,
-                fontWeight: AimFontWeights.semibold,
-                fontSize: 11,
+              const SizedBox(height: AimSpacing.space8),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AimTextStyles.bodySm.copyWith(
+                  color: isLocked ? surfaces.textMuted : surfaces.textPrimary,
+                  fontWeight: isCurrent ? AimFontWeights.bold : AimFontWeights.semibold,
+                  fontSize: 13,
+                ),
               ),
-            ),
-            if (!isLast) _buildLine(isDone, surfaces.border),
-          ],
+              const SizedBox(height: AimSpacing.space2),
+              Text(
+                subTranslated,
+                textAlign: TextAlign.center,
+                style: AimTextStyles.caption.copyWith(
+                  color: isDone
+                      ? const Color(0xFF22C55E)
+                      : isCurrent
+                          ? AimColors.primary500
+                          : surfaces.textMuted,
+                  fontWeight: AimFontWeights.semibold,
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
-
-  Widget _buildLine(bool isDone, Color borderStrong) {
-    if (isDone) {
-      return Container(
-        width: 2,
-        height: 36,
-        color: const Color(0xFF86EFAC),
-        margin: const EdgeInsets.symmetric(vertical: 6),
-      );
-    } else {
-      return Container(
-        width: 2,
-        height: 36,
-        margin: const EdgeInsets.symmetric(vertical: 6),
-        child: CustomPaint(
-          painter: _DashedLinePainter(color: borderStrong),
-        ),
-      );
-    }
-  }
-}
-
-class _DashedLinePainter extends CustomPainter {
-  _DashedLinePainter({required this.color});
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-    const dashHeight = 5.0;
-    const dashSpace = 5.0;
-    var startY = 0.0;
-    while (startY < size.height) {
-      canvas.drawLine(Offset(size.width / 2, startY), Offset(size.width / 2, startY + dashHeight), paint);
-      startY += dashHeight + dashSpace;
-    }
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
-}
-
-class _DashedCirclePainter extends CustomPainter {
-  _DashedCirclePainter({required this.color});
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    final double radius = size.width / 2;
-    const double dashWidth = 6.0;
-    const double dashSpace = 4.0;
-    final double circumference = 2 * 3.1415926535 * radius;
-    final int dashCount = (circumference / (dashWidth + dashSpace)).floor();
-
-    for (var i = 0; i < dashCount; i++) {
-      final double startAngle = (i * (dashWidth + dashSpace) / circumference) * 2 * 3.1415926535;
-      final double sweepAngle = (dashWidth / circumference) * 2 * 3.1415926535;
-      canvas.drawArc(
-        Rect.fromCircle(center: Offset(radius, radius), radius: radius),
-        startAngle,
-        sweepAngle,
-        false,
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }
 
 class _CoursePathSkeleton extends StatelessWidget {

@@ -989,33 +989,35 @@ class _DailyMissionsList extends StatelessWidget {
               l10n.homeDailyMissionsTitle,
               style: AimTextStyles.h3.copyWith(
                 color: surfaces.textPrimary,
-                fontSize: 15,
                 fontWeight: AimFontWeights.bold,
               ),
             ),
-            Text(
-              l10n.homeMissionsResetIn(4),
-              style: AimTextStyles.bodySm.copyWith(
-                color: AimColors.primary500,
-                fontWeight: AimFontWeights.semibold,
-                fontSize: 12,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AimColors.primary500.withValues(alpha: 0.1),
+                borderRadius: AimRadius.borderPill,
+              ),
+              child: Text(
+                l10n.homeMissionsResetIn(4),
+                style: AimTextStyles.bodySm.copyWith(
+                  color: AimColors.primary500,
+                  fontWeight: AimFontWeights.semibold,
+                  fontSize: 12,
+                ),
               ),
             ),
           ],
         ),
         const SizedBox(height: AimSpacing.componentGap),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          clipBehavior: Clip.none,
-          child: Row(
-            children: [
-              for (var i = 0; i < missions.length; i++) ...[
-                _MissionCard(mission: missions[i], onStart: onStart),
-                if (i < missions.length - 1)
-                  const SizedBox(width: AimSpacing.componentGap),
-              ],
+        Column(
+          children: [
+            for (var i = 0; i < missions.length; i++) ...[
+              _MissionCard(mission: missions[i], onStart: onStart),
+              if (i < missions.length - 1)
+                const SizedBox(height: AimSpacing.space12),
             ],
-          ),
+          ],
         ),
       ],
     );
@@ -1051,77 +1053,120 @@ class _MissionCard extends StatelessWidget {
     return GestureDetector(
       onTap: onStart,
       child: Container(
-        width: 130,
-        padding: const EdgeInsets.all(14),
+        width: double.infinity,
+        padding: const EdgeInsets.all(AimSpacing.space16),
         decoration: BoxDecoration(
           color: surfaces.surface,
           border: Border.all(
             color: mission.done ? const Color(0xFF86EFAC) : surfaces.border,
             width: 1.5,
           ),
-          borderRadius: AimRadius.borderLg,
+          borderRadius: AimRadius.borderXl,
           boxShadow: AimShadows.card,
         ),
-        child: Stack(
-          clipBehavior: Clip.none,
+        child: Row(
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  mission.icon,
-                  style: const TextStyle(fontSize: 22),
-                ),
-                const SizedBox(height: AimSpacing.space8),
-                SizedBox(
-                  height: 36,
-                  child: Text(
-                    mission.label,
-                    style: AimTextStyles.caption.copyWith(
-                      color: surfaces.textPrimary,
-                      fontWeight: AimFontWeights.semibold,
-                      fontSize: 12,
-                      height: 1.3,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+            // Icon Pill
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: mission.done
+                    ? const Color(0xFFE8F5E9)
+                    : AimColors.primary500.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                mission.icon,
+                style: const TextStyle(fontSize: 22),
+              ),
+            ),
+            const SizedBox(width: AimSpacing.space16),
+
+            // Info & Progress
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          mission.label,
+                          style: AimTextStyles.caption.copyWith(
+                            color: surfaces.textPrimary,
+                            fontWeight: AimFontWeights.bold,
+                            fontSize: 13,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${mission.progress}/${mission.total}',
+                        style: AimTextStyles.caption.copyWith(
+                          color: mission.done
+                              ? const Color(0xFF22C55E)
+                              : surfaces.textMuted,
+                          fontWeight: AimFontWeights.extrabold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: AimSpacing.space8),
-                ClipRRect(
-                  borderRadius: AimRadius.borderPill,
-                  child: SizedBox(
-                    height: 3,
-                    child: LinearProgressIndicator(
-                      value: mission.progress / mission.total,
-                      backgroundColor: surfaces.border,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        mission.done ? const Color(0xFF22C55E) : AimColors.primary500,
+                  const SizedBox(height: AimSpacing.space8),
+
+                  // Progress Bar
+                  ClipRRect(
+                    borderRadius: AimRadius.borderPill,
+                    child: SizedBox(
+                      height: 6,
+                      child: LinearProgressIndicator(
+                        value: mission.progress / mission.total,
+                        backgroundColor: surfaces.border,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          mission.done
+                              ? const Color(0xFF22C55E)
+                              : AimColors.primary500,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            if (mission.done)
-              Positioned(
-                top: -4,
-                right: -4,
-                child: Container(
-                  width: 18,
-                  height: 18,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF22C55E),
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: const Icon(
-                    Icons.check_rounded,
-                    color: AimColors.neutral0,
-                    size: 11,
-                  ),
-                ),
+                ],
               ),
+            ),
+            const SizedBox(width: AimSpacing.space16),
+
+            // Status Check Circle
+            mission.done
+                ? Container(
+                    width: 24,
+                    height: 24,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF22C55E),
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      Icons.check_rounded,
+                      color: Colors.white,
+                      size: 14,
+                    ),
+                  )
+                : Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: surfaces.border,
+                        width: 2,
+                      ),
+                    ),
+                  ),
           ],
         ),
       ),

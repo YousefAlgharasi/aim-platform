@@ -1212,6 +1212,28 @@ class AppLocalizationsEn extends AppLocalizations {
       'Test your skills to let the AI find your level.';
 
   @override
+  String placementGateStepLabel(int current, int total) {
+    return 'Step $current of $total';
+  }
+
+  @override
+  String get placementGateFocusCareerSub =>
+      'Professional vocabulary & business English';
+
+  @override
+  String get placementGateFocusExamsSub => 'IELTS, TOEFL, and academic prep';
+
+  @override
+  String get placementGateFocusSpeakingSub =>
+      'Fluency in everyday conversations';
+
+  @override
+  String get placementGateFocusMediaSub => 'Movies, podcasts, and casual slang';
+
+  @override
+  String get placementGateRecommendedBadge => 'Recommended';
+
+  @override
   String get placementIntroSectionsLabel => 'Sections';
 
   @override
@@ -1278,20 +1300,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get placementStartTestOverview => 'Test Overview';
 
   @override
-  String get placementStartAssessmentTitle => 'Placement Assessment';
+  String get placementStartAssessmentTitle => 'Level Assessment';
 
   @override
   String get placementStartAssessmentSubtitle =>
-      'Determine your optimal learning starting point';
+      'Calibrate your AI tutor to find your optimal starting point.';
 
   @override
   String placementStartLimitTitle(int minutes) {
-    return '$minutes Minutes Limit';
+    return '$minutes Minutes';
   }
 
   @override
   String get placementStartLimitDesc =>
-      'Timed test to measure accuracy and spontaneous language fluency.';
+      'Estimated duration for a full calibrated assessment.';
 
   @override
   String placementStartQuestionsTitle(int count) {
@@ -1300,14 +1322,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get placementStartQuestionsDesc =>
-      'Includes Grammar, Reading, Listening, Speaking, and Writing.';
+      'Questions dynamically adapt to your skill level.';
 
   @override
-  String get placementStartCalibrationTitle => 'Instant AI Calibration';
+  String get placementStartCalibrationTitle => 'Helpful Tip';
 
   @override
   String get placementStartCalibrationDesc =>
-      'Our engine evaluates your CEFR level (A1 - C1) in real time.';
+      'If you don\'t know an answer, it is okay to skip and let the AI adjust.';
 
   @override
   String get placementQuestionDefaultTitle => 'Placement Question';
@@ -1449,7 +1471,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get placementStartHonorCodeAgreement =>
-      'By starting, you agree to our Placement Honor Code';
+      'By starting, you agree to our Assessment Honor Code';
+
+  @override
+  String get placementStartBtnLabel => 'Start Assessment';
 
   @override
   String get placementSubmitCompletedQuestions => 'Completed Questions';
@@ -1497,4 +1522,148 @@ class AppLocalizationsEn extends AppLocalizations {
   String homeStreakDaysText(int days) {
     return '$days Days';
   }
+
+  @override
+  String get settingsTitle => 'Account Settings';
+
+  @override
+  String get settingsSaveSuccess => 'Profile Saved successfully!';
+
+  @override
+  String get settingsPasswordSuccess => 'Password Updated successfully!';
+
+  @override
+  String get settingsLogoutTitle => 'Confirm Logout';
+
+  @override
+  String get settingsLogoutMessage =>
+      'Are you sure you want to log out of your AIM account?';
+
+  @override
+  String get settingsFullName => 'Full Name';
+
+  @override
+  String get settingsEmailAddress => 'Email Address';
+
+  @override
+  String get settingsVerifiedEmail => 'Verified Email';
+
+  @override
+  String get settingsDailyCommitment => 'Daily Learning Commitment';
+
+  @override
+  String get settingsCommitmentCasual => '5 Mins/Day (Casual)';
+
+  @override
+  String get settingsCommitmentRecommended => '15 Mins/Day (Recommended)';
+
+  @override
+  String get settingsCommitmentIntensive => '30 Mins/Day (Intensive)';
+
+  @override
+  String get settingsSaveButton => 'Save Profile Changes';
+
+  @override
+  String get settingsSavingButton => 'Saving Changes...';
+
+  @override
+  String get settingsAppThemeHeader => 'APP THEME & DISPLAY';
+
+  @override
+  String get settingsThemeDark => 'Dark Theme';
+
+  @override
+  String get settingsThemeLight => 'Light Theme';
+
+  @override
+  String get settingsThemeSubtitle =>
+      'Toggle to switch between light and dark backgrounds';
+
+  @override
+  String get settingsNotificationsHeader => 'NOTIFICATION PREFERENCES';
+
+  @override
+  String get settingsReminders => 'Daily Study Reminders';
+
+  @override
+  String get settingsRemindersSubtitle =>
+      'Keep your learning streak active with daily push notices';
+
+  @override
+  String get settingsDiagnostics => 'Weakness Diagnostic Alerts';
+
+  @override
+  String get settingsDiagnosticsSubtitle =>
+      'Get notified when AIM engine detects a gap to review';
+
+  @override
+  String get settingsSecurityHeader => 'SECURITY & PASSWORD';
+
+  @override
+  String get settingsCurrentPassword => 'Current Password';
+
+  @override
+  String get settingsNewPassword => 'New Password';
+
+  @override
+  String get settingsUpdatePassword => 'Update Password';
+
+  @override
+  String get settingsUpdatingPassword => 'Updating...';
+
+  @override
+  String get settingsLogoutButton => 'Log Out of AIM Account';
+
+  @override
+  String get voiceAiTitle => 'LIVE VOICE AI';
+
+  @override
+  String voiceAiStep(int current) {
+    return 'Step $current/3';
+  }
+
+  @override
+  String voiceAiAudio(String time) {
+    return 'Audio $time';
+  }
+
+  @override
+  String get voiceAiStatusAiSpeaking => 'AI Tutor Speaking...';
+
+  @override
+  String voiceAiStatusListening(String secs) {
+    return 'Listening to your voice (00:$secs)';
+  }
+
+  @override
+  String get voiceAiStatusEvaluating => 'AI Evaluating Pronunciation...';
+
+  @override
+  String get voiceAiFinishHint => 'Tap mic when finished speaking';
+
+  @override
+  String get voiceAiStartHint => 'Tap mic to interrupt or speak';
+
+  @override
+  String get voiceAiCompletedBadge => 'LIVE VOICE SESSION COMPLETED!';
+
+  @override
+  String get voiceAiMasteredTitle => 'Lesson Mastered!';
+
+  @override
+  String voiceAiCompletedSubtitle(String title) {
+    return 'You completed the live AI voice lesson for \"$title\".';
+  }
+
+  @override
+  String get voiceAiXpEarned => 'XP EARNED';
+
+  @override
+  String get voiceAiAccuracy => 'VOICE ACCURACY';
+
+  @override
+  String get voiceAiAccuracyScore => '98% Score';
+
+  @override
+  String get voiceAiReturnButton => 'Return to Lesson Detail';
 }
