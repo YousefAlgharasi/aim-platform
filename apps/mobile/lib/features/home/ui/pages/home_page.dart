@@ -705,19 +705,33 @@ class _HomeTopBar extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            icon: const Icon(Icons.menu_rounded),
-            color: surfaces.textPrimary,
-            iconSize: AimSizes.iconMd,
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-          Text(
-            'AIM',
-            style: AimTextStyles.h2.copyWith(
-              color: AimColors.primary500,
-              fontWeight: AimFontWeights.extrabold,
-              letterSpacing: -0.5,
-            ),
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4F46E5),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.auto_awesome_rounded,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                ),
+              ),
+              const SizedBox(width: AimSpacing.space8),
+              Text(
+                'AIM English',
+                style: AimTextStyles.h3.copyWith(
+                  color: surfaces.textPrimary,
+                  fontWeight: AimFontWeights.extrabold,
+                  letterSpacing: -0.5,
+                ),
+              ),
+            ],
           ),
           Container(
             width: 34,
@@ -1000,9 +1014,10 @@ class _DailyMissionsList extends StatelessWidget {
     final surfaces = aimSurfacesOf(context);
     final l10n = AppLocalizations.of(context);
 
-    // Map the single real challenge to a mission
     final mission1 = _MissionItem(
-      icon: '📖',
+      iconData: Icons.menu_book_rounded,
+      iconColor: challenge.completed ? const Color(0xFF10B981) : const Color(0xFF4F46E5),
+      iconBgColor: challenge.completed ? const Color(0xFFD1FAE5) : const Color(0xFFEEF2FF),
       label: challenge.title,
       done: challenge.completed,
       progress: challenge.progressCount,
@@ -1015,14 +1030,18 @@ class _DailyMissionsList extends StatelessWidget {
     final missions = [
       mission1,
       _MissionItem(
-        icon: '🎤',
+        iconData: Icons.mic_none_rounded,
+        iconColor: const Color(0xFF4F46E5),
+        iconBgColor: const Color(0xFFEEF2FF),
         label: isAr ? 'تدرب على التحدث' : 'Practice Speaking',
         done: false,
         progress: 0,
         total: 1,
       ),
       _MissionItem(
-        icon: '✍️',
+        iconData: Icons.edit_rounded,
+        iconColor: const Color(0xFF4F46E5),
+        iconBgColor: const Color(0xFFEEF2FF),
         label: isAr ? 'اكتب فقرة قصيرة' : 'Write a Paragraph',
         done: false,
         progress: 0,
@@ -1077,14 +1096,18 @@ class _DailyMissionsList extends StatelessWidget {
 
 class _MissionItem {
   const _MissionItem({
-    required this.icon,
+    required this.iconData,
+    required this.iconColor,
+    required this.iconBgColor,
     required this.label,
     required this.done,
     required this.progress,
     required this.total,
   });
 
-  final String icon;
+  final IconData iconData;
+  final Color iconColor;
+  final Color iconBgColor;
   final String label;
   final bool done;
   final int progress;
@@ -1100,6 +1123,11 @@ class _MissionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final cardBgColor = isDark 
+        ? surfaces.surface 
+        : (mission.done ? const Color(0xFFF0FDF4).withValues(alpha: 0.5) : surfaces.surface);
 
     return GestureDetector(
       onTap: onStart,
@@ -1107,13 +1135,19 @@ class _MissionCard extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(AimSpacing.space16),
         decoration: BoxDecoration(
-          color: surfaces.surface,
+          color: cardBgColor,
           border: Border.all(
-            color: mission.done ? const Color(0xFF86EFAC) : surfaces.border,
+            color: mission.done ? const Color(0xFF10B981) : surfaces.border,
             width: 1.5,
           ),
           borderRadius: AimRadius.borderXl,
-          boxShadow: AimShadows.card,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -1122,15 +1156,14 @@ class _MissionCard extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: mission.done
-                    ? const Color(0xFFE8F5E9)
-                    : AimColors.primary500.withValues(alpha: 0.08),
+                color: mission.iconBgColor,
                 borderRadius: BorderRadius.circular(12),
               ),
               alignment: Alignment.center,
-              child: Text(
-                mission.icon,
-                style: const TextStyle(fontSize: 22),
+              child: Icon(
+                mission.iconData,
+                color: mission.iconColor,
+                size: 20,
               ),
             ),
             const SizedBox(width: AimSpacing.space16),
@@ -1160,7 +1193,7 @@ class _MissionCard extends StatelessWidget {
                         '${mission.progress}/${mission.total}',
                         style: AimTextStyles.caption.copyWith(
                           color: mission.done
-                              ? const Color(0xFF22C55E)
+                              ? const Color(0xFF10B981)
                               : surfaces.textMuted,
                           fontWeight: AimFontWeights.extrabold,
                           fontSize: 12,
@@ -1180,7 +1213,7 @@ class _MissionCard extends StatelessWidget {
                         backgroundColor: surfaces.border,
                         valueColor: AlwaysStoppedAnimation<Color>(
                           mission.done
-                              ? const Color(0xFF22C55E)
+                              ? const Color(0xFF10B981)
                               : AimColors.primary500,
                         ),
                       ),
@@ -1197,7 +1230,7 @@ class _MissionCard extends StatelessWidget {
                     width: 24,
                     height: 24,
                     decoration: const BoxDecoration(
-                      color: Color(0xFF22C55E),
+                      color: Color(0xFF10B981),
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,
@@ -1214,7 +1247,7 @@ class _MissionCard extends StatelessWidget {
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: surfaces.border,
-                        width: 2,
+                        width: 1.5,
                       ),
                     ),
                   ),

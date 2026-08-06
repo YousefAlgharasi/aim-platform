@@ -254,58 +254,37 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
 
     final surfaces = aimSurfacesOf(context);
     final l10n = AppLocalizations.of(context);
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+    final titleText = isArabic ? 'خريطة التعلم' : 'Learning Roadmap';
 
-    return Container(
-      width: double.infinity,
+    return Padding(
       padding: const EdgeInsets.symmetric(
-        vertical: AimSpacing.cardPaddingLg,
-        horizontal: AimSpacing.space8,
-      ),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            surfaces.surface,
-            Color.lerp(surfaces.surface, AimColors.gzPurple, 0.05)!,
-          ],
-        ),
-        borderRadius: AimRadius.borderX2l,
-        boxShadow: AimShadows.card,
+        vertical: AimSpacing.space16,
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            _courseTitle!,
-            textAlign: TextAlign.center,
-            style: AimTextStyles.h2.copyWith(color: surfaces.textPrimary),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: AimSpacing.space4),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: aimSoftFillsOf(context).primary,
-              borderRadius: AimRadius.borderPill,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AimSpacing.space12,
-                vertical: AimSpacing.space4,
-              ),
-              child: Text(
-                _subtitle ?? '',
-                textAlign: TextAlign.center,
-                style: AimTextStyles.bodySm.copyWith(
-                  color: aimSoftFillsOf(context).onPrimary,
-                  fontWeight: AimFontWeights.semibold,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                titleText,
+                style: AimTextStyles.h3.copyWith(
+                  color: surfaces.textPrimary,
+                  fontWeight: AimFontWeights.bold,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
-            ),
+              Text(
+                _subtitle ?? '',
+                style: AimTextStyles.bodySm.copyWith(
+                  color: surfaces.textMuted,
+                  fontWeight: AimFontWeights.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: AimSpacing.sectionGap),
+          const SizedBox(height: AimSpacing.space24),
           _CoursePathTrail(
             nodes: _nodes,
             onTapNode: _onTapNode,
@@ -345,15 +324,19 @@ class _CoursePathTrail extends StatelessWidget {
         final center = constraints.maxWidth / 2;
         final List<Offset> nodeOffsets = [];
 
-        // Alternating horizontal offsets like React prototype: 0, 55, -55, 55, -55...
+        // Alternating horizontal offsets like React prototype: center, center, right, left, right, center, left
         double getOffsetX(int index) {
-          if (index == 0) return 0.0;
-          return index % 2 == 1 ? 55.0 : -55.0;
+          final seq = [0.0, 0.0, 65.0, -65.0, 65.0, 0.0, -65.0, 65.0, -65.0];
+          if (index < seq.length) return seq[index];
+          return index % 2 == 1 ? 65.0 : -65.0;
         }
 
-        // Each node segment has a height spacing of ~135 pixels.
-        const double nodeSpacingY = 135.0;
-        const double initialY = 32.0;
+        // Calculated distance between circle centers is exactly 148 pixels
+        // (nodeSize/2 of 56 = 28, height spacer = 52, half of next = 28 => 28+52+28 = 108.
+        // Wait: node height with labels = 96 => bottom spacing of circle center is 96 - 28 = 68.
+        // 68 + spacer 52 + 28 = 148.0 pixels)
+        const double nodeSpacingY = 148.0;
+        const double initialY = 28.0;
 
         for (var i = 0; i < nodes.length; i++) {
           nodeOffsets.add(Offset(center + getOffsetX(i), initialY + (i * nodeSpacingY)));
@@ -387,7 +370,7 @@ class _CoursePathTrail extends StatelessWidget {
                     ),
                   ),
                   if (i < nodes.length - 1)
-                    const SizedBox(height: 52.0), // height spacer to alignment
+                    const SizedBox(height: 52.0), // spacer to match nodeSpacingY calculation
                 ],
               ],
             ),
