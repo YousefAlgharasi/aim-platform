@@ -56,9 +56,7 @@ flutter:
 # top of a second, visibly-different circle.
 flutter_native_splash:
   background_image: "assets/splash/splash_background.png"
-  image: assets/splash/splash_logo.png
   android_12:
-    image: assets/splash/splash_logo.png
     color: "#6C63FF"
     icon_background_color: "#6C63FF"
   android: true
