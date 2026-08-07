@@ -278,21 +278,25 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
         'id': 'career',
         'iconData': Icons.work_outline_rounded,
         'label': l10n.placementGateFocusCareer,
+        'sub': l10n.placementGateFocusCareerSub,
       },
       {
         'id': 'exams',
         'iconData': Icons.school_outlined,
         'label': l10n.placementGateFocusExams,
+        'sub': l10n.placementGateFocusExamsSub,
       },
       {
         'id': 'speaking',
         'iconData': Icons.chat_bubble_outline_rounded,
         'label': l10n.placementGateFocusSpeaking,
+        'sub': l10n.placementGateFocusSpeakingSub,
       },
       {
         'id': 'media',
         'iconData': Icons.movie_creation_outlined,
         'label': l10n.placementGateFocusMedia,
+        'sub': l10n.placementGateFocusMediaSub,
       },
     ];
 
@@ -300,6 +304,18 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
       key: const ValueKey(1),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AimSpacing.screenPaddingMobile),
+          child: Text(
+            l10n.placementGateStepLabel(2, 4).toUpperCase(),
+            style: AimTextStyles.caption.copyWith(
+              fontWeight: AimFontWeights.bold,
+              color: AimColors.primary500,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+        const SizedBox(height: AimSpacing.space4),
         PlacementPageHeader(
           title: l10n.placementGateFocusTitle,
           subtitle: l10n.placementGateFocusSubtitle,
@@ -315,6 +331,7 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
               final isSelected = _selectedFocus == opt['id'];
               return PlacementOptionCard(
                 title: opt['label'] as String,
+                subtitle: opt['sub'] as String?,
                 iconWidget: Icon(
                   opt['iconData'] as IconData,
                   size: AimSizes.iconLg,
@@ -363,6 +380,18 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
       key: const ValueKey(2),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AimSpacing.screenPaddingMobile),
+          child: Text(
+            l10n.placementGateStepLabel(3, 4).toUpperCase(),
+            style: AimTextStyles.caption.copyWith(
+              fontWeight: AimFontWeights.bold,
+              color: AimColors.primary500,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+        const SizedBox(height: AimSpacing.space4),
         PlacementPageHeader(
           title: l10n.placementGateHabitTitle,
           subtitle: l10n.placementGateHabitSubtitle,
@@ -408,6 +437,18 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
       key: const ValueKey(3),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AimSpacing.screenPaddingMobile),
+          child: Text(
+            l10n.placementGateStepLabel(4, 4).toUpperCase(),
+            style: AimTextStyles.caption.copyWith(
+              fontWeight: AimFontWeights.bold,
+              color: AimColors.primary500,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+        const SizedBox(height: AimSpacing.space4),
         PlacementPageHeader(
           title: l10n.placementGateStartTitle,
           subtitle: l10n.placementGateStartSubtitle,
@@ -415,40 +456,80 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
         const SizedBox(height: AimSpacing.space32),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AimSpacing.screenPaddingMobile),
-          child: Row(
+          child: Column(
             children: [
-              Expanded(
-                child: PlacementOptionCard(
-                  title: l10n.placementGateStartFromZeroTitle,
-                  subtitle: l10n.placementGateStartFromZeroSub,
-                  iconWidget: const Icon(
-                    Icons.eco_rounded,
-                    color: AimColors.primary500,
-                    size: AimSizes.iconLg,
-                  ),
-                  isSelected: isOptionA,
-                  height: 164,
-                  onTap: () {
-                    setState(() => _selectedStartMode = 'start_from_scratch');
-                  },
+              PlacementOptionCard(
+                title: l10n.placementGateStartFromZeroTitle,
+                subtitle: l10n.placementGateStartFromZeroSub,
+                iconWidget: const Icon(
+                  Icons.outlined_flag_rounded,
+                  color: AimColors.primary500,
+                  size: AimSizes.iconLg,
                 ),
+                isSelected: isOptionA,
+                onTap: () {
+                  setState(() => _selectedStartMode = 'start_from_scratch');
+                },
               ),
-              const SizedBox(width: AimSpacing.componentGap),
-              Expanded(
-                child: PlacementOptionCard(
-                  title: l10n.placementGateTestKnowledgeTitle,
-                  subtitle: l10n.placementGateTestKnowledgeSub,
-                  iconWidget: const Icon(
-                    Icons.psychology_rounded,
-                    color: AimColors.primary500,
-                    size: AimSizes.iconLg,
+              const SizedBox(height: AimSpacing.space24),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  PlacementOptionCard(
+                    title: l10n.placementGateTestKnowledgeTitle,
+                    subtitle: l10n.placementGateTestKnowledgeSub,
+                    iconWidget: const Icon(
+                      Icons.track_changes_rounded,
+                      color: AimColors.primary500,
+                      size: AimSizes.iconLg,
+                    ),
+                    isSelected: isOptionB,
+                    onTap: () {
+                      setState(() => _selectedStartMode = 'take_placement');
+                    },
                   ),
-                  isSelected: isOptionB,
-                  height: 164,
-                  onTap: () {
-                    setState(() => _selectedStartMode = 'take_placement');
-                  },
-                ),
+                  Positioned(
+                    top: -10,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: AimColors.primary500,
+                          borderRadius: BorderRadius.circular(100),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AimColors.primary500.withValues(alpha: 0.45),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.star_rounded,
+                              size: 11,
+                              color: AimColors.neutral0,
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
+                              l10n.placementGateRecommendedBadge.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                                color: AimColors.neutral0,
+                                letterSpacing: 1.0,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

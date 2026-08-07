@@ -221,12 +221,11 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.text('Test Overview'), findsOneWidget);
-      expect(find.text('Placement Assessment'), findsOneWidget);
-      expect(find.text('25 Minutes Limit'), findsOneWidget);
+      expect(find.text('Level Assessment'), findsOneWidget);
+      expect(find.text('25 Minutes'), findsOneWidget);
       expect(find.text('20 Adaptive Questions'), findsOneWidget);
-      expect(find.text('Instant AI Calibration'), findsOneWidget);
-      expect(find.text('Start'), findsOneWidget);
+      expect(find.text('Helpful Tip'), findsOneWidget);
+      expect(find.text('Start Assessment'), findsOneWidget);
     });
 
     testWidgets('renders without error under RTL directionality',
@@ -242,7 +241,7 @@ void main() {
       await tester.pump();
 
       expect(find.byType(PlacementStartPage), findsOneWidget);
-      expect(find.text('Placement Assessment'), findsOneWidget);
+      expect(find.text('Level Assessment'), findsOneWidget);
     });
   });
 }

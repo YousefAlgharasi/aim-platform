@@ -101,7 +101,7 @@ class PlacementOptionCard extends StatelessWidget {
     return GestureDetector(
       onTap: enabled ? onTap : null,
       child: Container(
-        height: height,
+        constraints: height != null ? BoxConstraints(minHeight: height!) : null,
         padding: padding,
         decoration: BoxDecoration(
           color: isSelected
