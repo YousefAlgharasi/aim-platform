@@ -34,7 +34,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
       curve: const Interval(0.0, 0.7, curve: Curves.easeOut),
     );
     _entrySlide = Tween<Offset>(
-      begin: const Offset(0, 0.06),
+      begin: const Offset(0, 0.05),
       end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _entryCtrl,
@@ -56,31 +56,30 @@ class _SplashPageState extends ConsumerState<SplashPage>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
-    final iconBoxSize = size.width * 0.183;
-    final iconSize = iconBoxSize * 0.528;
-    final titleFontSize = (size.width * 0.071).clamp(22.0, 36.0);
-    final subtitleFontSize = (size.width * 0.033).clamp(11.0, 16.0);
 
     return Scaffold(
-      backgroundColor: AimColors.primary500,
+      backgroundColor: AimColors.secondary500,
       body: Stack(
         children: [
-          const ColoredBox(color: AimColors.primary500, child: SizedBox.expand()),
+          // Background Color / Subtle Radial Gradient Glow
           Positioned.fill(
-            child: DecoratedBox(
+            child: Container(
               decoration: BoxDecoration(
                 gradient: RadialGradient(
-                  center: const Alignment(0.2, -0.2),
-                  radius: 0.85,
+                  center: const Alignment(0.0, -0.1),
+                  radius: 0.9,
                   colors: [
-                    AimColors.neutral0.withValues(alpha: 0.07),
-                    Colors.transparent,
+                    AimColors.secondary400,
+                    AimColors.secondary600,
                   ],
                 ),
               ),
             ),
           ),
+
           const AuthGate(),
+
+          // Center Logo & Tagline
           Center(
             child: FadeTransition(
               opacity: _entryOpacity,
@@ -89,47 +88,26 @@ class _SplashPageState extends ConsumerState<SplashPage>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(iconBoxSize * 0.306),
-                      child: BackdropFilter(
-                        filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                        child: Container(
-                          width: iconBoxSize,
-                          height: iconBoxSize,
-                          decoration: BoxDecoration(
-                            color: AimColors.neutral0.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(iconBoxSize * 0.306),
-                            border: Border.all(
-                              color: AimColors.neutral0.withValues(alpha: 0.25),
-                              width: 1.5,
-                            ),
-                          ),
-                          child: Center(
-                            child: Icon(
-                              Icons.psychology_rounded,
-                              size: iconSize,
-                              color: AimColors.neutral0,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: size.height * 0.022),
+                    // Brand Title
                     Text(
                       'AIM',
                       style: AimTextStyles.display.copyWith(
-                        fontSize: titleFontSize,
+                        fontSize: 64,
                         fontWeight: AimFontWeights.extrabold,
                         color: AimColors.neutral0,
-                        letterSpacing: -0.5,
+                        letterSpacing: 2.0,
+                        height: 1.0,
                       ),
                     ),
-                    SizedBox(height: size.height * 0.007),
+                    const SizedBox(height: 12),
+                    // Tagline Subtitle
                     Text(
-                      'AI-Powered Institute',
-                      style: AimTextStyles.bodySm.copyWith(
-                        fontSize: subtitleFontSize,
-                        color: AimColors.primary100,
+                      'YOUR AI MIND COACH',
+                      style: AimTextStyles.caption.copyWith(
+                        fontSize: 13,
+                        fontWeight: AimFontWeights.bold,
+                        color: AimColors.neutral0.withValues(alpha: 0.75),
+                        letterSpacing: 3.5,
                       ),
                     ),
                   ],
@@ -137,18 +115,20 @@ class _SplashPageState extends ConsumerState<SplashPage>
               ),
             ),
           ),
+
+          // Bottom Loading Indicator
           Positioned(
-            bottom: size.height * 0.075,
+            bottom: size.height * 0.08,
             left: 0,
             right: 0,
             child: Center(
               child: FadeTransition(
                 opacity: _entryOpacity,
                 child: SizedBox(
-                  width: 36,
-                  height: 36,
+                  width: 32,
+                  height: 32,
                   child: CircularProgressIndicator(
-                    strokeWidth: 3,
+                    strokeWidth: 3.0,
                     valueColor: AlwaysStoppedAnimation<Color>(
                       AimColors.neutral0.withValues(alpha: 0.85),
                     ),
