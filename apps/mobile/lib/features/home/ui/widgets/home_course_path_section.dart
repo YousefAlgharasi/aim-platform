@@ -324,10 +324,9 @@ class _CoursePathTrail extends StatelessWidget {
         final center = constraints.maxWidth / 2;
         final List<Offset> nodeOffsets = [];
 
-        // Alternating horizontal offsets like React prototype: center, center, right, left, right, center, left
+        // Alternating horizontal offsets like React prototype, starting immediately from index 1 to wind beautifully: center, right, left, right, left...
         double getOffsetX(int index) {
-          final seq = [0.0, 0.0, 65.0, -65.0, 65.0, 0.0, -65.0, 65.0, -65.0];
-          if (index < seq.length) return seq[index];
+          if (index == 0) return 0.0;
           return index % 2 == 1 ? 65.0 : -65.0;
         }
 

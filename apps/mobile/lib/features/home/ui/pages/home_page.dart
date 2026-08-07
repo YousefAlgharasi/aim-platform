@@ -419,24 +419,6 @@ class _HomeContent extends ConsumerWidget {
           ],
           const HomeCoursePathSection(),
           const SizedBox(height: AimSpacing.sectionGap),
-          const _HomeCurrentAssessmentSection(),
-          if (data.goal != null) ...[
-            HomeSectionHeader(title: l10n.homeGoalTitle),
-            const SizedBox(height: AimSpacing.componentGap),
-            HomeGoalCard(goal: data.goal!),
-            const SizedBox(height: AimSpacing.sectionGap),
-          ],
-          if (data.isEmpty) ..._gettingStartedCards(context, ref),
-          if (data.recommendations.isNotEmpty) ...[
-            HomeSectionHeader(title: l10n.homeRecommendationsTitle),
-            const SizedBox(height: AimSpacing.componentGap),
-            ...data.recommendations.map(
-              (m) => Padding(
-                padding: const EdgeInsets.only(bottom: AimSpacing.listItemGap),
-                child: HomeRecommendationCard(model: m),
-              ),
-            ),
-          ],
         ],
       ),
     );
