@@ -352,26 +352,29 @@ class _CoursePathTrail extends StatelessWidget {
                 ),
               ),
             ),
-            Column(
-              children: [
-                for (var i = 0; i < nodes.length; i++) ...[
-                  Transform.translate(
-                    offset: Offset(getOffsetX(i), 0),
-                    child: _RoadmapNodeWidget(
-                      node: nodes[i],
-                      label: switch (nodes[i].kind) {
-                        _NodeKind.lesson => nodes[i].title,
-                        _NodeKind.quiz => quizLabel,
-                        _NodeKind.finalExam => finalExamLabel,
-                      },
-                      lockedSemantic: lockedSemantic,
-                      onTap: () => onTapNode(nodes[i]),
+            SizedBox(
+              width: double.infinity,
+              child: Column(
+                children: [
+                  for (var i = 0; i < nodes.length; i++) ...[
+                    Transform.translate(
+                      offset: Offset(getOffsetX(i), 0),
+                      child: _RoadmapNodeWidget(
+                        node: nodes[i],
+                        label: switch (nodes[i].kind) {
+                          _NodeKind.lesson => nodes[i].title,
+                          _NodeKind.quiz => quizLabel,
+                          _NodeKind.finalExam => finalExamLabel,
+                        },
+                        lockedSemantic: lockedSemantic,
+                        onTap: () => onTapNode(nodes[i]),
+                      ),
                     ),
-                  ),
-                  if (i < nodes.length - 1)
-                    const SizedBox(height: 52.0), // spacer to match nodeSpacingY calculation
+                    if (i < nodes.length - 1)
+                      const SizedBox(height: 52.0), // spacer to match nodeSpacingY calculation
+                  ],
                 ],
-              ],
+              ),
             ),
           ],
         );
