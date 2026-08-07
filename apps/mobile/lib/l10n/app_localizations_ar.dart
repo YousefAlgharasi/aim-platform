@@ -287,13 +287,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get shellOpenMenuTooltip => 'فتح القائمة';
 
   @override
-  String get shellNavHome => 'الرئيسية';
+  String get shellNavHome => 'الصفحة الرئيسية';
 
   @override
   String get shellNavHomeSemantic => 'تبويب الرئيسية';
 
   @override
-  String get shellNavLearn => 'التعلّم';
+  String get shellNavLearn => 'الفصول والمسار';
 
   @override
   String get shellNavLearnSemantic => 'تبويب التعلّم';
@@ -305,10 +305,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get shellNavReviewSemantic => 'تبويب المراجعة';
 
   @override
-  String get shellNavProgress => 'التقدّم';
+  String get shellNavProgress => 'التحليلات والتقدم';
 
   @override
   String get shellNavProgressSemantic => 'تبويب التقدّم';
+
+  @override
+  String get drawerLogOut => 'تسجيل الخروج';
 
   @override
   String get shellNavProfile => 'الملف الشخصي';

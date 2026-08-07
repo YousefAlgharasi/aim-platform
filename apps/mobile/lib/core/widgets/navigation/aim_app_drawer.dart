@@ -86,6 +86,11 @@ class AIMAppDrawer extends StatelessWidget {
     return Drawer(
       backgroundColor: surfaces.surface,
       semanticLabel: semanticLabel,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.horizontal(
+          right: Radius.circular(32),
+        ),
+      ),
       child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -94,7 +99,6 @@ class AIMAppDrawer extends StatelessWidget {
               padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
               child: header,
             ),
-            Divider(height: 1, color: surfaces.divider),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(

@@ -317,7 +317,7 @@
   "@shellOpenMenuTooltip": {
     "description": "Tooltip for the floating action button that opens the navigation drawer."
   },
-  "shellNavHome": "Home",
+  "shellNavHome": "Home Feed",
   "@shellNavHome": {
     "description": "Label for the Home destination in the bottom nav and drawer."
   },
@@ -325,7 +325,7 @@
   "@shellNavHomeSemantic": {
     "description": "Accessibility label for the Home bottom-nav tab."
   },
-  "shellNavLearn": "Learn",
+  "shellNavLearn": "Chapters & Course",
   "@shellNavLearn": {
     "description": "Label for the Learn destination in the bottom nav and drawer."
   },
@@ -341,13 +341,17 @@
   "@shellNavReviewSemantic": {
     "description": "Accessibility label for the Review bottom-nav tab."
   },
-  "shellNavProgress": "Progress",
+  "shellNavProgress": "Analytics & Progress",
   "@shellNavProgress": {
     "description": "Label for the Progress destination in the bottom nav and drawer."
   },
   "shellNavProgressSemantic": "Progress tab",
   "@shellNavProgressSemantic": {
     "description": "Accessibility label for the Progress bottom-nav tab."
+  },
+  "drawerLogOut": "Log Out",
+  "@drawerLogOut": {
+    "description": "Log out button text in drawer"
   },
   "shellNavProfile": "Profile",
   "@shellNavProfile": {

@@ -623,7 +623,7 @@ abstract class AppLocalizations {
   /// Label for the Home destination in the bottom nav and drawer.
   ///
   /// In en, this message translates to:
-  /// **'Home'**
+  /// **'Home Feed'**
   String get shellNavHome;
 
   /// Accessibility label for the Home bottom-nav tab.
@@ -635,7 +635,7 @@ abstract class AppLocalizations {
   /// Label for the Learn destination in the bottom nav and drawer.
   ///
   /// In en, this message translates to:
-  /// **'Learn'**
+  /// **'Chapters & Course'**
   String get shellNavLearn;
 
   /// Accessibility label for the Learn bottom-nav tab.
@@ -659,7 +659,7 @@ abstract class AppLocalizations {
   /// Label for the Progress destination in the bottom nav and drawer.
   ///
   /// In en, this message translates to:
-  /// **'Progress'**
+  /// **'Analytics & Progress'**
   String get shellNavProgress;
 
   /// Accessibility label for the Progress bottom-nav tab.
@@ -667,6 +667,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Progress tab'**
   String get shellNavProgressSemantic;
+
+  /// Log out button text in drawer
+  ///
+  /// In en, this message translates to:
+  /// **'Log Out'**
+  String get drawerLogOut;
 
   /// Label for the Profile destination in the bottom nav and drawer.
   ///

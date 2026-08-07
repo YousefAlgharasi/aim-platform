@@ -10,7 +10,7 @@ import '../../../../core/localization/locale_provider.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
-import '../../../auth/ui/widgets/logout_button.dart';
+import '../../../auth/logic/provider/logout_provider.dart';
 import '../../../home/ui/pages/home_page.dart';
 import '../../../lessons/ui/pages/course_list_page.dart';
 import '../../../notifications/logic/provider/notification_providers.dart';
@@ -188,16 +188,6 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
   /// secondary destinations, a theme toggle, and a sign-out footer.
   Widget _buildDrawer(BuildContext context, WidgetRef ref, int selectedIndex) {
     final l10n = AppLocalizations.of(context);
-    final unreadCountState = ref.watch(notificationUnreadCountProvider);
-    final unreadCount = switch (unreadCountState) {
-      AppAsyncSuccess<int>(:final data) => data,
-      _ => 0,
-    };
-    final authContextState = ref.watch(authContextProvider);
-    final isParent = switch (authContextState) {
-      AppAsyncSuccess(:final data) => data.hasRole('parent'),
-      _ => false,
-    };
 
     void selectTab(int index) {
       context.pop();
@@ -211,7 +201,6 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
 
     return AIMAppDrawer(
       header: const _AIMDrawerBrandHeader(),
-      menuLabel: l10n.shellMenuSectionLabel,
       items: [
         AIMDrawerItemData(
           icon: const Icon(Icons.home_outlined),
@@ -226,154 +215,190 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
           onTap: () => selectTab(1),
         ),
         AIMDrawerItemData(
-          icon: const Icon(Icons.replay_outlined),
-          label: l10n.shellNavReview,
-          selected: selectedIndex == 2,
-          onTap: () => selectTab(2),
-          // No unread/due-count badge: no real due-count data source exists
-          // for the Review tab in this codebase today (checked
-          // features/reviews/) — omitted rather than fabricated.
-        ),
-        AIMDrawerItemData(
-          icon: const Icon(Icons.insights_outlined),
+          icon: const Icon(Icons.bar_chart_outlined),
           label: l10n.shellNavProgress,
           selected: selectedIndex == 3,
           onTap: () => selectTab(3),
         ),
         AIMDrawerItemData(
-          icon: const Icon(Icons.person_outline),
-          label: l10n.shellNavProfile,
-          selected: selectedIndex == 4,
-          onTap: () => selectTab(4),
-        ),
-      ],
-      moreLabel: l10n.shellMoreSectionLabel,
-      moreItems: [
-        AIMDrawerItemData(
-          icon: const _AIMDrawerIconAvatar(
-            color: AimColors.error500,
-            icon: Icons.notifications_outlined,
-          ),
-          label: l10n.shellNotifications,
-          onTap: () => navigateTo(AppRoutePaths.notificationInbox),
-          trailing: unreadCount > 0
-              ? _AIMDrawerCountBadge(count: unreadCount)
-              : Icon(Icons.chevron_right, color: aimSurfacesOf(context).textMuted),
-        ),
-        AIMDrawerItemData(
-          icon: const _AIMDrawerIconAvatar(
-            color: AimColors.warning500,
-            icon: Icons.emoji_events_outlined,
-          ),
+          icon: const Icon(Icons.emoji_events_outlined),
           label: l10n.shellAchievements,
+          selected: false,
           onTap: () => navigateTo(AppRoutePaths.achievements),
-          trailing: Icon(Icons.chevron_right, color: aimSurfacesOf(context).textMuted),
         ),
         AIMDrawerItemData(
-          icon: const _AIMDrawerIconAvatar(
-            color: AimColors.primary500,
-            icon: Icons.assignment_outlined,
-          ),
-          label: l10n.shellPlacementTest,
-          onTap: () => navigateTo(AppRoutePaths.placementMenu),
-          trailing: Icon(Icons.chevron_right, color: aimSurfacesOf(context).textMuted),
-        ),
-        AIMDrawerItemData(
-          icon: const _AIMDrawerIconAvatar(
-            color: AimColors.primary500,
-            icon: Icons.quiz_outlined,
-          ),
-          label: l10n.shellAssessments,
-          onTap: () => navigateTo(AppRoutePaths.assessments),
-          trailing: Icon(Icons.chevron_right, color: aimSurfacesOf(context).textMuted),
-        ),
-        AIMDrawerItemData(
-          icon: const _AIMDrawerIconAvatar(
-            color: AimColors.primary500,
-            icon: Icons.workspace_premium_outlined,
-          ),
-          label: l10n.shellAimPlus,
-          onTap: () => navigateTo(AppRoutePaths.pricing),
-          trailing: Icon(Icons.chevron_right, color: aimSurfacesOf(context).textMuted),
-        ),
-        AIMDrawerItemData(
-          icon: const _AIMDrawerIconAvatar(
-            color: AimColors.success500,
-            icon: Icons.help_outline,
-          ),
-          label: l10n.shellSupport,
-          onTap: () => navigateTo(
-            isParent
-                ? AppRoutePaths.parentHelpCenter
-                : AppRoutePaths.helpCenter,
-          ),
-          trailing: Icon(Icons.chevron_right, color: aimSurfacesOf(context).textMuted),
+          icon: const Icon(Icons.person_outline),
+          label: l10n.settingsTitle,
+          selected: false,
+          onTap: () => navigateTo(AppRoutePaths.accountSettings),
         ),
       ],
-      footer: const Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _AIMThemeToggleRow(),
-          SizedBox(height: AimSpacing.componentGap),
-          _AIMLanguageToggleRow(),
-          SizedBox(height: AimSpacing.componentGap),
-          LogoutButton(),
-        ],
+      footer: Consumer(
+        builder: (context, ref, child) {
+          final logoutState = ref.watch(logoutProvider);
+          final isLoggingOut = logoutState.isLoading;
+          final surfaces = aimSurfacesOf(context);
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GestureDetector(
+                onTap: isLoggingOut
+                    ? null
+                    : () {
+                        final token =
+                            ref.read(authFlowProvider).accessToken ?? '';
+                        ref.read(logoutProvider.notifier).logout(token);
+                      },
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: AimSpacing.space8),
+                  child: Text(
+                    'Log Out',
+                    style: AimTextStyles.bodyMd.copyWith(
+                      color: AimColors.error500,
+                      fontWeight: AimFontWeights.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AimSpacing.space4),
+              Text(
+                'AIM Mind Coach v2.4.0',
+                style: AimTextStyles.caption.copyWith(
+                  color: surfaces.textMuted,
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 }
 
-/// App-branding drawer header: logo mark + app name + tagline. The design
-/// shows the app's own branding here, not the signed-in user's profile —
-/// intentionally does not fetch/display any user data.
-class _AIMDrawerBrandHeader extends StatelessWidget {
+/// App-branding & profile header shown at the top of the side navigation drawer.
+class _AIMDrawerBrandHeader extends ConsumerWidget {
   const _AIMDrawerBrandHeader();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final surfaces = aimSurfacesOf(context);
-    final l10n = AppLocalizations.of(context);
+    final authContextState = ref.watch(authContextProvider);
 
-    return Row(
+    final displayName = switch (authContextState) {
+      AppAsyncSuccess(:final data) => data.profile?.displayName ??
+          ((data.user.email != null && data.user.email!.isNotEmpty)
+              ? data.user.email!.split('@').first
+              : 'Alex Johnson'),
+      _ => 'Alex Johnson',
+    };
+
+    final avatarLetter =
+        displayName.isNotEmpty ? displayName[0].toUpperCase() : 'A';
+
+    final isParent = switch (authContextState) {
+      AppAsyncSuccess(:final data) => data.hasRole('parent'),
+      _ => false,
+    };
+    final badgeText = isParent ? 'PARENT MEMBER' : 'AIM PLUS MEMBER';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: AimSizes.avatarMd,
-          height: AimSizes.avatarMd,
-          alignment: Alignment.center,
-          decoration: const BoxDecoration(
-            color: AimColors.primary500,
-            shape: BoxShape.circle,
-          ),
-          child: Text(
-            'A',
-            style: AimTextStyles.title.copyWith(
-              color: AimColors.neutral0,
-              fontWeight: AimFontWeights.bold,
-            ),
-          ),
-        ),
-        const SizedBox(width: AimSpacing.componentGap),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                l10n.shellBrandName,
-                style: AimTextStyles.title.copyWith(
-                  color: surfaces.textPrimary,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'AIM',
+              style: AimTextStyles.h2.copyWith(
+                color: AimColors.secondary500,
+                fontWeight: AimFontWeights.bold,
               ),
-              Text(
-                l10n.shellBrandTagline,
-                style: AimTextStyles.bodySm.copyWith(
+            ),
+            GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Container(
+                padding: const EdgeInsets.all(AimSpacing.space8),
+                decoration: BoxDecoration(
+                  color: surfaces.surfaceSunken,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.close,
+                  size: AimSizes.iconSm,
                   color: surfaces.textSecondary,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AimSpacing.space16),
+        Container(
+          padding: const EdgeInsets.all(AimSpacing.space16),
+          decoration: BoxDecoration(
+            color: AimColors.secondary50.withOpacity(0.4),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AimColors.secondary100,
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AimColors.secondary500,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  avatarLetter,
+                  style: AimTextStyles.h3.copyWith(
+                    color: AimColors.neutral0,
+                    fontWeight: AimFontWeights.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(width: AimSpacing.componentGap),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      displayName,
+                      style: AimTextStyles.bodyLg.copyWith(
+                        color: surfaces.textPrimary,
+                        fontWeight: AimFontWeights.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AimColors.secondary100.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        badgeText,
+                        style: AimTextStyles.caption.copyWith(
+                          color: AimColors.secondary700,
+                          fontWeight: AimFontWeights.bold,
+                          fontSize: 10,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

@@ -287,13 +287,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shellOpenMenuTooltip => 'Open menu';
 
   @override
-  String get shellNavHome => 'Home';
+  String get shellNavHome => 'Home Feed';
 
   @override
   String get shellNavHomeSemantic => 'Home tab';
 
   @override
-  String get shellNavLearn => 'Learn';
+  String get shellNavLearn => 'Chapters & Course';
 
   @override
   String get shellNavLearnSemantic => 'Learn tab';
@@ -305,10 +305,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shellNavReviewSemantic => 'Review tab';
 
   @override
-  String get shellNavProgress => 'Progress';
+  String get shellNavProgress => 'Analytics & Progress';
 
   @override
   String get shellNavProgressSemantic => 'Progress tab';
+
+  @override
+  String get drawerLogOut => 'Log Out';
 
   @override
   String get shellNavProfile => 'Profile';
