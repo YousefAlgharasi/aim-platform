@@ -40,6 +40,7 @@ describe('LessonProgressService — course/level gating', () => {
       .mockResolvedValueOnce({ rows: lessonExistsRows })
       .mockResolvedValueOnce({ rows: courseGatingRows })
       .mockResolvedValueOnce({ rows: levelStateRows })
+      .mockResolvedValueOnce({ rows: [] }) // completedCoursesResult
       .mockResolvedValueOnce({ rows: [{ prev_lesson_id: null }] })
       .mockResolvedValueOnce({ rows: finalRows });
     return { query, db: { query } as unknown as DatabaseService };
@@ -88,7 +89,7 @@ describe('LessonProgressService — course/level gating', () => {
       });
 
       expect(result.lessonId).toBe('lesson-1');
-      expect(query).toHaveBeenCalledTimes(5);
+      expect(query).toHaveBeenCalledTimes(6);
     });
 
     it('allows progress when the course has no track_slug/cefr_rank mapping', async () => {

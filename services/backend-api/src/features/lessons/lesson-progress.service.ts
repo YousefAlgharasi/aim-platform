@@ -355,7 +355,7 @@ export class LessonProgressService {
    */
   async assertCourseUnlockedForLesson(studentId: string, lessonId: string): Promise<void> {
     const courseResult = await this.db.query<LessonCourseGatingRow>(
-      `SELECT co.track_slug, co.cefr_rank
+      `SELECT COALESCE(co.track_slug, 'general_english') AS track_slug, co.cefr_rank
        FROM lessons l
        JOIN chapters c ON c.id = l.chapter_id
        JOIN levels lv ON lv.id = c.level_id
@@ -365,17 +365,40 @@ export class LessonProgressService {
     );
 
     const course = courseResult.rows[0];
-    if (!course || course.track_slug === null || course.cefr_rank === null) {
+    if (!course || course.cefr_rank === null) {
       return;
     }
 
+    const trackSlug = course.track_slug || 'general_english';
     const stateResult = await this.db.query<LevelStateRow>(
       `SELECT max_unlocked_cefr_rank FROM student_level_state WHERE student_id = $1 AND track_slug = $2`,
-      [studentId, course.track_slug],
+      [studentId, trackSlug],
     );
 
-    const maxUnlockedCefrRank = stateResult.rows[0]?.max_unlocked_cefr_rank ?? 1;
-    if (course.cefr_rank > maxUnlockedCefrRank) {
+    const maxUnlockedFromState = stateResult.rows[0]?.max_unlocked_cefr_rank ?? 1;
+
+    const completedCoursesResult = await this.db.query<{ max_completed_rank: number }>(
+      `SELECT MAX(co.cefr_rank) AS max_completed_rank
+       FROM courses co
+       JOIN course_lessons clsn ON clsn.course_id = co.id
+       LEFT JOIN lesson_progress lp ON lp.lesson_id = clsn.lesson_id AND lp.student_id = $1 AND lp.completed = true
+       WHERE COALESCE(co.track_slug, 'general_english') = $2 AND co.cefr_rank IS NOT NULL
+       GROUP BY co.id, co.cefr_rank
+       HAVING COUNT(DISTINCT clsn.lesson_id) > 0 AND COUNT(DISTINCT lp.lesson_id) = COUNT(DISTINCT clsn.lesson_id)`,
+      [studentId, trackSlug],
+    );
+
+    const highestCompletedRank = completedCoursesResult.rows.reduce(
+      (max, r) => (r.max_completed_rank > max ? Number(r.max_completed_rank) : max),
+      0,
+    );
+
+    const effectiveMaxUnlockedRank = Math.max(
+      maxUnlockedFromState,
+      highestCompletedRank > 0 ? highestCompletedRank + 1 : 1,
+    );
+
+    if (course.cefr_rank > effectiveMaxUnlockedRank) {
       throw new ForbiddenException('This course is locked for this student');
     }
   }
