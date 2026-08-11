@@ -49,10 +49,11 @@ import {
 } from '@nestjs/swagger';
 import { Response } from 'express';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
-import { CurrentUser } from '../../auth/current-user.decorator';
+import { CurrentUser, ResolvedInternalUserId } from '../../auth/current-user.decorator';
 import { AuthenticatedUser } from '../../auth/authenticated-user';
 import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../auth/authorization/required-roles.decorator';
+import { ResolveInternalUserIdGuard } from '../../auth/authorization/resolve-internal-user-id.guard';
 import { PlacementPermissionGuard } from './placement-permission.guard';
 import { PlacementTestReadService, PlacementTestActiveResponse } from './placement-test-read.service';
 import { PlacementAttemptService } from './placement-attempt.service';
@@ -123,14 +124,14 @@ export class PlacementController {
    * from scratch", and the student's prior choice (if any).
    */
   @Get('decision')
-  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get first-login placement gate status for the authenticated student.' })
   @ApiOkResponse({ description: 'should_show_gate + prior decision (if any).' })
-  async getDecision(@CurrentUser() user: AuthenticatedUser): Promise<PlacementGateStatusResponse> {
-    return this.decision.getGateStatus(user.id);
+  async getDecision(@ResolvedInternalUserId() studentId: string): Promise<PlacementGateStatusResponse> {
+    return this.decision.getGateStatus(studentId);
   }
 
   /**
@@ -139,17 +140,17 @@ export class PlacementController {
    * shown again.
    */
   @Post('decision')
-  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Record the student\'s first-login placement gate decision.' })
   @ApiOkResponse({ description: 'Decision persisted; should_show_gate is now false.' })
   async setDecision(
-    @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() studentId: string,
     @Body() body: SetPlacementDecisionDto,
   ): Promise<PlacementGateStatusResponse> {
-    return this.decision.setDecision(user.id, body.decision);
+    return this.decision.setDecision(studentId, body.decision);
   }
 
   /**
@@ -190,16 +191,16 @@ export class PlacementController {
    * Enforces retake policy (P4-049). P4-006 endpoint #4. Response: P4-013 §3.
    */
   @Post('attempts')
-  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Start a placement attempt — retake policy enforced.' })
   @ApiCreatedResponse({ description: 'New placement attempt created. student_id from JWT.' })
   async startAttempt(
-    @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() studentId: string,
   ): Promise<PlacementAttemptStartResponse> {
-    return this.attemptStart.startAttempt(user.id);
+    return this.attemptStart.startAttempt(studentId);
   }
 
   /**
@@ -251,7 +252,7 @@ export class PlacementController {
    * needing the client to inspect Content-Type).
    */
   @Get('questions/:id/audio')
-  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
@@ -261,13 +262,13 @@ export class PlacementController {
   @ApiOkResponse({ description: 'Audio stream. 204 (empty body) when no listening_script is authored yet.' })
   async getQuestionAudio(
     @Param('id') questionId: string,
-    @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() studentId: string,
     @Res() res: Response,
     @Query('languageCode') languageCode?: string,
   ): Promise<void> {
     const result = await this.questionAudio.ensureAudio(
       questionId,
-      user.id,
+      studentId,
       languageCode?.trim() || 'en',
     );
 
@@ -281,7 +282,7 @@ export class PlacementController {
       return;
     }
 
-    const audio = await this.audioStorage.retrieveAudio(result.audioRef, user.id);
+    const audio = await this.audioStorage.retrieveAudio(result.audioRef, studentId);
     if (!audio) {
       res.status(HttpStatus.NOT_FOUND).json({ error: 'Audio not found' });
       return;
@@ -296,7 +297,7 @@ export class PlacementController {
    * P4-006 endpoint #5. Request/response: P4-012 §3.1.
    */
   @Post('attempts/:id/answers')
-  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()
@@ -305,10 +306,10 @@ export class PlacementController {
   @ApiCreatedResponse({ description: 'Answer recorded. is_correct never returned during active attempt.' })
   async submitAnswer(
     @Param('id') attemptId: string,
-    @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() studentId: string,
     @Body() body: SubmitPlacementAnswerDto,
   ): Promise<SubmitPlacementAnswerResponse> {
-    return this.answerSubmit.submitAnswer(attemptId, user.id, body);
+    return this.answerSubmit.submitAnswer(attemptId, studentId, body);
   }
 
   /**
@@ -318,7 +319,7 @@ export class PlacementController {
    * attempt's server-enforced timer has expired.
    */
   @Post('attempts/:id/answers/speaking')
-  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()
@@ -331,7 +332,7 @@ export class PlacementController {
   )
   async submitSpeakingAnswer(
     @Param('id') attemptId: string,
-    @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() studentId: string,
     @UploadedFile() file: Express.Multer.File,
     @Body('placement_question_id') placementQuestionId: string,
   ): Promise<SubmitPlacementSpeakingAnswerResponse> {
@@ -350,7 +351,7 @@ export class PlacementController {
       });
     }
 
-    return this.speakingAnswerSubmit.submitSpeakingAnswer(attemptId, user.id, {
+    return this.speakingAnswerSubmit.submitSpeakingAnswer(attemptId, studentId, {
       placement_question_id: placementQuestionId,
       audio: file.buffer,
       contentType: file.mimetype,
@@ -363,7 +364,7 @@ export class PlacementController {
    * Scoring triggers separately (P4-046). P4-006 endpoint #6.
    */
   @Post('attempts/:id/complete')
-  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
@@ -372,15 +373,15 @@ export class PlacementController {
   @ApiOkResponse({ description: 'Attempt transitioned to submitted. Scoring is backend-only.' })
   async completeAttempt(
     @Param('id') attemptId: string,
-    @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() studentId: string,
   ): Promise<PlacementAttemptCompleteResponse> {
-    const response = await this.attemptComplete.completeAttempt(attemptId, user.id);
+    const response = await this.attemptComplete.completeAttempt(attemptId, studentId);
 
     const resultSummary = await this.resultCreate.createResult(attemptId);
     await this.initialPath.createInitialPath(resultSummary.resultId);
     // P20-006: seed student_level_state from this placement result so course
     // gating (P20-010/P20-011) has a starting ceiling to enforce against.
-    await this.levelState.upsertFromPlacement(user.id, resultSummary.estimatedLevel);
+    await this.levelState.upsertFromPlacement(studentId, resultSummary.estimatedLevel);
 
     return response;
   }
@@ -392,7 +393,7 @@ export class PlacementController {
    * P4-006 endpoint #7. Response: P4-014 §5–6.
    */
   @Get('attempts/:id/result')
-  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
@@ -404,9 +405,9 @@ export class PlacementController {
   })
   async getResult(
     @Param('id') attemptId: string,
-    @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() studentId: string,
   ): Promise<PlacementResultResponse> {
-    return this.resultRead.getResult(attemptId, user.id);
+    return this.resultRead.getResult(attemptId, studentId);
   }
 
   /**
@@ -417,7 +418,7 @@ export class PlacementController {
    * completed result + retake option, an in-progress resume, or fresh start.
    */
   @Get('attempts')
-  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
@@ -427,13 +428,13 @@ export class PlacementController {
       "status: 'none' | 'active' | 'submitted' | 'completed'. result is only populated when status is 'completed'.",
   })
   async getAttempts(
-    @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() studentId: string,
   ): Promise<PlacementLatestStatusResponse> {
-    return this.resultRead.getLatestAttemptStatus(user.id);
+    return this.resultRead.getLatestAttemptStatus(studentId);
   }
 
   @Get('attempts/latest')
-  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
@@ -443,8 +444,8 @@ export class PlacementController {
       "status: 'none' | 'active' | 'submitted' | 'completed'. result is only populated when status is 'completed'.",
   })
   async getLatestStatus(
-    @CurrentUser() user: AuthenticatedUser,
+    @ResolvedInternalUserId() studentId: string,
   ): Promise<PlacementLatestStatusResponse> {
-    return this.resultRead.getLatestAttemptStatus(user.id);
+    return this.resultRead.getLatestAttemptStatus(studentId);
   }
 }

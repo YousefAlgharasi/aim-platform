@@ -62,15 +62,16 @@ export class DatabaseService implements OnModuleDestroy {
       return this.pool;
     }
 
-    const connectionString = this.stripSslMode(this.backendConfig.database.url);
-    const nodeEnvironment = this.backendConfig.nodeEnv;
+    const rawUrl = this.backendConfig.database.url;
+    const requiresSsl = rawUrl.includes('sslmode=require') || this.backendConfig.nodeEnv === 'production';
+    const connectionString = this.stripSslMode(rawUrl);
 
     this.pool = new Pool({
       connectionString,
       max: 10,
       idleTimeoutMillis: 30_000,
       connectionTimeoutMillis: 5_000,
-      ssl: nodeEnvironment === 'production'
+      ssl: requiresSsl
         ? {
             rejectUnauthorized: false,
           }
