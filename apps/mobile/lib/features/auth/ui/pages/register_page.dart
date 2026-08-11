@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/routing/routing.dart';
-import '../../../../core/theme/theme.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../logic/provider/register_notifier.dart';
 import '../../logic/provider/register_provider.dart';

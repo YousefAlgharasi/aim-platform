@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/design_tokens/aim_colors.dart';
-import '../../../../core/design_tokens/aim_sizes.dart';
-import '../../../../core/design_tokens/aim_spacing.dart';
-import '../../../../core/design_tokens/aim_typography.dart';
 import '../../../../core/state/app_async_state.dart';
 import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/widgets/widgets.dart';

@@ -195,8 +195,8 @@ void main() {
           overrides: [
             studentCoursesProvider.overrideWith(
               (ref) => _FakeStudentCoursesNotifier(
-                AppAsyncState.success([
-                  const StudentCourseModel(
+                const AppAsyncState.success([
+                  StudentCourseModel(
                     courseId: 'locked-course',
                     title: 'Locked Course',
                     levelCode: 'B2',
@@ -257,8 +257,8 @@ void main() {
             ),
             studentCoursesProvider.overrideWith(
               (ref) => _FakeStudentCoursesNotifier(
-                AppAsyncState.success([
-                  const StudentCourseModel(
+                const AppAsyncState.success([
+                  StudentCourseModel(
                     courseId: 'unlocked-course',
                     title: 'Unlocked Course',
                     levelCode: 'A1',
@@ -323,8 +323,8 @@ void main() {
               ),
               studentCoursesProvider.overrideWith(
                 (ref) => _FakeStudentCoursesNotifier(
-                  AppAsyncState.success([
-                    const StudentCourseModel(
+                  const AppAsyncState.success([
+                    StudentCourseModel(
                       courseId: 'active-course',
                       title: 'Active Course',
                       levelCode: 'A1',

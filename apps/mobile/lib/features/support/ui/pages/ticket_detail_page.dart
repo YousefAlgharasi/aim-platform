@@ -336,7 +336,7 @@ class _TicketDetailHeader extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Padding(
-                    padding: EdgeInsets.all(AimSpacing.space12),
+                    padding: const EdgeInsets.all(AimSpacing.space12),
                     child: Icon(
                       Directionality.of(context) == TextDirection.rtl
                           ? Icons.chevron_right_rounded

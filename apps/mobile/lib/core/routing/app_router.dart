@@ -59,7 +59,6 @@ import '../../features/support/ui/pages/status_page.dart';
 import '../../features/support/ui/pages/release_notes_page.dart';
 import '../../features/support/ui/pages/release_note_detail_page.dart';
 import '../../features/voice_teacher/ui/pages/voice_teacher_page.dart';
-import '../../features/voice_teacher/ui/pages/live_ai_lesson_chat_page.dart';
 import '../../features/billing/ui/pages/checkout_start_page.dart';
 import '../../features/billing/ui/pages/checkout_status_page.dart';
 import '../../features/design_system_preview/ui/pages/ds_preview_page.dart';

@@ -42,13 +42,13 @@ class _DSLearningSectionState extends State<DSLearningSection> {
         ),
 
         // Stat Tile
-        DSSection(
+        const DSSection(
           title: 'Stat Tile',
           children: [
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: const [
+                children: [
                   AIMStatTile(
                     icon: Icon(Icons.local_fire_department_rounded),
                     value: '5',

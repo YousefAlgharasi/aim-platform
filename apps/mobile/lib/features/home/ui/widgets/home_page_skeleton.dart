@@ -20,11 +20,11 @@ class HomePageSkeleton extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
+          const Row(
             children: [
-              const AIMSkeleton(shape: AIMSkeletonShape.circle, width: 48, height: 48),
-              const SizedBox(width: AimSpacing.componentGap),
-              const Expanded(
+              AIMSkeleton(shape: AIMSkeletonShape.circle, width: 48, height: 48),
+              SizedBox(width: AimSpacing.componentGap),
+              Expanded(
                 child: AIMSkeleton(shape: AIMSkeletonShape.text, lines: 2),
               ),
             ],

@@ -8,11 +8,9 @@ import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
-import 'package:aim_mobile/features/placement/data/placement_mock_data.dart';
 import 'package:aim_mobile/features/placement/data/models/placement_test_model.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_provider.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_start_notifier.dart';
-import 'package:aim_mobile/features/placement/ui/widgets/placement_page_header.dart';
 import 'package:aim_mobile/features/placement/ui/widgets/placement_primary_button.dart';
 
 class PlacementStartPage extends ConsumerStatefulWidget {

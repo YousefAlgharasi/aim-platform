@@ -303,7 +303,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                     Container(
                       width: 64,
                       height: 64,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: AimColors.primary500,
                         borderRadius: AimRadius.borderLg,
                       ),
@@ -551,7 +551,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                   ),
                   Switch(
                     value: isDark,
-                    activeColor: AimColors.primary500,
+                    activeThumbColor: AimColors.primary500,
                     onChanged: (val) {
                       ref.read(themeModeProvider.notifier).state =
                           val ? ThemeMode.dark : ThemeMode.light;
@@ -604,7 +604,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                     ),
                     Switch(
                       value: _dailyReminders,
-                      activeColor: AimColors.primary500,
+                      activeThumbColor: AimColors.primary500,
                       onChanged: (val) {
                         setState(() {
                           _dailyReminders = val;
@@ -640,7 +640,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                     ),
                     Switch(
                       value: _weaknessAlerts,
-                      activeColor: AimColors.primary500,
+                      activeThumbColor: AimColors.primary500,
                       onChanged: (val) {
                         setState(() {
                           _weaknessAlerts = val;

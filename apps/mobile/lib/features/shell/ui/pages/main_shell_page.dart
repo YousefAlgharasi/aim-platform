@@ -415,7 +415,7 @@ class _AIMDrawerBrandHeader extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.all(AimSpacing.space16),
           decoration: BoxDecoration(
-            color: AimColors.secondary50.withOpacity(0.4),
+            color: AimColors.secondary50.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: AimColors.secondary100,
@@ -461,7 +461,7 @@ class _AIMDrawerBrandHeader extends ConsumerWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: AimColors.secondary100.withOpacity(0.5),
+                        color: AimColors.secondary100.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(

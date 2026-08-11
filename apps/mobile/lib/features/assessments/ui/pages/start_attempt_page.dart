@@ -99,7 +99,7 @@ class _StartAttemptPageState extends ConsumerState<StartAttemptPage> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _StartAttemptHeader(title: 'Start attempt'),
+          const _StartAttemptHeader(title: 'Start attempt'),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -212,7 +212,7 @@ class _StartAttemptHeader extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: Padding(
-                      padding: EdgeInsets.all(AimSpacing.space12),
+                      padding: const EdgeInsets.all(AimSpacing.space12),
                       child: Icon(
                         Directionality.of(context) == TextDirection.rtl
                             ? Icons.chevron_right_rounded

@@ -111,7 +111,7 @@ class PlacementIntroPage extends StatelessWidget {
               const SizedBox(height: AimSpacing.sectionGap),
 
               // ── Info Cards ───────────────────────────────────────────────
-              _InfoCard(
+              const _InfoCard(
                 icon: Icons.timer_outlined,
                 iconColor: AimColors.primary500,
                 title: '25 Minutes',
@@ -119,16 +119,16 @@ class PlacementIntroPage extends StatelessWidget {
                     'Estimated duration for a full calibrated assessment.',
               ),
               const SizedBox(height: AimSpacing.componentGap),
-              _InfoCard(
+              const _InfoCard(
                 icon: Icons.assignment_outlined,
                 iconColor: AimColors.primary500,
                 title: '20 Adaptive Questions',
                 subtitle: 'Questions dynamically adapt to your skill level.',
               ),
               const SizedBox(height: AimSpacing.componentGap),
-              _InfoCard(
+              const _InfoCard(
                 icon: Icons.lightbulb_outline_rounded,
-                iconColor: const Color(0xFFF59E0B),
+                iconColor: Color(0xFFF59E0B),
                 title: 'Helpful Tip',
                 subtitle:
                     "If you don't know an answer, it is okay to skip and let the AI adjust.",

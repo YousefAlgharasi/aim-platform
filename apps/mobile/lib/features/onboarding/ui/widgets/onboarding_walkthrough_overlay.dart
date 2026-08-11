@@ -126,7 +126,7 @@ class _OnboardingWalkthroughOverlayState
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         DecoratedBox(
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             gradient: AimGradients.gzHero,
                             shape: BoxShape.circle,
                           ),

@@ -19,9 +19,6 @@ import 'package:aim_mobile/features/home/logic/entity/home_skill_state.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_weakness_record.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_review_schedule.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_recommendation.dart';
-import 'package:aim_mobile/features/home/logic/entity/home_continue_learning.dart';
-import 'package:aim_mobile/features/home/logic/entity/home_quick_start_lesson.dart';
-import 'package:aim_mobile/features/home/logic/entity/home_recommended_course.dart';
 import 'package:aim_mobile/features/home/logic/repository/home_repository.dart';
 
 class HomeRepositoryImpl implements HomeRepository {

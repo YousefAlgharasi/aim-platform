@@ -1,5 +1,4 @@
 import 'package:aim_mobile/features/auth/logic/entity/auth_context.dart';
-import 'client_safe_permission_model.dart';
 import 'client_safe_profile_model.dart';
 import 'client_safe_role_model.dart';
 import 'current_user_model.dart';

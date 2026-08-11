@@ -307,7 +307,7 @@ class _LiveAiLessonChatPageState extends State<LiveAiLessonChatPage> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.volume_up, size: 12, color: AimColors.primary500),
+                      const Icon(Icons.volume_up, size: 12, color: AimColors.primary500),
                       const SizedBox(width: 4),
                       Text(
                         l10n.voiceAiAudio(message.audioTime!),

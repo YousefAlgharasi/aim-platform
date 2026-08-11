@@ -97,11 +97,11 @@ class PlanCard extends StatelessWidget {
           ),
           const SizedBox(height: AimSpacing.space16),
           if (isCurrentPlan)
-            SizedBox(
+            const SizedBox(
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: null,
-                child: const Text('Current plan'),
+                child: Text('Current plan'),
               ),
             )
           else
