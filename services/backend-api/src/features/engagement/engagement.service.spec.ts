@@ -54,11 +54,11 @@ describe('EngagementService', () => {
       expect(summary.goal.streakDays).toBe(3);
     });
 
-    it('breaks the streak when today is missing from active dates', async () => {
-      const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+    it('breaks the streak when yesterday and today are missing from active dates', async () => {
+      const twoDaysAgo = new Date(Date.now() - 86_400_000 * 2).toISOString().slice(0, 10);
 
       const repository = makeRepository({
-        findActiveDates: jest.fn().mockResolvedValue([yesterday]),
+        findActiveDates: jest.fn().mockResolvedValue([twoDaysAgo]),
       });
       const service = new EngagementService(repository);
 

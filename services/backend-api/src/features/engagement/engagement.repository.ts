@@ -60,9 +60,15 @@ export class EngagementRepository {
 
   async findActiveDates(studentId: string, limit: number): Promise<string[]> {
     const result = await this.db.query<{ active_date: string }>(
-      `SELECT DISTINCT (last_active_at AT TIME ZONE 'UTC')::date::text AS active_date
-       FROM lesson_progress
-       WHERE student_id = $1
+      `SELECT DISTINCT active_date FROM (
+         SELECT (last_active_at AT TIME ZONE 'UTC')::date::text AS active_date
+         FROM lesson_progress
+         WHERE student_id = $1 AND last_active_at IS NOT NULL
+         UNION
+         SELECT (graded_at AT TIME ZONE 'UTC')::date::text AS active_date
+         FROM assessment_results
+         WHERE student_id = $1 AND graded_at IS NOT NULL
+       ) sub
        ORDER BY active_date DESC
        LIMIT $2`,
       [studentId, limit],

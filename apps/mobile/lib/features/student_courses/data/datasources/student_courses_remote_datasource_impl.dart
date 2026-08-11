@@ -3,6 +3,7 @@
 import 'package:aim_mobile/core/networking/backend_api_client.dart';
 import 'package:aim_mobile/core/networking/backend_api_paths.dart';
 import 'package:aim_mobile/features/student_courses/data/models/student_course_model.dart';
+import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
 import 'student_courses_remote_datasource.dart';
 
 class StudentCoursesRemoteDatasourceImpl

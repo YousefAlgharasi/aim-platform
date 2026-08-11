@@ -390,17 +390,18 @@ export class PlacementResultReadService {
     estimatedLevel: string,
     studentId: string,
   ): Promise<{ recommendedCourseId: string | null; note: string | null; trackSlug: string | null }> {
-    const targetRank = PLACEMENT_BUCKET_TO_CEFR_RANK[estimatedLevel];
-    if (!targetRank) {
-      return { recommendedCourseId: null, note: null, trackSlug: null };
-    }
+    const initialTargetRank = PLACEMENT_BUCKET_TO_CEFR_RANK[estimatedLevel] ?? 1;
+    const resolvedTrack = await this.resolveStudentTrackSlug(studentId) ?? 'general_english';
+    const stateRes = await this.db.query<{ max_unlocked_cefr_rank: number }>(
+      `SELECT max_unlocked_cefr_rank FROM student_level_state WHERE student_id = $1 AND track_slug = $2`,
+      [studentId, resolvedTrack],
+    );
+    const maxUnlocked = stateRes.rows[0]?.max_unlocked_cefr_rank ?? 1;
+    const targetRank = Math.max(initialTargetRank, maxUnlocked);
 
-    // Match by the intended course's own cefr_rank regardless of status —
-    // this tells us the intended track even if that exact course is
-    // archived/unpublished, without fabricating a rank ourselves (cefr_rank
-    // is always author-set).
+    // Match by the intended course's own cefr_rank regardless of status
     const anchorResult = await this.db.query<RankAnchorCourseRow>(
-      `SELECT track_slug, cefr_rank FROM courses WHERE cefr_rank = $1 LIMIT 1`,
+      `SELECT COALESCE(track_slug, 'general_english') AS track_slug, cefr_rank FROM courses WHERE cefr_rank = $1 LIMIT 1`,
       [targetRank],
     );
     const anchor = anchorResult.rows[0];

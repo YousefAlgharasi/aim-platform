@@ -159,14 +159,26 @@ export class EngagementService {
     }
 
     const activeDateSet = new Set(activeDatesDesc);
-    const todayUtc = new Date(new Date().toISOString().slice(0, 10));
+    const today = new Date();
+    const todayStr = today.toISOString().slice(0, 10);
+
+    const yesterday = new Date(today);
+    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+    const yesterdayStr = yesterday.toISOString().slice(0, 10);
+
+    let cursorDate: Date;
+    if (activeDateSet.has(todayStr)) {
+      cursorDate = new Date(todayStr);
+    } else if (activeDateSet.has(yesterdayStr)) {
+      cursorDate = new Date(yesterdayStr);
+    } else {
+      return 0;
+    }
 
     let streak = 0;
-    const cursor = new Date(todayUtc);
-
-    while (activeDateSet.has(cursor.toISOString().slice(0, 10))) {
+    while (activeDateSet.has(cursorDate.toISOString().slice(0, 10))) {
       streak += 1;
-      cursor.setUTCDate(cursor.getUTCDate() - 1);
+      cursorDate.setUTCDate(cursorDate.getUTCDate() - 1);
     }
 
     return streak;
