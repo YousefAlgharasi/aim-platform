@@ -59,6 +59,8 @@ const _productionConfig = AppConfig(
 /// network path should never actually be invoked.
 class _FakeAuthRepository implements AuthRepository {
   @override
+  Future<void> requestPasswordReset({required String email}) => throw UnimplementedError();
+  @override
   Future<AuthContextModel> getMe(String bearerToken) async =>
       throw UnimplementedError('not called in UI-only tests');
 

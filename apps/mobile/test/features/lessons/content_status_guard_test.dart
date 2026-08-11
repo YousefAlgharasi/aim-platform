@@ -59,7 +59,7 @@ void main() {
     });
 
     test('handles empty list', () {
-      expect(ContentStatusGuard.filterCourses([]), isEmpty);
+      expect(ContentStatusGuard.filterCourses(<CourseModel>[]), isEmpty);
     });
   });
 
@@ -80,7 +80,7 @@ void main() {
     });
 
     test('handles empty list', () {
-      expect(ContentStatusGuard.filterChapters([]), isEmpty);
+      expect(ContentStatusGuard.filterChapters(<ChapterModel>[]), isEmpty);
     });
   });
 
@@ -101,7 +101,7 @@ void main() {
     });
 
     test('handles empty list', () {
-      expect(ContentStatusGuard.filterLessons([]), isEmpty);
+      expect(ContentStatusGuard.filterLessons(<LessonModel>[]), isEmpty);
     });
   });
 
@@ -133,7 +133,7 @@ void main() {
     });
 
     test('handles empty list', () {
-      expect(ContentStatusGuard.filterAssets([]), isEmpty);
+      expect(ContentStatusGuard.filterAssets(<LessonAssetModel>[]), isEmpty);
     });
   });
 }

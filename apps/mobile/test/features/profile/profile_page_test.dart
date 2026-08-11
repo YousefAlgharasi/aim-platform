@@ -45,6 +45,8 @@ const _studentContext = AuthContextModel(
 
 class _StubAuthRepo implements AuthRepository {
   @override
+  Future<void> requestPasswordReset({required String email}) => throw UnimplementedError();
+  @override
   Future<AuthContextModel> getMe(String t) async => throw UnimplementedError();
   @override
   Future<AuthSyncResponseModel> syncUser(String t,

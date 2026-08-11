@@ -10,6 +10,8 @@ import 'package:aim_mobile/features/profile/logic/repository/profile_repository.
 // ── Fake repository ───────────────────────────────────────────────────────────
 
 class _FakeProfileRepository implements ProfileRepository {
+  @override
+  Future<void> updateEngagementGoal(String bearerToken, {required int dailyGoalLessons}) => throw UnimplementedError();
   final ProfileMeResponseModel? _response;
   final Exception? _error;
 

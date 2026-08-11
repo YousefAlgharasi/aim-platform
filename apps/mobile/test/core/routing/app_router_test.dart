@@ -208,6 +208,8 @@ class _ImmediateAuthContextNotifier extends AuthContextNotifier {
 /// directly in the constructor — so every method just throws.
 class _UnusedAuthRepository implements AuthRepository {
   @override
+  Future<void> requestPasswordReset({required String email}) => throw UnimplementedError();
+  @override
   Future<AuthContextModel> getMe(String bearerToken) =>
       throw UnimplementedError();
 

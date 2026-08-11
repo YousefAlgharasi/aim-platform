@@ -18,6 +18,8 @@ import 'package:aim_mobile/features/auth/data/models/register_result_model.dart'
 
 class _NoOpAuthRepository implements AuthRepository {
   @override
+  Future<void> requestPasswordReset({required String email}) => throw UnimplementedError();
+  @override
   Future<AuthContextModel> getMe(String token) async =>
       throw UnimplementedError();
 

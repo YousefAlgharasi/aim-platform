@@ -32,7 +32,8 @@ import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
 import 'package:aim_mobile/features/lessons/data/repository/repo_impl/lesson_detail_repository_impl.dart';
 import 'package:aim_mobile/features/lessons/data/repository/repo_impl/lessons_repository_impl.dart';
 import 'package:aim_mobile/features/lessons/logic/content_status_guard.dart';
-import 'package:aim_mobile/features/lessons/logic/entity/lesson_detail.dart';
+
+import 'package:aim_mobile/features/lessons/logic/entity/lessons_entities.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/chapters_notifier.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/courses_notifier.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lesson_detail_notifier.dart';
@@ -367,7 +368,7 @@ void main() {
         datasource:  _FakeLessonsDatasource(courses: [_publishedCourse]),
       );
       final notifier = CoursesNotifier(repository: repo);
-      final emitted = <AppAsyncState<List<CourseModel>>>[];
+      final emitted = <AppAsyncState<List<Course>>>[];
       notifier.addListener((s) => emitted.add(s), fireImmediately: false);
       await notifier.load(bearerToken: 'tok');
       expect(emitted.first, isA<AppAsyncLoading>());
@@ -380,7 +381,7 @@ void main() {
             _FakeLessonsDatasource(chaptersProgress: [_publishedChapterProgress]),
       );
       final notifier = ChaptersNotifier(repository: repo);
-      final emitted = <AppAsyncState<List<ChapterProgressModel>>>[];
+      final emitted = <AppAsyncState<List<ChapterProgress>>>[];
       notifier.addListener((s) => emitted.add(s), fireImmediately: false);
       await notifier.load(bearerToken: 'tok', levelId: 'lv-1');
       expect(emitted.first, isA<AppAsyncLoading>());
@@ -393,7 +394,7 @@ void main() {
             _FakeLessonsDatasource(lessonsProgress: [_publishedLessonProgress]),
       );
       final notifier = LessonsListNotifier(repository: repo);
-      final emitted = <AppAsyncState<List<LessonProgressModel>>>[];
+      final emitted = <AppAsyncState<List<LessonProgress>>>[];
       notifier.addListener((s) => emitted.add(s), fireImmediately: false);
       await notifier.load(bearerToken: 'tok', chapterId: 'ch-1');
       expect(emitted.first, isA<AppAsyncLoading>());

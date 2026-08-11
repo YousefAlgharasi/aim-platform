@@ -44,6 +44,8 @@ Widget _testApp({List<Override> overrides = const [], Locale? locale}) {
 /// No-op backend AuthRepository — tests must not call submit().
 class _FakeAuthRepository implements AuthRepository {
   @override
+  Future<void> requestPasswordReset({required String email}) => throw UnimplementedError();
+  @override
   Future<AuthContextModel> getMe(String bearerToken) async =>
       throw UnimplementedError();
 

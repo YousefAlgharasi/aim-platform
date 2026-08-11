@@ -51,6 +51,8 @@ void main() {
 }
 
 class _FakeAuthRepository implements AuthRepository {
+  @override
+  Future<void> requestPasswordReset({required String email}) => throw UnimplementedError();
   const _FakeAuthRepository({
     this.getMeException,
   });
