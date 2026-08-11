@@ -36,6 +36,7 @@
 
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -44,7 +45,7 @@ import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
-import 'package:aim_mobile/features/lessons/data/models/lesson_progress_model.dart';
+import 'package:aim_mobile/features/lessons/logic/entity/lessons_entities.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lesson_asset.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lesson_detail.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
@@ -114,7 +115,7 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
             bearerToken: token,
             chapterId: detail.lesson.chapterId,
           );
-      LessonProgressModel? match;
+      LessonProgress? match;
       for (final l in lessons) {
         if (l.id == detail.lesson.id) {
           match = l;
@@ -139,6 +140,44 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
           bearerToken: token,
           lessonId: widget.lessonId,
         );
+  }
+
+  Future<void> _markComplete(LessonDetail detail) async {
+    final token = ref.read(authFlowProvider).accessToken;
+    if (token == null || token.isEmpty) return;
+
+    try {
+      await ref.read(lessonsRepositoryProvider).markLessonComplete(
+            bearerToken: token,
+            lessonId: detail.lesson.id,
+          );
+      if (mounted) {
+        setState(() => _practiceUnlocked = true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: AimColors.success500,
+            content: Row(
+              children: [
+                Icon(Icons.check_circle_rounded, color: AimColors.neutral0),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text('Lesson marked as completed! 🌟'),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AimColors.error500,
+            content: Text('Could not mark lesson complete: $e'),
+          ),
+        );
+      }
+    }
   }
 
   void _startPractice(LessonDetail detail) {
@@ -173,8 +212,9 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
 
   void _startVoicePractice(LessonDetail detail) {
     context.push(
-      AppRoutePaths.liveAiLesson,
+      AppRoutePaths.voiceTeacher,
       extra: {
+        'contextRef': 'lesson:${detail.lesson.id}',
         'lessonTitle': detail.lesson.title,
       },
     );
@@ -194,8 +234,8 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(lessonDetailProvider);
     final l10n = AppLocalizations.of(context);
+    final state = ref.watch(lessonDetailProvider);
 
     return Scaffold(
       appBar: AIMTopAppBar(
@@ -204,8 +244,6 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
           if (context.canPop()) context.pop();
         },
         actions: [
-          // Visual only — no bookmark/save-lesson endpoint exists yet, so
-          // this action is disabled rather than a dead-end tap.
           AIMIconButton(
             icon: const Icon(Icons.bookmark_border_rounded),
             semanticLabel: l10n.lessonsSaveLessonComingSoonSemantic,
@@ -233,6 +271,7 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
                 detail: data,
                 practiceUnlocked: _practiceUnlocked,
                 onRefresh: _refresh,
+                onMarkComplete: () => _markComplete(data),
                 onStartPractice: () => _startPractice(data),
                 onStartQuestionPractice: () => _startQuestionPractice(data),
                 onStartVoicePractice: () => _startVoicePractice(data),
@@ -257,6 +296,7 @@ class _LessonDetailContent extends StatelessWidget {
     required this.detail,
     required this.practiceUnlocked,
     required this.onRefresh,
+    required this.onMarkComplete,
     required this.onStartPractice,
     required this.onStartQuestionPractice,
     required this.onStartVoicePractice,
@@ -264,12 +304,9 @@ class _LessonDetailContent extends StatelessWidget {
   });
 
   final LessonDetail detail;
-
-  /// True once the backend confirms this lesson's AI/Voice Teacher
-  /// explanation is complete (lesson_progress.completed). Locked (false)
-  /// by default until confirmed — see LessonDetailPage._checkPracticeUnlock.
   final bool practiceUnlocked;
   final Future<void> Function() onRefresh;
+  final VoidCallback onMarkComplete;
   final VoidCallback onStartPractice;
   final VoidCallback onStartQuestionPractice;
   final VoidCallback onStartVoicePractice;
@@ -286,31 +323,36 @@ class _LessonDetailContent extends StatelessWidget {
           child: RefreshIndicator(
             onRefresh: onRefresh,
             child: ListView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AimSpacing.screenPaddingMobile,
-                vertical: AimSpacing.sectionGap,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               children: [
-                _LessonHero(detail: detail),
-                const SizedBox(height: AimSpacing.sectionGap),
+                _LessonHero(detail: detail, isCompleted: practiceUnlocked),
+                const SizedBox(height: 20),
+
+                // Section Header: What's inside
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       l10n.lessonsWhatsInsideTitle,
-                      style: AimTextStyles.h3.copyWith(
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
                         color: surfaces.textPrimary,
+                        letterSpacing: -0.3,
                       ),
                     ),
                     Text(
                       l10n.lessonsStepsCountLabel(detail.assets.length),
-                      style: AimTextStyles.bodySm.copyWith(
-                        color: surfaces.textSecondary,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: surfaces.textMuted,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: AimSpacing.componentGap),
+                const SizedBox(height: 12),
+
                 if (detail.hasNoContent)
                   AIMEmptyState(
                     icon: const Icon(Icons.play_lesson_outlined),
@@ -320,9 +362,7 @@ class _LessonDetailContent extends StatelessWidget {
                 else
                   ...detail.assets.asMap().entries.map(
                         (entry) => Padding(
-                          padding: const EdgeInsets.only(
-                            bottom: AimSpacing.listItemGap,
-                          ),
+                          padding: const EdgeInsets.only(bottom: 12),
                           child: LessonStepTile(
                             asset: entry.value,
                             stepNumber: entry.key + 1,
@@ -330,66 +370,238 @@ class _LessonDetailContent extends StatelessWidget {
                           ),
                         ),
                       ),
+
+                const SizedBox(height: 16),
+
+                // Key Vocabulary & Phrases Preview Card
+                _KeyPhrasesCard(detail: detail),
+                const SizedBox(height: 20),
+
+                if (!practiceUnlocked) ...[
+                  AIMGradientButton(
+                    label: 'Mark Lesson as Completed ✨',
+                    fullWidth: true,
+                    onPressed: onMarkComplete,
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                if (practiceUnlocked) ...[
+                  const SizedBox(height: 16),
+                  // Post-Lesson Mastered Section matching prototype
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: surfaces.surface,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: surfaces.border),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Lesson Mastered! 🌟',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: surfaces.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Reinforce your knowledge or practice with quick exercises.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: surfaces.textSecondary,
+                            height: 1.3,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Practice Now Card
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: onStartQuestionPractice,
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEEF2FF),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: const Color(0xFFC7D2FE)),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 44,
+                                    height: 44,
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 24),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            const Text(
+                                              'Practice Now',
+                                              style: TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w800,
+                                                color: Color(0xFF4F46E5),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF4F46E5),
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                              child: const Text(
+                                                'QUIZ',
+                                                style: TextStyle(
+                                                  fontSize: 9,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 2),
+                                        const Text(
+                                          'Test your comprehension with quick interactive exercises.',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: Color(0xFF4338CA),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        // Ask AI Tutor Card
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: onStartPractice,
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: surfaces.surfaceSunken,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: surfaces.border),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 44,
+                                    height: 44,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF3E8FF),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(Icons.auto_awesome_rounded, color: Color(0xFF9333EA), size: 22),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Ask AI Tutor',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w800,
+                                            color: surfaces.textPrimary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'Chat with your AI tutor to clarify rules or ask questions.',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: surfaces.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
         ),
+
+        // Bottom Primary CTA Bar matching prototype
         SafeArea(
           top: false,
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AimSpacing.screenPaddingMobile,
-              vertical: AimSpacing.componentGap,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // AIM pipeline live wiring: real question practice via a
-                // learning session. Additional entry point — the AI Teacher
-                // chat and voice buttons below are unchanged. Locked until
-                // the AI/Voice Teacher has actually finished teaching this
-                // lesson (practiceUnlocked, backend-computed — see
-                // LessonDetailPage._checkPracticeUnlock).
-                AIMButton(
-                  onPressed: practiceUnlocked ? onStartQuestionPractice : null,
-                  variant: AIMButtonVariant.secondary,
-                  fullWidth: true,
-                  leadingIcon: Icon(
-                    practiceUnlocked ? Icons.quiz_outlined : Icons.lock_outline_rounded,
-                  ),
-                  child: Text(l10n.lessonsPracticeQuestionsButton),
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF4F46E5), Color(0xFF6366F1), Color(0xFF7C3AED)],
                 ),
-                if (!practiceUnlocked) ...[
-                  const SizedBox(height: AimSpacing.space4),
-                  Text(
-                    l10n.lessonsPracticeLockedHint,
-                    textAlign: TextAlign.center,
-                    style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF4F46E5).withValues(alpha: 0.35),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
                   ),
                 ],
-                const SizedBox(height: AimSpacing.space8),
-                Row(
-              children: [
-                Expanded(
-                  child: AIMButton(
-                    onPressed: detail.hasNoContent ? null : onStartPractice,
-                    fullWidth: true,
-                    leadingIcon: const Icon(Icons.play_arrow, color: Colors.white),
-                    child: Text(l10n.lessonsStartPracticeButton),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: onStartVoicePractice,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.mic_rounded, color: Colors.white, size: 22),
+                        const SizedBox(width: 10),
+                        Text(
+                          practiceUnlocked ? 'Re-learn with Live AI Voice' : 'Start Learning Now',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                const SizedBox(width: AimSpacing.space8),
-                // P21-017: voice entry point, same contextRef as the text
-                // chat CTA above.
-                AIMIconButton(
-                  icon: const Icon(Icons.mic_rounded),
-                  semanticLabel: 'Practice by voice',
-                  onPressed: detail.hasNoContent ? null : onStartVoicePractice,
-                ),
-              ],
-            ),
-              ],
+              ),
             ),
           ),
         ),
@@ -398,14 +610,276 @@ class _LessonDetailContent extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Hero banner — description + duration/steps/XP pills
-// ---------------------------------------------------------------------------
-
-class _LessonHero extends StatelessWidget {
-  const _LessonHero({required this.detail});
+class _KeyPhrasesCard extends StatefulWidget {
+  const _KeyPhrasesCard({required this.detail});
 
   final LessonDetail detail;
+
+  @override
+  State<_KeyPhrasesCard> createState() => _KeyPhrasesCardState();
+}
+
+class _KeyPhrasesCardState extends State<_KeyPhrasesCard> {
+  int? _playingIndex;
+  AudioPlayer? _player;
+
+  List<({String phrase, String translation})> get _phrases {
+    final title = widget.detail.lesson.title.toLowerCase();
+
+    // 1. Dynamic phrases based on lesson topic
+    if (title.contains('alphabet') || title.contains('letter') || title.contains('sound')) {
+      return const [
+        (
+          phrase: 'A, B, C, D, E, F, G',
+          translation: 'Letter recognition and phonetic sounds.'
+        ),
+        (
+          phrase: 'Apple, Ball, Cat, Dog',
+          translation: 'Basic vocabulary starting sounds.'
+        ),
+        (
+          phrase: 'Can you spell your name, please?',
+          translation: 'Asking for spelling in English.'
+        ),
+      ];
+    }
+
+    if (title.contains('vowel') || title.contains('phonics')) {
+      return const [
+        (
+          phrase: 'Cat, Bed, Sit, Hot, Cup',
+          translation: 'Five short vowel sounds (a, e, i, o, u).'
+        ),
+        (
+          phrase: 'A red pen is on the desk.',
+          translation: 'Short vowel sentence practice.'
+        ),
+        (
+          phrase: 'The big dog ran in the sun.',
+          translation: 'Reading short vowel words.'
+        ),
+      ];
+    }
+
+    if (title.contains('consonant') || title.contains('blend') || title.contains('pair')) {
+      return const [
+        (
+          phrase: 'Ship, Shop, Chip, Chop',
+          translation: 'Distinguishing Sh vs Ch consonant sounds.'
+        ),
+        (
+          phrase: 'Think, Thank, This, That',
+          translation: 'Th voiced and voiceless sounds.'
+        ),
+        (
+          phrase: 'Blue, Green, Play, Stop',
+          translation: 'Consonant blend pronunciations.'
+        ),
+      ];
+    }
+
+    if (title.contains('greeting') || title.contains('salutation') || title.contains('intro')) {
+      return const [
+        (
+          phrase: 'Hello, how are you today?',
+          translation: 'Common polite English greeting.'
+        ),
+        (
+          phrase: 'Nice to meet you, my name is Alex.',
+          translation: 'Introducing yourself to others.'
+        ),
+        (
+          phrase: 'Have a great day! See you later.',
+          translation: 'Polite farewells and goodbyes.'
+        ),
+      ];
+    }
+
+    if (title.contains('food') || title.contains('drink') || title.contains('cafe') || title.contains('order')) {
+      return const [
+        (
+          phrase: 'Could I get a cup of coffee, please?',
+          translation: 'Polite ordering at a cafe or restaurant.'
+        ),
+        (
+          phrase: 'Could you bring us the bill, please?',
+          translation: 'Asking the server for the check.'
+        ),
+        (
+          phrase: 'What do you recommend today?',
+          translation: 'Asking for today\'s specials.'
+        ),
+      ];
+    }
+
+    // Default fallback matching lesson title
+    return [
+      (
+        phrase: widget.detail.lesson.title,
+        translation: widget.detail.lesson.description.isNotEmpty
+            ? widget.detail.lesson.description
+            : 'Key phrase and usage for this lesson.',
+      ),
+      const (
+        phrase: 'Listen carefully and repeat after the teacher.',
+        translation: 'Practice active listening and speech.',
+      ),
+    ];
+  }
+
+  @override
+  void dispose() {
+    _player?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _play(int index) async {
+    final phrases = _phrases;
+    if (index >= phrases.length) return;
+
+    if (_playingIndex == index) {
+      await _player?.stop();
+      if (mounted) setState(() => _playingIndex = null);
+      return;
+    }
+
+    setState(() => _playingIndex = index);
+    try {
+      _player ??= AudioPlayer();
+      await _player!.stop();
+      final phraseText = phrases[index].phrase;
+      final ttsUrl =
+          'https://translate.google.com/translate_tts?ie=UTF-8&q=${Uri.encodeComponent(phraseText)}&tl=en&client=tw-ob';
+      await _player!.play(UrlSource(ttsUrl));
+      _player!.onPlayerComplete.first.then((_) {
+        if (mounted && _playingIndex == index) {
+          setState(() => _playingIndex = null);
+        }
+      });
+    } catch (_) {
+      if (mounted && _playingIndex == index) {
+        setState(() => _playingIndex = null);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final phrases = _phrases;
+    final surfaces = aimSurfacesOf(context);
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: surfaces.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: surfaces.border),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEEF2FF),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.menu_book_rounded, color: Color(0xFF4F46E5), size: 18),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Key Vocabulary & Phrases',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: surfaces.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                'TAP 🔊 TO LISTEN',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: surfaces.textMuted,
+                  letterSpacing: 0.8,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          for (int i = 0; i < phrases.length; i++) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: surfaces.surfaceSunken,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: surfaces.border),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          phrases[i].phrase,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF4F46E5),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          phrases[i].translation,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: surfaces.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    onPressed: () => _play(i),
+                    icon: Icon(
+                      _playingIndex == i ? Icons.volume_up_rounded : Icons.volume_down_rounded,
+                      color: _playingIndex == i ? Colors.white : const Color(0xFF4F46E5),
+                      size: 18,
+                    ),
+                    style: IconButton.styleFrom(
+                      backgroundColor: _playingIndex == i
+                          ? const Color(0xFF4F46E5)
+                          : const Color(0xFFEEF2FF),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.all(8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (i < _phrases.length - 1) const SizedBox(height: 10),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _LessonHero extends StatelessWidget {
+  const _LessonHero({required this.detail, this.isCompleted = false});
+
+  final LessonDetail detail;
+  final bool isCompleted;
 
   @override
   Widget build(BuildContext context) {
@@ -417,36 +891,80 @@ class _LessonHero extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AimSpacing.sectionGap),
-      decoration: const BoxDecoration(
-        gradient: AimGradients.ai,
-        borderRadius: AimRadius.borderXl,
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF4F46E5), Color(0xFF6366F1), Color(0xFF7C3AED)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF4F46E5).withValues(alpha: 0.35),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // "Lesson {sortOrder}" — sortOrder is the lesson's real
-          // backend-supplied position within its chapter. The design
-          // screenshot also shows a "· A2" CEFR-level suffix, but no
-          // level field exists on this endpoint's Lesson entity, so it is
-          // intentionally omitted rather than fabricated (see the
-          // real-data-only precedent in lesson_list_tile.dart).
-          _HeroPill(text: l10n.lessonsLessonNumberPill(detail.lesson.sortOrder)),
-          const SizedBox(height: AimSpacing.space8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _HeroPill(text: l10n.lessonsLessonNumberPill(detail.lesson.sortOrder)),
+              if (isCompleted)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFF6EE7B7).withValues(alpha: 0.4)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check_rounded, color: Color(0xFF6EE7B7), size: 14),
+                      SizedBox(width: 4),
+                      Text(
+                        'Completed',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF6EE7B7),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
           Text(
             detail.lesson.title,
-            style: AimTextStyles.h2.copyWith(color: Colors.white),
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              letterSpacing: -0.4,
+            ),
           ),
-          const SizedBox(height: AimSpacing.space4),
-          if (detail.lesson.description.isNotEmpty)
+          if (detail.lesson.description.isNotEmpty) ...[
+            const SizedBox(height: 6),
             Text(
               detail.lesson.description,
-              style: AimTextStyles.bodyMd.copyWith(color: Colors.white),
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.white.withValues(alpha: 0.9),
+                height: 1.4,
+              ),
             ),
-          const SizedBox(height: AimSpacing.componentGap),
+          ],
+          const SizedBox(height: 18),
           Wrap(
-            spacing: AimSpacing.space8,
-            runSpacing: AimSpacing.space8,
+            spacing: 8,
+            runSpacing: 8,
             children: [
               if (totalSeconds > 0)
                 _HeroPill(text: _formatMinutes(l10n, totalSeconds)),

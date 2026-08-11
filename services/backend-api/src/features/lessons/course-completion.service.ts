@@ -146,4 +146,67 @@ export class CourseCompletionService {
       newMaxUnlockedCefrRank: nextRank,
     });
   }
+
+  /**
+   * Call after an assessment (exam or quiz) is passed by a student.
+   * If it is a course final exam and the student passed, advances max_unlocked_cefr_rank
+   * so the next course is unlocked.
+   */
+  async handleAssessmentCompleted(studentId: string, assessmentId: string): Promise<void> {
+    const courseResult = await this.db.query<LessonCourseRow>(
+      `SELECT co.id AS course_id, co.track_slug, co.cefr_rank
+       FROM assessments a
+       LEFT JOIN courses co ON co.id = a.course_id
+       LEFT JOIN chapters ch ON ch.id = a.chapter_id
+       LEFT JOIN levels lv ON lv.id = ch.level_id
+       LEFT JOIN courses co2 ON co2.id = lv.course_id
+       WHERE a.id = $1`,
+      [assessmentId],
+    );
+
+    const row = courseResult.rows[0];
+    const courseId = row?.course_id;
+    const trackSlug = row?.track_slug;
+    const cefrRank = row?.cefr_rank;
+
+    if (!courseId || !trackSlug || cefrRank === null || cefrRank === undefined) {
+      return;
+    }
+
+    const stateResult = await this.db.query<LevelStateRow>(
+      `SELECT max_unlocked_cefr_rank FROM student_level_state WHERE student_id = $1 AND track_slug = $2`,
+      [studentId, trackSlug],
+    );
+
+    const maxUnlockedCefrRank = stateResult.rows[0]?.max_unlocked_cefr_rank ?? 1;
+    if (cefrRank < maxUnlockedCefrRank) {
+      return;
+    }
+
+    const nextRank = cefrRank + 1;
+    const nextCourseResult = await this.db.query(
+      `SELECT 1 FROM courses WHERE track_slug = $1 AND cefr_rank = $2 AND status = 'published' LIMIT 1`,
+      [trackSlug, nextRank],
+    );
+
+    if ((nextCourseResult.rowCount ?? 0) === 0) {
+      return;
+    }
+
+    await this.db.query(
+      `UPDATE student_level_state
+       SET max_unlocked_cefr_rank = $3,
+           source = 'aim_engine',
+           last_computed_at = now(),
+           updated_at = now()
+       WHERE student_id = $1 AND track_slug = $2`,
+      [studentId, trackSlug, nextRank],
+    );
+
+    this.logger.log('assessment_completion_advanced_unlock_ceiling', {
+      studentId,
+      trackSlug,
+      newMaxUnlockedCefrRank: nextRank,
+    });
+  }
 }

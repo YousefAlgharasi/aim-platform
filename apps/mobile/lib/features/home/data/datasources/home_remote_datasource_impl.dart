@@ -102,17 +102,17 @@ class HomeRemoteDatasourceImpl implements HomeRemoteDatasource {
   }
 
   @override
-  Future<HomeEngagementSummary> getEngagementSummary({
+  Future<HomeEngagementSummaryModel> getEngagementSummary({
     required String bearerToken,
   }) async {
-    final envelope = await _apiClient.get<HomeEngagementSummary>(
+    final envelope = await _apiClient.get<HomeEngagementSummaryModel>(
       BackendApiPaths.engagementSummary,
       headers: _auth(bearerToken),
       decodeData: (json) {
         final data = _requireMap(json);
         final goalJson = data['goal'] as Map<String, dynamic>?;
         final challengeJson = data['challenge'] as Map<String, dynamic>?;
-        return HomeEngagementSummary(
+        return HomeEngagementSummaryModel(
           goal: goalJson != null
               ? HomeEngagementGoalModel.fromJson(goalJson)
               : const HomeEngagementGoalModel(
@@ -127,7 +127,7 @@ class HomeRemoteDatasourceImpl implements HomeRemoteDatasource {
       },
     );
     return envelope.data ??
-        const HomeEngagementSummary(
+        const HomeEngagementSummaryModel(
           goal: HomeEngagementGoalModel(
             targetLessons: 1,
             completedToday: 0,

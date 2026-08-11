@@ -62,7 +62,7 @@ describe('PlacementDecisionService', () => {
       const result = await svc.setDecision(STUDENT_ID, 'take_placement');
       expect(result).toEqual({ should_show_gate: false, decision: 'take_placement' });
       expect(db.query).toHaveBeenCalledWith(
-        expect.stringContaining('UPDATE student_profiles'),
+        expect.stringContaining('INSERT INTO student_profiles'),
         [STUDENT_ID, 'take_placement'],
       );
     });

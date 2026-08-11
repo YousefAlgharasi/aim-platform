@@ -1,10 +1,12 @@
-class CurrentUserModel {
+import 'package:aim_mobile/features/auth/logic/entity/auth_context.dart';
+
+class CurrentUserModel extends AuthUser {
   const CurrentUserModel({
-    required this.id,
-    required this.email,
-    this.phone,
-    this.userType,
-    this.status,
+    required super.id,
+    super.email,
+    super.phone,
+    super.userType,
+    super.status,
   });
 
   // GET /auth/me only returns {id, email} — userType/status are sourced from
@@ -18,12 +20,6 @@ class CurrentUserModel {
       status: json['status'] as String?,
     );
   }
-
-  final String id;
-  final String? email;
-  final String? phone;
-  final String? userType;
-  final String? status;
 
   bool get isActive => status == null || status == 'active';
 }

@@ -114,7 +114,18 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     return envelope.data!;
   }
 
+  @override
+  Future<void> requestPasswordReset({required String email}) async {
+    await _apiClient.post<dynamic>(
+      BackendApiPaths.authForgotPassword,
+      body: {'email': email},
+      requiresAuth: false,
+      decodeData: (json) => json,
+    );
+  }
+
   Map<String, String> _authHeaders(String bearerToken) {
     return {'authorization': 'Bearer $bearerToken'};
   }
 }
+

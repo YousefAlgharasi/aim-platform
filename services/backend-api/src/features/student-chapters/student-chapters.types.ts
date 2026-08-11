@@ -38,6 +38,12 @@ export interface StudentFinalExamSummary {
 
   /** True once every chapter in the course is fully complete (lessons + quizzes passed). */
   readonly unlocked: boolean;
+
+  /** True when student has a passing row in assessment_results. */
+  readonly passed?: boolean;
+
+  /** Latest score earned if passed/taken. */
+  readonly score?: number | null;
 }
 
 export interface StudentChaptersResponse {

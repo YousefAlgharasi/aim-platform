@@ -20,7 +20,7 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart'
 import 'package:aim_mobile/features/question_answer/data/models/question_answer_models.dart';
 import 'package:aim_mobile/features/question_answer/logic/provider/question_answer_provider.dart';
 import 'package:aim_mobile/features/question_answer/logic/repository/question_answer_repository.dart';
-import 'package:aim_mobile/features/question_answer/ui/pages/practice_session_page.dart';
+import 'package:aim_mobile/features/practice/ui/pages/practice_session_page.dart';
 
 QuestionModel _question(String id) => QuestionModel.fromJson({
       'id': id,

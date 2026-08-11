@@ -7,16 +7,11 @@ import '../voice_player_client.dart';
 enum PlaybackState { idle, loading, playing, paused, completed, error }
 
 class VoicePlaybackNotifier extends ChangeNotifier {
-  // Bugfix: loadAndPlay previously only fetched the audio bytes and flipped
-  // the state to "playing" without ever actually playing them through any
-  // audio output — there was no audio player anywhere in this class. stop/
-  // pause/resume had the same problem: they mutated state but never
-  // controlled real playback, so barge-in's "stop playback immediately"
-  // never actually stopped any sound either. [player] is injectable for
-  // widget tests, which have no real platform channel to back
-  // audioplayers' AudioPlayer (its own constructor already calls one).
-  VoicePlaybackNotifier({VoicePlayerClient? player})
-      : _player = player ?? RealVoicePlayerClient() {
+  // [player] is injectable for widget tests, which have no real platform
+  // channel to back audioplayers' AudioPlayer. In production, the concrete
+  // [RealVoicePlayerClient] is injected via [voicePlaybackProvider].
+  VoicePlaybackNotifier({required VoicePlayerClient player})
+      : _player = player {
     _completeSubscription = _player.onComplete.listen((_) => complete());
   }
 
@@ -45,6 +40,7 @@ class VoicePlaybackNotifier extends ChangeNotifier {
     required String audioRef,
     required Future<Uint8List> Function(String audioRef) fetchAudioFn,
     VoidCallback? onFinished,
+    String? fallbackText,
   }) async {
     if (_currentAudioRef == audioRef && _state == PlaybackState.paused) {
       resume();
@@ -61,6 +57,40 @@ class VoicePlaybackNotifier extends ChangeNotifier {
     try {
       final bytes = await fetchAudioFn(audioRef);
       await _player.playBytes(bytes);
+      _state = PlaybackState.playing;
+      notifyListeners();
+    } catch (e) {
+      if (fallbackText != null && fallbackText.trim().isNotEmpty) {
+        final encoded = Uri.encodeComponent(fallbackText.trim());
+        final ttsUrl =
+            'https://translate.google.com/translate_tts?ie=UTF-8&q=$encoded&tl=en&client=tw-ob';
+        try {
+          await _player.playUrl(ttsUrl);
+          _state = PlaybackState.playing;
+          notifyListeners();
+          return;
+        } catch (_) {}
+      }
+      _onFinished = null;
+      _state = PlaybackState.error;
+      _errorMessage = e.toString();
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadAndPlayUrl({
+    required String url,
+    VoidCallback? onFinished,
+  }) async {
+    _onFinished = onFinished;
+    _currentAudioRef = url;
+    _state = PlaybackState.loading;
+    _progress = 0.0;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _player.playUrl(url);
       _state = PlaybackState.playing;
       notifyListeners();
     } catch (e) {

@@ -7,7 +7,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
-import 'package:aim_mobile/features/home/data/models/home_models.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_review_schedule.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class HomeReviewScheduleCard extends StatelessWidget {
@@ -16,7 +16,7 @@ class HomeReviewScheduleCard extends StatelessWidget {
     super.key,
   });
 
-  final HomeReviewScheduleModel model;
+  final HomeReviewSchedule model;
 
   AIMBadgeTone get _statusTone {
     return switch (model.status.toLowerCase()) {

@@ -47,7 +47,7 @@ import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
-import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
+import 'package:aim_mobile/features/lessons/logic/entity/lessons_entities.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../widgets/lessons_widgets.dart';
@@ -81,7 +81,7 @@ class LessonListPage extends ConsumerStatefulWidget {
 }
 
 class _LessonListPageState extends ConsumerState<LessonListPage> {
-  ChapterQuizSummaryModel? _quiz;
+  ChapterQuizSummary? _quiz;
 
   @override
   void initState() {
@@ -136,9 +136,9 @@ class _LessonListPageState extends ConsumerState<LessonListPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(lessonsListProvider);
-    final lessons = state is AppAsyncSuccess<List<LessonProgressModel>>
+    final lessons = state is AppAsyncSuccess<List<LessonProgress>>
         ? state.data
-        : const <LessonProgressModel>[];
+        : const <LessonProgress>[];
     final loadingLabel =
         AppLocalizations.of(context).lessonsLoadingLessonsSemantic;
 
@@ -191,77 +191,118 @@ class _LessonListHeader extends StatelessWidget {
 
   final String chapterTitle;
   final int? chapterIndex;
-  final List<LessonProgressModel> lessons;
+  final List<LessonProgress> lessons;
 
   @override
   Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
     final l10n = AppLocalizations.of(context);
-
-    // Real "N/total done" — backend-computed LessonProgressModel.completed.
     final completedCount = lessons.where((lesson) => lesson.completed).length;
+    final surfaces = aimSurfacesOf(context);
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AimSpacing.screenPaddingMobile,
-        vertical: AimSpacing.space12,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // App Bar Header matching prototype
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: surfaces.surface,
+            border: Border(bottom: BorderSide(color: surfaces.border)),
+          ),
+          child: Row(
             children: [
-              AIMIconButton(
-                semanticLabel: l10n.commonBack,
+              IconButton(
                 onPressed: () {
-                  if (context.canPop()) context.pop();
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go('/lessons/chapters');
+                  }
                 },
-                icon: Icon(
-                  Directionality.of(context) == TextDirection.rtl
-                      ? Icons.chevron_right_rounded
-                      : Icons.chevron_left_rounded,
+                icon: Icon(Icons.arrow_back_rounded, color: surfaces.textSecondary, size: 22),
+                style: IconButton.styleFrom(
+                  backgroundColor: surfaces.surfaceSunken,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.all(8),
                 ),
               ),
-              const SizedBox(width: AimSpacing.space4),
+              const SizedBox(width: 12),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (chapterIndex != null)
-                      Text(
-                        l10n.lessonsChapterEyebrowLabel(chapterIndex! + 1),
-                        style: AimTextStyles.caption.copyWith(
-                          color: AimColors.primary500,
-                          fontWeight: AimFontWeights.bold,
-                          letterSpacing: 0.6,
-                        ),
-                      ),
-                    Text(
-                      chapterTitle,
-                      style: AimTextStyles.h3
-                          .copyWith(color: surfaces.textPrimary),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                child: Text(
+                  'Chapter Lessons',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: surfaces.textPrimary,
+                    letterSpacing: -0.3,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
           ),
-          if (lessons.isNotEmpty) ...[
-            const SizedBox(height: AimSpacing.componentGap),
-            AIMProgressBar(
-              value: completedCount.toDouble(),
-              max: lessons.length.toDouble(),
-              tone: AIMProgressBarTone.gradient,
-              showValue: true,
-              valueFormat: (v, m) =>
-                  l10n.commonDoneProgress(v.round(), m.round()),
-            ),
-          ],
-        ],
-      ),
+        ),
+
+        // Section Hero Header matching prototype
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  chapterIndex != null
+                      ? 'CHAPTER ${chapterIndex! + 1} LESSONS'
+                      : 'CHAPTER LESSONS',
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF4F46E5),
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                chapterTitle,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  color: surfaces.textPrimary,
+                  letterSpacing: -0.4,
+                  height: 1.25,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${lessons.length} Lessons · Practice & Mastery',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: surfaces.textSecondary,
+                ),
+              ),
+              if (lessons.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                AIMProgressBar(
+                  value: completedCount.toDouble(),
+                  max: lessons.length.toDouble(),
+                  tone: AIMProgressBarTone.gradient,
+                  showValue: true,
+                  valueFormat: (v, m) =>
+                      l10n.commonDoneProgress(v.round(), m.round()),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -278,9 +319,9 @@ class _LessonListContent extends StatelessWidget {
     required this.onQuizTap,
   });
 
-  final List<LessonProgressModel> lessons;
+  final List<LessonProgress> lessons;
   final Future<void> Function() onRefresh;
-  final ChapterQuizSummaryModel? quiz;
+  final ChapterQuizSummary? quiz;
   final VoidCallback onQuizTap;
 
   @override

@@ -27,6 +27,9 @@ class _FakePlayer implements VoicePlayerClient {
   Future<void> playBytes(Uint8List bytes) async => playedBytes = bytes;
 
   @override
+  Future<void> playUrl(String url) async {}
+
+  @override
   Future<void> pause() async {}
 
   @override

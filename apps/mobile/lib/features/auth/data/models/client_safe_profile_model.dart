@@ -1,12 +1,14 @@
-class ClientSafeProfileModel {
+import 'package:aim_mobile/features/auth/logic/entity/auth_context.dart';
+
+class ClientSafeProfileModel extends AuthProfile {
   const ClientSafeProfileModel({
-    required this.id,
+    required super.id,
     this.userId,
-    required this.profileType,
-    this.displayName,
+    super.profileType,
+    super.displayName,
     this.avatarUrl,
-    this.preferredLanguage,
-    this.timezone,
+    super.preferredLanguage,
+    super.timezone,
     this.createdAt,
     this.updatedAt,
   });
@@ -15,7 +17,7 @@ class ClientSafeProfileModel {
     return ClientSafeProfileModel(
       id: json['id'] as String,
       userId: json['userId'] as String?,
-      profileType: json['profileType'] as String,
+      profileType: json['profileType'] as String?,
       displayName: json['displayName'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
       preferredLanguage: json['preferredLanguage'] as String?,
@@ -25,13 +27,8 @@ class ClientSafeProfileModel {
     );
   }
 
-  final String id;
   final String? userId;
-  final String profileType;
-  final String? displayName;
   final String? avatarUrl;
-  final String? preferredLanguage;
-  final String? timezone;
   final String? createdAt;
   final String? updatedAt;
 }

@@ -1,40 +1,5 @@
-// Design ref: docs/design/ui-for-all-system-mobile/SCREENS.md → "Courses" (courseList)
-//   docs/design/ui-for-all-system-mobile/screenshots/light/06-screen.png
-//   docs/design/ui-for-all-system-mobile/screenshots/dark/06-screen.png
-// Endpoint: GET /student/courses (level badge, lesson count, real
-//   per-student progress — see services/backend-api/src/features/
-//   student-courses)
-// Widgets: AIMFullScreenLoading, AIMFullScreenError, AIMEmptyState,
-//   AIMChip, AIMBadge, CourseListTile
-//
 // Phase 6 — P6-073
-// CourseListPage — displays published courses, with real per-student
-// progress, from the backend.
-//
-// Loads via [studentCoursesProvider] on first build. Tapping a course
-// navigates to the chapter list (P6-074) passing the backend-supplied
-// course ID.
-//
-// All card content — title, description, levelCode, lessonCount, percent,
-// status — is backend-computed by GET /student/courses. Flutter never
-// computes progress percentage or completion status locally. The header
-// "Level" badge shows the levelCode of the student's most-advanced
-// touched course (also real, derived from the same response) — hidden
-// entirely if no course has a level yet.
-//
-// Security rules:
-// - Flutter never computes status, sortOrder, progress percent, or lesson
-//   counts.
-// - Bearer token from authFlowProvider; never stored here.
-// - courseId passed to next screen is always backend-supplied from the
-//   StudentCourseModel; never constructed from user input.
-// - No AIM Engine, AI Teacher, or AI provider calls from Flutter.
-// - No secrets here.
-//
-// RTL/Arabic rules:
-// - Uses Directionality-aware Row/Column/ListView.
-// - EdgeInsets.symmetric mirrors correctly under RTL.
-// - CourseListTile chevron mirrors via Directionality.of(context).
+// CourseListPage — displays published courses, with real per-student progress.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,17 +10,14 @@ import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/enrollment/logic/provider/enrollment_provider.dart';
+import 'package:aim_mobile/features/shell/logic/main_shell_tab_provider.dart';
+import 'package:aim_mobile/features/shell/ui/pages/main_shell_page.dart';
 import 'package:aim_mobile/features/student_courses/data/models/student_course_model.dart';
 import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
 import 'package:aim_mobile/features/student_courses/logic/provider/student_courses_provider.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../widgets/lessons_widgets.dart';
 
-/// Published course list screen, enriched with real per-student progress.
-///
-/// Auto-loads on first build using the bearer token from [authFlowProvider].
-/// Tapping a course navigates to the chapter list, passing the
-/// backend-supplied [StudentCourseModel.courseId].
 class CourseListPage extends ConsumerStatefulWidget {
   const CourseListPage({super.key});
 
@@ -84,30 +46,25 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
     await ref.read(currentEnrollmentProvider.notifier).load(bearerToken: token);
   }
 
-  /// Explicit "start course" action: a student has one active course at a
-  /// time (course_enrollments), separate from just browsing/opening
-  /// lessons. Confirms before enrolling — switching away from an existing
-  /// active course is a deliberate choice, not an accidental tap.
   Future<void> _onCourseTap(StudentCourseModel course) async {
+    final l10n = AppLocalizations.of(context);
     if (course.locked) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            AppLocalizations.of(context).lessonsCourseLockedMessage,
-          ),
-        ),
+        SnackBar(content: Text(l10n.lessonsCourseLockedMessage)),
       );
       return;
     }
 
-    final l10n = AppLocalizations.of(context);
-    final enrollmentState = ref.read(currentEnrollmentProvider);
-    final current = enrollmentState.valueOrNull;
-    final alreadyActive = current?.found == true && current?.courseId == course.courseId;
+    final currentEnrollment = ref.read(currentEnrollmentProvider).valueOrNull;
+    final isCurrent = course.courseId == currentEnrollment?.courseId;
 
-    if (!alreadyActive) {
-      final message = current?.found == true
-          ? l10n.lessonsSwitchCourseDialogMessage(current!.courseTitle!, course.title)
+    if (!isCurrent) {
+      final hasAnyEnrollment = currentEnrollment?.found == true;
+      final message = hasAnyEnrollment
+          ? l10n.lessonsSwitchCourseDialogMessage(
+              currentEnrollment?.courseTitle ?? '',
+              course.title,
+            )
           : l10n.lessonsStartCourseDialogMessage(course.title);
 
       final confirmed = await showDialog<bool>(
@@ -147,8 +104,6 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
       if (!mounted) return;
     }
 
-    // Navigate to the chapter list, passing the backend-supplied courseId.
-    // courseId is never constructed from user input.
     context.push(
       AppRoutePaths.courseChapters,
       extra: {'courseId': course.courseId, 'courseTitle': course.title},
@@ -161,12 +116,21 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
     final enrollmentState = ref.watch(currentEnrollmentProvider);
     final currentCourseId =
         enrollmentState.valueOrNull?.found == true ? enrollmentState.valueOrNull?.courseId : null;
-    final loadingLabel =
-        AppLocalizations.of(context).lessonsLoadingCoursesSemantic;
+    final loadingLabel = AppLocalizations.of(context).lessonsLoadingCoursesSemantic;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
+      backgroundColor: colorScheme.surface,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Scaffold.of(context).openDrawer();
+        },
+        backgroundColor: colorScheme.primary,
+        shape: const CircleBorder(),
+        elevation: 6,
+        child: const Icon(Icons.menu_rounded, color: Colors.white, size: 24),
+      ),
       body: SafeArea(
-        bottom: false,
         child: switch (state) {
           AppAsyncLoading() => AIMFullScreenLoading(
               semanticLabel: loadingLabel,
@@ -190,10 +154,6 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Content widget
-// ---------------------------------------------------------------------------
-
 enum _CourseFilter { all, inProgress, completed }
 
 class _CourseListContent extends StatefulWidget {
@@ -205,8 +165,6 @@ class _CourseListContent extends StatefulWidget {
   });
 
   final List<StudentCourseModel> courses;
-
-  /// The student's current active enrollment's courseId, or null if none.
   final String? currentCourseId;
   final Future<void> Function() onRefresh;
   final Future<void> Function(StudentCourseModel) onTap;
@@ -221,31 +179,24 @@ class _CourseListContentState extends State<_CourseListContent> {
   bool _matchesFilter(StudentCourseModel course) {
     return switch (_filter) {
       _CourseFilter.all => true,
-      _CourseFilter.inProgress =>
-        course.status == StudentCourseStatus.inProgress,
-      _CourseFilter.completed =>
-        course.status == StudentCourseStatus.completed,
+      _CourseFilter.inProgress => course.status == StudentCourseStatus.inProgress,
+      _CourseFilter.completed => course.status == StudentCourseStatus.completed,
     };
   }
 
-  /// Level badge for the most-advanced course the student has touched
-  /// (in-progress or completed, latest by list order), falling back to the
-  /// first course's level. Real data derived from the same response —
-  /// never a fabricated "current student level" field.
   String? _headerLevel(List<StudentCourseModel> courses) {
     for (final course in courses.reversed) {
-      if (course.status != StudentCourseStatus.notStarted &&
-          course.levelCode != null) {
+      if (course.status != StudentCourseStatus.notStarted && course.levelCode != null) {
         return course.levelCode;
       }
     }
-    return courses.isNotEmpty ? courses.first.levelCode : null;
+    return courses.isNotEmpty ? courses.first.levelCode : 'STARTER';
   }
 
   @override
   Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
     final l10n = AppLocalizations.of(context);
+    final surfaces = aimSurfacesOf(context);
 
     if (widget.courses.isEmpty) {
       return AIMEmptyState(
@@ -256,90 +207,246 @@ class _CourseListContentState extends State<_CourseListContent> {
     }
 
     final visibleCourses = widget.courses.where(_matchesFilter).toList();
-    final headerLevel = _headerLevel(widget.courses);
+    final headerLevel = _headerLevel(widget.courses) ?? 'STARTER';
 
     return RefreshIndicator(
       onRefresh: widget.onRefresh,
       child: ListView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AimSpacing.screenPaddingMobile,
-          vertical: AimSpacing.componentGap,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         children: [
+          // Top Header Row
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              Consumer(
+                builder: (context, ref, child) {
+                  return GestureDetector(
+                    onTap: () {
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        ref.read(mainShellTabIndexProvider.notifier).state = 0;
+                      }
+                    },
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      margin: const EdgeInsets.only(right: 12),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: surfaces.surfaceSunken,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.arrow_back_rounded,
+                        size: 20,
+                        color: surfaces.textPrimary,
+                      ),
+                    ),
+                  );
+                },
+              ),
               Expanded(
-                child: Text(
-                  l10n.lessonsCoursesPageTitle,
-                  style: AimTextStyles.h1.copyWith(color: surfaces.textPrimary),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.lessonsCoursesPageTitle,
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: surfaces.textPrimary,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.lessonsCoursesSubtitle,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: surfaces.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              if (headerLevel != null)
-                AIMBadge(
-                  tone: AIMBadgeTone.primary,
-                  variant: AIMBadgeVariant.soft,
-                  pill: true,
-                  dot: true,
-                  child: Text(l10n.lessonsLevelBadge(headerLevel)),
+
+              // Level Badge Pill
+              if (headerLevel.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEEF2FF),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFC7D2FE)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CircleAvatar(
+                        radius: 3.5,
+                        backgroundColor: Color(0xFF4F46E5),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        l10n.lessonsLevelBadge(headerLevel),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF4F46E5),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
             ],
           ),
-          const SizedBox(height: AimSpacing.space4),
-          Text(
-            l10n.lessonsCoursesSubtitle,
-            style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
-          ),
-          const SizedBox(height: AimSpacing.componentGap),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
+
+          const SizedBox(height: 20),
+
+          // Overview Hero Banner
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF4F46E5), Color(0xFF7C3AED), Color(0xFF6366F1)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF4F46E5).withValues(alpha: 0.25),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AIMChip(
-                  selected: _filter == _CourseFilter.all,
-                  onPressed: () =>
-                      setState(() => _filter = _CourseFilter.all),
-                  child: Text(l10n.lessonsFilterAllCourses),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text(
+                        'LEARNING PATH',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                    ),
+                    const Icon(
+                      Icons.auto_awesome_rounded,
+                      color: Color(0xFFFDE047),
+                      size: 20,
+                    ),
+                  ],
                 ),
-                const SizedBox(width: AimSpacing.innerGap),
-                AIMChip(
-                  selected: _filter == _CourseFilter.inProgress,
-                  onPressed: () =>
-                      setState(() => _filter = _CourseFilter.inProgress),
-                  child: Text(l10n.lessonsInProgressLabel),
+                const SizedBox(height: 12),
+                const Text(
+                  'Structured Curriculum',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
                 ),
-                const SizedBox(width: AimSpacing.innerGap),
-                AIMChip(
-                  selected: _filter == _CourseFilter.completed,
-                  onPressed: () =>
-                      setState(() => _filter = _CourseFilter.completed),
-                  child: Text(l10n.lessonsCompletedLabel),
+                const SizedBox(height: 4),
+                Text(
+                  'Follow your personalized sequence from CEFR Starter to Advanced mastery.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.white.withValues(alpha: 0.9),
+                    height: 1.3,
+                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: AimSpacing.sectionGap),
+
+          const SizedBox(height: 20),
+
+          // Filter Segment Tabs
+          Row(
+            children: [
+              _buildFilterTab(l10n.lessonsFilterAllCourses, _CourseFilter.all),
+              const SizedBox(width: 10),
+              _buildFilterTab(l10n.lessonsInProgressLabel, _CourseFilter.inProgress),
+              const SizedBox(width: 10),
+              _buildFilterTab(l10n.lessonsCompletedLabel, _CourseFilter.completed),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          // Courses List Tiles
           if (visibleCourses.isEmpty)
             Padding(
-              padding: const EdgeInsets.only(top: AimSpacing.sectionGap),
-              child: Text(
-                l10n.lessonsNoCoursesFilterMessage,
-                style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
-                textAlign: TextAlign.center,
+              padding: const EdgeInsets.only(top: 40),
+              child: Center(
+                child: Text(
+                  l10n.lessonsNoCoursesFilterMessage,
+                  style: TextStyle(fontSize: 14, color: surfaces.textSecondary),
+                  textAlign: TextAlign.center,
+                ),
               ),
             )
           else
-            for (var i = 0; i < visibleCourses.length; i++) ...[
+            for (var i = 0; i < visibleCourses.length; i++)
               CourseListTile(
                 model: visibleCourses[i],
                 index: i,
-                isCurrentEnrollment:
-                    widget.currentCourseId == visibleCourses[i].courseId,
+                isCurrentEnrollment: widget.currentCourseId == visibleCourses[i].courseId,
                 onTap: () => widget.onTap(visibleCourses[i]),
               ),
-              const SizedBox(height: AimSpacing.listItemGap),
-            ],
+
+          const SizedBox(height: 80),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFilterTab(String label, _CourseFilter filter) {
+    final isSelected = _filter == filter;
+    return InkWell(
+      onTap: () => setState(() => _filter = filter),
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF4F46E5) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF4F46E5) : const Color(0xFFE2E8F0),
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF4F46E5).withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            color: isSelected ? Colors.white : const Color(0xFF64748B),
+          ),
+        ),
       ),
     );
   }

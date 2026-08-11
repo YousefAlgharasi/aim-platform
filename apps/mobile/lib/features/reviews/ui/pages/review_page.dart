@@ -7,6 +7,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:go_router/go_router.dart';
+
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/aim_results/data/models/aim_results_models.dart';
@@ -86,36 +88,101 @@ class _ReviewPageState extends ConsumerState<ReviewPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(aimResultsProvider);
+    final surfaces = aimSurfacesOf(context);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      body: Column(
-        children: [
-          const AIMGradientHeroHeader(
-            title: 'Review',
-            subtitle: 'Spaced repetition keeps it in memory',
-          ),
-          Expanded(
-            child: switch (state) {
-              AppAsyncLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading review schedule'),
-              AppAsyncFailure(:final message) =>
-                AIMFullScreenError(message: message, onRetry: _load),
-              AppAsyncSuccess(:final data) => data.reviewSchedules.isEmpty
-                  ? const AIMEmptyState(
-                      icon: Icon(Icons.replay_outlined),
-                      title: 'No reviews scheduled',
-                      subtitle:
-                          'Complete practice sessions to receive review reminders.',
-                    )
-                  : _ReviewContent(
-                      schedules: data.reviewSchedules,
-                      onRefresh: _refresh,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // App Bar Header matching prototype
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              decoration: BoxDecoration(
+                color: surfaces.surface,
+                border: Border(bottom: BorderSide(color: surfaces.border)),
+              ),
+              child: Row(
+                children: [
+                  if (context.canPop()) ...[
+                    GestureDetector(
+                      onTap: () => context.pop(),
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        margin: const EdgeInsets.only(right: 12),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: surfaces.surfaceSunken,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          Icons.arrow_back_rounded,
+                          size: 20,
+                          color: surfaces.textPrimary,
+                        ),
+                      ),
                     ),
-              AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading review schedule'),
-            },
-          ),
-        ],
+                  ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Review',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                            color: surfaces.textPrimary,
+                            letterSpacing: -0.4,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Spaced-repetition flashcards due today',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: surfaces.textMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(Icons.style_rounded, color: colorScheme.primary, size: 22),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: switch (state) {
+                AppAsyncLoading() => const AIMFullScreenLoading(
+                    semanticLabel: 'Loading review schedule'),
+                AppAsyncFailure(:final message) =>
+                  AIMFullScreenError(message: message, onRetry: _load),
+                AppAsyncSuccess(:final data) => data.reviewSchedules.isEmpty
+                    ? const AIMEmptyState(
+                        icon: Icon(Icons.replay_outlined),
+                        title: 'No reviews scheduled',
+                        subtitle:
+                            'Complete practice sessions to receive review reminders.',
+                      )
+                    : _ReviewContent(
+                        schedules: data.reviewSchedules,
+                        onRefresh: _refresh,
+                      ),
+                AppAsyncIdle() => const AIMFullScreenLoading(
+                    semanticLabel: 'Loading review schedule'),
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -132,17 +199,177 @@ class _ReviewContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: onRefresh,
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AimSpacing.screenPaddingMobile,
-          vertical: AimSpacing.sectionGap,
+    final dueNowCount = schedules.where((s) => s.status == 'due').length;
+    final learnedCount = schedules.length;
+    final surfaces = aimSurfacesOf(context);
+
+    return Column(
+      children: [
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: onRefresh,
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              children: [
+                // Top Summary Stat Cards matching prototype
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildStatCard(
+                        context: context,
+                        val: '$dueNowCount',
+                        label: 'Due now',
+                        color: const Color(0xFFEF4444),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _buildStatCard(
+                        context: context,
+                        val: '$learnedCount',
+                        label: 'Learned',
+                        color: const Color(0xFF4F46E5),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _buildStatCard(
+                        context: context,
+                        val: '7d',
+                        label: 'Streak',
+                        color: const Color(0xFFF59E0B),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                Builder(
+                  builder: (context) {
+                    final surfaces = aimSurfacesOf(context);
+                    return Text(
+                      'REVIEW SCHEDULE',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: surfaces.textMuted,
+                        letterSpacing: 1.0,
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 12),
+
+                for (int i = 0; i < schedules.length; i++) ...[
+                  _ReviewScheduleCard(model: schedules[i]),
+                  if (i < schedules.length - 1) const SizedBox(height: 12),
+                ],
+              ],
+            ),
+          ),
         ),
-        itemCount: schedules.length,
-        separatorBuilder: (_, __) =>
-            const SizedBox(height: AimSpacing.listItemGap),
-        itemBuilder: (_, i) => _ReviewScheduleCard(model: schedules[i]),
+
+        // Bottom CTA Action Footer matching prototype
+        SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+            child: Container(
+              width: double.infinity,
+              height: 52,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF4F46E5), Color(0xFF6366F1), Color(0xFF7C3AED)],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF4F46E5).withValues(alpha: 0.3),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    // Navigate to lesson practice / question session
+                    context.push('/practice/session', extra: {
+                      'lessonId': 'review-session',
+                      'lessonTitle': 'Spaced Repetition Review',
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(16),
+                  child: const Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.style_rounded, color: Colors.white, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'Start Review Session',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCard({
+    required BuildContext context,
+    required String val,
+    required String label,
+    required Color color,
+  }) {
+    final surfaces = aimSurfacesOf(context);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: surfaces.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: surfaces.border),
+        boxShadow: [
+          BoxShadow(
+            color: surfaces.textPrimary.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            val,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: surfaces.textSecondary,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -129,6 +129,7 @@ void main() {
         ],
       ));
       await tester.pump();
+      await tester.pump();
       expect(find.text('Unit 1: Basics'), findsOneWidget);
       expect(find.text('Unit 2: Grammar'), findsOneWidget);
     });
@@ -303,4 +304,10 @@ class _FakeLessonsRepository implements LessonsRepository {
     required String chapterId,
   }) async =>
       null;
+
+  @override
+  Future<void> markLessonComplete({
+    required String bearerToken,
+    required String lessonId,
+  }) async {}
 }

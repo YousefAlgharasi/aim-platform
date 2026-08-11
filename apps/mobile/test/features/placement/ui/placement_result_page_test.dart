@@ -184,21 +184,12 @@ Widget _wrap(
         (ref) => _FakeStudentCoursesNotifier(courses),
       ),
     ],
-    child: MaterialApp.router(
+    child: MaterialApp(
       theme: AppTheme.light,
+      locale: const Locale('en'),
       localizationsDelegates: AppLocale.delegates,
       supportedLocales: AppLocale.supportedLocales,
-      routerConfig: GoRouter(
-        initialLocation: '/',
-        routes: [
-          GoRoute(
-            path: '/',
-            builder: (context, state) =>
-                Directionality(textDirection: dir, child: child),
-          ),
-        ],
-        errorBuilder: (context, state) => const SizedBox(),
-      ),
+      home: Directionality(textDirection: dir, child: child),
     ),
   );
 }
@@ -251,7 +242,7 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
       expect(find.byType(PlacementResultPage), findsOneWidget);
       expect(find.text('Unlock My Course'), findsOneWidget);
@@ -267,7 +258,7 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
       expect(find.text('B1'), findsOneWidget); // CEFR code for intermediate
       expect(find.text('Great Job! 🎉'), findsOneWidget);
@@ -284,7 +275,7 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
       expect(find.byType(PlacementResultPage), findsOneWidget);
       expect(find.text('B1'), findsOneWidget);
@@ -319,7 +310,7 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
       expect(find.text('Unlock My Course'), findsOneWidget);
     });
@@ -340,7 +331,7 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
       expect(find.text('Great Job! 🎉'), findsOneWidget);
       expect(find.text('Unlock My Course'), findsOneWidget);
@@ -385,7 +376,7 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
       expect(find.text('Great Job! 🎉'), findsOneWidget);
       expect(find.text('Unlock My Course'), findsOneWidget);

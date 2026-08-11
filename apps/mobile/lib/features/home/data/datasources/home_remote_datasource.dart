@@ -58,7 +58,7 @@ abstract class HomeRemoteDatasource {
   /// Returns the backend-computed daily goal, streak, and today's daily
   /// challenge. [streakDays] and challenge progress are never calculated
   /// locally.
-  Future<HomeEngagementSummary> getEngagementSummary({
+  Future<HomeEngagementSummaryModel> getEngagementSummary({
     required String bearerToken,
   });
 
@@ -96,8 +96,8 @@ abstract class HomeRemoteDatasource {
 }
 
 /// Bundles the goal + daily challenge payload from a single backend call.
-class HomeEngagementSummary {
-  const HomeEngagementSummary({required this.goal, this.dailyChallenge});
+class HomeEngagementSummaryModel {
+  const HomeEngagementSummaryModel({required this.goal, this.dailyChallenge});
 
   final HomeEngagementGoalModel goal;
   final HomeDailyChallengeModel? dailyChallenge;

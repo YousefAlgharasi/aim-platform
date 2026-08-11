@@ -114,6 +114,12 @@ class _FakeLessonsDatasource implements LessonsRemoteDatasource {
     _maybeThrow();
     return null;
   }
+
+  @override
+  Future<void> markLessonComplete(
+      {required String bearerToken, required String lessonId}) async {
+    _maybeThrow();
+  }
 }
 
 class _FakeLessonDetailDatasource implements LessonDetailRemoteDatasource {

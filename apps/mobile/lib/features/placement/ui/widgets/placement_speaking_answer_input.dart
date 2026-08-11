@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/theme/theme.dart';
+import 'package:aim_mobile/features/voice_teacher/data/datasources/voice_recorder_client_impl.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/voice_recorder_client.dart';
 
 const Duration kPlacementSpeakingMaxDuration = Duration(minutes: 1);
@@ -117,7 +119,13 @@ class _PlacementSpeakingAnswerInputState
 
     if (!kIsWeb) {
       try {
-        await _recorder.stop();
+        final path = await _recorder.stop();
+        if (path != null) {
+          final file = File(path);
+          if (await file.exists()) {
+            bytes = await file.readAsBytes();
+          }
+        }
       } catch (_) {
         bytes = _dummyWavBytes;
       }

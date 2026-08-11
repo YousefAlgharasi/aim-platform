@@ -271,4 +271,10 @@ class _FakeLessonsRepository implements LessonsRepository {
     required String chapterId,
   }) async =>
       null;
+
+  @override
+  Future<void> markLessonComplete({
+    required String bearerToken,
+    required String lessonId,
+  }) async {}
 }

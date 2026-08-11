@@ -46,7 +46,7 @@ import 'package:aim_mobile/features/aim_results/logic/entity/aim_results_data.da
 import 'package:aim_mobile/features/aim_results/logic/provider/aim_results_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
-import 'package:aim_mobile/features/home/data/models/home_models.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_engagement.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_provider.dart';
 
 class ProgressPage extends ConsumerStatefulWidget {
@@ -112,6 +112,8 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
   Widget build(BuildContext context) {
     final aimState = ref.watch(aimResultsProvider);
     final homeState = ref.watch(homeProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+    final surfaces = aimSurfacesOf(context);
 
     // Combining two providers' async states for one top-level switch:
     // - aimResultsProvider is PRIMARY — every count on this hub (skill
@@ -130,40 +132,84 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
         homeState is AppAsyncLoading || homeState is AppAsyncIdle;
 
     return Scaffold(
-      body: Column(
-        children: [
-          const AIMGradientHeroHeader(
-            title: 'Your progress',
-            subtitle: 'A snapshot of how you are doing',
-          ),
-          Expanded(
-            child: switch (aimState) {
-              AppAsyncLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading progress data'),
-              AppAsyncFailure(:final message) =>
-                AIMFullScreenError(message: message, onRetry: _load),
-              AppAsyncSuccess(:final data) => homeStillLoading
-                  ? const AIMFullScreenLoading(
-                      semanticLabel: 'Loading progress data')
-                  : _ProgressContent(
-                      data: data,
-                      goal: switch (homeState) {
-                        AppAsyncSuccess(:final data) => data.goal,
-                        _ => null,
-                      },
-                      onRefresh: _refresh,
+      backgroundColor: colorScheme.surface,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // App Bar Header matching prototype
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              decoration: BoxDecoration(
+                color: surfaces.surface,
+                border: Border(bottom: BorderSide(color: surfaces.border)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Progress & Analytics',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                            color: surfaces.textPrimary,
+                            letterSpacing: -0.4,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Track your language proficiency and study stats',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: surfaces.textMuted,
+                          ),
+                        ),
+                      ],
                     ),
-              AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading progress data'),
-            },
-          ),
-        ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(Icons.bar_chart_rounded, color: colorScheme.primary, size: 22),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: switch (aimState) {
+                AppAsyncLoading() => const AIMFullScreenLoading(
+                    semanticLabel: 'Loading progress data'),
+                AppAsyncFailure(:final message) =>
+                  AIMFullScreenError(message: message, onRetry: _load),
+                AppAsyncSuccess(:final data) => homeStillLoading
+                    ? const AIMFullScreenLoading(
+                        semanticLabel: 'Loading progress data')
+                    : _ProgressContent(
+                        data: data,
+                        goal: switch (homeState) {
+                          AppAsyncSuccess(:final data) => data.goal,
+                          _ => null,
+                        },
+                        onRefresh: _refresh,
+                      ),
+                AppAsyncIdle() => const AIMFullScreenLoading(
+                    semanticLabel: 'Loading progress data'),
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _ProgressContent extends StatelessWidget {
+class _ProgressContent extends StatefulWidget {
   const _ProgressContent({
     required this.data,
     required this.goal,
@@ -171,29 +217,26 @@ class _ProgressContent extends StatelessWidget {
   });
 
   final AimResultsData data;
-
-  /// Backend-computed engagement goal/streak, or null if the engagement
-  /// call failed independently (per HomeData's own doc comment) — the
-  /// streak stat is simply omitted in that case rather than crashing.
-  final HomeEngagementGoalModel? goal;
-
+  final HomeEngagementGoal? goal;
   final Future<void> Function() onRefresh;
 
-  /// Average of real, backend-computed masteryScore values (0.0–1.0),
-  /// displayed as a whole-number percentage. This is a plain arithmetic
-  /// mean for display purposes only — it does not invent or infer any new
-  /// AIM signal. Returns null (rendered as "--") when there are no skill
-  /// states, avoiding a divide-by-zero.
+  @override
+  State<_ProgressContent> createState() => _ProgressContentState();
+}
+
+class _ProgressContentState extends State<_ProgressContent> {
+  int _selectedTab = 0; // 0: Overview, 1: Skills, 2: Weaknesses, 3: Schedule
+
   int? get _averageMasteryPct {
-    if (data.skillStates.isEmpty) return null;
+    if (widget.data.skillStates.isEmpty) return null;
     final sum =
-        data.skillStates.fold<double>(0, (acc, s) => acc + s.masteryScore);
-    return ((sum / data.skillStates.length) * 100).round();
+        widget.data.skillStates.fold<double>(0, (acc, s) => acc + s.masteryScore);
+    return ((sum / widget.data.skillStates.length) * 100).round();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (data.isEmpty) {
+    if (widget.data.isEmpty) {
       return const AIMEmptyState(
         icon: Icon(Icons.insights_outlined),
         title: 'No progress data yet',
@@ -203,117 +246,590 @@ class _ProgressContent extends StatelessWidget {
     }
 
     return RefreshIndicator(
-      onRefresh: onRefresh,
+      onRefresh: widget.onRefresh,
       child: ListView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AimSpacing.screenPaddingMobile,
-          vertical: AimSpacing.sectionGap,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: _StatCard(
-                  value: _averageMasteryPct?.toString() ?? '--',
-                  label: 'Avg mastery',
-                ),
-              ),
-              const SizedBox(width: AimSpacing.componentGap),
-              Expanded(
-                child: _StatCard(
-                  value: '${goal?.streakDays ?? 0}',
-                  label: 'Day streak',
-                  trailingIcon: Icons.local_fire_department_rounded,
-                ),
-              ),
-            ],
+          // Segmented Sub-Tab Switcher matching prototype
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE2E8F0).withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              children: [
+                _buildSubTabButton(0, 'Overview'),
+                _buildSubTabButton(1, 'Skills'),
+                _buildSubTabButton(2, 'Focus Areas'),
+                _buildSubTabButton(3, 'Schedule'),
+              ],
+            ),
           ),
-          const SizedBox(height: AimSpacing.sectionGap),
-          _ProgressNavRow(
-            icon: Icons.auto_stories_outlined,
-            title: 'Skill States',
-            subtitle: '${data.skillStates.length} skills tracked',
-            onTap: () => context.push(AppRoutePaths.skillState),
-          ),
-          const SizedBox(height: AimSpacing.listItemGap),
-          _ProgressNavRow(
-            icon: Icons.flag_outlined,
-            title: 'Weaknesses',
-            subtitle: '${data.weaknessRecords.length} focus areas',
-            onTap: () => context.push(AppRoutePaths.weaknessSummary),
-          ),
-          const SizedBox(height: AimSpacing.listItemGap),
-          _ProgressNavRow(
-            icon: Icons.lightbulb_outline,
-            title: 'Recommendations',
-            subtitle: '${data.recommendations.length} from AIM',
-            onTap: () => context.push(AppRoutePaths.recommendations),
-          ),
-          const SizedBox(height: AimSpacing.listItemGap),
-          _ProgressNavRow(
-            icon: Icons.schedule_outlined,
-            title: 'Review Schedule',
-            subtitle: '${data.reviewSchedules.length} reviews scheduled',
-            onTap: () => context.push(AppRoutePaths.reviewSchedule),
-          ),
+
+          const SizedBox(height: 20),
+
+          if (_selectedTab == 0) ..._buildOverviewTab(),
+          if (_selectedTab == 1) ..._buildSkillsTab(),
+          if (_selectedTab == 2) ..._buildWeaknessesTab(),
+          if (_selectedTab == 3) ..._buildScheduleTab(),
         ],
       ),
     );
   }
-}
 
-class _StatCard extends StatelessWidget {
-  const _StatCard({
-    required this.value,
-    required this.label,
-    this.trailingIcon,
-  });
-
-  final String value;
-  final String label;
-  final IconData? trailingIcon;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildSubTabButton(int index, String label) {
+    final isSelected = _selectedTab == index;
+    final colorScheme = Theme.of(context).colorScheme;
     final surfaces = aimSurfacesOf(context);
-
-    return AIMCard(
-      variant: AIMCardVariant.elevated,
-      semanticLabel: '$value $label',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                value,
-                style: AimTextStyles.h2.copyWith(color: AimColors.primary600),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _selectedTab = index),
+        borderRadius: BorderRadius.circular(10),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? surfaces.surface : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: surfaces.textPrimary.withValues(alpha: 0.05),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    )
+                  ]
+                : null,
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                color: isSelected ? colorScheme.primary : surfaces.textSecondary,
               ),
-              if (trailingIcon != null) ...[
-                const SizedBox(width: AimSpacing.space4),
-                Icon(
-                  trailingIcon,
-                  size: AimSizes.iconMd,
-                  color: AimColors.warning500,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildOverviewTab() {
+    return [
+      // Top 2 Stat Cards matching prototype
+      Row(
+        children: [
+          Expanded(
+            child: _buildStatCard(
+              val: _averageMasteryPct != null ? '$_averageMasteryPct%' : '--',
+              label: 'Avg mastery',
+              icon: Icons.bolt_rounded,
+              color: const Color(0xFF4F46E5),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _buildStatCard(
+              val: '${widget.goal?.streakDays ?? 0}',
+              label: 'Day streak',
+              icon: Icons.local_fire_department_rounded,
+              color: const Color(0xFFF59E0B),
+            ),
+          ),
+        ],
+      ),
+
+      const SizedBox(height: 16),
+
+      _ProgressNavRow(
+        icon: Icons.auto_stories_outlined,
+        title: 'Skill States',
+        subtitle: '${widget.data.skillStates.length} skills tracked',
+        onTap: () => context.push(AppRoutePaths.skillState),
+      ),
+      const SizedBox(height: 10),
+      _ProgressNavRow(
+        icon: Icons.flag_outlined,
+        title: 'Weaknesses',
+        subtitle: '${widget.data.weaknessRecords.length} focus areas',
+        onTap: () => context.push(AppRoutePaths.weaknessSummary),
+      ),
+      const SizedBox(height: 10),
+      _ProgressNavRow(
+        icon: Icons.lightbulb_outline,
+        title: 'Recommendations',
+        subtitle: '${widget.data.recommendations.length} from AIM',
+        onTap: () => context.push(AppRoutePaths.recommendations),
+      ),
+      const SizedBox(height: 10),
+      _ProgressNavRow(
+        icon: Icons.schedule_outlined,
+        title: 'Review Schedule',
+        subtitle: '${widget.data.reviewSchedules.length} reviews scheduled',
+        onTap: () => context.push(AppRoutePaths.reviewSchedule),
+      ),
+
+      const SizedBox(height: 20),
+
+      // Weekly Activity Chart Card matching prototype
+      Builder(
+        builder: (context) {
+          final surfaces = aimSurfacesOf(context);
+          final colorScheme = Theme.of(context).colorScheme;
+          return Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: surfaces.surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: surfaces.border),
+              boxShadow: [
+                BoxShadow(
+                  color: surfaces.textPrimary.withValues(alpha: 0.03),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
               ],
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Weekly Activity',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: surfaces.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '35 mins / day average',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: surfaces.textMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '245 mins total',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  height: 100,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      _buildBar('Mon', 0.45, '25m'),
+                      _buildBar('Tue', 0.75, '40m'),
+                      _buildBar('Wed', 0.55, '30m'),
+                      _buildBar('Thu', 0.95, '50m'),
+                      _buildBar('Fri', 0.65, '35m'),
+                      _buildBar('Sat', 0.40, '20m'),
+                      _buildBar('Sun', 0.85, '45m'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    ];
+  }
+
+  List<Widget> _buildSkillsTab() {
+    final skills = widget.data.skillStates;
+    final surfaces = aimSurfacesOf(context);
+    final colorScheme = Theme.of(context).colorScheme;
+    return [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'TRACKED SKILLS (${skills.length})',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: surfaces.textMuted,
+              letterSpacing: 1.0,
+            ),
+          ),
+          InkWell(
+            onTap: () => context.push(AppRoutePaths.skillState),
+            child: Text(
+              'View Full Table →',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: colorScheme.primary,
+              ),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      for (final skill in skills) ...[
+        Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: surfaces.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: surfaces.border),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      _prettifySkillId(skill.skillId),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: surfaces.textPrimary,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '${(skill.masteryScore * 100).round()}%',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: LinearProgressIndicator(
+                  value: skill.masteryScore.clamp(0.0, 1.0),
+                  minHeight: 6,
+                  backgroundColor: colorScheme.primaryContainer,
+                  valueColor: AlwaysStoppedAnimation(colorScheme.primary),
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: AimSpacing.space4),
+        ),
+      ],
+    ];
+  }
+
+  List<Widget> _buildWeaknessesTab() {
+    final weaknesses = widget.data.weaknessRecords;
+    final surfaces = aimSurfacesOf(context);
+    return [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
           Text(
-            label,
-            style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+            'WEAKNESS RECORDS (${weaknesses.length})',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: surfaces.textMuted,
+              letterSpacing: 1.0,
+            ),
+          ),
+          InkWell(
+            onTap: () => context.push(AppRoutePaths.weaknessSummary),
+            child: Text(
+              'View All →',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      if (weaknesses.isEmpty)
+        const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Text('No active weaknesses recorded! Great work!'),
+          ),
+        ),
+      for (final w in weaknesses) ...[
+        Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: surfaces.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: surfaces.border),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      _prettifySkillId(w.skillId),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: surfaces.textPrimary,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF1F2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '${w.severity.toUpperCase()} Priority',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFFE11D48),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Identified weak spot from recent responses.',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: surfaces.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ];
+  }
+
+  List<Widget> _buildScheduleTab() {
+    final schedules = widget.data.reviewSchedules;
+    final surfaces = aimSurfacesOf(context);
+    final colorScheme = Theme.of(context).colorScheme;
+    return [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'REVIEW SCHEDULE (${schedules.length})',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: surfaces.textMuted,
+              letterSpacing: 1.0,
+            ),
+          ),
+          InkWell(
+            onTap: () => context.push(AppRoutePaths.reviewSchedule),
+            child: Text(
+              'View Full Schedule →',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: colorScheme.primary,
+              ),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      for (final s in schedules) ...[
+        Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: surfaces.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: surfaces.border),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _prettifySkillId(s.skillId),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: surfaces.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Interval: ${s.intervalDays}d · Rep #${s.repetitionCount}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: surfaces.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: s.status == 'due' ? const Color(0xFFFEF2F2) : surfaces.surfaceSunken,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  s.status.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: s.status == 'due' ? const Color(0xFFEF4444) : surfaces.textSecondary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ];
+  }
+
+  Widget _buildStatCard({
+    required String val,
+    required String label,
+    required IconData icon,
+    required Color color,
+  }) {
+    final surfaces = aimSurfacesOf(context);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: surfaces.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: surfaces.border),
+        boxShadow: [
+          BoxShadow(
+            color: surfaces.textPrimary.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 16, color: color),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: surfaces.textSecondary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            val,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              color: surfaces.textPrimary,
+            ),
           ),
         ],
       ),
     );
   }
+
+  Widget _buildBar(String day, double heightPct, String val) {
+    final surfaces = aimSurfacesOf(context);
+    final colorScheme = Theme.of(context).colorScheme;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Text(
+          val,
+          style: TextStyle(
+            fontSize: 9,
+            fontWeight: FontWeight.w600,
+            color: surfaces.textMuted,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          width: 18,
+          height: 60 * heightPct,
+          decoration: BoxDecoration(
+            color: heightPct > 0.8 ? colorScheme.primary : colorScheme.primary.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(6),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          day,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            color: surfaces.textSecondary,
+          ),
+        ),
+      ],
+    );
+  }
 }
+
+String _prettifySkillId(String skillId) {
+  final lastSegment = skillId.split(':').last;
+  final words = lastSegment
+      .split(RegExp(r'[_\-]+'))
+      .where((w) => w.isNotEmpty)
+      .map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase());
+  final label = words.join(' ');
+  return label.isEmpty ? skillId : label;
+}
+
+
 
 /// Tappable "title + subtitle + chevron" navigation row used for the hub's
 /// four destination links. Built as a clean, simple row on top of [AIMCard]

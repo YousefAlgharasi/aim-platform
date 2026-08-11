@@ -120,3 +120,4 @@ class AppRoutePaths {
   static const String accountSettings = '/profile/settings';
 }
 
+

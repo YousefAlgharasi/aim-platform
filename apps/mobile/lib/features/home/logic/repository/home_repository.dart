@@ -11,35 +11,40 @@
 // - Bearer token is passed from the provider layer; never stored here.
 // - No AIM Engine runtime, AI Teacher, or AI provider calls from Flutter.
 
-import 'package:aim_mobile/features/home/data/datasources/home_remote_datasource.dart'
-    show HomeEngagementSummary;
-import 'package:aim_mobile/features/home/data/models/home_models.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_continue_learning.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_engagement.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_quick_start_lesson.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_recommendation.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_recommended_course.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_review_schedule.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_skill_state.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_weakness_record.dart';
 
 abstract class HomeRepository {
   /// Fetch AIM skill state summary cards.
   /// All [band] and [masteryLevel] values are backend-computed.
-  Future<List<HomeSkillStateModel>> getSkillStates({
+  Future<List<HomeSkillState>> getSkillStates({
     required String bearerToken,
     required String studentId,
   });
 
   /// Fetch weakness strip entries.
   /// [severity] is backend-computed.
-  Future<List<HomeWeaknessRecordModel>> getWeaknessRecords({
+  Future<List<HomeWeaknessRecord>> getWeaknessRecords({
     required String bearerToken,
     required String studentId,
   });
 
   /// Fetch review schedule reminders.
   /// [priority] and [dueAt] are backend-computed.
-  Future<List<HomeReviewScheduleModel>> getReviewSchedules({
+  Future<List<HomeReviewSchedule>> getReviewSchedules({
     required String bearerToken,
     required String studentId,
   });
 
   /// Fetch recommendation cards.
   /// [action] and [reason] are backend-computed; never generated locally.
-  Future<List<HomeRecommendationModel>> getRecommendations({
+  Future<List<HomeRecommendation>> getRecommendations({
     required String bearerToken,
     required String studentId,
   });
@@ -51,22 +56,22 @@ abstract class HomeRepository {
 
   /// Fetch the backend-computed level, XP, badge count, global rank, and
   /// weekly activity for the hero card.
-  Future<HomeEngagementStatsModel?> getEngagementStats({
+  Future<HomeEngagementStats?> getEngagementStats({
     required String bearerToken,
   });
 
   /// Fetch the most recently active, incomplete lesson, if any.
-  Future<HomeContinueLearningModel?> getContinueLearning({
+  Future<HomeContinueLearning?> getContinueLearning({
     required String bearerToken,
   });
 
   /// Fetch the next lesson to start, derived from the student's placement result.
-  Future<HomeQuickStartLessonModel?> getQuickStartLesson({
+  Future<HomeQuickStartLesson?> getQuickStartLesson({
     required String bearerToken,
   });
 
   /// Fetch the course recommended based on the student's placement result.
-  Future<HomeRecommendedCourseModel?> getRecommendedCourse({
+  Future<HomeRecommendedCourse?> getRecommendedCourse({
     required String bearerToken,
   });
 }

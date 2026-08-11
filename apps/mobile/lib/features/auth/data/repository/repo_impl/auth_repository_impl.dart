@@ -1,13 +1,9 @@
 import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/networking/api_client_exception.dart';
 import 'package:aim_mobile/features/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
-import 'package:aim_mobile/features/auth/data/models/auth_sync_response_model.dart';
-import 'package:aim_mobile/features/auth/data/models/login_result_model.dart';
-import 'package:aim_mobile/features/auth/data/models/refresh_result_model.dart';
-import 'package:aim_mobile/features/auth/data/models/register_result_model.dart';
+import 'package:aim_mobile/features/auth/logic/entity/auth_context.dart';
+import 'package:aim_mobile/features/auth/logic/entity/auth_results.dart';
 import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
-
 
 class AuthRepositoryImpl implements AuthRepository {
   const AuthRepositoryImpl({required AuthRemoteDatasource datasource})
@@ -16,7 +12,7 @@ class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDatasource _datasource;
 
   @override
-  Future<AuthContextModel> getMe(String bearerToken) async {
+  Future<AuthContext> getMe(String bearerToken) async {
     try {
       return await _datasource.getMe(bearerToken);
     } on ApiClientException catch (e) {
@@ -25,7 +21,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<AuthSyncResponseModel> syncUser(
+  Future<AuthSyncResult> syncUser(
     String bearerToken, {
     String? preferredLanguage,
     String? timezone,
@@ -51,7 +47,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<LoginResult> login({
+  Future<AuthLoginResult> login({
     required String email,
     required String password,
   }) async {
@@ -63,7 +59,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<RefreshResult> refresh({required String refreshToken}) async {
+  Future<AuthRefreshResult> refresh({required String refreshToken}) async {
     try {
       return await _datasource.refresh(refreshToken: refreshToken);
     } on ApiClientException catch (e) {
@@ -72,7 +68,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<RegisterResult> register({
+  Future<AuthRegisterResult> register({
     required String email,
     required String password,
   }) async {
@@ -84,11 +80,21 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<LoginResult> loginAsTestUser({required String role}) async {
+  Future<AuthLoginResult> loginAsTestUser({required String role}) async {
     try {
       return await _datasource.loginAsTestUser(role: role);
     } on ApiClientException catch (e) {
       throw AppException(code: e.code, message: e.message);
     }
   }
+
+  @override
+  Future<void> requestPasswordReset({required String email}) async {
+    try {
+      await _datasource.requestPasswordReset(email: email);
+    } on ApiClientException catch (e) {
+      throw AppException(code: e.code, message: e.message);
+    }
+  }
 }
+

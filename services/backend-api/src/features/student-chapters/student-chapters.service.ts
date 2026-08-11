@@ -60,12 +60,14 @@ export class StudentChaptersService {
       };
     });
 
-    const finalExamRow = await this.repository.findFinalExamForLevel(levelId);
+    const finalExamRow = await this.repository.findFinalExamForLevel(levelId, studentId);
     const finalExam = finalExamRow
       ? {
           assessmentId: finalExamRow.assessment_id,
           title: finalExamRow.title,
           unlocked: everyChapterFullyComplete,
+          passed: Boolean(finalExamRow.passed),
+          score: finalExamRow.score != null ? Number(finalExamRow.score) : null,
         }
       : null;
 

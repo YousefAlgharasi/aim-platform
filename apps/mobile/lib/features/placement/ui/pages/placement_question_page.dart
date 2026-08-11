@@ -11,7 +11,6 @@ import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
 import '../../data/models/placement_question_model.dart';
-import '../../data/placement_mock_data.dart';
 import '../../logic/provider/placement_provider.dart';
 import '../../logic/provider/placement_question_notifier.dart';
 import '../widgets/placement_countdown_timer.dart';
@@ -47,69 +46,6 @@ class _PlacementQuestionPageState
     extends ConsumerState<PlacementQuestionPage> {
   String? _submitError;
   late String _timerExpiresAt;
-  PlacementQuestionReady? _mockState;
-  int _completedCount = 0;
-  int _skippedCount = 0;
-
-  void _mockSelectAnswer(String answer) {
-    _mockState ??= PlacementMockData.defaultMockQuestionReadyState;
-    setState(() {
-      _submitError = null;
-      _mockState = _mockState!.copyWith(
-        selectedAnswer: answer,
-      );
-    });
-  }
-
-  void _mockSkip() {
-    _skippedCount++;
-    _mockState ??= PlacementMockData.defaultMockQuestionReadyState;
-    final current = _mockState!;
-    if (current.isLastQuestion) {
-      context.push(
-        AppRoutePaths.placementSubmit,
-        extra: {
-          'attemptId': widget.attemptId,
-          'totalSections': widget.totalSections,
-          'completedCount': _completedCount,
-          'skippedCount': _skippedCount,
-          'totalQuestions': current.totalQuestions,
-        },
-      );
-    } else {
-      setState(() {
-        _mockState = current.copyWith(
-          currentIndex: current.currentIndex + 1,
-          clearSelectedAnswer: true,
-        );
-      });
-    }
-  }
-
-  void _mockSubmit() {
-    _completedCount++;
-    _mockState ??= PlacementMockData.defaultMockQuestionReadyState;
-    final current = _mockState!;
-    if (current.isLastQuestion) {
-      context.push(
-        AppRoutePaths.placementSubmit,
-        extra: {
-          'attemptId': widget.attemptId,
-          'totalSections': widget.totalSections,
-          'completedCount': _completedCount,
-          'skippedCount': _skippedCount,
-          'totalQuestions': current.totalQuestions,
-        },
-      );
-    } else {
-      setState(() {
-        _mockState = current.copyWith(
-          currentIndex: current.currentIndex + 1,
-          clearSelectedAnswer: true,
-        );
-      });
-    }
-  }
 
   @override
   void initState() {
@@ -163,11 +99,6 @@ class _PlacementQuestionPageState
       }
     });
 
-    _mockState ??= PlacementMockData.defaultMockQuestionReadyState;
-    final effectiveState = state is PlacementQuestionReady
-        ? state
-        : _mockState!;
-
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Scaffold(
@@ -175,58 +106,54 @@ class _PlacementQuestionPageState
         body: SafeArea(
           child: Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AimSpacing.screenPaddingMobile,
-                  AimSpacing.space16,
-                  AimSpacing.screenPaddingMobile,
-                  AimSpacing.space12,
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const SizedBox.shrink(),
-                        PlacementCountdownTimer(
-                          key: ValueKey(_timerExpiresAt),
-                          expiresAt: _timerExpiresAt,
-                          onExpired: _onTimerExpired,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AimSpacing.componentGap),
-                    ClipRRect(
-                      borderRadius: AimRadius.borderLg,
-                      child: LinearProgressIndicator(
-                        value: effectiveState.displayIndex /
-                            effectiveState.totalQuestions,
-                        minHeight: 8,
-                        backgroundColor: AimColors.primary500.withValues(alpha: 0.1),
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          AimColors.primary500,
+              if (state is PlacementQuestionReady)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AimSpacing.screenPaddingMobile,
+                    AimSpacing.space16,
+                    AimSpacing.screenPaddingMobile,
+                    AimSpacing.space12,
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const SizedBox.shrink(),
+                          PlacementCountdownTimer(
+                            key: ValueKey(_timerExpiresAt),
+                            expiresAt: _timerExpiresAt,
+                            onExpired: _onTimerExpired,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AimSpacing.componentGap),
+                      ClipRRect(
+                        borderRadius: AimRadius.borderLg,
+                        child: LinearProgressIndicator(
+                          value: state.displayIndex / state.totalQuestions,
+                          minHeight: 8,
+                          backgroundColor: AimColors.primary500.withValues(alpha: 0.1),
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            AimColors.primary500,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
               Expanded(
                 child: switch (state) {
-                  PlacementQuestionLoading() =>
+                  PlacementQuestionLoading() ||
+                  PlacementQuestionIdle() ||
+                  PlacementQuestionSectionComplete() =>
                     AIMFullScreenLoading(
                       semanticLabel: l10n.placementQuestionLoadingSemantic,
                     ),
-                  PlacementQuestionIdle() ||
-                  PlacementQuestionError() ||
-                  PlacementQuestionSectionComplete() => _QuestionBody(
-                      state: _mockState ?? PlacementMockData.defaultMockQuestionReadyState,
-                      submitError: _submitError,
-                      onSelectAnswer: _mockSelectAnswer,
-                      onSkip: _mockSkip,
-                      onSubmit: _mockSubmit,
-                      onSubmitSpeaking: (bytes, mimeType) =>
-                          _submitSpeakingAnswer(bytes, mimeType),
+                  PlacementQuestionError(:final message) =>
+                    AIMFullScreenError(
+                      message: message,
+                      onRetry: _loadQuestions,
                     ),
                   PlacementQuestionReady() => _QuestionBody(
                       state: state,
@@ -259,10 +186,7 @@ class _PlacementQuestionPageState
   Future<void> _submitSpeakingAnswer(List<int> audioBytes, String mimeType) async {
     setState(() => _submitError = null);
     final token = ref.read(authFlowProvider).accessToken ?? '';
-    if (token.isEmpty || token.startsWith('mock-')) {
-      _mockSubmit();
-      return;
-    }
+    if (token.isEmpty) return;
     try {
       await ref.read(placementQuestionProvider.notifier).submitSpeakingAnswer(
             token,
@@ -763,24 +687,29 @@ class _ListenButtonState extends ConsumerState<_ListenButton> {
     });
 
     try {
-      await _audioPlayer.play(
-        UrlSource('https://raw.githubusercontent.com/mdn/webaudio-examples/main/audio-analyser/viper.mp3'),
-      );
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _isPlaying = true;
-        });
+      final token = ref.read(authFlowProvider).accessToken ?? '';
+      final bytes = await ref.read(placementRepositoryProvider).getQuestionAudio(
+            token,
+            questionId: widget.questionId,
+          );
+      if (bytes.isNotEmpty) {
+        await _audioPlayer.play(BytesSource(Uint8List.fromList(bytes)));
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _isPlaying = true;
+          });
+        }
+      } else {
+        if (mounted) setState(() => _isLoading = false);
       }
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
-      // Fallback timer simulation if network/CORS fails or on unsupported web source
       setState(() {
         _isLoading = false;
-        _isPlaying = true;
+        _isPlaying = false;
+        _error = 'Failed to load question audio.';
       });
-      await Future.delayed(const Duration(seconds: 4));
-      if (mounted) setState(() => _isPlaying = false);
     }
   }
 

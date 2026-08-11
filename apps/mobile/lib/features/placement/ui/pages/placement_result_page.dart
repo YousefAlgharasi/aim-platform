@@ -151,6 +151,8 @@ class _ResultBodyState extends State<_ResultBody> {
     final levelName =
         PlacementMockData.cefrDisplayNames[widget.result.estimatedLevel] ??
             widget.result.estimatedLevel;
+    final displayCode = levelCode.isNotEmpty ? levelCode : 'B1';
+    final displayName = levelName.isNotEmpty ? levelName : 'Intermediate';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(
@@ -162,34 +164,122 @@ class _ResultBodyState extends State<_ResultBody> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Column(
+          // ── Gradient Level Badge with Glow ─────────────────────────────
+          Stack(
+            alignment: Alignment.center,
+            clipBehavior: Clip.none,
             children: [
-              Text(
-                levelCode.isNotEmpty ? levelCode : 'B1',
-                style: AimTextStyles.display.copyWith(
-                  fontSize: 64,
-                  fontWeight: AimFontWeights.extrabold,
-                  color: AimColors.primary500,
-                  height: 1,
+              // Glow blur behind the badge
+              Positioned(
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(36),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF6366F1).withValues(alpha: 0.30),
+                        blurRadius: 24,
+                        spreadRadius: 0,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: AimSpacing.space4),
-              Text(
-                levelName.isNotEmpty ? levelName : 'intermediate',
-                style: AimTextStyles.bodySm.copyWith(
-                  color: surfaces.textPrimary,
+              // Main badge
+              Container(
+                width: 96,
+                height: 96,
+                decoration: BoxDecoration(
+                  gradient: AimGradients.gzHero,
+                  borderRadius: BorderRadius.circular(28),
+                  border: Border.all(
+                    color: const Color(0xFF818CF8).withValues(alpha: 0.30),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AimColors.primary500.withValues(alpha: 0.28),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      displayCode,
+                      style: AimTextStyles.display.copyWith(
+                        fontSize: 36,
+                        fontWeight: AimFontWeights.extrabold,
+                        color: AimColors.neutral0,
+                        height: 1.0,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Level',
+                      style: AimTextStyles.caption.copyWith(
+                        fontSize: 10,
+                        fontWeight: AimFontWeights.bold,
+                        color: AimColors.neutral0.withValues(alpha: 0.75),
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
           const SizedBox(height: AimSpacing.space20),
-          Text(
-            l10n.placementResultGreatJob,
-            style: AimTextStyles.h2.copyWith(
-              color: surfaces.textPrimary,
+
+          // ── "Great Job! ✨" row ─────────────────────────────────────────
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                l10n.placementResultGreatJob,
+                style: AimTextStyles.h2.copyWith(
+                  color: surfaces.textPrimary,
+                ),
+              ),
+              const SizedBox(width: AimSpacing.space4),
+              const Icon(
+                Icons.auto_awesome,
+                size: 22,
+                color: Color(0xFFF59E0B),
+              ),
+            ],
+          ),
+          const SizedBox(height: AimSpacing.space8),
+
+          // ── Track pill ────────────────────────────────────────────────
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AimSpacing.space12,
+              vertical: AimSpacing.space4,
+            ),
+            decoration: BoxDecoration(
+              color: AimColors.primary500.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: Text(
+              '$displayName Track',
+              style: AimTextStyles.caption.copyWith(
+                color: AimColors.primary700,
+                fontWeight: AimFontWeights.bold,
+                letterSpacing: 0.5,
+              ),
             ),
           ),
           const SizedBox(height: AimSpacing.space8),
+
           Text(
             l10n.placementResultDetectedSubtitle,
             textAlign: TextAlign.center,

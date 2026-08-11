@@ -40,6 +40,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/analytics_summary/data/models/analytics_summary_report_model.dart';
@@ -141,7 +142,11 @@ class _AnalyticsHeader extends StatelessWidget {
               label: 'Back',
               child: InkWell(
                 onTap: () {
-                  if (context.canPop()) context.pop();
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go(AppRoutePaths.mainShell);
+                  }
                 },
                 customBorder: const CircleBorder(),
                 child: DecoratedBox(

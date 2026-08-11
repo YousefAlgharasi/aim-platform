@@ -85,3 +85,12 @@ class HomeEngagementStats {
   /// Null when there's no meaningful comparison (last week had 0 XP).
   final int? weeklyDeltaPercent;
 }
+
+/// Bundles the goal + daily challenge payload from a single backend call.
+class HomeEngagementSummary {
+  const HomeEngagementSummary({required this.goal, this.dailyChallenge});
+
+  final HomeEngagementGoal goal;
+  final HomeDailyChallenge? dailyChallenge;
+}
+

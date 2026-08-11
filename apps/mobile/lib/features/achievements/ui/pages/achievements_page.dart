@@ -7,8 +7,9 @@ import '../../../../core/design_tokens/aim_sizes.dart';
 import '../../../../core/design_tokens/aim_spacing.dart';
 import '../../../../core/design_tokens/aim_typography.dart';
 import '../../../../core/state/app_async_state.dart';
-
-import '../../../auth/data/models/auth_context_model.dart';
+import '../../../../core/routing/app_route_paths.dart';
+import '../../../../core/widgets/widgets.dart';
+import '../../../auth/logic/entity/auth_context.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
 import '../../data/models/achievement_model.dart';
@@ -163,6 +164,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
       AppAsyncSuccess(:final data) => data,
       _ => null,
     };
+    final colorScheme = Theme.of(context).colorScheme;
 
     final backendList = switch (state) {
       AppAsyncSuccess(:final data) => data,
@@ -180,7 +182,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
     };
 
     return Scaffold(
-      backgroundColor: AimColors.neutral50,
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -233,13 +235,14 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
     );
   }
 
-  Widget _buildTopHeader(BuildContext context, AuthContextModel? authContext) {
+  Widget _buildTopHeader(BuildContext context, AuthContext? authContext) {
     final displayName = authContext?.profile?.displayName ??
         ((authContext?.user.email != null && authContext!.user.email!.isNotEmpty)
             ? authContext.user.email!.split('@').first
             : 'Alex Johnson');
     final avatarLetter =
         displayName.isNotEmpty ? displayName[0].toUpperCase() : 'A';
+    final surfaces = aimSurfacesOf(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -250,26 +253,26 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           GestureDetector(
-            onTap: () => context.pop(),
+            onTap: () => context.canPop() ? context.pop() : context.go(AppRoutePaths.mainShell),
             child: Container(
               width: 40,
               height: 40,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: AimColors.secondary50.withValues(alpha: 0.6),
+                color: surfaces.surfaceSunken,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.arrow_back_rounded,
                 size: AimSizes.iconMd,
-                color: AimColors.neutral800,
+                color: surfaces.textPrimary,
               ),
             ),
           ),
           Text(
             'Achievements',
             style: AimTextStyles.h3.copyWith(
-              color: AimColors.neutral900,
+              color: surfaces.textPrimary,
               fontWeight: AimFontWeights.bold,
             ),
           ),
@@ -295,16 +298,18 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
   }
 
   Widget _buildMilestoneBanner(int unlockedCount, int totalCount) {
+    final surfaces = aimSurfacesOf(context);
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AimSpacing.space16),
       padding: const EdgeInsets.all(AimSpacing.space16),
       decoration: BoxDecoration(
-        color: AimColors.neutral0,
+        color: surfaces.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AimColors.neutral200),
+        border: Border.all(color: surfaces.border),
         boxShadow: [
           BoxShadow(
-            color: AimColors.neutral900.withValues(alpha: 0.03),
+            color: surfaces.textPrimary.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -327,7 +332,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
                   Text(
                     'AIM Milestones',
                     style: AimTextStyles.bodyLg.copyWith(
-                      color: AimColors.neutral900,
+                      color: surfaces.textPrimary,
                       fontWeight: AimFontWeights.bold,
                     ),
                   ),
@@ -337,7 +342,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
               Text(
                 '$unlockedCount of $totalCount badges unlocked',
                 style: AimTextStyles.bodySm.copyWith(
-                  color: AimColors.neutral500,
+                  color: surfaces.textMuted,
                 ),
               ),
             ],
@@ -345,7 +350,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: AimColors.secondary50,
+              color: colorScheme.secondaryContainer,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -367,6 +372,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
     required int unlockedCount,
     required int inProgressCount,
   }) {
+    final surfaces = aimSurfacesOf(context);
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: AimSpacing.space16,
@@ -374,7 +380,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
       ),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AimColors.neutral100,
+        color: surfaces.surfaceSunken,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -419,6 +425,7 @@ class _TabPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -426,12 +433,12 @@ class _TabPill extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 10),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: isSelected ? AimColors.neutral0 : Colors.transparent,
+          color: isSelected ? surfaces.surface : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AimColors.neutral900.withValues(alpha: 0.05),
+                    color: surfaces.textPrimary.withValues(alpha: 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -443,7 +450,7 @@ class _TabPill extends StatelessWidget {
           style: AimTextStyles.caption.copyWith(
             color: isSelected
                 ? AimColors.secondary600
-                : AimColors.neutral600,
+                : surfaces.textSecondary,
             fontWeight:
                 isSelected ? AimFontWeights.bold : AimFontWeights.medium,
             fontSize: 11,
@@ -461,6 +468,9 @@ class _BadgeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final colorScheme = Theme.of(context).colorScheme;
+
     final bool hasProgress =
         !badge.isUnlocked && badge.maxProgress > 0;
     final double progressRatio = hasProgress
@@ -470,12 +480,12 @@ class _BadgeCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AimSpacing.space16),
       decoration: BoxDecoration(
-        color: AimColors.neutral0,
+        color: surfaces.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AimColors.neutral200),
+        border: Border.all(color: surfaces.border),
         boxShadow: [
           BoxShadow(
-            color: AimColors.neutral900.withValues(alpha: 0.02),
+            color: surfaces.textPrimary.withValues(alpha: 0.02),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -492,15 +502,15 @@ class _BadgeCard extends StatelessWidget {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: badge.isUnlocked
-                      ? AimColors.secondary50
-                      : AimColors.neutral100,
+                      ? colorScheme.secondaryContainer
+                      : surfaces.surfaceSunken,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   badge.icon,
                   color: badge.isUnlocked
                       ? AimColors.secondary600
-                      : AimColors.neutral500,
+                      : surfaces.textMuted,
                   size: 24,
                 ),
               ),
@@ -514,7 +524,7 @@ class _BadgeCard extends StatelessWidget {
                     Text(
                       badge.title,
                       style: AimTextStyles.bodyLg.copyWith(
-                        color: AimColors.neutral900,
+                        color: surfaces.textPrimary,
                         fontWeight: AimFontWeights.bold,
                       ),
                     ),
@@ -522,7 +532,7 @@ class _BadgeCard extends StatelessWidget {
                     Text(
                       badge.description,
                       style: AimTextStyles.bodySm.copyWith(
-                        color: AimColors.neutral500,
+                        color: surfaces.textMuted,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -540,13 +550,13 @@ class _BadgeCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFD1FAE5),
+                    color: const Color(0xFFDCFCE7),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     'Unlocked',
                     style: AimTextStyles.caption.copyWith(
-                      color: const Color(0xFF059669),
+                      color: const Color(0xFF166534),
                       fontWeight: AimFontWeights.bold,
                       fontSize: 11,
                     ),
@@ -567,7 +577,7 @@ class _BadgeCard extends StatelessWidget {
                     child: LinearProgressIndicator(
                       value: progressRatio,
                       minHeight: 6,
-                      backgroundColor: AimColors.neutral200,
+                      backgroundColor: surfaces.surfaceSunken,
                       valueColor: const AlwaysStoppedAnimation<Color>(
                         AimColors.secondary500,
                       ),
@@ -578,7 +588,7 @@ class _BadgeCard extends StatelessWidget {
                 Text(
                   '${badge.currentProgress}/${badge.maxProgress}',
                   style: AimTextStyles.caption.copyWith(
-                    color: AimColors.neutral500,
+                    color: surfaces.textMuted,
                     fontWeight: AimFontWeights.bold,
                   ),
                 ),

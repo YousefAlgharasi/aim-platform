@@ -58,22 +58,29 @@ class _SplashPageState extends ConsumerState<SplashPage>
     final size = MediaQuery.sizeOf(context);
 
     return Scaffold(
-      backgroundColor: AimColors.secondary500,
+      backgroundColor: const Color(0xFF5E4BF4),
       body: Stack(
         children: [
-          // Background Color / Subtle Radial Gradient Glow
+          // Radial Gradient Base
           Positioned.fill(
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: RadialGradient(
-                  center: const Alignment(0.0, -0.1),
-                  radius: 0.9,
+                  center: Alignment(0.0, -0.1),
+                  radius: 1.0,
                   colors: [
-                    AimColors.secondary400,
-                    AimColors.secondary600,
+                    Color(0xFF6E5DF6),
+                    Color(0xFF4C3CDA),
                   ],
                 ),
               ),
+            ),
+          ),
+
+          // Concentric Background Rings / Ripples
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _SplashRipplesPainter(),
             ),
           ),
 
@@ -141,4 +148,24 @@ class _SplashPageState extends ConsumerState<SplashPage>
       ),
     );
   }
+}
+
+/// Custom painter that draws the subtle concentric rings in the splash background.
+class _SplashRipplesPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2 - 20);
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+
+    final radii = [140.0, 240.0, 350.0, 470.0, 600.0];
+    for (int i = 0; i < radii.length; i++) {
+      paint.color = Colors.white.withValues(alpha: 0.05 - (i * 0.008));
+      canvas.drawCircle(center, radii[i], paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

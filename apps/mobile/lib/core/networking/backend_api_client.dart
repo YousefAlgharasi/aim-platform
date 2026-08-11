@@ -130,6 +130,25 @@ class BackendApiClient {
     );
   }
 
+  Future<ApiResponseEnvelope<T>> put<T>(
+    String path, {
+    required ApiJsonDecoder<T> decodeData,
+    Object? body,
+    Map<String, String>? headers,
+  }) async {
+    final encodedBody = body == null ? null : jsonEncode(body);
+
+    return _sendWithRefreshRetry<T>(
+      decodeData: decodeData,
+      send: (effectiveHeaders) => _withTimeout(() => _httpClient.put(
+            buildUri(path),
+            headers: effectiveHeaders,
+            body: encodedBody,
+          )),
+      buildHeaders: () => _jsonHeaders(headers),
+    );
+  }
+
   Future<ApiResponseEnvelope<T>> patch<T>(
     String path, {
     required ApiJsonDecoder<T> decodeData,

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/theme.dart';
 
-/// Reusable primary button for placement flow screens.
-/// Theme-aware, responsive, accessible, supports loading state.
+/// Primary button matching PrimaryButton.tsx from Modern Auth Pages (3)-1.
+///
+/// Height: 54px | Border-radius: 14px | Shadow: 0 4px 16px rgba(79,70,229,0.2)
 class PlacementPrimaryButton extends StatelessWidget {
   const PlacementPrimaryButton({
     super.key,
@@ -19,21 +20,23 @@ class PlacementPrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
     final isClickable = enabled && !isLoading && onPressed != null;
+    const primaryColor = AimColors.primary500;
 
     return SizedBox(
       width: double.infinity,
-      height: AimSizes.buttonLg,
+      height: 54,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: enabled ? AimColors.primary500 : AimColors.primary500.withValues(alpha: 0.5),
-          borderRadius: AimRadius.borderMd,
+          color: isClickable
+              ? primaryColor
+              : primaryColor.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(14),
           boxShadow: isClickable
               ? [
                   BoxShadow(
-                    color: AimColors.primary500.withValues(alpha: 0.2),
-                    blurRadius: 6,
+                    color: primaryColor.withValues(alpha: 0.25),
+                    blurRadius: 16,
                     offset: const Offset(0, 4),
                   ),
                 ]
@@ -41,26 +44,27 @@ class PlacementPrimaryButton extends StatelessWidget {
         ),
         child: Material(
           color: Colors.transparent,
-          borderRadius: AimRadius.borderMd,
+          borderRadius: BorderRadius.circular(14),
           child: InkWell(
             onTap: isClickable ? onPressed : null,
-            borderRadius: AimRadius.borderMd,
+            borderRadius: BorderRadius.circular(14),
             child: Center(
               child: isLoading
-                  ? SizedBox(
-                      width: AimSizes.iconMd,
-                      height: AimSizes.iconMd,
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
                       child: CircularProgressIndicator(
                         strokeWidth: 2.5,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          surfaces.textOnPrimary,
-                        ),
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
                   : Text(
                       label,
                       style: AimTextStyles.button.copyWith(
-                        color: surfaces.textOnPrimary,
+                        color: const Color(0xFFF8FAFC),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.2,
                       ),
                     ),
             ),

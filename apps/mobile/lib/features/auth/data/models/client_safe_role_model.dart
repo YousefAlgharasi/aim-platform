@@ -1,7 +1,10 @@
-class ClientSafeRoleModel {
+import 'package:aim_mobile/features/auth/logic/entity/auth_context.dart';
+
+class ClientSafeRoleModel extends AuthRole {
   const ClientSafeRoleModel({
-    required this.key,
-    required this.name,
+    super.id = '',
+    required super.key,
+    required super.name,
   });
 
   factory ClientSafeRoleModel.fromJson(Map<String, dynamic> json) {
@@ -10,9 +13,6 @@ class ClientSafeRoleModel {
       name: json['name'] as String,
     );
   }
-
-  final String key;
-  final String name;
 
   factory ClientSafeRoleModel.fromKey(String key) {
     return ClientSafeRoleModel(

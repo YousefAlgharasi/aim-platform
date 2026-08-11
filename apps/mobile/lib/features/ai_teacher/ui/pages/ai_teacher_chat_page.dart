@@ -413,7 +413,13 @@ class _AiTeacherChatHeader extends StatelessWidget
               button: true,
               label: 'Back',
               child: InkWell(
-                onTap: () => context.pop(),
+                onTap: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go(AppRoutePaths.mainShell);
+                  }
+                },
                 customBorder: const CircleBorder(),
                 child: DecoratedBox(
                   decoration: BoxDecoration(

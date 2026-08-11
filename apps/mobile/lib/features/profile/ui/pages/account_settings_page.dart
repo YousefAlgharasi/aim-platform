@@ -3,17 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/core/theme/theme_mode_provider.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
-import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
+import 'package:aim_mobile/features/auth/logic/entity/auth_context.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/logout_provider.dart';
-import 'package:aim_mobile/features/auth/logic/provider/auth_token_interceptor_provider.dart';
 import 'package:aim_mobile/features/profile/logic/provider/profile_provider.dart';
 import 'package:aim_mobile/features/profile/data/models/profile_update_payload_models.dart';
-import 'package:aim_mobile/core/networking/backend_api_paths.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class AccountSettingsPage extends ConsumerStatefulWidget {
@@ -50,7 +49,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
 
   void _loadCurrentProfile() {
     final authState = ref.read(authContextProvider);
-    if (authState is AppAsyncSuccess<AuthContextModel>) {
+    if (authState is AppAsyncSuccess<AuthContext>) {
       _nameController.text = authState.data.profile?.displayName ?? '';
     }
   }
@@ -88,17 +87,14 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
       // Refresh current auth context to display updated name immediately
       await ref.read(authContextProvider.notifier).loadCurrentUser(token);
 
-      // 2. Update Daily Learning Commitment Goal in Backend API
+      // 2. Update Daily Learning Commitment Goal in Backend API via ProfileNotifier
       final lessonsMap = {'5': 1, '15': 2, '30': 3};
       final dailyGoalLessons = lessonsMap[_commitment] ?? 2;
 
-      final client = ref.read(authenticatedBackendApiClientProvider);
-      await client.put(
-        BackendApiPaths.engagementGoal,
-        headers: {'authorization': 'Bearer $token'},
-        body: {'dailyGoalLessons': dailyGoalLessons},
-        decodeData: (json) => json,
-      );
+      await ref.read(profileProvider.notifier).updateEngagementGoal(
+            token,
+            dailyGoalLessons: dailyGoalLessons,
+          );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -133,44 +129,58 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
   }
 
   Future<void> _updatePassword() async {
-    if (_currentPasswordController.text.isEmpty || _newPasswordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          backgroundColor: AimColors.error500,
-          content: Text('Please fill in both password fields.'),
-        ),
-      );
-      return;
-    }
-
     setState(() {
       _isUpdatingPassword = true;
     });
 
-    final l10n = AppLocalizations.of(context);
+    try {
+      final authState = ref.read(authContextProvider);
+      final email = switch (authState) {
+        AppAsyncSuccess(:final data) => data.user.email ?? '',
+        _ => '',
+      };
 
-    // Simulate password update locally since there is no backend password update API endpoint in AuthController
-    await Future.delayed(const Duration(milliseconds: 1200));
+      if (email.isNotEmpty) {
+        await ref.read(authRepositoryProvider).requestPasswordReset(email: email);
+      }
 
-    if (mounted) {
-      setState(() {
-        _isUpdatingPassword = false;
-        _currentPasswordController.clear();
-        _newPasswordController.clear();
-      });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: AimColors.success500,
-          content: Row(
-            children: [
-              const Icon(Icons.lock_reset, color: AimColors.neutral0),
-              const SizedBox(width: 8),
-              Text(l10n.settingsPasswordSuccess),
-            ],
+      if (mounted) {
+        setState(() {
+          _isUpdatingPassword = false;
+          _currentPasswordController.clear();
+          _newPasswordController.clear();
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: AimColors.success500,
+            content: Row(
+              children: [
+                Icon(Icons.mark_email_read, color: AimColors.neutral0),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Password reset email sent. Please check your inbox.',
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      );
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isUpdatingPassword = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AimColors.error500,
+            content: Text('Failed to request password reset: $e'),
+          ),
+        );
+      }
     }
   }
 
@@ -237,7 +247,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
         leadingWidth: 72,
         leading: Center(
           child: GestureDetector(
-            onTap: () => context.pop(),
+            onTap: () => context.canPop() ? context.pop() : context.go(AppRoutePaths.mainShell),
             child: Container(
               width: 40,
               height: 40,

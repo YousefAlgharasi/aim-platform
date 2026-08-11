@@ -93,6 +93,14 @@ export class PlacementDecisionService {
       [studentId, decision],
     );
 
+    if (updated.rows.length === 0) {
+      throw new AppError({
+        code: PlacementErrorCode.ATTEMPT_NOT_FOUND,
+        message: 'Student profile not found.',
+        statusCode: HttpStatus.NOT_FOUND,
+      });
+    }
+
     return { should_show_gate: false, decision: updated.rows[0].placement_decision };
   }
 }

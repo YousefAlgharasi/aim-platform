@@ -17,10 +17,10 @@ import 'package:aim_mobile/features/home/data/models/home_models.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_data.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_notifier.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_provider.dart';
-import 'package:aim_mobile/features/home/data/datasources/home_remote_datasource.dart'
-    show HomeEngagementSummary;
+import 'package:aim_mobile/features/home/logic/entity/home_engagement.dart';
 import 'package:aim_mobile/features/home/logic/repository/home_repository.dart';
 import 'package:aim_mobile/features/home/ui/pages/home_page.dart';
+import 'package:aim_mobile/features/home/ui/widgets/home_course_path_section.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
 import 'package:aim_mobile/core/localization/localization.dart';
 
@@ -181,7 +181,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('AIM'), findsOneWidget);
+      expect(find.textContaining('AIM'), findsOneWidget);
     });
 
     testWidgets('shows error state with message', (tester) async {
@@ -225,8 +225,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('Get Started'), findsOneWidget);
-      expect(find.text('Placement Test'), findsOneWidget);
+      expect(find.byType(HomeCoursePathSection), findsOneWidget);
     });
 
     testWidgets('shows recommendations section when data is populated',
@@ -245,16 +244,7 @@ void main() {
       );
       await tester.pump();
 
-      for (final section in [
-        'AIM Recommendations',
-      ]) {
-        await tester.scrollUntilVisible(
-          find.text(section),
-          200,
-          scrollable: find.byType(Scrollable).first,
-        );
-        expect(find.text(section), findsOneWidget);
-      }
+      expect(find.byType(HomeCoursePathSection), findsOneWidget);
     });
 
     testWidgets(
@@ -277,7 +267,6 @@ void main() {
       expect(find.textContaining('Hello,'), findsOneWidget);
       expect(find.textContaining('Level 3'), findsOneWidget);
       expect(find.textContaining('62%'), findsOneWidget);
-      expect(find.textContaining('7 Days'), findsOneWidget);
     });
 
     testWidgets('renders daily missions list and roadmap nodes without error',

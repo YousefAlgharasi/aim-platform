@@ -13,6 +13,7 @@
 // - No AIM Engine runtime, AI Teacher, lesson delivery, or progress dashboard logic.
 // - No secrets, service-role keys, or privileged config here.
 
+import 'package:aim_mobile/features/placement/logic/provider/placement_gate_notifier.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_menu_notifier.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_question_notifier.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_required_notifier.dart';
@@ -115,6 +116,16 @@ final placementRequiredProvider = StateNotifierProvider<
 final placementMenuProvider =
     StateNotifierProvider.autoDispose<PlacementMenuNotifier, PlacementMenuState>(
   (ref) => PlacementMenuNotifier(
+    repository: ref.watch(placementRepositoryProvider),
+  ),
+);
+
+/// Gate check provider — used by [MainShellPage] to decide whether to show
+/// the first-login placement gate before the student reaches the home screen.
+/// Auto-disposed so state is cleared when the gate is no longer visible.
+final placementGateProvider =
+    StateNotifierProvider.autoDispose<PlacementGateNotifier, PlacementGateState>(
+  (ref) => PlacementGateNotifier(
     repository: ref.watch(placementRepositoryProvider),
   ),
 );

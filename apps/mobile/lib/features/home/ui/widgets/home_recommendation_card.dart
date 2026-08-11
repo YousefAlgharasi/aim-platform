@@ -7,7 +7,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
-import 'package:aim_mobile/features/home/data/models/home_models.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_recommendation.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class HomeRecommendationCard extends StatelessWidget {
@@ -16,7 +16,7 @@ class HomeRecommendationCard extends StatelessWidget {
     super.key,
   });
 
-  final HomeRecommendationModel model;
+  final HomeRecommendation model;
 
   @override
   Widget build(BuildContext context) {

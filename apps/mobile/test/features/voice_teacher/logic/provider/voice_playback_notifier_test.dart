@@ -29,6 +29,11 @@ class _FakePlayer implements VoicePlayerClient {
   }
 
   @override
+  Future<void> playUrl(String url) async {
+    if (playThrows != null) throw playThrows!;
+  }
+
+  @override
   Future<void> pause() async => paused = true;
 
   @override

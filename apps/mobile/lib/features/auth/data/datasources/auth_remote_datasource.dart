@@ -34,4 +34,8 @@ abstract class AuthRemoteDatasource {
 
   /// POST /auth/test-login — unauthenticated, non-production only.
   Future<LoginResult> loginAsTestUser({required String role});
+
+  /// POST /auth/forgot-password — unauthenticated.
+  Future<void> requestPasswordReset({required String email});
 }
+

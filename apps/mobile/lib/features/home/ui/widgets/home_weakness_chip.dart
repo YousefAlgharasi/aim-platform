@@ -7,7 +7,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
-import 'package:aim_mobile/features/home/data/models/home_models.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_weakness_record.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class HomeWeaknessChip extends StatelessWidget {
@@ -16,7 +16,7 @@ class HomeWeaknessChip extends StatelessWidget {
     super.key,
   });
 
-  final HomeWeaknessRecordModel model;
+  final HomeWeaknessRecord model;
 
   AIMBadgeTone get _tone {
     return switch (model.severity.toLowerCase()) {

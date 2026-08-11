@@ -31,9 +31,9 @@ Future<String?> _refreshSession(Ref ref) async {
       return null;
     }
 
-    final datasource = ref.read(authRemoteDatasourceProvider);
+    final repo = ref.read(authRepositoryProvider);
     final refreshed =
-        await datasource.refresh(refreshToken: session.refreshToken);
+        await repo.refresh(refreshToken: session.refreshToken);
 
     await store.save(
       accessToken: refreshed.accessToken,

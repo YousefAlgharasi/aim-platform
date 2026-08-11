@@ -7,7 +7,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
-import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
+import 'package:aim_mobile/features/lessons/logic/entity/lessons_entities.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class ChapterQuizTile extends StatelessWidget {
@@ -17,7 +17,7 @@ class ChapterQuizTile extends StatelessWidget {
     super.key,
   });
 
-  final ChapterQuizSummaryModel model;
+  final ChapterQuizSummary model;
   final VoidCallback onTap;
 
   @override
@@ -31,13 +31,13 @@ class ChapterQuizTile extends StatelessWidget {
       semanticLabel: '${l10n.lessonsQuizRowLabel}: ${model.title}',
       child: Row(
         children: [
-          DecoratedBox(
-            decoration: const BoxDecoration(
+          const DecoratedBox(
+            decoration: BoxDecoration(
               gradient: AimGradients.gzCoral,
               shape: BoxShape.circle,
             ),
             child: Padding(
-              padding: const EdgeInsets.all(AimSpacing.space12),
+              padding: EdgeInsets.all(AimSpacing.space12),
               child: Icon(
                 Icons.quiz_outlined,
                 size: AimSizes.iconMd,

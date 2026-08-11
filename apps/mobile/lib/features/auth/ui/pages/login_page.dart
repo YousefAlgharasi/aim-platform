@@ -182,7 +182,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 ),
                 const SizedBox(height: AimSpacing.componentGap),
 
-                Center(
+                Align(
+                  alignment: AlignmentDirectional.centerEnd,
                   child: TextButton(
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -194,17 +195,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       );
                     },
                     style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AimSpacing.space16,
-                        vertical: AimSpacing.space8,
-                      ),
-                      tapTargetSize: MaterialTapTargetSize.padded,
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       overlayColor: AimColors.primary500.withValues(alpha: 0.12),
                     ),
                     child: Text(
                       l10n.authForgotPassword,
-                      style: AimTextStyles.button.copyWith(
-                        color: surfaces.textPrimary,
+                      style: AimTextStyles.caption.copyWith(
+                        color: AimColors.primary500,
+                        fontWeight: AimFontWeights.semibold,
                       ),
                     ),
                   ),

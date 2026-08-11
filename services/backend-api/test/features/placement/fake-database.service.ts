@@ -646,6 +646,11 @@ export class FakeDatabaseService {
       return toQueryResult([]);
     }
 
+    // ---- student_profiles: ensure existence ---------------------------------
+    if (sql.startsWith('INSERT INTO student_profiles') && sql.includes('ON CONFLICT (user_id) DO NOTHING')) {
+      return toQueryResult([]);
+    }
+
     // ---- placement_sections: list for active test --------------------------
     if (sql.startsWith('SELECT') && sql.includes('FROM placement_sections') && sql.includes('placement_test_id = $1')) {
       const [testId] = params as [string];

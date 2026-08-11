@@ -5,9 +5,14 @@
 // All AIM values (band, masteryLevel, severity, priority, action, reason)
 // are backend-computed. Flutter renders them verbatim; no local computation.
 
-import 'package:aim_mobile/features/home/data/models/home_models.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_continue_learning.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_engagement.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_quick_start_lesson.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_recommendation.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_recommended_course.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_review_schedule.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_skill_state.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_weakness_record.dart';
 
 /// Aggregated home screen data loaded from the backend.
 ///
@@ -28,29 +33,29 @@ class HomeData {
   });
 
   /// Backend-computed skill state summary cards.
-  final List<HomeSkillStateModel> skillStates;
+  final List<HomeSkillState> skillStates;
 
   /// Backend-computed weakness strip entries.
-  final List<HomeWeaknessRecordModel> weaknessRecords;
+  final List<HomeWeaknessRecord> weaknessRecords;
 
   /// Backend-computed review schedule reminders.
-  final List<HomeReviewScheduleModel> reviewSchedules;
+  final List<HomeReviewSchedule> reviewSchedules;
 
   /// Backend-computed recommendation cards.
   /// Never generated or rewritten by Flutter.
-  final List<HomeRecommendationModel> recommendations;
+  final List<HomeRecommendation> recommendations;
 
   /// Backend-computed daily goal + streak. Null only if the engagement
   /// summary call failed to load (handled separately from the four
   /// required lists above, which fail the whole page on error).
-  final HomeEngagementGoalModel? goal;
+  final HomeEngagementGoal? goal;
 
   /// Backend-selected daily challenge, or null if none is configured.
-  final HomeDailyChallengeModel? dailyChallenge;
+  final HomeDailyChallenge? dailyChallenge;
 
   /// Most recently active, incomplete lesson, or null if the student has
   /// not started any lesson yet.
-  final HomeContinueLearningModel? continueLearning;
+  final HomeContinueLearning? continueLearning;
 
   /// Next lesson recommended for the student based on their placement result,
   /// or null if no placement has been taken yet or no published lessons exist.
@@ -64,7 +69,7 @@ class HomeData {
   /// hero card. Null only if the engagement stats call failed to load
   /// (handled separately, like [goal]/[dailyChallenge], so a failure here
   /// never fails the whole page).
-  final HomeEngagementStatsModel? engagementStats;
+  final HomeEngagementStats? engagementStats;
 
   /// True when the four core AIM lists and continue-learning are all empty
   /// (backend returned no progress data yet) — drives whether the "getting

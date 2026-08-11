@@ -319,19 +319,28 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 ),
                 const SizedBox(height: AimSpacing.space32),
 
-                Center(
-                  child: GestureDetector(
-                    onTap: () => context.go(AppRoutePaths.signIn),
-                    child: Text(
-                      l10n.authAlreadyHaveAccount,
-                      style: AimTextStyles.bodyMd.copyWith(
-                        fontWeight: AimFontWeights.semibold,
-                        color: AimColors.primary500,
-                        decoration: TextDecoration.underline,
-                        decorationColor: AimColors.primary500,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Already have an account? ',
+                      style: AimTextStyles.bodySm.copyWith(
+                        color: surfaces.textSecondary,
                       ),
                     ),
-                  ),
+                    GestureDetector(
+                      onTap: () => context.go(AppRoutePaths.signIn),
+                      child: Text(
+                        l10n.authSignInButton,
+                        style: AimTextStyles.bodySm.copyWith(
+                          fontWeight: AimFontWeights.bold,
+                          color: AimColors.primary500,
+                          decoration: TextDecoration.underline,
+                          decorationColor: AimColors.primary500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

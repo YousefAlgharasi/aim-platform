@@ -48,7 +48,7 @@ import '../../../../core/state/app_async_state.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../achievements/data/models/achievement_model.dart';
 import '../../../achievements/logic/provider/achievements_provider.dart';
-import '../../../auth/data/models/auth_context_model.dart';
+import '../../../auth/logic/entity/auth_context.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
 import '../../../home/logic/entity/home_data.dart';
@@ -163,7 +163,7 @@ class _ProfileBody extends StatelessWidget {
     required this.achievements,
   });
 
-  final AuthContextModel authContext;
+  final AuthContext authContext;
   final AimSurfaceTheme surfaces;
 
   /// Backend-computed day streak from homeProvider, or null if that
@@ -355,7 +355,7 @@ class _ProfileHeroHeader extends StatelessWidget {
     required this.totalAchievements,
   });
 
-  final AuthContextModel authContext;
+  final AuthContext authContext;
   final int streakDays;
   final int unlockedCount;
   final int totalAchievements;

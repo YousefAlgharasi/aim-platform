@@ -52,9 +52,11 @@ class PlacementSubmitNotifier extends StateNotifier<PlacementSubmitState> {
   }) async {
     state = const PlacementSubmitLoading();
 
-    if (bearerToken.isEmpty || bearerToken.startsWith('mock-')) {
-      await Future.delayed(const Duration(milliseconds: 1500));
-      state = PlacementSubmitSuccess(attemptId: attemptId);
+    if (bearerToken.isEmpty) {
+      state = const PlacementSubmitError(
+        message: 'No authorization token available.',
+        code: 'NO_TOKEN',
+      );
       return;
     }
 

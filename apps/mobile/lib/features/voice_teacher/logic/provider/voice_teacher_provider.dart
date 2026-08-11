@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_token_interceptor_provider.dart';
+import 'package:aim_mobile/features/voice_teacher/data/datasources/voice_player_client_impl.dart';
+import 'package:aim_mobile/features/voice_teacher/data/datasources/voice_recorder_client_impl.dart';
 import 'package:aim_mobile/features/voice_teacher/data/datasources/voice_teacher_remote_datasource.dart';
 import 'package:aim_mobile/features/voice_teacher/data/datasources/voice_teacher_remote_datasource_impl.dart';
 import 'package:aim_mobile/features/voice_teacher/data/repository/voice_teacher_repository_impl.dart';
@@ -39,8 +41,17 @@ final voiceRecordSubmitProvider =
   (ref) => VoiceRecordSubmitNotifier(),
 );
 
+/// Provides a [RealVoiceRecorderClient] for the voice recording flow.
+/// Concrete implementation is from the Data layer; the notifier depends
+/// only on the [VoiceRecorderClient] interface.
+final voiceRecorderClientProvider = Provider.autoDispose<RealVoiceRecorderClient>(
+  (ref) => RealVoiceRecorderClient(),
+);
+
 /// Drives the AI Teacher audio playback states (P18-065).
+/// Injects [RealVoicePlayerClient] from the Data layer so the notifier
+/// stays decoupled from the concrete plugin implementation.
 final voicePlaybackProvider =
     ChangeNotifierProvider.autoDispose<VoicePlaybackNotifier>(
-  (ref) => VoicePlaybackNotifier(),
+  (ref) => VoicePlaybackNotifier(player: RealVoicePlayerClient()),
 );

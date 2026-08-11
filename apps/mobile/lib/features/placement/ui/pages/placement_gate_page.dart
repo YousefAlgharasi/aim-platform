@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/l10n/app_localizations.dart';
@@ -15,12 +16,6 @@ import '../widgets/placement_page_header.dart';
 import '../widgets/placement_primary_button.dart';
 import '../widgets/placement_progress_bar.dart';
 
-final placementGateProvider =
-    StateNotifierProvider.autoDispose<PlacementGateNotifier, PlacementGateState>(
-  (ref) => PlacementGateNotifier(
-    repository: ref.watch(placementRepositoryProvider),
-  ),
-);
 
 class PlacementGatePage extends ConsumerStatefulWidget {
   const PlacementGatePage({super.key});
@@ -44,8 +39,8 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(placementGateProvider);
-    final surfaces = aimSurfacesOf(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
 
     ref.listen<PlacementGateState>(placementGateProvider, (_, next) {
       if (context.mounted) {
@@ -70,20 +65,58 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Scaffold(
-        backgroundColor: surfaces.background,
+        backgroundColor: isDark
+            ? const Color(0xFF0F172A)
+            : const Color(0xFFEEF0F7),
         body: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: AimSpacing.space20),
-              PlacementProgressBar(total: 4, current: _currentStep),
-              const SizedBox(height: AimSpacing.space32),
-              Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 250),
-                  child: _buildCurrentStep(isChoosing),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: Container(
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.06),
+                      blurRadius: 32,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 20),
+                      PlacementProgressBar(total: 4, current: _currentStep),
+                      const SizedBox(height: 28),
+                      Expanded(
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 250),
+                          transitionBuilder: (child, animation) =>
+                              FadeTransition(
+                            opacity: animation,
+                            child: SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0.04, 0),
+                                end: Offset.zero,
+                              ).animate(animation),
+                              child: child,
+                            ),
+                          ),
+                          child: _buildCurrentStep(isChoosing),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -107,47 +140,53 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
   // ── Step 1: Vision Welcome ─────────────────────────────────────────────────
   Widget _buildVisionStep() {
     final l10n = AppLocalizations.of(context);
-    final surfaces = aimSurfacesOf(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       key: const ValueKey(0),
       children: [
+        // ── Illustration area ─────────────────────────────────────────
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AimSpacing.screenPaddingMobile),
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
             child: Container(
               width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: AimGradients.aiSoft,
-                borderRadius: AimRadius.borderX2l,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? [
+                          const Color(0xFF1E1B4B),
+                          const Color(0xFF1E293B),
+                        ]
+                      : [
+                          const Color(0xFFEEF2FF),
+                          const Color(0xFFF5F3FF),
+                        ],
+                ),
+                borderRadius: BorderRadius.circular(20),
               ),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
+                  // ✦ AI Adaptive badge — top right
                   Positioned(
-                    top: AimSpacing.space24,
-                    right: AimSpacing.space24,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: surfaces.surface,
-                        borderRadius: AimRadius.borderSm,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AimColors.neutral900.withValues(alpha: 0.06),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
+                    top: 18,
+                    right: 18,
+                    child: _FloatingBadge(
+                      isDark: isDark,
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text('✦ ', style: TextStyle(color: AimColors.primary500)),
+                          const Text('✦ ',
+                              style: TextStyle(
+                                  color: AimColors.primary500, fontSize: 10)),
                           Text(
                             l10n.placementGateAiAdaptive,
-                            style: AimTextStyles.caption.copyWith(
-                              fontWeight: AimFontWeights.semibold,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
                               color: AimColors.primary500,
                             ),
                           ),
@@ -155,98 +194,29 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
                       ),
                     ),
                   ),
-                  Container(
-                    width: 110,
-                    height: 170,
-                    decoration: BoxDecoration(
-                      color: surfaces.surface,
-                      borderRadius: AimRadius.borderLg,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AimColors.primary500.withValues(alpha: 0.18),
-                          blurRadius: 32,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(AimSpacing.space12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          height: 6,
-                          width: double.infinity,
-                          decoration: const BoxDecoration(
-                            color: AimColors.primary500,
-                            borderRadius: AimRadius.borderXs,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Container(
-                          height: 4,
-                          width: 60,
-                          decoration: BoxDecoration(
-                            color: surfaces.border,
-                            borderRadius: AimRadius.borderXs,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Container(
-                          height: 54,
-                          decoration: const BoxDecoration(
-                            gradient: AimGradients.aiSoft,
-                            borderRadius: AimRadius.borderSm,
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.psychology_rounded,
-                              color: AimColors.primary500,
-                              size: AimSizes.iconLg,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          height: 4,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: surfaces.border,
-                            borderRadius: AimRadius.borderXs,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Container(
-                          height: 4,
-                          width: 40,
-                          decoration: BoxDecoration(
-                            color: surfaces.border,
-                            borderRadius: AimRadius.borderXs,
-                          ),
-                        ),
-                      ],
+                  // ── Main illustration: undraw_chat_ai SVG ─────────────
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 16),
+                    child: SvgPicture.asset(
+                      'assets/images/undraw_chat_ai.svg',
+                      fit: BoxFit.contain,
                     ),
                   ),
+                  // 94% retention badge — bottom left
                   Positioned(
-                    bottom: AimSpacing.space24,
-                    left: AimSpacing.space24,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: surfaces.surface,
-                        borderRadius: AimRadius.borderSm,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AimColors.neutral900.withValues(alpha: 0.06),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
+                    bottom: 18,
+                    left: 18,
+                    child: _FloatingBadge(
+                      isDark: isDark,
                       child: Text(
                         l10n.placementGateRetention,
-                        style: AimTextStyles.caption.copyWith(
-                          fontWeight: AimFontWeights.semibold,
-                          color: surfaces.textPrimary,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: isDark
+                              ? const Color(0xFFCBD5E1)
+                              : const Color(0xFF334155),
                         ),
                       ),
                     ),
@@ -256,12 +226,13 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
             ),
           ),
         ),
-        const SizedBox(height: AimSpacing.sectionGap),
+        // ── Header ─────────────────────────────────────────────────────
         PlacementPageHeader(
           title: l10n.placementGateVisionTitle,
           subtitle: l10n.placementGateVisionSubtitle,
         ),
-        const SizedBox(height: AimSpacing.sectionGap),
+        const SizedBox(height: 20),
+        // ── Buttons ────────────────────────────────────────────────────
         _buildBottomButtons(
           onContinue: () => setState(() => _currentStep = 1),
           onSkip: () => setState(() => _currentStep = 3),
@@ -269,6 +240,8 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
       ],
     );
   }
+
+
 
   // ── Step 2: Goal Focus Calibration ─────────────────────────────────────────
   Widget _buildFocusStep() {
@@ -438,40 +411,43 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AimSpacing.screenPaddingMobile),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Text(
             l10n.placementGateStepLabel(4, 4).toUpperCase(),
-            style: AimTextStyles.caption.copyWith(
-              fontWeight: AimFontWeights.bold,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
               color: AimColors.primary500,
-              letterSpacing: 1.2,
+              letterSpacing: 1.4,
             ),
           ),
         ),
-        const SizedBox(height: AimSpacing.space4),
+        const SizedBox(height: 6),
         PlacementPageHeader(
           title: l10n.placementGateStartTitle,
           subtitle: l10n.placementGateStartSubtitle,
         ),
-        const SizedBox(height: AimSpacing.space32),
+        const SizedBox(height: 24),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AimSpacing.screenPaddingMobile),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             children: [
+              // Option A — Start from Zero (unselected by default)
               PlacementOptionCard(
                 title: l10n.placementGateStartFromZeroTitle,
                 subtitle: l10n.placementGateStartFromZeroSub,
                 iconWidget: const Icon(
                   Icons.outlined_flag_rounded,
                   color: AimColors.primary500,
-                  size: AimSizes.iconLg,
+                  size: 22,
                 ),
                 isSelected: isOptionA,
                 onTap: () {
                   setState(() => _selectedStartMode = 'start_from_scratch');
                 },
               ),
-              const SizedBox(height: AimSpacing.space24),
+              const SizedBox(height: 12),
+              // Option B — Test My Knowledge (pre-selected + RECOMMENDED badge)
               Stack(
                 clipBehavior: Clip.none,
                 children: [
@@ -481,7 +457,7 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
                     iconWidget: const Icon(
                       Icons.track_changes_rounded,
                       color: AimColors.primary500,
-                      size: AimSizes.iconLg,
+                      size: 22,
                     ),
                     isSelected: isOptionB,
                     onTap: () {
@@ -489,18 +465,20 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
                     },
                   ),
                   Positioned(
-                    top: -10,
+                    top: -11,
                     left: 0,
                     right: 0,
                     child: Center(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 3),
                         decoration: BoxDecoration(
                           color: AimColors.primary500,
                           borderRadius: BorderRadius.circular(100),
                           boxShadow: [
                             BoxShadow(
-                              color: AimColors.primary500.withValues(alpha: 0.45),
+                              color: AimColors.primary500
+                                  .withValues(alpha: 0.40),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -511,17 +489,18 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
                           children: [
                             const Icon(
                               Icons.star_rounded,
-                              size: 11,
-                              color: AimColors.neutral0,
+                              size: 10,
+                              color: Colors.white,
                             ),
                             const SizedBox(width: 3),
                             Text(
-                              l10n.placementGateRecommendedBadge.toUpperCase(),
+                              l10n.placementGateRecommendedBadge
+                                  .toUpperCase(),
                               style: const TextStyle(
                                 fontSize: 9,
-                                fontWeight: FontWeight.bold,
-                                color: AimColors.neutral0,
-                                letterSpacing: 1.0,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                letterSpacing: 0.8,
                               ),
                             ),
                           ],
@@ -536,12 +515,7 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
         ),
         const Spacer(),
         Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AimSpacing.screenPaddingMobile,
-            AimSpacing.space16,
-            AimSpacing.screenPaddingMobile,
-            AimSpacing.space24,
-          ),
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
           child: PlacementPrimaryButton(
             label: l10n.commonContinue,
             isLoading: isChoosing,
@@ -583,3 +557,31 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
     );
   }
 }
+
+// ── Floating badge helper ─────────────────────────────────────────────────────
+class _FloatingBadge extends StatelessWidget {
+  const _FloatingBadge({required this.isDark, required this.child});
+
+  final bool isDark;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.07),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+}
+

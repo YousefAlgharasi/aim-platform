@@ -30,6 +30,8 @@ export interface FinalExamRow {
   readonly assessment_id: string;
   readonly title: string;
   readonly course_id: string;
+  readonly passed?: boolean;
+  readonly score?: number | null;
 }
 
 @Injectable()
@@ -80,15 +82,26 @@ export class StudentChaptersRepository {
     return result.rows;
   }
 
-  /** The published final exam (course_id-linked) for the course this level belongs to, or null. */
-  async findFinalExamForLevel(levelId: string): Promise<FinalExamRow | null> {
+  /** The published final exam (course_id-linked or chapter-linked) for the course this level belongs to, or null. */
+  async findFinalExamForLevel(levelId: string, studentId?: string): Promise<FinalExamRow | null> {
     const result = await this.db.query<FinalExamRow>(
-      `SELECT a.id AS assessment_id, a.title AS title, lv.course_id AS course_id
+      `SELECT a.id AS assessment_id,
+              a.title AS title,
+              lv.course_id AS course_id,
+              EXISTS (
+                SELECT 1 FROM assessment_results ar
+                WHERE ar.assessment_id = a.id AND ar.student_id = $2 AND ar.passed = true
+              ) AS passed,
+              (
+                SELECT ar.score FROM assessment_results ar
+                WHERE ar.assessment_id = a.id AND ar.student_id = $2 AND ar.passed = true
+                ORDER BY ar.graded_at DESC LIMIT 1
+              ) AS score
        FROM levels lv
-       JOIN assessments a ON a.course_id = lv.course_id AND a.type = 'exam' AND a.status = 'published'
+       JOIN assessments a ON (a.course_id = lv.course_id OR a.chapter_id IN (SELECT id FROM chapters WHERE level_id = lv.id)) AND a.type = 'exam' AND a.status = 'published'
        WHERE lv.id = $1
        LIMIT 1`,
-      [levelId],
+      [levelId, studentId ?? null],
     );
     return result.rows[0] ?? null;
   }

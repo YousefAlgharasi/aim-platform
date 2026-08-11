@@ -219,6 +219,8 @@ describe('StudentChaptersService', () => {
       assessmentId: 'exam-1',
       title: 'A1.1 Final Exam',
       unlocked: true,
+      passed: false,
+      score: null,
     });
   });
 

@@ -116,28 +116,19 @@ class _PlacementStartPageState extends ConsumerState<PlacementStartPage> {
                   PlacementStartReady() =>
                     _AssessmentIntroBody(
                       test: state is PlacementStartReady
-                          ? (state as PlacementStartReady).test
-                          : PlacementMockData.mockTest,
+                          ? state.test
+                          : const PlacementTestModel(
+                              id: 'placement-test',
+                              title: 'Placement Assessment',
+                              status: 'active',
+                              totalSections: 0,
+                              estimatedMinutes: 0,
+                            ),
                       onStart: () {
                         final token = ref.read(authFlowProvider).accessToken ?? '';
-                        if (token.isEmpty ||
-                            token.startsWith('mock-') ||
-                            state is PlacementStartError ||
-                            state is PlacementStartIdle) {
-                          context.push(
-                            AppRoutePaths.placementQuestion,
-                            extra: {
-                              'sectionId': 'mock-section-1',
-                              'attemptId':
-                                  'mock-attempt-${DateTime.now().millisecondsSinceEpoch}',
-                              'sectionTitle': 'Adaptive English Placement Test',
-                              'sectionIndex': 1,
-                              'totalSections': 1,
-                            },
-                          );
-                          return;
+                        if (token.isNotEmpty) {
+                          ref.read(placementStartProvider.notifier).startAttempt(token);
                         }
-                        ref.read(placementStartProvider.notifier).startAttempt(token);
                       },
                     ),
                   PlacementStarted() => AIMFullScreenLoading(

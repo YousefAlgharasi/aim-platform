@@ -8,13 +8,17 @@ class FinalExamSummaryModel extends FinalExamSummary {
     required super.assessmentId,
     required super.title,
     required super.unlocked,
+    super.passed = false,
+    super.score,
   });
 
   factory FinalExamSummaryModel.fromJson(Map<String, dynamic> json) {
     return FinalExamSummaryModel(
       assessmentId: json['assessmentId'] as String,
       title: json['title'] as String,
-      unlocked: json['unlocked'] as bool,
+      unlocked: json['unlocked'] as bool? ?? false,
+      passed: json['passed'] as bool? ?? false,
+      score: (json['score'] as num?)?.toInt(),
     );
   }
 }

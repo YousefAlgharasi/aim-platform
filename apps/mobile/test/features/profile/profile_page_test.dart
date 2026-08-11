@@ -104,7 +104,7 @@ void main() {
     // `trailing` slot can't fit both the bell and edit icon buttons; see
     // _ProfileHeroHeader's doc comment in profile_page.dart).
     expect(find.byType(NotificationBellButton), findsOneWidget);
-    expect(find.byIcon(Icons.edit_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
     // Sign-out lives in the side menu drawer, not on this screen.
     expect(find.byType(LogoutButton), findsNothing);
     expect(find.byType(AIMCard), findsWidgets);

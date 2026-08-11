@@ -18,9 +18,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/state/app_async_state.dart';
 import '../../../../core/widgets/widgets.dart';
-import '../../../auth/data/models/auth_context_model.dart';
+import '../../../auth/logic/entity/auth_context.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
 import '../../data/models/profile_update_payload_models.dart';
@@ -98,7 +99,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   void initState() {
     super.initState();
     final authCtx = ref.read(authContextProvider);
-    final profile = authCtx is AppAsyncSuccess<AuthContextModel>
+    final profile = authCtx is AppAsyncSuccess<AuthContext>
         ? authCtx.data.profile
         : null;
 
@@ -312,7 +313,13 @@ class _EditProfileGradientHeader extends StatelessWidget {
                   button: true,
                   label: 'Back',
                   child: InkWell(
-                    onTap: () => context.pop(),
+                    onTap: () {
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.go(AppRoutePaths.mainShell);
+                      }
+                    },
                     customBorder: const CircleBorder(),
                     child: DecoratedBox(
                       decoration: BoxDecoration(

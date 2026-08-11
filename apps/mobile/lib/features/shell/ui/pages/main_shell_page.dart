@@ -17,7 +17,7 @@ import '../../../notifications/logic/provider/notification_providers.dart';
 import '../../../onboarding/logic/provider/onboarding_walkthrough_provider.dart';
 import '../../../onboarding/ui/widgets/onboarding_walkthrough_overlay.dart';
 import '../../../placement/logic/provider/placement_gate_notifier.dart';
-import '../../../placement/ui/pages/placement_gate_page.dart' show placementGateProvider;
+import '../../../placement/logic/provider/placement_provider.dart' show placementGateProvider;
 import '../../../profile/ui/pages/profile_page.dart';
 import '../../../progress/ui/pages/progress_page.dart';
 import '../../../reviews/ui/pages/review_page.dart';
@@ -148,9 +148,16 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
     final l10n = AppLocalizations.of(context);
     final hasSeenWalkthrough = ref.watch(onboardingWalkthroughProvider);
 
-    return Stack(
-      children: [
-        Scaffold(
+    return PopScope(
+      canPop: selectedIndex == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && selectedIndex != 0) {
+          ref.read(mainShellTabIndexProvider.notifier).state = 0;
+        }
+      },
+      child: Stack(
+        children: [
+          Scaffold(
           drawer: _buildDrawer(context, ref, selectedIndex),
           floatingActionButton: Builder(
             builder: (context) => FloatingActionButton(
@@ -180,59 +187,121 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
                 ref.read(onboardingWalkthroughProvider.notifier).markSeen(),
           ),
       ],
-    );
+    ),
+  );
   }
 
   /// Builds the side navigation drawer: app-branding header, a "MENU"
   /// section mirroring the 5 bottom-nav tabs, a "MORE" section of
   /// secondary destinations, a theme toggle, and a sign-out footer.
   Widget _buildDrawer(BuildContext context, WidgetRef ref, int selectedIndex) {
+    return _AIMAppDrawerWithMore(selectedIndex: selectedIndex);
+  }
+}
+
+class _AIMAppDrawerWithMore extends ConsumerStatefulWidget {
+  const _AIMAppDrawerWithMore({required this.selectedIndex});
+
+  final int selectedIndex;
+
+  @override
+  ConsumerState<_AIMAppDrawerWithMore> createState() =>
+      _AIMAppDrawerWithMoreState();
+}
+
+class _AIMAppDrawerWithMoreState
+    extends ConsumerState<_AIMAppDrawerWithMore> {
+  late bool _isMoreExpanded;
+
+  @override
+  void initState() {
+    super.initState();
+    _isMoreExpanded = widget.selectedIndex == 2;
+  }
+
+  void _selectTab(int index) {
+    context.pop();
+    ref.read(mainShellTabIndexProvider.notifier).state = index;
+  }
+
+  void _navigateTo(String routeName) {
+    context.pop();
+    context.push(routeName);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final selectedIndex = widget.selectedIndex;
 
-    void selectTab(int index) {
-      context.pop();
-      ref.read(mainShellTabIndexProvider.notifier).state = index;
-    }
-
-    void navigateTo(String routeName) {
-      context.pop();
-      context.push(routeName);
-    }
+    final drawerItems = [
+      AIMDrawerItemData(
+        icon: const Icon(Icons.home_outlined),
+        label: l10n.shellNavHome,
+        selected: selectedIndex == 0,
+        onTap: () => _selectTab(0),
+      ),
+      AIMDrawerItemData(
+        icon: const Icon(Icons.menu_book_outlined),
+        label: l10n.shellNavLearn,
+        selected: selectedIndex == 1,
+        onTap: () => _selectTab(1),
+      ),
+      AIMDrawerItemData(
+        icon: const Icon(Icons.bar_chart_outlined),
+        label: l10n.shellNavProgress,
+        selected: selectedIndex == 3,
+        onTap: () => _selectTab(3),
+      ),
+      AIMDrawerItemData(
+        icon: const Icon(Icons.person_outline),
+        label: l10n.shellNavProfile,
+        selected: selectedIndex == 4,
+        onTap: () => _selectTab(4),
+      ),
+      AIMDrawerItemData(
+        icon: const Icon(Icons.emoji_events_outlined),
+        label: l10n.shellAchievements,
+        selected: false,
+        onTap: () => _navigateTo(AppRoutePaths.achievements),
+      ),
+      AIMDrawerItemData(
+        icon: const Icon(Icons.settings_outlined),
+        label: l10n.settingsTitle,
+        selected: false,
+        onTap: () => _navigateTo(AppRoutePaths.accountSettings),
+      ),
+      AIMDrawerItemData(
+        icon: const Icon(Icons.tune_outlined),
+        label: 'More',
+        selected: selectedIndex == 2,
+        trailing: Icon(
+          _isMoreExpanded
+              ? Icons.keyboard_arrow_up_rounded
+              : Icons.keyboard_arrow_down_rounded,
+          color: AimColors.neutral500,
+        ),
+        onTap: () {
+          setState(() {
+            _isMoreExpanded = !_isMoreExpanded;
+          });
+        },
+      ),
+      if (_isMoreExpanded)
+        AIMDrawerItemData(
+          icon: const Padding(
+            padding: EdgeInsets.only(left: 12),
+            child: Icon(Icons.style_outlined, color: AimColors.primary500),
+          ),
+          label: l10n.shellNavReview,
+          selected: selectedIndex == 2,
+          onTap: () => _selectTab(2),
+        ),
+    ];
 
     return AIMAppDrawer(
       header: const _AIMDrawerBrandHeader(),
-      items: [
-        AIMDrawerItemData(
-          icon: const Icon(Icons.home_outlined),
-          label: l10n.shellNavHome,
-          selected: selectedIndex == 0,
-          onTap: () => selectTab(0),
-        ),
-        AIMDrawerItemData(
-          icon: const Icon(Icons.menu_book_outlined),
-          label: l10n.shellNavLearn,
-          selected: selectedIndex == 1,
-          onTap: () => selectTab(1),
-        ),
-        AIMDrawerItemData(
-          icon: const Icon(Icons.bar_chart_outlined),
-          label: l10n.shellNavProgress,
-          selected: selectedIndex == 3,
-          onTap: () => selectTab(3),
-        ),
-        AIMDrawerItemData(
-          icon: const Icon(Icons.emoji_events_outlined),
-          label: l10n.shellAchievements,
-          selected: false,
-          onTap: () => navigateTo(AppRoutePaths.achievements),
-        ),
-        AIMDrawerItemData(
-          icon: const Icon(Icons.person_outline),
-          label: l10n.settingsTitle,
-          selected: false,
-          onTap: () => navigateTo(AppRoutePaths.accountSettings),
-        ),
-      ],
+      items: drawerItems,
       footer: Consumer(
         builder: (context, ref, child) {
           final logoutState = ref.watch(logoutProvider);
@@ -242,6 +311,14 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AimSpacing.space16,
+                  vertical: AimSpacing.space8,
+                ),
+                child: _AIMLanguageToggleRow(),
+              ),
+              const SizedBox(height: AimSpacing.space8),
               GestureDetector(
                 onTap: isLoggingOut
                     ? null
@@ -455,6 +532,9 @@ class _AIMThemeToggleRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final surfaces = aimSurfacesOf(context);
     final mode = ref.watch(themeModeProvider);
+    final brightness = Theme.of(context).brightness;
+    final isDark = mode == ThemeMode.dark || (mode == ThemeMode.system && brightness == Brightness.dark);
+    final isLight = mode == ThemeMode.light || (mode == ThemeMode.system && brightness == Brightness.light);
     final l10n = AppLocalizations.of(context);
 
     return Row(
@@ -463,7 +543,7 @@ class _AIMThemeToggleRow extends ConsumerWidget {
           child: _ThemeToggleButton(
             label: l10n.shellThemeLight,
             icon: Icons.light_mode_outlined,
-            selected: mode == ThemeMode.light,
+            selected: isLight,
             surfaces: surfaces,
             onTap: () =>
                 ref.read(themeModeProvider.notifier).state = ThemeMode.light,
@@ -474,7 +554,7 @@ class _AIMThemeToggleRow extends ConsumerWidget {
           child: _ThemeToggleButton(
             label: l10n.shellThemeDark,
             icon: Icons.dark_mode_outlined,
-            selected: mode == ThemeMode.dark,
+            selected: isDark,
             surfaces: surfaces,
             onTap: () =>
                 ref.read(themeModeProvider.notifier).state = ThemeMode.dark,
@@ -574,13 +654,16 @@ class _ThemeToggleButton extends StatelessWidget {
               children: [
                 Icon(icon, size: AimSizes.iconSm, color: foreground),
                 const SizedBox(width: AimSpacing.space8),
-                Text(
-                  label,
-                  style: AimTextStyles.bodySm.copyWith(
-                    color: foreground,
-                    fontWeight: selected
-                        ? AimFontWeights.semibold
-                        : AimFontWeights.regular,
+                Flexible(
+                  child: Text(
+                    label,
+                    overflow: TextOverflow.ellipsis,
+                    style: AimTextStyles.bodySm.copyWith(
+                      color: foreground,
+                      fontWeight: selected
+                          ? AimFontWeights.semibold
+                          : AimFontWeights.regular,
+                    ),
                   ),
                 ),
               ],

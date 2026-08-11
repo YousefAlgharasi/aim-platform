@@ -13,10 +13,10 @@
 
 import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/state/app_state_notifier.dart';
-import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
+import 'package:aim_mobile/features/lessons/logic/entity/lesson_progress.dart';
 import 'package:aim_mobile/features/lessons/logic/repository/lessons_repository.dart';
 
-class LessonsListNotifier extends AppStateNotifier<List<LessonProgressModel>> {
+class LessonsListNotifier extends AppStateNotifier<List<LessonProgress>> {
   LessonsListNotifier({required LessonsRepository repository})
       : _repository = repository;
 

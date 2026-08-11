@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/features/placement/data/models/placement_result_model.dart';
-import 'package:aim_mobile/features/placement/data/placement_mock_data.dart';
 import 'package:aim_mobile/features/placement/logic/repository/placement_repository.dart';
 
 // ---------------------------------------------------------------------------
@@ -64,9 +63,11 @@ class PlacementResultNotifier extends StateNotifier<PlacementResultState> {
   }) async {
     state = const PlacementResultLoading();
 
-    if (bearerToken.isEmpty || bearerToken.startsWith('mock-')) {
-      await Future.delayed(const Duration(milliseconds: 1000));
-      state = const PlacementResultReady(PlacementMockData.mockResult);
+    if (bearerToken.isEmpty) {
+      state = const PlacementResultError(
+        message: 'No authorization token available.',
+        code: 'NO_TOKEN',
+      );
       return;
     }
 

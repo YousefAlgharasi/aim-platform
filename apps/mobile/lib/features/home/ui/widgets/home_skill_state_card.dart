@@ -7,7 +7,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
-import 'package:aim_mobile/features/home/data/models/home_models.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_skill_state.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class HomeSkillStateCard extends StatelessWidget {
@@ -16,7 +16,7 @@ class HomeSkillStateCard extends StatelessWidget {
     super.key,
   });
 
-  final HomeSkillStateModel model;
+  final HomeSkillState model;
 
   AIMBadgeTone get _trendTone {
     return switch (model.masteryTrend.toLowerCase()) {

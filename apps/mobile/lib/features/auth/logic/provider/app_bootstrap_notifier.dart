@@ -45,6 +45,7 @@ class AppBootstrapNotifier extends StateNotifier<AppBootstrapStatus> {
   /// device storage.
   Future<void> checkSession() async {
     try {
+
       final store = _ref.read(sessionStoreProvider);
       final session = await store.read();
       if (!mounted) return;
@@ -77,9 +78,9 @@ class AppBootstrapNotifier extends StateNotifier<AppBootstrapStatus> {
       }
 
       try {
-        final datasource = _ref.read(authRemoteDatasourceProvider);
+        final repo = _ref.read(authRepositoryProvider);
         final refreshed =
-            await datasource.refresh(refreshToken: session.refreshToken);
+            await repo.refresh(refreshToken: session.refreshToken);
 
         await store.save(
           accessToken: refreshed.accessToken,

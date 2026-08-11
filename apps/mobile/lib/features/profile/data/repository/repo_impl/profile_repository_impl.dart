@@ -36,4 +36,19 @@ class ProfileRepositoryImpl implements ProfileRepository {
       throw AppException(code: e.code, message: e.message);
     }
   }
+
+  @override
+  Future<void> updateEngagementGoal(
+    String bearerToken, {
+    required int dailyGoalLessons,
+  }) async {
+    try {
+      await _datasource.updateEngagementGoal(
+        bearerToken,
+        dailyGoalLessons: dailyGoalLessons,
+      );
+    } on ApiClientException catch (e) {
+      throw AppException(code: e.code, message: e.message);
+    }
+  }
 }

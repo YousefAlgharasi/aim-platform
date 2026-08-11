@@ -144,6 +144,18 @@ class LessonsRemoteDatasourceImpl implements LessonsRemoteDatasource {
     return envelope.data;
   }
 
+  @override
+  Future<void> markLessonComplete({
+    required String bearerToken,
+    required String lessonId,
+  }) async {
+    await _apiClient.post<void>(
+      BackendApiPaths.lessonComplete(lessonId),
+      headers: _auth(bearerToken),
+      decodeData: (_) {},
+    );
+  }
+
   // ── Helpers ────────────────────────────────────────────────────────────────
 
   Map<String, String> _auth(String bearerToken) =>

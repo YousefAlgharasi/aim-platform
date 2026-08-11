@@ -45,7 +45,7 @@ class PlacementGateNotifier extends StateNotifier<PlacementGateState> {
 
   Future<void> check(String bearerToken) async {
     state = const PlacementGateChecking();
-    if (bearerToken.isEmpty || bearerToken.startsWith('mock-')) {
+    if (bearerToken.isEmpty) {
       state = const PlacementGateShouldShow();
       return;
     }
@@ -62,7 +62,7 @@ class PlacementGateNotifier extends StateNotifier<PlacementGateState> {
 
   Future<void> choose(String bearerToken, String decision) async {
     state = const PlacementGateChecking();
-    if (bearerToken.isEmpty || bearerToken.startsWith('mock-')) {
+    if (bearerToken.isEmpty) {
       state = PlacementGateDecided(decision: decision);
       return;
     }
@@ -73,7 +73,6 @@ class PlacementGateNotifier extends StateNotifier<PlacementGateState> {
       );
       state = PlacementGateDecided(decision: result.decision ?? decision);
     } catch (_) {
-      // Graceful fallback for offline dev/mock mode
       state = PlacementGateDecided(decision: decision);
     }
   }

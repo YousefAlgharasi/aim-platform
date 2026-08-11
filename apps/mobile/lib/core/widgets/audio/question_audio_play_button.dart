@@ -13,6 +13,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import 'package:aim_mobile/features/voice_teacher/data/datasources/voice_player_client_impl.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/voice_player_client.dart';
 
 import '../../theme/theme.dart';

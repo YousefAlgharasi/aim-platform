@@ -1,12 +1,14 @@
+import 'package:aim_mobile/features/auth/logic/entity/auth_results.dart';
+
 /// Result of a successful POST /auth/refresh call.
 ///
 /// `expiresAt` is the Unix timestamp (in seconds) at which [accessToken]
 /// expires, as returned by the backend.
-class RefreshResult {
+class RefreshResult extends AuthRefreshResult {
   const RefreshResult({
-    required this.accessToken,
-    required this.refreshToken,
-    required this.expiresAt,
+    required super.accessToken,
+    required super.refreshToken,
+    required super.expiresAt,
   });
 
   factory RefreshResult.fromJson(Map<String, dynamic> json) {
@@ -16,10 +18,4 @@ class RefreshResult {
       expiresAt: json['expiresAt'] as int,
     );
   }
-
-  final String accessToken;
-  final String refreshToken;
-
-  /// Unix timestamp (seconds) at which [accessToken] expires.
-  final int expiresAt;
 }

@@ -19,10 +19,12 @@
 
 import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/state/app_state_notifier.dart';
-import 'package:aim_mobile/features/home/data/datasources/home_remote_datasource.dart'
-    show HomeEngagementSummary;
-import 'package:aim_mobile/features/home/data/models/home_models.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_engagement.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_data.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_skill_state.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_weakness_record.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_review_schedule.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_recommendation.dart';
 import 'package:aim_mobile/features/home/logic/repository/home_repository.dart';
 
 class HomeNotifier extends AppStateNotifier<HomeData> {
@@ -90,10 +92,10 @@ class HomeNotifier extends AppStateNotifier<HomeData> {
           .catchError((_) => null);
 
       setSuccess(HomeData(
-        skillStates: results[0] as List<HomeSkillStateModel>,
-        weaknessRecords: results[1] as List<HomeWeaknessRecordModel>,
-        reviewSchedules: results[2] as List<HomeReviewScheduleModel>,
-        recommendations: results[3] as List<HomeRecommendationModel>,
+        skillStates: results[0] as List<HomeSkillState>,
+        weaknessRecords: results[1] as List<HomeWeaknessRecord>,
+        reviewSchedules: results[2] as List<HomeReviewSchedule>,
+        recommendations: results[3] as List<HomeRecommendation>,
         goal: engagementResult?.goal,
         dailyChallenge: engagementResult?.dailyChallenge,
         engagementStats: engagementStatsResult,

@@ -14,6 +14,7 @@ class BackendApiPaths {
   static const String authLogin = '/auth/login';
   static const String authRefresh = '/auth/refresh';
   static const String authRegister = '/auth/register';
+  static const String authForgotPassword = '/auth/forgot-password';
 
   /// POST /auth/test-login — non-production only. Backend returns 404 for
   /// this route when running in production.

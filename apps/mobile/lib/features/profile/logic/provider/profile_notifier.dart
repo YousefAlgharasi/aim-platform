@@ -45,7 +45,19 @@ class ProfileNotifier extends AppStateNotifier<ProfileMeResponseModel> {
     }
   }
 
+  /// Updates the student's daily learning commitment goal.
+  /// Throws on failure — caller is responsible for showing an error.
+  Future<void> updateEngagementGoal(
+    String bearerToken, {
+    required int dailyGoalLessons,
+  }) =>
+      _repository.updateEngagementGoal(
+        bearerToken,
+        dailyGoalLessons: dailyGoalLessons,
+      );
+
   void clearProfile() {
     reset();
   }
 }
+

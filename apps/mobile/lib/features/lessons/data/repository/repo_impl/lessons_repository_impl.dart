@@ -14,8 +14,15 @@
 import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/networking/api_client_exception.dart';
 import 'package:aim_mobile/features/lessons/data/datasources/lessons_remote_datasource.dart';
-import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
 import 'package:aim_mobile/features/lessons/logic/content_status_guard.dart';
+import 'package:aim_mobile/features/lessons/logic/entity/chapter.dart';
+import 'package:aim_mobile/features/lessons/logic/entity/chapter_progress.dart';
+import 'package:aim_mobile/features/lessons/logic/entity/chapter_quiz_summary.dart';
+import 'package:aim_mobile/features/lessons/logic/entity/course.dart';
+import 'package:aim_mobile/features/lessons/logic/entity/final_exam_summary.dart';
+import 'package:aim_mobile/features/lessons/logic/entity/lesson.dart';
+import 'package:aim_mobile/features/lessons/logic/entity/lesson_progress.dart';
+import 'package:aim_mobile/features/lessons/logic/entity/level.dart';
 import 'package:aim_mobile/features/lessons/logic/repository/lessons_repository.dart';
 
 class LessonsRepositoryImpl implements LessonsRepository {
@@ -26,8 +33,7 @@ class LessonsRepositoryImpl implements LessonsRepository {
   final LessonsRemoteDatasource _datasource;
 
   @override
-  @override
-  Future<List<CourseModel>> getCourses({
+  Future<List<Course>> getCourses({
     required String bearerToken,
   }) async {
     final results = await _wrap(() => _datasource.getCourses(bearerToken: bearerToken));
@@ -35,8 +41,7 @@ class LessonsRepositoryImpl implements LessonsRepository {
   }
 
   @override
-  @override
-  Future<List<LevelModel>> getLevels({
+  Future<List<Level>> getLevels({
     required String bearerToken,
     required String courseId,
   }) async {
@@ -48,8 +53,7 @@ class LessonsRepositoryImpl implements LessonsRepository {
   }
 
   @override
-  @override
-  Future<List<ChapterModel>> getChapters({
+  Future<List<Chapter>> getChapters({
     required String bearerToken,
     required String levelId,
   }) async {
@@ -61,8 +65,7 @@ class LessonsRepositoryImpl implements LessonsRepository {
   }
 
   @override
-  @override
-  Future<List<LessonModel>> getLessons({
+  Future<List<Lesson>> getLessons({
     required String bearerToken,
     required String chapterId,
   }) async {
@@ -74,36 +77,38 @@ class LessonsRepositoryImpl implements LessonsRepository {
   }
 
   @override
-  Future<List<ChapterProgressModel>> getChaptersWithProgress({
+  Future<List<ChapterProgress>> getChaptersWithProgress({
     required String bearerToken,
     required String levelId,
-  }) {
+  }) async {
     // No ContentStatusGuard pass here: GET /student/chapters already filters
     // to published-only server-side, and ChapterProgressModel.status is a
     // per-student progress value (not_started/in_progress/completed), not
     // the draft/published/archived lifecycle status the guard checks.
-    return _wrap(() => _datasource.getChaptersWithProgress(
+    final results = await _wrap(() => _datasource.getChaptersWithProgress(
           bearerToken: bearerToken,
           levelId: levelId,
         ));
+    return results;
   }
 
   @override
-  Future<List<LessonProgressModel>> getLessonsWithProgress({
+  Future<List<LessonProgress>> getLessonsWithProgress({
     required String bearerToken,
     required String chapterId,
-  }) {
+  }) async {
     // No ContentStatusGuard pass here: GET /student/lessons already filters
     // to published-only server-side, and LessonProgressModel has no
     // lifecycle status field at all.
-    return _wrap(() => _datasource.getLessonsWithProgress(
+    final results = await _wrap(() => _datasource.getLessonsWithProgress(
           bearerToken: bearerToken,
           chapterId: chapterId,
         ));
+    return results;
   }
 
   @override
-  Future<FinalExamSummaryModel?> getFinalExamForLevel({
+  Future<FinalExamSummary?> getFinalExamForLevel({
     required String bearerToken,
     required String levelId,
   }) {
@@ -114,13 +119,24 @@ class LessonsRepositoryImpl implements LessonsRepository {
   }
 
   @override
-  Future<ChapterQuizSummaryModel?> getChapterQuiz({
+  Future<ChapterQuizSummary?> getChapterQuiz({
     required String bearerToken,
     required String chapterId,
   }) {
     return _wrap(() => _datasource.getChapterQuiz(
           bearerToken: bearerToken,
           chapterId: chapterId,
+        ));
+  }
+
+  @override
+  Future<void> markLessonComplete({
+    required String bearerToken,
+    required String lessonId,
+  }) {
+    return _wrap(() => _datasource.markLessonComplete(
+          bearerToken: bearerToken,
+          lessonId: lessonId,
         ));
   }
 

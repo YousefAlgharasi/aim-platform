@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../state/app_async_state.dart';
-import '../../features/auth/data/models/auth_context_model.dart';
+import '../../features/auth/logic/entity/auth_context.dart';
 import '../../features/auth/logic/entity/auth_flow_state.dart';
 import '../../features/auth/ui/pages/login_page.dart';
 import '../../features/auth/ui/pages/register_page.dart';
@@ -11,7 +11,7 @@ import '../../features/lessons/ui/pages/lesson_detail_page.dart';
 import '../../features/lessons/ui/pages/lesson_list_page.dart';
 import '../../features/onboarding/ui/pages/splash_page.dart';
 import '../../features/placement/ui/pages/placement_question_page.dart';
-import '../../features/question_answer/ui/pages/practice_session_page.dart';
+import '../../features/practice/ui/pages/practice_session_page.dart';
 import '../../features/placement/ui/pages/placement_menu_page.dart';
 import '../../features/placement/ui/pages/placement_result_page.dart';
 import '../../features/placement/ui/pages/placement_section_page.dart';
@@ -64,6 +64,7 @@ import '../../features/billing/ui/pages/checkout_start_page.dart';
 import '../../features/billing/ui/pages/checkout_status_page.dart';
 import '../../features/design_system_preview/ui/pages/ds_preview_page.dart';
 import '../../features/profile/ui/pages/account_settings_page.dart';
+
 import 'app_route_paths.dart';
 
 /// Centralised GoRouter configuration for the app.
@@ -89,7 +90,7 @@ class AppRouter {
   /// to auth changes via [refreshListenable].
   static GoRouter buildRouter({
     required AuthFlowState Function() authState,
-    required AppAsyncState<AuthContextModel>? Function() authContextState,
+    required AppAsyncState<AuthContext>? Function() authContextState,
     Listenable? refreshListenable,
     GlobalKey<NavigatorState>? navigatorKey,
     String initialLocation = AppRoutePaths.splash,
@@ -185,6 +186,17 @@ class AppRouter {
         GoRoute(
           path: AppRoutePaths.lessonDetail,
           builder: (context, state) => _buildLessonDetailPage(state.extra),
+        ),
+        GoRoute(
+          path: '/student/lessons/:id',
+          builder: (context, state) {
+            final lessonId = state.pathParameters['id'] ?? 'lesson-1';
+            final extra = state.extra is Map<String, dynamic> ? state.extra as Map<String, dynamic> : <String, dynamic>{};
+            return LessonDetailPage(
+              lessonId: extra['lessonId'] as String? ?? lessonId,
+              lessonTitle: extra['lessonTitle'] as String? ?? 'Lesson Detail',
+            );
+          },
         ),
         // AIM pipeline live wiring: lesson practice (learning session) flow
         GoRoute(
@@ -379,15 +391,16 @@ class AppRouter {
           path: AppRoutePaths.liveAiLesson,
           builder: (context, state) {
             final args = state.extra as Map<String, dynamic>? ?? {};
-            return LiveAiLessonChatPage(
-              lessonTitle: args['lessonTitle'] as String?,
-            );
+            final contextRef = (args['contextRef'] as String?) ??
+                (args['lessonId'] != null ? 'lesson:${args['lessonId']}' : 'general');
+            return VoiceTeacherPage(contextRef: contextRef);
           },
         ),
         GoRoute(
           path: AppRoutePaths.accountSettings,
           builder: (context, state) => const AccountSettingsPage(),
         ),
+
       ],
     );
   }
@@ -464,11 +477,8 @@ class AppRouter {
     final args = arguments is Map<String, dynamic>
         ? arguments
         : const <String, dynamic>{};
-    final lessonId = args['lessonId'];
-    final lessonTitle = args['lessonTitle'];
-    if (lessonId is! String || lessonTitle is! String) {
-      return const SplashPage();
-    }
+    final lessonId = args['lessonId'] as String? ?? 'review-session-1';
+    final lessonTitle = args['lessonTitle'] as String? ?? 'Practice Session';
     return PracticeSessionPage(lessonId: lessonId, lessonTitle: lessonTitle);
   }
 
@@ -476,11 +486,8 @@ class AppRouter {
     final args = arguments is Map<String, dynamic>
         ? arguments
         : const <String, dynamic>{};
-    final lessonId = args['lessonId'];
-    final lessonTitle = args['lessonTitle'];
-    if (lessonId is! String || lessonTitle is! String) {
-      return const SplashPage();
-    }
+    final lessonId = args['lessonId'] as String? ?? 'lesson-1';
+    final lessonTitle = args['lessonTitle'] as String? ?? 'Lesson Detail';
     return LessonDetailPage(lessonId: lessonId, lessonTitle: lessonTitle);
   }
 
@@ -488,12 +495,9 @@ class AppRouter {
     final args = arguments is Map<String, dynamic>
         ? arguments
         : const <String, dynamic>{};
-    final chapterId = args['chapterId'];
-    final chapterTitle = args['chapterTitle'];
+    final chapterId = args['chapterId'] as String? ?? 'chapter-1';
+    final chapterTitle = args['chapterTitle'] as String? ?? 'Chapter Lessons';
     final chapterIndex = args['chapterIndex'];
-    if (chapterId is! String || chapterTitle is! String) {
-      return const SplashPage();
-    }
     return LessonListPage(
       chapterId: chapterId,
       chapterTitle: chapterTitle,
@@ -505,11 +509,8 @@ class AppRouter {
     final args = arguments is Map<String, dynamic>
         ? arguments
         : const <String, dynamic>{};
-    final courseId = args['courseId'];
-    final courseTitle = args['courseTitle'];
-    if (courseId is! String || courseTitle is! String) {
-      return const SplashPage();
-    }
+    final courseId = args['courseId'] as String? ?? 'course-1';
+    final courseTitle = args['courseTitle'] as String? ?? 'General English (B1)';
     return ChapterListPage(courseId: courseId, courseTitle: courseTitle);
   }
 
@@ -617,8 +618,7 @@ class AppRouter {
     final args = arguments is Map<String, dynamic>
         ? arguments
         : const <String, dynamic>{};
-    final contextRef = args['contextRef'];
-    if (contextRef is! String) return const SplashPage();
+    final contextRef = (args['contextRef'] as String?) ?? 'general';
     return VoiceTeacherPage(contextRef: contextRef);
   }
 
@@ -687,7 +687,7 @@ class AppRouter {
   static String resolveRouteName(
     String? requestedRouteName, {
     AuthFlowState? authState,
-    AppAsyncState<AuthContextModel>? authContextState,
+    AppAsyncState<AuthContext>? authContextState,
   }) {
     final routeName = requestedRouteName ?? AppRoutePaths.splash;
     final isProtectedRoute = _protectedRoutes.contains(routeName);

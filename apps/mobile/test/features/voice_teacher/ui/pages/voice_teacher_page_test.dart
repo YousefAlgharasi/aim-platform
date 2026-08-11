@@ -120,6 +120,9 @@ class _FakeVoicePlayerClient implements VoicePlayerClient {
   }
 
   @override
+  Future<void> playUrl(String url) async {}
+
+  @override
   Future<void> pause() async {
     paused = true;
   }

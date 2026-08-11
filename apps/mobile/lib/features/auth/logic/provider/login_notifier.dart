@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/state/app_form_state.dart';
-import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
+import 'package:aim_mobile/features/auth/logic/entity/auth_context.dart';
 import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'auth_context_provider.dart';
@@ -84,7 +84,7 @@ class LoginNotifier extends StateNotifier<AppFormState> {
 
       if (!didLoadContext) {
         final contextState = _ref.read(authContextProvider);
-        final errorMessage = contextState is AppAsyncFailure<AuthContextModel>
+        final errorMessage = contextState is AppAsyncFailure<AuthContext>
             ? contextState.message
             : l10n.authSignInFailedGeneric;
         state = state.copyWith(
@@ -142,7 +142,7 @@ class LoginNotifier extends StateNotifier<AppFormState> {
 
       if (!didLoadContext) {
         final contextState = _ref.read(authContextProvider);
-        final errorMessage = contextState is AppAsyncFailure<AuthContextModel>
+        final errorMessage = contextState is AppAsyncFailure<AuthContext>
             ? contextState.message
             : l10n.authTestLoginFailedGeneric;
         state = state.copyWith(

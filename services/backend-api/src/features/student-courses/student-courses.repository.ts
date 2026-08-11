@@ -82,11 +82,15 @@ export class StudentCoursesRepository {
          ) AS quizzes_passed,
          (
            SELECT COUNT(*) FROM assessments a
-           WHERE a.course_id = co.id AND a.type = 'exam' AND a.status = 'published'
+           LEFT JOIN chapters ch ON ch.id = a.chapter_id
+           LEFT JOIN levels lv2 ON lv2.id = ch.level_id
+           WHERE (a.course_id = co.id OR lv2.course_id = co.id) AND a.type = 'exam' AND a.status = 'published'
          ) AS exam_count,
          NOT EXISTS (
            SELECT 1 FROM assessments a
-           WHERE a.course_id = co.id AND a.type = 'exam' AND a.status = 'published'
+           LEFT JOIN chapters ch ON ch.id = a.chapter_id
+           LEFT JOIN levels lv2 ON lv2.id = ch.level_id
+           WHERE (a.course_id = co.id OR lv2.course_id = co.id) AND a.type = 'exam' AND a.status = 'published'
              AND NOT EXISTS (
                SELECT 1 FROM assessment_results ar
                WHERE ar.assessment_id = a.id AND ar.student_id = $1 AND ar.passed = true

@@ -47,33 +47,77 @@ void main() {
         );
 
     Future<void> openDrawer() async {
-      await tester.tap(find.byIcon(Icons.menu));
-      await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
+      final scaffoldFinder = find.byType(Scaffold);
+      if (scaffoldFinder.evaluate().isNotEmpty) {
+        tester.state<ScaffoldState>(scaffoldFinder.first).openDrawer();
+      } else {
+        await tester.tap(find.byIcon(Icons.menu));
+      }
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+    }
+
+    Future<void> scrollToMore() async {
+      await tester.scrollUntilVisible(
+        find.text('More'),
+        100,
+        scrollable: find.descendant(
+          of: find.byType(Drawer),
+          matching: find.byType(Scrollable),
+        ),
+      );
+      await tester.pump();
+    }
+
+    Future<void> scrollToTop() async {
+      await tester.scrollUntilVisible(
+        find.text('Home Feed'),
+        -100,
+        scrollable: find.descendant(
+          of: find.byType(Drawer),
+          matching: find.byType(Scrollable),
+        ),
+      );
+      await tester.pump();
     }
 
     await openDrawer();
-    expect(inDrawer('Home'), findsOneWidget);
-    expect(inDrawer('Learn'), findsOneWidget);
-    expect(inDrawer('Review'), findsOneWidget);
-    expect(inDrawer('Progress'), findsOneWidget);
+    expect(inDrawer('Home Feed'), findsOneWidget);
+    expect(inDrawer('Chapters & Course'), findsOneWidget);
+    expect(inDrawer('Analytics & Progress'), findsOneWidget);
     expect(inDrawer('Profile'), findsOneWidget);
 
-    await tester.tap(inDrawer('Learn'));
+    await scrollToMore();
+    expect(inDrawer('More'), findsOneWidget);
+
+    await tester.tap(inDrawer('More'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(inDrawer('Review'), findsOneWidget);
+
+    await scrollToTop();
+    await tester.tap(inDrawer('Chapters & Course'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
     await openDrawer();
+    await scrollToMore();
+    await tester.tap(inDrawer('More'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
     await tester.tap(inDrawer('Review'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
     await openDrawer();
-    await tester.tap(inDrawer('Progress'));
+    await scrollToTop();
+    await tester.tap(inDrawer('Analytics & Progress'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
     await openDrawer();
+    await scrollToTop();
     await tester.tap(inDrawer('Profile'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));

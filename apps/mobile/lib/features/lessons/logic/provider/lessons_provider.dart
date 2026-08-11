@@ -21,12 +21,14 @@ import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_token_interceptor_provider.dart';
 import 'package:aim_mobile/features/lessons/data/datasources/lessons_remote_datasource.dart';
 import 'package:aim_mobile/features/lessons/data/datasources/lessons_remote_datasource_impl.dart';
-import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
 import 'package:aim_mobile/features/lessons/data/datasources/lesson_detail_remote_datasource.dart';
 import 'package:aim_mobile/features/lessons/data/datasources/lesson_detail_remote_datasource_impl.dart';
 import 'package:aim_mobile/features/lessons/data/repository/repo_impl/lesson_detail_repository_impl.dart';
 import 'package:aim_mobile/features/lessons/data/repository/repo_impl/lessons_repository_impl.dart';
+import 'package:aim_mobile/features/lessons/logic/entity/chapter_progress.dart';
+import 'package:aim_mobile/features/lessons/logic/entity/course.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lesson_detail.dart';
+import 'package:aim_mobile/features/lessons/logic/entity/lesson_progress.dart';
 import 'package:aim_mobile/features/lessons/logic/repository/lesson_detail_repository.dart';
 import 'package:aim_mobile/features/lessons/logic/repository/lessons_repository.dart';
 import 'chapters_notifier.dart';
@@ -59,7 +61,7 @@ final lessonsRepositoryProvider = Provider<LessonsRepository>((ref) {
 /// [authFlowProvider]. Stays alive for the session so the list page
 /// does not reload on every navigation event.
 final coursesProvider =
-    StateNotifierProvider<CoursesNotifier, AppAsyncState<List<CourseModel>>>(
+    StateNotifierProvider<CoursesNotifier, AppAsyncState<List<Course>>>(
   (ref) => CoursesNotifier(
     repository: ref.watch(lessonsRepositoryProvider),
   ),
@@ -71,9 +73,9 @@ final coursesProvider =
 /// the backend-supplied levelId. Uses .autoDispose so state is cleared
 /// when navigating away from the chapter list screen.
 ///
-/// Security: levelId must come from a prior backend CourseModel response.
+/// Security: levelId must come from a prior backend Course response.
 final chaptersProvider = StateNotifierProvider.autoDispose<
-    ChaptersNotifier, AppAsyncState<List<ChapterProgressModel>>>(
+    ChaptersNotifier, AppAsyncState<List<ChapterProgress>>>(
   (ref) => ChaptersNotifier(
     repository: ref.watch(lessonsRepositoryProvider),
   ),
@@ -85,9 +87,9 @@ final chaptersProvider = StateNotifierProvider.autoDispose<
 /// the backend-supplied chapterId. Uses .autoDispose so state is cleared
 /// when navigating away from the lesson list screen.
 ///
-/// Security: chapterId must come from a prior backend ChapterModel response.
+/// Security: chapterId must come from a prior backend Chapter response.
 final lessonsListProvider = StateNotifierProvider.autoDispose<
-    LessonsListNotifier, AppAsyncState<List<LessonProgressModel>>>(
+    LessonsListNotifier, AppAsyncState<List<LessonProgress>>>(
   (ref) => LessonsListNotifier(
     repository: ref.watch(lessonsRepositoryProvider),
   ),

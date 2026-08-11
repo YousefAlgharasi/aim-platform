@@ -23,10 +23,38 @@ class StudentCoursesRemoteDatasourceImpl
       decodeData: (json) {
         final data = _requireMap(json);
         final items = data['courses'] as List<dynamic>? ?? [];
-        return items
+        final parsed = items
             .whereType<Map<String, dynamic>>()
             .map(StudentCourseModel.fromJson)
             .toList();
+
+        bool previousCompleted = false;
+        final result = <StudentCourseModel>[];
+
+        for (int i = 0; i < parsed.length; i++) {
+          final c = parsed[i];
+          final isUnlocked = i == 0 || previousCompleted || !c.locked;
+          final updated = StudentCourseModel(
+            courseId: c.courseId,
+            title: c.title,
+            description: c.description,
+            levelCode: c.levelCode,
+            lessonCount: c.lessonCount,
+            completedLessonCount: c.completedLessonCount,
+            quizCount: c.quizCount,
+            examCount: c.examCount,
+            percent: c.percent,
+            status: c.status,
+            locked: !isUnlocked,
+          );
+          result.add(updated);
+
+          if (c.status == StudentCourseStatus.completed || c.percent == 100) {
+            previousCompleted = true;
+          }
+        }
+
+        return result;
       },
     );
     return envelope.data!;

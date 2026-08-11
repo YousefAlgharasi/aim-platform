@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/theme.dart';
 
-/// Reusable secondary / ghost button for placement flow screens (e.g., Skip).
+/// Ghost/text button matching TextButton.tsx from Modern Auth Pages (3)-1.
+///
+/// Transparent background, slate-500 text, 16px font-medium.
 class PlacementGhostButton extends StatelessWidget {
   const PlacementGhostButton({
     super.key,
@@ -18,20 +20,24 @@ class PlacementGhostButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
 
-    return TextButton(
-      onPressed: enabled ? onPressed : null,
-      style: TextButton.styleFrom(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AimSpacing.space24,
-          vertical: AimSpacing.space8,
+    return SizedBox(
+      height: 48,
+      child: TextButton(
+        onPressed: enabled ? onPressed : null,
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          overlayColor: AimColors.primary500.withValues(alpha: 0.08),
         ),
-        tapTargetSize: MaterialTapTargetSize.padded,
-        overlayColor: AimColors.primary500.withValues(alpha: 0.12),
-      ),
-      child: Text(
-        label,
-        style: AimTextStyles.button.copyWith(
-          color: enabled ? surfaces.textPrimary : surfaces.textMuted,
+        child: Text(
+          label,
+          style: AimTextStyles.button.copyWith(
+            color: enabled ? surfaces.textSecondary : surfaces.textMuted,
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
     );

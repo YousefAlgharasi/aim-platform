@@ -364,8 +364,7 @@ class _HomeContent extends ConsumerWidget {
         data.profile?.displayName ?? data.user.email ?? '',
       _ => '',
     };
-    final activeCourseName = data.recommendedCourse?.courseTitle ??
-        'Intermediate English';
+    final activeCourseName = data.recommendedCourse?.courseTitle ?? '';
 
     return RefreshIndicator(
       onRefresh: onRefresh,
@@ -379,10 +378,10 @@ class _HomeContent extends ConsumerWidget {
           const SizedBox(height: AimSpacing.space8),
           _WelcomeCard(
             displayName: displayName,
-            level: data.engagementStats?.level ?? 12,
+            level: data.engagementStats?.level ?? 1,
             activeCourseName: activeCourseName,
-            streakDays: data.goal?.streakDays ?? 7,
-            overallProgressPercent: data.engagementStats?.levelProgressPercent ?? 75,
+            streakDays: data.goal?.streakDays ?? 0,
+            overallProgressPercent: data.engagementStats?.levelProgressPercent ?? 0,
           ),
           if (lastUpdatedAt != null) ...[
             const SizedBox(height: AimSpacing.space8),
@@ -818,10 +817,11 @@ class _WelcomeCard extends StatelessWidget {
                             ),
                             const SizedBox(height: AimSpacing.space4),
                             Text(
-                              'Level $level · $activeCourseName',
+                              '$activeCourseName · XP Level $level',
                               style: AimTextStyles.bodySm.copyWith(
-                                color: AimColors.neutral0.withValues(alpha: 0.75),
+                                color: AimColors.neutral0.withValues(alpha: 0.85),
                                 fontSize: 12,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
@@ -982,7 +982,7 @@ class _ContinueLearningHeroCard extends StatelessWidget {
 
 // ── Daily challenge row ─────────────────────────────────────────────────────
 
-class _DailyMissionsList extends StatelessWidget {
+class _DailyMissionsList extends ConsumerWidget {
   const _DailyMissionsList({
     required this.challenge,
     required this.onStart,
@@ -992,7 +992,7 @@ class _DailyMissionsList extends StatelessWidget {
   final VoidCallback onStart;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final surfaces = aimSurfacesOf(context);
     final l10n = AppLocalizations.of(context);
 
@@ -1004,32 +1004,44 @@ class _DailyMissionsList extends StatelessWidget {
       done: challenge.completed,
       progress: challenge.progressCount,
       total: challenge.targetCount,
+      onTap: onStart,
     );
 
     final locale = Localizations.localeOf(context).languageCode;
     final isAr = locale == 'ar';
 
-    final missions = [
-      mission1,
-      _MissionItem(
-        iconData: Icons.mic_none_rounded,
-        iconColor: const Color(0xFF4F46E5),
-        iconBgColor: const Color(0xFFEEF2FF),
-        label: isAr ? 'تدرب على التحدث' : 'Practice Speaking',
-        done: false,
-        progress: 0,
-        total: 1,
+    final mission2 = _MissionItem(
+      iconData: Icons.mic_none_rounded,
+      iconColor: const Color(0xFF4F46E5),
+      iconBgColor: const Color(0xFFEEF2FF),
+      label: isAr ? 'تدرب على التحدث' : 'Practice Speaking',
+      done: false,
+      progress: 0,
+      total: 1,
+      onTap: () => context.push(
+        AppRoutePaths.voiceTeacher,
+        extra: {'contextRef': 'general'},
       ),
-      _MissionItem(
-        iconData: Icons.edit_rounded,
-        iconColor: const Color(0xFF4F46E5),
-        iconBgColor: const Color(0xFFEEF2FF),
-        label: isAr ? 'اكتب فقرة قصيرة' : 'Write a Paragraph',
-        done: false,
-        progress: 0,
-        total: 1,
+    );
+
+    final mission3 = _MissionItem(
+      iconData: Icons.edit_rounded,
+      iconColor: const Color(0xFF4F46E5),
+      iconBgColor: const Color(0xFFEEF2FF),
+      label: isAr ? 'اكتب فقرة قصيرة' : 'Write a Paragraph',
+      done: false,
+      progress: 0,
+      total: 1,
+      onTap: () => context.push(
+        AppRoutePaths.aiTeacherChat,
+        extra: {
+          'contextRef': 'general',
+          'lessonTitle': isAr ? 'ممارسة الكتابة' : 'Writing Practice',
+        },
       ),
-    ];
+    );
+
+    final missions = [mission1, mission2, mission3];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1065,7 +1077,7 @@ class _DailyMissionsList extends StatelessWidget {
         Column(
           children: [
             for (var i = 0; i < missions.length; i++) ...[
-              _MissionCard(mission: missions[i], onStart: onStart),
+              _MissionCard(mission: missions[i]),
               if (i < missions.length - 1)
                 const SizedBox(height: AimSpacing.space12),
             ],
@@ -1085,6 +1097,7 @@ class _MissionItem {
     required this.done,
     required this.progress,
     required this.total,
+    required this.onTap,
   });
 
   final IconData iconData;
@@ -1094,13 +1107,13 @@ class _MissionItem {
   final bool done;
   final int progress;
   final int total;
+  final VoidCallback onTap;
 }
 
 class _MissionCard extends StatelessWidget {
-  const _MissionCard({required this.mission, required this.onStart});
+  const _MissionCard({required this.mission});
 
   final _MissionItem mission;
-  final VoidCallback onStart;
 
   @override
   Widget build(BuildContext context) {
@@ -1112,7 +1125,7 @@ class _MissionCard extends StatelessWidget {
         : (mission.done ? const Color(0xFFF0FDF4).withValues(alpha: 0.5) : surfaces.surface);
 
     return GestureDetector(
-      onTap: onStart,
+      onTap: mission.onTap,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(AimSpacing.space16),

@@ -1,10 +1,11 @@
+import 'package:aim_mobile/features/auth/logic/entity/auth_results.dart';
 import 'current_user_model.dart';
 
-class AuthSyncResponseModel {
+class AuthSyncResponseModel extends AuthSyncResult {
   const AuthSyncResponseModel({
-    required this.user,
+    required CurrentUserModel super.user,
     required this.created,
-  });
+  }) : super(syncedAt: '');
 
   factory AuthSyncResponseModel.fromJson(Map<String, dynamic> json) {
     final rawUser = json['user'];
@@ -23,6 +24,5 @@ class AuthSyncResponseModel {
     );
   }
 
-  final CurrentUserModel user;
   final bool created;
 }

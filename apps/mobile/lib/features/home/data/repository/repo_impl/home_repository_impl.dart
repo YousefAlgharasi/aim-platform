@@ -14,6 +14,14 @@ import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/networking/api_client_exception.dart';
 import 'package:aim_mobile/features/home/data/datasources/home_remote_datasource.dart';
 import 'package:aim_mobile/features/home/data/models/home_models.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_engagement.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_skill_state.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_weakness_record.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_review_schedule.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_recommendation.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_continue_learning.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_quick_start_lesson.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_recommended_course.dart';
 import 'package:aim_mobile/features/home/logic/repository/home_repository.dart';
 
 class HomeRepositoryImpl implements HomeRepository {
@@ -23,7 +31,7 @@ class HomeRepositoryImpl implements HomeRepository {
   final HomeRemoteDatasource _datasource;
 
   @override
-  Future<List<HomeSkillStateModel>> getSkillStates({
+  Future<List<HomeSkillState>> getSkillStates({
     required String bearerToken,
     required String studentId,
   }) =>
@@ -33,7 +41,7 @@ class HomeRepositoryImpl implements HomeRepository {
           ));
 
   @override
-  Future<List<HomeWeaknessRecordModel>> getWeaknessRecords({
+  Future<List<HomeWeaknessRecord>> getWeaknessRecords({
     required String bearerToken,
     required String studentId,
   }) =>
@@ -43,7 +51,7 @@ class HomeRepositoryImpl implements HomeRepository {
           ));
 
   @override
-  Future<List<HomeReviewScheduleModel>> getReviewSchedules({
+  Future<List<HomeReviewSchedule>> getReviewSchedules({
     required String bearerToken,
     required String studentId,
   }) =>
@@ -53,7 +61,7 @@ class HomeRepositoryImpl implements HomeRepository {
           ));
 
   @override
-  Future<List<HomeRecommendationModel>> getRecommendations({
+  Future<List<HomeRecommendation>> getRecommendations({
     required String bearerToken,
     required String studentId,
   }) =>
@@ -65,8 +73,14 @@ class HomeRepositoryImpl implements HomeRepository {
   @override
   Future<HomeEngagementSummary> getEngagementSummary({
     required String bearerToken,
-  }) =>
-      _wrap(() => _datasource.getEngagementSummary(bearerToken: bearerToken));
+  }) async {
+    final dsSummary =
+        await _wrap(() => _datasource.getEngagementSummary(bearerToken: bearerToken));
+    return HomeEngagementSummary(
+      goal: dsSummary.goal,
+      dailyChallenge: dsSummary.dailyChallenge,
+    );
+  }
 
   @override
   Future<HomeEngagementStatsModel?> getEngagementStats({

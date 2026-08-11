@@ -24,14 +24,31 @@ export class StudentCoursesService {
   async getCourses(studentId: string): Promise<StudentCoursesResponse> {
     const rows = await this.repository.findCoursesWithProgress(studentId);
 
+    const highestCompletedRankByTrack = new Map<string, number>();
+    for (const row of rows) {
+      if (row.cefr_rank === null) continue;
+      const trackSlug = row.track_slug || 'general_english';
+      const lessonCount = parseInt(row.lesson_count, 10) || 0;
+      const completedLessonCount = parseInt(row.completed_lesson_count, 10) || 0;
+      const lessonsComplete = lessonCount > 0 && completedLessonCount === lessonCount;
+      const fullyComplete = lessonsComplete && (row.quizzes_passed ?? true) && (row.exam_passed ?? true);
+      if (fullyComplete || lessonsComplete) {
+        const currentMax = highestCompletedRankByTrack.get(trackSlug) ?? 0;
+        if (row.cefr_rank > currentMax) {
+          highestCompletedRankByTrack.set(trackSlug, row.cefr_rank);
+        }
+      }
+    }
+
     const courses: StudentCourseSummary[] = rows.map((row) => {
+      const trackSlug = row.track_slug || 'general_english';
       const lessonCount = parseInt(row.lesson_count, 10) || 0;
       const completedLessonCount = parseInt(row.completed_lesson_count, 10) || 0;
       const quizCount = parseInt(row.quiz_count, 10) || 0;
       const examCount = parseInt(row.exam_count, 10) || 0;
 
       const lessonsComplete = lessonCount > 0 && completedLessonCount === lessonCount;
-      const fullyComplete = lessonsComplete && row.quizzes_passed && row.exam_passed;
+      const fullyComplete = lessonsComplete && (row.quizzes_passed ?? true) && (row.exam_passed ?? true);
 
       const totalItems = lessonCount + quizCount + examCount;
       const completedItems =
@@ -41,7 +58,7 @@ export class StudentCoursesService {
       const percent = totalItems === 0 ? 0 : Math.round((completedItems / totalItems) * 100);
 
       let status: StudentCourseStatus;
-      if (fullyComplete) {
+      if (fullyComplete || lessonsComplete) {
         status = 'completed';
       } else if (completedItems > 0) {
         status = 'in_progress';
@@ -49,8 +66,14 @@ export class StudentCoursesService {
         status = 'not_started';
       }
 
-      const maxUnlockedCefrRank = row.max_unlocked_cefr_rank ?? 1;
-      const locked = row.cefr_rank !== null && row.cefr_rank > maxUnlockedCefrRank;
+      const maxUnlockedFromState = row.max_unlocked_cefr_rank ?? 1;
+      const highestCompleted = highestCompletedRankByTrack.get(trackSlug) ?? 0;
+      const effectiveMaxUnlockedRank = Math.max(
+        maxUnlockedFromState,
+        highestCompleted > 0 ? highestCompleted + 1 : 1,
+      );
+
+      const locked = row.cefr_rank !== null && row.cefr_rank > effectiveMaxUnlockedRank;
 
       return {
         courseId: row.course_id,

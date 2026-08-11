@@ -154,6 +154,18 @@ export class AssessmentResultService {
           `ResultService: persisted result ${resultId} for attempt ${gradingResult.attemptId}`,
         );
 
+        if (gradingResult.passed) {
+          try {
+            await this.updateLevelStateOnExamPass(gradingResult.studentId, gradingResult.assessmentId);
+          } catch (e: unknown) {
+            this.logger.warn(
+              `ResultService: failed to update level state on exam pass — ${
+                e instanceof Error ? e.message : String(e)
+              }`,
+            );
+          }
+        }
+
         // Analytics is a side effect of an already-committed result — never
         // let it fail the submission response. gradingResult.studentId is
         // the Supabase Auth UID (the id convention throughout the
@@ -275,5 +287,39 @@ export class AssessmentResultService {
       latePenaltyApplied: r.late_penalty_applied,
       gradedAt: r.graded_at,
     };
+  }
+
+  private async updateLevelStateOnExamPass(studentId: string, assessmentId: string): Promise<void> {
+    const res = await this.db.query<{ course_id: string; track_slug: string; cefr_rank: number }>(
+      `SELECT co.id AS course_id, co.track_slug, co.cefr_rank
+       FROM assessments a
+       JOIN courses co ON co.id = a.course_id
+       WHERE a.id = $1 AND a.type = 'exam'`,
+      [assessmentId],
+    );
+
+    const course = res.rows[0];
+    if (!course || !course.track_slug || course.cefr_rank === null) return;
+
+    const stateRes = await this.db.query<{ max_unlocked_cefr_rank: number }>(
+      `SELECT max_unlocked_cefr_rank FROM student_level_state WHERE student_id = $1 AND track_slug = $2`,
+      [studentId, course.track_slug],
+    );
+
+    const currentMax = stateRes.rows[0]?.max_unlocked_cefr_rank ?? 1;
+    const nextRank = course.cefr_rank + 1;
+
+    if (nextRank > currentMax) {
+      await this.db.query(
+        `INSERT INTO student_level_state (student_id, track_slug, current_cefr_rank, max_unlocked_cefr_rank, source, last_computed_at, updated_at)
+         VALUES ($1, $2, $3, $3, 'aim_engine', NOW(), NOW())
+         ON CONFLICT (student_id, track_slug)
+         DO UPDATE SET max_unlocked_cefr_rank = GREATEST(student_level_state.max_unlocked_cefr_rank, EXCLUDED.max_unlocked_cefr_rank),
+                       last_computed_at = NOW(),
+                       updated_at = NOW()`,
+        [studentId, course.track_slug, nextRank],
+      );
+      this.logger.log(`Advanced max_unlocked_cefr_rank for student ${studentId} to ${nextRank}`);
+    }
   }
 }

@@ -91,4 +91,11 @@ abstract class LessonsRemoteDatasource {
     required String bearerToken,
     required String chapterId,
   });
+
+  /// POST /lessons/:id/complete — mark a lesson as completed for the
+  /// authenticated student on the backend.
+  Future<void> markLessonComplete({
+    required String bearerToken,
+    required String lessonId,
+  });
 }

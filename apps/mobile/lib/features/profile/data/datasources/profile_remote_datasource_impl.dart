@@ -44,7 +44,21 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     return envelope.data!;
   }
 
+  @override
+  Future<void> updateEngagementGoal(
+    String bearerToken, {
+    required int dailyGoalLessons,
+  }) async {
+    await _apiClient.put<Map<String, dynamic>>(
+      BackendApiPaths.engagementGoal,
+      headers: _authHeaders(bearerToken),
+      body: {'dailyGoalLessons': dailyGoalLessons},
+      decodeData: (json) => json as Map<String, dynamic>,
+    );
+  }
+
   Map<String, String> _authHeaders(String bearerToken) {
     return {'authorization': 'Bearer $bearerToken'};
   }
 }
+

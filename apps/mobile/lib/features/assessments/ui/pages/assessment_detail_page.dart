@@ -145,7 +145,11 @@ class _AssessmentDetailHeader extends StatelessWidget {
                 label: 'Back',
                 child: InkWell(
                   onTap: () {
-                    if (context.canPop()) context.pop();
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go('/student/assessments');
+                    }
                   },
                   customBorder: const CircleBorder(),
                   child: DecoratedBox(

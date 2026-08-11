@@ -2,12 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/state/app_state_notifier.dart';
-import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
+import 'package:aim_mobile/features/auth/logic/entity/auth_context.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
-class AuthContextNotifier extends AppStateNotifier<AuthContextModel> {
+class AuthContextNotifier extends AppStateNotifier<AuthContext> {
   AuthContextNotifier({
     required AuthRepository repository,
     required Ref ref,

@@ -54,6 +54,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -61,6 +62,7 @@ import 'package:aim_mobile/features/voice_teacher/logic/entity/voice_teacher_ses
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_playback_notifier.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_record_submit_notifier.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_teacher_provider.dart';
+import 'package:aim_mobile/features/voice_teacher/data/datasources/voice_recorder_client_impl.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/voice_recorder_client.dart';
 import '../widgets/voice_error_state.dart';
 import '../widgets/voice_push_to_talk_button.dart';
@@ -147,7 +149,11 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
     if (history.length == 1 && history.first.isGreeting) {
       final greeting = history.first;
       if (greeting.audioRef != null) {
-        unawaited(_onPlayReply(greeting.audioRef!, onFinished: _onGreetingFinished));
+        unawaited(_onPlayReply(
+          greeting.audioRef!,
+          fallbackText: greeting.text,
+          onFinished: _onGreetingFinished,
+        ));
         return;
       }
     }
@@ -289,11 +295,14 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
       // Auto-play the AI's reply. The student presses-and-holds the mic
       // themselves for their next turn — no auto-listening afterward.
       final latest = ref.read(voiceTeacherSessionProvider);
-      final replyAudioRef = latest is AppAsyncSuccess<VoiceTeacherSessionState>
-          ? latest.data.lastTurn?.audioRef
+      final turn = latest is AppAsyncSuccess<VoiceTeacherSessionState>
+          ? latest.data.lastTurn
           : null;
-      if (replyAudioRef != null) {
-        unawaited(_onPlayReply(replyAudioRef));
+      final turnText = turn?.text;
+      if (turn?.audioRef != null) {
+        unawaited(_onPlayReply(turn!.audioRef!, fallbackText: turnText));
+      } else if (turnText != null && turnText.isNotEmpty) {
+        unawaited(_onPlayText(turnText));
       }
     } finally {
       _stoppingTurn = false;
@@ -324,11 +333,21 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
         );
   }
 
-  Future<void> _onPlayReply(String audioRef, {VoidCallback? onFinished}) async {
+  Future<void> _onPlayReply(
+    String audioRef, {
+    String? fallbackText,
+    VoidCallback? onFinished,
+  }) async {
     final token = _token;
-    if (token == null || token.isEmpty) return;
+    if (token == null || token.isEmpty) {
+      if (fallbackText != null && fallbackText.isNotEmpty) {
+        await _onPlayText(fallbackText, onFinished: onFinished);
+      }
+      return;
+    }
     await ref.read(voicePlaybackProvider).loadAndPlay(
           audioRef: audioRef,
+          fallbackText: fallbackText,
           fetchAudioFn: (targetAudioRef) async {
             final bytes = await ref
                 .read(voiceTeacherRepositoryProvider)
@@ -338,6 +357,20 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
                 );
             return Uint8List.fromList(bytes);
           },
+          onFinished: onFinished,
+        );
+  }
+
+  Future<void> _onPlayText(String text, {VoidCallback? onFinished}) async {
+    if (text.trim().isEmpty) {
+      onFinished?.call();
+      return;
+    }
+    final encoded = Uri.encodeComponent(text.trim());
+    final ttsUrl =
+        'https://translate.google.com/translate_tts?ie=UTF-8&q=$encoded&tl=en&client=tw-ob';
+    await ref.read(voicePlaybackProvider).loadAndPlayUrl(
+          url: ttsUrl,
           onFinished: onFinished,
         );
   }
@@ -419,7 +452,13 @@ class _VoiceTeacherHeader extends StatelessWidget
                 button: true,
                 label: 'Back',
                 child: InkWell(
-                  onTap: () => context.pop(),
+                  onTap: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go(AppRoutePaths.mainShell);
+                  }
+                },
                   customBorder: const CircleBorder(),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
