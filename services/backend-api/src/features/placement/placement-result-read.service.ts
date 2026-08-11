@@ -390,7 +390,11 @@ export class PlacementResultReadService {
     estimatedLevel: string,
     studentId: string,
   ): Promise<{ recommendedCourseId: string | null; note: string | null; trackSlug: string | null }> {
-    const initialTargetRank = PLACEMENT_BUCKET_TO_CEFR_RANK[estimatedLevel] ?? 1;
+    const initialTargetRank = PLACEMENT_BUCKET_TO_CEFR_RANK[estimatedLevel];
+    if (initialTargetRank === undefined) {
+      return { recommendedCourseId: null, note: null, trackSlug: null };
+    }
+
     const resolvedTrack = await this.resolveStudentTrackSlug(studentId) ?? 'general_english';
     const stateRes = await this.db.query<{ max_unlocked_cefr_rank: number }>(
       `SELECT max_unlocked_cefr_rank FROM student_level_state WHERE student_id = $1 AND track_slug = $2`,
