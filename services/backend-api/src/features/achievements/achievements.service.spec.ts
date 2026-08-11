@@ -6,6 +6,8 @@ describe('AchievementsService', () => {
     ({
       findActiveDefinitions: jest.fn().mockResolvedValue([]),
       findUnlockStateForStudent: jest.fn().mockResolvedValue([]),
+      countCompletedLessons: jest.fn().mockResolvedValue(0),
+      countPassedAssessments: jest.fn().mockResolvedValue(0),
       unlockAchievement: jest.fn(),
       ...overrides,
     }) as unknown as AchievementsRepository;

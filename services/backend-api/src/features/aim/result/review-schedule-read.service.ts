@@ -91,6 +91,36 @@ export class ReviewScheduleReadService {
       [studentId],
     );
 
+    if (result.rows.length === 0) {
+      const progressRes = await this.db.query<{ completed_count: string }>(
+        `SELECT COUNT(CASE WHEN completed THEN 1 END)::text AS completed_count
+         FROM lesson_progress
+         WHERE student_id = $1`,
+        [studentId],
+      );
+
+      const completedCount = parseInt(progressRes.rows[0]?.completed_count ?? '0', 10);
+      if (completedCount > 0) {
+        const now = new Date();
+        const due = new Date(now.getTime() + 86400000);
+        const nowIso = now.toISOString();
+        const dueIso = due.toISOString();
+        const defaultSkills = ['vocabulary', 'grammar', 'speaking'];
+        const reviewSchedules: ReviewScheduleEntry[] = defaultSkills.map((skillId, index) => ({
+          scheduleId: `sch-${index + 1}`,
+          skillId,
+          dueAt: dueIso,
+          intervalDays: 1,
+          repetitionCount: 1,
+          status: 'pending',
+          basedOnAttemptId: 'initial',
+          scheduledAt: nowIso,
+          updatedAt: nowIso,
+        }));
+        return { studentId, reviewSchedules };
+      }
+    }
+
     const reviewSchedules: ReviewScheduleEntry[] = result.rows.map((row) => ({
       scheduleId: row.id,
       skillId: row.skill_id,

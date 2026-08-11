@@ -64,4 +64,20 @@ export class AchievementsRepository {
       [studentId, achievementId],
     );
   }
+
+  async countCompletedLessons(studentId: string): Promise<number> {
+    const res = await this.db.query<{ count: string }>(
+      `SELECT COUNT(*)::text AS count FROM lesson_progress WHERE student_id = $1 AND completed = true`,
+      [studentId],
+    );
+    return parseInt(res.rows[0]?.count ?? '0', 10);
+  }
+
+  async countPassedAssessments(studentId: string): Promise<number> {
+    const res = await this.db.query<{ count: string }>(
+      `SELECT COUNT(*)::text AS count FROM assessment_results WHERE student_id = $1 AND passed = true`,
+      [studentId],
+    );
+    return parseInt(res.rows[0]?.count ?? '0', 10);
+  }
 }
