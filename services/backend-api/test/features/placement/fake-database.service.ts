@@ -207,6 +207,23 @@ export class FakeDatabaseService {
     const sql = text.replace(/\s+/g, ' ').trim();
     const params = [...values];
 
+    // ---- users: lookup by supabase_auth_uid ---------------------------------
+    if (sql.startsWith('SELECT') && sql.includes('FROM users') && sql.includes('WHERE supabase_auth_uid = $1')) {
+      const [authUid] = params as [string];
+      return toQueryResult([
+        {
+          id: authUid,
+          supabase_auth_uid: authUid,
+          email: 'test@example.com',
+          phone: null,
+          user_type: 'student',
+          status: 'active',
+          created_at: now(),
+          updated_at: now(),
+        } as unknown as T,
+      ]);
+    }
+
     // ---- placement_tests -------------------------------------------------
     if (sql.includes('FROM placement_tests') && sql.includes("status = 'published'")) {
       const test = this.tests.find((t) => t.status === 'published');

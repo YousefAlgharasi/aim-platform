@@ -16,6 +16,8 @@ import { PlacementSpeakingAnswerSubmitService } from './placement-speaking-answe
 import { PlacementDecisionService } from './placement-decision.service';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { PlacementPermissionGuard } from './placement-permission.guard';
+import { ResolveInternalUserIdGuard } from '../../auth/authorization/resolve-internal-user-id.guard';
+import { UsersService } from '../users/users.service';
 
 const GUARDS_KEY = '__guards__';
 
@@ -58,6 +60,7 @@ describe('PlacementController', () => {
         getGateStatus: jest.fn().mockResolvedValue({ should_show_gate: true, decision: null }),
         setDecision: jest.fn().mockResolvedValue({ should_show_gate: false, decision: 'take_placement' }),
       },
+      users: { findBySupabaseUid: jest.fn().mockResolvedValue({ id: 'student-1', supabaseAuthUid: 'student-1' }) },
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -77,10 +80,12 @@ describe('PlacementController', () => {
         { provide: TtsAudioStorageService, useValue: mocks.audioStorage },
         { provide: PlacementSpeakingAnswerSubmitService, useValue: mocks.speakingAnswerSubmit },
         { provide: PlacementDecisionService, useValue: mocks.decision },
+        { provide: UsersService, useValue: mocks.users },
       ],
     })
       .overrideGuard(SupabaseJwtAuthGuard).useValue({ canActivate: () => true })
       .overrideGuard(PlacementPermissionGuard).useValue({ canActivate: () => true })
+      .overrideGuard(ResolveInternalUserIdGuard).useValue({ canActivate: () => true })
       .compile();
 
     controller = module.get(PlacementController);
@@ -112,8 +117,7 @@ describe('PlacementController', () => {
 
   describe('startAttempt (P4-041)', () => {
     it('delegates to PlacementAttemptService.startAttempt with user.id', async () => {
-      const user = { id: 'student-1', email: 's@test.com', role: 'student' } as any;
-      await controller.startAttempt(user);
+      await controller.startAttempt('student-1');
       expect(attemptStart.startAttempt).toHaveBeenCalledWith('student-1');
     });
   });
@@ -134,46 +138,40 @@ describe('PlacementController', () => {
 
   describe('submitAnswer (P4-042)', () => {
     it('delegates to PlacementAnswerSubmitService.submitAnswer', async () => {
-      const user = { id: 'student-1' } as any;
       const body = { questionId: 'q-1', answerValue: 'A' } as any;
-      await controller.submitAnswer('att-1', user, body);
+      await controller.submitAnswer('att-1', 'student-1', body);
       expect(answerSubmit.submitAnswer).toHaveBeenCalledWith('att-1', 'student-1', body);
     });
   });
 
   describe('completeAttempt (P4-043)', () => {
     it('delegates to PlacementAttemptCompleteService.completeAttempt', async () => {
-      const user = { id: 'student-1' } as any;
-      await controller.completeAttempt('att-1', user);
+      await controller.completeAttempt('att-1', 'student-1');
       expect(attemptComplete.completeAttempt).toHaveBeenCalledWith('att-1', 'student-1');
     });
 
     it('triggers scoring pipeline after submission', async () => {
-      const user = { id: 'student-1' } as any;
-      await controller.completeAttempt('att-1', user);
+      await controller.completeAttempt('att-1', 'student-1');
       expect(resultCreate.createResult).toHaveBeenCalledWith('att-1');
       expect(initialPath.createInitialPath).toHaveBeenCalledWith('res-1');
     });
 
     it('seeds student_level_state from the placement result (P20-006)', async () => {
-      const user = { id: 'student-1' } as any;
-      await controller.completeAttempt('att-1', user);
+      await controller.completeAttempt('att-1', 'student-1');
       expect(levelState.upsertFromPlacement).toHaveBeenCalledWith('student-1', 'intermediate');
     });
   });
 
   describe('getResult (P4-048)', () => {
     it('delegates to PlacementResultReadService.getResult', async () => {
-      const user = { id: 'student-1' } as any;
-      await controller.getResult('att-1', user);
+      await controller.getResult('att-1', 'student-1');
       expect(resultRead.getResult).toHaveBeenCalledWith('att-1', 'student-1');
     });
   });
 
   describe('getLatestStatus', () => {
     it('delegates to PlacementResultReadService.getLatestAttemptStatus with the JWT-resolved student id', async () => {
-      const user = { id: 'student-1' } as any;
-      await controller.getLatestStatus(user);
+      await controller.getLatestStatus('student-1');
       expect(resultRead.getLatestAttemptStatus).toHaveBeenCalledWith('student-1');
     });
   });

@@ -305,6 +305,7 @@ describe('AuthLoginService', () => {
 
   describe('processGoogleUser', () => {
     it('bootstraps user and issues signed JWT tokens for valid Google profile', async () => {
+      mockFetch(200, { id: 'supa_g_123' });
       const googleProfile = {
         googleId: 'g_uid_999',
         email: 'googleuser@example.com',

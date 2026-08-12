@@ -224,7 +224,7 @@ describe('StudentSkillStateReadService — result reads (P5-069)', () => {
   }
 
   it('queries student_skill_states by student_id ordered by skill_id', async () => {
-    const querySpy = jest.fn().mockResolvedValue({ rows: [], rowCount: 0 });
+    const querySpy = jest.fn().mockResolvedValue({ rows: [makeSkillStateRow()], rowCount: 1 });
     const svc = new StudentSkillStateReadService(makeMockDb(querySpy));
     await svc.getSkillStatesForStudent(STUDENT_ID);
     expect(querySpy).toHaveBeenCalledTimes(1);
