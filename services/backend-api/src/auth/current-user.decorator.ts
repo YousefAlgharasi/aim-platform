@@ -23,9 +23,9 @@ export const CurrentUser = createParamDecorator<
 
 export function readResolvedInternalUserId(
   context: ExecutionContext,
-): string | undefined {
-  const request = context.switchToHttp().getRequest<{ resolvedInternalUserId?: string }>();
-  return request.resolvedInternalUserId;
+): string {
+  const request = context.switchToHttp().getRequest<{ resolvedInternalUserId?: string; user?: AuthenticatedUser }>();
+  return request.resolvedInternalUserId || request.user?.id || '';
 }
 
 export const ResolvedInternalUserId = createParamDecorator<

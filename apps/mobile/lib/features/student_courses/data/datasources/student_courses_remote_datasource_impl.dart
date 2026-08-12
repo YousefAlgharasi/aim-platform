@@ -29,12 +29,16 @@ class StudentCoursesRemoteDatasourceImpl
             .map(StudentCourseModel.fromJson)
             .toList();
 
-        bool previousCompleted = false;
         final result = <StudentCourseModel>[];
 
         for (int i = 0; i < parsed.length; i++) {
           final c = parsed[i];
-          final isUnlocked = i == 0 || previousCompleted || !c.locked;
+          final prevCourseCompleted = i > 0 &&
+              (parsed[i - 1].status == StudentCourseStatus.completed ||
+                  parsed[i - 1].percent == 100);
+
+          final isUnlocked = i == 0 || prevCourseCompleted;
+
           final updated = StudentCourseModel(
             courseId: c.courseId,
             title: c.title,
@@ -49,10 +53,6 @@ class StudentCoursesRemoteDatasourceImpl
             locked: !isUnlocked,
           );
           result.add(updated);
-
-          if (c.status == StudentCourseStatus.completed || c.percent == 100) {
-            previousCompleted = true;
-          }
         }
 
         return result;

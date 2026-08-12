@@ -195,7 +195,11 @@ export class PlacementResultReadService {
     const latestAttempt = await this.db.query<{ id: string }>(
       `SELECT id
        FROM placement_attempts
-       WHERE student_id = $1 AND status = 'completed'
+       WHERE (
+         student_id = $1
+         OR student_id IN (SELECT id FROM users WHERE supabase_auth_uid = $1 OR id = $1)
+         OR student_id IN (SELECT supabase_auth_uid FROM users WHERE id = $1 OR supabase_auth_uid = $1)
+       ) AND status = 'completed'
        ORDER BY completed_at DESC
        LIMIT 1`,
       [studentId],
@@ -222,7 +226,11 @@ export class PlacementResultReadService {
     const latestAttempt = await this.db.query<{ id: string; status: string }>(
       `SELECT id, status
        FROM placement_attempts
-       WHERE student_id = $1
+       WHERE (
+         student_id = $1
+         OR student_id IN (SELECT id FROM users WHERE supabase_auth_uid = $1 OR id = $1)
+         OR student_id IN (SELECT supabase_auth_uid FROM users WHERE id = $1 OR supabase_auth_uid = $1)
+       )
        ORDER BY started_at DESC
        LIMIT 1`,
       [studentId],
@@ -262,7 +270,11 @@ export class PlacementResultReadService {
     const attemptResult = await this.db.query<AttemptStatusRow>(
       `SELECT id, student_id, status, completed_at
        FROM placement_attempts
-       WHERE id = $1 AND student_id = $2
+       WHERE id = $1 AND (
+         student_id = $2
+         OR student_id IN (SELECT id FROM users WHERE supabase_auth_uid = $2 OR id = $2)
+         OR student_id IN (SELECT supabase_auth_uid FROM users WHERE id = $2 OR supabase_auth_uid = $2)
+       )
        LIMIT 1`,
       [attemptId, studentId],
     );

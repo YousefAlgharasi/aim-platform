@@ -72,7 +72,11 @@ export class PlacementAttemptCompleteService {
       `SELECT id, student_id, placement_test_id, status,
               started_at, submitted_at, completed_at
        FROM placement_attempts
-       WHERE id = $1 AND student_id = $2
+       WHERE id = $1 AND (
+         student_id = $2
+         OR student_id IN (SELECT id FROM users WHERE supabase_auth_uid = $2 OR id = $2)
+         OR student_id IN (SELECT supabase_auth_uid FROM users WHERE id = $2 OR supabase_auth_uid = $2)
+       )
        LIMIT 1`,
       [attemptId, studentId],
     );
