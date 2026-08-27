@@ -31,16 +31,7 @@ export default async function AdminPlacementResultsPage({ searchParams }: Props)
   let backendUnavailable = false;
 
   try {
-    const raw = await fetchAdminPlacementResults(token, page, limit);
-    if (level) {
-      data = {
-        ...raw,
-        results: raw.results.filter((r) => r.estimatedLevel === level),
-        total: raw.results.filter((r) => r.estimatedLevel === level).length,
-      };
-    } else {
-      data = raw;
-    }
+    data = await fetchAdminPlacementResults(token, page, limit, level);
   } catch (error) {
     if (
       error instanceof AdminApiClientError &&

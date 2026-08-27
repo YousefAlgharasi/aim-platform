@@ -40,7 +40,6 @@ export type AdminSkillSummaryEntry = {
 
 export type AdminPlacementResultSummary = {
   readonly resultId: string;
-  readonly attemptId: string;
   readonly studentId: string;
   /** Backend-assigned CEFR level. Admin dashboard displays as-is; never recalculates. */
   readonly estimatedLevel: string;
@@ -80,12 +79,11 @@ function decodeSkillSummaryEntry(raw: unknown): AdminSkillSummaryEntry {
 function decodeResultSummary(raw: unknown): AdminPlacementResultSummary {
   const r = raw as Record<string, unknown>;
   return {
-    resultId: typeof r['resultId'] === 'string' ? r['resultId'] : '',
-    attemptId: typeof r['attemptId'] === 'string' ? r['attemptId'] : '',
+    resultId: typeof r['id'] === 'string' ? r['id'] : '',
     studentId: typeof r['studentId'] === 'string' ? r['studentId'] : '',
     estimatedLevel: typeof r['estimatedLevel'] === 'string' ? r['estimatedLevel'] : '—',
-    completedAt: typeof r['completedAt'] === 'string' ? r['completedAt'] : '',
-    initialPathReady: r['initialPathReady'] === true,
+    completedAt: typeof r['createdAt'] === 'string' ? r['createdAt'] : '',
+    initialPathReady: typeof r['initialPathId'] === 'string' && r['initialPathId'].length > 0,
   };
 }
 
@@ -101,7 +99,7 @@ function decodeResultDetail(raw: unknown): AdminPlacementResultDetail {
 
 function decodeListData(raw: unknown): AdminPlacementResultListData {
   const r = raw as Record<string, unknown>;
-  const rawResults = Array.isArray(r['results']) ? r['results'] : [];
+  const rawResults = Array.isArray(r['data']) ? r['data'] : [];
   return {
     results: rawResults.map(decodeResultSummary),
     total: typeof r['total'] === 'number' ? r['total'] : 0,
@@ -122,13 +120,14 @@ export async function fetchAdminPlacementResults(
   token: string,
   page: number = 1,
   limit: number = 20,
+  level?: string,
 ): Promise<AdminPlacementResultListData> {
   const envelope = await adminApiClient.get(
     '/admin/placement/results',
     decodeListData,
     {
       headers: { Authorization: `Bearer ${token}` },
-      query: { page, limit },
+      query: level ? { page, limit, level } : { page, limit },
     },
   );
   return envelope.data;
