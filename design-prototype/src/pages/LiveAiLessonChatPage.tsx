@@ -293,33 +293,17 @@ export function LiveAiLessonChatPage({
           )}
         </div>
 
-        {/* Voice / Text reply toggle — the learner picks how they answer, per turn */}
-        <div className="flex items-center gap-1 mb-5 bg-slate-100 dark:bg-slate-800 rounded-full p-1">
-          <button
-            type="button"
-            onClick={() => setReplyMode('voice')}
-            disabled={state !== 'ai-speaking'}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold border-none cursor-pointer transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-              replyMode === 'voice'
-                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm'
-                : 'bg-transparent text-slate-500 dark:text-slate-400'
-            }`}
-          >
-            🎙️ Speak
-          </button>
-          <button
-            type="button"
-            onClick={() => setReplyMode('text')}
-            disabled={state !== 'ai-speaking'}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold border-none cursor-pointer transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-              replyMode === 'text'
-                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm'
-                : 'bg-transparent text-slate-500 dark:text-slate-400'
-            }`}
-          >
-            ⌨️ Type
-          </button>
-        </div>
+        {/* Voice / Text reply toggle — one button, click flips to the other mode.
+            Label always names the mode you're switching TO (not the current one),
+            since the mic button / text field below already shows what's active. */}
+        <button
+          type="button"
+          onClick={() => setReplyMode((m) => (m === 'voice' ? 'text' : 'voice'))}
+          disabled={state !== 'ai-speaking'}
+          className="mb-5 px-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold border-none cursor-pointer transition-colors hover:bg-slate-200 dark:hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50 flex items-center gap-1.5"
+        >
+          {replyMode === 'voice' ? '⌨️ Switch to typing' : '🎙️ Switch to speaking'}
+        </button>
 
         {replyMode === 'voice' ? (
           <>

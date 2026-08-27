@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { MobileShell } from "./components/MobileShell"
 import { SplashPage } from "./pages/SplashPage"
 import { LoginPage } from "./pages/LoginPage"
@@ -15,8 +15,30 @@ import { MainDashboardPage } from "./pages/MainDashboardPage"
 
 export type Screen = "splash" | "login" | "register" | "onboard-vision" | "onboard-focus" | "onboard-habit" | "onboard-start" | "assessment-intro" | "assessment-question" | "assessment-submit" | "assessment-results" | "main"
 
+const DARK_MODE_STORAGE_KEY = "aim-dark-mode"
+
+function getInitialDarkMode(): boolean {
+  try {
+    const stored = localStorage.getItem(DARK_MODE_STORAGE_KEY)
+    if (stored !== null) return stored === "true"
+  } catch {
+    // localStorage unavailable (private browsing, disabled storage) — fall through to system preference
+  }
+  return typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches
+}
+
 export default function App() {
   const [screen, setScreen] = useState<Screen>("splash")
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(getInitialDarkMode)
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", isDarkMode)
+    try {
+      localStorage.setItem(DARK_MODE_STORAGE_KEY, String(isDarkMode))
+    } catch {
+      // localStorage unavailable — theme still applies for this session, just won't persist
+    }
+  }, [isDarkMode])
 
   return (
     <MobileShell>
@@ -74,7 +96,11 @@ export default function App() {
         <AssessmentResultsPage onUnlock={() => setScreen("main")} />
       )}
       {screen === "main" && (
-        <MainDashboardPage onLogout={() => setScreen("login")} />
+        <MainDashboardPage
+          onLogout={() => setScreen("login")}
+          isDarkMode={isDarkMode}
+          onToggleDarkMode={setIsDarkMode}
+        />
       )}
     </MobileShell>
   )
