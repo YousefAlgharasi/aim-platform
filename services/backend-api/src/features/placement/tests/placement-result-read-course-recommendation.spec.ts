@@ -20,7 +20,7 @@ function makeDb(handler: (sql: string, params: readonly unknown[]) => QueryResul
     const custom = handler(sql, params);
     if (custom) return custom;
 
-    if (sql.includes('FROM placement_attempts') && sql.includes('WHERE id = $1 AND student_id = $2')) {
+    if (sql.includes('FROM placement_attempts') && sql.includes('WHERE id = $1 AND (')) {
       return {
         rows: [{ id: ATTEMPT_ID, student_id: STUDENT_ID, status: 'completed', completed_at: '2026-06-01T00:00:00Z' }],
         rowCount: 1,

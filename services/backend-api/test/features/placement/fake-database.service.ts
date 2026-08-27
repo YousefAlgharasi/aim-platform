@@ -263,7 +263,7 @@ export class FakeDatabaseService {
 
     // ---- placement_attempts: lookup by id (+ optional student_id) --------
     if (sql.startsWith('SELECT') && sql.includes('FROM placement_attempts') && sql.includes('WHERE id = $1')) {
-      if (sql.includes('AND student_id = $2')) {
+      if (sql.includes('student_id = $2')) {
         const [attemptId, studentId] = params as [string, string];
         const attempt = this.attempts.find((a) => a.id === attemptId && a.student_id === studentId);
         return toQueryResult(attempt ? [attempt as unknown as T] : []);
