@@ -173,18 +173,25 @@ export class AdminDataService {
     let dataWhere = '';
     let idx = 1;
     if (level) {
-      dataWhere = `WHERE estimated_level = $${idx++}`;
+      dataWhere = `WHERE pr.estimated_level = $${idx++}`;
       dataParams.push(level);
     }
     const limitIdx = idx++;
     const offsetIdx = idx;
     dataParams.push(safeLimit, offset);
 
+    // student_id on placement_results may hold either the internal users.id
+    // or the Supabase auth UID (same normalization used by the placement
+    // ownership checks) — join on both so the student's name always resolves.
     const result = await this.db.query<Record<string, unknown>>(
-      `SELECT id, student_id, estimated_level, skill_mastery_map, weakness_map, initial_path_id, created_at
-       FROM placement_results
+      `SELECT pr.id, pr.student_id, pr.estimated_level, pr.skill_mastery_map, pr.weakness_map,
+              pr.initial_path_id, pr.created_at,
+              sp.display_name, u.email
+       FROM placement_results pr
+       LEFT JOIN users u ON u.id = pr.student_id OR u.supabase_auth_uid = pr.student_id
+       LEFT JOIN student_profiles sp ON sp.user_id = u.id
        ${dataWhere}
-       ORDER BY created_at DESC
+       ORDER BY pr.created_at DESC
        LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
       dataParams,
     );
@@ -193,6 +200,7 @@ export class AdminDataService {
       data: result.rows.map((r) => ({
         id: r.id,
         studentId: r.student_id,
+        studentName: (r.display_name as string | null) ?? (r.email as string | null) ?? null,
         estimatedLevel: r.estimated_level,
         skillMasteryMap: r.skill_mastery_map,
         weaknessMap: r.weakness_map,
