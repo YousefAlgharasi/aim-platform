@@ -139,6 +139,58 @@ describe('AdminDataService', () => {
     expect(db.query.mock.calls[1][0]).toContain('LIMIT $2 OFFSET $3');
   });
 
+  it('listPlacementResults returns correct camelCase mapping', async () => {
+    const db = createDb([
+      { rows: [{ count: '1' }] },
+      {
+        rows: [
+          {
+            id: 'r1',
+            student_id: 's1',
+            estimated_level: 'B1',
+            skill_mastery_map: { reading: 0.7 },
+            weakness_map: { grammar: true },
+            initial_path_id: 'p1',
+            created_at: '2026-01-01',
+          },
+        ],
+      },
+    ]);
+    const service = new AdminDataService(db as never);
+    const result = await service.listPlacementResults(1, 20);
+
+    expect(result).toEqual({
+      data: [
+        {
+          id: 'r1',
+          studentId: 's1',
+          estimatedLevel: 'B1',
+          skillMasteryMap: { reading: 0.7 },
+          weaknessMap: { grammar: true },
+          initialPathId: 'p1',
+          createdAt: '2026-01-01',
+        },
+      ],
+      total: 1,
+      page: 1,
+      limit: 20,
+    });
+  });
+
+  it('listPlacementResults with level filter uses correct parameter indices', async () => {
+    const db = createDb([
+      { rows: [{ count: '0' }] },
+      { rows: [] },
+    ]);
+    const service = new AdminDataService(db as never);
+    await service.listPlacementResults(1, 20, 'B1');
+
+    expect(db.query.mock.calls[0][0]).toContain('$1');
+    expect(db.query.mock.calls[0][1]).toEqual(['B1']);
+    expect(db.query.mock.calls[1][0]).toContain('LIMIT $2 OFFSET $3');
+    expect(db.query.mock.calls[1][1]).toEqual(['B1', 20, 0]);
+  });
+
   it('listDeadlines returns correct camelCase mapping', async () => {
     const db = createDb([
       { rows: [{ count: '1' }] },

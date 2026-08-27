@@ -153,21 +153,40 @@ export class AdminDataService {
     };
   }
 
-  async listPlacementResults(page: number, limit: number) {
+  async listPlacementResults(page: number, limit: number, level?: string) {
     const { safePage, safeLimit, offset } = safePagination(page, limit);
 
+    const countParams: unknown[] = [];
+    let countWhere = '';
+    if (level) {
+      countWhere = 'WHERE estimated_level = $1';
+      countParams.push(level);
+    }
+
     const countResult = await this.db.query<{ count: string }>(
-      'SELECT COUNT(*)::text AS count FROM placement_results',
-      [],
+      `SELECT COUNT(*)::text AS count FROM placement_results ${countWhere}`,
+      countParams,
     );
     const total = parseInt(countResult.rows[0]?.count ?? '0', 10);
+
+    const dataParams: unknown[] = [];
+    let dataWhere = '';
+    let idx = 1;
+    if (level) {
+      dataWhere = `WHERE estimated_level = $${idx++}`;
+      dataParams.push(level);
+    }
+    const limitIdx = idx++;
+    const offsetIdx = idx;
+    dataParams.push(safeLimit, offset);
 
     const result = await this.db.query<Record<string, unknown>>(
       `SELECT id, student_id, estimated_level, skill_mastery_map, weakness_map, initial_path_id, created_at
        FROM placement_results
+       ${dataWhere}
        ORDER BY created_at DESC
-       LIMIT $1 OFFSET $2`,
-      [safeLimit, offset],
+       LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
+      dataParams,
     );
 
     return {

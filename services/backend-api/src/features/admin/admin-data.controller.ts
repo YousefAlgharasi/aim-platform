@@ -68,10 +68,12 @@ export class AdminDataController {
   async listPlacementResults(
     @Query('page') page = '1',
     @Query('limit') limit = '20',
+    @Query('level') level?: string,
   ) {
     return this.adminDataService.listPlacementResults(
       parseInt(page, 10) || 1,
       parseInt(limit, 10) || 20,
+      level,
     );
   }
 
