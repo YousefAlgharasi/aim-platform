@@ -83,20 +83,20 @@ function RowChoiceCard({
         onClick={onClick}
         className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-200 cursor-pointer text-left
           ${selected
-            ? "bg-[rgba(79,70,229,0.07)] ring-2 ring-[#4F46E5] shadow-[0_4px_20px_rgba(79,70,229,0.15)]"
+            ? "bg-[rgba(79,70,229,0.07)] dark:bg-indigo-950/40 ring-2 ring-[#4F46E5] shadow-[0_4px_20px_rgba(79,70,229,0.15)]"
             : recommended
-              ? "bg-white ring-2 ring-[#4F46E5]/40 hover:ring-[#4F46E5]/70 hover:shadow-md"
-              : "bg-white ring-1 ring-[#E2E8F0] hover:ring-[#C7D2FE] hover:shadow-sm"
+              ? "bg-white dark:bg-slate-800 ring-2 ring-[#4F46E5]/40 hover:ring-[#4F46E5]/70 hover:shadow-md"
+              : "bg-white dark:bg-slate-800 ring-1 ring-[#E2E8F0] dark:ring-slate-700 hover:ring-[#C7D2FE] dark:hover:ring-indigo-700 hover:shadow-sm"
           }`}
       >
         {/* Icon pill */}
         <div
           className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-200
             ${selected
-              ? "bg-indigo-100 text-[#4F46E5]"
+              ? "bg-indigo-100 dark:bg-indigo-900/50 text-[#4F46E5] dark:text-indigo-400"
               : recommended
-                ? "bg-indigo-50 text-[#4F46E5]"
-                : "bg-slate-100 text-slate-500"
+                ? "bg-indigo-50 dark:bg-slate-700 text-[#4F46E5] dark:text-indigo-400"
+                : "bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
             }`}
         >
           {icon}
@@ -104,10 +104,10 @@ function RowChoiceCard({
 
         {/* Text */}
         <div className="flex-1 min-w-0">
-          <p className={`font-bold text-[15px] m-0 leading-snug ${selected ? "text-[#4F46E5]" : "text-[#0F172A]"}`}>
+          <p className={`font-bold text-[15px] m-0 leading-snug ${selected ? "text-[#4F46E5] dark:text-indigo-400" : "text-[#0F172A] dark:text-white"}`}>
             {title}
           </p>
-          <p className={`text-xs m-0 mt-0.5 leading-relaxed ${selected ? "text-indigo-400" : "text-[#94A3B8]"}`}>
+          <p className={`text-xs m-0 mt-0.5 leading-relaxed ${selected ? "text-indigo-400" : "text-[#94A3B8] dark:text-slate-500"}`}>
             {description}
           </p>
         </div>
@@ -118,7 +118,7 @@ function RowChoiceCard({
             <CheckIcon className="size-3 text-white" />
           </div>
         ) : (
-          <div className="w-6 h-6 rounded-full ring-1 ring-[#CBD5E1] shrink-0" />
+          <div className="w-6 h-6 rounded-full ring-1 ring-[#CBD5E1] dark:ring-slate-600 shrink-0" />
         )}
       </button>
     </div>
@@ -135,13 +135,13 @@ export function OnboardStartPage({ onContinue }: OnboardStartPageProps) {
       <ProgressDots total={4} current={3} />
 
       <div className="px-6 pt-7">
-        <span className="text-[#94A3B8] text-xs font-semibold uppercase tracking-wider block mb-1">
+        <span className="text-[#94A3B8] dark:text-slate-500 text-xs font-semibold uppercase tracking-wider block mb-1">
           Step 4 of 4
         </span>
-        <h1 className="text-[#0F172A] font-bold text-3xl tracking-tight leading-tight mb-2">
+        <h1 className="text-[#0F172A] dark:text-white font-bold text-3xl tracking-tight leading-tight mb-2">
           How would you<br />like to start?
         </h1>
-        <p className="text-[#94A3B8] text-sm leading-relaxed">
+        <p className="text-[#94A3B8] dark:text-slate-500 text-sm leading-relaxed">
           Choose carefully — the placement test can only be taken once to accurately calibrate your AI tutor.
         </p>
       </div>

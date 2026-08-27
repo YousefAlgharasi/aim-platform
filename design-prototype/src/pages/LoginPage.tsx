@@ -26,7 +26,7 @@ export function LoginPage({ onRegister, onSuccess, onSkipToHome }: LoginPageProp
   }
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-6 sm:p-7 pt-10 bg-gradient-to-b from-indigo-50/40 via-white to-slate-50/50">
+    <div className="flex-1 flex flex-col justify-between p-6 sm:p-7 pt-10 bg-gradient-to-b from-indigo-50/40 via-white to-slate-50/50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
       {/* Header section */}
       <div>
         <div className="flex items-center gap-2 mb-6">
@@ -38,13 +38,13 @@ export function LoginPage({ onRegister, onSuccess, onSkipToHome }: LoginPageProp
           </span>
         </div>
 
-        <span className="text-indigo-600 font-extrabold text-xs uppercase tracking-wider block mb-1">
+        <span className="text-indigo-600 dark:text-indigo-400 font-extrabold text-xs uppercase tracking-wider block mb-1">
           Welcome back
         </span>
-        <h1 className="text-slate-900 font-extrabold text-3xl tracking-tight leading-tight m-0">
+        <h1 className="text-slate-900 dark:text-white font-extrabold text-3xl tracking-tight leading-tight m-0">
           Sign in to your<br />account
         </h1>
-        <p className="text-slate-500 text-sm mt-1.5 leading-relaxed">
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1.5 leading-relaxed">
           Happy to see you again. Enter your email and password to continue.
         </p>
       </div>
@@ -68,7 +68,7 @@ export function LoginPage({ onRegister, onSuccess, onSkipToHome }: LoginPageProp
             <button
               type="button"
               onClick={() => setShowPass(!showPass)}
-              className="bg-transparent border-none cursor-pointer p-0 text-slate-400 hover:text-slate-700 flex items-center"
+              className="bg-transparent border-none cursor-pointer p-0 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 flex items-center"
             >
               <EyeIcon off={showPass} />
             </button>
@@ -78,7 +78,7 @@ export function LoginPage({ onRegister, onSuccess, onSkipToHome }: LoginPageProp
         <div className="text-right">
           <button
             type="button"
-            className="bg-transparent border-none text-[#4F46E5] font-semibold text-xs cursor-pointer hover:underline p-0"
+            className="bg-transparent border-none text-[#4F46E5] dark:text-indigo-400 font-semibold text-xs cursor-pointer hover:underline p-0"
           >
             Forgot password?
           </button>
@@ -101,7 +101,7 @@ export function LoginPage({ onRegister, onSuccess, onSkipToHome }: LoginPageProp
           <button
             type="button"
             onClick={onSkipToHome}
-            className="mt-1 h-11 rounded-2xl border border-dashed border-slate-300 text-slate-500 hover:text-indigo-600 hover:border-indigo-300 font-semibold text-xs cursor-pointer bg-transparent transition-colors"
+            className="mt-1 h-11 rounded-2xl border border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 font-semibold text-xs cursor-pointer bg-transparent transition-colors"
           >
             Skip to Home (Preview)
           </button>
@@ -109,12 +109,12 @@ export function LoginPage({ onRegister, onSuccess, onSkipToHome }: LoginPageProp
       </form>
 
       {/* Footer link */}
-      <p className="text-center text-slate-700 text-sm font-medium mt-4">
+      <p className="text-center text-slate-700 dark:text-slate-200 text-sm font-medium mt-4">
         Don&apos;t have an account?{" "}
         <button
           type="button"
           onClick={onRegister}
-          className="bg-transparent border-none text-[#4F46E5] font-bold text-sm cursor-pointer underline underline-offset-2 p-0 inline"
+          className="bg-transparent border-none text-[#4F46E5] dark:text-indigo-400 font-bold text-sm cursor-pointer underline underline-offset-2 p-0 inline"
         >
           Create account
         </button>

@@ -28,7 +28,7 @@ export function RegisterPage({ onLogin, onSuccess }: RegisterPageProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-6 sm:p-7 pt-10 overflow-y-auto bg-gradient-to-b from-indigo-50/40 via-white to-slate-50/50">
+    <div className="flex-1 flex flex-col justify-between p-6 sm:p-7 pt-10 overflow-y-auto bg-gradient-to-b from-indigo-50/40 via-white to-slate-50/50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-6">
@@ -40,13 +40,13 @@ export function RegisterPage({ onLogin, onSuccess }: RegisterPageProps) {
           </span>
         </div>
 
-        <span className="text-indigo-600 font-extrabold text-xs uppercase tracking-wider block mb-1">
+        <span className="text-indigo-600 dark:text-indigo-400 font-extrabold text-xs uppercase tracking-wider block mb-1">
           Start your journey
         </span>
-        <h1 className="text-slate-900 font-extrabold text-3xl tracking-tight leading-tight m-0">
+        <h1 className="text-slate-900 dark:text-white font-extrabold text-3xl tracking-tight leading-tight m-0">
           Create an account
         </h1>
-        <p className="text-slate-500 text-sm mt-1.5 leading-relaxed">
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1.5 leading-relaxed">
           Takes less than a minute. Enter your details below.
         </p>
       </div>
@@ -76,7 +76,7 @@ export function RegisterPage({ onLogin, onSuccess }: RegisterPageProps) {
             <button
               type="button"
               onClick={() => setShowPass(!showPass)}
-              className="bg-transparent border-none cursor-pointer p-0 text-slate-400 hover:text-slate-700 flex items-center"
+              className="bg-transparent border-none cursor-pointer p-0 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 flex items-center"
             >
               <EyeIcon off={showPass} />
             </button>
@@ -92,7 +92,7 @@ export function RegisterPage({ onLogin, onSuccess }: RegisterPageProps) {
             <button
               type="button"
               onClick={() => setShowConfirm(!showConfirm)}
-              className="bg-transparent border-none cursor-pointer p-0 text-slate-400 hover:text-slate-700 flex items-center"
+              className="bg-transparent border-none cursor-pointer p-0 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 flex items-center"
             >
               <EyeIcon off={showConfirm} />
             </button>
@@ -114,12 +114,12 @@ export function RegisterPage({ onLogin, onSuccess }: RegisterPageProps) {
       </form>
 
       {/* Footer link */}
-      <p className="text-center text-slate-700 text-sm font-medium mt-2 mb-4">
+      <p className="text-center text-slate-700 dark:text-slate-200 text-sm font-medium mt-2 mb-4">
         Already have an account?{" "}
         <button
           type="button"
           onClick={onLogin}
-          className="bg-transparent border-none text-[#4F46E5] font-bold text-sm cursor-pointer underline underline-offset-2 p-0 inline"
+          className="bg-transparent border-none text-[#4F46E5] dark:text-indigo-400 font-bold text-sm cursor-pointer underline underline-offset-2 p-0 inline"
         >
           Log in
         </button>
