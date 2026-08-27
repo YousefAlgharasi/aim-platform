@@ -9,24 +9,24 @@ interface AssessmentIntroPageProps {
 export function AssessmentIntroPage({ onStart }: AssessmentIntroPageProps) {
   const items = [
     {
-      icon: <ClockIcon className="size-5 text-[#4F46E5]" />,
+      icon: <ClockIcon className="size-5 text-[#4F46E5] dark:text-indigo-400" />,
       title: '25 Minutes',
       desc: 'Estimated duration for a full calibrated assessment.',
     },
     {
-      icon: <ClipboardIcon className="size-5 text-[#4F46E5]" />,
+      icon: <ClipboardIcon className="size-5 text-[#4F46E5] dark:text-indigo-400" />,
       title: '20 Adaptive Questions',
       desc: 'Questions dynamically adapt to your skill level.',
     },
     {
-      icon: <LightbulbIcon className="size-5 text-amber-500" />,
+      icon: <LightbulbIcon className="size-5 text-amber-500 dark:text-amber-400" />,
       title: 'Helpful Tip',
       desc: "If you don't know an answer, it is okay to skip and let the AI adjust.",
     },
   ]
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-6 sm:p-7 pt-10 bg-gradient-to-b from-indigo-50/40 via-white to-slate-50/50">
+    <div className="flex-1 flex flex-col justify-between p-6 sm:p-7 pt-10 bg-gradient-to-b from-indigo-50/40 via-white to-slate-50/50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100">
       <div>
         {/* Hero Icon Badge */}
         <div className="relative mb-6">
@@ -47,14 +47,14 @@ export function AssessmentIntroPage({ onStart }: AssessmentIntroPageProps) {
         </div>
 
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-[#4F46E5] font-extrabold text-xs uppercase tracking-wider bg-indigo-50 px-2.5 py-1 rounded-full">
+          <span className="text-[#4F46E5] dark:text-indigo-400 font-extrabold text-xs uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 rounded-full">
             Placement Test
           </span>
         </div>
-        <h1 className="text-slate-900 font-extrabold text-3xl tracking-tight leading-tight m-0 mt-2">
+        <h1 className="text-slate-900 dark:text-white font-extrabold text-3xl tracking-tight leading-tight m-0 mt-2">
           Level Assessment
         </h1>
-        <p className="text-slate-500 text-sm mt-1.5 leading-relaxed">
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1.5 leading-relaxed">
           Calibrate your AI tutor to find your optimal starting point.
         </p>
       </div>
@@ -64,23 +64,23 @@ export function AssessmentIntroPage({ onStart }: AssessmentIntroPageProps) {
         {items.map((item, i) => (
           <div
             key={i}
-            className="flex gap-4 items-center bg-white ring-1 ring-slate-200/80 rounded-2xl p-4 shadow-xs hover:ring-indigo-200 transition-all duration-200"
+            className="flex gap-4 items-center bg-white dark:bg-slate-800 ring-1 ring-slate-200/80 dark:ring-slate-700 rounded-2xl p-4 shadow-xs hover:ring-indigo-200 transition-all duration-200"
           >
-            <div className="w-11 h-11 bg-indigo-50/80 rounded-xl flex items-center justify-center shrink-0">
+            <div className="w-11 h-11 bg-indigo-50/80 dark:bg-indigo-950/60 rounded-xl flex items-center justify-center shrink-0">
               {item.icon}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-slate-900 font-bold text-[15px] m-0 leading-snug">{item.title}</p>
-              <p className="text-slate-400 font-normal text-xs mt-0.5 mb-0 leading-relaxed">
+              <p className="text-slate-900 dark:text-white font-bold text-[15px] m-0 leading-snug">{item.title}</p>
+              <p className="text-slate-400 dark:text-slate-500 font-normal text-xs mt-0.5 mb-0 leading-relaxed">
                 {item.desc}
               </p>
             </div>
           </div>
         ))}
 
-        <p className="text-slate-400 text-xs text-center mt-4 leading-relaxed">
+        <p className="text-slate-400 dark:text-slate-500 text-xs text-center mt-4 leading-relaxed">
           By starting, you agree to our{' '}
-          <span className="text-[#4F46E5] font-semibold cursor-pointer underline underline-offset-2">
+          <span className="text-[#4F46E5] dark:text-indigo-400 font-semibold cursor-pointer underline underline-offset-2">
             Assessment Honor Code
           </span>
         </p>

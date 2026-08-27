@@ -7,9 +7,9 @@ import { SeedlingIcon, BoltIcon, RocketIcon } from '../components/Icons'
 type HabitOption = '5min' | '15min' | '30min'
 
 const HABIT_OPTIONS: { id: HabitOption; icon: React.ReactNode; label: string; sub: string }[] = [
-  { id: '5min',  icon: <SeedlingIcon className="size-[22px] text-[#4F46E5]" />, label: '5 mins / day',  sub: 'Light — great for staying consistent' },
-  { id: '15min', icon: <BoltIcon     className="size-[22px] text-[#4F46E5]" />, label: '15 mins / day', sub: 'Balanced — recommended for most learners' },
-  { id: '30min', icon: <RocketIcon   className="size-[22px] text-[#4F46E5]" />, label: '30 mins / day', sub: 'Intensive — fastest path to fluency' },
+  { id: '5min',  icon: <SeedlingIcon className="size-[22px] text-[#4F46E5] dark:text-indigo-400" />, label: '5 mins / day',  sub: 'Light — great for staying consistent' },
+  { id: '15min', icon: <BoltIcon     className="size-[22px] text-[#4F46E5] dark:text-indigo-400" />, label: '15 mins / day', sub: 'Balanced — recommended for most learners' },
+  { id: '30min', icon: <RocketIcon   className="size-[22px] text-[#4F46E5] dark:text-indigo-400" />, label: '30 mins / day', sub: 'Intensive — fastest path to fluency' },
 ]
 
 interface OnboardHabitPageProps {
@@ -25,13 +25,13 @@ export function OnboardHabitPage({ onNext, onSkip }: OnboardHabitPageProps) {
       <ProgressDots total={4} current={2} />
 
       <div className="px-6 pt-7">
-        <span className="text-[#94A3B8] text-xs font-semibold uppercase tracking-wider block mb-1">
+        <span className="text-[#94A3B8] dark:text-slate-500 text-xs font-semibold uppercase tracking-wider block mb-1">
           Step 3 of 4
         </span>
-        <h1 className="text-[#0F172A] font-bold text-3xl tracking-tight leading-tight mb-2">
+        <h1 className="text-[#0F172A] dark:text-white font-bold text-3xl tracking-tight leading-tight mb-2">
           Set your daily goal
         </h1>
-        <p className="text-[#94A3B8] text-sm leading-relaxed">
+        <p className="text-[#94A3B8] dark:text-slate-500 text-sm leading-relaxed">
           How much time will you commit to learning each day?
         </p>
       </div>

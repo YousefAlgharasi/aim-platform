@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { PrimaryButton } from '../components/Button'
 import {
   FlameIcon,
@@ -21,7 +21,7 @@ import {
 import { LessonDetailPage } from './LessonDetailPage'
 import { PracticeSessionPage } from './PracticeSessionPage'
 import { AiTeacherChatPage } from './AiTeacherChatPage'
-import { LiveAiLessonChatPage } from './LiveAiLessonChatPage'
+import { LiveAiLessonChatPage, type NextLessonInfo } from './LiveAiLessonChatPage'
 import { AchievementsPage } from './AchievementsPage'
 import { AccountSettingsPage } from './AccountSettingsPage'
 
@@ -30,7 +30,7 @@ export type ViewState =
   | { type: 'tab'; tab: TabId }
   | { type: 'lesson-detail'; lessonTitle: string }
   | { type: 'live-ai-lesson'; lessonTitle: string }
-  | { type: 'practice' }
+  | { type: 'practice'; lessonTitle?: string }
   | { type: 'ai-chat' }
   | { type: 'achievements' }
   | { type: 'settings' }
@@ -111,6 +111,46 @@ const CHAPTERS_DATA: ChapterData[] = [
   },
 ]
 
+/** What comes after `lessonTitle` in the course: the next lesson to jump into,
+ *  'chapter-complete' when it was the chapter's last lesson and the next chapter
+ *  isn't unlocked yet, or null when the title isn't found in CHAPTERS_DATA at all
+ *  (e.g. practice started from the Progress tab with no specific lesson context). */
+function findNextLessonInfo(lessonTitle: string): NextLessonInfo | 'chapter-complete' | null {
+  for (let ci = 0; ci < CHAPTERS_DATA.length; ci++) {
+    const chapter = CHAPTERS_DATA[ci]
+    const lessonIndex = chapter.lessons.findIndex((l) => l.title === lessonTitle)
+    if (lessonIndex === -1) continue
+
+    if (lessonIndex + 1 < chapter.lessons.length) {
+      const next = chapter.lessons[lessonIndex + 1]
+      if (next.locked) return 'chapter-complete'
+      return { title: next.title, chapterTitle: chapter.title, isNewChapter: false }
+    }
+
+    const nextChapter = CHAPTERS_DATA[ci + 1]
+    const firstOfNextChapter = nextChapter?.lessons[0]
+    if (firstOfNextChapter && !firstOfNextChapter.locked) {
+      return { title: firstOfNextChapter.title, chapterTitle: nextChapter.title, isNewChapter: true }
+    }
+    return 'chapter-complete'
+  }
+  return null
+}
+
+/** The learner's actual current lesson (flagged `current: true` in CHAPTERS_DATA),
+ *  or null if none is marked. Used by the Home roadmap's "Current Step" node, whose
+ *  own label (e.g. "Travel Prep") is a display-only checkpoint name that doesn't match
+ *  any real lesson title — passing it straight to lesson-detail broke findNextLessonInfo
+ *  downstream (it could never find a match), which silently hid the Next Lesson CTA on
+ *  the completion screen for anyone entering a lesson via the roadmap. */
+function findCurrentLessonTitle(): string | null {
+  for (const chapter of CHAPTERS_DATA) {
+    const current = chapter.lessons.find((l) => l.current)
+    if (current) return current.title
+  }
+  return null
+}
+
 const ROADMAP = [
   { id: 1, label: 'Basics 1', sub: 'Mastered', state: 'done', offsetX: 0 },
   { id: 2, label: 'Greetings', sub: 'Mastered', state: 'done', offsetX: 50 },
@@ -187,13 +227,20 @@ function ZigZagRoadmap({ onSelectLesson }: { onSelectLesson: (label: string) => 
             {/* Node Circle */}
             <button
               type="button"
-              onClick={() => !isLocked && onSelectLesson(node.label)}
+              onClick={() => {
+                if (isLocked) return
+                // The "current" node routes to the real current lesson (so the
+                // completion screen can resolve a real Next Lesson CTA afterward).
+                // "done"/other nodes aren't backed by a specific real lesson in
+                // CHAPTERS_DATA, so they still fall back to the roadmap's own label.
+                onSelectLesson(isCurrent ? findCurrentLessonTitle() ?? node.label : node.label)
+              }}
               className={`relative flex items-center justify-center transition-all duration-200 cursor-pointer ${
                 isCurrent
                   ? 'size-17 bg-gradient-to-br from-[#4F46E5] to-[#6366F1] ring-4 ring-indigo-200 shadow-xl shadow-indigo-500/30 rounded-3xl rotate-3'
                   : isDone
                   ? 'size-14 bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-md shadow-emerald-500/20 rounded-2xl'
-                  : 'size-14 bg-white ring-2 ring-slate-200 rounded-2xl shadow-sm'
+                  : 'size-14 bg-white dark:bg-slate-800 ring-2 ring-slate-200 dark:ring-slate-700 rounded-2xl shadow-sm'
               }`}
             >
               {isDone && (
@@ -207,7 +254,7 @@ function ZigZagRoadmap({ onSelectLesson }: { onSelectLesson: (label: string) => 
                 </svg>
               )}
               {isLocked && (
-                <svg className="size-6 text-slate-400" viewBox="0 0 20 20" fill="none">
+                <svg className="size-6 text-slate-400 dark:text-slate-500" viewBox="0 0 20 20" fill="none">
                   <rect x="4" y="9" width="12" height="9" rx="2" stroke="currentColor" strokeWidth="1.6" />
                   <path d="M7 9V7a3 3 0 0 1 6 0v2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                 </svg>
@@ -218,14 +265,14 @@ function ZigZagRoadmap({ onSelectLesson }: { onSelectLesson: (label: string) => 
             <div className="text-center mt-2">
               <p
                 className={`text-xs m-0 leading-tight ${
-                  isCurrent ? 'font-extrabold text-slate-900 text-sm' : isLocked ? 'text-slate-400 font-medium' : 'text-slate-800 font-bold'
+                  isCurrent ? 'font-extrabold text-slate-900 dark:text-white text-sm' : isLocked ? 'text-slate-400 dark:text-slate-500 font-medium' : 'text-slate-800 dark:text-slate-100 font-bold'
                 }`}
               >
                 {node.label}
               </p>
               <p
                 className={`text-[11px] font-semibold m-0 mt-0.5 ${
-                  isDone ? 'text-emerald-600' : isCurrent ? 'text-[#4F46E5]' : 'text-slate-400'
+                  isDone ? 'text-emerald-600 dark:text-emerald-400' : isCurrent ? 'text-[#4F46E5] dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'
                 }`}
               >
                 {node.sub}
@@ -272,8 +319,8 @@ function HomePage({ onSelectLesson }: { onSelectLesson: (title: string) => void 
         {/* Daily Missions */}
         <div className="flex flex-col gap-3">
           <div className="flex justify-between items-center px-1">
-            <span className="text-slate-900 font-extrabold text-base tracking-tight">Daily Missions</span>
-            <span className="text-[#4F46E5] font-semibold text-xs bg-indigo-50 px-2.5 py-1 rounded-full">
+            <span className="text-slate-900 dark:text-white font-extrabold text-base tracking-tight">Daily Missions</span>
+            <span className="text-[#4F46E5] dark:text-indigo-400 font-semibold text-xs bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 rounded-full">
               Reset in 4h
             </span>
           </div>
@@ -283,14 +330,14 @@ function HomePage({ onSelectLesson }: { onSelectLesson: (title: string) => void 
             {MISSIONS.map((m, i) => (
               <div
                 key={i}
-                className={`w-full bg-white ring-1 rounded-2xl p-4 flex items-center gap-4 transition-all duration-200 shadow-sm ${
-                  m.done ? 'ring-emerald-200 bg-emerald-50/20' : 'ring-slate-200/80 hover:ring-indigo-200'
+                className={`w-full bg-white dark:bg-slate-800 ring-1 rounded-2xl p-4 flex items-center gap-4 transition-all duration-200 shadow-sm ${
+                  m.done ? 'ring-emerald-200 dark:ring-emerald-800 bg-emerald-50/20 dark:bg-emerald-950/20' : 'ring-slate-200/80 dark:ring-slate-700 hover:ring-indigo-200'
                 }`}
               >
                 {/* Icon Pill */}
                 <div
                   className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
-                    m.done ? 'bg-emerald-100 text-emerald-600' : 'bg-indigo-50 text-[#4F46E5]'
+                    m.done ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400' : 'bg-indigo-50 dark:bg-indigo-950/60 text-[#4F46E5] dark:text-indigo-400'
                   }`}
                 >
                   {m.icon}
@@ -299,16 +346,16 @@ function HomePage({ onSelectLesson }: { onSelectLesson: (title: string) => void 
                 {/* Info & Progress */}
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-center mb-1.5">
-                    <p className={`font-bold text-sm m-0 truncate ${m.done ? 'text-slate-700' : 'text-slate-900'}`}>
+                    <p className={`font-bold text-sm m-0 truncate ${m.done ? 'text-slate-700 dark:text-slate-200' : 'text-slate-900 dark:text-white'}`}>
                       {m.label}
                     </p>
-                    <span className={`text-xs font-extrabold ${m.done ? 'text-emerald-600' : 'text-slate-400'}`}>
+                    <span className={`text-xs font-extrabold ${m.done ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`}>
                       {m.progress}/{m.total}
                     </span>
                   </div>
 
                   {/* Progress Bar */}
-                  <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-300 ${
                         m.done ? 'bg-emerald-500' : 'bg-gradient-to-r from-indigo-500 to-violet-500'
@@ -324,7 +371,7 @@ function HomePage({ onSelectLesson }: { onSelectLesson: (title: string) => void 
                     <CheckIcon className="size-3.5 text-white" />
                   </div>
                 ) : (
-                  <div className="size-6 rounded-full ring-1 ring-slate-300 shrink-0" />
+                  <div className="size-6 rounded-full ring-1 ring-slate-300 dark:ring-slate-600 shrink-0" />
                 )}
               </div>
             ))}
@@ -334,8 +381,8 @@ function HomePage({ onSelectLesson }: { onSelectLesson: (title: string) => void 
         {/* Learning Roadmap */}
         <div className="mt-2">
           <div className="flex items-center justify-between px-1 mb-2">
-            <span className="text-slate-900 font-extrabold text-base tracking-tight">Learning Roadmap</span>
-            <span className="text-slate-400 font-semibold text-xs">Chapter 1</span>
+            <span className="text-slate-900 dark:text-white font-extrabold text-base tracking-tight">Learning Roadmap</span>
+            <span className="text-slate-400 dark:text-slate-500 font-semibold text-xs">Chapter 1</span>
           </div>
 
           <ZigZagRoadmap onSelectLesson={onSelectLesson} />
@@ -375,8 +422,8 @@ function LearnTab({ onSelectLesson }: { onSelectLesson: (lessonTitle: string) =>
 
       {/* Chapters Header */}
       <div className="flex justify-between items-center mb-3 px-1">
-        <span className="text-slate-900 font-extrabold text-base tracking-tight">Course Chapters</span>
-        <span className="text-slate-400 text-xs font-medium">4 Chapters</span>
+        <span className="text-slate-900 dark:text-white font-extrabold text-base tracking-tight">Course Chapters</span>
+        <span className="text-slate-400 dark:text-slate-500 text-xs font-medium">4 Chapters</span>
       </div>
 
       {/* Collapsible Chapters Accordion */}
@@ -389,10 +436,10 @@ function LearnTab({ onSelectLesson }: { onSelectLesson: (lessonTitle: string) =>
           return (
             <div
               key={ch.id}
-              className={`bg-white ring-1 rounded-2xl overflow-hidden transition-all duration-200 shadow-sm ${
+              className={`bg-white dark:bg-slate-800 ring-1 rounded-2xl overflow-hidden transition-all duration-200 shadow-sm ${
                 isOpen
                   ? 'ring-2 ring-[#4F46E5] shadow-md'
-                  : 'ring-slate-200/80 hover:ring-indigo-200'
+                  : 'ring-slate-200/80 dark:ring-slate-700 hover:ring-indigo-200'
               }`}
             >
               {/* Accordion Header Button */}
@@ -408,7 +455,7 @@ function LearnTab({ onSelectLesson }: { onSelectLesson: (lessonTitle: string) =>
                       ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/20'
                       : isOpen
                       ? 'bg-[#4F46E5] text-white shadow-sm'
-                      : 'bg-indigo-50 text-[#4F46E5]'
+                      : 'bg-indigo-50 dark:bg-indigo-950/60 text-[#4F46E5] dark:text-indigo-400'
                   }`}
                 >
                   {isCompleted ? <CheckIcon className="size-5 text-white" /> : `Ch.${ch.number}`}
@@ -417,19 +464,19 @@ function LearnTab({ onSelectLesson }: { onSelectLesson: (lessonTitle: string) =>
                 {/* Chapter Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <p className="font-bold text-slate-900 text-base m-0 leading-tight truncate">
+                    <p className="font-bold text-slate-900 dark:text-white text-base m-0 leading-tight truncate">
                       {ch.title}
                     </p>
                   </div>
-                  <p className="text-slate-400 text-xs m-0 truncate font-medium">
+                  <p className="text-slate-400 dark:text-slate-500 text-xs m-0 truncate font-medium">
                     {ch.completedCount}/{ch.lessonsCount} lessons completed
                   </p>
                 </div>
 
                 {/* Chevron */}
                 <div
-                  className={`size-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0 transition-transform duration-200 ${
-                    isOpen ? 'rotate-180 bg-indigo-50 text-indigo-600' : ''
+                  className={`size-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-300 shrink-0 transition-transform duration-200 ${
+                    isOpen ? 'rotate-180 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400' : ''
                   }`}
                 >
                   <ChevronDownIcon className="size-4" />
@@ -438,8 +485,8 @@ function LearnTab({ onSelectLesson }: { onSelectLesson: (lessonTitle: string) =>
 
               {/* Collapsible Lessons List */}
               {isOpen && (
-                <div className="px-4 pb-4 pt-1 flex flex-col gap-2 border-t border-slate-100 bg-slate-50/50">
-                  <p className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1 px-1">
+                <div className="px-4 pb-4 pt-1 flex flex-col gap-2 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40">
+                  <p className="text-slate-400 dark:text-slate-500 text-[11px] font-bold uppercase tracking-wider mb-1 px-1">
                     Lessons in this chapter
                   </p>
 
@@ -449,26 +496,26 @@ function LearnTab({ onSelectLesson }: { onSelectLesson: (lessonTitle: string) =>
                       type="button"
                       onClick={() => !les.locked && onSelectLesson(les.title)}
                       disabled={les.locked}
-                      className={`w-full bg-white ring-1 rounded-xl p-3 flex items-center gap-3 text-left border-none transition-all duration-150 ${
+                      className={`w-full bg-white dark:bg-slate-800 ring-1 rounded-xl p-3 flex items-center gap-3 text-left border-none transition-all duration-150 ${
                         les.locked
-                          ? 'ring-slate-200/50 opacity-60 cursor-not-allowed'
+                          ? 'ring-slate-200/50 dark:ring-slate-700/50 opacity-60 cursor-not-allowed'
                           : les.current
-                          ? 'ring-2 ring-[#4F46E5] bg-indigo-50/30 cursor-pointer shadow-xs'
-                          : 'ring-slate-200/80 hover:ring-indigo-300 cursor-pointer'
+                          ? 'ring-2 ring-[#4F46E5] bg-indigo-50/30 dark:bg-indigo-950/30 cursor-pointer shadow-xs'
+                          : 'ring-slate-200/80 dark:ring-slate-700 hover:ring-indigo-300 cursor-pointer'
                       }`}
                     >
                       {/* Icon */}
                       <div
                         className={`size-8 rounded-lg flex items-center justify-center shrink-0 ${
                           les.completed
-                            ? 'bg-emerald-100 text-emerald-600'
+                            ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400'
                             : les.current
                             ? 'bg-indigo-600 text-white'
-                            : 'bg-slate-100 text-slate-400'
+                            : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500'
                         }`}
                       >
                         {les.completed ? (
-                          <CheckIcon className="size-4 text-emerald-600" />
+                          <CheckIcon className="size-4 text-emerald-600 dark:text-emerald-400" />
                         ) : les.type === 'speaking' ? (
                           <MicIcon className="size-4" />
                         ) : (
@@ -479,26 +526,26 @@ function LearnTab({ onSelectLesson }: { onSelectLesson: (lessonTitle: string) =>
                       {/* Lesson title & type */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className="text-[10px] font-extrabold uppercase text-slate-400">
+                          <span className="text-[10px] font-extrabold uppercase text-slate-400 dark:text-slate-500">
                             Lesson {les.number}
                           </span>
-                          <span className="text-[9px] font-semibold text-indigo-600 bg-indigo-50 px-1.5 py-0.2 rounded-full uppercase">
+                          <span className="text-[9px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.2 rounded-full uppercase">
                             {les.type}
                           </span>
                         </div>
-                        <p className="font-bold text-slate-900 text-xs m-0 truncate">
+                        <p className="font-bold text-slate-900 dark:text-white text-xs m-0 truncate">
                           {les.title}
                         </p>
                       </div>
 
                       {/* Arrow / Lock */}
                       {les.locked ? (
-                        <svg className="size-3.5 text-slate-400 shrink-0" viewBox="0 0 20 20" fill="none">
+                        <svg className="size-3.5 text-slate-400 dark:text-slate-500 shrink-0" viewBox="0 0 20 20" fill="none">
                           <rect x="4" y="9" width="12" height="9" rx="2" stroke="currentColor" strokeWidth="1.6" />
                           <path d="M7 9V7a3 3 0 0 1 6 0v2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                         </svg>
                       ) : (
-                        <svg className="size-3.5 text-indigo-600 shrink-0" viewBox="0 0 16 16" fill="none">
+                        <svg className="size-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" viewBox="0 0 16 16" fill="none">
                           <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       )}
@@ -512,20 +559,20 @@ function LearnTab({ onSelectLesson }: { onSelectLesson: (lessonTitle: string) =>
       </div>
 
       {/* Next Locked Course Muted Card */}
-      <div className="bg-slate-100/90 ring-1 ring-slate-200/80 rounded-3xl p-5 relative overflow-hidden opacity-80">
+      <div className="bg-slate-100/90 dark:bg-slate-800/60 ring-1 ring-slate-200/80 dark:ring-slate-700 rounded-3xl p-5 relative overflow-hidden opacity-80">
         <div className="flex items-center gap-2 mb-2">
-          <svg className="size-4 text-slate-500" viewBox="0 0 20 20" fill="none">
+          <svg className="size-4 text-slate-500 dark:text-slate-400" viewBox="0 0 20 20" fill="none">
             <rect x="4" y="9" width="12" height="9" rx="2" stroke="currentColor" strokeWidth="1.6" />
             <path d="M7 9V7a3 3 0 0 1 6 0v2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
           </svg>
-          <span className="text-slate-600 font-extrabold text-xs uppercase tracking-wider">
+          <span className="text-slate-600 dark:text-slate-300 font-extrabold text-xs uppercase tracking-wider">
             Next Up · Locked Course
           </span>
         </div>
-        <h3 className="font-bold text-slate-800 text-base m-0 mb-1">
+        <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base m-0 mb-1">
           Business English (B2)
         </h3>
-        <p className="text-slate-500 text-xs m-0 leading-relaxed">
+        <p className="text-slate-500 dark:text-slate-400 text-xs m-0 leading-relaxed">
           Unlocks automatically once you complete all chapters in General English (B1).
         </p>
       </div>
@@ -543,18 +590,18 @@ function ReviewTab() {
 
   return (
     <div className="flex-1 h-full min-h-0 overflow-y-auto px-5 pt-5 pb-16">
-      <h1 className="text-[#0F172A] font-extrabold text-2xl tracking-tight mb-1">Review</h1>
-      <p className="text-[#94A3B8] text-sm mb-5">Spaced-repetition flashcards due today.</p>
+      <h1 className="text-[#0F172A] dark:text-white font-extrabold text-2xl tracking-tight mb-1">Review</h1>
+      <p className="text-[#94A3B8] dark:text-slate-500 text-sm mb-5">Spaced-repetition flashcards due today.</p>
 
       <div className="grid grid-cols-3 gap-2.5 mb-6">
         {[
           { label: 'Due now', val: '12', color: 'text-red-500' },
-          { label: 'Learned', val: '84', color: 'text-[#4F46E5]' },
+          { label: 'Learned', val: '84', color: 'text-[#4F46E5] dark:text-indigo-400' },
           { label: 'Streak', val: '7', color: 'text-amber-500' },
         ].map((s) => (
-          <div key={s.label} className="bg-white ring-1 ring-slate-200/80 rounded-2xl p-3 text-center shadow-xs">
+          <div key={s.label} className="bg-white dark:bg-slate-800 ring-1 ring-slate-200/80 dark:ring-slate-700 rounded-2xl p-3 text-center shadow-xs">
             <p className={`font-black text-xl m-0 ${s.color}`}>{s.val}</p>
-            <p className="text-[#64748B] text-xs font-medium mt-0.5 m-0">{s.label}</p>
+            <p className="text-[#64748B] dark:text-slate-400 text-xs font-medium mt-0.5 m-0">{s.label}</p>
           </div>
         ))}
       </div>
@@ -563,13 +610,13 @@ function ReviewTab() {
         {items.map((item, i) => (
           <div
             key={i}
-            className="bg-white ring-1 ring-slate-200/80 rounded-2xl p-4 flex items-center justify-between shadow-xs"
+            className="bg-white dark:bg-slate-800 ring-1 ring-slate-200/80 dark:ring-slate-700 rounded-2xl p-4 flex items-center justify-between shadow-xs"
           >
             <div>
-              <p className="text-[#0F172A] font-bold text-base m-0">{item.word}</p>
-              <p className="text-[#64748B] text-xs mt-0.5 m-0">{item.meaning}</p>
+              <p className="text-[#0F172A] dark:text-white font-bold text-base m-0">{item.word}</p>
+              <p className="text-[#64748B] dark:text-slate-400 text-xs mt-0.5 m-0">{item.meaning}</p>
             </div>
-            <span className={`font-semibold text-xs ${item.due === 'Now' ? 'text-red-500' : 'text-[#64748B]'}`}>
+            <span className={`font-semibold text-xs ${item.due === 'Now' ? 'text-red-500' : 'text-[#64748B] dark:text-slate-400'}`}>
               {item.due}
             </span>
           </div>
@@ -644,7 +691,7 @@ function ProgressTab({
       title: 'Preposition Usage in Polite Requests',
       accuracy: '62% accuracy',
       tag: 'High Priority',
-      tagStyle: 'bg-rose-50 text-rose-600',
+      tagStyle: 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400',
       description: 'Confusing "for" and "to" in phrases like "ask for the bill".',
       actionLabel: 'Practice Weakness',
       actionType: 'practice',
@@ -654,7 +701,7 @@ function ProgressTab({
       title: 'Fast-Paced Native Conversation',
       accuracy: '70% accuracy',
       tag: 'Medium Priority',
-      tagStyle: 'bg-amber-50 text-amber-600',
+      tagStyle: 'bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400',
       description: 'Audio comprehension drops at speech speeds above 1.2x.',
       actionLabel: 'Ask AI Tutor',
       actionType: 'ai-chat',
@@ -664,7 +711,7 @@ function ProgressTab({
       title: 'Past Continuous vs. Past Simple',
       accuracy: '75% accuracy',
       tag: 'Low Priority',
-      tagStyle: 'bg-indigo-50 text-indigo-600',
+      tagStyle: 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400',
       description: 'Slight delay when picking correct tense during fast quizzes.',
       actionLabel: 'Practice Weakness',
       actionType: 'practice',
@@ -672,19 +719,19 @@ function ProgressTab({
   ]
 
   return (
-    <div className="flex-1 h-full min-h-0 overflow-y-auto px-5 pt-5 pb-16 bg-[#F8FAFC]">
+    <div className="flex-1 h-full min-h-0 overflow-y-auto px-5 pt-5 pb-16 bg-[#F8FAFC] dark:bg-slate-900">
       {/* Clean Header */}
       <div className="mb-4">
-        <h1 className="text-[#0F172A] font-extrabold text-xl tracking-tight m-0">
+        <h1 className="text-[#0F172A] dark:text-white font-extrabold text-xl tracking-tight m-0">
           Progress & Analytics
         </h1>
-        <p className="text-slate-400 text-xs mt-0.5 m-0 font-medium">
+        <p className="text-slate-400 dark:text-slate-500 text-xs mt-0.5 m-0 font-medium">
           Track your language proficiency and study stats
         </p>
       </div>
 
       {/* Segmented Sub-Tab Switcher */}
-      <div className="bg-slate-200/50 p-1 rounded-xl flex gap-1 mb-5">
+      <div className="bg-slate-200/50 dark:bg-slate-800 p-1 rounded-xl flex gap-1 mb-5">
         {[
           { id: 'overview', label: 'Overview' },
           { id: 'skills', label: 'Skills' },
@@ -697,8 +744,8 @@ function ProgressTab({
             onClick={() => setSubTab(tab.id as any)}
             className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all border-none cursor-pointer ${
               subTab === tab.id
-                ? 'bg-white text-indigo-600 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800'
+                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
             {tab.label}
@@ -711,23 +758,23 @@ function ProgressTab({
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-2.5">
             {stats.map((s) => (
-              <div key={s.label} className="bg-white ring-1 ring-slate-200/70 rounded-xl p-3.5 shadow-2xs">
+              <div key={s.label} className="bg-white dark:bg-slate-800 ring-1 ring-slate-200/70 dark:ring-slate-700 rounded-xl p-3.5 shadow-2xs">
                 <div className="flex items-center gap-2 mb-1.5">
                   {s.icon}
-                  <span className="text-slate-500 text-xs font-medium">{s.label}</span>
+                  <span className="text-slate-500 dark:text-slate-400 text-xs font-medium">{s.label}</span>
                 </div>
-                <p className="text-slate-900 font-extrabold text-lg m-0">{s.val}</p>
+                <p className="text-slate-900 dark:text-white font-extrabold text-lg m-0">{s.val}</p>
               </div>
             ))}
           </div>
 
-          <div className="bg-white ring-1 ring-slate-200/70 rounded-xl p-4 shadow-2xs">
+          <div className="bg-white dark:bg-slate-800 ring-1 ring-slate-200/70 dark:ring-slate-700 rounded-xl p-4 shadow-2xs">
             <div className="flex justify-between items-center mb-3">
               <div>
-                <p className="text-slate-900 font-bold text-xs m-0">Weekly Activity</p>
-                <p className="text-slate-400 text-[11px] m-0">35 mins / day average</p>
+                <p className="text-slate-900 dark:text-white font-bold text-xs m-0">Weekly Activity</p>
+                <p className="text-slate-400 dark:text-slate-500 text-[11px] m-0">35 mins / day average</p>
               </div>
-              <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
+              <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md">
                 245 mins total
               </span>
             </div>
@@ -743,14 +790,14 @@ function ProgressTab({
                 { day: 'Sun', h: 85, val: '45m' },
               ].map((bar, i) => (
                 <div key={i} className="flex flex-col items-center gap-1.5 flex-1">
-                  <span className="text-[9px] font-medium text-slate-400">{bar.val}</span>
-                  <div className="w-4 bg-slate-100 rounded-full h-full flex items-end">
+                  <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500">{bar.val}</span>
+                  <div className="w-4 bg-slate-100 dark:bg-slate-700 rounded-full h-full flex items-end">
                     <div
                       className="w-full bg-indigo-600 rounded-full transition-all duration-300"
                       style={{ height: `${bar.h}%` }}
                     />
                   </div>
-                  <span className="text-slate-500 text-[10px] font-semibold">{bar.day}</span>
+                  <span className="text-slate-500 dark:text-slate-400 text-[10px] font-semibold">{bar.day}</span>
                 </div>
               ))}
             </div>
@@ -762,14 +809,14 @@ function ProgressTab({
       {subTab === 'skills' && (
         <div className="flex flex-col gap-3">
           {skillsData.map((sk, idx) => (
-            <div key={idx} className="bg-white ring-1 ring-slate-200/70 rounded-xl p-4 shadow-2xs">
+            <div key={idx} className="bg-white dark:bg-slate-800 ring-1 ring-slate-200/70 dark:ring-slate-700 rounded-xl p-4 shadow-2xs">
               <div className="flex justify-between items-center mb-2">
-                <span className="font-bold text-slate-900 text-xs">{sk.name}</span>
-                <span className="font-extrabold text-indigo-600 text-xs">{sk.score}%</span>
+                <span className="font-bold text-slate-900 dark:text-white text-xs">{sk.name}</span>
+                <span className="font-extrabold text-indigo-600 dark:text-indigo-400 text-xs">{sk.score}%</span>
               </div>
 
               {/* Thin Sleek Progress Bar */}
-              <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-3">
+              <div className="h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-3">
                 <div
                   className="h-full bg-indigo-600 rounded-full transition-all duration-500"
                   style={{ width: `${sk.score}%` }}
@@ -777,11 +824,11 @@ function ProgressTab({
               </div>
 
               {/* Minimal sub-stats list */}
-              <div className="flex flex-col gap-1.5 pt-2 border-t border-slate-100">
+              <div className="flex flex-col gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-700">
                 {sk.subStats.map((sub, i) => (
                   <div key={i} className="flex justify-between items-center text-[11px]">
-                    <span className="text-slate-500 font-medium">{sub.label}</span>
-                    <span className="font-bold text-slate-700">{sub.score}</span>
+                    <span className="text-slate-500 dark:text-slate-400 font-medium">{sub.label}</span>
+                    <span className="font-bold text-slate-700 dark:text-slate-200">{sub.score}</span>
                   </div>
                 ))}
               </div>
@@ -794,21 +841,21 @@ function ProgressTab({
       {subTab === 'weaknesses' && (
         <div className="flex flex-col gap-3">
           {weaknesses.map((w) => (
-            <div key={w.id} className="bg-white ring-1 ring-slate-200/70 rounded-xl p-4 shadow-2xs flex flex-col gap-2">
+            <div key={w.id} className="bg-white dark:bg-slate-800 ring-1 ring-slate-200/70 dark:ring-slate-700 rounded-xl p-4 shadow-2xs flex flex-col gap-2">
               <div className="flex justify-between items-center">
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${w.tagStyle}`}>
                   {w.tag} · {w.accuracy}
                 </span>
               </div>
 
-              <p className="font-bold text-slate-900 text-xs m-0">{w.title}</p>
-              <p className="text-slate-500 text-[11px] m-0 leading-relaxed">{w.description}</p>
+              <p className="font-bold text-slate-900 dark:text-white text-xs m-0">{w.title}</p>
+              <p className="text-slate-500 dark:text-slate-400 text-[11px] m-0 leading-relaxed">{w.description}</p>
 
               <div className="pt-1">
                 <button
                   type="button"
                   onClick={w.actionType === 'practice' ? onStartPractice : onAskAiTeacher}
-                  className="py-1.5 px-3 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold text-xs border-none cursor-pointer transition-colors inline-flex items-center gap-1.5"
+                  className="py-1.5 px-3 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 font-bold text-xs border-none cursor-pointer transition-colors inline-flex items-center gap-1.5"
                 >
                   {w.actionType === 'practice' ? <ZapIcon className="size-3.5" /> : <SparkleIcon className="size-3.5" />}
                   <span>{w.actionLabel}</span>
@@ -823,15 +870,15 @@ function ProgressTab({
       {subTab === 'review' && (
         <div className="flex flex-col gap-3.5">
           {/* Sleek Minimal Summary Header */}
-          <div className="bg-white ring-1 ring-slate-200/70 rounded-xl p-4 shadow-2xs flex justify-between items-center">
+          <div className="bg-white dark:bg-slate-800 ring-1 ring-slate-200/70 dark:ring-slate-700 rounded-xl p-4 shadow-2xs flex justify-between items-center">
             <div>
               <div className="flex items-center gap-1.5 mb-0.5">
-                <SparkleIcon className="size-3.5 text-indigo-600" />
-                <span className="font-bold text-slate-900 text-xs">SuperMemo-2 Algorithm</span>
+                <SparkleIcon className="size-3.5 text-indigo-600 dark:text-indigo-400" />
+                <span className="font-bold text-slate-900 dark:text-white text-xs">SuperMemo-2 Algorithm</span>
               </div>
-              <p className="text-slate-400 text-[11px] m-0">Optimized spaced repetition active</p>
+              <p className="text-slate-400 dark:text-slate-500 text-[11px] m-0">Optimized spaced repetition active</p>
             </div>
-            <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/60">
+            <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-200/60 dark:border-emerald-800">
               94% Recall
             </span>
           </div>
@@ -839,20 +886,20 @@ function ProgressTab({
           {/* Clean Stat Metric Boxes */}
           <div className="grid grid-cols-3 gap-2">
             {[
-              { label: 'Due Today', count: '12', color: 'text-rose-600' },
-              { label: 'Due Tomorrow', count: '18', color: 'text-amber-600' },
-              { label: 'In 3 Days', count: '24', color: 'text-indigo-600' },
+              { label: 'Due Today', count: '12', color: 'text-rose-600 dark:text-rose-400' },
+              { label: 'Due Tomorrow', count: '18', color: 'text-amber-600 dark:text-amber-400' },
+              { label: 'In 3 Days', count: '24', color: 'text-indigo-600 dark:text-indigo-400' },
             ].map((bucket, i) => (
-              <div key={i} className="bg-white ring-1 ring-slate-200/70 rounded-xl p-3 text-center shadow-2xs">
+              <div key={i} className="bg-white dark:bg-slate-800 ring-1 ring-slate-200/70 dark:ring-slate-700 rounded-xl p-3 text-center shadow-2xs">
                 <p className={`font-black text-base m-0 ${bucket.color}`}>{bucket.count}</p>
-                <p className="text-[10px] font-semibold text-slate-500 mt-0.5 m-0">{bucket.label}</p>
+                <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5 m-0">{bucket.label}</p>
               </div>
             ))}
           </div>
 
           {/* Minimal Review Queue List */}
-          <div className="bg-white ring-1 ring-slate-200/70 rounded-xl p-4 shadow-2xs">
-            <p className="font-bold text-slate-900 text-xs mb-2.5">Review Queue</p>
+          <div className="bg-white dark:bg-slate-800 ring-1 ring-slate-200/70 dark:ring-slate-700 rounded-xl p-4 shadow-2xs">
+            <p className="font-bold text-slate-900 dark:text-white text-xs mb-2.5">Review Queue</p>
 
             <div className="flex flex-col gap-2 mb-3">
               {[
@@ -860,12 +907,12 @@ function ProgressTab({
                 { word: 'Could you bring us the bill, please?', tag: 'Dining Etiquette' },
                 { word: 'What do you recommend for lunch today?', tag: 'Social Interactions' },
               ].map((item, idx) => (
-                <div key={idx} className="bg-slate-50/70 rounded-lg p-2.5 border border-slate-100 flex justify-between items-center text-xs">
+                <div key={idx} className="bg-slate-50/70 dark:bg-slate-900/60 rounded-lg p-2.5 border border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs">
                   <div className="min-w-0 pr-2">
-                    <p className="font-medium text-slate-800 m-0 truncate">{item.word}</p>
-                    <span className="text-[10px] text-slate-400">{item.tag}</span>
+                    <p className="font-medium text-slate-800 dark:text-slate-100 m-0 truncate">{item.word}</p>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500">{item.tag}</span>
                   </div>
-                  <span className="text-[10px] font-bold text-rose-500 bg-rose-50 px-2 py-0.5 rounded-md shrink-0">
+                  <span className="text-[10px] font-bold text-rose-500 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-md shrink-0">
                     Due Now
                   </span>
                 </div>
@@ -907,8 +954,8 @@ function ProfileTab({
         <div className="size-20 rounded-full bg-gradient-to-br from-[#4F46E5] to-[#818CF8] flex items-center justify-center shadow-lg mb-3">
           <span className="text-white font-extrabold text-2xl">A</span>
         </div>
-        <h2 className="text-[#0F172A] font-bold text-xl m-0">Alex Johnson</h2>
-        <p className="text-[#64748B] text-xs mt-0.5 m-0">alex.johnson@example.com</p>
+        <h2 className="text-[#0F172A] dark:text-white font-bold text-xl m-0">Alex Johnson</h2>
+        <p className="text-[#64748B] dark:text-slate-400 text-xs mt-0.5 m-0">alex.johnson@example.com</p>
       </div>
 
       <div className="flex flex-col gap-2">
@@ -917,15 +964,15 @@ function ProfileTab({
             key={i}
             type="button"
             onClick={opt.action}
-            className="w-full bg-white ring-1 ring-slate-200/80 rounded-2xl p-4 flex items-center justify-between cursor-pointer hover:border-[#CBD5E1] transition-colors border-none text-left"
+            className="w-full bg-white dark:bg-slate-800 ring-1 ring-slate-200/80 dark:ring-slate-700 rounded-2xl p-4 flex items-center justify-between cursor-pointer hover:border-[#CBD5E1] transition-colors border-none text-left"
           >
             <div className="flex items-center gap-3.5">
-              <div className="text-[#4F46E5]">{opt.icon}</div>
-              <span className={`font-semibold text-sm ${opt.danger ? 'text-red-500' : 'text-[#0F172A]'}`}>
+              <div className="text-[#4F46E5] dark:text-indigo-400">{opt.icon}</div>
+              <span className={`font-semibold text-sm ${opt.danger ? 'text-red-500' : 'text-[#0F172A] dark:text-white'}`}>
                 {opt.label}
               </span>
             </div>
-            <svg className="size-4 text-[#94A3B8]" viewBox="0 0 16 16" fill="none">
+            <svg className="size-4 text-[#94A3B8] dark:text-slate-500" viewBox="0 0 16 16" fill="none">
               <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
@@ -935,20 +982,20 @@ function ProfileTab({
   )
 }
 
-export function MainDashboardPage({ onLogout }: { onLogout?: () => void }) {
+interface MainDashboardPageProps {
+  onLogout?: () => void
+  /** Dark-mode state now lives in App.tsx so it survives logout/remount and persists
+   *  across sessions — this page just reads it and forwards the setter down to
+   *  AccountSettingsPage, which owns the actual toggle switch UI. */
+  isDarkMode: boolean
+  onToggleDarkMode: (val: boolean) => void
+}
+
+export function MainDashboardPage({ onLogout, isDarkMode, onToggleDarkMode }: MainDashboardPageProps) {
   const [viewState, setViewStateState] = useState<ViewState>({ type: 'tab', tab: 'home' })
   const [historyStack, setHistoryStack] = useState<ViewState[]>([])
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set())
-  const [isDarkMode, setIsDarkMode] = useState(false)
-
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }, [isDarkMode])
 
   const setViewState = (nextState: ViewState) => {
     setHistoryStack((prev) => [...prev, viewState])
@@ -980,14 +1027,39 @@ export function MainDashboardPage({ onLogout }: { onLogout?: () => void }) {
             <span className={`font-extrabold text-sm tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>AIM English</span>
           </div>
 
-          {/* Profile Avatar Button */}
-          <button
-            type="button"
-            onClick={() => setViewState({ type: 'tab', tab: 'profile' })}
-            className="size-9 rounded-2xl bg-gradient-to-br from-[#4F46E5] to-[#818CF8] flex items-center justify-center shadow-md shadow-indigo-500/20 text-white font-black text-xs border-none cursor-pointer hover:opacity-90 transition-opacity"
-          >
-            A
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Theme Toggle */}
+            <button
+              type="button"
+              onClick={() => onToggleDarkMode(!isDarkMode)}
+              title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              className={`size-9 rounded-xl flex items-center justify-center border-none cursor-pointer transition-colors ${
+                isDarkMode
+                  ? 'bg-slate-800 text-indigo-300 hover:bg-slate-700'
+                  : 'bg-slate-100 text-amber-500 hover:bg-slate-200'
+              }`}
+            >
+              {isDarkMode ? (
+                <svg className="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                </svg>
+              ) : (
+                <svg className="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="4" />
+                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                </svg>
+              )}
+            </button>
+
+            {/* Profile Avatar Button */}
+            <button
+              type="button"
+              onClick={() => setViewState({ type: 'tab', tab: 'profile' })}
+              className="size-9 rounded-2xl bg-gradient-to-br from-[#4F46E5] to-[#818CF8] flex items-center justify-center shadow-md shadow-indigo-500/20 text-white font-black text-xs border-none cursor-pointer hover:opacity-90 transition-opacity"
+            >
+              A
+            </button>
+          </div>
         </div>
       )}
 
@@ -1019,7 +1091,7 @@ export function MainDashboardPage({ onLogout }: { onLogout?: () => void }) {
           isCompleted={completedLessons.has(viewState.lessonTitle)}
           onBack={handleBack}
           onStartLiveAiLesson={() => setViewState({ type: 'live-ai-lesson', lessonTitle: viewState.lessonTitle })}
-          onStartPractice={() => setViewState({ type: 'practice' })}
+          onStartPractice={() => setViewState({ type: 'practice', lessonTitle: viewState.lessonTitle })}
           onAskAiTeacher={() => setViewState({ type: 'ai-chat' })}
         />
       )}
@@ -1032,6 +1104,11 @@ export function MainDashboardPage({ onLogout }: { onLogout?: () => void }) {
             handleBack()
           }}
           onBack={handleBack}
+          nextLessonInfo={findNextLessonInfo(viewState.lessonTitle)}
+          onGoToNextLesson={(nextTitle) => {
+            setCompletedLessons((prev) => new Set(prev).add(viewState.lessonTitle))
+            setViewState({ type: 'lesson-detail', lessonTitle: nextTitle })
+          }}
         />
       )}
 
@@ -1039,6 +1116,12 @@ export function MainDashboardPage({ onLogout }: { onLogout?: () => void }) {
         <PracticeSessionPage
           onDone={handleBack}
           onBack={handleBack}
+          nextLessonInfo={viewState.lessonTitle ? findNextLessonInfo(viewState.lessonTitle) : null}
+          onGoToNextLesson={
+            viewState.lessonTitle
+              ? (nextTitle) => setViewState({ type: 'lesson-detail', lessonTitle: nextTitle })
+              : undefined
+          }
         />
       )}
 
@@ -1058,7 +1141,7 @@ export function MainDashboardPage({ onLogout }: { onLogout?: () => void }) {
         <AccountSettingsPage
           onBack={handleBack}
           isDarkMode={isDarkMode}
-          onToggleDarkMode={(val) => setIsDarkMode(val)}
+          onToggleDarkMode={onToggleDarkMode}
           onLogout={onLogout}
         />
       )}

@@ -79,8 +79,8 @@ function QuestionTimer({ seconds }: { seconds: number }) {
   const mm = String(Math.floor(seconds / 60)).padStart(2, "0")
   const ss = String(seconds % 60).padStart(2, "0")
   return (
-    <div className="flex items-center gap-1.5 bg-[rgba(79,70,229,0.08)] rounded-full px-3 py-1">
-      <svg className="size-3.5 text-[#4F46E5]" viewBox="0 0 14 14" fill="none">
+    <div className="flex items-center gap-1.5 bg-[rgba(79,70,229,0.08)] dark:bg-indigo-950/60 rounded-full px-3 py-1">
+      <svg className="size-3.5 text-[#4F46E5] dark:text-indigo-400" viewBox="0 0 14 14" fill="none">
         <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.3" />
         <path
           d="M7 4.5v3l1.5 1.5"
@@ -89,7 +89,7 @@ function QuestionTimer({ seconds }: { seconds: number }) {
           strokeLinecap="round"
         />
       </svg>
-      <span className="text-[#4F46E5] font-semibold text-xs font-mono">
+      <span className="text-[#4F46E5] dark:text-indigo-400 font-semibold text-xs font-mono">
         {mm}:{ss}
       </span>
     </div>
@@ -165,7 +165,7 @@ export function AssessmentQuestionPage({
   }
 
   return (
-    <div className="flex-1 flex flex-col justify-between">
+    <div className="flex-1 flex flex-col justify-between bg-[#F8FAFC] dark:bg-slate-900 text-slate-900 dark:text-slate-100">
       {/* Header */}
       <div className="p-5 pb-3 flex flex-col gap-2.5">
         <div className="flex justify-end">
@@ -176,20 +176,20 @@ export function AssessmentQuestionPage({
 
       {/* Main question card & options */}
       <div className="flex-1 px-5 flex flex-col gap-3.5 overflow-y-auto pb-2">
-        <div className={`${q.type === 'speaking' ? 'flex-1' : ''} flex flex-col bg-white border-1.5 border-[#E2E8F0] rounded-2xl p-4 sm:p-5`}>
-          <p className="text-[#4F46E5] font-semibold text-[11px] tracking-wider uppercase mb-2.5">
+        <div className={`${q.type === 'speaking' ? 'flex-1' : ''} flex flex-col bg-white dark:bg-slate-800 border-1.5 border-[#E2E8F0] dark:border-slate-700 rounded-2xl p-4 sm:p-5`}>
+          <p className="text-[#4F46E5] dark:text-indigo-400 font-semibold text-[11px] tracking-wider uppercase mb-2.5">
             {q.category} · QUESTION {q.number}/{q.total}
           </p>
-          <p className="text-[#0F172A] font-medium text-base leading-snug m-0">
+          <p className="text-[#0F172A] dark:text-white font-medium text-base leading-snug m-0">
             {q.prompt}
           </p>
           {q.passage && (
-            <div className="mt-3.5 bg-[#F1F5F9] border-l-3 border-[#4F46E5] rounded-r-lg p-3">
+            <div className="mt-3.5 bg-[#F1F5F9] dark:bg-slate-900/60 border-l-3 border-[#4F46E5] rounded-r-lg p-3">
               <p
                 className={`text-sm leading-relaxed m-0 ${
                   q.type === "reading"
-                    ? "text-[#64748B] italic"
-                    : "text-[#0F172A] font-normal"
+                    ? "text-[#64748B] dark:text-slate-400 italic"
+                    : "text-[#0F172A] dark:text-white font-normal"
                 }`}
               >
                 {q.passage}
@@ -236,12 +236,12 @@ export function AssessmentQuestionPage({
               {/* Status text */}
               <div className="text-center">
                 <p className={`text-sm font-medium m-0 ${
-                  recording ? "text-red-500" : "text-[#64748B]"
+                  recording ? "text-red-500 dark:text-red-400" : "text-[#64748B] dark:text-slate-400"
                 }`}>
                   {recording ? "Recording… tap to stop" : "Tap to start recording"}
                 </p>
                 {recording && (
-                  <p className="text-[#4F46E5] font-semibold text-xs mt-1.5 m-0 font-mono tracking-widest">
+                  <p className="text-[#4F46E5] dark:text-indigo-400 font-semibold text-xs mt-1.5 m-0 font-mono tracking-widest">
                     {String(Math.floor(recordSecs / 60)).padStart(2, "0")}:{String(recordSecs % 60).padStart(2, "0")} / 01:00
                   </p>
                 )}
@@ -251,7 +251,7 @@ export function AssessmentQuestionPage({
 
           {/* Listening UI — compact auto-play bar */}
           {q.type === "listening" && (
-            <div className="mt-4 flex items-center gap-3 bg-[#EEF2FF] rounded-2xl px-4 py-3">
+            <div className="mt-4 flex items-center gap-3 bg-[#EEF2FF] dark:bg-indigo-950/60 rounded-2xl px-4 py-3">
               {/* Tap-to-play icon button */}
               <button
                 type="button"
@@ -281,17 +281,17 @@ export function AssessmentQuestionPage({
 
               {/* Progress + time */}
               <div className="flex-1 flex flex-col gap-1.5">
-                <div className="relative h-2 bg-[#C7D2FE] rounded-full overflow-hidden">
+                <div className="relative h-2 bg-[#C7D2FE] dark:bg-indigo-900 rounded-full overflow-hidden">
                   <div
                     className="absolute inset-y-0 left-0 bg-[#4F46E5] rounded-full transition-all duration-1000"
                     style={{ width: `${(audioSecs / AUDIO_TOTAL) * 100}%` }}
                   />
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[10px] font-mono font-semibold text-[#4F46E5]">
+                  <span className="text-[10px] font-mono font-semibold text-[#4F46E5] dark:text-indigo-400">
                     {String(Math.floor(audioSecs / 60)).padStart(2,'0')}:{String(audioSecs % 60).padStart(2,'0')}
                   </span>
-                  <span className="text-[10px] font-mono text-[#94A3B8]">
+                  <span className="text-[10px] font-mono text-[#94A3B8] dark:text-slate-500">
                     {String(Math.floor(AUDIO_TOTAL / 60)).padStart(2,'0')}:{String(AUDIO_TOTAL % 60).padStart(2,'0')}
                   </span>
                 </div>
@@ -313,15 +313,15 @@ export function AssessmentQuestionPage({
                     onClick={() => setSelected(i)}
                     className={`w-full flex items-center justify-between p-3.5 rounded-xl border-1.5 transition-all duration-150 cursor-pointer text-left ${
                       active
-                        ? "border-[#4F46E5] bg-[rgba(79,70,229,0.08)]"
-                        : "border-[#E2E8F0] bg-white hover:border-[#CBD5E1]"
+                        ? "border-[#4F46E5] bg-[rgba(79,70,229,0.08)] dark:bg-indigo-950/60"
+                        : "border-[#E2E8F0] dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#CBD5E1] dark:hover:border-slate-600"
                     }`}
                   >
                     <span
                       className={`text-sm ${
                         active
-                          ? "text-[#4F46E5] font-semibold"
-                          : "text-[#0F172A] font-normal"
+                          ? "text-[#4F46E5] dark:text-indigo-400 font-semibold"
+                          : "text-[#0F172A] dark:text-white font-normal"
                       }`}
                     >
                       {opt}
@@ -330,7 +330,7 @@ export function AssessmentQuestionPage({
                       className={`size-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
                         active
                           ? "border-[#4F46E5] bg-[#4F46E5]"
-                          : "border-[#CBD5E1] bg-transparent"
+                          : "border-[#CBD5E1] dark:border-slate-600 bg-transparent"
                       }`}
                     >
                       {active && (
@@ -346,7 +346,7 @@ export function AssessmentQuestionPage({
         {/* Writing input */}
         {q.type === "writing" && (
           <div>
-            <label className="text-[#0F172A] font-semibold text-sm mb-2 block">
+            <label className="text-[#0F172A] dark:text-white font-semibold text-sm mb-2 block">
               Your Response
             </label>
             <textarea
@@ -354,13 +354,13 @@ export function AssessmentQuestionPage({
               onChange={(e) => setWritingText(e.target.value)}
               placeholder="Type your response here..."
               rows={6}
-              className="w-full bg-[#F1F5F9] border-1.5 border-[#E2E8F0] focus:border-[#4F46E5] rounded-xl p-3.5 text-sm text-[#0F172A] outline-none resize-none leading-relaxed font-sans"
+              className="w-full bg-[#F1F5F9] dark:bg-slate-800 border-1.5 border-[#E2E8F0] dark:border-slate-700 focus:border-[#4F46E5] rounded-xl p-3.5 text-sm text-[#0F172A] dark:text-white outline-none resize-none leading-relaxed font-sans placeholder-slate-400 dark:placeholder-slate-500"
             />
             <div className="flex justify-between mt-1.5">
-              <span className="text-[#64748B] text-xs">
+              <span className="text-[#64748B] dark:text-slate-400 text-xs">
                 Target: {q.writingTarget}
               </span>
-              <span className="text-[#64748B] text-xs">
+              <span className="text-[#64748B] dark:text-slate-400 text-xs">
                 {writingText.length} characters
               </span>
             </div>
@@ -373,7 +373,7 @@ export function AssessmentQuestionPage({
         <button
           type="button"
           onClick={handleSkip}
-          className="flex-1 h-12 rounded-xl bg-[#F1F5F9] border-none text-[#0F172A] font-semibold text-sm cursor-pointer hover:bg-[#E2E8F0]"
+          className="flex-1 h-12 rounded-xl bg-[#F1F5F9] dark:bg-slate-800 border-none text-[#0F172A] dark:text-white font-semibold text-sm cursor-pointer hover:bg-[#E2E8F0] dark:hover:bg-slate-700"
         >
           Skip
         </button>

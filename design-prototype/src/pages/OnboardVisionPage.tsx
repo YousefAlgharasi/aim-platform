@@ -24,10 +24,10 @@ export function OnboardVisionPage({ onNext, onSkip }: OnboardVisionPageProps) {
 
       {/* Content Text */}
       <div className="px-6 pt-4">
-        <h1 className="text-[#0F172A] font-bold text-3xl tracking-tight leading-tight mb-2">
+        <h1 className="text-[#0F172A] dark:text-white font-bold text-3xl tracking-tight leading-tight mb-2">
           Your personal AI Tutor,<br />built for you.
         </h1>
-        <p className="text-[#94A3B8] text-sm leading-relaxed">
+        <p className="text-[#94A3B8] dark:text-slate-500 text-sm leading-relaxed">
           Adaptive AI learning paths that evolve with your progress — lessons, quizzes, and mentorship shaped around you.
         </p>
       </div>

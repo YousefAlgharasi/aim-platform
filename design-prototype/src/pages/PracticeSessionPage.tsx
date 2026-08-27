@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
-import { PrimaryButton } from '../components/Button'
+import { PrimaryButton, TextButton } from '../components/Button'
 import { ProgressBar } from '../components/ProgressDots'
 import { CheckIcon, ZapIcon, SparkleIcon, TrophyIcon } from '../components/Icons'
+import type { NextLessonInfo } from './LiveAiLessonChatPage'
 
 interface PracticeQuestion {
   id: number
@@ -38,9 +39,11 @@ const QUESTIONS: PracticeQuestion[] = [
 interface PracticeSessionPageProps {
   onDone: () => void
   onBack: () => void
+  nextLessonInfo?: NextLessonInfo | 'chapter-complete' | null
+  onGoToNextLesson?: (nextLessonTitle: string) => void
 }
 
-export function PracticeSessionPage({ onDone, onBack }: PracticeSessionPageProps) {
+export function PracticeSessionPage({ onDone, onBack, nextLessonInfo, onGoToNextLesson }: PracticeSessionPageProps) {
   const [qIndex, setQIndex] = useState(0)
   const [selected, setSelected] = useState<number | null>(null)
   const [answered, setAnswered] = useState(false)
@@ -105,8 +108,27 @@ export function PracticeSessionPage({ onDone, onBack }: PracticeSessionPageProps
           </div>
         </div>
 
-        <div className="pb-4">
-          <PrimaryButton onClick={onDone}>Continue to Lesson</PrimaryButton>
+        <div className="pb-4 flex flex-col gap-2.5">
+          {nextLessonInfo === 'chapter-complete' && (
+            <div className="w-full py-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 ring-1 ring-amber-200 dark:ring-amber-900 text-amber-700 dark:text-amber-300 font-bold text-sm text-center">
+              🎉 Chapter Complete! Next chapter unlocks soon.
+            </div>
+          )}
+
+          {nextLessonInfo && nextLessonInfo !== 'chapter-complete' && onGoToNextLesson ? (
+            <>
+              <PrimaryButton onClick={() => onGoToNextLesson(nextLessonInfo.title)}>
+                {nextLessonInfo.isNewChapter
+                  ? `Start Next Chapter: ${nextLessonInfo.chapterTitle}`
+                  : `Next Lesson: ${nextLessonInfo.title}`}
+              </PrimaryButton>
+              <TextButton onClick={onDone} className="h-auto py-0 text-sm dark:text-slate-400 dark:hover:text-white">
+                Back to Lesson
+              </TextButton>
+            </>
+          ) : (
+            <PrimaryButton onClick={onDone}>Continue to Lesson</PrimaryButton>
+          )}
         </div>
       </div>
     )
