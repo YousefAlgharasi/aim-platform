@@ -23,12 +23,14 @@ export function LiveAiLessonChatPage({
   const [state, setState] = useState<'ai-speaking' | 'listening' | 'evaluating'>('ai-speaking')
   const [completed, setCompleted] = useState(false)
   const [secs, setSecs] = useState(0)
+  const [replyMode, setReplyMode] = useState<'voice' | 'text'>('voice')
+  const [textInput, setTextInput] = useState('')
 
   const [messages, setMessages] = useState<VoiceMessage[]>([
     {
       id: 1,
       sender: 'ai',
-      text: `Hello Alex! Welcome to your live voice lesson on "${lessonTitle}". ☕\n\nListen carefully: "Could I get a cup of coffee, please?"`,
+      text: `Hello Alex! Welcome to your live lesson on "${lessonTitle}". ☕\n\nListen carefully: "Could I get a cup of coffee, please?"`,
       audioTime: '00:06',
     },
   ])
@@ -42,10 +44,44 @@ export function LiveAiLessonChatPage({
     return () => clearInterval(t)
   }, [state])
 
+  const submitUserResponse = (userText: string, audioTime?: string) => {
+    setState('evaluating')
+
+    setMessages((prev) => [
+      ...prev,
+      { id: Date.now(), sender: 'user', text: userText, audioTime },
+    ])
+
+    setTimeout(() => {
+      if (step < 3) {
+        setStep((s) => s + 1)
+        setState('ai-speaking')
+        setSecs(0)
+        const nextPrompt =
+          step === 1
+            ? 'Excellent! Now try asking for the check: "Could you bring us the bill, please?"'
+            : 'Spot on! Now ask for recommendations: "What do you recommend for lunch today?"'
+
+        setTimeout(() => {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: Date.now() + 1,
+              sender: 'ai',
+              text: nextPrompt,
+              audioTime: '00:05',
+            },
+          ])
+        }, 300)
+      } else {
+        setCompleted(true)
+      }
+    }, 1500)
+  }
+
   const handleMicTap = () => {
     if (state === 'listening') {
       // User finishes speaking
-      setState('evaluating')
       const userText =
         step === 1
           ? 'Could I get a cup of coffee, please?'
@@ -53,41 +89,18 @@ export function LiveAiLessonChatPage({
           ? 'Could you bring us the bill, please?'
           : 'What do you recommend for lunch today?'
 
-      setMessages((prev) => [
-        ...prev,
-        { id: Date.now(), sender: 'user', text: userText, audioTime: `00:${String(secs).padStart(2, '0')}` },
-      ])
-
-      setTimeout(() => {
-        if (step < 3) {
-          setStep((s) => s + 1)
-          setState('ai-speaking')
-          setSecs(0)
-          const nextPrompt =
-            step === 1
-              ? 'Excellent pronunciation! Now try asking for the check: "Could you bring us the bill, please?"'
-              : 'Spot on! Now ask for recommendations: "What do you recommend for lunch today?"'
-
-          setTimeout(() => {
-            setMessages((prev) => [
-              ...prev,
-              {
-                id: Date.now() + 1,
-                sender: 'ai',
-                text: nextPrompt,
-                audioTime: '00:05',
-              },
-            ])
-          }, 300)
-        } else {
-          setCompleted(true)
-        }
-      }, 1500)
+      submitUserResponse(userText, `00:${String(secs).padStart(2, '0')}`)
     } else if (state === 'ai-speaking') {
       // Allow skipping AI speech directly to listening
       setState('listening')
       setSecs(0)
     }
+  }
+
+  const handleTextSend = () => {
+    if (!textInput.trim() || state !== 'ai-speaking') return
+    submitUserResponse(textInput.trim())
+    setTextInput('')
   }
 
   if (completed) {
@@ -102,11 +115,11 @@ export function LiveAiLessonChatPage({
           </div>
 
           <span className="text-emerald-600 dark:text-emerald-400 font-extrabold text-xs uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 rounded-full mb-2">
-            Live Voice Session Completed!
+            Live Lesson Completed!
           </span>
           <h1 className="text-slate-900 dark:text-white font-extrabold text-3xl tracking-tight m-0">Lesson Mastered!</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1.5 mb-6 max-w-[260px] leading-relaxed">
-            You completed the live AI voice lesson for "{lessonTitle}".
+            You completed the live AI lesson for "{lessonTitle}".
           </p>
 
           <div className="w-full bg-white dark:bg-slate-800 ring-1 ring-slate-200/80 dark:ring-slate-700 rounded-2xl p-4 flex items-center justify-around shadow-sm mb-6">
@@ -119,7 +132,7 @@ export function LiveAiLessonChatPage({
             <div className="w-px h-8 bg-slate-200 dark:bg-slate-700" />
             <div className="text-center">
               <span className="text-slate-400 dark:text-slate-500 text-[10px] font-extrabold uppercase tracking-wider block mb-1">
-                Voice Accuracy
+                Accuracy
               </span>
               <span className="text-emerald-600 dark:text-emerald-400 font-extrabold text-lg flex items-center gap-1">
                 <CheckIcon className="size-4" /> 98% Score
@@ -161,7 +174,7 @@ export function LiveAiLessonChatPage({
               <SparkleIcon className="size-4 text-white" />
             </div>
             <span className="font-extrabold text-xs text-slate-900 dark:text-white uppercase tracking-wider">
-              Live Voice AI
+              Live AI Lesson
             </span>
           </div>
 
@@ -238,36 +251,94 @@ export function LiveAiLessonChatPage({
           )}
           {state === 'evaluating' && (
             <span className="text-indigo-600 dark:text-indigo-300 font-extrabold text-xs bg-indigo-50 dark:bg-indigo-950/60 px-3 py-1 rounded-full flex items-center gap-1.5">
-              ✦ AI Evaluating Pronunciation...
+              ✦ AI Evaluating...
             </span>
           )}
         </div>
 
-        {/* Central Pulse Mic Button */}
-        <div className="relative">
-          {state === 'listening' && (
-            <>
-              <div className="absolute -inset-5 rounded-full bg-rose-500/10 animate-ping" />
-              <div className="absolute -inset-2.5 rounded-full bg-rose-500/20" />
-            </>
-          )}
+        {/* Voice / Text reply toggle — the learner picks how they answer, per turn */}
+        <div className="flex items-center gap-1 mb-5 bg-slate-100 dark:bg-slate-800 rounded-full p-1">
           <button
             type="button"
-            onClick={handleMicTap}
-            disabled={state === 'evaluating'}
-            className={`size-22 rounded-full border-none cursor-pointer flex items-center justify-center shadow-xl relative transition-all duration-200 active:scale-95 ${
-              state === 'listening'
-                ? 'bg-rose-500 text-white shadow-rose-200'
-                : 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-indigo-500/25'
+            onClick={() => setReplyMode('voice')}
+            disabled={state !== 'ai-speaking'}
+            className={`px-4 py-1.5 rounded-full text-xs font-bold border-none cursor-pointer transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+              replyMode === 'voice'
+                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm'
+                : 'bg-transparent text-slate-500 dark:text-slate-400'
             }`}
           >
-            <MicIcon className="size-9 text-white" />
+            🎙️ Speak
+          </button>
+          <button
+            type="button"
+            onClick={() => setReplyMode('text')}
+            disabled={state !== 'ai-speaking'}
+            className={`px-4 py-1.5 rounded-full text-xs font-bold border-none cursor-pointer transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+              replyMode === 'text'
+                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm'
+                : 'bg-transparent text-slate-500 dark:text-slate-400'
+            }`}
+          >
+            ⌨️ Type
           </button>
         </div>
 
-        <p className="text-slate-400 dark:text-slate-500 text-xs mt-3 mb-0 font-medium">
-          {state === 'listening' ? 'Tap mic when finished speaking' : 'Tap mic to interrupt or speak'}
-        </p>
+        {replyMode === 'voice' ? (
+          <>
+            {/* Central Pulse Mic Button */}
+            <div className="relative">
+              {state === 'listening' && (
+                <>
+                  <div className="absolute -inset-5 rounded-full bg-rose-500/10 animate-ping" />
+                  <div className="absolute -inset-2.5 rounded-full bg-rose-500/20" />
+                </>
+              )}
+              <button
+                type="button"
+                onClick={handleMicTap}
+                disabled={state === 'evaluating'}
+                className={`size-22 rounded-full border-none cursor-pointer flex items-center justify-center shadow-xl relative transition-all duration-200 active:scale-95 ${
+                  state === 'listening'
+                    ? 'bg-rose-500 text-white shadow-rose-200'
+                    : 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-indigo-500/25'
+                }`}
+              >
+                <MicIcon className="size-9 text-white" />
+              </button>
+            </div>
+
+            <p className="text-slate-400 dark:text-slate-500 text-xs mt-3 mb-0 font-medium">
+              {state === 'listening' ? 'Tap mic when finished speaking' : 'Tap mic to interrupt or speak'}
+            </p>
+          </>
+        ) : (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              handleTextSend()
+            }}
+            className="w-full flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-2xl p-2 pl-4 border border-slate-200/60 dark:border-slate-700"
+          >
+            <input
+              type="text"
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
+              disabled={state !== 'ai-speaking'}
+              placeholder="Type your answer..."
+              className="flex-1 bg-transparent border-none outline-none text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 disabled:opacity-50"
+            />
+            <button
+              type="submit"
+              disabled={!textInput.trim() || state !== 'ai-speaking'}
+              className="size-10 rounded-xl bg-[#4F46E5] hover:bg-[#4338CA] text-white flex items-center justify-center border-none cursor-pointer transition-opacity disabled:opacity-40 shrink-0"
+            >
+              <svg className="size-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+              </svg>
+            </button>
+          </form>
+        )}
       </div>
     </div>
   )
