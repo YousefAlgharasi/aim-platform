@@ -3,6 +3,7 @@ import { MobileShell } from "./components/MobileShell"
 import { SplashPage } from "./pages/SplashPage"
 import { LoginPage } from "./pages/LoginPage"
 import { RegisterPage } from "./pages/RegisterPage"
+import { ForgotPasswordPage } from "./pages/ForgotPasswordPage"
 import { OnboardVisionPage } from "./pages/OnboardVisionPage"
 import { OnboardFocusPage } from "./pages/OnboardFocusPage"
 import { OnboardHabitPage } from "./pages/OnboardHabitPage"
@@ -13,7 +14,7 @@ import { AssessmentSubmitPage } from "./pages/AssessmentSubmitPage"
 import { AssessmentResultsPage } from "./pages/AssessmentResultsPage"
 import { MainDashboardPage } from "./pages/MainDashboardPage"
 
-export type Screen = "splash" | "login" | "register" | "onboard-vision" | "onboard-focus" | "onboard-habit" | "onboard-start" | "assessment-intro" | "assessment-question" | "assessment-submit" | "assessment-results" | "main"
+export type Screen = "splash" | "login" | "register" | "forgot-password" | "onboard-vision" | "onboard-focus" | "onboard-habit" | "onboard-start" | "assessment-intro" | "assessment-question" | "assessment-submit" | "assessment-results" | "main"
 
 const DARK_MODE_STORAGE_KEY = "aim-dark-mode"
 
@@ -48,12 +49,19 @@ export default function App() {
           onRegister={() => setScreen("register")}
           onSuccess={() => setScreen("onboard-vision")}
           onSkipToHome={() => setScreen("main")}
+          onForgotPassword={() => setScreen("forgot-password")}
         />
       )}
       {screen === "register" && (
         <RegisterPage
           onLogin={() => setScreen("login")}
           onSuccess={() => setScreen("onboard-vision")}
+        />
+      )}
+      {screen === "forgot-password" && (
+        <ForgotPasswordPage
+          onBackToLogin={() => setScreen("login")}
+          onResetComplete={() => setScreen("login")}
         />
       )}
       {screen === "onboard-vision" && (
