@@ -29,7 +29,7 @@ describe('PlacementResultReadService.getLatestResultForStudent', () => {
       if (sql.includes('FROM placement_attempts') && sql.includes('ORDER BY completed_at DESC')) {
         return { rows: [{ id: ATTEMPT_ID }], rowCount: 1 };
       }
-      if (sql.includes('FROM placement_attempts') && sql.includes('WHERE id = $1 AND student_id = $2')) {
+      if (sql.includes('FROM placement_attempts') && sql.includes('WHERE id = $1 AND (')) {
         return {
           rows: [
             { id: ATTEMPT_ID, student_id: STUDENT_ID, status: 'completed', completed_at: '2026-06-01T00:00:00Z' },
@@ -104,7 +104,7 @@ describe('PlacementResultReadService.getLatestAttemptStatus', () => {
       if (sql.includes('ORDER BY started_at DESC')) {
         return { rows: [{ id: ATTEMPT_ID, status: 'completed' }], rowCount: 1 };
       }
-      if (sql.includes('FROM placement_attempts') && sql.includes('WHERE id = $1 AND student_id = $2')) {
+      if (sql.includes('FROM placement_attempts') && sql.includes('WHERE id = $1 AND (')) {
         return {
           rows: [
             { id: ATTEMPT_ID, student_id: STUDENT_ID, status: 'completed', completed_at: '2026-06-01T00:00:00Z' },
