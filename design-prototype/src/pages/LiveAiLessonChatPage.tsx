@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { SparkleIcon, CheckIcon, TrophyIcon, MicIcon } from '../components/Icons'
+import { TextButton } from '../components/Button'
 
 interface VoiceMessage {
   id: number
@@ -8,16 +9,29 @@ interface VoiceMessage {
   audioTime?: string
 }
 
+export interface NextLessonInfo {
+  title: string
+  chapterTitle: string
+  isNewChapter: boolean
+}
+
 interface LiveAiLessonChatPageProps {
   lessonTitle?: string
   onFinishLesson: () => void
   onBack: () => void
+  /** What comes after this lesson: the next lesson to jump into, 'chapter-complete' when
+   *  this was the chapter's last lesson and nothing further is unlocked yet, or omitted
+   *  when the caller has no course-progression data for this lesson. */
+  nextLessonInfo?: NextLessonInfo | 'chapter-complete' | null
+  onGoToNextLesson?: (nextLessonTitle: string) => void
 }
 
 export function LiveAiLessonChatPage({
   lessonTitle = 'Ordering Food & Drinks at a Cafe',
   onFinishLesson,
   onBack,
+  nextLessonInfo,
+  onGoToNextLesson,
 }: LiveAiLessonChatPageProps) {
   const [step, setStep] = useState(1) // Step 1 to 3
   const [state, setState] = useState<'ai-speaking' | 'listening' | 'evaluating'>('ai-speaking')
@@ -141,14 +155,37 @@ export function LiveAiLessonChatPage({
           </div>
         </div>
 
-        <div className="pb-4">
-          <button
-            type="button"
-            onClick={onFinishLesson}
-            className="w-full h-13 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-extrabold text-base border-none cursor-pointer shadow-lg shadow-indigo-500/25 hover:opacity-90 active:scale-98 transition-all"
-          >
-            Return to Lesson Detail
-          </button>
+        <div className="pb-4 flex flex-col gap-2.5">
+          {nextLessonInfo === 'chapter-complete' && (
+            <div className="w-full py-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 ring-1 ring-amber-200 dark:ring-amber-900 text-amber-700 dark:text-amber-300 font-bold text-sm text-center">
+              🎉 Chapter Complete! Next chapter unlocks soon.
+            </div>
+          )}
+
+          {nextLessonInfo && nextLessonInfo !== 'chapter-complete' && onGoToNextLesson ? (
+            <>
+              <button
+                type="button"
+                onClick={() => onGoToNextLesson(nextLessonInfo.title)}
+                className="w-full h-13 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-extrabold text-base border-none cursor-pointer shadow-lg shadow-indigo-500/25 hover:opacity-90 active:scale-98 transition-all"
+              >
+                {nextLessonInfo.isNewChapter
+                  ? `Start Next Chapter: ${nextLessonInfo.chapterTitle}`
+                  : `Next Lesson: ${nextLessonInfo.title}`}
+              </button>
+              <TextButton onClick={onFinishLesson} className="h-auto py-0 text-sm dark:text-slate-400 dark:hover:text-white">
+                Back to Lesson
+              </TextButton>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={onFinishLesson}
+              className="w-full h-13 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-extrabold text-base border-none cursor-pointer shadow-lg shadow-indigo-500/25 hover:opacity-90 active:scale-98 transition-all"
+            >
+              Return to Lesson Detail
+            </button>
+          )}
         </div>
       </div>
     )

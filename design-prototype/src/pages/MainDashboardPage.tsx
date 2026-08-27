@@ -21,7 +21,7 @@ import {
 import { LessonDetailPage } from './LessonDetailPage'
 import { PracticeSessionPage } from './PracticeSessionPage'
 import { AiTeacherChatPage } from './AiTeacherChatPage'
-import { LiveAiLessonChatPage } from './LiveAiLessonChatPage'
+import { LiveAiLessonChatPage, type NextLessonInfo } from './LiveAiLessonChatPage'
 import { AchievementsPage } from './AchievementsPage'
 import { AccountSettingsPage } from './AccountSettingsPage'
 
@@ -30,7 +30,7 @@ export type ViewState =
   | { type: 'tab'; tab: TabId }
   | { type: 'lesson-detail'; lessonTitle: string }
   | { type: 'live-ai-lesson'; lessonTitle: string }
-  | { type: 'practice' }
+  | { type: 'practice'; lessonTitle?: string }
   | { type: 'ai-chat' }
   | { type: 'achievements' }
   | { type: 'settings' }
@@ -110,6 +110,32 @@ const CHAPTERS_DATA: ChapterData[] = [
     ],
   },
 ]
+
+/** What comes after `lessonTitle` in the course: the next lesson to jump into,
+ *  'chapter-complete' when it was the chapter's last lesson and the next chapter
+ *  isn't unlocked yet, or null when the title isn't found in CHAPTERS_DATA at all
+ *  (e.g. practice started from the Progress tab with no specific lesson context). */
+function findNextLessonInfo(lessonTitle: string): NextLessonInfo | 'chapter-complete' | null {
+  for (let ci = 0; ci < CHAPTERS_DATA.length; ci++) {
+    const chapter = CHAPTERS_DATA[ci]
+    const lessonIndex = chapter.lessons.findIndex((l) => l.title === lessonTitle)
+    if (lessonIndex === -1) continue
+
+    if (lessonIndex + 1 < chapter.lessons.length) {
+      const next = chapter.lessons[lessonIndex + 1]
+      if (next.locked) return 'chapter-complete'
+      return { title: next.title, chapterTitle: chapter.title, isNewChapter: false }
+    }
+
+    const nextChapter = CHAPTERS_DATA[ci + 1]
+    const firstOfNextChapter = nextChapter?.lessons[0]
+    if (firstOfNextChapter && !firstOfNextChapter.locked) {
+      return { title: firstOfNextChapter.title, chapterTitle: nextChapter.title, isNewChapter: true }
+    }
+    return 'chapter-complete'
+  }
+  return null
+}
 
 const ROADMAP = [
   { id: 1, label: 'Basics 1', sub: 'Mastered', state: 'done', offsetX: 0 },
@@ -1019,7 +1045,7 @@ export function MainDashboardPage({ onLogout }: { onLogout?: () => void }) {
           isCompleted={completedLessons.has(viewState.lessonTitle)}
           onBack={handleBack}
           onStartLiveAiLesson={() => setViewState({ type: 'live-ai-lesson', lessonTitle: viewState.lessonTitle })}
-          onStartPractice={() => setViewState({ type: 'practice' })}
+          onStartPractice={() => setViewState({ type: 'practice', lessonTitle: viewState.lessonTitle })}
           onAskAiTeacher={() => setViewState({ type: 'ai-chat' })}
         />
       )}
@@ -1032,6 +1058,11 @@ export function MainDashboardPage({ onLogout }: { onLogout?: () => void }) {
             handleBack()
           }}
           onBack={handleBack}
+          nextLessonInfo={findNextLessonInfo(viewState.lessonTitle)}
+          onGoToNextLesson={(nextTitle) => {
+            setCompletedLessons((prev) => new Set(prev).add(viewState.lessonTitle))
+            setViewState({ type: 'lesson-detail', lessonTitle: nextTitle })
+          }}
         />
       )}
 
@@ -1039,6 +1070,12 @@ export function MainDashboardPage({ onLogout }: { onLogout?: () => void }) {
         <PracticeSessionPage
           onDone={handleBack}
           onBack={handleBack}
+          nextLessonInfo={viewState.lessonTitle ? findNextLessonInfo(viewState.lessonTitle) : null}
+          onGoToNextLesson={
+            viewState.lessonTitle
+              ? (nextTitle) => setViewState({ type: 'lesson-detail', lessonTitle: nextTitle })
+              : undefined
+          }
         />
       )}
 
