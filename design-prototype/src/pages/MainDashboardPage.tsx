@@ -1006,14 +1006,39 @@ export function MainDashboardPage({ onLogout, isDarkMode, onToggleDarkMode }: Ma
             <span className={`font-extrabold text-sm tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>AIM English</span>
           </div>
 
-          {/* Profile Avatar Button */}
-          <button
-            type="button"
-            onClick={() => setViewState({ type: 'tab', tab: 'profile' })}
-            className="size-9 rounded-2xl bg-gradient-to-br from-[#4F46E5] to-[#818CF8] flex items-center justify-center shadow-md shadow-indigo-500/20 text-white font-black text-xs border-none cursor-pointer hover:opacity-90 transition-opacity"
-          >
-            A
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Theme Toggle */}
+            <button
+              type="button"
+              onClick={() => onToggleDarkMode(!isDarkMode)}
+              title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              className={`size-9 rounded-xl flex items-center justify-center border-none cursor-pointer transition-colors ${
+                isDarkMode
+                  ? 'bg-slate-800 text-indigo-300 hover:bg-slate-700'
+                  : 'bg-slate-100 text-amber-500 hover:bg-slate-200'
+              }`}
+            >
+              {isDarkMode ? (
+                <svg className="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                </svg>
+              ) : (
+                <svg className="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="4" />
+                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                </svg>
+              )}
+            </button>
+
+            {/* Profile Avatar Button */}
+            <button
+              type="button"
+              onClick={() => setViewState({ type: 'tab', tab: 'profile' })}
+              className="size-9 rounded-2xl bg-gradient-to-br from-[#4F46E5] to-[#818CF8] flex items-center justify-center shadow-md shadow-indigo-500/20 text-white font-black text-xs border-none cursor-pointer hover:opacity-90 transition-opacity"
+            >
+              A
+            </button>
+          </div>
         </div>
       )}
 
