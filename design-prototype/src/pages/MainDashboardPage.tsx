@@ -137,6 +137,20 @@ function findNextLessonInfo(lessonTitle: string): NextLessonInfo | 'chapter-comp
   return null
 }
 
+/** The learner's actual current lesson (flagged `current: true` in CHAPTERS_DATA),
+ *  or null if none is marked. Used by the Home roadmap's "Current Step" node, whose
+ *  own label (e.g. "Travel Prep") is a display-only checkpoint name that doesn't match
+ *  any real lesson title — passing it straight to lesson-detail broke findNextLessonInfo
+ *  downstream (it could never find a match), which silently hid the Next Lesson CTA on
+ *  the completion screen for anyone entering a lesson via the roadmap. */
+function findCurrentLessonTitle(): string | null {
+  for (const chapter of CHAPTERS_DATA) {
+    const current = chapter.lessons.find((l) => l.current)
+    if (current) return current.title
+  }
+  return null
+}
+
 const ROADMAP = [
   { id: 1, label: 'Basics 1', sub: 'Mastered', state: 'done', offsetX: 0 },
   { id: 2, label: 'Greetings', sub: 'Mastered', state: 'done', offsetX: 50 },
@@ -213,7 +227,14 @@ function ZigZagRoadmap({ onSelectLesson }: { onSelectLesson: (label: string) => 
             {/* Node Circle */}
             <button
               type="button"
-              onClick={() => !isLocked && onSelectLesson(node.label)}
+              onClick={() => {
+                if (isLocked) return
+                // The "current" node routes to the real current lesson (so the
+                // completion screen can resolve a real Next Lesson CTA afterward).
+                // "done"/other nodes aren't backed by a specific real lesson in
+                // CHAPTERS_DATA, so they still fall back to the roadmap's own label.
+                onSelectLesson(isCurrent ? findCurrentLessonTitle() ?? node.label : node.label)
+              }}
               className={`relative flex items-center justify-center transition-all duration-200 cursor-pointer ${
                 isCurrent
                   ? 'size-17 bg-gradient-to-br from-[#4F46E5] to-[#6366F1] ring-4 ring-indigo-200 shadow-xl shadow-indigo-500/30 rounded-3xl rotate-3'
