@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { SparkleIcon, CheckIcon, TrophyIcon, MicIcon } from '../components/Icons'
 import { TextButton } from '../components/Button'
 
@@ -302,7 +302,7 @@ export function LiveAiLessonChatPage({
           disabled={state !== 'ai-speaking'}
           className="mb-5 px-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold border-none cursor-pointer transition-colors hover:bg-slate-200 dark:hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50 flex items-center gap-1.5"
         >
-          {replyMode === 'voice' ? '⌨️ Switch to typing' : '🎙️ Switch to speaking'}
+          {replyMode === 'voice' ? '⌨️ typing' : '🎙️ speaking'}
         </button>
 
         {replyMode === 'voice' ? (
