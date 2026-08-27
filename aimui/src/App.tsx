@@ -25,6 +25,7 @@ export default function App() {
         <LoginPage
           onRegister={() => setScreen("register")}
           onSuccess={() => setScreen("onboard-vision")}
+          onSkipToHome={() => setScreen("main")}
         />
       )}
       {screen === "register" && (

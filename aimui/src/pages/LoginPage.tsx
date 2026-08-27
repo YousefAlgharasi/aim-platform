@@ -7,9 +7,10 @@ import { EyeIcon, GoogleIcon, FacebookIcon, SparkleIcon } from "../components/Ic
 interface LoginPageProps {
   onRegister?: () => void
   onSuccess?: () => void
+  onSkipToHome?: () => void
 }
 
-export function LoginPage({ onRegister, onSuccess }: LoginPageProps) {
+export function LoginPage({ onRegister, onSuccess, onSkipToHome }: LoginPageProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPass, setShowPass] = useState(false)
@@ -95,6 +96,16 @@ export function LoginPage({ onRegister, onSuccess }: LoginPageProps) {
           <SocialButton icon={<GoogleIcon />}>Google</SocialButton>
           <SocialButton icon={<FacebookIcon />}>Facebook</SocialButton>
         </div>
+
+        {onSkipToHome && (
+          <button
+            type="button"
+            onClick={onSkipToHome}
+            className="mt-1 h-11 rounded-2xl border border-dashed border-slate-300 text-slate-500 hover:text-indigo-600 hover:border-indigo-300 font-semibold text-xs cursor-pointer bg-transparent transition-colors"
+          >
+            Skip to Home (Preview)
+          </button>
+        )}
       </form>
 
       {/* Footer link */}
