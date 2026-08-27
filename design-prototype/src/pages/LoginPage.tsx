@@ -8,9 +8,10 @@ interface LoginPageProps {
   onRegister?: () => void
   onSuccess?: () => void
   onSkipToHome?: () => void
+  onForgotPassword?: () => void
 }
 
-export function LoginPage({ onRegister, onSuccess, onSkipToHome }: LoginPageProps) {
+export function LoginPage({ onRegister, onSuccess, onSkipToHome, onForgotPassword }: LoginPageProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPass, setShowPass] = useState(false)
@@ -78,6 +79,7 @@ export function LoginPage({ onRegister, onSuccess, onSkipToHome }: LoginPageProp
         <div className="text-right">
           <button
             type="button"
+            onClick={onForgotPassword}
             className="bg-transparent border-none text-[#4F46E5] dark:text-indigo-400 font-semibold text-xs cursor-pointer hover:underline p-0"
           >
             Forgot password?
