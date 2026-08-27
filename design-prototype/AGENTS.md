@@ -1,6 +1,6 @@
-# figma-make-app
+# design-prototype
 
-React + Vite + Tailwind CSS project running inside Figma Make.
+React + Vite + Tailwind CSS UI/UX design prototype for the AIM platform, generated in and running inside Figma Make.
 
 ## Development Server
 

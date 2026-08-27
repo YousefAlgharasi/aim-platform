@@ -5,7 +5,7 @@ import path from "node:path"
 
 // Fallback configuration replacing the missing .figma/make/site.json file
 const siteConfiguration = {
-  title: "Figma Make App",
+  title: "AIM Design Prototype",
   description: "",
   language: "en",
 }
