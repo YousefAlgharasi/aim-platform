@@ -139,7 +139,7 @@ describe('AdminDataService', () => {
     expect(db.query.mock.calls[1][0]).toContain('LIMIT $2 OFFSET $3');
   });
 
-  it('listPlacementResults returns correct camelCase mapping', async () => {
+  it('listPlacementResults returns correct camelCase mapping and resolves student name', async () => {
     const db = createDb([
       { rows: [{ count: '1' }] },
       {
@@ -152,6 +152,8 @@ describe('AdminDataService', () => {
             weakness_map: { grammar: true },
             initial_path_id: 'p1',
             created_at: '2026-01-01',
+            display_name: 'Jane Doe',
+            email: 'jane@example.com',
           },
         ],
       },
@@ -164,6 +166,7 @@ describe('AdminDataService', () => {
         {
           id: 'r1',
           studentId: 's1',
+          studentName: 'Jane Doe',
           estimatedLevel: 'B1',
           skillMasteryMap: { reading: 0.7 },
           weaknessMap: { grammar: true },
@@ -175,6 +178,43 @@ describe('AdminDataService', () => {
       page: 1,
       limit: 20,
     });
+  });
+
+  it('listPlacementResults falls back to email, then null, when no display name is set', async () => {
+    const db = createDb([
+      { rows: [{ count: '1' }] },
+      {
+        rows: [
+          {
+            id: 'r1',
+            student_id: 's1',
+            estimated_level: 'B1',
+            skill_mastery_map: {},
+            weakness_map: {},
+            initial_path_id: null,
+            created_at: '2026-01-01',
+            display_name: null,
+            email: 'jane@example.com',
+          },
+          {
+            id: 'r2',
+            student_id: 's2',
+            estimated_level: 'A2',
+            skill_mastery_map: {},
+            weakness_map: {},
+            initial_path_id: null,
+            created_at: '2026-01-01',
+            display_name: null,
+            email: null,
+          },
+        ],
+      },
+    ]);
+    const service = new AdminDataService(db as never);
+    const result = await service.listPlacementResults(1, 20);
+
+    expect(result.data[0].studentName).toBe('jane@example.com');
+    expect(result.data[1].studentName).toBeNull();
   });
 
   it('listPlacementResults with level filter uses correct parameter indices', async () => {

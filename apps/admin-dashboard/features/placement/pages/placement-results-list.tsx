@@ -7,7 +7,7 @@ import {
   AdminPagination,
   AdminIdCell,
   AdminDateCell,
-  AdminCard,
+  AdminFilterBar,
   AdminSelect,
 } from '../../../shared/components/Misc';
 import type { AdminTableColumn } from '../../../shared/components/Misc';
@@ -21,16 +21,24 @@ type Props = {
   readonly filterLevel: string;
 };
 
-const CEFR_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+// Matches the placement_results.estimated_level CHECK constraint (backend-owned).
+const ESTIMATED_LEVELS = ['beginner', 'elementary', 'intermediate', 'upper_intermediate', 'advanced'];
 
-const LEVEL_VARIANT: Record<string, 'info' | 'success' | 'primary'> = {
-  A1: 'info',
-  A2: 'info',
-  B1: 'primary',
-  B2: 'primary',
-  C1: 'success',
-  C2: 'success',
+const LEVEL_VARIANT: Record<string, 'info' | 'primary' | 'success'> = {
+  beginner: 'info',
+  elementary: 'info',
+  intermediate: 'primary',
+  upper_intermediate: 'primary',
+  advanced: 'success',
 };
+
+function formatLevelLabel(level: string): string {
+  return level
+    .split('_')
+    .filter(Boolean)
+    .map((word) => word[0].toUpperCase() + word.slice(1))
+    .join(' ');
+}
 
 const columns: AdminTableColumn<AdminPlacementResultSummary>[] = [
   {
@@ -39,16 +47,21 @@ const columns: AdminTableColumn<AdminPlacementResultSummary>[] = [
     render: (row) => <AdminIdCell id={row.resultId} />,
   },
   {
-    key: 'studentId',
-    header: 'Student ID',
-    render: (row) => <AdminIdCell id={row.studentId} />,
+    key: 'studentName',
+    header: 'Student',
+    render: (row) =>
+      row.studentName ? (
+        <span>{row.studentName}</span>
+      ) : (
+        <AdminIdCell id={row.studentId} />
+      ),
   },
   {
     key: 'estimatedLevel',
     header: 'Estimated Level',
     render: (row) => (
       <AdminBadge variant={LEVEL_VARIANT[row.estimatedLevel] ?? 'neutral'}>
-        {row.estimatedLevel}
+        {formatLevelLabel(row.estimatedLevel)}
       </AdminBadge>
     ),
   },
@@ -77,30 +90,31 @@ export function AdminPlacementResultsList({
 }: Props) {
   const router = useRouter();
 
+  const setLevel = (value: string) => {
+    const params = new URLSearchParams();
+    if (value) params.set('level', value);
+    params.set('page', '1');
+    router.push(`?${params.toString()}`);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-16)' }}>
-      {/* Filter */}
-      <AdminCard title="Filters">
-        <div style={{ maxWidth: '200px' }}>
-          <AdminSelect
-            value={filterLevel}
-            onChange={(e) => {
-              const params = new URLSearchParams();
-              if (e.target.value) params.set('level', e.target.value);
-              params.set('page', '1');
-              router.push(`?${params.toString()}`);
-            }}
-            aria-label="Filter by estimated level"
-          >
-            <option value="">All Levels</option>
-            {CEFR_LEVELS.map((l) => (
-              <option key={l} value={l}>{l}</option>
-            ))}
-          </AdminSelect>
-        </div>
-      </AdminCard>
+      <AdminFilterBar
+        label="Filter placement results"
+        onClearAll={filterLevel ? () => setLevel('') : undefined}
+      >
+        <AdminSelect
+          value={filterLevel}
+          onChange={(e) => setLevel(e.target.value)}
+          aria-label="Filter by estimated level"
+        >
+          <option value="">All Levels</option>
+          {ESTIMATED_LEVELS.map((l) => (
+            <option key={l} value={l}>{formatLevelLabel(l)}</option>
+          ))}
+        </AdminSelect>
+      </AdminFilterBar>
 
-      {/* Results */}
       {results.length === 0 ? (
         <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
           No placement results match the current filters.

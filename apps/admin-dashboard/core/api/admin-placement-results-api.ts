@@ -41,6 +41,8 @@ export type AdminSkillSummaryEntry = {
 export type AdminPlacementResultSummary = {
   readonly resultId: string;
   readonly studentId: string;
+  /** Student's display name (falls back to email, then null). Backend-resolved. */
+  readonly studentName: string | null;
   /** Backend-assigned CEFR level. Admin dashboard displays as-is; never recalculates. */
   readonly estimatedLevel: string;
   readonly completedAt: string;
@@ -81,6 +83,7 @@ function decodeResultSummary(raw: unknown): AdminPlacementResultSummary {
   return {
     resultId: typeof r['id'] === 'string' ? r['id'] : '',
     studentId: typeof r['studentId'] === 'string' ? r['studentId'] : '',
+    studentName: typeof r['studentName'] === 'string' ? r['studentName'] : null,
     estimatedLevel: typeof r['estimatedLevel'] === 'string' ? r['estimatedLevel'] : '—',
     completedAt: typeof r['createdAt'] === 'string' ? r['createdAt'] : '',
     initialPathReady: typeof r['initialPathId'] === 'string' && r['initialPathId'].length > 0,

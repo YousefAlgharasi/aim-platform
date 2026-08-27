@@ -57,22 +57,13 @@ export default async function AdminPlacementResultsPage({ searchParams }: Props)
       </nav>
 
       <header className="admin-page-header">
-        <p className="eyebrow">Admin — Placement</p>
         <h1>Placement Results</h1>
         {data && (
           <p className="admin-page-meta">
             {data.total} result{data.total !== 1 ? 's' : ''}
-            {level ? ` at level ${level}` : ''}
           </p>
         )}
       </header>
-
-      {/* admin-boundary-note */}
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Estimated level (CEFR), skill signals, and initial path
-        assignment are computed by the backend only. This view is read-only — no placement scoring,
-        mastery values, or AIM Engine runtime logic is present here.
-      </div>
 
       {backendUnavailable && (
         <div className="admin-boundary-note" role="status">
