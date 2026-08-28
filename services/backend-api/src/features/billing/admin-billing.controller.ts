@@ -32,6 +32,18 @@ export class AdminBillingController {
     private readonly auditService: BillingAuditService,
   ) {}
 
+  @Get('subscriptions')
+  @ApiOperation({ summary: 'List all subscriptions, including free-tier (admin)' })
+  async listSubscriptions(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.subscriptionService.listAllSubscriptions(
+      page ? parseInt(page, 10) : 1,
+      limit ? parseInt(limit, 10) : 50,
+    );
+  }
+
   @Get('subscriptions/:userId')
   @ApiOperation({ summary: 'Get subscriptions for a user (admin)' })
   async getUserSubscriptions(@Param('userId') userId: string) {

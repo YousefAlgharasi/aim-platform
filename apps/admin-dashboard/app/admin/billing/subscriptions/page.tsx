@@ -1,13 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { backendFetchJson } from '../../../../core/api/client-api-helpers';
 import {
   AdminTable,
   AdminStatusBadge,
-  AdminInput,
-  AdminButton,
-  AdminCard,
   AdminIdCell,
   AdminDateCell,
   type AdminTableColumn,
@@ -16,6 +13,7 @@ import {
 type Subscription = {
   id: string;
   userId: string;
+  studentName: string | null;
   planId: string;
   status: string;
   currentPeriodStart: string | null;
@@ -24,36 +22,51 @@ type Subscription = {
   createdAt: string;
 };
 
-export default function AdminSubscriptionsPage() {
-  const [userId, setUserId] = useState('');
-  const [items, setItems] = useState<Subscription[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [searched, setSearched] = useState(false);
+type SubscriptionListData = {
+  data: Subscription[];
+  total: number;
+  page: number;
+  limit: number;
+};
 
-  async function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    if (!userId.trim()) return;
+export default function AdminSubscriptionsPage() {
+  const [items, setItems] = useState<Subscription[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
     setLoading(true);
     setError(null);
-    try {
-      const data = await backendFetchJson<Subscription[]>(
-        `/admin/billing/subscriptions/${userId.trim()}`
-      );
-      setItems(data);
-      setSearched(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load subscriptions.');
-    } finally {
-      setLoading(false);
-    }
-  }
+    backendFetchJson<SubscriptionListData>('/admin/billing/subscriptions')
+      .then((data) => {
+        if (cancelled) return;
+        setItems(data.data ?? []);
+        setTotal(data.total ?? (data.data ?? []).length);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : 'Failed to load subscriptions.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const columns: AdminTableColumn<Subscription>[] = [
     {
       key: 'id',
       header: 'Subscription ID',
       render: (s) => <AdminIdCell id={s.id} />,
+    },
+    {
+      key: 'studentName',
+      header: 'Student',
+      render: (s) => (s.studentName ? <span>{s.studentName}</span> : <AdminIdCell id={s.userId} />),
     },
     {
       key: 'planId',
@@ -89,35 +102,13 @@ export default function AdminSubscriptionsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-primary-500)]">
-          Billing
-        </p>
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">Subscriptions</h1>
-        <p className="text-sm text-[var(--text-secondary)] mt-1">
-          Look up subscriptions by user ID.
-        </p>
+        {!loading && !error && (
+          <p className="text-sm text-[var(--text-secondary)] mt-1">
+            {total} subscription{total !== 1 ? 's' : ''}
+          </p>
+        )}
       </div>
-
-      <AdminCard className="p-4">
-        <form onSubmit={handleSearch} className="flex flex-wrap items-end gap-3">
-          <div className="flex flex-col gap-1 flex-1 min-w-[240px]">
-            <label htmlFor="bs-uid" className="text-xs font-medium text-[var(--text-secondary)]">
-              User ID
-            </label>
-            <AdminInput
-              id="bs-uid"
-              type="text"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              placeholder="Enter user ID"
-              disabled={loading}
-            />
-          </div>
-          <AdminButton type="submit" variant="primary" disabled={loading || !userId.trim()}>
-            {loading ? 'Searching…' : 'Search'}
-          </AdminButton>
-        </form>
-      </AdminCard>
 
       {error && (
         <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700" role="alert">
@@ -125,15 +116,16 @@ export default function AdminSubscriptionsPage() {
         </div>
       )}
 
-      {searched && !error && items.length === 0 && (
-        <AdminCard className="p-8 text-center flex flex-col items-center justify-center gap-1">
-          <p className="font-semibold text-sm text-[var(--text-primary)]">No subscriptions found</p>
-          <p className="text-xs text-[var(--text-muted)]">This user has no subscriptions.</p>
-        </AdminCard>
-      )}
-
-      {items.length > 0 && (
-        <AdminTable columns={columns} rows={items} getRowKey={(s) => s.id} />
+      {loading ? (
+        <div className="p-8 text-center text-sm text-[var(--text-muted)] border border-[var(--border)] rounded-xl bg-[var(--surface)]">
+          Loading subscriptions...
+        </div>
+      ) : !error && items.length === 0 ? (
+        <div className="p-8 text-center text-sm text-[var(--text-muted)] border border-[var(--border)] rounded-xl bg-[var(--surface)]">
+          No subscriptions found.
+        </div>
+      ) : (
+        !error && <AdminTable columns={columns} rows={items} getRowKey={(s) => s.id} />
       )}
     </div>
   );

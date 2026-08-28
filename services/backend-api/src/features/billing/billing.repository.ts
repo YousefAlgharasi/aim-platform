@@ -724,6 +724,55 @@ export class BillingRepository {
     return result.rows;
   }
 
+  // Lists every subscription row (including free-plan subscriptions — every
+  // student has one, backfilled by 20260629200000_backfill_free_subscriptions
+  // and provisioned automatically for new signups, so no status/plan filter
+  // is applied here) with the owning student's display name resolved the
+  // same way listPlacementResults does: user_id on subscriptions may hold
+  // either the internal users.id or the Supabase auth UID, so join on both.
+  async listAllSubscriptionsWithStudentNames(
+    page: number,
+    limit: number,
+  ): Promise<{ data: Array<Record<string, unknown>>; total: number; page: number; limit: number }> {
+    const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
+    const safeLimit = Number.isFinite(limit) && limit > 0 ? Math.min(Math.floor(limit), 200) : 50;
+    const offset = (safePage - 1) * safeLimit;
+
+    const countResult = await this.db.query<{ count: string }>(
+      `SELECT COUNT(*)::text AS count FROM subscriptions`,
+    );
+    const total = parseInt(countResult.rows[0]?.count ?? '0', 10);
+
+    const result = await this.db.query<Record<string, unknown>>(
+      `SELECT s.id, s.user_id, s.plan_id, s.status, s.current_period_start, s.current_period_end,
+              s.cancel_at_period_end, s.created_at,
+              sp.display_name, u.email
+       FROM subscriptions s
+       LEFT JOIN users u ON u.id = s.user_id OR u.supabase_auth_uid = s.user_id
+       LEFT JOIN student_profiles sp ON sp.user_id = u.id
+       ORDER BY s.created_at DESC
+       LIMIT $1 OFFSET $2`,
+      [safeLimit, offset],
+    );
+
+    return {
+      data: result.rows.map((r) => ({
+        id: r.id,
+        userId: r.user_id,
+        studentName: (r.display_name as string | null) ?? (r.email as string | null) ?? null,
+        planId: r.plan_id,
+        status: r.status,
+        currentPeriodStart: r.current_period_start,
+        currentPeriodEnd: r.current_period_end,
+        cancelAtPeriodEnd: r.cancel_at_period_end,
+        createdAt: r.created_at,
+      })),
+      total,
+      page: safePage,
+      limit: safeLimit,
+    };
+  }
+
   async findAllPayments(limit: number = 50, offset: number = 0): Promise<Payment[]> {
     const result = await this.db.query<Payment>(
       `SELECT ${this.PAYMENT_COLUMNS} FROM payments ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
