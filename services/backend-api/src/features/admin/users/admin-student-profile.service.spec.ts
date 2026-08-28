@@ -44,6 +44,29 @@ describe('AdminStudentProfileService', () => {
       if (sql.includes('FROM ai_chat_sessions')) {
         return { rows: [{ id: 'sess1', context_ref: 'lesson:l1', status: 'active', created_at: '2026-01-03', updated_at: '2026-01-04' }] };
       }
+      if (sql.includes('FROM assessment_results ar')) {
+        return {
+          rows: [
+            {
+              id: 'ar1',
+              assessment_id: 'a1',
+              title: 'Placement Prep Quiz',
+              type: 'quiz',
+              score: '8.00',
+              max_score: '10.00',
+              passed: true,
+              attempted_at: '2026-01-06',
+              course_title: null,
+            },
+          ],
+        };
+      }
+      if (sql.includes('FROM billing_plans')) {
+        return { rows: [{ name: 'Free Plan' }] };
+      }
+      if (sql.includes('FROM courses WHERE id')) {
+        return { rows: [{ title: 'English A2' }] };
+      }
       return undefined;
     });
 
@@ -52,6 +75,7 @@ describe('AdminStudentProfileService', () => {
         estimated_level: 'B1',
         created_at: '2026-01-01',
         skill_mastery_map: { 'grammar.past': { mastery_score: 0.8, signal: 'strong', total_questions: 5, correct_answers: 4 } },
+        recommended_course_id: 'course-2',
       }),
     };
     const subscriptionService = {
@@ -87,8 +111,29 @@ describe('AdminStudentProfileService', () => {
       estimatedLevel: 'B1',
       completedAt: '2026-01-01',
       skillSummary: [{ skillCode: 'grammar.past', signal: 'strong' }],
+      scorePercent: 80,
+      recommendedCourseId: 'course-2',
+      recommendedCourseTitle: 'English A2',
     });
-    expect(profile.subscription).toEqual({ planId: 'plan-free', status: 'active', currentPeriodEnd: null });
+    expect(profile.subscription).toEqual({
+      planId: 'plan-free',
+      planName: 'Free Plan',
+      status: 'active',
+      currentPeriodEnd: null,
+    });
+    expect(profile.assessmentResults).toEqual([
+      {
+        id: 'ar1',
+        assessmentId: 'a1',
+        title: 'Placement Prep Quiz',
+        type: 'quiz',
+        score: 8,
+        maxScore: 10,
+        passed: true,
+        attemptedAt: '2026-01-06',
+        courseTitle: null,
+      },
+    ]);
     expect(profile.courses).toHaveLength(1);
     expect(profile.courses[0]).toEqual({
       enrollmentId: 'ce1',
