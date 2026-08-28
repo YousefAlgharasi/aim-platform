@@ -13,6 +13,7 @@ import type {
   AdminStudentProfileCourse,
   AdminStudentProfileSkillSignal,
 } from '../../../core/api/admin-student-profile-api';
+import { studentDisplayName } from '../student-display-name';
 
 type Props = {
   readonly profile: AdminStudentProfile;
@@ -37,12 +38,6 @@ function formatLevelLabel(level: string): string {
     .filter(Boolean)
     .map((word) => word[0].toUpperCase() + word.slice(1))
     .join(' ');
-}
-
-function studentDisplayName(profile: AdminStudentProfile): string {
-  if (profile.student.displayName) return profile.student.displayName;
-  if (profile.student.email) return profile.student.email;
-  return `Student ${profile.student.id.slice(0, 8)}`;
 }
 
 function ProgressBar({ pct }: { readonly pct: number }) {
@@ -257,5 +252,3 @@ export function StudentProgressClient({ profile }: Props) {
     </div>
   );
 }
-
-export { studentDisplayName };
