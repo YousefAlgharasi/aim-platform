@@ -54,9 +54,11 @@ export async function fetchAdminSessionSummaryDetail(
 export type AdminAuditLogItem = {
   readonly id: string;
   readonly userId: string;
+  readonly userName: string | null;
   readonly action: string;
   readonly entityType: string | null;
   readonly entityId: string | null;
+  readonly category: string;
   readonly createdAt: string;
 };
 
@@ -65,9 +67,11 @@ function decodeAuditLog(v: unknown): AdminAuditLogItem {
   return {
     id:         String(o.id ?? ''),
     userId:     String(o.userId ?? ''),
+    userName:   typeof o.userName === 'string' ? o.userName : null,
     action:     String(o.action ?? ''),
     entityType: typeof o.entityType === 'string' ? o.entityType : null,
     entityId:   typeof o.entityId   === 'string' ? o.entityId   : null,
+    category:   String(o.category ?? ''),
     createdAt:  String(o.createdAt ?? ''),
   };
 }

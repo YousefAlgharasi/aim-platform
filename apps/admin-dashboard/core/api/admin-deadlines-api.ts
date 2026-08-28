@@ -6,9 +6,12 @@ import { decodePaginatedResponse, type AdminPaginatedResponse } from './admin-pa
 export type AdminDeadlineItem = {
   readonly id: string;
   readonly assessmentId: string;
+  readonly studentId: string | null;
+  /** Resolved student display name (falls back to email, then null). null studentId means "all students". */
+  readonly studentName: string | null;
+  readonly opensAt: string | null;
   readonly dueAt: string;
-  readonly courseId: string | null;
-  readonly chapterId: string | null;
+  readonly extendedClosesAt: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
 };
@@ -16,13 +19,15 @@ export type AdminDeadlineItem = {
 function decodeDeadline(v: unknown): AdminDeadlineItem {
   const o = v as Record<string, unknown>;
   return {
-    id:           String(o.id ?? ''),
-    assessmentId: String(o.assessmentId ?? ''),
-    dueAt:        String(o.dueAt ?? ''),
-    courseId:     typeof o.courseId === 'string' ? o.courseId : null,
-    chapterId:    typeof o.chapterId === 'string' ? o.chapterId : null,
-    createdAt:    String(o.createdAt ?? ''),
-    updatedAt:    String(o.updatedAt ?? ''),
+    id:               String(o.id ?? ''),
+    assessmentId:     String(o.assessmentId ?? ''),
+    studentId:        typeof o.studentId === 'string' ? o.studentId : null,
+    studentName:      typeof o.studentName === 'string' ? o.studentName : null,
+    opensAt:          typeof o.opensAt === 'string' ? o.opensAt : null,
+    dueAt:            String(o.dueAt ?? ''),
+    extendedClosesAt: typeof o.extendedClosesAt === 'string' ? o.extendedClosesAt : null,
+    createdAt:        String(o.createdAt ?? ''),
+    updatedAt:        String(o.updatedAt ?? ''),
   };
 }
 

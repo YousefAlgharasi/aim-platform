@@ -30,19 +30,11 @@ export default async function AdminAuditLogsPage({ searchParams }: Props) {
   return (
     <section className="admin-curriculum-page">
       <header className="admin-page-header">
-        <p className="eyebrow">Admin — Audit</p>
-        <h1>AIM Audit Logs</h1>
+        <h1>Admin Actions Log</h1>
         {logs && (
           <p className="admin-page-meta">{logs.total} log entr{logs.total !== 1 ? 'ies' : 'y'}</p>
         )}
       </header>
-
-      {/* admin-boundary-note */}
-      <div className="admin-boundary-note">
-        <strong>Read-only:</strong> Audit logs are written server-side by the backend API.
-        This view displays safe metadata only — no raw learner data or AI provider responses.
-        Logs are append-only and cannot be edited from this surface.
-      </div>
 
       {fetchError && (
         <p className="admin-error-banner" role="alert">{fetchError}</p>
@@ -50,7 +42,7 @@ export default async function AdminAuditLogsPage({ searchParams }: Props) {
 
       {logs && (
         <AuditLogClient
-          logs={logs.data as { id: string; userId: string; action: string; entityType: string | null; entityId: string | null; createdAt: string }[]}
+          logs={logs.data as { id: string; userId: string; userName: string | null; action: string; entityType: string | null; entityId: string | null; category: string; createdAt: string }[]}
           total={logs.total}
           page={logs.page}
           totalPages={Math.ceil(logs.total / logs.limit)}

@@ -42,20 +42,22 @@ const columns: AdminTableColumn<AdminAssessmentResultItem>[] = [
   {
     key: 'studentId',
     header: 'Student',
-    width: '120px',
-    render: (item) => <AdminIdCell id={item.studentId} />,
+    width: '140px',
+    render: (item) =>
+      item.studentName ? <span>{item.studentName}</span> : <AdminIdCell id={item.studentId} />,
   },
   {
     key: 'assessmentId',
     header: 'Assessment',
-    width: '120px',
-    render: (item) => <AdminIdCell id={item.assessmentId} />,
+    width: '160px',
+    render: (item) =>
+      item.assessmentTitle ? <span>{item.assessmentTitle}</span> : <AdminIdCell id={item.assessmentId} />,
   },
   {
     key: 'score',
     header: 'Score',
     width: '80px',
-    render: (item) => <span>{item.score}</span>,
+    render: (item) => <span>{item.score} / {item.maxScore}</span>,
   },
   {
     key: 'passed',
@@ -121,7 +123,6 @@ export default async function AdminAssessmentResultsPage({ searchParams }: Props
       </nav>
 
       <AdminPageHeader
-        eyebrow="Admin — Results & Progress"
         title="Assessment Results"
         description={
           data
@@ -129,10 +130,6 @@ export default async function AdminAssessmentResultsPage({ searchParams }: Props
             : undefined
         }
       />
-
-      <p className="text-xs text-[var(--text-secondary)] mb-4">
-        Scores and pass/fail status are computed by the backend API. This page displays results only.
-      </p>
 
       {fetchError && <AdminApiErrorState message={fetchError} />}
 

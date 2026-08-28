@@ -16,15 +16,17 @@
 // - No secrets, service-role keys, database credentials, or privileged config here.
 //
 // Backend dependency:
-//   PATCH /placement/admin/tests/:id/status — endpoint #10 in P4-006 API map
-//   GET   /admin/placement/tests            — endpoint #8, used to fetch test metadata
+//   POST /admin/placement/tests/:id/publish — draft -> published
+//   POST /admin/placement/tests/:id/archive — published -> archived
+//   GET  /admin/placement/tests             — used to fetch test metadata
 // If endpoints not yet deployed, the page renders a clear notice and does not crash.
 
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../../core/auth';
 import {
-  updatePlacementTestStatus,
+  publishPlacementTest,
+  archivePlacementTest,
   AdminApiClientError,
 } from '../../../../../../core/api/admin-placement-test-status-api';
 import {
@@ -40,9 +42,8 @@ type Props = {
 function toErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof AdminApiClientError) {
     const e = error as { status?: number; message: string };
-    // Surface the ACTIVE_TEST_EXISTS business error clearly
     if (e.status === 409) {
-      return 'Cannot publish: another placement test is already published. Move it to draft first. (409 ACTIVE_TEST_EXISTS)';
+      return 'Cannot publish: another placement test is already published. Archive it first.';
     }
     return `Backend error ${e.status ?? ''}: ${e.message}`;
   }
@@ -88,20 +89,20 @@ export default async function AdminPlacementTestStatusPage({ params }: Props) {
   async function handleSetPublished(): Promise<{ error?: string }> {
     'use server';
     try {
-      await updatePlacementTestStatus(token, testId, { status: 'published' });
+      await publishPlacementTest(token, testId);
       return {};
     } catch (error) {
       return { error: toErrorMessage(error, 'Failed to publish test. Check backend connectivity.') };
     }
   }
 
-  async function handleSetDraft(): Promise<{ error?: string }> {
+  async function handleArchive(): Promise<{ error?: string }> {
     'use server';
     try {
-      await updatePlacementTestStatus(token, testId, { status: 'draft' });
+      await archivePlacementTest(token, testId);
       return {};
     } catch (error) {
-      return { error: toErrorMessage(error, 'Failed to move test to draft. Check backend connectivity.') };
+      return { error: toErrorMessage(error, 'Failed to archive test. Check backend connectivity.') };
     }
   }
 
@@ -118,20 +119,11 @@ export default async function AdminPlacementTestStatusPage({ params }: Props) {
 
       {/* Page header */}
       <header className="admin-page-header">
-        <p className="eyebrow">Admin — Placement</p>
         <h1>Placement Test Status</h1>
         {test && (
           <p className="admin-page-meta">{test.title}</p>
         )}
       </header>
-
-      {/* Security boundary note */}
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Status transitions (draft ↔ published) are
-        enforced entirely by the backend. Only one placement test may be published at a
-        time. Placement scoring, CEFR thresholds, skill maps, and weakness maps are
-        always computed server-side — never by this UI.
-      </div>
 
       {/* Backend not yet available */}
       {backendUnavailable && (
@@ -157,7 +149,7 @@ export default async function AdminPlacementTestStatusPage({ params }: Props) {
           testTitle={test.title}
           currentStatus={test.status}
           onSetPublished={handleSetPublished}
-          onSetDraft={handleSetDraft}
+          onArchive={handleArchive}
         />
       )}
     </section>

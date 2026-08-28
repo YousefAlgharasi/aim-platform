@@ -6,23 +6,38 @@ import { decodePaginatedResponse, type AdminPaginatedResponse } from '../../../c
 export type AdminAssessmentResultItem = {
   readonly id: string;
   readonly studentId: string;
+  readonly studentName: string | null;
   readonly assessmentId: string;
+  readonly assessmentTitle: string | null;
   readonly score: number;        // backend-computed — never recalculated here
+  readonly maxScore: number;     // backend-computed — never recalculated here
   readonly passed: boolean;      // backend-computed — never recalculated here
   readonly attemptedAt: string;
   readonly completedAt: string | null;
 };
 
+// score/maxScore are NUMERIC columns on the backend — pg returns them as
+// strings (e.g. "8.00"), so accept either a number or a numeric string and
+// only fall back to 0 when the value truly isn't parseable.
+function decodeNumeric(v: unknown): number {
+  if (typeof v === 'number') return v;
+  const parsed = Number(v);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 function decodeResult(v: unknown): AdminAssessmentResultItem {
   const o = v as Record<string, unknown>;
   return {
-    id:           String(o.id ?? ''),
-    studentId:    String(o.studentId ?? ''),
-    assessmentId: String(o.assessmentId ?? ''),
-    score:        typeof o.score === 'number' ? o.score : 0,
-    passed:       Boolean(o.passed),
-    attemptedAt:  String(o.attemptedAt ?? ''),
-    completedAt:  typeof o.completedAt === 'string' ? o.completedAt : null,
+    id:              String(o.id ?? ''),
+    studentId:       String(o.studentId ?? ''),
+    studentName:     typeof o.studentName === 'string' ? o.studentName : null,
+    assessmentId:    String(o.assessmentId ?? ''),
+    assessmentTitle: typeof o.assessmentTitle === 'string' ? o.assessmentTitle : null,
+    score:           decodeNumeric(o.score),
+    maxScore:        decodeNumeric(o.maxScore),
+    passed:          Boolean(o.passed),
+    attemptedAt:     String(o.attemptedAt ?? ''),
+    completedAt:     typeof o.completedAt === 'string' ? o.completedAt : null,
   };
 }
 

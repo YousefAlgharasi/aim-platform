@@ -43,6 +43,17 @@ const columns: AdminTableColumn<AdminDeadlineItem>[] = [
     render: (item) => <AdminIdCell id={item.assessmentId} />,
   },
   {
+    key: 'studentName',
+    header: 'Student',
+    width: '140px',
+    render: (item) =>
+      item.studentId ? (
+        <span>{item.studentName ?? <AdminIdCell id={item.studentId} />}</span>
+      ) : (
+        <span>All students</span>
+      ),
+  },
+  {
     key: 'dueAt',
     header: 'Deadline Date',
     width: '160px',
@@ -103,7 +114,6 @@ export default async function AdminDeadlinesPage({ searchParams }: Props) {
       </nav>
 
       <AdminPageHeader
-        eyebrow="Admin — Assessments"
         title="Deadlines"
         description={
           data
@@ -111,10 +121,6 @@ export default async function AdminDeadlinesPage({ searchParams }: Props) {
             : undefined
         }
       />
-
-      <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 'var(--space-16)' }}>
-        Deadline enforcement and late/expired status are determined by the backend API.
-      </p>
 
       {fetchError && <AdminApiErrorState message={fetchError} />}
 

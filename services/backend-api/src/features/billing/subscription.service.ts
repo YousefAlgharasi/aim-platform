@@ -18,6 +18,10 @@ export class SubscriptionService {
     return this.billingRepo.findSubscriptionsByUserId(userId);
   }
 
+  async listAllSubscriptions(page: number, limit: number) {
+    return this.billingRepo.listAllSubscriptionsWithStudentNames(page, limit);
+  }
+
   async getSubscriptionById(id: string, userId?: string): Promise<Subscription> {
     validateUUID(id, 'subscriptionId');
     const subscription = await this.billingRepo.findSubscriptionById(id);
