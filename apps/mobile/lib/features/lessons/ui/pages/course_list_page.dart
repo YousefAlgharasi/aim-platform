@@ -294,6 +294,9 @@ class _CourseListContentState extends State<_CourseListContent> {
                         ],
                       ),
                     ),
+                  const SizedBox(width: 8),
+                  const AimQuickThemeToggle(size: 34, iconSize: 18),
+                  const SizedBox(width: 8),
                   Consumer(
                     builder: (context, ref, child) {
                       final authState = ref.watch(authContextProvider);
@@ -303,7 +306,7 @@ class _CourseListContentState extends State<_CourseListContent> {
                         _ => 'A',
                       };
                       return CircleAvatar(
-                        radius: 18,
+                        radius: 17,
                         backgroundColor: const Color(0xFF6366F1),
                         child: Text(
                           initial,

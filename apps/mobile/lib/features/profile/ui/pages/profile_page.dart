@@ -413,6 +413,8 @@ class _ProfileHeroHeader extends StatelessWidget {
                             .copyWith(color: AimColors.neutral0),
                       ),
                     ),
+                    const AimQuickThemeToggle(size: 34, iconSize: 18),
+                    const SizedBox(width: 4),
                     const NotificationBellButton(),
                     IconButton(
                       icon: const Icon(Icons.settings_outlined),
