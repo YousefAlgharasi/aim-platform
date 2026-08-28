@@ -511,9 +511,9 @@ class _RoadmapNodeWidget extends StatelessWidget {
         width: nodeSize,
         height: nodeSize,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: surfaces.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE2E8F0), width: 2),
+          border: Border.all(color: surfaces.border, width: 2),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),

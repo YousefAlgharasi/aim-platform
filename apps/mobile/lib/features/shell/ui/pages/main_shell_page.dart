@@ -5,8 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/state/app_async_state.dart';
-import '../../../../core/localization/app_locale.dart';
-import '../../../../core/localization/locale_provider.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
@@ -225,14 +223,6 @@ class _AIMAppDrawerWithMore extends ConsumerStatefulWidget {
 
 class _AIMAppDrawerWithMoreState
     extends ConsumerState<_AIMAppDrawerWithMore> {
-  late bool _isMoreExpanded;
-
-  @override
-  void initState() {
-    super.initState();
-    _isMoreExpanded = widget.selectedIndex == 2;
-  }
-
   void _selectTab(int index) {
     context.pop();
     ref.read(mainShellTabIndexProvider.notifier).state = index;
@@ -268,12 +258,6 @@ class _AIMAppDrawerWithMoreState
         onTap: () => _selectTab(3),
       ),
       AIMDrawerItemData(
-        icon: const Icon(Icons.person_outline),
-        label: l10n.shellNavProfile,
-        selected: selectedIndex == 4,
-        onTap: () => _selectTab(4),
-      ),
-      AIMDrawerItemData(
         icon: const Icon(Icons.emoji_events_outlined),
         label: l10n.shellAchievements,
         selected: false,
@@ -285,32 +269,6 @@ class _AIMAppDrawerWithMoreState
         selected: false,
         onTap: () => _navigateTo(AppRoutePaths.accountSettings),
       ),
-      AIMDrawerItemData(
-        icon: const Icon(Icons.tune_outlined),
-        label: 'More',
-        selected: selectedIndex == 2,
-        trailing: Icon(
-          _isMoreExpanded
-              ? Icons.keyboard_arrow_up_rounded
-              : Icons.keyboard_arrow_down_rounded,
-          color: AimColors.neutral500,
-        ),
-        onTap: () {
-          setState(() {
-            _isMoreExpanded = !_isMoreExpanded;
-          });
-        },
-      ),
-      if (_isMoreExpanded)
-        AIMDrawerItemData(
-          icon: const Padding(
-            padding: EdgeInsets.only(left: 12),
-            child: Icon(Icons.style_outlined, color: AimColors.primary500),
-          ),
-          label: l10n.shellNavReview,
-          selected: selectedIndex == 2,
-          onTap: () => _selectTab(2),
-        ),
     ];
 
     return AIMAppDrawer(
@@ -325,14 +283,6 @@ class _AIMAppDrawerWithMoreState
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AimSpacing.space16,
-                  vertical: AimSpacing.space8,
-                ),
-                child: _AIMLanguageToggleRow(),
-              ),
-              const SizedBox(height: AimSpacing.space8),
               GestureDetector(
                 onTap: isLoggingOut
                     ? null
@@ -401,19 +351,14 @@ class _AIMDrawerBrandHeader extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Row(
-              children: [
-                AimBrandLogo(size: 36, fontSize: 11, borderRadius: 12),
-                SizedBox(width: 8),
-                Text(
-                  'AIM English',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.3,
-                  ),
-                ),
-              ],
+            Text(
+              'AIM',
+              style: AimTextStyles.h2.copyWith(
+                color: AimColors.primary500,
+                fontWeight: AimFontWeights.extrabold,
+                fontSize: 22,
+                letterSpacing: -0.5,
+              ),
             ),
             GestureDetector(
               onTap: () => Navigator.of(context).pop(),
@@ -436,21 +381,21 @@ class _AIMDrawerBrandHeader extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.all(AimSpacing.space16),
           decoration: BoxDecoration(
-            color: AimColors.secondary50.withValues(alpha: 0.4),
+            color: surfaces.surfaceRaised,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: AimColors.secondary100,
+              color: surfaces.border,
               width: 1,
             ),
           ),
           child: Row(
             children: [
               Container(
-                width: 48,
-                height: 48,
+                width: 44,
+                height: 44,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: AimColors.secondary500,
+                  gradient: AimGradients.gzHero,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -478,18 +423,18 @@ class _AIMDrawerBrandHeader extends ConsumerWidget {
                     const SizedBox(height: 4),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                        horizontal: 10,
+                        vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: AimColors.secondary100.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(6),
+                        color: const Color(0xFFEEF2FF),
+                        borderRadius: BorderRadius.circular(100),
                       ),
                       child: Text(
                         badgeText,
                         style: AimTextStyles.caption.copyWith(
-                          color: AimColors.secondary700,
-                          fontWeight: AimFontWeights.bold,
+                          color: const Color(0xFF4F46E5),
+                          fontWeight: AimFontWeights.extrabold,
                           fontSize: 10,
                           letterSpacing: 0.5,
                         ),
@@ -506,192 +451,4 @@ class _AIMDrawerBrandHeader extends ConsumerWidget {
   }
 }
 
-/// Small colored circular icon-avatar background used for "MORE" section
-/// rows, matching the mockup's varied icon-treatment colors.
-class _AIMDrawerIconAvatar extends StatelessWidget {
-  const _AIMDrawerIconAvatar({required this.color, required this.icon});
 
-  final Color color;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: AimSizes.avatarSm,
-      height: AimSizes.avatarSm,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      child: Icon(icon, color: AimColors.neutral0, size: AimSizes.iconSm),
-    );
-  }
-}
-
-/// Small numeric unread-count badge shown as a drawer item's [trailing].
-class _AIMDrawerCountBadge extends StatelessWidget {
-  const _AIMDrawerCountBadge({required this.count});
-
-  final int count;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return AIMBadge(
-      tone: AIMBadgeTone.error,
-      variant: AIMBadgeVariant.solid,
-      pill: true,
-      semanticLabel: l10n.shellUnreadNotificationsSemantic(count),
-      child: Text(count > 99 ? '99+' : '$count'),
-    );
-  }
-}
-
-/// Light/Dark segmented toggle wired to the app's real [themeModeProvider].
-class _AIMThemeToggleRow extends ConsumerWidget {
-  const _AIMThemeToggleRow();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final surfaces = aimSurfacesOf(context);
-    final mode = ref.watch(themeModeProvider);
-    final brightness = Theme.of(context).brightness;
-    final isDark = mode == ThemeMode.dark || (mode == ThemeMode.system && brightness == Brightness.dark);
-    final isLight = mode == ThemeMode.light || (mode == ThemeMode.system && brightness == Brightness.light);
-    final l10n = AppLocalizations.of(context);
-
-    return Row(
-      children: [
-        Expanded(
-          child: _ThemeToggleButton(
-            label: l10n.shellThemeLight,
-            icon: Icons.light_mode_outlined,
-            selected: isLight,
-            surfaces: surfaces,
-            onTap: () =>
-                ref.read(themeModeProvider.notifier).state = ThemeMode.light,
-          ),
-        ),
-        const SizedBox(width: AimSpacing.componentGap),
-        Expanded(
-          child: _ThemeToggleButton(
-            label: l10n.shellThemeDark,
-            icon: Icons.dark_mode_outlined,
-            selected: isDark,
-            surfaces: surfaces,
-            onTap: () =>
-                ref.read(themeModeProvider.notifier).state = ThemeMode.dark,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// English/Arabic segmented toggle wired to the app's real [localeProvider].
-/// Switching languages also switches text direction (LTR/RTL) app-wide,
-/// since [AppLocale.directionFor] derives direction from the same locale.
-class _AIMLanguageToggleRow extends ConsumerWidget {
-  const _AIMLanguageToggleRow();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final surfaces = aimSurfacesOf(context);
-    final locale = ref.watch(localeProvider);
-    final l10n = AppLocalizations.of(context);
-
-    return Row(
-      children: [
-        Expanded(
-          child: _ThemeToggleButton(
-            label: l10n.shellLanguageEnglish,
-            icon: Icons.language,
-            selected: locale.languageCode == AppLocale.english,
-            surfaces: surfaces,
-            semanticLabel: l10n.shellLanguageSemantic(l10n.shellLanguageEnglish),
-            onTap: () => ref.read(localeProvider.notifier).state =
-                const Locale(AppLocale.english),
-          ),
-        ),
-        const SizedBox(width: AimSpacing.componentGap),
-        Expanded(
-          child: _ThemeToggleButton(
-            label: l10n.shellLanguageArabic,
-            icon: Icons.translate,
-            selected: locale.languageCode == AppLocale.arabic,
-            surfaces: surfaces,
-            semanticLabel: l10n.shellLanguageSemantic(l10n.shellLanguageArabic),
-            onTap: () => ref.read(localeProvider.notifier).state =
-                const Locale(AppLocale.arabic),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ThemeToggleButton extends StatelessWidget {
-  const _ThemeToggleButton({
-    required this.label,
-    required this.icon,
-    required this.selected,
-    required this.surfaces,
-    required this.onTap,
-    this.semanticLabel,
-  });
-
-  final String label;
-  final IconData icon;
-  final bool selected;
-  final AimSurfaceTheme surfaces;
-  final VoidCallback onTap;
-
-  /// Accessibility label override. Defaults to the theme-toggle semantic
-  /// (`"$label theme"`) for backward compatibility with [_AIMThemeToggleRow];
-  /// [_AIMLanguageToggleRow] passes its own language-toggle semantic.
-  final String? semanticLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    final soft = aimSoftFillsOf(context);
-    final l10n = AppLocalizations.of(context);
-    final background = selected ? soft.primary : surfaces.surfaceSunken;
-    final foreground = selected ? soft.onPrimary : surfaces.textSecondary;
-
-    return Material(
-      color: background,
-      borderRadius: AimRadius.borderMd,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: AimRadius.borderMd,
-        splashColor: surfaces.statePressed,
-        highlightColor: surfaces.statePressed,
-        child: Semantics(
-          button: true,
-          selected: selected,
-          label: semanticLabel ?? l10n.shellThemeSemantic(label),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: AimSizes.touchTarget),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: AimSizes.iconSm, color: foreground),
-                const SizedBox(width: AimSpacing.space8),
-                Flexible(
-                  child: Text(
-                    label,
-                    overflow: TextOverflow.ellipsis,
-                    style: AimTextStyles.bodySm.copyWith(
-                      color: foreground,
-                      fontWeight: selected
-                          ? AimFontWeights.semibold
-                          : AimFontWeights.regular,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}

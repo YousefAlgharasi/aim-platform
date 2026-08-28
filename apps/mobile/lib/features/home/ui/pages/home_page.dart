@@ -423,98 +423,7 @@ class _HomeContent extends ConsumerWidget {
   }
 }
 
-/// Promo cards shown in place of the four core AIM sections when the
-/// student has no skill/weakness/schedule/recommendation/continue-learning
-/// data yet. Rendered inline within [_HomeContent] so Goal/Daily Challenge
-/// above are never hidden behind this state.
-List<Widget> _gettingStartedCards(BuildContext context, WidgetRef ref) {
-  final surfaces = aimSurfacesOf(context);
-  final l10n = AppLocalizations.of(context);
 
-  return [
-    HomeSectionHeader(title: l10n.homeGetStartedTitle),
-    const SizedBox(height: AimSpacing.componentGap),
-    AIMCard(
-      variant: AIMCardVariant.elevated,
-      onTap: () => context.push(
-        AppRoutePaths.placementStart,
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.assignment_outlined,
-            color: AimColors.primary600,
-            size: AimSizes.iconMd,
-          ),
-          const SizedBox(width: AimSpacing.componentGap),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.homePlacementTestTitle,
-                  style: AimTextStyles.title.copyWith(
-                    color: surfaces.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: AimSpacing.space4),
-                Text(
-                  l10n.homePlacementTestSubtitle,
-                  style: AimTextStyles.bodySm.copyWith(
-                    color: surfaces.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Icon(
-            Icons.chevron_right,
-            color: surfaces.textMuted,
-          ),
-        ],
-      ),
-    ),
-    const SizedBox(height: AimSpacing.componentGap),
-    AIMCard(
-      variant: AIMCardVariant.elevated,
-      onTap: () => ref.read(mainShellTabIndexProvider.notifier).state = 1,
-      child: Row(
-        children: [
-          const Icon(
-            Icons.menu_book_outlined,
-            color: AimColors.primary600,
-            size: AimSizes.iconMd,
-          ),
-          const SizedBox(width: AimSpacing.componentGap),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.homeBrowseCoursesTitle,
-                  style: AimTextStyles.title.copyWith(
-                    color: surfaces.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: AimSpacing.space4),
-                Text(
-                  l10n.homeBrowseCoursesSubtitle,
-                  style: AimTextStyles.bodySm.copyWith(
-                    color: surfaces.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Icon(
-            Icons.chevron_right,
-            color: surfaces.textMuted,
-          ),
-        ],
-      ),
-    ),
-  ];
-}
 
 // ── Current assessment section ──────────────────────────────────────────────
 
@@ -678,6 +587,11 @@ class _HomeTopBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final surfaces = aimSurfacesOf(context);
+    final mode = ref.watch(themeModeProvider);
+    final brightness = Theme.of(context).brightness;
+    final isDark = mode == ThemeMode.dark ||
+        (mode == ThemeMode.system && brightness == Brightness.dark);
+
     return Padding(
       padding: const EdgeInsets.symmetric(
         vertical: AimSpacing.space16,
@@ -699,22 +613,48 @@ class _HomeTopBar extends ConsumerWidget {
               ),
             ],
           ),
-          Container(
-            width: 34,
-            height: 34,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              gradient: AimGradients.gzHero,
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              _initial(displayName),
-              style: AimTextStyles.label.copyWith(
-                color: AimColors.neutral0,
-                fontWeight: AimFontWeights.bold,
-                fontSize: 13,
+          Row(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  ref.read(themeModeProvider.notifier).state =
+                      isDark ? ThemeMode.light : ThemeMode.dark;
+                },
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  margin: const EdgeInsets.only(right: AimSpacing.space8),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: surfaces.surfaceSunken,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: surfaces.border),
+                  ),
+                  child: Icon(
+                    isDark ? Icons.nights_stay_outlined : Icons.wb_sunny_outlined,
+                    color: isDark ? AimColors.neutral300 : AimColors.warning500,
+                    size: 18,
+                  ),
+                ),
               ),
-            ),
+              Container(
+                width: 34,
+                height: 34,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  gradient: AimGradients.gzHero,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  _initial(displayName),
+                  style: AimTextStyles.label.copyWith(
+                    color: AimColors.neutral0,
+                    fontWeight: AimFontWeights.bold,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -984,11 +924,16 @@ class _DailyMissionsList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final surfaces = aimSurfacesOf(context);
     final l10n = AppLocalizations.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final mission1 = _MissionItem(
       iconData: Icons.menu_book_rounded,
-      iconColor: challenge.completed ? const Color(0xFF10B981) : const Color(0xFF4F46E5),
-      iconBgColor: challenge.completed ? const Color(0xFFD1FAE5) : const Color(0xFFEEF2FF),
+      iconColor: challenge.completed
+          ? (isDark ? const Color(0xFF34D399) : const Color(0xFF10B981))
+          : (isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5)),
+      iconBgColor: challenge.completed
+          ? (isDark ? const Color(0xFF064E3B).withValues(alpha: 0.6) : const Color(0xFFD1FAE5))
+          : (isDark ? const Color(0xFF1E1B4B).withValues(alpha: 0.6) : const Color(0xFFEEF2FF)),
       label: challenge.title,
       done: challenge.completed,
       progress: challenge.progressCount,
@@ -1001,8 +946,8 @@ class _DailyMissionsList extends ConsumerWidget {
 
     final mission2 = _MissionItem(
       iconData: Icons.mic_none_rounded,
-      iconColor: const Color(0xFF4F46E5),
-      iconBgColor: const Color(0xFFEEF2FF),
+      iconColor: isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5),
+      iconBgColor: isDark ? const Color(0xFF1E1B4B).withValues(alpha: 0.6) : const Color(0xFFEEF2FF),
       label: isAr ? 'تدرب على التحدث' : 'Practice Speaking',
       done: false,
       progress: 0,
@@ -1015,8 +960,8 @@ class _DailyMissionsList extends ConsumerWidget {
 
     final mission3 = _MissionItem(
       iconData: Icons.edit_rounded,
-      iconColor: const Color(0xFF4F46E5),
-      iconBgColor: const Color(0xFFEEF2FF),
+      iconColor: isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5),
+      iconBgColor: isDark ? const Color(0xFF1E1B4B).withValues(alpha: 0.6) : const Color(0xFFEEF2FF),
       label: isAr ? 'اكتب فقرة قصيرة' : 'Write a Paragraph',
       done: false,
       progress: 0,

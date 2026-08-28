@@ -6,6 +6,7 @@ import '../../features/auth/logic/entity/auth_context.dart';
 import '../../features/auth/logic/entity/auth_flow_state.dart';
 import '../../features/auth/ui/pages/login_page.dart';
 import '../../features/auth/ui/pages/register_page.dart';
+import '../../features/auth/ui/pages/forgot_password_page.dart';
 import '../../features/lessons/ui/pages/chapter_list_page.dart';
 import '../../features/lessons/ui/pages/lesson_detail_page.dart';
 import '../../features/lessons/ui/pages/lesson_list_page.dart';
@@ -120,6 +121,10 @@ class AppRouter {
         GoRoute(
           path: AppRoutePaths.register,
           builder: (context, state) => const RegisterPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.forgotPassword,
+          builder: (context, state) => const ForgotPasswordPage(),
         ),
         GoRoute(
           path: AppRoutePaths.mainShell,
@@ -711,7 +716,8 @@ class AppRouter {
     // authFlowProvider flipped, without waiting on authContextProvider.
     if (authState.isSignedIn) {
       if (routeName == AppRoutePaths.signIn ||
-          routeName == AppRoutePaths.register) {
+          routeName == AppRoutePaths.register ||
+          routeName == AppRoutePaths.forgotPassword) {
         return AppRoutePaths.placementGate;
       }
       if (routeName == AppRoutePaths.splash) {
