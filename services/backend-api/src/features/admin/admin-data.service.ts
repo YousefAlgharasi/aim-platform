@@ -1,9 +1,51 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import { AppError } from '../../common/errors/app-error';
+import { ApiErrorCode } from '../../common/errors/api-error-code';
+import { HttpStatus } from '@nestjs/common';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
+
+// Skill mastery -> signal thresholds. Mirrors placement-result-read.service's
+// masteryToSignal so admins see the same categorical signal the student-facing
+// API derives — never a raw mastery_score/percentage.
+const SKILL_SIGNAL_STRONG = 0.75;
+const SKILL_SIGNAL_DEVELOPING = 0.4;
+
+type SkillSignal = 'strong' | 'developing' | 'emerging';
+
+function masteryToSignal(mastery: number): SkillSignal {
+  if (mastery >= SKILL_SIGNAL_STRONG) return 'strong';
+  if (mastery >= SKILL_SIGNAL_DEVELOPING) return 'developing';
+  return 'emerging';
+}
+
+function formatSkillName(skillCode: string): string {
+  return skillCode
+    .split(/[._-]+/)
+    .filter(Boolean)
+    .map((word) => word[0].toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+function buildSkillSummary(
+  skillMasteryMap: unknown,
+): Array<{ skillCode: string; skillName: string; signal: SkillSignal }> {
+  if (!skillMasteryMap || typeof skillMasteryMap !== 'object') return [];
+  return Object.entries(skillMasteryMap as Record<string, unknown>).map(([skillCode, value]) => {
+    const masteryScore =
+      value && typeof value === 'object'
+        ? Number((value as Record<string, unknown>).mastery_score ?? 0)
+        : Number(value ?? 0);
+    return {
+      skillCode,
+      skillName: formatSkillName(skillCode),
+      signal: masteryToSignal(masteryScore),
+    };
+  });
+}
 
 function safePagination(page: number, limit: number) {
   const safePage = Math.max(page, DEFAULT_PAGE);
@@ -69,6 +111,37 @@ export class AdminDataService {
     };
   }
 
+  async getAssessmentDetail(id: string) {
+    const result = await this.db.query<Record<string, unknown>>(
+      `SELECT a.id, a.title, a.type, a.status,
+              (SELECT COUNT(*)::int FROM assessment_questions aq WHERE aq.assessment_id = a.id) AS question_count,
+              a.created_at, a.updated_at
+       FROM assessments a
+       WHERE a.id = $1
+       LIMIT 1`,
+      [id],
+    );
+
+    const row = result.rows[0];
+    if (!row) {
+      throw new AppError({
+        code: ApiErrorCode.NOT_FOUND,
+        message: 'Assessment not found',
+        statusCode: HttpStatus.NOT_FOUND,
+      });
+    }
+
+    return {
+      id: row.id,
+      title: row.title,
+      type: row.type,
+      status: row.status,
+      questionCount: row.question_count ?? 0,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  }
+
   async listDeadlines(page: number, limit: number) {
     const { safePage, safeLimit, offset } = safePagination(page, limit);
 
@@ -78,10 +151,17 @@ export class AdminDataService {
     );
     const total = parseInt(countResult.rows[0]?.count ?? '0', 10);
 
+    // student_id is NULL when the deadline applies to all students for the
+    // assessment; non-NULL means an individual extension for one student —
+    // resolve that student's name the same way listPlacementResults does.
     const result = await this.db.query<Record<string, unknown>>(
-      `SELECT id, assessment_id, closes_at AS due_at, NULL AS course_id, NULL AS chapter_id, created_at, updated_at
-       FROM assessment_deadlines
-       ORDER BY created_at DESC
+      `SELECT ad.id, ad.assessment_id, ad.student_id, ad.opens_at,
+              ad.closes_at AS due_at, ad.extended_closes_at, ad.created_at, ad.updated_at,
+              sp.display_name, u.email
+       FROM assessment_deadlines ad
+       LEFT JOIN users u ON u.id = ad.student_id OR u.supabase_auth_uid = ad.student_id
+       LEFT JOIN student_profiles sp ON sp.user_id = u.id
+       ORDER BY ad.created_at DESC
        LIMIT $1 OFFSET $2`,
       [safeLimit, offset],
     );
@@ -90,9 +170,13 @@ export class AdminDataService {
       data: result.rows.map((r) => ({
         id: r.id,
         assessmentId: r.assessment_id,
+        studentId: (r.student_id as string | null) ?? null,
+        studentName: r.student_id
+          ? (r.display_name as string | null) ?? (r.email as string | null) ?? null
+          : null,
+        opensAt: r.opens_at,
         dueAt: r.due_at,
-        courseId: r.course_id ?? null,
-        chapterId: r.chapter_id ?? null,
+        extendedClosesAt: r.extended_closes_at ?? null,
         createdAt: r.created_at,
         updatedAt: r.updated_at,
       })),
@@ -129,10 +213,18 @@ export class AdminDataService {
     const offsetIdx = idx;
     const dataParams = [...filterParams, safeLimit, offset];
 
+    // The WHERE clause filters on the unaliased assessment_results columns
+    // (student_id/assessment_id), so it is applied before aliasing to `ar`.
     const result = await this.db.query<Record<string, unknown>>(
-      `SELECT id, student_id, assessment_id, score, passed, created_at AS attempted_at, graded_at AS completed_at
-       FROM assessment_results ${whereClause}
-       ORDER BY created_at DESC
+      `SELECT ar.id, ar.student_id, ar.assessment_id, ar.score, ar.max_score, ar.passed,
+              ar.created_at AS attempted_at, ar.graded_at AS completed_at,
+              a.title AS assessment_title, sp.display_name, u.email
+       FROM assessment_results ar
+       LEFT JOIN assessments a ON a.id = ar.assessment_id
+       LEFT JOIN users u ON u.id = ar.student_id OR u.supabase_auth_uid = ar.student_id
+       LEFT JOIN student_profiles sp ON sp.user_id = u.id
+       ${whereClause}
+       ORDER BY ar.created_at DESC
        LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
       dataParams,
     );
@@ -141,8 +233,12 @@ export class AdminDataService {
       data: result.rows.map((r) => ({
         id: r.id,
         studentId: r.student_id,
+        studentName: (r.display_name as string | null) ?? (r.email as string | null) ?? null,
         assessmentId: r.assessment_id,
-        score: r.score,
+        assessmentTitle: (r.assessment_title as string | null) ?? null,
+        // NUMERIC columns come back from pg as strings — coerce explicitly.
+        score: Number(r.score),
+        maxScore: Number(r.max_score),
         passed: r.passed,
         attemptedAt: r.attempted_at,
         completedAt: r.completed_at ?? null,
@@ -203,6 +299,9 @@ export class AdminDataService {
         studentName: (r.display_name as string | null) ?? (r.email as string | null) ?? null,
         estimatedLevel: r.estimated_level,
         skillMasteryMap: r.skill_mastery_map,
+        // Categorical signal only (strong/developing/emerging) — never the raw
+        // mastery_score/percentage, per this codebase's placement scoring rules.
+        skillSummary: buildSkillSummary(r.skill_mastery_map),
         weaknessMap: r.weakness_map,
         initialPathId: r.initial_path_id,
         createdAt: r.created_at,

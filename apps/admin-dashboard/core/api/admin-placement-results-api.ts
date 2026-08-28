@@ -47,6 +47,8 @@ export type AdminPlacementResultSummary = {
   readonly estimatedLevel: string;
   readonly completedAt: string;
   readonly initialPathReady: boolean;
+  /** Per-skill mastery signal (strong/developing/emerging). Never a raw score. */
+  readonly skillSummary: AdminSkillSummaryEntry[];
 };
 
 export type AdminPlacementResultDetail = AdminPlacementResultSummary & {
@@ -80,6 +82,7 @@ function decodeSkillSummaryEntry(raw: unknown): AdminSkillSummaryEntry {
 
 function decodeResultSummary(raw: unknown): AdminPlacementResultSummary {
   const r = raw as Record<string, unknown>;
+  const rawSkills = Array.isArray(r['skillSummary']) ? r['skillSummary'] : [];
   return {
     resultId: typeof r['id'] === 'string' ? r['id'] : '',
     studentId: typeof r['studentId'] === 'string' ? r['studentId'] : '',
@@ -87,6 +90,7 @@ function decodeResultSummary(raw: unknown): AdminPlacementResultSummary {
     estimatedLevel: typeof r['estimatedLevel'] === 'string' ? r['estimatedLevel'] : '—',
     completedAt: typeof r['createdAt'] === 'string' ? r['createdAt'] : '',
     initialPathReady: typeof r['initialPathId'] === 'string' && r['initialPathId'].length > 0,
+    skillSummary: rawSkills.map(decodeSkillSummaryEntry),
   };
 }
 

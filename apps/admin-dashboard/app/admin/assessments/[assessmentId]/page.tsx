@@ -39,9 +39,10 @@ export default async function AdminAssessmentDetailPage({ params }: Props) {
         : 'Failed to load assessment. Check backend connectivity.';
   }
 
-  const attachedQuestions = (assessment?.questionIds ?? []).map((id) => {
-    return { id, stem: `Question ${id}`, type: 'multiple_choice', difficulty: 'beginner' };
-  });
+  // The backend detail endpoint returns question count only, not per-question
+  // detail — there is no real data to attach here, so this stays empty rather
+  // than fabricating placeholder question stems.
+  const attachedQuestions: Array<{ id: string; stem: string; type: string; difficulty: string }> = [];
 
   async function handleUpdate(data: {
     title: string;
@@ -206,7 +207,6 @@ export default async function AdminAssessmentDetailPage({ params }: Props) {
       </nav>
 
       <header className="admin-page-header">
-        <p className="eyebrow">Admin — Assessment Detail</p>
         <h1>{assessment?.title ?? 'Assessment'}</h1>
       </header>
 
@@ -231,14 +231,18 @@ export default async function AdminAssessmentDetailPage({ params }: Props) {
             disabled={assessment.status === 'archived'}
             onUpdateSettings={handleUpdateSettings}
           />
+          {/* Per-assessment deadline windows live in assessment_deadlines (see
+              /admin/deadlines) and are not part of the assessment detail
+              response — this widget starts from empty/unset defaults rather
+              than fabricating values the backend never returned. */}
           <DeadlineManagement
             assessmentId={assessmentId}
             deadline={{
-              opensAt: (assessment as Record<string, unknown>).opensAt as string | null ?? null,
-              closesAt: (assessment as Record<string, unknown>).closesAt as string | null ?? null,
-              lateSubmissionPolicy: ((assessment as Record<string, unknown>).lateSubmissionPolicy as 'none' | 'penalty' | 'allow') ?? 'none',
-              latePenaltyPercent: (assessment as Record<string, unknown>).latePenaltyPercent as number | null ?? null,
-              lateWindowMinutes: (assessment as Record<string, unknown>).lateWindowMinutes as number | null ?? null,
+              opensAt: null,
+              closesAt: null,
+              lateSubmissionPolicy: 'none',
+              latePenaltyPercent: null,
+              lateWindowMinutes: null,
             }}
             disabled={assessment.status === 'archived'}
             onUpdateDeadline={handleUpdateDeadline}

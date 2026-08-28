@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { AuthorizedRole } from '../../auth/authorization/authorized-role';
@@ -28,6 +28,14 @@ export class AdminDataController {
       parseInt(limit, 10) || 20,
       type,
     );
+  }
+
+  @Get('assessments/:id')
+  @RequireRoles(AuthorizedRole.ADMIN, AuthorizedRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get a single assessment by id.' })
+  @ApiOkResponse({ description: 'Assessment detail.' })
+  async getAssessmentDetail(@Param('id') id: string) {
+    return this.adminDataService.getAssessmentDetail(id);
   }
 
   @Get('deadlines')

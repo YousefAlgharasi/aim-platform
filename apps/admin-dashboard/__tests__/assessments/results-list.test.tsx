@@ -14,8 +14,11 @@ jest.mock('../../core/api', () => ({
 const makeResult = (overrides: Partial<AdminAssessmentResultItem> = {}): AdminAssessmentResultItem => ({
   id: 'r-1',
   studentId: 'student-123',
+  studentName: null,
   assessmentId: 'a-1',
+  assessmentTitle: null,
   score: 85,
+  maxScore: 100,
   passed: true,
   attemptedAt: '2026-01-15T10:00:00Z',
   completedAt: '2026-01-15T10:30:00Z',

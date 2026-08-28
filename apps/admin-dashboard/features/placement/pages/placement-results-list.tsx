@@ -11,7 +11,7 @@ import {
   AdminSelect,
 } from '../../../shared/components/Misc';
 import type { AdminTableColumn } from '../../../shared/components/Misc';
-import type { AdminPlacementResultSummary } from '../../../core/api/admin-placement-results-api';
+import type { AdminPlacementResultSummary, SkillSignal } from '../../../core/api/admin-placement-results-api';
 
 type Props = {
   readonly results: readonly AdminPlacementResultSummary[];
@@ -39,6 +39,12 @@ function formatLevelLabel(level: string): string {
     .map((word) => word[0].toUpperCase() + word.slice(1))
     .join(' ');
 }
+
+const SIGNAL_VARIANT: Record<SkillSignal, 'success' | 'primary' | 'warning'> = {
+  strong: 'success',
+  developing: 'primary',
+  emerging: 'warning',
+};
 
 const columns: AdminTableColumn<AdminPlacementResultSummary>[] = [
   {
@@ -73,6 +79,22 @@ const columns: AdminTableColumn<AdminPlacementResultSummary>[] = [
         {row.initialPathReady ? 'Ready' : 'Pending'}
       </AdminBadge>
     ),
+  },
+  {
+    key: 'skillSummary',
+    header: 'Skill Signals',
+    render: (row) =>
+      row.skillSummary.length === 0 ? (
+        <span style={{ color: 'var(--text-muted)' }}>—</span>
+      ) : (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-4, 4px)' }}>
+          {row.skillSummary.map((skill) => (
+            <AdminBadge key={skill.skillCode} variant={SIGNAL_VARIANT[skill.signal]}>
+              {skill.skillName}
+            </AdminBadge>
+          ))}
+        </div>
+      ),
   },
   {
     key: 'completedAt',
