@@ -1669,4 +1669,670 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get voiceAiReturnButton => 'Return to Lesson Detail';
+
+  @override
+  String get lessonsCourseOverviewHeader => 'COURSE OVERVIEW';
+
+  @override
+  String get lessonsCourseProgressHeader => 'Course Progress';
+
+  @override
+  String get lessonsCourseChaptersHeader => 'Course Chapters';
+
+  @override
+  String get lessonsNextUpLockedCourse => 'NEXT UP · LOCKED COURSE';
+
+  @override
+  String get lessonsNextCourseLevel => 'Next Course Level';
+
+  @override
+  String get lessonsUnlockCourseCondition =>
+      'Unlocks automatically once you complete all chapters in this course.';
+
+  @override
+  String lessonsUnlockNextCourseCondition(String activeCourse) {
+    return 'Unlocks automatically once you complete all chapters in $activeCourse.';
+  }
+
+  @override
+  String get lessonsLearningPathHeader => 'LEARNING PATH';
+
+  @override
+  String get lessonsStructuredCurriculumHeader => 'Structured Curriculum';
+
+  @override
+  String get lessonsPersonalizedSequenceSubtitle =>
+      'Follow your personalized sequence from CEFR Starter to Advanced mastery.';
+
+  @override
+  String get lessonsKeyVocabularyHeader => 'Key Vocabulary & Phrases';
+
+  @override
+  String get lessonsTapToListenHeader => 'TAP 🔊 TO LISTEN';
+
+  @override
+  String get lessonsAskAiTutorHeader => 'Ask AI Tutor';
+
+  @override
+  String get lessonsAskAiTutorSubtitle =>
+      'Chat with your AI tutor to clarify rules or ask questions.';
+
+  @override
+  String get lessonsPracticeNowHeader => 'Practice Now';
+
+  @override
+  String get lessonsPracticeNowSubtitle =>
+      'Reinforce your knowledge or practice with quick exercises.';
+
+  @override
+  String get lessonsQuizHeader => 'QUIZ';
+
+  @override
+  String get lessonsQuizSubtitle =>
+      'Test your comprehension with quick interactive exercises.';
+
+  @override
+  String get lessonsLessonMasteredTitle => 'Lesson Mastered! 🌟';
+
+  @override
+  String get lessonsLessonMasteredSnackbar => 'Lesson marked as completed! 🌟';
+
+  @override
+  String lessonsMarkCompleteFailed(String error) {
+    return 'Could not mark lesson complete: $error';
+  }
+
+  @override
+  String get lessonsInThisChapterHeader => 'LESSONS IN THIS CHAPTER';
+
+  @override
+  String get lessonsChapterQuizHeader => 'CHAPTER QUIZ';
+
+  @override
+  String get lessonsPassedStatus => 'PASSED';
+
+  @override
+  String get lessonsLockedStatus => 'LOCKED';
+
+  @override
+  String lessonsTotalLessonsCount(int chaptersCount, int totalLessons) {
+    return '$chaptersCount chapters · $totalLessons Total Lessons';
+  }
+
+  @override
+  String get progressTitle => 'Progress & Analytics';
+
+  @override
+  String get progressSubtitle =>
+      'Track your language proficiency and study stats';
+
+  @override
+  String get progressWeeklyActivity => 'Weekly Activity';
+
+  @override
+  String progressDailyAverageMins(int minutes) {
+    return '$minutes mins / day average';
+  }
+
+  @override
+  String progressTotalMins(int minutes) {
+    return '$minutes mins total';
+  }
+
+  @override
+  String progressTrackedSkillsHeader(int count) {
+    return 'TRACKED SKILLS ($count)';
+  }
+
+  @override
+  String progressReviewScheduleHeader(int count) {
+    return 'REVIEW SCHEDULE ($count)';
+  }
+
+  @override
+  String progressWeaknessRecordsHeader(int count) {
+    return 'WEAKNESS RECORDS ($count)';
+  }
+
+  @override
+  String get progressWeakSpotIdentified =>
+      'Identified weak spot from recent responses.';
+
+  @override
+  String get progressNoWeaknesses =>
+      'No active weaknesses recorded! Great work!';
+
+  @override
+  String get progressViewAll => 'View All →';
+
+  @override
+  String get progressViewFullSchedule => 'View Full Schedule →';
+
+  @override
+  String get progressViewFullTable => 'View Full Table →';
+
+  @override
+  String progressPriorityLabel(String severity) {
+    return '$severity Priority';
+  }
+
+  @override
+  String progressIntervalAndRep(int interval, int rep) {
+    return 'Interval: ${interval}d · Rep #$rep';
+  }
+
+  @override
+  String get progressSkillStatesTitle => 'Skill States';
+
+  @override
+  String progressConfidencePct(int percent) {
+    return 'Confidence $percent%';
+  }
+
+  @override
+  String progressDueAt(String date) {
+    return 'Due: $date';
+  }
+
+  @override
+  String progressDetectedAt(String date) {
+    return 'Detected: $date';
+  }
+
+  @override
+  String progressResolvedAt(String date) {
+    return 'Resolved: $date';
+  }
+
+  @override
+  String progressExpiresAt(String date) {
+    return 'Expires: $date';
+  }
+
+  @override
+  String progressGeneratedAt(String date) {
+    return 'Generated: $date';
+  }
+
+  @override
+  String progressTargetLesson(String lessonId) {
+    return 'Lesson: $lessonId';
+  }
+
+  @override
+  String progressRankBadge(int rank) {
+    return '#$rank';
+  }
+
+  @override
+  String get billingTitle => 'Billing';
+
+  @override
+  String get billingSubscription => 'Subscription';
+
+  @override
+  String get billingCurrentPlan => 'Current plan';
+
+  @override
+  String get billingChangePlan => 'Change plan';
+
+  @override
+  String get billingCancelSubscription => 'Cancel subscription';
+
+  @override
+  String get billingCancelSubscriptionDialogTitle => 'Cancel Subscription?';
+
+  @override
+  String get billingCancelSubscriptionDialogMessage =>
+      'Your subscription will remain active until the end of the current billing period.';
+
+  @override
+  String get billingKeepSubscription => 'Keep Subscription';
+
+  @override
+  String get billingPlansAndPricing => 'Plans & Pricing';
+
+  @override
+  String get billingInvoices => 'Invoices';
+
+  @override
+  String get billingInvoiceDetail => 'Invoice Detail';
+
+  @override
+  String get billingNoEntitlements => 'No entitlements yet.';
+
+  @override
+  String get billingTermsAgreement => 'By continuing you agree to AIM Terms';
+
+  @override
+  String get billingCheckout => 'Checkout';
+
+  @override
+  String get billingPaymentPending => 'Payment pending';
+
+  @override
+  String get billingPaymentSuccessful => 'Payment successful!';
+
+  @override
+  String get billingPaymentFailed => 'Payment failed';
+
+  @override
+  String get billingPaymentVerifying =>
+      'Please wait while we verify your payment.';
+
+  @override
+  String get billingPaymentFailedMessage =>
+      'Your payment could not be processed. Please try again.';
+
+  @override
+  String get billingPaymentProcessingMessage =>
+      'Your payment is being processed. We will notify you once completed.';
+
+  @override
+  String get billingGoBack => 'Go back';
+
+  @override
+  String billingQuantity(int quantity) {
+    return 'Qty: $quantity';
+  }
+
+  @override
+  String get billingPopularBadge => 'Popular';
+
+  @override
+  String get supportHelpCenter => 'Help Center';
+
+  @override
+  String get supportNewTicket => 'New ticket';
+
+  @override
+  String get supportMyTickets => 'My Tickets';
+
+  @override
+  String get supportTicket => 'Ticket';
+
+  @override
+  String get supportParentHelp => 'Parent Help';
+
+  @override
+  String get supportParentTickets => 'Parent tickets';
+
+  @override
+  String get supportFeedback => 'Send feedback';
+
+  @override
+  String get supportRateAimQuestion => 'How would you rate AIM?';
+
+  @override
+  String get supportReleaseNotes => 'Release notes';
+
+  @override
+  String get supportReleaseNote => 'Release note';
+
+  @override
+  String supportReleasedDate(String date) {
+    return 'Released $date';
+  }
+
+  @override
+  String get supportSystemStatus => 'System Status';
+
+  @override
+  String get supportWhatNew => 'What\'s new';
+
+  @override
+  String get supportNoTickets => 'No Tickets Yet';
+
+  @override
+  String get supportNoTicketsSubtitle =>
+      'Create a ticket to get help from our support team.';
+
+  @override
+  String get supportNoReleaseNotes => 'No Release Notes';
+
+  @override
+  String get supportNoReleaseNotesSubtitle =>
+      'Release notes will appear here when published.';
+
+  @override
+  String get supportReleaseNoteNotAvailable =>
+      'Release note is not available yet';
+
+  @override
+  String get supportReleaseNoteNotAvailableSubtitle =>
+      'This release note will appear here once release notes are live.';
+
+  @override
+  String get practicePracticeSession => 'PRACTICE SESSION';
+
+  @override
+  String get practicePracticeComplete => 'PRACTICE COMPLETE!';
+
+  @override
+  String get practiceGreatJob => 'Great Job!';
+
+  @override
+  String get practiceAccuracy => 'ACCURACY';
+
+  @override
+  String get practiceXpEarned => 'XP EARNED';
+
+  @override
+  String get practiceCheckAnswer => 'Check Answer';
+
+  @override
+  String get practiceContinueToLesson => 'Continue to Lesson';
+
+  @override
+  String practiceQuestionOf(int current, int total) {
+    return 'QUESTION $current OF $total';
+  }
+
+  @override
+  String practiceSessionCompletedMsg(String lessonTitle) {
+    return 'You finished this practice session for $lessonTitle.';
+  }
+
+  @override
+  String practiceScoreSummary(int score, int total) {
+    return 'You scored $score/$total on this practice session.';
+  }
+
+  @override
+  String get practicePlacementRequiredTitle => 'Placement Test Required';
+
+  @override
+  String get practicePlacementRequiredBody =>
+      'You must complete the placement test first to determine your starting level and begin learning sessions.';
+
+  @override
+  String get practiceTakePlacementNow => 'Take Placement Test Now';
+
+  @override
+  String get practiceTryDemoExercises => 'Try Demo Exercises';
+
+  @override
+  String get qaAnswerSubmitted => 'Answer submitted';
+
+  @override
+  String get qaAnalysingResponse => 'AIM is analysing your response.';
+
+  @override
+  String get qaAnalysingSession => 'AIM is analysing your session…';
+
+  @override
+  String get qaSessionSummary => 'Session Summary';
+
+  @override
+  String get qaSkillsCovered => 'Skills covered';
+
+  @override
+  String get assessmentAssessments => 'Assessments';
+
+  @override
+  String get assessmentDeadlines => 'Deadlines';
+
+  @override
+  String get assessmentBreakdown => 'BREAKDOWN';
+
+  @override
+  String get assessmentPastResults => 'Past results';
+
+  @override
+  String get assessmentResultHistory => 'Result history';
+
+  @override
+  String get assessmentSections => 'Sections';
+
+  @override
+  String get assessmentViewAttemptHistory => 'View your attempt history';
+
+  @override
+  String assessmentGradedDate(String date) {
+    return 'Graded $date';
+  }
+
+  @override
+  String get assessmentLatePenalty => 'Late penalty applied';
+
+  @override
+  String get assessmentReadyToBegin => 'Ready to begin?';
+
+  @override
+  String get assessmentSubmitAnswersDialogTitle => 'Submit your answers?';
+
+  @override
+  String get assessmentSubmitAnswersDialogMessage =>
+      'This action is final and cannot be undone. You cannot change answers after submitting.';
+
+  @override
+  String get placementYourResponse => 'Your Response';
+
+  @override
+  String get placementTargetSentences => 'Target: 3-5 sentences';
+
+  @override
+  String placementCharactersCount(int count) {
+    return '$count characters';
+  }
+
+  @override
+  String get placementPressHoldToRecord => 'Press & hold the mic to record';
+
+  @override
+  String get placementReleaseWhenFinished => 'Release when finished';
+
+  @override
+  String get placementRecordingInProgress => 'Recording in progress...';
+
+  @override
+  String get placementRecordingCompleted => 'Recording completed!';
+
+  @override
+  String get placementTapSubmitRecording =>
+      'Tap Submit below to submit your recording.';
+
+  @override
+  String get placementAiEngineActive => 'AI Engine Active';
+
+  @override
+  String get placementResultsRecordedSaved =>
+      'Your placement test results have been recorded and saved.';
+
+  @override
+  String get reviewsSpacedRepetitionDue =>
+      'Spaced-repetition flashcards due today';
+
+  @override
+  String get reviewsScheduleHeader => 'REVIEW SCHEDULE';
+
+  @override
+  String get reviewsStartSession => 'Start Review Session';
+
+  @override
+  String reviewsIntervalDays(int days) {
+    return 'Interval ${days}d';
+  }
+
+  @override
+  String reviewsRepetitionNumber(int rep) {
+    return 'rep #$rep';
+  }
+
+  @override
+  String get voiceTeacherPageTitle => 'Voice Teacher';
+
+  @override
+  String get voiceTeacherPageSubtitle =>
+      'Practise your pronunciation with the AI teacher';
+
+  @override
+  String get voiceTeacherConnectionErrorTitle => 'Connection Error';
+
+  @override
+  String get voiceTeacherMicrophoneErrorTitle => 'Microphone Error';
+
+  @override
+  String get voiceTeacherServerErrorTitle => 'Server Error';
+
+  @override
+  String get voiceTeacherGenericErrorTitle => 'Something Went Wrong';
+
+  @override
+  String get voiceTeacherConnectionErrorMsg =>
+      'Could not connect to voice server. Please check your internet.';
+
+  @override
+  String get voiceTeacherMicrophoneErrorMsg =>
+      'Could not access microphone. Please grant permission.';
+
+  @override
+  String get voiceTeacherServerErrorMsg =>
+      'Voice service encountered an error. Please try again later.';
+
+  @override
+  String get voiceTeacherGenericErrorMsg =>
+      'An unexpected error occurred during the voice session.';
+
+  @override
+  String get voiceTeacherTextResponseTitle => 'Text response from teacher';
+
+  @override
+  String get voiceTeacherRetryAudio => 'Retry audio';
+
+  @override
+  String get voiceTeacherTryAgain => 'Try Again';
+
+  @override
+  String get voiceTeacherProcessing => 'Processing...';
+
+  @override
+  String get voiceTeacherTranscribing => 'Transcribing...';
+
+  @override
+  String get voiceTeacherWhatYouSaid => 'What you said';
+
+  @override
+  String get voiceTeacherTeacherResponse => 'Teacher response';
+
+  @override
+  String get voiceTeacherRecorded => 'Recorded';
+
+  @override
+  String get voiceTeacherAudioUnavailable =>
+      'Audio unavailable — here\'s the text response';
+
+  @override
+  String get voiceTeacherStop => 'Stop';
+
+  @override
+  String get voiceTeacherDiscard => 'Discard';
+
+  @override
+  String get voiceTeacherSend => 'Send';
+
+  @override
+  String get voiceTeacherHelpful => 'Helpful';
+
+  @override
+  String get voiceTeacherNotHelpful => 'Not helpful';
+
+  @override
+  String get aiTeacherConversations => 'Conversations';
+
+  @override
+  String get aiTeacherSettingsTitle => 'AI Teacher settings';
+
+  @override
+  String get aiTeacherCurrentLessonHeader => 'Current lesson';
+
+  @override
+  String get aiTeacherWasThisHelpful => 'Was this helpful?';
+
+  @override
+  String get aiTeacherWelcomeBack => 'Welcome back';
+
+  @override
+  String get aiTeacherAskQuestionsGuidance =>
+      'Ask questions and get guidance on this lesson.';
+
+  @override
+  String get profileAimPlusMember => 'AIM PLUS MEMBER';
+
+  @override
+  String get profileLearningGapsAlerts =>
+      'Alerts when AI detects new learning gaps';
+
+  @override
+  String get profileStudyTimeNotification =>
+      'Get notified at your preferred study time';
+
+  @override
+  String get profileSecurityPassword => 'Security & Password';
+
+  @override
+  String get profilePasswordResetSuccess =>
+      'Password reset email sent. Please check your inbox.';
+
+  @override
+  String profilePasswordResetFailed(String error) {
+    return 'Failed to request password reset: $error';
+  }
+
+  @override
+  String profileSaveFailed(String error) {
+    return 'Failed to save profile changes: $error';
+  }
+
+  @override
+  String get profileNoProfileLoaded => 'No profile loaded.';
+
+  @override
+  String get notificationsChannels => 'CHANNELS';
+
+  @override
+  String get notificationsQuietHours => 'QUIET HOURS';
+
+  @override
+  String get notificationsManageReminders => 'Manage lesson reminders';
+
+  @override
+  String get notificationsDismissed => 'This notification has been dismissed.';
+
+  @override
+  String get notificationsPause => 'Pause';
+
+  @override
+  String get notificationsResume => 'Resume';
+
+  @override
+  String get authHappyToSeeYou =>
+      'Happy to see you again. Enter your email and password to continue.';
+
+  @override
+  String get authSignInToAccount => 'Sign in to your account';
+
+  @override
+  String get authTakesLessThanMinute =>
+      'Takes less than a minute. Enter your details below.';
+
+  @override
+  String get authCheckEmailTitle => 'Check your email';
+
+  @override
+  String authSentConfirmationLink(String email) {
+    return 'We sent a confirmation link to:\n$email';
+  }
+
+  @override
+  String get authBackToLogin => 'Back to Login';
+
+  @override
+  String get authDevTestAccounts => 'DEV / TEST ACCOUNTS';
+
+  @override
+  String get authQuickLoginWithTest => 'Quick-login with test credentials:';
+
+  @override
+  String get shellLogOut => 'Log Out';
 }

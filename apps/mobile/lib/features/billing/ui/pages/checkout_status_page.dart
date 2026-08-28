@@ -21,6 +21,7 @@ import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/billing/logic/provider/billing_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class CheckoutStatusPage extends ConsumerStatefulWidget {
   final String sessionId;
@@ -38,6 +39,7 @@ class CheckoutStatusPage extends ConsumerStatefulWidget {
 
   static Widget buildSuccessState(BuildContext context, {String? planName}) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -53,14 +55,14 @@ class CheckoutStatusPage extends ConsumerStatefulWidget {
         ),
         const SizedBox(height: AimSpacing.sectionGap),
         Text(
-          'Payment successful!',
+          l10n.billingPaymentSuccessful,
           style: AimTextStyles.h2.copyWith(color: surfaces.textPrimary),
         ),
         const SizedBox(height: AimSpacing.space8),
         Text(
           planName != null
-              ? 'Welcome to $planName — all features are now unlocked.'
-              : 'Your subscription is now active.',
+              ? '$planName - ${l10n.billingPaymentSuccessful}'
+              : l10n.billingPaymentSuccessful,
           style: AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
           textAlign: TextAlign.center,
         ),
@@ -70,6 +72,7 @@ class CheckoutStatusPage extends ConsumerStatefulWidget {
 
   static Widget buildFailureState(BuildContext context, {VoidCallback? onRetry}) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -85,22 +88,22 @@ class CheckoutStatusPage extends ConsumerStatefulWidget {
         ),
         const SizedBox(height: AimSpacing.sectionGap),
         Text(
-          'Payment failed',
+          l10n.billingPaymentFailed,
           style: AimTextStyles.h2.copyWith(color: surfaces.textPrimary),
         ),
         const SizedBox(height: AimSpacing.space8),
         Text(
-          'Your payment could not be processed. Please try again.',
+          l10n.billingPaymentFailedMessage,
           style: AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
           textAlign: TextAlign.center,
         ),
         if (onRetry != null) ...[
           const SizedBox(height: AimSpacing.sectionGap),
           AIMGradientButton(
-            label: 'Try again',
+            label: l10n.commonRetry,
             onPressed: onRetry,
             fullWidth: true,
-            semanticLabel: 'Retry payment',
+            semanticLabel: l10n.commonRetry,
           ),
         ],
         const SizedBox(height: AimSpacing.componentGap),
@@ -109,7 +112,7 @@ class CheckoutStatusPage extends ConsumerStatefulWidget {
           onPressed: () =>
               context.go(AppRoutePaths.mainShell),
           fullWidth: true,
-          child: const Text('Go back'),
+          child: Text(l10n.commonBack),
         ),
       ],
     );
@@ -117,6 +120,7 @@ class CheckoutStatusPage extends ConsumerStatefulWidget {
 
   static Widget buildPendingState(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -136,14 +140,36 @@ class CheckoutStatusPage extends ConsumerStatefulWidget {
         ),
         const SizedBox(height: AimSpacing.sectionGap),
         Text(
-          'Payment pending',
+          l10n.billingPaymentPending,
           style: AimTextStyles.h2.copyWith(color: surfaces.textPrimary),
         ),
         const SizedBox(height: AimSpacing.space8),
         Text(
-          "Your payment is being processed. We'll notify you when it's "
-          'complete.',
+          l10n.billingPaymentProcessingMessage,
           style: AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  static Widget buildCheckingState(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const CircularProgressIndicator(),
+        const SizedBox(height: AimSpacing.sectionGap),
+        Text(
+          l10n.billingPaymentPending,
+          style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
+        ),
+        const SizedBox(height: AimSpacing.space8),
+        Text(
+          l10n.billingPaymentVerifying,
+          style:
+              AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
           textAlign: TextAlign.center,
         ),
       ],
@@ -152,7 +178,7 @@ class CheckoutStatusPage extends ConsumerStatefulWidget {
 }
 
 class _CheckoutStatusPageState extends ConsumerState<CheckoutStatusPage> {
-  String _status = 'pending';
+  String? _status;
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -160,17 +186,24 @@ class _CheckoutStatusPageState extends ConsumerState<CheckoutStatusPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkStatus());
-    ref.listenManual(checkoutReturnSignalProvider, (_, __) => _checkStatus());
   }
 
   Future<void> _checkStatus() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+    final sessionId = widget.sessionId;
+    if (sessionId.isEmpty) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _status = 'failed';
+          _errorMessage = 'No session ID provided';
+        });
+      }
+      return;
+    }
+
     try {
       final repository = ref.read(billingRepositoryProvider);
-      final session = await repository.getCheckoutStatus(widget.sessionId);
+      final session = await repository.getCheckoutStatus(sessionId);
       if (!mounted) return;
       setState(() {
         _status = session.status;
@@ -211,11 +244,11 @@ class _CheckoutStatusPageState extends ConsumerState<CheckoutStatusPage> {
               Padding(
                 padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
                 child: AIMGradientButton(
-                  label: 'Go to Home',
+                  label: AppLocalizations.of(context).billingGoBack,
                   onPressed: () =>
                       context.go(AppRoutePaths.mainShell),
                   fullWidth: true,
-                  semanticLabel: 'Go to home',
+                  semanticLabel: AppLocalizations.of(context).billingGoBack,
                 ),
               ),
           ],

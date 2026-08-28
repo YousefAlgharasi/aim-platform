@@ -29,7 +29,6 @@
 // - No secrets, service-role keys, or privileged config here.
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -175,6 +174,7 @@ class _SectionTopBar extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
+            tooltip: l10n.commonBack,
             icon: Icon(
               isRtl ? Icons.chevron_right_rounded : Icons.chevron_left_rounded,
               color: surfaces.textPrimary,

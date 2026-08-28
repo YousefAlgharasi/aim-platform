@@ -22,6 +22,7 @@ import 'package:go_router/go_router.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 import '../../logic/provider/support_provider.dart';
 
@@ -88,10 +89,11 @@ class TicketListPage extends ConsumerStatefulWidget {
 
   /// Builds an empty state when no tickets exist.
   static Widget buildEmptyState(BuildContext context) {
-    return const AIMEmptyState(
-      icon: Icon(Icons.confirmation_number_outlined),
-      title: 'No Tickets Yet',
-      subtitle: 'Create a ticket to get help from our support team.',
+    final l10n = AppLocalizations.of(context);
+    return AIMEmptyState(
+      icon: const Icon(Icons.confirmation_number_outlined),
+      title: l10n.supportNoTickets,
+      subtitle: l10n.supportNoTicketsSubtitle,
     );
   }
 
@@ -144,7 +146,7 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _TicketListHeader(title: 'My tickets'),
+          _TicketListHeader(title: AppLocalizations.of(context).supportMyTickets),
           Expanded(
             child: switch (state) {
               AppAsyncLoading() || AppAsyncIdle() => const AIMFullScreenLoading(
@@ -158,6 +160,7 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
                   ? TicketListPage.buildEmptyState(context)
                   : ListView.builder(
                       padding: const EdgeInsets.symmetric(
+                        horizontal: AimSpacing.screenPaddingMobile,
                         vertical: AimSpacing.sectionGap,
                       ),
                       itemCount: data.length,
@@ -183,9 +186,9 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
         ],
       ),
       floatingActionButton: AIMFab(
-        semanticLabel: 'Create a support ticket',
-        onPressed: () => context.push(AppRoutePaths.createTicket),
         icon: const Icon(Icons.add),
+        semanticLabel: AppLocalizations.of(context).supportNewTicket,
+        onPressed: () => context.push(AppRoutePaths.createTicket),
       ),
     );
   }
@@ -213,7 +216,7 @@ class _TicketListHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();

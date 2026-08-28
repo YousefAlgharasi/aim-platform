@@ -48,6 +48,7 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.da
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_engagement.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class ProgressPage extends ConsumerStatefulWidget {
   const ProgressPage({super.key});
@@ -150,7 +151,7 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Progress & Analytics',
+                          AppLocalizations.of(context).progressTitle,
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w900,
@@ -160,7 +161,7 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Track your language proficiency and study stats',
+                          AppLocalizations.of(context).progressSubtitle,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
@@ -402,7 +403,7 @@ class _ProgressContentState extends State<_ProgressContent> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Weekly Activity',
+                          AppLocalizations.of(context).progressWeeklyActivity,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w800,
@@ -411,7 +412,7 @@ class _ProgressContentState extends State<_ProgressContent> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '35 mins / day average',
+                          AppLocalizations.of(context).progressDailyAverageMins(35),
                           style: TextStyle(
                             fontSize: 11,
                             color: surfaces.textMuted,
@@ -426,7 +427,7 @@ class _ProgressContentState extends State<_ProgressContent> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        '245 mins total',
+                        AppLocalizations.of(context).progressTotalMins(245),
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
@@ -448,8 +449,8 @@ class _ProgressContentState extends State<_ProgressContent> {
                       _buildBar('Wed', 0.55, '30m'),
                       _buildBar('Thu', 0.95, '50m'),
                       _buildBar('Fri', 0.65, '35m'),
-                      _buildBar('Sat', 0.40, '20m'),
-                      _buildBar('Sun', 0.85, '45m'),
+                      _buildBar('Sat', 0.85, '45m'),
+                      _buildBar('Sun', 0.60, '30m'),
                     ],
                   ),
                 ),
@@ -458,6 +459,87 @@ class _ProgressContentState extends State<_ProgressContent> {
           );
         },
       ),
+
+      const SizedBox(height: 20),
+
+      // Focus Areas Preview matching prototype
+      if (widget.data.weaknessRecords.isNotEmpty) ...[
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              AppLocalizations.of(context).progressWeaknessRecordsHeader(widget.data.weaknessRecords.length),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: aimSurfacesOf(context).textMuted,
+                letterSpacing: 1.0,
+              ),
+            ),
+            InkWell(
+              onTap: () => context.push(AppRoutePaths.weaknessSummary),
+              child: Text(
+                AppLocalizations.of(context).progressViewAll,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        for (final w in widget.data.weaknessRecords.take(3))
+          Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: aimSurfacesOf(context).surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: aimSurfacesOf(context).border),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF1F2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.flag_rounded, color: Color(0xFFE11D48), size: 16),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    _prettifySkillId(w.skillId),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: aimSurfacesOf(context).textPrimary,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF1F2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    AppLocalizations.of(context).progressPriorityLabel(w.severity.toUpperCase()),
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFFE11D48),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
     ];
   }
 
@@ -470,7 +552,7 @@ class _ProgressContentState extends State<_ProgressContent> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'TRACKED SKILLS (${skills.length})',
+            AppLocalizations.of(context).progressTrackedSkillsHeader(skills.length),
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,
@@ -481,7 +563,7 @@ class _ProgressContentState extends State<_ProgressContent> {
           InkWell(
             onTap: () => context.push(AppRoutePaths.skillState),
             child: Text(
-              'View Full Table →',
+              AppLocalizations.of(context).progressViewFullTable,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
@@ -552,7 +634,7 @@ class _ProgressContentState extends State<_ProgressContent> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'WEAKNESS RECORDS (${weaknesses.length})',
+            AppLocalizations.of(context).progressWeaknessRecordsHeader(weaknesses.length),
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,
@@ -563,7 +645,7 @@ class _ProgressContentState extends State<_ProgressContent> {
           InkWell(
             onTap: () => context.push(AppRoutePaths.weaknessSummary),
             child: Text(
-              'View All →',
+              AppLocalizations.of(context).progressViewAll,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
@@ -575,10 +657,10 @@ class _ProgressContentState extends State<_ProgressContent> {
       ),
       const SizedBox(height: 12),
       if (weaknesses.isEmpty)
-        const Center(
+        Center(
           child: Padding(
-            padding: EdgeInsets.all(24),
-            child: Text('No active weaknesses recorded! Great work!'),
+            padding: const EdgeInsets.all(24),
+            child: Text(AppLocalizations.of(context).progressNoWeaknesses),
           ),
         ),
       for (final w in weaknesses) ...[
@@ -613,7 +695,7 @@ class _ProgressContentState extends State<_ProgressContent> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      '${w.severity.toUpperCase()} Priority',
+                      AppLocalizations.of(context).progressPriorityLabel(w.severity.toUpperCase()),
                       style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
@@ -625,7 +707,7 @@ class _ProgressContentState extends State<_ProgressContent> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Identified weak spot from recent responses.',
+                AppLocalizations.of(context).progressWeakSpotIdentified,
                 style: TextStyle(
                   fontSize: 12,
                   color: surfaces.textSecondary,
@@ -647,7 +729,7 @@ class _ProgressContentState extends State<_ProgressContent> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'REVIEW SCHEDULE (${schedules.length})',
+            AppLocalizations.of(context).progressReviewScheduleHeader(schedules.length),
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,
@@ -658,7 +740,7 @@ class _ProgressContentState extends State<_ProgressContent> {
           InkWell(
             onTap: () => context.push(AppRoutePaths.reviewSchedule),
             child: Text(
-              'View Full Schedule →',
+              AppLocalizations.of(context).progressViewFullSchedule,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
@@ -694,7 +776,7 @@ class _ProgressContentState extends State<_ProgressContent> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Interval: ${s.intervalDays}d · Rep #${s.repetitionCount}',
+                      AppLocalizations.of(context).progressIntervalAndRep(s.intervalDays.round(), s.repetitionCount),
                       style: TextStyle(
                         fontSize: 11,
                         color: surfaces.textSecondary,

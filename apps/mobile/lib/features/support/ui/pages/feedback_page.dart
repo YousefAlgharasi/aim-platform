@@ -23,6 +23,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 import '../../logic/provider/support_provider.dart';
 
@@ -98,7 +99,7 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
                 ),
                 const SizedBox(height: AimSpacing.componentGap),
                 Text(
-                  'How would you rate AIM?',
+                  AppLocalizations.of(context).supportRateAimQuestion,
                   style: AimTextStyles.label
                       .copyWith(color: surfaces.textPrimary),
                 ),
@@ -132,11 +133,11 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
                 ],
                 const SizedBox(height: AimSpacing.sectionGap),
                 AIMGradientButton(
-                  label: 'Submit',
+                  label: AppLocalizations.of(context).commonSubmit,
                   onPressed: isSubmitting ? null : _handleSubmit,
                   loading: isSubmitting,
                   fullWidth: true,
-                  semanticLabel: 'Submit feedback',
+                  semanticLabel: AppLocalizations.of(context).commonSubmit,
                 ),
               ],
             ),
@@ -168,23 +169,26 @@ class _StarRating extends StatelessWidget {
   const _StarRating({required this.rating, required this.onChanged});
 
   final int? rating;
-  final ValueChanged<int?> onChanged;
+  final ValueChanged<int> onChanged;
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(5, (index) {
         final starValue = index + 1;
-        final filled = rating != null && starValue <= rating!;
+        final filled = rating != null && rating! >= starValue;
         return Semantics(
           button: true,
-          label: 'Rate $starValue out of 5',
+          label: '$starValue star',
           child: InkWell(
-            onTap: () => onChanged(rating == starValue ? null : starValue),
-            customBorder: const CircleBorder(),
+            onTap: () => onChanged(starValue),
+            borderRadius: BorderRadius.circular(AimRadius.sm),
             child: Padding(
-              padding: const EdgeInsets.all(AimSpacing.space4),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AimSpacing.space4,
+                vertical: AimSpacing.space8,
+              ),
               child: Icon(
                 filled ? Icons.star : Icons.star_border,
                 size: AimSizes.iconLg,
@@ -218,7 +222,7 @@ class _FeedbackHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -244,7 +248,7 @@ class _FeedbackHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Send feedback',
+              AppLocalizations.of(context).supportFeedback,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],

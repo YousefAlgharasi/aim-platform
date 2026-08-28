@@ -24,6 +24,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 import '../../logic/provider/support_provider.dart';
 
@@ -324,7 +325,7 @@ class _TicketDetailHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -350,7 +351,7 @@ class _TicketDetailHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Ticket',
+              AppLocalizations.of(context).supportTicket,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],

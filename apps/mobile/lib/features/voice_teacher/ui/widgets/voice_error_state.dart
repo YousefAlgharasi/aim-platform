@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:aim_mobile/core/design_tokens/aim_colors.dart';
 import 'package:aim_mobile/core/design_tokens/aim_spacing.dart';
 import 'package:aim_mobile/core/design_tokens/aim_radius.dart';
+import 'package:aim_mobile/core/design_tokens/aim_sizes.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 enum VoiceErrorType {
   networkError,
@@ -26,8 +28,8 @@ class VoiceErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
     final theme = Theme.of(context);
+    final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
 
     return Container(
       margin: const EdgeInsets.all(AimSpacing.space16),
@@ -47,15 +49,16 @@ class VoiceErrorState extends StatelessWidget {
             children: [
               Icon(
                 _iconForType(errorType),
-                size: 20,
                 color: theme.colorScheme.error,
+                size: AimSizes.iconMd,
               ),
               const SizedBox(width: AimSpacing.space8),
               Expanded(
                 child: Text(
-                  _titleForType(errorType, isRtl),
+                  _titleForType(errorType, l10n),
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: theme.colorScheme.error,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -64,25 +67,22 @@ class VoiceErrorState extends StatelessWidget {
                   icon: const Icon(Icons.close, size: 18),
                   onPressed: onDismiss,
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minWidth: 28,
-                    minHeight: 28,
-                  ),
+                  constraints: const BoxConstraints(),
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
             ],
           ),
-          const SizedBox(height: AimSpacing.space4),
+          const SizedBox(height: AimSpacing.space8),
           Text(
-            _messageForType(errorType, isRtl),
+            _messageForType(errorType, l10n),
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onErrorContainer,
+              color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
           if (fallbackText != null && fallbackText!.isNotEmpty) ...[
-            const SizedBox(height: AimSpacing.space8),
+            const SizedBox(height: AimSpacing.space12),
             Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AimSpacing.space8),
+              padding: const EdgeInsets.all(AimSpacing.space12),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(AimRadius.sm),
@@ -91,7 +91,7 @@ class VoiceErrorState extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isRtl ? 'رد المعلم (نصي):' : 'Teacher response (text):',
+                    l10n?.voiceTeacherTextResponseTitle ?? 'Text response from teacher',
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -115,7 +115,7 @@ class VoiceErrorState extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh, size: 18),
-                label: Text(isRtl ? 'إعادة المحاولة' : 'Try Again'),
+                label: Text(l10n?.voiceTeacherTryAgain ?? 'Try Again'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AimColors.primary500,
                   side: BorderSide(color: AimColors.primary500.withValues(alpha: 0.3)),
@@ -141,37 +141,53 @@ class VoiceErrorState extends StatelessWidget {
     }
   }
 
-  String _titleForType(VoiceErrorType type, bool isRtl) {
+  String _titleForType(VoiceErrorType type, AppLocalizations? l10n) {
+    if (l10n != null) {
+      switch (type) {
+        case VoiceErrorType.networkError:
+          return l10n.voiceTeacherConnectionErrorTitle;
+        case VoiceErrorType.microphoneError:
+          return l10n.voiceTeacherMicrophoneErrorTitle;
+        case VoiceErrorType.serverError:
+          return l10n.voiceTeacherServerErrorTitle;
+        case VoiceErrorType.unknownError:
+          return l10n.voiceTeacherGenericErrorTitle;
+      }
+    }
     switch (type) {
       case VoiceErrorType.networkError:
-        return isRtl ? 'خطأ في الاتصال' : 'Connection Error';
+        return 'Connection Error';
       case VoiceErrorType.microphoneError:
-        return isRtl ? 'خطأ في الميكروفون' : 'Microphone Error';
+        return 'Microphone Error';
       case VoiceErrorType.serverError:
-        return isRtl ? 'خطأ في الخادم' : 'Server Error';
+        return 'Server Error';
       case VoiceErrorType.unknownError:
-        return isRtl ? 'حدث خطأ' : 'Something Went Wrong';
+        return 'Something Went Wrong';
     }
   }
 
-  String _messageForType(VoiceErrorType type, bool isRtl) {
+  String _messageForType(VoiceErrorType type, AppLocalizations? l10n) {
+    if (l10n != null) {
+      switch (type) {
+        case VoiceErrorType.networkError:
+          return l10n.voiceTeacherConnectionErrorMsg;
+        case VoiceErrorType.microphoneError:
+          return l10n.voiceTeacherMicrophoneErrorMsg;
+        case VoiceErrorType.serverError:
+          return l10n.voiceTeacherServerErrorMsg;
+        case VoiceErrorType.unknownError:
+          return l10n.voiceTeacherGenericErrorMsg;
+      }
+    }
     switch (type) {
       case VoiceErrorType.networkError:
-        return isRtl
-            ? 'تحقق من اتصالك بالإنترنت وحاول مرة أخرى'
-            : 'Check your internet connection and try again';
+        return 'Could not connect to voice server. Please check your internet connection.';
       case VoiceErrorType.microphoneError:
-        return isRtl
-            ? 'لم نتمكن من الوصول إلى الميكروفون. تحقق من الأذونات'
-            : 'Could not access the microphone. Check permissions';
+        return 'Could not access microphone. Please grant microphone permission.';
       case VoiceErrorType.serverError:
-        return isRtl
-            ? 'الخادم غير متاح حالياً. حاول لاحقاً'
-            : 'Server is currently unavailable. Try again later';
+        return 'Voice service encountered an error. Please try again.';
       case VoiceErrorType.unknownError:
-        return isRtl
-            ? 'حدث خطأ غير متوقع. حاول مرة أخرى'
-            : 'An unexpected error occurred. Please try again';
+        return 'An unexpected error occurred during the voice session.';
     }
   }
 

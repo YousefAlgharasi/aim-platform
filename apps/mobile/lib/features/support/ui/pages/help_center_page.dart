@@ -18,6 +18,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../widgets/help_faq_accordion.dart';
 
 class HelpCenterPage extends StatelessWidget {
@@ -128,7 +129,7 @@ class HelpCenterPage extends StatelessWidget {
                 Expanded(
                   child: _HelpQuickLink(
                     icon: Icons.confirmation_number_outlined,
-                    label: 'My Tickets',
+                    label: AppLocalizations.of(context).supportMyTickets,
                     onTap: () => context.push(AppRoutePaths.ticketList),
                   ),
                 ),
@@ -136,7 +137,7 @@ class HelpCenterPage extends StatelessWidget {
                 Expanded(
                   child: _HelpQuickLink(
                     icon: Icons.feedback_outlined,
-                    label: 'Feedback',
+                    label: AppLocalizations.of(context).supportFeedback,
                     onTap: () => context.push(AppRoutePaths.feedback),
                   ),
                 ),
@@ -144,7 +145,7 @@ class HelpCenterPage extends StatelessWidget {
                 Expanded(
                   child: _HelpQuickLink(
                     icon: Icons.info_outline,
-                    label: 'Status',
+                    label: AppLocalizations.of(context).supportSystemStatus,
                     onTap: () => context.push(AppRoutePaths.supportStatus),
                   ),
                 ),
@@ -169,11 +170,11 @@ class HelpCenterPage extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
               child: AIMGradientButton(
-                label: 'Create Ticket',
+                label: AppLocalizations.of(context).supportNewTicket,
                 icon: const Icon(Icons.add),
                 onPressed: () => context.push(AppRoutePaths.createTicket),
                 fullWidth: true,
-                semanticLabel: 'Create a support ticket',
+                semanticLabel: AppLocalizations.of(context).supportNewTicket,
               ),
             ),
           ),
@@ -253,7 +254,7 @@ class _HelpCenterHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -279,7 +280,7 @@ class _HelpCenterHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Help Center',
+              AppLocalizations.of(context).supportHelpCenter,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],

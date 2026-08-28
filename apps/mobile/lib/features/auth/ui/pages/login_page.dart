@@ -119,7 +119,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 const SizedBox(height: 24),
 
                 Text(
-                  l10n.authWelcomeBackTitle.toUpperCase(),
+                  l10n.authWelcomeBackTitle,
                   style: AimTextStyles.caption.copyWith(
                     color: AimColors.primary600,
                     fontWeight: AimFontWeights.extrabold,
