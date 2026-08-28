@@ -2335,4 +2335,215 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shellLogOut => 'Log Out';
+
+  @override
+  String get profileTitle => 'Profile';
+
+  @override
+  String get profileLoadingProfile => 'Loading profile';
+
+  @override
+  String profileCouldNotLoad(String message) {
+    return 'Could not load profile: $message';
+  }
+
+  @override
+  String get profileSectionAccount => 'ACCOUNT';
+
+  @override
+  String get profileLabelEmail => 'Email';
+
+  @override
+  String get profileLabelStatus => 'Status';
+
+  @override
+  String get profileLabelType => 'Type';
+
+  @override
+  String get profileSectionProfile => 'PROFILE';
+
+  @override
+  String get profileLabelDisplayName => 'Display Name';
+
+  @override
+  String get profileLabelLanguage => 'Language';
+
+  @override
+  String get profileLabelTimezone => 'Timezone';
+
+  @override
+  String get profileSectionRoles => 'ROLES';
+
+  @override
+  String get profileRolesSubtitle =>
+      'Displayed for reference only. Enforced by backend.';
+
+  @override
+  String get profileSectionQuickLinks => 'QUICK LINKS';
+
+  @override
+  String get profileLinkLearningPath => 'Learning Path';
+
+  @override
+  String get profileLinkSubscriptionBilling => 'Subscription & Billing';
+
+  @override
+  String get profileLinkInvoiceHistory => 'Invoice History';
+
+  @override
+  String get profileLinkAchievements => 'Achievements';
+
+  @override
+  String get profileLinkAnalyticsSummary => 'Analytics Summary';
+
+  @override
+  String get profileLinkApiEndpointTester => 'API Endpoint Tester (Dev)';
+
+  @override
+  String get profileStatDayStreak => 'day streak';
+
+  @override
+  String get profileStatAchievements => 'achievements';
+
+  @override
+  String get profileTooltipAccountSettings => 'Account Settings';
+
+  @override
+  String get profileAchievementsCarouselTitle => 'Achievements';
+
+  @override
+  String get editProfileTitle => 'Edit profile';
+
+  @override
+  String get editProfileSave => 'Save';
+
+  @override
+  String get editProfileBack => 'Back';
+
+  @override
+  String get editProfileLabelDisplayName => 'Display Name';
+
+  @override
+  String get editProfilePlaceholderDisplayName => 'Your display name';
+
+  @override
+  String get editProfileLabelPreferredLanguage => 'Preferred Language';
+
+  @override
+  String get editProfilePlaceholderLanguage => 'Select a language';
+
+  @override
+  String get editProfileLabelTimezone => 'Timezone';
+
+  @override
+  String get editProfilePlaceholderTimezone => 'Select a timezone';
+
+  @override
+  String get editProfileSaveChanges => 'Save changes';
+
+  @override
+  String get editProfileDisplayNameTooLong =>
+      'Display name must be 80 characters or fewer.';
+
+  @override
+  String get editProfileSessionExpired =>
+      'Your session has expired. Please sign in again.';
+
+  @override
+  String get editProfileUpdatedSuccess => 'Profile updated.';
+
+  @override
+  String get settingsAppThemeDisplay => 'App Theme & Display';
+
+  @override
+  String get settingsThemeDarkSubtitle => 'Darker UI option for night use';
+
+  @override
+  String get settingsThemeLightSubtitle => 'Clean, high contrast appearance';
+
+  @override
+  String get settingsNotificationPreferences => 'Notification Preferences';
+
+  @override
+  String get settingsEnterFullName => 'Enter your full name';
+
+  @override
+  String get achievementsTitle => 'Achievements';
+
+  @override
+  String get achievementsMilestonesTitle => 'AIM Milestones';
+
+  @override
+  String achievementsBadgesUnlocked(int unlocked, int total) {
+    return '$unlocked of $total badges unlocked';
+  }
+
+  @override
+  String get achievementsLeagueRank => 'Gold League #3';
+
+  @override
+  String get achievementsTabAll => 'All Badges';
+
+  @override
+  String achievementsTabUnlocked(int count) {
+    return 'Unlocked ($count)';
+  }
+
+  @override
+  String achievementsTabInProgress(int count) {
+    return 'In Progress ($count)';
+  }
+
+  @override
+  String get achievementsBadgeUnlocked => 'Unlocked';
+
+  @override
+  String get achievementsFirstStepTitle => 'First Step';
+
+  @override
+  String get achievementsFirstStepDesc => 'Complete your first English lesson';
+
+  @override
+  String get achievementsStreakMasterTitle => 'Streak Master';
+
+  @override
+  String get achievementsStreakMasterDesc => 'Maintain a 7-day learning streak';
+
+  @override
+  String get achievementsGrammarWizardTitle => 'Grammar Wizard';
+
+  @override
+  String get achievementsGrammarWizardDesc =>
+      'Score 90%+ in Grammar assessment';
+
+  @override
+  String get achievementsVoiceChampionTitle => 'Voice Champion';
+
+  @override
+  String get achievementsVoiceChampionDesc =>
+      'Complete 5 Live AI Voice practice sessions';
+
+  @override
+  String get achievementsVocabularyTitanTitle => 'Vocabulary Titan';
+
+  @override
+  String get achievementsVocabularyTitanDesc => 'Master 200+ active words';
+
+  @override
+  String get achievementsSpeedLearnerTitle => 'Speed Learner';
+
+  @override
+  String get achievementsSpeedLearnerDesc => 'Finish 3 lessons in a single day';
+
+  @override
+  String get achievementsPerfectQuizTitle => 'Perfect Quiz Accuracy';
+
+  @override
+  String get achievementsPerfectQuizDesc => 'Score 100% on 5 practice quizzes';
+
+  @override
+  String get achievementsPolyglotLegendTitle => 'Polyglot Legend';
+
+  @override
+  String get achievementsPolyglotLegendDesc => 'Reach Level 20 in English';
 }

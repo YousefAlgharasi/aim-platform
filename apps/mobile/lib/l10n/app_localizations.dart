@@ -3839,6 +3839,402 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Log Out'**
   String get shellLogOut;
+
+  /// Title for the profile page hero header.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profileTitle;
+
+  /// Semantic label shown while profile is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading profile'**
+  String get profileLoadingProfile;
+
+  /// Error message when profile fails to load.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load profile: {message}'**
+  String profileCouldNotLoad(String message);
+
+  /// Section heading for account info on profile page.
+  ///
+  /// In en, this message translates to:
+  /// **'ACCOUNT'**
+  String get profileSectionAccount;
+
+  /// Label for the email row on profile page.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get profileLabelEmail;
+
+  /// Label for the status row on profile page.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get profileLabelStatus;
+
+  /// Label for the user type row on profile page.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get profileLabelType;
+
+  /// Section heading for student profile details.
+  ///
+  /// In en, this message translates to:
+  /// **'PROFILE'**
+  String get profileSectionProfile;
+
+  /// Label for display name on profile page.
+  ///
+  /// In en, this message translates to:
+  /// **'Display Name'**
+  String get profileLabelDisplayName;
+
+  /// Label for preferred language on profile page.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get profileLabelLanguage;
+
+  /// Label for timezone on profile page.
+  ///
+  /// In en, this message translates to:
+  /// **'Timezone'**
+  String get profileLabelTimezone;
+
+  /// Section heading for user roles.
+  ///
+  /// In en, this message translates to:
+  /// **'ROLES'**
+  String get profileSectionRoles;
+
+  /// Subtitle under the roles section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Displayed for reference only. Enforced by backend.'**
+  String get profileRolesSubtitle;
+
+  /// Section heading for quick navigation links.
+  ///
+  /// In en, this message translates to:
+  /// **'QUICK LINKS'**
+  String get profileSectionQuickLinks;
+
+  /// Quick link label for Learning Path.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning Path'**
+  String get profileLinkLearningPath;
+
+  /// Quick link label for Subscription & Billing.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription & Billing'**
+  String get profileLinkSubscriptionBilling;
+
+  /// Quick link label for Invoice History.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice History'**
+  String get profileLinkInvoiceHistory;
+
+  /// Quick link label for Achievements.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get profileLinkAchievements;
+
+  /// Quick link label for Analytics Summary.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics Summary'**
+  String get profileLinkAnalyticsSummary;
+
+  /// Quick link label for developer API endpoint tester.
+  ///
+  /// In en, this message translates to:
+  /// **'API Endpoint Tester (Dev)'**
+  String get profileLinkApiEndpointTester;
+
+  /// Label under the day streak stat card on profile.
+  ///
+  /// In en, this message translates to:
+  /// **'day streak'**
+  String get profileStatDayStreak;
+
+  /// Label under the achievements stat card on profile.
+  ///
+  /// In en, this message translates to:
+  /// **'achievements'**
+  String get profileStatAchievements;
+
+  /// Tooltip for the settings icon button on profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Settings'**
+  String get profileTooltipAccountSettings;
+
+  /// Title above the achievements carousel on profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get profileAchievementsCarouselTitle;
+
+  /// Header title on the edit profile screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit profile'**
+  String get editProfileTitle;
+
+  /// Save text button on the edit profile header.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get editProfileSave;
+
+  /// Semantic label for the back button on edit profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get editProfileBack;
+
+  /// Label for the display name field on edit profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Display Name'**
+  String get editProfileLabelDisplayName;
+
+  /// Placeholder for the display name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Your display name'**
+  String get editProfilePlaceholderDisplayName;
+
+  /// Label for the preferred language selector.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred Language'**
+  String get editProfileLabelPreferredLanguage;
+
+  /// Placeholder for the preferred language selector.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a language'**
+  String get editProfilePlaceholderLanguage;
+
+  /// Label for the timezone selector.
+  ///
+  /// In en, this message translates to:
+  /// **'Timezone'**
+  String get editProfileLabelTimezone;
+
+  /// Placeholder for the timezone selector.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a timezone'**
+  String get editProfilePlaceholderTimezone;
+
+  /// Label for the save changes gradient button.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get editProfileSaveChanges;
+
+  /// Validation error when display name exceeds 80 chars.
+  ///
+  /// In en, this message translates to:
+  /// **'Display name must be 80 characters or fewer.'**
+  String get editProfileDisplayNameTooLong;
+
+  /// Toast shown when the session is expired on edit profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session has expired. Please sign in again.'**
+  String get editProfileSessionExpired;
+
+  /// Toast shown on successful profile update.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated.'**
+  String get editProfileUpdatedSuccess;
+
+  /// Section header for app theme settings.
+  ///
+  /// In en, this message translates to:
+  /// **'App Theme & Display'**
+  String get settingsAppThemeDisplay;
+
+  /// Subtitle when dark mode is active.
+  ///
+  /// In en, this message translates to:
+  /// **'Darker UI option for night use'**
+  String get settingsThemeDarkSubtitle;
+
+  /// Subtitle when light mode is active.
+  ///
+  /// In en, this message translates to:
+  /// **'Clean, high contrast appearance'**
+  String get settingsThemeLightSubtitle;
+
+  /// Section header for notification settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Preferences'**
+  String get settingsNotificationPreferences;
+
+  /// Placeholder text for the name input on settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your full name'**
+  String get settingsEnterFullName;
+
+  /// Title on the achievements page header.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get achievementsTitle;
+
+  /// Title on the milestones banner card.
+  ///
+  /// In en, this message translates to:
+  /// **'AIM Milestones'**
+  String get achievementsMilestonesTitle;
+
+  /// Subtitle showing how many badges are unlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'{unlocked} of {total} badges unlocked'**
+  String achievementsBadgesUnlocked(int unlocked, int total);
+
+  /// League rank pill on the milestones card.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold League #3'**
+  String get achievementsLeagueRank;
+
+  /// Label for the All Badges filter tab.
+  ///
+  /// In en, this message translates to:
+  /// **'All Badges'**
+  String get achievementsTabAll;
+
+  /// Label for the Unlocked filter tab with count.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocked ({count})'**
+  String achievementsTabUnlocked(int count);
+
+  /// Label for the In Progress filter tab with count.
+  ///
+  /// In en, this message translates to:
+  /// **'In Progress ({count})'**
+  String achievementsTabInProgress(int count);
+
+  /// Tag text on an unlocked badge card.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocked'**
+  String get achievementsBadgeUnlocked;
+
+  /// Default badge title: First Step.
+  ///
+  /// In en, this message translates to:
+  /// **'First Step'**
+  String get achievementsFirstStepTitle;
+
+  /// Default badge description: First Step.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your first English lesson'**
+  String get achievementsFirstStepDesc;
+
+  /// Default badge title: Streak Master.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak Master'**
+  String get achievementsStreakMasterTitle;
+
+  /// Default badge description: Streak Master.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintain a 7-day learning streak'**
+  String get achievementsStreakMasterDesc;
+
+  /// Default badge title: Grammar Wizard.
+  ///
+  /// In en, this message translates to:
+  /// **'Grammar Wizard'**
+  String get achievementsGrammarWizardTitle;
+
+  /// Default badge description: Grammar Wizard.
+  ///
+  /// In en, this message translates to:
+  /// **'Score 90%+ in Grammar assessment'**
+  String get achievementsGrammarWizardDesc;
+
+  /// Default badge title: Voice Champion.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice Champion'**
+  String get achievementsVoiceChampionTitle;
+
+  /// Default badge description: Voice Champion.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete 5 Live AI Voice practice sessions'**
+  String get achievementsVoiceChampionDesc;
+
+  /// Default badge title: Vocabulary Titan.
+  ///
+  /// In en, this message translates to:
+  /// **'Vocabulary Titan'**
+  String get achievementsVocabularyTitanTitle;
+
+  /// Default badge description: Vocabulary Titan.
+  ///
+  /// In en, this message translates to:
+  /// **'Master 200+ active words'**
+  String get achievementsVocabularyTitanDesc;
+
+  /// Default badge title: Speed Learner.
+  ///
+  /// In en, this message translates to:
+  /// **'Speed Learner'**
+  String get achievementsSpeedLearnerTitle;
+
+  /// Default badge description: Speed Learner.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish 3 lessons in a single day'**
+  String get achievementsSpeedLearnerDesc;
+
+  /// Default badge title: Perfect Quiz Accuracy.
+  ///
+  /// In en, this message translates to:
+  /// **'Perfect Quiz Accuracy'**
+  String get achievementsPerfectQuizTitle;
+
+  /// Default badge description: Perfect Quiz Accuracy.
+  ///
+  /// In en, this message translates to:
+  /// **'Score 100% on 5 practice quizzes'**
+  String get achievementsPerfectQuizDesc;
+
+  /// Default badge title: Polyglot Legend.
+  ///
+  /// In en, this message translates to:
+  /// **'Polyglot Legend'**
+  String get achievementsPolyglotLegendTitle;
+
+  /// Default badge description: Polyglot Legend.
+  ///
+  /// In en, this message translates to:
+  /// **'Reach Level 20 in English'**
+  String get achievementsPolyglotLegendDesc;
 }
 
 class _AppLocalizationsDelegate

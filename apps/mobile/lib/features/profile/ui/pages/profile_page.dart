@@ -46,6 +46,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/state/app_async_state.dart';
 import '../../../../core/widgets/widgets.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../achievements/data/models/achievement_model.dart';
 import '../../../achievements/logic/provider/achievements_provider.dart';
 import '../../../auth/logic/entity/auth_context.dart';
@@ -127,13 +128,15 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       _ => const <AchievementModel>[],
     };
 
+    final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
+
     return Scaffold(
       body: switch (authContextState) {
-        AppAsyncLoading() => const AIMFullScreenLoading(
-            semanticLabel: 'Loading profile',
+        AppAsyncLoading() => AIMFullScreenLoading(
+            semanticLabel: l10n?.profileLoadingProfile ?? 'Loading profile',
           ),
         AppAsyncFailure(:final message) => AIMFullScreenError(
-            message: 'Could not load profile: $message',
+            message: l10n?.profileCouldNotLoad(message) ?? 'Could not load profile: $message',
             onRetry: null,
           ),
         AppAsyncSuccess(:final data) => _ProfileBody(
@@ -144,7 +147,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           ),
         _ => Center(
             child: Text(
-              'No profile loaded.',
+              l10n?.profileNoProfileLoaded ?? 'No profile loaded.',
               style: AimTextStyles.bodyMd.copyWith(color: surfaces.textMuted),
             ),
           ),
@@ -177,6 +180,7 @@ class _ProfileBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
     final profile = authContext.profile;
     final unlockedCount = achievements.where((a) => a.unlocked).length;
 
@@ -208,21 +212,21 @@ class _ProfileBody extends StatelessWidget {
 
               // Account section
               _ProfileSection(
-                title: 'ACCOUNT',
+                title: l10n?.profileSectionAccount ?? 'ACCOUNT',
                 surfaces: surfaces,
                 children: [
                   _InfoRow(
-                    label: 'Email',
+                    label: l10n?.profileLabelEmail ?? 'Email',
                     value: authContext.user.email,
                     surfaces: surfaces,
                   ),
                   _InfoRow(
-                    label: 'Status',
+                    label: l10n?.profileLabelStatus ?? 'Status',
                     value: authContext.user.status,
                     surfaces: surfaces,
                   ),
                   _InfoRow(
-                    label: 'Type',
+                    label: l10n?.profileLabelType ?? 'Type',
                     value: authContext.user.userType,
                     surfaces: surfaces,
                   ),
@@ -233,22 +237,22 @@ class _ProfileBody extends StatelessWidget {
               if (profile != null) ...[
                 const SizedBox(height: AimSpacing.sectionGap),
                 _ProfileSection(
-                  title: 'PROFILE',
+                  title: l10n?.profileSectionProfile ?? 'PROFILE',
                   surfaces: surfaces,
                   children: [
                     _InfoRow(
-                      label: 'Display Name',
+                      label: l10n?.profileLabelDisplayName ?? 'Display Name',
                       value: profile.displayName,
                       surfaces: surfaces,
                     ),
                     if (profile.profileType == 'student_profile') ...[
                       _InfoRow(
-                        label: 'Language',
+                        label: l10n?.profileLabelLanguage ?? 'Language',
                         value: profile.preferredLanguage,
                         surfaces: surfaces,
                       ),
                       _InfoRow(
-                        label: 'Timezone',
+                        label: l10n?.profileLabelTimezone ?? 'Timezone',
                         value: profile.timezone,
                         surfaces: surfaces,
                       ),
@@ -261,8 +265,8 @@ class _ProfileBody extends StatelessWidget {
               if (authContext.roles.isNotEmpty) ...[
                 const SizedBox(height: AimSpacing.sectionGap),
                 _ProfileSection(
-                  title: 'ROLES',
-                  subtitle: 'Displayed for reference only. Enforced by backend.',
+                  title: l10n?.profileSectionRoles ?? 'ROLES',
+                  subtitle: l10n?.profileRolesSubtitle ?? 'Displayed for reference only. Enforced by backend.',
                   surfaces: surfaces,
                   children: [
                     Wrap(
@@ -285,42 +289,42 @@ class _ProfileBody extends StatelessWidget {
 
               // Quick links section
               _ProfileSection(
-                title: 'QUICK LINKS',
+                title: l10n?.profileSectionQuickLinks ?? 'QUICK LINKS',
                 surfaces: surfaces,
                 children: [
                   _ProfileNavItem(
                     icon: Icons.route_outlined,
-                    label: 'Learning Path',
+                    label: l10n?.profileLinkLearningPath ?? 'Learning Path',
                     surfaces: surfaces,
                     onTap: () => context.push(AppRoutePaths.learningPath),
                   ),
                   _ProfileNavItem(
                     icon: Icons.credit_card_outlined,
-                    label: 'Subscription & Billing',
+                    label: l10n?.profileLinkSubscriptionBilling ?? 'Subscription & Billing',
                     surfaces: surfaces,
                     onTap: () => context.push(AppRoutePaths.subscription),
                   ),
                   _ProfileNavItem(
                     icon: Icons.receipt_long_outlined,
-                    label: 'Invoice History',
+                    label: l10n?.profileLinkInvoiceHistory ?? 'Invoice History',
                     surfaces: surfaces,
                     onTap: () => context.push(AppRoutePaths.invoiceHistory),
                   ),
                   _ProfileNavItem(
                     icon: Icons.emoji_events_outlined,
-                    label: 'Achievements',
+                    label: l10n?.profileLinkAchievements ?? 'Achievements',
                     surfaces: surfaces,
                     onTap: () => context.push(AppRoutePaths.achievements),
                   ),
                   _ProfileNavItem(
                     icon: Icons.bar_chart_outlined,
-                    label: 'Analytics Summary',
+                    label: l10n?.profileLinkAnalyticsSummary ?? 'Analytics Summary',
                     surfaces: surfaces,
                     onTap: () => context.push(AppRoutePaths.analyticsSummary),
                   ),
                   _ProfileNavItem(
                     icon: Icons.api_outlined,
-                    label: 'API Endpoint Tester (Dev)',
+                    label: l10n?.profileLinkApiEndpointTester ?? 'API Endpoint Tester (Dev)',
                     surfaces: surfaces,
                     onTap: () => context.push(AppRoutePaths.endpointTester),
                   ),
@@ -408,7 +412,7 @@ class _ProfileHeroHeader extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        'Profile',
+                        Localizations.of<AppLocalizations>(context, AppLocalizations)?.profileTitle ?? 'Profile',
                         style: AimTextStyles.title
                             .copyWith(color: AimColors.neutral0),
                       ),
@@ -416,7 +420,7 @@ class _ProfileHeroHeader extends StatelessWidget {
                     const NotificationBellButton(),
                     IconButton(
                       icon: const Icon(Icons.settings_outlined),
-                      tooltip: 'Account Settings',
+                      tooltip: Localizations.of<AppLocalizations>(context, AppLocalizations)?.profileTooltipAccountSettings ?? 'Account Settings',
                       onPressed: () =>
                           context.push(AppRoutePaths.accountSettings),
                     ),
@@ -495,7 +499,7 @@ class _ProfileHeroHeader extends StatelessWidget {
                     Expanded(
                       child: _HeroStatCard(
                         value: '$streakDays',
-                        label: 'day streak',
+                        label: Localizations.of<AppLocalizations>(context, AppLocalizations)?.profileStatDayStreak ?? 'day streak',
                         trailingIcon: Icons.local_fire_department_rounded,
                       ),
                     ),
@@ -503,7 +507,7 @@ class _ProfileHeroHeader extends StatelessWidget {
                     Expanded(
                       child: _HeroStatCard(
                         value: '$unlockedCount/$totalAchievements',
-                        label: 'achievements',
+                        label: Localizations.of<AppLocalizations>(context, AppLocalizations)?.profileStatAchievements ?? 'achievements',
                       ),
                     ),
                   ],
@@ -606,7 +610,7 @@ class _AchievementsCarousel extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Achievements',
+          Localizations.of<AppLocalizations>(context, AppLocalizations)?.profileAchievementsCarouselTitle ?? 'Achievements',
           style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
         ),
         const SizedBox(height: AimSpacing.componentGap),
@@ -743,11 +747,14 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 112,
-            child: Text(
-              label,
-              style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
+          ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 112),
+            child: Padding(
+              padding: const EdgeInsetsDirectional.only(end: AimSpacing.space8),
+              child: Text(
+                label,
+                style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
+              ),
             ),
           ),
           Expanded(
@@ -777,6 +784,7 @@ class _ProfileNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
     return InkWell(
       onTap: onTap,
       borderRadius: AimRadius.borderMd,
@@ -794,7 +802,7 @@ class _ProfileNavItem extends StatelessWidget {
               ),
             ),
             Icon(
-              Icons.chevron_right,
+              isRtl ? Icons.chevron_left : Icons.chevron_right,
               size: AimSizes.iconSm,
               color: surfaces.textMuted,
             ),

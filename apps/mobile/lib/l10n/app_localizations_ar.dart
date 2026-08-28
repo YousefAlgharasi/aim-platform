@@ -2375,4 +2375,215 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get shellLogOut => 'تسجيل الخروج';
+
+  @override
+  String get profileTitle => 'الملف الشخصي';
+
+  @override
+  String get profileLoadingProfile => 'جارٍ تحميل الملف الشخصي';
+
+  @override
+  String profileCouldNotLoad(String message) {
+    return 'تعذّر تحميل الملف الشخصي: $message';
+  }
+
+  @override
+  String get profileSectionAccount => 'الحساب';
+
+  @override
+  String get profileLabelEmail => 'البريد الإلكتروني';
+
+  @override
+  String get profileLabelStatus => 'الحالة';
+
+  @override
+  String get profileLabelType => 'النوع';
+
+  @override
+  String get profileSectionProfile => 'الملف الشخصي';
+
+  @override
+  String get profileLabelDisplayName => 'الاسم المعروض';
+
+  @override
+  String get profileLabelLanguage => 'اللغة';
+
+  @override
+  String get profileLabelTimezone => 'المنطقة الزمنية';
+
+  @override
+  String get profileSectionRoles => 'الأدوار';
+
+  @override
+  String get profileRolesSubtitle => 'للعرض فقط. يُطبَّق من الخادم.';
+
+  @override
+  String get profileSectionQuickLinks => 'روابط سريعة';
+
+  @override
+  String get profileLinkLearningPath => 'مسار التعلّم';
+
+  @override
+  String get profileLinkSubscriptionBilling => 'الاشتراك والفوترة';
+
+  @override
+  String get profileLinkInvoiceHistory => 'سجل الفواتير';
+
+  @override
+  String get profileLinkAchievements => 'الإنجازات';
+
+  @override
+  String get profileLinkAnalyticsSummary => 'ملخص التحليلات';
+
+  @override
+  String get profileLinkApiEndpointTester => 'اختبار نقاط الوصول (مطوّر)';
+
+  @override
+  String get profileStatDayStreak => 'أيام متتالية';
+
+  @override
+  String get profileStatAchievements => 'إنجازات';
+
+  @override
+  String get profileTooltipAccountSettings => 'إعدادات الحساب';
+
+  @override
+  String get profileAchievementsCarouselTitle => 'الإنجازات';
+
+  @override
+  String get editProfileTitle => 'تعديل الملف الشخصي';
+
+  @override
+  String get editProfileSave => 'حفظ';
+
+  @override
+  String get editProfileBack => 'رجوع';
+
+  @override
+  String get editProfileLabelDisplayName => 'الاسم المعروض';
+
+  @override
+  String get editProfilePlaceholderDisplayName => 'اسمك المعروض';
+
+  @override
+  String get editProfileLabelPreferredLanguage => 'اللغة المفضّلة';
+
+  @override
+  String get editProfilePlaceholderLanguage => 'اختر لغة';
+
+  @override
+  String get editProfileLabelTimezone => 'المنطقة الزمنية';
+
+  @override
+  String get editProfilePlaceholderTimezone => 'اختر منطقة زمنية';
+
+  @override
+  String get editProfileSaveChanges => 'حفظ التغييرات';
+
+  @override
+  String get editProfileDisplayNameTooLong =>
+      'يجب ألّا يتجاوز الاسم المعروض 80 حرفاً.';
+
+  @override
+  String get editProfileSessionExpired =>
+      'انتهت جلستك. يرجى تسجيل الدخول مجدداً.';
+
+  @override
+  String get editProfileUpdatedSuccess => 'تم تحديث الملف الشخصي.';
+
+  @override
+  String get settingsAppThemeDisplay => 'مظهر التطبيق والعرض';
+
+  @override
+  String get settingsThemeDarkSubtitle => 'واجهة داكنة للاستخدام الليلي';
+
+  @override
+  String get settingsThemeLightSubtitle => 'مظهر نظيف عالي التباين';
+
+  @override
+  String get settingsNotificationPreferences => 'تفضيلات الإشعارات';
+
+  @override
+  String get settingsEnterFullName => 'أدخل اسمك الكامل';
+
+  @override
+  String get achievementsTitle => 'الإنجازات';
+
+  @override
+  String get achievementsMilestonesTitle => 'إنجازات AIM';
+
+  @override
+  String achievementsBadgesUnlocked(int unlocked, int total) {
+    return '$unlocked من $total شارة مفتوحة';
+  }
+
+  @override
+  String get achievementsLeagueRank => 'الدوري الذهبي #3';
+
+  @override
+  String get achievementsTabAll => 'جميع الشارات';
+
+  @override
+  String achievementsTabUnlocked(int count) {
+    return 'مفتوحة ($count)';
+  }
+
+  @override
+  String achievementsTabInProgress(int count) {
+    return 'قيد التقدم ($count)';
+  }
+
+  @override
+  String get achievementsBadgeUnlocked => 'مفتوح';
+
+  @override
+  String get achievementsFirstStepTitle => 'الخطوة الأولى';
+
+  @override
+  String get achievementsFirstStepDesc => 'أكمل أول درس إنجليزي لك';
+
+  @override
+  String get achievementsStreakMasterTitle => 'خبير المتابعة';
+
+  @override
+  String get achievementsStreakMasterDesc => 'حافظ على سلسلة تعلّم لمدة ٧ أيام';
+
+  @override
+  String get achievementsGrammarWizardTitle => 'ساحر القواعد';
+
+  @override
+  String get achievementsGrammarWizardDesc => 'احصل على ٩٠٪+ في تقييم القواعد';
+
+  @override
+  String get achievementsVoiceChampionTitle => 'بطل الصوت';
+
+  @override
+  String get achievementsVoiceChampionDesc =>
+      'أكمل ٥ جلسات تدريب صوتي مباشر مع الذكاء الاصطناعي';
+
+  @override
+  String get achievementsVocabularyTitanTitle => 'عملاق المفردات';
+
+  @override
+  String get achievementsVocabularyTitanDesc => 'أتقن أكثر من ٢٠٠ كلمة نشطة';
+
+  @override
+  String get achievementsSpeedLearnerTitle => 'المتعلم السريع';
+
+  @override
+  String get achievementsSpeedLearnerDesc => 'أنهِ ٣ دروس في يوم واحد';
+
+  @override
+  String get achievementsPerfectQuizTitle => 'دقة الاختبار المثالية';
+
+  @override
+  String get achievementsPerfectQuizDesc =>
+      'احصل على ١٠٠٪ في ٥ اختبارات تدريبية';
+
+  @override
+  String get achievementsPolyglotLegendTitle => 'أسطورة اللغات';
+
+  @override
+  String get achievementsPolyglotLegendDesc =>
+      'وصول المستوى ٢٠ في اللغة الإنجليزية';
 }

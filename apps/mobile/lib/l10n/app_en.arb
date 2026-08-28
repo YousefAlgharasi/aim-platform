@@ -2980,5 +2980,286 @@
   "shellLogOut": "Log Out",
   "@shellLogOut": {
     "description": "Button to log out of the app."
+  },
+
+  "profileTitle": "Profile",
+  "@profileTitle": {
+    "description": "Title for the profile page hero header."
+  },
+  "profileLoadingProfile": "Loading profile",
+  "@profileLoadingProfile": {
+    "description": "Semantic label shown while profile is loading."
+  },
+  "profileCouldNotLoad": "Could not load profile: {message}",
+  "@profileCouldNotLoad": {
+    "description": "Error message when profile fails to load.",
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "profileSectionAccount": "ACCOUNT",
+  "@profileSectionAccount": {
+    "description": "Section heading for account info on profile page."
+  },
+  "profileLabelEmail": "Email",
+  "@profileLabelEmail": {
+    "description": "Label for the email row on profile page."
+  },
+  "profileLabelStatus": "Status",
+  "@profileLabelStatus": {
+    "description": "Label for the status row on profile page."
+  },
+  "profileLabelType": "Type",
+  "@profileLabelType": {
+    "description": "Label for the user type row on profile page."
+  },
+  "profileSectionProfile": "PROFILE",
+  "@profileSectionProfile": {
+    "description": "Section heading for student profile details."
+  },
+  "profileLabelDisplayName": "Display Name",
+  "@profileLabelDisplayName": {
+    "description": "Label for display name on profile page."
+  },
+  "profileLabelLanguage": "Language",
+  "@profileLabelLanguage": {
+    "description": "Label for preferred language on profile page."
+  },
+  "profileLabelTimezone": "Timezone",
+  "@profileLabelTimezone": {
+    "description": "Label for timezone on profile page."
+  },
+  "profileSectionRoles": "ROLES",
+  "@profileSectionRoles": {
+    "description": "Section heading for user roles."
+  },
+  "profileRolesSubtitle": "Displayed for reference only. Enforced by backend.",
+  "@profileRolesSubtitle": {
+    "description": "Subtitle under the roles section header."
+  },
+  "profileSectionQuickLinks": "QUICK LINKS",
+  "@profileSectionQuickLinks": {
+    "description": "Section heading for quick navigation links."
+  },
+  "profileLinkLearningPath": "Learning Path",
+  "@profileLinkLearningPath": {
+    "description": "Quick link label for Learning Path."
+  },
+  "profileLinkSubscriptionBilling": "Subscription & Billing",
+  "@profileLinkSubscriptionBilling": {
+    "description": "Quick link label for Subscription & Billing."
+  },
+  "profileLinkInvoiceHistory": "Invoice History",
+  "@profileLinkInvoiceHistory": {
+    "description": "Quick link label for Invoice History."
+  },
+  "profileLinkAchievements": "Achievements",
+  "@profileLinkAchievements": {
+    "description": "Quick link label for Achievements."
+  },
+  "profileLinkAnalyticsSummary": "Analytics Summary",
+  "@profileLinkAnalyticsSummary": {
+    "description": "Quick link label for Analytics Summary."
+  },
+  "profileLinkApiEndpointTester": "API Endpoint Tester (Dev)",
+  "@profileLinkApiEndpointTester": {
+    "description": "Quick link label for developer API endpoint tester."
+  },
+  "profileStatDayStreak": "day streak",
+  "@profileStatDayStreak": {
+    "description": "Label under the day streak stat card on profile."
+  },
+  "profileStatAchievements": "achievements",
+  "@profileStatAchievements": {
+    "description": "Label under the achievements stat card on profile."
+  },
+  "profileTooltipAccountSettings": "Account Settings",
+  "@profileTooltipAccountSettings": {
+    "description": "Tooltip for the settings icon button on profile."
+  },
+  "profileAchievementsCarouselTitle": "Achievements",
+  "@profileAchievementsCarouselTitle": {
+    "description": "Title above the achievements carousel on profile."
+  },
+
+  "editProfileTitle": "Edit profile",
+  "@editProfileTitle": {
+    "description": "Header title on the edit profile screen."
+  },
+  "editProfileSave": "Save",
+  "@editProfileSave": {
+    "description": "Save text button on the edit profile header."
+  },
+  "editProfileBack": "Back",
+  "@editProfileBack": {
+    "description": "Semantic label for the back button on edit profile."
+  },
+  "editProfileLabelDisplayName": "Display Name",
+  "@editProfileLabelDisplayName": {
+    "description": "Label for the display name field on edit profile."
+  },
+  "editProfilePlaceholderDisplayName": "Your display name",
+  "@editProfilePlaceholderDisplayName": {
+    "description": "Placeholder for the display name field."
+  },
+  "editProfileLabelPreferredLanguage": "Preferred Language",
+  "@editProfileLabelPreferredLanguage": {
+    "description": "Label for the preferred language selector."
+  },
+  "editProfilePlaceholderLanguage": "Select a language",
+  "@editProfilePlaceholderLanguage": {
+    "description": "Placeholder for the preferred language selector."
+  },
+  "editProfileLabelTimezone": "Timezone",
+  "@editProfileLabelTimezone": {
+    "description": "Label for the timezone selector."
+  },
+  "editProfilePlaceholderTimezone": "Select a timezone",
+  "@editProfilePlaceholderTimezone": {
+    "description": "Placeholder for the timezone selector."
+  },
+  "editProfileSaveChanges": "Save changes",
+  "@editProfileSaveChanges": {
+    "description": "Label for the save changes gradient button."
+  },
+  "editProfileDisplayNameTooLong": "Display name must be 80 characters or fewer.",
+  "@editProfileDisplayNameTooLong": {
+    "description": "Validation error when display name exceeds 80 chars."
+  },
+  "editProfileSessionExpired": "Your session has expired. Please sign in again.",
+  "@editProfileSessionExpired": {
+    "description": "Toast shown when the session is expired on edit profile."
+  },
+  "editProfileUpdatedSuccess": "Profile updated.",
+  "@editProfileUpdatedSuccess": {
+    "description": "Toast shown on successful profile update."
+  },
+
+  "settingsAppThemeDisplay": "App Theme & Display",
+  "@settingsAppThemeDisplay": {
+    "description": "Section header for app theme settings."
+  },
+  "settingsThemeDarkSubtitle": "Darker UI option for night use",
+  "@settingsThemeDarkSubtitle": {
+    "description": "Subtitle when dark mode is active."
+  },
+  "settingsThemeLightSubtitle": "Clean, high contrast appearance",
+  "@settingsThemeLightSubtitle": {
+    "description": "Subtitle when light mode is active."
+  },
+  "settingsNotificationPreferences": "Notification Preferences",
+  "@settingsNotificationPreferences": {
+    "description": "Section header for notification settings."
+  },
+  "settingsEnterFullName": "Enter your full name",
+  "@settingsEnterFullName": {
+    "description": "Placeholder text for the name input on settings."
+  },
+
+  "achievementsTitle": "Achievements",
+  "@achievementsTitle": {
+    "description": "Title on the achievements page header."
+  },
+  "achievementsMilestonesTitle": "AIM Milestones",
+  "@achievementsMilestonesTitle": {
+    "description": "Title on the milestones banner card."
+  },
+  "achievementsBadgesUnlocked": "{unlocked} of {total} badges unlocked",
+  "@achievementsBadgesUnlocked": {
+    "description": "Subtitle showing how many badges are unlocked.",
+    "placeholders": {
+      "unlocked": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "achievementsLeagueRank": "Gold League #3",
+  "@achievementsLeagueRank": {
+    "description": "League rank pill on the milestones card."
+  },
+  "achievementsTabAll": "All Badges",
+  "@achievementsTabAll": {
+    "description": "Label for the All Badges filter tab."
+  },
+  "achievementsTabUnlocked": "Unlocked ({count})",
+  "@achievementsTabUnlocked": {
+    "description": "Label for the Unlocked filter tab with count.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "achievementsTabInProgress": "In Progress ({count})",
+  "@achievementsTabInProgress": {
+    "description": "Label for the In Progress filter tab with count.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "achievementsBadgeUnlocked": "Unlocked",
+  "@achievementsBadgeUnlocked": {
+    "description": "Tag text on an unlocked badge card."
+  },
+  "achievementsFirstStepTitle": "First Step",
+  "@achievementsFirstStepTitle": {
+    "description": "Default badge title: First Step."
+  },
+  "achievementsFirstStepDesc": "Complete your first English lesson",
+  "@achievementsFirstStepDesc": {
+    "description": "Default badge description: First Step."
+  },
+  "achievementsStreakMasterTitle": "Streak Master",
+  "@achievementsStreakMasterTitle": {
+    "description": "Default badge title: Streak Master."
+  },
+  "achievementsStreakMasterDesc": "Maintain a 7-day learning streak",
+  "@achievementsStreakMasterDesc": {
+    "description": "Default badge description: Streak Master."
+  },
+  "achievementsGrammarWizardTitle": "Grammar Wizard",
+  "@achievementsGrammarWizardTitle": {
+    "description": "Default badge title: Grammar Wizard."
+  },
+  "achievementsGrammarWizardDesc": "Score 90%+ in Grammar assessment",
+  "@achievementsGrammarWizardDesc": {
+    "description": "Default badge description: Grammar Wizard."
+  },
+  "achievementsVoiceChampionTitle": "Voice Champion",
+  "@achievementsVoiceChampionTitle": {
+    "description": "Default badge title: Voice Champion."
+  },
+  "achievementsVoiceChampionDesc": "Complete 5 Live AI Voice practice sessions",
+  "@achievementsVoiceChampionDesc": {
+    "description": "Default badge description: Voice Champion."
+  },
+  "achievementsVocabularyTitanTitle": "Vocabulary Titan",
+  "@achievementsVocabularyTitanTitle": {
+    "description": "Default badge title: Vocabulary Titan."
+  },
+  "achievementsVocabularyTitanDesc": "Master 200+ active words",
+  "@achievementsVocabularyTitanDesc": {
+    "description": "Default badge description: Vocabulary Titan."
+  },
+  "achievementsSpeedLearnerTitle": "Speed Learner",
+  "@achievementsSpeedLearnerTitle": {
+    "description": "Default badge title: Speed Learner."
+  },
+  "achievementsSpeedLearnerDesc": "Finish 3 lessons in a single day",
+  "@achievementsSpeedLearnerDesc": {
+    "description": "Default badge description: Speed Learner."
+  },
+  "achievementsPerfectQuizTitle": "Perfect Quiz Accuracy",
+  "@achievementsPerfectQuizTitle": {
+    "description": "Default badge title: Perfect Quiz Accuracy."
+  },
+  "achievementsPerfectQuizDesc": "Score 100% on 5 practice quizzes",
+  "@achievementsPerfectQuizDesc": {
+    "description": "Default badge description: Perfect Quiz Accuracy."
+  },
+  "achievementsPolyglotLegendTitle": "Polyglot Legend",
+  "@achievementsPolyglotLegendTitle": {
+    "description": "Default badge title: Polyglot Legend."
+  },
+  "achievementsPolyglotLegendDesc": "Reach Level 20 in English",
+  "@achievementsPolyglotLegendDesc": {
+    "description": "Default badge description: Polyglot Legend."
   }
 }

@@ -21,6 +21,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/state/app_async_state.dart';
 import '../../../../core/widgets/widgets.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../auth/logic/entity/auth_context.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
@@ -125,18 +126,20 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     }
   }
 
-  bool _validate() {
+  bool _validate(AppLocalizations? l10n) {
     final dn = _displayNameController.text.trim();
     String? dnErr;
     if (dn.length > 80) {
-      dnErr = 'Display name must be 80 characters or fewer.';
+      dnErr = l10n?.editProfileDisplayNameTooLong ??
+          'Display name must be 80 characters or fewer.';
     }
     setState(() => _displayNameError = dnErr);
     return dnErr == null;
   }
 
   Future<void> _submit() async {
-    if (!_validate()) return;
+    final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
+    if (!_validate(l10n)) return;
 
     final dn = _displayNameController.text.trim();
 
@@ -152,7 +155,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       if (!mounted) return;
       AIMToast.show(
         context,
-        message: 'Your session has expired. Please sign in again.',
+        message: l10n?.editProfileSessionExpired ??
+            'Your session has expired. Please sign in again.',
         tone: AIMAlertTone.error,
       );
       return;
@@ -164,7 +168,10 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
     if (!mounted) return;
     if (success) {
-      AIMToast.show(context, message: 'Profile updated.');
+      AIMToast.show(
+        context,
+        message: l10n?.editProfileUpdatedSuccess ?? 'Profile updated.',
+      );
       context.pop();
     }
   }
@@ -172,6 +179,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
     final profileState = ref.watch(profileProvider);
     final isSubmitting = profileState is AppAsyncLoading;
     final canSave = _dirty && !isSubmitting;
@@ -212,19 +220,23 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
                   // Display Name
                   AIMInput(
-                    label: 'Display Name',
-                    placeholder: 'Your display name',
+                    label: l10n?.editProfileLabelDisplayName ?? 'Display Name',
+                    placeholder: l10n?.editProfilePlaceholderDisplayName ??
+                        'Your display name',
                     controller: _displayNameController,
                     error: _displayNameError,
                     textInputAction: TextInputAction.next,
-                    semanticLabel: 'Display name field',
+                    semanticLabel:
+                        l10n?.editProfileLabelDisplayName ?? 'Display name field',
                   ),
                   const SizedBox(height: AimSpacing.componentGap),
 
                   // Preferred Language
                   AIMSelect(
-                    label: 'Preferred Language',
-                    placeholder: 'Select a language',
+                    label: l10n?.editProfileLabelPreferredLanguage ??
+                        'Preferred Language',
+                    placeholder: l10n?.editProfilePlaceholderLanguage ??
+                        'Select a language',
                     options: _kLanguageOptions,
                     value: _preferredLanguage,
                     onChanged: (value) {
@@ -233,14 +245,16 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                         _dirty = true;
                       });
                     },
-                    semanticLabel: 'Preferred language field',
+                    semanticLabel: l10n?.editProfileLabelPreferredLanguage ??
+                        'Preferred language field',
                   ),
                   const SizedBox(height: AimSpacing.componentGap),
 
                   // Timezone
                   AIMSelect(
-                    label: 'Timezone',
-                    placeholder: 'Select a timezone',
+                    label: l10n?.editProfileLabelTimezone ?? 'Timezone',
+                    placeholder: l10n?.editProfilePlaceholderTimezone ??
+                        'Select a timezone',
                     options: _kTimezoneOptions,
                     value: _timezone,
                     onChanged: (value) {
@@ -249,18 +263,20 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                         _dirty = true;
                       });
                     },
-                    semanticLabel: 'Timezone field',
+                    semanticLabel:
+                        l10n?.editProfileLabelTimezone ?? 'Timezone field',
                   ),
                   const SizedBox(height: AimSpacing.sectionGap),
 
                   // ── Save changes CTA ─────────────────────────────────
                   AIMGradientButton(
-                    label: 'Save changes',
+                    label: l10n?.editProfileSaveChanges ?? 'Save changes',
                     fullWidth: true,
                     loading: isSubmitting,
                     enabled: canSave,
                     onPressed: _submit,
-                    semanticLabel: 'Save changes',
+                    semanticLabel:
+                        l10n?.editProfileSaveChanges ?? 'Save changes',
                   ),
                 ],
               ),
@@ -296,6 +312,7 @@ class _EditProfileGradientHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(gradient: AimGradients.gzHero),
@@ -311,7 +328,7 @@ class _EditProfileGradientHeader extends StatelessWidget {
               children: [
                 Semantics(
                   button: true,
-                  label: 'Back',
+                  label: l10n?.editProfileBack ?? 'Back',
                   child: InkWell(
                     onTap: () {
                       if (context.canPop()) {
@@ -330,8 +347,8 @@ class _EditProfileGradientHeader extends StatelessWidget {
                         padding: const EdgeInsets.all(AimSpacing.space12),
                         child: Icon(
                           Directionality.of(context) == TextDirection.rtl
-                          ? Icons.chevron_right_rounded
-                          : Icons.chevron_left_rounded,
+                              ? Icons.chevron_right_rounded
+                              : Icons.chevron_left_rounded,
                           size: AimSizes.iconMd,
                           color: AimColors.neutral0,
                         ),
@@ -347,7 +364,7 @@ class _EditProfileGradientHeader extends StatelessWidget {
                     child: Align(
                       alignment: AlignmentDirectional.centerStart,
                       child: Text(
-                        'Edit profile',
+                        l10n?.editProfileTitle ?? 'Edit profile',
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         style: AimTextStyles.h3.copyWith(
@@ -376,7 +393,7 @@ class _EditProfileGradientHeader extends StatelessWidget {
                             ),
                           )
                         : Text(
-                            'Save',
+                            l10n?.editProfileSave ?? 'Save',
                             style: AimTextStyles.button.copyWith(
                               color: AimColors.neutral0,
                             ),

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/state/app_async_state.dart';
 import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/widgets/widgets.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../auth/logic/entity/auth_context.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
@@ -55,47 +56,53 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
   }
 
   /// Default badges matching Figma prototype
-  List<_BadgeItem> _getDefaultBadges() {
-    return const [
+  List<_BadgeItem> _getDefaultBadges(AppLocalizations? l10n) {
+    return [
       _BadgeItem(
         key: 'first_step',
-        title: 'First Step',
-        description: 'Complete your first English lesson',
+        title: l10n?.achievementsFirstStepTitle ?? 'First Step',
+        description: l10n?.achievementsFirstStepDesc ??
+            'Complete your first English lesson',
         icon: Icons.menu_book_rounded,
         isUnlocked: true,
       ),
       _BadgeItem(
         key: 'streak_master',
-        title: 'Streak Master',
-        description: 'Maintain a 7-day learning streak',
+        title: l10n?.achievementsStreakMasterTitle ?? 'Streak Master',
+        description: l10n?.achievementsStreakMasterDesc ??
+            'Maintain a 7-day learning streak',
         icon: Icons.local_fire_department_outlined,
         isUnlocked: true,
       ),
       _BadgeItem(
         key: 'grammar_wizard',
-        title: 'Grammar Wizard',
-        description: 'Score 90%+ in Grammar assessment',
+        title: l10n?.achievementsGrammarWizardTitle ?? 'Grammar Wizard',
+        description: l10n?.achievementsGrammarWizardDesc ??
+            'Score 90%+ in Grammar assessment',
         icon: Icons.check_circle_outline_rounded,
         isUnlocked: true,
       ),
       _BadgeItem(
         key: 'voice_champion',
-        title: 'Voice Champion',
-        description: 'Complete 5 Live AI Voice practice sessions',
+        title: l10n?.achievementsVoiceChampionTitle ?? 'Voice Champion',
+        description: l10n?.achievementsVoiceChampionDesc ??
+            'Complete 5 Live AI Voice practice sessions',
         icon: Icons.mic_none_rounded,
         isUnlocked: true,
       ),
       _BadgeItem(
         key: 'vocabulary_titan',
-        title: 'Vocabulary Titan',
-        description: 'Master 200+ active words',
+        title: l10n?.achievementsVocabularyTitanTitle ?? 'Vocabulary Titan',
+        description: l10n?.achievementsVocabularyTitanDesc ??
+            'Master 200+ active words',
         icon: Icons.emoji_events_outlined,
         isUnlocked: true,
       ),
       _BadgeItem(
         key: 'speed_learner',
-        title: 'Speed Learner',
-        description: 'Finish 3 lessons in a single day',
+        title: l10n?.achievementsSpeedLearnerTitle ?? 'Speed Learner',
+        description: l10n?.achievementsSpeedLearnerDesc ??
+            'Finish 3 lessons in a single day',
         icon: Icons.bolt_rounded,
         isUnlocked: false,
         currentProgress: 2,
@@ -103,8 +110,10 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
       ),
       _BadgeItem(
         key: 'perfect_quiz',
-        title: 'Perfect Quiz Accuracy',
-        description: 'Score 100% on 5 practice quizzes',
+        title:
+            l10n?.achievementsPerfectQuizTitle ?? 'Perfect Quiz Accuracy',
+        description: l10n?.achievementsPerfectQuizDesc ??
+            'Score 100% on 5 practice quizzes',
         icon: Icons.star_outline_rounded,
         isUnlocked: false,
         currentProgress: 3,
@@ -112,8 +121,9 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
       ),
       _BadgeItem(
         key: 'polyglot_legend',
-        title: 'Polyglot Legend',
-        description: 'Reach Level 20 in English',
+        title: l10n?.achievementsPolyglotLegendTitle ?? 'Polyglot Legend',
+        description: l10n?.achievementsPolyglotLegendDesc ??
+            'Reach Level 20 in English',
         icon: Icons.workspace_premium_outlined,
         isUnlocked: false,
         currentProgress: 12,
@@ -122,9 +132,12 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
     ];
   }
 
-  List<_BadgeItem> _buildBadgeList(List<AchievementModel>? backendAchievements) {
+  List<_BadgeItem> _buildBadgeList(
+    List<AchievementModel>? backendAchievements,
+    AppLocalizations? l10n,
+  ) {
     if (backendAchievements == null || backendAchievements.isEmpty) {
-      return _getDefaultBadges();
+      return _getDefaultBadges(l10n);
     }
 
     final Map<String, IconData> iconLookup = {
@@ -154,6 +167,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
     final state = ref.watch(achievementsProvider);
     final authContextState = ref.watch(authContextProvider);
     final authData = switch (authContextState) {
@@ -167,7 +181,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
       _ => null,
     };
 
-    final allBadges = _buildBadgeList(backendList);
+    final allBadges = _buildBadgeList(backendList, l10n);
     final unlockedBadges = allBadges.where((b) => b.isUnlocked).toList();
     final inProgressBadges = allBadges.where((b) => !b.isUnlocked).toList();
 
@@ -183,7 +197,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
         child: Column(
           children: [
             // Top Header
-            _buildTopHeader(context, authData),
+            _buildTopHeader(context, authData, l10n),
             const SizedBox(height: AimSpacing.space8),
 
             // Scrollable Content
@@ -196,6 +210,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
                   _buildMilestoneBanner(
                     unlockedBadges.length,
                     allBadges.length,
+                    l10n,
                   ),
 
                   // Filter Segment Tabs
@@ -206,6 +221,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
                     },
                     unlockedCount: unlockedBadges.length,
                     inProgressCount: inProgressBadges.length,
+                    l10n: l10n,
                   ),
 
                   // Badges List
@@ -231,7 +247,11 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
     );
   }
 
-  Widget _buildTopHeader(BuildContext context, AuthContext? authContext) {
+  Widget _buildTopHeader(
+    BuildContext context,
+    AuthContext? authContext,
+    AppLocalizations? l10n,
+  ) {
     final displayName = authContext?.profile?.displayName ??
         ((authContext?.user.email != null && authContext!.user.email!.isNotEmpty)
             ? authContext.user.email!.split('@').first
@@ -259,14 +279,16 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
-                Icons.arrow_back_rounded,
+                Directionality.of(context) == TextDirection.rtl
+                    ? Icons.arrow_forward_rounded
+                    : Icons.arrow_back_rounded,
                 size: AimSizes.iconMd,
                 color: surfaces.textPrimary,
               ),
             ),
           ),
           Text(
-            'Achievements',
+            l10n?.achievementsTitle ?? 'Achievements',
             style: AimTextStyles.h3.copyWith(
               color: surfaces.textPrimary,
               fontWeight: AimFontWeights.bold,
@@ -293,7 +315,11 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
     );
   }
 
-  Widget _buildMilestoneBanner(int unlockedCount, int totalCount) {
+  Widget _buildMilestoneBanner(
+    int unlockedCount,
+    int totalCount,
+    AppLocalizations? l10n,
+  ) {
     final surfaces = aimSurfacesOf(context);
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
@@ -326,7 +352,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    'AIM Milestones',
+                    l10n?.achievementsMilestonesTitle ?? 'AIM Milestones',
                     style: AimTextStyles.bodyLg.copyWith(
                       color: surfaces.textPrimary,
                       fontWeight: AimFontWeights.bold,
@@ -336,7 +362,8 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
               ),
               const SizedBox(height: 4),
               Text(
-                '$unlockedCount of $totalCount badges unlocked',
+                l10n?.achievementsBadgesUnlocked(unlockedCount, totalCount) ??
+                    '$unlockedCount of $totalCount badges unlocked',
                 style: AimTextStyles.bodySm.copyWith(
                   color: surfaces.textMuted,
                 ),
@@ -350,7 +377,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              'Gold League #3',
+              l10n?.achievementsLeagueRank ?? 'Gold League #3',
               style: AimTextStyles.caption.copyWith(
                 color: AimColors.secondary600,
                 fontWeight: AimFontWeights.bold,
@@ -367,6 +394,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
     required ValueChanged<int> onTabSelected,
     required int unlockedCount,
     required int inProgressCount,
+    required AppLocalizations? l10n,
   }) {
     final surfaces = aimSurfacesOf(context);
     return Container(
@@ -383,21 +411,23 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
         children: [
           Expanded(
             child: _TabPill(
-              label: 'All Badges',
+              label: l10n?.achievementsTabAll ?? 'All Badges',
               isSelected: selectedTab == 0,
               onTap: () => onTabSelected(0),
             ),
           ),
           Expanded(
             child: _TabPill(
-              label: 'Unlocked ($unlockedCount)',
+              label: l10n?.achievementsTabUnlocked(unlockedCount) ??
+                  'Unlocked ($unlockedCount)',
               isSelected: selectedTab == 1,
               onTap: () => onTabSelected(1),
             ),
           ),
           Expanded(
             child: _TabPill(
-              label: 'In Progress ($inProgressCount)',
+              label: l10n?.achievementsTabInProgress(inProgressCount) ??
+                  'In Progress ($inProgressCount)',
               isSelected: selectedTab == 2,
               onTap: () => onTabSelected(2),
             ),
@@ -466,6 +496,7 @@ class _BadgeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
 
     final bool hasProgress =
         !badge.isUnlocked && badge.maxProgress > 0;
@@ -539,7 +570,7 @@ class _BadgeCard extends StatelessWidget {
 
               // Unlocked Tag Badge
               if (badge.isUnlocked) ...[
-                const SizedBox(width: 8),
+                const SizedBox(width: AimSpacing.space8),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
@@ -550,7 +581,7 @@ class _BadgeCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    'Unlocked',
+                    l10n?.achievementsBadgeUnlocked ?? 'Unlocked',
                     style: AimTextStyles.caption.copyWith(
                       color: const Color(0xFF166534),
                       fontWeight: AimFontWeights.bold,
@@ -596,3 +627,4 @@ class _BadgeCard extends StatelessWidget {
     );
   }
 }
+
