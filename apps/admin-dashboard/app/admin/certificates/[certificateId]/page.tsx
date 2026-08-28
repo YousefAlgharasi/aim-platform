@@ -104,23 +104,39 @@ export default async function CertificateViewPage({ params }: Props) {
           color: #666;
           margin: 0 0 12px;
         }
-        .certificate-scores-table {
-          width: 100%;
-          border-collapse: collapse;
+        .certificate-report-row {
+          display: flex;
+          align-items: baseline;
+          justify-content: space-between;
+          gap: 16px;
+          padding: 8px 0;
+          border-bottom: 1px solid #eee7d5;
           font-size: 14px;
         }
-        .certificate-scores-table th,
-        .certificate-scores-table td {
-          text-align: left;
-          padding: 8px 10px;
-          border-bottom: 1px solid #eee7d5;
+        .certificate-report-label {
+          color: #333;
         }
-        .certificate-scores-table th {
-          color: #666;
-          font-weight: normal;
+        .certificate-report-type {
           text-transform: uppercase;
-          font-size: 11px;
+          font-size: 10px;
           letter-spacing: 0.05em;
+          color: #8a7a4a;
+          margin-right: 8px;
+        }
+        .certificate-report-score {
+          font-variant-numeric: tabular-nums;
+          white-space: nowrap;
+        }
+        .certificate-report-total {
+          display: flex;
+          align-items: baseline;
+          justify-content: space-between;
+          gap: 16px;
+          padding: 14px 0 0;
+          margin-top: 6px;
+          border-top: 2px solid #1a1a1a;
+          font-size: 18px;
+          font-weight: bold;
         }
         .certificate-pass { color: #1a7a3c; font-weight: bold; }
         .certificate-fail { color: #a3252f; font-weight: bold; }
@@ -154,42 +170,34 @@ export default async function CertificateViewPage({ params }: Props) {
       <p className="certificate-course-title">{certificate.courseTitle}</p>
       <p className="certificate-line">Issued on {formatDate(certificate.issuedAt)}</p>
 
-      {certificate.overallScorePercent !== null && (
-        <p className="certificate-line" style={{ fontSize: '20px', fontWeight: 'bold', color: '#1a1a1a', marginTop: '12px' }}>
-          Final Grade: {certificate.overallScorePercent}/100
-        </p>
-      )}
-
       <hr className="certificate-divider" />
 
-      <p className="certificate-scores-title">Assessment Results</p>
+      <p className="certificate-scores-title">Report Card</p>
       {certificate.scoreSnapshot.length === 0 ? (
         <p style={{ color: '#888', fontSize: '14px' }}>No assessment scores recorded for this certificate.</p>
       ) : (
-        <table className="certificate-scores-table">
-          <thead>
-            <tr>
-              <th>Assessment</th>
-              <th>Type</th>
-              <th>Score</th>
-              <th>Result</th>
-            </tr>
-          </thead>
-          <tbody>
-            {certificate.scoreSnapshot.map((entry) => (
-              <tr key={entry.assessmentId}>
-                <td>{entry.title}</td>
-                <td style={{ textTransform: 'capitalize' }}>{entry.type}</td>
-                <td>
-                  {entry.scorePercent} / 100
-                </td>
-                <td className={entry.passed ? 'certificate-pass' : 'certificate-fail'}>
-                  {entry.passed ? 'Passed' : 'Failed'}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div>
+          {certificate.scoreSnapshot.map((entry) => (
+            <div key={entry.assessmentId} className="certificate-report-row">
+              <span className="certificate-report-label">
+                <span className="certificate-report-type">{entry.type}</span>
+                {entry.title}
+              </span>
+              <span className="certificate-report-score">
+                {entry.scorePercent}/100{' '}
+                <span className={entry.passed ? 'certificate-pass' : 'certificate-fail'}>
+                  {entry.passed ? '✓' : '✗'}
+                </span>
+              </span>
+            </div>
+          ))}
+          {certificate.overallScorePercent !== null && (
+            <div className="certificate-report-total">
+              <span>Total Grade</span>
+              <span>{certificate.overallScorePercent}/100</span>
+            </div>
+          )}
+        </div>
       )}
 
       <p className="certificate-footer">Certificate ID: {certificate.id}</p>
