@@ -1,6 +1,7 @@
 export * from './api/admin-assessment-results-api';
 export * from './api/admin-assessments-api';
 export * from './hooks/use-assessments-query';
+export * from './components/assessment-linkage';
 export * from './components/assessment-publishing';
 export * from './components/assessment-settings';
 export * from './components/deadline-management';

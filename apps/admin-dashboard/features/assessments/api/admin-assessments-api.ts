@@ -24,6 +24,8 @@ export type AdminAssessmentSettings = {
 };
 
 export type AdminAssessmentDetail = AdminAssessmentListItem & {
+  readonly courseId: string | null;
+  readonly chapterId: string | null;
   readonly questionIds: readonly string[];
   readonly settings: AdminAssessmentSettings;
 };
@@ -46,6 +48,8 @@ function decodeDetail(v: unknown): AdminAssessmentDetail {
   const settings = (o.settings ?? {}) as Record<string, unknown>;
   return {
     ...decodeListItem(v),
+    courseId: typeof o.courseId === 'string' ? o.courseId : null,
+    chapterId: typeof o.chapterId === 'string' ? o.chapterId : null,
     questionIds: Array.isArray(o.questionIds) ? o.questionIds.map(String) : [],
     settings: {
       timeLimitMinutes: typeof settings.timeLimitMinutes === 'number' ? settings.timeLimitMinutes : null,
@@ -104,10 +108,20 @@ export async function createAdminAssessment(
   return envelope.data;
 }
 
+export type UpdateAssessmentBody = {
+  title?: string;
+  description?: string;
+  status?: AdminAssessmentStatus;
+  courseId?: string | null;
+  chapterId?: string | null;
+  questionIds?: string[];
+  settings?: Partial<AdminAssessmentSettings>;
+};
+
 export async function updateAdminAssessment(
   token: string,
   id: string,
-  body: Partial<CreateAssessmentBody>,
+  body: UpdateAssessmentBody,
 ): Promise<AdminAssessmentDetail> {
   const envelope = await adminApiClient.patch(
     `/admin/assessments/${id}`,

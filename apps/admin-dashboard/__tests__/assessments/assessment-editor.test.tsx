@@ -16,6 +16,8 @@ const makeAssessment = (overrides: Partial<AdminAssessmentDetail> = {}): AdminAs
   type: 'quiz',
   status: 'draft',
   questionCount: 5,
+  courseId: null,
+  chapterId: null,
   questionIds: ['q-1', 'q-2'],
   createdAt: '2026-01-01T00:00:00Z',
   updatedAt: '2026-01-01T00:00:00Z',
