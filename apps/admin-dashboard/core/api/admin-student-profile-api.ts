@@ -35,6 +35,7 @@ export type AdminStudentProfileAssessmentResult = {
   readonly type: 'quiz' | 'exam';
   readonly score: number;
   readonly maxScore: number;
+  readonly scorePercent: number;
   readonly passed: boolean;
   readonly attemptedAt: string;
   readonly courseTitle: string | null;
@@ -46,6 +47,7 @@ export type AdminStudentProfileCourseAssessment = {
   readonly type: 'quiz' | 'exam';
   readonly score: number;
   readonly maxScore: number;
+  readonly scorePercent: number;
   readonly passed: boolean;
 };
 
@@ -65,6 +67,7 @@ export type AdminStudentProfileCourse = {
   readonly completionPct: number;
   readonly completed: boolean;
   readonly assessments: readonly AdminStudentProfileCourseAssessment[];
+  readonly overallScorePercent: number | null;
   readonly certificate: AdminStudentProfileCertificateRef | null;
 };
 
@@ -116,6 +119,13 @@ function decodeNumber(v: unknown, fallback = 0): number {
   return fallback;
 }
 
+// Falls back to computing score/maxScore*100 for older data recorded before
+// the backend started sending scorePercent directly.
+function decodeScorePercent(v: unknown, score: number, maxScore: number): number {
+  if (typeof v === 'number' && Number.isFinite(v)) return v;
+  return maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+}
+
 function decodePlacement(raw: unknown): AdminStudentProfilePlacement | null {
   if (!isObject(raw)) return null;
   const rawSkills = Array.isArray(raw.skillSummary) ? raw.skillSummary : [];
@@ -144,13 +154,16 @@ function decodeSubscription(raw: unknown): AdminStudentProfileSubscription | nul
 
 function decodeAssessmentResult(raw: unknown): AdminStudentProfileAssessmentResult {
   const r = isObject(raw) ? raw : {};
+  const score = decodeNumber(r.score);
+  const maxScore = decodeNumber(r.maxScore);
   return {
     id: String(r.id ?? ''),
     assessmentId: String(r.assessmentId ?? ''),
     title: String(r.title ?? ''),
     type: r.type === 'exam' ? 'exam' : 'quiz',
-    score: decodeNumber(r.score),
-    maxScore: decodeNumber(r.maxScore),
+    score,
+    maxScore,
+    scorePercent: decodeScorePercent(r.scorePercent, score, maxScore),
     passed: Boolean(r.passed),
     attemptedAt: String(r.attemptedAt ?? ''),
     courseTitle: typeof r.courseTitle === 'string' ? r.courseTitle : null,
@@ -159,12 +172,15 @@ function decodeAssessmentResult(raw: unknown): AdminStudentProfileAssessmentResu
 
 function decodeAssessment(raw: unknown): AdminStudentProfileCourseAssessment {
   const r = isObject(raw) ? raw : {};
+  const score = decodeNumber(r.score);
+  const maxScore = decodeNumber(r.maxScore);
   return {
     assessmentId: String(r.assessmentId ?? ''),
     title: String(r.title ?? ''),
     type: r.type === 'exam' ? 'exam' : 'quiz',
-    score: decodeNumber(r.score),
-    maxScore: decodeNumber(r.maxScore),
+    score,
+    maxScore,
+    scorePercent: decodeScorePercent(r.scorePercent, score, maxScore),
     passed: Boolean(r.passed),
   };
 }
@@ -190,6 +206,7 @@ function decodeCourse(raw: unknown): AdminStudentProfileCourse {
     completionPct: decodeNumber(r.completionPct),
     completed: Boolean(r.completed),
     assessments: rawAssessments.map(decodeAssessment),
+    overallScorePercent: typeof r.overallScorePercent === 'number' ? r.overallScorePercent : null,
     certificate: decodeCertificateRef(r.certificate),
   };
 }

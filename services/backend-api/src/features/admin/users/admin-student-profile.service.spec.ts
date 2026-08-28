@@ -129,6 +129,7 @@ describe('AdminStudentProfileService', () => {
         type: 'quiz',
         score: 8,
         maxScore: 10,
+        scorePercent: 80,
         passed: true,
         attemptedAt: '2026-01-06',
         courseTitle: null,
@@ -146,6 +147,7 @@ describe('AdminStudentProfileService', () => {
       completionPct: 100,
       completed: true,
       assessments: [{ assessmentId: 'a1', title: 'Chapter Quiz', type: 'quiz', score: 8, maxScore: 10, passed: true }],
+      overallScorePercent: 80,
       certificate: { id: 'cert-1', issuedAt: '2026-02-01' },
     });
     expect(certificateService.issueIfCompleted).toHaveBeenCalledWith('s1', 'course-1');

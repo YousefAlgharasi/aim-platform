@@ -21,6 +21,7 @@ import { CourseCompletionService } from '../../lessons/course-completion.service
 import { PlacementResultReadService } from '../../placement/placement-result-read.service';
 import { SubscriptionService } from '../../billing/subscription.service';
 import { CertificateService } from '../../certificates/certificate.service';
+import { computeCourseScorePercent, toScorePercent } from '../../certificates/course-score.util';
 
 interface StudentRow {
   id: string;
@@ -83,6 +84,8 @@ export interface AdminStudentCourseAssessment {
   readonly type: 'quiz' | 'exam';
   readonly score: number;
   readonly maxScore: number;
+  /** score/maxScore normalized to a 0-100 percent, for a consistent "out of 100" display. */
+  readonly scorePercent: number;
   readonly passed: boolean;
 }
 
@@ -97,6 +100,8 @@ export interface AdminStudentCourse {
   readonly completionPct: number;
   readonly completed: boolean;
   readonly assessments: AdminStudentCourseAssessment[];
+  /** Weighted quiz/exam rollup (see course-score.util.ts). Null if nothing to score yet. */
+  readonly overallScorePercent: number | null;
   readonly certificate: { readonly id: string; readonly issuedAt: string } | null;
 }
 
@@ -107,6 +112,8 @@ export interface AdminStudentAssessmentResult {
   readonly type: 'quiz' | 'exam';
   readonly score: number;
   readonly maxScore: number;
+  /** score/maxScore normalized to a 0-100 percent, for a consistent "out of 100" display. */
+  readonly scorePercent: number;
   readonly passed: boolean;
   readonly attemptedAt: string;
   /** Null when this assessment isn't linked to a course/chapter yet. */
@@ -303,6 +310,7 @@ export class AdminStudentProfileService {
             lessonCounts.total > 0 ? Math.round((lessonCounts.completed / lessonCounts.total) * 100) : 0,
           completed,
           assessments,
+          overallScorePercent: computeCourseScorePercent(assessments),
           certificate: certificate ? { id: certificate.id, issuedAt: certificate.issuedAt } : null,
         } satisfies AdminStudentCourse;
       }),
@@ -360,17 +368,22 @@ export class AdminStudentProfileService {
        ORDER BY ar.created_at DESC`,
       [studentId],
     );
-    return result.rows.map((r) => ({
-      id: r.id,
-      assessmentId: r.assessment_id,
-      title: r.title,
-      type: r.type === 'exam' ? 'exam' : 'quiz',
-      score: Number(r.score),
-      maxScore: Number(r.max_score),
-      passed: r.passed,
-      attemptedAt: r.attempted_at,
-      courseTitle: r.course_title,
-    }));
+    return result.rows.map((r) => {
+      const score = Number(r.score);
+      const maxScore = Number(r.max_score);
+      return {
+        id: r.id,
+        assessmentId: r.assessment_id,
+        title: r.title,
+        type: r.type === 'exam' ? 'exam' : 'quiz',
+        score,
+        maxScore,
+        scorePercent: toScorePercent(score, maxScore),
+        passed: r.passed,
+        attemptedAt: r.attempted_at,
+        courseTitle: r.course_title,
+      };
+    });
   }
 
   private async getWeaknesses(studentId: string): Promise<AdminStudentProfile['weaknesses']> {

@@ -67,11 +67,18 @@ function CourseRow({ course }: { readonly course: AdminStudentProfileCourse }) {
         </span>
       }
       summary={
-        <div className="flex items-center gap-2">
-          <ProgressBar pct={course.completionPct} />
-          <span className="text-xs text-[var(--text-secondary)] whitespace-nowrap">
-            {course.completedLessons} / {course.totalLessons} ({course.completionPct}%)
-          </span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <ProgressBar pct={course.completionPct} />
+            <span className="text-xs text-[var(--text-secondary)] whitespace-nowrap">
+              {course.completedLessons} / {course.totalLessons} ({course.completionPct}%)
+            </span>
+          </div>
+          {course.overallScorePercent !== null && (
+            <span className="text-xs font-semibold text-[var(--text-primary)] whitespace-nowrap">
+              Score: {course.overallScorePercent}/100
+            </span>
+          )}
         </div>
       }
     >
@@ -94,7 +101,7 @@ function CourseRow({ course }: { readonly course: AdminStudentProfileCourse }) {
                   <AdminBadge variant={a.type === 'exam' ? 'purple' : 'info'}>{a.type}</AdminBadge>
                   <span className="text-sm text-[var(--text-primary)] flex-1 min-w-[120px]">{a.title}</span>
                   <span className="text-sm text-[var(--text-secondary)]">
-                    {a.score} / {a.maxScore}
+                    {a.scorePercent} / 100
                   </span>
                   <AdminBadge variant={a.passed ? 'success' : 'error'}>
                     {a.passed ? 'Passed' : 'Failed'}
@@ -259,7 +266,7 @@ export function StudentProgressClient({ profile }: Props) {
                   {a.courseTitle ?? 'Not linked to a course'}
                 </span>
                 <span className="text-sm text-[var(--text-secondary)]">
-                  {a.score} / {a.maxScore}
+                  {a.scorePercent} / 100
                 </span>
                 <AdminBadge variant={a.passed ? 'success' : 'error'}>{a.passed ? 'Passed' : 'Failed'}</AdminBadge>
                 <span className="text-xs text-[var(--text-muted)]">

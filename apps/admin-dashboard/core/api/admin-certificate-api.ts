@@ -10,6 +10,7 @@ export type AdminCertificateScoreSnapshotEntry = {
   readonly type: 'quiz' | 'exam';
   readonly score: number;
   readonly maxScore: number;
+  readonly scorePercent: number;
   readonly passed: boolean;
 };
 
@@ -21,6 +22,7 @@ export type AdminCertificate = {
   readonly studentName: string | null;
   readonly issuedAt: string;
   readonly scoreSnapshot: readonly AdminCertificateScoreSnapshotEntry[];
+  readonly overallScorePercent: number | null;
 };
 
 function isObject(v: unknown): v is Record<string, unknown> {
@@ -33,14 +35,24 @@ function decodeNumber(v: unknown, fallback = 0): number {
   return fallback;
 }
 
+// Falls back to computing score/maxScore*100 for older certificates issued
+// before the backend started sending scorePercent directly.
+function decodeScorePercent(v: unknown, score: number, maxScore: number): number {
+  if (typeof v === 'number' && Number.isFinite(v)) return v;
+  return maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+}
+
 function decodeScoreEntry(raw: unknown): AdminCertificateScoreSnapshotEntry {
   const r = isObject(raw) ? raw : {};
+  const score = decodeNumber(r.score);
+  const maxScore = decodeNumber(r.maxScore);
   return {
     assessmentId: String(r.assessmentId ?? ''),
     title: String(r.title ?? ''),
     type: r.type === 'exam' ? 'exam' : 'quiz',
-    score: decodeNumber(r.score),
-    maxScore: decodeNumber(r.maxScore),
+    score,
+    maxScore,
+    scorePercent: decodeScorePercent(r.scorePercent, score, maxScore),
     passed: Boolean(r.passed),
   };
 }
@@ -56,6 +68,7 @@ function decodeCertificate(raw: unknown): AdminCertificate {
     studentName: typeof r.studentName === 'string' ? r.studentName : null,
     issuedAt: String(r.issuedAt ?? ''),
     scoreSnapshot: rawSnapshot.map(decodeScoreEntry),
+    overallScorePercent: typeof r.overallScorePercent === 'number' ? r.overallScorePercent : null,
   };
 }
 

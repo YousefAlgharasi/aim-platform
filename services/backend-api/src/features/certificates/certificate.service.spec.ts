@@ -27,7 +27,7 @@ describe('CertificateService', () => {
     const result = await service.getCourseAssessmentResults('student-1', 'course-1');
 
     expect(result).toEqual([
-      { assessmentId: 'a1', title: 'Final Exam', type: 'exam', score: 18, maxScore: 20, passed: true },
+      { assessmentId: 'a1', title: 'Final Exam', type: 'exam', score: 18, maxScore: 20, scorePercent: 90, passed: true },
     ]);
     expect(db.query.mock.calls[0][1]).toEqual(['student-1', 'course-1']);
   });
@@ -83,7 +83,9 @@ describe('CertificateService', () => {
       display_name: null,
       email: 'jane@example.com',
       issued_at: '2026-02-01',
-      score_snapshot: [{ assessmentId: 'a1', title: 'Final Exam', type: 'exam', score: 18, maxScore: 20, passed: true }],
+      score_snapshot: [
+        { assessmentId: 'a1', title: 'Final Exam', type: 'exam', score: 18, maxScore: 20, scorePercent: 90, passed: true },
+      ],
     };
     const db = createDb([
       { rows: [] }, // getForStudentAndCourse (existence check) -> none
@@ -97,9 +99,10 @@ describe('CertificateService', () => {
 
     expect(result?.id).toBe('cert-2');
     expect(result?.studentName).toBe('jane@example.com');
+    expect(result?.overallScorePercent).toBe(90);
     expect(db.query.mock.calls[2][0]).toContain('INSERT INTO certificates');
     expect(db.query.mock.calls[2][1]).toEqual(['student-1', 'course-1', JSON.stringify([
-      { assessmentId: 'a1', title: 'Final Exam', type: 'exam', score: 18, maxScore: 20, passed: true },
+      { assessmentId: 'a1', title: 'Final Exam', type: 'exam', score: 18, maxScore: 20, scorePercent: 90, passed: true },
     ])]);
   });
 });
