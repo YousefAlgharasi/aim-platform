@@ -17,10 +17,21 @@ import { useState } from 'react';
 type AuditLogRow = {
   readonly id: string;
   readonly userId: string;
+  readonly userName?: string | null;
   readonly action: string;
   readonly entityType: string | null;
   readonly entityId: string | null;
+  readonly category?: string;
   readonly createdAt: string;
+};
+
+const CATEGORY_LABELS: Record<string, string> = {
+  assessment: 'Assessment',
+  curriculum: 'Curriculum',
+  placement: 'Placement',
+  auth: 'Auth',
+  notifications: 'Notifications',
+  billing: 'Billing',
 };
 
 type Props = {
@@ -40,8 +51,15 @@ const columns: AdminTableColumn<AuditLogRow>[] = [
   },
   {
     key: 'userId',
-    header: 'User ID',
-    render: (row) => <AdminIdCell id={row.userId} />,
+    header: 'User',
+    render: (row) => (row.userName ? <span>{row.userName}</span> : <AdminIdCell id={row.userId} />),
+  },
+  {
+    key: 'category',
+    header: 'Category',
+    render: (row) => (
+      <AdminBadge variant="default">{row.category ? (CATEGORY_LABELS[row.category] ?? row.category) : '—'}</AdminBadge>
+    ),
   },
   {
     key: 'action',

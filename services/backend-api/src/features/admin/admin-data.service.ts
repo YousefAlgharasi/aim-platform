@@ -258,33 +258,74 @@ export class AdminDataService {
     };
   }
 
+  // Admin-relevant audit activity is spread across several append-only audit
+  // tables that share a normalizable shape (an actor/user id, an action/event
+  // type, an optional entity reference, and a created_at). This unions the
+  // ones that represent real admin-relevant actions across the platform, so
+  // the "AIM Audit Logs" admin page reflects genuine activity instead of only
+  // assessment CRUD. aim_audit_log (AIM Engine pipeline internals) and the
+  // access-decision logs (analytics_access_audit_logs, parent_access_audit_logs)
+  // are intentionally excluded — different shape / different surface.
+  // operations_audit_logs is covered by the separate Activity Logs page
+  // (listActivityLogs) and is not duplicated here.
   async listAuditLogs(page: number, limit: number, filters?: { userId?: string; action?: string; from?: string; to?: string }) {
     const { safePage, safeLimit, offset } = safePagination(page, limit);
-    const conditions: string[] = [];
     const filterParams: unknown[] = [];
     let idx = 1;
 
+    let userIdIdx: number | null = null;
+    let actionIdx: number | null = null;
+    let fromIdx: number | null = null;
+    let toIdx: number | null = null;
+
     if (filters?.userId) {
-      conditions.push(`actor_id = $${idx++}`);
+      userIdIdx = idx++;
       filterParams.push(filters.userId);
     }
     if (filters?.action) {
-      conditions.push(`event_type = $${idx++}`);
+      actionIdx = idx++;
       filterParams.push(filters.action);
     }
     if (filters?.from) {
-      conditions.push(`created_at >= $${idx++}`);
+      fromIdx = idx++;
       filterParams.push(filters.from);
     }
     if (filters?.to) {
-      conditions.push(`created_at <= $${idx++}`);
+      toIdx = idx++;
       filterParams.push(filters.to);
     }
 
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    // Builds a WHERE clause for one branch of the UNION ALL, applying the
+    // shared filters against that table's own (pre-aliasing) column names so
+    // each branch can use its own indexes.
+    const buildWhere = (userCol: string, actionCol: string): string => {
+      const conditions: string[] = [];
+      if (userIdIdx) conditions.push(`${userCol} = $${userIdIdx}`);
+      if (actionIdx) conditions.push(`${actionCol} = $${actionIdx}`);
+      if (fromIdx) conditions.push(`created_at >= $${fromIdx}`);
+      if (toIdx) conditions.push(`created_at <= $${toIdx}`);
+      return conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    };
+
+    const branches = [
+      `SELECT id, actor_id AS user_id, event_type AS action, entity_type, entity_id, created_at, 'assessment' AS category
+       FROM assessment_audit_logs ${buildWhere('actor_id', 'event_type')}`,
+      `SELECT id, actor_user_id AS user_id, event_type AS action, entity_type, entity_id, created_at, 'curriculum' AS category
+       FROM curriculum_audit_logs ${buildWhere('actor_user_id', 'event_type')}`,
+      `SELECT id, student_id AS user_id, event_type AS action, 'placement_attempt'::text AS entity_type, placement_attempt_id AS entity_id, created_at, 'placement' AS category
+       FROM placement_audit_log ${buildWhere('student_id', 'event_type')}`,
+      `SELECT id, COALESCE(actor_user_id, user_id) AS user_id, event_type AS action, NULL::text AS entity_type, NULL::uuid AS entity_id, created_at, 'auth' AS category
+       FROM auth_audit_logs ${buildWhere('COALESCE(actor_user_id, user_id)', 'event_type')}`,
+      `SELECT id, actor_id AS user_id, action, entity_type, entity_id, created_at, 'notifications' AS category
+       FROM notification_audit_logs ${buildWhere('actor_id', 'action')}`,
+      `SELECT id, actor_id AS user_id, action, entity_type, entity_id, created_at, 'billing' AS category
+       FROM billing_audit_logs ${buildWhere('actor_id', 'action')}`,
+    ];
+
+    const unionSql = branches.join('\n       UNION ALL\n       ');
 
     const countResult = await this.db.query<{ count: string }>(
-      `SELECT COUNT(*)::text AS count FROM assessment_audit_logs ${whereClause}`,
+      `SELECT COUNT(*)::text AS count FROM (${unionSql}) all_audit_logs`,
       [...filterParams],
     );
     const total = parseInt(countResult.rows[0]?.count ?? '0', 10);
@@ -293,10 +334,16 @@ export class AdminDataService {
     const offsetIdx = idx;
     const dataParams = [...filterParams, safeLimit, offset];
 
+    // student_id/actor_id/user_id across these tables may hold either the
+    // internal users.id or the Supabase auth UID — join on both so the
+    // actor's name resolves the same way listPlacementResults does.
     const result = await this.db.query<Record<string, unknown>>(
-      `SELECT id, actor_id AS user_id, event_type AS action, entity_type, entity_id, created_at
-       FROM assessment_audit_logs ${whereClause}
-       ORDER BY created_at DESC
+      `SELECT al.id, al.user_id, al.action, al.entity_type, al.entity_id, al.created_at, al.category,
+              sp.display_name, u.email
+       FROM (${unionSql}) al
+       LEFT JOIN users u ON u.id = al.user_id OR u.supabase_auth_uid = al.user_id
+       LEFT JOIN student_profiles sp ON sp.user_id = u.id
+       ORDER BY al.created_at DESC
        LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
       dataParams,
     );
@@ -305,9 +352,11 @@ export class AdminDataService {
       data: result.rows.map((r) => ({
         id: r.id,
         userId: r.user_id,
+        userName: (r.display_name as string | null) ?? (r.email as string | null) ?? null,
         action: r.action,
         entityType: r.entity_type ?? null,
         entityId: r.entity_id ?? null,
+        category: r.category,
         createdAt: r.created_at,
       })),
       total,
