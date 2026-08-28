@@ -1,5 +1,6 @@
-import { render, screen, renderWithProviders } from '../test-utils';
+import { screen, renderWithProviders } from '../test-utils';
 import { StudentProgressClient } from '../../features/students';
+import type { AdminStudentProfile } from '../../core/api/admin-student-profile-api';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn(), push: jest.fn() }),
@@ -10,46 +11,83 @@ jest.mock('../../core/api', () => ({
   AdminApiClientError: class extends Error { status = 500; },
 }));
 
-const defaultProps = {
-  studentId: 'st-1',
-  completedLessons: 8,
-  totalLessons: 20,
-  completionPct: 40,
-  lastActiveAt: '2026-01-15T10:00:00Z',
-  lessons: [
-    { lessonId: 'l-1', lessonTitle: 'Past Simple Basics', completed: true, completedAt: '2026-01-10T00:00:00Z' },
-    { lessonId: 'l-2', lessonTitle: 'Present Perfect', completed: false, completedAt: null },
+const baseProfile: AdminStudentProfile = {
+  student: {
+    id: 'st-1',
+    email: 'student@example.com',
+    displayName: 'Jane Student',
+    status: 'active',
+    createdAt: '2026-01-01T00:00:00Z',
+  },
+  placement: {
+    estimatedLevel: 'intermediate',
+    completedAt: '2026-01-05T00:00:00Z',
+    skillSummary: [{ skillCode: 'grammar', signal: 'strong' }],
+  },
+  subscription: { planId: 'pro-monthly', status: 'active', currentPeriodEnd: '2026-03-01T00:00:00Z' },
+  courses: [
+    {
+      enrollmentId: 'enr-1',
+      courseId: 'course-1',
+      courseTitle: 'English Foundations',
+      enrollmentStatus: 'active',
+      enrolledAt: '2026-01-02T00:00:00Z',
+      completedLessons: 8,
+      totalLessons: 20,
+      completionPct: 40,
+      completed: false,
+      assessments: [],
+      certificate: null,
+    },
+    {
+      enrollmentId: 'enr-2',
+      courseId: 'course-2',
+      courseTitle: 'Advanced Grammar',
+      enrollmentStatus: 'switched',
+      enrolledAt: '2025-12-01T00:00:00Z',
+      completedLessons: 10,
+      totalLessons: 10,
+      completionPct: 100,
+      completed: true,
+      assessments: [
+        { assessmentId: 'a-1', title: 'Midterm Quiz', type: 'quiz', score: 8, maxScore: 10, passed: true },
+      ],
+      certificate: { id: 'cert-1', issuedAt: '2026-01-20T00:00:00Z' },
+    },
   ],
-  totalLessonRecords: 2,
-  page: 1,
-  totalPages: 1,
+  weaknesses: [],
+  aiTeacherSessions: [],
 };
 
 describe('StudentProgressClient — no authority', () => {
   it('displays completion percentage from backend without recalculating', () => {
-    renderWithProviders(<StudentProgressClient {...defaultProps} />);
-    expect(screen.getByText('40%')).toBeInTheDocument();
+    renderWithProviders(<StudentProgressClient profile={baseProfile} />);
+    expect(screen.getByText('8 / 20 (40%)')).toBeInTheDocument();
   });
 
-  it('displays lesson counts from backend', () => {
-    renderWithProviders(<StudentProgressClient {...defaultProps} />);
-    expect(screen.getByText('8 / 20 lessons')).toBeInTheDocument();
-  });
-
-  it('displays completion status from backend', () => {
-    renderWithProviders(<StudentProgressClient {...defaultProps} />);
-    expect(screen.getByText('Completed')).toBeInTheDocument();
-    expect(screen.getByText('In progress')).toBeInTheDocument();
+  it('displays completion status badges from backend', () => {
+    renderWithProviders(<StudentProgressClient profile={baseProfile} />);
+    expect(screen.getByText('Completed ✓')).toBeInTheDocument();
   });
 
   it('does not contain mutation buttons for progress', () => {
-    renderWithProviders(<StudentProgressClient {...defaultProps} />);
+    renderWithProviders(<StudentProgressClient profile={baseProfile} />);
     expect(screen.queryByText(/delete/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/reset/i)).not.toBeInTheDocument();
   });
 
-  it('shows empty state for no lessons', () => {
-    renderWithProviders(<StudentProgressClient {...defaultProps} lessons={[]} totalLessonRecords={0} />);
-    expect(screen.getByText(/no lesson records/i)).toBeInTheDocument();
+  it('shows empty state for no courses', () => {
+    renderWithProviders(<StudentProgressClient profile={{ ...baseProfile, courses: [] }} />);
+    expect(screen.getByText(/no course enrollments/i)).toBeInTheDocument();
+  });
+
+  it('shows empty state for no placement result', () => {
+    renderWithProviders(<StudentProgressClient profile={{ ...baseProfile, placement: null }} />);
+    expect(screen.getByText(/no placement result yet/i)).toBeInTheDocument();
+  });
+
+  it('shows empty state for no weaknesses', () => {
+    renderWithProviders(<StudentProgressClient profile={baseProfile} />);
+    expect(screen.getByText(/no weaknesses currently tracked/i)).toBeInTheDocument();
   });
 });

@@ -422,6 +422,8 @@ describe('AdminDataService', () => {
       title: 'Quiz 1',
       type: 'quiz',
       status: 'published',
+      courseId: null,
+      chapterId: null,
       questionCount: 5,
       createdAt: '2026-01-01',
       updatedAt: '2026-01-02',

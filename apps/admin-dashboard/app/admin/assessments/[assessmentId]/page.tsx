@@ -9,6 +9,7 @@ import {
   publishAdminAssessment,
   unpublishAdminAssessment,
   AssessmentSettings,
+  AssessmentLinkage,
   DeadlineManagement,
   AssessmentPublishing,
   type AdminAssessmentSettings,
@@ -16,6 +17,8 @@ import {
 import { AssessmentEditorClient } from '../../../../features/assessments/pages/assessment-editor-client';
 import { AssessmentQuestionBuilder } from '../../../../features/assessments/components/question-builder';
 import { fetchAdminQuestions } from '../../../../features/content/api/admin-question-bank-api';
+import { fetchAdminCourses } from '../../../../features/content/api/admin-courses-api';
+import { fetchAdminChapters } from '../../../../features/content/api/admin-chapters-api';
 
 type Props = {
   params: Promise<{ assessmentId: string }>;
@@ -37,6 +40,24 @@ export default async function AdminAssessmentDetailPage({ params }: Props) {
       error instanceof AdminApiClientError
         ? `Backend error ${error.status}: ${error.message}`
         : 'Failed to load assessment. Check backend connectivity.';
+  }
+
+  // Course/chapter options for the linkage picker. Best-effort: if either
+  // list fails to load, the picker still renders with an empty list rather
+  // than blocking the whole page.
+  let courseOptions: Array<{ id: string; title: string }> = [];
+  let chapterOptions: Array<{ id: string; title: string }> = [];
+  try {
+    const courseList = await fetchAdminCourses(token, 1, 200);
+    courseOptions = courseList.courses.map((c) => ({ id: c.id, title: c.title }));
+  } catch {
+    courseOptions = [];
+  }
+  try {
+    const chapterList = await fetchAdminChapters(token, undefined, 1, 200);
+    chapterOptions = chapterList.chapters.map((c) => ({ id: c.id, title: c.title }));
+  } catch {
+    chapterOptions = [];
   }
 
   // The backend detail endpoint returns question count only, not per-question
@@ -100,13 +121,35 @@ export default async function AdminAssessmentDetailPage({ params }: Props) {
     const cookieStore = await cookies();
     const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
     try {
-      await updateAdminAssessment(token, assessmentId, { status: 'archived' } as never);
+      await updateAdminAssessment(token, assessmentId, { status: 'archived' });
       return {};
     } catch (err) {
       const msg =
         err instanceof AdminApiClientError
           ? `Backend error ${err.status}: ${err.message}`
           : 'Failed to archive assessment.';
+      return { error: msg };
+    }
+  }
+
+  async function handleUpdateLinkage(data: {
+    courseId: string | null;
+    chapterId: string | null;
+  }): Promise<{ error?: string }> {
+    'use server';
+    const cookieStore = await cookies();
+    const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      await updateAdminAssessment(token, assessmentId, {
+        courseId: data.courseId,
+        chapterId: data.chapterId,
+      });
+      return {};
+    } catch (err) {
+      const msg =
+        err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to update course/chapter linkage.';
       return { error: msg };
     }
   }
@@ -168,8 +211,16 @@ export default async function AdminAssessmentDetailPage({ params }: Props) {
     'use server';
     const cookieStore = await cookies();
     const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    // The backend's UpdateAssessmentSettingsDto (forbidNonWhitelisted) only
+    // accepts these three fields. The settings form also tracks UI-only
+    // extras (maxAttempts, gradingPolicy, etc.) that have no backend
+    // persistence yet — those are intentionally not forwarded here, since
+    // sending them would trip forbidNonWhitelisted and 400 the whole save.
+    const { timeLimitMinutes, passMark, shuffleQuestions } = settings as Partial<AdminAssessmentSettings>;
     try {
-      await updateAdminAssessment(token, assessmentId, { settings } as never);
+      await updateAdminAssessment(token, assessmentId, {
+        settings: { timeLimitMinutes: timeLimitMinutes ?? null, passMark: passMark ?? null, shuffleQuestions: Boolean(shuffleQuestions) },
+      });
       return {};
     } catch (err) {
       const msg =
@@ -217,6 +268,15 @@ export default async function AdminAssessmentDetailPage({ params }: Props) {
       {assessment && (
         <>
           <AssessmentEditorClient assessment={assessment} onUpdate={handleUpdate} />
+          <AssessmentLinkage
+            assessmentId={assessmentId}
+            courseId={assessment.courseId}
+            chapterId={assessment.chapterId}
+            courses={courseOptions}
+            chapters={chapterOptions}
+            disabled={assessment.status === 'archived'}
+            onUpdateLinkage={handleUpdateLinkage}
+          />
           <AssessmentPublishing
             assessmentId={assessmentId}
             status={assessment.status}

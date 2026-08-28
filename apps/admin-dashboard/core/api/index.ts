@@ -19,6 +19,8 @@ export * from './admin-assessments-api';
 export * from './admin-deadlines-api';
 export * from './admin-assessment-results-api';
 export * from './admin-student-progress-api';
+export * from './admin-student-profile-api';
+export * from './admin-certificate-api';
 export * from './admin-aim-data-api';
 export * from './admin-logs-api';
 export * from './admin-reports-api';

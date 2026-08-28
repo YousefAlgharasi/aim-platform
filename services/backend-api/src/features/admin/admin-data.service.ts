@@ -113,7 +113,7 @@ export class AdminDataService {
 
   async getAssessmentDetail(id: string) {
     const result = await this.db.query<Record<string, unknown>>(
-      `SELECT a.id, a.title, a.type, a.status,
+      `SELECT a.id, a.title, a.type, a.status, a.course_id, a.chapter_id,
               (SELECT COUNT(*)::int FROM assessment_questions aq WHERE aq.assessment_id = a.id) AS question_count,
               a.created_at, a.updated_at
        FROM assessments a
@@ -136,6 +136,8 @@ export class AdminDataService {
       title: row.title,
       type: row.type,
       status: row.status,
+      courseId: row.course_id ?? null,
+      chapterId: row.chapter_id ?? null,
       questionCount: row.question_count ?? 0,
       createdAt: row.created_at,
       updatedAt: row.updated_at,

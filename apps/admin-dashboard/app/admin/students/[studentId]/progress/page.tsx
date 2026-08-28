@@ -1,38 +1,30 @@
 import Link from 'next/link';
 import { getAdminToken } from '../../../../../core/api/admin-token';
 import { AdminApiClientError } from '../../../../../core/api';
-import {
-  fetchAdminStudentProgress,
-  fetchAdminStudentLessons,
-} from '../../../../../core/api/admin-student-progress-api';
-import { StudentProgressClient } from '../../../../../features/students';
+import { fetchAdminStudentProfile } from '../../../../../core/api/admin-student-profile-api';
+import { StudentProgressClient, studentDisplayName } from '../../../../../features/students';
 
 type Props = {
   params: Promise<{ studentId: string }>;
-  searchParams: Promise<{ page?: string }>;
 };
 
-export default async function StudentProgressPage({ params, searchParams }: Props) {
+export default async function StudentProgressPage({ params }: Props) {
   const { studentId } = await params;
-  const { page: pageParam } = await searchParams;
-  const page = parseInt(pageParam ?? '1', 10) || 1;
   const token = await getAdminToken();
 
-  let progress = null;
-  let lessons = null;
+  let profile = null;
   let fetchError: string | null = null;
 
   try {
-    [progress, lessons] = await Promise.all([
-      fetchAdminStudentProgress(token, studentId),
-      fetchAdminStudentLessons(token, studentId, page, 20),
-    ]);
+    profile = await fetchAdminStudentProfile(token, studentId);
   } catch (error) {
     fetchError =
       error instanceof AdminApiClientError
         ? `Backend error ${error.status}: ${error.message}`
-        : 'Failed to load student progress.';
+        : 'Failed to load student profile.';
   }
+
+  const heading = profile ? studentDisplayName(profile) : 'Student Profile';
 
   return (
     <section className="admin-curriculum-page">
@@ -40,38 +32,17 @@ export default async function StudentProgressPage({ params, searchParams }: Prop
         <Link href="/admin/students">Students</Link>
         <span aria-hidden="true">/</span>
         <span>{studentId}</span>
-        <span aria-hidden="true">/</span>
-        <span>Progress</span>
       </nav>
 
       <header className="admin-page-header">
-        <p className="eyebrow">Admin — Student Progress</p>
-        <h1>Progress Overview</h1>
+        <h1>{heading}</h1>
       </header>
-
-      {/* admin-boundary-note */}
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Completion percentage, lesson completion status,
-        and all progress metrics are computed by the backend only. This view is read-only.
-      </div>
 
       {fetchError && (
         <p className="admin-error-banner" role="alert">{fetchError}</p>
       )}
 
-      {progress && lessons && (
-        <StudentProgressClient
-          studentId={studentId}
-          completedLessons={progress.completedLessons}
-          totalLessons={progress.totalLessons}
-          completionPct={progress.completionPct}
-          lastActiveAt={progress.lastActiveAt}
-          lessons={lessons.data as { lessonId: string; lessonTitle: string; completed: boolean; completedAt: string | null }[]}
-          totalLessonRecords={lessons.total}
-          page={lessons.page}
-          totalPages={Math.ceil(lessons.total / lessons.limit)}
-        />
-      )}
+      {profile && <StudentProgressClient profile={profile} />}
     </section>
   );
 }

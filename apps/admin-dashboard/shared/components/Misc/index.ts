@@ -6,6 +6,7 @@ export { AdminBadge } from '../Badge/admin-badge';
 export { AdminStatusBadge } from '../Badge/admin-status-badge';
 export { AdminButton } from '../Button/admin-button';
 export { AdminCard } from './admin-card';
+export { AdminAccordion } from './admin-accordion';
 export { AdminFormField } from '../Input/admin-form-field';
 export { AdminInput, AdminTextarea, AdminSelect } from '../Input/admin-inputs';
 export { AdminConfirmDialog } from '../Modal/admin-confirm-dialog';

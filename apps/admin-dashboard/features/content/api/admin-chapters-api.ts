@@ -81,7 +81,7 @@ export type UpdateChapterPayload = {
 
 export async function fetchAdminChapters(
   token: string,
-  levelId: string,
+  levelId?: string,
   page = 1,
   limit = 20,
   status?: ChapterStatus,
