@@ -7,6 +7,10 @@ import { AuthModule } from '../../auth';
 import { DatabaseModule } from '../../database/database.module';
 import { RolesModule } from '../roles';
 import { UsersModule } from '../users';
+import { LessonsModule } from '../lessons/lessons.module';
+import { PlacementModule } from '../placement/placement.module';
+import { BillingModule } from '../billing/billing.module';
+import { CertificateModule } from '../certificates/certificate.module';
 import { AdminController } from './admin.controller';
 import { AdminDataController } from './admin-data.controller';
 import { AdminDataService } from './admin-data.service';
@@ -23,11 +27,12 @@ import { AdminUsersController } from './users/admin-users.controller';
 import { AdminUsersService } from './users/admin-users.service';
 import { AdminStudentProgressController } from './users/admin-student-progress.controller';
 import { AdminStudentProgressService } from './users/admin-student-progress.service';
+import { AdminStudentProfileService } from './users/admin-student-profile.service';
 
 @Module({
-  imports: [AuthModule, DatabaseModule, RolesModule, UsersModule],
+  imports: [AuthModule, DatabaseModule, RolesModule, UsersModule, LessonsModule, PlacementModule, BillingModule, CertificateModule],
   controllers: [AdminController, AdminDataController, AdminParentsController, AdminRoleAssignmentController, AdminRolesController, AdminUsersController, AdminStudentProgressController, AdminStatsController],
-  providers: [AdminService, AdminDataService, AdminParentsService, AdminRoleAssignmentService, AdminUsersService, AdminStudentProgressService, AdminProfileService, AdminStatsService],
+  providers: [AdminService, AdminDataService, AdminParentsService, AdminRoleAssignmentService, AdminUsersService, AdminStudentProgressService, AdminStudentProfileService, AdminProfileService, AdminStatsService],
   exports: [AdminService, AdminDataService, AdminRoleAssignmentService, AdminProfileService],
 })
 export class AdminModule {}

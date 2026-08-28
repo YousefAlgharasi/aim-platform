@@ -5,6 +5,10 @@
 // Endpoints:
 //   GET /admin/students/:id/progress — Progress summary for one student.
 //   GET /admin/students/:id/lessons  — Paginated per-lesson completion list.
+//   GET /admin/students/:id/profile  — Full profile: placement, course
+//                                       history (with assessments and any
+//                                       certificate), weaknesses,
+//                                       subscription, AI Teacher activity.
 //
 // Security rules:
 //   - Guarded by SupabaseJwtAuthGuard and RoleGuard — admin roles are
@@ -24,6 +28,7 @@ import {
   StudentLessonProgressListResponse,
   StudentProgressSummary,
 } from '../../lessons/lesson-progress.types';
+import { AdminStudentProfileService, AdminStudentProfile } from './admin-student-profile.service';
 
 @ApiTags(OPENAPI_TAGS.admin)
 @ApiBearerAuth()
@@ -31,7 +36,21 @@ import {
 @UseGuards(SupabaseJwtAuthGuard, RoleGuard)
 @RequireRoles(AuthorizedRole.ADMIN, AuthorizedRole.SUPER_ADMIN)
 export class AdminStudentProgressController {
-  constructor(private readonly studentProgress: AdminStudentProgressService) {}
+  constructor(
+    private readonly studentProgress: AdminStudentProgressService,
+    private readonly studentProfile: AdminStudentProfileService,
+  ) {}
+
+  @Get(':id/profile')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get the full admin profile for a student: placement, course history, assessments, certificates, weaknesses, subscription, AI Teacher activity (admin, read-only).' })
+  @ApiParam({ name: 'id', description: 'Internal AIM user UUID of the student.' })
+  @ApiOkResponse({ description: 'Aggregated student profile. Every value is backend-computed elsewhere; this endpoint only assembles them.' })
+  async getFullProfile(
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ): Promise<AdminStudentProfile> {
+    return this.studentProfile.getProfile(id);
+  }
 
   @Get(':id/progress')
   @HttpCode(HttpStatus.OK)
