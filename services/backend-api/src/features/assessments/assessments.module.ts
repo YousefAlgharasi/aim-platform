@@ -16,9 +16,12 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from '../../auth/auth.module';
 import { DatabaseModule } from '../../database/database.module';
 import { AnalyticsModule } from '../analytics/analytics.module';
+import { RolesModule } from '../roles';
 import { SessionsModule } from '../sessions/sessions.module';
 import { UsersModule } from '../users/users.module';
 import { TtsGatewayModule } from '../voice-teacher/tts-gateway/tts-gateway.module';
+import { AdminAssessmentWriteController } from './admin-assessment-write.controller';
+import { AdminAssessmentWriteService } from './admin-assessment-write.service';
 import { AssessmentGradingService } from './assessment-grading.service';
 import { AssessmentScorePolicyService } from './assessment-score-policy.service';
 import { AssessmentResultService } from './assessment-result.service';
@@ -40,9 +43,10 @@ import { AssessmentResultOwnershipGuard } from './guards/assessment-result-owner
 import { AssessmentAuditService } from './assessment-audit.service';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, AnalyticsModule, SessionsModule, TtsGatewayModule, UsersModule],
-  controllers: [AssessmentController],
+  imports: [DatabaseModule, AuthModule, AnalyticsModule, RolesModule, SessionsModule, TtsGatewayModule, UsersModule],
+  controllers: [AssessmentController, AdminAssessmentWriteController],
   providers: [
+    AdminAssessmentWriteService,
     AssessmentRepository,
     AssessmentService,
     AssessmentDeadlineService,
