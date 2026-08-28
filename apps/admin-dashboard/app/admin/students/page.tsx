@@ -16,7 +16,6 @@ import {
   AdminFilterBar,
   AdminInput,
   AdminSelect,
-  AdminIdCell,
   AdminDateCell,
   AdminButton,
   type AdminTableColumn,
@@ -39,16 +38,6 @@ type Props = {
 
 const columns: AdminTableColumn<AdminUserListItem>[] = [
   {
-    key: 'id',
-    header: 'ID',
-    width: '120px',
-    render: (user) => (
-      <Link href={`/admin/students/${user.id}/progress`} className="no-underline">
-        <AdminIdCell id={user.id} />
-      </Link>
-    ),
-  },
-  {
     key: 'email',
     header: 'Email',
     render: (user) => user.email ?? <span className="text-[var(--text-muted)]">—</span>,
@@ -60,40 +49,22 @@ const columns: AdminTableColumn<AdminUserListItem>[] = [
     render: (user) => <AdminStatusBadge status={user.status} />,
   },
   {
-    key: 'progress',
-    header: 'Progress',
-    width: '160px',
-    render: (user) =>
-      user.totalLessons === null ? (
-        <span className="text-[var(--text-muted)]">—</span>
-      ) : (
-        <div
-          className="flex items-center gap-2"
-          aria-label={`${user.completedLessons ?? 0} of ${user.totalLessons} lessons completed`}
-        >
-          <div className="w-16 h-1.5 rounded-full bg-[var(--surface-sunken)] overflow-hidden shrink-0">
-            <div
-              className="h-full rounded-full bg-[var(--color-primary-600)] transition-all duration-300"
-              style={{ width: `${user.completionPct ?? 0}%` }}
-            />
-          </div>
-          <span className="text-xs text-[var(--text-secondary)] whitespace-nowrap">
-            {user.completedLessons ?? 0}/{user.totalLessons} ({user.completionPct ?? 0}%)
-          </span>
-        </div>
-      ),
-  },
-  {
-    key: 'lastActiveAt',
-    header: 'Last Active',
-    width: '130px',
-    render: (user) => <AdminDateCell iso={user.lastActiveAt} />,
-  },
-  {
     key: 'createdAt',
     header: 'Enrolled',
     width: '130px',
     render: (user) => <AdminDateCell iso={user.createdAt} />,
+  },
+  {
+    key: 'actions',
+    header: '',
+    width: '90px',
+    render: (user) => (
+      <Link href={`/admin/students/${user.id}/progress`} className="no-underline">
+        <AdminButton type="button" variant="secondary">
+          View
+        </AdminButton>
+      </Link>
+    ),
   },
 ];
 
@@ -149,12 +120,6 @@ export default async function AdminStudentsPage({ searchParams }: Props) {
         }
       />
 
-      <p className="text-xs text-[var(--text-secondary)] mb-4">
-        Lesson progress is backend-computed from published lessons and per-student completion
-        records — this view never recalculates it. Click a student to see their full progress
-        breakdown.
-      </p>
-
       <form action="/admin/students" method="GET">
         <AdminFilterBar label="Filter students">
           <AdminInput
@@ -209,7 +174,6 @@ export default async function AdminStudentsPage({ searchParams }: Props) {
             columns={columns}
             rows={data.users}
             getRowKey={(u) => u.id}
-            caption={`Students — page ${data.page} of ${totalPages}`}
           />
 
           <AdminPagination

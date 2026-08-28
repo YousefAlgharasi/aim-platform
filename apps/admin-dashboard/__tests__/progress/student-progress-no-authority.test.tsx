@@ -23,8 +23,16 @@ const baseProfile: AdminStudentProfile = {
     estimatedLevel: 'intermediate',
     completedAt: '2026-01-05T00:00:00Z',
     skillSummary: [{ skillCode: 'grammar', signal: 'strong' }],
+    scorePercent: 85,
+    recommendedCourseId: 'course-1',
+    recommendedCourseTitle: 'English Foundations',
   },
-  subscription: { planId: 'pro-monthly', status: 'active', currentPeriodEnd: '2026-03-01T00:00:00Z' },
+  subscription: {
+    planId: 'pro-monthly',
+    planName: 'Pro Monthly',
+    status: 'active',
+    currentPeriodEnd: '2026-03-01T00:00:00Z',
+  },
   courses: [
     {
       enrollmentId: 'enr-1',
@@ -57,6 +65,7 @@ const baseProfile: AdminStudentProfile = {
   ],
   weaknesses: [],
   aiTeacherSessions: [],
+  assessmentResults: [],
 };
 
 describe('StudentProgressClient — no authority', () => {
