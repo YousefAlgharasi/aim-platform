@@ -224,7 +224,9 @@ class _ResultBodyState extends State<_ResultBody> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Level',
+                      Localizations.localeOf(context).languageCode == 'ar'
+                          ? 'المستوى'
+                          : 'Level',
                       style: AimTextStyles.caption.copyWith(
                         fontSize: 10,
                         fontWeight: AimFontWeights.bold,
@@ -270,7 +272,9 @@ class _ResultBodyState extends State<_ResultBody> {
               borderRadius: BorderRadius.circular(100),
             ),
             child: Text(
-              '$displayName Track',
+              Localizations.localeOf(context).languageCode == 'ar'
+                  ? 'مسار $displayName'
+                  : '$displayName Track',
               style: AimTextStyles.caption.copyWith(
                 color: AimColors.primary700,
                 fontWeight: AimFontWeights.bold,
@@ -324,6 +328,9 @@ class _ResultBodyState extends State<_ResultBody> {
             l10n.placementResultSelectPlan,
             style: AimTextStyles.title.copyWith(
               color: surfaces.textSecondary,
+              fontSize: 12,
+              fontWeight: AimFontWeights.bold,
+              letterSpacing: 0.8,
             ),
           ),
           const SizedBox(height: AimSpacing.space12),
@@ -333,17 +340,56 @@ class _ResultBodyState extends State<_ResultBody> {
               PlacementOptionCard(
                 title: l10n.placementResultFreePlan,
                 subtitle: l10n.placementResultFreePlanSub,
-                trailingValue: '0\$/mo',
+                trailingValue: '\$0/mo',
                 isSelected: _planChoice == 'free',
                 onTap: () => setState(() => _planChoice = 'free'),
               ),
-              const SizedBox(height: AimSpacing.componentGap),
-              PlacementOptionCard(
-                title: l10n.placementResultPlusPlan,
-                subtitle: l10n.placementResultPlusPlanSub,
-                trailingValue: '12.99\$/mo',
-                isSelected: _planChoice == 'plus',
-                onTap: () => setState(() => _planChoice = 'plus'),
+              const SizedBox(height: AimSpacing.space16),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  PlacementOptionCard(
+                    title: l10n.placementResultPlusPlan,
+                    subtitle: l10n.placementResultPlusPlanSub,
+                    trailingValue: '\$12.99/mo',
+                    isSelected: _planChoice == 'plus',
+                    onTap: () => setState(() => _planChoice = 'plus'),
+                  ),
+                  Positioned(
+                    top: -10,
+                    right: 16,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFF59E0B), Color(0xFFF97316)],
+                        ),
+                        borderRadius: BorderRadius.circular(100),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        Localizations.localeOf(context).languageCode == 'ar'
+                            ? '7 أيام مجاناً'
+                            : '7 DAYS FREE',
+                        style: AimTextStyles.caption.copyWith(
+                          fontSize: 9,
+                          fontWeight: AimFontWeights.extrabold,
+                          color: AimColors.neutral0,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

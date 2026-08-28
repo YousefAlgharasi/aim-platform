@@ -8,6 +8,7 @@ class ChapterQuizSummary {
     required this.title,
     required this.completed,
     required this.locked,
+    this.scorePercent,
   });
 
   final String assessmentId;
@@ -18,4 +19,7 @@ class ChapterQuizSummary {
 
   /// Backend-computed: true until every lesson in the chapter is completed.
   final bool locked;
+
+  /// Backend-computed: score percentage earned on latest attempt (if completed).
+  final int? scorePercent;
 }

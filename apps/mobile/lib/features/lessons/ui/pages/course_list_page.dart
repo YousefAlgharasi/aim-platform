@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/enrollment/logic/provider/enrollment_provider.dart';
 import 'package:aim_mobile/features/shell/logic/main_shell_tab_provider.dart';
@@ -120,14 +121,27 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Scaffold.of(context).openDrawer();
-        },
-        backgroundColor: colorScheme.primary,
-        shape: const CircleBorder(),
-        elevation: 6,
-        child: const Icon(Icons.menu_rounded, color: Colors.white, size: 24),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF653BFF).withValues(alpha: 0.45),
+              blurRadius: 20,
+              spreadRadius: 2,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: FloatingActionButton(
+          onPressed: () {
+            Scaffold.of(context).openDrawer();
+          },
+          backgroundColor: const Color(0xFF653BFF),
+          shape: const CircleBorder(),
+          elevation: 0,
+          child: const Icon(Icons.notes_rounded, color: Colors.white, size: 24),
+        ),
       ),
       body: SafeArea(
         child: switch (state) {
@@ -194,6 +208,7 @@ class _CourseListContentState extends State<_CourseListContent> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
 
@@ -213,91 +228,96 @@ class _CourseListContentState extends State<_CourseListContent> {
       child: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         children: [
-          // Top Header Row
+          // Top Header Row matching Figma prototype (AIM logo + Title + Avatar)
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Consumer(
-                builder: (context, ref, child) {
-                  return GestureDetector(
-                    onTap: () {
-                      if (context.canPop()) {
-                        context.pop();
-                      } else {
-                        ref.read(mainShellTabIndexProvider.notifier).state = 0;
-                      }
+              Row(
+                children: [
+                  Consumer(
+                    builder: (context, ref, child) {
+                      return GestureDetector(
+                        onTap: () {
+                          if (context.canPop()) {
+                            context.pop();
+                          } else {
+                            ref.read(mainShellTabIndexProvider.notifier).state = 0;
+                          }
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.only(right: 10),
+                          child: AimBrandLogo(size: 38, fontSize: 11, borderRadius: 12),
+                        ),
+                      );
                     },
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      margin: const EdgeInsets.only(right: 12),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: surfaces.surfaceSunken,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.arrow_back_rounded,
-                        size: 20,
-                        color: surfaces.textPrimary,
-                      ),
+                  ),
+                  Text(
+                    l10n.lessonsCoursesPageTitle,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: surfaces.textPrimary,
+                      letterSpacing: -0.3,
                     ),
-                  );
-                },
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.lessonsCoursesPageTitle,
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: surfaces.textPrimary,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      l10n.lessonsCoursesSubtitle,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: surfaces.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
 
-              // Level Badge Pill
-              if (headerLevel.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEEF2FF),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFC7D2FE)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const CircleAvatar(
-                        radius: 3.5,
-                        backgroundColor: Color(0xFF4F46E5),
+              // Level Badge or User Avatar
+              Row(
+                children: [
+                  if (headerLevel.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: colorScheme.primary.withValues(alpha: 0.3)),
                       ),
-                      const SizedBox(width: 6),
-                      Text(
-                        l10n.lessonsLevelBadge(headerLevel),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF4F46E5),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircleAvatar(
+                            radius: 3,
+                            backgroundColor: colorScheme.primary,
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            l10n.lessonsLevelBadge(headerLevel),
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final authState = ref.watch(authContextProvider);
+                      final initial = switch (authState) {
+                        AppAsyncSuccess(:final data) =>
+                          (data.profile?.displayName ?? data.user.email ?? 'A')[0].toUpperCase(),
+                        _ => 'A',
+                      };
+                      return CircleAvatar(
+                        radius: 18,
+                        backgroundColor: const Color(0xFF6366F1),
+                        child: Text(
+                          initial,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
                         ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                ),
+                ],
+              ),
             ],
           ),
 
@@ -399,7 +419,7 @@ class _CourseListContentState extends State<_CourseListContent> {
                 ),
               ),
             )
-          else
+          else ...[
             for (var i = 0; i < visibleCourses.length; i++)
               CourseListTile(
                 model: visibleCourses[i],
@@ -407,6 +427,69 @@ class _CourseListContentState extends State<_CourseListContent> {
                 isCurrentEnrollment: widget.currentCourseId == visibleCourses[i].courseId,
                 onTap: () => widget.onTap(visibleCourses[i]),
               ),
+
+            // Prototype "NEXT UP · LOCKED COURSE" Card
+            if (widget.courses.any((c) => c.locked)) ...[
+              const SizedBox(height: 8),
+              Builder(
+                builder: (context) {
+                  final lockedCourse = widget.courses.firstWhere((c) => c.locked);
+                  final activeCourse = widget.courses.firstWhere((c) => !c.locked, orElse: () => widget.courses.first);
+
+                  return Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: surfaces.surfaceSunken.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: surfaces.border),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.lock_outline_rounded,
+                              size: 16,
+                              color: surfaces.textMuted,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'NEXT UP · LOCKED COURSE',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                color: surfaces.textMuted,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          lockedCourse.title,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: surfaces.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Unlocks automatically once you complete all chapters in ${activeCourse.title}.',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: surfaces.textSecondary,
+                            height: 1.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ],
+          ],
 
           const SizedBox(height: 80),
         ],
@@ -416,6 +499,8 @@ class _CourseListContentState extends State<_CourseListContent> {
 
   Widget _buildFilterTab(String label, _CourseFilter filter) {
     final isSelected = _filter == filter;
+    final colorScheme = Theme.of(context).colorScheme;
+    final surfaces = aimSurfacesOf(context);
     return InkWell(
       onTap: () => setState(() => _filter = filter),
       borderRadius: BorderRadius.circular(20),
@@ -423,15 +508,15 @@ class _CourseListContentState extends State<_CourseListContent> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF4F46E5) : Colors.white,
+          color: isSelected ? colorScheme.primary : surfaces.surfaceSunken,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? const Color(0xFF4F46E5) : const Color(0xFFE2E8F0),
+            color: isSelected ? colorScheme.primary : surfaces.border,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFF4F46E5).withValues(alpha: 0.2),
+                    color: colorScheme.primary.withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -443,7 +528,7 @@ class _CourseListContentState extends State<_CourseListContent> {
           style: TextStyle(
             fontSize: 13,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-            color: isSelected ? Colors.white : const Color(0xFF64748B),
+            color: isSelected ? Colors.white : surfaces.textSecondary,
           ),
         ),
       ),

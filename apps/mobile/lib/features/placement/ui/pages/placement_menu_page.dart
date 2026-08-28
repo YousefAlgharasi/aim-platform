@@ -31,6 +31,8 @@ import 'package:aim_mobile/features/placement/data/models/placement_result_model
 import 'package:aim_mobile/features/placement/logic/provider/placement_menu_notifier.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_provider.dart';
 
+import 'package:aim_mobile/features/placement/ui/widgets/placement_primary_button.dart';
+
 const _cefrCodes = {
   'beginner': 'A1',
   'elementary': 'A2',
@@ -143,48 +145,32 @@ class _MenuHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final surfaces = aimSurfacesOf(context);
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
 
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsetsDirectional.fromSTEB(
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.space16,
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.space16,
-      ),
-      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+      height: AimSizes.topBarHeight,
+      padding: const EdgeInsets.symmetric(horizontal: AimSpacing.space8),
       child: Row(
         children: [
-          Semantics(
-            button: true,
-            label: l10n.commonBack,
-            child: InkWell(
-              onTap: () {
-                if (context.canPop()) context.pop();
-              },
-              customBorder: const CircleBorder(),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: AimColors.neutral0.withValues(alpha: 0.18),
-                  shape: BoxShape.circle,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(AimSpacing.space12),
-                  child: Icon(
-                    Directionality.of(context) == TextDirection.rtl
-                        ? Icons.chevron_right_rounded
-                        : Icons.chevron_left_rounded,
-                    size: AimSizes.iconMd,
-                    color: AimColors.neutral0,
-                  ),
-                ),
-              ),
+          IconButton(
+            icon: Icon(
+              isRtl ? Icons.chevron_right_rounded : Icons.chevron_left_rounded,
+              color: surfaces.textPrimary,
+              size: 26,
             ),
+            onPressed: () {
+              if (context.canPop()) context.pop();
+            },
           ),
-          const SizedBox(width: AimSpacing.componentGap),
+          const SizedBox(width: AimSpacing.space4),
           Text(
             l10n.placementMenuHeaderTitle,
-            style: AimTextStyles.h2.copyWith(color: AimColors.neutral0),
+            style: AimTextStyles.title.copyWith(
+              color: surfaces.textPrimary,
+              fontSize: 18,
+              fontWeight: AimFontWeights.bold,
+            ),
           ),
         ],
       ),
@@ -225,10 +211,8 @@ class _NotTakenBody extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AimSpacing.sectionGap),
-          AIMGradientButton(
+          PlacementPrimaryButton(
             label: l10n.placementMenuTakeTestBtn,
-            fullWidth: true,
-            semanticLabel: l10n.placementMenuTakeTestBtn,
             onPressed: onStart,
           ),
         ],
@@ -250,15 +234,7 @@ class _InProgressBody extends StatelessWidget {
 
   final String status;
 
-  /// Starts a fresh attempt (the backend auto-abandons the existing
-  /// active one) — there is no mid-section resume flow in this app today,
-  /// so "continue" honestly means "start again," not "pick up exactly
-  /// where you left off."
   final VoidCallback onContinue;
-
-  /// Re-runs the status check — used while a submitted attempt is still
-  /// being scored server-side, since a new attempt can't be started until
-  /// scoring finishes.
   final VoidCallback onCheckAgain;
 
   @override
@@ -298,17 +274,13 @@ class _InProgressBody extends StatelessWidget {
           ),
           const SizedBox(height: AimSpacing.sectionGap),
           if (isSubmitted)
-            AIMGradientButton(
+            PlacementPrimaryButton(
               label: l10n.placementMenuCheckAgainBtn,
-              fullWidth: true,
-              semanticLabel: l10n.placementMenuCheckAgainBtn,
               onPressed: onCheckAgain,
             )
           else
-            AIMGradientButton(
+            PlacementPrimaryButton(
               label: l10n.placementMenuContinueBtn,
-              fullWidth: true,
-              semanticLabel: l10n.placementMenuContinueBtn,
               onPressed: onContinue,
             ),
         ],
@@ -358,7 +330,7 @@ class _CompletedBody extends StatelessWidget {
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.all(AimSpacing.cardPaddingLg),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: AimGradients.gzHero,
                 borderRadius: AimRadius.borderXl,
               ),
@@ -389,10 +361,8 @@ class _CompletedBody extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AimSpacing.sectionGap),
-          AIMGradientButton(
+          PlacementPrimaryButton(
             label: l10n.placementMenuViewFullResult,
-            fullWidth: true,
-            semanticLabel: l10n.placementMenuViewFullResult,
             onPressed: () => context.push(
               AppRoutePaths.placementResult,
               extra: {'attemptId': result.placementAttemptId},

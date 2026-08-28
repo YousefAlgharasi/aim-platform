@@ -160,12 +160,26 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
           Scaffold(
           drawer: _buildDrawer(context, ref, selectedIndex),
           floatingActionButton: Builder(
-            builder: (context) => FloatingActionButton(
-              backgroundColor: AimColors.primary500,
-              foregroundColor: AimColors.neutral0,
-              tooltip: l10n.shellOpenMenuTooltip,
-              onPressed: () => Scaffold.of(context).openDrawer(),
-              child: const Icon(Icons.menu),
+            builder: (context) => Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF653BFF).withValues(alpha: 0.45),
+                    blurRadius: 20,
+                    spreadRadius: 2,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: FloatingActionButton(
+                backgroundColor: const Color(0xFF653BFF),
+                foregroundColor: AimColors.neutral0,
+                elevation: 0,
+                tooltip: l10n.shellOpenMenuTooltip,
+                onPressed: () => Scaffold.of(context).openDrawer(),
+                child: const Icon(Icons.notes_rounded, color: Colors.white, size: 24),
+              ),
             ),
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -387,12 +401,19 @@ class _AIMDrawerBrandHeader extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'AIM',
-              style: AimTextStyles.h2.copyWith(
-                color: AimColors.secondary500,
-                fontWeight: AimFontWeights.bold,
-              ),
+            const Row(
+              children: [
+                AimBrandLogo(size: 36, fontSize: 11, borderRadius: 12),
+                SizedBox(width: 8),
+                Text(
+                  'AIM English',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+              ],
             ),
             GestureDetector(
               onTap: () => Navigator.of(context).pop(),

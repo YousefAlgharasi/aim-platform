@@ -36,4 +36,6 @@ services/backend-api/var/
 env.json
 .claude/
 scripts/create-superadmin-supabase.js
+.vite/
+
 

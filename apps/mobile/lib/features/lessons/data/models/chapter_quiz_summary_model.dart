@@ -9,14 +9,16 @@ class ChapterQuizSummaryModel extends ChapterQuizSummary {
     required super.title,
     required super.completed,
     required super.locked,
+    super.scorePercent,
   });
 
   factory ChapterQuizSummaryModel.fromJson(Map<String, dynamic> json) {
     return ChapterQuizSummaryModel(
-      assessmentId: json['assessmentId'] as String,
-      title: json['title'] as String,
-      completed: json['completed'] as bool? ?? false,
-      locked: json['locked'] as bool? ?? true,
+      assessmentId: json['assessmentId'] as String? ?? json['id'] as String? ?? '',
+      title: json['title'] as String? ?? 'Chapter Quiz',
+      completed: json['completed'] as bool? ?? json['isPassed'] as bool? ?? false,
+      locked: json['locked'] as bool? ?? json['isLocked'] as bool? ?? false,
+      scorePercent: (json['scorePercent'] as num?)?.toInt() ?? (json['score'] as num?)?.toInt(),
     );
   }
 }

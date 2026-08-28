@@ -156,6 +156,7 @@ class _PlacementQuestionPageState
                     ),
                   PlacementQuestionReady() => _QuestionBody(
                       state: state,
+                      sectionTitle: widget.sectionTitle,
                       submitError: _submitError,
                       onSelectAnswer: (ans) => ref
                           .read(placementQuestionProvider.notifier)
@@ -227,6 +228,7 @@ class _PlacementQuestionPageState
 class _QuestionBody extends StatelessWidget {
   const _QuestionBody({
     required this.state,
+    required this.sectionTitle,
     required this.onSelectAnswer,
     required this.onSkip,
     required this.onSubmit,
@@ -235,6 +237,7 @@ class _QuestionBody extends StatelessWidget {
   });
 
   final PlacementQuestionReady state;
+  final String sectionTitle;
   final ValueChanged<String> onSelectAnswer;
   final VoidCallback onSkip;
   final VoidCallback onSubmit;
@@ -256,6 +259,7 @@ class _QuestionBody extends StatelessWidget {
             question: question,
             displayIndex: state.displayIndex,
             totalQuestions: state.totalQuestions,
+            sectionTitle: sectionTitle,
           ),
           const SizedBox(height: AimSpacing.formFieldGap),
           Expanded(
@@ -322,19 +326,34 @@ class _QuestionPromptCard extends StatelessWidget {
     required this.question,
     required this.displayIndex,
     required this.totalQuestions,
+    required this.sectionTitle,
   });
 
   final PlacementQuestionModel question;
   final int displayIndex;
   final int totalQuestions;
+  final String sectionTitle;
 
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final parts = question.text.split('\n\n');
-    final String promptHeader = parts[0];
-    final String promptText = parts.length > 1 ? parts[1] : promptHeader;
-    final String? passage = parts.length > 2 ? parts.sublist(2).join('\n\n') : null;
+    String promptHeader;
+    String? passageText;
+
+    if (parts.length > 1) {
+      promptHeader = parts[0];
+      passageText = parts.sublist(1).join('\n\n');
+    } else {
+      promptHeader = parts[0];
+      passageText = null;
+    }
+
+    final categoryText = sectionTitle.isNotEmpty
+        ? sectionTitle.toUpperCase()
+        : 'CONDITIONALS';
 
     return Container(
       padding: const EdgeInsets.all(AimSpacing.cardPadding),
@@ -353,36 +372,59 @@ class _QuestionPromptCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Category & Question Counter Header ───────────────────────────
+          Text(
+            '$categoryText · QUESTION $displayIndex/$totalQuestions',
+            style: AimTextStyles.caption.copyWith(
+              color: AimColors.primary500,
+              fontWeight: AimFontWeights.bold,
+              fontSize: 11,
+              letterSpacing: 1.0,
+            ),
+          ),
+          const SizedBox(height: AimSpacing.space8),
+
+          // ── Prompt Instruction ───────────────────────────────────────────
           Text(
             promptHeader,
-            style: AimTextStyles.caption.copyWith(
-              color: surfaces.textMuted,
-              fontWeight: AimFontWeights.semibold,
-              letterSpacing: 1.2,
-            ),
-          ),
-          const SizedBox(height: AimSpacing.componentGap),
-          Text(
-            promptText,
             style: AimTextStyles.bodyLg.copyWith(
               color: surfaces.textPrimary,
-              height: 1.45,
+              fontWeight: AimFontWeights.medium,
+              height: 1.35,
             ),
           ),
-          if (passage != null && passage.isNotEmpty) ...[
-            const SizedBox(height: AimSpacing.formFieldGap),
+
+          // ── Passage / Sentence Box with Left Accent Border ───────────────
+          if (passageText != null && passageText.isNotEmpty) ...[
+            const SizedBox(height: AimSpacing.space12),
             Container(
-              padding: const EdgeInsets.all(AimSpacing.cardPadding),
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: surfaces.surfaceSunken,
-                borderRadius: AimRadius.borderSm,
+                color: isDark
+                    ? const Color(0xFF1E293B)
+                    : const Color(0xFFF1F5F9),
+                borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(10),
+                  bottomRight: Radius.circular(10),
+                  topLeft: Radius.circular(2),
+                  bottomLeft: Radius.circular(2),
+                ),
+                border: const Border(
+                  left: BorderSide(
+                    color: AimColors.primary500,
+                    width: 3.5,
+                  ),
+                ),
               ),
               child: Text(
-                passage,
-                style: AimTextStyles.bodySm.copyWith(
-                  fontStyle: FontStyle.italic,
-                  color: surfaces.textSecondary,
-                  height: 1.5,
+                passageText,
+                style: AimTextStyles.bodyMd.copyWith(
+                  color: surfaces.textPrimary,
+                  fontStyle: question.type == 'reading'
+                      ? FontStyle.italic
+                      : FontStyle.normal,
+                  height: 1.45,
                 ),
               ),
             ),

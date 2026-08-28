@@ -87,25 +87,35 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Scaffold.of(context).openDrawer();
-        },
-        backgroundColor: colorScheme.primary,
-        shape: const CircleBorder(),
-        elevation: 6,
-        child: const Icon(Icons.menu_rounded, color: Colors.white, size: 24),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF653BFF).withValues(alpha: 0.45),
+              blurRadius: 20,
+              spreadRadius: 2,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: FloatingActionButton(
+          onPressed: () {
+            Scaffold.of(context).openDrawer();
+          },
+          backgroundColor: const Color(0xFF653BFF),
+          shape: const CircleBorder(),
+          elevation: 0,
+          child: const Icon(Icons.notes_rounded, color: Colors.white, size: 24),
+        ),
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // App Bar Header (Back button + Course Title matching prototype)
+            // App Bar Header (Back button + Course Title matching Image 1 from prototype)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: surfaces.surface,
-                border: Border(bottom: BorderSide(color: surfaces.border)),
-              ),
+              color: surfaces.surface,
               child: Row(
                 children: [
                   IconButton(
@@ -116,7 +126,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
                         context.go('/main');
                       }
                     },
-                    icon: Icon(Icons.arrow_back_rounded, color: surfaces.textSecondary, size: 22),
+                    icon: Icon(Icons.arrow_back_rounded, color: surfaces.textPrimary, size: 20),
                     style: IconButton.styleFrom(
                       backgroundColor: surfaces.surfaceSunken,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -124,11 +134,13 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
                     ),
                   ),
                   const SizedBox(width: 12),
+                  const AimBrandLogo(size: 34, fontSize: 10, borderRadius: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       widget.courseTitle,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 18,
                         fontWeight: FontWeight.w800,
                         color: surfaces.textPrimary,
                         letterSpacing: -0.3,
@@ -175,7 +187,6 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
     }
 
     final overallPercent = (chapters.fold<int>(0, (sum, c) => sum + c.percent) / chapters.length).round();
-    final totalLessons = chapters.fold<int>(0, (sum, c) => sum + c.lessonCount);
     final isExamPassed = (_finalExam?.passed ?? false) || (overallPercent == 100);
 
     final visibleChapters = <(int, ChapterProgress)>[
@@ -186,12 +197,14 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
           (index, ch),
     ];
 
+    final totalLessons = chapters.fold<int>(0, (sum, c) => sum + c.lessonCount);
+
     return RefreshIndicator(
       onRefresh: _refresh,
       child: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         children: [
-          // Banner Hero: Course Overview matching prototype
+          // Course Overview Hero Banner
           Container(
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
@@ -212,7 +225,6 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Pill badge
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
@@ -231,7 +243,6 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
                 ),
                 const SizedBox(height: 12),
 
-                // Course Title
                 Text(
                   widget.courseTitle,
                   style: const TextStyle(
@@ -253,7 +264,6 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
 
                 const SizedBox(height: 20),
 
-                // Course Progress Bar
                 Row(
                   children: [
                     Text(
@@ -323,7 +333,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
                   Text(
                     '${chapters.length} chapters',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: surfaces.textMuted,
                     ),
@@ -337,7 +347,11 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
 
           // Chapters List (Expandable Accordion Cards)
           for (final (index, chapter) in visibleChapters) ...[
-            _ExpandableChapterCard(chapter: chapter, index: index),
+            _ExpandableChapterCard(
+              chapter: chapter,
+              index: index,
+              allChapters: chapters,
+            ),
             const SizedBox(height: 12),
           ],
 
@@ -357,8 +371,8 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
 
   Widget _buildFilterTab(String label, ChapterListFilter filter) {
     final isSelected = _filter == filter;
-    final colorScheme = Theme.of(context).colorScheme;
     final surfaces = aimSurfacesOf(context);
+    const brandIndigo = Color(0xFF6366F1);
     return InkWell(
       onTap: () => setState(() => _filter = filter),
       borderRadius: BorderRadius.circular(20),
@@ -366,15 +380,15 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
         decoration: BoxDecoration(
-          color: isSelected ? colorScheme.primary : surfaces.surfaceSunken,
+          color: isSelected ? brandIndigo : surfaces.surfaceSunken,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? colorScheme.primary : surfaces.border,
+            color: isSelected ? brandIndigo : surfaces.border,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: colorScheme.primary.withValues(alpha: 0.2),
+                    color: brandIndigo.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -446,17 +460,18 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
       );
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isPassed = exam.passed || isExamPassed;
     final isUnlocked = exam.unlocked || isPassed;
 
     final cardBg = isPassed
-        ? const Color(0xFFDCFCE7)
+        ? (isDark ? AimColors.success700.withValues(alpha: 0.15) : AimColors.success50)
         : (isUnlocked ? AimColors.primary500.withValues(alpha: 0.06) : surfaces.surface);
     final borderColor = isPassed
-        ? const Color(0xFF22C55E)
+        ? (isDark ? AimColors.success500.withValues(alpha: 0.6) : AimColors.success500)
         : (isUnlocked ? AimColors.primary500 : surfaces.border);
     final badgeColor = isPassed
-        ? const Color(0xFF16A34A)
+        ? (isDark ? AimColors.success500 : const Color(0xFF16A34A))
         : (isUnlocked ? const Color(0xFFD97706) : surfaces.textSecondary);
 
     return Material(
@@ -467,7 +482,10 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
                 if (isPassed) {
                   context.push(
                     AppRoutePaths.assessmentResultHistory,
-                    extra: {'assessmentId': exam.assessmentId},
+                    extra: {
+                      'assessmentId': exam.assessmentId,
+                      'assessmentTitle': exam.title,
+                    },
                   );
                 } else {
                   context.push(
@@ -492,7 +510,9 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
             ),
             boxShadow: [
               BoxShadow(
-                color: surfaces.textPrimary.withValues(alpha: 0.03),
+                color: isPassed
+                    ? AimColors.success500.withValues(alpha: isDark ? 0.08 : 0.04)
+                    : surfaces.textPrimary.withValues(alpha: 0.03),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -548,7 +568,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
                       style: TextStyle(
                         fontSize: 13,
                         color: isPassed
-                            ? const Color(0xFF15803D)
+                            ? (isDark ? AimColors.success500 : const Color(0xFF15803D))
                             : (isUnlocked
                                 ? AimColors.primary500
                                 : surfaces.textSecondary),
@@ -565,7 +585,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 18,
-                  color: isPassed ? const Color(0xFF16A34A) : AimColors.primary500,
+                  color: isPassed ? AimColors.success500 : AimColors.primary500,
                 ),
             ],
           ),
@@ -579,10 +599,12 @@ class _ExpandableChapterCard extends ConsumerStatefulWidget {
   const _ExpandableChapterCard({
     required this.chapter,
     required this.index,
+    this.allChapters = const [],
   });
 
   final ChapterProgress chapter;
   final int index;
+  final List<ChapterProgress> allChapters;
 
   @override
   ConsumerState<_ExpandableChapterCard> createState() => _ExpandableChapterCardState();
@@ -591,6 +613,7 @@ class _ExpandableChapterCard extends ConsumerStatefulWidget {
 class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> {
   late bool _isExpanded;
   List<LessonProgress>? _lessons;
+  ChapterQuizSummary? _quiz;
   bool _isLoading = false;
 
   @override
@@ -602,8 +625,17 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
     }
   }
 
-  Future<void> _fetchLessons() async {
-    if (_lessons != null || _isLoading) return;
+  @override
+  void didUpdateWidget(covariant _ExpandableChapterCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.chapter.completedLessonCount != widget.chapter.completedLessonCount ||
+        oldWidget.chapter.percent != widget.chapter.percent) {
+      _fetchLessons(force: true);
+    }
+  }
+
+  Future<void> _fetchLessons({bool force = false}) async {
+    if (!force && (_lessons != null || _isLoading)) return;
     final token = ref.read(authFlowProvider).accessToken;
     if (token == null || token.isEmpty) return;
 
@@ -614,9 +646,14 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
         bearerToken: token,
         chapterId: widget.chapter.chapterId,
       );
+      final quiz = await repository.getChapterQuiz(
+        bearerToken: token,
+        chapterId: widget.chapter.chapterId,
+      );
       if (mounted) {
         setState(() {
           _lessons = list;
+          _quiz = quiz;
           _isLoading = false;
         });
       }
@@ -660,23 +697,33 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
     final chapter = widget.chapter;
     final index = widget.index;
     final isCompleted = chapter.isCompleted;
-    final isLocked = chapter.status == 'locked';
+
+    // A chapter is locked if backend specifies status == 'locked' OR if it's not the first chapter and the previous chapter is incomplete
+    final isPreviousCompleted = index == 0 || (index < widget.allChapters.length && widget.allChapters[index - 1].isCompleted);
+    final isLocked = chapter.status == 'locked' || (!isCompleted && !isPreviousCompleted);
+
     final chNum = index + 1;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final colorScheme = Theme.of(context).colorScheme;
     final surfaces = aimSurfacesOf(context);
 
-    return Container(
+    final isHighlighted = chapter.isInProgress || _isExpanded;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
         color: surfaces.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: surfaces.border,
-          width: 1,
+          color: isHighlighted ? colorScheme.primary : surfaces.border,
+          width: isHighlighted ? 1.5 : 1.0,
         ),
         boxShadow: [
           BoxShadow(
-            color: surfaces.textPrimary.withValues(alpha: 0.04),
-            blurRadius: 10,
+            color: isHighlighted
+                ? colorScheme.primary.withValues(alpha: 0.12)
+                : surfaces.textPrimary.withValues(alpha: 0.04),
+            blurRadius: isHighlighted ? 12 : 10,
             offset: const Offset(0, 4),
           ),
         ],
@@ -699,12 +746,13 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                     decoration: BoxDecoration(
                       color: isCompleted
                           ? const Color(0xFF10B981)
-                          : (isLocked ? surfaces.surfaceSunken : colorScheme.primaryContainer),
+                          : (isLocked ? surfaces.surfaceSunken : const Color(0xFF6366F1)),
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: isCompleted
+                      boxShadow: (isCompleted || !isLocked)
                           ? [
                               BoxShadow(
-                                color: const Color(0xFF10B981).withValues(alpha: 0.25),
+                                color: (isCompleted ? const Color(0xFF10B981) : const Color(0xFF6366F1))
+                                    .withValues(alpha: 0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 4),
                               ),
@@ -717,7 +765,7 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                           : Text(
                               'Ch.$chNum',
                               style: TextStyle(
-                                color: isLocked ? surfaces.textMuted : colorScheme.primary,
+                                color: isLocked ? surfaces.textMuted : Colors.white,
                                 fontWeight: FontWeight.w900,
                                 fontSize: 14,
                               ),
@@ -746,27 +794,27 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                             ),
                             if (isCompleted)
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFDCFCE7),
-                                  borderRadius: BorderRadius.circular(12),
+                                  color: isDark ? AimColors.success700.withValues(alpha: 0.3) : AimColors.success50,
+                                  borderRadius: BorderRadius.circular(6),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'DONE',
                                   style: TextStyle(
-                                    fontSize: 9,
+                                    fontSize: 10,
                                     fontWeight: FontWeight.w800,
-                                    color: Color(0xFF166534),
-                                    letterSpacing: 0.8,
+                                    color: isDark ? AimColors.success500 : const Color(0xFF16A34A),
+                                    letterSpacing: 0.5,
                                   ),
                                 ),
                               )
                             else if (chapter.isInProgress)
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
                                   color: colorScheme.primaryContainer,
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
                                   'IN PROGRESS',
@@ -774,16 +822,16 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                                     fontSize: 9,
                                     fontWeight: FontWeight.w800,
                                     color: colorScheme.primary,
-                                    letterSpacing: 0.8,
+                                    letterSpacing: 0.5,
                                   ),
                                 ),
                               )
                             else if (isLocked)
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
                                   color: surfaces.surfaceSunken,
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
                                   'LOCKED',
@@ -791,14 +839,14 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                                     fontSize: 9,
                                     fontWeight: FontWeight.w800,
                                     color: surfaces.textMuted,
-                                    letterSpacing: 0.8,
+                                    letterSpacing: 0.5,
                                   ),
                                 ),
                               ),
                           ],
                         ),
                         if (chapter.description != null && chapter.description!.isNotEmpty) ...[
-                          const SizedBox(height: 3),
+                          const SizedBox(height: 4),
                           Text(
                             chapter.description!,
                             style: TextStyle(
@@ -812,7 +860,7 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                         ],
                         const SizedBox(height: 12),
 
-                        // Progress Bar + Expand Chevron
+                        // Progress Bar + Lesson Count + Chevron
                         Row(
                           children: [
                             Expanded(
@@ -910,47 +958,64 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                           final iconData = _getSkillIcon(skillKind, lesson.completed, lesson.current);
                           final lessonNum = lIndex + 1;
 
+                          final isLessonLocked = isLocked;
+
+                          final isDark = Theme.of(context).brightness == Brightness.dark;
+
                           return Container(
                             margin: const EdgeInsets.only(bottom: 8),
                             decoration: BoxDecoration(
                               color: lesson.current
-                                  ? colorScheme.primaryContainer.withValues(alpha: 0.3)
+                                  ? surfaces.surface
                                   : surfaces.surfaceSunken.withValues(alpha: 0.5),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                 color: lesson.current
-                                    ? colorScheme.primary.withValues(alpha: 0.5)
+                                    ? AimColors.primary500
                                     : (lesson.completed
-                                        ? const Color(0xFF10B981).withValues(alpha: 0.3)
+                                        ? AimColors.success500.withValues(alpha: 0.4)
                                         : surfaces.border),
                                 width: lesson.current ? 1.5 : 1.0,
                               ),
+                              boxShadow: lesson.current
+                                  ? [
+                                      BoxShadow(
+                                        color: AimColors.primary500.withValues(alpha: 0.15),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ]
+                                  : null,
                             ),
                             child: InkWell(
-                              onTap: () {
-                                context.push(
-                                  AppRoutePaths.lessonDetail,
-                                  extra: {
-                                    'lessonId': lesson.id,
-                                    'lessonTitle': lesson.title,
-                                  },
-                                );
-                              },
+                              onTap: isLessonLocked
+                                  ? null
+                                  : () {
+                                      context.push(
+                                        AppRoutePaths.lessonDetail,
+                                        extra: {
+                                          'lessonId': lesson.id,
+                                          'lessonTitle': lesson.title,
+                                        },
+                                      );
+                                    },
                               borderRadius: BorderRadius.circular(16),
                               child: Padding(
                                 padding: const EdgeInsets.all(12),
                                 child: Row(
                                   children: [
-                                    // Lesson Icon Pill matching screenshot
+                                    // Lesson Icon Pill matching prototype image
                                     Container(
                                       width: 40,
                                       height: 40,
                                       decoration: BoxDecoration(
                                         color: lesson.completed
-                                            ? const Color(0xFFD1FAE5)
+                                            ? (isDark ? AimColors.success700.withValues(alpha: 0.4) : AimColors.success50)
                                             : (lesson.current
-                                                ? colorScheme.primaryContainer
-                                                : surfaces.surface),
+                                                ? AimColors.primary500
+                                                : (isDark
+                                                    ? AimColors.primary500.withValues(alpha: 0.2)
+                                                    : AimColors.primary50)),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       alignment: Alignment.center,
@@ -958,10 +1023,12 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                                         iconData,
                                         size: 20,
                                         color: lesson.completed
-                                            ? const Color(0xFF10B981)
+                                            ? AimColors.success500
                                             : (lesson.current
-                                                ? colorScheme.primary
-                                                : surfaces.textSecondary),
+                                                ? AimColors.neutral0
+                                                : (isLessonLocked
+                                                    ? surfaces.textSecondary
+                                                    : AimColors.primary500)),
                                       ),
                                     ),
                                     const SizedBox(width: 12),
@@ -978,7 +1045,7 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                                                 style: TextStyle(
                                                   fontSize: 10,
                                                   fontWeight: FontWeight.w800,
-                                                  color: surfaces.textMuted,
+                                                  color: surfaces.textSecondary,
                                                   letterSpacing: 0.5,
                                                 ),
                                               ),
@@ -989,7 +1056,9 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                                                   vertical: 1.5,
                                                 ),
                                                 decoration: BoxDecoration(
-                                                  color: colorScheme.primary.withValues(alpha: 0.1),
+                                                  color: isLessonLocked
+                                                      ? (isDark ? surfaces.surfaceSunken : AimColors.neutral100)
+                                                      : AimColors.primary500.withValues(alpha: 0.15),
                                                   borderRadius: BorderRadius.circular(6),
                                                 ),
                                                 child: Text(
@@ -997,7 +1066,9 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                                                   style: TextStyle(
                                                     fontSize: 9,
                                                     fontWeight: FontWeight.w800,
-                                                    color: colorScheme.primary,
+                                                    color: isLessonLocked
+                                                        ? surfaces.textSecondary
+                                                        : AimColors.primary500,
                                                     letterSpacing: 0.5,
                                                   ),
                                                 ),
@@ -1019,11 +1090,13 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                                       ),
                                     ),
 
-                                    // Trailing chevron
+                                    // Trailing icon (Lock outline if locked, Chevron if unlocked)
                                     Icon(
-                                      Icons.chevron_right_rounded,
-                                      size: 20,
-                                      color: surfaces.textMuted,
+                                      isLessonLocked
+                                          ? Icons.lock_outline_rounded
+                                          : Icons.chevron_right_rounded,
+                                      size: isLessonLocked ? 16 : 20,
+                                      color: surfaces.textSecondary,
                                     ),
                                   ],
                                 ),
@@ -1033,6 +1106,175 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                         },
                       ),
                     ],
+                  if (_quiz != null) ...[
+                    const SizedBox(height: 4),
+                    Builder(
+                      builder: (context) {
+                        final quiz = _quiz!;
+                        final isDark = Theme.of(context).brightness == Brightness.dark;
+                        final isCompleted = quiz.completed;
+                        final isLocked = quiz.locked;
+                        final scoreText = quiz.scorePercent != null ? ' · ${quiz.scorePercent}%' : '';
+
+                        final bgColor = isCompleted
+                            ? (isDark ? const Color(0xFF065F46).withValues(alpha: 0.2) : const Color(0xFFECFDF5))
+                            : (isLocked
+                                ? (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9))
+                                : (isDark ? AimColors.primary500.withValues(alpha: 0.15) : const Color(0xFFEEF2FF)));
+
+                        final borderColor = isCompleted
+                            ? const Color(0xFF10B981)
+                            : (isLocked ? surfaces.border : AimColors.primary500.withValues(alpha: 0.4));
+
+                        final iconBgColor = isCompleted
+                            ? const Color(0xFF10B981)
+                            : (isLocked ? surfaces.surfaceSunken : AimColors.primary500);
+
+                        final iconData = isCompleted
+                            ? Icons.check_circle_rounded
+                            : (isLocked ? Icons.lock_rounded : Icons.quiz_rounded);
+
+                        final iconColor = isCompleted
+                            ? AimColors.neutral0
+                            : (isLocked ? surfaces.textMuted : AimColors.neutral0);
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          decoration: BoxDecoration(
+                            color: bgColor,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: borderColor,
+                              width: isCompleted ? 1.5 : 1.0,
+                            ),
+                          ),
+                          child: InkWell(
+                            onTap: isLocked
+                                ? null
+                                : () {
+                                    context.push(
+                                      AppRoutePaths.assessmentDetail,
+                                      extra: {
+                                        'assessmentId': quiz.assessmentId,
+                                        'assessmentTitle': quiz.title,
+                                      },
+                                    );
+                                  },
+                            borderRadius: BorderRadius.circular(16),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: iconBgColor,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Icon(
+                                      iconData,
+                                      size: 20,
+                                      color: iconColor,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              'CHAPTER QUIZ',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w800,
+                                                color: isCompleted
+                                                    ? const Color(0xFF059669)
+                                                    : (isLocked ? surfaces.textMuted : AimColors.primary600),
+                                                letterSpacing: 0.8,
+                                              ),
+                                            ),
+                                            if (isCompleted) ...[
+                                              const SizedBox(width: 6),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(
+                                                  horizontal: 6,
+                                                  vertical: 1.5,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFFD1FAE5),
+                                                  borderRadius: BorderRadius.circular(6),
+                                                ),
+                                                child: Text(
+                                                  'PASSED$scoreText',
+                                                  style: const TextStyle(
+                                                    fontSize: 9,
+                                                    fontWeight: FontWeight.w800,
+                                                    color: Color(0xFF065F46),
+                                                    letterSpacing: 0.5,
+                                                  ),
+                                                ),
+                                              ),
+                                            ] else if (isLocked) ...[
+                                              const SizedBox(width: 6),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(
+                                                  horizontal: 6,
+                                                  vertical: 1.5,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: surfaces.surfaceSunken,
+                                                  borderRadius: BorderRadius.circular(6),
+                                                ),
+                                                child: Text(
+                                                  'LOCKED',
+                                                  style: TextStyle(
+                                                    fontSize: 9,
+                                                    fontWeight: FontWeight.w800,
+                                                    color: surfaces.textMuted,
+                                                    letterSpacing: 0.5,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          quiz.title,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                            color: surfaces.textPrimary,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(
+                                    isCompleted
+                                        ? Icons.check_rounded
+                                        : (isLocked
+                                            ? Icons.lock_outline_rounded
+                                            : Icons.chevron_right_rounded),
+                                    size: 20,
+                                    color: isCompleted
+                                        ? const Color(0xFF10B981)
+                                        : (isLocked ? surfaces.textMuted : AimColors.primary500),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ],
               ),
             ),

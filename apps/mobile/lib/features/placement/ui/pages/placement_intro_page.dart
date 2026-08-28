@@ -49,157 +49,178 @@ class PlacementIntroPage extends StatelessWidget {
       value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Scaffold(
         backgroundColor: surfaces.background,
-        body: SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(
-              AimSpacing.screenPaddingMobile,
-              AimSpacing.space32,
-              AimSpacing.screenPaddingMobile,
-              AimSpacing.space40,
-            ),
-            children: [
-              // ── Hero Icon Badge ──────────────────────────────────────────
-              _HeroBadge(),
-              const SizedBox(height: AimSpacing.space24),
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: isDark
+                ? null
+                : const LinearGradient(
+                    colors: [
+                      Color(0xFFEEF2FF),
+                      Colors.white,
+                      Color(0xFFF8FAFC),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+          ),
+          child: SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(
+                AimSpacing.screenPaddingMobile,
+                AimSpacing.space32,
+                AimSpacing.screenPaddingMobile,
+                AimSpacing.space40,
+              ),
+              children: [
+                // ── Hero Icon Badge ──────────────────────────────────────────
+                _HeroBadge(),
+                const SizedBox(height: AimSpacing.space24),
 
-              // ── "Placement Test" pill ───────────────────────────────────
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AimSpacing.space12,
-                      vertical: AimSpacing.space4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? AimColors.primary500.withValues(alpha: 0.18)
-                          : const Color(0xFFEEF2FF),
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    child: Text(
-                      'Placement Test',
-                      style: AimTextStyles.caption.copyWith(
-                        color: AimColors.primary600,
-                        fontWeight: AimFontWeights.extrabold,
-                        letterSpacing: 0.6,
+                // ── "Placement Test" pill ───────────────────────────────────
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AimSpacing.space12,
+                        vertical: AimSpacing.space4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? AimColors.primary500.withValues(alpha: 0.18)
+                            : const Color(0xFFEEF2FF),
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      child: Text(
+                        'PLACEMENT TEST',
+                        style: AimTextStyles.caption.copyWith(
+                          color: AimColors.primary600,
+                          fontWeight: AimFontWeights.extrabold,
+                          fontSize: 11,
+                          letterSpacing: 0.8,
+                        ),
                       ),
                     ),
+                  ],
+                ),
+                const SizedBox(height: AimSpacing.space12),
+
+                // ── Title ────────────────────────────────────────────────────
+                Text(
+                  l10n.placementStartAssessmentTitle,
+                  style: AimTextStyles.h1.copyWith(
+                    color: surfaces.textPrimary,
+                    fontSize: 30,
+                    fontWeight: AimFontWeights.extrabold,
+                    height: 1.15,
                   ),
-                ],
-              ),
-              const SizedBox(height: AimSpacing.space8),
-
-              // ── Title ────────────────────────────────────────────────────
-              Text(
-                'Level Assessment',
-                style: AimTextStyles.h1.copyWith(
-                  color: surfaces.textPrimary,
-                  fontSize: 28,
-                  height: 1.15,
                 ),
-              ),
-              const SizedBox(height: AimSpacing.space8),
+                const SizedBox(height: AimSpacing.space8),
 
-              // ── Subtitle ─────────────────────────────────────────────────
-              Text(
-                'Calibrate your AI tutor to find your optimal starting point.',
-                style: AimTextStyles.bodySm.copyWith(
-                  color: surfaces.textSecondary,
-                  height: 1.5,
+                // ── Subtitle ─────────────────────────────────────────────────
+                Text(
+                  l10n.placementStartAssessmentSubtitle,
+                  style: AimTextStyles.bodySm.copyWith(
+                    color: surfaces.textSecondary,
+                    height: 1.5,
+                  ),
                 ),
-              ),
-              const SizedBox(height: AimSpacing.sectionGap),
+                const SizedBox(height: AimSpacing.sectionGap),
 
-              // ── Info Cards ───────────────────────────────────────────────
-              const _InfoCard(
-                icon: Icons.timer_outlined,
-                iconColor: AimColors.primary500,
-                title: '25 Minutes',
-                subtitle:
-                    'Estimated duration for a full calibrated assessment.',
-              ),
-              const SizedBox(height: AimSpacing.componentGap),
-              const _InfoCard(
-                icon: Icons.assignment_outlined,
-                iconColor: AimColors.primary500,
-                title: '20 Adaptive Questions',
-                subtitle: 'Questions dynamically adapt to your skill level.',
-              ),
-              const SizedBox(height: AimSpacing.componentGap),
-              const _InfoCard(
-                icon: Icons.lightbulb_outline_rounded,
-                iconColor: Color(0xFFF59E0B),
-                title: 'Helpful Tip',
-                subtitle:
-                    "If you don't know an answer, it is okay to skip and let the AI adjust.",
-              ),
-              const SizedBox(height: AimSpacing.space20),
+                // ── Info Cards ───────────────────────────────────────────────
+                _InfoCard(
+                  icon: Icons.timer_outlined,
+                  iconColor: AimColors.primary500,
+                  title: l10n.placementStartLimitTitle(25),
+                  subtitle: l10n.placementStartLimitDesc,
+                ),
+                const SizedBox(height: AimSpacing.componentGap),
+                _InfoCard(
+                  icon: Icons.assignment_outlined,
+                  iconColor: AimColors.primary500,
+                  title: l10n.placementStartQuestionsTitle(20),
+                  subtitle: l10n.placementStartQuestionsDesc,
+                ),
+                const SizedBox(height: AimSpacing.componentGap),
+                _InfoCard(
+                  icon: Icons.lightbulb_outline_rounded,
+                  iconColor: const Color(0xFFF59E0B),
+                  title: l10n.placementStartCalibrationTitle,
+                  subtitle: l10n.placementStartCalibrationDesc,
+                ),
+                const SizedBox(height: AimSpacing.space24),
 
-              // ── Honor Code note ──────────────────────────────────────────
-              Center(
-                child: Text.rich(
-                  TextSpan(
-                    text: 'By starting, you agree to our ',
-                    style: AimTextStyles.caption.copyWith(
-                      color: surfaces.textMuted,
+                // ── Honor Code note ──────────────────────────────────────────
+                Center(
+                  child: Text.rich(
+                    TextSpan(
+                      text: Localizations.localeOf(context).languageCode == 'ar'
+                          ? 'ببدء التقييم، فإنك توافق على '
+                          : 'By starting, you agree to our ',
+                      style: AimTextStyles.caption.copyWith(
+                        color: surfaces.textMuted,
+                      ),
+                      children: [
+                        WidgetSpan(
+                          child: GestureDetector(
+                            onTap: () {},
+                            child: Text(
+                              Localizations.localeOf(context).languageCode == 'ar'
+                                  ? 'ميثاق شرف التقييم الخاص بنا'
+                                  : 'Assessment Honor Code',
+                              style: AimTextStyles.caption.copyWith(
+                                color: AimColors.primary500,
+                                fontWeight: AimFontWeights.semibold,
+                                decoration: TextDecoration.underline,
+                                decorationColor: AimColors.primary500,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    children: [
-                      WidgetSpan(
-                        child: GestureDetector(
-                          onTap: () {},
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: AimSpacing.space32),
+
+                // ── CTA Button ───────────────────────────────────────────────
+                SizedBox(
+                  width: double.infinity,
+                  height: AimSizes.buttonLg,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: AimGradients.gzHero,
+                      borderRadius: AimRadius.borderMd,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AimColors.primary500.withValues(alpha: 0.25),
+                          blurRadius: 14,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      borderRadius: AimRadius.borderMd,
+                      child: InkWell(
+                        onTap: () => context.push(AppRoutePaths.placementStart),
+                        borderRadius: AimRadius.borderMd,
+                        child: Center(
                           child: Text(
-                            'Assessment Honor Code',
-                            style: AimTextStyles.caption.copyWith(
-                              color: AimColors.primary500,
-                              fontWeight: AimFontWeights.semibold,
-                              decoration: TextDecoration.underline,
-                              decorationColor: AimColors.primary500,
+                            l10n.placementStartBtnLabel,
+                            style: AimTextStyles.button.copyWith(
+                              color: AimColors.neutral0,
+                              fontSize: 16,
+                              fontWeight: AimFontWeights.bold,
                             ),
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: AimSpacing.space32),
-
-              // ── CTA Button ───────────────────────────────────────────────
-              SizedBox(
-                width: double.infinity,
-                height: AimSizes.buttonLg,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: AimGradients.gzHero,
-                    borderRadius: AimRadius.borderMd,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AimColors.primary500.withValues(alpha: 0.25),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    borderRadius: AimRadius.borderMd,
-                    child: InkWell(
-                      onTap: () => context.push(AppRoutePaths.placementStart),
-                      borderRadius: AimRadius.borderMd,
-                      child: Center(
-                        child: Text(
-                          'Start Assessment',
-                          style: AimTextStyles.button.copyWith(
-                            color: AimColors.neutral0,
-                          ),
-                        ),
-                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

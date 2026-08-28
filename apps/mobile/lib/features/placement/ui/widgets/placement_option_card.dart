@@ -157,8 +157,8 @@ class PlacementOptionCard extends StatelessWidget {
             ] else if (isSelected) ...[
               const SizedBox(width: 12),
               Container(
-                width: 24,
-                height: 24,
+                width: 22,
+                height: 22,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: primaryColor,
@@ -170,22 +170,33 @@ class PlacementOptionCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.check_rounded,
-                  size: 14,
-                  color: Colors.white,
+                child: Center(
+                  child: (iconWidget != null || subtitle != null)
+                      ? const Icon(
+                          Icons.check_rounded,
+                          size: 14,
+                          color: Colors.white,
+                        )
+                      : Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
               ),
             ] else ...[
               const SizedBox(width: 12),
               Container(
-                width: 24,
-                height: 24,
+                width: 22,
+                height: 22,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: const Color(0xFFCBD5E1),
-                    width: 1.5,
+                    color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
+                    width: 2.0,
                   ),
                 ),
               ),

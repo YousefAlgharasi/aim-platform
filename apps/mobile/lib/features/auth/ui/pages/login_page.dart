@@ -145,7 +145,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     height: 1.5,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 64),
 
                 if (formState.errorMessage != null) ...[
                   AIMAlertBanner(

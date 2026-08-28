@@ -47,6 +47,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lessons_entities.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
+import 'package:aim_mobile/features/student_courses/logic/provider/student_courses_provider.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../widgets/lessons_widgets.dart';
 
@@ -72,12 +73,8 @@ class LessonDetailPage extends ConsumerStatefulWidget {
 }
 
 class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
-  // Locked-by-default: the "Practice questions" CTA only unlocks once the
-  // backend confirms this lesson is complete (lesson_progress.completed —
-  // set by LessonTeachingStageService when the AI Teacher/Voice Teacher
-  // finishes teaching it). Starts false so the button never briefly shows
-  // enabled before the real state is known.
-  bool _practiceUnlocked = false;
+  // Optional practice section: unlocked by default so students can practice anytime.
+  bool _practiceUnlocked = true;
   bool _practiceCheckStarted = false;
 
   @override
@@ -149,6 +146,8 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
             bearerToken: token,
             lessonId: detail.lesson.id,
           );
+      ref.invalidate(chaptersProvider);
+      ref.invalidate(studentCoursesProvider);
       if (mounted) {
         setState(() => _practiceUnlocked = true);
         ScaffoldMessenger.of(context).showSnackBar(

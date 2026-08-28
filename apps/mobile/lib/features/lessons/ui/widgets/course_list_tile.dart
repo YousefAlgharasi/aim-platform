@@ -148,23 +148,24 @@ class CourseListTile extends StatelessWidget {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFDCFCE7),
+                                    color: AimColors.success700.withValues(alpha: 0.25),
                                     borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: AimColors.success500.withValues(alpha: 0.4)),
                                   ),
-                                  child: const Row(
+                                  child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       CircleAvatar(
                                         radius: 3,
-                                        backgroundColor: Color(0xFF166534),
+                                        backgroundColor: AimColors.success500,
                                       ),
-                                      SizedBox(width: 4),
+                                      const SizedBox(width: 4),
                                       Text(
                                         'Current',
                                         style: TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.bold,
-                                          color: Color(0xFF166534),
+                                          color: AimColors.success500,
                                         ),
                                       ),
                                     ],
@@ -268,7 +269,7 @@ class CourseListTile extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                       decoration: BoxDecoration(
                         color: completed
-                            ? const Color(0xFFDCFCE7)
+                            ? AimColors.success700.withValues(alpha: 0.25)
                             : (inProgress ? colorScheme.primaryContainer : surfaces.surfaceSunken),
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -280,7 +281,7 @@ class CourseListTile extends StatelessWidget {
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: completed
-                              ? const Color(0xFF166534)
+                              ? AimColors.success500
                               : (inProgress ? colorScheme.primary : surfaces.textSecondary),
                         ),
                       ),

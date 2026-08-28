@@ -687,21 +687,7 @@ class _HomeTopBar extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF4F46E5),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.auto_awesome_rounded,
-                    color: Colors.white,
-                    size: 16,
-                  ),
-                ),
-              ),
+              const AimBrandLogo(size: 32, fontSize: 10, borderRadius: 10),
               const SizedBox(width: AimSpacing.space8),
               Text(
                 'AIM English',
@@ -807,7 +793,9 @@ class _WelcomeCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Hello, $firstName! 👋',
+                              Localizations.localeOf(context).languageCode == 'ar'
+                                  ? 'مرحباً، $firstName! 👋'
+                                  : 'Hello, $firstName! 👋',
                               style: AimTextStyles.title.copyWith(
                                 color: AimColors.neutral0,
                                 fontWeight: AimFontWeights.bold,
@@ -816,7 +804,9 @@ class _WelcomeCard extends StatelessWidget {
                             ),
                             const SizedBox(height: AimSpacing.space4),
                             Text(
-                              '$activeCourseName · XP Level $level',
+                              Localizations.localeOf(context).languageCode == 'ar'
+                                  ? '$activeCourseName · مستوى XP $level'
+                                  : '$activeCourseName · XP Level $level',
                               style: AimTextStyles.bodySm.copyWith(
                                 color: AimColors.neutral0.withValues(alpha: 0.85),
                                 fontSize: 12,

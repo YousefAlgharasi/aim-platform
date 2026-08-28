@@ -24,6 +24,7 @@ import 'package:aim_mobile/features/enrollment/logic/entity/current_enrollment.d
 import 'package:aim_mobile/features/enrollment/logic/provider/enrollment_provider.dart';
 import 'package:aim_mobile/features/enrollment/logic/repository/enrollment_repository.dart';
 import 'package:aim_mobile/features/lessons/ui/pages/course_list_page.dart';
+import 'package:aim_mobile/features/lessons/ui/widgets/course_list_tile.dart';
 import 'package:aim_mobile/features/student_courses/data/models/student_course_model.dart';
 import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
 import 'package:aim_mobile/features/student_courses/logic/provider/student_courses_notifier.dart';
@@ -222,7 +223,7 @@ void main() {
       );
       await tester.pump();
 
-      await tester.tap(find.text('Locked Course'));
+      await tester.tap(find.byType(CourseListTile).last);
       await tester.pump();
 
       expect(find.text('Chapters'), findsNothing);

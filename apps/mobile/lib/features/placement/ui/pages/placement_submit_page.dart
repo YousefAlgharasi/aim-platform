@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -93,7 +94,7 @@ class _PlacementSubmitPageState extends ConsumerState<PlacementSubmitPage> {
   }
 }
 
-class _SubmissionSuccessfulBody extends StatelessWidget {
+class _SubmissionSuccessfulBody extends StatefulWidget {
   const _SubmissionSuccessfulBody({
     required this.completedCount,
     required this.skippedCount,
@@ -105,44 +106,99 @@ class _SubmissionSuccessfulBody extends StatelessWidget {
   final int totalQuestions;
 
   @override
+  State<_SubmissionSuccessfulBody> createState() =>
+      _SubmissionSuccessfulBodyState();
+}
+
+class _SubmissionSuccessfulBodyState extends State<_SubmissionSuccessfulBody> {
+  int _analysisStep = 0;
+  Timer? _stepTimer;
+
+  static const _steps = [
+    'Evaluating response accuracy...',
+    'Calibrating skill level...',
+    'Generating personalized roadmap...',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _stepTimer = Timer.periodic(const Duration(milliseconds: 900), (timer) {
+      if (!mounted) return;
+      setState(() {
+        if (_analysisStep < _steps.length - 1) {
+          _analysisStep++;
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _stepTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(
         horizontal: AimSpacing.screenPaddingMobile,
-        vertical: AimSpacing.space32,
+        vertical: AimSpacing.space24,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Spacer(flex: 2),
-          // ── Centered Sparkles Badge (Figma: 80x80 purple circle + white ✦) ──
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AimColors.primary500,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AimColors.primary500.withValues(alpha: 0.25),
-                  blurRadius: 24,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: const Center(
-              child: Text(
-                '✦',
-                style: TextStyle(
-                  color: AimColors.neutral0,
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
+          const SizedBox(height: AimSpacing.space20),
+          // ── Animated Hero Check Badge ─────────────────────────────────────
+          Stack(
+            alignment: Alignment.center,
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 90,
+                height: 90,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AimColors.primary500.withValues(alpha: 0.25),
+                      blurRadius: 24,
+                      spreadRadius: 4,
+                    ),
+                  ],
                 ),
               ),
-            ),
+              Transform.rotate(
+                angle: 0.08,
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    gradient: AimGradients.gzHero,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AimColors.primary500.withValues(alpha: 0.3),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.check_rounded,
+                      color: AimColors.neutral0,
+                      size: 44,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: AimSpacing.space24),
 
@@ -151,140 +207,255 @@ class _SubmissionSuccessfulBody extends StatelessWidget {
             l10n.placementSubmitSuccessfulTitle,
             style: AimTextStyles.h2.copyWith(
               color: surfaces.textPrimary,
+              fontSize: 24,
+              fontWeight: AimFontWeights.extrabold,
               letterSpacing: -0.3,
             ),
           ),
-          const SizedBox(height: AimSpacing.innerGap),
+          const SizedBox(height: AimSpacing.space8),
           Text(
-            l10n.placementSubmitEvaluatingMessage,
-            style: AimTextStyles.bodySm.copyWith(
-              color: surfaces.textSecondary,
-            ),
-          ),
-          const SizedBox(height: AimSpacing.space32),
-
-          // ── Stat Card (Completed vs Skipped) ──────────────────────────────
-          Container(
-            padding: const EdgeInsets.all(AimSpacing.cardPaddingLg),
-            decoration: BoxDecoration(
-              color: surfaces.surface,
-              borderRadius: AimRadius.borderLg,
-              border: Border.all(color: surfaces.border),
-              boxShadow: [
-                BoxShadow(
-                  color: AimColors.neutral900.withValues(alpha: 0.03),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        color: AimColors.success500.withValues(alpha: 0.12),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.check,
-                          size: 14,
-                          color: AimColors.success500,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AimSpacing.componentGap),
-                    Text(
-                      l10n.placementSubmitCompletedQuestions,
-                      style: AimTextStyles.bodySm.copyWith(
-                        fontWeight: AimFontWeights.medium,
-                        color: surfaces.textPrimary,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      '$completedCount / $totalQuestions',
-                      style: AimTextStyles.bodySm.copyWith(
-                        fontWeight: AimFontWeights.bold,
-                        color: AimColors.primary500,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AimSpacing.cardPadding),
-                Divider(height: 1, color: surfaces.divider),
-                const SizedBox(height: AimSpacing.cardPadding),
-                Row(
-                  children: [
-                    Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        color: surfaces.textMuted.withValues(alpha: 0.12),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Icon(
-                          Icons.fast_forward_rounded,
-                          size: 14,
-                          color: surfaces.textMuted,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AimSpacing.componentGap),
-                    Text(
-                      l10n.placementSubmitSkippedQuestions,
-                      style: AimTextStyles.bodySm.copyWith(
-                        fontWeight: AimFontWeights.medium,
-                        color: surfaces.textPrimary,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      '$skippedCount',
-                      style: AimTextStyles.bodySm.copyWith(
-                        fontWeight: AimFontWeights.bold,
-                        color: surfaces.textPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const Spacer(flex: 3),
-
-          // ── Loading Spinner & AI Calibration Text ──────────────────────────
-          const SizedBox(
-            width: 32,
-            height: 32,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(AimColors.primary500),
-            ),
-          ),
-          const SizedBox(height: AimSpacing.space20),
-          Text(
-            l10n.placementSubmitAnalyzingAnswers,
-            style: AimTextStyles.bodyLg.copyWith(
-              fontWeight: AimFontWeights.bold,
-              color: AimColors.primary500,
-            ),
-          ),
-          const SizedBox(height: AimSpacing.innerGap),
-          Text(
-            l10n.placementSubmitCalibratingBody,
+            'Your placement test results have been recorded and saved.',
             textAlign: TextAlign.center,
-            style: AimTextStyles.caption.copyWith(
+            style: AimTextStyles.bodySm.copyWith(
               color: surfaces.textSecondary,
               height: 1.5,
             ),
           ),
-          const Spacer(flex: 1),
+          const SizedBox(height: AimSpacing.space24),
+
+          // ── 2-Column Stats Summary Grid ──────────────────────────────────
+          Row(
+            children: [
+              // Completed Card
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(AimSpacing.space16),
+                  decoration: BoxDecoration(
+                    color: surfaces.surface,
+                    borderRadius: AimRadius.borderLg,
+                    border: Border.all(color: surfaces.border),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AimColors.neutral900.withValues(alpha: 0.03),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.check_circle_outline_rounded,
+                            size: 18,
+                            color: Color(0xFF10B981),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AimSpacing.space12),
+                      Text(
+                        l10n.placementSubmitCompletedQuestions.toUpperCase(),
+                        style: AimTextStyles.caption.copyWith(
+                          fontSize: 10,
+                          fontWeight: AimFontWeights.extrabold,
+                          color: surfaces.textMuted,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text.rich(
+                        TextSpan(
+                          text: '${widget.completedCount} ',
+                          style: AimTextStyles.h2.copyWith(
+                            color: surfaces.textPrimary,
+                            fontSize: 20,
+                            fontWeight: AimFontWeights.extrabold,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: '/ ${widget.totalQuestions}',
+                              style: AimTextStyles.caption.copyWith(
+                                color: surfaces.textMuted,
+                                fontSize: 12,
+                                fontWeight: AimFontWeights.medium,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: AimSpacing.space12),
+              // Skipped Card
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(AimSpacing.space16),
+                  decoration: BoxDecoration(
+                    color: surfaces.surface,
+                    borderRadius: AimRadius.borderLg,
+                    border: Border.all(color: surfaces.border),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AimColors.neutral900.withValues(alpha: 0.03),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.error_outline_rounded,
+                            size: 18,
+                            color: Color(0xFFF59E0B),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AimSpacing.space12),
+                      Text(
+                        l10n.placementSubmitSkippedQuestions.toUpperCase(),
+                        style: AimTextStyles.caption.copyWith(
+                          fontSize: 10,
+                          fontWeight: AimFontWeights.extrabold,
+                          color: surfaces.textMuted,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text.rich(
+                        TextSpan(
+                          text: '${widget.skippedCount} ',
+                          style: AimTextStyles.h2.copyWith(
+                            color: surfaces.textPrimary,
+                            fontSize: 20,
+                            fontWeight: AimFontWeights.extrabold,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: Localizations.localeOf(context).languageCode == 'ar'
+                                  ? 'سؤالاً'
+                                  : 'questions',
+                              style: AimTextStyles.caption.copyWith(
+                                color: surfaces.textMuted,
+                                fontSize: 12,
+                                fontWeight: AimFontWeights.medium,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AimSpacing.space24),
+
+          // ── AI Calibration Banner ─────────────────────────────────────────
+          Container(
+            padding: const EdgeInsets.all(AimSpacing.space20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isDark
+                    ? [
+                        AimColors.primary500.withValues(alpha: 0.15),
+                        const Color(0xFF8B5CF6).withValues(alpha: 0.15),
+                      ]
+                    : [
+                        const Color(0xFFEEF2FF),
+                        const Color(0xFFF3E8FF),
+                      ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: AimRadius.borderLg,
+              border: Border.all(
+                color: AimColors.primary500.withValues(alpha: 0.25),
+              ),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(AimColors.primary500),
+                      ),
+                    ),
+                    const SizedBox(width: AimSpacing.space8),
+                    Text(
+                      'AI Engine Active',
+                      style: AimTextStyles.bodyMd.copyWith(
+                        color: AimColors.primary600,
+                        fontWeight: AimFontWeights.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.auto_awesome,
+                      size: 16,
+                      color: AimColors.primary500,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AimSpacing.space12),
+                Text(
+                  _steps[_analysisStep],
+                  style: AimTextStyles.bodySm.copyWith(
+                    color: surfaces.textPrimary,
+                    fontWeight: AimFontWeights.semibold,
+                  ),
+                ),
+                const SizedBox(height: AimSpacing.space12),
+                // Progress Track
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(100),
+                  child: LinearProgressIndicator(
+                    value: (_analysisStep + 1) / _steps.length,
+                    minHeight: 6,
+                    backgroundColor: AimColors.primary500.withValues(alpha: 0.15),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      AimColors.primary500,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AimSpacing.space12),
+                Text(
+                  l10n.placementSubmitCalibratingBody,
+                  textAlign: TextAlign.center,
+                  style: AimTextStyles.caption.copyWith(
+                    color: surfaces.textSecondary,
+                    height: 1.45,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

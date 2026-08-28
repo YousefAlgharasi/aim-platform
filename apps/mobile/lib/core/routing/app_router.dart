@@ -588,8 +588,8 @@ class AppRouter {
   static Widget _buildResultHistory(Object? arguments) {
     final args = _assessmentArgs(arguments);
     final assessmentId = args['assessmentId'];
-    final assessmentTitle = args['assessmentTitle'];
-    if (assessmentId is! String || assessmentTitle is! String) {
+    final assessmentTitle = (args['assessmentTitle'] as String?) ?? 'Final Level Exam';
+    if (assessmentId is! String) {
       return const SplashPage();
     }
     return ResultHistoryPage(

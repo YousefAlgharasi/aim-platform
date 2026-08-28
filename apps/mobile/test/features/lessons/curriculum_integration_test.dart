@@ -233,7 +233,7 @@ void main() {
       );
       final notifier = CoursesNotifier(repository: repo);
       await notifier.load(bearerToken: 'tok');
-      final state = notifier.state as AppAsyncSuccess<List<CourseModel>>;
+      final state = notifier.state as AppAsyncSuccess<List<Course>>;
       expect(state.data.length, 1);
       expect(state.data.first.id, 'c-pub');
     });
@@ -245,7 +245,7 @@ void main() {
       );
       final notifier = CoursesNotifier(repository: repo);
       await notifier.load(bearerToken: 'tok');
-      final state = notifier.state as AppAsyncSuccess<List<CourseModel>>;
+      final state = notifier.state as AppAsyncSuccess<List<Course>>;
       expect(state.data.length, 1);
       expect(state.data.every((c) => c.status == _pub), isTrue);
     });
@@ -258,7 +258,7 @@ void main() {
       );
       final notifier = CoursesNotifier(repository: repo);
       await notifier.load(bearerToken: 'tok');
-      final state = notifier.state as AppAsyncSuccess<List<CourseModel>>;
+      final state = notifier.state as AppAsyncSuccess<List<Course>>;
       expect(state.data.every((c) => c.status == _pub), isTrue);
     });
   });
@@ -274,7 +274,7 @@ void main() {
       final notifier = ChaptersNotifier(repository: repo);
       await notifier.load(bearerToken: 'tok', levelId: 'lv-1');
       final state =
-          notifier.state as AppAsyncSuccess<List<ChapterProgressModel>>;
+          notifier.state as AppAsyncSuccess<List<ChapterProgress>>;
       expect(state.data.length, 1);
       expect(state.data.first.chapterId, 'ch-pub');
     });
@@ -289,7 +289,7 @@ void main() {
       final notifier = ChaptersNotifier(repository: repo);
       await notifier.load(bearerToken: 'tok', levelId: 'lv-1');
       final state =
-          notifier.state as AppAsyncSuccess<List<ChapterProgressModel>>;
+          notifier.state as AppAsyncSuccess<List<ChapterProgress>>;
       expect(state.data.first.percent, 25);
       expect(state.data.first.completedLessonCount, 1);
       expect(state.data.first.status, 'in_progress');
@@ -307,7 +307,7 @@ void main() {
       final notifier = LessonsListNotifier(repository: repo);
       await notifier.load(bearerToken: 'tok', chapterId: 'ch-1');
       final state =
-          notifier.state as AppAsyncSuccess<List<LessonProgressModel>>;
+          notifier.state as AppAsyncSuccess<List<LessonProgress>>;
       expect(state.data.length, 1);
       expect(state.data.first.id, 'l-pub');
     });
@@ -322,7 +322,7 @@ void main() {
       final notifier = LessonsListNotifier(repository: repo);
       await notifier.load(bearerToken: 'tok', chapterId: 'ch-1');
       final state =
-          notifier.state as AppAsyncSuccess<List<LessonProgressModel>>;
+          notifier.state as AppAsyncSuccess<List<LessonProgress>>;
       expect(state.data.first.completed, isFalse);
       expect(state.data.first.current, isTrue);
     });

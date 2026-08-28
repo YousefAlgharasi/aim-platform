@@ -39,6 +39,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_provider.dart';
 import 'package:aim_mobile/features/placement/logic/provider/placement_section_notifier.dart';
+import 'package:aim_mobile/features/placement/ui/widgets/placement_primary_button.dart';
 import 'package:aim_mobile/features/placement/ui/widgets/placement_skill_display.dart';
 
 class PlacementSectionPage extends ConsumerStatefulWidget {
@@ -85,32 +86,34 @@ class _PlacementSectionPageState extends ConsumerState<PlacementSectionPage> {
 
     return Scaffold(
       backgroundColor: surfaces.background,
-      body: Column(
-        children: [
-          _GradientTopBar(title: title),
-          Expanded(
-            child: switch (state) {
-              PlacementSectionIdle() ||
-              PlacementSectionLoading() =>
-                const AIMFullScreenLoading(),
-              PlacementSectionError(:final message) => AIMFullScreenError(
-                  message: message,
-                  retryLabel: l10n.commonRetry,
-                  onRetry: () {
-                    final token = ref.read(authFlowProvider).accessToken ?? '';
-                    ref.read(placementSectionProvider.notifier).loadSections(
-                          token,
-                          attemptId: widget.attemptId,
-                        );
-                  },
-                ),
-              PlacementSectionReady() => _SectionBody(
-                  state: state,
-                  onStartSection: () => _navigateToQuestions(context, state),
-                ),
-            },
-          ),
-        ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            _SectionTopBar(title: title),
+            Expanded(
+              child: switch (state) {
+                PlacementSectionIdle() ||
+                PlacementSectionLoading() =>
+                  const AIMFullScreenLoading(),
+                PlacementSectionError(:final message) => AIMFullScreenError(
+                    message: message,
+                    retryLabel: l10n.commonRetry,
+                    onRetry: () {
+                      final token = ref.read(authFlowProvider).accessToken ?? '';
+                      ref.read(placementSectionProvider.notifier).loadSections(
+                            token,
+                            attemptId: widget.attemptId,
+                          );
+                    },
+                  ),
+                PlacementSectionReady() => _SectionBody(
+                    state: state,
+                    onStartSection: () => _navigateToQuestions(context, state),
+                  ),
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -152,53 +155,45 @@ class _PlacementSectionPageState extends ConsumerState<PlacementSectionPage> {
 }
 
 // ---------------------------------------------------------------------------
-// Gradient top bar — back chevron + "Section X of Y".
+// Clean top bar — back chevron + "Section X of Y".
 // ---------------------------------------------------------------------------
 
-class _GradientTopBar extends StatelessWidget {
-  const _GradientTopBar({required this.title});
+class _SectionTopBar extends StatelessWidget {
+  const _SectionTopBar({required this.title});
 
   final String title;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final surfaces = aimSurfacesOf(context);
     final isRtl = Directionality.of(context) == TextDirection.rtl;
 
-    // Without this, the OS paints its default status bar background above
-    // the gradient instead of light icons sitting transparently on it.
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
-      child: Container(
-        width: double.infinity,
-        decoration: const BoxDecoration(gradient: AimGradients.gzHero),
-        child: SafeArea(
-          bottom: false,
-          child: SizedBox(
-            height: AimSizes.topBarHeight,
-            child: Row(
-              children: [
-                const SizedBox(width: AimSpacing.space8),
-                AIMIconButton(
-                  semanticLabel: l10n.commonBack,
-                  icon: Icon(
-                    isRtl ? Icons.chevron_right : Icons.chevron_left,
-                    color: AimColors.neutral0,
-                  ),
-                  onPressed: () {
-                    if (context.canPop()) context.pop();
-                  },
-                ),
-                const SizedBox(width: AimSpacing.space4),
-                Text(
-                  title,
-                  style:
-                      AimTextStyles.title.copyWith(color: AimColors.neutral0),
-                ),
-              ],
+    return Container(
+      height: AimSizes.topBarHeight,
+      padding: const EdgeInsets.symmetric(horizontal: AimSpacing.space8),
+      child: Row(
+        children: [
+          IconButton(
+            icon: Icon(
+              isRtl ? Icons.chevron_right_rounded : Icons.chevron_left_rounded,
+              color: surfaces.textPrimary,
+              size: 26,
+            ),
+            onPressed: () {
+              if (context.canPop()) context.pop();
+            },
+          ),
+          const SizedBox(width: AimSpacing.space4),
+          Text(
+            title,
+            style: AimTextStyles.title.copyWith(
+              color: surfaces.textPrimary,
+              fontSize: 18,
+              fontWeight: AimFontWeights.bold,
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -221,7 +216,7 @@ class _SectionBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
-    final soft = aimSoftFillsOf(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final section = state.currentSection;
     final minutes = placementEstimatedMinutes(section.totalQuestions);
 
@@ -244,26 +239,31 @@ class _SectionBody extends StatelessWidget {
           Center(
             child: Column(
               children: [
-                DecoratedBox(
+                Container(
+                  width: 64,
+                  height: 64,
                   decoration: BoxDecoration(
-                    color: soft.primary,
-                    borderRadius: AimRadius.borderXl,
+                    color: isDark ? const Color(0xFF312E81) : const Color(0xFFEEF2FF),
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AimSpacing.space16),
+                  child: Center(
                     child: Icon(
                       placementSkillIcon(section.skillCode),
-                      size: AimSizes.iconLg,
-                      color: soft.onPrimary,
+                      size: 30,
+                      color: AimColors.primary500,
                     ),
                   ),
                 ),
                 const SizedBox(height: AimSpacing.componentGap),
                 Text(
                   section.title,
-                  style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
+                  style: AimTextStyles.h2.copyWith(
+                    color: surfaces.textPrimary,
+                    fontSize: 24,
+                    fontWeight: AimFontWeights.extrabold,
+                  ),
                 ),
-                const SizedBox(height: AimSpacing.space4),
+                const SizedBox(height: AimSpacing.space8),
                 Text(
                   '${placementSkillCategoryLabel(section.skillCode)} · '
                   '$questionsText · $minutesText',
@@ -276,11 +276,9 @@ class _SectionBody extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          AIMGradientButton(
+          PlacementPrimaryButton(
             label: btnLabel,
-            fullWidth: true,
             onPressed: onStartSection,
-            semanticLabel: btnLabel,
           ),
         ],
       ),
