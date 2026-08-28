@@ -3,13 +3,14 @@
 // Phase 4 — P4-058
 // PlacementTestStatusControl — client component.
 //
-// Scope: Placement Test phase only — admin UI to toggle placement test draft/published status.
+// Scope: Placement Test phase only — admin UI to publish/archive a placement test.
 //
 // Security rules:
 // - All initial data is fetched server-side (page.tsx) and passed as props.
 // - This component calls server actions (passed as props) — never calls the backend directly.
 // - Backend is the sole authority for status transitions and the active-test constraint.
-// - Only 'draft' and 'published' transitions are exposed; 'archived' is not offered here.
+// - Only 'published' and 'archived' transitions are exposed here; a draft can only be
+//   published, and a published test can only be archived — there is no way back to draft.
 // - No placement scoring, CEFR thresholds, skill maps, or weakness maps here.
 // - No AIM Engine runtime, AI Teacher, lesson delivery, or progress dashboard.
 
@@ -21,7 +22,7 @@ type PlacementTestStatusControlProps = {
   readonly testId: string;
   readonly testTitle: string;
   readonly currentStatus: PlacementTestStatus;
-  readonly onSetDraft: () => Promise<{ error?: string }>;
+  readonly onArchive: () => Promise<{ error?: string }>;
   readonly onSetPublished: () => Promise<{ error?: string }>;
 };
 
@@ -41,7 +42,7 @@ export function PlacementTestStatusControl({
   testId: _testId,
   testTitle,
   currentStatus,
-  onSetDraft,
+  onArchive,
   onSetPublished,
 }: PlacementTestStatusControlProps) {
   const router = useRouter();
@@ -69,15 +70,15 @@ export function PlacementTestStatusControl({
     });
   }
 
-  async function handleUnpublish() {
+  async function handleArchive() {
     setActionError(null);
     setActionSuccess(null);
     startTransition(async () => {
-      const result = await onSetDraft();
+      const result = await onArchive();
       if (result.error) {
         setActionError(result.error);
       } else {
-        setActionSuccess('Test moved to draft. No active placement test until another is published.');
+        setActionSuccess('Test archived. No active placement test until another is published.');
         refresh();
       }
     });
@@ -108,13 +109,14 @@ export function PlacementTestStatusControl({
           <p>
             This test is <strong>published</strong> and is the active placement test.
             Students will be assigned this test when they begin placement. Only one test
-            may be published at a time — the backend enforces this.
+            can be published at a time.
           </p>
         )}
         {isArchived && (
           <p className="skill-linker-empty">
-            This test is <strong>archived</strong>. Archived tests cannot be published
-            through this UI. Contact your system administrator if you need to restore it.
+            This test is <strong>archived</strong>. Archived tests are no longer used for
+            placement and cannot be republished through this page. Contact your system
+            administrator if you need to restore it.
           </p>
         )}
       </section>
@@ -136,25 +138,26 @@ export function PlacementTestStatusControl({
             {currentStatus === 'published' && (
               <button
                 className="btn-danger"
-                onClick={handleUnpublish}
+                onClick={handleArchive}
                 disabled={isPending}
               >
-                {isPending ? 'Unpublishing…' : '↩ Move to Draft'}
+                {isPending ? 'Archiving…' : '↩ Archive Test'}
               </button>
             )}
           </div>
 
           {currentStatus === 'draft' && (
             <p className="admin-boundary-note" style={{ marginTop: '0.5rem' }}>
-              Publishing will make this the active placement test. If another test is
-              currently published, the backend will reject this action (409
-              ACTIVE_TEST_EXISTS). Unpublish the active test first.
+              Publishing will make this the active placement test. Only one test can be
+              published at a time — if another test is already published, archive it
+              first.
             </p>
           )}
           {currentStatus === 'published' && (
             <p className="admin-boundary-note" style={{ marginTop: '0.5rem' }}>
-              Moving to draft will deactivate this test. Students will not be assigned
-              placement until a test is published again.
+              Archiving will deactivate this test. Students will not be assigned
+              placement until another test is published. This cannot be undone from
+              this page.
             </p>
           )}
 
@@ -170,15 +173,6 @@ export function PlacementTestStatusControl({
           )}
         </section>
       )}
-
-      {/* Backend authority note */}
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Status transitions (draft ↔ published) are
-        enforced by the backend. Only one placement test may be{' '}
-        <strong>published</strong> at a time — the backend rejects a second publish with{' '}
-        <code>409 ACTIVE_TEST_EXISTS</code>. Placement scoring, CEFR thresholds, skill
-        maps, and weakness maps are always computed server-side — never by this UI.
-      </div>
     </div>
   );
 }

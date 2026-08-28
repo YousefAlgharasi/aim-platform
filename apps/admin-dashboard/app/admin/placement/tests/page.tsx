@@ -87,7 +87,6 @@ export default async function AdminPlacementTestsPage({ searchParams }: Props) {
 
       {/* Page header */}
       <header className="admin-page-header">
-        <p className="eyebrow">Admin — Placement</p>
         <h1>Placement Tests</h1>
         {data && (
           <p className="admin-page-meta">
@@ -96,14 +95,6 @@ export default async function AdminPlacementTestsPage({ searchParams }: Props) {
           </p>
         )}
       </header>
-
-      {/* Security boundary note */}
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Test status (draft / published / archived),
-        section counts, and estimated duration are backend-managed. This view is read-only.
-        No placement scoring, CEFR thresholds, or AIM Engine runtime logic is present here.
-        Status transitions are implemented in P4-058.
-      </div>
 
       {/* Backend not yet available */}
       {backendUnavailable && (

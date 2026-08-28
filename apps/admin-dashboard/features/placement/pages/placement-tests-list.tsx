@@ -1,20 +1,16 @@
 'use client';
 
-// Phase 4 — P4-054 / P4-058
-// AdminPlacementTestsList — client component.
-//
-// Scope: Placement Test phase only — admin view of placement test definitions.
-//
-// Security rules:
-// - All data is fetched server-side (page.tsx) and passed as props — never fetched here.
-// - status is displayed as-is from the backend; never computed by this component.
-// - estimatedMinutes and totalSections come from the backend only.
-// - No placement scoring, CEFR thresholds, skill maps, or weakness maps here.
-// - No AIM Engine runtime, AI Teacher, lesson delivery, or progress dashboard.
-// P4-058: Added "Status →" link column to navigate to draft/published status control per test.
-
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import {
+  AdminTable,
+  AdminBadge,
+  AdminPagination,
+  AdminIdCell,
+  AdminDateCell,
+  AdminFilterBar,
+} from '../../../shared/components/Misc';
+import type { AdminTableColumn } from '../../../shared/components/Misc';
 import type {
   AdminPlacementTestSummary,
   PlacementTestStatus,
@@ -28,10 +24,10 @@ type AdminPlacementTestsListProps = {
   readonly filterStatus: string;
 };
 
-const STATUS_BADGE_CLASSES: Record<PlacementTestStatus, string> = {
-  published: 'status-published',
-  draft: 'status-draft',
-  archived: 'status-archived',
+const STATUS_VARIANT: Record<PlacementTestStatus, 'success' | 'info' | 'neutral'> = {
+  published: 'success',
+  draft: 'info',
+  archived: 'neutral',
 };
 
 const STATUS_LABELS: Record<PlacementTestStatus, string> = {
@@ -40,35 +36,7 @@ const STATUS_LABELS: Record<PlacementTestStatus, string> = {
   archived: 'Archived',
 };
 
-function buildFilterHref(
-  overrides: Record<string, string>,
-  current: { status: string },
-): string {
-  const params = new URLSearchParams();
-  if (current.status) params.set('status', current.status);
-  Object.entries(overrides).forEach(([k, v]) =>
-    v ? params.set(k, v) : params.delete(k),
-  );
-  params.set('page', '1');
-  return `?${params.toString()}`;
-}
-
-function formatDate(iso: string): string {
-  if (!iso) return '—';
-  try {
-    return new Date(iso).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  } catch {
-    return iso;
-  }
-}
-
-function truncateId(id: string): string {
-  return id ? `…${id.slice(-8)}` : '—';
-}
+const STATUSES: PlacementTestStatus[] = ['draft', 'published', 'archived'];
 
 export function AdminPlacementTestsList({
   tests,
@@ -79,112 +47,114 @@ export function AdminPlacementTestsList({
 }: AdminPlacementTestsListProps) {
   const router = useRouter();
 
-  const STATUSES: PlacementTestStatus[] = ['draft', 'published', 'archived'];
+  const setStatus = (status: string) => {
+    const params = new URLSearchParams();
+    if (status) params.set('status', status);
+    params.set('page', '1');
+    router.push(`?${params.toString()}`);
+  };
+
+  const columns: AdminTableColumn<AdminPlacementTestSummary>[] = [
+    {
+      key: 'title',
+      header: 'Title',
+      render: (row) => <span>{row.title}</span>,
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (row) => (
+        <AdminBadge variant={STATUS_VARIANT[row.status] ?? 'neutral'}>
+          {STATUS_LABELS[row.status] ?? row.status}
+        </AdminBadge>
+      ),
+    },
+    {
+      key: 'totalSections',
+      header: 'Sections',
+      render: (row) => <span>{row.totalSections}</span>,
+    },
+    {
+      key: 'estimatedMinutes',
+      header: 'Est. Minutes',
+      render: (row) => <span>{row.estimatedMinutes} min</span>,
+    },
+    {
+      key: 'createdAt',
+      header: 'Created',
+      render: (row) => <AdminDateCell date={row.createdAt} />,
+    },
+    {
+      key: 'id',
+      header: 'ID',
+      render: (row) => <AdminIdCell id={row.id} />,
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      render: (row) =>
+        row.status !== 'archived' ? (
+          <Link href={`/admin/placement/tests/${row.id}/status`} className="admin-table-link">
+            Status →
+          </Link>
+        ) : (
+          <span className="admin-table-none">Archived</span>
+        ),
+    },
+  ];
 
   return (
-    <div>
-      {/* Status filter */}
-      <div className="admin-filter-row" role="group" aria-label="Filter by status">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-16)' }}>
+      <AdminFilterBar
+        label="Filter placement tests"
+        onClearAll={filterStatus ? () => setStatus('') : undefined}
+      >
         <button
+          type="button"
           className={`filter-btn${!filterStatus ? ' active' : ''}`}
-          onClick={() => router.push('?page=1')}
+          onClick={() => setStatus('')}
         >
           All ({total})
         </button>
         {STATUSES.map((s) => (
           <button
             key={s}
+            type="button"
             className={`filter-btn${filterStatus === s ? ' active' : ''}`}
-            onClick={() => router.push(buildFilterHref({ status: s }, { status: filterStatus }))}
+            onClick={() => setStatus(s)}
           >
             {STATUS_LABELS[s]}
           </button>
         ))}
-      </div>
+      </AdminFilterBar>
 
-      {/* Tests table */}
       {tests.length === 0 ? (
-        <p className="admin-empty-state">
+        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
           {filterStatus
             ? `No placement tests with status "${filterStatus}".`
             : 'No placement tests found.'}
         </p>
       ) : (
-        <table className="admin-table" aria-label="Placement tests">
-          <thead>
-            <tr>
-              <th scope="col">Title</th>
-              <th scope="col">Status</th>
-              <th scope="col">Sections</th>
-              <th scope="col">Est. Minutes</th>
-              <th scope="col">Created</th>
-              <th scope="col">ID</th>
-              <th scope="col">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tests.map((test) => (
-              <tr key={test.id}>
-                <td className="admin-table-primary">{test.title}</td>
-                <td>
-                  <span
-                    className={`status-badge ${STATUS_BADGE_CLASSES[test.status] ?? 'status-draft'}`}
-                  >
-                    {STATUS_LABELS[test.status] ?? test.status}
-                  </span>
-                </td>
-                <td>{test.totalSections}</td>
-                <td>{test.estimatedMinutes} min</td>
-                <td>{formatDate(test.createdAt)}</td>
-                <td className="admin-table-mono">{truncateId(test.id)}</td>
-                <td>
-                  {test.status !== 'archived' && (
-                    <Link
-                      href={`/admin/placement/tests/${test.id}/status`}
-                      className="admin-table-link"
-                    >
-                      Status →
-                    </Link>
-                  )}
-                  {test.status === 'archived' && (
-                    <span className="admin-table-none">Archived</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <nav className="admin-pagination" aria-label="Pagination">
-          <button
-            className="btn-secondary"
-            disabled={page <= 1}
-            onClick={() =>
-              router.push(
-                buildFilterHref({ page: String(page - 1) }, { status: filterStatus }),
-              )
-            }
-          >
-            ← Previous
-          </button>
-          <span className="admin-pagination-info">
-            Page {page} of {totalPages}
-          </span>
-          <button
-            className="btn-secondary"
-            disabled={page >= totalPages}
-            onClick={() =>
-              router.push(
-                buildFilterHref({ page: String(page + 1) }, { status: filterStatus }),
-              )
-            }
-          >
-            Next →
-          </button>
-        </nav>
+        <>
+          <AdminTable
+            columns={columns}
+            rows={tests}
+            getRowKey={(row) => row.id}
+            caption={`${total} placement test${total !== 1 ? 's' : ''}`}
+          />
+          {totalPages > 1 && (
+            <AdminPagination
+              page={page}
+              totalPages={totalPages}
+              buildHref={(p) => {
+                const params = new URLSearchParams();
+                if (filterStatus) params.set('status', filterStatus);
+                params.set('page', String(p));
+                return `?${params.toString()}`;
+              }}
+            />
+          )}
+        </>
       )}
     </div>
   );

@@ -3,19 +3,18 @@
 //
 // Scope: Placement Test phase only — admin control of placement test draft/published status.
 //
-// Endpoints consumed (P4-006 API map, endpoint #10):
-//   PATCH /placement/admin/tests/:id/status
-//         body: { status: 'draft' | 'published' }
-//         → updates placement test status; returns updated test summary
+// Endpoints consumed (see PlacementAdminController):
+//   POST /admin/placement/tests/:id/publish   — draft -> published
+//   POST /admin/placement/tests/:id/archive   — published -> archived
 //
 // Valid status transitions (backend-enforced):
-//   draft     → published   (activates the test; backend enforces ACTIVE_TEST_EXISTS guard)
-//   published → draft       (deactivates; only one published test may exist at a time)
+//   draft     → published   (activates the test; backend enforces PUBLISHED_TEST_EXISTS guard)
+//   published → archived    (deactivates; this is a one-way transition — the backend has
+//                             no endpoint to move a published test back to draft)
 //
 // Security rules:
 // - Token is read server-side from the HTTP-only cookie; never sent to the browser.
 // - Backend is the sole authority for status transitions and active-test enforcement.
-// - Only values 'draft' and 'published' are accepted by the backend (no 'archived' via this UI).
 // - No placement scoring, CEFR thresholds, skill maps, or weakness maps here.
 // - No AIM Engine runtime, AI Teacher, lesson delivery, or progress dashboard logic.
 // - No secrets, service-role keys, database credentials, or privileged config here.
@@ -25,16 +24,6 @@
 import { adminApiClient } from './index';
 import { AdminApiClientError } from './admin-api-client-error';
 import type { PlacementTestStatus, AdminPlacementTestSummary } from './admin-placement-tests-api';
-
-// ---------------------------------------------------------------------------
-// Type definitions
-// ---------------------------------------------------------------------------
-
-export type PlacementTestStatusTransition = 'draft' | 'published';
-
-export type UpdatePlacementTestStatusPayload = {
-  readonly status: PlacementTestStatusTransition;
-};
 
 // ---------------------------------------------------------------------------
 // Decoder helpers — structural validation only, no business logic.
@@ -66,25 +55,44 @@ function decodeTestSummary(raw: unknown): AdminPlacementTestSummary {
 // ---------------------------------------------------------------------------
 
 /**
- * Update a placement test's status (draft ↔ published).
+ * Publish a draft placement test, making it the active placement test.
  * Requires admin token with placement:admin:tests:manage permission.
  *
  * Backend enforces:
- * - Only one test may have status 'published' at a time (409 ACTIVE_TEST_EXISTS).
- * - Status 'archived' is not a valid target via this endpoint.
- * - All scoring, CEFR thresholds, and result generation remain backend-only.
+ * - Only a test in 'draft' status can be published (409 TEST_NOT_DRAFT otherwise).
+ * - Only one test may have status 'published' at a time (409 PUBLISHED_TEST_EXISTS).
  */
-export async function updatePlacementTestStatus(
+export async function publishPlacementTest(
   token: string,
   testId: string,
-  payload: UpdatePlacementTestStatusPayload,
 ): Promise<AdminPlacementTestSummary> {
-  const envelope = await adminApiClient.patch(
-    `/placement/admin/tests/${encodeURIComponent(testId)}/status`,
+  const envelope = await adminApiClient.post(
+    `/admin/placement/tests/${encodeURIComponent(testId)}/publish`,
     decodeTestSummary,
     {
       headers: { Authorization: `Bearer ${token}` },
-      body: payload,
+    },
+  );
+  return envelope.data;
+}
+
+/**
+ * Archive a published placement test, deactivating it.
+ * Requires admin token with placement:admin:tests:manage permission.
+ *
+ * Backend enforces:
+ * - Only a test in 'published' status can be archived (409 TEST_NOT_PUBLISHED otherwise).
+ * - This transition is one-way — an archived test cannot be restored through this UI.
+ */
+export async function archivePlacementTest(
+  token: string,
+  testId: string,
+): Promise<AdminPlacementTestSummary> {
+  const envelope = await adminApiClient.post(
+    `/admin/placement/tests/${encodeURIComponent(testId)}/archive`,
+    decodeTestSummary,
+    {
+      headers: { Authorization: `Bearer ${token}` },
     },
   );
   return envelope.data;
