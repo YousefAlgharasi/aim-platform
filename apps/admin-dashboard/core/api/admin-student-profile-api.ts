@@ -16,12 +16,28 @@ export type AdminStudentProfilePlacement = {
   readonly estimatedLevel: string;
   readonly completedAt: string;
   readonly skillSummary: readonly AdminStudentProfileSkillSummary[];
+  readonly scorePercent: number | null;
+  readonly recommendedCourseId: string | null;
+  readonly recommendedCourseTitle: string | null;
 };
 
 export type AdminStudentProfileSubscription = {
   readonly planId: string;
+  readonly planName: string | null;
   readonly status: string;
   readonly currentPeriodEnd: string | null;
+};
+
+export type AdminStudentProfileAssessmentResult = {
+  readonly id: string;
+  readonly assessmentId: string;
+  readonly title: string;
+  readonly type: 'quiz' | 'exam';
+  readonly score: number;
+  readonly maxScore: number;
+  readonly passed: boolean;
+  readonly attemptedAt: string;
+  readonly courseTitle: string | null;
 };
 
 export type AdminStudentProfileCourseAssessment = {
@@ -83,6 +99,7 @@ export type AdminStudentProfile = {
   readonly courses: readonly AdminStudentProfileCourse[];
   readonly weaknesses: readonly AdminStudentProfileWeakness[];
   readonly aiTeacherSessions: readonly AdminStudentProfileAiSession[];
+  readonly assessmentResults: readonly AdminStudentProfileAssessmentResult[];
 };
 
 function isObject(v: unknown): v is Record<string, unknown> {
@@ -109,6 +126,9 @@ function decodePlacement(raw: unknown): AdminStudentProfilePlacement | null {
       skillCode: String(s.skillCode ?? ''),
       signal: decodeSkillSignal(s.signal),
     })),
+    scorePercent: typeof raw.scorePercent === 'number' ? raw.scorePercent : null,
+    recommendedCourseId: typeof raw.recommendedCourseId === 'string' ? raw.recommendedCourseId : null,
+    recommendedCourseTitle: typeof raw.recommendedCourseTitle === 'string' ? raw.recommendedCourseTitle : null,
   };
 }
 
@@ -116,8 +136,24 @@ function decodeSubscription(raw: unknown): AdminStudentProfileSubscription | nul
   if (!isObject(raw)) return null;
   return {
     planId: String(raw.planId ?? ''),
+    planName: typeof raw.planName === 'string' ? raw.planName : null,
     status: String(raw.status ?? ''),
     currentPeriodEnd: typeof raw.currentPeriodEnd === 'string' ? raw.currentPeriodEnd : null,
+  };
+}
+
+function decodeAssessmentResult(raw: unknown): AdminStudentProfileAssessmentResult {
+  const r = isObject(raw) ? raw : {};
+  return {
+    id: String(r.id ?? ''),
+    assessmentId: String(r.assessmentId ?? ''),
+    title: String(r.title ?? ''),
+    type: r.type === 'exam' ? 'exam' : 'quiz',
+    score: decodeNumber(r.score),
+    maxScore: decodeNumber(r.maxScore),
+    passed: Boolean(r.passed),
+    attemptedAt: String(r.attemptedAt ?? ''),
+    courseTitle: typeof r.courseTitle === 'string' ? r.courseTitle : null,
   };
 }
 
@@ -188,6 +224,7 @@ function decodeStudentProfile(raw: unknown): AdminStudentProfile {
   const rawCourses = Array.isArray(r.courses) ? r.courses : [];
   const rawWeaknesses = Array.isArray(r.weaknesses) ? r.weaknesses : [];
   const rawSessions = Array.isArray(r.aiTeacherSessions) ? r.aiTeacherSessions : [];
+  const rawAssessmentResults = Array.isArray(r.assessmentResults) ? r.assessmentResults : [];
 
   return {
     student: {
@@ -202,6 +239,7 @@ function decodeStudentProfile(raw: unknown): AdminStudentProfile {
     courses: rawCourses.map(decodeCourse),
     weaknesses: rawWeaknesses.map(decodeWeakness),
     aiTeacherSessions: rawSessions.map(decodeAiSession),
+    assessmentResults: rawAssessmentResults.map(decodeAssessmentResult),
   };
 }
 

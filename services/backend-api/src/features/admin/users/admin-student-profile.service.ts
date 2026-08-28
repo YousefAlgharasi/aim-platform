@@ -61,6 +61,22 @@ interface AiSessionRow {
   updated_at: string;
 }
 
+interface PlanRow {
+  name: string;
+}
+
+interface AllAssessmentResultRow {
+  id: string;
+  assessment_id: string;
+  title: string;
+  type: string;
+  score: string;
+  max_score: string;
+  passed: boolean;
+  attempted_at: string;
+  course_title: string | null;
+}
+
 export interface AdminStudentCourseAssessment {
   readonly assessmentId: string;
   readonly title: string;
@@ -84,6 +100,19 @@ export interface AdminStudentCourse {
   readonly certificate: { readonly id: string; readonly issuedAt: string } | null;
 }
 
+export interface AdminStudentAssessmentResult {
+  readonly id: string;
+  readonly assessmentId: string;
+  readonly title: string;
+  readonly type: 'quiz' | 'exam';
+  readonly score: number;
+  readonly maxScore: number;
+  readonly passed: boolean;
+  readonly attemptedAt: string;
+  /** Null when this assessment isn't linked to a course/chapter yet. */
+  readonly courseTitle: string | null;
+}
+
 export interface AdminStudentProfile {
   readonly student: {
     readonly id: string;
@@ -96,13 +125,19 @@ export interface AdminStudentProfile {
     readonly estimatedLevel: string;
     readonly completedAt: string;
     readonly skillSummary: Array<{ skillCode: string; signal: string }>;
+    /** Average of the backend-computed per-skill mastery scores, as a 0-100 percent. Never a raw/recomputed value — a straight rollup of what's already stored. */
+    readonly scorePercent: number | null;
+    readonly recommendedCourseId: string | null;
+    readonly recommendedCourseTitle: string | null;
   } | null;
   readonly subscription: {
     readonly planId: string;
+    readonly planName: string | null;
     readonly status: string;
     readonly currentPeriodEnd: string | Date | null;
   } | null;
   readonly courses: AdminStudentCourse[];
+  readonly assessmentResults: AdminStudentAssessmentResult[];
   readonly weaknesses: Array<{
     readonly id: string;
     readonly skillId: string;
@@ -150,15 +185,17 @@ export class AdminStudentProfileService {
       });
     }
 
-    const [placement, subscriptions, courses, weaknesses, aiSessions] = await Promise.all([
+    const [placement, subscriptions, courses, assessmentResults, weaknesses, aiSessions] = await Promise.all([
       this.getPlacementSummary(studentId),
       this.subscriptionService.getUserSubscriptions(studentId),
       this.getCourseHistory(studentId),
+      this.getAllAssessmentResults(studentId),
       this.getWeaknesses(studentId),
       this.getRecentAiSessions(studentId),
     ]);
 
     const activeSubscription = subscriptions.find((s) => s.status === 'active') ?? subscriptions[0];
+    const planName = activeSubscription ? await this.getPlanName(activeSubscription.planId) : null;
 
     return {
       student: {
@@ -172,30 +209,64 @@ export class AdminStudentProfileService {
       subscription: activeSubscription
         ? {
             planId: activeSubscription.planId,
+            planName,
             status: activeSubscription.status,
             currentPeriodEnd: activeSubscription.currentPeriodEnd ?? null,
           }
         : null,
       courses,
+      assessmentResults,
       weaknesses,
       aiTeacherSessions: aiSessions,
     };
+  }
+
+  private async getPlanName(planId: string): Promise<string | null> {
+    const result = await this.db.query<PlanRow>(`SELECT name FROM billing_plans WHERE id = $1`, [planId]);
+    return result.rows[0]?.name ?? null;
   }
 
   private async getPlacementSummary(studentId: string): Promise<AdminStudentProfile['placement']> {
     const result = await this.placementResultRead.getLatestResultForStudent(studentId);
     if (!result) return null;
 
-    const skillSummary = Object.entries(result.skill_mastery_map ?? {}).map(([skillCode, entry]) => ({
+    const masteryEntries = Object.entries(result.skill_mastery_map ?? {});
+    const skillSummary = masteryEntries.map(([skillCode, entry]) => ({
       skillCode,
       signal: (entry as { signal?: string })?.signal ?? 'emerging',
     }));
+
+    // Straight average of the mastery scores the backend already computed and
+    // persisted per skill — not a new calculation, just a rollup for display.
+    const scorePercent =
+      masteryEntries.length > 0
+        ? Math.round(
+            (masteryEntries.reduce(
+              (sum, [, entry]) => sum + ((entry as { mastery_score?: number })?.mastery_score ?? 0),
+              0,
+            ) /
+              masteryEntries.length) *
+              100,
+          )
+        : null;
+
+    const recommendedCourseTitle = result.recommended_course_id
+      ? await this.getCourseTitle(result.recommended_course_id)
+      : null;
 
     return {
       estimatedLevel: result.estimated_level,
       completedAt: result.created_at,
       skillSummary,
+      scorePercent,
+      recommendedCourseId: result.recommended_course_id,
+      recommendedCourseTitle,
     };
+  }
+
+  private async getCourseTitle(courseId: string): Promise<string | null> {
+    const result = await this.db.query<{ title: string }>(`SELECT title FROM courses WHERE id = $1`, [courseId]);
+    return result.rows[0]?.title ?? null;
   }
 
   private async getCourseHistory(studentId: string): Promise<AdminStudentCourse[]> {
@@ -265,6 +336,41 @@ export class AdminStudentProfileService {
       total: parseInt(row?.total ?? '0', 10),
       completed: parseInt(row?.completed_count ?? '0', 10),
     };
+  }
+
+  /**
+   * Every assessment result for this student, regardless of whether the
+   * assessment is linked to a course/chapter yet — course.assessments in
+   * getCourseHistory only shows results for assessments that ARE linked, so
+   * without this a student's quiz/exam history could look empty just
+   * because nobody has assigned those assessments to a course.
+   */
+  private async getAllAssessmentResults(studentId: string): Promise<AdminStudentAssessmentResult[]> {
+    const result = await this.db.query<AllAssessmentResultRow>(
+      `SELECT ar.id, ar.assessment_id, a.title, a.type, ar.score, ar.max_score, ar.passed,
+              ar.created_at AS attempted_at,
+              COALESCE(co.title, co2.title) AS course_title
+       FROM assessment_results ar
+       JOIN assessments a ON a.id = ar.assessment_id
+       LEFT JOIN courses co ON co.id = a.course_id
+       LEFT JOIN chapters c ON c.id = a.chapter_id
+       LEFT JOIN levels lv ON lv.id = c.level_id
+       LEFT JOIN courses co2 ON co2.id = lv.course_id
+       WHERE ar.student_id = $1
+       ORDER BY ar.created_at DESC`,
+      [studentId],
+    );
+    return result.rows.map((r) => ({
+      id: r.id,
+      assessmentId: r.assessment_id,
+      title: r.title,
+      type: r.type === 'exam' ? 'exam' : 'quiz',
+      score: Number(r.score),
+      maxScore: Number(r.max_score),
+      passed: r.passed,
+      attemptedAt: r.attempted_at,
+      courseTitle: r.course_title,
+    }));
   }
 
   private async getWeaknesses(studentId: string): Promise<AdminStudentProfile['weaknesses']> {
