@@ -154,6 +154,12 @@ export default async function CertificateViewPage({ params }: Props) {
       <p className="certificate-course-title">{certificate.courseTitle}</p>
       <p className="certificate-line">Issued on {formatDate(certificate.issuedAt)}</p>
 
+      {certificate.overallScorePercent !== null && (
+        <p className="certificate-line" style={{ fontSize: '20px', fontWeight: 'bold', color: '#1a1a1a', marginTop: '12px' }}>
+          Final Grade: {certificate.overallScorePercent}/100
+        </p>
+      )}
+
       <hr className="certificate-divider" />
 
       <p className="certificate-scores-title">Assessment Results</p>
@@ -175,7 +181,7 @@ export default async function CertificateViewPage({ params }: Props) {
                 <td>{entry.title}</td>
                 <td style={{ textTransform: 'capitalize' }}>{entry.type}</td>
                 <td>
-                  {entry.score} / {entry.maxScore}
+                  {entry.scorePercent} / 100
                 </td>
                 <td className={entry.passed ? 'certificate-pass' : 'certificate-fail'}>
                   {entry.passed ? 'Passed' : 'Failed'}

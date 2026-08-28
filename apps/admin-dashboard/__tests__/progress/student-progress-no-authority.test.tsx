@@ -45,6 +45,7 @@ const baseProfile: AdminStudentProfile = {
       completionPct: 40,
       completed: false,
       assessments: [],
+      overallScorePercent: null,
       certificate: null,
     },
     {
@@ -58,8 +59,9 @@ const baseProfile: AdminStudentProfile = {
       completionPct: 100,
       completed: true,
       assessments: [
-        { assessmentId: 'a-1', title: 'Midterm Quiz', type: 'quiz', score: 8, maxScore: 10, passed: true },
+        { assessmentId: 'a-1', title: 'Midterm Quiz', type: 'quiz', score: 8, maxScore: 10, scorePercent: 80, passed: true },
       ],
+      overallScorePercent: 80,
       certificate: { id: 'cert-1', issuedAt: '2026-01-20T00:00:00Z' },
     },
   ],

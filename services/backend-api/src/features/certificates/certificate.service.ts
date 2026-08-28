@@ -19,6 +19,7 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { CourseCompletionService } from '../lessons/course-completion.service';
 import { Certificate, CertificateScoreSnapshotEntry } from './certificate.types';
+import { computeCourseScorePercent, toScorePercent } from './course-score.util';
 
 interface CertificateRow {
   id: string;
@@ -74,14 +75,19 @@ export class CertificateService {
       [studentId, courseId],
     );
 
-    return result.rows.map((r) => ({
-      assessmentId: r.assessment_id,
-      title: r.title,
-      type: r.type === 'exam' ? 'exam' : 'quiz',
-      score: Number(r.score),
-      maxScore: Number(r.max_score),
-      passed: r.passed,
-    }));
+    return result.rows.map((r) => {
+      const score = Number(r.score);
+      const maxScore = Number(r.max_score);
+      return {
+        assessmentId: r.assessment_id,
+        title: r.title,
+        type: r.type === 'exam' ? 'exam' : 'quiz',
+        score,
+        maxScore,
+        scorePercent: toScorePercent(score, maxScore),
+        passed: r.passed,
+      };
+    });
   }
 
   async getForStudentAndCourse(studentId: string, courseId: string): Promise<Certificate | null> {
@@ -142,7 +148,7 @@ export class CertificateService {
   }
 
   private toCertificate(row: CertificateRow): Certificate {
-    const rawSnapshot = Array.isArray(row.score_snapshot) ? row.score_snapshot : [];
+    const rawSnapshot = (Array.isArray(row.score_snapshot) ? row.score_snapshot : []) as CertificateScoreSnapshotEntry[];
     return {
       id: row.id,
       studentId: row.student_id,
@@ -150,7 +156,8 @@ export class CertificateService {
       courseTitle: row.course_title,
       studentName: row.display_name ?? row.email ?? null,
       issuedAt: row.issued_at,
-      scoreSnapshot: rawSnapshot as CertificateScoreSnapshotEntry[],
+      scoreSnapshot: rawSnapshot,
+      overallScorePercent: computeCourseScorePercent(rawSnapshot),
     };
   }
 }

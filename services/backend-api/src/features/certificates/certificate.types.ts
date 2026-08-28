@@ -12,6 +12,8 @@ export interface CertificateScoreSnapshotEntry {
   readonly type: 'quiz' | 'exam';
   readonly score: number;
   readonly maxScore: number;
+  /** score/maxScore normalized to a 0-100 percent, for a consistent "out of 100" display. */
+  readonly scorePercent: number;
   readonly passed: boolean;
 }
 
@@ -23,4 +25,6 @@ export interface Certificate {
   readonly studentName: string | null;
   readonly issuedAt: string;
   readonly scoreSnapshot: readonly CertificateScoreSnapshotEntry[];
+  /** Weighted quiz/exam rollup (see course-score.util.ts). Null if nothing to score yet. */
+  readonly overallScorePercent: number | null;
 }
