@@ -119,7 +119,7 @@ export class AdminStatsService {
     let avgScore: number | null = null;
     try {
       const result = await this.db.query<{ count: string; avg: string | null }>(`
-        SELECT COUNT(*)::text AS count, ROUND(AVG(score_percentage)::numeric, 1)::text AS avg
+        SELECT COUNT(*)::text AS count, ROUND(AVG(score / max_score * 100)::numeric, 1)::text AS avg
         FROM assessment_results
       `);
       const row = result.rows[0];
