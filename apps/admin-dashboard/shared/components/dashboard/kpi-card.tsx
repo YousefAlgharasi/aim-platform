@@ -22,7 +22,7 @@ const ACCENT_STYLES: Record<Props['accent'], string> = {
 
 export const KpiCard = memo(function KpiCard({ icon, label, value, sub, accent, href }: Props) {
   const card = (
-    <div className="flex items-start gap-3.5 p-5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] transition-all duration-200 hover:border-[var(--color-primary-200)] hover:shadow-md hover:-translate-y-0.5">
+    <div className="h-full flex items-start gap-3.5 p-5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] transition-all duration-200 hover:border-[var(--color-primary-200)] hover:shadow-md hover:-translate-y-0.5">
       <div
         className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${ACCENT_STYLES[accent]}`}
       >
@@ -38,5 +38,5 @@ export const KpiCard = memo(function KpiCard({ icon, label, value, sub, accent, 
     </div>
   );
 
-  return href ? <Link href={href} className="no-underline text-inherit block">{card}</Link> : card;
+  return href ? <Link href={href} className="no-underline text-inherit block h-full">{card}</Link> : card;
 });
