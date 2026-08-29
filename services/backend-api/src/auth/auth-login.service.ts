@@ -33,18 +33,20 @@ import {
   AuthRefreshInput,
   AuthRegisterInput,
   AuthRegisterResult,
+  AuthResetPasswordInput,
   AuthTokenResult,
   SupabaseAuthErrorResponse,
   SupabaseAuthTokenResponse,
   SupabaseSignUpResponse,
 } from './auth-login.types';
 
-type AuthOperation = 'login' | 'refresh' | 'register' | 'google';
+type AuthOperation = 'login' | 'refresh' | 'register' | 'google' | 'resetPassword';
 
 const SUPABASE_TOKEN_PATH = '/auth/v1/token';
 const SUPABASE_SIGNUP_PATH = '/auth/v1/signup';
 const SUPABASE_RECOVER_PATH = '/auth/v1/recover';
 const SUPABASE_LOGOUT_PATH = '/auth/v1/logout';
+const SUPABASE_USER_PATH = '/auth/v1/user';
 const SUPABASE_ADMIN_USERS_PATH = '/auth/v1/admin/users';
 const SUPABASE_REQUEST_TIMEOUT_MS = 8000;
 const MOBILE_EMAIL_CONFIRMATION_REDIRECT_URL = 'aimapp://login-callback';
@@ -307,6 +309,35 @@ export class AuthLoginService {
     } catch (error) {
       // Logout is best-effort server-side; the client discards its tokens regardless.
       this.logger.warn(`Supabase logout call failed: ${this.toSafeErrorMessage(error)}`);
+    }
+  }
+
+  async resetPassword(accessToken: string, input: AuthResetPasswordInput): Promise<void> {
+    const url = this.buildSupabaseUrl(SUPABASE_USER_PATH);
+
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          ...this.buildHeaders(),
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password: input.password }),
+        signal: AbortSignal.timeout(SUPABASE_REQUEST_TIMEOUT_MS),
+      });
+    } catch (error) {
+      this.logger.warn(`Supabase resetPassword call failed: ${this.toSafeErrorMessage(error)}`);
+      throw new AppError({
+        code: ApiErrorCode.SERVICE_UNAVAILABLE,
+        message: 'Unable to reach the authentication service.',
+        statusCode: HttpStatus.SERVICE_UNAVAILABLE,
+      });
+    }
+
+    if (!response.ok) {
+      await this.throwMappedError(response, 'resetPassword');
     }
   }
 

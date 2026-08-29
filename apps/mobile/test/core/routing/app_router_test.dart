@@ -211,6 +211,8 @@ class _UnusedAuthRepository implements AuthRepository {
   @override
   Future<void> requestPasswordReset({required String email}) => throw UnimplementedError();
   @override
+  Future<void> resetPassword({required String newPassword, required String bearerToken}) => throw UnimplementedError();
+  @override
   Future<AuthContextModel> getMe(String bearerToken) =>
       throw UnimplementedError();
 

@@ -8,6 +8,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/routing/routing.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../logic/provider/auth_context_provider.dart';
+import '../../logic/provider/session_store_provider.dart';
 
 /// State of the forgot password flow (matching prototype's 4 steps).
 enum _ForgotPasswordStep {
@@ -112,7 +113,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     }
   }
 
-  void _submitNewPassword() {
+  Future<void> _submitNewPassword() async {
     final newPassword = _newPasswordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
 
@@ -138,13 +139,37 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
       _errorMessage = null;
     });
 
-    Future.delayed(const Duration(milliseconds: 600), () {
+    try {
+      final session = await ref.read(sessionStoreProvider).read();
+      final token = session?.accessToken ?? '';
+
+      if (token.isNotEmpty) {
+        await ref.read(authRepositoryProvider).resetPassword(
+              newPassword: newPassword,
+              bearerToken: token,
+            );
+      }
+
       if (!mounted) return;
       setState(() {
         _isLoading = false;
         _step = _ForgotPasswordStep.success;
       });
-    });
+    } on AppException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.message;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      final raw = e.toString().replaceAll('Exception: ', '');
+      final match = RegExp(r'message:\s*([^)]+)').firstMatch(raw);
+      setState(() {
+        _isLoading = false;
+        _errorMessage = match?.group(1)?.trim() ?? raw;
+      });
+    }
   }
 
   void _backToLogin() {

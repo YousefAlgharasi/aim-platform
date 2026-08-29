@@ -10,6 +10,9 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart'
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
 
+import 'package:aim_mobile/features/auth/data/session/session_store.dart';
+import 'package:aim_mobile/features/auth/logic/provider/session_store_provider.dart';
+
 import '../../support/test_router_app.dart';
 
 class _FakeAuthRepository implements AuthRepository {
@@ -21,6 +24,16 @@ class _FakeAuthRepository implements AuthRepository {
     requestedEmail = email;
     if (shouldFail) {
       throw Exception('Failed to send reset link. User not found.');
+    }
+  }
+
+  @override
+  Future<void> resetPassword({
+    required String newPassword,
+    required String bearerToken,
+  }) async {
+    if (shouldFail) {
+      throw Exception('Failed to reset password.');
     }
   }
 
@@ -56,6 +69,33 @@ class _FakeAuthRepository implements AuthRepository {
 
   @override
   Future<void> logout(String bearerToken) => throw UnimplementedError();
+}
+
+class _FakeSessionStore implements SessionStore {
+  SessionData? _data;
+
+  @override
+  Future<SessionData?> read() async => _data;
+
+  @override
+  Future<void> save({
+    required String accessToken,
+    required String refreshToken,
+    required int expiresAt,
+    required String email,
+  }) async {
+    _data = SessionData(
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      expiresAt: expiresAt,
+      email: email,
+    );
+  }
+
+  @override
+  Future<void> clear() async {
+    _data = null;
+  }
 }
 
 Widget _testApp({List<Override> overrides = const []}) {
@@ -122,6 +162,7 @@ void main() {
 
     testWidgets('can navigate to reset step via preview and complete success step', (tester) async {
       await tester.pumpWidget(_testApp(overrides: [
+        sessionStoreProvider.overrideWithValue(_FakeSessionStore()),
         authRepositoryProvider.overrideWithValue(fakeRepo),
       ]));
       await tester.pumpAndSettle();

@@ -32,4 +32,10 @@ abstract class AuthRepository {
   /// POST /auth/forgot-password — sends a password-reset email to [email].
   /// This is an unauthenticated endpoint; no bearer token is needed.
   Future<void> requestPasswordReset({required String email});
+
+  /// POST /auth/reset-password — updates password for authenticated user.
+  Future<void> resetPassword({
+    required String newPassword,
+    required String bearerToken,
+  });
 }
