@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/l10n/app_localizations.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/routing/routing.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/widgets/widgets.dart';
@@ -81,11 +82,19 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
         _isLoading = false;
         _step = _ForgotPasswordStep.sent;
       });
-    } catch (e) {
+    } on AppException catch (e) {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _errorMessage = e.toString().replaceAll('Exception: ', '');
+        _errorMessage = e.message;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      final raw = e.toString().replaceAll('Exception: ', '');
+      final match = RegExp(r'message:\s*([^)]+)').firstMatch(raw);
+      setState(() {
+        _isLoading = false;
+        _errorMessage = match?.group(1)?.trim() ?? raw;
       });
     }
   }
