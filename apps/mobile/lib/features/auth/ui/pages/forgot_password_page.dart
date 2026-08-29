@@ -150,36 +150,55 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
-      child: Scaffold(
-        backgroundColor: surfaces.background,
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AimSpacing.screenPaddingMobile,
-              vertical: AimSpacing.space20,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Brand Header + Back Button (hidden on success step)
-                if (_step != _ForgotPasswordStep.success) ...[
-                  _buildHeader(isDark, surfaces),
-                  const SizedBox(height: AimSpacing.space24),
-                ],
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isDark
+                ? const [
+                    Color(0xFF0F172A),
+                    Color(0xFF0F172A),
+                    Color(0xFF020617),
+                  ]
+                : const [
+                    Color(0x22EEF2FF),
+                    Colors.white,
+                    Color(0x40F8FAFC),
+                  ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AimSpacing.screenPaddingMobile,
+                vertical: AimSpacing.space20,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Brand Header + Back Button (hidden on success step)
+                  if (_step != _ForgotPasswordStep.success) ...[
+                    _buildHeader(isDark, surfaces),
+                    const SizedBox(height: AimSpacing.space24),
+                  ],
 
-                Expanded(
-                  child: switch (_step) {
-                    _ForgotPasswordStep.email =>
-                      _buildEmailStep(l10n, surfaces, isDark),
-                    _ForgotPasswordStep.sent =>
-                      _buildSentStep(l10n, surfaces, isDark),
-                    _ForgotPasswordStep.reset =>
-                      _buildResetStep(l10n, surfaces, isDark),
-                    _ForgotPasswordStep.success =>
-                      _buildSuccessStep(l10n, surfaces, isDark),
-                  },
-                ),
-              ],
+                  Expanded(
+                    child: switch (_step) {
+                      _ForgotPasswordStep.email =>
+                        _buildEmailStep(l10n, surfaces, isDark),
+                      _ForgotPasswordStep.sent =>
+                        _buildSentStep(l10n, surfaces, isDark),
+                      _ForgotPasswordStep.reset =>
+                        _buildResetStep(l10n, surfaces, isDark),
+                      _ForgotPasswordStep.success =>
+                        _buildSuccessStep(l10n, surfaces, isDark),
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -754,26 +773,33 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const Spacer(),
-                  Container(
-                    width: 72,
-                    height: 72,
-                    decoration: BoxDecoration(
-                      gradient: AimGradients.ai,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color:
-                              const Color(0xFF4F46E5).withValues(alpha: 0.3),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
+                  Transform.rotate(
+                    angle: 0.05,
+                    child: Container(
+                      width: 88,
+                      height: 88,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF34D399), Color(0xFF4F46E5)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                      ],
-                    ),
-                    alignment: Alignment.center,
-                    child: const Icon(
-                      Icons.check_rounded,
-                      color: AimColors.neutral0,
-                      size: 40,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFF4F46E5).withValues(alpha: 0.35),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.check_rounded,
+                        color: AimColors.neutral0,
+                        size: 48,
+                      ),
                     ),
                   ),
                   const SizedBox(height: AimSpacing.space24),
