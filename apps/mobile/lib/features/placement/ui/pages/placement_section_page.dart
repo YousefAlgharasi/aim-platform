@@ -165,7 +165,6 @@ class _SectionTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
     final isRtl = Directionality.of(context) == TextDirection.rtl;
 

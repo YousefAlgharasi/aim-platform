@@ -201,7 +201,6 @@ class _ReviewContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final dueNowCount = schedules.where((s) => s.status == 'due').length;
     final learnedCount = schedules.length;
-    final surfaces = aimSurfacesOf(context);
 
     return Column(
       children: [

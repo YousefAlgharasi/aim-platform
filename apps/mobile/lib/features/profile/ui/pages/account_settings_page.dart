@@ -219,7 +219,6 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authContextProvider);
-    final themeMode = ref.watch(themeModeProvider);
     final surfaces = aimSurfacesOf(context);
     final l10n = AppLocalizations.of(context);
 
