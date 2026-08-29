@@ -23,6 +23,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/l10n/app_localizations.dart';
+
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/aim_results/data/models/aim_results_models.dart';
@@ -117,9 +119,10 @@ class _RecommendationsPageState extends ConsumerState<RecommendationsPage> {
               AppAsyncFailure(:final message) =>
                 AIMFullScreenError(message: message, onRetry: _load),
               AppAsyncSuccess(:final data) => data.recommendations.isEmpty
-                  ? const AIMEmptyState(
-                      icon: Icon(Icons.auto_awesome_outlined),
-                      title: 'No recommendations yet',
+                  ? AIMEmptyState(
+                      icon: const Icon(Icons.auto_awesome_outlined),
+                      title:
+                          AppLocalizations.of(context).progressNoRecommendations,
                       subtitle:
                           'Complete lessons and practice sessions to receive AIM recommendations.',
                     )

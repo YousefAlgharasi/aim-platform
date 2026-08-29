@@ -23,6 +23,7 @@ import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/billing/logic/provider/billing_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class CheckoutStartPage extends ConsumerStatefulWidget {
   final String planName;
@@ -178,8 +179,9 @@ class _CheckoutStartPageState extends ConsumerState<CheckoutStartPage> {
                   const SizedBox(height: AimSpacing.sectionGap),
                   AIMInput(
                     controller: _promoController,
-                    label: 'Promotion code (optional)',
-                    placeholder: 'Enter code',
+                    label: AppLocalizations.of(context).billingPromoCodeLabel,
+                    placeholder:
+                        AppLocalizations.of(context).billingPromoCodePlaceholder,
                   ),
                   if (_errorMessage != null) ...[
                     const SizedBox(height: AimSpacing.componentGap),
@@ -191,11 +193,12 @@ class _CheckoutStartPageState extends ConsumerState<CheckoutStartPage> {
                   ],
                   const SizedBox(height: AimSpacing.sectionGap),
                   AIMGradientButton(
-                    label: 'Proceed to Payment',
+                    label: AppLocalizations.of(context).billingProceedToPayment,
                     onPressed: _isLoading ? null : _startCheckout,
                     loading: _isLoading,
                     fullWidth: true,
-                    semanticLabel: 'Proceed to payment',
+                    semanticLabel:
+                        AppLocalizations.of(context).billingProceedToPayment,
                   ),
                 ],
               ),

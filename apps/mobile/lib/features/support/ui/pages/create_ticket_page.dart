@@ -42,21 +42,21 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
   String? _subjectError;
   String? _descriptionError;
 
-  static const _categoryOptions = [
-    AIMSelectOption(value: 'bug_report', label: 'Bug Report'),
-    AIMSelectOption(value: 'account_issue', label: 'Account Issue'),
-    AIMSelectOption(value: 'learning_issue', label: 'Learning Issue'),
-    AIMSelectOption(value: 'billing_issue', label: 'Billing Issue'),
-    AIMSelectOption(value: 'general', label: 'General'),
-    AIMSelectOption(value: 'other', label: 'Other'),
-  ];
+  List<AIMSelectOption> _getCategoryOptions(AppLocalizations l10n) => [
+        AIMSelectOption(value: 'bug_report', label: l10n.supportCategoryBugReport),
+        AIMSelectOption(value: 'account_issue', label: l10n.supportCategoryAccountIssue),
+        AIMSelectOption(value: 'learning_issue', label: l10n.supportCategoryLearningIssue),
+        AIMSelectOption(value: 'billing_issue', label: l10n.supportCategoryBillingIssue),
+        AIMSelectOption(value: 'general', label: l10n.supportCategoryGeneral),
+        AIMSelectOption(value: 'other', label: l10n.supportCategoryOther),
+      ];
 
-  static const _severityOptions = [
-    AIMSelectOption(value: 'low', label: 'Low'),
-    AIMSelectOption(value: 'medium', label: 'Medium'),
-    AIMSelectOption(value: 'high', label: 'High'),
-    AIMSelectOption(value: 'critical', label: 'Critical'),
-  ];
+  List<AIMSelectOption> _getSeverityOptions(AppLocalizations l10n) => [
+        AIMSelectOption(value: 'low', label: l10n.supportSeverityLow),
+        AIMSelectOption(value: 'medium', label: l10n.supportSeverityMedium),
+        AIMSelectOption(value: 'high', label: l10n.supportSeverityHigh),
+        AIMSelectOption(value: 'critical', label: l10n.supportSeverityCritical),
+      ];
 
   @override
   void dispose() {
@@ -68,6 +68,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final submitState = ref.watch(createTicketProvider);
     final isSubmitting = switch (submitState) {
       AppAsyncLoading() => true,
@@ -98,8 +99,8 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
               ),
               children: [
                 AIMSelect(
-                  label: 'Category',
-                  options: _categoryOptions,
+                  label: l10n.supportCategoryLabel,
+                  options: _getCategoryOptions(l10n),
                   value: _category,
                   onChanged: (value) {
                     if (value != null) setState(() => _category = value);
@@ -107,8 +108,8 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                 ),
                 const SizedBox(height: AimSpacing.componentGap),
                 AIMSelect(
-                  label: 'Severity',
-                  options: _severityOptions,
+                  label: l10n.supportSeverityLabel,
+                  options: _getSeverityOptions(l10n),
                   value: _severity,
                   onChanged: (value) {
                     if (value != null) setState(() => _severity = value);
@@ -116,16 +117,16 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                 ),
                 const SizedBox(height: AimSpacing.componentGap),
                 AIMInput(
-                  label: 'Subject',
+                  label: l10n.supportSubjectLabel,
                   controller: _subjectController,
-                  placeholder: 'Briefly describe the issue',
+                  placeholder: l10n.supportSubjectPlaceholder,
                   error: _subjectError,
                 ),
                 const SizedBox(height: AimSpacing.componentGap),
                 AIMTextarea(
-                  label: 'Description',
+                  label: l10n.supportDescriptionLabel,
                   controller: _descriptionController,
-                  placeholder: 'Tell us what happened, step by step...',
+                  placeholder: l10n.supportDescriptionPlaceholder,
                   rows: 5,
                   error: _descriptionError,
                 ),
@@ -139,11 +140,11 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                 ],
                 const SizedBox(height: AimSpacing.sectionGap),
                 AIMGradientButton(
-                  label: 'Submit Ticket',
-                  onPressed: isSubmitting ? null : _handleSubmit,
+                  label: l10n.supportSubmitTicket,
+                  onPressed: isSubmitting ? null : () => _handleSubmit(l10n),
                   loading: isSubmitting,
                   fullWidth: true,
-                  semanticLabel: 'Submit ticket',
+                  semanticLabel: l10n.supportSubmitTicket,
                 ),
               ],
             ),
@@ -153,13 +154,13 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
     );
   }
 
-  void _handleSubmit() {
+  void _handleSubmit(AppLocalizations l10n) {
     final subject = _subjectController.text.trim();
     final description = _descriptionController.text.trim();
     setState(() {
-      _subjectError = subject.isEmpty ? 'Subject is required' : null;
+      _subjectError = subject.isEmpty ? l10n.supportSubjectRequired : null;
       _descriptionError =
-          description.isEmpty ? 'Description is required' : null;
+          description.isEmpty ? l10n.supportDescriptionRequired : null;
     });
     if (_subjectError != null || _descriptionError != null) return;
 

@@ -322,7 +322,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Already have an account? ',
+                      l10n.authAlreadyHaveAccount,
                       style: AimTextStyles.bodySm.copyWith(
                         color: surfaces.textSecondary,
                       ),

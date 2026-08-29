@@ -39,7 +39,7 @@ class TranscriptionPreview extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space8),
             Text(
-              l10n?.voiceTeacherTranscribing ?? 'Transcribing...',
+              l10n?.voiceTeacherTranscribing ?? (isRtl ? 'جارٍ التحويل...' : 'Transcribing...'),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
                 fontStyle: FontStyle.italic,
@@ -72,8 +72,8 @@ class TranscriptionPreview extends StatelessWidget {
               const SizedBox(width: AimSpacing.space4),
               Text(
                 isStudent
-                    ? (l10n?.voiceTeacherWhatYouSaid ?? 'What you said')
-                    : (l10n?.voiceTeacherTeacherResponse ?? 'Teacher response'),
+                    ? (l10n?.voiceTeacherWhatYouSaid ?? (isRtl ? 'ما قلته' : 'What you said'))
+                    : (l10n?.voiceTeacherTeacherResponse ?? (isRtl ? 'رد المعلم' : 'Teacher response')),
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),

@@ -23,6 +23,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/l10n/app_localizations.dart';
+
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 
@@ -191,13 +193,15 @@ class _NotificationDetailPageState
                     AIMButton(
                       onPressed: _busy ? null : _dismiss,
                       variant: AIMButtonVariant.ghost,
-                      child: const Text('Dismiss'),
+                      child: Text(
+                          AppLocalizations.of(context).notificationsDismiss),
                     ),
                   ] else
-                    const AIMAlertBanner(
+                    AIMAlertBanner(
                       tone: AIMAlertTone.info,
-                      title: 'Dismissed',
-                      child: Text(
+                      title: AppLocalizations.of(context)
+                          .notificationsDismissedTitle,
+                      child: const Text(
                         'This notification has been dismissed.',
                       ),
                     ),

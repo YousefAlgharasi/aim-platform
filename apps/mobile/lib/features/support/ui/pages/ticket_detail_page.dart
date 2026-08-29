@@ -278,19 +278,23 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           AIMTextarea(
-                            label: 'Add a comment',
+                            label: AppLocalizations.of(context)
+                                .supportTicketAddComment,
                             controller: _commentController,
-                            placeholder: 'Write a follow-up message...',
+                            placeholder: AppLocalizations.of(context)
+                                .supportTicketCommentPlaceholder,
                             rows: 3,
                             error: _postError,
                           ),
                           const SizedBox(height: AimSpacing.componentGap),
                           AIMGradientButton(
-                            label: 'Send',
+                            label: AppLocalizations.of(context)
+                                .supportTicketSendComment,
                             onPressed: _isPosting ? null : _postComment,
                             loading: _isPosting,
                             fullWidth: true,
-                            semanticLabel: 'Send comment',
+                            semanticLabel: AppLocalizations.of(context)
+                                .supportTicketSendComment,
                           ),
                         ],
                       ),

@@ -27,6 +27,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/question_answer/logic/entity/question_session_state.dart';
 import 'package:aim_mobile/features/question_answer/logic/provider/question_answer_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'attempt_acknowledgement_card.dart';
 
 /// Encapsulates the answer submit interaction for [QuestionPage] and any
@@ -92,12 +93,12 @@ class _AnswerSubmitFlowContent extends StatelessWidget {
           const SizedBox(height: AimSpacing.componentGap),
         ],
         AIMGradientButton(
-          label: 'Continue',
+          label: AppLocalizations.of(context).commonContinue,
           gradient: AimGradients.gzHero,
           fullWidth: true,
           loading: state.isSubmitting,
           enabled: state.canSubmit,
-          semanticLabel: 'Continue',
+          semanticLabel: AppLocalizations.of(context).commonContinue,
           onPressed: state.canSubmit ? onSubmit : null,
         ),
       ],

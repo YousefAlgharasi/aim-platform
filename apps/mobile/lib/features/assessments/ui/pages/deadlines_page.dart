@@ -35,6 +35,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
 import 'package:aim_mobile/features/assessments/logic/provider/assessment_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Which backend-computed bucket a tile belongs to. Set by each
 /// [_DeadlineSection] from the backend's own grouping — never derived
@@ -228,13 +229,14 @@ class _DeadlinesContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (_isEmpty) {
-      return const AIMEmptyState(
-        icon: Icon(Icons.event_available_outlined),
-        title: 'No deadlines',
-        subtitle: 'Your assessment deadlines will appear here.',
+      return AIMEmptyState(
+        icon: const Icon(Icons.event_available_outlined),
+        title: AppLocalizations.of(context).assessmentsNoDeadlinesTitle,
+        subtitle: AppLocalizations.of(context).assessmentsNoDeadlinesSubtitle,
       );
     }
 
+    final l10n = AppLocalizations.of(context);
     return RefreshIndicator(
       onRefresh: onRefresh,
       child: ListView(
@@ -245,35 +247,35 @@ class _DeadlinesContent extends StatelessWidget {
         children: [
           if (deadlines.active.isNotEmpty)
             _DeadlineSection(
-              title: 'Active',
+              title: l10n.assessmentsTabActive,
               color: AimColors.success500,
               kind: _DeadlineKind.active,
               items: deadlines.active,
             ),
           if (deadlines.upcoming.isNotEmpty)
             _DeadlineSection(
-              title: 'Upcoming',
+              title: l10n.assessmentsTabUpcoming,
               color: AimColors.info500,
               kind: _DeadlineKind.upcoming,
               items: deadlines.upcoming,
             ),
           if (deadlines.late.isNotEmpty)
             _DeadlineSection(
-              title: 'Late',
+              title: l10n.assessmentsTabLate,
               color: AimColors.warning500,
               kind: _DeadlineKind.late,
               items: deadlines.late,
             ),
           if (deadlines.missed.isNotEmpty)
             _DeadlineSection(
-              title: 'Missed',
+              title: l10n.assessmentsTabMissed,
               color: AimColors.error500,
               kind: _DeadlineKind.missed,
               items: deadlines.missed,
             ),
           if (deadlines.closed.isNotEmpty)
             _DeadlineSection(
-              title: 'Closed',
+              title: l10n.assessmentsTabClosed,
               color: AimColors.neutral500,
               kind: _DeadlineKind.closed,
               items: deadlines.closed,

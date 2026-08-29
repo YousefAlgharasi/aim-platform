@@ -23,6 +23,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/question_answer/logic/entity/session_feedback.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class SessionFeedbackCard extends StatelessWidget {
   const SessionFeedbackCard({required this.feedback, super.key});
@@ -80,7 +81,7 @@ class SessionFeedbackCard extends StatelessWidget {
           const SizedBox(height: AimSpacing.componentGap),
           if (feedback.itemsAttempted != null) ...[
             _SummaryRow(
-              label: 'Questions attempted',
+              label: AppLocalizations.of(context).qaQuestionsAttempted,
               value: '${feedback.itemsAttempted}',
               surfaces: surfaces,
             ),
@@ -88,7 +89,7 @@ class SessionFeedbackCard extends StatelessWidget {
           if (feedback.itemsCorrect != null) ...[
             const SizedBox(height: AimSpacing.space4),
             _SummaryRow(
-              label: 'Correct (backend score)',
+              label: AppLocalizations.of(context).qaCorrectScore,
               value: '${feedback.itemsCorrect}',
               surfaces: surfaces,
             ),
@@ -96,7 +97,7 @@ class SessionFeedbackCard extends StatelessWidget {
           if (feedback.overallMasteryShift != null) ...[
             const SizedBox(height: AimSpacing.space4),
             _SummaryRow(
-              label: 'Mastery shift',
+              label: AppLocalizations.of(context).qaMasteryShift,
               value: feedback.overallMasteryShift!,
               surfaces: surfaces,
             ),

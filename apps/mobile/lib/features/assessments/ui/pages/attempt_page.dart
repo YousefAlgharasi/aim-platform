@@ -29,6 +29,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
 import 'package:aim_mobile/features/assessments/logic/provider/assessment_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class AttemptPage extends ConsumerStatefulWidget {
   const AttemptPage({
@@ -433,10 +434,12 @@ class _AttemptContent extends ConsumerWidget {
                       ),
                 ),
               AppAsyncSuccess(:final data) => data.isEmpty
-                  ? const AIMEmptyState(
-                      icon: Icon(Icons.quiz_outlined),
-                      title: 'Questions',
-                      subtitle: 'No questions found for this attempt.',
+                  ? AIMEmptyState(
+                      icon: const Icon(Icons.quiz_outlined),
+                      title: AppLocalizations.of(context)
+                          .assessmentsQuestionsEmptyTitle,
+                      subtitle: AppLocalizations.of(context)
+                          .assessmentsQuestionsEmptySubtitle,
                     )
                   : ListView.separated(
                       itemCount: data.length,
@@ -480,10 +483,10 @@ class _AttemptContent extends ConsumerWidget {
           ),
           const SizedBox(height: AimSpacing.sectionGap),
           AIMGradientButton(
-            label: 'Submit',
+            label: AppLocalizations.of(context).assessmentsSubmit,
             onPressed: onSubmit,
             fullWidth: true,
-            semanticLabel: 'Submit attempt',
+            semanticLabel: AppLocalizations.of(context).assessmentsSubmit,
           ),
         ],
       ),
@@ -619,9 +622,10 @@ class _FreeResponseInputState extends State<_FreeResponseInput> {
   Widget build(BuildContext context) {
     return AIMTextarea(
       controller: _controller,
-      placeholder: 'Type your answer here…',
+      placeholder:
+          AppLocalizations.of(context).assessmentsTypeAnswerPlaceholder,
       rows: 2,
-      semanticLabel: 'Your answer',
+      semanticLabel: AppLocalizations.of(context).assessmentsYourAnswerLabel,
       onChanged: _onChanged,
     );
   }

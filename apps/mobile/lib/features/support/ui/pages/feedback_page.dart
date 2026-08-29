@@ -42,13 +42,13 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
   String? _titleError;
   String? _bodyError;
 
-  static const _categoryOptions = [
-    AIMSelectOption(value: 'suggestion', label: 'Suggestion'),
-    AIMSelectOption(value: 'bug_report', label: 'Bug report'),
-    AIMSelectOption(value: 'compliment', label: 'Compliment'),
-    AIMSelectOption(value: 'complaint', label: 'Complaint'),
-    AIMSelectOption(value: 'other', label: 'Other'),
-  ];
+  List<AIMSelectOption> _getCategoryOptions(AppLocalizations l10n) => [
+        AIMSelectOption(value: 'suggestion', label: l10n.supportCategorySuggestion),
+        AIMSelectOption(value: 'bug_report', label: l10n.supportCategoryBugReport),
+        AIMSelectOption(value: 'compliment', label: l10n.supportCategoryCompliment),
+        AIMSelectOption(value: 'complaint', label: l10n.supportCategoryComplaint),
+        AIMSelectOption(value: 'other', label: l10n.supportCategoryOther),
+      ];
 
   @override
   void dispose() {
@@ -60,6 +60,7 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final submitState = ref.watch(submitFeedbackProvider);
     final isSubmitting = switch (submitState) {
       AppAsyncLoading() => true,
@@ -90,8 +91,8 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
               ),
               children: [
                 AIMSelect(
-                  label: 'Category',
-                  options: _categoryOptions,
+                  label: l10n.supportCategoryLabel,
+                  options: _getCategoryOptions(l10n),
                   value: _category,
                   onChanged: (value) {
                     if (value != null) setState(() => _category = value);
@@ -99,7 +100,7 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
                 ),
                 const SizedBox(height: AimSpacing.componentGap),
                 Text(
-                  AppLocalizations.of(context).supportRateAimQuestion,
+                  l10n.supportRateAimQuestion,
                   style: AimTextStyles.label
                       .copyWith(color: surfaces.textPrimary),
                 ),
@@ -110,16 +111,16 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
                 ),
                 const SizedBox(height: AimSpacing.componentGap),
                 AIMInput(
-                  label: 'Title',
+                  label: l10n.supportFeedbackTitleLabel,
                   controller: _titleController,
-                  placeholder: 'A short summary',
+                  placeholder: l10n.supportFeedbackTitlePlaceholder,
                   error: _titleError,
                 ),
                 const SizedBox(height: AimSpacing.componentGap),
                 AIMTextarea(
-                  label: 'Your feedback',
+                  label: l10n.supportFeedbackBodyLabel,
                   controller: _bodyController,
-                  placeholder: 'Tell us what you think...',
+                  placeholder: l10n.supportFeedbackBodyPlaceholder,
                   rows: 5,
                   error: _bodyError,
                 ),
@@ -133,11 +134,11 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
                 ],
                 const SizedBox(height: AimSpacing.sectionGap),
                 AIMGradientButton(
-                  label: AppLocalizations.of(context).commonSubmit,
-                  onPressed: isSubmitting ? null : _handleSubmit,
+                  label: l10n.commonSubmit,
+                  onPressed: isSubmitting ? null : () => _handleSubmit(l10n),
                   loading: isSubmitting,
                   fullWidth: true,
-                  semanticLabel: AppLocalizations.of(context).commonSubmit,
+                  semanticLabel: l10n.commonSubmit,
                 ),
               ],
             ),
@@ -147,12 +148,12 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
     );
   }
 
-  void _handleSubmit() {
+  void _handleSubmit(AppLocalizations l10n) {
     final title = _titleController.text.trim();
     final body = _bodyController.text.trim();
     setState(() {
-      _titleError = title.isEmpty ? 'Title is required' : null;
-      _bodyError = body.isEmpty ? 'Feedback details are required' : null;
+      _titleError = title.isEmpty ? l10n.supportFeedbackTitleRequired : null;
+      _bodyError = body.isEmpty ? l10n.supportFeedbackBodyRequired : null;
     });
     if (_titleError != null || _bodyError != null) return;
 

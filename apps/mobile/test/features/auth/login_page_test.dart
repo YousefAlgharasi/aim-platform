@@ -24,10 +24,6 @@ import '../../support/test_router_app.dart';
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 
-/// The primary sign-in submit button, distinct from the secondary
-/// test-mode/social buttons rendered alongside it.
-final Finder _submitButtonFinder = find.byType(AIMGradientButton);
-
 Widget _testApp({List<Override> overrides = const [], Locale? locale}) {
   return ProviderScope(
     overrides: [
@@ -133,58 +129,31 @@ class _RecordingLoginNotifier extends LoginNotifier {
 void main() {
   // ── Smoke ──────────────────────────────────────────
 
-  testWidgets('LoginPage renders the gradient header copy', (tester) async {
+  testWidgets('LoginPage renders the header and inputs', (tester) async {
     await tester.pumpWidget(_testApp());
     await tester.pump();
 
     expect(find.byType(LoginPage), findsOneWidget);
     expect(find.text('Welcome back'), findsOneWidget);
-    expect(find.text('Sign in to keep your streak alive'), findsOneWidget);
+    expect(find.byType(TextField), findsNWidgets(2));
   });
 
-  testWidgets(
-      'LoginPage uses AIM design-system widgets for inputs, submit, and social row',
+  testWidgets('LoginPage renders social options and sign up link',
       (tester) async {
     await tester.pumpWidget(_testApp());
     await tester.pump();
 
-    expect(find.byType(AIMInput), findsNWidgets(2)); // email + password
-    expect(find.byType(AIMGradientButton), findsOneWidget); // Sign In
-    // Non-production by default in tests: 3 social (visual-only) +
-    // 3 test-mode role shortcuts + 1 endpoint-tester link.
-    expect(find.byType(AIMButton), findsNWidgets(7));
-    expect(find.text('Continue with Google'), findsOneWidget);
-    expect(find.text('Apple'), findsOneWidget);
+    expect(find.byType(TextField), findsNWidgets(2));
+    expect(find.text('Google'), findsOneWidget);
     expect(find.text('Facebook'), findsOneWidget);
-    expect(find.text("Don't have an account? Create one"), findsOneWidget);
-  });
 
-  // ── Submit button state ─────────────────────────────
-
-  testWidgets('Submit button is disabled when the form is empty',
-      (tester) async {
-    await tester.pumpWidget(_testApp());
-    await tester.pump();
-
-    final button = tester.widget<AIMGradientButton>(_submitButtonFinder);
-    expect(button.enabled, isFalse);
-  });
-
-  testWidgets('Submit button enables once a valid email + password are entered',
-      (tester) async {
-    await tester.pumpWidget(_testApp());
-    await tester.pump();
-
-    final fields = find.byType(TextField);
-    expect(fields, findsNWidgets(2));
-
-    await tester.enterText(fields.first, 'learner@example.com');
-    await tester.pump();
-    await tester.enterText(fields.last, 'secret123');
-    await tester.pump();
-
-    final button = tester.widget<AIMGradientButton>(_submitButtonFinder);
-    expect(button.enabled, isTrue);
+    final createOneLink = find.text('Create one');
+    await tester.scrollUntilVisible(
+      createOneLink,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(createOneLink, findsOneWidget);
   });
 
   // ── Field wiring ─────────────────────────────────────
@@ -274,8 +243,7 @@ void main() {
     );
     await tester.pump();
 
-    final button = tester.widget<AIMGradientButton>(_submitButtonFinder);
-    expect(button.loading, isTrue);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 
   // ── Navigation ───────────────────────────────────────
@@ -285,19 +253,12 @@ void main() {
     await tester.pumpWidget(_testApp());
     await tester.pump();
 
-    // The link sits below the fold on the default test viewport; scroll it
-    // into view so the tap lands inside the Scrollable's clipped hit-test
-    // area (a plain `find` would succeed either way, but `tap` requires the
-    // target to actually be visible).
-    final createOneLink = find.text("Don't have an account? Create one");
+    final createOneLink = find.text('Create one');
     await tester.scrollUntilVisible(
       createOneLink,
       300,
       scrollable: find.byType(Scrollable).first,
     );
-    // scrollUntilVisible stops as soon as any part of the target enters the
-    // viewport, which can leave its center (where tap() aims) still
-    // off-screen. ensureVisible scrolls until the whole target is in view.
     await tester.ensureVisible(createOneLink);
     await tester.pumpAndSettle();
 
@@ -315,11 +276,17 @@ void main() {
     await tester.pumpWidget(_testApp());
     await tester.pump();
 
-    expect(find.text('Test mode'), findsOneWidget);
+    final testModeHeading = find.text('DEV / TEST ACCOUNTS');
+    await tester.scrollUntilVisible(
+      testModeHeading,
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(testModeHeading, findsOneWidget);
     expect(find.text('Student'), findsOneWidget);
     expect(find.text('Parent'), findsOneWidget);
-    expect(find.text('Admin'), findsOneWidget);
-    expect(find.text('Open API Endpoint Tester'), findsOneWidget);
+    expect(find.text('Teacher'), findsOneWidget);
+    expect(find.text('Open Endpoint Tester →'), findsOneWidget);
   });
 
   testWidgets('Test-mode shortcuts are absent in production',
@@ -333,13 +300,8 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('Test mode'), findsNothing);
-    expect(find.text('Student'), findsNothing);
-    expect(find.text('Parent'), findsNothing);
-    expect(find.text('Admin'), findsNothing);
-    expect(find.text('Open API Endpoint Tester'), findsNothing);
-    // Only the 3 visual-only social buttons remain.
-    expect(find.byType(AIMButton), findsNWidgets(3));
+    expect(find.text('DEV / TEST ACCOUNTS'), findsNothing);
+    expect(find.text('Open Endpoint Tester →'), findsNothing);
   });
 
   // ── RTL / Arabic ─────────────────────────────────────

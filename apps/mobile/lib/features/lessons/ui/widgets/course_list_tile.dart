@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Distinct colors for each course card icon box to match Figma prototype.
 const List<Color> _kCourseIconBgColors = [
@@ -155,14 +156,14 @@ class CourseListTile extends StatelessWidget {
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      CircleAvatar(
+                                      const CircleAvatar(
                                         radius: 3,
                                         backgroundColor: AimColors.success500,
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        'Current',
-                                        style: TextStyle(
+                                        AppLocalizations.of(context).coursesCurrentBadge,
+                                        style: const TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.bold,
                                           color: AimColors.success500,

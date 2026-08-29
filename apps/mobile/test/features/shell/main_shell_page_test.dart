@@ -131,7 +131,7 @@ void main() {
       child: const MainShellPage(),
     ));
 
-    await tester.tap(find.byIcon(Icons.menu));
+    tester.state<ScaffoldState>(find.byType(Scaffold).first).openDrawer();
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 

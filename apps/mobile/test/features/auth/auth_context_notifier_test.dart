@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
+import 'package:aim_mobile/features/auth/logic/entity/auth_context.dart';
 import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
 import 'package:aim_mobile/features/auth/data/models/auth_sync_response_model.dart';
 import 'package:aim_mobile/features/auth/data/models/login_result_model.dart';
@@ -42,9 +43,9 @@ void main() {
 
     expect(didLoadContext, isFalse);
     expect(authFlowState.isSignedOut, isTrue);
-    expect(authContextState, isA<AppAsyncFailure<AuthContextModel>>());
+    expect(authContextState, isA<AppAsyncFailure<AuthContext>>());
     expect(
-      (authContextState as AppAsyncFailure<AuthContextModel>).code,
+      (authContextState as AppAsyncFailure<AuthContext>).code,
       'AUTH_SESSION_EXPIRED',
     );
   });

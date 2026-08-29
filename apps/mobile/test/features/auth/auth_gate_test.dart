@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
+import 'package:aim_mobile/features/auth/ui/pages/login_page.dart';
 import 'package:aim_mobile/features/shell/ui/pages/main_shell_page.dart';
 import 'package:aim_mobile/features/auth/data/session/session_store.dart';
 import 'package:aim_mobile/features/auth/logic/provider/app_bootstrap_notifier.dart';
@@ -70,7 +72,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Welcome back'), findsOneWidget);
+    expect(find.byType(LoginPage), findsOneWidget);
   });
 
   testWidgets('AuthGate stays on splash while still checking', (tester) async {
@@ -88,7 +90,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('AIM'), findsOneWidget);
-    expect(find.text('Welcome back'), findsNothing);
+    expect(find.byType(LoginPage), findsNothing);
   });
 
   testWidgets('AuthGate navigates to mainShell when already signed in',
@@ -103,7 +105,7 @@ void main() {
               ..signIn('learner@example.com', accessToken: 'tok-abc');
           }),
         ],
-        child: const TestRouterApp(),
+        child: const TestRouterApp(initialLocation: AppRoutePaths.mainShell),
       ),
     );
 

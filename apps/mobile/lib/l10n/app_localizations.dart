@@ -68,7 +68,8 @@ abstract class AppLocalizations {
   final String localeName;
 
   static AppLocalizations of(BuildContext context) {
-    return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
+    return Localizations.of<AppLocalizations>(context, AppLocalizations) ??
+        lookupAppLocalizations(const Locale('en'));
   }
 
   static const LocalizationsDelegate<AppLocalizations> delegate =
@@ -115,6 +116,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancel'**
   String get commonCancel;
+
+  /// No description provided for @commonResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get commonResume;
+
+  /// No description provided for @commonPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get commonPause;
 
   /// No description provided for @commonSave.
   ///
@@ -289,6 +302,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Don\'t have an account? '**
   String get authNoAccountPrompt;
+
+  /// Link back to the login page shown at the bottom of the register page.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account? Sign in'**
+  String get authAlreadyHaveAccount;
 
   /// Link text that opens the registration page.
   ///
@@ -481,12 +500,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Privacy Policy'**
   String get authPrivacyPolicyLink;
-
-  /// Link back to the login page shown at the bottom of the register page.
-  ///
-  /// In en, this message translates to:
-  /// **'Already have an account? Sign in'**
-  String get authAlreadyHaveAccount;
 
   /// App bar title for the email-confirmation-sent screen.
   ///
@@ -3147,7 +3160,7 @@ abstract class AppLocalizations {
   /// Tab or title for user's support tickets.
   ///
   /// In en, this message translates to:
-  /// **'My Tickets'**
+  /// **'My tickets'**
   String get supportMyTickets;
 
   /// Screen title for single ticket.
@@ -3210,13 +3223,13 @@ abstract class AppLocalizations {
   /// **'What\'s new'**
   String get supportWhatNew;
 
-  /// Title when user has no support tickets.
+  /// Empty state title for student support tickets
   ///
   /// In en, this message translates to:
   /// **'No Tickets Yet'**
   String get supportNoTickets;
 
-  /// Subtitle when user has no support tickets.
+  /// Empty state subtitle for student support tickets
   ///
   /// In en, this message translates to:
   /// **'Create a ticket to get help from our support team.'**
@@ -3690,7 +3703,7 @@ abstract class AppLocalizations {
   /// **'Try Again'**
   String get voiceTeacherTryAgain;
 
-  /// Processing voice recording status.
+  /// Push to talk button processing text
   ///
   /// In en, this message translates to:
   /// **'Processing...'**
@@ -4325,6 +4338,942 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reach Level 20 in English'**
   String get achievementsPolyglotLegendDesc;
+
+  /// Title for create ticket screen
+  ///
+  /// In en, this message translates to:
+  /// **'Submit a ticket'**
+  String get supportCreateTicketTitle;
+
+  /// Button label to create a new support ticket
+  ///
+  /// In en, this message translates to:
+  /// **'Create Ticket'**
+  String get supportCreateTicketButton;
+
+  /// Button to submit support ticket
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Ticket'**
+  String get supportSubmitTicket;
+
+  /// Label for ticket category dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get supportCategoryLabel;
+
+  /// Label for ticket severity dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Severity'**
+  String get supportSeverityLabel;
+
+  /// Label for ticket subject input
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get supportSubjectLabel;
+
+  /// Placeholder for ticket subject
+  ///
+  /// In en, this message translates to:
+  /// **'Briefly describe the issue'**
+  String get supportSubjectPlaceholder;
+
+  /// Label for ticket description textarea
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get supportDescriptionLabel;
+
+  /// Placeholder for ticket description
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us what happened, step by step...'**
+  String get supportDescriptionPlaceholder;
+
+  /// Validation error for empty subject
+  ///
+  /// In en, this message translates to:
+  /// **'Subject is required'**
+  String get supportSubjectRequired;
+
+  /// Validation error for empty description
+  ///
+  /// In en, this message translates to:
+  /// **'Description is required'**
+  String get supportDescriptionRequired;
+
+  /// Category option: Bug report
+  ///
+  /// In en, this message translates to:
+  /// **'Bug Report'**
+  String get supportCategoryBugReport;
+
+  /// Category option: Account issue
+  ///
+  /// In en, this message translates to:
+  /// **'Account Issue'**
+  String get supportCategoryAccountIssue;
+
+  /// Category option: Learning issue
+  ///
+  /// In en, this message translates to:
+  /// **'Learning Issue'**
+  String get supportCategoryLearningIssue;
+
+  /// Category option: Billing issue
+  ///
+  /// In en, this message translates to:
+  /// **'Billing Issue'**
+  String get supportCategoryBillingIssue;
+
+  /// Category option: General
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get supportCategoryGeneral;
+
+  /// Feedback category: Suggestion
+  ///
+  /// In en, this message translates to:
+  /// **'Suggestion'**
+  String get supportCategorySuggestion;
+
+  /// Feedback category: Compliment
+  ///
+  /// In en, this message translates to:
+  /// **'Compliment'**
+  String get supportCategoryCompliment;
+
+  /// Feedback category: Complaint
+  ///
+  /// In en, this message translates to:
+  /// **'Complaint'**
+  String get supportCategoryComplaint;
+
+  /// Category option: Other
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get supportCategoryOther;
+
+  /// Severity option: Low
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get supportSeverityLow;
+
+  /// Severity option: Medium
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get supportSeverityMedium;
+
+  /// Severity option: High
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get supportSeverityHigh;
+
+  /// Severity option: Critical
+  ///
+  /// In en, this message translates to:
+  /// **'Critical'**
+  String get supportSeverityCritical;
+
+  /// Feedback title input label
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get supportFeedbackTitleLabel;
+
+  /// Feedback title placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'A short summary'**
+  String get supportFeedbackTitlePlaceholder;
+
+  /// Feedback body input label
+  ///
+  /// In en, this message translates to:
+  /// **'Your feedback'**
+  String get supportFeedbackBodyLabel;
+
+  /// Feedback body placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us what you think...'**
+  String get supportFeedbackBodyPlaceholder;
+
+  /// Validation error when feedback title is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Title is required'**
+  String get supportFeedbackTitleRequired;
+
+  /// Validation error when feedback body is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback details are required'**
+  String get supportFeedbackBodyRequired;
+
+  /// Label for ticket comment input
+  ///
+  /// In en, this message translates to:
+  /// **'Add a comment'**
+  String get supportTicketAddComment;
+
+  /// Placeholder for ticket follow-up comment
+  ///
+  /// In en, this message translates to:
+  /// **'Write a follow-up message...'**
+  String get supportTicketCommentPlaceholder;
+
+  /// Button to send comment
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get supportTicketSendComment;
+
+  /// System status banner title
+  ///
+  /// In en, this message translates to:
+  /// **'All Systems Operational'**
+  String get supportStatusAllOperational;
+
+  /// Empty state title for status components
+  ///
+  /// In en, this message translates to:
+  /// **'No components reported'**
+  String get supportStatusNoComponents;
+
+  /// Empty state subtitle for status components
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to show yet.'**
+  String get supportStatusNothingToShow;
+
+  /// Empty state title for parent support tickets
+  ///
+  /// In en, this message translates to:
+  /// **'No Support Tickets'**
+  String get supportNoParentTickets;
+
+  /// Empty state subtitle for parent support tickets
+  ///
+  /// In en, this message translates to:
+  /// **'Create a ticket if you need help with your account.'**
+  String get supportNoParentTicketsSubtitle;
+
+  /// Badge text for current enrolled course
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get coursesCurrentBadge;
+
+  /// App bar title and screen header for the AI Voice Teacher
+  ///
+  /// In en, this message translates to:
+  /// **'Voice Teacher'**
+  String get voiceTeacherTitle;
+
+  /// Loading state accessibility label when initializing voice teacher
+  ///
+  /// In en, this message translates to:
+  /// **'Starting Voice Teacher session'**
+  String get voiceTeacherStartingSession;
+
+  /// Accessibility label for voice teacher back button
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get voiceTeacherBackSemantic;
+
+  /// Status pill label when voice teacher is speaking
+  ///
+  /// In en, this message translates to:
+  /// **'Speaking'**
+  String get voiceTeacherStatusSpeaking;
+
+  /// Status pill label when recording user voice
+  ///
+  /// In en, this message translates to:
+  /// **'Recording'**
+  String get voiceTeacherStatusRecording;
+
+  /// Status pill label when processing user response
+  ///
+  /// In en, this message translates to:
+  /// **'Processing'**
+  String get voiceTeacherStatusProcessing;
+
+  /// Status pill label when ready for user input
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
+  String get voiceTeacherStatusReady;
+
+  /// Main heading when voice teacher is speaking
+  ///
+  /// In en, this message translates to:
+  /// **'Your teacher is speaking…'**
+  String get voiceTeacherHeadingSpeaking;
+
+  /// Main heading when recording user speech
+  ///
+  /// In en, this message translates to:
+  /// **'Listening to you…'**
+  String get voiceTeacherHeadingRecording;
+
+  /// Main heading when processing user speech
+  ///
+  /// In en, this message translates to:
+  /// **'Processing your answer…'**
+  String get voiceTeacherHeadingProcessing;
+
+  /// Main heading when awaiting student push-to-talk press
+  ///
+  /// In en, this message translates to:
+  /// **'Your turn — press and hold to speak'**
+  String get voiceTeacherHeadingListening;
+
+  /// Subtitle text below push-to-talk button
+  ///
+  /// In en, this message translates to:
+  /// **'Practise your pronunciation with the AI teacher'**
+  String get voiceTeacherPracticeSubtitle;
+
+  /// Button label to toggle chat transcript view
+  ///
+  /// In en, this message translates to:
+  /// **'Messages'**
+  String get voiceTeacherMessagesButton;
+
+  /// Voice error back to call button
+  ///
+  /// In en, this message translates to:
+  /// **'Back to call'**
+  String get voiceTeacherBackToCall;
+
+  /// Accessibility label for voice status pill
+  ///
+  /// In en, this message translates to:
+  /// **'Status: {status}'**
+  String voiceTeacherStatusSemantic(String status);
+
+  /// Push to talk button instruction text
+  ///
+  /// In en, this message translates to:
+  /// **'Press and hold to speak'**
+  String get voiceTeacherPressAndHold;
+
+  /// Accessibility label while recording voice
+  ///
+  /// In en, this message translates to:
+  /// **'Recording — release to send'**
+  String get voiceTeacherRecordingRelease;
+
+  /// Accessibility label for voice teacher message in transcript
+  ///
+  /// In en, this message translates to:
+  /// **'Voice Teacher said: {text}'**
+  String voiceTeacherSaid(String text);
+
+  /// Accessibility label for user message in transcript
+  ///
+  /// In en, this message translates to:
+  /// **'You said: {text}'**
+  String voiceTeacherYouSaid(String text);
+
+  /// Card title for Voice Teacher entry widget
+  ///
+  /// In en, this message translates to:
+  /// **'Voice Teacher'**
+  String get voiceTeacherEntryTitle;
+
+  /// Card subtitle for Voice Teacher entry widget
+  ///
+  /// In en, this message translates to:
+  /// **'Practice conversational speaking with AI'**
+  String get voiceTeacherEntrySubtitle;
+
+  /// Promo code input label
+  ///
+  /// In en, this message translates to:
+  /// **'Promotion code (optional)'**
+  String get billingPromoCodeLabel;
+
+  /// Promo code placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Enter code'**
+  String get billingPromoCodePlaceholder;
+
+  /// Button to proceed to payment
+  ///
+  /// In en, this message translates to:
+  /// **'Proceed to Payment'**
+  String get billingProceedToPayment;
+
+  /// Title for empty invoices
+  ///
+  /// In en, this message translates to:
+  /// **'No Invoices Yet'**
+  String get billingNoInvoicesTitle;
+
+  /// Subtitle for empty invoices
+  ///
+  /// In en, this message translates to:
+  /// **'Your invoices will appear here after your first payment.'**
+  String get billingNoInvoicesSubtitle;
+
+  /// Title when no subscription plans exist
+  ///
+  /// In en, this message translates to:
+  /// **'No plans available'**
+  String get billingNoPlansAvailable;
+
+  /// Subtitle when no subscription plans exist
+  ///
+  /// In en, this message translates to:
+  /// **'Check back later for available plans.'**
+  String get billingCheckBackLaterPlans;
+
+  /// Button to subscribe to plan
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribe'**
+  String get billingSubscribe;
+
+  /// Empty assessments title
+  ///
+  /// In en, this message translates to:
+  /// **'No assessments available'**
+  String get assessmentsNoAssessmentsTitle;
+
+  /// Empty assessments subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Published quizzes and exams will appear here.'**
+  String get assessmentsNoAssessmentsSubtitle;
+
+  /// Assessment detail questions stat
+  ///
+  /// In en, this message translates to:
+  /// **'Questions'**
+  String get assessmentsStatQuestions;
+
+  /// Assessment detail time limit stat
+  ///
+  /// In en, this message translates to:
+  /// **'Time limit'**
+  String get assessmentsStatTimeLimit;
+
+  /// Assessment detail max attempts stat
+  ///
+  /// In en, this message translates to:
+  /// **'Max attempts'**
+  String get assessmentsStatMaxAttempts;
+
+  /// Button to start assessment attempt
+  ///
+  /// In en, this message translates to:
+  /// **'Start Attempt'**
+  String get assessmentsStartAttempt;
+
+  /// Start attempt screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Start attempt'**
+  String get assessmentsStartAttemptTitle;
+
+  /// Button to go back
+  ///
+  /// In en, this message translates to:
+  /// **'Go Back'**
+  String get assessmentsGoBack;
+
+  /// Button to submit assessment attempt
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get assessmentsSubmit;
+
+  /// Button to finish viewing results
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get assessmentsDone;
+
+  /// Empty results history title
+  ///
+  /// In en, this message translates to:
+  /// **'No results yet'**
+  String get assessmentsNoResultsTitle;
+
+  /// Empty results history subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Your past attempt results will appear here.'**
+  String get assessmentsNoResultsSubtitle;
+
+  /// Assessment deadline section title
+  ///
+  /// In en, this message translates to:
+  /// **'Deadline'**
+  String get assessmentsDeadlinesTitle;
+
+  /// Empty deadlines title
+  ///
+  /// In en, this message translates to:
+  /// **'No deadlines'**
+  String get assessmentsNoDeadlinesTitle;
+
+  /// Empty deadlines subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Your assessment deadlines will appear here.'**
+  String get assessmentsNoDeadlinesSubtitle;
+
+  /// Deadlines tab active
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get assessmentsTabActive;
+
+  /// Deadlines tab upcoming
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get assessmentsTabUpcoming;
+
+  /// Deadlines tab late
+  ///
+  /// In en, this message translates to:
+  /// **'Late'**
+  String get assessmentsTabLate;
+
+  /// Deadlines tab missed
+  ///
+  /// In en, this message translates to:
+  /// **'Missed'**
+  String get assessmentsTabMissed;
+
+  /// Deadlines tab closed
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get assessmentsTabClosed;
+
+  /// Deadline opens date label
+  ///
+  /// In en, this message translates to:
+  /// **'Opens'**
+  String get assessmentsOpensLabel;
+
+  /// Deadline closes date label
+  ///
+  /// In en, this message translates to:
+  /// **'Closes'**
+  String get assessmentsClosesLabel;
+
+  /// Deadline extended close label
+  ///
+  /// In en, this message translates to:
+  /// **'Extended close'**
+  String get assessmentsExtendedCloseLabel;
+
+  /// Question answer placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Type your answer here…'**
+  String get assessmentsTypeAnswerPlaceholder;
+
+  /// Question answer label
+  ///
+  /// In en, this message translates to:
+  /// **'Your answer'**
+  String get assessmentsYourAnswerLabel;
+
+  /// Empty questions list title
+  ///
+  /// In en, this message translates to:
+  /// **'Questions'**
+  String get assessmentsQuestionsEmptyTitle;
+
+  /// Empty questions list subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'No questions found for this attempt.'**
+  String get assessmentsQuestionsEmptySubtitle;
+
+  /// Empty notifications title
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
+  String get notificationsNoNotificationsTitle;
+
+  /// Empty notifications subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Session reminders and progress updates will appear here.'**
+  String get notificationsNoNotificationsSubtitle;
+
+  /// Status completed for assessments and reviews
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get assessmentsStatusCompleted;
+
+  /// Button to dismiss notification
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get notificationsDismiss;
+
+  /// Notification dismissed state title
+  ///
+  /// In en, this message translates to:
+  /// **'Dismissed'**
+  String get notificationsDismissedTitle;
+
+  /// Quiet hours toggle switch label
+  ///
+  /// In en, this message translates to:
+  /// **'Enable quiet hours'**
+  String get notificationsEnableQuietHours;
+
+  /// Button to save quiet hours
+  ///
+  /// In en, this message translates to:
+  /// **'Save quiet hours'**
+  String get notificationsSaveQuietHours;
+
+  /// Empty reminders title
+  ///
+  /// In en, this message translates to:
+  /// **'No reminders yet'**
+  String get notificationsNoRemindersTitle;
+
+  /// Empty reminders subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders you enable will appear here.'**
+  String get notificationsNoRemindersSubtitle;
+
+  /// Button to cancel reminder
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get notificationsCancelReminder;
+
+  /// Badge for unread notification
+  ///
+  /// In en, this message translates to:
+  /// **'Unread'**
+  String get notificationsUnread;
+
+  /// Average mastery stat label
+  ///
+  /// In en, this message translates to:
+  /// **'Avg mastery'**
+  String get progressAvgMastery;
+
+  /// Day streak stat label
+  ///
+  /// In en, this message translates to:
+  /// **'Day streak'**
+  String get progressDayStreak;
+
+  /// Hub link title for skill states
+  ///
+  /// In en, this message translates to:
+  /// **'Skill States'**
+  String get progressSkillStates;
+
+  /// Hub link title for weaknesses
+  ///
+  /// In en, this message translates to:
+  /// **'Weaknesses'**
+  String get progressWeaknesses;
+
+  /// Hub link title for recommendations
+  ///
+  /// In en, this message translates to:
+  /// **'Recommendations'**
+  String get progressRecommendations;
+
+  /// Hub link title for review schedule
+  ///
+  /// In en, this message translates to:
+  /// **'Review Schedule'**
+  String get progressReviewSchedule;
+
+  /// Weakness summary title
+  ///
+  /// In en, this message translates to:
+  /// **'Focus Areas'**
+  String get progressFocusAreas;
+
+  /// Empty progress state title
+  ///
+  /// In en, this message translates to:
+  /// **'No progress data yet'**
+  String get progressNoProgressData;
+
+  /// Empty skill state title
+  ///
+  /// In en, this message translates to:
+  /// **'No skill data yet'**
+  String get progressNoSkillData;
+
+  /// Empty weakness summary title
+  ///
+  /// In en, this message translates to:
+  /// **'No focus areas yet'**
+  String get progressNoFocusAreas;
+
+  /// Empty recommendations title
+  ///
+  /// In en, this message translates to:
+  /// **'No recommendations yet'**
+  String get progressNoRecommendations;
+
+  /// Skill status strong
+  ///
+  /// In en, this message translates to:
+  /// **'Strong'**
+  String get progressStatusStrong;
+
+  /// Skill status developing
+  ///
+  /// In en, this message translates to:
+  /// **'Developing'**
+  String get progressStatusDeveloping;
+
+  /// Skill status needs work
+  ///
+  /// In en, this message translates to:
+  /// **'Needs work'**
+  String get progressStatusNeedsWork;
+
+  /// Skill trend improving
+  ///
+  /// In en, this message translates to:
+  /// **'Improving'**
+  String get progressTrendImproving;
+
+  /// Skill trend declining
+  ///
+  /// In en, this message translates to:
+  /// **'Declining'**
+  String get progressTrendDeclining;
+
+  /// Skill trend stable
+  ///
+  /// In en, this message translates to:
+  /// **'Stable'**
+  String get progressTrendStable;
+
+  /// Skill trend insufficient data
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient data'**
+  String get progressTrendInsufficient;
+
+  /// Review status skipped
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped'**
+  String get progressStatusSkipped;
+
+  /// Review status overdue
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get progressStatusOverdue;
+
+  /// Empty AI chat prompt title
+  ///
+  /// In en, this message translates to:
+  /// **'Ask AI Teacher anything'**
+  String get aiTeacherAskAnythingTitle;
+
+  /// Empty AI chat prompt subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Start the conversation by sending a message.'**
+  String get aiTeacherStartConversationSubtitle;
+
+  /// Session history button tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation history'**
+  String get aiTeacherConversationHistory;
+
+  /// Empty AI history title
+  ///
+  /// In en, this message translates to:
+  /// **'No conversations yet'**
+  String get aiTeacherNoConversationsTitle;
+
+  /// Empty AI history subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Start chatting with AI Teacher to see your history here.'**
+  String get aiTeacherNoConversationsSubtitle;
+
+  /// AI Teacher setting text toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer text replies over voice'**
+  String get aiTeacherPreferTextLabel;
+
+  /// AI Teacher setting animations toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Reduce animations in AI Teacher and Voice Tutor'**
+  String get aiTeacherReduceAnimationsLabel;
+
+  /// AI Teacher settings info banner title
+  ///
+  /// In en, this message translates to:
+  /// **'About these settings'**
+  String get aiTeacherAboutSettingsTitle;
+
+  /// AI chat message input placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Ask me anything...'**
+  String get aiTeacherAskAnythingHint;
+
+  /// Voice mic tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Voice input (coming soon)'**
+  String get aiTeacherVoiceComingSoon;
+
+  /// AI chat send button label
+  ///
+  /// In en, this message translates to:
+  /// **'Send message'**
+  String get aiTeacherSendMessage;
+
+  /// AI safety block title
+  ///
+  /// In en, this message translates to:
+  /// **'AI Teacher is limited right now'**
+  String get aiTeacherLimitedBannerTitle;
+
+  /// AI Teacher entry card button
+  ///
+  /// In en, this message translates to:
+  /// **'Open AI Teacher'**
+  String get aiTeacherOpenButton;
+
+  /// Voice transcript empty title
+  ///
+  /// In en, this message translates to:
+  /// **'Start talking with your Voice Teacher'**
+  String get voiceTeacherStartTalkingTitle;
+
+  /// Voice transcript empty subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Your transcript will appear here.'**
+  String get voiceTeacherTranscriptAppearSubtitle;
+
+  /// Voice transcript title
+  ///
+  /// In en, this message translates to:
+  /// **'Messages'**
+  String get voiceTeacherMessages;
+
+  /// QA continue button
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get qaContinueButton;
+
+  /// QA fill-in-blank label
+  ///
+  /// In en, this message translates to:
+  /// **'Your answer'**
+  String get qaYourAnswerLabel;
+
+  /// QA fill-in-blank placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Type your answer here'**
+  String get qaTypeAnswerPlaceholder;
+
+  /// Session feedback questions attempted stat
+  ///
+  /// In en, this message translates to:
+  /// **'Questions attempted'**
+  String get qaQuestionsAttempted;
+
+  /// Session feedback correct score stat
+  ///
+  /// In en, this message translates to:
+  /// **'Correct (backend score)'**
+  String get qaCorrectScore;
+
+  /// Session feedback mastery shift stat
+  ///
+  /// In en, this message translates to:
+  /// **'Mastery shift'**
+  String get qaMasteryShift;
+
+  /// Lesson completed toast message
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson marked as completed! 🌟'**
+  String get qaLessonCompletedToast;
+
+  /// Mark lesson completed button
+  ///
+  /// In en, this message translates to:
+  /// **'Mark Lesson as Completed ✨'**
+  String get qaMarkLessonCompletedButton;
+
+  /// Drawer more item label
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get shellNavMore;
+
+  /// Language option English
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get profileLanguageEnglish;
+
+  /// Language option Arabic
+  ///
+  /// In en, this message translates to:
+  /// **'Arabic'**
+  String get profileLanguageArabic;
+
+  /// Title for the analytics summary page
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics'**
+  String get analyticsPageTitle;
+
+  /// Empty state title for analytics summary
+  ///
+  /// In en, this message translates to:
+  /// **'No reports available'**
+  String get analyticsNoReportsTitle;
+
+  /// Empty state subtitle for analytics summary
+  ///
+  /// In en, this message translates to:
+  /// **'There are no analytics reports for you yet.'**
+  String get analyticsNoReportsSubtitle;
 }
 
 class _AppLocalizationsDelegate
@@ -4350,12 +5299,7 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
     case 'ar':
       return AppLocalizationsAr();
     case 'en':
+    default:
       return AppLocalizationsEn();
   }
-
-  throw FlutterError(
-      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
 }

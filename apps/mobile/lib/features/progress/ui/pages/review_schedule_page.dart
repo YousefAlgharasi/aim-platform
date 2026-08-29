@@ -37,6 +37,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'package:aim_mobile/features/aim_results/data/models/aim_results_models.dart';
 import 'package:aim_mobile/features/aim_results/logic/entity/aim_review_schedule.dart'
     show formatAimIntervalDays;
@@ -181,17 +182,26 @@ class _ReviewScheduleRow extends StatelessWidget {
   const _ReviewScheduleRow({required this.model});
   final AimReviewScheduleModel model;
 
-  ({AIMBadgeTone tone, String label}) get _status => switch (model.status) {
-        'due' => (tone: AIMBadgeTone.primary, label: 'Due'),
-        'pending' => (tone: AIMBadgeTone.neutral, label: 'Pending'),
-        'completed' => (tone: AIMBadgeTone.success, label: 'Completed'),
-        'skipped' => (tone: AIMBadgeTone.warning, label: 'Skipped'),
-        'overdue' => (tone: AIMBadgeTone.error, label: 'Overdue'),
-        final other => (
-            tone: AIMBadgeTone.neutral,
-            label: other.isEmpty ? '—' : other[0].toUpperCase() + other.substring(1),
-          ),
-      };
+  ({AIMBadgeTone tone, String label}) _status(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return switch (model.status) {
+      'due' => (tone: AIMBadgeTone.primary, label: l10n.reviewsStatusDue),
+      'pending' =>
+        (tone: AIMBadgeTone.neutral, label: l10n.reviewsStatusPending),
+      'completed' =>
+        (tone: AIMBadgeTone.success, label: l10n.assessmentsStatusCompleted),
+      'skipped' =>
+        (tone: AIMBadgeTone.warning, label: l10n.progressStatusSkipped),
+      'overdue' =>
+        (tone: AIMBadgeTone.error, label: l10n.progressStatusOverdue),
+      final other => (
+          tone: AIMBadgeTone.neutral,
+          label: other.isEmpty
+              ? '—'
+              : other[0].toUpperCase() + other.substring(1),
+        ),
+    };
+  }
 
   /// Pure date-formatting of the backend-supplied [AimReviewScheduleModel.dueAt].
   /// Derives no new business data — Flutter never computes review timing.
@@ -220,7 +230,7 @@ class _ReviewScheduleRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
-    final status = _status;
+    final status = _status(context);
     final title = _prettifySkillId(model.skillId);
 
     return AIMCard(

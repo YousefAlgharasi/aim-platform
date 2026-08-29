@@ -20,6 +20,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'package:aim_mobile/features/aim_results/data/models/aim_results_models.dart';
 import 'package:aim_mobile/features/aim_results/logic/provider/aim_results_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
@@ -77,16 +78,16 @@ class _WeaknessSummaryPageState extends ConsumerState<WeaknessSummaryPage> {
     final state = ref.watch(aimResultsProvider);
 
     return Scaffold(
-      appBar: const AIMTopAppBar(title: 'Focus Areas'),
+      appBar: AIMTopAppBar(title: AppLocalizations.of(context).commonFocusAreas),
       body: switch (state) {
         AppAsyncLoading() =>
           const AIMFullScreenLoading(semanticLabel: 'Loading weakness data'),
         AppAsyncFailure(:final message) =>
           AIMFullScreenError(message: message, onRetry: _load),
         AppAsyncSuccess(:final data) => data.weaknessRecords.isEmpty
-            ? const AIMEmptyState(
-                icon: Icon(Icons.check_circle_outline),
-                title: 'No focus areas yet',
+            ? AIMEmptyState(
+                icon: const Icon(Icons.check_circle_outline),
+                title: AppLocalizations.of(context).progressNoWeaknesses,
                 subtitle:
                     'Complete practice sessions so AIM can identify areas to focus on.',
               )

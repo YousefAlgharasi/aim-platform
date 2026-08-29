@@ -238,9 +238,9 @@ class _ProgressContentState extends State<_ProgressContent> {
   @override
   Widget build(BuildContext context) {
     if (widget.data.isEmpty) {
-      return const AIMEmptyState(
-        icon: Icon(Icons.insights_outlined),
-        title: 'No progress data yet',
+      return AIMEmptyState(
+        icon: const Icon(Icons.insights_outlined),
+        title: AppLocalizations.of(context).progressNoProgressData,
         subtitle:
             'Complete lessons and practice sessions to see your AIM progress.',
       );
@@ -319,6 +319,7 @@ class _ProgressContentState extends State<_ProgressContent> {
   }
 
   List<Widget> _buildOverviewTab() {
+    final l10n = AppLocalizations.of(context);
     return [
       // Top 2 Stat Cards matching prototype
       Row(
@@ -326,7 +327,7 @@ class _ProgressContentState extends State<_ProgressContent> {
           Expanded(
             child: _buildStatCard(
               val: _averageMasteryPct != null ? '$_averageMasteryPct%' : '--',
-              label: 'Avg mastery',
+              label: l10n.progressAvgMastery,
               icon: Icons.bolt_rounded,
               color: const Color(0xFF4F46E5),
             ),
@@ -335,7 +336,7 @@ class _ProgressContentState extends State<_ProgressContent> {
           Expanded(
             child: _buildStatCard(
               val: '${widget.goal?.streakDays ?? 0}',
-              label: 'Day streak',
+              label: l10n.progressDayStreak,
               icon: Icons.local_fire_department_rounded,
               color: const Color(0xFFF59E0B),
             ),
@@ -347,28 +348,28 @@ class _ProgressContentState extends State<_ProgressContent> {
 
       _ProgressNavRow(
         icon: Icons.auto_stories_outlined,
-        title: 'Skill States',
+        title: l10n.progressSkillStates,
         subtitle: '${widget.data.skillStates.length} skills tracked',
         onTap: () => context.push(AppRoutePaths.skillState),
       ),
       const SizedBox(height: 10),
       _ProgressNavRow(
         icon: Icons.flag_outlined,
-        title: 'Weaknesses',
+        title: l10n.progressWeaknesses,
         subtitle: '${widget.data.weaknessRecords.length} focus areas',
         onTap: () => context.push(AppRoutePaths.weaknessSummary),
       ),
       const SizedBox(height: 10),
       _ProgressNavRow(
         icon: Icons.lightbulb_outline,
-        title: 'Recommendations',
+        title: l10n.progressRecommendations,
         subtitle: '${widget.data.recommendations.length} from AIM',
         onTap: () => context.push(AppRoutePaths.recommendations),
       ),
       const SizedBox(height: 10),
       _ProgressNavRow(
         icon: Icons.schedule_outlined,
-        title: 'Review Schedule',
+        title: l10n.progressReviewSchedule,
         subtitle: '${widget.data.reviewSchedules.length} reviews scheduled',
         onTap: () => context.push(AppRoutePaths.reviewSchedule),
       ),

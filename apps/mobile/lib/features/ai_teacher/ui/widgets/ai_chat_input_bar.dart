@@ -35,6 +35,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Chat message input row: pill-shaped text field (with a disabled mic
 /// affordance) plus a circular gradient send button.
@@ -145,7 +146,8 @@ class _AiChatInputBarState extends State<AiChatInputBar> {
                               focusedErrorBorder: InputBorder.none,
                               filled: false,
                               isDense: true,
-                              hintText: 'Ask me anything...',
+                              hintText: AppLocalizations.of(context)
+                                  .aiTeacherAskAnythingHint,
                               hintStyle: AimTextStyles.bodyMd.copyWith(
                                 color: surfaces.textMuted,
                               ),
@@ -158,7 +160,8 @@ class _AiChatInputBarState extends State<AiChatInputBar> {
                         // (onPressed: null) rather than faking capture.
                         Semantics(
                           button: true,
-                          label: 'Voice input (coming soon)',
+                          label: AppLocalizations.of(context)
+                              .aiTeacherVoiceComingSoon,
                           child: IconButton(
                             constraints: const BoxConstraints(
                               minWidth: AimSizes.touchTarget,
@@ -205,7 +208,7 @@ class _SendButton extends StatelessWidget {
     return Semantics(
       button: true,
       enabled: enabled,
-      label: 'Send message',
+      label: AppLocalizations.of(context).aiTeacherSendMessage,
       onTap: enabled ? onPressed : null,
       excludeSemantics: true,
       child: SizedBox.square(

@@ -27,6 +27,8 @@ class RecordingStateBar extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
 
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
+
     if (state == RecordingState.idle || state == RecordingState.cancelled) {
       return const SizedBox.shrink();
     }
@@ -57,14 +59,14 @@ class RecordingStateBar extends StatelessWidget {
             const Spacer(),
             _ActionButton(
               icon: Icons.close,
-              label: l10n?.commonCancel ?? 'Cancel',
+              label: l10n?.commonCancel ?? (isRtl ? 'إلغاء' : 'Cancel'),
               color: theme.colorScheme.onSurfaceVariant,
               onTap: onCancel,
             ),
             const SizedBox(width: AimSpacing.space8),
             _ActionButton(
               icon: Icons.stop,
-              label: l10n?.voiceTeacherStop ?? 'Stop',
+              label: l10n?.voiceTeacherStop ?? (isRtl ? 'إيقاف' : 'Stop'),
               color: Colors.red,
               onTap: onStop,
             ),
@@ -73,7 +75,7 @@ class RecordingStateBar extends StatelessWidget {
             const Icon(Icons.check_circle, color: AimColors.primary500, size: 20),
             const SizedBox(width: AimSpacing.space8),
             Text(
-              l10n?.voiceTeacherRecorded ?? 'Recorded',
+              l10n?.voiceTeacherRecorded ?? (isRtl ? 'تم التسجيل' : 'Recorded'),
               style: theme.textTheme.bodyMedium,
             ),
             if (duration != null) ...[
@@ -88,14 +90,14 @@ class RecordingStateBar extends StatelessWidget {
             const Spacer(),
             _ActionButton(
               icon: Icons.delete_outline,
-              label: l10n?.voiceTeacherDiscard ?? 'Discard',
+              label: l10n?.voiceTeacherDiscard ?? (isRtl ? 'تجاهل' : 'Discard'),
               color: theme.colorScheme.error,
               onTap: onCancel,
             ),
             const SizedBox(width: AimSpacing.space8),
             _ActionButton(
               icon: Icons.send,
-              label: l10n?.voiceTeacherSend ?? 'Send',
+              label: l10n?.voiceTeacherSend ?? (isRtl ? 'إرسال' : 'Send'),
               color: AimColors.primary500,
               onTap: onSend,
             ),

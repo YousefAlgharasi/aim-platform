@@ -48,6 +48,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/entity/ai_teacher_chat_state.dart';
 import 'package:aim_mobile/features/ai_teacher/logic/provider/ai_teacher_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/l10n/l10n.dart';
 import '../widgets/ai_teacher_widgets.dart';
 
 /// Main AI Teacher text chat screen.
@@ -325,10 +326,12 @@ class _ChatContent extends StatelessWidget {
           ),
         Expanded(
           child: isEmpty
-              ? const AIMEmptyState(
-                  icon: Icon(Icons.chat_bubble_outline_rounded),
-                  title: 'Ask AI Teacher anything',
-                  subtitle: 'Start the conversation by sending a message.',
+              ? AIMEmptyState(
+                  icon: const Icon(Icons.chat_bubble_outline_rounded),
+                  title: AppLocalizations.of(context)
+                      .aiTeacherAskAnythingTitle,
+                  subtitle: AppLocalizations.of(context)
+                      .aiTeacherStartConversationSubtitle,
                 )
               : ListView.separated(
                   padding: const EdgeInsets.symmetric(
@@ -411,7 +414,7 @@ class _AiTeacherChatHeader extends StatelessWidget
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: context.l10n.commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) {
@@ -472,7 +475,7 @@ class _AiTeacherChatHeader extends StatelessWidget
                 ),
               ],
             ),
-            const SizedBox(width: AimSpacing.space8),
+            const SizedBox(width: AimSpacing.space12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -500,7 +503,7 @@ class _AiTeacherChatHeader extends StatelessWidget
             ),
             Semantics(
               button: true,
-              label: 'Conversation history',
+              label: context.l10n.aiTeacherConversationHistory,
               child: InkWell(
                 onTap: onOpenHistory,
                 customBorder: const CircleBorder(),

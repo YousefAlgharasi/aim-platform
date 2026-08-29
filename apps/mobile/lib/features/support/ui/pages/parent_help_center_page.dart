@@ -143,11 +143,11 @@ class ParentHelpCenterPage extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
               child: AIMGradientButton(
-                label: AppLocalizations.of(context).supportNewTicket,
+                label: AppLocalizations.of(context).supportCreateTicketButton,
                 icon: const Icon(Icons.add),
                 onPressed: () => context.push(AppRoutePaths.createTicket),
                 fullWidth: true,
-                semanticLabel: AppLocalizations.of(context).supportNewTicket,
+                semanticLabel: AppLocalizations.of(context).supportCreateTicketButton,
               ),
             ),
           ),

@@ -18,6 +18,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonCancel => 'Cancel';
 
   @override
+  String get commonResume => 'Resume';
+
+  @override
+  String get commonPause => 'Pause';
+
+  @override
   String get commonSave => 'Save';
 
   @override
@@ -107,6 +113,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authNoAccountPrompt => 'Don\'t have an account? ';
+
+  @override
+  String get authAlreadyHaveAccount => 'Already have an account? Sign in';
 
   @override
   String get authCreateOneLink => 'Create one';
@@ -208,9 +217,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authPrivacyPolicyLink => 'Privacy Policy';
-
-  @override
-  String get authAlreadyHaveAccount => 'Already have an account? Sign in';
 
   @override
   String get authCheckYourEmailTitle => 'Check Your Email';
@@ -1946,7 +1952,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get supportNewTicket => 'New ticket';
 
   @override
-  String get supportMyTickets => 'My Tickets';
+  String get supportMyTickets => 'My tickets';
 
   @override
   String get supportTicket => 'Ticket';
@@ -2598,4 +2604,497 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get achievementsPolyglotLegendDesc => 'Reach Level 20 in English';
+
+  @override
+  String get supportCreateTicketTitle => 'Submit a ticket';
+
+  @override
+  String get supportCreateTicketButton => 'Create Ticket';
+
+  @override
+  String get supportSubmitTicket => 'Submit Ticket';
+
+  @override
+  String get supportCategoryLabel => 'Category';
+
+  @override
+  String get supportSeverityLabel => 'Severity';
+
+  @override
+  String get supportSubjectLabel => 'Subject';
+
+  @override
+  String get supportSubjectPlaceholder => 'Briefly describe the issue';
+
+  @override
+  String get supportDescriptionLabel => 'Description';
+
+  @override
+  String get supportDescriptionPlaceholder =>
+      'Tell us what happened, step by step...';
+
+  @override
+  String get supportSubjectRequired => 'Subject is required';
+
+  @override
+  String get supportDescriptionRequired => 'Description is required';
+
+  @override
+  String get supportCategoryBugReport => 'Bug Report';
+
+  @override
+  String get supportCategoryAccountIssue => 'Account Issue';
+
+  @override
+  String get supportCategoryLearningIssue => 'Learning Issue';
+
+  @override
+  String get supportCategoryBillingIssue => 'Billing Issue';
+
+  @override
+  String get supportCategoryGeneral => 'General';
+
+  @override
+  String get supportCategorySuggestion => 'Suggestion';
+
+  @override
+  String get supportCategoryCompliment => 'Compliment';
+
+  @override
+  String get supportCategoryComplaint => 'Complaint';
+
+  @override
+  String get supportCategoryOther => 'Other';
+
+  @override
+  String get supportSeverityLow => 'Low';
+
+  @override
+  String get supportSeverityMedium => 'Medium';
+
+  @override
+  String get supportSeverityHigh => 'High';
+
+  @override
+  String get supportSeverityCritical => 'Critical';
+
+  @override
+  String get supportFeedbackTitleLabel => 'Title';
+
+  @override
+  String get supportFeedbackTitlePlaceholder => 'A short summary';
+
+  @override
+  String get supportFeedbackBodyLabel => 'Your feedback';
+
+  @override
+  String get supportFeedbackBodyPlaceholder => 'Tell us what you think...';
+
+  @override
+  String get supportFeedbackTitleRequired => 'Title is required';
+
+  @override
+  String get supportFeedbackBodyRequired => 'Feedback details are required';
+
+  @override
+  String get supportTicketAddComment => 'Add a comment';
+
+  @override
+  String get supportTicketCommentPlaceholder => 'Write a follow-up message...';
+
+  @override
+  String get supportTicketSendComment => 'Send';
+
+  @override
+  String get supportStatusAllOperational => 'All Systems Operational';
+
+  @override
+  String get supportStatusNoComponents => 'No components reported';
+
+  @override
+  String get supportStatusNothingToShow => 'Nothing to show yet.';
+
+  @override
+  String get supportNoParentTickets => 'No Support Tickets';
+
+  @override
+  String get supportNoParentTicketsSubtitle =>
+      'Create a ticket if you need help with your account.';
+
+  @override
+  String get coursesCurrentBadge => 'Current';
+
+  @override
+  String get voiceTeacherTitle => 'Voice Teacher';
+
+  @override
+  String get voiceTeacherStartingSession => 'Starting Voice Teacher session';
+
+  @override
+  String get voiceTeacherBackSemantic => 'Back';
+
+  @override
+  String get voiceTeacherStatusSpeaking => 'Speaking';
+
+  @override
+  String get voiceTeacherStatusRecording => 'Recording';
+
+  @override
+  String get voiceTeacherStatusProcessing => 'Processing';
+
+  @override
+  String get voiceTeacherStatusReady => 'Ready';
+
+  @override
+  String get voiceTeacherHeadingSpeaking => 'Your teacher is speaking…';
+
+  @override
+  String get voiceTeacherHeadingRecording => 'Listening to you…';
+
+  @override
+  String get voiceTeacherHeadingProcessing => 'Processing your answer…';
+
+  @override
+  String get voiceTeacherHeadingListening =>
+      'Your turn — press and hold to speak';
+
+  @override
+  String get voiceTeacherPracticeSubtitle =>
+      'Practise your pronunciation with the AI teacher';
+
+  @override
+  String get voiceTeacherMessagesButton => 'Messages';
+
+  @override
+  String get voiceTeacherBackToCall => 'Back to call';
+
+  @override
+  String voiceTeacherStatusSemantic(String status) {
+    return 'Status: $status';
+  }
+
+  @override
+  String get voiceTeacherPressAndHold => 'Press and hold to speak';
+
+  @override
+  String get voiceTeacherRecordingRelease => 'Recording — release to send';
+
+  @override
+  String voiceTeacherSaid(String text) {
+    return 'Voice Teacher said: $text';
+  }
+
+  @override
+  String voiceTeacherYouSaid(String text) {
+    return 'You said: $text';
+  }
+
+  @override
+  String get voiceTeacherEntryTitle => 'Voice Teacher';
+
+  @override
+  String get voiceTeacherEntrySubtitle =>
+      'Practice conversational speaking with AI';
+
+  @override
+  String get billingPromoCodeLabel => 'Promotion code (optional)';
+
+  @override
+  String get billingPromoCodePlaceholder => 'Enter code';
+
+  @override
+  String get billingProceedToPayment => 'Proceed to Payment';
+
+  @override
+  String get billingNoInvoicesTitle => 'No Invoices Yet';
+
+  @override
+  String get billingNoInvoicesSubtitle =>
+      'Your invoices will appear here after your first payment.';
+
+  @override
+  String get billingNoPlansAvailable => 'No plans available';
+
+  @override
+  String get billingCheckBackLaterPlans =>
+      'Check back later for available plans.';
+
+  @override
+  String get billingSubscribe => 'Subscribe';
+
+  @override
+  String get assessmentsNoAssessmentsTitle => 'No assessments available';
+
+  @override
+  String get assessmentsNoAssessmentsSubtitle =>
+      'Published quizzes and exams will appear here.';
+
+  @override
+  String get assessmentsStatQuestions => 'Questions';
+
+  @override
+  String get assessmentsStatTimeLimit => 'Time limit';
+
+  @override
+  String get assessmentsStatMaxAttempts => 'Max attempts';
+
+  @override
+  String get assessmentsStartAttempt => 'Start Attempt';
+
+  @override
+  String get assessmentsStartAttemptTitle => 'Start attempt';
+
+  @override
+  String get assessmentsGoBack => 'Go Back';
+
+  @override
+  String get assessmentsSubmit => 'Submit';
+
+  @override
+  String get assessmentsDone => 'Done';
+
+  @override
+  String get assessmentsNoResultsTitle => 'No results yet';
+
+  @override
+  String get assessmentsNoResultsSubtitle =>
+      'Your past attempt results will appear here.';
+
+  @override
+  String get assessmentsDeadlinesTitle => 'Deadline';
+
+  @override
+  String get assessmentsNoDeadlinesTitle => 'No deadlines';
+
+  @override
+  String get assessmentsNoDeadlinesSubtitle =>
+      'Your assessment deadlines will appear here.';
+
+  @override
+  String get assessmentsTabActive => 'Active';
+
+  @override
+  String get assessmentsTabUpcoming => 'Upcoming';
+
+  @override
+  String get assessmentsTabLate => 'Late';
+
+  @override
+  String get assessmentsTabMissed => 'Missed';
+
+  @override
+  String get assessmentsTabClosed => 'Closed';
+
+  @override
+  String get assessmentsOpensLabel => 'Opens';
+
+  @override
+  String get assessmentsClosesLabel => 'Closes';
+
+  @override
+  String get assessmentsExtendedCloseLabel => 'Extended close';
+
+  @override
+  String get assessmentsTypeAnswerPlaceholder => 'Type your answer here…';
+
+  @override
+  String get assessmentsYourAnswerLabel => 'Your answer';
+
+  @override
+  String get assessmentsQuestionsEmptyTitle => 'Questions';
+
+  @override
+  String get assessmentsQuestionsEmptySubtitle =>
+      'No questions found for this attempt.';
+
+  @override
+  String get notificationsNoNotificationsTitle => 'No notifications yet';
+
+  @override
+  String get notificationsNoNotificationsSubtitle =>
+      'Session reminders and progress updates will appear here.';
+
+  @override
+  String get assessmentsStatusCompleted => 'Completed';
+
+  @override
+  String get notificationsDismiss => 'Dismiss';
+
+  @override
+  String get notificationsDismissedTitle => 'Dismissed';
+
+  @override
+  String get notificationsEnableQuietHours => 'Enable quiet hours';
+
+  @override
+  String get notificationsSaveQuietHours => 'Save quiet hours';
+
+  @override
+  String get notificationsNoRemindersTitle => 'No reminders yet';
+
+  @override
+  String get notificationsNoRemindersSubtitle =>
+      'Reminders you enable will appear here.';
+
+  @override
+  String get notificationsCancelReminder => 'Cancel';
+
+  @override
+  String get notificationsUnread => 'Unread';
+
+  @override
+  String get progressAvgMastery => 'Avg mastery';
+
+  @override
+  String get progressDayStreak => 'Day streak';
+
+  @override
+  String get progressSkillStates => 'Skill States';
+
+  @override
+  String get progressWeaknesses => 'Weaknesses';
+
+  @override
+  String get progressRecommendations => 'Recommendations';
+
+  @override
+  String get progressReviewSchedule => 'Review Schedule';
+
+  @override
+  String get progressFocusAreas => 'Focus Areas';
+
+  @override
+  String get progressNoProgressData => 'No progress data yet';
+
+  @override
+  String get progressNoSkillData => 'No skill data yet';
+
+  @override
+  String get progressNoFocusAreas => 'No focus areas yet';
+
+  @override
+  String get progressNoRecommendations => 'No recommendations yet';
+
+  @override
+  String get progressStatusStrong => 'Strong';
+
+  @override
+  String get progressStatusDeveloping => 'Developing';
+
+  @override
+  String get progressStatusNeedsWork => 'Needs work';
+
+  @override
+  String get progressTrendImproving => 'Improving';
+
+  @override
+  String get progressTrendDeclining => 'Declining';
+
+  @override
+  String get progressTrendStable => 'Stable';
+
+  @override
+  String get progressTrendInsufficient => 'Insufficient data';
+
+  @override
+  String get progressStatusSkipped => 'Skipped';
+
+  @override
+  String get progressStatusOverdue => 'Overdue';
+
+  @override
+  String get aiTeacherAskAnythingTitle => 'Ask AI Teacher anything';
+
+  @override
+  String get aiTeacherStartConversationSubtitle =>
+      'Start the conversation by sending a message.';
+
+  @override
+  String get aiTeacherConversationHistory => 'Conversation history';
+
+  @override
+  String get aiTeacherNoConversationsTitle => 'No conversations yet';
+
+  @override
+  String get aiTeacherNoConversationsSubtitle =>
+      'Start chatting with AI Teacher to see your history here.';
+
+  @override
+  String get aiTeacherPreferTextLabel => 'Prefer text replies over voice';
+
+  @override
+  String get aiTeacherReduceAnimationsLabel =>
+      'Reduce animations in AI Teacher and Voice Tutor';
+
+  @override
+  String get aiTeacherAboutSettingsTitle => 'About these settings';
+
+  @override
+  String get aiTeacherAskAnythingHint => 'Ask me anything...';
+
+  @override
+  String get aiTeacherVoiceComingSoon => 'Voice input (coming soon)';
+
+  @override
+  String get aiTeacherSendMessage => 'Send message';
+
+  @override
+  String get aiTeacherLimitedBannerTitle => 'AI Teacher is limited right now';
+
+  @override
+  String get aiTeacherOpenButton => 'Open AI Teacher';
+
+  @override
+  String get voiceTeacherStartTalkingTitle =>
+      'Start talking with your Voice Teacher';
+
+  @override
+  String get voiceTeacherTranscriptAppearSubtitle =>
+      'Your transcript will appear here.';
+
+  @override
+  String get voiceTeacherMessages => 'Messages';
+
+  @override
+  String get qaContinueButton => 'Continue';
+
+  @override
+  String get qaYourAnswerLabel => 'Your answer';
+
+  @override
+  String get qaTypeAnswerPlaceholder => 'Type your answer here';
+
+  @override
+  String get qaQuestionsAttempted => 'Questions attempted';
+
+  @override
+  String get qaCorrectScore => 'Correct (backend score)';
+
+  @override
+  String get qaMasteryShift => 'Mastery shift';
+
+  @override
+  String get qaLessonCompletedToast => 'Lesson marked as completed! 🌟';
+
+  @override
+  String get qaMarkLessonCompletedButton => 'Mark Lesson as Completed ✨';
+
+  @override
+  String get shellNavMore => 'More';
+
+  @override
+  String get profileLanguageEnglish => 'English';
+
+  @override
+  String get profileLanguageArabic => 'Arabic';
+
+  @override
+  String get analyticsPageTitle => 'Analytics';
+
+  @override
+  String get analyticsNoReportsTitle => 'No reports available';
+
+  @override
+  String get analyticsNoReportsSubtitle =>
+      'There are no analytics reports for you yet.';
 }

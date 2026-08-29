@@ -143,11 +143,11 @@ class StatusPage extends ConsumerStatefulWidget {
 
   /// Builds an all-operational banner.
   static Widget buildAllOperationalBanner(BuildContext context) {
-    return const AIMAlertBanner(
+    return AIMAlertBanner(
       tone: AIMAlertTone.success,
-      title: 'All Systems Operational',
-      semanticLabel: 'All systems operational',
-      child: SizedBox.shrink(),
+      title: AppLocalizations.of(context).supportStatusAllOperational,
+      semanticLabel: AppLocalizations.of(context).supportStatusAllOperational,
+      child: const SizedBox.shrink(),
     );
   }
 
@@ -218,10 +218,10 @@ class _StatusPageState extends ConsumerState<StatusPage> {
                           ref.read(operationalStatusProvider.notifier).load(),
                     ),
                   AppAsyncSuccess(:final data) => data.isEmpty
-                      ? const AIMEmptyState(
-                          icon: Icon(Icons.monitor_heart_outlined),
-                          title: 'No components reported',
-                          subtitle: 'Nothing to show yet.',
+                      ? AIMEmptyState(
+                          icon: const Icon(Icons.monitor_heart_outlined),
+                          title: AppLocalizations.of(context).supportStatusNoComponents,
+                          subtitle: AppLocalizations.of(context).supportStatusNothingToShow,
                         )
                       : Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,

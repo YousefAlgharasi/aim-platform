@@ -17,6 +17,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
 import 'package:aim_mobile/features/assessments/logic/provider/assessment_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class StartAttemptPage extends ConsumerStatefulWidget {
   const StartAttemptPage({
@@ -28,10 +29,6 @@ class StartAttemptPage extends ConsumerStatefulWidget {
 
   final String assessmentId;
   final String assessmentTitle;
-
-  /// The assessment's real time limit, passed from the detail page. Null
-  /// when the assessment has no time limit — the confirmation copy falls
-  /// back to a generic sentence rather than fabricating a duration.
   final int? timeLimitSeconds;
 
   @override
@@ -46,7 +43,6 @@ class _StartAttemptPageState extends ConsumerState<StartAttemptPage> {
     if (token == null || token.isEmpty) return;
 
     setState(() => _starting = true);
-
     ref.read(startAttemptProvider.notifier).start(
           bearerToken: token,
           assessmentId: widget.assessmentId,
@@ -76,7 +72,10 @@ class _StartAttemptPageState extends ConsumerState<StartAttemptPage> {
           case AppAsyncFailure(:final message):
             setState(() => _starting = false);
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(message)),
+              SnackBar(
+                content: Text(message),
+                backgroundColor: AimColors.error500,
+              ),
             );
           case _:
             break;
@@ -85,21 +84,18 @@ class _StartAttemptPageState extends ConsumerState<StartAttemptPage> {
     );
 
     final surfaces = aimSurfacesOf(context);
-    final soft = aimSoftFillsOf(context);
     final timeLimitSeconds = widget.timeLimitSeconds;
-    final bodyCopy = timeLimitSeconds != null
-        ? 'Once you start, the ${_formatMinutes(timeLimitSeconds)}-minute '
-            'timer runs continuously — even if you leave the app. Make sure '
-            'you have time to finish.'
-        : 'Once you start, the attempt will be recorded. Make sure you are '
-            'ready before proceeding.';
+    final subtitle = timeLimitSeconds != null
+        ? 'Once you start, the ${_formatMinutes(timeLimitSeconds)}-minute timer runs continuously — even if you leave the app. Make sure you have time to finish.'
+        : 'Once you start, the attempt will be recorded. Make sure you are ready before proceeding.';
 
     return Scaffold(
       backgroundColor: surfaces.background,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _StartAttemptHeader(title: 'Start attempt'),
+          _StartAttemptHeader(
+              title: AppLocalizations.of(context).assessmentsStartAttemptTitle),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -109,34 +105,32 @@ class _StartAttemptPageState extends ConsumerState<StartAttemptPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Spacer(),
+                  const SizedBox(height: AimSpacing.sectionGap),
                   Center(
-                    child: DecoratedBox(
+                    child: Container(
+                      width: 72,
+                      height: 72,
                       decoration: BoxDecoration(
-                        color: soft.warning,
+                        color: AimColors.primary500.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(AimSpacing.space16),
-                        child: Icon(
-                          Icons.access_time,
-                          size: AimSizes.iconLg,
-                          color: soft.onWarning,
-                        ),
+                      child: const Icon(
+                        Icons.timer_outlined,
+                        size: 36,
+                        color: AimColors.primary500,
                       ),
                     ),
                   ),
                   const SizedBox(height: AimSpacing.sectionGap),
                   Text(
-                    'Ready to begin?',
-                    style: AimTextStyles.h2.copyWith(
-                      color: surfaces.textPrimary,
-                    ),
+                    widget.assessmentTitle,
+                    style:
+                        AimTextStyles.h2.copyWith(color: surfaces.textPrimary),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: AimSpacing.componentGap),
+                  const SizedBox(height: AimSpacing.space8),
                   Text(
-                    bodyCopy,
+                    subtitle,
                     style: AimTextStyles.bodyMd.copyWith(
                       color: surfaces.textSecondary,
                     ),
@@ -144,19 +138,19 @@ class _StartAttemptPageState extends ConsumerState<StartAttemptPage> {
                   ),
                   const Spacer(),
                   AIMGradientButton(
-                    label: 'Start Attempt',
+                    label: AppLocalizations.of(context).assessmentsStartAttempt,
                     loading: _starting,
                     fullWidth: true,
                     onPressed: _startAttempt,
                     semanticLabel:
-                        'Start attempt for ${widget.assessmentTitle}',
+                        '${AppLocalizations.of(context).assessmentsStartAttempt} ${widget.assessmentTitle}',
                   ),
                   const SizedBox(height: AimSpacing.componentGap),
                   AIMButton(
                     variant: AIMButtonVariant.outline,
                     onPressed: () => context.pop(),
                     fullWidth: true,
-                    child: const Text('Go Back'),
+                    child: Text(AppLocalizations.of(context).assessmentsGoBack),
                   ),
                 ],
               ),
