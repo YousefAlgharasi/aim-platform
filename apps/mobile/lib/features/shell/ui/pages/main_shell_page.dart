@@ -304,7 +304,7 @@ class _AIMAppDrawerWithMoreState
       if (_isMoreExpanded)
         AIMDrawerItemData(
           icon: const Padding(
-            padding: EdgeInsets.only(left: 12),
+            padding: EdgeInsetsDirectional.only(start: 12),
             child: Icon(Icons.style_outlined, color: AimColors.primary500),
           ),
           label: l10n.shellNavReview,

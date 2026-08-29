@@ -244,13 +244,11 @@ class _CourseListContentState extends State<_CourseListContent> {
                             ref.read(mainShellTabIndexProvider.notifier).state = 0;
                           }
                         },
-                        child: const Padding(
-                          padding: EdgeInsets.only(right: 10),
-                          child: AimBrandLogo(size: 38, fontSize: 11, borderRadius: 12),
-                        ),
+                        child: const AimBrandLogo(size: 38, fontSize: 11, borderRadius: 12),
                       );
                     },
                   ),
+                  const SizedBox(width: 12),
                   Text(
                     l10n.lessonsCoursesPageTitle,
                     style: TextStyle(
@@ -269,7 +267,7 @@ class _CourseListContentState extends State<_CourseListContent> {
                   if (headerLevel.isNotEmpty)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      margin: const EdgeInsets.only(right: 8),
+                      margin: const EdgeInsetsDirectional.only(end: 10),
                       decoration: BoxDecoration(
                         color: colorScheme.primary.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(16),
@@ -282,7 +280,7 @@ class _CourseListContentState extends State<_CourseListContent> {
                             radius: 3,
                             backgroundColor: colorScheme.primary,
                           ),
-                          const SizedBox(width: 5),
+                          const SizedBox(width: 6),
                           Text(
                             l10n.lessonsLevelBadge(headerLevel),
                             style: TextStyle(

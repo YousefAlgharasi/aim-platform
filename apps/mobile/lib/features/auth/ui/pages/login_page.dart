@@ -448,7 +448,9 @@ class _FigmaInputFieldState extends State<_FigmaInputField> {
             GestureDetector(
               onTap: () => setState(() => _showText = !_showText),
               child: Padding(
-                padding: const EdgeInsets.only(right: AimSpacing.space16),
+                padding: const EdgeInsetsDirectional.only(
+                  end: AimSpacing.space16,
+                ),
                 child: Icon(
                   _showText
                       ? Icons.visibility_off_outlined

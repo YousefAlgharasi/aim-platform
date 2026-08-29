@@ -453,7 +453,9 @@ class _RegFigmaInputFieldState extends State<_RegFigmaInputField> {
             GestureDetector(
               onTap: () => setState(() => _showText = !_showText),
               child: Padding(
-                padding: const EdgeInsets.only(right: AimSpacing.space16),
+                padding: const EdgeInsetsDirectional.only(
+                  end: AimSpacing.space16,
+                ),
                 child: Icon(
                   _showText
                       ? Icons.visibility_off_outlined
@@ -532,7 +534,8 @@ class _PasswordStrengthMeter extends StatelessWidget {
               return Expanded(
                 child: Container(
                   height: 4,
-                  margin: EdgeInsets.only(right: index < 3 ? 4 : 0),
+                  margin:
+                      EdgeInsetsDirectional.only(end: index < 3 ? 4 : 0),
                   decoration: BoxDecoration(
                     color: active ? color : AimColors.neutral300,
                     borderRadius: AimRadius.borderXs,
