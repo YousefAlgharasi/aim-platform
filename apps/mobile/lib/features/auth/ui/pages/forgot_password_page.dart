@@ -25,7 +25,12 @@ enum _ForgotPasswordStep {
 /// 3. Create new password (`reset`) -> validates password strength & match.
 /// 4. Success confirmation (`success`) -> password reset success hero & sign in CTA.
 class ForgotPasswordPage extends ConsumerStatefulWidget {
-  const ForgotPasswordPage({super.key});
+  const ForgotPasswordPage({
+    super.key,
+    this.initialStepName,
+  });
+
+  final String? initialStepName;
 
   @override
   ConsumerState<ForgotPasswordPage> createState() =>
@@ -45,6 +50,15 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   bool _isLoading = false;
   bool _showPassword = false;
   String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialStepName == 'reset' ||
+        widget.initialStepName == 'recovery') {
+      _step = _ForgotPasswordStep.reset;
+    }
+  }
 
   @override
   void dispose() {

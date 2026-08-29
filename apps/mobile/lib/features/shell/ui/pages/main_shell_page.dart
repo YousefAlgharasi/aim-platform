@@ -457,5 +457,3 @@ class _AIMDrawerBrandHeader extends ConsumerWidget {
     );
   }
 }
-
-

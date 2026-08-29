@@ -124,7 +124,10 @@ class AppRouter {
         ),
         GoRoute(
           path: AppRoutePaths.forgotPassword,
-          builder: (context, state) => const ForgotPasswordPage(),
+          builder: (context, state) {
+            final step = state.uri.queryParameters['step'];
+            return ForgotPasswordPage(initialStepName: step);
+          },
         ),
         GoRoute(
           path: AppRoutePaths.mainShell,
@@ -716,8 +719,7 @@ class AppRouter {
     // authFlowProvider flipped, without waiting on authContextProvider.
     if (authState.isSignedIn) {
       if (routeName == AppRoutePaths.signIn ||
-          routeName == AppRoutePaths.register ||
-          routeName == AppRoutePaths.forgotPassword) {
+          routeName == AppRoutePaths.register) {
         return AppRoutePaths.placementGate;
       }
       if (routeName == AppRoutePaths.splash) {

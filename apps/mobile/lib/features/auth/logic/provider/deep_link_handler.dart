@@ -47,14 +47,28 @@ class DeepLinkHandler {
 
       final params = Uri.splitQueryString(fragment);
       final type = params['type'];
-      if (type == 'recovery' || uri.host == 'reset-password') {
-        _router?.go(AppRoutePaths.forgotPassword);
-        return;
-      }
-
       final accessToken = params['access_token'];
       final refreshToken = params['refresh_token'] ?? '';
       final expiresIn = int.tryParse(params['expires_in'] ?? '') ?? 3600;
+
+      if (type == 'recovery' || uri.host == 'reset-password') {
+        if (accessToken != null && accessToken.isNotEmpty) {
+          final expiresAt =
+              DateTime.now().millisecondsSinceEpoch ~/ 1000 + expiresIn;
+          await _ref.read(sessionStoreProvider).save(
+                accessToken: accessToken,
+                refreshToken: refreshToken,
+                expiresAt: expiresAt,
+                email: '',
+              );
+          _ref.read(authFlowProvider.notifier).signIn(
+                '',
+                accessToken: accessToken,
+              );
+        }
+        _router?.go('${AppRoutePaths.forgotPassword}?step=reset');
+        return;
+      }
 
       if (accessToken == null || accessToken.isEmpty) return;
 
