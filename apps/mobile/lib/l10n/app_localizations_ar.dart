@@ -2181,6 +2181,58 @@ class AppLocalizationsAr extends AppLocalizations {
       'تم تسجيل نتائج اختبار تحديد المستوى وحفظها بنجاح.';
 
   @override
+  String get reviewsTitle => 'المراجعة';
+
+  @override
+  String get reviewsLoadingSemantic => 'جارٍ تحميل جدول المراجعة';
+
+  @override
+  String get reviewsNoScheduleTitle => 'لا توجد مراجعات مجدولة';
+
+  @override
+  String get reviewsNoScheduleSubtitle =>
+      'أكمل جلسات التدريب لتلقي تذكيرات المراجعة.';
+
+  @override
+  String get reviewsStatDueNow => 'مستحقة الآن';
+
+  @override
+  String get reviewsStatLearned => 'تم تعلمها';
+
+  @override
+  String get reviewsStatStreak => 'التتابع';
+
+  @override
+  String get reviewsDueToday => 'مستحقة اليوم';
+
+  @override
+  String get reviewsDueTomorrow => 'مستحقة غدًا';
+
+  @override
+  String get reviewsDueYesterday => 'مستحقة أمس';
+
+  @override
+  String reviewsDueInDays(int days) {
+    return 'مستحقة خلال $days أيام';
+  }
+
+  @override
+  String reviewsDueDaysAgo(int days) {
+    return 'مستحقة منذ $days أيام';
+  }
+
+  @override
+  String reviewsDueDate(String date) {
+    return 'مستحقة $date';
+  }
+
+  @override
+  String get reviewsStatusDue => 'مستحقة';
+
+  @override
+  String get reviewsStatusPending => 'في الانتظار';
+
+  @override
   String get reviewsSpacedRepetitionDue =>
       'بطاقات التكرار المتباعد المستحقة اليوم';
 
@@ -2191,7 +2243,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reviewsStartSession => 'بدء جلسة المراجعة';
 
   @override
-  String reviewsIntervalDays(int days) {
+  String reviewsIntervalDays(String days) {
     return 'الفاصل $days يوم';
   }
 

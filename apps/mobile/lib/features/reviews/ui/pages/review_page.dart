@@ -17,6 +17,7 @@ import 'package:aim_mobile/features/aim_results/logic/entity/aim_review_schedule
 import 'package:aim_mobile/features/aim_results/logic/provider/aim_results_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Review — Spaced-repetition schedule tab.
 ///
@@ -37,6 +38,7 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart'
 /// - EdgeInsetsDirectional / EdgeInsets.symmetric only — RTL-safe.
 /// - CrossAxisAlignment.start in Column — direction-aware.
 /// - AIMGradientHeroHeader handles RTL internally (no back button used here).
+/// - Back arrow icon direction-aware: arrow_forward for RTL, arrow_back for LTR.
 class ReviewPage extends ConsumerStatefulWidget {
   const ReviewPage({super.key});
 
@@ -85,11 +87,31 @@ class _ReviewPageState extends ConsumerState<ReviewPage> {
         );
   }
 
+  bool _canPop(BuildContext context) {
+    try {
+      return context.canPop();
+    } catch (_) {
+      return ModalRoute.of(context)?.canPop ?? false;
+    }
+  }
+
+  void _handlePop(BuildContext context) {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    } else {
+      try {
+        if (context.canPop()) context.pop();
+      } catch (_) {}
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(aimResultsProvider);
     final surfaces = aimSurfacesOf(context);
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
 
     return Scaffold(
       body: SafeArea(
@@ -104,20 +126,22 @@ class _ReviewPageState extends ConsumerState<ReviewPage> {
               ),
               child: Row(
                 children: [
-                  if (context.canPop()) ...[
+                  if (_canPop(context)) ...[
                     GestureDetector(
-                      onTap: () => context.pop(),
+                      onTap: () => _handlePop(context),
                       child: Container(
                         width: 36,
                         height: 36,
-                        margin: const EdgeInsets.only(right: 12),
+                        margin: const EdgeInsetsDirectional.only(end: 12),
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color: surfaces.surfaceSunken,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(
-                          Icons.arrow_back_rounded,
+                          isRtl
+                              ? Icons.arrow_forward_rounded
+                              : Icons.arrow_back_rounded,
                           size: 20,
                           color: surfaces.textPrimary,
                         ),
@@ -129,7 +153,7 @@ class _ReviewPageState extends ConsumerState<ReviewPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Review',
+                          l10n?.reviewsTitle ?? 'Review',
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w900,
@@ -139,7 +163,8 @@ class _ReviewPageState extends ConsumerState<ReviewPage> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Spaced-repetition flashcards due today',
+                          l10n?.reviewsSpacedRepetitionDue ??
+                              'Spaced-repetition flashcards due today',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
@@ -162,23 +187,26 @@ class _ReviewPageState extends ConsumerState<ReviewPage> {
             ),
             Expanded(
               child: switch (state) {
-                AppAsyncLoading() => const AIMFullScreenLoading(
-                    semanticLabel: 'Loading review schedule'),
+                AppAsyncLoading() => AIMFullScreenLoading(
+                    semanticLabel: l10n?.reviewsLoadingSemantic ??
+                        'Loading review schedule'),
                 AppAsyncFailure(:final message) =>
                   AIMFullScreenError(message: message, onRetry: _load),
                 AppAsyncSuccess(:final data) => data.reviewSchedules.isEmpty
-                    ? const AIMEmptyState(
-                        icon: Icon(Icons.replay_outlined),
-                        title: 'No reviews scheduled',
-                        subtitle:
+                    ? AIMEmptyState(
+                        icon: const Icon(Icons.replay_outlined),
+                        title: l10n?.reviewsNoScheduleTitle ??
+                            'No reviews scheduled',
+                        subtitle: l10n?.reviewsNoScheduleSubtitle ??
                             'Complete practice sessions to receive review reminders.',
                       )
                     : _ReviewContent(
                         schedules: data.reviewSchedules,
                         onRefresh: _refresh,
                       ),
-                AppAsyncIdle() => const AIMFullScreenLoading(
-                    semanticLabel: 'Loading review schedule'),
+                AppAsyncIdle() => AIMFullScreenLoading(
+                    semanticLabel: l10n?.reviewsLoadingSemantic ??
+                        'Loading review schedule'),
               },
             ),
           ],
@@ -201,6 +229,7 @@ class _ReviewContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final dueNowCount = schedules.where((s) => s.status == 'due').length;
     final learnedCount = schedules.length;
+    final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
 
     return Column(
       children: [
@@ -217,7 +246,7 @@ class _ReviewContent extends StatelessWidget {
                       child: _buildStatCard(
                         context: context,
                         val: '$dueNowCount',
-                        label: 'Due now',
+                        label: l10n?.reviewsStatDueNow ?? 'Due now',
                         color: const Color(0xFFEF4444),
                       ),
                     ),
@@ -226,7 +255,7 @@ class _ReviewContent extends StatelessWidget {
                       child: _buildStatCard(
                         context: context,
                         val: '$learnedCount',
-                        label: 'Learned',
+                        label: l10n?.reviewsStatLearned ?? 'Learned',
                         color: const Color(0xFF4F46E5),
                       ),
                     ),
@@ -235,7 +264,7 @@ class _ReviewContent extends StatelessWidget {
                       child: _buildStatCard(
                         context: context,
                         val: '7d',
-                        label: 'Streak',
+                        label: l10n?.reviewsStatStreak ?? 'Streak',
                         color: const Color(0xFFF59E0B),
                       ),
                     ),
@@ -248,7 +277,7 @@ class _ReviewContent extends StatelessWidget {
                   builder: (context) {
                     final surfaces = aimSurfacesOf(context);
                     return Text(
-                      'REVIEW SCHEDULE',
+                      l10n?.reviewsScheduleHeader ?? 'REVIEW SCHEDULE',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
@@ -274,7 +303,7 @@ class _ReviewContent extends StatelessWidget {
         SafeArea(
           top: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             child: Container(
               width: double.infinity,
               height: 52,
@@ -302,15 +331,15 @@ class _ReviewContent extends StatelessWidget {
                     });
                   },
                   borderRadius: BorderRadius.circular(16),
-                  child: const Center(
+                  child: Center(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.style_rounded, color: Colors.white, size: 20),
-                        SizedBox(width: 8),
+                        const Icon(Icons.style_rounded, color: Colors.white, size: 20),
+                        const SizedBox(width: 8),
                         Text(
-                          'Start Review Session',
-                          style: TextStyle(
+                          l10n?.reviewsStartSession ?? 'Start Review Session',
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
                             color: Colors.white,
@@ -393,16 +422,13 @@ String _prettifySkillId(String skillId) {
   return label.isEmpty ? skillId : label;
 }
 
-/// Formats a real, backend-supplied `dueAt` ISO timestamp into a short
-/// relative label (e.g. "Due Today", "Due 2 days ago", "Due in 3 days").
-/// Falls further out to a plain formatted date. Adapted from the relative
-/// time style established by `_relativeTimeLabel` in
-/// `features/home/ui/pages/home_page.dart`, extended to handle near-future
-/// dates since review due-dates are frequently in the future, not just the
-/// past.
-String _dueDateLabel(String dueAtIso) {
+/// Formats a real, backend-supplied `dueAt` ISO timestamp into a localized
+/// relative label (e.g. "مستحقة اليوم", "Due Today", "Due in 3 days").
+/// Falls further out to a plain formatted date. Uses l10n keys for proper
+/// Arabic/English output.
+String _dueDateLabel(String dueAtIso, AppLocalizations? l10n) {
   final dueAt = DateTime.tryParse(dueAtIso);
-  if (dueAt == null) return 'Due: $dueAtIso';
+  if (dueAt == null) return l10n?.reviewsDueDate(dueAtIso) ?? 'Due: $dueAtIso';
 
   final now = DateTime.now().toUtc();
   final due = dueAt.toUtc();
@@ -410,13 +436,17 @@ String _dueDateLabel(String dueAtIso) {
   final startOfDue = DateTime.utc(due.year, due.month, due.day);
   final dayDiff = startOfDue.difference(startOfToday).inDays;
 
-  if (dayDiff == 0) return 'Due Today';
-  if (dayDiff == 1) return 'Due Tomorrow';
-  if (dayDiff == -1) return 'Due Yesterday';
-  if (dayDiff > 1 && dayDiff < 7) return 'Due in $dayDiff days';
-  if (dayDiff < -1 && dayDiff > -7) return 'Due ${-dayDiff} days ago';
+  if (dayDiff == 0) return l10n?.reviewsDueToday ?? 'Due Today';
+  if (dayDiff == 1) return l10n?.reviewsDueTomorrow ?? 'Due Tomorrow';
+  if (dayDiff == -1) return l10n?.reviewsDueYesterday ?? 'Due Yesterday';
+  if (dayDiff > 1 && dayDiff < 7) {
+    return l10n?.reviewsDueInDays(dayDiff) ?? 'Due in $dayDiff days';
+  }
+  if (dayDiff < -1 && dayDiff > -7) {
+    return l10n?.reviewsDueDaysAgo(-dayDiff) ?? 'Due ${-dayDiff} days ago';
+  }
 
-  return 'Due ${_formatDate(due)}';
+  return l10n?.reviewsDueDate(_formatDate(due)) ?? 'Due ${_formatDate(due)}';
 }
 
 const _months = [
@@ -442,9 +472,9 @@ class _ReviewScheduleCard extends StatelessWidget {
         _ => AIMBadgeTone.neutral,
       };
 
-  String get _statusLabel => switch (model.status) {
-        'due' => 'Due',
-        'pending' => 'Pending',
+  String _statusLabel(AppLocalizations? l10n) => switch (model.status) {
+        'due' => l10n?.reviewsStatusDue ?? 'Due',
+        'pending' => l10n?.reviewsStatusPending ?? 'Pending',
         _ => model.status,
       };
 
@@ -452,6 +482,7 @@ class _ReviewScheduleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
     final title = _prettifySkillId(model.skillId);
+    final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
@@ -470,11 +501,12 @@ class _ReviewScheduleCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const SizedBox(width: AimSpacing.space8),
               AIMBadge(
                 tone: _statusTone,
                 variant: AIMBadgeVariant.soft,
                 pill: true,
-                child: Text(_statusLabel),
+                child: Text(_statusLabel(l10n)),
               ),
             ],
           ),
@@ -489,7 +521,7 @@ class _ReviewScheduleCard extends StatelessWidget {
               const SizedBox(width: AimSpacing.space4),
               Expanded(
                 child: Text(
-                  _dueDateLabel(model.dueAt),
+                  _dueDateLabel(model.dueAt, l10n),
                   style: AimTextStyles.bodySm
                       .copyWith(color: surfaces.textPrimary),
                 ),
@@ -505,13 +537,17 @@ class _ReviewScheduleCard extends StatelessWidget {
                 tone: AIMBadgeTone.neutral,
                 variant: AIMBadgeVariant.soft,
                 pill: true,
-                child: Text('Interval ${formatAimIntervalDays(model.intervalDays)}d'),
+                child: Text(l10n?.reviewsIntervalDays(
+                        formatAimIntervalDays(model.intervalDays)) ??
+                    'Interval ${formatAimIntervalDays(model.intervalDays)}d'),
               ),
               AIMBadge(
                 tone: AIMBadgeTone.neutral,
                 variant: AIMBadgeVariant.soft,
                 pill: true,
-                child: Text('rep #${model.repetitionCount}'),
+                child: Text(l10n?.reviewsRepetitionNumber(
+                        model.repetitionCount) ??
+                    'rep #${model.repetitionCount}'),
               ),
               AIMBadge(
                 tone: AIMBadgeTone.neutral,

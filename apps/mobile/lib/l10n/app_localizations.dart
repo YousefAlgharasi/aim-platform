@@ -3492,6 +3492,96 @@ abstract class AppLocalizations {
   /// **'Your placement test results have been recorded and saved.'**
   String get placementResultsRecordedSaved;
 
+  /// App bar title for the review schedule screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get reviewsTitle;
+
+  /// Accessibility label shown while the review schedule is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading review schedule'**
+  String get reviewsLoadingSemantic;
+
+  /// Empty-state title when no review items exist.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews scheduled'**
+  String get reviewsNoScheduleTitle;
+
+  /// Empty-state subtitle when no review items exist.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete practice sessions to receive review reminders.'**
+  String get reviewsNoScheduleSubtitle;
+
+  /// Label for the due-now stat card on the review screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Due now'**
+  String get reviewsStatDueNow;
+
+  /// Label for the learned-count stat card on the review screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Learned'**
+  String get reviewsStatLearned;
+
+  /// Label for the streak stat card on the review screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak'**
+  String get reviewsStatStreak;
+
+  /// Relative due-date label when the item is due today.
+  ///
+  /// In en, this message translates to:
+  /// **'Due Today'**
+  String get reviewsDueToday;
+
+  /// Relative due-date label when the item is due tomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Due Tomorrow'**
+  String get reviewsDueTomorrow;
+
+  /// Relative due-date label when the item was due yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Due Yesterday'**
+  String get reviewsDueYesterday;
+
+  /// Relative due-date label when the item is due in 2-6 days.
+  ///
+  /// In en, this message translates to:
+  /// **'Due in {days} days'**
+  String reviewsDueInDays(int days);
+
+  /// Relative due-date label when the item was due 2-6 days ago.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {days} days ago'**
+  String reviewsDueDaysAgo(int days);
+
+  /// Absolute due-date label for items more than a week away.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String reviewsDueDate(String date);
+
+  /// Status badge label for a due review item.
+  ///
+  /// In en, this message translates to:
+  /// **'Due'**
+  String get reviewsStatusDue;
+
+  /// Status badge label for a pending review item.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get reviewsStatusPending;
+
   /// Subtitle for reviews screen.
   ///
   /// In en, this message translates to:
@@ -3514,7 +3604,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Interval {days}d'**
-  String reviewsIntervalDays(int days);
+  String reviewsIntervalDays(String days);
 
   /// Repetition count badge.
   ///

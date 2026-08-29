@@ -2140,6 +2140,58 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your placement test results have been recorded and saved.';
 
   @override
+  String get reviewsTitle => 'Review';
+
+  @override
+  String get reviewsLoadingSemantic => 'Loading review schedule';
+
+  @override
+  String get reviewsNoScheduleTitle => 'No reviews scheduled';
+
+  @override
+  String get reviewsNoScheduleSubtitle =>
+      'Complete practice sessions to receive review reminders.';
+
+  @override
+  String get reviewsStatDueNow => 'Due now';
+
+  @override
+  String get reviewsStatLearned => 'Learned';
+
+  @override
+  String get reviewsStatStreak => 'Streak';
+
+  @override
+  String get reviewsDueToday => 'Due Today';
+
+  @override
+  String get reviewsDueTomorrow => 'Due Tomorrow';
+
+  @override
+  String get reviewsDueYesterday => 'Due Yesterday';
+
+  @override
+  String reviewsDueInDays(int days) {
+    return 'Due in $days days';
+  }
+
+  @override
+  String reviewsDueDaysAgo(int days) {
+    return 'Due $days days ago';
+  }
+
+  @override
+  String reviewsDueDate(String date) {
+    return 'Due $date';
+  }
+
+  @override
+  String get reviewsStatusDue => 'Due';
+
+  @override
+  String get reviewsStatusPending => 'Pending';
+
+  @override
   String get reviewsSpacedRepetitionDue =>
       'Spaced-repetition flashcards due today';
 
@@ -2150,7 +2202,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reviewsStartSession => 'Start Review Session';
 
   @override
-  String reviewsIntervalDays(int days) {
+  String reviewsIntervalDays(String days) {
     return 'Interval ${days}d';
   }
 

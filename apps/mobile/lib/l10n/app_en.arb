@@ -2724,6 +2724,81 @@
   "@placementResultsRecordedSaved": {
     "description": "Placement completion message."
   },
+  "reviewsTitle": "Review",
+  "@reviewsTitle": {
+    "description": "App bar title for the review schedule screen."
+  },
+  "reviewsLoadingSemantic": "Loading review schedule",
+  "@reviewsLoadingSemantic": {
+    "description": "Accessibility label shown while the review schedule is loading."
+  },
+  "reviewsNoScheduleTitle": "No reviews scheduled",
+  "@reviewsNoScheduleTitle": {
+    "description": "Empty-state title when no review items exist."
+  },
+  "reviewsNoScheduleSubtitle": "Complete practice sessions to receive review reminders.",
+  "@reviewsNoScheduleSubtitle": {
+    "description": "Empty-state subtitle when no review items exist."
+  },
+  "reviewsStatDueNow": "Due now",
+  "@reviewsStatDueNow": {
+    "description": "Label for the due-now stat card on the review screen."
+  },
+  "reviewsStatLearned": "Learned",
+  "@reviewsStatLearned": {
+    "description": "Label for the learned-count stat card on the review screen."
+  },
+  "reviewsStatStreak": "Streak",
+  "@reviewsStatStreak": {
+    "description": "Label for the streak stat card on the review screen."
+  },
+  "reviewsDueToday": "Due Today",
+  "@reviewsDueToday": {
+    "description": "Relative due-date label when the item is due today."
+  },
+  "reviewsDueTomorrow": "Due Tomorrow",
+  "@reviewsDueTomorrow": {
+    "description": "Relative due-date label when the item is due tomorrow."
+  },
+  "reviewsDueYesterday": "Due Yesterday",
+  "@reviewsDueYesterday": {
+    "description": "Relative due-date label when the item was due yesterday."
+  },
+  "reviewsDueInDays": "Due in {days} days",
+  "@reviewsDueInDays": {
+    "description": "Relative due-date label when the item is due in 2-6 days.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewsDueDaysAgo": "Due {days} days ago",
+  "@reviewsDueDaysAgo": {
+    "description": "Relative due-date label when the item was due 2-6 days ago.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewsDueDate": "Due {date}",
+  "@reviewsDueDate": {
+    "description": "Absolute due-date label for items more than a week away.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewsStatusDue": "Due",
+  "@reviewsStatusDue": {
+    "description": "Status badge label for a due review item."
+  },
+  "reviewsStatusPending": "Pending",
+  "@reviewsStatusPending": {
+    "description": "Status badge label for a pending review item."
+  },
   "reviewsSpacedRepetitionDue": "Spaced-repetition flashcards due today",
   "@reviewsSpacedRepetitionDue": {
     "description": "Subtitle for reviews screen."
@@ -2741,7 +2816,7 @@
     "description": "Interval days badge.",
     "placeholders": {
       "days": {
-        "type": "int"
+        "type": "String"
       }
     }
   },
