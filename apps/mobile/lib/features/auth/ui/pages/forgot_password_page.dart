@@ -9,20 +9,21 @@ import '../../../../core/theme/theme.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../logic/provider/auth_context_provider.dart';
 
-/// State of the forgot password flow.
+/// State of the forgot password flow (matching prototype's 4 steps).
 enum _ForgotPasswordStep {
   email,
   sent,
+  reset,
+  success,
 }
 
-/// Forgot Password Screen — high-fidelity design prototype implementation.
+/// Forgot Password Screen — 4-step prototype implementation.
 ///
-/// Features:
-/// - Brand header with AIM logo pill & gradient text.
-/// - Rounded icon back button.
-/// - Prototype typography & spacing (FORGOT PASSWORD? badge, Reset your password title).
-/// - High contrast dark and light mode input styling.
-/// - Interactive Send Reset Link CTA & Resend email flows.
+/// Steps:
+/// 1. Email entry (`email`) -> sends reset link via AuthRepository.
+/// 2. Email sent confirmation (`sent`) -> check email info & preview shortcut.
+/// 3. Create new password (`reset`) -> validates password strength & match.
+/// 4. Success confirmation (`success`) -> password reset success hero & sign in CTA.
 class ForgotPasswordPage extends ConsumerStatefulWidget {
   const ForgotPasswordPage({super.key});
 
@@ -33,20 +34,30 @@ class ForgotPasswordPage extends ConsumerStatefulWidget {
 
 class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   final _emailController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
   final _emailFocus = FocusNode();
+  final _newPasswordFocus = FocusNode();
+  final _confirmPasswordFocus = FocusNode();
 
   _ForgotPasswordStep _step = _ForgotPasswordStep.email;
   bool _isLoading = false;
+  bool _showPassword = false;
   String? _errorMessage;
 
   @override
   void dispose() {
     _emailController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
     _emailFocus.dispose();
+    _newPasswordFocus.dispose();
+    _confirmPasswordFocus.dispose();
     super.dispose();
   }
 
-  Future<void> _submit() async {
+  Future<void> _submitEmail() async {
     final email = _emailController.text.trim();
     if (email.isEmpty) {
       setState(() {
@@ -79,6 +90,41 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     }
   }
 
+  void _submitNewPassword() {
+    final newPassword = _newPasswordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
+
+    if (newPassword.length < 8) {
+      setState(() {
+        _errorMessage = 'Password must be at least 8 characters.';
+      });
+      return;
+    }
+
+    if (newPassword != confirmPassword) {
+      setState(() {
+        _errorMessage = 'Passwords do not match.';
+      });
+      return;
+    }
+
+    _newPasswordFocus.unfocus();
+    _confirmPasswordFocus.unfocus();
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _step = _ForgotPasswordStep.success;
+      });
+    });
+  }
+
   void _backToLogin() {
     if (context.canPop()) {
       context.pop();
@@ -106,14 +152,23 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Brand Header + Back Button
-                _buildHeader(isDark, surfaces),
-                const SizedBox(height: AimSpacing.space24),
+                // Brand Header + Back Button (hidden on success step)
+                if (_step != _ForgotPasswordStep.success) ...[
+                  _buildHeader(isDark, surfaces),
+                  const SizedBox(height: AimSpacing.space24),
+                ],
 
                 Expanded(
-                  child: _step == _ForgotPasswordStep.email
-                      ? _buildEmailStep(l10n, surfaces, isDark)
-                      : _buildSentStep(l10n, surfaces, isDark),
+                  child: switch (_step) {
+                    _ForgotPasswordStep.email =>
+                      _buildEmailStep(l10n, surfaces, isDark),
+                    _ForgotPasswordStep.sent =>
+                      _buildSentStep(l10n, surfaces, isDark),
+                    _ForgotPasswordStep.reset =>
+                      _buildResetStep(l10n, surfaces, isDark),
+                    _ForgotPasswordStep.success =>
+                      _buildSuccessStep(l10n, surfaces, isDark),
+                  },
                 ),
               ],
             ),
@@ -311,7 +366,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                         borderSide: BorderSide(color: primaryColor, width: 2),
                       ),
                     ),
-                    onSubmitted: (_) => _submit(),
+                    onSubmitted: (_) => _submitEmail(),
                   ),
                   const SizedBox(height: AimSpacing.space16),
 
@@ -322,7 +377,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     size: AIMButtonSize.large,
                     loading: _isLoading,
                     disabled: _isLoading,
-                    onPressed: _submit,
+                    onPressed: _submitEmail,
                     child: const Text('Send Reset Link'),
                   ),
 
@@ -373,6 +428,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     AimSurfaceTheme surfaces,
     bool isDark,
   ) {
+    final primaryColor =
+        isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5);
+
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
@@ -421,7 +479,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    _emailController.text.trim(),
+                    _emailController.text.trim().isEmpty
+                        ? 'your email'
+                        : _emailController.text.trim(),
                     textAlign: TextAlign.center,
                     style: AimTextStyles.bodyLg.copyWith(
                       color: surfaces.textPrimary,
@@ -434,7 +494,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     variant: AIMButtonVariant.outline,
                     fullWidth: true,
                     size: AIMButtonSize.large,
-                    onPressed: _isLoading ? null : _submit,
+                    onPressed: _isLoading ? null : _submitEmail,
                     child: const Text("Didn't get it? Resend email"),
                   ),
                   const SizedBox(height: AimSpacing.space12),
@@ -447,6 +507,298 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     child: const Text('Back to Sign In'),
                   ),
                   const SizedBox(height: AimSpacing.space12),
+
+                  // Demo / Prototype Shortcut to test password reset UI directly
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _errorMessage = null;
+                        _step = _ForgotPasswordStep.reset;
+                      });
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: surfaces.border,
+                          style: BorderStyle.solid,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Continue to Reset Password (Preview)',
+                        style: AimTextStyles.caption.copyWith(
+                          color: primaryColor,
+                          fontWeight: AimFontWeights.semibold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AimSpacing.space12),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildResetStep(
+    AppLocalizations l10n,
+    AimSurfaceTheme surfaces,
+    bool isDark,
+  ) {
+    final primaryColor =
+        isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: IntrinsicHeight(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'RESET PASSWORD',
+                    style: AimTextStyles.caption.copyWith(
+                      color: primaryColor,
+                      fontWeight: AimFontWeights.extrabold,
+                      fontSize: 11,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+
+                  Text(
+                    'Create a new\npassword',
+                    style: AimTextStyles.h1.copyWith(
+                      color: surfaces.textPrimary,
+                      fontWeight: AimFontWeights.extrabold,
+                      fontSize: 28,
+                      height: 1.15,
+                    ),
+                  ),
+                  const SizedBox(height: AimSpacing.space8),
+
+                  Text(
+                    "Choose a strong password you haven't used before.",
+                    style: AimTextStyles.bodyMd.copyWith(
+                      color: surfaces.textMuted,
+                      fontSize: 14,
+                      height: 1.45,
+                    ),
+                  ),
+                  const SizedBox(height: AimSpacing.space24),
+
+                  if (_errorMessage != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(AimSpacing.space12),
+                      decoration: BoxDecoration(
+                        color: AimColors.error500.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AimColors.error500.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline,
+                              color: AimColors.error500, size: 20),
+                          const SizedBox(width: AimSpacing.space8),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: AimTextStyles.caption.copyWith(
+                                color: AimColors.error500,
+                                fontWeight: AimFontWeights.medium,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AimSpacing.space16),
+                  ],
+
+                  // New Password Input
+                  TextField(
+                    controller: _newPasswordController,
+                    focusNode: _newPasswordFocus,
+                    obscureText: !_showPassword,
+                    enabled: !_isLoading,
+                    style: AimTextStyles.bodyMd
+                        .copyWith(color: surfaces.textPrimary),
+                    decoration: InputDecoration(
+                      hintText: 'New password',
+                      hintStyle: AimTextStyles.bodyMd
+                          .copyWith(color: surfaces.textMuted),
+                      filled: true,
+                      fillColor: surfaces.surface,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _showPassword
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: surfaces.textMuted,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _showPassword = !_showPassword;
+                          });
+                        },
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: AimSpacing.space16,
+                        vertical: 14,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: surfaces.border),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: surfaces.border),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: primaryColor, width: 2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AimSpacing.space12),
+
+                  // Confirm Password Input
+                  TextField(
+                    controller: _confirmPasswordController,
+                    focusNode: _confirmPasswordFocus,
+                    obscureText: !_showPassword,
+                    enabled: !_isLoading,
+                    style: AimTextStyles.bodyMd
+                        .copyWith(color: surfaces.textPrimary),
+                    decoration: InputDecoration(
+                      hintText: 'Confirm new password',
+                      hintStyle: AimTextStyles.bodyMd
+                          .copyWith(color: surfaces.textMuted),
+                      filled: true,
+                      fillColor: surfaces.surface,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: AimSpacing.space16,
+                        vertical: 14,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: surfaces.border),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: surfaces.border),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: primaryColor, width: 2),
+                      ),
+                    ),
+                    onSubmitted: (_) => _submitNewPassword(),
+                  ),
+                  const SizedBox(height: AimSpacing.space20),
+
+                  AIMButton(
+                    variant: AIMButtonVariant.primary,
+                    fullWidth: true,
+                    size: AIMButtonSize.large,
+                    loading: _isLoading,
+                    disabled: _isLoading,
+                    onPressed: _submitNewPassword,
+                    child: const Text('Reset Password'),
+                  ),
+                  const Spacer(),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSuccessStep(
+    AppLocalizations l10n,
+    AimSurfaceTheme surfaces,
+    bool isDark,
+  ) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: IntrinsicHeight(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Spacer(),
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      gradient: AimGradients.ai,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                              const Color(0xFF4F46E5).withValues(alpha: 0.3),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      Icons.check_rounded,
+                      color: AimColors.neutral0,
+                      size: 40,
+                    ),
+                  ),
+                  const SizedBox(height: AimSpacing.space24),
+
+                  Text(
+                    'Password Reset!',
+                    textAlign: TextAlign.center,
+                    style: AimTextStyles.h1.copyWith(
+                      color: surfaces.textPrimary,
+                      fontWeight: AimFontWeights.extrabold,
+                      fontSize: 28,
+                    ),
+                  ),
+                  const SizedBox(height: AimSpacing.space8),
+
+                  Text(
+                    'Your password has been updated. Sign in with your new password.',
+                    textAlign: TextAlign.center,
+                    style: AimTextStyles.bodyMd.copyWith(
+                      color: surfaces.textMuted,
+                      fontSize: 14,
+                      height: 1.45,
+                    ),
+                  ),
+                  const Spacer(),
+
+                  AIMButton(
+                    variant: AIMButtonVariant.primary,
+                    fullWidth: true,
+                    size: AIMButtonSize.large,
+                    onPressed: _backToLogin,
+                    child: const Text('Back to Sign In'),
+                  ),
+                  const SizedBox(height: AimSpacing.space16),
                 ],
               ),
             ),

@@ -46,6 +46,12 @@ class DeepLinkHandler {
       if (fragment.isEmpty) return;
 
       final params = Uri.splitQueryString(fragment);
+      final type = params['type'];
+      if (type == 'recovery' || uri.host == 'reset-password') {
+        _router?.go(AppRoutePaths.forgotPassword);
+        return;
+      }
+
       final accessToken = params['access_token'];
       final refreshToken = params['refresh_token'] ?? '';
       final expiresIn = int.tryParse(params['expires_in'] ?? '') ?? 3600;

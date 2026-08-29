@@ -120,5 +120,28 @@ void main() {
 
       expect(find.text('Failed to send reset link. User not found.'), findsOneWidget);
     });
+
+    testWidgets('can navigate to reset step via preview and complete success step', (tester) async {
+      await tester.pumpWidget(_testApp(overrides: [
+        authRepositoryProvider.overrideWithValue(fakeRepo),
+      ]));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'student@example.com');
+      await tester.tap(find.text('Send Reset Link'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Continue to Reset Password (Preview)'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Create a new\npassword'), findsOneWidget);
+
+      await tester.enterText(find.byType(TextField).first, 'newpassword123');
+      await tester.enterText(find.byType(TextField).last, 'newpassword123');
+      await tester.tap(find.text('Reset Password'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Password Reset!'), findsOneWidget);
+    });
   });
 }
