@@ -159,17 +159,18 @@ export class AuthController {
    */
   @Post('reset-password')
   @UseGuards(SupabaseJwtAuthGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update password for authenticated user.' })
   async resetPassword(
     @Body() body: AuthResetPasswordDto,
     @Req() request: AuthenticatedRequest,
-  ): Promise<void> {
+  ): Promise<{ success: true }> {
     const token = extractBearerToken(request);
     if (token) {
       await this.authLogin.resetPassword(token, body);
     }
+    return { success: true };
   }
 
   /**
