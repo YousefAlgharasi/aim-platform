@@ -181,7 +181,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.textContaining('AIM'), findsOneWidget);
+      expect(find.text('AIM English'), findsOneWidget);
     });
 
     testWidgets('shows error state with message', (tester) async {

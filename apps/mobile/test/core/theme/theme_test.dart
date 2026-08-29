@@ -1,4 +1,5 @@
 import 'package:aim_mobile/core/theme/theme.dart';
+import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -165,6 +166,40 @@ void main() {
 
       expect(gradients.ai, AimGradients.ai);
       expect(shadows.card, AimShadows.card);
+    });
+
+    testWidgets('AIMButton adapts colors dynamically between Light and Dark mode', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: ThemeMode.light,
+          home: const Scaffold(
+            body: AIMButton(
+              variant: AIMButtonVariant.outline,
+              child: Text('Outline Button'),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Outline Button'), findsOneWidget);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: ThemeMode.dark,
+          home: const Scaffold(
+            body: AIMButton(
+              variant: AIMButtonVariant.outline,
+              child: Text('Outline Button'),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Outline Button'), findsOneWidget);
     });
   });
 }

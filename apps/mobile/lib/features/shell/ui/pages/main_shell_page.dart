@@ -325,6 +325,7 @@ class _AIMDrawerBrandHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final surfaces = aimSurfacesOf(context);
+    final soft = aimSoftFillsOf(context);
     final authContextState = ref.watch(authContextProvider);
 
     final displayName = switch (authContextState) {
@@ -378,72 +379,78 @@ class _AIMDrawerBrandHeader extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: AimSpacing.space16),
-        Container(
-          padding: const EdgeInsets.all(AimSpacing.space16),
-          decoration: BoxDecoration(
-            color: surfaces.surfaceRaised,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: surfaces.border,
-              width: 1,
+        GestureDetector(
+          onTap: () {
+            Navigator.of(context).pop();
+            ref.read(mainShellTabIndexProvider.notifier).state = 4;
+          },
+          child: Container(
+            padding: const EdgeInsets.all(AimSpacing.space16),
+            decoration: BoxDecoration(
+              color: surfaces.surfaceRaised,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: surfaces.border,
+                width: 1,
+              ),
             ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  gradient: AimGradients.gzHero,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  avatarLetter,
-                  style: AimTextStyles.h3.copyWith(
-                    color: AimColors.neutral0,
-                    fontWeight: AimFontWeights.bold,
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    gradient: AimGradients.gzHero,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    avatarLetter,
+                    style: AimTextStyles.h3.copyWith(
+                      color: AimColors.neutral0,
+                      fontWeight: AimFontWeights.bold,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: AimSpacing.componentGap),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      displayName,
-                      style: AimTextStyles.bodyLg.copyWith(
-                        color: surfaces.textPrimary,
-                        fontWeight: AimFontWeights.bold,
+                const SizedBox(width: AimSpacing.componentGap),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        displayName,
+                        style: AimTextStyles.bodyLg.copyWith(
+                          color: surfaces.textPrimary,
+                          fontWeight: AimFontWeights.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEEF2FF),
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Text(
-                        badgeText,
-                        style: AimTextStyles.caption.copyWith(
-                          color: const Color(0xFF4F46E5),
-                          fontWeight: AimFontWeights.extrabold,
-                          fontSize: 10,
-                          letterSpacing: 0.5,
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: soft.primary,
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: Text(
+                          badgeText,
+                          style: AimTextStyles.caption.copyWith(
+                            color: soft.onPrimary,
+                            fontWeight: AimFontWeights.extrabold,
+                            fontSize: 10,
+                            letterSpacing: 0.5,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],

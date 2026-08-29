@@ -15,12 +15,20 @@ enum _ForgotPasswordStep {
   sent,
 }
 
-/// Forgot Password Screen — AIM Mobile.
+/// Forgot Password Screen — high-fidelity design prototype implementation.
+///
+/// Features:
+/// - Brand header with AIM logo pill & gradient text.
+/// - Rounded icon back button.
+/// - Prototype typography & spacing (FORGOT PASSWORD? badge, Reset your password title).
+/// - High contrast dark and light mode input styling.
+/// - Interactive Send Reset Link CTA & Resend email flows.
 class ForgotPasswordPage extends ConsumerStatefulWidget {
   const ForgotPasswordPage({super.key});
 
   @override
-  ConsumerState<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
+  ConsumerState<ForgotPasswordPage> createState() =>
+      _ForgotPasswordPageState();
 }
 
 class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
@@ -54,7 +62,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     });
 
     try {
-      await ref.read(authRepositoryProvider).requestPasswordReset(email: email);
+      await ref
+          .read(authRepositoryProvider)
+          .requestPasswordReset(email: email);
       if (!mounted) return;
       setState(() {
         _isLoading = false;
@@ -82,7 +92,6 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final size = MediaQuery.sizeOf(context);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
@@ -92,34 +101,19 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
           child: Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AimSpacing.screenPaddingMobile,
-              vertical: AimSpacing.space24,
+              vertical: AimSpacing.space20,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top Header Row with Back Button & Logo
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: _backToLogin,
-                      icon: const Icon(Icons.arrow_back_rounded),
-                      style: IconButton.styleFrom(
-                        backgroundColor: surfaces.surface,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: AimRadius.borderMd,
-                        ),
-                      ),
-                    ),
-                    const Spacer(),
-                    const AimBrandLogo(size: 32),
-                  ],
-                ),
-                const SizedBox(height: AimSpacing.space32),
+                // Brand Header + Back Button
+                _buildHeader(isDark, surfaces),
+                const SizedBox(height: AimSpacing.space24),
 
                 Expanded(
                   child: _step == _ForgotPasswordStep.email
-                      ? _buildEmailStep(l10n, surfaces, size)
-                      : _buildSentStep(l10n, surfaces),
+                      ? _buildEmailStep(l10n, surfaces, isDark)
+                      : _buildSentStep(l10n, surfaces, isDark),
                 ),
               ],
             ),
@@ -129,136 +123,70 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     );
   }
 
-  Widget _buildEmailStep(
-    AppLocalizations l10n,
-    AimSurfaceTheme surfaces,
-    Size size,
-  ) {
-    return ListView(
-      physics: const ClampingScrollPhysics(),
+  Widget _buildHeader(bool isDark, AimSurfaceTheme surfaces) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.authForgotPassword,
-          style: AimTextStyles.h2.copyWith(
-            color: surfaces.textPrimary,
-            fontWeight: AimFontWeights.extrabold,
-          ),
-        ),
-        const SizedBox(height: AimSpacing.space8),
-        Text(
-          'Enter your email address and we will send you instructions to reset your password.',
-          style: AimTextStyles.bodyMd.copyWith(
-            color: surfaces.textSecondary,
-          ),
-        ),
-        const SizedBox(height: AimSpacing.space32),
-
-        if (_errorMessage != null) ...[
-          Container(
-            padding: const EdgeInsets.all(AimSpacing.space12),
-            decoration: BoxDecoration(
-              color: AimColors.error500.withValues(alpha: 0.1),
-              borderRadius: AimRadius.borderMd,
-              border: Border.all(
-                color: AimColors.error500.withValues(alpha: 0.3),
+        // Brand Logo Row
+        Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                gradient: AimGradients.ai,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF4F46E5).withValues(alpha: 0.25),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              alignment: Alignment.center,
+              child: const Icon(
+                Icons.auto_awesome_rounded,
+                color: AimColors.neutral0,
+                size: 20,
               ),
             ),
-            child: Row(
-              children: [
-                const Icon(Icons.error_outline, color: AimColors.error500, size: 20),
-                const SizedBox(width: AimSpacing.space8),
-                Expanded(
-                  child: Text(
-                    _errorMessage!,
-                    style: AimTextStyles.caption.copyWith(
-                      color: AimColors.error500,
-                      fontWeight: AimFontWeights.medium,
-                    ),
-                  ),
+            const SizedBox(width: 10),
+            ShaderMask(
+              shaderCallback: (bounds) => AimGradients.ai.createShader(bounds),
+              child: Text(
+                'AIM',
+                style: AimTextStyles.h2.copyWith(
+                  color: AimColors.neutral0,
+                  fontWeight: AimFontWeights.extrabold,
+                  fontSize: 22,
+                  letterSpacing: -0.5,
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: AimSpacing.space20),
-        ],
-
-        Text(
-          l10n.authEmailLabel,
-          style: AimTextStyles.caption.copyWith(
-            color: surfaces.textSecondary,
-            fontWeight: AimFontWeights.semibold,
-          ),
-        ),
-        const SizedBox(height: AimSpacing.space8),
-        TextField(
-          controller: _emailController,
-          focusNode: _emailFocus,
-          keyboardType: TextInputType.emailAddress,
-          autofillHints: const [AutofillHints.email],
-          enabled: !_isLoading,
-          style: AimTextStyles.bodyLg.copyWith(color: surfaces.textPrimary),
-          decoration: InputDecoration(
-            hintText: 'name@example.com',
-            prefixIcon: const Icon(Icons.mail_outline_rounded),
-            filled: true,
-            fillColor: surfaces.surface,
-            border: OutlineInputBorder(
-              borderRadius: AimRadius.borderMd,
-              borderSide: BorderSide(color: surfaces.border),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: AimRadius.borderMd,
-              borderSide: BorderSide(color: surfaces.border),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: AimRadius.borderMd,
-              borderSide: const BorderSide(color: AimColors.primary500, width: 2),
-            ),
-          ),
-          onSubmitted: (_) => _submit(),
-        ),
-        const SizedBox(height: AimSpacing.space32),
-
-        SizedBox(
-          width: double.infinity,
-          height: AimSizes.buttonLg,
-          child: ElevatedButton(
-            onPressed: _isLoading ? null : _submit,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AimColors.primary500,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: AimRadius.borderMd,
               ),
-              elevation: 0,
             ),
-            child: _isLoading
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      color: Colors.white,
-                    ),
-                  )
-                : Text(
-                    'Send Reset Link',
-                    style: AimTextStyles.button.copyWith(
-                      fontWeight: AimFontWeights.bold,
-                    ),
-                  ),
-          ),
+          ],
         ),
-        const SizedBox(height: AimSpacing.space24),
+        const SizedBox(height: AimSpacing.space16),
 
-        Center(
-          child: TextButton(
-            onPressed: _backToLogin,
-            child: Text(
-              'Back to Sign In',
-              style: AimTextStyles.bodyMd.copyWith(
-                color: AimColors.primary500,
-                fontWeight: AimFontWeights.semibold,
+        // Back Button
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: _backToLogin,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              width: 40,
+              height: 40,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: surfaces.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: surfaces.border),
+              ),
+              child: Icon(
+                Icons.arrow_back_rounded,
+                size: 20,
+                color: surfaces.textPrimary,
               ),
             ),
           ),
@@ -267,86 +195,264 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     );
   }
 
-  Widget _buildSentStep(AppLocalizations l10n, AimSurfaceTheme surfaces) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            color: AimColors.success500.withValues(alpha: 0.15),
-            shape: BoxShape.circle,
-          ),
-          child: const Center(
-            child: Icon(
-              Icons.mark_email_read_rounded,
-              color: AimColors.success500,
-              size: 36,
-            ),
-          ),
-        ),
-        const SizedBox(height: AimSpacing.space24),
-        Text(
-          'Check Your Email',
-          style: AimTextStyles.h2.copyWith(
-            color: surfaces.textPrimary,
-            fontWeight: AimFontWeights.bold,
-          ),
-        ),
-        const SizedBox(height: AimSpacing.space12),
-        Text(
-          'We sent a password reset link to:',
-          textAlign: TextAlign.center,
-          style: AimTextStyles.bodyMd.copyWith(
-            color: surfaces.textSecondary,
-          ),
-        ),
-        const SizedBox(height: AimSpacing.space4),
-        Text(
-          _emailController.text.trim(),
-          textAlign: TextAlign.center,
-          style: AimTextStyles.bodyLg.copyWith(
-            color: surfaces.textPrimary,
-            fontWeight: AimFontWeights.bold,
-          ),
-        ),
-        const SizedBox(height: AimSpacing.space32),
+  Widget _buildEmailStep(
+    AppLocalizations l10n,
+    AimSurfaceTheme surfaces,
+    bool isDark,
+  ) {
+    final primaryColor =
+        isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5);
 
-        SizedBox(
-          width: double.infinity,
-          height: AimSizes.buttonLg,
-          child: ElevatedButton(
-            onPressed: _backToLogin,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AimColors.primary500,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: AimRadius.borderMd,
-              ),
-              elevation: 0,
-            ),
-            child: Text(
-              'Back to Sign In',
-              style: AimTextStyles.button.copyWith(
-                fontWeight: AimFontWeights.bold,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: AimSpacing.space16),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: IntrinsicHeight(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Category Badge
+                  Text(
+                    'FORGOT PASSWORD?',
+                    style: AimTextStyles.caption.copyWith(
+                      color: primaryColor,
+                      fontWeight: AimFontWeights.extrabold,
+                      fontSize: 11,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
 
-        TextButton(
-          onPressed: _isLoading ? null : _submit,
-          child: Text(
-            "Didn't get it? Resend email",
-            style: AimTextStyles.bodyMd.copyWith(
-              color: AimColors.primary500,
-              fontWeight: AimFontWeights.semibold,
+                  // Title
+                  Text(
+                    'Reset your\npassword',
+                    style: AimTextStyles.h1.copyWith(
+                      color: surfaces.textPrimary,
+                      fontWeight: AimFontWeights.extrabold,
+                      fontSize: 28,
+                      height: 1.15,
+                    ),
+                  ),
+                  const SizedBox(height: AimSpacing.space8),
+
+                  // Subtitle
+                  Text(
+                    "Enter the email linked to your account and we'll send you a link to reset your password.",
+                    style: AimTextStyles.bodyMd.copyWith(
+                      color: surfaces.textMuted,
+                      fontSize: 14,
+                      height: 1.45,
+                    ),
+                  ),
+                  const SizedBox(height: AimSpacing.space24),
+
+                  // Error message banner if present
+                  if (_errorMessage != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(AimSpacing.space12),
+                      decoration: BoxDecoration(
+                        color: AimColors.error500.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AimColors.error500.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline,
+                              color: AimColors.error500, size: 20),
+                          const SizedBox(width: AimSpacing.space8),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: AimTextStyles.caption.copyWith(
+                                color: AimColors.error500,
+                                fontWeight: AimFontWeights.medium,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AimSpacing.space16),
+                  ],
+
+                  // Input Field
+                  TextField(
+                    controller: _emailController,
+                    focusNode: _emailFocus,
+                    keyboardType: TextInputType.emailAddress,
+                    autofillHints: const [AutofillHints.email],
+                    enabled: !_isLoading,
+                    style: AimTextStyles.bodyMd
+                        .copyWith(color: surfaces.textPrimary),
+                    decoration: InputDecoration(
+                      hintText: 'Email address',
+                      hintStyle: AimTextStyles.bodyMd
+                          .copyWith(color: surfaces.textMuted),
+                      filled: true,
+                      fillColor: surfaces.surface,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: AimSpacing.space16,
+                        vertical: 14,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: surfaces.border),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: surfaces.border),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: primaryColor, width: 2),
+                      ),
+                    ),
+                    onSubmitted: (_) => _submit(),
+                  ),
+                  const SizedBox(height: AimSpacing.space16),
+
+                  // Submit CTA Button
+                  AIMButton(
+                    variant: AIMButtonVariant.primary,
+                    fullWidth: true,
+                    size: AIMButtonSize.large,
+                    loading: _isLoading,
+                    disabled: _isLoading,
+                    onPressed: _submit,
+                    child: const Text('Send Reset Link'),
+                  ),
+
+                  const Spacer(),
+
+                  // Bottom Navigation Link
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                          top: AimSpacing.space16,
+                          bottom: AimSpacing.space12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Remembered your password? ',
+                            style: AimTextStyles.bodySm.copyWith(
+                              color: surfaces.textSecondary,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: _backToLogin,
+                            child: Text(
+                              'Back to Sign In',
+                              style: AimTextStyles.bodySm.copyWith(
+                                color: primaryColor,
+                                fontWeight: AimFontWeights.bold,
+                                decoration: TextDecoration.underline,
+                                decorationColor: primaryColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        );
+      },
+    );
+  }
+
+  Widget _buildSentStep(
+    AppLocalizations l10n,
+    AimSurfaceTheme surfaces,
+    bool isDark,
+  ) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: IntrinsicHeight(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Spacer(),
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0x3310B981)
+                          : const Color(0xFFD1FAE5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.mail_outline_rounded,
+                      color: isDark
+                          ? const Color(0xFF34D399)
+                          : const Color(0xFF059669),
+                      size: 32,
+                    ),
+                  ),
+                  const SizedBox(height: AimSpacing.space20),
+                  Text(
+                    'Check Your Email',
+                    style: AimTextStyles.h2.copyWith(
+                      color: surfaces.textPrimary,
+                      fontWeight: AimFontWeights.extrabold,
+                      fontSize: 24,
+                    ),
+                  ),
+                  const SizedBox(height: AimSpacing.space8),
+                  Text(
+                    'We sent a password reset link to',
+                    textAlign: TextAlign.center,
+                    style: AimTextStyles.bodyMd.copyWith(
+                      color: surfaces.textMuted,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _emailController.text.trim(),
+                    textAlign: TextAlign.center,
+                    style: AimTextStyles.bodyLg.copyWith(
+                      color: surfaces.textPrimary,
+                      fontWeight: AimFontWeights.bold,
+                    ),
+                  ),
+                  const Spacer(),
+
+                  AIMButton(
+                    variant: AIMButtonVariant.outline,
+                    fullWidth: true,
+                    size: AIMButtonSize.large,
+                    onPressed: _isLoading ? null : _submit,
+                    child: const Text("Didn't get it? Resend email"),
+                  ),
+                  const SizedBox(height: AimSpacing.space12),
+
+                  AIMButton(
+                    variant: AIMButtonVariant.primary,
+                    fullWidth: true,
+                    size: AIMButtonSize.large,
+                    onPressed: _backToLogin,
+                    child: const Text('Back to Sign In'),
+                  ),
+                  const SizedBox(height: AimSpacing.space12),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

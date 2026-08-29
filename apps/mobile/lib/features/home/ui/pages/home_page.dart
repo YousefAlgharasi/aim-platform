@@ -637,20 +637,25 @@ class _HomeTopBar extends ConsumerWidget {
                   ),
                 ),
               ),
-              Container(
-                width: 34,
-                height: 34,
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  gradient: AimGradients.gzHero,
-                  shape: BoxShape.circle,
-                ),
-                child: Text(
-                  _initial(displayName),
-                  style: AimTextStyles.label.copyWith(
-                    color: AimColors.neutral0,
-                    fontWeight: AimFontWeights.bold,
-                    fontSize: 13,
+              GestureDetector(
+                onTap: () {
+                  ref.read(mainShellTabIndexProvider.notifier).state = 4;
+                },
+                child: Container(
+                  width: 34,
+                  height: 34,
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(
+                    gradient: AimGradients.gzHero,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    _initial(displayName),
+                    style: AimTextStyles.label.copyWith(
+                      color: AimColors.neutral0,
+                      fontWeight: AimFontWeights.bold,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ),

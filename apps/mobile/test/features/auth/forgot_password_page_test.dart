@@ -85,7 +85,7 @@ void main() {
       ]));
       await tester.pumpAndSettle();
 
-      expect(find.text('Forgot password?'), findsOneWidget);
+      expect(find.text('FORGOT PASSWORD?'), findsOneWidget);
       expect(find.byType(TextField), findsOneWidget);
       expect(find.text('Send Reset Link'), findsOneWidget);
       expect(find.text('Back to Sign In'), findsOneWidget);
