@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 enum BillingPlanType { free, basic, premium, enterprise }
 
 enum SubscriptionStatus { active, past_due, canceled, expired, trialing, paused, incomplete }

@@ -1,4 +1,3 @@
-import 'package:aim_mobile/core/theme/theme.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

@@ -11,6 +11,7 @@ import 'package:aim_mobile/features/auth/data/models/current_user_model.dart';
 import 'package:aim_mobile/features/auth/data/models/login_result_model.dart';
 import 'package:aim_mobile/features/auth/data/models/refresh_result_model.dart';
 import 'package:aim_mobile/features/auth/data/models/register_result_model.dart';
+import 'package:aim_mobile/features/auth/logic/entity/auth_context.dart';
 import 'package:aim_mobile/features/auth/logic/entity/auth_flow_state.dart';
 import 'package:aim_mobile/features/auth/logic/provider/app_bootstrap_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/provider/app_bootstrap_provider.dart';
@@ -83,7 +84,7 @@ void main() {
         email: 'learner@example.com',
         accessToken: 'token-1',
       ),
-      authContextState: const AppAsyncState<AuthContextModel>.success(
+      authContextState: const AppAsyncState<AuthContext>.success(
         _authContext,
       ),
     );
@@ -139,7 +140,7 @@ void main() {
 
     // AppRouter's redirect should have taken the splash route straight to
     // /auth/sign-in once authFlowProvider resolved to signedOut.
-    expect(find.text('Welcome back'), findsOneWidget);
+    expect(find.text('WELCOME BACK'), findsOneWidget);
   });
 
   testWidgets('splash shows AIM branding while checking', (tester) async {

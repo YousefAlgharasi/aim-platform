@@ -330,7 +330,7 @@ class _CompletedBody extends StatelessWidget {
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.all(AimSpacing.cardPaddingLg),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: AimGradients.gzHero,
                 borderRadius: AimRadius.borderXl,
               ),

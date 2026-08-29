@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
-import 'package:aim_mobile/core/routing/app_route_paths.dart';
 
 class VoiceMessage {
   VoiceMessage({

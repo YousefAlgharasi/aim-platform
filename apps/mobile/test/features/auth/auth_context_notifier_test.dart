@@ -3,11 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
-import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
-import 'package:aim_mobile/features/auth/data/models/auth_sync_response_model.dart';
-import 'package:aim_mobile/features/auth/data/models/login_result_model.dart';
-import 'package:aim_mobile/features/auth/data/models/refresh_result_model.dart';
-import 'package:aim_mobile/features/auth/data/models/register_result_model.dart';
+import 'package:aim_mobile/features/auth/logic/entity/auth_context.dart';
+import 'package:aim_mobile/features/auth/logic/entity/auth_results.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
@@ -42,9 +39,9 @@ void main() {
 
     expect(didLoadContext, isFalse);
     expect(authFlowState.isSignedOut, isTrue);
-    expect(authContextState, isA<AppAsyncFailure<AuthContextModel>>());
+    expect(authContextState, isA<AppAsyncFailure<AuthContext>>());
     expect(
-      (authContextState as AppAsyncFailure<AuthContextModel>).code,
+      (authContextState as AppAsyncFailure<AuthContext>).code,
       'AUTH_SESSION_EXPIRED',
     );
   });
@@ -60,7 +57,7 @@ class _FakeAuthRepository implements AuthRepository {
   final Exception? getMeException;
 
   @override
-  Future<AuthContextModel> getMe(String bearerToken) async {
+  Future<AuthContext> getMe(String bearerToken) async {
     final exception = getMeException;
     if (exception != null) {
       throw exception;
@@ -69,7 +66,7 @@ class _FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AuthSyncResponseModel> syncUser(
+  Future<AuthSyncResult> syncUser(
     String bearerToken, {
     String? preferredLanguage,
     String? timezone,
@@ -83,7 +80,7 @@ class _FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<LoginResult> login({
+  Future<AuthLoginResult> login({
     required String email,
     required String password,
   }) {
@@ -91,12 +88,12 @@ class _FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<RefreshResult> refresh({required String refreshToken}) {
+  Future<AuthRefreshResult> refresh({required String refreshToken}) {
     throw UnimplementedError();
   }
 
   @override
-  Future<RegisterResult> register({
+  Future<AuthRegisterResult> register({
     required String email,
     required String password,
   }) {
@@ -104,7 +101,7 @@ class _FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<LoginResult> loginAsTestUser({required String role}) {
+  Future<AuthLoginResult> loginAsTestUser({required String role}) {
     throw UnimplementedError();
   }
 }

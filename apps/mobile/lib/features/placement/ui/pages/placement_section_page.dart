@@ -29,7 +29,6 @@
 // - No secrets, service-role keys, or privileged config here.
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -165,7 +164,6 @@ class _SectionTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
     final isRtl = Directionality.of(context) == TextDirection.rtl;
 

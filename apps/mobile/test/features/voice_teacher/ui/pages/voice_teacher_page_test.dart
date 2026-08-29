@@ -719,7 +719,7 @@ void main() {
           // file read -> delete -> submitToBackend -> submitTurn) needs real
           // wall-clock time to fully unwind, since the button's onPressEnd
           // slot discards the returned Future.
-          await Future<void>.delayed(const Duration(milliseconds: 100));
+          await Future<void>.delayed(const Duration(milliseconds: 300));
           await tester.pump();
         });
 

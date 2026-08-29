@@ -152,14 +152,14 @@ class CourseListTile extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(color: AimColors.success500.withValues(alpha: 0.4)),
                                   ),
-                                  child: Row(
+                                  child: const Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       CircleAvatar(
                                         radius: 3,
                                         backgroundColor: AimColors.success500,
                                       ),
-                                      const SizedBox(width: 4),
+                                      SizedBox(width: 4),
                                       Text(
                                         'Current',
                                         style: TextStyle(

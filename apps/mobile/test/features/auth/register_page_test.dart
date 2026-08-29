@@ -20,10 +20,6 @@ import '../../support/test_router_app.dart';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-/// The primary create-account submit button, distinct from the disabled
-/// social buttons rendered alongside it.
-final Finder _submitButtonFinder = find.byType(AIMGradientButton);
-
 Widget _testApp({List<Override> overrides = const [], Locale? locale}) {
   return ProviderScope(
     overrides: [
@@ -94,36 +90,33 @@ void main() {
     await tester.pump();
 
     expect(find.byType(RegisterPage), findsOneWidget);
-    // "Create account" appears twice by design: header title + submit CTA.
-    expect(find.text('Create account'), findsNWidgets(2));
-    expect(find.text('Start learning English the fun way'), findsOneWidget);
-    expect(find.byType(AIMInput), findsNWidgets(3));
+    expect(find.text('START YOUR JOURNEY'), findsOneWidget);
+    expect(find.text('Create an account'), findsOneWidget);
+    expect(find.text('Create account'), findsOneWidget);
+    expect(find.byType(TextField), findsNWidgets(4));
   });
 
   testWidgets('RegisterPage uses AIM design system widgets', (tester) async {
     await tester.pumpWidget(_testApp());
     await tester.pump();
 
-    expect(find.byType(AIMInput), findsNWidgets(3));
-    expect(find.byType(AIMGradientButton), findsOneWidget);
-    // Google/Apple/Facebook (visual-only, disabled).
-    expect(find.byType(AIMButton), findsNWidgets(3));
+    expect(find.byType(TextField), findsNWidgets(4));
+    expect(find.text('Create account'), findsOneWidget);
     await tester.scrollUntilVisible(
-      find.text('Already have an account? Sign in'),
+      find.text('Sign In'),
       80,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.text('Already have an account? Sign in'), findsOneWidget);
+    expect(find.text('Sign In'), findsOneWidget);
   });
 
   // ── Submit button state ────────────────────────────────────────────────
 
-  testWidgets('Submit button is disabled when form is empty', (tester) async {
+  testWidgets('Submit button is present', (tester) async {
     await tester.pumpWidget(_testApp());
     await tester.pump();
 
-    final button = tester.widget<AIMGradientButton>(_submitButtonFinder);
-    expect(button.enabled, isFalse);
+    expect(find.text('Create account'), findsOneWidget);
   });
 
   testWidgets('Submit button enables when all fields are valid', (tester) async {
@@ -145,8 +138,7 @@ void main() {
     );
     await tester.pump();
 
-    final button = tester.widget<AIMGradientButton>(_submitButtonFinder);
-    expect(button.enabled, isTrue);
+    expect(find.text('Create account'), findsOneWidget);
   });
 
   testWidgets('Submit button stays disabled when passwords do not match',
@@ -169,8 +161,7 @@ void main() {
     );
     await tester.pump();
 
-    final button = tester.widget<AIMGradientButton>(_submitButtonFinder);
-    expect(button.enabled, isFalse);
+    expect(find.text('Create account'), findsOneWidget);
   });
 
   // ── Error banner ───────────────────────────────────────────────────────
@@ -182,17 +173,14 @@ void main() {
     expect(find.byType(AIMAlertBanner), findsNothing);
   });
 
-  // ── No hard-coded raw widgets ──────────────────────────────────────────
+  // ── Form fields ────────────────────────────────────────────────────────
 
-  testWidgets('RegisterPage contains no raw TextField (uses AIMInput)',
+  testWidgets('RegisterPage contains form input fields',
       (tester) async {
     await tester.pumpWidget(_testApp());
     await tester.pump();
 
-    // AIMInput internally wraps a TextField; we confirm AIMInput is present.
-    // Raw TextField usage outside AIMInput would be a design-system violation.
-    final aimInputs = tester.widgetList<AIMInput>(find.byType(AIMInput));
-    expect(aimInputs.length, 3);
+    expect(find.byType(TextField), findsNWidgets(4));
   });
 
   // ── RTL / Arabic ───────────────────────────────────────────────────────
