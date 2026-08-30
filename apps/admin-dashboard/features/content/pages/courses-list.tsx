@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CourseForm } from '../components/course-form';
 import { ContentStatusWorkflow } from '../components/content-status-workflow';
+import { CurriculumTree, type CurriculumTreeActions } from '../components/curriculum-tree';
 import type { ContentStatus } from '../api/admin-content-status-api';
 import type { AdminCourseSummary } from '../api/admin-courses-api';
 
@@ -28,6 +29,7 @@ type Props = {
     id: string,
     action: 'publish' | 'archive' | 'restore',
   ) => Promise<{ error?: string }>;
+  readonly curriculumActions: CurriculumTreeActions;
 };
 
 const STATUS_DOT: Record<string, string> = {
@@ -38,7 +40,7 @@ const STATUS_DOT: Record<string, string> = {
   archived: 'var(--text-muted)',
 };
 
-type DetailTab = 'details' | 'status';
+type DetailTab = 'details' | 'curriculum' | 'status';
 
 export function CoursesList({
   courses,
@@ -50,6 +52,7 @@ export function CoursesList({
   onCreateCourse,
   onUpdateCourse,
   onTransitionCourse,
+  curriculumActions,
 }: Props) {
   const router = useRouter();
   const [showCreate, setShowCreate] = useState(false);
@@ -112,6 +115,15 @@ export function CoursesList({
           <button
             type="button"
             role="tab"
+            aria-selected={activeTab === 'curriculum'}
+            className={`cl-tab ${activeTab === 'curriculum' ? 'cl-tab--active' : ''}`}
+            onClick={() => setActiveTab('curriculum')}
+          >
+            Curriculum
+          </button>
+          <button
+            type="button"
+            role="tab"
             aria-selected={activeTab === 'status'}
             className={`cl-tab ${activeTab === 'status' ? 'cl-tab--active' : ''}`}
             onClick={() => setActiveTab('status')}
@@ -119,9 +131,13 @@ export function CoursesList({
             Status
           </button>
         </div>
-        {activeTab === 'details' ? (
+        {activeTab === 'details' && (
           <CourseForm mode="edit" initial={selected} onSubmit={handleUpdate} onCancel={() => setSelected(null)} />
-        ) : (
+        )}
+        {activeTab === 'curriculum' && (
+          <CurriculumTree courseId={selected.id} actions={curriculumActions} />
+        )}
+        {activeTab === 'status' && (
           <ContentStatusWorkflow
             entityId={selected.id}
             entityType="courses"
@@ -196,6 +212,9 @@ export function CoursesList({
                   <td className="cl-td cl-td--order">{course.sortOrder}</td>
                   <td className="cl-td cl-td--date">{fmtDate(course.updatedAt)}</td>
                   <td className="cl-td cl-td--actions">
+                    <button type="button" className="cl-edit-btn" onClick={() => openCourse(course, 'curriculum')}>
+                      Curriculum
+                    </button>
                     <button type="button" className="cl-edit-btn" onClick={() => openCourse(course, 'status')}>
                       Status
                     </button>
