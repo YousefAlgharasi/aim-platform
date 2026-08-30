@@ -28,22 +28,14 @@ export default async function AdminPlacementResultsPage({ searchParams }: Props)
 
   let data: AdminPlacementResultListData | null = null;
   let fetchError: string | null = null;
-  let backendUnavailable = false;
 
   try {
     data = await fetchAdminPlacementResults(token, page, limit, level);
   } catch (error) {
-    if (
-      error instanceof AdminApiClientError &&
-      (error.status === 404 || error.status === 501 || error.status === 503)
-    ) {
-      backendUnavailable = true;
-    } else {
-      fetchError =
-        error instanceof AdminApiClientError
-          ? `Backend error ${error.status ?? ''}: ${error.message}`
-          : 'Failed to load placement results. Check backend connectivity.';
-    }
+    fetchError =
+      error instanceof AdminApiClientError
+        ? `Backend error ${error.status ?? ''}: ${error.message}`
+        : 'Failed to load placement results. Check backend connectivity.';
   }
 
   const totalPages = data ? Math.ceil(data.total / limit) : 0;
@@ -65,13 +57,6 @@ export default async function AdminPlacementResultsPage({ searchParams }: Props)
         )}
       </header>
 
-      {backendUnavailable && (
-        <div className="admin-boundary-note" role="status">
-          <strong>Notice:</strong> The admin placement results endpoint (
-          <code>GET /admin/placement/results</code>) is not yet deployed. This page is ready and
-          will display results automatically once the backend endpoint is available.
-        </div>
-      )}
 
       {fetchError && (
         <p className="admin-error-banner" role="alert">{fetchError}</p>

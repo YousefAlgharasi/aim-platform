@@ -94,12 +94,6 @@ export default async function AdminAssessmentsPage({ searchParams }: Props) {
         )}
       </header>
 
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Assessment grading, scoring, pass/fail
-        determination, deadline computation, and student results are controlled by
-        backend APIs only. This UI does not compute scores or determine outcomes.
-      </div>
-
       {fetchError && (
         <p className="admin-error-banner" role="alert">{fetchError}</p>
       )}

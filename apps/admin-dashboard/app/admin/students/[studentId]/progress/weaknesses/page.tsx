@@ -46,13 +46,6 @@ export default async function WeaknessesPage({ params }: Props) {
         <h1>Weaknesses & Recommendations</h1>
       </header>
 
-      {/* admin-boundary-note */}
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Weakness severity and recommendations are
-        computed by the AIM Engine only. This view is read-only — no editing or
-        recalculation of AIM outcomes is possible.
-      </div>
-
       {fetchError && (
         <p className="admin-error-banner" role="alert">{fetchError}</p>
       )}

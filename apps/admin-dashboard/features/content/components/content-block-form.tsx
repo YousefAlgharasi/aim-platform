@@ -158,11 +158,6 @@ export function ContentBlockForm({ mode, initial, onSubmit, onCancel }: ContentB
         </AdminFormField>
       </div>
 
-      <div className="admin-boundary-note" style={{ marginBlock: 'var(--space-16)' }}>
-        <strong>Backend authority:</strong> Content validation and storage are
-        controlled by backend APIs.
-      </div>
-
       <div className="aim-block-form-actions">
         <AdminButton
           variant="primary"

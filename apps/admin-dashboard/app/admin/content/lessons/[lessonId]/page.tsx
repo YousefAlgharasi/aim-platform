@@ -85,12 +85,6 @@ export default async function AdminLessonEditorPage({ params }: Props) {
         description={lesson ? `Status: ${lesson.status.replace('_', ' ')} · Order: ${lesson.sortOrder}` : undefined}
       />
 
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Status changes (publish, archive) and
-        skill linking are controlled by backend APIs. A lesson cannot be published
-        until it is linked to at least one skill.
-      </div>
-
       {fetchError && <AdminApiErrorState message={fetchError} />}
 
       {lesson && (

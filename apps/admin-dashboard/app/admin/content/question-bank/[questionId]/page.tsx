@@ -70,12 +70,6 @@ export default async function AdminQuestionDetailPage({ params }: Props) {
         <h1>{question ? `Edit Question` : 'Question Not Found'}</h1>
       </header>
 
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Question status (publish, archive),
-        answer correctness, and skill mapping are controlled by backend APIs only.
-        Choice management requires backend support (not yet available).
-      </div>
-
       {fetchError && (
         <p className="admin-error-banner" role="alert">{fetchError}</p>
       )}

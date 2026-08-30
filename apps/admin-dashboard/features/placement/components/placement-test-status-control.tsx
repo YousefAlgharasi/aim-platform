@@ -146,21 +146,6 @@ export function PlacementTestStatusControl({
             )}
           </div>
 
-          {currentStatus === 'draft' && (
-            <p className="admin-boundary-note" style={{ marginTop: '0.5rem' }}>
-              Publishing will make this the active placement test. Only one test can be
-              published at a time — if another test is already published, archive it
-              first.
-            </p>
-          )}
-          {currentStatus === 'published' && (
-            <p className="admin-boundary-note" style={{ marginTop: '0.5rem' }}>
-              Archiving will deactivate this test. Students will not be assigned
-              placement until another test is published. This cannot be undone from
-              this page.
-            </p>
-          )}
-
           {actionError && (
             <p className="course-form-error" role="alert">
               {actionError}

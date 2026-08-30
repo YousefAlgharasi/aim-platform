@@ -45,12 +45,6 @@ export default async function SessionSummaryPage({ params, searchParams }: Props
         )}
       </header>
 
-      {/* admin-boundary-note */}
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Session data and feedback summaries are
-        backend-managed. This view is read-only.
-      </div>
-
       {fetchError && (
         <p className="admin-error-banner" role="alert">{fetchError}</p>
       )}

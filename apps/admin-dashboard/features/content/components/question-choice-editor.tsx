@@ -51,13 +51,6 @@ export function QuestionChoiceEditor({ questionType, questionId: _questionId }: 
       <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0 }}>
         {guidance.description}
       </p>
-
-      <div className="admin-boundary-note" style={{ marginBlockStart: 'var(--space-16)' }}>
-        <strong>Pending backend support:</strong> Choice management APIs are not yet
-        available. Once the backend exposes choice CRUD endpoints, this section will
-        allow adding, editing, reordering, and marking correct choices directly.
-        Answer correctness is always determined by the backend.
-      </div>
     </AdminCard>
   );
 }

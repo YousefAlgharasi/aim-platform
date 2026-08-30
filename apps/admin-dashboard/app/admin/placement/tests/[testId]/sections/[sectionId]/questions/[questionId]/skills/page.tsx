@@ -61,21 +61,14 @@ export default async function AdminPlacementQuestionSkillsPage({ params }: Props
   // Fetch existing skill links for this question
   let linksData: PlacementQuestionSkillLinksData | null = null;
   let linksError: string | null = null;
-  let backendUnavailable = false;
 
   try {
     linksData = await fetchPlacementQuestionSkillLinks(token, questionId);
   } catch (err) {
-    const error = err as Record<string, unknown> | null;
-    const status = typeof error?.['status'] === 'number' ? error['status'] : 0;
-    if (status === 404 || status === 501 || status === 503) {
-      backendUnavailable = true;
-    } else {
-      linksError = toErrorMessage(
-        err,
-        'Failed to load skill links. Check backend connectivity.',
-      );
-    }
+    linksError = toErrorMessage(
+      err,
+      'Failed to load skill links. Check backend connectivity.',
+    );
   }
 
   // Fetch available published skills for the picker
@@ -179,25 +172,6 @@ export default async function AdminPlacementQuestionSkillsPage({ params }: Props
         )}
       </header>
 
-      {/* Security boundary note */}
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Skill links are managed by the backend.{' '}
-        <strong>correct_answer is never fetched or displayed</strong> — it is
-        backend-only. The backend requires exactly one{' '}
-        <strong>primary</strong> skill link before a question can be activated in a live
-        placement test. Placement scores, skill maps, and weakness maps are always
-        computed server-side — never by this UI.
-      </div>
-
-      {/* Backend not yet available */}
-      {backendUnavailable && (
-        <div className="admin-boundary-note" role="status">
-          <strong>Notice:</strong> The admin placement question skills endpoint (
-          <code>GET /admin/placement/questions/:questionId/skills</code>) is not yet
-          deployed. This page is ready and will display skill links automatically once
-          the backend endpoint is available.
-        </div>
-      )}
 
       {/* Error banners */}
       {linksError && (

@@ -106,11 +106,6 @@ export function QuestionValidationPanel({ question, hasSkillLinks }: Props) {
         ))}
       </ul>
 
-      <div className="admin-boundary-note" style={{ marginBlockStart: 'var(--space-12)' }}>
-        <strong>Note:</strong> Validation is advisory only. Publishing decisions are
-        controlled by backend APIs.
-      </div>
-
       <style>{`
         .aim-validation-list {
           list-style: none;

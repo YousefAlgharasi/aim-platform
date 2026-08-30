@@ -6,11 +6,19 @@
 // elsewhere (assessment-grading.service.ts, assessment-score-policy.service.ts)
 // and are never touched here.
 
-import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { AppError } from '../../common/errors/app-error';
 import { ApiErrorCode } from '../../common/errors/api-error-code';
 import { DatabaseService } from '../../database/database.service';
-import { UpdateAssessmentDto } from './admin-assessment-write.dto';
+import { CreateAssessmentDto, UpdateAssessmentDto } from './admin-assessment-write.dto';
+
+interface PgError {
+  code?: string;
+}
+
+function isPgError(err: unknown): err is PgError {
+  return typeof err === 'object' && err !== null && 'code' in err;
+}
 
 interface AssessmentRow {
   id: string;
@@ -33,6 +41,16 @@ interface SettingsRow {
 @Injectable()
 export class AdminAssessmentWriteService {
   constructor(private readonly db: DatabaseService) {}
+
+  async create(dto: CreateAssessmentDto, createdBy: string) {
+    const result = await this.db.query<{ id: string }>(
+      `INSERT INTO assessments (type, title, status, created_by)
+       VALUES ($1, $2, 'draft', $3)
+       RETURNING id`,
+      [dto.type, dto.title, createdBy],
+    );
+    return this.getDetail(result.rows[0].id);
+  }
 
   async update(id: string, dto: UpdateAssessmentDto) {
     await this.assertExists(id);
@@ -75,7 +93,41 @@ export class AdminAssessmentWriteService {
       await this.upsertSettings(id, dto.settings);
     }
 
+    if (dto.questionIds !== undefined) {
+      await this.replaceQuestions(id, dto.questionIds);
+    }
+
     return this.getDetail(id);
+  }
+
+  private async replaceQuestions(assessmentId: string, questionIds: string[]): Promise<void> {
+    try {
+      await this.db.withClient(async (client) => {
+        await client.query('BEGIN');
+        try {
+          await client.query(`DELETE FROM assessment_questions WHERE assessment_id = $1`, [assessmentId]);
+
+          for (let i = 0; i < questionIds.length; i++) {
+            await client.query(
+              `INSERT INTO assessment_questions (assessment_id, question_id, "order")
+               VALUES ($1, $2, $3)`,
+              [assessmentId, questionIds[i], i + 1],
+            );
+          }
+
+          await client.query('COMMIT');
+        } catch (err) {
+          await client.query('ROLLBACK');
+          throw err;
+        }
+      });
+    } catch (err) {
+      // 23503: FK violation (question_id doesn't exist in questions table).
+      if (isPgError(err) && err.code === '23503') {
+        throw new BadRequestException('One or more question IDs do not exist in the question bank.');
+      }
+      throw err;
+    }
   }
 
   async publish(id: string) {
@@ -150,6 +202,11 @@ export class AdminAssessmentWriteService {
     );
     const settingsRow = settingsResult.rows[0];
 
+    const questionIdsResult = await this.db.query<{ question_id: string }>(
+      `SELECT question_id FROM assessment_questions WHERE assessment_id = $1 ORDER BY "order"`,
+      [id],
+    );
+
     return {
       id: row.id,
       title: row.title,
@@ -160,7 +217,7 @@ export class AdminAssessmentWriteService {
       questionCount: row.question_count ?? 0,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
-      questionIds: [] as string[],
+      questionIds: questionIdsResult.rows.map((r) => r.question_id),
       settings: {
         timeLimitMinutes: settingsRow?.time_limit_seconds
           ? Math.round(settingsRow.time_limit_seconds / 60)
