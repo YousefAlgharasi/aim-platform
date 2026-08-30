@@ -102,6 +102,28 @@ describe('AiTeacherProviderOpenAiService', () => {
       expect(result.categories).toEqual(['unsafe_content']);
     });
 
+    it('returns flagged: false when the verdict is preceded by reasoning-model chain-of-thought', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          choices: [
+            {
+              message: {
+                content:
+                  'The student is asking a normal, benign English-learning question. ' +
+                  'Final verdict: SAFE',
+              },
+            },
+          ],
+        }),
+      }) as unknown as typeof fetch;
+
+      const service = new AiTeacherProviderOpenAiService(makeConfig());
+      const result = await service.moderateContent({ providerKeyRef: 'ref', content: 'hello' });
+
+      expect(result).toEqual({ flagged: false, categories: [] });
+    });
+
     it('treats an ambiguous/unparseable reply as flagged (fail closed)', async () => {
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
