@@ -61,21 +61,14 @@ export default async function AdminPlacementQuestionSkillsPage({ params }: Props
   // Fetch existing skill links for this question
   let linksData: PlacementQuestionSkillLinksData | null = null;
   let linksError: string | null = null;
-  let backendUnavailable = false;
 
   try {
     linksData = await fetchPlacementQuestionSkillLinks(token, questionId);
   } catch (err) {
-    const error = err as Record<string, unknown> | null;
-    const status = typeof error?.['status'] === 'number' ? error['status'] : 0;
-    if (status === 404 || status === 501 || status === 503) {
-      backendUnavailable = true;
-    } else {
-      linksError = toErrorMessage(
-        err,
-        'Failed to load skill links. Check backend connectivity.',
-      );
-    }
+    linksError = toErrorMessage(
+      err,
+      'Failed to load skill links. Check backend connectivity.',
+    );
   }
 
   // Fetch available published skills for the picker
@@ -179,9 +172,6 @@ export default async function AdminPlacementQuestionSkillsPage({ params }: Props
         )}
       </header>
 
-      {/* Backend not yet available */}
-      {backendUnavailable && (
-      )}
 
       {/* Error banners */}
       {linksError && (

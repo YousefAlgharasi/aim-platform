@@ -50,7 +50,6 @@ export default async function AdminPlacementTestsPage({ searchParams }: Props) {
 
   let data: AdminPlacementTestListData | null = null;
   let fetchError: string | null = null;
-  let backendUnavailable = false;
 
   try {
     const raw = await fetchAdminPlacementTests(token, page, limit);
@@ -61,17 +60,10 @@ export default async function AdminPlacementTestsPage({ searchParams }: Props) {
       data = raw;
     }
   } catch (error) {
-    if (
-      error instanceof AdminApiClientError &&
-      (error.status === 404 || error.status === 501 || error.status === 503)
-    ) {
-      backendUnavailable = true;
-    } else {
-      fetchError =
-        error instanceof AdminApiClientError
-          ? `Backend error ${error.status ?? ''}: ${error.message}`
-          : 'Failed to load placement tests. Check backend connectivity.';
-    }
+    fetchError =
+      error instanceof AdminApiClientError
+        ? `Backend error ${error.status ?? ''}: ${error.message}`
+        : 'Failed to load placement tests. Check backend connectivity.';
   }
 
   const totalPages = data ? Math.ceil(data.total / limit) : 0;
@@ -96,9 +88,6 @@ export default async function AdminPlacementTestsPage({ searchParams }: Props) {
         )}
       </header>
 
-      {/* Backend not yet available */}
-      {backendUnavailable && (
-      )}
 
       {/* Error banner */}
       {fetchError && (

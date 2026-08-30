@@ -59,7 +59,6 @@ export default async function AdminPlacementTestStatusPage({ params }: Props) {
   // Fetch test metadata to display context (title, current status)
   let test: AdminPlacementTestSummary | null = null;
   let fetchError: string | null = null;
-  let backendUnavailable = false;
 
   try {
     const data = await fetchAdminPlacementTests(token, 1, 100);
@@ -70,16 +69,10 @@ export default async function AdminPlacementTestStatusPage({ params }: Props) {
       fetchError = `Placement test not found (ID: …${testId.slice(-8)}).`;
     }
   } catch (err) {
-    const errRecord = err as Record<string, unknown> | null;
-    const status = typeof errRecord?.['status'] === 'number' ? errRecord['status'] : 0;
-    if (status === 404 || status === 501 || status === 503) {
-      backendUnavailable = true;
-    } else {
-      fetchError = toErrorMessage(
-        err,
-        'Failed to load placement test. Check backend connectivity.',
-      );
-    }
+    fetchError = toErrorMessage(
+      err,
+      'Failed to load placement test. Check backend connectivity.',
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -125,9 +118,6 @@ export default async function AdminPlacementTestStatusPage({ params }: Props) {
         )}
       </header>
 
-      {/* Backend not yet available */}
-      {backendUnavailable && (
-      )}
 
       {/* Error banner */}
       {fetchError && (

@@ -40,22 +40,14 @@ export default async function AdminPlacementQuestionsPage({ params }: Props) {
 
   let data: AdminPlacementQuestionsData | null = null;
   let fetchError: string | null = null;
-  let backendUnavailable = false;
 
   try {
     data = await fetchAdminPlacementQuestions(token, sectionId);
   } catch (error) {
-    if (
-      error instanceof AdminApiClientError &&
-      (error.status === 404 || error.status === 501 || error.status === 503)
-    ) {
-      backendUnavailable = true;
-    } else {
-      fetchError =
-        error instanceof AdminApiClientError
-          ? `Backend error ${error.status ?? ''}: ${error.message}`
-          : 'Failed to load placement questions. Check backend connectivity.';
-    }
+    fetchError =
+      error instanceof AdminApiClientError
+        ? `Backend error ${error.status ?? ''}: ${error.message}`
+        : 'Failed to load placement questions. Check backend connectivity.';
   }
 
   return (
@@ -82,9 +74,6 @@ export default async function AdminPlacementQuestionsPage({ params }: Props) {
         )}
       </header>
 
-      {/* Backend not yet available */}
-      {backendUnavailable && (
-      )}
 
       {/* Error banner */}
       {fetchError && (
