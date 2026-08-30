@@ -66,6 +66,7 @@ export type CurriculumTreeActions = {
 
 type Props = {
   readonly courseId: string;
+  readonly courseTitle: string;
   readonly actions: CurriculumTreeActions;
 };
 
@@ -81,7 +82,7 @@ function StatusDot({ status }: { readonly status: string }) {
   return <span className="ctree-dot" style={{ background: STATUS_DOT[status] ?? 'var(--text-muted)' }} />;
 }
 
-export function CurriculumTree({ courseId, actions }: Props) {
+export function CurriculumTree({ courseId, courseTitle, actions }: Props) {
   const [levels, setLevels] = useState<AdminLevelSummary[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -111,6 +112,16 @@ export function CurriculumTree({ courseId, actions }: Props) {
 
   return (
     <div className="ctree-root">
+      <div className="ctree-exam-row">
+        <span className="ctree-hint">Quizzes and exams are managed in the Assessments section.</span>
+        <Link
+          href={`/admin/assessments?search=${encodeURIComponent(courseTitle)}`}
+          className="ctree-node-link"
+        >
+          <span className="ctree-exam-btn">Final Exam for this Course →</span>
+        </Link>
+      </div>
+
       <div className="ctree-section-header">
         <h3 className="ctree-section-title">Levels</h3>
         <button type="button" className="ctree-add-btn" onClick={() => setShowCreateLevel((v) => !v)}>
@@ -147,6 +158,20 @@ export function CurriculumTree({ courseId, actions }: Props) {
         }
         .ctree-add-btn:hover { background: var(--surface-sunken); }
         .ctree-hint { margin: 0; font-size: 13px; color: var(--text-muted); }
+        .ctree-exam-row {
+          display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+          padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-md);
+          background: var(--surface-sunken);
+        }
+        .ctree-exam-btn {
+          font-size: 12px; font-weight: 600; color: var(--color-primary-500);
+          white-space: nowrap;
+        }
+        .ctree-exam-btn:hover { text-decoration: underline; }
+        .ctree-chapter-quiz-btn {
+          font-size: 11px; font-weight: 600; color: var(--color-primary-500); white-space: nowrap;
+        }
+        .ctree-chapter-quiz-btn:hover { text-decoration: underline; }
         .ctree-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
         .ctree-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
 
@@ -419,9 +444,14 @@ function ChapterNode({
         <div className="ctree-node-body">
           <div className="ctree-section-header">
             <h4 className="ctree-section-title">Lessons</h4>
-            <button type="button" className="ctree-add-btn" onClick={() => setShowCreateLesson((v) => !v)}>
-              {showCreateLesson ? 'Cancel' : '+ Add Lesson'}
-            </button>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <Link href={`/admin/assessments?search=${encodeURIComponent(chapter.title)}`} className="ctree-node-link">
+                <span className="ctree-chapter-quiz-btn">Chapter Quiz →</span>
+              </Link>
+              <button type="button" className="ctree-add-btn" onClick={() => setShowCreateLesson((v) => !v)}>
+                {showCreateLesson ? 'Cancel' : '+ Add Lesson'}
+              </button>
+            </div>
           </div>
 
           {showCreateLesson && (
