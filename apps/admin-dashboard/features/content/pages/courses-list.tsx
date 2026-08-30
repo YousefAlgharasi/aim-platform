@@ -4,6 +4,8 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CourseForm } from '../components/course-form';
+import { ContentStatusWorkflow } from '../components/content-status-workflow';
+import type { ContentStatus } from '../api/admin-content-status-api';
 import type { AdminCourseSummary } from '../api/admin-courses-api';
 
 type Props = {
@@ -22,6 +24,10 @@ type Props = {
     id: string,
     data: { title: string; slug: string | null; description: string | null },
   ) => Promise<{ error?: string }>;
+  readonly onTransitionCourse: (
+    id: string,
+    action: 'publish' | 'archive' | 'restore',
+  ) => Promise<{ error?: string }>;
 };
 
 const STATUS_DOT: Record<string, string> = {
@@ -32,6 +38,8 @@ const STATUS_DOT: Record<string, string> = {
   archived: 'var(--text-muted)',
 };
 
+type DetailTab = 'details' | 'status';
+
 export function CoursesList({
   courses,
   total,
@@ -41,10 +49,12 @@ export function CoursesList({
   searchQuery,
   onCreateCourse,
   onUpdateCourse,
+  onTransitionCourse,
 }: Props) {
   const router = useRouter();
   const [showCreate, setShowCreate] = useState(false);
-  const [editing, setEditing] = useState<AdminCourseSummary | null>(null);
+  const [selected, setSelected] = useState<AdminCourseSummary | null>(null);
+  const [activeTab, setActiveTab] = useState<DetailTab>('details');
   const [, startTransition] = useTransition();
 
   function refresh() {
@@ -58,18 +68,88 @@ export function CoursesList({
   }
 
   async function handleUpdate(data: { title: string; slug: string | null; description: string | null }) {
-    if (!editing) return {};
-    const result = await onUpdateCourse(editing.id, data);
-    if (!result.error) { setEditing(null); refresh(); }
+    if (!selected) return {};
+    const result = await onUpdateCourse(selected.id, data);
+    if (!result.error) { setSelected(null); refresh(); }
     return result;
+  }
+
+  async function handleTransition(action: 'publish' | 'archive' | 'restore') {
+    if (!selected) return { error: 'No course selected.' };
+    const result = await onTransitionCourse(selected.id, action);
+    if (!result.error) refresh();
+    return result;
+  }
+
+  function openCourse(course: AdminCourseSummary, tab: DetailTab) {
+    setSelected(course);
+    setActiveTab(tab);
   }
 
   if (showCreate) {
     return <CourseForm mode="create" onSubmit={handleCreate} onCancel={() => setShowCreate(false)} />;
   }
 
-  if (editing) {
-    return <CourseForm mode="edit" initial={editing} onSubmit={handleUpdate} onCancel={() => setEditing(null)} />;
+  if (selected) {
+    return (
+      <div className="cl-detail">
+        <div className="cl-detail-header">
+          <button type="button" className="cl-back-btn" onClick={() => setSelected(null)}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5m7-7l-7 7 7 7"/></svg>
+            Back to courses
+          </button>
+        </div>
+        <div className="cl-tabs" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'details'}
+            className={`cl-tab ${activeTab === 'details' ? 'cl-tab--active' : ''}`}
+            onClick={() => setActiveTab('details')}
+          >
+            Details
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'status'}
+            className={`cl-tab ${activeTab === 'status' ? 'cl-tab--active' : ''}`}
+            onClick={() => setActiveTab('status')}
+          >
+            Status
+          </button>
+        </div>
+        {activeTab === 'details' ? (
+          <CourseForm mode="edit" initial={selected} onSubmit={handleUpdate} onCancel={() => setSelected(null)} />
+        ) : (
+          <ContentStatusWorkflow
+            entityId={selected.id}
+            entityType="courses"
+            entityTitle={selected.title}
+            currentStatus={selected.status as ContentStatus}
+            onTransition={handleTransition}
+          />
+        )}
+        <style>{`
+          .cl-detail { display: flex; flex-direction: column; gap: 16px; }
+          .cl-detail-header { display: flex; }
+          .cl-back-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: none; border: none; color: var(--text-link);
+            font-size: 13px; font-weight: 600; cursor: pointer; padding: 4px 0; font-family: inherit;
+          }
+          .cl-back-btn:hover { text-decoration: underline; }
+          .cl-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); }
+          .cl-tab {
+            padding: 8px 16px; border: none; background: none; cursor: pointer;
+            font-size: 13px; font-weight: 600; color: var(--text-muted); font-family: inherit;
+            border-bottom: 2px solid transparent; margin-bottom: -1px;
+          }
+          .cl-tab:hover { color: var(--text-primary); }
+          .cl-tab--active { color: var(--color-primary-500); border-bottom-color: var(--color-primary-500); }
+        `}</style>
+      </div>
+    );
   }
 
   return (
@@ -99,13 +179,13 @@ export function CoursesList({
               {courses.map((course) => (
                 <tr key={course.id} className="cl-row">
                   <td className="cl-td">
-                    <Link href={`/admin/content/courses/${course.id}/status`} className="cl-course-link">
+                    <button type="button" className="cl-course-link" onClick={() => openCourse(course, 'details')}>
                       <div className="cl-course-info">
                         <span className="cl-course-title">{course.title}</span>
                         {course.slug && <span className="cl-course-slug">{course.slug}</span>}
                         {course.description && <span className="cl-course-desc">{course.description}</span>}
                       </div>
-                    </Link>
+                    </button>
                   </td>
                   <td className="cl-td">
                     <span className="cl-status">
@@ -116,7 +196,10 @@ export function CoursesList({
                   <td className="cl-td cl-td--order">{course.sortOrder}</td>
                   <td className="cl-td cl-td--date">{fmtDate(course.updatedAt)}</td>
                   <td className="cl-td cl-td--actions">
-                    <button type="button" className="cl-edit-btn" onClick={() => setEditing(course)}>
+                    <button type="button" className="cl-edit-btn" onClick={() => openCourse(course, 'status')}>
+                      Status
+                    </button>
+                    <button type="button" className="cl-edit-btn" onClick={() => openCourse(course, 'details')}>
                       Edit
                     </button>
                   </td>
@@ -173,9 +256,13 @@ export function CoursesList({
         .cl-td { padding: 12px 16px; font-size: 14px; color: var(--text-primary); vertical-align: top; }
         .cl-td--order { text-align: center; font-weight: 600; color: var(--text-secondary); font-size: 13px; }
         .cl-td--date { font-size: 12px; color: var(--text-secondary); }
-        .cl-td--actions { text-align: right; }
+        .cl-td--actions { text-align: right; display: flex; gap: 6px; justify-content: flex-end; }
 
-        .cl-course-link { text-decoration: none; color: inherit; display: block; }
+        .cl-course-link {
+          text-decoration: none; color: inherit; display: block; width: 100%;
+          background: none; border: none; padding: 0; margin: 0; text-align: left;
+          font-family: inherit; cursor: pointer;
+        }
         .cl-course-info { display: flex; flex-direction: column; gap: 2px; }
         .cl-course-title { font-weight: 600; color: var(--text-primary); }
         .cl-course-link:hover .cl-course-title { color: var(--color-primary-500); }

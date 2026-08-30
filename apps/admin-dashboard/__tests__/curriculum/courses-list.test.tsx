@@ -27,6 +27,7 @@ const defaultProps = {
   totalPages: 1,
   onCreateCourse: jest.fn().mockResolvedValue({}),
   onUpdateCourse: jest.fn().mockResolvedValue({}),
+  onTransitionCourse: jest.fn().mockResolvedValue({}),
 };
 
 describe('CoursesList', () => {
