@@ -27,6 +27,7 @@ import 'package:aim_mobile/features/ai_teacher/logic/provider/ai_teacher_provide
 import 'package:aim_mobile/features/ai_teacher/logic/repository/ai_teacher_chat_repository.dart';
 import 'package:aim_mobile/features/ai_teacher/ui/pages/ai_teacher_chat_page.dart';
 import 'package:aim_mobile/features/ai_teacher/ui/pages/ai_teacher_session_history_page.dart';
+import 'package:aim_mobile/core/localization/app_locale.dart';
 import 'package:aim_mobile/features/auth/logic/entity/auth_flow_state.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -39,6 +40,8 @@ Widget _wrap(Widget child, {List<Override> overrides = const []}) =>
       ],
       child: MaterialApp.router(
         theme: AppTheme.light,
+        localizationsDelegates: AppLocale.delegates,
+        supportedLocales: AppLocale.supportedLocales,
         routerConfig: GoRouter(
           initialLocation: '/',
           routes: [

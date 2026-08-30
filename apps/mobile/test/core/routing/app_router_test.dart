@@ -140,7 +140,7 @@ void main() {
 
     // AppRouter's redirect should have taken the splash route straight to
     // /auth/sign-in once authFlowProvider resolved to signedOut.
-    expect(find.text('WELCOME BACK'), findsOneWidget);
+    expect(find.text('Welcome back'), findsOneWidget);
   });
 
   testWidgets('splash shows AIM branding while checking', (tester) async {

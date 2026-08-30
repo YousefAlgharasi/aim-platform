@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:aim_mobile/core/localization/app_locale.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/support/data/models/support_models.dart';
 import 'package:aim_mobile/features/support/logic/provider/support_provider.dart';
@@ -63,23 +64,23 @@ Widget _wrap(Widget child) {
     overrides: [
       supportRepositoryProvider.overrideWithValue(_FakeSupportRepository()),
     ],
-    child: MaterialApp(home: child),
+    child: MaterialApp(
+      localizationsDelegates: AppLocale.delegates,
+      supportedLocales: AppLocale.supportedLocales,
+      home: child,
+    ),
   );
 }
 
 void main() {
   group('ParentHelpCenterPage', () {
     testWidgets('renders scaffold with title', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(home: ParentHelpCenterPage()),
-      );
+      await tester.pumpWidget(_wrap(const ParentHelpCenterPage()));
       expect(find.text('Parent Help'), findsOneWidget);
     });
 
     testWidgets('shows parent-specific help categories', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(home: ParentHelpCenterPage()),
-      );
+      await tester.pumpWidget(_wrap(const ParentHelpCenterPage()));
       expect(find.text('Student Progress'), findsOneWidget);
       expect(find.text('Courses & Content'), findsOneWidget);
       expect(find.text('Billing & Payments'), findsOneWidget);
@@ -94,9 +95,7 @@ void main() {
     });
 
     testWidgets('shows create ticket button', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(home: ParentHelpCenterPage()),
-      );
+      await tester.pumpWidget(_wrap(const ParentHelpCenterPage()));
       expect(find.text('Create Ticket'), findsOneWidget);
       expect(find.byType(AIMGradientButton), findsOneWidget);
     });
@@ -117,11 +116,10 @@ void main() {
 
     testWidgets('buildEmptyState shows no tickets message', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
+        _wrap(
+          const Scaffold(
             body: Builder(
-              builder: (context) =>
-                  ParentTicketListPage.buildEmptyState(context),
+              builder: ParentTicketListPage.buildEmptyState,
             ),
           ),
         ),
@@ -136,8 +134,8 @@ void main() {
 
     testWidgets('buildTicketTile renders ticket info', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
+        _wrap(
+          Scaffold(
             body: Builder(
               builder: (context) => ParentTicketListPage.buildTicketTile(
                 context: context,

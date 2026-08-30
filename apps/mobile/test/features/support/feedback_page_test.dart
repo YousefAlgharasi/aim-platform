@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:aim_mobile/core/localization/app_locale.dart';
 import 'package:aim_mobile/features/support/data/models/support_models.dart';
 import 'package:aim_mobile/features/support/logic/provider/support_provider.dart';
 import 'package:aim_mobile/features/support/logic/repository/support_repository.dart';
@@ -61,7 +62,11 @@ Widget _wrap(Widget child) {
     overrides: [
       supportRepositoryProvider.overrideWithValue(_FakeSupportRepository()),
     ],
-    child: MaterialApp(home: child),
+    child: MaterialApp(
+      localizationsDelegates: AppLocale.delegates,
+      supportedLocales: AppLocale.supportedLocales,
+      home: child,
+    ),
   );
 }
 

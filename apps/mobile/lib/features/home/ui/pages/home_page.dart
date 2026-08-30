@@ -958,16 +958,13 @@ class _DailyMissionsList extends ConsumerWidget {
 
     final mission1 = _MissionItem(
       iconData: Icons.menu_book_rounded,
-      iconColor: challenge.completed ? const Color(0xFF10B981) : const Color(0xFF4F46E5),
-      iconBgColor: challenge.completed ? const Color(0xFFD1FAE5) : const Color(0xFFEEF2FF),
-      label: localizeChallengeTitle(challenge.title),
       iconColor: challenge.completed
           ? (isDark ? const Color(0xFF34D399) : const Color(0xFF10B981))
           : (isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5)),
       iconBgColor: challenge.completed
           ? (isDark ? const Color(0xFF064E3B).withValues(alpha: 0.6) : const Color(0xFFD1FAE5))
           : (isDark ? const Color(0xFF1E1B4B).withValues(alpha: 0.6) : const Color(0xFFEEF2FF)),
-      label: challenge.title,
+      label: localizeChallengeTitle(challenge.title),
       done: challenge.completed,
       progress: challenge.progressCount,
       total: challenge.targetCount,
@@ -976,12 +973,9 @@ class _DailyMissionsList extends ConsumerWidget {
 
     final mission2 = _MissionItem(
       iconData: Icons.mic_none_rounded,
-      iconColor: const Color(0xFF4F46E5),
-      iconBgColor: const Color(0xFFEEF2FF),
-      label: l10n.homeMissionPracticeSpeaking,
       iconColor: isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5),
       iconBgColor: isDark ? const Color(0xFF1E1B4B).withValues(alpha: 0.6) : const Color(0xFFEEF2FF),
-      label: isAr ? 'تدرب على التحدث' : 'Practice Speaking',
+      label: l10n.homeMissionPracticeSpeaking,
       done: false,
       progress: 0,
       total: 1,
@@ -993,12 +987,9 @@ class _DailyMissionsList extends ConsumerWidget {
 
     final mission3 = _MissionItem(
       iconData: Icons.edit_rounded,
-      iconColor: const Color(0xFF4F46E5),
-      iconBgColor: const Color(0xFFEEF2FF),
-      label: l10n.homeMissionWriteParagraph,
       iconColor: isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5),
       iconBgColor: isDark ? const Color(0xFF1E1B4B).withValues(alpha: 0.6) : const Color(0xFFEEF2FF),
-      label: isAr ? 'اكتب فقرة قصيرة' : 'Write a Paragraph',
+      label: l10n.homeMissionWriteParagraph,
       done: false,
       progress: 0,
       total: 1,

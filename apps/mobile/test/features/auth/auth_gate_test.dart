@@ -74,7 +74,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(LoginPage), findsOneWidget);
-    expect(find.text('WELCOME BACK'), findsOneWidget);
+    expect(find.text('Welcome back'), findsOneWidget);
   });
 
   testWidgets('AuthGate stays on splash while still checking', (tester) async {
@@ -93,7 +93,7 @@ void main() {
 
     expect(find.text('AIM'), findsOneWidget);
     expect(find.byType(LoginPage), findsNothing);
-    expect(find.text('WELCOME BACK'), findsNothing);
+    expect(find.text('Welcome back'), findsNothing);
   });
 
   testWidgets('AuthGate navigates to mainShell when already signed in',
@@ -109,7 +109,6 @@ void main() {
           }),
         ],
         child: const TestRouterApp(initialLocation: AppRoutePaths.mainShell),
-        child: const TestRouterApp(initialLocation: AppRoutePaths.home),
       ),
     );
 

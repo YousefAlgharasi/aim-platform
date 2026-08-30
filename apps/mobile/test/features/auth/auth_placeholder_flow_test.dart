@@ -28,6 +28,6 @@ void main() {
     await tester.pump();
 
     expect(find.text('Sign In'), findsWidgets);
-    expect(find.text('WELCOME BACK'), findsOneWidget);
+    expect(find.text('Welcome back'), findsOneWidget);
   });
 }

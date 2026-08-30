@@ -138,8 +138,6 @@ void main() {
     expect(find.byType(LoginPage), findsOneWidget);
     expect(find.text('Welcome back'), findsOneWidget);
     expect(find.byType(TextField), findsNWidgets(2));
-    expect(find.text('WELCOME BACK'), findsOneWidget);
-    expect(find.textContaining('Sign in to your'), findsOneWidget);
   });
 
   testWidgets('LoginPage renders social options and sign up link',
