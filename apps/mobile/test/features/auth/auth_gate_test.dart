@@ -109,7 +109,6 @@ void main() {
           }),
         ],
         child: const TestRouterApp(initialLocation: AppRoutePaths.mainShell),
-        child: const TestRouterApp(initialLocation: AppRoutePaths.home),
       ),
     );
 

@@ -4,8 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/routing/routing.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/features/auth/logic/entity/auth_context.dart';
+import 'package:aim_mobile/features/auth/logic/entity/auth_results.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/features/auth/logic/provider/register_notifier.dart';
+import 'package:aim_mobile/features/auth/logic/provider/register_provider.dart';
+import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
 import 'package:aim_mobile/features/auth/ui/pages/register_page.dart';
 
 import '../../support/test_router_app.dart';
@@ -33,14 +38,16 @@ Widget _testApp({List<Override> overrides = const [], Locale? locale}) {
 class _FakeAuthRepository implements AuthRepository {
   @override
   Future<void> requestPasswordReset({required String email}) => throw UnimplementedError();
+
   @override
   Future<void> resetPassword({required String newPassword, required String bearerToken}) => throw UnimplementedError();
+
   @override
-  Future<AuthContextModel> getMe(String bearerToken) async =>
+  Future<AuthContext> getMe(String bearerToken) async =>
       throw UnimplementedError();
 
   @override
-  Future<AuthSyncResponseModel> syncUser(
+  Future<AuthSyncResult> syncUser(
     String bearerToken, {
     String? preferredLanguage,
     String? timezone,
@@ -51,25 +58,25 @@ class _FakeAuthRepository implements AuthRepository {
   Future<void> logout(String bearerToken) async => throw UnimplementedError();
 
   @override
-  Future<LoginResult> login({
+  Future<AuthLoginResult> login({
     required String email,
     required String password,
   }) async =>
       throw UnimplementedError();
 
   @override
-  Future<RefreshResult> refresh({required String refreshToken}) async =>
+  Future<AuthRefreshResult> refresh({required String refreshToken}) async =>
       throw UnimplementedError();
 
   @override
-  Future<RegisterResult> register({
+  Future<AuthRegisterResult> register({
     required String email,
     required String password,
   }) async =>
       throw UnimplementedError();
 
   @override
-  Future<LoginResult> loginAsTestUser({required String role}) async =>
+  Future<AuthLoginResult> loginAsTestUser({required String role}) async =>
       throw UnimplementedError();
 }
 
@@ -86,7 +93,6 @@ void main() {
     expect(find.byType(RegisterPage), findsOneWidget);
     expect(find.text('Create an account'), findsOneWidget);
     expect(find.text('START YOUR JOURNEY'), findsOneWidget);
-    expect(find.text('Create an account'), findsOneWidget);
     expect(find.text('Create account'), findsOneWidget);
     expect(find.byType(TextField), findsNWidgets(4));
   });
@@ -123,12 +129,6 @@ void main() {
 
     final textFields = find.byType(TextField);
     expect(textFields, findsNWidgets(4));
-  testWidgets('Submit button is present', (tester) async {
-    await tester.pumpWidget(_testApp());
-    await tester.pump();
-
-    expect(find.text('Create account'), findsOneWidget);
-  });
 
     await tester.enterText(textFields.at(1), 'learner@example.com');
     await tester.pump();
