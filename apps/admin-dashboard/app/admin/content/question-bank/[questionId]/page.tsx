@@ -9,6 +9,7 @@ import {
   type AdminQuestionDetail,
   type QuestionDifficulty,
 } from '../../../../../features/content/api/admin-question-bank-api';
+import { fetchQuestionSkillLinks } from '../../../../../features/content/api/admin-question-skills-api';
 import { QuestionEditorClient } from '../../../../../features/content';
 
 type Props = {
@@ -23,6 +24,7 @@ export default async function AdminQuestionDetailPage({ params }: Props) {
 
   let question: AdminQuestionDetail | null = null;
   let fetchError: string | null = null;
+  let hasSkillLinks = false;
 
   try {
     question = await fetchAdminQuestion(token, questionId);
@@ -31,6 +33,18 @@ export default async function AdminQuestionDetailPage({ params }: Props) {
       error instanceof AdminApiClientError
         ? `Backend error ${error.status}: ${error.message}`
         : 'Failed to load question. Check backend connectivity.';
+  }
+
+  if (question) {
+    try {
+      const skillLinks = await fetchQuestionSkillLinks(token, questionId);
+      hasSkillLinks = skillLinks.links.length > 0;
+    } catch {
+      // Skill link status is advisory for the validation panel; if the
+      // backend call fails, fall back to "no links" rather than blocking
+      // the page.
+      hasSkillLinks = false;
+    }
   }
 
   async function handleUpdate(formData: {
@@ -77,6 +91,7 @@ export default async function AdminQuestionDetailPage({ params }: Props) {
       {question && (
         <QuestionEditorClient
           question={question}
+          hasSkillLinks={hasSkillLinks}
           onUpdate={handleUpdate}
         />
       )}

@@ -577,10 +577,15 @@ export class AdminDataService {
     );
     const totalEnrollments = parseInt(result.rows[0]?.count ?? '0', 10);
 
+    const activeCoursesResult = await this.db.query<{ count: string }>(
+      `SELECT COUNT(DISTINCT course_id)::text AS count FROM course_enrollments WHERE status = 'active'`,
+    );
+    const activeCourses = parseInt(activeCoursesResult.rows[0]?.count ?? '0', 10);
+
     return {
       totalEnrollments,
       newEnrollments: totalEnrollments,
-      activeCourses: 0,
+      activeCourses,
       period,
     };
   }

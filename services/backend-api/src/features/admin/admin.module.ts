@@ -11,6 +11,7 @@ import { LessonsModule } from '../lessons/lessons.module';
 import { PlacementModule } from '../placement/placement.module';
 import { BillingModule } from '../billing/billing.module';
 import { CertificateModule } from '../certificates/certificate.module';
+import { AimModule } from '../aim/aim.module';
 import { AdminController } from './admin.controller';
 import { AdminDataController } from './admin-data.controller';
 import { AdminDataService } from './admin-data.service';
@@ -30,7 +31,7 @@ import { AdminStudentProgressService } from './users/admin-student-progress.serv
 import { AdminStudentProfileService } from './users/admin-student-profile.service';
 
 @Module({
-  imports: [AuthModule, DatabaseModule, RolesModule, UsersModule, LessonsModule, PlacementModule, BillingModule, CertificateModule],
+  imports: [AuthModule, DatabaseModule, RolesModule, UsersModule, LessonsModule, PlacementModule, BillingModule, CertificateModule, AimModule],
   controllers: [AdminController, AdminDataController, AdminParentsController, AdminRoleAssignmentController, AdminRolesController, AdminUsersController, AdminStudentProgressController, AdminStatsController],
   providers: [AdminService, AdminDataService, AdminParentsService, AdminRoleAssignmentService, AdminUsersService, AdminStudentProgressService, AdminStudentProfileService, AdminProfileService, AdminStatsService],
   exports: [AdminService, AdminDataService, AdminRoleAssignmentService, AdminProfileService],

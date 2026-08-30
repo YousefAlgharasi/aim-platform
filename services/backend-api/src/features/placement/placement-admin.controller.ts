@@ -18,6 +18,7 @@
 //   DELETE /admin/placement/questions/:id                        — remove a question (no answers).
 //   POST   /admin/placement/questions/:questionId/skills          — link a skill to a question.
 //   DELETE /admin/placement/questions/:questionId/skills/:skillId — unlink a skill.
+//   PATCH  /admin/placement/questions/:questionId/skills/:skillId — set a linked skill as primary.
 //   GET    /admin/placement/analytics                             — aggregate analytics summary (P19-008).
 //
 // Security rules:
@@ -244,5 +245,15 @@ export class PlacementAdminController {
     @Param('skillId') skillId: string,
   ): Promise<void> {
     await this.write.removeQuestionSkillLink(questionId, skillId);
+  }
+
+  @Patch('questions/:questionId/skills/:skillId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Set a linked skill as the primary skill for a placement question.' })
+  async setPrimaryQuestionSkill(
+    @Param('questionId') questionId: string,
+    @Param('skillId') skillId: string,
+  ): Promise<AdminPlacementQuestionSkillLink> {
+    return this.write.setPrimaryQuestionSkillLink(questionId, skillId);
   }
 }

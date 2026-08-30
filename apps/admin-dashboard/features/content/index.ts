@@ -7,6 +7,7 @@ export * from './api/admin-lessons-api';
 export * from './api/admin-levels-api';
 export * from './api/admin-objectives-api';
 export * from './api/admin-question-bank-api';
+export * from './api/admin-question-skills-api';
 export * from './api/admin-skills-api';
 export * from './components/chapter-form';
 export * from './components/content-block-form';
