@@ -40,10 +40,17 @@ export class AuthForgotPasswordDto {
   @IsEmail()
   email!: string;
 
-  @ApiProperty({ required: false, description: 'Web origin to redirect to after the reset link is followed. Must match an allowed CORS origin.' })
+  @ApiProperty({ required: false, description: 'Web origin to redirect to after password reset link click. Must match an allowed CORS origin.' })
   @IsOptional()
   @IsUrl({ require_tld: false })
   redirectUrl?: string;
+}
+
+export class AuthResetPasswordDto {
+  @ApiProperty()
+  @IsString()
+  @MinLength(8)
+  password!: string;
 }
 
 export class AuthGoogleLoginDto {

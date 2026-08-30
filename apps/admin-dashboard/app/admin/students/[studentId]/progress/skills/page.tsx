@@ -40,12 +40,6 @@ export default async function SkillStatePage({ params }: Props) {
         <p className="admin-page-meta">{skills.length} skill{skills.length !== 1 ? 's' : ''}</p>
       </header>
 
-      {/* admin-boundary-note */}
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Mastery level and skill state are computed by the
-        AIM Engine only. This view is read-only — no editing of mastery values is possible.
-      </div>
-
       {fetchError && (
         <p className="admin-error-banner" role="alert">{fetchError}</p>
       )}

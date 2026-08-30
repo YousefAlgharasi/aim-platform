@@ -5,8 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/state/app_async_state.dart';
-import '../../../../core/localization/app_locale.dart';
-import '../../../../core/localization/locale_provider.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
@@ -225,14 +223,6 @@ class _AIMAppDrawerWithMore extends ConsumerStatefulWidget {
 
 class _AIMAppDrawerWithMoreState
     extends ConsumerState<_AIMAppDrawerWithMore> {
-  late bool _isMoreExpanded;
-
-  @override
-  void initState() {
-    super.initState();
-    _isMoreExpanded = widget.selectedIndex == 2;
-  }
-
   void _selectTab(int index) {
     context.pop();
     ref.read(mainShellTabIndexProvider.notifier).state = index;
@@ -266,12 +256,6 @@ class _AIMAppDrawerWithMoreState
         label: l10n.shellNavProgress,
         selected: selectedIndex == 3,
         onTap: () => _selectTab(3),
-      ),
-      AIMDrawerItemData(
-        icon: const Icon(Icons.person_outline),
-        label: l10n.shellNavProfile,
-        selected: selectedIndex == 4,
-        onTap: () => _selectTab(4),
       ),
       AIMDrawerItemData(
         icon: const Icon(Icons.emoji_events_outlined),
@@ -325,14 +309,6 @@ class _AIMAppDrawerWithMoreState
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AimSpacing.space16,
-                  vertical: AimSpacing.space8,
-                ),
-                child: _AIMLanguageToggleRow(),
-              ),
-              const SizedBox(height: AimSpacing.space8),
               GestureDetector(
                 onTap: isLoggingOut
                     ? null
@@ -375,6 +351,7 @@ class _AIMDrawerBrandHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final surfaces = aimSurfacesOf(context);
+    final soft = aimSoftFillsOf(context);
     final authContextState = ref.watch(authContextProvider);
 
     final displayName = switch (authContextState) {
@@ -401,19 +378,14 @@ class _AIMDrawerBrandHeader extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Row(
-              children: [
-                AimBrandLogo(size: 36, fontSize: 11, borderRadius: 12),
-                SizedBox(width: 8),
-                Text(
-                  'AIM English',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.3,
-                  ),
-                ),
-              ],
+            Text(
+              'AIM',
+              style: AimTextStyles.h2.copyWith(
+                color: AimColors.primary500,
+                fontWeight: AimFontWeights.extrabold,
+                fontSize: 22,
+                letterSpacing: -0.5,
+              ),
             ),
             GestureDetector(
               onTap: () => Navigator.of(context).pop(),
@@ -433,66 +405,52 @@ class _AIMDrawerBrandHeader extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: AimSpacing.space16),
-        Container(
-          padding: const EdgeInsets.all(AimSpacing.space16),
-          decoration: BoxDecoration(
-            color: AimColors.secondary50.withValues(alpha: 0.4),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: AimColors.secondary100,
-              width: 1,
+        GestureDetector(
+          onTap: () {
+            Navigator.of(context).pop();
+            ref.read(mainShellTabIndexProvider.notifier).state = 4;
+          },
+          child: Container(
+            padding: const EdgeInsets.all(AimSpacing.space16),
+            decoration: BoxDecoration(
+              color: surfaces.surfaceRaised,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: surfaces.border,
+                width: 1,
+              ),
             ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: AimColors.secondary500,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  avatarLetter,
-                  style: AimTextStyles.h3.copyWith(
-                    color: AimColors.neutral0,
-                    fontWeight: AimFontWeights.bold,
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    gradient: AimGradients.gzHero,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    avatarLetter,
+                    style: AimTextStyles.h3.copyWith(
+                      color: AimColors.neutral0,
+                      fontWeight: AimFontWeights.bold,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: AimSpacing.componentGap),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      displayName,
-                      style: AimTextStyles.bodyLg.copyWith(
-                        color: surfaces.textPrimary,
-                        fontWeight: AimFontWeights.bold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AimColors.secondary100.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        badgeText,
-                        style: AimTextStyles.caption.copyWith(
-                          color: AimColors.secondary700,
+                const SizedBox(width: AimSpacing.componentGap),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        displayName,
+                        style: AimTextStyles.bodyLg.copyWith(
+                          color: surfaces.textPrimary,
                           fontWeight: AimFontWeights.bold,
-                          fontSize: 10,
-                          letterSpacing: 0.5,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -606,13 +564,34 @@ class _ThemeToggleButton extends StatelessWidget {
                           ? AimFontWeights.semibold
                           : AimFontWeights.regular,
                     ),
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: soft.primary,
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: Text(
+                          badgeText,
+                          style: AimTextStyles.caption.copyWith(
+                            color: soft.onPrimary,
+                            fontWeight: AimFontWeights.extrabold,
+                            fontSize: 10,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

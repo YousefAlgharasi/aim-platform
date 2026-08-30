@@ -111,6 +111,18 @@ export class PlacementAnswerValidationService {
     const incorrect: string[] = [];
 
     for (const answer of answers) {
+      // writing/speaking answers are AI-graded (P4-052), not objectively
+      // scored — correct_answer holds a non-scoring placeholder for these
+      // types. Leaving is_correct untouched here (it is written NULL at
+      // submission time) prevents these from being force-marked "incorrect"
+      // by the deterministic evaluator below, which previously corrupted
+      // skill_mastery_map/weakness_map by always flagging the placement
+      // writing/speaking skills as weaknesses regardless of the actual
+      // AI-graded score.
+      if (answer.question_type === 'writing' || answer.question_type === 'speaking') {
+        continue;
+      }
+
       const isCorrect = this.evaluateCorrectness(
         answer.answer_value,
         answer.correct_answer,
@@ -147,13 +159,15 @@ export class PlacementAnswerValidationService {
       );
     }
 
+    const totalEvaluated = correct.length + incorrect.length;
+
     this.logger.log(
       `PlacementAnswerValidationService: attempt ${attemptId} — ` +
-        `${answers.length} evaluated, ${correct.length} correct, ${incorrect.length} incorrect`,
+        `${totalEvaluated} evaluated, ${correct.length} correct, ${incorrect.length} incorrect`,
     );
 
     return {
-      totalEvaluated: answers.length,
+      totalEvaluated,
       totalCorrect: correct.length,
       totalIncorrect: incorrect.length,
     };

@@ -9,6 +9,11 @@
 //   GET    /curriculum/questions/:id
 //   POST   /curriculum/questions
 //   PATCH  /curriculum/questions/:id
+//   GET    /curriculum/questions/:questionId/choices
+//   POST   /curriculum/questions/:questionId/choices
+//   PATCH  /curriculum/questions/:questionId/choices/:choiceId
+//   DELETE /curriculum/questions/:questionId/choices/:choiceId
+//   PUT    /curriculum/questions/:questionId/choices/reorder
 
 import { adminApiClient } from '../../../core/api';
 
@@ -173,6 +178,136 @@ export async function updateAdminQuestion(
     `/curriculum/questions/${encodeURIComponent(id)}`,
     decodeQuestionSummary,
     { headers: { authorization: `Bearer ${token}` }, body: payload },
+  );
+  return envelope.data;
+}
+
+// ---------------------------------------------------------------------------
+// Answer choices
+// ---------------------------------------------------------------------------
+
+export type AdminQuestionChoice = {
+  readonly id: string;
+  readonly questionId: string;
+  readonly text: string;
+  readonly richText: unknown | null;
+  readonly isCorrect: boolean;
+  readonly order: number;
+  readonly explanation: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+};
+
+export type AdminQuestionChoiceListData = {
+  readonly choices: AdminQuestionChoice[];
+  readonly total: number;
+};
+
+export type CreateQuestionChoicePayload = {
+  readonly text: string;
+  readonly isCorrect: boolean;
+  readonly order: number;
+  readonly explanation?: string | null;
+};
+
+export type UpdateQuestionChoicePayload = {
+  readonly text?: string;
+  readonly isCorrect?: boolean;
+  readonly order?: number;
+  readonly explanation?: string | null;
+};
+
+function decodeQuestionChoice(value: unknown): AdminQuestionChoice {
+  if (!isObject(value) || typeof value.id !== 'string' || typeof value.text !== 'string') {
+    throw new Error('Invalid question choice response shape.');
+  }
+  return {
+    id: value.id,
+    questionId: String(value.questionId ?? ''),
+    text: value.text,
+    richText: value.richText ?? null,
+    isCorrect: Boolean(value.isCorrect),
+    order: typeof value.order === 'number' ? value.order : 0,
+    explanation: typeof value.explanation === 'string' ? value.explanation : null,
+    createdAt: String(value.createdAt ?? ''),
+    updatedAt: String(value.updatedAt ?? ''),
+  };
+}
+
+function decodeQuestionChoiceListData(value: unknown): AdminQuestionChoiceListData {
+  if (!isObject(value) || !Array.isArray(value.choices)) {
+    throw new Error('Invalid question choice list response shape.');
+  }
+  return {
+    choices: value.choices.map(decodeQuestionChoice),
+    total: typeof value.total === 'number' ? value.total : 0,
+  };
+}
+
+export async function fetchAdminQuestionChoices(
+  token: string,
+  questionId: string,
+): Promise<AdminQuestionChoiceListData> {
+  const envelope = await adminApiClient.get<AdminQuestionChoiceListData>(
+    `/curriculum/questions/${encodeURIComponent(questionId)}/choices`,
+    decodeQuestionChoiceListData,
+    { headers: { authorization: `Bearer ${token}` } },
+  );
+  return envelope.data;
+}
+
+export async function createAdminQuestionChoice(
+  token: string,
+  questionId: string,
+  payload: CreateQuestionChoicePayload,
+): Promise<AdminQuestionChoice> {
+  const envelope = await adminApiClient.post<AdminQuestionChoice>(
+    `/curriculum/questions/${encodeURIComponent(questionId)}/choices`,
+    decodeQuestionChoice,
+    { headers: { authorization: `Bearer ${token}` }, body: payload },
+  );
+  return envelope.data;
+}
+
+export async function updateAdminQuestionChoice(
+  token: string,
+  questionId: string,
+  choiceId: string,
+  payload: UpdateQuestionChoicePayload,
+): Promise<AdminQuestionChoice> {
+  const envelope = await adminApiClient.patch<AdminQuestionChoice>(
+    `/curriculum/questions/${encodeURIComponent(questionId)}/choices/${encodeURIComponent(choiceId)}`,
+    decodeQuestionChoice,
+    { headers: { authorization: `Bearer ${token}` }, body: payload },
+  );
+  return envelope.data;
+}
+
+function decodeVoid(_value: unknown): null {
+  return null;
+}
+
+export async function deleteAdminQuestionChoice(
+  token: string,
+  questionId: string,
+  choiceId: string,
+): Promise<void> {
+  await adminApiClient.delete<null>(
+    `/curriculum/questions/${encodeURIComponent(questionId)}/choices/${encodeURIComponent(choiceId)}`,
+    decodeVoid,
+    { headers: { authorization: `Bearer ${token}` } },
+  );
+}
+
+export async function reorderAdminQuestionChoices(
+  token: string,
+  questionId: string,
+  orderedChoiceIds: string[],
+): Promise<AdminQuestionChoiceListData> {
+  const envelope = await adminApiClient.put<AdminQuestionChoiceListData>(
+    `/curriculum/questions/${encodeURIComponent(questionId)}/choices/reorder`,
+    decodeQuestionChoiceListData,
+    { headers: { authorization: `Bearer ${token}` }, body: { orderedChoiceIds } },
   );
   return envelope.data;
 }

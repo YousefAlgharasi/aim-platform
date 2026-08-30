@@ -425,8 +425,43 @@ describe('AdminDataService', () => {
       courseId: null,
       chapterId: null,
       questionCount: 5,
+      questionIds: [],
+      settings: {
+        timeLimitMinutes: null,
+        passMark: null,
+        shuffleQuestions: false,
+      },
       createdAt: '2026-01-01',
       updatedAt: '2026-01-02',
+    });
+  });
+
+  it('getAssessmentDetail returns ordered questionIds and resolved settings', async () => {
+    const db = createDb([
+      {
+        rows: [
+          {
+            id: 'a1',
+            title: 'Quiz 1',
+            type: 'quiz',
+            status: 'published',
+            question_count: 2,
+            created_at: '2026-01-01',
+            updated_at: '2026-01-02',
+          },
+        ],
+      },
+      { rows: [{ question_id: 'q1' }, { question_id: 'q2' }] },
+      { rows: [{ time_limit_seconds: 600, pass_threshold: '70.00', randomize_questions: true }] },
+    ]);
+    const service = new AdminDataService(db as never);
+    const result = await service.getAssessmentDetail('a1');
+
+    expect(result.questionIds).toEqual(['q1', 'q2']);
+    expect(result.settings).toEqual({
+      timeLimitMinutes: 10,
+      passMark: 70,
+      shuffleQuestions: true,
     });
   });
 

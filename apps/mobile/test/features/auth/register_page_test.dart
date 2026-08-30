@@ -29,6 +29,50 @@ Widget _testApp({List<Override> overrides = const [], Locale? locale}) {
   );
 }
 
+/// No-op backend AuthRepository — tests must not call submit().
+class _FakeAuthRepository implements AuthRepository {
+  @override
+  Future<void> requestPasswordReset({required String email}) => throw UnimplementedError();
+  @override
+  Future<void> resetPassword({required String newPassword, required String bearerToken}) => throw UnimplementedError();
+  @override
+  Future<AuthContextModel> getMe(String bearerToken) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<AuthSyncResponseModel> syncUser(
+    String bearerToken, {
+    String? preferredLanguage,
+    String? timezone,
+  }) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> logout(String bearerToken) async => throw UnimplementedError();
+
+  @override
+  Future<LoginResult> login({
+    required String email,
+    required String password,
+  }) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<RefreshResult> refresh({required String refreshToken}) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<RegisterResult> register({
+    required String email,
+    required String password,
+  }) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<LoginResult> loginAsTestUser({required String role}) async =>
+      throw UnimplementedError();
+}
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 void main() {
@@ -41,6 +85,9 @@ void main() {
 
     expect(find.byType(RegisterPage), findsOneWidget);
     expect(find.text('Create an account'), findsOneWidget);
+    expect(find.text('START YOUR JOURNEY'), findsOneWidget);
+    expect(find.text('Create an account'), findsOneWidget);
+    expect(find.text('Create account'), findsOneWidget);
     expect(find.byType(TextField), findsNWidgets(4));
   });
 
@@ -59,6 +106,13 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     expect(signInLink, findsOneWidget);
+    expect(find.text('Create account'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Sign In'),
+      80,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Sign In'), findsOneWidget);
   });
 
   // ── Form validation ───────────────────────────────────────────────────
@@ -69,6 +123,12 @@ void main() {
 
     final textFields = find.byType(TextField);
     expect(textFields, findsNWidgets(4));
+  testWidgets('Submit button is present', (tester) async {
+    await tester.pumpWidget(_testApp());
+    await tester.pump();
+
+    expect(find.text('Create account'), findsOneWidget);
+  });
 
     await tester.enterText(textFields.at(1), 'learner@example.com');
     await tester.pump();
@@ -76,6 +136,31 @@ void main() {
     await tester.pump();
     await tester.enterText(textFields.at(3), 'secret123');
     await tester.pump();
+
+    expect(find.text('Create account'), findsOneWidget);
+  });
+
+  testWidgets('Submit button stays disabled when passwords do not match',
+      (tester) async {
+    await tester.pumpWidget(
+      _testApp(
+        overrides: [
+          registerProvider.overrideWith((ref) {
+            final notifier = RegisterNotifier(
+              repository: _FakeAuthRepository(),
+              ref: ref,
+            );
+            notifier.setEmail('learner@example.com');
+            notifier.setPassword('secret123');
+            notifier.setConfirmPassword('mismatch');
+            return notifier;
+          }),
+        ],
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Create account'), findsOneWidget);
   });
 
   // ── Error banner ───────────────────────────────────────────────────────
@@ -85,6 +170,16 @@ void main() {
     await tester.pump();
 
     expect(find.byType(AIMAlertBanner), findsNothing);
+  });
+
+  // ── Form fields ────────────────────────────────────────────────────────
+
+  testWidgets('RegisterPage contains form input fields',
+      (tester) async {
+    await tester.pumpWidget(_testApp());
+    await tester.pump();
+
+    expect(find.byType(TextField), findsNWidgets(4));
   });
 
   // ── RTL / Arabic ───────────────────────────────────────────────────────

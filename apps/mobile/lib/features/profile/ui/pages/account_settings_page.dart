@@ -271,6 +271,8 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
         ),
         centerTitle: true,
         actions: [
+          const AimQuickThemeToggle(size: 36, iconSize: 18),
+          const SizedBox(width: 8),
           Padding(
             padding: const EdgeInsetsDirectional.only(end: 16),
             child: CircleAvatar(

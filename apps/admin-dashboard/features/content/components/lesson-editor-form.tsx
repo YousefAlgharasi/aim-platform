@@ -194,12 +194,6 @@ export function LessonEditorForm({ lesson, onUpdate }: LessonEditorFormProps) {
         </AdminFormField>
       </div>
 
-      <div className="admin-boundary-note" style={{ marginBlock: 'var(--space-16)' }}>
-        <strong>Backend authority:</strong> Status changes (publish, archive) and
-        skill linking are controlled by backend APIs. A lesson cannot be published
-        until it is linked to at least one skill.
-      </div>
-
       <div className="aim-lesson-editor-actions">
         <AdminButton
           variant="primary"

@@ -171,13 +171,19 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
                       ],
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(Icons.bar_chart_rounded, color: colorScheme.primary, size: 22),
+                  Row(
+                    children: [
+                      const AimQuickThemeToggle(size: 36, iconSize: 18),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Icon(Icons.bar_chart_rounded, color: colorScheme.primary, size: 22),
+                      ),
+                    ],
                   ),
                 ],
               ),

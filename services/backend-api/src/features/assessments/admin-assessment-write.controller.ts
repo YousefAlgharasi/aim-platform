@@ -12,15 +12,16 @@
 //   - Guarded by SupabaseJwtAuthGuard and RoleGuard — admin roles only.
 //   - Grading, scoring, and pass/fail are never accepted or computed here.
 
-import { Body, Controller, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../auth/authorization/required-roles.decorator';
 import { RoleGuard } from '../../auth/authorization/role.guard';
+import { ResolvedInternalUserId } from '../../auth/current-user.decorator';
 import { OPENAPI_TAGS } from '../../openapi/openapi.tags';
 import { AdminAssessmentWriteService } from './admin-assessment-write.service';
-import { UpdateAssessmentDto } from './admin-assessment-write.dto';
+import { CreateAssessmentDto, UpdateAssessmentDto } from './admin-assessment-write.dto';
 
 @ApiTags(OPENAPI_TAGS.admin)
 @ApiBearerAuth()
@@ -29,6 +30,14 @@ import { UpdateAssessmentDto } from './admin-assessment-write.dto';
 @RequireRoles(AuthorizedRole.ADMIN, AuthorizedRole.SUPER_ADMIN)
 export class AdminAssessmentWriteController {
   constructor(private readonly write: AdminAssessmentWriteService) {}
+
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a new draft assessment (quiz or exam).' })
+  @ApiCreatedResponse({ description: 'Created assessment detail.' })
+  async create(@Body() dto: CreateAssessmentDto, @ResolvedInternalUserId() createdBy: string) {
+    return this.write.create(dto, createdBy);
+  }
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)

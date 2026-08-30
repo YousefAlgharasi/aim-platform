@@ -6,6 +6,7 @@ import '../../features/auth/logic/entity/auth_context.dart';
 import '../../features/auth/logic/entity/auth_flow_state.dart';
 import '../../features/auth/ui/pages/login_page.dart';
 import '../../features/auth/ui/pages/register_page.dart';
+import '../../features/auth/ui/pages/forgot_password_page.dart';
 import '../../features/lessons/ui/pages/chapter_list_page.dart';
 import '../../features/lessons/ui/pages/lesson_detail_page.dart';
 import '../../features/lessons/ui/pages/lesson_list_page.dart';
@@ -120,6 +121,13 @@ class AppRouter {
         GoRoute(
           path: AppRoutePaths.register,
           builder: (context, state) => const RegisterPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.forgotPassword,
+          builder: (context, state) {
+            final step = state.uri.queryParameters['step'];
+            return ForgotPasswordPage(initialStepName: step);
+          },
         ),
         GoRoute(
           path: AppRoutePaths.mainShell,

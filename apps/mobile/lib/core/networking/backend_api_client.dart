@@ -6,6 +6,7 @@ import 'package:http_parser/http_parser.dart' as http_parser;
 import '../config/config.dart';
 import '../logging/app_logger.dart';
 import 'api_client_exception.dart';
+import 'api_meta.dart';
 import 'api_response_envelope.dart';
 import 'auth_interceptor.dart';
 
@@ -327,6 +328,14 @@ class BackendApiClient {
     http.Response response, {
     required ApiJsonDecoder<T> decodeData,
   }) async {
+    if (response.statusCode == 204 || response.body.trim().isEmpty) {
+      return ApiResponseEnvelope<T>(
+        success: true,
+        meta: const ApiMeta(),
+        data: null,
+      );
+    }
+
     final decoded = jsonDecode(response.body);
 
     if (decoded is! Map<String, dynamic>) {

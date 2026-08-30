@@ -380,21 +380,27 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
               fontWeight: AimFontWeights.bold,
             ),
           ),
-          Container(
-            width: 40,
-            height: 40,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: AimColors.secondary500,
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              avatarLetter,
-              style: AimTextStyles.bodyLg.copyWith(
-                color: AimColors.neutral0,
-                fontWeight: AimFontWeights.bold,
+          Row(
+            children: [
+              const AimQuickThemeToggle(size: 36, iconSize: 18),
+              const SizedBox(width: 8),
+              Container(
+                width: 36,
+                height: 36,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  color: AimColors.secondary500,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  avatarLetter,
+                  style: AimTextStyles.bodyLg.copyWith(
+                    color: AimColors.neutral0,
+                    fontWeight: AimFontWeights.bold,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ],
       ),

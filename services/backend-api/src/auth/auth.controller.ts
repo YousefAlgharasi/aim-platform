@@ -20,7 +20,7 @@ import {
   AuthRegisterResult,
   AuthTokenResult,
 } from './auth-login.types';
-import { AuthForgotPasswordDto, AuthGoogleLoginDto, AuthLoginDto, AuthRefreshDto, AuthRegisterDto } from './auth-login.dto';
+import { AuthForgotPasswordDto, AuthGoogleLoginDto, AuthLoginDto, AuthRefreshDto, AuthRegisterDto, AuthResetPasswordDto } from './auth-login.dto';
 import { extractBearerToken } from './bearer-token';
 import { AuthenticatedRequest } from './authenticated-user';
 import { RolesService } from '../features/roles/roles.service';
@@ -150,6 +150,27 @@ export class AuthController {
   @ApiOkResponse({ description: 'Reset email sent (if the account exists).' })
   async forgotPassword(@Body() body: AuthForgotPasswordDto): Promise<AuthForgotPasswordResult> {
     return this.authLogin.forgotPassword(body);
+  }
+
+  /**
+   * POST /auth/reset-password
+   *
+   * Updates the password for the currently authenticated user (via recovery/session token).
+   */
+  @Post('reset-password')
+  @UseGuards(SupabaseJwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update password for authenticated user.' })
+  async resetPassword(
+    @Body() body: AuthResetPasswordDto,
+    @Req() request: AuthenticatedRequest,
+  ): Promise<{ success: true }> {
+    const token = extractBearerToken(request);
+    if (token) {
+      await this.authLogin.resetPassword(token, body);
+    }
+    return { success: true };
   }
 
   /**

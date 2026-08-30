@@ -35,6 +35,10 @@ export interface AuthForgotPasswordResult {
   readonly sent: true;
 }
 
+export interface AuthResetPasswordInput {
+  readonly password: string;
+}
+
 export interface AuthRegisterResult {
   readonly requiresEmailConfirmation: boolean;
   readonly accessToken?: string;

@@ -32,6 +32,12 @@ export class AdminBillingController {
     private readonly auditService: BillingAuditService,
   ) {}
 
+  @Get('overview')
+  @ApiOperation({ summary: 'Get billing KPI overview (admin)' })
+  async getOverview() {
+    return this.subscriptionService.getOverview();
+  }
+
   @Get('subscriptions')
   @ApiOperation({ summary: 'List all subscriptions, including free-tier (admin)' })
   async listSubscriptions(

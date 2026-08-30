@@ -40,22 +40,14 @@ export default async function AdminPlacementSectionsPage({ params }: Props) {
 
   let data: AdminPlacementSectionsData | null = null;
   let fetchError: string | null = null;
-  let backendUnavailable = false;
 
   try {
     data = await fetchAdminPlacementSections(token, testId);
   } catch (error) {
-    if (
-      error instanceof AdminApiClientError &&
-      (error.status === 404 || error.status === 501 || error.status === 503)
-    ) {
-      backendUnavailable = true;
-    } else {
-      fetchError =
-        error instanceof AdminApiClientError
-          ? `Backend error ${error.status ?? ''}: ${error.message}`
-          : 'Failed to load placement sections. Check backend connectivity.';
-    }
+    fetchError =
+      error instanceof AdminApiClientError
+        ? `Backend error ${error.status ?? ''}: ${error.message}`
+        : 'Failed to load placement sections. Check backend connectivity.';
   }
 
   return (
@@ -80,21 +72,6 @@ export default async function AdminPlacementSectionsPage({ params }: Props) {
         )}
       </header>
 
-      {/* Security boundary note */}
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Section order, question counts, and skill codes
-        are backend-managed. This view is read-only — no placement scoring, mastery values,
-        or AIM Engine runtime logic is present here.
-      </div>
-
-      {/* Backend not yet available */}
-      {backendUnavailable && (
-        <div className="admin-boundary-note" role="status">
-          <strong>Notice:</strong> The admin placement sections endpoint (
-          <code>GET /admin/placement/sections</code>) is not yet deployed. This page is ready
-          and will display sections automatically once the backend endpoint is available.
-        </div>
-      )}
 
       {/* Error banner */}
       {fetchError && (

@@ -37,5 +37,11 @@ abstract class AuthRemoteDatasource {
 
   /// POST /auth/forgot-password — unauthenticated.
   Future<void> requestPasswordReset({required String email});
+
+  /// POST /auth/reset-password — authenticated.
+  Future<void> resetPassword({
+    required String newPassword,
+    required String bearerToken,
+  });
 }
 

@@ -96,5 +96,20 @@ class AuthRepositoryImpl implements AuthRepository {
       throw AppException(code: e.code, message: e.message);
     }
   }
+
+  @override
+  Future<void> resetPassword({
+    required String newPassword,
+    required String bearerToken,
+  }) async {
+    try {
+      await _datasource.resetPassword(
+        newPassword: newPassword,
+        bearerToken: bearerToken,
+      );
+    } on ApiClientException catch (e) {
+      throw AppException(code: e.code, message: e.message);
+    }
+  }
 }
 

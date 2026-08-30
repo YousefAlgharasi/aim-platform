@@ -22,11 +22,13 @@ export class AdminDataController {
     @Query('page') page = '1',
     @Query('limit') limit = '20',
     @Query('type') type?: string,
+    @Query('search') search?: string,
   ) {
     return this.adminDataService.listAssessments(
       parseInt(page, 10) || 1,
       parseInt(limit, 10) || 20,
       type,
+      search,
     );
   }
 

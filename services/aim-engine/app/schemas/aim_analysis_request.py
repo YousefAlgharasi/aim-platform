@@ -30,10 +30,10 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum, StrEnum
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from pydantic.alias_generators import to_camel
-from typing import Any
 
 # ---------------------------------------------------------------------------
 # Wire-format compatibility base (P5-076 contract fix)

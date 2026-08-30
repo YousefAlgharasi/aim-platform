@@ -15,12 +15,6 @@ export default function AdminContentPage() {
         </p>
       </header>
 
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> This dashboard is a navigation shell.
-        Publishing, archiving, permissions, lesson-skill validation, and
-        question-skill validation remain backend responsibilities.
-      </div>
-
       <div className="admin-curriculum-grid">
         {adminCurriculumNavigationItems.map((item) => (
           <Link className="admin-curriculum-card" href={item.href} key={item.href}>

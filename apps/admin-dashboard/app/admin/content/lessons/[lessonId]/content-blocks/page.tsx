@@ -48,7 +48,7 @@ export default async function LessonContentBlocksPage({ params }: Props) {
           <nav className="admin-breadcrumb" aria-label="Breadcrumb">
             <Link href="/admin/content" className="admin-breadcrumb-link">Content</Link>
             <span aria-hidden="true"> / </span>
-            <Link href="/admin/content/lessons" className="admin-breadcrumb-link">Lessons</Link>
+            <Link href="/admin/content/courses" className="admin-breadcrumb-link">Courses</Link>
             <span aria-hidden="true"> / </span>
             <span>Not Found</span>
           </nav>
@@ -140,7 +140,7 @@ export default async function LessonContentBlocksPage({ params }: Props) {
       <nav className="admin-breadcrumb" aria-label="Breadcrumb">
         <Link href="/admin/content" className="admin-breadcrumb-link">Content</Link>
         <span aria-hidden="true"> / </span>
-        <Link href="/admin/content/lessons" className="admin-breadcrumb-link">Lessons</Link>
+        <Link href="/admin/content/courses" className="admin-breadcrumb-link">Courses</Link>
         <span aria-hidden="true"> / </span>
         {lesson && (
           <>
@@ -177,12 +177,6 @@ export default async function LessonContentBlocksPage({ params }: Props) {
           </span>
         </div>
       )}
-
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Content blocks are managed by backend
-        curriculum APIs. Block ordering and content validation are enforced
-        server-side.
-      </div>
 
       {lessonError && <AdminApiErrorState message={lessonError} />}
       {blocksError && <AdminApiErrorState message={blocksError} />}

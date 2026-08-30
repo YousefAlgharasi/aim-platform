@@ -424,6 +424,7 @@ class _HomeContent extends ConsumerWidget {
 }
 
 
+
 // ── Current assessment section ──────────────────────────────────────────────
 
 /// Shows at most the student's single "current" assessment (backend-picked
@@ -592,6 +593,11 @@ class _HomeTopBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final surfaces = aimSurfacesOf(context);
+    final mode = ref.watch(themeModeProvider);
+    final brightness = Theme.of(context).brightness;
+    final isDark = mode == ThemeMode.dark ||
+        (mode == ThemeMode.system && brightness == Brightness.dark);
+
     return Padding(
       padding: const EdgeInsets.symmetric(
         vertical: AimSpacing.space16,
@@ -613,22 +619,53 @@ class _HomeTopBar extends ConsumerWidget {
               ),
             ],
           ),
-          Container(
-            width: 34,
-            height: 34,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              gradient: AimGradients.gzHero,
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              _initial(displayName),
-              style: AimTextStyles.label.copyWith(
-                color: AimColors.neutral0,
-                fontWeight: AimFontWeights.bold,
-                fontSize: 13,
+          Row(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  ref.read(themeModeProvider.notifier).state =
+                      isDark ? ThemeMode.light : ThemeMode.dark;
+                },
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  margin: const EdgeInsets.only(right: AimSpacing.space8),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: surfaces.surfaceSunken,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: surfaces.border),
+                  ),
+                  child: Icon(
+                    isDark ? Icons.nights_stay_outlined : Icons.wb_sunny_outlined,
+                    color: isDark ? AimColors.neutral300 : AimColors.warning500,
+                    size: 18,
+                  ),
+                ),
               ),
-            ),
+              GestureDetector(
+                onTap: () {
+                  ref.read(mainShellTabIndexProvider.notifier).state = 4;
+                },
+                child: Container(
+                  width: 34,
+                  height: 34,
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(
+                    gradient: AimGradients.gzHero,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    _initial(displayName),
+                    style: AimTextStyles.label.copyWith(
+                      color: AimColors.neutral0,
+                      fontWeight: AimFontWeights.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -901,6 +938,7 @@ class _DailyMissionsList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final surfaces = aimSurfacesOf(context);
     final l10n = AppLocalizations.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     String localizeChallengeTitle(String rawTitle) {
       final isAr = Localizations.localeOf(context).languageCode == 'ar';
@@ -923,6 +961,13 @@ class _DailyMissionsList extends ConsumerWidget {
       iconColor: challenge.completed ? const Color(0xFF10B981) : const Color(0xFF4F46E5),
       iconBgColor: challenge.completed ? const Color(0xFFD1FAE5) : const Color(0xFFEEF2FF),
       label: localizeChallengeTitle(challenge.title),
+      iconColor: challenge.completed
+          ? (isDark ? const Color(0xFF34D399) : const Color(0xFF10B981))
+          : (isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5)),
+      iconBgColor: challenge.completed
+          ? (isDark ? const Color(0xFF064E3B).withValues(alpha: 0.6) : const Color(0xFFD1FAE5))
+          : (isDark ? const Color(0xFF1E1B4B).withValues(alpha: 0.6) : const Color(0xFFEEF2FF)),
+      label: challenge.title,
       done: challenge.completed,
       progress: challenge.progressCount,
       total: challenge.targetCount,
@@ -934,6 +979,9 @@ class _DailyMissionsList extends ConsumerWidget {
       iconColor: const Color(0xFF4F46E5),
       iconBgColor: const Color(0xFFEEF2FF),
       label: l10n.homeMissionPracticeSpeaking,
+      iconColor: isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5),
+      iconBgColor: isDark ? const Color(0xFF1E1B4B).withValues(alpha: 0.6) : const Color(0xFFEEF2FF),
+      label: isAr ? 'تدرب على التحدث' : 'Practice Speaking',
       done: false,
       progress: 0,
       total: 1,
@@ -948,6 +996,9 @@ class _DailyMissionsList extends ConsumerWidget {
       iconColor: const Color(0xFF4F46E5),
       iconBgColor: const Color(0xFFEEF2FF),
       label: l10n.homeMissionWriteParagraph,
+      iconColor: isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5),
+      iconBgColor: isDark ? const Color(0xFF1E1B4B).withValues(alpha: 0.6) : const Color(0xFFEEF2FF),
+      label: isAr ? 'اكتب فقرة قصيرة' : 'Write a Paragraph',
       done: false,
       progress: 0,
       total: 1,

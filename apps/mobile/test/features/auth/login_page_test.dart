@@ -57,6 +57,8 @@ class _FakeAuthRepository implements AuthRepository {
   @override
   Future<void> requestPasswordReset({required String email}) => throw UnimplementedError();
   @override
+  Future<void> resetPassword({required String newPassword, required String bearerToken}) => throw UnimplementedError();
+  @override
   Future<AuthContextModel> getMe(String bearerToken) async =>
       throw UnimplementedError('not called in UI-only tests');
 
@@ -136,6 +138,8 @@ void main() {
     expect(find.byType(LoginPage), findsOneWidget);
     expect(find.text('Welcome back'), findsOneWidget);
     expect(find.byType(TextField), findsNWidgets(2));
+    expect(find.text('WELCOME BACK'), findsOneWidget);
+    expect(find.textContaining('Sign in to your'), findsOneWidget);
   });
 
   testWidgets('LoginPage renders social options and sign up link',
@@ -154,6 +158,37 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     expect(createOneLink, findsOneWidget);
+    expect(find.byType(TextField), findsNWidgets(2)); // email + password
+    expect(find.text('Sign In'), findsOneWidget);
+    expect(find.text('Google'), findsOneWidget);
+    expect(find.text('Facebook'), findsOneWidget);
+    expect(find.text('Create one', skipOffstage: false), findsOneWidget);
+  });
+
+  // ── Submit button state ─────────────────────────────
+
+  testWidgets('Submit button is present and clickable',
+      (tester) async {
+    await tester.pumpWidget(_testApp());
+    await tester.pump();
+
+    expect(find.text('Sign In'), findsOneWidget);
+  });
+
+  testWidgets('Submit button enables once a valid email + password are entered',
+      (tester) async {
+    await tester.pumpWidget(_testApp());
+    await tester.pump();
+
+    final fields = find.byType(TextField);
+    expect(fields, findsNWidgets(2));
+
+    await tester.enterText(fields.first, 'learner@example.com');
+    await tester.pump();
+    await tester.enterText(fields.last, 'secret123');
+    await tester.pump();
+
+    expect(find.text('Sign In'), findsOneWidget);
   });
 
   // ── Field wiring ─────────────────────────────────────
@@ -287,6 +322,11 @@ void main() {
     expect(find.text('Parent'), findsOneWidget);
     expect(find.text('Teacher'), findsOneWidget);
     expect(find.text('Open Endpoint Tester →'), findsOneWidget);
+    expect(find.text('DEV / TEST ACCOUNTS', skipOffstage: false), findsOneWidget);
+    expect(find.text('Student', skipOffstage: false), findsOneWidget);
+    expect(find.text('Parent', skipOffstage: false), findsOneWidget);
+    expect(find.text('Teacher', skipOffstage: false), findsOneWidget);
+    expect(find.text('Open Endpoint Tester →', skipOffstage: false), findsOneWidget);
   });
 
   testWidgets('Test-mode shortcuts are absent in production',
@@ -302,6 +342,11 @@ void main() {
 
     expect(find.text('DEV / TEST ACCOUNTS'), findsNothing);
     expect(find.text('Open Endpoint Tester →'), findsNothing);
+    expect(find.text('DEV / TEST ACCOUNTS', skipOffstage: false), findsNothing);
+    expect(find.text('Student', skipOffstage: false), findsNothing);
+    expect(find.text('Parent', skipOffstage: false), findsNothing);
+    expect(find.text('Teacher', skipOffstage: false), findsNothing);
+    expect(find.text('Open Endpoint Tester →', skipOffstage: false), findsNothing);
   });
 
   // ── RTL / Arabic ─────────────────────────────────────

@@ -27,6 +27,22 @@ const defaultProps = {
   totalPages: 1,
   onCreateCourse: jest.fn().mockResolvedValue({}),
   onUpdateCourse: jest.fn().mockResolvedValue({}),
+  onTransitionCourse: jest.fn().mockResolvedValue({}),
+  curriculumActions: {
+    fetchLevels: jest.fn().mockResolvedValue({ data: [] }),
+    createLevel: jest.fn().mockResolvedValue({}),
+    updateLevel: jest.fn().mockResolvedValue({}),
+    transitionLevel: jest.fn().mockResolvedValue({}),
+    fetchChapters: jest.fn().mockResolvedValue({ data: [] }),
+    createChapter: jest.fn().mockResolvedValue({}),
+    updateChapter: jest.fn().mockResolvedValue({}),
+    transitionChapter: jest.fn().mockResolvedValue({}),
+    fetchLessons: jest.fn().mockResolvedValue({ data: [] }),
+    createLesson: jest.fn().mockResolvedValue({}),
+    updateLesson: jest.fn().mockResolvedValue({}),
+    transitionLesson: jest.fn().mockResolvedValue({}),
+    fetchLessonSkills: jest.fn().mockResolvedValue({ data: [] }),
+  },
 };
 
 describe('CoursesList', () => {

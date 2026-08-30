@@ -223,14 +223,14 @@ final class _AIMButtonSpec {
           overlay: surfaces.statePressed,
         ),
       AIMButtonVariant.outline => _AIMButtonSpec(
-          background: pressed ? AimColors.primary100 : const Color(0x00000000),
-          foreground: AimColors.primary600,
+          background: pressed ? soft.primary : const Color(0x00000000),
+          foreground: surfaces.textLink,
           border: surfaces.borderStrong,
           overlay: soft.primary,
         ),
       AIMButtonVariant.ghost => _AIMButtonSpec(
-          background: pressed ? AimColors.primary100 : const Color(0x00000000),
-          foreground: AimColors.primary600,
+          background: pressed ? soft.primary : const Color(0x00000000),
+          foreground: surfaces.textLink,
           border: const Color(0x00000000),
           overlay: soft.primary,
         ),

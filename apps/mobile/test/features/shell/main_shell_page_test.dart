@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/localization/app_locale.dart';
-import 'package:aim_mobile/core/localization/locale_provider.dart';
 import 'package:aim_mobile/features/onboarding/data/onboarding_walkthrough_store.dart';
 import 'package:aim_mobile/features/onboarding/logic/provider/onboarding_walkthrough_provider.dart';
 import 'package:aim_mobile/features/shell/ui/pages/main_shell_page.dart';
@@ -30,15 +29,13 @@ class _NoopStore extends OnboardingWalkthroughStore {
 }
 
 void main() {
-  testWidgets('main shell shows all primary tabs via the drawer, no bottom nav bar',
+  testWidgets('main shell shows primary navigation items via the drawer',
       (tester) async {
     await tester.pumpWidget(TestShell(
       overrides: [_walkthroughAlreadySeen],
       child: const MainShellPage(),
     ));
 
-    // Navigation is drawer-only now — the bottom nav bar was removed as
-    // redundant with the drawer's MENU section.
     expect(find.byType(BottomNavigationBar), findsNothing);
 
     Finder inDrawer(String text) => find.descendant(
@@ -51,67 +48,23 @@ void main() {
       final scaffoldFinder = find.byType(Scaffold);
       if (scaffoldFinder.evaluate().isNotEmpty) {
         tester.state<ScaffoldState>(scaffoldFinder.first).openDrawer();
-      } else {
-        await tester.tap(find.byIcon(Icons.menu));
       }
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
-    }
-
-    Future<void> scrollToMore() async {
-      await tester.scrollUntilVisible(
-        find.text('More'),
-        100,
-        scrollable: find.descendant(
-          of: find.byType(Drawer),
-          matching: find.byType(Scrollable),
-        ),
-      );
-      await tester.pump();
-    }
-
-    Future<void> scrollToTop() async {
-      await tester.scrollUntilVisible(
-        find.text('Home Feed'),
-        -100,
-        scrollable: find.descendant(
-          of: find.byType(Drawer),
-          matching: find.byType(Scrollable),
-        ),
-      );
-      await tester.pump();
     }
 
     await openDrawer();
     expect(inDrawer('Home Feed'), findsOneWidget);
     expect(inDrawer('Chapters & Course'), findsOneWidget);
     expect(inDrawer('Analytics & Progress'), findsOneWidget);
-    expect(inDrawer('Profile'), findsOneWidget);
+    expect(inDrawer('Achievements'), findsOneWidget);
+    expect(inDrawer('Account Settings'), findsOneWidget);
 
-    await scrollToMore();
-    expect(inDrawer('More'), findsOneWidget);
-
-    await tester.tap(inDrawer('More'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(inDrawer('Review'), findsOneWidget);
-
-    await scrollToTop();
     await tester.tap(inDrawer('Chapters & Course'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
     await openDrawer();
-    await scrollToMore();
-    await tester.tap(inDrawer('More'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.tap(inDrawer('Review'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-
-    await openDrawer();
-    await scrollToTop();
     await tester.tap(inDrawer('Analytics & Progress'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
