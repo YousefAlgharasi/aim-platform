@@ -34,6 +34,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
 import 'package:aim_mobile/features/assessments/logic/provider/assessment_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Display-only formatting of a real backend value: drops the trailing ".0"
 /// when a points double is integral (e.g. "17" instead of "17.0").
@@ -227,10 +228,10 @@ class _ResultContent extends StatelessWidget {
 
         const SizedBox(height: AimSpacing.sectionGap),
         AIMGradientButton(
-          label: 'Done',
+          label: AppLocalizations.of(context).assessmentsDone,
           onPressed: onDone,
           fullWidth: true,
-          semanticLabel: 'Done viewing result',
+          semanticLabel: AppLocalizations.of(context).assessmentsDone,
         ),
       ],
     );

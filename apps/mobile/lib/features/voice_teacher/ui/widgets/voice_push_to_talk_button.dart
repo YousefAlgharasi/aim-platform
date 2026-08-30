@@ -16,6 +16,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class VoicePushToTalkButton extends StatefulWidget {
   const VoicePushToTalkButton({
@@ -91,12 +92,13 @@ class _VoicePushToTalkButtonState extends State<VoicePushToTalkButton>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isEnabled = !widget.processing;
     final caption = widget.processing
-        ? 'Processing...'
+        ? l10n.voiceTeacherProcessing
         : widget.recording
             ? _formatDuration(_elapsedSeconds)
-            : 'Press and hold to speak';
+            : l10n.voiceTeacherPressAndHold;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -105,7 +107,9 @@ class _VoicePushToTalkButtonState extends State<VoicePushToTalkButton>
           button: true,
           enabled: isEnabled,
           toggled: widget.recording,
-          label: widget.recording ? 'Recording — release to send' : 'Press and hold to speak',
+          label: widget.recording
+              ? l10n.voiceTeacherRecordingRelease
+              : l10n.voiceTeacherPressAndHold,
           child: GestureDetector(
             onTapDown: isEnabled ? (_) => widget.onPressStart() : null,
             onTapUp: isEnabled ? (_) => widget.onPressEnd() : null,

@@ -105,9 +105,9 @@ class _VoiceTeacherAvatarState extends State<VoiceTeacherAvatar>
               child: _AvatarFace(mood: mood, size: size),
             ),
           ),
-          Positioned(
+          PositionedDirectional(
             top: size * 0.04,
-            right: size * 0.04,
+            end: size * 0.04,
             child: Container(
               width: size * 0.24,
               height: size * 0.24,

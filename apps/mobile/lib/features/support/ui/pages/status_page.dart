@@ -25,6 +25,7 @@ import 'package:go_router/go_router.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 import '../../logic/provider/support_provider.dart';
 
@@ -142,11 +143,11 @@ class StatusPage extends ConsumerStatefulWidget {
 
   /// Builds an all-operational banner.
   static Widget buildAllOperationalBanner(BuildContext context) {
-    return const AIMAlertBanner(
+    return AIMAlertBanner(
       tone: AIMAlertTone.success,
-      title: 'All Systems Operational',
-      semanticLabel: 'All systems operational',
-      child: SizedBox.shrink(),
+      title: AppLocalizations.of(context).supportStatusAllOperational,
+      semanticLabel: AppLocalizations.of(context).supportStatusAllOperational,
+      child: const SizedBox.shrink(),
     );
   }
 
@@ -217,10 +218,10 @@ class _StatusPageState extends ConsumerState<StatusPage> {
                           ref.read(operationalStatusProvider.notifier).load(),
                     ),
                   AppAsyncSuccess(:final data) => data.isEmpty
-                      ? const AIMEmptyState(
-                          icon: Icon(Icons.monitor_heart_outlined),
-                          title: 'No components reported',
-                          subtitle: 'Nothing to show yet.',
+                      ? AIMEmptyState(
+                          icon: const Icon(Icons.monitor_heart_outlined),
+                          title: AppLocalizations.of(context).supportStatusNoComponents,
+                          subtitle: AppLocalizations.of(context).supportStatusNothingToShow,
                         )
                       : Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -249,13 +250,13 @@ class _StatusPageState extends ConsumerState<StatusPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Release notes',
+                              AppLocalizations.of(context).supportReleaseNotes,
                               style: AimTextStyles.title
                                   .copyWith(color: surfaces.textPrimary),
                             ),
                             const SizedBox(height: AimSpacing.space2),
                             Text(
-                              "What's new in AIM",
+                              AppLocalizations.of(context).supportWhatNew,
                               style: AimTextStyles.bodySm
                                   .copyWith(color: surfaces.textSecondary),
                             ),
@@ -298,7 +299,7 @@ class _StatusHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -324,7 +325,7 @@ class _StatusHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'System Status',
+              AppLocalizations.of(context).supportSystemStatus,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],

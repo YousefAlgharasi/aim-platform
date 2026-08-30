@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/entity/voice_message.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 import 'voice_feedback_actions.dart';
 
@@ -28,10 +29,11 @@ class VoiceTranscriptList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (messages.isEmpty) {
-      return const AIMEmptyState(
-        icon: Icon(Icons.mic_none_rounded),
-        title: 'Start talking with your Voice Teacher',
-        subtitle: 'Your transcript will appear here.',
+      return AIMEmptyState(
+        icon: const Icon(Icons.mic_none_rounded),
+        title: AppLocalizations.of(context).voiceTeacherStartTalkingTitle,
+        subtitle:
+            AppLocalizations.of(context).voiceTeacherTranscriptAppearSubtitle,
       );
     }
 
@@ -47,21 +49,23 @@ class VoiceTranscriptList extends StatelessWidget {
         final isTeacher = message.role == VoiceMessageRole.teacher;
 
         return Align(
-          alignment:
-              isTeacher ? Alignment.centerLeft : Alignment.centerRight,
+          alignment: isTeacher
+              ? AlignmentDirectional.centerStart
+              : AlignmentDirectional.centerEnd,
           child: ConstrainedBox(
             constraints: BoxConstraints(
               maxWidth: MediaQuery.of(context).size.width * 0.78,
             ),
             child: Column(
-              crossAxisAlignment:
-                  isTeacher ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+              crossAxisAlignment: isTeacher
+                  ? CrossAxisAlignment.start
+                  : CrossAxisAlignment.end,
               children: [
                 AIMCard(
                   variant: isTeacher ? AIMCardVariant.ai : AIMCardVariant.standard,
                   semanticLabel: isTeacher
-                      ? 'Voice Teacher said: ${message.text}'
-                      : 'You said: ${message.text}',
+                      ? AppLocalizations.of(context).voiceTeacherSaid(message.text)
+                      : AppLocalizations.of(context).voiceTeacherYouSaid(message.text),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,7 +75,9 @@ class VoiceTranscriptList extends StatelessWidget {
                         IconButton(
                           icon: const Icon(Icons.play_circle_outline),
                           onPressed: () => onPlayAudio?.call(message.audioRef!),
-                          tooltip: 'Play audio',
+                          tooltip: Directionality.of(context) == TextDirection.rtl
+                              ? 'تشغيل الصوت'
+                              : 'Play audio',
                         ),
                     ],
                   ),

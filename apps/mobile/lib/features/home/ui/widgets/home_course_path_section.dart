@@ -254,8 +254,7 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
 
     final surfaces = aimSurfacesOf(context);
     final l10n = AppLocalizations.of(context);
-    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
-    final titleText = isArabic ? 'خريطة التعلم' : 'Learning Roadmap';
+    final titleText = l10n.homeLearningRoadmap;
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -531,13 +530,11 @@ class _RoadmapNodeWidget extends StatelessWidget {
       );
     }
 
-    final locale = Localizations.localeOf(context).languageCode;
-    final isAr = locale == 'ar';
     final String subTranslated = isDone
-        ? (isAr ? 'متقن' : 'Mastered')
+        ? l10n.homeNodeMastered
         : isCurrent
-            ? (isAr ? 'الدرس الحالي' : 'Current Lesson')
-            : (isAr ? 'مغلق' : 'Locked');
+            ? l10n.homeNodeCurrentLesson
+            : l10n.homeNodeLocked;
 
     return Semantics(
       button: node.unlocked,

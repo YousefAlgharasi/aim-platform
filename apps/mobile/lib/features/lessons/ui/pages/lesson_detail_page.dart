@@ -149,16 +149,20 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
       ref.invalidate(chaptersProvider);
       ref.invalidate(studentCoursesProvider);
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         setState(() => _practiceUnlocked = true);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             backgroundColor: AimColors.success500,
             content: Row(
               children: [
-                Icon(Icons.check_circle_rounded, color: AimColors.neutral0),
-                SizedBox(width: 8),
+                const Icon(Icons.check_circle_rounded, color: AimColors.neutral0),
+                const SizedBox(width: 8),
                 Expanded(
-                  child: Text('Lesson marked as completed! 🌟'),
+                  child: Text(
+                    l10n.commonDone,
+                    style: const TextStyle(color: AimColors.neutral0),
+                  ),
                 ),
               ],
             ),
@@ -167,10 +171,14 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: AimColors.error500,
-            content: Text('Could not mark lesson complete: $e'),
+            content: Text(
+              '${l10n.commonError}: $e',
+              style: const TextStyle(color: AimColors.neutral0),
+            ),
           ),
         );
       }
@@ -397,7 +405,7 @@ class _LessonDetailContent extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Lesson Mastered! 🌟',
+                          l10n.lessonsLessonMasteredTitle,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
@@ -406,7 +414,7 @@ class _LessonDetailContent extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Reinforce your knowledge or practice with quick exercises.',
+                          l10n.lessonsPracticeNowSubtitle,
                           style: TextStyle(
                             fontSize: 12,
                             color: surfaces.textSecondary,
@@ -448,9 +456,9 @@ class _LessonDetailContent extends StatelessWidget {
                                       children: [
                                         Row(
                                           children: [
-                                            const Text(
-                                              'Practice Now',
-                                              style: TextStyle(
+                                            Text(
+                                              l10n.lessonsPracticeNowHeader,
+                                              style: const TextStyle(
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.w800,
                                                 color: Color(0xFF4F46E5),
@@ -463,9 +471,9 @@ class _LessonDetailContent extends StatelessWidget {
                                                 color: const Color(0xFF4F46E5),
                                                 borderRadius: BorderRadius.circular(10),
                                               ),
-                                              child: const Text(
-                                                'QUIZ',
-                                                style: TextStyle(
+                                              child: Text(
+                                                l10n.lessonsQuizHeader,
+                                                style: const TextStyle(
                                                   fontSize: 9,
                                                   fontWeight: FontWeight.w900,
                                                   color: Colors.white,
@@ -475,9 +483,9 @@ class _LessonDetailContent extends StatelessWidget {
                                           ],
                                         ),
                                         const SizedBox(height: 2),
-                                        const Text(
-                                          'Test your comprehension with quick interactive exercises.',
-                                          style: TextStyle(
+                                        Text(
+                                          l10n.lessonsQuizSubtitle,
+                                          style: const TextStyle(
                                             fontSize: 11,
                                             color: Color(0xFF4338CA),
                                           ),
@@ -523,7 +531,7 @@ class _LessonDetailContent extends StatelessWidget {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Ask AI Tutor',
+                                          l10n.lessonsAskAiTutorHeader,
                                           style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w800,
@@ -532,7 +540,7 @@ class _LessonDetailContent extends StatelessWidget {
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          'Chat with your AI tutor to clarify rules or ask questions.',
+                                          l10n.lessonsAskAiTutorSubtitle,
                                           style: TextStyle(
                                             fontSize: 11,
                                             color: surfaces.textSecondary,
@@ -764,6 +772,7 @@ class _KeyPhrasesCardState extends State<_KeyPhrasesCard> {
   Widget build(BuildContext context) {
     final phrases = _phrases;
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -789,7 +798,7 @@ class _KeyPhrasesCardState extends State<_KeyPhrasesCard> {
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    'Key Vocabulary & Phrases',
+                    l10n.lessonsKeyVocabularyHeader,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
@@ -799,7 +808,7 @@ class _KeyPhrasesCardState extends State<_KeyPhrasesCard> {
                 ],
               ),
               Text(
-                'TAP 🔊 TO LISTEN',
+                l10n.lessonsTapToListenHeader,
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w800,

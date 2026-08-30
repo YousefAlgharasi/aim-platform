@@ -18,6 +18,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get commonCancel => 'إلغاء';
 
   @override
+  String get commonResume => 'استئناف';
+
+  @override
+  String get commonPause => 'إيقاف مؤقت';
+
+  @override
   String get commonSave => 'حفظ';
 
   @override
@@ -107,6 +113,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get authNoAccountPrompt => 'ليس لديك حساب؟ ';
+
+  @override
+  String get authAlreadyHaveAccount => 'لديك حساب بالفعل؟ سجّل الدخول';
 
   @override
   String get authCreateOneLink => 'أنشئ حسابًا';
@@ -208,9 +217,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get authPrivacyPolicyLink => 'سياسة الخصوصية';
-
-  @override
-  String get authAlreadyHaveAccount => 'لديك حساب بالفعل؟ سجّل الدخول';
 
   @override
   String get authCheckYourEmailTitle => 'تحقق من بريدك الإلكتروني';
@@ -1714,4 +1720,1588 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get voiceAiReturnButton => 'العودة لتفاصيل الدرس';
+
+  @override
+  String get lessonsCourseOverviewHeader => 'نظرة عامة على الدورة';
+
+  @override
+  String get lessonsCourseProgressHeader => 'تقدم الدورة';
+
+  @override
+  String get lessonsCourseChaptersHeader => 'فصول الدورة';
+
+  @override
+  String get lessonsNextUpLockedCourse => 'التالي · دورة مقفلة';
+
+  @override
+  String get lessonsNextCourseLevel => 'مستوى الدورة التالي';
+
+  @override
+  String get lessonsUnlockCourseCondition =>
+      'تُفتح تلقائياً بمجرد إكمال جميع فصول هذه الدورة.';
+
+  @override
+  String lessonsUnlockNextCourseCondition(String activeCourse) {
+    return 'تُفتح تلقائياً بمجرد إكمال جميع فصول $activeCourse.';
+  }
+
+  @override
+  String get lessonsLearningPathHeader => 'المسار التعليمي';
+
+  @override
+  String get lessonsStructuredCurriculumHeader => 'المنهج الدراسي المنظم';
+
+  @override
+  String get lessonsPersonalizedSequenceSubtitle =>
+      'اتبع تسلسلك المخصص من مستوى المبتدئ إلى الإتقان المتقدم وفق الإطار الأوروبي المشترك.';
+
+  @override
+  String get lessonsKeyVocabularyHeader => 'المفردات والعبارات الرئيسية';
+
+  @override
+  String get lessonsTapToListenHeader => 'اضغط 🔊 للاستماع';
+
+  @override
+  String get lessonsAskAiTutorHeader => 'اسأل معلم الذكاء الاصطناعي';
+
+  @override
+  String get lessonsAskAiTutorSubtitle =>
+      'تحدث مع معلم الذكاء الاصطناعي لتوضيح القواعد أو طرح الأسئلة.';
+
+  @override
+  String get lessonsPracticeNowHeader => 'تمرن الآن';
+
+  @override
+  String get lessonsPracticeNowSubtitle =>
+      'عزز معلوماتك أو تدرب بتمارين سريعة.';
+
+  @override
+  String get lessonsQuizHeader => 'اختبار قصير';
+
+  @override
+  String get lessonsQuizSubtitle => 'اختبر استيعابك بتمارين تفاعلية سريعة.';
+
+  @override
+  String get lessonsLessonMasteredTitle => 'تم إتقان الدرس! 🌟';
+
+  @override
+  String get lessonsLessonMasteredSnackbar => 'تم تسجيل الدرس كمكتمل! 🌟';
+
+  @override
+  String lessonsMarkCompleteFailed(String error) {
+    return 'تعذر تسجيل الدرس كمكتمل: $error';
+  }
+
+  @override
+  String get lessonsInThisChapterHeader => 'الدروس في هذا الفصل';
+
+  @override
+  String get lessonsChapterQuizHeader => 'اختبار الفصل';
+
+  @override
+  String get lessonsPassedStatus => 'ناجح';
+
+  @override
+  String get lessonsLockedStatus => 'مقفل';
+
+  @override
+  String lessonsTotalLessonsCount(int chaptersCount, int totalLessons) {
+    return '$chaptersCount فصول · $totalLessons إجمالي الدروس';
+  }
+
+  @override
+  String get progressTitle => 'التقدم والتحليلات';
+
+  @override
+  String get progressSubtitle => 'تتبع كفاءتك اللغوية وإحصاءات دراستك';
+
+  @override
+  String get progressWeeklyActivity => 'النشاط الأسبوعي';
+
+  @override
+  String progressDailyAverageMins(int minutes) {
+    return 'متوسط $minutes دقيقة / يومياً';
+  }
+
+  @override
+  String progressTotalMins(int minutes) {
+    return 'إجمالي $minutes دقيقة';
+  }
+
+  @override
+  String progressTrackedSkillsHeader(int count) {
+    return 'المهارات المتابعة ($count)';
+  }
+
+  @override
+  String progressReviewScheduleHeader(int count) {
+    return 'جدول المراجعة ($count)';
+  }
+
+  @override
+  String progressWeaknessRecordsHeader(int count) {
+    return 'سجلات نقاط الضعف ($count)';
+  }
+
+  @override
+  String get progressWeakSpotIdentified =>
+      'تم تحديد نقطة ضعف من الإجابات الأخيرة.';
+
+  @override
+  String get progressNoWeaknesses => 'لا توجد نقاط ضعف مسجلة حالياً! عمل رائع!';
+
+  @override
+  String get progressViewAll => 'عرض الكل ←';
+
+  @override
+  String get progressViewFullSchedule => 'عرض الجدول الكامل ←';
+
+  @override
+  String get progressViewFullTable => 'عرض الجدول الكامل ←';
+
+  @override
+  String progressPriorityLabel(String severity) {
+    return 'أولوية $severity';
+  }
+
+  @override
+  String progressIntervalAndRep(int interval, int rep) {
+    return 'الفاصل: $interval يوم · التكرار #$rep';
+  }
+
+  @override
+  String get progressSkillStatesTitle => 'حالات المهارات';
+
+  @override
+  String progressConfidencePct(int percent) {
+    return 'مستوى الثقة $percent%';
+  }
+
+  @override
+  String progressDueAt(String date) {
+    return 'تاريخ الاستحقاق: $date';
+  }
+
+  @override
+  String progressDetectedAt(String date) {
+    return 'تاريخ الاكتشاف: $date';
+  }
+
+  @override
+  String progressResolvedAt(String date) {
+    return 'تاريخ المعالجة: $date';
+  }
+
+  @override
+  String progressExpiresAt(String date) {
+    return 'تاريخ الانتهاء: $date';
+  }
+
+  @override
+  String progressGeneratedAt(String date) {
+    return 'تاريخ الإنشاء: $date';
+  }
+
+  @override
+  String progressTargetLesson(String lessonId) {
+    return 'الدرس: $lessonId';
+  }
+
+  @override
+  String progressRankBadge(int rank) {
+    return '#$rank';
+  }
+
+  @override
+  String get billingTitle => 'الاشتراك والفوترة';
+
+  @override
+  String get billingSubscription => 'الاشتراك';
+
+  @override
+  String get billingCurrentPlan => 'الخطة الحالية';
+
+  @override
+  String get billingChangePlan => 'تغيير الخطة';
+
+  @override
+  String get billingCancelSubscription => 'إلغاء الاشتراك';
+
+  @override
+  String get billingCancelSubscriptionDialogTitle => 'هل تريد إلغاء الاشتراك؟';
+
+  @override
+  String get billingCancelSubscriptionDialogMessage =>
+      'سيظل اشتراكك نشطاً حتى نهاية فترة الفاتورة الحالية.';
+
+  @override
+  String get billingKeepSubscription => 'الاحتفاظ بالاشتراك';
+
+  @override
+  String get billingPlansAndPricing => 'الخطط والأسعار';
+
+  @override
+  String get billingInvoices => 'الفواتير';
+
+  @override
+  String get billingInvoiceDetail => 'تفاصيل الفاتورة';
+
+  @override
+  String get billingNoEntitlements => 'لا توجد صلاحيات مفعّلة حالياً.';
+
+  @override
+  String get billingTermsAgreement => 'بالمتابعة فإنك توافق على شروط AIM';
+
+  @override
+  String get billingCheckout => 'الدفع';
+
+  @override
+  String get billingPaymentPending => 'الدفع قيد الانتظار';
+
+  @override
+  String get billingPaymentSuccessful => 'تم الدفع بنجاح!';
+
+  @override
+  String get billingPaymentFailed => 'فشلت عملية الدفع';
+
+  @override
+  String get billingPaymentVerifying => 'يرجى الانتظار بينما نتحقق من دفعتك.';
+
+  @override
+  String get billingPaymentFailedMessage =>
+      'تعذر معالجة دفعتك. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get billingPaymentProcessingMessage =>
+      'جاري معالجة دفعتك. سنخبرك بمجرد اكتمالها.';
+
+  @override
+  String get billingGoBack => 'الرجوع';
+
+  @override
+  String billingQuantity(int quantity) {
+    return 'الكمية: $quantity';
+  }
+
+  @override
+  String get billingPopularBadge => 'الأكثر شيوعاً';
+
+  @override
+  String get supportHelpCenter => 'مركز المساعدة';
+
+  @override
+  String get supportNewTicket => 'تذكرة جديدة';
+
+  @override
+  String get supportMyTickets => 'تذاكري';
+
+  @override
+  String get supportTicket => 'تذكرة';
+
+  @override
+  String get supportParentHelp => 'مساعدة أولياء الأمور';
+
+  @override
+  String get supportParentTickets => 'تذاكر أولياء الأمور';
+
+  @override
+  String get supportFeedback => 'إرسال الملاحظات';
+
+  @override
+  String get supportRateAimQuestion => 'كيف تقيّم تطبيق AIM؟';
+
+  @override
+  String get supportReleaseNotes => 'ملاحظات الإصدار';
+
+  @override
+  String get supportReleaseNote => 'ملاحظة الإصدار';
+
+  @override
+  String supportReleasedDate(String date) {
+    return 'تاريخ الإصدار $date';
+  }
+
+  @override
+  String get supportSystemStatus => 'حالة النظام';
+
+  @override
+  String get supportWhatNew => 'ما الجديد';
+
+  @override
+  String get supportNoTickets => 'لا توجد تذاكر بعد';
+
+  @override
+  String get supportNoTicketsSubtitle =>
+      'أنشئ تذكرة للحصول على مساعدة من فريق الدعم لدينا.';
+
+  @override
+  String get supportNoReleaseNotes => 'لا توجد ملاحظات إصدار';
+
+  @override
+  String get supportNoReleaseNotesSubtitle =>
+      'ستظهر ملاحظات الإصدار هنا عند نشرها.';
+
+  @override
+  String get supportReleaseNoteNotAvailable => 'ملاحظة الإصدار غير متاحة بعد';
+
+  @override
+  String get supportReleaseNoteNotAvailableSubtitle =>
+      'ستظهر ملاحظة الإصدار هذه هنا بمجرد إطلاق ملاحظات الإصدار.';
+
+  @override
+  String get practicePracticeSession => 'جلسة تدريب';
+
+  @override
+  String get practicePracticeComplete => 'اكتمل التدريب!';
+
+  @override
+  String get practiceGreatJob => 'عمل رائع!';
+
+  @override
+  String get practiceAccuracy => 'الدقة';
+
+  @override
+  String get practiceXpEarned => 'نقاط XP المكتسبة';
+
+  @override
+  String get practiceCheckAnswer => 'تحقق من الإجابة';
+
+  @override
+  String get practiceContinueToLesson => 'متابعة إلى الدرس';
+
+  @override
+  String practiceQuestionOf(int current, int total) {
+    return 'السؤال $current من $total';
+  }
+
+  @override
+  String practiceSessionCompletedMsg(String lessonTitle) {
+    return 'أكملت جلسة التدريب لـ $lessonTitle.';
+  }
+
+  @override
+  String practiceScoreSummary(int score, int total) {
+    return 'حصلت على $score/$total في جلسة التدريب هذه.';
+  }
+
+  @override
+  String get practicePlacementRequiredTitle => 'مطلوب اختبار تحديد المستوى';
+
+  @override
+  String get practicePlacementRequiredBody =>
+      'يجب إكمال اختبار تحديد المستوى أولاً لتحديد مستواك المرجعي وبدء الجلسات التعليمية.';
+
+  @override
+  String get practiceTakePlacementNow => 'إجراء اختبار تحديد المستوى الآن';
+
+  @override
+  String get practiceTryDemoExercises => 'ممارسة التمارين تجريبياً';
+
+  @override
+  String get qaAnswerSubmitted => 'تم إرسال الإجابة';
+
+  @override
+  String get qaAnalysingResponse => 'يقوم AIM بتحليل إجابتك.';
+
+  @override
+  String get qaAnalysingSession => 'يقوم AIM بتحليل جلستك…';
+
+  @override
+  String get qaSessionSummary => 'ملخص الجلسة';
+
+  @override
+  String get qaSkillsCovered => 'المهارات المغطاة';
+
+  @override
+  String get assessmentAssessments => 'التقييمات';
+
+  @override
+  String get assessmentDeadlines => 'المواعيد النهائية';
+
+  @override
+  String get assessmentBreakdown => 'تفاصيل النقاط';
+
+  @override
+  String get assessmentPastResults => 'النتائج السابقة';
+
+  @override
+  String get assessmentResultHistory => 'سجل النتائج';
+
+  @override
+  String get assessmentSections => 'الأقسام';
+
+  @override
+  String get assessmentViewAttemptHistory => 'عرض سجل محاولاتك';
+
+  @override
+  String assessmentGradedDate(String date) {
+    return 'تم التقييم في $date';
+  }
+
+  @override
+  String get assessmentLatePenalty => 'تم تطبيق خصم التأخير';
+
+  @override
+  String get assessmentReadyToBegin => 'جاهز للبدء؟';
+
+  @override
+  String get assessmentSubmitAnswersDialogTitle => 'هل تريد تسليم إجاباتك؟';
+
+  @override
+  String get assessmentSubmitAnswersDialogMessage =>
+      'هذا الإجراء نهائي ولا يمكن التراجع عنه. لا يمكنك تغيير الإجابات بعد التسليم.';
+
+  @override
+  String get placementYourResponse => 'إجابتك';
+
+  @override
+  String get placementTargetSentences => 'الهدف: 3-5 جمل';
+
+  @override
+  String placementCharactersCount(int count) {
+    return '$count حرف';
+  }
+
+  @override
+  String get placementPressHoldToRecord =>
+      'اضغط مع الاستمرار على الميكروفون للتسجيل';
+
+  @override
+  String get placementReleaseWhenFinished => 'اترك الزر عند الانتهاء';
+
+  @override
+  String get placementRecordingInProgress => 'جاري التسجيل...';
+
+  @override
+  String get placementRecordingCompleted => 'اكتمل التسجيل!';
+
+  @override
+  String get placementTapSubmitRecording =>
+      'اضغط على تسليم بالأسفل لإرسال تسجيلك.';
+
+  @override
+  String get placementAiEngineActive => 'محرك الذكاء الاصطناعي نشط';
+
+  @override
+  String get placementResultsRecordedSaved =>
+      'تم تسجيل نتائج اختبار تحديد المستوى وحفظها بنجاح.';
+
+  @override
+  String get reviewsTitle => 'المراجعة';
+
+  @override
+  String get reviewsLoadingSemantic => 'جارٍ تحميل جدول المراجعة';
+
+  @override
+  String get reviewsNoScheduleTitle => 'لا توجد مراجعات مجدولة';
+
+  @override
+  String get reviewsNoScheduleSubtitle =>
+      'أكمل جلسات التدريب لتلقي تذكيرات المراجعة.';
+
+  @override
+  String get reviewsStatDueNow => 'مستحقة الآن';
+
+  @override
+  String get reviewsStatLearned => 'تم تعلمها';
+
+  @override
+  String get reviewsStatStreak => 'التتابع';
+
+  @override
+  String get reviewsDueToday => 'مستحقة اليوم';
+
+  @override
+  String get reviewsDueTomorrow => 'مستحقة غدًا';
+
+  @override
+  String get reviewsDueYesterday => 'مستحقة أمس';
+
+  @override
+  String reviewsDueInDays(int days) {
+    return 'مستحقة خلال $days أيام';
+  }
+
+  @override
+  String reviewsDueDaysAgo(int days) {
+    return 'مستحقة منذ $days أيام';
+  }
+
+  @override
+  String reviewsDueDate(String date) {
+    return 'مستحقة $date';
+  }
+
+  @override
+  String get reviewsStatusDue => 'مستحقة';
+
+  @override
+  String get reviewsStatusPending => 'في الانتظار';
+
+  @override
+  String get reviewsSpacedRepetitionDue =>
+      'بطاقات التكرار المتباعد المستحقة اليوم';
+
+  @override
+  String get reviewsScheduleHeader => 'جدول المراجعة';
+
+  @override
+  String get reviewsStartSession => 'بدء جلسة المراجعة';
+
+  @override
+  String reviewsIntervalDays(String days) {
+    return 'الفاصل $days يوم';
+  }
+
+  @override
+  String reviewsRepetitionNumber(int rep) {
+    return 'تكرار #$rep';
+  }
+
+  @override
+  String get voiceTeacherPageTitle => 'المعلم الصوتي';
+
+  @override
+  String get voiceTeacherPageSubtitle =>
+      'مارس نطقك ومحادثتك مع معلم الذكاء الاصطناعي';
+
+  @override
+  String get voiceTeacherConnectionErrorTitle => 'خطأ في الاتصال';
+
+  @override
+  String get voiceTeacherMicrophoneErrorTitle => 'خطأ في الميكروفون';
+
+  @override
+  String get voiceTeacherServerErrorTitle => 'خطأ في الخادم';
+
+  @override
+  String get voiceTeacherGenericErrorTitle => 'حدث خطأ';
+
+  @override
+  String get voiceTeacherConnectionErrorMsg =>
+      'تعذر الاتصال بخادم الصوت. يرجى التحقق من اتصال الإنترنت.';
+
+  @override
+  String get voiceTeacherMicrophoneErrorMsg =>
+      'تعذر الوصول للميكروفون. يرجى منح الإذن في الإعدادات.';
+
+  @override
+  String get voiceTeacherServerErrorMsg =>
+      'واجهت خدمة الصوت خطأ في الخادم. يرجى المحاولة لاحقاً.';
+
+  @override
+  String get voiceTeacherGenericErrorMsg =>
+      'حدث خطأ غير متوقع أثناء الجلسة الصوتية.';
+
+  @override
+  String get voiceTeacherTextResponseTitle => 'رد نصي من المعلم';
+
+  @override
+  String get voiceTeacherRetryAudio => 'إعادة تحميل الصوت';
+
+  @override
+  String get voiceTeacherTryAgain => 'إعادة المحاولة';
+
+  @override
+  String get voiceTeacherProcessing => 'جارٍ المعالجة...';
+
+  @override
+  String get voiceTeacherTranscribing => 'جارٍ التحويل...';
+
+  @override
+  String get voiceTeacherWhatYouSaid => 'ما قلته';
+
+  @override
+  String get voiceTeacherTeacherResponse => 'رد المعلم';
+
+  @override
+  String get voiceTeacherRecorded => 'تم التسجيل';
+
+  @override
+  String get voiceTeacherAudioUnavailable => 'لم يتوفر الصوت — إليك الرد النصي';
+
+  @override
+  String get voiceTeacherStop => 'إيقاف';
+
+  @override
+  String get voiceTeacherDiscard => 'حذف';
+
+  @override
+  String get voiceTeacherSend => 'إرسال';
+
+  @override
+  String get voiceTeacherHelpful => 'مفيد';
+
+  @override
+  String get voiceTeacherNotHelpful => 'غير مفيد';
+
+  @override
+  String get aiTeacherConversations => 'المحادثات';
+
+  @override
+  String get aiTeacherSettingsTitle => 'إعدادات معلم الذكاء الاصطناعي';
+
+  @override
+  String get aiTeacherCurrentLessonHeader => 'الدرس الحالي';
+
+  @override
+  String get aiTeacherWasThisHelpful => 'هل كان هذا مفيداً؟';
+
+  @override
+  String get aiTeacherWelcomeBack => 'مرحباً بعودتك';
+
+  @override
+  String get aiTeacherAskQuestionsGuidance =>
+      'اطرح الأسئلة واحصل على إرشادات حول هذا الدرس.';
+
+  @override
+  String get profileAimPlusMember => 'عضوية AIM PLUS';
+
+  @override
+  String get profileLearningGapsAlerts =>
+      'تنبيهات عند اكتشاف فجوات تعليمية جديدة بالذكاء الاصطناعي';
+
+  @override
+  String get profileStudyTimeNotification =>
+      'تلقي الإشعارات في وقت دراستك المفضل';
+
+  @override
+  String get profileSecurityPassword => 'الأمان وكلمة المرور';
+
+  @override
+  String get profilePasswordResetSuccess =>
+      'تم إرسال بريد إعادة تعيين كلمة المرور. يرجى التحقق من صندوق الوارد.';
+
+  @override
+  String profilePasswordResetFailed(String error) {
+    return 'فشل طلب إعادة تعيين كلمة المرور: $error';
+  }
+
+  @override
+  String profileSaveFailed(String error) {
+    return 'فشل حفظ تغييرات الملف الشخصي: $error';
+  }
+
+  @override
+  String get profileNoProfileLoaded => 'لم يتم تحميل الملف الشخصي.';
+
+  @override
+  String get notificationsChannels => 'القنوات';
+
+  @override
+  String get notificationsQuietHours => 'ساعات الهدوء';
+
+  @override
+  String get notificationsManageReminders => 'إدارة تذكيرات الدروس';
+
+  @override
+  String get notificationsDismissed => 'تم تجاهل هذا الإشعار.';
+
+  @override
+  String get notificationsPause => 'إيقاف مؤقت';
+
+  @override
+  String get notificationsResume => 'استئناف';
+
+  @override
+  String get authHappyToSeeYou =>
+      'سعداء برؤيتك مجدداً. أدخل بريدك الإلكتروني وكلمة المرور للمتابعة.';
+
+  @override
+  String get authSignInToAccount => 'تسجيل الدخول إلى حسابك';
+
+  @override
+  String get authTakesLessThanMinute =>
+      'يستغرق أقل من دقيقة. أدخل بياناتك أدناه.';
+
+  @override
+  String get authCheckEmailTitle => 'تحقق من بريدك الإلكتروني';
+
+  @override
+  String authSentConfirmationLink(String email) {
+    return 'أرسلنا رابط تأكيد إلى:\n$email';
+  }
+
+  @override
+  String get authBackToLogin => 'العودة لتسجيل الدخول';
+
+  @override
+  String get authDevTestAccounts => 'حسابات التطوير والاختبار';
+
+  @override
+  String get authQuickLoginWithTest => 'تسجيل دخول سريع ببيانات اختبار:';
+
+  @override
+  String get shellLogOut => 'تسجيل الخروج';
+
+  @override
+  String get profileTitle => 'الملف الشخصي';
+
+  @override
+  String get profileLoadingProfile => 'جارٍ تحميل الملف الشخصي';
+
+  @override
+  String profileCouldNotLoad(String message) {
+    return 'تعذّر تحميل الملف الشخصي: $message';
+  }
+
+  @override
+  String get profileSectionAccount => 'الحساب';
+
+  @override
+  String get profileLabelEmail => 'البريد الإلكتروني';
+
+  @override
+  String get profileLabelStatus => 'الحالة';
+
+  @override
+  String get profileLabelType => 'النوع';
+
+  @override
+  String get profileSectionProfile => 'الملف الشخصي';
+
+  @override
+  String get profileLabelDisplayName => 'الاسم المعروض';
+
+  @override
+  String get profileLabelLanguage => 'اللغة';
+
+  @override
+  String get profileLabelTimezone => 'المنطقة الزمنية';
+
+  @override
+  String get profileSectionRoles => 'الأدوار';
+
+  @override
+  String get profileRolesSubtitle => 'للعرض فقط. يُطبَّق من الخادم.';
+
+  @override
+  String get profileSectionQuickLinks => 'روابط سريعة';
+
+  @override
+  String get profileLinkLearningPath => 'مسار التعلّم';
+
+  @override
+  String get profileLinkSubscriptionBilling => 'الاشتراك والفوترة';
+
+  @override
+  String get profileLinkInvoiceHistory => 'سجل الفواتير';
+
+  @override
+  String get profileLinkAchievements => 'الإنجازات';
+
+  @override
+  String get profileLinkAnalyticsSummary => 'ملخص التحليلات';
+
+  @override
+  String get profileLinkApiEndpointTester => 'اختبار نقاط الوصول (مطوّر)';
+
+  @override
+  String get profileStatDayStreak => 'أيام متتالية';
+
+  @override
+  String get profileStatAchievements => 'إنجازات';
+
+  @override
+  String get profileTooltipAccountSettings => 'إعدادات الحساب';
+
+  @override
+  String get profileAchievementsCarouselTitle => 'الإنجازات';
+
+  @override
+  String get editProfileTitle => 'تعديل الملف الشخصي';
+
+  @override
+  String get editProfileSave => 'حفظ';
+
+  @override
+  String get editProfileBack => 'رجوع';
+
+  @override
+  String get editProfileLabelDisplayName => 'الاسم المعروض';
+
+  @override
+  String get editProfilePlaceholderDisplayName => 'اسمك المعروض';
+
+  @override
+  String get editProfileLabelPreferredLanguage => 'اللغة المفضّلة';
+
+  @override
+  String get editProfilePlaceholderLanguage => 'اختر لغة';
+
+  @override
+  String get editProfileLabelTimezone => 'المنطقة الزمنية';
+
+  @override
+  String get editProfilePlaceholderTimezone => 'اختر منطقة زمنية';
+
+  @override
+  String get editProfileSaveChanges => 'حفظ التغييرات';
+
+  @override
+  String get editProfileDisplayNameTooLong =>
+      'يجب ألّا يتجاوز الاسم المعروض 80 حرفاً.';
+
+  @override
+  String get editProfileSessionExpired =>
+      'انتهت جلستك. يرجى تسجيل الدخول مجدداً.';
+
+  @override
+  String get editProfileUpdatedSuccess => 'تم تحديث الملف الشخصي.';
+
+  @override
+  String get settingsAppThemeDisplay => 'مظهر التطبيق والعرض';
+
+  @override
+  String get settingsThemeDarkSubtitle => 'واجهة داكنة للاستخدام الليلي';
+
+  @override
+  String get settingsThemeLightSubtitle => 'مظهر نظيف عالي التباين';
+
+  @override
+  String get settingsNotificationPreferences => 'تفضيلات الإشعارات';
+
+  @override
+  String get settingsEnterFullName => 'أدخل اسمك الكامل';
+
+  @override
+  String get achievementsTitle => 'الإنجازات';
+
+  @override
+  String get achievementsMilestonesTitle => 'إنجازات AIM';
+
+  @override
+  String achievementsBadgesUnlocked(int unlocked, int total) {
+    return '$unlocked من $total شارة مفتوحة';
+  }
+
+  @override
+  String get achievementsLeagueRank => 'الدوري الذهبي #3';
+
+  @override
+  String get achievementsTabAll => 'جميع الشارات';
+
+  @override
+  String achievementsTabUnlocked(int count) {
+    return 'مفتوحة ($count)';
+  }
+
+  @override
+  String achievementsTabInProgress(int count) {
+    return 'قيد التقدم ($count)';
+  }
+
+  @override
+  String get achievementsBadgeUnlocked => 'مفتوح';
+
+  @override
+  String get achievementsFirstStepTitle => 'الخطوة الأولى';
+
+  @override
+  String get achievementsFirstStepDesc => 'أكمل أول درس إنجليزي لك';
+
+  @override
+  String get achievementsStreakMasterTitle => 'خبير المتابعة';
+
+  @override
+  String get achievementsStreakMasterDesc => 'حافظ على سلسلة تعلّم لمدة ٧ أيام';
+
+  @override
+  String get achievementsGrammarWizardTitle => 'ساحر القواعد';
+
+  @override
+  String get achievementsGrammarWizardDesc => 'احصل على ٩٠٪+ في تقييم القواعد';
+
+  @override
+  String get achievementsVoiceChampionTitle => 'بطل الصوت';
+
+  @override
+  String get achievementsVoiceChampionDesc =>
+      'أكمل ٥ جلسات تدريب صوتي مباشر مع الذكاء الاصطناعي';
+
+  @override
+  String get achievementsVocabularyTitanTitle => 'عملاق المفردات';
+
+  @override
+  String get achievementsVocabularyTitanDesc => 'أتقن أكثر من ٢٠٠ كلمة نشطة';
+
+  @override
+  String get achievementsSpeedLearnerTitle => 'المتعلم السريع';
+
+  @override
+  String get achievementsSpeedLearnerDesc => 'أنهِ ٣ دروس في يوم واحد';
+
+  @override
+  String get achievementsPerfectQuizTitle => 'دقة الاختبار المثالية';
+
+  @override
+  String get achievementsPerfectQuizDesc =>
+      'احصل على ١٠٠٪ في ٥ اختبارات تدريبية';
+
+  @override
+  String get achievementsPolyglotLegendTitle => 'أسطورة اللغات';
+
+  @override
+  String get achievementsPolyglotLegendDesc =>
+      'وصول المستوى ٢٠ في اللغة الإنجليزية';
+
+  @override
+  String get supportCreateTicketTitle => 'إرسال تذكرة دعم';
+
+  @override
+  String get supportCreateTicketButton => 'إنشاء تذكرة';
+
+  @override
+  String get supportSubmitTicket => 'إرسال التذكرة';
+
+  @override
+  String get supportCategoryLabel => 'الفئة';
+
+  @override
+  String get supportSeverityLabel => 'مستوى الأهمية';
+
+  @override
+  String get supportSubjectLabel => 'الموضوع';
+
+  @override
+  String get supportSubjectPlaceholder => 'صف المشكلة بإيجاز';
+
+  @override
+  String get supportDescriptionLabel => 'الوصف';
+
+  @override
+  String get supportDescriptionPlaceholder => 'أخبرنا بما حدث، خطوة بخطوة...';
+
+  @override
+  String get supportSubjectRequired => 'الموضوع مطلوب';
+
+  @override
+  String get supportDescriptionRequired => 'الوصف مطلوب';
+
+  @override
+  String get supportCategoryBugReport => 'إبلاغ عن خطأ';
+
+  @override
+  String get supportCategoryAccountIssue => 'مشكلة في الحساب';
+
+  @override
+  String get supportCategoryLearningIssue => 'مشكلة في التعلم';
+
+  @override
+  String get supportCategoryBillingIssue => 'مشكلة في الفوترة';
+
+  @override
+  String get supportCategoryGeneral => 'عام';
+
+  @override
+  String get supportCategorySuggestion => 'اقتراح';
+
+  @override
+  String get supportCategoryCompliment => 'إشادة';
+
+  @override
+  String get supportCategoryComplaint => 'شكوى';
+
+  @override
+  String get supportCategoryOther => 'أخرى';
+
+  @override
+  String get supportSeverityLow => 'منخفض';
+
+  @override
+  String get supportSeverityMedium => 'متوسط';
+
+  @override
+  String get supportSeverityHigh => 'مرتفع';
+
+  @override
+  String get supportSeverityCritical => 'حرج';
+
+  @override
+  String get supportFeedbackTitleLabel => 'العنوان';
+
+  @override
+  String get supportFeedbackTitlePlaceholder => 'ملخص قصير';
+
+  @override
+  String get supportFeedbackBodyLabel => 'ملاحظاتك';
+
+  @override
+  String get supportFeedbackBodyPlaceholder => 'أخبرنا برأيك...';
+
+  @override
+  String get supportFeedbackTitleRequired => 'العنوان مطلوب';
+
+  @override
+  String get supportFeedbackBodyRequired => 'تفاصيل الملاحظات مطلوبة';
+
+  @override
+  String get supportTicketAddComment => 'إضافة تعليق';
+
+  @override
+  String get supportTicketCommentPlaceholder => 'اكتب رسالة متابعة...';
+
+  @override
+  String get supportTicketSendComment => 'إرسال';
+
+  @override
+  String get supportStatusAllOperational => 'جميع الأنظمة تعمل بكفاءة';
+
+  @override
+  String get supportStatusNoComponents => 'لا توجد مكونات مسجلة';
+
+  @override
+  String get supportStatusNothingToShow => 'لا يوجد شيء لعرضه بعد.';
+
+  @override
+  String get supportNoParentTickets => 'لا توجد تذاكر دعم';
+
+  @override
+  String get supportNoParentTicketsSubtitle =>
+      'أنشئ تذكرة إذا كنت بحاجة إلى مساعدة في حسابك.';
+
+  @override
+  String get coursesCurrentBadge => 'الحالي';
+
+  @override
+  String get voiceTeacherTitle => 'المعلم الصوتي';
+
+  @override
+  String get voiceTeacherStartingSession => 'بدء جلسة المعلم الصوتي';
+
+  @override
+  String get voiceTeacherBackSemantic => 'رجوع';
+
+  @override
+  String get voiceTeacherStatusSpeaking => 'يتحدث';
+
+  @override
+  String get voiceTeacherStatusRecording => 'تسجيل';
+
+  @override
+  String get voiceTeacherStatusProcessing => 'معالجة';
+
+  @override
+  String get voiceTeacherStatusReady => 'جاهز';
+
+  @override
+  String get voiceTeacherHeadingSpeaking => 'معلمك يتحدث الآن…';
+
+  @override
+  String get voiceTeacherHeadingRecording => 'أستمع إليك الآن…';
+
+  @override
+  String get voiceTeacherHeadingProcessing => 'جارٍ معالجة إجابتك…';
+
+  @override
+  String get voiceTeacherHeadingListening => 'دورك الآن — اضغط مطولاً للتحدث';
+
+  @override
+  String get voiceTeacherPracticeSubtitle => 'مارس نطقك مع المعلم الذكي';
+
+  @override
+  String get voiceTeacherMessagesButton => 'الرسائل';
+
+  @override
+  String get voiceTeacherBackToCall => 'العودة للمكالمة';
+
+  @override
+  String voiceTeacherStatusSemantic(String status) {
+    return 'الحالة: $status';
+  }
+
+  @override
+  String get voiceTeacherPressAndHold => 'اضغط مع الاستمرار للتحدث';
+
+  @override
+  String get voiceTeacherRecordingRelease => 'جارٍ التسجيل — حرر للإرسال';
+
+  @override
+  String voiceTeacherSaid(String text) {
+    return 'قال المعلم الصوتي: $text';
+  }
+
+  @override
+  String voiceTeacherYouSaid(String text) {
+    return 'أنت قلت: $text';
+  }
+
+  @override
+  String get voiceTeacherEntryTitle => 'المعلم الصوتي';
+
+  @override
+  String get voiceTeacherEntrySubtitle =>
+      'مارس المحادثة الشفهية مع الذكاء الاصطناعي';
+
+  @override
+  String get billingPromoCodeLabel => 'رمز ترويجي (اختياري)';
+
+  @override
+  String get billingPromoCodePlaceholder => 'أدخل الرمز';
+
+  @override
+  String get billingProceedToPayment => 'المتابعة إلى الدفع';
+
+  @override
+  String get billingNoInvoicesTitle => 'لا توجد فواتير بعد';
+
+  @override
+  String get billingNoInvoicesSubtitle =>
+      'ستظهر فواتيرك هنا بعد أول عملية دفع.';
+
+  @override
+  String get billingNoPlansAvailable => 'لا توجد باقات متاحة';
+
+  @override
+  String get billingCheckBackLaterPlans =>
+      'يرجى التحقق لاحقاً من الباقات المتاحة.';
+
+  @override
+  String get billingSubscribe => 'اشتراك';
+
+  @override
+  String get assessmentsNoAssessmentsTitle => 'لا توجد تقييمات متاحة';
+
+  @override
+  String get assessmentsNoAssessmentsSubtitle =>
+      'ستظهر الاختبارات والتقييمات المنشورة هنا.';
+
+  @override
+  String get assessmentsStatQuestions => 'الأسئلة';
+
+  @override
+  String get assessmentsStatTimeLimit => 'الوقت المحدد';
+
+  @override
+  String get assessmentsStatMaxAttempts => 'أقصى عدد محاولات';
+
+  @override
+  String get assessmentsStartAttempt => 'بدء المحاولة';
+
+  @override
+  String get assessmentsStartAttemptTitle => 'بدء المحاولة';
+
+  @override
+  String get assessmentsGoBack => 'الرجوع';
+
+  @override
+  String get assessmentsSubmit => 'تسليم';
+
+  @override
+  String get assessmentsDone => 'تم';
+
+  @override
+  String get assessmentsNoResultsTitle => 'لا توجد نتائج بعد';
+
+  @override
+  String get assessmentsNoResultsSubtitle =>
+      'ستظهر نتائج محاولاتك السابقة هنا.';
+
+  @override
+  String get assessmentsDeadlinesTitle => 'الموعد النهائي';
+
+  @override
+  String get assessmentsNoDeadlinesTitle => 'لا توجد مواعيد نهائية';
+
+  @override
+  String get assessmentsNoDeadlinesSubtitle =>
+      'ستظهر مواعيد تقييماتك النهائية هنا.';
+
+  @override
+  String get assessmentsTabActive => 'النشطة';
+
+  @override
+  String get assessmentsTabUpcoming => 'القادمة';
+
+  @override
+  String get assessmentsTabLate => 'المتأخرة';
+
+  @override
+  String get assessmentsTabMissed => 'الفائتة';
+
+  @override
+  String get assessmentsTabClosed => 'المغلقة';
+
+  @override
+  String get assessmentsOpensLabel => 'يفتح';
+
+  @override
+  String get assessmentsClosesLabel => 'يغلق';
+
+  @override
+  String get assessmentsExtendedCloseLabel => 'تمديد الإغلاق';
+
+  @override
+  String get assessmentsTypeAnswerPlaceholder => 'اكتب إجابتك هنا…';
+
+  @override
+  String get assessmentsYourAnswerLabel => 'إجابتك';
+
+  @override
+  String get assessmentsQuestionsEmptyTitle => 'الأسئلة';
+
+  @override
+  String get assessmentsQuestionsEmptySubtitle =>
+      'لم يتم العثور على أسئلة لهذه المحاولة.';
+
+  @override
+  String get notificationsNoNotificationsTitle => 'لا توجد إشعارات بعد';
+
+  @override
+  String get notificationsNoNotificationsSubtitle =>
+      'ستظهر تذكيرات الجلسات وتحديثات التقدم هنا.';
+
+  @override
+  String get assessmentsStatusCompleted => 'مكتمل';
+
+  @override
+  String get notificationsDismiss => 'تجاهل';
+
+  @override
+  String get notificationsDismissedTitle => 'تم التجاهل';
+
+  @override
+  String get notificationsEnableQuietHours => 'تفعيل ساعات الهدوء';
+
+  @override
+  String get notificationsSaveQuietHours => 'حفظ ساعات الهدوء';
+
+  @override
+  String get notificationsNoRemindersTitle => 'لا توجد تذكيرات بعد';
+
+  @override
+  String get notificationsNoRemindersSubtitle =>
+      'ستظهر التذكيرات التي تفعلها هنا.';
+
+  @override
+  String get notificationsCancelReminder => 'إلغاء';
+
+  @override
+  String get notificationsUnread => 'غير مقروء';
+
+  @override
+  String get progressAvgMastery => 'متوسط الإتقان';
+
+  @override
+  String get progressDayStreak => 'أيام التتابع';
+
+  @override
+  String get progressSkillStates => 'حالات المهارات';
+
+  @override
+  String get progressWeaknesses => 'نقاط الضعف';
+
+  @override
+  String get progressRecommendations => 'التوصيات';
+
+  @override
+  String get progressReviewSchedule => 'جدول المراجعة';
+
+  @override
+  String get progressFocusAreas => 'مجالات التركيز';
+
+  @override
+  String get progressNoProgressData => 'لا توجد بيانات تقدم بعد';
+
+  @override
+  String get progressNoSkillData => 'لا توجد بيانات مهارات بعد';
+
+  @override
+  String get progressNoFocusAreas => 'لا توجد مجالات تركيز بعد';
+
+  @override
+  String get progressNoRecommendations => 'لا توجد توصيات بعد';
+
+  @override
+  String get progressStatusStrong => 'قوي';
+
+  @override
+  String get progressStatusDeveloping => 'قيد التطوير';
+
+  @override
+  String get progressStatusNeedsWork => 'يحتاج تدريباً';
+
+  @override
+  String get progressTrendImproving => 'في تحسن';
+
+  @override
+  String get progressTrendDeclining => 'في تراجع';
+
+  @override
+  String get progressTrendStable => 'مستقر';
+
+  @override
+  String get progressTrendInsufficient => 'بيانات غير كافية';
+
+  @override
+  String get progressStatusSkipped => 'تم التخطي';
+
+  @override
+  String get progressStatusOverdue => 'متأخر';
+
+  @override
+  String get aiTeacherAskAnythingTitle => 'اسأل معلم الذكاء الاصطناعي أي شيء';
+
+  @override
+  String get aiTeacherStartConversationSubtitle =>
+      'ابدأ المحادثة بإرسال رسالة.';
+
+  @override
+  String get aiTeacherConversationHistory => 'سجل المحادثات';
+
+  @override
+  String get aiTeacherNoConversationsTitle => 'لا توجد محادثات بعد';
+
+  @override
+  String get aiTeacherNoConversationsSubtitle =>
+      'ابدأ المحادثة مع معلم الذكاء الاصطناعي لتظهر هنا.';
+
+  @override
+  String get aiTeacherPreferTextLabel => 'تفضيل الردود النصية على الصوتية';
+
+  @override
+  String get aiTeacherReduceAnimationsLabel =>
+      'تقليل التأثيرات الحركية في المعلم الذكي والصوتي';
+
+  @override
+  String get aiTeacherAboutSettingsTitle => 'حول هذه الإعدادات';
+
+  @override
+  String get aiTeacherAskAnythingHint => 'اسألني أي شيء...';
+
+  @override
+  String get aiTeacherVoiceComingSoon => 'الإدخال الصوتي (قريباً)';
+
+  @override
+  String get aiTeacherSendMessage => 'إرسال الرسالة';
+
+  @override
+  String get aiTeacherLimitedBannerTitle =>
+      'المعلم الذكي محدود الاستخدام حالياً';
+
+  @override
+  String get aiTeacherOpenButton => 'فتح المعلم الذكي';
+
+  @override
+  String get voiceTeacherStartTalkingTitle => 'ابدأ التحدث مع معلمك الصوتي';
+
+  @override
+  String get voiceTeacherTranscriptAppearSubtitle => 'سيظهر النص المنطوق هنا.';
+
+  @override
+  String get voiceTeacherMessages => 'الرسائل';
+
+  @override
+  String get qaContinueButton => 'متابعة';
+
+  @override
+  String get qaYourAnswerLabel => 'إجابتك';
+
+  @override
+  String get qaTypeAnswerPlaceholder => 'اكتب إجابتك هنا';
+
+  @override
+  String get qaQuestionsAttempted => 'الأسئلة المجابة';
+
+  @override
+  String get qaCorrectScore => 'الصحيحة (تقييم الخادم)';
+
+  @override
+  String get qaMasteryShift => 'تغير مستوى الإتقان';
+
+  @override
+  String get qaLessonCompletedToast => 'تم تحديد الدرس كمكتمل! 🌟';
+
+  @override
+  String get qaMarkLessonCompletedButton => 'تحديد الدرس كمكتمل ✨';
+
+  @override
+  String get shellNavMore => 'المزيد';
+
+  @override
+  String get profileLanguageEnglish => 'الإنجليزية';
+
+  @override
+  String get profileLanguageArabic => 'العربية';
+
+  @override
+  String get analyticsPageTitle => 'التحليلات';
+
+  @override
+  String get analyticsNoReportsTitle => 'لا توجد تقارير متاحة';
+
+  @override
+  String get analyticsNoReportsSubtitle => 'لا توجد تقارير تحليلات لك بعد.';
+
+  @override
+  String get homeAppName => 'AIM English';
+
+  @override
+  String homeGreeting(String name) {
+    return 'مرحباً، $name! 👋';
+  }
+
+  @override
+  String homeXpLevelSubtitle(String course, int level) {
+    return '$course · المستوى $level';
+  }
+
+  @override
+  String get homeLearningRoadmap => 'خريطة التعلم';
+
+  @override
+  String get homeNodeMastered => 'متقن';
+
+  @override
+  String get homeNodeCurrentLesson => 'الدرس الحالي';
+
+  @override
+  String get homeNodeLocked => 'مغلق';
+
+  @override
+  String get homeMissionPracticeSpeaking => 'تدرب على التحدث';
+
+  @override
+  String get homeMissionWriteParagraph => 'اكتب فقرة قصيرة';
+
+  @override
+  String get homeMissionWritingPractice => 'ممارسة الكتابة';
+
+  @override
+  String get billingCheckoutTitle => 'الدفع';
+
+  @override
+  String get billingBillingLabel => 'الفوترة';
+
+  @override
+  String get billingTermsAgreementFull =>
+      'بمتابعتك فإنك توافق على شروط خدمة AIM وتفوّض بالخصم المتكرر. يمكنك الإلغاء في أي وقت.';
+
+  @override
+  String get billingCouldNotOpenPayment =>
+      'تعذر فتح صفحة الدفع. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get billingFailedToStart =>
+      'فشل بدء عملية الدفع. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get submitAttemptTitle => 'هل تريد تقديم إجاباتك؟';
+
+  @override
+  String get submitAttemptWarning => 'لا يمكنك تغيير الإجابات بعد التقديم.';
+
+  @override
+  String get submitAttemptFinalAction =>
+      'هذا الإجراء نهائي ولا يمكن التراجع عنه.';
+
+  @override
+  String get deadlinesTitle => 'المواعيد النهائية';
+
+  @override
+  String get deadlinesLoadingSemantic => 'جارٍ تحميل المواعيد النهائية';
+
+  @override
+  String deadlinesDueRelative(String relative, String date) {
+    return 'مستحق $relative · $date';
+  }
+
+  @override
+  String deadlinesOpens(String date) {
+    return 'يفتح $date';
+  }
+
+  @override
+  String deadlinesExtendedTo(String date) {
+    return 'ممدد إلى $date';
+  }
+
+  @override
+  String deadlinesWasDue(String date) {
+    return 'كان مستحقاً $date';
+  }
+
+  @override
+  String deadlinesClosed(String date) {
+    return 'أُغلق $date';
+  }
+
+  @override
+  String get deadlinesRelativeToday => 'اليوم';
+
+  @override
+  String get deadlinesRelativeTomorrow => 'غداً';
+
+  @override
+  String deadlinesRelativeInDays(int days) {
+    return 'خلال $days أيام';
+  }
+
+  @override
+  String get reviewScheduleTitle => 'جدول المراجعة';
+
+  @override
+  String get reviewScheduleLoadingSemantic => 'جارٍ تحميل جدول المراجعة';
+
+  @override
+  String get reviewScheduleNoTitle => 'لا توجد مراجعات مجدولة';
+
+  @override
+  String get reviewScheduleNoSubtitle =>
+      'أكمل جلسات التمرين لتلقي تذكيرات المراجعة.';
+
+  @override
+  String reviewScheduleEveryInterval(String days, int rep) {
+    return 'كل $days يوم · التكرار #$rep';
+  }
+
+  @override
+  String lessonsCountChip(int count) {
+    return '$count درس';
+  }
+
+  @override
+  String quizzesCountChip(int count) {
+    return '$count اختبار';
+  }
+
+  @override
+  String examsCountChip(int count) {
+    return '$count امتحان';
+  }
+
+  @override
+  String get lessonsCourseLockedHint => 'أكمل مستواك الحالي لفتح هذه الدورة';
+
+  @override
+  String get achievementFirstLessonCompleteTitle => 'الخطوات الأولى';
+
+  @override
+  String get achievementFirstLessonCompleteDesc => 'أكمل درسك الأول.';
+
+  @override
+  String get achievementFiveLessonsCompleteTitle => 'البداية والانطلاق';
+
+  @override
+  String get achievementFiveLessonsCompleteDesc => 'أكمل 5 دروس.';
+
+  @override
+  String get achievementThreeDayStreakTitle => 'حماس متواصل';
+
+  @override
+  String get achievementThreeDayStreakDesc =>
+      'حافظ على سلسلة تعلم لمدة 3 أيام.';
+
+  @override
+  String get achievementSevenDayStreakTitle => 'بطل الأسبوع';
+
+  @override
+  String get achievementSevenDayStreakDesc =>
+      'حافظ على سلسلة تعلم لمدة 7 أيام.';
+
+  @override
+  String get achievementFirstAssessmentPassedTitle => 'عبقري الاختبارات';
+
+  @override
+  String get achievementFirstAssessmentPassedDesc => 'اجتز تقييمك الأول بنجاح.';
 }

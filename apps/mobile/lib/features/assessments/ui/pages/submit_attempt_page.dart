@@ -43,6 +43,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
 import 'package:aim_mobile/features/assessments/logic/provider/assessment_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class SubmitAttemptPage extends ConsumerStatefulWidget {
   const SubmitAttemptPage({
@@ -134,7 +135,7 @@ class _SubmitAttemptPageState extends ConsumerState<SubmitAttemptPage> {
                 children: [
                   const Spacer(),
                   Text(
-                    'Submit your answers?',
+                    AppLocalizations.of(context).submitAttemptTitle,
                     style: AimTextStyles.h2
                         .copyWith(color: surfaces.textPrimary),
                     textAlign: TextAlign.center,
@@ -144,7 +145,7 @@ class _SubmitAttemptPageState extends ConsumerState<SubmitAttemptPage> {
                   // backing data; see the file header.
                   const SizedBox(height: AimSpacing.componentGap),
                   Text(
-                    'You cannot change answers after submitting.',
+                    AppLocalizations.of(context).submitAttemptWarning,
                     style: AimTextStyles.bodyMd
                         .copyWith(color: surfaces.textSecondary),
                     textAlign: TextAlign.center,
@@ -167,7 +168,8 @@ class _SubmitAttemptPageState extends ConsumerState<SubmitAttemptPage> {
                         const SizedBox(width: AimSpacing.space8),
                         Expanded(
                           child: Text(
-                            'This action is final and cannot be undone.',
+                            AppLocalizations.of(context)
+                                .submitAttemptFinalAction,
                             style: AimTextStyles.bodySm.copyWith(
                               color: AimColors.error700,
                               fontWeight: FontWeight.w600,
@@ -179,12 +181,12 @@ class _SubmitAttemptPageState extends ConsumerState<SubmitAttemptPage> {
                   ),
                   const Spacer(flex: 2),
                   AIMGradientButton(
-                    label: 'Submit',
+                    label: AppLocalizations.of(context).assessmentsSubmit,
                     onPressed: _submitting ? null : _submitAttempt,
                     loading: _submitting,
                     fullWidth: true,
                     semanticLabel:
-                        'Submit attempt for ${widget.assessmentTitle}',
+                        '${AppLocalizations.of(context).assessmentsSubmit} ${widget.assessmentTitle}',
                   ),
                   const SizedBox(height: AimSpacing.componentGap),
                   AIMButton(
@@ -192,7 +194,7 @@ class _SubmitAttemptPageState extends ConsumerState<SubmitAttemptPage> {
                     onPressed: _submitting ? null : () => context.pop(),
                     disabled: _submitting,
                     fullWidth: true,
-                    child: const Text('Go Back'),
+                    child: Text(AppLocalizations.of(context).assessmentsGoBack),
                   ),
                 ],
               ),
@@ -235,7 +237,7 @@ class _SubmitHeader extends StatelessWidget {
             Semantics(
               button: true,
               enabled: onBack != null,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: onBack,
                 customBorder: const CircleBorder(),

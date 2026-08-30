@@ -38,14 +38,11 @@ function App() {
 
   const { pathname } = window.location;
 
-  // Developer / internal tools — not linked from the student UI
-  if (pathname === '/dev' || pathname === '/algorithm-tester') {
-    return <AlgorithmTester />;
-  }
-
-  if (pathname === '/aim-demo') {
-    return <AimDemo />;
-  }
+  const isInternalDevRoute =
+    pathname === '/dev' ||
+    pathname === '/algorithm-tester' ||
+    pathname === '/aim-demo' ||
+    pathname === '/adaptive-result';
 
   const isAdminRoute =
     pathname === '/admin' ||
@@ -57,7 +54,7 @@ function App() {
   const isParentRoute =
     pathname === '/parent' || pathname === '/parent-dashboard';
 
-  if (isAdminRoute || isParentRoute) {
+  if (isAdminRoute || isParentRoute || isInternalDevRoute) {
     if (loading) {
       return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading…</div>;
     }
@@ -65,6 +62,19 @@ function App() {
       window.location.href = '/';
       return null;
     }
+  }
+
+  // Developer / internal tools — accessible only after authentication
+  if (pathname === '/dev' || pathname === '/algorithm-tester') {
+    return <AlgorithmTester />;
+  }
+
+  if (pathname === '/aim-demo') {
+    return <AimDemo />;
+  }
+
+  if (pathname === '/adaptive-result') {
+    return <AdaptiveResult />;
   }
 
   if (isAdminRoute && pathname === '/admin/notifications') {

@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
+import 'package:aim_mobile/features/auth/ui/pages/login_page.dart';
 import 'package:aim_mobile/core/routing/routing.dart';
 import 'package:aim_mobile/features/shell/ui/pages/main_shell_page.dart';
 import 'package:aim_mobile/features/auth/data/session/session_store.dart';
@@ -71,6 +73,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
+    expect(find.byType(LoginPage), findsOneWidget);
     expect(find.text('WELCOME BACK'), findsOneWidget);
   });
 
@@ -89,6 +92,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('AIM'), findsOneWidget);
+    expect(find.byType(LoginPage), findsNothing);
     expect(find.text('WELCOME BACK'), findsNothing);
   });
 
@@ -104,6 +108,7 @@ void main() {
               ..signIn('learner@example.com', accessToken: 'tok-abc');
           }),
         ],
+        child: const TestRouterApp(initialLocation: AppRoutePaths.mainShell),
         child: const TestRouterApp(initialLocation: AppRoutePaths.home),
       ),
     );

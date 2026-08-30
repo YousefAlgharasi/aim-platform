@@ -32,6 +32,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
 import 'package:aim_mobile/features/assessments/logic/provider/assessment_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Display-only formatting of a real backend value: drops the trailing ".0"
 /// when a points double is integral (e.g. "17" instead of "17.0").
@@ -214,10 +215,10 @@ class _ResultHistoryContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (history.results.isEmpty) {
-      return const AIMEmptyState(
-        icon: Icon(Icons.history_outlined),
-        title: 'No results yet',
-        subtitle: 'Your past attempt results will appear here.',
+      return AIMEmptyState(
+        icon: const Icon(Icons.history_outlined),
+        title: AppLocalizations.of(context).assessmentsNoResultsTitle,
+        subtitle: AppLocalizations.of(context).assessmentsNoResultsSubtitle,
       );
     }
 

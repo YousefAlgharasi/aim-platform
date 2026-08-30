@@ -269,6 +269,32 @@ class _AIMAppDrawerWithMoreState
         selected: false,
         onTap: () => _navigateTo(AppRoutePaths.accountSettings),
       ),
+      AIMDrawerItemData(
+        icon: const Icon(Icons.tune_outlined),
+        label: 'More',
+        selected: selectedIndex == 2,
+        trailing: Icon(
+          _isMoreExpanded
+              ? Icons.keyboard_arrow_up_rounded
+              : Icons.keyboard_arrow_down_rounded,
+          color: AimColors.neutral500,
+        ),
+        onTap: () {
+          setState(() {
+            _isMoreExpanded = !_isMoreExpanded;
+          });
+        },
+      ),
+      if (_isMoreExpanded)
+        AIMDrawerItemData(
+          icon: const Padding(
+            padding: EdgeInsetsDirectional.only(start: 12),
+            child: Icon(Icons.style_outlined, color: AimColors.primary500),
+          ),
+          label: l10n.shellNavReview,
+          selected: selectedIndex == 2,
+          onTap: () => _selectTab(2),
+        ),
     ];
 
     return AIMAppDrawer(
@@ -426,6 +452,118 @@ class _AIMDrawerBrandHeader extends ConsumerWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+
+/// English/Arabic segmented toggle wired to the app's real [localeProvider].
+/// Switching languages also switches text direction (LTR/RTL) app-wide,
+/// since [AppLocale.directionFor] derives direction from the same locale.
+class _AIMLanguageToggleRow extends ConsumerWidget {
+  const _AIMLanguageToggleRow();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final surfaces = aimSurfacesOf(context);
+    final locale = ref.watch(localeProvider);
+    final l10n = AppLocalizations.of(context);
+
+    return Row(
+      children: [
+        Expanded(
+          child: _ThemeToggleButton(
+            label: l10n.shellLanguageEnglish,
+            icon: Icons.language,
+            selected: locale.languageCode == AppLocale.english,
+            surfaces: surfaces,
+            semanticLabel: l10n.shellLanguageSemantic(l10n.shellLanguageEnglish),
+            onTap: () => ref.read(localeProvider.notifier).state =
+                const Locale(AppLocale.english),
+          ),
+        ),
+        const SizedBox(width: AimSpacing.componentGap),
+        Expanded(
+          child: _ThemeToggleButton(
+            label: l10n.shellLanguageArabic,
+            icon: Icons.translate,
+            selected: locale.languageCode == AppLocale.arabic,
+            surfaces: surfaces,
+            semanticLabel: l10n.shellLanguageSemantic(l10n.shellLanguageArabic),
+            onTap: () => ref.read(localeProvider.notifier).state =
+                const Locale(AppLocale.arabic),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ThemeToggleButton extends StatelessWidget {
+  const _ThemeToggleButton({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.surfaces,
+    required this.onTap,
+    this.semanticLabel,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final AimSurfaceTheme surfaces;
+  final VoidCallback onTap;
+
+  /// Accessibility label override. Defaults to the theme-toggle semantic
+  /// (`"$label theme"`) for backward compatibility with [_AIMThemeToggleRow];
+  /// [_AIMLanguageToggleRow] passes its own language-toggle semantic.
+  final String? semanticLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final soft = aimSoftFillsOf(context);
+    final l10n = AppLocalizations.of(context);
+    final background = selected ? soft.primary : surfaces.surfaceSunken;
+    final foreground = selected ? soft.onPrimary : surfaces.textSecondary;
+
+    return Material(
+      color: background,
+      borderRadius: AimRadius.borderMd,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AimRadius.borderMd,
+        splashColor: surfaces.statePressed,
+        highlightColor: surfaces.statePressed,
+        child: Semantics(
+          button: true,
+          selected: selected,
+          label: semanticLabel ?? l10n.shellThemeSemantic(label),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: AimSizes.touchTarget),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: AimSizes.iconSm, color: foreground),
+                const SizedBox(width: AimSpacing.space8),
+                Flexible(
+                  child: Text(
+                    label,
+                    overflow: TextOverflow.ellipsis,
+                    style: AimTextStyles.bodySm.copyWith(
+                      color: foreground,
+                      fontWeight: selected
+                          ? AimFontWeights.semibold
+                          : AimFontWeights.regular,
+                    ),
                       const SizedBox(height: 4),
                       Container(
                         padding: const EdgeInsets.symmetric(

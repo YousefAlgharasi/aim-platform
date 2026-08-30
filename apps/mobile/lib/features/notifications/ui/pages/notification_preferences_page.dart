@@ -25,6 +25,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/l10n/app_localizations.dart';
+
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -393,10 +395,12 @@ class _QuietHoursSectionState extends State<_QuietHoursSection> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AIMSwitch(
-            label: 'Enable quiet hours',
+            label:
+                AppLocalizations.of(context).notificationsEnableQuietHours,
             value: _enabled,
             disabled: isLoading,
-            semanticLabel: 'Enable quiet hours',
+            semanticLabel:
+                AppLocalizations.of(context).notificationsEnableQuietHours,
             onChanged: (value) => setState(() => _enabled = value),
           ),
           const SizedBox(height: AimSpacing.componentGap),
@@ -415,7 +419,7 @@ class _QuietHoursSectionState extends State<_QuietHoursSection> {
           ),
           const SizedBox(height: AimSpacing.sectionGap),
           AIMGradientButton(
-            label: 'Save quiet hours',
+            label: AppLocalizations.of(context).notificationsSaveQuietHours,
             onPressed: isLoading
                 ? null
                 : () => widget.onSave(
@@ -426,7 +430,8 @@ class _QuietHoursSectionState extends State<_QuietHoursSection> {
                     ),
             loading: isLoading,
             fullWidth: true,
-            semanticLabel: 'Save quiet hours',
+            semanticLabel:
+                AppLocalizations.of(context).notificationsSaveQuietHours,
           ),
         ],
       ),

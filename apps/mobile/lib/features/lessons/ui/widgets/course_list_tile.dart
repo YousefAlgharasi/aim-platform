@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Distinct colors for each course card icon box to match Figma prototype.
 const List<Color> _kCourseIconBgColors = [
@@ -113,15 +114,20 @@ class CourseListTile extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              Text(
-                                model.title,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: surfaces.textPrimary,
+                              Expanded(
+                                child: Text(
+                                  model.title,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: surfaces.textPrimary,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.start,
                                 ),
                               ),
-                              const Spacer(),
+                              const SizedBox(width: 8),
 
                               // Level Code Pill
                               if (model.levelCode != null) ...[
@@ -155,14 +161,14 @@ class CourseListTile extends StatelessWidget {
                                   child: const Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      CircleAvatar(
+                                      const CircleAvatar(
                                         radius: 3,
                                         backgroundColor: AimColors.success500,
                                       ),
                                       SizedBox(width: 4),
                                       Text(
-                                        'Current',
-                                        style: TextStyle(
+                                        AppLocalizations.of(context).coursesCurrentBadge,
+                                        style: const TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.bold,
                                           color: AimColors.success500,
@@ -191,6 +197,7 @@ class CourseListTile extends StatelessWidget {
                               model.description!,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.start,
                               style: TextStyle(
                                 fontSize: 13,
                                 color: locked ? surfaces.textMuted : surfaces.textSecondary,
@@ -202,7 +209,8 @@ class CourseListTile extends StatelessWidget {
                             Padding(
                               padding: const EdgeInsets.only(top: 4),
                               child: Text(
-                                'Finish your current level to unlock this course',
+                                AppLocalizations.of(context).lessonsCourseLockedHint,
+                                textAlign: TextAlign.start,
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: surfaces.textMuted,
@@ -252,11 +260,23 @@ class CourseListTile extends StatelessWidget {
                 // Metadata Row: Lessons, Quizzes, Exams
                 Row(
                   children: [
-                    _buildMetaChip(context, Icons.menu_book_outlined, '${model.lessonCount} lessons'),
+                    _buildMetaChip(
+                      context,
+                      Icons.menu_book_outlined,
+                      AppLocalizations.of(context).lessonsCountChip(model.lessonCount),
+                    ),
                     const SizedBox(width: 12),
-                    _buildMetaChip(context, Icons.quiz_outlined, '${model.quizCount} quizzes'),
+                    _buildMetaChip(
+                      context,
+                      Icons.quiz_outlined,
+                      AppLocalizations.of(context).quizzesCountChip(model.quizCount),
+                    ),
                     const SizedBox(width: 12),
-                    _buildMetaChip(context, Icons.emoji_events_outlined, '${model.examCount} exam'),
+                    _buildMetaChip(
+                      context,
+                      Icons.emoji_events_outlined,
+                      AppLocalizations.of(context).examsCountChip(model.examCount),
+                    ),
                   ],
                 ),
 
@@ -275,8 +295,10 @@ class CourseListTile extends StatelessWidget {
                       ),
                       child: Text(
                         completed
-                            ? 'Completed'
-                            : (inProgress ? 'In progress' : 'Not started'),
+                            ? AppLocalizations.of(context).lessonsCompletedLabel
+                            : (inProgress
+                                ? AppLocalizations.of(context).lessonsInProgressLabel
+                                : AppLocalizations.of(context).lessonsNotStartedLabel),
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,

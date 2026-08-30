@@ -71,6 +71,7 @@ import '../widgets/voice_teacher_avatar.dart';
 import '../widgets/voice_text_fallback.dart';
 import '../widgets/voice_transcript_list.dart';
 import '../widgets/voice_waveform_indicator.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class VoiceTeacherPage extends ConsumerStatefulWidget {
   const VoiceTeacherPage({required this.contextRef, this.recorder, super.key});
@@ -377,6 +378,7 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final sessionState = ref.watch(voiceTeacherSessionProvider);
     final recordState = ref.watch(voiceRecordSubmitProvider);
     final playbackState = ref.watch(voicePlaybackProvider);
@@ -388,11 +390,11 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
         decoration: const BoxDecoration(gradient: AimGradients.gzHero),
         child: SafeArea(
           child: switch (sessionState) {
-            AppAsyncLoading() => const AIMFullScreenLoading(
-                semanticLabel: 'Starting Voice Teacher session',
+            AppAsyncLoading() => AIMFullScreenLoading(
+                semanticLabel: l10n.voiceTeacherStartingSession,
               ),
-            AppAsyncIdle() => const AIMFullScreenLoading(
-                semanticLabel: 'Starting Voice Teacher session',
+            AppAsyncIdle() => AIMFullScreenLoading(
+                semanticLabel: l10n.voiceTeacherStartingSession,
               ),
             AppAsyncFailure() => VoiceErrorState(
                 errorType: VoiceErrorType.serverError,
@@ -438,6 +440,9 @@ class _VoiceTeacherHeader extends StatelessWidget
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
+
     return SafeArea(
       bottom: false,
       child: SizedBox(
@@ -450,7 +455,7 @@ class _VoiceTeacherHeader extends StatelessWidget
             children: [
               Semantics(
                 button: true,
-                label: 'Back',
+                label: l10n.voiceTeacherBackSemantic,
                 child: InkWell(
                   onTap: () {
                   if (context.canPop()) {
@@ -468,7 +473,7 @@ class _VoiceTeacherHeader extends StatelessWidget
                     child: Padding(
                       padding: const EdgeInsets.all(AimSpacing.space12),
                       child: Icon(
-                        Directionality.of(context) == TextDirection.rtl
+                        isRtl
                           ? Icons.chevron_right_rounded
                           : Icons.chevron_left_rounded,
                         size: AimSizes.iconMd,
@@ -481,7 +486,7 @@ class _VoiceTeacherHeader extends StatelessWidget
               const SizedBox(width: AimSpacing.componentGap),
               Expanded(
                 child: Text(
-                  'Voice Teacher',
+                  l10n.voiceTeacherTitle,
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                   style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
@@ -575,7 +580,7 @@ class _VoiceTutorContent extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsetsDirectional.only(end: AimSpacing.space8),
                   child: _VoiceTranscriptToggleButton(
-                    label: 'Back to call',
+                    label: AppLocalizations.of(context).voiceTeacherBackToCall,
                     icon: Icons.mic_none_rounded,
                     onTap: onToggleTranscript,
                   ),
@@ -693,18 +698,26 @@ class _VoiceAvatarStage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final (label, heading) = switch (mood) {
-      VoiceAvatarMood.speaking => ('Speaking', 'Your teacher is speaking…'),
-      VoiceAvatarMood.recording => ('Recording', 'Listening to you…'),
-      VoiceAvatarMood.processing => ('Processing', 'Processing your answer…'),
-      VoiceAvatarMood.listening => ('Ready', 'Your turn — press and hold to speak'),
+      VoiceAvatarMood.speaking => (
+          l10n.voiceTeacherStatusSpeaking,
+          l10n.voiceTeacherHeadingSpeaking,
+        ),
+      VoiceAvatarMood.recording => (
+          l10n.voiceTeacherStatusRecording,
+          l10n.voiceTeacherHeadingRecording,
+        ),
+      VoiceAvatarMood.processing => (
+          l10n.voiceTeacherStatusProcessing,
+          l10n.voiceTeacherHeadingProcessing,
+        ),
+      VoiceAvatarMood.listening => (
+          l10n.voiceTeacherStatusReady,
+          l10n.voiceTeacherHeadingListening,
+        ),
     };
 
-    // The mic is only for the student's turn — disabled while the AI is
-    // speaking or a submitted turn is still processing, so a stray press
-    // can't barge in mid-sentence or double-submit while a turn is in
-    // flight (barge-in remains possible by design once the AI is actually
-    // mid-speech and the student wants to interrupt — see onPressStart).
     final micEnabled = mood != VoiceAvatarMood.processing;
 
     return Stack(
@@ -739,7 +752,7 @@ class _VoiceAvatarStage extends StatelessWidget {
                   errorOrFallback!
                 else
                   Text(
-                    'Practise your pronunciation with the AI teacher',
+                    l10n.voiceTeacherPracticeSubtitle,
                     style: AimTextStyles.bodySm.copyWith(
                       color: AimColors.neutral0.withValues(alpha: 0.85),
                     ),
@@ -754,7 +767,7 @@ class _VoiceAvatarStage extends StatelessWidget {
             bottom: AimSpacing.screenPaddingMobile,
             end: AimSpacing.screenPaddingMobile,
             child: _VoiceTranscriptToggleButton(
-              label: 'Messages',
+              label: l10n.voiceTeacherMessagesButton,
               icon: Icons.chat_bubble_outline_rounded,
               onTap: onViewMessages!,
             ),
@@ -837,8 +850,9 @@ class _VoiceStatusPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Semantics(
-      label: 'Status: $label',
+      label: l10n.voiceTeacherStatusSemantic(label),
       child: ExcludeSemantics(
         child: DecoratedBox(
           decoration: BoxDecoration(

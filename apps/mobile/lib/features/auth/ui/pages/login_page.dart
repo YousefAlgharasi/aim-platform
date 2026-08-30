@@ -9,7 +9,7 @@ import '../../../../core/routing/routing.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../logic/provider/login_provider.dart';
 
-/// Login screen — Student Mobile App MVP.
+/// Login screen — Student Mobile App.
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
@@ -60,7 +60,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final l10n = AppLocalizations.of(context);
     final formState = ref.watch(loginProvider);
     final isTestModeAvailable = !ref.watch(appConfigProvider).isProduction;
-    final size = MediaQuery.sizeOf(context);
     final surfaces = aimSurfacesOf(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -71,14 +70,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         body: SafeArea(
           child: AutofillGroup(
             child: ListView(
-              padding: EdgeInsets.fromLTRB(
+              padding: const EdgeInsetsDirectional.fromSTEB(
                 AimSpacing.screenPaddingMobile,
-                size.height * 0.065,
+                AimSpacing.space32,
                 AimSpacing.screenPaddingMobile,
                 AimSpacing.space40,
               ),
               children: [
-                // Sparkle logo header row
+                // Header brand row
                 Row(
                   children: [
                     Container(
@@ -86,7 +85,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       height: 40,
                       decoration: BoxDecoration(
                         gradient: AimGradients.gzHero,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AimRadius.borderSm,
                         boxShadow: [
                           BoxShadow(
                             color: AimColors.primary500.withValues(alpha: 0.2),
@@ -96,56 +95,60 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ],
                       ),
                       child: const Center(
-                        child: Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+                        child: Icon(
+                          Icons.auto_awesome,
+                          color: AimColors.neutral0,
+                          size: 20,
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AimSpacing.innerGap),
                     ShaderMask(
-                      shaderCallback: (bounds) => AimGradients.gzHero.createShader(
+                      shaderCallback: (bounds) =>
+                          AimGradients.gzHero.createShader(
                         Rect.fromLTWH(0, 0, bounds.width, bounds.height),
                       ),
-                      child: const Text(
-                        'AIM',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w900,
+                      child: Text(
+                        l10n.appTitle,
+                        style: AimTextStyles.h2.copyWith(
+                          color: AimColors.neutral0,
+                          fontWeight: AimFontWeights.extrabold,
                           letterSpacing: -0.5,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AimSpacing.sectionGap),
 
                 Text(
-                  l10n.authWelcomeBackTitle.toUpperCase(),
+                  'SIGN IN',
                   style: AimTextStyles.caption.copyWith(
                     color: AimColors.primary600,
                     fontWeight: AimFontWeights.extrabold,
                     letterSpacing: 1.0,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: AimSpacing.space4),
 
                 Text(
-                  'Sign in to your\naccount',
+                  'Welcome back',
                   style: AimTextStyles.h1.copyWith(
                     color: surfaces.textPrimary,
                     fontSize: 28,
                     height: 1.15,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AimSpacing.innerGap),
 
                 Text(
-                  'Happy to see you again. Enter your email and password to continue.',
+                  'Enter your credentials to access your courses and continue learning.',
                   style: AimTextStyles.bodySm.copyWith(
                     color: surfaces.textSecondary,
                     height: 1.5,
                   ),
                 ),
-                const SizedBox(height: 64),
+                const SizedBox(height: AimSpacing.sectionGap),
 
                 if (formState.errorMessage != null) ...[
                   AIMAlertBanner(
@@ -218,7 +221,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ],
                     ),
                     child: Material(
-                      color: Colors.transparent,
+                      color: AimColors.neutral0.withValues(alpha: 0.0),
                       borderRadius: AimRadius.borderMd,
                       child: InkWell(
                         onTap: formState.isSubmitting ? null : _submit,
@@ -260,9 +263,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       child: Text(
-                        l10n.authOrConnector,
-                        style: AimTextStyles.bodySm.copyWith(
+                        l10n.authOrContinueWith,
+                        style: AimTextStyles.caption.copyWith(
                           color: surfaces.textMuted,
+                          fontWeight: AimFontWeights.semibold,
                         ),
                       ),
                     ),
@@ -302,7 +306,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      l10n.authNoAccountPrompt,
+                      'Don\'t have an account? ',
                       style: AimTextStyles.bodySm.copyWith(
                         color: surfaces.textSecondary,
                       ),
@@ -310,7 +314,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     GestureDetector(
                       onTap: _openRegister,
                       child: Text(
-                        l10n.authCreateOneLink,
+                        'Create one',
                         style: AimTextStyles.bodySm.copyWith(
                           fontWeight: AimFontWeights.bold,
                           color: AimColors.primary500,
@@ -390,65 +394,63 @@ class _FigmaInputFieldState extends State<_FigmaInputField> {
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 150),
-      height: AimSizes.buttonLg,
+    Color borderColor;
+    if (widget.disabled) {
+      borderColor = surfaces.disabledBorder;
+    } else if (_focused) {
+      borderColor = AimColors.primary500;
+    } else {
+      borderColor = surfaces.border;
+    }
+
+    return Container(
+      height: AimSizes.input,
       decoration: BoxDecoration(
-        color: surfaces.surfaceSunken,
+        color: widget.disabled ? surfaces.surfaceSunken : surfaces.surfaceRaised,
         borderRadius: AimRadius.borderMd,
         border: Border.all(
-          color: _focused ? AimColors.primary500 : surfaces.border,
-          width: 1,
+          color: borderColor,
+          width: _focused ? 1.5 : 1.0,
         ),
       ),
       child: Row(
         children: [
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AimSpacing.space16),
-              child: TextField(
-                controller: widget.controller,
-                focusNode: widget.focusNode,
-                obscureText: widget.obscureText && !_showText,
-                keyboardType: widget.keyboardType,
-                textInputAction: widget.textInputAction,
-                autofillHints: widget.autofillHints,
-                enabled: !widget.disabled,
-                onChanged: widget.onChanged,
-                onSubmitted: widget.onSubmitted,
-                style: AimTextStyles.bodyMd.copyWith(
-                  color: surfaces.textPrimary,
+            child: TextField(
+              controller: widget.controller,
+              focusNode: widget.focusNode,
+              obscureText: widget.obscureText && !_showText,
+              keyboardType: widget.keyboardType,
+              textInputAction: widget.textInputAction,
+              autofillHints: widget.autofillHints,
+              enabled: !widget.disabled,
+              onChanged: widget.onChanged,
+              onSubmitted: widget.onSubmitted,
+              style: AimTextStyles.bodyMd.copyWith(color: surfaces.textPrimary),
+              decoration: InputDecoration(
+                hintText: widget.placeholder,
+                hintStyle: AimTextStyles.bodyMd.copyWith(color: surfaces.textMuted),
+                contentPadding: const EdgeInsetsDirectional.symmetric(
+                  horizontal: AimSpacing.space16,
+                  vertical: AimSpacing.space12,
                 ),
-                decoration: InputDecoration(
-                  hintText: widget.placeholder,
-                  hintStyle: AimTextStyles.bodyMd.copyWith(
-                    color: surfaces.textMuted,
-                  ),
-                  filled: true,
-                  fillColor: Colors.transparent,
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  disabledBorder: InputBorder.none,
-                  isDense: true,
-                  contentPadding: EdgeInsets.zero,
-                ),
+                border: InputBorder.none,
+                isDense: true,
               ),
             ),
           ),
           if (widget.obscureText)
-            GestureDetector(
-              onTap: () => setState(() => _showText = !_showText),
-              child: Padding(
-                padding: const EdgeInsets.only(right: AimSpacing.space16),
-                child: Icon(
-                  _showText
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
-                  size: AimSizes.iconMd,
-                  color: surfaces.textMuted,
-                ),
+            IconButton(
+              icon: Icon(
+                _showText
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
+                size: 20,
+                color: surfaces.textMuted,
               ),
+              onPressed: widget.disabled
+                  ? null
+                  : () => setState(() => _showText = !_showText),
             ),
         ],
       ),
@@ -479,19 +481,26 @@ class _FigmaSocialButton extends StatelessWidget {
         child: InkWell(
           onTap: onPressed,
           borderRadius: AimRadius.borderLg,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              icon,
-              const SizedBox(width: AimSpacing.innerGap),
-              Text(
-                label,
-                style: AimTextStyles.bodySm.copyWith(
-                  fontWeight: AimFontWeights.medium,
-                  color: surfaces.textPrimary,
+          child: Padding(
+            padding: const EdgeInsetsDirectional.symmetric(horizontal: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                icon,
+                const SizedBox(width: AimSpacing.innerGap),
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AimTextStyles.bodySm.copyWith(
+                      fontWeight: AimFontWeights.medium,
+                      color: surfaces.textPrimary,
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -534,7 +543,7 @@ class _TestAccountsCard extends StatelessWidget {
           ),
           const SizedBox(height: AimSpacing.innerGap),
           Text(
-            'Quick-login with test credentials:',
+            'Pre-populated with test accounts across the three primary AIM roles. Tapping any role automatically signs in with that profile.',
             style: AimTextStyles.bodySm.copyWith(
               color: surfaces.textSecondary,
             ),
@@ -629,50 +638,39 @@ class _GooglePainter extends CustomPainter {
         '4285F4',
         Path()
           ..moveTo(22.56 * scale, 12.25 * scale)
-          ..cubicTo(22.56 * scale, 11.47 * scale, 22.49 * scale,
-              10.72 * scale, 22.36 * scale, 10 * scale)
+          ..cubicTo(22.56 * scale, 11.47 * scale, 22.49 * scale, 10.72 * scale, 22.36 * scale, 10 * scale)
           ..lineTo(12 * scale, 10 * scale)
           ..lineTo(12 * scale, 14.26 * scale)
           ..lineTo(17.92 * scale, 14.26 * scale)
-          ..cubicTo(17.67 * scale, 15.63 * scale, 16.89 * scale,
-              16.8 * scale, 15.72 * scale, 17.58 * scale)
+          ..cubicTo(17.67 * scale, 15.63 * scale, 16.89 * scale, 16.8 * scale, 15.72 * scale, 17.58 * scale)
           ..lineTo(15.72 * scale, 20.35 * scale)
           ..lineTo(19.29 * scale, 20.35 * scale)
-          ..cubicTo(21.37 * scale, 18.43 * scale, 22.56 * scale,
-              15.61 * scale, 22.56 * scale, 12.25 * scale)
+          ..cubicTo(21.37 * scale, 18.43 * scale, 22.56 * scale, 15.61 * scale, 22.56 * scale, 12.25 * scale)
           ..close());
 
     fill(
         '34A853',
         Path()
           ..moveTo(12 * scale, 23 * scale)
-          ..cubicTo(14.97 * scale, 23 * scale, 17.46 * scale, 22.02 * scale,
-              19.28 * scale, 20.34 * scale)
+          ..cubicTo(14.97 * scale, 23 * scale, 17.46 * scale, 22.02 * scale, 19.28 * scale, 20.34 * scale)
           ..lineTo(15.71 * scale, 17.57 * scale)
-          ..cubicTo(14.73 * scale, 18.23 * scale, 13.48 * scale,
-              18.63 * scale, 12 * scale, 18.63 * scale)
-          ..cubicTo(9.14 * scale, 18.63 * scale, 6.71 * scale, 16.7 * scale,
-              5.84 * scale, 14.1 * scale)
+          ..cubicTo(14.73 * scale, 18.23 * scale, 13.48 * scale, 18.63 * scale, 12 * scale, 18.63 * scale)
+          ..cubicTo(9.14 * scale, 18.63 * scale, 6.71 * scale, 16.7 * scale, 5.84 * scale, 14.1 * scale)
           ..lineTo(2.18 * scale, 14.1 * scale)
           ..lineTo(2.18 * scale, 16.94 * scale)
-          ..cubicTo(4 * scale, 20.53 * scale, 7.7 * scale, 23 * scale,
-              12 * scale, 23 * scale)
+          ..cubicTo(4 * scale, 20.53 * scale, 7.7 * scale, 23 * scale, 12 * scale, 23 * scale)
           ..close());
 
     fill(
         'FBBC05',
         Path()
           ..moveTo(5.84 * scale, 14.1 * scale)
-          ..cubicTo(5.62 * scale, 13.44 * scale, 5.5 * scale, 12.73 * scale,
-              5.5 * scale, 12 * scale)
-          ..cubicTo(5.5 * scale, 11.27 * scale, 5.62 * scale, 10.56 * scale,
-              5.84 * scale, 9.9 * scale)
+          ..cubicTo(5.62 * scale, 13.44 * scale, 5.5 * scale, 12.73 * scale, 5.5 * scale, 12 * scale)
+          ..cubicTo(5.5 * scale, 11.27 * scale, 5.62 * scale, 10.56 * scale, 5.84 * scale, 9.9 * scale)
           ..lineTo(5.84 * scale, 7.06 * scale)
           ..lineTo(2.18 * scale, 7.06 * scale)
-          ..cubicTo(1.43 * scale, 8.55 * scale, 1 * scale, 10.22 * scale,
-              1 * scale, 12 * scale)
-          ..cubicTo(1 * scale, 13.78 * scale, 1.43 * scale, 15.45 * scale,
-              2.18 * scale, 16.94 * scale)
+          ..cubicTo(1.43 * scale, 8.55 * scale, 1 * scale, 10.22 * scale, 1 * scale, 12 * scale)
+          ..cubicTo(1 * scale, 13.78 * scale, 1.43 * scale, 15.45 * scale, 2.18 * scale, 16.94 * scale)
           ..lineTo(5.84 * scale, 14.1 * scale)
           ..close());
 
@@ -680,16 +678,12 @@ class _GooglePainter extends CustomPainter {
         'EA4335',
         Path()
           ..moveTo(12 * scale, 5.38 * scale)
-          ..cubicTo(13.62 * scale, 5.38 * scale, 15.06 * scale, 5.94 * scale,
-              16.21 * scale, 7.02 * scale)
+          ..cubicTo(13.62 * scale, 5.38 * scale, 15.06 * scale, 5.94 * scale, 16.21 * scale, 7.02 * scale)
           ..lineTo(19.36 * scale, 3.87 * scale)
-          ..cubicTo(17.45 * scale, 2.09 * scale, 14.97 * scale, 1 * scale,
-              12 * scale, 1 * scale)
-          ..cubicTo(7.7 * scale, 1 * scale, 4 * scale, 3.47 * scale,
-              2.18 * scale, 7.06 * scale)
+          ..cubicTo(17.45 * scale, 2.09 * scale, 14.97 * scale, 1 * scale, 12 * scale, 1 * scale)
+          ..cubicTo(7.7 * scale, 1 * scale, 4 * scale, 3.47 * scale, 2.18 * scale, 7.06 * scale)
           ..lineTo(5.84 * scale, 9.9 * scale)
-          ..cubicTo(6.71 * scale, 7.3 * scale, 9.14 * scale, 5.38 * scale,
-              12 * scale, 5.38 * scale)
+          ..cubicTo(6.71 * scale, 7.3 * scale, 9.14 * scale, 5.38 * scale, 12 * scale, 5.38 * scale)
           ..close());
   }
 

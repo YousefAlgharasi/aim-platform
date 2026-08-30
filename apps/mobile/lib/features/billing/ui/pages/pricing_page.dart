@@ -18,6 +18,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/l10n/app_localizations.dart';
+
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -167,10 +169,10 @@ class PlansList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (data.plans.isEmpty) {
-      return const AIMEmptyState(
-        icon: Icon(Icons.storefront_outlined),
-        title: 'No plans available',
-        subtitle: 'Check back later for available plans.',
+      return AIMEmptyState(
+        icon: const Icon(Icons.storefront_outlined),
+        title: AppLocalizations.of(context).billingNoPlansAvailable,
+        subtitle: AppLocalizations.of(context).billingCheckBackLaterPlans,
       );
     }
 

@@ -113,7 +113,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: AimColors.error500,
-            content: Text('Failed to save profile changes: $e'),
+            content: Text(l10n.profileSaveFailed(e.toString())),
           ),
         );
       }
@@ -127,6 +127,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
   }
 
   Future<void> _updatePassword() async {
+    final l10n = AppLocalizations.of(context);
     setState(() {
       _isUpdatingPassword = true;
     });
@@ -151,16 +152,14 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             backgroundColor: AimColors.success500,
             content: Row(
               children: [
-                Icon(Icons.mark_email_read, color: AimColors.neutral0),
-                SizedBox(width: 8),
+                const Icon(Icons.mark_email_read, color: AimColors.neutral0),
+                const SizedBox(width: 8),
                 Expanded(
-                  child: Text(
-                    'Password reset email sent. Please check your inbox.',
-                  ),
+                  child: Text(l10n.profilePasswordResetSuccess),
                 ),
               ],
             ),
@@ -175,7 +174,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: AimColors.error500,
-            content: Text('Failed to request password reset: $e'),
+            content: Text(l10n.profilePasswordResetFailed(e.toString())),
           ),
         );
       }
@@ -253,7 +252,9 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                 borderRadius: AimRadius.borderMd,
               ),
               child: Icon(
-                Icons.arrow_back_rounded,
+                Directionality.of(context) == TextDirection.rtl
+                    ? Icons.arrow_forward_rounded
+                    : Icons.arrow_back_rounded,
                 color: surfaces.textPrimary,
                 size: 20,
               ),
@@ -273,7 +274,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
           const AimQuickThemeToggle(size: 36, iconSize: 18),
           const SizedBox(width: 8),
           Padding(
-            padding: const EdgeInsets.only(right: 16),
+            padding: const EdgeInsetsDirectional.only(end: 16),
             child: CircleAvatar(
               radius: 18,
               backgroundColor: AimColors.primary500,
@@ -346,7 +347,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                                   borderRadius: AimRadius.borderSm,
                                 ),
                                 child: Text(
-                                  'AIM PLUS MEMBER',
+                                  l10n.profileAimPlusMember,
                                   style: AimTextStyles.caption.copyWith(
                                     color: AimColors.primary600,
                                     fontSize: 9,
@@ -374,7 +375,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                 const SizedBox(height: 6),
                 AIMInput(
                   controller: _nameController,
-                  placeholder: 'Enter your full name',
+                  placeholder: l10n.settingsEnterFullName,
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -490,9 +491,9 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
 
           // 2. App Theme & Display
           Padding(
-            padding: const EdgeInsets.only(bottom: 8, left: 4),
+            padding: const EdgeInsetsDirectional.only(bottom: 8, start: 4),
             child: Text(
-              'App Theme & Display',
+              l10n.settingsAppThemeDisplay,
               style: AimTextStyles.bodyMd.copyWith(
                 color: surfaces.textPrimary,
                 fontWeight: AimFontWeights.extrabold,
@@ -539,8 +540,8 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                         const SizedBox(height: 2),
                         Text(
                           isDark 
-                              ? 'Darker UI option for night use' 
-                              : 'Clean, high contrast appearance',
+                              ? l10n.settingsThemeDarkSubtitle 
+                              : l10n.settingsThemeLightSubtitle,
                           style: AimTextStyles.caption.copyWith(
                             color: surfaces.textMuted,
                           ),
@@ -564,9 +565,9 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
 
           // 3. Notification Preferences
           Padding(
-            padding: const EdgeInsets.only(bottom: 8, left: 4),
+            padding: const EdgeInsetsDirectional.only(bottom: 8, start: 4),
             child: Text(
-              'Notification Preferences',
+              l10n.settingsNotificationPreferences,
               style: AimTextStyles.bodyMd.copyWith(
                 color: surfaces.textPrimary,
                 fontWeight: AimFontWeights.extrabold,
@@ -593,7 +594,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Get notified at your preferred study time',
+                            l10n.profileStudyTimeNotification,
                             style: AimTextStyles.caption.copyWith(
                               color: surfaces.textMuted,
                             ),
@@ -629,7 +630,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Alerts when AI detects new learning gaps',
+                            l10n.profileLearningGapsAlerts,
                             style: AimTextStyles.caption.copyWith(
                               color: surfaces.textMuted,
                             ),
@@ -655,9 +656,9 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
 
           // 4. Security & Password
           Padding(
-            padding: const EdgeInsets.only(bottom: 8, left: 4),
+            padding: const EdgeInsetsDirectional.only(bottom: 8, start: 4),
             child: Text(
-              'Security & Password',
+              l10n.profileSecurityPassword,
               style: AimTextStyles.bodyMd.copyWith(
                 color: surfaces.textPrimary,
                 fontWeight: AimFontWeights.extrabold,

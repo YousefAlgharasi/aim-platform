@@ -21,6 +21,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/billing/data/models/billing_models.dart';
 import 'package:aim_mobile/features/billing/logic/entity/billing_data.dart';
 import 'package:aim_mobile/features/billing/logic/provider/billing_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'pricing_page.dart';
 
 class SubscriptionPage extends ConsumerStatefulWidget {
@@ -213,14 +214,14 @@ class _SubscriptionContent extends ConsumerWidget {
               Expanded(
                 child: OutlinedButton(
                   onPressed: () => context.push(AppRoutePaths.invoiceHistory),
-                  child: const Text('Invoices'),
+                  child: Text(AppLocalizations.of(context).billingInvoices),
                 ),
               ),
               const SizedBox(width: AimSpacing.componentGap),
               Expanded(
                 child: OutlinedButton(
                   onPressed: () => context.push(AppRoutePaths.pricing),
-                  child: const Text('Change plan'),
+                  child: Text(AppLocalizations.of(context).billingChangePlan),
                 ),
               ),
             ],
@@ -230,7 +231,7 @@ class _SubscriptionContent extends ConsumerWidget {
             TextButton(
               onPressed: () => _showCancelDialog(context, ref, subscription.id),
               style: TextButton.styleFrom(foregroundColor: AimColors.error500),
-              child: const Text('Cancel subscription'),
+              child: Text(AppLocalizations.of(context).billingCancelSubscription),
             ),
           ],
         ],
@@ -243,17 +244,16 @@ class _SubscriptionContent extends ConsumerWidget {
     WidgetRef ref,
     String subscriptionId,
   ) {
+    final l10n = AppLocalizations.of(context);
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Cancel Subscription?'),
-        content: const Text(
-          'Your subscription will remain active until the end of the current billing period.',
-        ),
+        title: Text(l10n.billingCancelSubscriptionDialogTitle),
+        content: Text(l10n.billingCancelSubscriptionDialogMessage),
         actions: [
           TextButton(
             onPressed: () => ctx.pop(),
-            child: const Text('Keep Subscription'),
+            child: Text(l10n.billingKeepSubscription),
           ),
           TextButton(
             onPressed: () {
@@ -263,7 +263,7 @@ class _SubscriptionContent extends ConsumerWidget {
                   .cancelSubscription(subscriptionId);
             },
             style: TextButton.styleFrom(foregroundColor: AimColors.error500),
-            child: const Text('Cancel'),
+            child: Text(l10n.commonCancel),
           ),
         ],
       ),
@@ -313,7 +313,7 @@ class _CurrentPlanCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Current plan',
+                        AppLocalizations.of(context).billingCurrentPlan,
                         style: AimTextStyles.bodySm.copyWith(
                           color: AimColors.neutral0.withValues(alpha: 0.85),
                         ),

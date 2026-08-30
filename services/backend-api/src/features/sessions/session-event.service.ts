@@ -122,6 +122,9 @@ export class SessionEventService {
     );
 
     const event = insertResult.rows[0];
+    if (!event) {
+      throw new Error('Failed to record learning session event');
+    }
 
     await this.db.query(
       `UPDATE learning_sessions

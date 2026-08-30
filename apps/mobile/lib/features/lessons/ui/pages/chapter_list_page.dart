@@ -11,6 +11,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lessons_entities.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 enum ChapterListFilter { all, inProgress, completed }
 
@@ -170,16 +171,17 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
   }
 
   Widget _buildBody(BuildContext context, List<ChapterProgress> chapters) {
+    final l10n = AppLocalizations.of(context);
     if (chapters.isEmpty) {
       return RefreshIndicator(
         onRefresh: _refresh,
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-          children: const [
+          children: [
             AIMEmptyState(
-              icon: Icon(Icons.layers_outlined),
-              title: 'No chapters available',
-              subtitle: 'Check back later for new chapters.',
+              icon: const Icon(Icons.layers_outlined),
+              title: l10n.lessonsNoChaptersTitle,
+              subtitle: l10n.lessonsNoChaptersSubtitle,
             ),
           ],
         ),
@@ -231,9 +233,9 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
                     color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Text(
-                    'COURSE OVERVIEW',
-                    style: TextStyle(
+                  child: Text(
+                    l10n.lessonsCourseOverviewHeader,
+                    style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w800,
                       color: Colors.white,
@@ -254,7 +256,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${chapters.length} chapters · $totalLessons Total Lessons',
+                  l10n.lessonsTotalLessonsCount(chapters.length, totalLessons),
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.white.withValues(alpha: 0.9),
@@ -267,7 +269,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
                 Row(
                   children: [
                     Text(
-                      'Course Progress',
+                      l10n.lessonsCourseProgressHeader,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -304,11 +306,11 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
           // Filter Segment Tabs
           Row(
             children: [
-              _buildFilterTab('All chapters', ChapterListFilter.all),
+              _buildFilterTab(l10n.lessonsFilterAllChapters, ChapterListFilter.all),
               const SizedBox(width: 8),
-              _buildFilterTab('In progress', ChapterListFilter.inProgress),
+              _buildFilterTab(l10n.lessonsInProgressLabel, ChapterListFilter.inProgress),
               const SizedBox(width: 8),
-              _buildFilterTab('Completed', ChapterListFilter.completed),
+              _buildFilterTab(l10n.lessonsCompletedLabel, ChapterListFilter.completed),
             ],
           ),
 
@@ -321,7 +323,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
               return Row(
                 children: [
                   Text(
-                    'Course Chapters',
+                    l10n.lessonsCourseChaptersHeader,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
@@ -331,7 +333,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
                   ),
                   const Spacer(),
                   Text(
-                    '${chapters.length} chapters',
+                    l10n.lessonsChapterCountLabel(chapters.length),
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -409,6 +411,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
 
   Widget _buildNextUpCard({bool isExamPassed = false}) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final exam = _finalExam;
 
     if (exam == null) {
@@ -427,7 +430,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
                 Icon(Icons.lock_outline_rounded, size: 16, color: surfaces.textSecondary),
                 const SizedBox(width: 6),
                 Text(
-                  'NEXT UP · LOCKED COURSE',
+                  l10n.lessonsNextUpLockedCourse,
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
@@ -439,7 +442,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Next Course Level',
+              l10n.lessonsNextCourseLevel,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -448,7 +451,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Unlocks automatically once you complete all chapters in this course.',
+              l10n.lessonsUnlockCourseCondition,
               style: TextStyle(
                 fontSize: 13,
                 color: surfaces.textSecondary,
@@ -706,6 +709,7 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colorScheme = Theme.of(context).colorScheme;
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     final isHighlighted = chapter.isInProgress || _isExpanded;
 
@@ -800,7 +804,7 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  'DONE',
+                                  l10n.lessonsDoneBadge,
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w800,
@@ -817,7 +821,7 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  'IN PROGRESS',
+                                  l10n.lessonsInProgressLabel.toUpperCase(),
                                   style: TextStyle(
                                     fontSize: 9,
                                     fontWeight: FontWeight.w800,
@@ -834,7 +838,7 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  'LOCKED',
+                                  l10n.lessonsLockedStatus,
                                   style: TextStyle(
                                     fontSize: 9,
                                     fontWeight: FontWeight.w800,
@@ -924,7 +928,7 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'LESSONS IN THIS CHAPTER',
+                    l10n.lessonsInThisChapterHeader,
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
@@ -943,7 +947,7 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       child: Text(
-                        'No lessons available in this chapter.',
+                        l10n.lessonsNoLessonsTitle,
                         style: TextStyle(
                           fontSize: 13,
                           color: surfaces.textMuted,
@@ -1041,7 +1045,7 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                                           Row(
                                             children: [
                                               Text(
-                                                'LESSON $lessonNum',
+                                                l10n.lessonsLessonNumberPill(lessonNum).toUpperCase(),
                                                 style: TextStyle(
                                                   fontSize: 10,
                                                   fontWeight: FontWeight.w800,
@@ -1187,7 +1191,7 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                                         Row(
                                           children: [
                                             Text(
-                                              'CHAPTER QUIZ',
+                                              l10n.lessonsChapterQuizHeader,
                                               style: TextStyle(
                                                 fontSize: 10,
                                                 fontWeight: FontWeight.w800,
@@ -1209,7 +1213,7 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                                                   borderRadius: BorderRadius.circular(6),
                                                 ),
                                                 child: Text(
-                                                  'PASSED$scoreText',
+                                                  '${l10n.lessonsPassedStatus}$scoreText',
                                                   style: const TextStyle(
                                                     fontSize: 9,
                                                     fontWeight: FontWeight.w800,
@@ -1230,7 +1234,7 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                                                   borderRadius: BorderRadius.circular(6),
                                                 ),
                                                 child: Text(
-                                                  'LOCKED',
+                                                  l10n.lessonsLockedStatus,
                                                   style: TextStyle(
                                                     fontSize: 9,
                                                     fontWeight: FontWeight.w800,

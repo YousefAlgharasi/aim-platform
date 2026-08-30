@@ -37,6 +37,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'package:aim_mobile/features/aim_results/data/models/aim_results_models.dart';
 import 'package:aim_mobile/features/aim_results/logic/entity/aim_review_schedule.dart'
     show formatAimIntervalDays;
@@ -96,11 +97,13 @@ class _ReviewSchedulePageState extends ConsumerState<ReviewSchedulePage> {
   Widget build(BuildContext context) {
     final state = ref.watch(aimResultsProvider);
 
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       body: Column(
         children: [
           AIMGradientHeroHeader(
-            title: 'Review Schedule',
+            title: l10n.reviewScheduleTitle,
             // IconButton resolves its own foreground colour from the
             // Material 3 colour scheme rather than the ambient IconTheme,
             // so it would otherwise ignore the header's white
@@ -125,23 +128,22 @@ class _ReviewSchedulePageState extends ConsumerState<ReviewSchedulePage> {
           ),
           Expanded(
             child: switch (state) {
-              AppAsyncLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading review schedule'),
+              AppAsyncLoading() => AIMFullScreenLoading(
+                  semanticLabel: l10n.reviewScheduleLoadingSemantic),
               AppAsyncFailure(:final message) =>
                 AIMFullScreenError(message: message, onRetry: _load),
               AppAsyncSuccess(:final data) => data.reviewSchedules.isEmpty
-                  ? const AIMEmptyState(
-                      icon: Icon(Icons.schedule_outlined),
-                      title: 'No reviews scheduled',
-                      subtitle:
-                          'Complete practice sessions to receive AIM-computed review reminders.',
+                  ? AIMEmptyState(
+                      icon: const Icon(Icons.schedule_outlined),
+                      title: l10n.reviewScheduleNoTitle,
+                      subtitle: l10n.reviewScheduleNoSubtitle,
                     )
                   : _ReviewScheduleList(
                       schedules: data.reviewSchedules,
                       onRefresh: _refresh,
                     ),
-              AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading review schedule'),
+              AppAsyncIdle() => AIMFullScreenLoading(
+                  semanticLabel: l10n.reviewScheduleLoadingSemantic),
             },
           ),
         ],
@@ -181,46 +183,58 @@ class _ReviewScheduleRow extends StatelessWidget {
   const _ReviewScheduleRow({required this.model});
   final AimReviewScheduleModel model;
 
-  ({AIMBadgeTone tone, String label}) get _status => switch (model.status) {
-        'due' => (tone: AIMBadgeTone.primary, label: 'Due'),
-        'pending' => (tone: AIMBadgeTone.neutral, label: 'Pending'),
-        'completed' => (tone: AIMBadgeTone.success, label: 'Completed'),
-        'skipped' => (tone: AIMBadgeTone.warning, label: 'Skipped'),
-        'overdue' => (tone: AIMBadgeTone.error, label: 'Overdue'),
-        final other => (
-            tone: AIMBadgeTone.neutral,
-            label: other.isEmpty ? '—' : other[0].toUpperCase() + other.substring(1),
-          ),
-      };
+  ({AIMBadgeTone tone, String label}) _status(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return switch (model.status) {
+      'due' => (tone: AIMBadgeTone.primary, label: l10n.reviewsStatusDue),
+      'pending' =>
+        (tone: AIMBadgeTone.neutral, label: l10n.reviewsStatusPending),
+      'completed' =>
+        (tone: AIMBadgeTone.success, label: l10n.assessmentsStatusCompleted),
+      'skipped' =>
+        (tone: AIMBadgeTone.warning, label: l10n.progressStatusSkipped),
+      'overdue' =>
+        (tone: AIMBadgeTone.error, label: l10n.progressStatusOverdue),
+      final other => (
+          tone: AIMBadgeTone.neutral,
+          label: other.isEmpty
+              ? '—'
+              : other[0].toUpperCase() + other.substring(1),
+        ),
+    };
+  }
 
   /// Pure date-formatting of the backend-supplied [AimReviewScheduleModel.dueAt].
   /// Derives no new business data — Flutter never computes review timing.
-  String _dueLabel() {
+  String _dueLabel(BuildContext context) {
     final dueAt = DateTime.tryParse(model.dueAt);
-    if (dueAt == null) return 'Due ${model.dueAt}';
+    final l10n = AppLocalizations.of(context);
+    if (dueAt == null) return l10n.reviewsDueDate(model.dueAt);
 
     final now = DateTime.now();
     final due = DateTime(dueAt.year, dueAt.month, dueAt.day);
     final today = DateTime(now.year, now.month, now.day);
     final diffDays = due.difference(today).inDays;
 
-    if (diffDays == 0) return 'Due Today';
-    if (diffDays == 1) return 'Due Tomorrow';
-    if (diffDays > 1) return 'Due in $diffDays days';
-    if (diffDays == -1) return 'Due 1 day ago';
-    if (diffDays > -7) return 'Due ${-diffDays} days ago';
+    if (diffDays == 0) return l10n.reviewsDueToday;
+    if (diffDays == 1) return l10n.reviewsDueTomorrow;
+    if (diffDays > 1) return l10n.reviewsDueInDays(diffDays);
+    if (diffDays == -1) return l10n.reviewsDueDaysAgo(1);
+    if (diffDays > -7) return l10n.reviewsDueDaysAgo(-diffDays);
 
     const months = [
       'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
     ];
-    return 'Due ${months[dueAt.month - 1]} ${dueAt.day}';
+    final formattedDate = '${months[dueAt.month - 1]} ${dueAt.day}';
+    return l10n.reviewsDueDate(formattedDate);
   }
 
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
-    final status = _status;
+    final l10n = AppLocalizations.of(context);
+    final status = _status(context);
     final title = _prettifySkillId(model.skillId);
 
     return AIMCard(
@@ -237,10 +251,12 @@ class _ReviewScheduleRow extends StatelessWidget {
                   title,
                   style: AimTextStyles.title
                       .copyWith(color: surfaces.textPrimary),
+                  textAlign: TextAlign.start,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const SizedBox(width: AimSpacing.space8),
               AIMBadge(
                 tone: status.tone,
                 variant: AIMBadgeVariant.soft,
@@ -256,18 +272,23 @@ class _ReviewScheduleRow extends StatelessWidget {
                   size: AimSizes.iconSm, color: AimColors.primary500),
               const SizedBox(width: AimSpacing.space8),
               Text(
-                _dueLabel(),
+                _dueLabel(context),
                 style: AimTextStyles.bodyMd.copyWith(
                   color: surfaces.textPrimary,
                   fontWeight: AimFontWeights.semibold,
                 ),
+                textAlign: TextAlign.start,
               ),
             ],
           ),
           const SizedBox(height: AimSpacing.space8),
           Text(
-            'Every ${formatAimIntervalDays(model.intervalDays)}d · repetition #${model.repetitionCount}',
+            l10n.reviewScheduleEveryInterval(
+              formatAimIntervalDays(model.intervalDays),
+              model.repetitionCount,
+            ),
             style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
+            textAlign: TextAlign.start,
           ),
         ],
       ),

@@ -46,6 +46,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/analytics_summary/data/models/analytics_summary_report_model.dart';
 import 'package:aim_mobile/features/analytics_summary/logic/provider/analytics_summary_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class AnalyticsSummaryPage extends ConsumerStatefulWidget {
   const AnalyticsSummaryPage({super.key});
@@ -99,10 +100,11 @@ class _AnalyticsSummaryPageState extends ConsumerState<AnalyticsSummaryPage> {
               AppAsyncFailure(:final message) =>
                 AIMFullScreenError(message: message, onRetry: _load),
               AppAsyncSuccess(:final data) => data.isEmpty
-                  ? const AIMEmptyState(
-                      icon: Icon(Icons.insights_outlined),
-                      title: 'No reports available',
-                      subtitle: 'There are no analytics reports for you yet.',
+                  ? AIMEmptyState(
+                      icon: const Icon(Icons.insights_outlined),
+                      title: AppLocalizations.of(context).analyticsNoReportsTitle,
+                      subtitle:
+                          AppLocalizations.of(context).analyticsNoReportsSubtitle,
                     )
                   : _ReportList(reports: data, onRefresh: _refresh),
               AppAsyncIdle() => const AIMFullScreenLoading(
@@ -170,7 +172,7 @@ class _AnalyticsHeader extends StatelessWidget {
             const SizedBox(width: AimSpacing.space12),
             Expanded(
               child: Text(
-                'Analytics',
+                AppLocalizations.of(context).analyticsPageTitle,
                 style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

@@ -266,3 +266,39 @@ Do not mark a task `Done` unless:
 - Git push succeeded
 - Notion comment added
 
+---
+
+## 11. Push Approval Rule
+
+Do not run `git push` until the user explicitly tells you to push.
+
+You may:
+
+- Stage files (`git add`)
+- Create commits (`git commit`)
+- Run tests and analyzers
+
+You must not push to any remote branch unless the user says:
+
+- "push it"
+- "go ahead and push"
+- "you can push now"
+- Or any equivalent explicit approval
+
+If the user has not approved the push, stop after committing and report what was committed.
+
+---
+
+## 12. Arabic / RTL UI Quality Rule
+
+All mobile UI screens must render correctly in both English (LTR) and Arabic (RTL).
+
+When localizing or modifying any screen:
+
+- Verify text does not overlap or crowd adjacent widgets in Arabic
+- Ensure proper spacing, padding, and margins for RTL layouts
+- Test that long Arabic strings wrap correctly and do not overflow
+- Confirm directional icons (arrows, chevrons) mirror appropriately
+- Use `Directionality`-aware spacing (e.g., `EdgeInsetsDirectional`) where needed
+- Never hardcode `TextDirection.ltr` on user-visible content unless explicitly required
+- Treat Arabic UI/UX quality as equal priority to English — not an afterthought

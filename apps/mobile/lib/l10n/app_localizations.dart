@@ -116,6 +116,18 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get commonCancel;
 
+  /// No description provided for @commonResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get commonResume;
+
+  /// No description provided for @commonPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get commonPause;
+
   /// No description provided for @commonSave.
   ///
   /// In en, this message translates to:
@@ -289,6 +301,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Don\'t have an account? '**
   String get authNoAccountPrompt;
+
+  /// Link back to the login page shown at the bottom of the register page.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account? Sign in'**
+  String get authAlreadyHaveAccount;
 
   /// Link text that opens the registration page.
   ///
@@ -481,12 +499,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Privacy Policy'**
   String get authPrivacyPolicyLink;
-
-  /// Link back to the login page shown at the bottom of the register page.
-  ///
-  /// In en, this message translates to:
-  /// **'Already have an account? Sign in'**
-  String get authAlreadyHaveAccount;
 
   /// App bar title for the email-confirmation-sent screen.
   ///
@@ -2693,6 +2705,2856 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Return to Lesson Detail'**
   String get voiceAiReturnButton;
+
+  /// Section title for course overview card.
+  ///
+  /// In en, this message translates to:
+  /// **'COURSE OVERVIEW'**
+  String get lessonsCourseOverviewHeader;
+
+  /// Label for course progress header.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Progress'**
+  String get lessonsCourseProgressHeader;
+
+  /// Label for course chapters list header.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Chapters'**
+  String get lessonsCourseChaptersHeader;
+
+  /// Badge for next locked course level.
+  ///
+  /// In en, this message translates to:
+  /// **'NEXT UP · LOCKED COURSE'**
+  String get lessonsNextUpLockedCourse;
+
+  /// Title for next course level card.
+  ///
+  /// In en, this message translates to:
+  /// **'Next Course Level'**
+  String get lessonsNextCourseLevel;
+
+  /// Description for course unlocking requirement.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocks automatically once you complete all chapters in this course.'**
+  String get lessonsUnlockCourseCondition;
+
+  /// Description for unlocking next course based on current course.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocks automatically once you complete all chapters in {activeCourse}.'**
+  String lessonsUnlockNextCourseCondition(String activeCourse);
+
+  /// Eyebrow header for learning path.
+  ///
+  /// In en, this message translates to:
+  /// **'LEARNING PATH'**
+  String get lessonsLearningPathHeader;
+
+  /// Title for structured curriculum section.
+  ///
+  /// In en, this message translates to:
+  /// **'Structured Curriculum'**
+  String get lessonsStructuredCurriculumHeader;
+
+  /// Subtitle for course sequence.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow your personalized sequence from CEFR Starter to Advanced mastery.'**
+  String get lessonsPersonalizedSequenceSubtitle;
+
+  /// Header for vocabulary list in lesson detail.
+  ///
+  /// In en, this message translates to:
+  /// **'Key Vocabulary & Phrases'**
+  String get lessonsKeyVocabularyHeader;
+
+  /// Hint to tap audio icon in vocabulary list.
+  ///
+  /// In en, this message translates to:
+  /// **'TAP 🔊 TO LISTEN'**
+  String get lessonsTapToListenHeader;
+
+  /// Card title to chat with AI tutor.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask AI Tutor'**
+  String get lessonsAskAiTutorHeader;
+
+  /// Card description to chat with AI tutor.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat with your AI tutor to clarify rules or ask questions.'**
+  String get lessonsAskAiTutorSubtitle;
+
+  /// Practice exercises section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice Now'**
+  String get lessonsPracticeNowHeader;
+
+  /// Practice exercises section description.
+  ///
+  /// In en, this message translates to:
+  /// **'Reinforce your knowledge or practice with quick exercises.'**
+  String get lessonsPracticeNowSubtitle;
+
+  /// Quiz badge header.
+  ///
+  /// In en, this message translates to:
+  /// **'QUIZ'**
+  String get lessonsQuizHeader;
+
+  /// Quiz section description.
+  ///
+  /// In en, this message translates to:
+  /// **'Test your comprehension with quick interactive exercises.'**
+  String get lessonsQuizSubtitle;
+
+  /// Title when lesson is mastered.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson Mastered! 🌟'**
+  String get lessonsLessonMasteredTitle;
+
+  /// Snackbar text when lesson is completed.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson marked as completed! 🌟'**
+  String get lessonsLessonMasteredSnackbar;
+
+  /// Error message when marking lesson complete fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not mark lesson complete: {error}'**
+  String lessonsMarkCompleteFailed(String error);
+
+  /// Section header for lessons list in chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'LESSONS IN THIS CHAPTER'**
+  String get lessonsInThisChapterHeader;
+
+  /// Chapter quiz section header.
+  ///
+  /// In en, this message translates to:
+  /// **'CHAPTER QUIZ'**
+  String get lessonsChapterQuizHeader;
+
+  /// Passed status badge text.
+  ///
+  /// In en, this message translates to:
+  /// **'PASSED'**
+  String get lessonsPassedStatus;
+
+  /// Locked status badge text.
+  ///
+  /// In en, this message translates to:
+  /// **'LOCKED'**
+  String get lessonsLockedStatus;
+
+  /// Overview summary with chapter and lesson counts.
+  ///
+  /// In en, this message translates to:
+  /// **'{chaptersCount} chapters · {totalLessons} Total Lessons'**
+  String lessonsTotalLessonsCount(int chaptersCount, int totalLessons);
+
+  /// Title for progress & analytics screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress & Analytics'**
+  String get progressTitle;
+
+  /// Subtitle for progress screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Track your language proficiency and study stats'**
+  String get progressSubtitle;
+
+  /// Header for weekly activity chart.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Activity'**
+  String get progressWeeklyActivity;
+
+  /// Average daily study time in minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} mins / day average'**
+  String progressDailyAverageMins(int minutes);
+
+  /// Total study time in minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} mins total'**
+  String progressTotalMins(int minutes);
+
+  /// Section header for tracked skills list.
+  ///
+  /// In en, this message translates to:
+  /// **'TRACKED SKILLS ({count})'**
+  String progressTrackedSkillsHeader(int count);
+
+  /// Section header for review schedule.
+  ///
+  /// In en, this message translates to:
+  /// **'REVIEW SCHEDULE ({count})'**
+  String progressReviewScheduleHeader(int count);
+
+  /// Section header for weakness records.
+  ///
+  /// In en, this message translates to:
+  /// **'WEAKNESS RECORDS ({count})'**
+  String progressWeaknessRecordsHeader(int count);
+
+  /// Card text describing an identified weakness.
+  ///
+  /// In en, this message translates to:
+  /// **'Identified weak spot from recent responses.'**
+  String get progressWeakSpotIdentified;
+
+  /// Message when there are no weaknesses.
+  ///
+  /// In en, this message translates to:
+  /// **'No active weaknesses recorded! Great work!'**
+  String get progressNoWeaknesses;
+
+  /// Button to view all items.
+  ///
+  /// In en, this message translates to:
+  /// **'View All →'**
+  String get progressViewAll;
+
+  /// Button to view full review schedule.
+  ///
+  /// In en, this message translates to:
+  /// **'View Full Schedule →'**
+  String get progressViewFullSchedule;
+
+  /// Button to view full skill table.
+  ///
+  /// In en, this message translates to:
+  /// **'View Full Table →'**
+  String get progressViewFullTable;
+
+  /// Priority level indicator.
+  ///
+  /// In en, this message translates to:
+  /// **'{severity} Priority'**
+  String progressPriorityLabel(String severity);
+
+  /// Review interval and repetition number.
+  ///
+  /// In en, this message translates to:
+  /// **'Interval: {interval}d · Rep #{rep}'**
+  String progressIntervalAndRep(int interval, int rep);
+
+  /// Screen title for skill states table.
+  ///
+  /// In en, this message translates to:
+  /// **'Skill States'**
+  String get progressSkillStatesTitle;
+
+  /// Skill confidence score percentage.
+  ///
+  /// In en, this message translates to:
+  /// **'Confidence {percent}%'**
+  String progressConfidencePct(int percent);
+
+  /// Schedule due date label.
+  ///
+  /// In en, this message translates to:
+  /// **'Due: {date}'**
+  String progressDueAt(String date);
+
+  /// Weakness detected date label.
+  ///
+  /// In en, this message translates to:
+  /// **'Detected: {date}'**
+  String progressDetectedAt(String date);
+
+  /// Weakness resolved date label.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved: {date}'**
+  String progressResolvedAt(String date);
+
+  /// Recommendation expiry date label.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires: {date}'**
+  String progressExpiresAt(String date);
+
+  /// Recommendation generated date label.
+  ///
+  /// In en, this message translates to:
+  /// **'Generated: {date}'**
+  String progressGeneratedAt(String date);
+
+  /// Target lesson id label.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson: {lessonId}'**
+  String progressTargetLesson(String lessonId);
+
+  /// Rank badge label.
+  ///
+  /// In en, this message translates to:
+  /// **'#{rank}'**
+  String progressRankBadge(int rank);
+
+  /// Title for billing page.
+  ///
+  /// In en, this message translates to:
+  /// **'Billing'**
+  String get billingTitle;
+
+  /// Header for subscription section.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription'**
+  String get billingSubscription;
+
+  /// Current plan badge or label.
+  ///
+  /// In en, this message translates to:
+  /// **'Current plan'**
+  String get billingCurrentPlan;
+
+  /// Button to change current plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Change plan'**
+  String get billingChangePlan;
+
+  /// Button to cancel subscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel subscription'**
+  String get billingCancelSubscription;
+
+  /// Dialog title for canceling subscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Subscription?'**
+  String get billingCancelSubscriptionDialogTitle;
+
+  /// Dialog message for cancellation.
+  ///
+  /// In en, this message translates to:
+  /// **'Your subscription will remain active until the end of the current billing period.'**
+  String get billingCancelSubscriptionDialogMessage;
+
+  /// Button to keep subscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep Subscription'**
+  String get billingKeepSubscription;
+
+  /// Screen title for plans & pricing.
+  ///
+  /// In en, this message translates to:
+  /// **'Plans & Pricing'**
+  String get billingPlansAndPricing;
+
+  /// Title/tab for invoices.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoices'**
+  String get billingInvoices;
+
+  /// Screen title for invoice detail.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice Detail'**
+  String get billingInvoiceDetail;
+
+  /// Empty state for entitlements list.
+  ///
+  /// In en, this message translates to:
+  /// **'No entitlements yet.'**
+  String get billingNoEntitlements;
+
+  /// Agreement text before checkout.
+  ///
+  /// In en, this message translates to:
+  /// **'By continuing you agree to AIM Terms'**
+  String get billingTermsAgreement;
+
+  /// Checkout button text.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout'**
+  String get billingCheckout;
+
+  /// Status message when payment is pending.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment pending'**
+  String get billingPaymentPending;
+
+  /// Status message when payment succeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment successful!'**
+  String get billingPaymentSuccessful;
+
+  /// Status message when payment failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment failed'**
+  String get billingPaymentFailed;
+
+  /// Helper text during payment verification.
+  ///
+  /// In en, this message translates to:
+  /// **'Please wait while we verify your payment.'**
+  String get billingPaymentVerifying;
+
+  /// Error message for payment failure.
+  ///
+  /// In en, this message translates to:
+  /// **'Your payment could not be processed. Please try again.'**
+  String get billingPaymentFailedMessage;
+
+  /// Processing message for checkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Your payment is being processed. We will notify you once completed.'**
+  String get billingPaymentProcessingMessage;
+
+  /// Button to go back from checkout status.
+  ///
+  /// In en, this message translates to:
+  /// **'Go back'**
+  String get billingGoBack;
+
+  /// Invoice line item quantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Qty: {quantity}'**
+  String billingQuantity(int quantity);
+
+  /// Badge for popular subscription plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular'**
+  String get billingPopularBadge;
+
+  /// Title for help center page.
+  ///
+  /// In en, this message translates to:
+  /// **'Help Center'**
+  String get supportHelpCenter;
+
+  /// Button or screen title for new support ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'New ticket'**
+  String get supportNewTicket;
+
+  /// Tab or title for user's support tickets.
+  ///
+  /// In en, this message translates to:
+  /// **'My tickets'**
+  String get supportMyTickets;
+
+  /// Screen title for single ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'Ticket'**
+  String get supportTicket;
+
+  /// Title for parent help center.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent Help'**
+  String get supportParentHelp;
+
+  /// Title for parent tickets list.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent tickets'**
+  String get supportParentTickets;
+
+  /// Button to submit feedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Send feedback'**
+  String get supportFeedback;
+
+  /// Question prompt for rating AIM.
+  ///
+  /// In en, this message translates to:
+  /// **'How would you rate AIM?'**
+  String get supportRateAimQuestion;
+
+  /// Title for release notes page.
+  ///
+  /// In en, this message translates to:
+  /// **'Release notes'**
+  String get supportReleaseNotes;
+
+  /// Title for single release note.
+  ///
+  /// In en, this message translates to:
+  /// **'Release note'**
+  String get supportReleaseNote;
+
+  /// Release date label.
+  ///
+  /// In en, this message translates to:
+  /// **'Released {date}'**
+  String supportReleasedDate(String date);
+
+  /// Title for system status page.
+  ///
+  /// In en, this message translates to:
+  /// **'System Status'**
+  String get supportSystemStatus;
+
+  /// Header for what's new section.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s new'**
+  String get supportWhatNew;
+
+  /// Empty state title for student support tickets
+  ///
+  /// In en, this message translates to:
+  /// **'No Tickets Yet'**
+  String get supportNoTickets;
+
+  /// Empty state subtitle for student support tickets
+  ///
+  /// In en, this message translates to:
+  /// **'Create a ticket to get help from our support team.'**
+  String get supportNoTicketsSubtitle;
+
+  /// Title when no release notes exist.
+  ///
+  /// In en, this message translates to:
+  /// **'No Release Notes'**
+  String get supportNoReleaseNotes;
+
+  /// Subtitle when no release notes exist.
+  ///
+  /// In en, this message translates to:
+  /// **'Release notes will appear here when published.'**
+  String get supportNoReleaseNotesSubtitle;
+
+  /// Title when a release note detail is not ready.
+  ///
+  /// In en, this message translates to:
+  /// **'Release note is not available yet'**
+  String get supportReleaseNoteNotAvailable;
+
+  /// Subtitle when a release note detail is not ready.
+  ///
+  /// In en, this message translates to:
+  /// **'This release note will appear here once release notes are live.'**
+  String get supportReleaseNoteNotAvailableSubtitle;
+
+  /// Practice session header.
+  ///
+  /// In en, this message translates to:
+  /// **'PRACTICE SESSION'**
+  String get practicePracticeSession;
+
+  /// Practice completed title.
+  ///
+  /// In en, this message translates to:
+  /// **'PRACTICE COMPLETE!'**
+  String get practicePracticeComplete;
+
+  /// Congratulatory message.
+  ///
+  /// In en, this message translates to:
+  /// **'Great Job!'**
+  String get practiceGreatJob;
+
+  /// Accuracy metric header.
+  ///
+  /// In en, this message translates to:
+  /// **'ACCURACY'**
+  String get practiceAccuracy;
+
+  /// XP earned metric header.
+  ///
+  /// In en, this message translates to:
+  /// **'XP EARNED'**
+  String get practiceXpEarned;
+
+  /// Button to check answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Check Answer'**
+  String get practiceCheckAnswer;
+
+  /// Button to proceed back to lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue to Lesson'**
+  String get practiceContinueToLesson;
+
+  /// Question progress counter.
+  ///
+  /// In en, this message translates to:
+  /// **'QUESTION {current} OF {total}'**
+  String practiceQuestionOf(int current, int total);
+
+  /// Summary message after practice.
+  ///
+  /// In en, this message translates to:
+  /// **'You finished this practice session for {lessonTitle}.'**
+  String practiceSessionCompletedMsg(String lessonTitle);
+
+  /// Score summary for practice.
+  ///
+  /// In en, this message translates to:
+  /// **'You scored {score}/{total} on this practice session.'**
+  String practiceScoreSummary(int score, int total);
+
+  /// Title when placement test is required before practice.
+  ///
+  /// In en, this message translates to:
+  /// **'Placement Test Required'**
+  String get practicePlacementRequiredTitle;
+
+  /// Description why placement test is required.
+  ///
+  /// In en, this message translates to:
+  /// **'You must complete the placement test first to determine your starting level and begin learning sessions.'**
+  String get practicePlacementRequiredBody;
+
+  /// Button to start placement test.
+  ///
+  /// In en, this message translates to:
+  /// **'Take Placement Test Now'**
+  String get practiceTakePlacementNow;
+
+  /// Button to try demo practice questions.
+  ///
+  /// In en, this message translates to:
+  /// **'Try Demo Exercises'**
+  String get practiceTryDemoExercises;
+
+  /// Title when question answer is submitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer submitted'**
+  String get qaAnswerSubmitted;
+
+  /// Status message when AI evaluates answer.
+  ///
+  /// In en, this message translates to:
+  /// **'AIM is analysing your response.'**
+  String get qaAnalysingResponse;
+
+  /// Status message when AI summarizes session.
+  ///
+  /// In en, this message translates to:
+  /// **'AIM is analysing your session…'**
+  String get qaAnalysingSession;
+
+  /// Session summary card title.
+  ///
+  /// In en, this message translates to:
+  /// **'Session Summary'**
+  String get qaSessionSummary;
+
+  /// Skills covered list title.
+  ///
+  /// In en, this message translates to:
+  /// **'Skills covered'**
+  String get qaSkillsCovered;
+
+  /// Assessments screen title.
+  ///
+  /// In en, this message translates to:
+  /// **'Assessments'**
+  String get assessmentAssessments;
+
+  /// Assessment deadlines screen title.
+  ///
+  /// In en, this message translates to:
+  /// **'Deadlines'**
+  String get assessmentDeadlines;
+
+  /// Assessment points breakdown header.
+  ///
+  /// In en, this message translates to:
+  /// **'BREAKDOWN'**
+  String get assessmentBreakdown;
+
+  /// Past assessment results section.
+  ///
+  /// In en, this message translates to:
+  /// **'Past results'**
+  String get assessmentPastResults;
+
+  /// Result history screen title.
+  ///
+  /// In en, this message translates to:
+  /// **'Result history'**
+  String get assessmentResultHistory;
+
+  /// Assessment sections list title.
+  ///
+  /// In en, this message translates to:
+  /// **'Sections'**
+  String get assessmentSections;
+
+  /// Action to view assessment history.
+  ///
+  /// In en, this message translates to:
+  /// **'View your attempt history'**
+  String get assessmentViewAttemptHistory;
+
+  /// Graded timestamp.
+  ///
+  /// In en, this message translates to:
+  /// **'Graded {date}'**
+  String assessmentGradedDate(String date);
+
+  /// Late penalty badge.
+  ///
+  /// In en, this message translates to:
+  /// **'Late penalty applied'**
+  String get assessmentLatePenalty;
+
+  /// Assessment start prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to begin?'**
+  String get assessmentReadyToBegin;
+
+  /// Confirmation dialog title for submitting assessment.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit your answers?'**
+  String get assessmentSubmitAnswersDialogTitle;
+
+  /// Confirmation dialog message for submitting assessment.
+  ///
+  /// In en, this message translates to:
+  /// **'This action is final and cannot be undone. You cannot change answers after submitting.'**
+  String get assessmentSubmitAnswersDialogMessage;
+
+  /// Placement test response input label.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Response'**
+  String get placementYourResponse;
+
+  /// Guideline for placement open-response.
+  ///
+  /// In en, this message translates to:
+  /// **'Target: 3-5 sentences'**
+  String get placementTargetSentences;
+
+  /// Character count for placement response.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} characters'**
+  String placementCharactersCount(int count);
+
+  /// Speaking question instruction.
+  ///
+  /// In en, this message translates to:
+  /// **'Press & hold the mic to record'**
+  String get placementPressHoldToRecord;
+
+  /// Speaking question release instruction.
+  ///
+  /// In en, this message translates to:
+  /// **'Release when finished'**
+  String get placementReleaseWhenFinished;
+
+  /// Speaking question recording state.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording in progress...'**
+  String get placementRecordingInProgress;
+
+  /// Speaking question recorded state.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording completed!'**
+  String get placementRecordingCompleted;
+
+  /// Instruction to submit recorded answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap Submit below to submit your recording.'**
+  String get placementTapSubmitRecording;
+
+  /// Placement submission AI indicator.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Engine Active'**
+  String get placementAiEngineActive;
+
+  /// Placement completion message.
+  ///
+  /// In en, this message translates to:
+  /// **'Your placement test results have been recorded and saved.'**
+  String get placementResultsRecordedSaved;
+
+  /// App bar title for the review schedule screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get reviewsTitle;
+
+  /// Accessibility label shown while the review schedule is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading review schedule'**
+  String get reviewsLoadingSemantic;
+
+  /// Empty-state title when no review items exist.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews scheduled'**
+  String get reviewsNoScheduleTitle;
+
+  /// Empty-state subtitle when no review items exist.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete practice sessions to receive review reminders.'**
+  String get reviewsNoScheduleSubtitle;
+
+  /// Label for the due-now stat card on the review screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Due now'**
+  String get reviewsStatDueNow;
+
+  /// Label for the learned-count stat card on the review screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Learned'**
+  String get reviewsStatLearned;
+
+  /// Label for the streak stat card on the review screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak'**
+  String get reviewsStatStreak;
+
+  /// Relative due-date label when the item is due today.
+  ///
+  /// In en, this message translates to:
+  /// **'Due Today'**
+  String get reviewsDueToday;
+
+  /// Relative due-date label when the item is due tomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Due Tomorrow'**
+  String get reviewsDueTomorrow;
+
+  /// Relative due-date label when the item was due yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Due Yesterday'**
+  String get reviewsDueYesterday;
+
+  /// Relative due-date label when the item is due in 2-6 days.
+  ///
+  /// In en, this message translates to:
+  /// **'Due in {days} days'**
+  String reviewsDueInDays(int days);
+
+  /// Relative due-date label when the item was due 2-6 days ago.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {days} days ago'**
+  String reviewsDueDaysAgo(int days);
+
+  /// Absolute due-date label for items more than a week away.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String reviewsDueDate(String date);
+
+  /// Status badge label for a due review item.
+  ///
+  /// In en, this message translates to:
+  /// **'Due'**
+  String get reviewsStatusDue;
+
+  /// Status badge label for a pending review item.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get reviewsStatusPending;
+
+  /// Subtitle for reviews screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Spaced-repetition flashcards due today'**
+  String get reviewsSpacedRepetitionDue;
+
+  /// Section header for review schedule.
+  ///
+  /// In en, this message translates to:
+  /// **'REVIEW SCHEDULE'**
+  String get reviewsScheduleHeader;
+
+  /// Button to start reviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Review Session'**
+  String get reviewsStartSession;
+
+  /// Interval days badge.
+  ///
+  /// In en, this message translates to:
+  /// **'Interval {days}d'**
+  String reviewsIntervalDays(String days);
+
+  /// Repetition count badge.
+  ///
+  /// In en, this message translates to:
+  /// **'rep #{rep}'**
+  String reviewsRepetitionNumber(int rep);
+
+  /// Voice teacher page title.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice Teacher'**
+  String get voiceTeacherPageTitle;
+
+  /// Voice teacher page subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Practise your pronunciation with the AI teacher'**
+  String get voiceTeacherPageSubtitle;
+
+  /// Voice error title.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection Error'**
+  String get voiceTeacherConnectionErrorTitle;
+
+  /// Voice error title.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone Error'**
+  String get voiceTeacherMicrophoneErrorTitle;
+
+  /// Voice error title.
+  ///
+  /// In en, this message translates to:
+  /// **'Server Error'**
+  String get voiceTeacherServerErrorTitle;
+
+  /// Voice error title.
+  ///
+  /// In en, this message translates to:
+  /// **'Something Went Wrong'**
+  String get voiceTeacherGenericErrorTitle;
+
+  /// Voice connection error details.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect to voice server. Please check your internet.'**
+  String get voiceTeacherConnectionErrorMsg;
+
+  /// Voice mic error details.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not access microphone. Please grant permission.'**
+  String get voiceTeacherMicrophoneErrorMsg;
+
+  /// Voice server error details.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice service encountered an error. Please try again later.'**
+  String get voiceTeacherServerErrorMsg;
+
+  /// Voice generic error details.
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred during the voice session.'**
+  String get voiceTeacherGenericErrorMsg;
+
+  /// Fallback title when audio is text-only.
+  ///
+  /// In en, this message translates to:
+  /// **'Text response from teacher'**
+  String get voiceTeacherTextResponseTitle;
+
+  /// Button to retry fetching audio.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry audio'**
+  String get voiceTeacherRetryAudio;
+
+  /// Button to retry voice action.
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get voiceTeacherTryAgain;
+
+  /// Push to talk button processing text
+  ///
+  /// In en, this message translates to:
+  /// **'Processing...'**
+  String get voiceTeacherProcessing;
+
+  /// Transcribing user speech status.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcribing...'**
+  String get voiceTeacherTranscribing;
+
+  /// Transcript preview user header.
+  ///
+  /// In en, this message translates to:
+  /// **'What you said'**
+  String get voiceTeacherWhatYouSaid;
+
+  /// Transcript preview teacher header.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher response'**
+  String get voiceTeacherTeacherResponse;
+
+  /// State bar recorded label.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded'**
+  String get voiceTeacherRecorded;
+
+  /// Notice when audio fails and text fallback is shown.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio unavailable — here\'s the text response'**
+  String get voiceTeacherAudioUnavailable;
+
+  /// Stop voice recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get voiceTeacherStop;
+
+  /// Discard voice recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get voiceTeacherDiscard;
+
+  /// Send voice recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get voiceTeacherSend;
+
+  /// Feedback helpful button.
+  ///
+  /// In en, this message translates to:
+  /// **'Helpful'**
+  String get voiceTeacherHelpful;
+
+  /// Feedback not helpful button.
+  ///
+  /// In en, this message translates to:
+  /// **'Not helpful'**
+  String get voiceTeacherNotHelpful;
+
+  /// AI Teacher session history title.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversations'**
+  String get aiTeacherConversations;
+
+  /// AI Teacher settings page title.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Teacher settings'**
+  String get aiTeacherSettingsTitle;
+
+  /// Current lesson context chip.
+  ///
+  /// In en, this message translates to:
+  /// **'Current lesson'**
+  String get aiTeacherCurrentLessonHeader;
+
+  /// AI Teacher message feedback prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Was this helpful?'**
+  String get aiTeacherWasThisHelpful;
+
+  /// AI Teacher session recap welcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get aiTeacherWelcomeBack;
+
+  /// AI Teacher entry card description.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask questions and get guidance on this lesson.'**
+  String get aiTeacherAskQuestionsGuidance;
+
+  /// Badge for active AIM Plus membership.
+  ///
+  /// In en, this message translates to:
+  /// **'AIM PLUS MEMBER'**
+  String get profileAimPlusMember;
+
+  /// Setting toggle description for learning gap alerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts when AI detects new learning gaps'**
+  String get profileLearningGapsAlerts;
+
+  /// Setting toggle description for daily study time.
+  ///
+  /// In en, this message translates to:
+  /// **'Get notified at your preferred study time'**
+  String get profileStudyTimeNotification;
+
+  /// Settings section header for password.
+  ///
+  /// In en, this message translates to:
+  /// **'Security & Password'**
+  String get profileSecurityPassword;
+
+  /// Success message for password reset request.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset email sent. Please check your inbox.'**
+  String get profilePasswordResetSuccess;
+
+  /// Error message for password reset request.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to request password reset: {error}'**
+  String profilePasswordResetFailed(String error);
+
+  /// Error message for saving profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save profile changes: {error}'**
+  String profileSaveFailed(String error);
+
+  /// Empty state when profile data is null.
+  ///
+  /// In en, this message translates to:
+  /// **'No profile loaded.'**
+  String get profileNoProfileLoaded;
+
+  /// Notification settings section header.
+  ///
+  /// In en, this message translates to:
+  /// **'CHANNELS'**
+  String get notificationsChannels;
+
+  /// Notification quiet hours header.
+  ///
+  /// In en, this message translates to:
+  /// **'QUIET HOURS'**
+  String get notificationsQuietHours;
+
+  /// Subtitle for notification preferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage lesson reminders'**
+  String get notificationsManageReminders;
+
+  /// Status text for dismissed notification.
+  ///
+  /// In en, this message translates to:
+  /// **'This notification has been dismissed.'**
+  String get notificationsDismissed;
+
+  /// Button to pause reminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get notificationsPause;
+
+  /// Button to resume reminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get notificationsResume;
+
+  /// Subtitle on login screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Happy to see you again. Enter your email and password to continue.'**
+  String get authHappyToSeeYou;
+
+  /// Header on login screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to your account'**
+  String get authSignInToAccount;
+
+  /// Subtitle on register screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Takes less than a minute. Enter your details below.'**
+  String get authTakesLessThanMinute;
+
+  /// Title on email confirmation screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your email'**
+  String get authCheckEmailTitle;
+
+  /// Body on email confirmation screen.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a confirmation link to:\n{email}'**
+  String authSentConfirmationLink(String email);
+
+  /// Button to return to login screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Login'**
+  String get authBackToLogin;
+
+  /// Dev tools test accounts section header on login.
+  ///
+  /// In en, this message translates to:
+  /// **'DEV / TEST ACCOUNTS'**
+  String get authDevTestAccounts;
+
+  /// Helper label for test accounts buttons.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick-login with test credentials:'**
+  String get authQuickLoginWithTest;
+
+  /// Button to log out of the app.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Out'**
+  String get shellLogOut;
+
+  /// Title for the profile page hero header.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profileTitle;
+
+  /// Semantic label shown while profile is loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading profile'**
+  String get profileLoadingProfile;
+
+  /// Error message when profile fails to load.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load profile: {message}'**
+  String profileCouldNotLoad(String message);
+
+  /// Section heading for account info on profile page.
+  ///
+  /// In en, this message translates to:
+  /// **'ACCOUNT'**
+  String get profileSectionAccount;
+
+  /// Label for the email row on profile page.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get profileLabelEmail;
+
+  /// Label for the status row on profile page.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get profileLabelStatus;
+
+  /// Label for the user type row on profile page.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get profileLabelType;
+
+  /// Section heading for student profile details.
+  ///
+  /// In en, this message translates to:
+  /// **'PROFILE'**
+  String get profileSectionProfile;
+
+  /// Label for display name on profile page.
+  ///
+  /// In en, this message translates to:
+  /// **'Display Name'**
+  String get profileLabelDisplayName;
+
+  /// Label for preferred language on profile page.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get profileLabelLanguage;
+
+  /// Label for timezone on profile page.
+  ///
+  /// In en, this message translates to:
+  /// **'Timezone'**
+  String get profileLabelTimezone;
+
+  /// Section heading for user roles.
+  ///
+  /// In en, this message translates to:
+  /// **'ROLES'**
+  String get profileSectionRoles;
+
+  /// Subtitle under the roles section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Displayed for reference only. Enforced by backend.'**
+  String get profileRolesSubtitle;
+
+  /// Section heading for quick navigation links.
+  ///
+  /// In en, this message translates to:
+  /// **'QUICK LINKS'**
+  String get profileSectionQuickLinks;
+
+  /// Quick link label for Learning Path.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning Path'**
+  String get profileLinkLearningPath;
+
+  /// Quick link label for Subscription & Billing.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription & Billing'**
+  String get profileLinkSubscriptionBilling;
+
+  /// Quick link label for Invoice History.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice History'**
+  String get profileLinkInvoiceHistory;
+
+  /// Quick link label for Achievements.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get profileLinkAchievements;
+
+  /// Quick link label for Analytics Summary.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics Summary'**
+  String get profileLinkAnalyticsSummary;
+
+  /// Quick link label for developer API endpoint tester.
+  ///
+  /// In en, this message translates to:
+  /// **'API Endpoint Tester (Dev)'**
+  String get profileLinkApiEndpointTester;
+
+  /// Label under the day streak stat card on profile.
+  ///
+  /// In en, this message translates to:
+  /// **'day streak'**
+  String get profileStatDayStreak;
+
+  /// Label under the achievements stat card on profile.
+  ///
+  /// In en, this message translates to:
+  /// **'achievements'**
+  String get profileStatAchievements;
+
+  /// Tooltip for the settings icon button on profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Settings'**
+  String get profileTooltipAccountSettings;
+
+  /// Title above the achievements carousel on profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get profileAchievementsCarouselTitle;
+
+  /// Header title on the edit profile screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit profile'**
+  String get editProfileTitle;
+
+  /// Save text button on the edit profile header.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get editProfileSave;
+
+  /// Semantic label for the back button on edit profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get editProfileBack;
+
+  /// Label for the display name field on edit profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Display Name'**
+  String get editProfileLabelDisplayName;
+
+  /// Placeholder for the display name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Your display name'**
+  String get editProfilePlaceholderDisplayName;
+
+  /// Label for the preferred language selector.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred Language'**
+  String get editProfileLabelPreferredLanguage;
+
+  /// Placeholder for the preferred language selector.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a language'**
+  String get editProfilePlaceholderLanguage;
+
+  /// Label for the timezone selector.
+  ///
+  /// In en, this message translates to:
+  /// **'Timezone'**
+  String get editProfileLabelTimezone;
+
+  /// Placeholder for the timezone selector.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a timezone'**
+  String get editProfilePlaceholderTimezone;
+
+  /// Label for the save changes gradient button.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get editProfileSaveChanges;
+
+  /// Validation error when display name exceeds 80 chars.
+  ///
+  /// In en, this message translates to:
+  /// **'Display name must be 80 characters or fewer.'**
+  String get editProfileDisplayNameTooLong;
+
+  /// Toast shown when the session is expired on edit profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session has expired. Please sign in again.'**
+  String get editProfileSessionExpired;
+
+  /// Toast shown on successful profile update.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated.'**
+  String get editProfileUpdatedSuccess;
+
+  /// Section header for app theme settings.
+  ///
+  /// In en, this message translates to:
+  /// **'App Theme & Display'**
+  String get settingsAppThemeDisplay;
+
+  /// Subtitle when dark mode is active.
+  ///
+  /// In en, this message translates to:
+  /// **'Darker UI option for night use'**
+  String get settingsThemeDarkSubtitle;
+
+  /// Subtitle when light mode is active.
+  ///
+  /// In en, this message translates to:
+  /// **'Clean, high contrast appearance'**
+  String get settingsThemeLightSubtitle;
+
+  /// Section header for notification settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Preferences'**
+  String get settingsNotificationPreferences;
+
+  /// Placeholder text for the name input on settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your full name'**
+  String get settingsEnterFullName;
+
+  /// Title on the achievements page header.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get achievementsTitle;
+
+  /// Title on the milestones banner card.
+  ///
+  /// In en, this message translates to:
+  /// **'AIM Milestones'**
+  String get achievementsMilestonesTitle;
+
+  /// Subtitle showing how many badges are unlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'{unlocked} of {total} badges unlocked'**
+  String achievementsBadgesUnlocked(int unlocked, int total);
+
+  /// League rank pill on the milestones card.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold League #3'**
+  String get achievementsLeagueRank;
+
+  /// Label for the All Badges filter tab.
+  ///
+  /// In en, this message translates to:
+  /// **'All Badges'**
+  String get achievementsTabAll;
+
+  /// Label for the Unlocked filter tab with count.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocked ({count})'**
+  String achievementsTabUnlocked(int count);
+
+  /// Label for the In Progress filter tab with count.
+  ///
+  /// In en, this message translates to:
+  /// **'In Progress ({count})'**
+  String achievementsTabInProgress(int count);
+
+  /// Tag text on an unlocked badge card.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocked'**
+  String get achievementsBadgeUnlocked;
+
+  /// Default badge title: First Step.
+  ///
+  /// In en, this message translates to:
+  /// **'First Step'**
+  String get achievementsFirstStepTitle;
+
+  /// Default badge description: First Step.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your first English lesson'**
+  String get achievementsFirstStepDesc;
+
+  /// Default badge title: Streak Master.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak Master'**
+  String get achievementsStreakMasterTitle;
+
+  /// Default badge description: Streak Master.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintain a 7-day learning streak'**
+  String get achievementsStreakMasterDesc;
+
+  /// Default badge title: Grammar Wizard.
+  ///
+  /// In en, this message translates to:
+  /// **'Grammar Wizard'**
+  String get achievementsGrammarWizardTitle;
+
+  /// Default badge description: Grammar Wizard.
+  ///
+  /// In en, this message translates to:
+  /// **'Score 90%+ in Grammar assessment'**
+  String get achievementsGrammarWizardDesc;
+
+  /// Default badge title: Voice Champion.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice Champion'**
+  String get achievementsVoiceChampionTitle;
+
+  /// Default badge description: Voice Champion.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete 5 Live AI Voice practice sessions'**
+  String get achievementsVoiceChampionDesc;
+
+  /// Default badge title: Vocabulary Titan.
+  ///
+  /// In en, this message translates to:
+  /// **'Vocabulary Titan'**
+  String get achievementsVocabularyTitanTitle;
+
+  /// Default badge description: Vocabulary Titan.
+  ///
+  /// In en, this message translates to:
+  /// **'Master 200+ active words'**
+  String get achievementsVocabularyTitanDesc;
+
+  /// Default badge title: Speed Learner.
+  ///
+  /// In en, this message translates to:
+  /// **'Speed Learner'**
+  String get achievementsSpeedLearnerTitle;
+
+  /// Default badge description: Speed Learner.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish 3 lessons in a single day'**
+  String get achievementsSpeedLearnerDesc;
+
+  /// Default badge title: Perfect Quiz Accuracy.
+  ///
+  /// In en, this message translates to:
+  /// **'Perfect Quiz Accuracy'**
+  String get achievementsPerfectQuizTitle;
+
+  /// Default badge description: Perfect Quiz Accuracy.
+  ///
+  /// In en, this message translates to:
+  /// **'Score 100% on 5 practice quizzes'**
+  String get achievementsPerfectQuizDesc;
+
+  /// Default badge title: Polyglot Legend.
+  ///
+  /// In en, this message translates to:
+  /// **'Polyglot Legend'**
+  String get achievementsPolyglotLegendTitle;
+
+  /// Default badge description: Polyglot Legend.
+  ///
+  /// In en, this message translates to:
+  /// **'Reach Level 20 in English'**
+  String get achievementsPolyglotLegendDesc;
+
+  /// Title for create ticket screen
+  ///
+  /// In en, this message translates to:
+  /// **'Submit a ticket'**
+  String get supportCreateTicketTitle;
+
+  /// Button label to create a new support ticket
+  ///
+  /// In en, this message translates to:
+  /// **'Create Ticket'**
+  String get supportCreateTicketButton;
+
+  /// Button to submit support ticket
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Ticket'**
+  String get supportSubmitTicket;
+
+  /// Label for ticket category dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get supportCategoryLabel;
+
+  /// Label for ticket severity dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Severity'**
+  String get supportSeverityLabel;
+
+  /// Label for ticket subject input
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get supportSubjectLabel;
+
+  /// Placeholder for ticket subject
+  ///
+  /// In en, this message translates to:
+  /// **'Briefly describe the issue'**
+  String get supportSubjectPlaceholder;
+
+  /// Label for ticket description textarea
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get supportDescriptionLabel;
+
+  /// Placeholder for ticket description
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us what happened, step by step...'**
+  String get supportDescriptionPlaceholder;
+
+  /// Validation error for empty subject
+  ///
+  /// In en, this message translates to:
+  /// **'Subject is required'**
+  String get supportSubjectRequired;
+
+  /// Validation error for empty description
+  ///
+  /// In en, this message translates to:
+  /// **'Description is required'**
+  String get supportDescriptionRequired;
+
+  /// Category option: Bug report
+  ///
+  /// In en, this message translates to:
+  /// **'Bug Report'**
+  String get supportCategoryBugReport;
+
+  /// Category option: Account issue
+  ///
+  /// In en, this message translates to:
+  /// **'Account Issue'**
+  String get supportCategoryAccountIssue;
+
+  /// Category option: Learning issue
+  ///
+  /// In en, this message translates to:
+  /// **'Learning Issue'**
+  String get supportCategoryLearningIssue;
+
+  /// Category option: Billing issue
+  ///
+  /// In en, this message translates to:
+  /// **'Billing Issue'**
+  String get supportCategoryBillingIssue;
+
+  /// Category option: General
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get supportCategoryGeneral;
+
+  /// Feedback category: Suggestion
+  ///
+  /// In en, this message translates to:
+  /// **'Suggestion'**
+  String get supportCategorySuggestion;
+
+  /// Feedback category: Compliment
+  ///
+  /// In en, this message translates to:
+  /// **'Compliment'**
+  String get supportCategoryCompliment;
+
+  /// Feedback category: Complaint
+  ///
+  /// In en, this message translates to:
+  /// **'Complaint'**
+  String get supportCategoryComplaint;
+
+  /// Category option: Other
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get supportCategoryOther;
+
+  /// Severity option: Low
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get supportSeverityLow;
+
+  /// Severity option: Medium
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get supportSeverityMedium;
+
+  /// Severity option: High
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get supportSeverityHigh;
+
+  /// Severity option: Critical
+  ///
+  /// In en, this message translates to:
+  /// **'Critical'**
+  String get supportSeverityCritical;
+
+  /// Feedback title input label
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get supportFeedbackTitleLabel;
+
+  /// Feedback title placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'A short summary'**
+  String get supportFeedbackTitlePlaceholder;
+
+  /// Feedback body input label
+  ///
+  /// In en, this message translates to:
+  /// **'Your feedback'**
+  String get supportFeedbackBodyLabel;
+
+  /// Feedback body placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us what you think...'**
+  String get supportFeedbackBodyPlaceholder;
+
+  /// Validation error when feedback title is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Title is required'**
+  String get supportFeedbackTitleRequired;
+
+  /// Validation error when feedback body is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback details are required'**
+  String get supportFeedbackBodyRequired;
+
+  /// Label for ticket comment input
+  ///
+  /// In en, this message translates to:
+  /// **'Add a comment'**
+  String get supportTicketAddComment;
+
+  /// Placeholder for ticket follow-up comment
+  ///
+  /// In en, this message translates to:
+  /// **'Write a follow-up message...'**
+  String get supportTicketCommentPlaceholder;
+
+  /// Button to send comment
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get supportTicketSendComment;
+
+  /// System status banner title
+  ///
+  /// In en, this message translates to:
+  /// **'All Systems Operational'**
+  String get supportStatusAllOperational;
+
+  /// Empty state title for status components
+  ///
+  /// In en, this message translates to:
+  /// **'No components reported'**
+  String get supportStatusNoComponents;
+
+  /// Empty state subtitle for status components
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to show yet.'**
+  String get supportStatusNothingToShow;
+
+  /// Empty state title for parent support tickets
+  ///
+  /// In en, this message translates to:
+  /// **'No Support Tickets'**
+  String get supportNoParentTickets;
+
+  /// Empty state subtitle for parent support tickets
+  ///
+  /// In en, this message translates to:
+  /// **'Create a ticket if you need help with your account.'**
+  String get supportNoParentTicketsSubtitle;
+
+  /// Badge text for current enrolled course
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get coursesCurrentBadge;
+
+  /// App bar title and screen header for the AI Voice Teacher
+  ///
+  /// In en, this message translates to:
+  /// **'Voice Teacher'**
+  String get voiceTeacherTitle;
+
+  /// Loading state accessibility label when initializing voice teacher
+  ///
+  /// In en, this message translates to:
+  /// **'Starting Voice Teacher session'**
+  String get voiceTeacherStartingSession;
+
+  /// Accessibility label for voice teacher back button
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get voiceTeacherBackSemantic;
+
+  /// Status pill label when voice teacher is speaking
+  ///
+  /// In en, this message translates to:
+  /// **'Speaking'**
+  String get voiceTeacherStatusSpeaking;
+
+  /// Status pill label when recording user voice
+  ///
+  /// In en, this message translates to:
+  /// **'Recording'**
+  String get voiceTeacherStatusRecording;
+
+  /// Status pill label when processing user response
+  ///
+  /// In en, this message translates to:
+  /// **'Processing'**
+  String get voiceTeacherStatusProcessing;
+
+  /// Status pill label when ready for user input
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
+  String get voiceTeacherStatusReady;
+
+  /// Main heading when voice teacher is speaking
+  ///
+  /// In en, this message translates to:
+  /// **'Your teacher is speaking…'**
+  String get voiceTeacherHeadingSpeaking;
+
+  /// Main heading when recording user speech
+  ///
+  /// In en, this message translates to:
+  /// **'Listening to you…'**
+  String get voiceTeacherHeadingRecording;
+
+  /// Main heading when processing user speech
+  ///
+  /// In en, this message translates to:
+  /// **'Processing your answer…'**
+  String get voiceTeacherHeadingProcessing;
+
+  /// Main heading when awaiting student push-to-talk press
+  ///
+  /// In en, this message translates to:
+  /// **'Your turn — press and hold to speak'**
+  String get voiceTeacherHeadingListening;
+
+  /// Subtitle text below push-to-talk button
+  ///
+  /// In en, this message translates to:
+  /// **'Practise your pronunciation with the AI teacher'**
+  String get voiceTeacherPracticeSubtitle;
+
+  /// Button label to toggle chat transcript view
+  ///
+  /// In en, this message translates to:
+  /// **'Messages'**
+  String get voiceTeacherMessagesButton;
+
+  /// Voice error back to call button
+  ///
+  /// In en, this message translates to:
+  /// **'Back to call'**
+  String get voiceTeacherBackToCall;
+
+  /// Accessibility label for voice status pill
+  ///
+  /// In en, this message translates to:
+  /// **'Status: {status}'**
+  String voiceTeacherStatusSemantic(String status);
+
+  /// Push to talk button instruction text
+  ///
+  /// In en, this message translates to:
+  /// **'Press and hold to speak'**
+  String get voiceTeacherPressAndHold;
+
+  /// Accessibility label while recording voice
+  ///
+  /// In en, this message translates to:
+  /// **'Recording — release to send'**
+  String get voiceTeacherRecordingRelease;
+
+  /// Accessibility label for voice teacher message in transcript
+  ///
+  /// In en, this message translates to:
+  /// **'Voice Teacher said: {text}'**
+  String voiceTeacherSaid(String text);
+
+  /// Accessibility label for user message in transcript
+  ///
+  /// In en, this message translates to:
+  /// **'You said: {text}'**
+  String voiceTeacherYouSaid(String text);
+
+  /// Card title for Voice Teacher entry widget
+  ///
+  /// In en, this message translates to:
+  /// **'Voice Teacher'**
+  String get voiceTeacherEntryTitle;
+
+  /// Card subtitle for Voice Teacher entry widget
+  ///
+  /// In en, this message translates to:
+  /// **'Practice conversational speaking with AI'**
+  String get voiceTeacherEntrySubtitle;
+
+  /// Promo code input label
+  ///
+  /// In en, this message translates to:
+  /// **'Promotion code (optional)'**
+  String get billingPromoCodeLabel;
+
+  /// Promo code placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Enter code'**
+  String get billingPromoCodePlaceholder;
+
+  /// Button to proceed to payment
+  ///
+  /// In en, this message translates to:
+  /// **'Proceed to Payment'**
+  String get billingProceedToPayment;
+
+  /// Title for empty invoices
+  ///
+  /// In en, this message translates to:
+  /// **'No Invoices Yet'**
+  String get billingNoInvoicesTitle;
+
+  /// Subtitle for empty invoices
+  ///
+  /// In en, this message translates to:
+  /// **'Your invoices will appear here after your first payment.'**
+  String get billingNoInvoicesSubtitle;
+
+  /// Title when no subscription plans exist
+  ///
+  /// In en, this message translates to:
+  /// **'No plans available'**
+  String get billingNoPlansAvailable;
+
+  /// Subtitle when no subscription plans exist
+  ///
+  /// In en, this message translates to:
+  /// **'Check back later for available plans.'**
+  String get billingCheckBackLaterPlans;
+
+  /// Button to subscribe to plan
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribe'**
+  String get billingSubscribe;
+
+  /// Empty assessments title
+  ///
+  /// In en, this message translates to:
+  /// **'No assessments available'**
+  String get assessmentsNoAssessmentsTitle;
+
+  /// Empty assessments subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Published quizzes and exams will appear here.'**
+  String get assessmentsNoAssessmentsSubtitle;
+
+  /// Assessment detail questions stat
+  ///
+  /// In en, this message translates to:
+  /// **'Questions'**
+  String get assessmentsStatQuestions;
+
+  /// Assessment detail time limit stat
+  ///
+  /// In en, this message translates to:
+  /// **'Time limit'**
+  String get assessmentsStatTimeLimit;
+
+  /// Assessment detail max attempts stat
+  ///
+  /// In en, this message translates to:
+  /// **'Max attempts'**
+  String get assessmentsStatMaxAttempts;
+
+  /// Button to start assessment attempt
+  ///
+  /// In en, this message translates to:
+  /// **'Start Attempt'**
+  String get assessmentsStartAttempt;
+
+  /// Start attempt screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Start attempt'**
+  String get assessmentsStartAttemptTitle;
+
+  /// Button to go back
+  ///
+  /// In en, this message translates to:
+  /// **'Go Back'**
+  String get assessmentsGoBack;
+
+  /// Button to submit assessment attempt
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get assessmentsSubmit;
+
+  /// Button to finish viewing results
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get assessmentsDone;
+
+  /// Empty results history title
+  ///
+  /// In en, this message translates to:
+  /// **'No results yet'**
+  String get assessmentsNoResultsTitle;
+
+  /// Empty results history subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Your past attempt results will appear here.'**
+  String get assessmentsNoResultsSubtitle;
+
+  /// Assessment deadline section title
+  ///
+  /// In en, this message translates to:
+  /// **'Deadline'**
+  String get assessmentsDeadlinesTitle;
+
+  /// Empty deadlines title
+  ///
+  /// In en, this message translates to:
+  /// **'No deadlines'**
+  String get assessmentsNoDeadlinesTitle;
+
+  /// Empty deadlines subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Your assessment deadlines will appear here.'**
+  String get assessmentsNoDeadlinesSubtitle;
+
+  /// Deadlines tab active
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get assessmentsTabActive;
+
+  /// Deadlines tab upcoming
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get assessmentsTabUpcoming;
+
+  /// Deadlines tab late
+  ///
+  /// In en, this message translates to:
+  /// **'Late'**
+  String get assessmentsTabLate;
+
+  /// Deadlines tab missed
+  ///
+  /// In en, this message translates to:
+  /// **'Missed'**
+  String get assessmentsTabMissed;
+
+  /// Deadlines tab closed
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get assessmentsTabClosed;
+
+  /// Deadline opens date label
+  ///
+  /// In en, this message translates to:
+  /// **'Opens'**
+  String get assessmentsOpensLabel;
+
+  /// Deadline closes date label
+  ///
+  /// In en, this message translates to:
+  /// **'Closes'**
+  String get assessmentsClosesLabel;
+
+  /// Deadline extended close label
+  ///
+  /// In en, this message translates to:
+  /// **'Extended close'**
+  String get assessmentsExtendedCloseLabel;
+
+  /// Question answer placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Type your answer here…'**
+  String get assessmentsTypeAnswerPlaceholder;
+
+  /// Question answer label
+  ///
+  /// In en, this message translates to:
+  /// **'Your answer'**
+  String get assessmentsYourAnswerLabel;
+
+  /// Empty questions list title
+  ///
+  /// In en, this message translates to:
+  /// **'Questions'**
+  String get assessmentsQuestionsEmptyTitle;
+
+  /// Empty questions list subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'No questions found for this attempt.'**
+  String get assessmentsQuestionsEmptySubtitle;
+
+  /// Empty notifications title
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
+  String get notificationsNoNotificationsTitle;
+
+  /// Empty notifications subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Session reminders and progress updates will appear here.'**
+  String get notificationsNoNotificationsSubtitle;
+
+  /// Status completed for assessments and reviews
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get assessmentsStatusCompleted;
+
+  /// Button to dismiss notification
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get notificationsDismiss;
+
+  /// Notification dismissed state title
+  ///
+  /// In en, this message translates to:
+  /// **'Dismissed'**
+  String get notificationsDismissedTitle;
+
+  /// Quiet hours toggle switch label
+  ///
+  /// In en, this message translates to:
+  /// **'Enable quiet hours'**
+  String get notificationsEnableQuietHours;
+
+  /// Button to save quiet hours
+  ///
+  /// In en, this message translates to:
+  /// **'Save quiet hours'**
+  String get notificationsSaveQuietHours;
+
+  /// Empty reminders title
+  ///
+  /// In en, this message translates to:
+  /// **'No reminders yet'**
+  String get notificationsNoRemindersTitle;
+
+  /// Empty reminders subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders you enable will appear here.'**
+  String get notificationsNoRemindersSubtitle;
+
+  /// Button to cancel reminder
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get notificationsCancelReminder;
+
+  /// Badge for unread notification
+  ///
+  /// In en, this message translates to:
+  /// **'Unread'**
+  String get notificationsUnread;
+
+  /// Average mastery stat label
+  ///
+  /// In en, this message translates to:
+  /// **'Avg mastery'**
+  String get progressAvgMastery;
+
+  /// Day streak stat label
+  ///
+  /// In en, this message translates to:
+  /// **'Day streak'**
+  String get progressDayStreak;
+
+  /// Hub link title for skill states
+  ///
+  /// In en, this message translates to:
+  /// **'Skill States'**
+  String get progressSkillStates;
+
+  /// Hub link title for weaknesses
+  ///
+  /// In en, this message translates to:
+  /// **'Weaknesses'**
+  String get progressWeaknesses;
+
+  /// Hub link title for recommendations
+  ///
+  /// In en, this message translates to:
+  /// **'Recommendations'**
+  String get progressRecommendations;
+
+  /// Hub link title for review schedule
+  ///
+  /// In en, this message translates to:
+  /// **'Review Schedule'**
+  String get progressReviewSchedule;
+
+  /// Weakness summary title
+  ///
+  /// In en, this message translates to:
+  /// **'Focus Areas'**
+  String get progressFocusAreas;
+
+  /// Empty progress state title
+  ///
+  /// In en, this message translates to:
+  /// **'No progress data yet'**
+  String get progressNoProgressData;
+
+  /// Empty skill state title
+  ///
+  /// In en, this message translates to:
+  /// **'No skill data yet'**
+  String get progressNoSkillData;
+
+  /// Empty weakness summary title
+  ///
+  /// In en, this message translates to:
+  /// **'No focus areas yet'**
+  String get progressNoFocusAreas;
+
+  /// Empty recommendations title
+  ///
+  /// In en, this message translates to:
+  /// **'No recommendations yet'**
+  String get progressNoRecommendations;
+
+  /// Skill status strong
+  ///
+  /// In en, this message translates to:
+  /// **'Strong'**
+  String get progressStatusStrong;
+
+  /// Skill status developing
+  ///
+  /// In en, this message translates to:
+  /// **'Developing'**
+  String get progressStatusDeveloping;
+
+  /// Skill status needs work
+  ///
+  /// In en, this message translates to:
+  /// **'Needs work'**
+  String get progressStatusNeedsWork;
+
+  /// Skill trend improving
+  ///
+  /// In en, this message translates to:
+  /// **'Improving'**
+  String get progressTrendImproving;
+
+  /// Skill trend declining
+  ///
+  /// In en, this message translates to:
+  /// **'Declining'**
+  String get progressTrendDeclining;
+
+  /// Skill trend stable
+  ///
+  /// In en, this message translates to:
+  /// **'Stable'**
+  String get progressTrendStable;
+
+  /// Skill trend insufficient data
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient data'**
+  String get progressTrendInsufficient;
+
+  /// Review status skipped
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped'**
+  String get progressStatusSkipped;
+
+  /// Review status overdue
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get progressStatusOverdue;
+
+  /// Empty AI chat prompt title
+  ///
+  /// In en, this message translates to:
+  /// **'Ask AI Teacher anything'**
+  String get aiTeacherAskAnythingTitle;
+
+  /// Empty AI chat prompt subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Start the conversation by sending a message.'**
+  String get aiTeacherStartConversationSubtitle;
+
+  /// Session history button tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation history'**
+  String get aiTeacherConversationHistory;
+
+  /// Empty AI history title
+  ///
+  /// In en, this message translates to:
+  /// **'No conversations yet'**
+  String get aiTeacherNoConversationsTitle;
+
+  /// Empty AI history subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Start chatting with AI Teacher to see your history here.'**
+  String get aiTeacherNoConversationsSubtitle;
+
+  /// AI Teacher setting text toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer text replies over voice'**
+  String get aiTeacherPreferTextLabel;
+
+  /// AI Teacher setting animations toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Reduce animations in AI Teacher and Voice Tutor'**
+  String get aiTeacherReduceAnimationsLabel;
+
+  /// AI Teacher settings info banner title
+  ///
+  /// In en, this message translates to:
+  /// **'About these settings'**
+  String get aiTeacherAboutSettingsTitle;
+
+  /// AI chat message input placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Ask me anything...'**
+  String get aiTeacherAskAnythingHint;
+
+  /// Voice mic tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Voice input (coming soon)'**
+  String get aiTeacherVoiceComingSoon;
+
+  /// AI chat send button label
+  ///
+  /// In en, this message translates to:
+  /// **'Send message'**
+  String get aiTeacherSendMessage;
+
+  /// AI safety block title
+  ///
+  /// In en, this message translates to:
+  /// **'AI Teacher is limited right now'**
+  String get aiTeacherLimitedBannerTitle;
+
+  /// AI Teacher entry card button
+  ///
+  /// In en, this message translates to:
+  /// **'Open AI Teacher'**
+  String get aiTeacherOpenButton;
+
+  /// Voice transcript empty title
+  ///
+  /// In en, this message translates to:
+  /// **'Start talking with your Voice Teacher'**
+  String get voiceTeacherStartTalkingTitle;
+
+  /// Voice transcript empty subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Your transcript will appear here.'**
+  String get voiceTeacherTranscriptAppearSubtitle;
+
+  /// Voice transcript title
+  ///
+  /// In en, this message translates to:
+  /// **'Messages'**
+  String get voiceTeacherMessages;
+
+  /// QA continue button
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get qaContinueButton;
+
+  /// QA fill-in-blank label
+  ///
+  /// In en, this message translates to:
+  /// **'Your answer'**
+  String get qaYourAnswerLabel;
+
+  /// QA fill-in-blank placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Type your answer here'**
+  String get qaTypeAnswerPlaceholder;
+
+  /// Session feedback questions attempted stat
+  ///
+  /// In en, this message translates to:
+  /// **'Questions attempted'**
+  String get qaQuestionsAttempted;
+
+  /// Session feedback correct score stat
+  ///
+  /// In en, this message translates to:
+  /// **'Correct (backend score)'**
+  String get qaCorrectScore;
+
+  /// Session feedback mastery shift stat
+  ///
+  /// In en, this message translates to:
+  /// **'Mastery shift'**
+  String get qaMasteryShift;
+
+  /// Lesson completed toast message
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson marked as completed! 🌟'**
+  String get qaLessonCompletedToast;
+
+  /// Mark lesson completed button
+  ///
+  /// In en, this message translates to:
+  /// **'Mark Lesson as Completed ✨'**
+  String get qaMarkLessonCompletedButton;
+
+  /// Drawer more item label
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get shellNavMore;
+
+  /// Language option English
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get profileLanguageEnglish;
+
+  /// Language option Arabic
+  ///
+  /// In en, this message translates to:
+  /// **'Arabic'**
+  String get profileLanguageArabic;
+
+  /// Title for the analytics summary page
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics'**
+  String get analyticsPageTitle;
+
+  /// Empty state title for analytics summary
+  ///
+  /// In en, this message translates to:
+  /// **'No reports available'**
+  String get analyticsNoReportsTitle;
+
+  /// Empty state subtitle for analytics summary
+  ///
+  /// In en, this message translates to:
+  /// **'There are no analytics reports for you yet.'**
+  String get analyticsNoReportsSubtitle;
+
+  /// Application brand name shown in header and top bar
+  ///
+  /// In en, this message translates to:
+  /// **'AIM English'**
+  String get homeAppName;
+
+  /// Personalized welcome greeting on home screen
+  ///
+  /// In en, this message translates to:
+  /// **'Hello, {name}! 👋'**
+  String homeGreeting(String name);
+
+  /// Course title and XP level subtitle on home screen welcome card
+  ///
+  /// In en, this message translates to:
+  /// **'{course} · XP Level {level}'**
+  String homeXpLevelSubtitle(String course, int level);
+
+  /// Title for the learning roadmap course path section
+  ///
+  /// In en, this message translates to:
+  /// **'Learning Roadmap'**
+  String get homeLearningRoadmap;
+
+  /// Status text for a mastered/completed node in the course path
+  ///
+  /// In en, this message translates to:
+  /// **'Mastered'**
+  String get homeNodeMastered;
+
+  /// Status text for the current active node in the course path
+  ///
+  /// In en, this message translates to:
+  /// **'Current Lesson'**
+  String get homeNodeCurrentLesson;
+
+  /// Status text for a locked node in the course path
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get homeNodeLocked;
+
+  /// Daily challenge mission to practice speaking
+  ///
+  /// In en, this message translates to:
+  /// **'Practice Speaking'**
+  String get homeMissionPracticeSpeaking;
+
+  /// Daily challenge mission to write a paragraph
+  ///
+  /// In en, this message translates to:
+  /// **'Write a Paragraph'**
+  String get homeMissionWriteParagraph;
+
+  /// Lesson title for writing practice AI chat
+  ///
+  /// In en, this message translates to:
+  /// **'Writing Practice'**
+  String get homeMissionWritingPractice;
+
+  /// Header title for checkout page
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout'**
+  String get billingCheckoutTitle;
+
+  /// Label for billing row in checkout summary
+  ///
+  /// In en, this message translates to:
+  /// **'Billing'**
+  String get billingBillingLabel;
+
+  /// Full terms of service and billing authorization disclaimer
+  ///
+  /// In en, this message translates to:
+  /// **'By continuing you agree to AIM\'s Terms of Service and authorise a recurring charge. Cancel anytime.'**
+  String get billingTermsAgreementFull;
+
+  /// Error message when payment gateway URL cannot be opened
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the payment page. Please try again.'**
+  String get billingCouldNotOpenPayment;
+
+  /// Error message when checkout session creation fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to start checkout. Please try again.'**
+  String get billingFailedToStart;
+
+  /// Title on confirmation page before submitting assessment attempt
+  ///
+  /// In en, this message translates to:
+  /// **'Submit your answers?'**
+  String get submitAttemptTitle;
+
+  /// Warning subtitle explaining answers cannot be modified after submit
+  ///
+  /// In en, this message translates to:
+  /// **'You cannot change answers after submitting.'**
+  String get submitAttemptWarning;
+
+  /// Finality callout notice on submit attempt confirmation screen
+  ///
+  /// In en, this message translates to:
+  /// **'This action is final and cannot be undone.'**
+  String get submitAttemptFinalAction;
+
+  /// Header title for student deadlines page
+  ///
+  /// In en, this message translates to:
+  /// **'Deadlines'**
+  String get deadlinesTitle;
+
+  /// Accessibility label while deadlines are loading
+  ///
+  /// In en, this message translates to:
+  /// **'Loading deadlines'**
+  String get deadlinesLoadingSemantic;
+
+  /// Due date formatted with relative day and calendar date
+  ///
+  /// In en, this message translates to:
+  /// **'Due {relative} · {date}'**
+  String deadlinesDueRelative(String relative, String date);
+
+  /// Upcoming assessment opening date
+  ///
+  /// In en, this message translates to:
+  /// **'Opens {date}'**
+  String deadlinesOpens(String date);
+
+  /// Extended deadline notice
+  ///
+  /// In en, this message translates to:
+  /// **'Extended to {date}'**
+  String deadlinesExtendedTo(String date);
+
+  /// Past due notice for late assessment
+  ///
+  /// In en, this message translates to:
+  /// **'Was due {date}'**
+  String deadlinesWasDue(String date);
+
+  /// Closed assessment date notice
+  ///
+  /// In en, this message translates to:
+  /// **'Closed {date}'**
+  String deadlinesClosed(String date);
+
+  /// Relative time indicator for today
+  ///
+  /// In en, this message translates to:
+  /// **'today'**
+  String get deadlinesRelativeToday;
+
+  /// Relative time indicator for tomorrow
+  ///
+  /// In en, this message translates to:
+  /// **'tomorrow'**
+  String get deadlinesRelativeTomorrow;
+
+  /// Relative time indicator in N days
+  ///
+  /// In en, this message translates to:
+  /// **'in {days} days'**
+  String deadlinesRelativeInDays(int days);
+
+  /// Header title for review schedule screen
+  ///
+  /// In en, this message translates to:
+  /// **'Review Schedule'**
+  String get reviewScheduleTitle;
+
+  /// Accessibility label while loading review schedule
+  ///
+  /// In en, this message translates to:
+  /// **'Loading review schedule'**
+  String get reviewScheduleLoadingSemantic;
+
+  /// Empty state title when no reviews are scheduled
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews scheduled'**
+  String get reviewScheduleNoTitle;
+
+  /// Empty state subtitle for review schedule screen
+  ///
+  /// In en, this message translates to:
+  /// **'Complete practice sessions to receive review reminders.'**
+  String get reviewScheduleNoSubtitle;
+
+  /// Review schedule interval and repetition count
+  ///
+  /// In en, this message translates to:
+  /// **'Every {days}d · repetition #{rep}'**
+  String reviewScheduleEveryInterval(String days, int rep);
+
+  /// Meta chip showing lesson count on course card
+  ///
+  /// In en, this message translates to:
+  /// **'{count} lessons'**
+  String lessonsCountChip(int count);
+
+  /// Meta chip showing quiz count on course card
+  ///
+  /// In en, this message translates to:
+  /// **'{count} quizzes'**
+  String quizzesCountChip(int count);
+
+  /// Meta chip showing exam count on course card
+  ///
+  /// In en, this message translates to:
+  /// **'{count} exam'**
+  String examsCountChip(int count);
+
+  /// Hint text explaining how to unlock a locked course
+  ///
+  /// In en, this message translates to:
+  /// **'Finish your current level to unlock this course'**
+  String get lessonsCourseLockedHint;
+
+  /// Achievement title for first_lesson_complete
+  ///
+  /// In en, this message translates to:
+  /// **'First Steps'**
+  String get achievementFirstLessonCompleteTitle;
+
+  /// Achievement description for first_lesson_complete
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your first lesson.'**
+  String get achievementFirstLessonCompleteDesc;
+
+  /// Achievement title for five_lessons_complete
+  ///
+  /// In en, this message translates to:
+  /// **'Getting Started'**
+  String get achievementFiveLessonsCompleteTitle;
+
+  /// Achievement description for five_lessons_complete
+  ///
+  /// In en, this message translates to:
+  /// **'Complete 5 lessons.'**
+  String get achievementFiveLessonsCompleteDesc;
+
+  /// Achievement title for three_day_streak
+  ///
+  /// In en, this message translates to:
+  /// **'On a Roll'**
+  String get achievementThreeDayStreakTitle;
+
+  /// Achievement description for three_day_streak
+  ///
+  /// In en, this message translates to:
+  /// **'Keep a 3-day learning streak.'**
+  String get achievementThreeDayStreakDesc;
+
+  /// Achievement title for seven_day_streak
+  ///
+  /// In en, this message translates to:
+  /// **'Week Warrior'**
+  String get achievementSevenDayStreakTitle;
+
+  /// Achievement description for seven_day_streak
+  ///
+  /// In en, this message translates to:
+  /// **'Keep a 7-day learning streak.'**
+  String get achievementSevenDayStreakDesc;
+
+  /// Achievement title for first_assessment_passed
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz Whiz'**
+  String get achievementFirstAssessmentPassedTitle;
+
+  /// Achievement description for first_assessment_passed
+  ///
+  /// In en, this message translates to:
+  /// **'Pass your first assessment.'**
+  String get achievementFirstAssessmentPassedDesc;
 }
 
 class _AppLocalizationsDelegate

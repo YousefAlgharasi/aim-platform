@@ -3,6 +3,7 @@ import 'package:aim_mobile/core/design_tokens/aim_colors.dart';
 import 'package:aim_mobile/core/design_tokens/aim_spacing.dart';
 import 'package:aim_mobile/core/design_tokens/aim_radius.dart';
 import 'package:aim_mobile/core/widgets/learning/aim_card.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class VoiceTeacherEntryCard extends StatelessWidget {
   final VoidCallback onTap;
@@ -13,12 +14,19 @@ class VoiceTeacherEntryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isRtl = Directionality.of(context) == TextDirection.rtl;
     final theme = Theme.of(context);
+    final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
+    final title = l10n?.voiceTeacherPageTitle ??
+        (isRtl ? 'المعلم الصوتي' : 'Voice Teacher');
+    final subtitle = l10n?.voiceTeacherPageSubtitle ??
+        (isRtl
+            ? 'تحدث مع معلمك بالصوت'
+            : 'Talk with your teacher using voice');
 
     return AIMCard(
       variant: AIMCardVariant.ai,
       interactive: true,
       onTap: onTap,
-      semanticLabel: isRtl ? 'المعلم الصوتي' : 'Voice Teacher',
+      semanticLabel: title,
       child: Row(
         children: [
           Container(
@@ -40,16 +48,14 @@ class VoiceTeacherEntryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isRtl ? 'المعلم الصوتي' : 'Voice Teacher',
+                  title,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  isRtl
-                      ? 'تحدث مع معلمك بالصوت'
-                      : 'Talk with your teacher using voice',
+                  subtitle,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),

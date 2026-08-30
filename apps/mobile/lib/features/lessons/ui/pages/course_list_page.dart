@@ -244,13 +244,11 @@ class _CourseListContentState extends State<_CourseListContent> {
                             ref.read(mainShellTabIndexProvider.notifier).state = 0;
                           }
                         },
-                        child: const Padding(
-                          padding: EdgeInsets.only(right: 10),
-                          child: AimBrandLogo(size: 38, fontSize: 11, borderRadius: 12),
-                        ),
+                        child: const AimBrandLogo(size: 38, fontSize: 11, borderRadius: 12),
                       );
                     },
                   ),
+                  const SizedBox(width: 12),
                   Text(
                     l10n.lessonsCoursesPageTitle,
                     style: TextStyle(
@@ -269,7 +267,7 @@ class _CourseListContentState extends State<_CourseListContent> {
                   if (headerLevel.isNotEmpty)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      margin: const EdgeInsets.only(right: 8),
+                      margin: const EdgeInsetsDirectional.only(end: 10),
                       decoration: BoxDecoration(
                         color: colorScheme.primary.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(16),
@@ -282,7 +280,7 @@ class _CourseListContentState extends State<_CourseListContent> {
                             radius: 3,
                             backgroundColor: colorScheme.primary,
                           ),
-                          const SizedBox(width: 5),
+                          const SizedBox(width: 6),
                           Text(
                             l10n.lessonsLevelBadge(headerLevel),
                             style: TextStyle(
@@ -356,9 +354,9 @@ class _CourseListContentState extends State<_CourseListContent> {
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Text(
-                        'LEARNING PATH',
-                        style: TextStyle(
+                      child: Text(
+                        l10n.lessonsLearningPathHeader,
+                        style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
@@ -374,9 +372,9 @@ class _CourseListContentState extends State<_CourseListContent> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Structured Curriculum',
-                  style: TextStyle(
+                Text(
+                  l10n.lessonsStructuredCurriculumHeader,
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
@@ -384,7 +382,7 @@ class _CourseListContentState extends State<_CourseListContent> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Follow your personalized sequence from CEFR Starter to Advanced mastery.',
+                  l10n.lessonsPersonalizedSequenceSubtitle,
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.white.withValues(alpha: 0.9),
@@ -458,7 +456,7 @@ class _CourseListContentState extends State<_CourseListContent> {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              'NEXT UP · LOCKED COURSE',
+                              l10n.lessonsNextUpLockedCourse,
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,
@@ -479,7 +477,7 @@ class _CourseListContentState extends State<_CourseListContent> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Unlocks automatically once you complete all chapters in ${activeCourse.title}.',
+                          l10n.lessonsUnlockNextCourseCondition(activeCourse.title),
                           style: TextStyle(
                             fontSize: 13,
                             color: surfaces.textSecondary,

@@ -6,6 +6,8 @@
   },
   "commonBack": "Back",
   "commonCancel": "Cancel",
+  "commonResume": "Resume",
+  "commonPause": "Pause",
   "commonSave": "Save",
   "commonSubmit": "Submit",
   "commonRetry": "Try again",
@@ -86,6 +88,10 @@
   "authNoAccountPrompt": "Don't have an account? ",
   "@authNoAccountPrompt": {
     "description": "Prompt shown before the 'Create one' link on the login page."
+  },
+  "authAlreadyHaveAccount": "Already have an account? ",
+  "@authAlreadyHaveAccount": {
+    "description": "Prompt shown before the 'Sign In' link on the register page."
   },
   "authCreateOneLink": "Create one",
   "@authCreateOneLink": {
@@ -2054,5 +2060,2205 @@
   "voiceAiXpEarned": "XP EARNED",
   "voiceAiAccuracy": "VOICE ACCURACY",
   "voiceAiAccuracyScore": "98% Score",
-  "voiceAiReturnButton": "Return to Lesson Detail"
+  "voiceAiReturnButton": "Return to Lesson Detail",
+  "lessonsCourseOverviewHeader": "COURSE OVERVIEW",
+  "@lessonsCourseOverviewHeader": {
+    "description": "Section title for course overview card."
+  },
+  "lessonsCourseProgressHeader": "Course Progress",
+  "@lessonsCourseProgressHeader": {
+    "description": "Label for course progress header."
+  },
+  "lessonsCourseChaptersHeader": "Course Chapters",
+  "@lessonsCourseChaptersHeader": {
+    "description": "Label for course chapters list header."
+  },
+  "lessonsNextUpLockedCourse": "NEXT UP · LOCKED COURSE",
+  "@lessonsNextUpLockedCourse": {
+    "description": "Badge for next locked course level."
+  },
+  "lessonsNextCourseLevel": "Next Course Level",
+  "@lessonsNextCourseLevel": {
+    "description": "Title for next course level card."
+  },
+  "lessonsUnlockCourseCondition": "Unlocks automatically once you complete all chapters in this course.",
+  "@lessonsUnlockCourseCondition": {
+    "description": "Description for course unlocking requirement."
+  },
+  "lessonsUnlockNextCourseCondition": "Unlocks automatically once you complete all chapters in {activeCourse}.",
+  "@lessonsUnlockNextCourseCondition": {
+    "description": "Description for unlocking next course based on current course.",
+    "placeholders": {
+      "activeCourse": {
+        "type": "String"
+      }
+    }
+  },
+  "lessonsLearningPathHeader": "LEARNING PATH",
+  "@lessonsLearningPathHeader": {
+    "description": "Eyebrow header for learning path."
+  },
+  "lessonsStructuredCurriculumHeader": "Structured Curriculum",
+  "@lessonsStructuredCurriculumHeader": {
+    "description": "Title for structured curriculum section."
+  },
+  "lessonsPersonalizedSequenceSubtitle": "Follow your personalized sequence from CEFR Starter to Advanced mastery.",
+  "@lessonsPersonalizedSequenceSubtitle": {
+    "description": "Subtitle for course sequence."
+  },
+  "lessonsKeyVocabularyHeader": "Key Vocabulary & Phrases",
+  "@lessonsKeyVocabularyHeader": {
+    "description": "Header for vocabulary list in lesson detail."
+  },
+  "lessonsTapToListenHeader": "TAP 🔊 TO LISTEN",
+  "@lessonsTapToListenHeader": {
+    "description": "Hint to tap audio icon in vocabulary list."
+  },
+  "lessonsAskAiTutorHeader": "Ask AI Tutor",
+  "@lessonsAskAiTutorHeader": {
+    "description": "Card title to chat with AI tutor."
+  },
+  "lessonsAskAiTutorSubtitle": "Chat with your AI tutor to clarify rules or ask questions.",
+  "@lessonsAskAiTutorSubtitle": {
+    "description": "Card description to chat with AI tutor."
+  },
+  "lessonsPracticeNowHeader": "Practice Now",
+  "@lessonsPracticeNowHeader": {
+    "description": "Practice exercises section header."
+  },
+  "lessonsPracticeNowSubtitle": "Reinforce your knowledge or practice with quick exercises.",
+  "@lessonsPracticeNowSubtitle": {
+    "description": "Practice exercises section description."
+  },
+  "lessonsQuizHeader": "QUIZ",
+  "@lessonsQuizHeader": {
+    "description": "Quiz badge header."
+  },
+  "lessonsQuizSubtitle": "Test your comprehension with quick interactive exercises.",
+  "@lessonsQuizSubtitle": {
+    "description": "Quiz section description."
+  },
+  "lessonsLessonMasteredTitle": "Lesson Mastered! 🌟",
+  "@lessonsLessonMasteredTitle": {
+    "description": "Title when lesson is mastered."
+  },
+  "lessonsLessonMasteredSnackbar": "Lesson marked as completed! 🌟",
+  "@lessonsLessonMasteredSnackbar": {
+    "description": "Snackbar text when lesson is completed."
+  },
+  "lessonsMarkCompleteFailed": "Could not mark lesson complete: {error}",
+  "@lessonsMarkCompleteFailed": {
+    "description": "Error message when marking lesson complete fails.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "lessonsInThisChapterHeader": "LESSONS IN THIS CHAPTER",
+  "@lessonsInThisChapterHeader": {
+    "description": "Section header for lessons list in chapter."
+  },
+  "lessonsChapterQuizHeader": "CHAPTER QUIZ",
+  "@lessonsChapterQuizHeader": {
+    "description": "Chapter quiz section header."
+  },
+  "lessonsPassedStatus": "PASSED",
+  "@lessonsPassedStatus": {
+    "description": "Passed status badge text."
+  },
+  "lessonsLockedStatus": "LOCKED",
+  "@lessonsLockedStatus": {
+    "description": "Locked status badge text."
+  },
+  "lessonsTotalLessonsCount": "{chaptersCount} chapters · {totalLessons} Total Lessons",
+  "@lessonsTotalLessonsCount": {
+    "description": "Overview summary with chapter and lesson counts.",
+    "placeholders": {
+      "chaptersCount": {
+        "type": "int"
+      },
+      "totalLessons": {
+        "type": "int"
+      }
+    }
+  },
+  "progressTitle": "Progress & Analytics",
+  "@progressTitle": {
+    "description": "Title for progress & analytics screen."
+  },
+  "progressSubtitle": "Track your language proficiency and study stats",
+  "@progressSubtitle": {
+    "description": "Subtitle for progress screen."
+  },
+  "progressWeeklyActivity": "Weekly Activity",
+  "@progressWeeklyActivity": {
+    "description": "Header for weekly activity chart."
+  },
+  "progressDailyAverageMins": "{minutes} mins / day average",
+  "@progressDailyAverageMins": {
+    "description": "Average daily study time in minutes.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "progressTotalMins": "{minutes} mins total",
+  "@progressTotalMins": {
+    "description": "Total study time in minutes.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "progressTrackedSkillsHeader": "TRACKED SKILLS ({count})",
+  "@progressTrackedSkillsHeader": {
+    "description": "Section header for tracked skills list.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "progressReviewScheduleHeader": "REVIEW SCHEDULE ({count})",
+  "@progressReviewScheduleHeader": {
+    "description": "Section header for review schedule.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "progressWeaknessRecordsHeader": "WEAKNESS RECORDS ({count})",
+  "@progressWeaknessRecordsHeader": {
+    "description": "Section header for weakness records.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "progressWeakSpotIdentified": "Identified weak spot from recent responses.",
+  "@progressWeakSpotIdentified": {
+    "description": "Card text describing an identified weakness."
+  },
+  "progressNoWeaknesses": "No active weaknesses recorded! Great work!",
+  "@progressNoWeaknesses": {
+    "description": "Message when there are no weaknesses."
+  },
+  "progressViewAll": "View All →",
+  "@progressViewAll": {
+    "description": "Button to view all items."
+  },
+  "progressViewFullSchedule": "View Full Schedule →",
+  "@progressViewFullSchedule": {
+    "description": "Button to view full review schedule."
+  },
+  "progressViewFullTable": "View Full Table →",
+  "@progressViewFullTable": {
+    "description": "Button to view full skill table."
+  },
+  "progressPriorityLabel": "{severity} Priority",
+  "@progressPriorityLabel": {
+    "description": "Priority level indicator.",
+    "placeholders": {
+      "severity": {
+        "type": "String"
+      }
+    }
+  },
+  "progressIntervalAndRep": "Interval: {interval}d · Rep #{rep}",
+  "@progressIntervalAndRep": {
+    "description": "Review interval and repetition number.",
+    "placeholders": {
+      "interval": {
+        "type": "int"
+      },
+      "rep": {
+        "type": "int"
+      }
+    }
+  },
+  "progressSkillStatesTitle": "Skill States",
+  "@progressSkillStatesTitle": {
+    "description": "Screen title for skill states table."
+  },
+  "progressConfidencePct": "Confidence {percent}%",
+  "@progressConfidencePct": {
+    "description": "Skill confidence score percentage.",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "progressDueAt": "Due: {date}",
+  "@progressDueAt": {
+    "description": "Schedule due date label.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "progressDetectedAt": "Detected: {date}",
+  "@progressDetectedAt": {
+    "description": "Weakness detected date label.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "progressResolvedAt": "Resolved: {date}",
+  "@progressResolvedAt": {
+    "description": "Weakness resolved date label.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "progressExpiresAt": "Expires: {date}",
+  "@progressExpiresAt": {
+    "description": "Recommendation expiry date label.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "progressGeneratedAt": "Generated: {date}",
+  "@progressGeneratedAt": {
+    "description": "Recommendation generated date label.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "progressTargetLesson": "Lesson: {lessonId}",
+  "@progressTargetLesson": {
+    "description": "Target lesson id label.",
+    "placeholders": {
+      "lessonId": {
+        "type": "String"
+      }
+    }
+  },
+  "progressRankBadge": "#{rank}",
+  "@progressRankBadge": {
+    "description": "Rank badge label.",
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      }
+    }
+  },
+  "billingTitle": "Billing",
+  "@billingTitle": {
+    "description": "Title for billing page."
+  },
+  "billingSubscription": "Subscription",
+  "@billingSubscription": {
+    "description": "Header for subscription section."
+  },
+  "billingCurrentPlan": "Current plan",
+  "@billingCurrentPlan": {
+    "description": "Current plan badge or label."
+  },
+  "billingChangePlan": "Change plan",
+  "@billingChangePlan": {
+    "description": "Button to change current plan."
+  },
+  "billingCancelSubscription": "Cancel subscription",
+  "@billingCancelSubscription": {
+    "description": "Button to cancel subscription."
+  },
+  "billingCancelSubscriptionDialogTitle": "Cancel Subscription?",
+  "@billingCancelSubscriptionDialogTitle": {
+    "description": "Dialog title for canceling subscription."
+  },
+  "billingCancelSubscriptionDialogMessage": "Your subscription will remain active until the end of the current billing period.",
+  "@billingCancelSubscriptionDialogMessage": {
+    "description": "Dialog message for cancellation."
+  },
+  "billingKeepSubscription": "Keep Subscription",
+  "@billingKeepSubscription": {
+    "description": "Button to keep subscription."
+  },
+  "billingPlansAndPricing": "Plans & Pricing",
+  "@billingPlansAndPricing": {
+    "description": "Screen title for plans & pricing."
+  },
+  "billingInvoices": "Invoices",
+  "@billingInvoices": {
+    "description": "Title/tab for invoices."
+  },
+  "billingInvoiceDetail": "Invoice Detail",
+  "@billingInvoiceDetail": {
+    "description": "Screen title for invoice detail."
+  },
+  "billingNoEntitlements": "No entitlements yet.",
+  "@billingNoEntitlements": {
+    "description": "Empty state for entitlements list."
+  },
+  "billingTermsAgreement": "By continuing you agree to AIM Terms",
+  "@billingTermsAgreement": {
+    "description": "Agreement text before checkout."
+  },
+  "billingCheckout": "Checkout",
+  "@billingCheckout": {
+    "description": "Checkout button text."
+  },
+  "billingPaymentPending": "Payment pending",
+  "@billingPaymentPending": {
+    "description": "Status message when payment is pending."
+  },
+  "billingPaymentSuccessful": "Payment successful!",
+  "@billingPaymentSuccessful": {
+    "description": "Status message when payment succeeded."
+  },
+  "billingPaymentFailed": "Payment failed",
+  "@billingPaymentFailed": {
+    "description": "Status message when payment failed."
+  },
+  "billingPaymentVerifying": "Please wait while we verify your payment.",
+  "@billingPaymentVerifying": {
+    "description": "Helper text during payment verification."
+  },
+  "billingPaymentFailedMessage": "Your payment could not be processed. Please try again.",
+  "@billingPaymentFailedMessage": {
+    "description": "Error message for payment failure."
+  },
+  "billingPaymentProcessingMessage": "Your payment is being processed. We will notify you once completed.",
+  "@billingPaymentProcessingMessage": {
+    "description": "Processing message for checkout."
+  },
+  "billingGoBack": "Go back",
+  "@billingGoBack": {
+    "description": "Button to go back from checkout status."
+  },
+  "billingQuantity": "Qty: {quantity}",
+  "@billingQuantity": {
+    "description": "Invoice line item quantity.",
+    "placeholders": {
+      "quantity": {
+        "type": "int"
+      }
+    }
+  },
+  "billingPopularBadge": "Popular",
+  "@billingPopularBadge": {
+    "description": "Badge for popular subscription plan."
+  },
+  "supportHelpCenter": "Help Center",
+  "@supportHelpCenter": {
+    "description": "Title for help center page."
+  },
+  "supportNewTicket": "New ticket",
+  "@supportNewTicket": {
+    "description": "Button or screen title for new support ticket."
+  },
+  "supportMyTickets": "My tickets",
+  "@supportMyTickets": {
+    "description": "Tab or title for user's support tickets."
+  },
+  "supportTicket": "Ticket",
+  "@supportTicket": {
+    "description": "Screen title for single ticket."
+  },
+  "supportParentHelp": "Parent Help",
+  "@supportParentHelp": {
+    "description": "Title for parent help center."
+  },
+  "supportParentTickets": "Parent tickets",
+  "@supportParentTickets": {
+    "description": "Title for parent tickets list."
+  },
+  "supportFeedback": "Send feedback",
+  "@supportFeedback": {
+    "description": "Button to submit feedback."
+  },
+  "supportRateAimQuestion": "How would you rate AIM?",
+  "@supportRateAimQuestion": {
+    "description": "Question prompt for rating AIM."
+  },
+  "supportReleaseNotes": "Release notes",
+  "@supportReleaseNotes": {
+    "description": "Title for release notes page."
+  },
+  "supportReleaseNote": "Release note",
+  "@supportReleaseNote": {
+    "description": "Title for single release note."
+  },
+  "supportReleasedDate": "Released {date}",
+  "@supportReleasedDate": {
+    "description": "Release date label.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "supportSystemStatus": "System Status",
+  "@supportSystemStatus": {
+    "description": "Title for system status page."
+  },
+  "supportWhatNew": "What's new",
+  "@supportWhatNew": {
+    "description": "Header for what's new section."
+  },
+  "supportNoTickets": "No Tickets Yet",
+  "@supportNoTickets": {
+    "description": "Title when user has no support tickets."
+  },
+  "supportNoTicketsSubtitle": "Create a ticket to get help from our support team.",
+  "@supportNoTicketsSubtitle": {
+    "description": "Subtitle when user has no support tickets."
+  },
+  "supportNoReleaseNotes": "No Release Notes",
+  "@supportNoReleaseNotes": {
+    "description": "Title when no release notes exist."
+  },
+  "supportNoReleaseNotesSubtitle": "Release notes will appear here when published.",
+  "@supportNoReleaseNotesSubtitle": {
+    "description": "Subtitle when no release notes exist."
+  },
+  "supportReleaseNoteNotAvailable": "Release note is not available yet",
+  "@supportReleaseNoteNotAvailable": {
+    "description": "Title when a release note detail is not ready."
+  },
+  "supportReleaseNoteNotAvailableSubtitle": "This release note will appear here once release notes are live.",
+  "@supportReleaseNoteNotAvailableSubtitle": {
+    "description": "Subtitle when a release note detail is not ready."
+  },
+  "practicePracticeSession": "PRACTICE SESSION",
+  "@practicePracticeSession": {
+    "description": "Practice session header."
+  },
+  "practicePracticeComplete": "PRACTICE COMPLETE!",
+  "@practicePracticeComplete": {
+    "description": "Practice completed title."
+  },
+  "practiceGreatJob": "Great Job!",
+  "@practiceGreatJob": {
+    "description": "Congratulatory message."
+  },
+  "practiceAccuracy": "ACCURACY",
+  "@practiceAccuracy": {
+    "description": "Accuracy metric header."
+  },
+  "practiceXpEarned": "XP EARNED",
+  "@practiceXpEarned": {
+    "description": "XP earned metric header."
+  },
+  "practiceCheckAnswer": "Check Answer",
+  "@practiceCheckAnswer": {
+    "description": "Button to check answer."
+  },
+  "practiceContinueToLesson": "Continue to Lesson",
+  "@practiceContinueToLesson": {
+    "description": "Button to proceed back to lesson."
+  },
+  "practiceQuestionOf": "QUESTION {current} OF {total}",
+  "@practiceQuestionOf": {
+    "description": "Question progress counter.",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "practiceSessionCompletedMsg": "You finished this practice session for {lessonTitle}.",
+  "@practiceSessionCompletedMsg": {
+    "description": "Summary message after practice.",
+    "placeholders": {
+      "lessonTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "practiceScoreSummary": "You scored {score}/{total} on this practice session.",
+  "@practiceScoreSummary": {
+    "description": "Score summary for practice.",
+    "placeholders": {
+      "score": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "practicePlacementRequiredTitle": "Placement Test Required",
+  "@practicePlacementRequiredTitle": {
+    "description": "Title when placement test is required before practice."
+  },
+  "practicePlacementRequiredBody": "You must complete the placement test first to determine your starting level and begin learning sessions.",
+  "@practicePlacementRequiredBody": {
+    "description": "Description why placement test is required."
+  },
+  "practiceTakePlacementNow": "Take Placement Test Now",
+  "@practiceTakePlacementNow": {
+    "description": "Button to start placement test."
+  },
+  "practiceTryDemoExercises": "Try Demo Exercises",
+  "@practiceTryDemoExercises": {
+    "description": "Button to try demo practice questions."
+  },
+  "qaAnswerSubmitted": "Answer submitted",
+  "@qaAnswerSubmitted": {
+    "description": "Title when question answer is submitted."
+  },
+  "qaAnalysingResponse": "AIM is analysing your response.",
+  "@qaAnalysingResponse": {
+    "description": "Status message when AI evaluates answer."
+  },
+  "qaAnalysingSession": "AIM is analysing your session…",
+  "@qaAnalysingSession": {
+    "description": "Status message when AI summarizes session."
+  },
+  "qaSessionSummary": "Session Summary",
+  "@qaSessionSummary": {
+    "description": "Session summary card title."
+  },
+  "qaSkillsCovered": "Skills covered",
+  "@qaSkillsCovered": {
+    "description": "Skills covered list title."
+  },
+  "assessmentAssessments": "Assessments",
+  "@assessmentAssessments": {
+    "description": "Assessments screen title."
+  },
+  "assessmentDeadlines": "Deadlines",
+  "@assessmentDeadlines": {
+    "description": "Assessment deadlines screen title."
+  },
+  "assessmentBreakdown": "BREAKDOWN",
+  "@assessmentBreakdown": {
+    "description": "Assessment points breakdown header."
+  },
+  "assessmentPastResults": "Past results",
+  "@assessmentPastResults": {
+    "description": "Past assessment results section."
+  },
+  "assessmentResultHistory": "Result history",
+  "@assessmentResultHistory": {
+    "description": "Result history screen title."
+  },
+  "assessmentSections": "Sections",
+  "@assessmentSections": {
+    "description": "Assessment sections list title."
+  },
+  "assessmentViewAttemptHistory": "View your attempt history",
+  "@assessmentViewAttemptHistory": {
+    "description": "Action to view assessment history."
+  },
+  "assessmentGradedDate": "Graded {date}",
+  "@assessmentGradedDate": {
+    "description": "Graded timestamp.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "assessmentLatePenalty": "Late penalty applied",
+  "@assessmentLatePenalty": {
+    "description": "Late penalty badge."
+  },
+  "assessmentReadyToBegin": "Ready to begin?",
+  "@assessmentReadyToBegin": {
+    "description": "Assessment start prompt."
+  },
+  "assessmentSubmitAnswersDialogTitle": "Submit your answers?",
+  "@assessmentSubmitAnswersDialogTitle": {
+    "description": "Confirmation dialog title for submitting assessment."
+  },
+  "assessmentSubmitAnswersDialogMessage": "This action is final and cannot be undone. You cannot change answers after submitting.",
+  "@assessmentSubmitAnswersDialogMessage": {
+    "description": "Confirmation dialog message for submitting assessment."
+  },
+  "placementYourResponse": "Your Response",
+  "@placementYourResponse": {
+    "description": "Placement test response input label."
+  },
+  "placementTargetSentences": "Target: 3-5 sentences",
+  "@placementTargetSentences": {
+    "description": "Guideline for placement open-response."
+  },
+  "placementCharactersCount": "{count} characters",
+  "@placementCharactersCount": {
+    "description": "Character count for placement response.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "placementPressHoldToRecord": "Press & hold the mic to record",
+  "@placementPressHoldToRecord": {
+    "description": "Speaking question instruction."
+  },
+  "placementReleaseWhenFinished": "Release when finished",
+  "@placementReleaseWhenFinished": {
+    "description": "Speaking question release instruction."
+  },
+  "placementRecordingInProgress": "Recording in progress...",
+  "@placementRecordingInProgress": {
+    "description": "Speaking question recording state."
+  },
+  "placementRecordingCompleted": "Recording completed!",
+  "@placementRecordingCompleted": {
+    "description": "Speaking question recorded state."
+  },
+  "placementTapSubmitRecording": "Tap Submit below to submit your recording.",
+  "@placementTapSubmitRecording": {
+    "description": "Instruction to submit recorded answer."
+  },
+  "placementAiEngineActive": "AI Engine Active",
+  "@placementAiEngineActive": {
+    "description": "Placement submission AI indicator."
+  },
+  "placementResultsRecordedSaved": "Your placement test results have been recorded and saved.",
+  "@placementResultsRecordedSaved": {
+    "description": "Placement completion message."
+  },
+  "reviewsTitle": "Review",
+  "@reviewsTitle": {
+    "description": "App bar title for the review schedule screen."
+  },
+  "reviewsLoadingSemantic": "Loading review schedule",
+  "@reviewsLoadingSemantic": {
+    "description": "Accessibility label shown while the review schedule is loading."
+  },
+  "reviewsNoScheduleTitle": "No reviews scheduled",
+  "@reviewsNoScheduleTitle": {
+    "description": "Empty-state title when no review items exist."
+  },
+  "reviewsNoScheduleSubtitle": "Complete practice sessions to receive review reminders.",
+  "@reviewsNoScheduleSubtitle": {
+    "description": "Empty-state subtitle when no review items exist."
+  },
+  "reviewsStatDueNow": "Due now",
+  "@reviewsStatDueNow": {
+    "description": "Label for the due-now stat card on the review screen."
+  },
+  "reviewsStatLearned": "Learned",
+  "@reviewsStatLearned": {
+    "description": "Label for the learned-count stat card on the review screen."
+  },
+  "reviewsStatStreak": "Streak",
+  "@reviewsStatStreak": {
+    "description": "Label for the streak stat card on the review screen."
+  },
+  "reviewsDueToday": "Due Today",
+  "@reviewsDueToday": {
+    "description": "Relative due-date label when the item is due today."
+  },
+  "reviewsDueTomorrow": "Due Tomorrow",
+  "@reviewsDueTomorrow": {
+    "description": "Relative due-date label when the item is due tomorrow."
+  },
+  "reviewsDueYesterday": "Due Yesterday",
+  "@reviewsDueYesterday": {
+    "description": "Relative due-date label when the item was due yesterday."
+  },
+  "reviewsDueInDays": "Due in {days} days",
+  "@reviewsDueInDays": {
+    "description": "Relative due-date label when the item is due in 2-6 days.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewsDueDaysAgo": "Due {days} days ago",
+  "@reviewsDueDaysAgo": {
+    "description": "Relative due-date label when the item was due 2-6 days ago.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewsDueDate": "Due {date}",
+  "@reviewsDueDate": {
+    "description": "Absolute due-date label for items more than a week away.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewsStatusDue": "Due",
+  "@reviewsStatusDue": {
+    "description": "Status badge label for a due review item."
+  },
+  "reviewsStatusPending": "Pending",
+  "@reviewsStatusPending": {
+    "description": "Status badge label for a pending review item."
+  },
+  "reviewsSpacedRepetitionDue": "Spaced-repetition flashcards due today",
+  "@reviewsSpacedRepetitionDue": {
+    "description": "Subtitle for reviews screen."
+  },
+  "reviewsScheduleHeader": "REVIEW SCHEDULE",
+  "@reviewsScheduleHeader": {
+    "description": "Section header for review schedule."
+  },
+  "reviewsStartSession": "Start Review Session",
+  "@reviewsStartSession": {
+    "description": "Button to start reviews."
+  },
+  "reviewsIntervalDays": "Interval {days}d",
+  "@reviewsIntervalDays": {
+    "description": "Interval days badge.",
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewsRepetitionNumber": "rep #{rep}",
+  "@reviewsRepetitionNumber": {
+    "description": "Repetition count badge.",
+    "placeholders": {
+      "rep": {
+        "type": "int"
+      }
+    }
+  },
+  "voiceTeacherPageTitle": "Voice Teacher",
+  "@voiceTeacherPageTitle": {
+    "description": "Voice teacher page title."
+  },
+  "voiceTeacherPageSubtitle": "Practise your pronunciation with the AI teacher",
+  "@voiceTeacherPageSubtitle": {
+    "description": "Voice teacher page subtitle."
+  },
+  "voiceTeacherConnectionErrorTitle": "Connection Error",
+  "@voiceTeacherConnectionErrorTitle": {
+    "description": "Voice error title."
+  },
+  "voiceTeacherMicrophoneErrorTitle": "Microphone Error",
+  "@voiceTeacherMicrophoneErrorTitle": {
+    "description": "Voice error title."
+  },
+  "voiceTeacherServerErrorTitle": "Server Error",
+  "@voiceTeacherServerErrorTitle": {
+    "description": "Voice error title."
+  },
+  "voiceTeacherGenericErrorTitle": "Something Went Wrong",
+  "@voiceTeacherGenericErrorTitle": {
+    "description": "Voice error title."
+  },
+  "voiceTeacherConnectionErrorMsg": "Could not connect to voice server. Please check your internet.",
+  "@voiceTeacherConnectionErrorMsg": {
+    "description": "Voice connection error details."
+  },
+  "voiceTeacherMicrophoneErrorMsg": "Could not access microphone. Please grant permission.",
+  "@voiceTeacherMicrophoneErrorMsg": {
+    "description": "Voice mic error details."
+  },
+  "voiceTeacherServerErrorMsg": "Voice service encountered an error. Please try again later.",
+  "@voiceTeacherServerErrorMsg": {
+    "description": "Voice server error details."
+  },
+  "voiceTeacherGenericErrorMsg": "An unexpected error occurred during the voice session.",
+  "@voiceTeacherGenericErrorMsg": {
+    "description": "Voice generic error details."
+  },
+  "voiceTeacherTextResponseTitle": "Text response from teacher",
+  "@voiceTeacherTextResponseTitle": {
+    "description": "Fallback title when audio is text-only."
+  },
+  "voiceTeacherRetryAudio": "Retry audio",
+  "@voiceTeacherRetryAudio": {
+    "description": "Button to retry fetching audio."
+  },
+  "voiceTeacherTryAgain": "Try Again",
+  "@voiceTeacherTryAgain": {
+    "description": "Button to retry voice action."
+  },
+  "voiceTeacherProcessing": "Processing...",
+  "@voiceTeacherProcessing": {
+    "description": "Processing voice recording status."
+  },
+  "voiceTeacherTranscribing": "Transcribing...",
+  "@voiceTeacherTranscribing": {
+    "description": "Transcribing user speech status."
+  },
+  "voiceTeacherWhatYouSaid": "What you said",
+  "@voiceTeacherWhatYouSaid": {
+    "description": "Transcript preview user header."
+  },
+  "voiceTeacherTeacherResponse": "Teacher response",
+  "@voiceTeacherTeacherResponse": {
+    "description": "Transcript preview teacher header."
+  },
+  "voiceTeacherRecorded": "Recorded",
+  "@voiceTeacherRecorded": {
+    "description": "State bar recorded label."
+  },
+  "voiceTeacherAudioUnavailable": "Audio unavailable — here's the text response",
+  "@voiceTeacherAudioUnavailable": {
+    "description": "Notice when audio fails and text fallback is shown."
+  },
+  "voiceTeacherStop": "Stop",
+  "@voiceTeacherStop": {
+    "description": "Stop voice recording."
+  },
+  "voiceTeacherDiscard": "Discard",
+  "@voiceTeacherDiscard": {
+    "description": "Discard voice recording."
+  },
+  "voiceTeacherSend": "Send",
+  "@voiceTeacherSend": {
+    "description": "Send voice recording."
+  },
+  "voiceTeacherHelpful": "Helpful",
+  "@voiceTeacherHelpful": {
+    "description": "Feedback helpful button."
+  },
+  "voiceTeacherNotHelpful": "Not helpful",
+  "@voiceTeacherNotHelpful": {
+    "description": "Feedback not helpful button."
+  },
+  "aiTeacherConversations": "Conversations",
+  "@aiTeacherConversations": {
+    "description": "AI Teacher session history title."
+  },
+  "aiTeacherSettingsTitle": "AI Teacher settings",
+  "@aiTeacherSettingsTitle": {
+    "description": "AI Teacher settings page title."
+  },
+  "aiTeacherCurrentLessonHeader": "Current lesson",
+  "@aiTeacherCurrentLessonHeader": {
+    "description": "Current lesson context chip."
+  },
+  "aiTeacherWasThisHelpful": "Was this helpful?",
+  "@aiTeacherWasThisHelpful": {
+    "description": "AI Teacher message feedback prompt."
+  },
+  "aiTeacherWelcomeBack": "Welcome back",
+  "@aiTeacherWelcomeBack": {
+    "description": "AI Teacher session recap welcome."
+  },
+  "aiTeacherAskQuestionsGuidance": "Ask questions and get guidance on this lesson.",
+  "@aiTeacherAskQuestionsGuidance": {
+    "description": "AI Teacher entry card description."
+  },
+  "profileAimPlusMember": "AIM PLUS MEMBER",
+  "@profileAimPlusMember": {
+    "description": "Badge for active AIM Plus membership."
+  },
+  "profileLearningGapsAlerts": "Alerts when AI detects new learning gaps",
+  "@profileLearningGapsAlerts": {
+    "description": "Setting toggle description for learning gap alerts."
+  },
+  "profileStudyTimeNotification": "Get notified at your preferred study time",
+  "@profileStudyTimeNotification": {
+    "description": "Setting toggle description for daily study time."
+  },
+  "profileSecurityPassword": "Security & Password",
+  "@profileSecurityPassword": {
+    "description": "Settings section header for password."
+  },
+  "profilePasswordResetSuccess": "Password reset email sent. Please check your inbox.",
+  "@profilePasswordResetSuccess": {
+    "description": "Success message for password reset request."
+  },
+  "profilePasswordResetFailed": "Failed to request password reset: {error}",
+  "@profilePasswordResetFailed": {
+    "description": "Error message for password reset request.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "profileSaveFailed": "Failed to save profile changes: {error}",
+  "@profileSaveFailed": {
+    "description": "Error message for saving profile.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "profileNoProfileLoaded": "No profile loaded.",
+  "@profileNoProfileLoaded": {
+    "description": "Empty state when profile data is null."
+  },
+  "notificationsChannels": "CHANNELS",
+  "@notificationsChannels": {
+    "description": "Notification settings section header."
+  },
+  "notificationsQuietHours": "QUIET HOURS",
+  "@notificationsQuietHours": {
+    "description": "Notification quiet hours header."
+  },
+  "notificationsManageReminders": "Manage lesson reminders",
+  "@notificationsManageReminders": {
+    "description": "Subtitle for notification preferences."
+  },
+  "notificationsDismissed": "This notification has been dismissed.",
+  "@notificationsDismissed": {
+    "description": "Status text for dismissed notification."
+  },
+  "notificationsPause": "Pause",
+  "@notificationsPause": {
+    "description": "Button to pause reminder."
+  },
+  "notificationsResume": "Resume",
+  "@notificationsResume": {
+    "description": "Button to resume reminder."
+  },
+  "authHappyToSeeYou": "Happy to see you again. Enter your email and password to continue.",
+  "@authHappyToSeeYou": {
+    "description": "Subtitle on login screen."
+  },
+  "authSignInToAccount": "Sign in to your account",
+  "@authSignInToAccount": {
+    "description": "Header on login screen."
+  },
+  "authTakesLessThanMinute": "Takes less than a minute. Enter your details below.",
+  "@authTakesLessThanMinute": {
+    "description": "Subtitle on register screen."
+  },
+  "authCheckEmailTitle": "Check your email",
+  "@authCheckEmailTitle": {
+    "description": "Title on email confirmation screen."
+  },
+  "authSentConfirmationLink": "We sent a confirmation link to:\n{email}",
+  "@authSentConfirmationLink": {
+    "description": "Body on email confirmation screen.",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "authBackToLogin": "Back to Login",
+  "@authBackToLogin": {
+    "description": "Button to return to login screen."
+  },
+  "authDevTestAccounts": "DEV / TEST ACCOUNTS",
+  "@authDevTestAccounts": {
+    "description": "Dev tools test accounts section header on login."
+  },
+  "authQuickLoginWithTest": "Quick-login with test credentials:",
+  "@authQuickLoginWithTest": {
+    "description": "Helper label for test accounts buttons."
+  },
+  "shellLogOut": "Log Out",
+  "@shellLogOut": {
+    "description": "Button to log out of the app."
+  },
+  "profileTitle": "Profile",
+  "@profileTitle": {
+    "description": "Title for the profile page hero header."
+  },
+  "profileLoadingProfile": "Loading profile",
+  "@profileLoadingProfile": {
+    "description": "Semantic label shown while profile is loading."
+  },
+  "profileCouldNotLoad": "Could not load profile: {message}",
+  "@profileCouldNotLoad": {
+    "description": "Error message when profile fails to load.",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "profileSectionAccount": "ACCOUNT",
+  "@profileSectionAccount": {
+    "description": "Section heading for account info on profile page."
+  },
+  "profileLabelEmail": "Email",
+  "@profileLabelEmail": {
+    "description": "Label for the email row on profile page."
+  },
+  "profileLabelStatus": "Status",
+  "@profileLabelStatus": {
+    "description": "Label for the status row on profile page."
+  },
+  "profileLabelType": "Type",
+  "@profileLabelType": {
+    "description": "Label for the user type row on profile page."
+  },
+  "profileSectionProfile": "PROFILE",
+  "@profileSectionProfile": {
+    "description": "Section heading for student profile details."
+  },
+  "profileLabelDisplayName": "Display Name",
+  "@profileLabelDisplayName": {
+    "description": "Label for display name on profile page."
+  },
+  "profileLabelLanguage": "Language",
+  "@profileLabelLanguage": {
+    "description": "Label for preferred language on profile page."
+  },
+  "profileLabelTimezone": "Timezone",
+  "@profileLabelTimezone": {
+    "description": "Label for timezone on profile page."
+  },
+  "profileSectionRoles": "ROLES",
+  "@profileSectionRoles": {
+    "description": "Section heading for user roles."
+  },
+  "profileRolesSubtitle": "Displayed for reference only. Enforced by backend.",
+  "@profileRolesSubtitle": {
+    "description": "Subtitle under the roles section header."
+  },
+  "profileSectionQuickLinks": "QUICK LINKS",
+  "@profileSectionQuickLinks": {
+    "description": "Section heading for quick navigation links."
+  },
+  "profileLinkLearningPath": "Learning Path",
+  "@profileLinkLearningPath": {
+    "description": "Quick link label for Learning Path."
+  },
+  "profileLinkSubscriptionBilling": "Subscription & Billing",
+  "@profileLinkSubscriptionBilling": {
+    "description": "Quick link label for Subscription & Billing."
+  },
+  "profileLinkInvoiceHistory": "Invoice History",
+  "@profileLinkInvoiceHistory": {
+    "description": "Quick link label for Invoice History."
+  },
+  "profileLinkAchievements": "Achievements",
+  "@profileLinkAchievements": {
+    "description": "Quick link label for Achievements."
+  },
+  "profileLinkAnalyticsSummary": "Analytics Summary",
+  "@profileLinkAnalyticsSummary": {
+    "description": "Quick link label for Analytics Summary."
+  },
+  "profileLinkApiEndpointTester": "API Endpoint Tester (Dev)",
+  "@profileLinkApiEndpointTester": {
+    "description": "Quick link label for developer API endpoint tester."
+  },
+  "profileStatDayStreak": "day streak",
+  "@profileStatDayStreak": {
+    "description": "Label under the day streak stat card on profile."
+  },
+  "profileStatAchievements": "achievements",
+  "@profileStatAchievements": {
+    "description": "Label under the achievements stat card on profile."
+  },
+  "profileTooltipAccountSettings": "Account Settings",
+  "@profileTooltipAccountSettings": {
+    "description": "Tooltip for the settings icon button on profile."
+  },
+  "profileAchievementsCarouselTitle": "Achievements",
+  "@profileAchievementsCarouselTitle": {
+    "description": "Title above the achievements carousel on profile."
+  },
+  "editProfileTitle": "Edit profile",
+  "@editProfileTitle": {
+    "description": "Header title on the edit profile screen."
+  },
+  "editProfileSave": "Save",
+  "@editProfileSave": {
+    "description": "Save text button on the edit profile header."
+  },
+  "editProfileBack": "Back",
+  "@editProfileBack": {
+    "description": "Semantic label for the back button on edit profile."
+  },
+  "editProfileLabelDisplayName": "Display Name",
+  "@editProfileLabelDisplayName": {
+    "description": "Label for the display name field on edit profile."
+  },
+  "editProfilePlaceholderDisplayName": "Your display name",
+  "@editProfilePlaceholderDisplayName": {
+    "description": "Placeholder for the display name field."
+  },
+  "editProfileLabelPreferredLanguage": "Preferred Language",
+  "@editProfileLabelPreferredLanguage": {
+    "description": "Label for the preferred language selector."
+  },
+  "editProfilePlaceholderLanguage": "Select a language",
+  "@editProfilePlaceholderLanguage": {
+    "description": "Placeholder for the preferred language selector."
+  },
+  "editProfileLabelTimezone": "Timezone",
+  "@editProfileLabelTimezone": {
+    "description": "Label for the timezone selector."
+  },
+  "editProfilePlaceholderTimezone": "Select a timezone",
+  "@editProfilePlaceholderTimezone": {
+    "description": "Placeholder for the timezone selector."
+  },
+  "editProfileSaveChanges": "Save changes",
+  "@editProfileSaveChanges": {
+    "description": "Label for the save changes gradient button."
+  },
+  "editProfileDisplayNameTooLong": "Display name must be 80 characters or fewer.",
+  "@editProfileDisplayNameTooLong": {
+    "description": "Validation error when display name exceeds 80 chars."
+  },
+  "editProfileSessionExpired": "Your session has expired. Please sign in again.",
+  "@editProfileSessionExpired": {
+    "description": "Toast shown when the session is expired on edit profile."
+  },
+  "editProfileUpdatedSuccess": "Profile updated.",
+  "@editProfileUpdatedSuccess": {
+    "description": "Toast shown on successful profile update."
+  },
+  "settingsAppThemeDisplay": "App Theme & Display",
+  "@settingsAppThemeDisplay": {
+    "description": "Section header for app theme settings."
+  },
+  "settingsThemeDarkSubtitle": "Darker UI option for night use",
+  "@settingsThemeDarkSubtitle": {
+    "description": "Subtitle when dark mode is active."
+  },
+  "settingsThemeLightSubtitle": "Clean, high contrast appearance",
+  "@settingsThemeLightSubtitle": {
+    "description": "Subtitle when light mode is active."
+  },
+  "settingsNotificationPreferences": "Notification Preferences",
+  "@settingsNotificationPreferences": {
+    "description": "Section header for notification settings."
+  },
+  "settingsEnterFullName": "Enter your full name",
+  "@settingsEnterFullName": {
+    "description": "Placeholder text for the name input on settings."
+  },
+  "achievementsTitle": "Achievements",
+  "@achievementsTitle": {
+    "description": "Title on the achievements page header."
+  },
+  "achievementsMilestonesTitle": "AIM Milestones",
+  "@achievementsMilestonesTitle": {
+    "description": "Title on the milestones banner card."
+  },
+  "achievementsBadgesUnlocked": "{unlocked} of {total} badges unlocked",
+  "@achievementsBadgesUnlocked": {
+    "description": "Subtitle showing how many badges are unlocked.",
+    "placeholders": {
+      "unlocked": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "achievementsLeagueRank": "Gold League #3",
+  "@achievementsLeagueRank": {
+    "description": "League rank pill on the milestones card."
+  },
+  "achievementsTabAll": "All Badges",
+  "@achievementsTabAll": {
+    "description": "Label for the All Badges filter tab."
+  },
+  "achievementsTabUnlocked": "Unlocked ({count})",
+  "@achievementsTabUnlocked": {
+    "description": "Label for the Unlocked filter tab with count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "achievementsTabInProgress": "In Progress ({count})",
+  "@achievementsTabInProgress": {
+    "description": "Label for the In Progress filter tab with count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "achievementsBadgeUnlocked": "Unlocked",
+  "@achievementsBadgeUnlocked": {
+    "description": "Tag text on an unlocked badge card."
+  },
+  "achievementsFirstStepTitle": "First Step",
+  "@achievementsFirstStepTitle": {
+    "description": "Default badge title: First Step."
+  },
+  "achievementsFirstStepDesc": "Complete your first English lesson",
+  "@achievementsFirstStepDesc": {
+    "description": "Default badge description: First Step."
+  },
+  "achievementsStreakMasterTitle": "Streak Master",
+  "@achievementsStreakMasterTitle": {
+    "description": "Default badge title: Streak Master."
+  },
+  "achievementsStreakMasterDesc": "Maintain a 7-day learning streak",
+  "@achievementsStreakMasterDesc": {
+    "description": "Default badge description: Streak Master."
+  },
+  "achievementsGrammarWizardTitle": "Grammar Wizard",
+  "@achievementsGrammarWizardTitle": {
+    "description": "Default badge title: Grammar Wizard."
+  },
+  "achievementsGrammarWizardDesc": "Score 90%+ in Grammar assessment",
+  "@achievementsGrammarWizardDesc": {
+    "description": "Default badge description: Grammar Wizard."
+  },
+  "achievementsVoiceChampionTitle": "Voice Champion",
+  "@achievementsVoiceChampionTitle": {
+    "description": "Default badge title: Voice Champion."
+  },
+  "achievementsVoiceChampionDesc": "Complete 5 Live AI Voice practice sessions",
+  "@achievementsVoiceChampionDesc": {
+    "description": "Default badge description: Voice Champion."
+  },
+  "achievementsVocabularyTitanTitle": "Vocabulary Titan",
+  "@achievementsVocabularyTitanTitle": {
+    "description": "Default badge title: Vocabulary Titan."
+  },
+  "achievementsVocabularyTitanDesc": "Master 200+ active words",
+  "@achievementsVocabularyTitanDesc": {
+    "description": "Default badge description: Vocabulary Titan."
+  },
+  "achievementsSpeedLearnerTitle": "Speed Learner",
+  "@achievementsSpeedLearnerTitle": {
+    "description": "Default badge title: Speed Learner."
+  },
+  "achievementsSpeedLearnerDesc": "Finish 3 lessons in a single day",
+  "@achievementsSpeedLearnerDesc": {
+    "description": "Default badge description: Speed Learner."
+  },
+  "achievementsPerfectQuizTitle": "Perfect Quiz Accuracy",
+  "@achievementsPerfectQuizTitle": {
+    "description": "Default badge title: Perfect Quiz Accuracy."
+  },
+  "achievementsPerfectQuizDesc": "Score 100% on 5 practice quizzes",
+  "@achievementsPerfectQuizDesc": {
+    "description": "Default badge description: Perfect Quiz Accuracy."
+  },
+  "achievementsPolyglotLegendTitle": "Polyglot Legend",
+  "@achievementsPolyglotLegendTitle": {
+    "description": "Default badge title: Polyglot Legend."
+  },
+  "achievementsPolyglotLegendDesc": "Reach Level 20 in English",
+  "@achievementsPolyglotLegendDesc": {
+    "description": "Default badge description: Polyglot Legend."
+  },
+  "supportCreateTicketTitle": "Submit a ticket",
+  "@supportCreateTicketTitle": {
+    "description": "Title for create ticket screen"
+  },
+  "supportCreateTicketButton": "Create Ticket",
+  "@supportCreateTicketButton": {
+    "description": "Button label to create a new support ticket"
+  },
+  "supportSubmitTicket": "Submit Ticket",
+  "@supportSubmitTicket": {
+    "description": "Button to submit support ticket"
+  },
+  "supportCategoryLabel": "Category",
+  "@supportCategoryLabel": {
+    "description": "Label for ticket category dropdown"
+  },
+  "supportSeverityLabel": "Severity",
+  "@supportSeverityLabel": {
+    "description": "Label for ticket severity dropdown"
+  },
+  "supportSubjectLabel": "Subject",
+  "@supportSubjectLabel": {
+    "description": "Label for ticket subject input"
+  },
+  "supportSubjectPlaceholder": "Briefly describe the issue",
+  "@supportSubjectPlaceholder": {
+    "description": "Placeholder for ticket subject"
+  },
+  "supportDescriptionLabel": "Description",
+  "@supportDescriptionLabel": {
+    "description": "Label for ticket description textarea"
+  },
+  "supportDescriptionPlaceholder": "Tell us what happened, step by step...",
+  "@supportDescriptionPlaceholder": {
+    "description": "Placeholder for ticket description"
+  },
+  "supportSubjectRequired": "Subject is required",
+  "@supportSubjectRequired": {
+    "description": "Validation error for empty subject"
+  },
+  "supportDescriptionRequired": "Description is required",
+  "@supportDescriptionRequired": {
+    "description": "Validation error for empty description"
+  },
+  "supportCategoryBugReport": "Bug Report",
+  "@supportCategoryBugReport": {
+    "description": "Category option: Bug report"
+  },
+  "supportCategoryAccountIssue": "Account Issue",
+  "@supportCategoryAccountIssue": {
+    "description": "Category option: Account issue"
+  },
+  "supportCategoryLearningIssue": "Learning Issue",
+  "@supportCategoryLearningIssue": {
+    "description": "Category option: Learning issue"
+  },
+  "supportCategoryBillingIssue": "Billing Issue",
+  "@supportCategoryBillingIssue": {
+    "description": "Category option: Billing issue"
+  },
+  "supportCategoryGeneral": "General",
+  "@supportCategoryGeneral": {
+    "description": "Category option: General"
+  },
+  "supportCategorySuggestion": "Suggestion",
+  "@supportCategorySuggestion": {
+    "description": "Feedback category: Suggestion"
+  },
+  "supportCategoryCompliment": "Compliment",
+  "@supportCategoryCompliment": {
+    "description": "Feedback category: Compliment"
+  },
+  "supportCategoryComplaint": "Complaint",
+  "@supportCategoryComplaint": {
+    "description": "Feedback category: Complaint"
+  },
+  "supportCategoryOther": "Other",
+  "@supportCategoryOther": {
+    "description": "Category option: Other"
+  },
+  "supportSeverityLow": "Low",
+  "@supportSeverityLow": {
+    "description": "Severity option: Low"
+  },
+  "supportSeverityMedium": "Medium",
+  "@supportSeverityMedium": {
+    "description": "Severity option: Medium"
+  },
+  "supportSeverityHigh": "High",
+  "@supportSeverityHigh": {
+    "description": "Severity option: High"
+  },
+  "supportSeverityCritical": "Critical",
+  "@supportSeverityCritical": {
+    "description": "Severity option: Critical"
+  },
+  "supportFeedbackTitleLabel": "Title",
+  "@supportFeedbackTitleLabel": {
+    "description": "Feedback title input label"
+  },
+  "supportFeedbackTitlePlaceholder": "A short summary",
+  "@supportFeedbackTitlePlaceholder": {
+    "description": "Feedback title placeholder"
+  },
+  "supportFeedbackBodyLabel": "Your feedback",
+  "@supportFeedbackBodyLabel": {
+    "description": "Feedback body input label"
+  },
+  "supportFeedbackBodyPlaceholder": "Tell us what you think...",
+  "@supportFeedbackBodyPlaceholder": {
+    "description": "Feedback body placeholder"
+  },
+  "supportFeedbackTitleRequired": "Title is required",
+  "@supportFeedbackTitleRequired": {
+    "description": "Validation error when feedback title is empty"
+  },
+  "supportFeedbackBodyRequired": "Feedback details are required",
+  "@supportFeedbackBodyRequired": {
+    "description": "Validation error when feedback body is empty"
+  },
+  "supportTicketAddComment": "Add a comment",
+  "@supportTicketAddComment": {
+    "description": "Label for ticket comment input"
+  },
+  "supportTicketCommentPlaceholder": "Write a follow-up message...",
+  "@supportTicketCommentPlaceholder": {
+    "description": "Placeholder for ticket follow-up comment"
+  },
+  "supportTicketSendComment": "Send",
+  "@supportTicketSendComment": {
+    "description": "Button to send comment"
+  },
+  "supportStatusAllOperational": "All Systems Operational",
+  "@supportStatusAllOperational": {
+    "description": "System status banner title"
+  },
+  "supportStatusNoComponents": "No components reported",
+  "@supportStatusNoComponents": {
+    "description": "Empty state title for status components"
+  },
+  "supportStatusNothingToShow": "Nothing to show yet.",
+  "@supportStatusNothingToShow": {
+    "description": "Empty state subtitle for status components"
+  },
+  "supportNoTickets": "No Tickets Yet",
+  "@supportNoTickets": {
+    "description": "Empty state title for student support tickets"
+  },
+  "supportNoTicketsSubtitle": "Create a ticket to get help from our support team.",
+  "@supportNoTicketsSubtitle": {
+    "description": "Empty state subtitle for student support tickets"
+  },
+  "supportNoParentTickets": "No Support Tickets",
+  "@supportNoParentTickets": {
+    "description": "Empty state title for parent support tickets"
+  },
+  "supportNoParentTicketsSubtitle": "Create a ticket if you need help with your account.",
+  "@supportNoParentTicketsSubtitle": {
+    "description": "Empty state subtitle for parent support tickets"
+  },
+  "coursesCurrentBadge": "Current",
+  "@coursesCurrentBadge": {
+    "description": "Badge text for current enrolled course"
+  },
+  "voiceTeacherTitle": "Voice Teacher",
+  "@voiceTeacherTitle": {
+    "description": "App bar title and screen header for the AI Voice Teacher"
+  },
+  "voiceTeacherStartingSession": "Starting Voice Teacher session",
+  "@voiceTeacherStartingSession": {
+    "description": "Loading state accessibility label when initializing voice teacher"
+  },
+  "voiceTeacherBackSemantic": "Back",
+  "@voiceTeacherBackSemantic": {
+    "description": "Accessibility label for voice teacher back button"
+  },
+  "voiceTeacherStatusSpeaking": "Speaking",
+  "@voiceTeacherStatusSpeaking": {
+    "description": "Status pill label when voice teacher is speaking"
+  },
+  "voiceTeacherStatusRecording": "Recording",
+  "@voiceTeacherStatusRecording": {
+    "description": "Status pill label when recording user voice"
+  },
+  "voiceTeacherStatusProcessing": "Processing",
+  "@voiceTeacherStatusProcessing": {
+    "description": "Status pill label when processing user response"
+  },
+  "voiceTeacherStatusReady": "Ready",
+  "@voiceTeacherStatusReady": {
+    "description": "Status pill label when ready for user input"
+  },
+  "voiceTeacherHeadingSpeaking": "Your teacher is speaking…",
+  "@voiceTeacherHeadingSpeaking": {
+    "description": "Main heading when voice teacher is speaking"
+  },
+  "voiceTeacherHeadingRecording": "Listening to you…",
+  "@voiceTeacherHeadingRecording": {
+    "description": "Main heading when recording user speech"
+  },
+  "voiceTeacherHeadingProcessing": "Processing your answer…",
+  "@voiceTeacherHeadingProcessing": {
+    "description": "Main heading when processing user speech"
+  },
+  "voiceTeacherHeadingListening": "Your turn — press and hold to speak",
+  "@voiceTeacherHeadingListening": {
+    "description": "Main heading when awaiting student push-to-talk press"
+  },
+  "voiceTeacherPracticeSubtitle": "Practise your pronunciation with the AI teacher",
+  "@voiceTeacherPracticeSubtitle": {
+    "description": "Subtitle text below push-to-talk button"
+  },
+  "voiceTeacherMessagesButton": "Messages",
+  "@voiceTeacherMessagesButton": {
+    "description": "Button label to toggle chat transcript view"
+  },
+  "voiceTeacherBackToCall": "Back to call",
+  "@voiceTeacherBackToCall": {
+    "description": "Button label to return to voice call view from transcript"
+  },
+  "voiceTeacherStatusSemantic": "Status: {status}",
+  "@voiceTeacherStatusSemantic": {
+    "description": "Accessibility label for voice status pill",
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceTeacherPressAndHold": "Press and hold to speak",
+  "@voiceTeacherPressAndHold": {
+    "description": "Push to talk button instruction text"
+  },
+  "voiceTeacherProcessing": "Processing...",
+  "@voiceTeacherProcessing": {
+    "description": "Push to talk button processing text"
+  },
+  "voiceTeacherRecordingRelease": "Recording — release to send",
+  "@voiceTeacherRecordingRelease": {
+    "description": "Accessibility label while recording voice"
+  },
+  "voiceTeacherSaid": "Voice Teacher said: {text}",
+  "@voiceTeacherSaid": {
+    "description": "Accessibility label for voice teacher message in transcript",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceTeacherYouSaid": "You said: {text}",
+  "@voiceTeacherYouSaid": {
+    "description": "Accessibility label for user message in transcript",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceTeacherEntryTitle": "Voice Teacher",
+  "@voiceTeacherEntryTitle": {
+    "description": "Card title for Voice Teacher entry widget"
+  },
+  "voiceTeacherEntrySubtitle": "Practice conversational speaking with AI",
+  "@voiceTeacherEntrySubtitle": {
+    "description": "Card subtitle for Voice Teacher entry widget"
+  },
+  "billingPromoCodeLabel": "Promotion code (optional)",
+  "@billingPromoCodeLabel": {
+    "description": "Promo code input label"
+  },
+  "billingPromoCodePlaceholder": "Enter code",
+  "@billingPromoCodePlaceholder": {
+    "description": "Promo code placeholder"
+  },
+  "billingProceedToPayment": "Proceed to Payment",
+  "@billingProceedToPayment": {
+    "description": "Button to proceed to payment"
+  },
+  "billingNoInvoicesTitle": "No Invoices Yet",
+  "@billingNoInvoicesTitle": {
+    "description": "Title for empty invoices"
+  },
+  "billingNoInvoicesSubtitle": "Your invoices will appear here after your first payment.",
+  "@billingNoInvoicesSubtitle": {
+    "description": "Subtitle for empty invoices"
+  },
+  "billingNoPlansAvailable": "No plans available",
+  "@billingNoPlansAvailable": {
+    "description": "Title when no subscription plans exist"
+  },
+  "billingCheckBackLaterPlans": "Check back later for available plans.",
+  "@billingCheckBackLaterPlans": {
+    "description": "Subtitle when no subscription plans exist"
+  },
+  "billingSubscribe": "Subscribe",
+  "@billingSubscribe": {
+    "description": "Button to subscribe to plan"
+  },
+  "assessmentsNoAssessmentsTitle": "No assessments available",
+  "@assessmentsNoAssessmentsTitle": {
+    "description": "Empty assessments title"
+  },
+  "assessmentsNoAssessmentsSubtitle": "Published quizzes and exams will appear here.",
+  "@assessmentsNoAssessmentsSubtitle": {
+    "description": "Empty assessments subtitle"
+  },
+  "assessmentsStatQuestions": "Questions",
+  "@assessmentsStatQuestions": {
+    "description": "Assessment detail questions stat"
+  },
+  "assessmentsStatTimeLimit": "Time limit",
+  "@assessmentsStatTimeLimit": {
+    "description": "Assessment detail time limit stat"
+  },
+  "assessmentsStatMaxAttempts": "Max attempts",
+  "@assessmentsStatMaxAttempts": {
+    "description": "Assessment detail max attempts stat"
+  },
+  "assessmentsStartAttempt": "Start Attempt",
+  "@assessmentsStartAttempt": {
+    "description": "Button to start assessment attempt"
+  },
+  "assessmentsStartAttemptTitle": "Start attempt",
+  "@assessmentsStartAttemptTitle": {
+    "description": "Start attempt screen title"
+  },
+  "assessmentsGoBack": "Go Back",
+  "@assessmentsGoBack": {
+    "description": "Button to go back"
+  },
+  "assessmentsSubmit": "Submit",
+  "@assessmentsSubmit": {
+    "description": "Button to submit assessment attempt"
+  },
+  "assessmentsDone": "Done",
+  "@assessmentsDone": {
+    "description": "Button to finish viewing results"
+  },
+  "assessmentsNoResultsTitle": "No results yet",
+  "@assessmentsNoResultsTitle": {
+    "description": "Empty results history title"
+  },
+  "assessmentsNoResultsSubtitle": "Your past attempt results will appear here.",
+  "@assessmentsNoResultsSubtitle": {
+    "description": "Empty results history subtitle"
+  },
+  "assessmentsDeadlinesTitle": "Deadline",
+  "@assessmentsDeadlinesTitle": {
+    "description": "Assessment deadline section title"
+  },
+  "assessmentsNoDeadlinesTitle": "No deadlines",
+  "@assessmentsNoDeadlinesTitle": {
+    "description": "Empty deadlines title"
+  },
+  "assessmentsNoDeadlinesSubtitle": "Your assessment deadlines will appear here.",
+  "@assessmentsNoDeadlinesSubtitle": {
+    "description": "Empty deadlines subtitle"
+  },
+  "assessmentsTabActive": "Active",
+  "@assessmentsTabActive": {
+    "description": "Deadlines tab active"
+  },
+  "assessmentsTabUpcoming": "Upcoming",
+  "@assessmentsTabUpcoming": {
+    "description": "Deadlines tab upcoming"
+  },
+  "assessmentsTabLate": "Late",
+  "@assessmentsTabLate": {
+    "description": "Deadlines tab late"
+  },
+  "assessmentsTabMissed": "Missed",
+  "@assessmentsTabMissed": {
+    "description": "Deadlines tab missed"
+  },
+  "assessmentsTabClosed": "Closed",
+  "@assessmentsTabClosed": {
+    "description": "Deadlines tab closed"
+  },
+  "assessmentsOpensLabel": "Opens",
+  "@assessmentsOpensLabel": {
+    "description": "Deadline opens date label"
+  },
+  "assessmentsClosesLabel": "Closes",
+  "@assessmentsClosesLabel": {
+    "description": "Deadline closes date label"
+  },
+  "assessmentsExtendedCloseLabel": "Extended close",
+  "@assessmentsExtendedCloseLabel": {
+    "description": "Deadline extended close label"
+  },
+  "assessmentsTypeAnswerPlaceholder": "Type your answer here…",
+  "@assessmentsTypeAnswerPlaceholder": {
+    "description": "Question answer placeholder"
+  },
+  "assessmentsYourAnswerLabel": "Your answer",
+  "@assessmentsYourAnswerLabel": {
+    "description": "Question answer label"
+  },
+  "assessmentsQuestionsEmptyTitle": "Questions",
+  "@assessmentsQuestionsEmptyTitle": {
+    "description": "Empty questions list title"
+  },
+  "assessmentsQuestionsEmptySubtitle": "No questions found for this attempt.",
+  "@assessmentsQuestionsEmptySubtitle": {
+    "description": "Empty questions list subtitle"
+  },
+  "notificationsNoNotificationsTitle": "No notifications yet",
+  "@notificationsNoNotificationsTitle": {
+    "description": "Empty notifications title"
+  },
+  "notificationsNoNotificationsSubtitle": "Session reminders and progress updates will appear here.",
+  "@notificationsNoNotificationsSubtitle": {
+    "description": "Empty notifications subtitle"
+  },
+  "assessmentsStatusCompleted": "Completed",
+  "@assessmentsStatusCompleted": {
+    "description": "Status completed for assessments and reviews"
+  },
+  "notificationsDismiss": "Dismiss",
+  "@notificationsDismiss": {
+    "description": "Button to dismiss notification"
+  },
+  "notificationsDismissedTitle": "Dismissed",
+  "@notificationsDismissedTitle": {
+    "description": "Notification dismissed state title"
+  },
+  "notificationsEnableQuietHours": "Enable quiet hours",
+  "@notificationsEnableQuietHours": {
+    "description": "Quiet hours toggle switch label"
+  },
+  "notificationsSaveQuietHours": "Save quiet hours",
+  "@notificationsSaveQuietHours": {
+    "description": "Button to save quiet hours"
+  },
+  "notificationsNoRemindersTitle": "No reminders yet",
+  "@notificationsNoRemindersTitle": {
+    "description": "Empty reminders title"
+  },
+  "notificationsNoRemindersSubtitle": "Reminders you enable will appear here.",
+  "@notificationsNoRemindersSubtitle": {
+    "description": "Empty reminders subtitle"
+  },
+  "notificationsCancelReminder": "Cancel",
+  "@notificationsCancelReminder": {
+    "description": "Button to cancel reminder"
+  },
+  "notificationsUnread": "Unread",
+  "@notificationsUnread": {
+    "description": "Badge for unread notification"
+  },
+  "progressAvgMastery": "Avg mastery",
+  "@progressAvgMastery": {
+    "description": "Average mastery stat label"
+  },
+  "progressDayStreak": "Day streak",
+  "@progressDayStreak": {
+    "description": "Day streak stat label"
+  },
+  "progressSkillStates": "Skill States",
+  "@progressSkillStates": {
+    "description": "Hub link title for skill states"
+  },
+  "progressWeaknesses": "Weaknesses",
+  "@progressWeaknesses": {
+    "description": "Hub link title for weaknesses"
+  },
+  "progressRecommendations": "Recommendations",
+  "@progressRecommendations": {
+    "description": "Hub link title for recommendations"
+  },
+  "progressReviewSchedule": "Review Schedule",
+  "@progressReviewSchedule": {
+    "description": "Hub link title for review schedule"
+  },
+  "progressFocusAreas": "Focus Areas",
+  "@progressFocusAreas": {
+    "description": "Weakness summary title"
+  },
+  "progressNoProgressData": "No progress data yet",
+  "@progressNoProgressData": {
+    "description": "Empty progress state title"
+  },
+  "progressNoSkillData": "No skill data yet",
+  "@progressNoSkillData": {
+    "description": "Empty skill state title"
+  },
+  "progressNoFocusAreas": "No focus areas yet",
+  "@progressNoFocusAreas": {
+    "description": "Empty weakness summary title"
+  },
+  "progressNoRecommendations": "No recommendations yet",
+  "@progressNoRecommendations": {
+    "description": "Empty recommendations title"
+  },
+  "progressStatusStrong": "Strong",
+  "@progressStatusStrong": {
+    "description": "Skill status strong"
+  },
+  "progressStatusDeveloping": "Developing",
+  "@progressStatusDeveloping": {
+    "description": "Skill status developing"
+  },
+  "progressStatusNeedsWork": "Needs work",
+  "@progressStatusNeedsWork": {
+    "description": "Skill status needs work"
+  },
+  "progressTrendImproving": "Improving",
+  "@progressTrendImproving": {
+    "description": "Skill trend improving"
+  },
+  "progressTrendDeclining": "Declining",
+  "@progressTrendDeclining": {
+    "description": "Skill trend declining"
+  },
+  "progressTrendStable": "Stable",
+  "@progressTrendStable": {
+    "description": "Skill trend stable"
+  },
+  "progressTrendInsufficient": "Insufficient data",
+  "@progressTrendInsufficient": {
+    "description": "Skill trend insufficient data"
+  },
+  "progressStatusSkipped": "Skipped",
+  "@progressStatusSkipped": {
+    "description": "Review status skipped"
+  },
+  "progressStatusOverdue": "Overdue",
+  "@progressStatusOverdue": {
+    "description": "Review status overdue"
+  },
+  "aiTeacherAskAnythingTitle": "Ask AI Teacher anything",
+  "@aiTeacherAskAnythingTitle": {
+    "description": "Empty AI chat prompt title"
+  },
+  "aiTeacherStartConversationSubtitle": "Start the conversation by sending a message.",
+  "@aiTeacherStartConversationSubtitle": {
+    "description": "Empty AI chat prompt subtitle"
+  },
+  "aiTeacherConversationHistory": "Conversation history",
+  "@aiTeacherConversationHistory": {
+    "description": "Session history button tooltip"
+  },
+  "aiTeacherNoConversationsTitle": "No conversations yet",
+  "@aiTeacherNoConversationsTitle": {
+    "description": "Empty AI history title"
+  },
+  "aiTeacherNoConversationsSubtitle": "Start chatting with AI Teacher to see your history here.",
+  "@aiTeacherNoConversationsSubtitle": {
+    "description": "Empty AI history subtitle"
+  },
+  "aiTeacherPreferTextLabel": "Prefer text replies over voice",
+  "@aiTeacherPreferTextLabel": {
+    "description": "AI Teacher setting text toggle"
+  },
+  "aiTeacherReduceAnimationsLabel": "Reduce animations in AI Teacher and Voice Tutor",
+  "@aiTeacherReduceAnimationsLabel": {
+    "description": "AI Teacher setting animations toggle"
+  },
+  "aiTeacherAboutSettingsTitle": "About these settings",
+  "@aiTeacherAboutSettingsTitle": {
+    "description": "AI Teacher settings info banner title"
+  },
+  "aiTeacherAskAnythingHint": "Ask me anything...",
+  "@aiTeacherAskAnythingHint": {
+    "description": "AI chat message input placeholder"
+  },
+  "aiTeacherVoiceComingSoon": "Voice input (coming soon)",
+  "@aiTeacherVoiceComingSoon": {
+    "description": "Voice mic tooltip"
+  },
+  "aiTeacherSendMessage": "Send message",
+  "@aiTeacherSendMessage": {
+    "description": "AI chat send button label"
+  },
+  "aiTeacherLimitedBannerTitle": "AI Teacher is limited right now",
+  "@aiTeacherLimitedBannerTitle": {
+    "description": "AI safety block title"
+  },
+  "aiTeacherOpenButton": "Open AI Teacher",
+  "@aiTeacherOpenButton": {
+    "description": "AI Teacher entry card button"
+  },
+  "voiceTeacherStartTalkingTitle": "Start talking with your Voice Teacher",
+  "@voiceTeacherStartTalkingTitle": {
+    "description": "Voice transcript empty title"
+  },
+  "voiceTeacherTranscriptAppearSubtitle": "Your transcript will appear here.",
+  "@voiceTeacherTranscriptAppearSubtitle": {
+    "description": "Voice transcript empty subtitle"
+  },
+  "voiceTeacherBackToCall": "Back to call",
+  "@voiceTeacherBackToCall": {
+    "description": "Voice error back to call button"
+  },
+  "voiceTeacherMessages": "Messages",
+  "@voiceTeacherMessages": {
+    "description": "Voice transcript title"
+  },
+  "qaContinueButton": "Continue",
+  "@qaContinueButton": {
+    "description": "QA continue button"
+  },
+  "qaYourAnswerLabel": "Your answer",
+  "@qaYourAnswerLabel": {
+    "description": "QA fill-in-blank label"
+  },
+  "qaTypeAnswerPlaceholder": "Type your answer here",
+  "@qaTypeAnswerPlaceholder": {
+    "description": "QA fill-in-blank placeholder"
+  },
+  "qaQuestionsAttempted": "Questions attempted",
+  "@qaQuestionsAttempted": {
+    "description": "Session feedback questions attempted stat"
+  },
+  "qaCorrectScore": "Correct (backend score)",
+  "@qaCorrectScore": {
+    "description": "Session feedback correct score stat"
+  },
+  "qaMasteryShift": "Mastery shift",
+  "@qaMasteryShift": {
+    "description": "Session feedback mastery shift stat"
+  },
+  "qaLessonCompletedToast": "Lesson marked as completed! 🌟",
+  "@qaLessonCompletedToast": {
+    "description": "Lesson completed toast message"
+  },
+  "qaMarkLessonCompletedButton": "Mark Lesson as Completed ✨",
+  "@qaMarkLessonCompletedButton": {
+    "description": "Mark lesson completed button"
+  },
+  "shellNavMore": "More",
+  "@shellNavMore": {
+    "description": "Drawer more item label"
+  },
+  "profileLanguageEnglish": "English",
+  "@profileLanguageEnglish": {
+    "description": "Language option English"
+  },
+  "profileLanguageArabic": "Arabic",
+  "@profileLanguageArabic": {
+    "description": "Language option Arabic"
+  },
+  "analyticsPageTitle": "Analytics",
+  "@analyticsPageTitle": {
+    "description": "Title for the analytics summary page"
+  },
+  "analyticsNoReportsTitle": "No reports available",
+  "@analyticsNoReportsTitle": {
+    "description": "Empty state title for analytics summary"
+  },
+  "analyticsNoReportsSubtitle": "There are no analytics reports for you yet.",
+  "@analyticsNoReportsSubtitle": {
+    "description": "Empty state subtitle for analytics summary"
+  },
+  "homeAppName": "AIM English",
+  "@homeAppName": {
+    "description": "Application brand name shown in header and top bar"
+  },
+  "homeGreeting": "Hello, {name}! 👋",
+  "@homeGreeting": {
+    "description": "Personalized welcome greeting on home screen",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeXpLevelSubtitle": "{course} · XP Level {level}",
+  "@homeXpLevelSubtitle": {
+    "description": "Course title and XP level subtitle on home screen welcome card",
+    "placeholders": {
+      "course": {
+        "type": "String"
+      },
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "homeLearningRoadmap": "Learning Roadmap",
+  "@homeLearningRoadmap": {
+    "description": "Title for the learning roadmap course path section"
+  },
+  "homeNodeMastered": "Mastered",
+  "@homeNodeMastered": {
+    "description": "Status text for a mastered/completed node in the course path"
+  },
+  "homeNodeCurrentLesson": "Current Lesson",
+  "@homeNodeCurrentLesson": {
+    "description": "Status text for the current active node in the course path"
+  },
+  "homeNodeLocked": "Locked",
+  "@homeNodeLocked": {
+    "description": "Status text for a locked node in the course path"
+  },
+  "homeMissionPracticeSpeaking": "Practice Speaking",
+  "@homeMissionPracticeSpeaking": {
+    "description": "Daily challenge mission to practice speaking"
+  },
+  "homeMissionWriteParagraph": "Write a Paragraph",
+  "@homeMissionWriteParagraph": {
+    "description": "Daily challenge mission to write a paragraph"
+  },
+  "homeMissionWritingPractice": "Writing Practice",
+  "@homeMissionWritingPractice": {
+    "description": "Lesson title for writing practice AI chat"
+  },
+  "billingCheckoutTitle": "Checkout",
+  "@billingCheckoutTitle": {
+    "description": "Header title for checkout page"
+  },
+  "billingBillingLabel": "Billing",
+  "@billingBillingLabel": {
+    "description": "Label for billing row in checkout summary"
+  },
+  "billingTermsAgreementFull": "By continuing you agree to AIM's Terms of Service and authorise a recurring charge. Cancel anytime.",
+  "@billingTermsAgreementFull": {
+    "description": "Full terms of service and billing authorization disclaimer"
+  },
+  "billingCouldNotOpenPayment": "Could not open the payment page. Please try again.",
+  "@billingCouldNotOpenPayment": {
+    "description": "Error message when payment gateway URL cannot be opened"
+  },
+  "billingFailedToStart": "Failed to start checkout. Please try again.",
+  "@billingFailedToStart": {
+    "description": "Error message when checkout session creation fails"
+  },
+  "submitAttemptTitle": "Submit your answers?",
+  "@submitAttemptTitle": {
+    "description": "Title on confirmation page before submitting assessment attempt"
+  },
+  "submitAttemptWarning": "You cannot change answers after submitting.",
+  "@submitAttemptWarning": {
+    "description": "Warning subtitle explaining answers cannot be modified after submit"
+  },
+  "submitAttemptFinalAction": "This action is final and cannot be undone.",
+  "@submitAttemptFinalAction": {
+    "description": "Finality callout notice on submit attempt confirmation screen"
+  },
+  "deadlinesTitle": "Deadlines",
+  "@deadlinesTitle": {
+    "description": "Header title for student deadlines page"
+  },
+  "deadlinesLoadingSemantic": "Loading deadlines",
+  "@deadlinesLoadingSemantic": {
+    "description": "Accessibility label while deadlines are loading"
+  },
+  "deadlinesDueRelative": "Due {relative} · {date}",
+  "@deadlinesDueRelative": {
+    "description": "Due date formatted with relative day and calendar date",
+    "placeholders": {
+      "relative": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "deadlinesOpens": "Opens {date}",
+  "@deadlinesOpens": {
+    "description": "Upcoming assessment opening date",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "deadlinesExtendedTo": "Extended to {date}",
+  "@deadlinesExtendedTo": {
+    "description": "Extended deadline notice",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "deadlinesWasDue": "Was due {date}",
+  "@deadlinesWasDue": {
+    "description": "Past due notice for late assessment",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "deadlinesClosed": "Closed {date}",
+  "@deadlinesClosed": {
+    "description": "Closed assessment date notice",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "deadlinesRelativeToday": "today",
+  "@deadlinesRelativeToday": {
+    "description": "Relative time indicator for today"
+  },
+  "deadlinesRelativeTomorrow": "tomorrow",
+  "@deadlinesRelativeTomorrow": {
+    "description": "Relative time indicator for tomorrow"
+  },
+  "deadlinesRelativeInDays": "in {days} days",
+  "@deadlinesRelativeInDays": {
+    "description": "Relative time indicator in N days",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewScheduleTitle": "Review Schedule",
+  "@reviewScheduleTitle": {
+    "description": "Header title for review schedule screen"
+  },
+  "reviewScheduleLoadingSemantic": "Loading review schedule",
+  "@reviewScheduleLoadingSemantic": {
+    "description": "Accessibility label while loading review schedule"
+  },
+  "reviewScheduleNoTitle": "No reviews scheduled",
+  "@reviewScheduleNoTitle": {
+    "description": "Empty state title when no reviews are scheduled"
+  },
+  "reviewScheduleNoSubtitle": "Complete practice sessions to receive review reminders.",
+  "@reviewScheduleNoSubtitle": {
+    "description": "Empty state subtitle for review schedule screen"
+  },
+  "reviewScheduleEveryInterval": "Every {days}d · repetition #{rep}",
+  "@reviewScheduleEveryInterval": {
+    "description": "Review schedule interval and repetition count",
+    "placeholders": {
+      "days": {
+        "type": "String"
+      },
+      "rep": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonsCountChip": "{count} lessons",
+  "@lessonsCountChip": {
+    "description": "Meta chip showing lesson count on course card",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "quizzesCountChip": "{count} quizzes",
+  "@quizzesCountChip": {
+    "description": "Meta chip showing quiz count on course card",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "examsCountChip": "{count} exam",
+  "@examsCountChip": {
+    "description": "Meta chip showing exam count on course card",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonsCourseLockedHint": "Finish your current level to unlock this course",
+  "@lessonsCourseLockedHint": {
+    "description": "Hint text explaining how to unlock a locked course"
+  },
+  "achievementFirstLessonCompleteTitle": "First Steps",
+  "@achievementFirstLessonCompleteTitle": {
+    "description": "Achievement title for first_lesson_complete"
+  },
+  "achievementFirstLessonCompleteDesc": "Complete your first lesson.",
+  "@achievementFirstLessonCompleteDesc": {
+    "description": "Achievement description for first_lesson_complete"
+  },
+  "achievementFiveLessonsCompleteTitle": "Getting Started",
+  "@achievementFiveLessonsCompleteTitle": {
+    "description": "Achievement title for five_lessons_complete"
+  },
+  "achievementFiveLessonsCompleteDesc": "Complete 5 lessons.",
+  "@achievementFiveLessonsCompleteDesc": {
+    "description": "Achievement description for five_lessons_complete"
+  },
+  "achievementThreeDayStreakTitle": "On a Roll",
+  "@achievementThreeDayStreakTitle": {
+    "description": "Achievement title for three_day_streak"
+  },
+  "achievementThreeDayStreakDesc": "Keep a 3-day learning streak.",
+  "@achievementThreeDayStreakDesc": {
+    "description": "Achievement description for three_day_streak"
+  },
+  "achievementSevenDayStreakTitle": "Week Warrior",
+  "@achievementSevenDayStreakTitle": {
+    "description": "Achievement title for seven_day_streak"
+  },
+  "achievementSevenDayStreakDesc": "Keep a 7-day learning streak.",
+  "@achievementSevenDayStreakDesc": {
+    "description": "Achievement description for seven_day_streak"
+  },
+  "achievementFirstAssessmentPassedTitle": "Quiz Whiz",
+  "@achievementFirstAssessmentPassedTitle": {
+    "description": "Achievement title for first_assessment_passed"
+  },
+  "achievementFirstAssessmentPassedDesc": "Pass your first assessment.",
+  "@achievementFirstAssessmentPassedDesc": {
+    "description": "Achievement description for first_assessment_passed"
+  }
 }

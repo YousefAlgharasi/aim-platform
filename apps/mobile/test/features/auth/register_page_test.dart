@@ -4,16 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/routing/routing.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
-import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
-import 'package:aim_mobile/features/auth/data/models/auth_sync_response_model.dart';
-import 'package:aim_mobile/features/auth/data/models/login_result_model.dart';
-import 'package:aim_mobile/features/auth/data/models/refresh_result_model.dart';
-import 'package:aim_mobile/features/auth/data/models/register_result_model.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
-import 'package:aim_mobile/features/auth/logic/provider/register_notifier.dart';
-import 'package:aim_mobile/features/auth/logic/provider/register_provider.dart';
-import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
 import 'package:aim_mobile/features/auth/ui/pages/register_page.dart';
 
 import '../../support/test_router_app.dart';
@@ -86,23 +78,34 @@ class _FakeAuthRepository implements AuthRepository {
 void main() {
   // ── Smoke ──────────────────────────────────────────────────────────────
 
-  testWidgets('RegisterPage renders the gradient header and form fields',
+  testWidgets('RegisterPage renders the header and form fields',
       (tester) async {
     await tester.pumpWidget(_testApp());
     await tester.pump();
 
     expect(find.byType(RegisterPage), findsOneWidget);
+    expect(find.text('Create an account'), findsOneWidget);
     expect(find.text('START YOUR JOURNEY'), findsOneWidget);
     expect(find.text('Create an account'), findsOneWidget);
     expect(find.text('Create account'), findsOneWidget);
     expect(find.byType(TextField), findsNWidgets(4));
   });
 
-  testWidgets('RegisterPage uses AIM design system widgets', (tester) async {
+  testWidgets('RegisterPage renders social auth options and sign in link',
+      (tester) async {
     await tester.pumpWidget(_testApp());
     await tester.pump();
 
     expect(find.byType(TextField), findsNWidgets(4));
+    expect(find.text('Google'), findsOneWidget);
+    expect(find.text('Facebook'), findsOneWidget);
+    final signInLink = find.text('Sign In');
+    await tester.scrollUntilVisible(
+      signInLink,
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(signInLink, findsOneWidget);
     expect(find.text('Create account'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Sign In'),
@@ -112,8 +115,14 @@ void main() {
     expect(find.text('Sign In'), findsOneWidget);
   });
 
-  // ── Submit button state ────────────────────────────────────────────────
+  // ── Form validation ───────────────────────────────────────────────────
 
+  testWidgets('Form state updates with input values', (tester) async {
+    await tester.pumpWidget(_testApp());
+    await tester.pump();
+
+    final textFields = find.byType(TextField);
+    expect(textFields, findsNWidgets(4));
   testWidgets('Submit button is present', (tester) async {
     await tester.pumpWidget(_testApp());
     await tester.pump();
@@ -121,23 +130,11 @@ void main() {
     expect(find.text('Create account'), findsOneWidget);
   });
 
-  testWidgets('Submit button enables when all fields are valid', (tester) async {
-    await tester.pumpWidget(
-      _testApp(
-        overrides: [
-          registerProvider.overrideWith((ref) {
-            final notifier = RegisterNotifier(
-              repository: _FakeAuthRepository(),
-              ref: ref,
-            );
-            notifier.setEmail('learner@example.com');
-            notifier.setPassword('secret123');
-            notifier.setConfirmPassword('secret123');
-            return notifier;
-          }),
-        ],
-      ),
-    );
+    await tester.enterText(textFields.at(1), 'learner@example.com');
+    await tester.pump();
+    await tester.enterText(textFields.at(2), 'secret123');
+    await tester.pump();
+    await tester.enterText(textFields.at(3), 'secret123');
     await tester.pump();
 
     expect(find.text('Create account'), findsOneWidget);

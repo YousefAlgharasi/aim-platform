@@ -24,6 +24,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 import '../../logic/provider/support_provider.dart';
 
@@ -277,19 +278,23 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           AIMTextarea(
-                            label: 'Add a comment',
+                            label: AppLocalizations.of(context)
+                                .supportTicketAddComment,
                             controller: _commentController,
-                            placeholder: 'Write a follow-up message...',
+                            placeholder: AppLocalizations.of(context)
+                                .supportTicketCommentPlaceholder,
                             rows: 3,
                             error: _postError,
                           ),
                           const SizedBox(height: AimSpacing.componentGap),
                           AIMGradientButton(
-                            label: 'Send',
+                            label: AppLocalizations.of(context)
+                                .supportTicketSendComment,
                             onPressed: _isPosting ? null : _postComment,
                             loading: _isPosting,
                             fullWidth: true,
-                            semanticLabel: 'Send comment',
+                            semanticLabel: AppLocalizations.of(context)
+                                .supportTicketSendComment,
                           ),
                         ],
                       ),
@@ -324,7 +329,7 @@ class _TicketDetailHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -350,7 +355,7 @@ class _TicketDetailHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Ticket',
+              AppLocalizations.of(context).supportTicket,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],

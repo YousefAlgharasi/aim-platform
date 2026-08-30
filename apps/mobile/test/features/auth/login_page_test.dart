@@ -131,21 +131,33 @@ class _RecordingLoginNotifier extends LoginNotifier {
 void main() {
   // ── Smoke ──────────────────────────────────────────
 
-  testWidgets('LoginPage renders the gradient header copy', (tester) async {
+  testWidgets('LoginPage renders the header and inputs', (tester) async {
     await tester.pumpWidget(_testApp());
     await tester.pump();
 
     expect(find.byType(LoginPage), findsOneWidget);
+    expect(find.text('Welcome back'), findsOneWidget);
+    expect(find.byType(TextField), findsNWidgets(2));
     expect(find.text('WELCOME BACK'), findsOneWidget);
     expect(find.textContaining('Sign in to your'), findsOneWidget);
   });
 
-  testWidgets(
-      'LoginPage uses AIM design-system widgets for inputs, submit, and social row',
+  testWidgets('LoginPage renders social options and sign up link',
       (tester) async {
     await tester.pumpWidget(_testApp());
     await tester.pump();
 
+    expect(find.byType(TextField), findsNWidgets(2));
+    expect(find.text('Google'), findsOneWidget);
+    expect(find.text('Facebook'), findsOneWidget);
+
+    final createOneLink = find.text('Create one');
+    await tester.scrollUntilVisible(
+      createOneLink,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(createOneLink, findsOneWidget);
     expect(find.byType(TextField), findsNWidgets(2)); // email + password
     expect(find.text('Sign In'), findsOneWidget);
     expect(find.text('Google'), findsOneWidget);
@@ -299,6 +311,17 @@ void main() {
     await tester.pumpWidget(_testApp());
     await tester.pump();
 
+    final testModeHeading = find.text('DEV / TEST ACCOUNTS');
+    await tester.scrollUntilVisible(
+      testModeHeading,
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(testModeHeading, findsOneWidget);
+    expect(find.text('Student'), findsOneWidget);
+    expect(find.text('Parent'), findsOneWidget);
+    expect(find.text('Teacher'), findsOneWidget);
+    expect(find.text('Open Endpoint Tester →'), findsOneWidget);
     expect(find.text('DEV / TEST ACCOUNTS', skipOffstage: false), findsOneWidget);
     expect(find.text('Student', skipOffstage: false), findsOneWidget);
     expect(find.text('Parent', skipOffstage: false), findsOneWidget);
@@ -317,6 +340,8 @@ void main() {
     );
     await tester.pump();
 
+    expect(find.text('DEV / TEST ACCOUNTS'), findsNothing);
+    expect(find.text('Open Endpoint Tester →'), findsNothing);
     expect(find.text('DEV / TEST ACCOUNTS', skipOffstage: false), findsNothing);
     expect(find.text('Student', skipOffstage: false), findsNothing);
     expect(find.text('Parent', skipOffstage: false), findsNothing);

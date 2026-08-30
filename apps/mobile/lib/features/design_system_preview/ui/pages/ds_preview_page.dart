@@ -254,7 +254,7 @@ class _TabChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: AimMotion.durationFast,
-        margin: const EdgeInsets.only(right: AimSpacing.space8),
+        margin: const EdgeInsetsDirectional.only(end: AimSpacing.space8),
         padding: const EdgeInsets.symmetric(
           horizontal: AimSpacing.space12,
           vertical: AimSpacing.space4,

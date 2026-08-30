@@ -14,6 +14,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
 import 'package:aim_mobile/features/assessments/logic/provider/assessment_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../widgets/assessment_widgets.dart';
 
 class AssessmentListPage extends ConsumerStatefulWidget {
@@ -189,10 +190,10 @@ class _AssessmentListContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return const AIMEmptyState(
-        icon: Icon(Icons.quiz_outlined),
-        title: 'No assessments available',
-        subtitle: 'Published quizzes and exams will appear here.',
+      return AIMEmptyState(
+        icon: const Icon(Icons.quiz_outlined),
+        title: AppLocalizations.of(context).assessmentsNoAssessmentsTitle,
+        subtitle: AppLocalizations.of(context).assessmentsNoAssessmentsSubtitle,
       );
     }
 

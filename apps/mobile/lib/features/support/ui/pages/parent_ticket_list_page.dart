@@ -20,6 +20,7 @@ import 'package:go_router/go_router.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 import '../../logic/provider/support_provider.dart';
 import 'ticket_list_page.dart';
@@ -33,10 +34,10 @@ class ParentTicketListPage extends ConsumerStatefulWidget {
 
   /// Builds an empty state for parent tickets using shared pattern.
   static Widget buildEmptyState(BuildContext context) {
-    return const AIMEmptyState(
-      icon: Icon(Icons.confirmation_number_outlined),
-      title: 'No Support Tickets',
-      subtitle: 'Create a ticket if you need help with your account.',
+    return AIMEmptyState(
+      icon: const Icon(Icons.confirmation_number_outlined),
+      title: AppLocalizations.of(context).supportNoParentTickets,
+      subtitle: AppLocalizations.of(context).supportNoParentTicketsSubtitle,
     );
   }
 

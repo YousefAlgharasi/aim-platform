@@ -21,6 +21,7 @@ import 'package:go_router/go_router.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 import '../../logic/entity/notification_entities.dart';
 import '../../logic/provider/notification_providers.dart';
@@ -141,10 +142,13 @@ class _ReminderSettingsPageState extends ConsumerState<ReminderSettingsPage> {
                   onRetry: _load,
                 ),
               AppAsyncSuccess(:final data) => data.isEmpty
-                  ? const AIMEmptyState(
-                      title: 'No reminders yet',
-                      subtitle: 'Reminders you enable will appear here.',
-                      semanticLabel: 'No reminder schedules',
+                  ? AIMEmptyState(
+                      title: AppLocalizations.of(context)
+                          .notificationsNoRemindersTitle,
+                      subtitle: AppLocalizations.of(context)
+                          .notificationsNoRemindersSubtitle,
+                      semanticLabel: AppLocalizations.of(context)
+                          .notificationsNoRemindersTitle,
                     )
                   : ListView.separated(
                       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -309,8 +313,10 @@ class _ReminderScheduleTile extends StatelessWidget {
                     child: AIMButton(
                       variant: AIMButtonVariant.secondary,
                       onPressed: onResume,
-                      semanticLabel: 'Resume reminder',
-                      child: const Text('Resume'),
+                      semanticLabel:
+                          AppLocalizations.of(context).commonResume,
+                      child:
+                          Text(AppLocalizations.of(context).commonResume),
                     ),
                   )
                 else
@@ -318,8 +324,9 @@ class _ReminderScheduleTile extends StatelessWidget {
                     child: AIMButton(
                       variant: AIMButtonVariant.secondary,
                       onPressed: onPause,
-                      semanticLabel: 'Pause reminder',
-                      child: const Text('Pause'),
+                      semanticLabel:
+                          AppLocalizations.of(context).commonPause,
+                      child: Text(AppLocalizations.of(context).commonPause),
                     ),
                   ),
                 const SizedBox(width: AimSpacing.innerGap),
@@ -327,8 +334,9 @@ class _ReminderScheduleTile extends StatelessWidget {
                   child: AIMButton(
                     variant: AIMButtonVariant.ghost,
                     onPressed: onCancel,
-                    semanticLabel: 'Cancel reminder',
-                    child: const Text('Cancel'),
+                    semanticLabel:
+                        AppLocalizations.of(context).commonCancel,
+                    child: Text(AppLocalizations.of(context).commonCancel),
                   ),
                 ),
               ],

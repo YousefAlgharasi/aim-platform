@@ -21,7 +21,7 @@ void main() {
         .where((f) => f.path.endsWith('.dart'))
         .toList();
     uiFiles = sourceFiles
-        .where((f) => f.path.contains('ui/'))
+        .where((f) => f.path.replaceAll('\\', '/').contains('ui/'))
         .toList();
   });
 

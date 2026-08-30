@@ -42,7 +42,7 @@ class PlacementProgressBar extends StatelessWidget {
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
               height: 4,
-              margin: EdgeInsets.only(right: i < total - 1 ? 6 : 0),
+              margin: EdgeInsetsDirectional.only(end: i < total - 1 ? 6 : 0),
               decoration: BoxDecoration(
                 color: segColor,
                 borderRadius: BorderRadius.circular(2),

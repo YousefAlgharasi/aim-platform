@@ -34,6 +34,7 @@ import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 import '../../logic/entity/notification_entities.dart';
 import '../../logic/provider/notification_providers.dart';
@@ -257,11 +258,11 @@ class _NotificationInboxList extends StatelessWidget {
         events.where((event) => event.dismissedAt == null).toList();
 
     if (visible.isEmpty) {
-      return const AIMEmptyState(
-        icon: Icon(Icons.notifications_none_rounded),
-        title: 'No notifications yet',
+      return AIMEmptyState(
+        icon: const Icon(Icons.notifications_none_rounded),
+        title: AppLocalizations.of(context).notificationsNoNotificationsTitle,
         subtitle:
-            'Session reminders and progress updates will appear here.',
+            AppLocalizations.of(context).notificationsNoNotificationsSubtitle,
       );
     }
 
@@ -328,8 +329,8 @@ class _NotificationTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (isUnread)
-              const Padding(
-                padding: EdgeInsetsDirectional.only(
+              Padding(
+                padding: const EdgeInsetsDirectional.only(
                   end: AimSpacing.innerGap,
                   top: AimSpacing.space4,
                 ),
@@ -337,7 +338,8 @@ class _NotificationTile extends StatelessWidget {
                   Icons.circle,
                   size: AimSpacing.space8,
                   color: AimColors.primary500,
-                  semanticLabel: 'Unread',
+                  semanticLabel:
+                      AppLocalizations.of(context).notificationsUnread,
                 ),
               ),
             Expanded(

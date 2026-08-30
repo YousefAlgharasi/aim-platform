@@ -68,6 +68,40 @@ void main() {
     await tester.tap(inDrawer('Analytics & Progress'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
+
+    await openDrawer();
+    await scrollToTop();
+    await tester.tap(inDrawer('Profile'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('No profile loaded.'), findsOneWidget);
+  });
+
+  testWidgets('drawer language toggle switches the app locale to Arabic and back',
+      (tester) async {
+    await tester.pumpWidget(TestShell(
+      overrides: [_walkthroughAlreadySeen],
+      child: const MainShellPage(),
+    ));
+
+    tester.state<ScaffoldState>(find.byType(Scaffold).first).openDrawer();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('English'), findsOneWidget);
+    expect(find.text('العربية'), findsOneWidget);
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(MainShellPage)),
+    );
+
+    await tester.tap(find.text('العربية'));
+    await tester.pump();
+    expect(container.read(localeProvider).languageCode, AppLocale.arabic);
+
+    await tester.tap(find.text('English'));
+    await tester.pump();
+    expect(container.read(localeProvider).languageCode, AppLocale.english);
   });
 }
 

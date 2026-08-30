@@ -13,6 +13,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../widgets/help_faq_accordion.dart';
 
 class ParentHelpCenterPage extends StatelessWidget {
@@ -110,7 +111,10 @@ class ParentHelpCenterPage extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('My Tickets', style: AimTextStyles.bodyMd),
+                  Text(
+                    AppLocalizations.of(context).supportMyTickets,
+                    style: AimTextStyles.bodyMd,
+                  ),
                   Icon(
                     Directionality.of(context) == TextDirection.rtl
                         ? Icons.chevron_left_rounded
@@ -139,11 +143,11 @@ class ParentHelpCenterPage extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
               child: AIMGradientButton(
-                label: 'Create Ticket',
+                label: AppLocalizations.of(context).supportCreateTicketButton,
                 icon: const Icon(Icons.add),
                 onPressed: () => context.push(AppRoutePaths.createTicket),
                 fullWidth: true,
-                semanticLabel: 'Create a support ticket',
+                semanticLabel: AppLocalizations.of(context).supportCreateTicketButton,
               ),
             ),
           ),
@@ -173,7 +177,7 @@ class _ParentHelpCenterHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -199,7 +203,7 @@ class _ParentHelpCenterHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Parent Help',
+              AppLocalizations.of(context).supportParentHelp,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],

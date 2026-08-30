@@ -22,6 +22,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class ReleaseNotesPage extends StatelessWidget {
   const ReleaseNotesPage({super.key});
@@ -108,10 +109,11 @@ class ReleaseNotesPage extends StatelessWidget {
 
   /// Builds an empty state when no release notes exist.
   static Widget buildEmptyState(BuildContext context) {
-    return const AIMEmptyState(
-      icon: Icon(Icons.new_releases_outlined),
-      title: 'No Release Notes',
-      subtitle: 'Release notes will appear here when published.',
+    final l10n = AppLocalizations.of(context);
+    return AIMEmptyState(
+      icon: const Icon(Icons.new_releases_outlined),
+      title: l10n.supportNoReleaseNotes,
+      subtitle: l10n.supportNoReleaseNotesSubtitle,
     );
   }
 
@@ -146,7 +148,7 @@ class _ReleaseNotesHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -172,7 +174,7 @@ class _ReleaseNotesHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Release notes',
+              AppLocalizations.of(context).supportReleaseNotes,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],

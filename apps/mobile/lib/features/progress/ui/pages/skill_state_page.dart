@@ -40,6 +40,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'package:aim_mobile/features/aim_results/data/models/aim_results_models.dart';
 import 'package:aim_mobile/features/aim_results/logic/provider/aim_results_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
@@ -175,7 +176,7 @@ class _SkillStateHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Skill States',
+              AppLocalizations.of(context).progressSkillStates,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],
@@ -249,49 +250,53 @@ class _SkillStateDetailCard extends StatelessWidget {
   const _SkillStateDetailCard({required this.model});
   final AimSkillStateModel model;
 
-  ({AIMBadgeTone tone, AIMProgressBarTone barTone, String label}) get _tier {
+  ({AIMBadgeTone tone, AIMProgressBarTone barTone, String label}) _tier(
+      BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return switch (_tierOf(model.masteryScore)) {
       _SkillMasteryTier.strong => (
           tone: AIMBadgeTone.success,
           barTone: AIMProgressBarTone.success,
-          label: 'Strong',
+          label: l10n.progressStatusStrong,
         ),
       _SkillMasteryTier.developing => (
           tone: AIMBadgeTone.primary,
           barTone: AIMProgressBarTone.primary,
-          label: 'Developing',
+          label: l10n.progressStatusDeveloping,
         ),
       _SkillMasteryTier.needsWork => (
           tone: AIMBadgeTone.warning,
           barTone: AIMProgressBarTone.warning,
-          label: 'Needs work',
+          label: l10n.progressStatusNeedsWork,
         ),
     };
   }
 
   ({IconData icon, Color color, String label}) _trendDisplay(
+    BuildContext context,
     AimSurfaceTheme surfaces,
   ) {
+    final l10n = AppLocalizations.of(context);
     return switch (model.masteryTrend) {
       'improving' => (
           icon: Icons.trending_up,
           color: AimColors.success500,
-          label: 'Improving',
+          label: l10n.progressTrendImproving,
         ),
       'declining' => (
           icon: Icons.trending_down,
           color: AimColors.error500,
-          label: 'Declining',
+          label: l10n.progressTrendDeclining,
         ),
       'stable' => (
           icon: Icons.trending_flat,
           color: surfaces.textSecondary,
-          label: 'Stable',
+          label: l10n.progressTrendStable,
         ),
       _ => (
           icon: Icons.trending_flat,
           color: surfaces.textSecondary,
-          label: 'Insufficient data',
+          label: l10n.progressTrendInsufficient,
         ),
     };
   }
@@ -304,8 +309,8 @@ class _SkillStateDetailCard extends StatelessWidget {
     final prevPct = model.previousMasteryScore != null
         ? (model.previousMasteryScore! * 100).round()
         : null;
-    final tier = _tier;
-    final trend = _trendDisplay(surfaces);
+    final tier = _tier(context);
+    final trend = _trendDisplay(context, surfaces);
     final title = _prettifySkillId(model.skillId);
 
     return AIMCard(

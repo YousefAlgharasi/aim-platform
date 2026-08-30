@@ -18,6 +18,7 @@ import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/billing/data/models/billing_models.dart';
 import 'package:aim_mobile/features/billing/logic/provider/billing_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class InvoiceHistoryPage extends ConsumerStatefulWidget {
   const InvoiceHistoryPage({super.key});
@@ -102,10 +103,10 @@ class InvoiceHistoryPage extends ConsumerStatefulWidget {
       value.isEmpty ? value : '${value[0].toUpperCase()}${value.substring(1)}';
 
   static Widget buildEmptyState(BuildContext context) {
-    return const AIMEmptyState(
-      icon: Icon(Icons.receipt_long_outlined),
-      title: 'No Invoices Yet',
-      subtitle: 'Your invoices will appear here after your first payment.',
+    return AIMEmptyState(
+      icon: const Icon(Icons.receipt_long_outlined),
+      title: AppLocalizations.of(context).billingNoInvoicesTitle,
+      subtitle: AppLocalizations.of(context).billingNoInvoicesSubtitle,
     );
   }
 }
@@ -270,7 +271,7 @@ class InvoiceDetailPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Invoice Detail'),
+        title: Text(AppLocalizations.of(context).billingInvoiceDetail),
       ),
       body: SafeArea(
         child: _buildInvoiceDetail(context, theme),
@@ -302,8 +303,21 @@ class InvoiceDetailPage extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(invoiceNumber, style: theme.textTheme.titleMedium),
-                Text(status, style: theme.textTheme.labelMedium),
+                Expanded(
+                  child: Text(
+                    invoiceNumber,
+                    style: theme.textTheme.titleMedium,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  status,
+                  style: theme.textTheme.labelMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
             const SizedBox(height: 8),

@@ -22,6 +22,7 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
 import 'package:aim_mobile/features/assessments/logic/provider/assessment_provider.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class AssessmentDetailPage extends ConsumerStatefulWidget {
   const AssessmentDetailPage({
@@ -227,13 +228,17 @@ class _AssessmentDetailContent extends StatelessWidget {
           spacing: AimSpacing.componentGap,
           runSpacing: AimSpacing.componentGap,
           children: [
-            _StatTile(value: '$totalQuestions', label: 'Questions'),
+            _StatTile(
+                value: '$totalQuestions',
+                label: AppLocalizations.of(context).assessmentsStatQuestions),
             if (detail.timeLimitSeconds != null)
               _StatTile(
                 value: _formatDuration(detail.timeLimitSeconds!),
-                label: 'Time limit',
+                label: AppLocalizations.of(context).assessmentsStatTimeLimit,
               ),
-            _StatTile(value: '${detail.maxAttempts}', label: 'Max attempts'),
+            _StatTile(
+                value: '${detail.maxAttempts}',
+                label: AppLocalizations.of(context).assessmentsStatMaxAttempts),
           ],
         ),
         const SizedBox(height: AimSpacing.componentGap),
@@ -243,7 +248,7 @@ class _AssessmentDetailContent extends StatelessWidget {
         if (detail.deadline != null) ...[
           const SizedBox(height: AimSpacing.sectionGap),
           Text(
-            'Deadline',
+            AppLocalizations.of(context).assessmentsDeadlinesTitle,
             style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
           ),
           const SizedBox(height: AimSpacing.componentGap),
@@ -267,10 +272,11 @@ class _AssessmentDetailContent extends StatelessWidget {
 
         const SizedBox(height: AimSpacing.sectionGap),
         AIMGradientButton(
-          label: 'Start Attempt',
+          label: AppLocalizations.of(context).assessmentsStartAttempt,
           fullWidth: true,
           onPressed: onStartAttempt,
-          semanticLabel: 'Start attempt for ${detail.title}',
+          semanticLabel:
+              '${AppLocalizations.of(context).assessmentsStartAttempt} ${detail.title}',
         ),
       ],
     );
@@ -413,11 +419,16 @@ class _DeadlineCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AimSpacing.space8),
-          _DeadlineDateRow(label: 'Opens', value: deadline.opensAt),
-          _DeadlineDateRow(label: 'Closes', value: deadline.closesAt),
+          _DeadlineDateRow(
+              label: AppLocalizations.of(context).assessmentsOpensLabel,
+              value: deadline.opensAt),
+          _DeadlineDateRow(
+              label: AppLocalizations.of(context).assessmentsClosesLabel,
+              value: deadline.closesAt),
           if (deadline.extendedClosesAt != null)
             _DeadlineDateRow(
-              label: 'Extended close',
+              label:
+                  AppLocalizations.of(context).assessmentsExtendedCloseLabel,
               value: deadline.extendedClosesAt!,
             ),
         ],

@@ -211,7 +211,7 @@ export class LessonAttemptService {
       [input.learningSessionId, input.itemId],
     );
     const attemptNumberForItem =
-      parseInt(countResult.rows[0].count, 10) + 1;
+      parseInt(countResult.rows[0]?.count ?? '0', 10) + 1;
 
     // -----------------------------------------------------------------------
     // Step 4: compute responseTimeMs (backend-computed, never client-supplied)
@@ -287,7 +287,11 @@ export class LessonAttemptService {
         ],
       );
 
-      attemptRow = attemptResult.rows[0];
+      const insertedAttempt = attemptResult.rows[0];
+      if (!insertedAttempt) {
+        throw new Error('Failed to insert lesson attempt record');
+      }
+      attemptRow = insertedAttempt;
 
       const answerResult = await this.db.query<AnswerRow>(
         `INSERT INTO answers (
@@ -312,7 +316,11 @@ export class LessonAttemptService {
         ],
       );
 
-      answerRow = answerResult.rows[0];
+      const insertedAnswer = answerResult.rows[0];
+      if (!insertedAnswer) {
+        throw new Error('Failed to insert answer record');
+      }
+      answerRow = insertedAnswer;
 
       await this.db.query('COMMIT', []);
     } catch (err) {

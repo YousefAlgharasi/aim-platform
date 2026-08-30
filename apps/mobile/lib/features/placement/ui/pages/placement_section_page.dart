@@ -173,6 +173,7 @@ class _SectionTopBar extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
+            tooltip: l10n.commonBack,
             icon: Icon(
               isRtl ? Icons.chevron_right_rounded : Icons.chevron_left_rounded,
               color: surfaces.textPrimary,

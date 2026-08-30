@@ -24,6 +24,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class ReleaseNoteDetailPage extends StatelessWidget {
   final String noteId;
@@ -33,20 +34,20 @@ class ReleaseNoteDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     // Release note loaded from backend via GET /release-notes/:id
     return Scaffold(
       backgroundColor: surfaces.background,
-      body: const Column(
+      body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _ReleaseNoteDetailHeader(),
+          const _ReleaseNoteDetailHeader(),
           Expanded(
             child: AIMEmptyState(
-              icon: Icon(Icons.new_releases_outlined),
-              title: 'Release note is not available yet',
-              subtitle: 'This release note will appear here once release '
-                  'notes are live.',
+              icon: const Icon(Icons.new_releases_outlined),
+              title: l10n.supportReleaseNoteNotAvailable,
+              subtitle: l10n.supportReleaseNoteNotAvailableSubtitle,
             ),
           ),
         ],
@@ -182,7 +183,7 @@ class _ReleaseNoteDetailHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -208,7 +209,7 @@ class _ReleaseNoteDetailHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Release note',
+              AppLocalizations.of(context).supportReleaseNotes,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],

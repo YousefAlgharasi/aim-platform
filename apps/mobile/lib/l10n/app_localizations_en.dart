@@ -18,6 +18,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonCancel => 'Cancel';
 
   @override
+  String get commonResume => 'Resume';
+
+  @override
+  String get commonPause => 'Pause';
+
+  @override
   String get commonSave => 'Save';
 
   @override
@@ -107,6 +113,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authNoAccountPrompt => 'Don\'t have an account? ';
+
+  @override
+  String get authAlreadyHaveAccount => 'Already have an account? Sign in';
 
   @override
   String get authCreateOneLink => 'Create one';
@@ -208,9 +217,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authPrivacyPolicyLink => 'Privacy Policy';
-
-  @override
-  String get authAlreadyHaveAccount => 'Already have an account? Sign in';
 
   @override
   String get authCheckYourEmailTitle => 'Check Your Email';
@@ -1669,4 +1675,1600 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get voiceAiReturnButton => 'Return to Lesson Detail';
+
+  @override
+  String get lessonsCourseOverviewHeader => 'COURSE OVERVIEW';
+
+  @override
+  String get lessonsCourseProgressHeader => 'Course Progress';
+
+  @override
+  String get lessonsCourseChaptersHeader => 'Course Chapters';
+
+  @override
+  String get lessonsNextUpLockedCourse => 'NEXT UP · LOCKED COURSE';
+
+  @override
+  String get lessonsNextCourseLevel => 'Next Course Level';
+
+  @override
+  String get lessonsUnlockCourseCondition =>
+      'Unlocks automatically once you complete all chapters in this course.';
+
+  @override
+  String lessonsUnlockNextCourseCondition(String activeCourse) {
+    return 'Unlocks automatically once you complete all chapters in $activeCourse.';
+  }
+
+  @override
+  String get lessonsLearningPathHeader => 'LEARNING PATH';
+
+  @override
+  String get lessonsStructuredCurriculumHeader => 'Structured Curriculum';
+
+  @override
+  String get lessonsPersonalizedSequenceSubtitle =>
+      'Follow your personalized sequence from CEFR Starter to Advanced mastery.';
+
+  @override
+  String get lessonsKeyVocabularyHeader => 'Key Vocabulary & Phrases';
+
+  @override
+  String get lessonsTapToListenHeader => 'TAP 🔊 TO LISTEN';
+
+  @override
+  String get lessonsAskAiTutorHeader => 'Ask AI Tutor';
+
+  @override
+  String get lessonsAskAiTutorSubtitle =>
+      'Chat with your AI tutor to clarify rules or ask questions.';
+
+  @override
+  String get lessonsPracticeNowHeader => 'Practice Now';
+
+  @override
+  String get lessonsPracticeNowSubtitle =>
+      'Reinforce your knowledge or practice with quick exercises.';
+
+  @override
+  String get lessonsQuizHeader => 'QUIZ';
+
+  @override
+  String get lessonsQuizSubtitle =>
+      'Test your comprehension with quick interactive exercises.';
+
+  @override
+  String get lessonsLessonMasteredTitle => 'Lesson Mastered! 🌟';
+
+  @override
+  String get lessonsLessonMasteredSnackbar => 'Lesson marked as completed! 🌟';
+
+  @override
+  String lessonsMarkCompleteFailed(String error) {
+    return 'Could not mark lesson complete: $error';
+  }
+
+  @override
+  String get lessonsInThisChapterHeader => 'LESSONS IN THIS CHAPTER';
+
+  @override
+  String get lessonsChapterQuizHeader => 'CHAPTER QUIZ';
+
+  @override
+  String get lessonsPassedStatus => 'PASSED';
+
+  @override
+  String get lessonsLockedStatus => 'LOCKED';
+
+  @override
+  String lessonsTotalLessonsCount(int chaptersCount, int totalLessons) {
+    return '$chaptersCount chapters · $totalLessons Total Lessons';
+  }
+
+  @override
+  String get progressTitle => 'Progress & Analytics';
+
+  @override
+  String get progressSubtitle =>
+      'Track your language proficiency and study stats';
+
+  @override
+  String get progressWeeklyActivity => 'Weekly Activity';
+
+  @override
+  String progressDailyAverageMins(int minutes) {
+    return '$minutes mins / day average';
+  }
+
+  @override
+  String progressTotalMins(int minutes) {
+    return '$minutes mins total';
+  }
+
+  @override
+  String progressTrackedSkillsHeader(int count) {
+    return 'TRACKED SKILLS ($count)';
+  }
+
+  @override
+  String progressReviewScheduleHeader(int count) {
+    return 'REVIEW SCHEDULE ($count)';
+  }
+
+  @override
+  String progressWeaknessRecordsHeader(int count) {
+    return 'WEAKNESS RECORDS ($count)';
+  }
+
+  @override
+  String get progressWeakSpotIdentified =>
+      'Identified weak spot from recent responses.';
+
+  @override
+  String get progressNoWeaknesses =>
+      'No active weaknesses recorded! Great work!';
+
+  @override
+  String get progressViewAll => 'View All →';
+
+  @override
+  String get progressViewFullSchedule => 'View Full Schedule →';
+
+  @override
+  String get progressViewFullTable => 'View Full Table →';
+
+  @override
+  String progressPriorityLabel(String severity) {
+    return '$severity Priority';
+  }
+
+  @override
+  String progressIntervalAndRep(int interval, int rep) {
+    return 'Interval: ${interval}d · Rep #$rep';
+  }
+
+  @override
+  String get progressSkillStatesTitle => 'Skill States';
+
+  @override
+  String progressConfidencePct(int percent) {
+    return 'Confidence $percent%';
+  }
+
+  @override
+  String progressDueAt(String date) {
+    return 'Due: $date';
+  }
+
+  @override
+  String progressDetectedAt(String date) {
+    return 'Detected: $date';
+  }
+
+  @override
+  String progressResolvedAt(String date) {
+    return 'Resolved: $date';
+  }
+
+  @override
+  String progressExpiresAt(String date) {
+    return 'Expires: $date';
+  }
+
+  @override
+  String progressGeneratedAt(String date) {
+    return 'Generated: $date';
+  }
+
+  @override
+  String progressTargetLesson(String lessonId) {
+    return 'Lesson: $lessonId';
+  }
+
+  @override
+  String progressRankBadge(int rank) {
+    return '#$rank';
+  }
+
+  @override
+  String get billingTitle => 'Billing';
+
+  @override
+  String get billingSubscription => 'Subscription';
+
+  @override
+  String get billingCurrentPlan => 'Current plan';
+
+  @override
+  String get billingChangePlan => 'Change plan';
+
+  @override
+  String get billingCancelSubscription => 'Cancel subscription';
+
+  @override
+  String get billingCancelSubscriptionDialogTitle => 'Cancel Subscription?';
+
+  @override
+  String get billingCancelSubscriptionDialogMessage =>
+      'Your subscription will remain active until the end of the current billing period.';
+
+  @override
+  String get billingKeepSubscription => 'Keep Subscription';
+
+  @override
+  String get billingPlansAndPricing => 'Plans & Pricing';
+
+  @override
+  String get billingInvoices => 'Invoices';
+
+  @override
+  String get billingInvoiceDetail => 'Invoice Detail';
+
+  @override
+  String get billingNoEntitlements => 'No entitlements yet.';
+
+  @override
+  String get billingTermsAgreement => 'By continuing you agree to AIM Terms';
+
+  @override
+  String get billingCheckout => 'Checkout';
+
+  @override
+  String get billingPaymentPending => 'Payment pending';
+
+  @override
+  String get billingPaymentSuccessful => 'Payment successful!';
+
+  @override
+  String get billingPaymentFailed => 'Payment failed';
+
+  @override
+  String get billingPaymentVerifying =>
+      'Please wait while we verify your payment.';
+
+  @override
+  String get billingPaymentFailedMessage =>
+      'Your payment could not be processed. Please try again.';
+
+  @override
+  String get billingPaymentProcessingMessage =>
+      'Your payment is being processed. We will notify you once completed.';
+
+  @override
+  String get billingGoBack => 'Go back';
+
+  @override
+  String billingQuantity(int quantity) {
+    return 'Qty: $quantity';
+  }
+
+  @override
+  String get billingPopularBadge => 'Popular';
+
+  @override
+  String get supportHelpCenter => 'Help Center';
+
+  @override
+  String get supportNewTicket => 'New ticket';
+
+  @override
+  String get supportMyTickets => 'My tickets';
+
+  @override
+  String get supportTicket => 'Ticket';
+
+  @override
+  String get supportParentHelp => 'Parent Help';
+
+  @override
+  String get supportParentTickets => 'Parent tickets';
+
+  @override
+  String get supportFeedback => 'Send feedback';
+
+  @override
+  String get supportRateAimQuestion => 'How would you rate AIM?';
+
+  @override
+  String get supportReleaseNotes => 'Release notes';
+
+  @override
+  String get supportReleaseNote => 'Release note';
+
+  @override
+  String supportReleasedDate(String date) {
+    return 'Released $date';
+  }
+
+  @override
+  String get supportSystemStatus => 'System Status';
+
+  @override
+  String get supportWhatNew => 'What\'s new';
+
+  @override
+  String get supportNoTickets => 'No Tickets Yet';
+
+  @override
+  String get supportNoTicketsSubtitle =>
+      'Create a ticket to get help from our support team.';
+
+  @override
+  String get supportNoReleaseNotes => 'No Release Notes';
+
+  @override
+  String get supportNoReleaseNotesSubtitle =>
+      'Release notes will appear here when published.';
+
+  @override
+  String get supportReleaseNoteNotAvailable =>
+      'Release note is not available yet';
+
+  @override
+  String get supportReleaseNoteNotAvailableSubtitle =>
+      'This release note will appear here once release notes are live.';
+
+  @override
+  String get practicePracticeSession => 'PRACTICE SESSION';
+
+  @override
+  String get practicePracticeComplete => 'PRACTICE COMPLETE!';
+
+  @override
+  String get practiceGreatJob => 'Great Job!';
+
+  @override
+  String get practiceAccuracy => 'ACCURACY';
+
+  @override
+  String get practiceXpEarned => 'XP EARNED';
+
+  @override
+  String get practiceCheckAnswer => 'Check Answer';
+
+  @override
+  String get practiceContinueToLesson => 'Continue to Lesson';
+
+  @override
+  String practiceQuestionOf(int current, int total) {
+    return 'QUESTION $current OF $total';
+  }
+
+  @override
+  String practiceSessionCompletedMsg(String lessonTitle) {
+    return 'You finished this practice session for $lessonTitle.';
+  }
+
+  @override
+  String practiceScoreSummary(int score, int total) {
+    return 'You scored $score/$total on this practice session.';
+  }
+
+  @override
+  String get practicePlacementRequiredTitle => 'Placement Test Required';
+
+  @override
+  String get practicePlacementRequiredBody =>
+      'You must complete the placement test first to determine your starting level and begin learning sessions.';
+
+  @override
+  String get practiceTakePlacementNow => 'Take Placement Test Now';
+
+  @override
+  String get practiceTryDemoExercises => 'Try Demo Exercises';
+
+  @override
+  String get qaAnswerSubmitted => 'Answer submitted';
+
+  @override
+  String get qaAnalysingResponse => 'AIM is analysing your response.';
+
+  @override
+  String get qaAnalysingSession => 'AIM is analysing your session…';
+
+  @override
+  String get qaSessionSummary => 'Session Summary';
+
+  @override
+  String get qaSkillsCovered => 'Skills covered';
+
+  @override
+  String get assessmentAssessments => 'Assessments';
+
+  @override
+  String get assessmentDeadlines => 'Deadlines';
+
+  @override
+  String get assessmentBreakdown => 'BREAKDOWN';
+
+  @override
+  String get assessmentPastResults => 'Past results';
+
+  @override
+  String get assessmentResultHistory => 'Result history';
+
+  @override
+  String get assessmentSections => 'Sections';
+
+  @override
+  String get assessmentViewAttemptHistory => 'View your attempt history';
+
+  @override
+  String assessmentGradedDate(String date) {
+    return 'Graded $date';
+  }
+
+  @override
+  String get assessmentLatePenalty => 'Late penalty applied';
+
+  @override
+  String get assessmentReadyToBegin => 'Ready to begin?';
+
+  @override
+  String get assessmentSubmitAnswersDialogTitle => 'Submit your answers?';
+
+  @override
+  String get assessmentSubmitAnswersDialogMessage =>
+      'This action is final and cannot be undone. You cannot change answers after submitting.';
+
+  @override
+  String get placementYourResponse => 'Your Response';
+
+  @override
+  String get placementTargetSentences => 'Target: 3-5 sentences';
+
+  @override
+  String placementCharactersCount(int count) {
+    return '$count characters';
+  }
+
+  @override
+  String get placementPressHoldToRecord => 'Press & hold the mic to record';
+
+  @override
+  String get placementReleaseWhenFinished => 'Release when finished';
+
+  @override
+  String get placementRecordingInProgress => 'Recording in progress...';
+
+  @override
+  String get placementRecordingCompleted => 'Recording completed!';
+
+  @override
+  String get placementTapSubmitRecording =>
+      'Tap Submit below to submit your recording.';
+
+  @override
+  String get placementAiEngineActive => 'AI Engine Active';
+
+  @override
+  String get placementResultsRecordedSaved =>
+      'Your placement test results have been recorded and saved.';
+
+  @override
+  String get reviewsTitle => 'Review';
+
+  @override
+  String get reviewsLoadingSemantic => 'Loading review schedule';
+
+  @override
+  String get reviewsNoScheduleTitle => 'No reviews scheduled';
+
+  @override
+  String get reviewsNoScheduleSubtitle =>
+      'Complete practice sessions to receive review reminders.';
+
+  @override
+  String get reviewsStatDueNow => 'Due now';
+
+  @override
+  String get reviewsStatLearned => 'Learned';
+
+  @override
+  String get reviewsStatStreak => 'Streak';
+
+  @override
+  String get reviewsDueToday => 'Due Today';
+
+  @override
+  String get reviewsDueTomorrow => 'Due Tomorrow';
+
+  @override
+  String get reviewsDueYesterday => 'Due Yesterday';
+
+  @override
+  String reviewsDueInDays(int days) {
+    return 'Due in $days days';
+  }
+
+  @override
+  String reviewsDueDaysAgo(int days) {
+    return 'Due $days days ago';
+  }
+
+  @override
+  String reviewsDueDate(String date) {
+    return 'Due $date';
+  }
+
+  @override
+  String get reviewsStatusDue => 'Due';
+
+  @override
+  String get reviewsStatusPending => 'Pending';
+
+  @override
+  String get reviewsSpacedRepetitionDue =>
+      'Spaced-repetition flashcards due today';
+
+  @override
+  String get reviewsScheduleHeader => 'REVIEW SCHEDULE';
+
+  @override
+  String get reviewsStartSession => 'Start Review Session';
+
+  @override
+  String reviewsIntervalDays(String days) {
+    return 'Interval ${days}d';
+  }
+
+  @override
+  String reviewsRepetitionNumber(int rep) {
+    return 'rep #$rep';
+  }
+
+  @override
+  String get voiceTeacherPageTitle => 'Voice Teacher';
+
+  @override
+  String get voiceTeacherPageSubtitle =>
+      'Practise your pronunciation with the AI teacher';
+
+  @override
+  String get voiceTeacherConnectionErrorTitle => 'Connection Error';
+
+  @override
+  String get voiceTeacherMicrophoneErrorTitle => 'Microphone Error';
+
+  @override
+  String get voiceTeacherServerErrorTitle => 'Server Error';
+
+  @override
+  String get voiceTeacherGenericErrorTitle => 'Something Went Wrong';
+
+  @override
+  String get voiceTeacherConnectionErrorMsg =>
+      'Could not connect to voice server. Please check your internet.';
+
+  @override
+  String get voiceTeacherMicrophoneErrorMsg =>
+      'Could not access microphone. Please grant permission.';
+
+  @override
+  String get voiceTeacherServerErrorMsg =>
+      'Voice service encountered an error. Please try again later.';
+
+  @override
+  String get voiceTeacherGenericErrorMsg =>
+      'An unexpected error occurred during the voice session.';
+
+  @override
+  String get voiceTeacherTextResponseTitle => 'Text response from teacher';
+
+  @override
+  String get voiceTeacherRetryAudio => 'Retry audio';
+
+  @override
+  String get voiceTeacherTryAgain => 'Try Again';
+
+  @override
+  String get voiceTeacherProcessing => 'Processing...';
+
+  @override
+  String get voiceTeacherTranscribing => 'Transcribing...';
+
+  @override
+  String get voiceTeacherWhatYouSaid => 'What you said';
+
+  @override
+  String get voiceTeacherTeacherResponse => 'Teacher response';
+
+  @override
+  String get voiceTeacherRecorded => 'Recorded';
+
+  @override
+  String get voiceTeacherAudioUnavailable =>
+      'Audio unavailable — here\'s the text response';
+
+  @override
+  String get voiceTeacherStop => 'Stop';
+
+  @override
+  String get voiceTeacherDiscard => 'Discard';
+
+  @override
+  String get voiceTeacherSend => 'Send';
+
+  @override
+  String get voiceTeacherHelpful => 'Helpful';
+
+  @override
+  String get voiceTeacherNotHelpful => 'Not helpful';
+
+  @override
+  String get aiTeacherConversations => 'Conversations';
+
+  @override
+  String get aiTeacherSettingsTitle => 'AI Teacher settings';
+
+  @override
+  String get aiTeacherCurrentLessonHeader => 'Current lesson';
+
+  @override
+  String get aiTeacherWasThisHelpful => 'Was this helpful?';
+
+  @override
+  String get aiTeacherWelcomeBack => 'Welcome back';
+
+  @override
+  String get aiTeacherAskQuestionsGuidance =>
+      'Ask questions and get guidance on this lesson.';
+
+  @override
+  String get profileAimPlusMember => 'AIM PLUS MEMBER';
+
+  @override
+  String get profileLearningGapsAlerts =>
+      'Alerts when AI detects new learning gaps';
+
+  @override
+  String get profileStudyTimeNotification =>
+      'Get notified at your preferred study time';
+
+  @override
+  String get profileSecurityPassword => 'Security & Password';
+
+  @override
+  String get profilePasswordResetSuccess =>
+      'Password reset email sent. Please check your inbox.';
+
+  @override
+  String profilePasswordResetFailed(String error) {
+    return 'Failed to request password reset: $error';
+  }
+
+  @override
+  String profileSaveFailed(String error) {
+    return 'Failed to save profile changes: $error';
+  }
+
+  @override
+  String get profileNoProfileLoaded => 'No profile loaded.';
+
+  @override
+  String get notificationsChannels => 'CHANNELS';
+
+  @override
+  String get notificationsQuietHours => 'QUIET HOURS';
+
+  @override
+  String get notificationsManageReminders => 'Manage lesson reminders';
+
+  @override
+  String get notificationsDismissed => 'This notification has been dismissed.';
+
+  @override
+  String get notificationsPause => 'Pause';
+
+  @override
+  String get notificationsResume => 'Resume';
+
+  @override
+  String get authHappyToSeeYou =>
+      'Happy to see you again. Enter your email and password to continue.';
+
+  @override
+  String get authSignInToAccount => 'Sign in to your account';
+
+  @override
+  String get authTakesLessThanMinute =>
+      'Takes less than a minute. Enter your details below.';
+
+  @override
+  String get authCheckEmailTitle => 'Check your email';
+
+  @override
+  String authSentConfirmationLink(String email) {
+    return 'We sent a confirmation link to:\n$email';
+  }
+
+  @override
+  String get authBackToLogin => 'Back to Login';
+
+  @override
+  String get authDevTestAccounts => 'DEV / TEST ACCOUNTS';
+
+  @override
+  String get authQuickLoginWithTest => 'Quick-login with test credentials:';
+
+  @override
+  String get shellLogOut => 'Log Out';
+
+  @override
+  String get profileTitle => 'Profile';
+
+  @override
+  String get profileLoadingProfile => 'Loading profile';
+
+  @override
+  String profileCouldNotLoad(String message) {
+    return 'Could not load profile: $message';
+  }
+
+  @override
+  String get profileSectionAccount => 'ACCOUNT';
+
+  @override
+  String get profileLabelEmail => 'Email';
+
+  @override
+  String get profileLabelStatus => 'Status';
+
+  @override
+  String get profileLabelType => 'Type';
+
+  @override
+  String get profileSectionProfile => 'PROFILE';
+
+  @override
+  String get profileLabelDisplayName => 'Display Name';
+
+  @override
+  String get profileLabelLanguage => 'Language';
+
+  @override
+  String get profileLabelTimezone => 'Timezone';
+
+  @override
+  String get profileSectionRoles => 'ROLES';
+
+  @override
+  String get profileRolesSubtitle =>
+      'Displayed for reference only. Enforced by backend.';
+
+  @override
+  String get profileSectionQuickLinks => 'QUICK LINKS';
+
+  @override
+  String get profileLinkLearningPath => 'Learning Path';
+
+  @override
+  String get profileLinkSubscriptionBilling => 'Subscription & Billing';
+
+  @override
+  String get profileLinkInvoiceHistory => 'Invoice History';
+
+  @override
+  String get profileLinkAchievements => 'Achievements';
+
+  @override
+  String get profileLinkAnalyticsSummary => 'Analytics Summary';
+
+  @override
+  String get profileLinkApiEndpointTester => 'API Endpoint Tester (Dev)';
+
+  @override
+  String get profileStatDayStreak => 'day streak';
+
+  @override
+  String get profileStatAchievements => 'achievements';
+
+  @override
+  String get profileTooltipAccountSettings => 'Account Settings';
+
+  @override
+  String get profileAchievementsCarouselTitle => 'Achievements';
+
+  @override
+  String get editProfileTitle => 'Edit profile';
+
+  @override
+  String get editProfileSave => 'Save';
+
+  @override
+  String get editProfileBack => 'Back';
+
+  @override
+  String get editProfileLabelDisplayName => 'Display Name';
+
+  @override
+  String get editProfilePlaceholderDisplayName => 'Your display name';
+
+  @override
+  String get editProfileLabelPreferredLanguage => 'Preferred Language';
+
+  @override
+  String get editProfilePlaceholderLanguage => 'Select a language';
+
+  @override
+  String get editProfileLabelTimezone => 'Timezone';
+
+  @override
+  String get editProfilePlaceholderTimezone => 'Select a timezone';
+
+  @override
+  String get editProfileSaveChanges => 'Save changes';
+
+  @override
+  String get editProfileDisplayNameTooLong =>
+      'Display name must be 80 characters or fewer.';
+
+  @override
+  String get editProfileSessionExpired =>
+      'Your session has expired. Please sign in again.';
+
+  @override
+  String get editProfileUpdatedSuccess => 'Profile updated.';
+
+  @override
+  String get settingsAppThemeDisplay => 'App Theme & Display';
+
+  @override
+  String get settingsThemeDarkSubtitle => 'Darker UI option for night use';
+
+  @override
+  String get settingsThemeLightSubtitle => 'Clean, high contrast appearance';
+
+  @override
+  String get settingsNotificationPreferences => 'Notification Preferences';
+
+  @override
+  String get settingsEnterFullName => 'Enter your full name';
+
+  @override
+  String get achievementsTitle => 'Achievements';
+
+  @override
+  String get achievementsMilestonesTitle => 'AIM Milestones';
+
+  @override
+  String achievementsBadgesUnlocked(int unlocked, int total) {
+    return '$unlocked of $total badges unlocked';
+  }
+
+  @override
+  String get achievementsLeagueRank => 'Gold League #3';
+
+  @override
+  String get achievementsTabAll => 'All Badges';
+
+  @override
+  String achievementsTabUnlocked(int count) {
+    return 'Unlocked ($count)';
+  }
+
+  @override
+  String achievementsTabInProgress(int count) {
+    return 'In Progress ($count)';
+  }
+
+  @override
+  String get achievementsBadgeUnlocked => 'Unlocked';
+
+  @override
+  String get achievementsFirstStepTitle => 'First Step';
+
+  @override
+  String get achievementsFirstStepDesc => 'Complete your first English lesson';
+
+  @override
+  String get achievementsStreakMasterTitle => 'Streak Master';
+
+  @override
+  String get achievementsStreakMasterDesc => 'Maintain a 7-day learning streak';
+
+  @override
+  String get achievementsGrammarWizardTitle => 'Grammar Wizard';
+
+  @override
+  String get achievementsGrammarWizardDesc =>
+      'Score 90%+ in Grammar assessment';
+
+  @override
+  String get achievementsVoiceChampionTitle => 'Voice Champion';
+
+  @override
+  String get achievementsVoiceChampionDesc =>
+      'Complete 5 Live AI Voice practice sessions';
+
+  @override
+  String get achievementsVocabularyTitanTitle => 'Vocabulary Titan';
+
+  @override
+  String get achievementsVocabularyTitanDesc => 'Master 200+ active words';
+
+  @override
+  String get achievementsSpeedLearnerTitle => 'Speed Learner';
+
+  @override
+  String get achievementsSpeedLearnerDesc => 'Finish 3 lessons in a single day';
+
+  @override
+  String get achievementsPerfectQuizTitle => 'Perfect Quiz Accuracy';
+
+  @override
+  String get achievementsPerfectQuizDesc => 'Score 100% on 5 practice quizzes';
+
+  @override
+  String get achievementsPolyglotLegendTitle => 'Polyglot Legend';
+
+  @override
+  String get achievementsPolyglotLegendDesc => 'Reach Level 20 in English';
+
+  @override
+  String get supportCreateTicketTitle => 'Submit a ticket';
+
+  @override
+  String get supportCreateTicketButton => 'Create Ticket';
+
+  @override
+  String get supportSubmitTicket => 'Submit Ticket';
+
+  @override
+  String get supportCategoryLabel => 'Category';
+
+  @override
+  String get supportSeverityLabel => 'Severity';
+
+  @override
+  String get supportSubjectLabel => 'Subject';
+
+  @override
+  String get supportSubjectPlaceholder => 'Briefly describe the issue';
+
+  @override
+  String get supportDescriptionLabel => 'Description';
+
+  @override
+  String get supportDescriptionPlaceholder =>
+      'Tell us what happened, step by step...';
+
+  @override
+  String get supportSubjectRequired => 'Subject is required';
+
+  @override
+  String get supportDescriptionRequired => 'Description is required';
+
+  @override
+  String get supportCategoryBugReport => 'Bug Report';
+
+  @override
+  String get supportCategoryAccountIssue => 'Account Issue';
+
+  @override
+  String get supportCategoryLearningIssue => 'Learning Issue';
+
+  @override
+  String get supportCategoryBillingIssue => 'Billing Issue';
+
+  @override
+  String get supportCategoryGeneral => 'General';
+
+  @override
+  String get supportCategorySuggestion => 'Suggestion';
+
+  @override
+  String get supportCategoryCompliment => 'Compliment';
+
+  @override
+  String get supportCategoryComplaint => 'Complaint';
+
+  @override
+  String get supportCategoryOther => 'Other';
+
+  @override
+  String get supportSeverityLow => 'Low';
+
+  @override
+  String get supportSeverityMedium => 'Medium';
+
+  @override
+  String get supportSeverityHigh => 'High';
+
+  @override
+  String get supportSeverityCritical => 'Critical';
+
+  @override
+  String get supportFeedbackTitleLabel => 'Title';
+
+  @override
+  String get supportFeedbackTitlePlaceholder => 'A short summary';
+
+  @override
+  String get supportFeedbackBodyLabel => 'Your feedback';
+
+  @override
+  String get supportFeedbackBodyPlaceholder => 'Tell us what you think...';
+
+  @override
+  String get supportFeedbackTitleRequired => 'Title is required';
+
+  @override
+  String get supportFeedbackBodyRequired => 'Feedback details are required';
+
+  @override
+  String get supportTicketAddComment => 'Add a comment';
+
+  @override
+  String get supportTicketCommentPlaceholder => 'Write a follow-up message...';
+
+  @override
+  String get supportTicketSendComment => 'Send';
+
+  @override
+  String get supportStatusAllOperational => 'All Systems Operational';
+
+  @override
+  String get supportStatusNoComponents => 'No components reported';
+
+  @override
+  String get supportStatusNothingToShow => 'Nothing to show yet.';
+
+  @override
+  String get supportNoParentTickets => 'No Support Tickets';
+
+  @override
+  String get supportNoParentTicketsSubtitle =>
+      'Create a ticket if you need help with your account.';
+
+  @override
+  String get coursesCurrentBadge => 'Current';
+
+  @override
+  String get voiceTeacherTitle => 'Voice Teacher';
+
+  @override
+  String get voiceTeacherStartingSession => 'Starting Voice Teacher session';
+
+  @override
+  String get voiceTeacherBackSemantic => 'Back';
+
+  @override
+  String get voiceTeacherStatusSpeaking => 'Speaking';
+
+  @override
+  String get voiceTeacherStatusRecording => 'Recording';
+
+  @override
+  String get voiceTeacherStatusProcessing => 'Processing';
+
+  @override
+  String get voiceTeacherStatusReady => 'Ready';
+
+  @override
+  String get voiceTeacherHeadingSpeaking => 'Your teacher is speaking…';
+
+  @override
+  String get voiceTeacherHeadingRecording => 'Listening to you…';
+
+  @override
+  String get voiceTeacherHeadingProcessing => 'Processing your answer…';
+
+  @override
+  String get voiceTeacherHeadingListening =>
+      'Your turn — press and hold to speak';
+
+  @override
+  String get voiceTeacherPracticeSubtitle =>
+      'Practise your pronunciation with the AI teacher';
+
+  @override
+  String get voiceTeacherMessagesButton => 'Messages';
+
+  @override
+  String get voiceTeacherBackToCall => 'Back to call';
+
+  @override
+  String voiceTeacherStatusSemantic(String status) {
+    return 'Status: $status';
+  }
+
+  @override
+  String get voiceTeacherPressAndHold => 'Press and hold to speak';
+
+  @override
+  String get voiceTeacherRecordingRelease => 'Recording — release to send';
+
+  @override
+  String voiceTeacherSaid(String text) {
+    return 'Voice Teacher said: $text';
+  }
+
+  @override
+  String voiceTeacherYouSaid(String text) {
+    return 'You said: $text';
+  }
+
+  @override
+  String get voiceTeacherEntryTitle => 'Voice Teacher';
+
+  @override
+  String get voiceTeacherEntrySubtitle =>
+      'Practice conversational speaking with AI';
+
+  @override
+  String get billingPromoCodeLabel => 'Promotion code (optional)';
+
+  @override
+  String get billingPromoCodePlaceholder => 'Enter code';
+
+  @override
+  String get billingProceedToPayment => 'Proceed to Payment';
+
+  @override
+  String get billingNoInvoicesTitle => 'No Invoices Yet';
+
+  @override
+  String get billingNoInvoicesSubtitle =>
+      'Your invoices will appear here after your first payment.';
+
+  @override
+  String get billingNoPlansAvailable => 'No plans available';
+
+  @override
+  String get billingCheckBackLaterPlans =>
+      'Check back later for available plans.';
+
+  @override
+  String get billingSubscribe => 'Subscribe';
+
+  @override
+  String get assessmentsNoAssessmentsTitle => 'No assessments available';
+
+  @override
+  String get assessmentsNoAssessmentsSubtitle =>
+      'Published quizzes and exams will appear here.';
+
+  @override
+  String get assessmentsStatQuestions => 'Questions';
+
+  @override
+  String get assessmentsStatTimeLimit => 'Time limit';
+
+  @override
+  String get assessmentsStatMaxAttempts => 'Max attempts';
+
+  @override
+  String get assessmentsStartAttempt => 'Start Attempt';
+
+  @override
+  String get assessmentsStartAttemptTitle => 'Start attempt';
+
+  @override
+  String get assessmentsGoBack => 'Go Back';
+
+  @override
+  String get assessmentsSubmit => 'Submit';
+
+  @override
+  String get assessmentsDone => 'Done';
+
+  @override
+  String get assessmentsNoResultsTitle => 'No results yet';
+
+  @override
+  String get assessmentsNoResultsSubtitle =>
+      'Your past attempt results will appear here.';
+
+  @override
+  String get assessmentsDeadlinesTitle => 'Deadline';
+
+  @override
+  String get assessmentsNoDeadlinesTitle => 'No deadlines';
+
+  @override
+  String get assessmentsNoDeadlinesSubtitle =>
+      'Your assessment deadlines will appear here.';
+
+  @override
+  String get assessmentsTabActive => 'Active';
+
+  @override
+  String get assessmentsTabUpcoming => 'Upcoming';
+
+  @override
+  String get assessmentsTabLate => 'Late';
+
+  @override
+  String get assessmentsTabMissed => 'Missed';
+
+  @override
+  String get assessmentsTabClosed => 'Closed';
+
+  @override
+  String get assessmentsOpensLabel => 'Opens';
+
+  @override
+  String get assessmentsClosesLabel => 'Closes';
+
+  @override
+  String get assessmentsExtendedCloseLabel => 'Extended close';
+
+  @override
+  String get assessmentsTypeAnswerPlaceholder => 'Type your answer here…';
+
+  @override
+  String get assessmentsYourAnswerLabel => 'Your answer';
+
+  @override
+  String get assessmentsQuestionsEmptyTitle => 'Questions';
+
+  @override
+  String get assessmentsQuestionsEmptySubtitle =>
+      'No questions found for this attempt.';
+
+  @override
+  String get notificationsNoNotificationsTitle => 'No notifications yet';
+
+  @override
+  String get notificationsNoNotificationsSubtitle =>
+      'Session reminders and progress updates will appear here.';
+
+  @override
+  String get assessmentsStatusCompleted => 'Completed';
+
+  @override
+  String get notificationsDismiss => 'Dismiss';
+
+  @override
+  String get notificationsDismissedTitle => 'Dismissed';
+
+  @override
+  String get notificationsEnableQuietHours => 'Enable quiet hours';
+
+  @override
+  String get notificationsSaveQuietHours => 'Save quiet hours';
+
+  @override
+  String get notificationsNoRemindersTitle => 'No reminders yet';
+
+  @override
+  String get notificationsNoRemindersSubtitle =>
+      'Reminders you enable will appear here.';
+
+  @override
+  String get notificationsCancelReminder => 'Cancel';
+
+  @override
+  String get notificationsUnread => 'Unread';
+
+  @override
+  String get progressAvgMastery => 'Avg mastery';
+
+  @override
+  String get progressDayStreak => 'Day streak';
+
+  @override
+  String get progressSkillStates => 'Skill States';
+
+  @override
+  String get progressWeaknesses => 'Weaknesses';
+
+  @override
+  String get progressRecommendations => 'Recommendations';
+
+  @override
+  String get progressReviewSchedule => 'Review Schedule';
+
+  @override
+  String get progressFocusAreas => 'Focus Areas';
+
+  @override
+  String get progressNoProgressData => 'No progress data yet';
+
+  @override
+  String get progressNoSkillData => 'No skill data yet';
+
+  @override
+  String get progressNoFocusAreas => 'No focus areas yet';
+
+  @override
+  String get progressNoRecommendations => 'No recommendations yet';
+
+  @override
+  String get progressStatusStrong => 'Strong';
+
+  @override
+  String get progressStatusDeveloping => 'Developing';
+
+  @override
+  String get progressStatusNeedsWork => 'Needs work';
+
+  @override
+  String get progressTrendImproving => 'Improving';
+
+  @override
+  String get progressTrendDeclining => 'Declining';
+
+  @override
+  String get progressTrendStable => 'Stable';
+
+  @override
+  String get progressTrendInsufficient => 'Insufficient data';
+
+  @override
+  String get progressStatusSkipped => 'Skipped';
+
+  @override
+  String get progressStatusOverdue => 'Overdue';
+
+  @override
+  String get aiTeacherAskAnythingTitle => 'Ask AI Teacher anything';
+
+  @override
+  String get aiTeacherStartConversationSubtitle =>
+      'Start the conversation by sending a message.';
+
+  @override
+  String get aiTeacherConversationHistory => 'Conversation history';
+
+  @override
+  String get aiTeacherNoConversationsTitle => 'No conversations yet';
+
+  @override
+  String get aiTeacherNoConversationsSubtitle =>
+      'Start chatting with AI Teacher to see your history here.';
+
+  @override
+  String get aiTeacherPreferTextLabel => 'Prefer text replies over voice';
+
+  @override
+  String get aiTeacherReduceAnimationsLabel =>
+      'Reduce animations in AI Teacher and Voice Tutor';
+
+  @override
+  String get aiTeacherAboutSettingsTitle => 'About these settings';
+
+  @override
+  String get aiTeacherAskAnythingHint => 'Ask me anything...';
+
+  @override
+  String get aiTeacherVoiceComingSoon => 'Voice input (coming soon)';
+
+  @override
+  String get aiTeacherSendMessage => 'Send message';
+
+  @override
+  String get aiTeacherLimitedBannerTitle => 'AI Teacher is limited right now';
+
+  @override
+  String get aiTeacherOpenButton => 'Open AI Teacher';
+
+  @override
+  String get voiceTeacherStartTalkingTitle =>
+      'Start talking with your Voice Teacher';
+
+  @override
+  String get voiceTeacherTranscriptAppearSubtitle =>
+      'Your transcript will appear here.';
+
+  @override
+  String get voiceTeacherMessages => 'Messages';
+
+  @override
+  String get qaContinueButton => 'Continue';
+
+  @override
+  String get qaYourAnswerLabel => 'Your answer';
+
+  @override
+  String get qaTypeAnswerPlaceholder => 'Type your answer here';
+
+  @override
+  String get qaQuestionsAttempted => 'Questions attempted';
+
+  @override
+  String get qaCorrectScore => 'Correct (backend score)';
+
+  @override
+  String get qaMasteryShift => 'Mastery shift';
+
+  @override
+  String get qaLessonCompletedToast => 'Lesson marked as completed! 🌟';
+
+  @override
+  String get qaMarkLessonCompletedButton => 'Mark Lesson as Completed ✨';
+
+  @override
+  String get shellNavMore => 'More';
+
+  @override
+  String get profileLanguageEnglish => 'English';
+
+  @override
+  String get profileLanguageArabic => 'Arabic';
+
+  @override
+  String get analyticsPageTitle => 'Analytics';
+
+  @override
+  String get analyticsNoReportsTitle => 'No reports available';
+
+  @override
+  String get analyticsNoReportsSubtitle =>
+      'There are no analytics reports for you yet.';
+
+  @override
+  String get homeAppName => 'AIM English';
+
+  @override
+  String homeGreeting(String name) {
+    return 'Hello, $name! 👋';
+  }
+
+  @override
+  String homeXpLevelSubtitle(String course, int level) {
+    return '$course · XP Level $level';
+  }
+
+  @override
+  String get homeLearningRoadmap => 'Learning Roadmap';
+
+  @override
+  String get homeNodeMastered => 'Mastered';
+
+  @override
+  String get homeNodeCurrentLesson => 'Current Lesson';
+
+  @override
+  String get homeNodeLocked => 'Locked';
+
+  @override
+  String get homeMissionPracticeSpeaking => 'Practice Speaking';
+
+  @override
+  String get homeMissionWriteParagraph => 'Write a Paragraph';
+
+  @override
+  String get homeMissionWritingPractice => 'Writing Practice';
+
+  @override
+  String get billingCheckoutTitle => 'Checkout';
+
+  @override
+  String get billingBillingLabel => 'Billing';
+
+  @override
+  String get billingTermsAgreementFull =>
+      'By continuing you agree to AIM\'s Terms of Service and authorise a recurring charge. Cancel anytime.';
+
+  @override
+  String get billingCouldNotOpenPayment =>
+      'Could not open the payment page. Please try again.';
+
+  @override
+  String get billingFailedToStart =>
+      'Failed to start checkout. Please try again.';
+
+  @override
+  String get submitAttemptTitle => 'Submit your answers?';
+
+  @override
+  String get submitAttemptWarning =>
+      'You cannot change answers after submitting.';
+
+  @override
+  String get submitAttemptFinalAction =>
+      'This action is final and cannot be undone.';
+
+  @override
+  String get deadlinesTitle => 'Deadlines';
+
+  @override
+  String get deadlinesLoadingSemantic => 'Loading deadlines';
+
+  @override
+  String deadlinesDueRelative(String relative, String date) {
+    return 'Due $relative · $date';
+  }
+
+  @override
+  String deadlinesOpens(String date) {
+    return 'Opens $date';
+  }
+
+  @override
+  String deadlinesExtendedTo(String date) {
+    return 'Extended to $date';
+  }
+
+  @override
+  String deadlinesWasDue(String date) {
+    return 'Was due $date';
+  }
+
+  @override
+  String deadlinesClosed(String date) {
+    return 'Closed $date';
+  }
+
+  @override
+  String get deadlinesRelativeToday => 'today';
+
+  @override
+  String get deadlinesRelativeTomorrow => 'tomorrow';
+
+  @override
+  String deadlinesRelativeInDays(int days) {
+    return 'in $days days';
+  }
+
+  @override
+  String get reviewScheduleTitle => 'Review Schedule';
+
+  @override
+  String get reviewScheduleLoadingSemantic => 'Loading review schedule';
+
+  @override
+  String get reviewScheduleNoTitle => 'No reviews scheduled';
+
+  @override
+  String get reviewScheduleNoSubtitle =>
+      'Complete practice sessions to receive review reminders.';
+
+  @override
+  String reviewScheduleEveryInterval(String days, int rep) {
+    return 'Every ${days}d · repetition #$rep';
+  }
+
+  @override
+  String lessonsCountChip(int count) {
+    return '$count lessons';
+  }
+
+  @override
+  String quizzesCountChip(int count) {
+    return '$count quizzes';
+  }
+
+  @override
+  String examsCountChip(int count) {
+    return '$count exam';
+  }
+
+  @override
+  String get lessonsCourseLockedHint =>
+      'Finish your current level to unlock this course';
+
+  @override
+  String get achievementFirstLessonCompleteTitle => 'First Steps';
+
+  @override
+  String get achievementFirstLessonCompleteDesc =>
+      'Complete your first lesson.';
+
+  @override
+  String get achievementFiveLessonsCompleteTitle => 'Getting Started';
+
+  @override
+  String get achievementFiveLessonsCompleteDesc => 'Complete 5 lessons.';
+
+  @override
+  String get achievementThreeDayStreakTitle => 'On a Roll';
+
+  @override
+  String get achievementThreeDayStreakDesc => 'Keep a 3-day learning streak.';
+
+  @override
+  String get achievementSevenDayStreakTitle => 'Week Warrior';
+
+  @override
+  String get achievementSevenDayStreakDesc => 'Keep a 7-day learning streak.';
+
+  @override
+  String get achievementFirstAssessmentPassedTitle => 'Quiz Whiz';
+
+  @override
+  String get achievementFirstAssessmentPassedDesc =>
+      'Pass your first assessment.';
 }
