@@ -18,6 +18,8 @@ import {
   fetchAdminLessons,
   createAdminLesson,
   updateAdminLesson,
+  fetchLessonSkillLinks,
+  fetchAdminSkills,
   type AdminCourseSummary,
   type AdminCourseListData,
   type CourseStatus,
@@ -326,6 +328,35 @@ export default async function AdminCoursesPage({ searchParams }: Props) {
     return runTransition('lessons', lessonId, action);
   }
 
+  async function fetchLessonSkillsAction(lessonId: string) {
+    'use server';
+    const cs = await cookies();
+    const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      const [links, skills] = await Promise.all([
+        fetchLessonSkillLinks(t, lessonId),
+        fetchAdminSkills(t, 1, 200),
+      ]);
+      const skillById = new Map(skills.skills.map((s) => [s.id, s]));
+      const data = links.links.map((link) => {
+        const skill = skillById.get(link.skillId);
+        return {
+          id: link.skillId,
+          key: skill?.key ?? link.skillId,
+          title: skill?.title ?? link.skillId,
+          domain: skill?.domain ?? '',
+        };
+      });
+      return { data };
+    } catch (err) {
+      return {
+        error: err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to load linked skills.',
+      };
+    }
+  }
+
   const curriculumActions: CurriculumTreeActions = {
     fetchLevels: fetchLevelsAction,
     createLevel: createLevelAction,
@@ -339,6 +370,7 @@ export default async function AdminCoursesPage({ searchParams }: Props) {
     createLesson: createLessonAction,
     updateLesson: updateLessonAction,
     transitionLesson: transitionLessonAction,
+    fetchLessonSkills: fetchLessonSkillsAction,
   };
 
   const statusCounts = data ? {

@@ -41,6 +41,7 @@ const defaultProps = {
     createLesson: jest.fn().mockResolvedValue({}),
     updateLesson: jest.fn().mockResolvedValue({}),
     transitionLesson: jest.fn().mockResolvedValue({}),
+    fetchLessonSkills: jest.fn().mockResolvedValue({ data: [] }),
   },
 };
 
