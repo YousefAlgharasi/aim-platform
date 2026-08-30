@@ -29,6 +29,9 @@ import {
   StudentProgressSummary,
 } from '../../lessons/lesson-progress.types';
 import { AdminStudentProfileService, AdminStudentProfile } from './admin-student-profile.service';
+import { StudentSkillStateReadService } from '../../aim/result/student-skill-state-read.service';
+import { WeaknessRecordsReadService } from '../../aim/result/weakness-records-read.service';
+import { RecommendationReadService } from '../../aim/result/recommendation-read.service';
 
 @ApiTags(OPENAPI_TAGS.admin)
 @ApiBearerAuth()
@@ -39,6 +42,9 @@ export class AdminStudentProgressController {
   constructor(
     private readonly studentProgress: AdminStudentProgressService,
     private readonly studentProfile: AdminStudentProfileService,
+    private readonly skillStateRead: StudentSkillStateReadService,
+    private readonly weaknessRecordsRead: WeaknessRecordsReadService,
+    private readonly recommendationRead: RecommendationReadService,
   ) {}
 
   @Get(':id/profile')
@@ -61,6 +67,65 @@ export class AdminStudentProgressController {
     @Param('id', new ParseUUIDPipe()) id: string,
   ): Promise<StudentProgressSummary> {
     return this.studentProgress.getProgressSummary(id);
+  }
+
+  @Get(':id/skill-states')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'List backend-persisted skill mastery states for a student (admin, read-only).' })
+  @ApiParam({ name: 'id', description: 'Internal AIM user UUID of the student.' })
+  @ApiOkResponse({ description: 'Skill states, wrapped in a data envelope. masteryLevel/state are backend-computed.' })
+  async getSkillStates(
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ): Promise<{ data: Array<{ skillId: string; skillKey: string; masteryLevel: number; state: string; lastUpdatedAt: string }> }> {
+    const { skillStates } = await this.skillStateRead.getSkillStatesForStudent(id);
+    return {
+      data: skillStates.map((s) => ({
+        skillId: s.skillId,
+        skillKey: s.skillId,
+        masteryLevel: Math.round(s.masteryScore),
+        state:
+          s.masteryScore >= 85 ? 'mastered' : s.masteryScore >= 50 ? 'learning' : 'struggling',
+        lastUpdatedAt: s.updatedAt,
+      })),
+    };
+  }
+
+  @Get(':id/weaknesses')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'List backend-persisted weakness records for a student (admin, read-only).' })
+  @ApiParam({ name: 'id', description: 'Internal AIM user UUID of the student.' })
+  @ApiOkResponse({ description: 'Weakness records, wrapped in a data envelope. severity is backend-computed.' })
+  async getWeaknesses(
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ): Promise<{ data: Array<{ skillId: string; skillKey: string; severity: string; detectedAt: string }> }> {
+    const { weaknessRecords } = await this.weaknessRecordsRead.getWeaknessRecordsForStudent(id);
+    return {
+      data: weaknessRecords.map((w) => ({
+        skillId: w.skillId,
+        skillKey: w.skillId,
+        severity: w.severity,
+        detectedAt: w.detectedAt,
+      })),
+    };
+  }
+
+  @Get(':id/recommendations')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'List active AIM recommendations for a student (admin, read-only).' })
+  @ApiParam({ name: 'id', description: 'Internal AIM user UUID of the student.' })
+  @ApiOkResponse({ description: 'Active recommendations, wrapped in a data envelope. reason is an AIM Engine output.' })
+  async getRecommendations(
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ): Promise<{ data: Array<{ type: string; entityId: string; reason: string; generatedAt: string }> }> {
+    const { recommendations } = await this.recommendationRead.getActiveForStudent(id);
+    return {
+      data: recommendations.map((r) => ({
+        type: r.kind,
+        entityId: r.targetLessonId ?? r.targetSkillId,
+        reason: r.reason,
+        generatedAt: r.generatedAt,
+      })),
+    };
   }
 
   @Get(':id/lessons')
