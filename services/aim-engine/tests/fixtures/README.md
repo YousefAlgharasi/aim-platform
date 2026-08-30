@@ -51,7 +51,5 @@ from tests.fixtures import (
 )
 from app.schemas.aim_analysis_request import AimAnalysisRequest
 
-request = AimAnalysisRequest.model_validate(
-    VALID_REQUEST_LESSON_PRACTICE_SINGLE_ATTEMPT
-)
+request = AimAnalysisRequest.model_validate(VALID_REQUEST_LESSON_PRACTICE_SINGLE_ATTEMPT)
 ```
