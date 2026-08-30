@@ -166,6 +166,7 @@ class _SectionTopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
     final isRtl = Directionality.of(context) == TextDirection.rtl;
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       height: AimSizes.topBarHeight,

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/localization/app_locale.dart';
+import 'package:aim_mobile/core/localization/locale_provider.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/state/app_async_state.dart';
@@ -223,6 +225,8 @@ class _AIMAppDrawerWithMore extends ConsumerStatefulWidget {
 
 class _AIMAppDrawerWithMoreState
     extends ConsumerState<_AIMAppDrawerWithMore> {
+  bool _isMoreExpanded = false;
+
   void _selectTab(int index) {
     context.pop();
     ref.read(mainShellTabIndexProvider.notifier).state = index;
@@ -452,11 +456,31 @@ class _AIMDrawerBrandHeader extends ConsumerWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: soft.primary,
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: Text(
+                          badgeText,
+                          style: AimTextStyles.caption.copyWith(
+                            color: soft.onPrimary,
+                            fontWeight: AimFontWeights.extrabold,
+                            fontSize: 10,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
@@ -564,34 +588,13 @@ class _ThemeToggleButton extends StatelessWidget {
                           ? AimFontWeights.semibold
                           : AimFontWeights.regular,
                     ),
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: soft.primary,
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                        child: Text(
-                          badgeText,
-                          style: AimTextStyles.caption.copyWith(
-                            color: soft.onPrimary,
-                            fontWeight: AimFontWeights.extrabold,
-                            fontSize: 10,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ],
                   ),
                 ),
               ],
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 }
