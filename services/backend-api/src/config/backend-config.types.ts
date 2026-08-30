@@ -49,14 +49,11 @@ export interface BackendConfig {
   readonly ttsProvider: {
     readonly apiKey: string;
     readonly model: string;
-    /** Speech-synthesis submission endpoint URL (e.g. tts.ai's POST /v1/tts/). */
+    /** Speech-synthesis endpoint URL (Groq's POST /openai/v1/audio/speech). */
     readonly baseUrl: string;
-    /** Voice ID required by tts.ai's synthesis request (e.g. "af_bella"). */
+    /** Voice ID required by the synthesis request (e.g. "hannah"). */
     readonly voice: string;
-    /**
-     * Polling endpoint for tts.ai's async job result (GET .../v1/speech/results/?uuid=...).
-     * Defaults to the tts.ai results endpoint derived from `baseUrl`'s origin.
-     */
+    /** Unused by Groq's synchronous TTS endpoint; kept for a future job-based provider. */
     readonly resultsUrl: string;
   };
   readonly cors: {
