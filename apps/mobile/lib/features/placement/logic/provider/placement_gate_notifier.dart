@@ -55,8 +55,8 @@ class PlacementGateNotifier extends StateNotifier<PlacementGateState> {
           ? const PlacementGateShouldShow()
           : const PlacementGateHidden();
     } catch (e) {
-      // Do not block the student on a transient error — treat as should show
-      state = const PlacementGateShouldShow();
+      // Do not block the student on a transient error or offline mode — fail open
+      state = const PlacementGateHidden();
     }
   }
 

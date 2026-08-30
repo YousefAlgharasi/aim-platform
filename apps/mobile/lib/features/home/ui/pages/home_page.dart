@@ -46,6 +46,7 @@ import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/features/auth/logic/entity/auth_context.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_data.dart';
@@ -90,15 +91,20 @@ class _HomePageState extends ConsumerState<HomePage> {
   void _load() {
     final authContext = ref.read(authContextProvider);
     final authFlow = ref.read(authFlowProvider);
+    final token = authFlow.accessToken;
 
-    // Only load when auth context has resolved and a token is available.
+    if (token == null || token.isEmpty) return;
+
+    if (authContext is AppAsyncIdle) {
+      ref.read(authContextProvider.notifier).loadCurrentUser(token);
+      return;
+    }
+
     final contextData = switch (authContext) {
       AppAsyncSuccess(:final data) => data,
       _ => null,
     };
     if (contextData == null) return;
-    final token = authFlow.accessToken;
-    if (token == null || token.isEmpty) return;
 
     ref.read(homeProvider.notifier).load(
           bearerToken: token,
@@ -148,6 +154,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(homeProvider);
+    final authContextState = ref.watch(authContextProvider);
     final loadingLabel = AppLocalizations.of(context).homeLoadingSemantic;
 
     ref.listen<AppAsyncState<HomeData>>(homeProvider, (_, next) {
@@ -155,6 +162,28 @@ class _HomePageState extends ConsumerState<HomePage> {
         setState(() => _lastUpdatedAt = DateTime.now());
       }
     });
+
+    ref.listen<AppAsyncState<AuthContext>>(authContextProvider, (prev, next) {
+      if (next is AppAsyncSuccess) {
+        _load();
+      }
+    });
+
+    if (authContextState is AppAsyncFailure<AuthContext>) {
+      return Scaffold(
+        body: SafeArea(
+          child: AIMFullScreenError(
+            message: authContextState.message,
+            onRetry: () {
+              final token = ref.read(authFlowProvider).accessToken;
+              if (token != null && token.isNotEmpty) {
+                ref.read(authContextProvider.notifier).loadCurrentUser(token);
+              }
+            },
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       body: SafeArea(
