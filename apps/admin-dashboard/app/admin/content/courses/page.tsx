@@ -6,6 +6,9 @@ import {
   fetchAdminCourses,
   createAdminCourse,
   updateAdminCourse,
+  publishContent,
+  archiveContent,
+  restoreContent,
   type AdminCourseSummary,
   type AdminCourseListData,
   type CourseStatus,
@@ -91,6 +94,27 @@ export default async function AdminCoursesPage({ searchParams }: Props) {
     }
   }
 
+  async function handleTransition(
+    id: string,
+    action: 'publish' | 'archive' | 'restore',
+  ): Promise<{ error?: string }> {
+    'use server';
+    const cs = await cookies();
+    const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      if (action === 'publish') await publishContent(t, 'courses', id);
+      else if (action === 'archive') await archiveContent(t, 'courses', id);
+      else await restoreContent(t, 'courses', id);
+      return {};
+    } catch (err) {
+      return {
+        error: err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Status transition failed.',
+      };
+    }
+  }
+
   const statusCounts = data ? {
     draft: data.courses.filter((c) => c.status === 'draft').length,
     published: data.courses.filter((c) => c.status === 'published').length,
@@ -167,6 +191,7 @@ export default async function AdminCoursesPage({ searchParams }: Props) {
           searchQuery={searchQuery}
           onCreateCourse={handleCreate}
           onUpdateCourse={handleUpdate}
+          onTransitionCourse={handleTransition}
         />
       )}
 
@@ -179,6 +204,7 @@ export default async function AdminCoursesPage({ searchParams }: Props) {
           totalPages={0}
           onCreateCourse={handleCreate}
           onUpdateCourse={handleUpdate}
+          onTransitionCourse={handleTransition}
         />
       )}
 
