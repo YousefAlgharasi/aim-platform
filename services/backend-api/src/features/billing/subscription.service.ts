@@ -188,4 +188,42 @@ export class SubscriptionService {
 
     return updated;
   }
+
+  /**
+   * Aggregate KPIs for the admin billing monitor "Overview" tab.
+   *
+   * revenueMtd is only safely computable when all revenue is in a single currency
+   * (payments.amount is an integer in minor units and cannot be summed across
+   * currencies). If multiple currencies are present this month, revenueMtd is
+   * returned as null and the per-currency breakdown is provided instead so the
+   * caller is never given a fabricated cross-currency total.
+   */
+  async getOverview(): Promise<{
+    activeSubscriptions: number;
+    revenueMtd: number | null;
+    revenueMtdCurrency: string | null;
+    revenueMtdByCurrency: Array<{ currency: string; amount: number }>;
+    pendingRefunds: number;
+    failedPayments: number;
+  }> {
+    const [activeSubscriptions, revenueMtdByCurrency, pendingRefunds, failedPayments] =
+      await Promise.all([
+        this.billingRepo.countActiveSubscriptions(),
+        this.billingRepo.getRevenueMtdByCurrency(),
+        this.billingRepo.countPendingRefunds(),
+        this.billingRepo.countRecentFailedPayments(7),
+      ]);
+
+    const revenueMtd = revenueMtdByCurrency.length === 1 ? revenueMtdByCurrency[0].amount : null;
+    const revenueMtdCurrency = revenueMtdByCurrency.length === 1 ? revenueMtdByCurrency[0].currency : null;
+
+    return {
+      activeSubscriptions,
+      revenueMtd,
+      revenueMtdCurrency,
+      revenueMtdByCurrency,
+      pendingRefunds,
+      failedPayments,
+    };
+  }
 }
