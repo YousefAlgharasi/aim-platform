@@ -6,12 +6,50 @@ import {
   fetchAdminCourses,
   createAdminCourse,
   updateAdminCourse,
+  publishContent,
+  archiveContent,
+  restoreContent,
+  fetchAdminLevels,
+  createAdminLevel,
+  updateAdminLevel,
+  fetchAdminChapters,
+  createAdminChapter,
+  updateAdminChapter,
+  fetchAdminLessons,
+  createAdminLesson,
+  updateAdminLesson,
+  fetchLessonSkillLinks,
+  fetchAdminSkills,
   type AdminCourseSummary,
   type AdminCourseListData,
   type CourseStatus,
+  type CurriculumTreeActions,
   CoursesList,
 } from '../../../../features/content';
 import { AdminApiClientError } from '../../../../core/api';
+
+type TransitionAction = 'publish' | 'archive' | 'restore';
+
+async function runTransition(
+  entityType: 'levels' | 'chapters' | 'lessons',
+  id: string,
+  action: TransitionAction,
+): Promise<{ error?: string }> {
+  const cs = await cookies();
+  const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+  try {
+    if (action === 'publish') await publishContent(t, entityType, id);
+    else if (action === 'archive') await archiveContent(t, entityType, id);
+    else await restoreContent(t, entityType, id);
+    return {};
+  } catch (err) {
+    return {
+      error: err instanceof AdminApiClientError
+        ? `Backend error ${err.status}: ${err.message}`
+        : 'Status transition failed.',
+    };
+  }
+}
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
@@ -91,6 +129,250 @@ export default async function AdminCoursesPage({ searchParams }: Props) {
     }
   }
 
+  async function handleTransition(
+    id: string,
+    action: 'publish' | 'archive' | 'restore',
+  ): Promise<{ error?: string }> {
+    'use server';
+    const cs = await cookies();
+    const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      if (action === 'publish') await publishContent(t, 'courses', id);
+      else if (action === 'archive') await archiveContent(t, 'courses', id);
+      else await restoreContent(t, 'courses', id);
+      return {};
+    } catch (err) {
+      return {
+        error: err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Status transition failed.',
+      };
+    }
+  }
+
+  async function fetchLevelsAction(courseId: string) {
+    'use server';
+    const cs = await cookies();
+    const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      const result = await fetchAdminLevels(t, courseId, 1, 100);
+      return { data: result.levels };
+    } catch (err) {
+      return {
+        error: err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to load levels.',
+      };
+    }
+  }
+
+  async function createLevelAction(
+    courseId: string,
+    formData: { title: string; code: string | null; slug: string | null; description: string | null },
+  ): Promise<{ error?: string }> {
+    'use server';
+    const cs = await cookies();
+    const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      await createAdminLevel(t, courseId, formData);
+      return {};
+    } catch (err) {
+      return {
+        error: err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to create level.',
+      };
+    }
+  }
+
+  async function updateLevelAction(
+    courseId: string,
+    levelId: string,
+    formData: { title: string; code: string | null; slug: string | null; description: string | null },
+  ): Promise<{ error?: string }> {
+    'use server';
+    const cs = await cookies();
+    const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      await updateAdminLevel(t, courseId, levelId, formData);
+      return {};
+    } catch (err) {
+      return {
+        error: err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to update level.',
+      };
+    }
+  }
+
+  async function transitionLevelAction(levelId: string, action: TransitionAction) {
+    'use server';
+    return runTransition('levels', levelId, action);
+  }
+
+  async function fetchChaptersAction(levelId: string) {
+    'use server';
+    const cs = await cookies();
+    const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      const result = await fetchAdminChapters(t, levelId, 1, 100);
+      return { data: result.chapters };
+    } catch (err) {
+      return {
+        error: err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to load chapters.',
+      };
+    }
+  }
+
+  async function createChapterAction(
+    levelId: string,
+    formData: { title: string; slug: string | null; description: string | null },
+  ): Promise<{ error?: string }> {
+    'use server';
+    const cs = await cookies();
+    const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      await createAdminChapter(t, { levelId, ...formData });
+      return {};
+    } catch (err) {
+      return {
+        error: err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to create chapter.',
+      };
+    }
+  }
+
+  async function updateChapterAction(
+    chapterId: string,
+    formData: { title: string; slug: string | null; description: string | null },
+  ): Promise<{ error?: string }> {
+    'use server';
+    const cs = await cookies();
+    const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      await updateAdminChapter(t, chapterId, formData);
+      return {};
+    } catch (err) {
+      return {
+        error: err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to update chapter.',
+      };
+    }
+  }
+
+  async function transitionChapterAction(chapterId: string, action: TransitionAction) {
+    'use server';
+    return runTransition('chapters', chapterId, action);
+  }
+
+  async function fetchLessonsAction(chapterId: string) {
+    'use server';
+    const cs = await cookies();
+    const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      const result = await fetchAdminLessons({ token: t, chapterId, page: 1, limit: 100 });
+      return { data: result.lessons };
+    } catch (err) {
+      return {
+        error: err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to load lessons.',
+      };
+    }
+  }
+
+  async function createLessonAction(
+    chapterId: string,
+    formData: { title: string; description: string },
+  ): Promise<{ error?: string }> {
+    'use server';
+    const cs = await cookies();
+    const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      await createAdminLesson(t, chapterId, formData);
+      return {};
+    } catch (err) {
+      return {
+        error: err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to create lesson.',
+      };
+    }
+  }
+
+  async function updateLessonAction(
+    lessonId: string,
+    formData: { title: string; description: string },
+  ): Promise<{ error?: string }> {
+    'use server';
+    const cs = await cookies();
+    const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      await updateAdminLesson(t, lessonId, formData);
+      return {};
+    } catch (err) {
+      return {
+        error: err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to update lesson.',
+      };
+    }
+  }
+
+  async function transitionLessonAction(lessonId: string, action: TransitionAction) {
+    'use server';
+    return runTransition('lessons', lessonId, action);
+  }
+
+  async function fetchLessonSkillsAction(lessonId: string) {
+    'use server';
+    const cs = await cookies();
+    const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      const [links, skills] = await Promise.all([
+        fetchLessonSkillLinks(t, lessonId),
+        fetchAdminSkills(t, 1, 200),
+      ]);
+      const skillById = new Map(skills.skills.map((s) => [s.id, s]));
+      const data = links.links.map((link) => {
+        const skill = skillById.get(link.skillId);
+        return {
+          id: link.skillId,
+          key: skill?.key ?? link.skillId,
+          title: skill?.title ?? link.skillId,
+          domain: skill?.domain ?? '',
+        };
+      });
+      return { data };
+    } catch (err) {
+      return {
+        error: err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to load linked skills.',
+      };
+    }
+  }
+
+  const curriculumActions: CurriculumTreeActions = {
+    fetchLevels: fetchLevelsAction,
+    createLevel: createLevelAction,
+    updateLevel: updateLevelAction,
+    transitionLevel: transitionLevelAction,
+    fetchChapters: fetchChaptersAction,
+    createChapter: createChapterAction,
+    updateChapter: updateChapterAction,
+    transitionChapter: transitionChapterAction,
+    fetchLessons: fetchLessonsAction,
+    createLesson: createLessonAction,
+    updateLesson: updateLessonAction,
+    transitionLesson: transitionLessonAction,
+    fetchLessonSkills: fetchLessonSkillsAction,
+  };
+
   const statusCounts = data ? {
     draft: data.courses.filter((c) => c.status === 'draft').length,
     published: data.courses.filter((c) => c.status === 'published').length,
@@ -167,6 +449,8 @@ export default async function AdminCoursesPage({ searchParams }: Props) {
           searchQuery={searchQuery}
           onCreateCourse={handleCreate}
           onUpdateCourse={handleUpdate}
+          onTransitionCourse={handleTransition}
+          curriculumActions={curriculumActions}
         />
       )}
 
@@ -179,6 +463,8 @@ export default async function AdminCoursesPage({ searchParams }: Props) {
           totalPages={0}
           onCreateCourse={handleCreate}
           onUpdateCourse={handleUpdate}
+          onTransitionCourse={handleTransition}
+          curriculumActions={curriculumActions}
         />
       )}
 

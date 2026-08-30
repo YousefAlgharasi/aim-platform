@@ -488,3 +488,99 @@ a { color: inherit; text-decoration: none; }
     width: 200px;
   }
 }
+
+/* =============================================================
+   Shared admin page chrome
+   Used across ~90 admin pages (breadcrumb, header, banners, empty
+   states) but previously had no CSS backing anywhere, so every page
+   using it rendered as unstyled plain text. Styled here once to
+   match the design system tokens above, consistent with the
+   embedded-style pattern used on pages like Courses/Question Bank.
+   ============================================================= */
+
+.admin-curriculum-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-20);
+}
+
+.admin-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+.admin-breadcrumb a {
+  color: var(--text-link);
+  text-decoration: none;
+}
+.admin-breadcrumb a:hover {
+  text-decoration: underline;
+}
+.admin-breadcrumb span:last-child {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.admin-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.admin-page-header .eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-primary-500);
+}
+.admin-page-header h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+.admin-page-header .admin-page-meta {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  max-width: 640px;
+}
+
+.admin-error-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--color-error-500);
+  background: var(--error-soft);
+  color: var(--error-soft-fg);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.admin-boundary-note {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.admin-boundary-note strong {
+  color: var(--text-primary);
+}
+
+.courses-empty,
+.admin-empty-state {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}

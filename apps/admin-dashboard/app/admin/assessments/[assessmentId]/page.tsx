@@ -16,7 +16,7 @@ import {
 } from '../../../../features/assessments';
 import { AssessmentEditorClient } from '../../../../features/assessments/pages/assessment-editor-client';
 import { AssessmentQuestionBuilder } from '../../../../features/assessments/components/question-builder';
-import { fetchAdminQuestions } from '../../../../features/content/api/admin-question-bank-api';
+import { fetchAdminQuestions, fetchAdminQuestion } from '../../../../features/content/api/admin-question-bank-api';
 import { fetchAdminCourses } from '../../../../features/content/api/admin-courses-api';
 import { fetchAdminChapters } from '../../../../features/content/api/admin-chapters-api';
 
@@ -60,10 +60,27 @@ export default async function AdminAssessmentDetailPage({ params }: Props) {
     chapterOptions = [];
   }
 
-  // The backend detail endpoint returns question count only, not per-question
-  // detail — there is no real data to attach here, so this stays empty rather
-  // than fabricating placeholder question stems.
-  const attachedQuestions: Array<{ id: string; stem: string; type: string; difficulty: string }> = [];
+  // The backend detail endpoint returns question IDs only, not stems/types —
+  // resolve each attached question individually against the question bank so
+  // the builder can actually show what's on this assessment. A question that
+  // fails to resolve (e.g. deleted from the bank) is skipped rather than
+  // fabricated or allowed to fail the whole page.
+  let attachedQuestions: Array<{ id: string; stem: string; type: string; difficulty: string }> = [];
+  if (assessment) {
+    // Kept parallel to questionIds (same order, same length) even when a
+    // question fails to resolve, since the question builder's reorder
+    // controls assume index-aligned arrays.
+    attachedQuestions = await Promise.all(
+      assessment.questionIds.map(async (id) => {
+        try {
+          const q = await fetchAdminQuestion(token, id);
+          return { id: q.id, stem: q.stem, type: q.type, difficulty: q.difficulty };
+        } catch {
+          return { id, stem: '(question unavailable)', type: 'unknown', difficulty: 'unknown' };
+        }
+      }),
+    );
+  }
 
   async function handleUpdate(data: {
     title: string;

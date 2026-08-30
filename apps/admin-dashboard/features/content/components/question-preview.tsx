@@ -106,12 +106,6 @@ export function QuestionPreview({ question }: Props) {
         )}
       </div>
 
-      <div className="admin-boundary-note" style={{ marginBlockStart: 'var(--space-12)' }}>
-        <strong>Note:</strong> This is an approximate preview. Actual student
-        experience is rendered by the Flutter app using backend-delivered question data.
-        Choice content will appear once backend choice APIs are available.
-      </div>
-
       <style>{`
         .aim-preview-container {
           border: 1px solid var(--border);

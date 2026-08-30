@@ -37,11 +37,6 @@ export default async function AdminActivityLogsPage({ searchParams }: Props) {
         )}
       </header>
 
-      <div className="admin-boundary-note">
-        <strong>Read-only:</strong> Activity logs are recorded server-side by the backend.
-        This view displays safe event metadata only — no raw learner data or AI provider responses.
-      </div>
-
       {fetchError && (
         <p className="admin-error-banner" role="alert">{fetchError}</p>
       )}

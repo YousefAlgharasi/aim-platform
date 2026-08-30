@@ -58,15 +58,20 @@ function safePagination(page: number, limit: number) {
 export class AdminDataService {
   constructor(private readonly db: DatabaseService) {}
 
-  async listAssessments(page: number, limit: number, type?: string) {
+  async listAssessments(page: number, limit: number, type?: string, search?: string) {
     const { safePage, safeLimit, offset } = safePagination(page, limit);
 
+    const countConditions: string[] = [];
     const countParams: unknown[] = [];
-    let countWhere = '';
     if (type) {
-      countWhere = 'WHERE a.type = $1';
+      countConditions.push(`a.type = $${countParams.length + 1}`);
       countParams.push(type);
     }
+    if (search) {
+      countConditions.push(`a.title ILIKE $${countParams.length + 1}`);
+      countParams.push(`%${search}%`);
+    }
+    const countWhere = countConditions.length ? `WHERE ${countConditions.join(' AND ')}` : '';
 
     const countResult = await this.db.query<{ count: string }>(
       `SELECT COUNT(*)::text AS count FROM assessments a ${countWhere}`,
@@ -74,15 +79,19 @@ export class AdminDataService {
     );
     const total = parseInt(countResult.rows[0]?.count ?? '0', 10);
 
+    const dataConditions: string[] = [];
     const dataParams: unknown[] = [];
-    let dataWhere = '';
-    let idx = 1;
     if (type) {
-      dataWhere = `WHERE a.type = $${idx++}`;
+      dataConditions.push(`a.type = $${dataParams.length + 1}`);
       dataParams.push(type);
     }
-    const limitIdx = idx++;
-    const offsetIdx = idx;
+    if (search) {
+      dataConditions.push(`a.title ILIKE $${dataParams.length + 1}`);
+      dataParams.push(`%${search}%`);
+    }
+    const dataWhere = dataConditions.length ? `WHERE ${dataConditions.join(' AND ')}` : '';
+    const limitIdx = dataParams.length + 1;
+    const offsetIdx = dataParams.length + 2;
     dataParams.push(safeLimit, offset);
 
     const result = await this.db.query<Record<string, unknown>>(
@@ -131,6 +140,21 @@ export class AdminDataService {
       });
     }
 
+    const questionIdsResult = await this.db.query<{ question_id: string }>(
+      `SELECT question_id FROM assessment_questions WHERE assessment_id = $1 ORDER BY "order"`,
+      [id],
+    );
+
+    const settingsResult = await this.db.query<{
+      time_limit_seconds: number | null;
+      pass_threshold: string;
+      randomize_questions: boolean;
+    }>(
+      `SELECT time_limit_seconds, pass_threshold, randomize_questions FROM assessment_settings WHERE assessment_id = $1`,
+      [id],
+    );
+    const settingsRow = settingsResult.rows[0];
+
     return {
       id: row.id,
       title: row.title,
@@ -139,6 +163,14 @@ export class AdminDataService {
       courseId: row.course_id ?? null,
       chapterId: row.chapter_id ?? null,
       questionCount: row.question_count ?? 0,
+      questionIds: questionIdsResult.rows.map((r) => r.question_id),
+      settings: {
+        timeLimitMinutes: settingsRow?.time_limit_seconds
+          ? Math.round(settingsRow.time_limit_seconds / 60)
+          : null,
+        passMark: settingsRow ? Number(settingsRow.pass_threshold) : null,
+        shuffleQuestions: settingsRow?.randomize_questions ?? false,
+      },
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
@@ -545,10 +577,15 @@ export class AdminDataService {
     );
     const totalEnrollments = parseInt(result.rows[0]?.count ?? '0', 10);
 
+    const activeCoursesResult = await this.db.query<{ count: string }>(
+      `SELECT COUNT(DISTINCT course_id)::text AS count FROM course_enrollments WHERE status = 'active'`,
+    );
+    const activeCourses = parseInt(activeCoursesResult.rows[0]?.count ?? '0', 10);
+
     return {
       totalEnrollments,
       newEnrollments: totalEnrollments,
-      activeCourses: 0,
+      activeCourses,
       period,
     };
   }

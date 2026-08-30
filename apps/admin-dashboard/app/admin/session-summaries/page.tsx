@@ -34,11 +34,6 @@ export default async function AdminSessionSummariesPage({ searchParams }: Props)
         )}
       </header>
 
-      <div className="admin-boundary-note">
-        <strong>Read-only:</strong> Session summaries are generated server-side.
-        This view displays safe metadata only.
-      </div>
-
       {fetchError && (
         <p className="admin-error-banner" role="alert">{fetchError}</p>
       )}

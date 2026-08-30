@@ -153,12 +153,6 @@ export function ContentStatusWorkflow({
           ))}
         </div>
       )}
-
-      <div className="mt-4 p-4 rounded-xl bg-[var(--surface-sunken)] border border-[var(--border)] text-xs text-[var(--text-secondary)]">
-        <strong>Backend authority:</strong> All status transitions are validated and
-        enforced by backend APIs. Permission checks, skill-link requirements, and
-        audit logging are applied server-side.
-      </div>
     </AdminCard>
   );
 }

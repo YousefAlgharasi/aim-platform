@@ -119,7 +119,7 @@ export default async function LessonSkillLinkerPage({ params }: Props) {
       <nav className="admin-breadcrumb" aria-label="Breadcrumb">
         <Link href="/admin/content">Content</Link>
         <span aria-hidden="true">/</span>
-        <Link href="/admin/content/lessons">Lessons</Link>
+        <Link href="/admin/content/courses">Courses</Link>
         <span aria-hidden="true">/</span>
         <span>Skill Links</span>
       </nav>

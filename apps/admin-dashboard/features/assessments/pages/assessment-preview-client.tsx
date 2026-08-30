@@ -31,7 +31,6 @@ export function AssessmentPreviewClient({
 }: Props) {
   return (
     <div className="aim-preview-container">
-      {/* admin-boundary-note */}
       {/* Assessment header as student would see */}
       <AdminCard title={assessmentTitle} description={`${formatType(assessmentType)} · ${questions.length} questions`}>
         <div className="aim-preview-meta">

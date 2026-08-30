@@ -158,11 +158,6 @@ export function AssessmentPublishing({
         )}
       </div>
 
-      <div className="admin-boundary-note mt-4">
-        <strong>Backend authority:</strong> Publishing state transitions are enforced
-        by the backend. The UI sends requests only.
-      </div>
-
       {selectedAction && confirmConfig[selectedAction] && (
         <AdminConfirmDialog
           open

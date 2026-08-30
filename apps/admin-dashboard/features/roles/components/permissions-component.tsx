@@ -27,11 +27,6 @@ export function PermissionsComponent({ data, fetchError }: PermissionsComponentP
         )}
       </header>
 
-      <div className="admin-boundary-note">
-        <strong>Security boundary:</strong> This page renders backend-approved
-        data only. Permission enforcement is the backend&apos;s responsibility.
-      </div>
-
       {fetchError && (
         <div className="admin-error-banner" role="alert">
           {fetchError}

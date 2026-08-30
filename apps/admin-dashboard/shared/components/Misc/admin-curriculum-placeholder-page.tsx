@@ -22,10 +22,6 @@ export function AdminCurriculumPlaceholderPage({
         <h1>{item.label}</h1>
         <p className="hero-copy">{item.description}</p>
       </header>
-
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> {item.backendBoundary}
-      </div>
     </section>
   );
 }

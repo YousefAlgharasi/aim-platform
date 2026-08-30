@@ -122,6 +122,13 @@ export class PlacementScoringService {
     //    Join placement_answers → placement_question_skills → skills.
     //    All linked skills (primary + secondary) contribute equally.
     // -----------------------------------------------------------------------
+    // writing/speaking questions are AI-graded (P4-052), not objectively
+    // scored — is_correct is never set for them (see
+    // PlacementAnswerValidationService). Excluding them here keeps the
+    // placement.writing/placement.speaking skills out of skill_mastery_map
+    // and weakness_map, which previously always showed those two skills as
+    // top weaknesses regardless of the student's actual AI-graded score.
+    // Their signal is surfaced separately via computeAdditionalSignals().
     const skillAnswersResult = await this.db.query<SkillAnswerRow>(
       `SELECT
          pqs.skill_id,
@@ -129,9 +136,11 @@ export class PlacementScoringService {
          s.title   AS skill_name,
          pa.is_correct
        FROM placement_answers pa
+       JOIN placement_questions pq ON pq.id = pa.placement_question_id
        JOIN placement_question_skills pqs ON pqs.placement_question_id = pa.placement_question_id
        JOIN skills s ON s.id = pqs.skill_id
-       WHERE pa.placement_attempt_id = $1`,
+       WHERE pa.placement_attempt_id = $1
+         AND pq.question_type NOT IN ('writing', 'speaking')`,
       [attemptId],
     );
 

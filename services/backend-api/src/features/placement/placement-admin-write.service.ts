@@ -581,6 +581,48 @@ export class PlacementAdminWriteService {
     return mapSkillLink(result.rows[0]);
   }
 
+  async setPrimaryQuestionSkillLink(
+    questionId: string,
+    skillId: string,
+  ): Promise<AdminPlacementQuestionSkillLink> {
+    const existing = await this.db.query<PlacementQuestionSkillRow>(
+      `SELECT placement_question_id, skill_id, is_primary, created_at
+         FROM placement_question_skills
+        WHERE placement_question_id = $1 AND skill_id = $2`,
+      [questionId, skillId],
+    );
+
+    if ((existing.rowCount ?? 0) === 0) {
+      throw new AppError({
+        code: PlacementErrorCode.SKILL_LINK_NOT_FOUND,
+        message: 'Skill link not found for this question.',
+        statusCode: HttpStatus.NOT_FOUND,
+      });
+    }
+
+    return this.db.withClient(async (client) => {
+      // Clear any existing primary link on this question first so the
+      // partial unique index (one primary per question) never sees two
+      // is_primary = true rows at once.
+      await client.query(
+        `UPDATE placement_question_skills
+            SET is_primary = false
+          WHERE placement_question_id = $1 AND is_primary = true`,
+        [questionId],
+      );
+
+      const result = await client.query<PlacementQuestionSkillRow>(
+        `UPDATE placement_question_skills
+            SET is_primary = true
+          WHERE placement_question_id = $1 AND skill_id = $2
+          RETURNING placement_question_id, skill_id, is_primary, created_at`,
+        [questionId, skillId],
+      );
+
+      return mapSkillLink(result.rows[0]);
+    });
+  }
+
   async removeQuestionSkillLink(
     questionId: string,
     skillId: string,

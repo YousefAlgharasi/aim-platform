@@ -33,8 +33,8 @@ export default function AdminAssetsContentPage() {
         <div>
           <p className="as-info-title">Lesson-based asset management</p>
           <p className="as-info-desc">Assets (text, images, videos, audio, exercises, and vocabulary) are attached as content blocks within each lesson. Navigate to a lesson to manage its content blocks.</p>
-          <Link href="/admin/content/lessons" className="as-info-link">
-            Go to Lessons
+          <Link href="/admin/content/courses" className="as-info-link">
+            Go to Courses
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14m-7-7l7 7-7 7"/></svg>
           </Link>
         </div>

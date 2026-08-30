@@ -34,7 +34,7 @@ export default async function AdminLessonEditorPage({ params }: Props) {
           <nav className="admin-breadcrumb" aria-label="Breadcrumb">
             <Link href="/admin/content" className="admin-breadcrumb-link">Content</Link>
             <span aria-hidden="true"> / </span>
-            <Link href="/admin/content/lessons" className="admin-breadcrumb-link">Lessons</Link>
+            <Link href="/admin/content/courses" className="admin-breadcrumb-link">Courses</Link>
             <span aria-hidden="true"> / </span>
             <span>Not Found</span>
           </nav>
@@ -74,7 +74,7 @@ export default async function AdminLessonEditorPage({ params }: Props) {
       <nav className="admin-breadcrumb" aria-label="Breadcrumb">
         <Link href="/admin/content" className="admin-breadcrumb-link">Content</Link>
         <span aria-hidden="true"> / </span>
-        <Link href="/admin/content/lessons" className="admin-breadcrumb-link">Lessons</Link>
+        <Link href="/admin/content/courses" className="admin-breadcrumb-link">Courses</Link>
         <span aria-hidden="true"> / </span>
         <span>{lesson?.title ?? lessonId}</span>
       </nav>
@@ -84,12 +84,6 @@ export default async function AdminLessonEditorPage({ params }: Props) {
         title={lesson ? `Edit: ${lesson.title}` : 'Lesson Editor'}
         description={lesson ? `Status: ${lesson.status.replace('_', ' ')} · Order: ${lesson.sortOrder}` : undefined}
       />
-
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Status changes (publish, archive) and
-        skill linking are controlled by backend APIs. A lesson cannot be published
-        until it is linked to at least one skill.
-      </div>
 
       {fetchError && <AdminApiErrorState message={fetchError} />}
 

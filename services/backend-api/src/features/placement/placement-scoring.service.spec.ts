@@ -345,6 +345,28 @@ describe('PlacementScoringService', () => {
   });
 
   // -------------------------------------------------------------------------
+  // Writing/speaking exclusion from skill_mastery_map/weakness_map (P4-052)
+  // -------------------------------------------------------------------------
+
+  describe('writing/speaking skill exclusion', () => {
+    it('excludes writing/speaking question types from the skill-answers query', async () => {
+      const queries: string[] = [];
+      const db: jest.Mocked<Pick<DatabaseService, 'query'>> = {
+        query: jest.fn().mockImplementation(async (sql: string) => {
+          queries.push(sql);
+          return { rows: [], rowCount: 0 } as unknown as QueryResult;
+        }),
+      };
+      const svc = new PlacementScoringService(db as unknown as DatabaseService);
+      await svc.scoreAttempt(attemptId);
+
+      const skillQuery = queries.find((q) => q.includes('placement_question_skills'));
+      expect(skillQuery).toBeDefined();
+      expect(skillQuery).toMatch(/question_type NOT IN \('writing', 'speaking'\)/);
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // Security: internal fields must never be returned to clients
   // -------------------------------------------------------------------------
 

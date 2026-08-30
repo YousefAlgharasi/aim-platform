@@ -151,11 +151,6 @@ export function AssessmentEditorClient({ assessment, onUpdate }: Props) {
             </div>
           )}
         </AdminCard>
-
-        <div className="admin-boundary-note">
-          <strong>Backend authority:</strong> Assessment grading, scoring, deadlines,
-          and pass/fail determination are computed by the backend only.
-        </div>
       </div>
     );
   }
