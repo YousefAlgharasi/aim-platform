@@ -145,9 +145,7 @@ function decodeAdminUserDetail(value: unknown): AdminUserDetail {
     phone: typeof value.phone === 'string' ? value.phone : null,
     userType: isAdminUserType(value.userType) ? value.userType : 'student',
     status: isAdminUserStatus(value.status) ? value.status : 'active',
-    roles: Array.isArray(value.roles)
-      ? value.roles.filter((r): r is string => typeof r === 'string')
-      : [],
+    roles: Array.isArray(value.roles) ? value.roles.map(decodeRoleKey).filter(isNonEmptyString) : [],
     studentProfile: isObject(value.studentProfile)
       ? decodeStudentProfile(value.studentProfile)
       : null,
@@ -233,6 +231,18 @@ function isAdminUserStatus(value: unknown): value is AdminUserStatus {
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+// Backend returns roles in user-detail responses as { key, name } objects
+// (see AdminUserRoleItem), not bare strings. Accept both shapes defensively.
+function decodeRoleKey(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (isObject(value) && typeof value.key === 'string') return value.key;
+  return '';
+}
+
+function isNonEmptyString(value: string): value is string {
+  return value.length > 0;
 }
 
 // ---------------------------------------------------------------------------
