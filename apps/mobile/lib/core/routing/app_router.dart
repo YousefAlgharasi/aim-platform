@@ -719,11 +719,9 @@ class AppRouter {
     // authFlowProvider flipped, without waiting on authContextProvider.
     if (authState.isSignedIn) {
       if (routeName == AppRoutePaths.signIn ||
-          routeName == AppRoutePaths.register) {
-        return AppRoutePaths.placementGate;
-      }
-      if (routeName == AppRoutePaths.splash) {
-        return AppRoutePaths.placementGate;
+          routeName == AppRoutePaths.register ||
+          routeName == AppRoutePaths.splash) {
+        return AppRoutePaths.mainShell;
       }
     }
 

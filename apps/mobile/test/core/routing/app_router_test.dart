@@ -89,7 +89,7 @@ void main() {
       ),
     );
 
-    expect(resolvedRoute, AppRoutePaths.placementGate);
+    expect(resolvedRoute, AppRoutePaths.mainShell);
   });
 
   test('resolveRouteName returns splash when requestedRoute is splash and checking', () {
