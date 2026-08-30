@@ -533,7 +533,13 @@ class _HomeAssessmentCard extends StatelessWidget {
               ],
             ),
           ),
-          Icon(Icons.chevron_right, color: surfaces.textMuted),
+          const SizedBox(width: AimSpacing.space8),
+          Icon(
+            Directionality.of(context) == TextDirection.rtl
+                ? Icons.chevron_left_rounded
+                : Icons.chevron_right_rounded,
+            color: surfaces.textMuted,
+          ),
         ],
       ),
     );
@@ -598,7 +604,7 @@ class _HomeTopBar extends ConsumerWidget {
               const AimBrandLogo(size: 32, fontSize: 10, borderRadius: 10),
               const SizedBox(width: AimSpacing.space8),
               Text(
-                'AIM English',
+                AppLocalizations.of(context).homeAppName,
                 style: AimTextStyles.h3.copyWith(
                   color: surfaces.textPrimary,
                   fontWeight: AimFontWeights.extrabold,
@@ -701,29 +707,32 @@ class _WelcomeCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              Localizations.localeOf(context).languageCode == 'ar'
-                                  ? 'مرحباً، $firstName! 👋'
-                                  : 'Hello, $firstName! 👋',
+                              l10n.homeGreeting(firstName),
                               style: AimTextStyles.title.copyWith(
                                 color: AimColors.neutral0,
                                 fontWeight: AimFontWeights.bold,
                                 fontSize: 20,
                               ),
+                              textAlign: TextAlign.start,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: AimSpacing.space4),
                             Text(
-                              Localizations.localeOf(context).languageCode == 'ar'
-                                  ? '$activeCourseName · مستوى XP $level'
-                                  : '$activeCourseName · XP Level $level',
+                              l10n.homeXpLevelSubtitle(activeCourseName, level),
                               style: AimTextStyles.bodySm.copyWith(
                                 color: AimColors.neutral0.withValues(alpha: 0.85),
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                               ),
+                              textAlign: TextAlign.start,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
                       ),
+                      const SizedBox(width: AimSpacing.space12),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: AimSpacing.space12,
@@ -893,25 +902,38 @@ class _DailyMissionsList extends ConsumerWidget {
     final surfaces = aimSurfacesOf(context);
     final l10n = AppLocalizations.of(context);
 
+    String localizeChallengeTitle(String rawTitle) {
+      final isAr = Localizations.localeOf(context).languageCode == 'ar';
+      if (!isAr) return rawTitle;
+
+      switch (rawTitle.trim().toLowerCase()) {
+        case 'keep your streak alive':
+          return 'حافظ على حماسك وتتابعك';
+        case 'finish a lesson':
+          return 'أكمل درساً واحداً اليوم';
+        case 'lesson double':
+          return 'أكمل درسين اليوم';
+        default:
+          return rawTitle;
+      }
+    }
+
     final mission1 = _MissionItem(
       iconData: Icons.menu_book_rounded,
       iconColor: challenge.completed ? const Color(0xFF10B981) : const Color(0xFF4F46E5),
       iconBgColor: challenge.completed ? const Color(0xFFD1FAE5) : const Color(0xFFEEF2FF),
-      label: challenge.title,
+      label: localizeChallengeTitle(challenge.title),
       done: challenge.completed,
       progress: challenge.progressCount,
       total: challenge.targetCount,
       onTap: onStart,
     );
 
-    final locale = Localizations.localeOf(context).languageCode;
-    final isAr = locale == 'ar';
-
     final mission2 = _MissionItem(
       iconData: Icons.mic_none_rounded,
       iconColor: const Color(0xFF4F46E5),
       iconBgColor: const Color(0xFFEEF2FF),
-      label: isAr ? 'تدرب على التحدث' : 'Practice Speaking',
+      label: l10n.homeMissionPracticeSpeaking,
       done: false,
       progress: 0,
       total: 1,
@@ -925,7 +947,7 @@ class _DailyMissionsList extends ConsumerWidget {
       iconData: Icons.edit_rounded,
       iconColor: const Color(0xFF4F46E5),
       iconBgColor: const Color(0xFFEEF2FF),
-      label: isAr ? 'اكتب فقرة قصيرة' : 'Write a Paragraph',
+      label: l10n.homeMissionWriteParagraph,
       done: false,
       progress: 0,
       total: 1,
@@ -933,7 +955,7 @@ class _DailyMissionsList extends ConsumerWidget {
         AppRoutePaths.aiTeacherChat,
         extra: {
           'contextRef': 'general',
-          'lessonTitle': isAr ? 'ممارسة الكتابة' : 'Writing Practice',
+          'lessonTitle': l10n.homeMissionWritingPractice,
         },
       ),
     );

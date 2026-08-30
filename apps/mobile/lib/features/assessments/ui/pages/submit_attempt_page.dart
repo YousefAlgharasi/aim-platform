@@ -135,7 +135,7 @@ class _SubmitAttemptPageState extends ConsumerState<SubmitAttemptPage> {
                 children: [
                   const Spacer(),
                   Text(
-                    'Submit your answers?',
+                    AppLocalizations.of(context).submitAttemptTitle,
                     style: AimTextStyles.h2
                         .copyWith(color: surfaces.textPrimary),
                     textAlign: TextAlign.center,
@@ -145,7 +145,7 @@ class _SubmitAttemptPageState extends ConsumerState<SubmitAttemptPage> {
                   // backing data; see the file header.
                   const SizedBox(height: AimSpacing.componentGap),
                   Text(
-                    'You cannot change answers after submitting.',
+                    AppLocalizations.of(context).submitAttemptWarning,
                     style: AimTextStyles.bodyMd
                         .copyWith(color: surfaces.textSecondary),
                     textAlign: TextAlign.center,
@@ -168,7 +168,8 @@ class _SubmitAttemptPageState extends ConsumerState<SubmitAttemptPage> {
                         const SizedBox(width: AimSpacing.space8),
                         Expanded(
                           child: Text(
-                            'This action is final and cannot be undone.',
+                            AppLocalizations.of(context)
+                                .submitAttemptFinalAction,
                             style: AimTextStyles.bodySm.copyWith(
                               color: AimColors.error700,
                               fontWeight: FontWeight.w600,
@@ -236,7 +237,7 @@ class _SubmitHeader extends StatelessWidget {
             Semantics(
               button: true,
               enabled: onBack != null,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: onBack,
                 customBorder: const CircleBorder(),

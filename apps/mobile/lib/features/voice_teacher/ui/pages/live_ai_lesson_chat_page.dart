@@ -38,6 +38,7 @@ class _LiveAiLessonChatPageState extends State<LiveAiLessonChatPage> {
   bool _completed = false;
   int _secs = 0;
   Timer? _timer;
+  Timer? _evalTimer;
   bool _initialized = false;
 
   late final List<VoiceMessage> _messages;
@@ -52,7 +53,7 @@ class _LiveAiLessonChatPageState extends State<LiveAiLessonChatPage> {
         VoiceMessage(
           id: '1',
           sender: 'ai',
-          text: 'Hello Alex! Welcome to your live voice lesson on "$title". ☕\n\nListen carefully: "Could I get a cup of coffee, please?"',
+          text: 'Hello! Welcome to your live voice lesson on "$title". ☕\n\nListen carefully: "Could I get a cup of coffee, please?"',
           audioTime: '00:06',
         ),
       ];
@@ -63,6 +64,7 @@ class _LiveAiLessonChatPageState extends State<LiveAiLessonChatPage> {
   @override
   void dispose() {
     _timer?.cancel();
+    _evalTimer?.cancel();
     super.dispose();
   }
 
@@ -93,6 +95,7 @@ class _LiveAiLessonChatPageState extends State<LiveAiLessonChatPage> {
   void _handleMicTap() {
     if (_state == 'listening') {
       _timer?.cancel();
+      _evalTimer?.cancel();
       setState(() {
         _state = 'evaluating';
       });
@@ -114,7 +117,7 @@ class _LiveAiLessonChatPageState extends State<LiveAiLessonChatPage> {
         );
       });
 
-      Timer(const Duration(milliseconds: 1800), () {
+      _evalTimer = Timer(const Duration(milliseconds: 1800), () {
         if (mounted) {
           if (_step < 3) {
             setState(() {
@@ -186,7 +189,7 @@ class _LiveAiLessonChatPageState extends State<LiveAiLessonChatPage> {
 
   Widget _buildHeader(AimSurfaceTheme surfaces, AppLocalizations l10n) {
     return Container(
-      padding: const EdgeInsets.symmetric(
+      padding: const EdgeInsetsDirectional.symmetric(
         horizontal: AimSpacing.screenPaddingMobile,
         vertical: AimSpacing.space12,
       ),
@@ -220,7 +223,7 @@ class _LiveAiLessonChatPageState extends State<LiveAiLessonChatPage> {
                       child: Icon(Icons.star, color: AimColors.neutral0, size: 14),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AimSpacing.space8),
                   Text(
                     l10n.voiceAiTitle,
                     style: AimTextStyles.caption.copyWith(
@@ -240,7 +243,7 @@ class _LiveAiLessonChatPageState extends State<LiveAiLessonChatPage> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AimSpacing.space8),
           ClipRRect(
             borderRadius: AimRadius.borderPill,
             child: LinearProgressIndicator(
@@ -264,24 +267,28 @@ class _LiveAiLessonChatPageState extends State<LiveAiLessonChatPage> {
         final isUser = message.sender == 'user';
 
         return Align(
-          alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+          alignment: isUser
+              ? AlignmentDirectional.centerEnd
+              : AlignmentDirectional.centerStart,
           child: Column(
-            crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            crossAxisAlignment: isUser
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.start,
             children: [
               Container(
-                margin: const EdgeInsets.only(bottom: 4),
+                margin: const EdgeInsetsDirectional.only(bottom: 4),
                 constraints: BoxConstraints(
-                  maxWidth: MediaQuery.of(context).size.width * 0.75,
+                  maxWidth: MediaQuery.sizeOf(context).width * 0.75,
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   gradient: isUser ? AimGradients.gzHero : null,
                   color: isUser ? null : surfaces.surface,
-                  borderRadius: BorderRadius.only(
-                    topLeft: const Radius.circular(16),
-                    topRight: const Radius.circular(16),
-                    bottomLeft: Radius.circular(isUser ? 16 : 0),
-                    bottomRight: Radius.circular(isUser ? 0 : 16),
+                  borderRadius: BorderRadiusDirectional.only(
+                    topStart: const Radius.circular(16),
+                    topEnd: const Radius.circular(16),
+                    bottomStart: Radius.circular(isUser ? 16 : 0),
+                    bottomEnd: Radius.circular(isUser ? 0 : 16),
                   ),
                   border: isUser ? null : Border.all(color: surfaces.border),
                   boxShadow: [
@@ -301,11 +308,19 @@ class _LiveAiLessonChatPageState extends State<LiveAiLessonChatPage> {
               ),
               if (message.audioTime != null)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 12, left: 4, right: 4),
+                  padding: const EdgeInsetsDirectional.only(
+                    bottom: 12,
+                    start: 4,
+                    end: 4,
+                  ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.volume_up, size: 12, color: AimColors.primary500),
+                      const Icon(
+                        Icons.volume_up,
+                        size: 12,
+                        color: AimColors.primary500,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         l10n.voiceAiAudio(message.audioTime!),
@@ -326,25 +341,33 @@ class _LiveAiLessonChatPageState extends State<LiveAiLessonChatPage> {
 
   Widget _buildControlPanel(AimSurfaceTheme surfaces, AppLocalizations l10n) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AimSpacing.screenPaddingMobile,
-        vertical: AimSpacing.space24,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space20,
+        AimSpacing.screenPaddingMobile,
+        AimSpacing.space24,
       ),
       decoration: BoxDecoration(
         color: surfaces.surface,
-        border: Border(
-          top: BorderSide(color: surfaces.border, width: 1),
-        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(top: BorderSide(color: surfaces.border, width: 1)),
+        boxShadow: [
+          BoxShadow(
+            color: AimColors.neutral900.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, -4),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildEqualizerWaveform(),
-          const SizedBox(height: 16),
+          const SizedBox(height: AimSpacing.space16),
           _buildStatusBadge(l10n),
-          const SizedBox(height: 16),
+          const SizedBox(height: AimSpacing.space16),
           _buildMicButton(),
-          const SizedBox(height: 12),
+          const SizedBox(height: AimSpacing.space12),
           Text(
             _state == 'listening'
                 ? l10n.voiceAiFinishHint

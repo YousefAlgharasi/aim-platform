@@ -3097,4 +3097,178 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get analyticsNoReportsSubtitle =>
       'There are no analytics reports for you yet.';
+
+  @override
+  String get homeAppName => 'AIM English';
+
+  @override
+  String homeGreeting(String name) {
+    return 'Hello, $name! 👋';
+  }
+
+  @override
+  String homeXpLevelSubtitle(String course, int level) {
+    return '$course · XP Level $level';
+  }
+
+  @override
+  String get homeLearningRoadmap => 'Learning Roadmap';
+
+  @override
+  String get homeNodeMastered => 'Mastered';
+
+  @override
+  String get homeNodeCurrentLesson => 'Current Lesson';
+
+  @override
+  String get homeNodeLocked => 'Locked';
+
+  @override
+  String get homeMissionPracticeSpeaking => 'Practice Speaking';
+
+  @override
+  String get homeMissionWriteParagraph => 'Write a Paragraph';
+
+  @override
+  String get homeMissionWritingPractice => 'Writing Practice';
+
+  @override
+  String get billingCheckoutTitle => 'Checkout';
+
+  @override
+  String get billingBillingLabel => 'Billing';
+
+  @override
+  String get billingTermsAgreementFull =>
+      'By continuing you agree to AIM\'s Terms of Service and authorise a recurring charge. Cancel anytime.';
+
+  @override
+  String get billingCouldNotOpenPayment =>
+      'Could not open the payment page. Please try again.';
+
+  @override
+  String get billingFailedToStart =>
+      'Failed to start checkout. Please try again.';
+
+  @override
+  String get submitAttemptTitle => 'Submit your answers?';
+
+  @override
+  String get submitAttemptWarning =>
+      'You cannot change answers after submitting.';
+
+  @override
+  String get submitAttemptFinalAction =>
+      'This action is final and cannot be undone.';
+
+  @override
+  String get deadlinesTitle => 'Deadlines';
+
+  @override
+  String get deadlinesLoadingSemantic => 'Loading deadlines';
+
+  @override
+  String deadlinesDueRelative(String relative, String date) {
+    return 'Due $relative · $date';
+  }
+
+  @override
+  String deadlinesOpens(String date) {
+    return 'Opens $date';
+  }
+
+  @override
+  String deadlinesExtendedTo(String date) {
+    return 'Extended to $date';
+  }
+
+  @override
+  String deadlinesWasDue(String date) {
+    return 'Was due $date';
+  }
+
+  @override
+  String deadlinesClosed(String date) {
+    return 'Closed $date';
+  }
+
+  @override
+  String get deadlinesRelativeToday => 'today';
+
+  @override
+  String get deadlinesRelativeTomorrow => 'tomorrow';
+
+  @override
+  String deadlinesRelativeInDays(int days) {
+    return 'in $days days';
+  }
+
+  @override
+  String get reviewScheduleTitle => 'Review Schedule';
+
+  @override
+  String get reviewScheduleLoadingSemantic => 'Loading review schedule';
+
+  @override
+  String get reviewScheduleNoTitle => 'No reviews scheduled';
+
+  @override
+  String get reviewScheduleNoSubtitle =>
+      'Complete practice sessions to receive review reminders.';
+
+  @override
+  String reviewScheduleEveryInterval(String days, int rep) {
+    return 'Every ${days}d · repetition #$rep';
+  }
+
+  @override
+  String lessonsCountChip(int count) {
+    return '$count lessons';
+  }
+
+  @override
+  String quizzesCountChip(int count) {
+    return '$count quizzes';
+  }
+
+  @override
+  String examsCountChip(int count) {
+    return '$count exam';
+  }
+
+  @override
+  String get lessonsCourseLockedHint =>
+      'Finish your current level to unlock this course';
+
+  @override
+  String get achievementFirstLessonCompleteTitle => 'First Steps';
+
+  @override
+  String get achievementFirstLessonCompleteDesc =>
+      'Complete your first lesson.';
+
+  @override
+  String get achievementFiveLessonsCompleteTitle => 'Getting Started';
+
+  @override
+  String get achievementFiveLessonsCompleteDesc => 'Complete 5 lessons.';
+
+  @override
+  String get achievementThreeDayStreakTitle => 'On a Roll';
+
+  @override
+  String get achievementThreeDayStreakDesc => 'Keep a 3-day learning streak.';
+
+  @override
+  String get achievementSevenDayStreakTitle => 'Week Warrior';
+
+  @override
+  String get achievementSevenDayStreakDesc => 'Keep a 7-day learning streak.';
+
+  @override
+  String get achievementFirstAssessmentPassedTitle => 'Quiz Whiz';
+
+  @override
+  String get achievementFirstAssessmentPassedDesc =>
+      'Pass your first assessment.';
 }

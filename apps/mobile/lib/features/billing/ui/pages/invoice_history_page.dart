@@ -303,8 +303,21 @@ class InvoiceDetailPage extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(invoiceNumber, style: theme.textTheme.titleMedium),
-                Text(status, style: theme.textTheme.labelMedium),
+                Expanded(
+                  child: Text(
+                    invoiceNumber,
+                    style: theme.textTheme.titleMedium,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  status,
+                  style: theme.textTheme.labelMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
             const SizedBox(height: 8),

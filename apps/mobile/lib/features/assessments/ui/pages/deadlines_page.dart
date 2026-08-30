@@ -64,7 +64,7 @@ String _formatDate(String iso) {
 /// non-future dates (callers then fall back to the plain date). Mirrors the
 /// relative-date tone of review_page.dart's `_dueDateLabel`; purely
 /// presentational — bucket/status stays backend-computed.
-String? _relativeDays(String iso) {
+String? _relativeDays(BuildContext context, String iso) {
   final date = DateTime.tryParse(iso);
   if (date == null) return null;
   final now = DateTime.now();
@@ -72,9 +72,10 @@ String? _relativeDays(String iso) {
   final startOfToday = DateTime(now.year, now.month, now.day);
   final startOfDate = DateTime(local.year, local.month, local.day);
   final dayDiff = startOfDate.difference(startOfToday).inDays;
-  if (dayDiff == 0) return 'today';
-  if (dayDiff == 1) return 'tomorrow';
-  if (dayDiff > 1) return 'in $dayDiff days';
+  final l10n = AppLocalizations.of(context);
+  if (dayDiff == 0) return l10n.deadlinesRelativeToday;
+  if (dayDiff == 1) return l10n.deadlinesRelativeTomorrow;
+  if (dayDiff > 1) return l10n.deadlinesRelativeInDays(dayDiff);
   return null;
 }
 
@@ -107,7 +108,7 @@ class _DeadlinesPageState extends ConsumerState<DeadlinesPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(deadlinesProvider);
-
+    final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
 
     return Scaffold(
@@ -118,8 +119,8 @@ class _DeadlinesPageState extends ConsumerState<DeadlinesPage> {
           const _DeadlinesHeader(),
           Expanded(
             child: switch (state) {
-              AppAsyncLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading deadlines',
+              AppAsyncLoading() => AIMFullScreenLoading(
+                  semanticLabel: l10n.deadlinesLoadingSemantic,
                 ),
               AppAsyncFailure(:final message) => AIMFullScreenError(
                   message: message,
@@ -129,8 +130,8 @@ class _DeadlinesPageState extends ConsumerState<DeadlinesPage> {
                   deadlines: data,
                   onRefresh: _refresh,
                 ),
-              AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading deadlines',
+              AppAsyncIdle() => AIMFullScreenLoading(
+                  semanticLabel: l10n.deadlinesLoadingSemantic,
                 ),
             },
           ),
@@ -164,7 +165,7 @@ class _DeadlinesHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) {
@@ -195,7 +196,7 @@ class _DeadlinesHeader extends StatelessWidget {
             const SizedBox(width: AimSpacing.space12),
             Expanded(
               child: Text(
-                'Deadlines',
+                AppLocalizations.of(context).deadlinesTitle,
                 style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -357,36 +358,40 @@ class _DeadlineTile extends StatelessWidget {
   /// One friendly subtitle line per backend bucket (design screen 31), all
   /// formatted from REAL timestamps — the bucket itself is never recomputed
   /// locally.
-  String _subtitle() {
+  String _subtitle(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     switch (kind) {
       case _DeadlineKind.active:
         // "Due in 2 days · Jun 27"; on parse failure _relativeDays returns
         // null and only the (raw-string-fallback) date is shown.
-        final relative = _relativeDays(item.closesAt);
+        final relative = _relativeDays(context, item.closesAt);
         final date = _formatDate(item.closesAt);
-        return relative != null ? 'Due $relative · $date' : 'Due $date';
+        return relative != null
+            ? l10n.deadlinesDueRelative(relative, date)
+            : l10n.reviewsDueDate(date);
       case _DeadlineKind.upcoming:
-        return 'Opens ${_formatDate(item.opensAt)}';
+        return l10n.deadlinesOpens(_formatDate(item.opensAt));
       case _DeadlineKind.late:
         // extendedClosesAt is a real backend field (a granted extension,
         // previously dropped silently) — surface it when present.
         final extended = item.extendedClosesAt;
         return extended != null
-            ? 'Extended to ${_formatDate(extended)}'
-            : 'Was due ${_formatDate(item.closesAt)}';
+            ? l10n.deadlinesExtendedTo(_formatDate(extended))
+            : l10n.deadlinesWasDue(_formatDate(item.closesAt));
       case _DeadlineKind.missed:
       case _DeadlineKind.closed:
         // The design's "Submitted <date>" for closed items cannot be shown —
         // no submission date exists in this payload (see file header). The
         // effective close (extension-aware) is shown instead.
-        return 'Closed ${_formatDate(item.extendedClosesAt ?? item.closesAt)}';
+        return l10n.deadlinesClosed(
+            _formatDate(item.extendedClosesAt ?? item.closesAt));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
-    final subtitle = _subtitle();
+    final subtitle = _subtitle(context);
 
     return AIMCard(
       variant: AIMCardVariant.elevated,
@@ -405,6 +410,7 @@ class _DeadlineTile extends StatelessWidget {
           Text(
             item.assessmentTitle,
             style: AimTextStyles.title.copyWith(color: surfaces.textPrimary),
+            textAlign: TextAlign.start,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -413,6 +419,7 @@ class _DeadlineTile extends StatelessWidget {
             subtitle,
             style:
                 AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
+            textAlign: TextAlign.start,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

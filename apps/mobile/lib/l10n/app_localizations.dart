@@ -68,8 +68,7 @@ abstract class AppLocalizations {
   final String localeName;
 
   static AppLocalizations of(BuildContext context) {
-    return Localizations.of<AppLocalizations>(context, AppLocalizations) ??
-        lookupAppLocalizations(const Locale('en'));
+    return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
   static const LocalizationsDelegate<AppLocalizations> delegate =
@@ -5274,6 +5273,288 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'There are no analytics reports for you yet.'**
   String get analyticsNoReportsSubtitle;
+
+  /// Application brand name shown in header and top bar
+  ///
+  /// In en, this message translates to:
+  /// **'AIM English'**
+  String get homeAppName;
+
+  /// Personalized welcome greeting on home screen
+  ///
+  /// In en, this message translates to:
+  /// **'Hello, {name}! 👋'**
+  String homeGreeting(String name);
+
+  /// Course title and XP level subtitle on home screen welcome card
+  ///
+  /// In en, this message translates to:
+  /// **'{course} · XP Level {level}'**
+  String homeXpLevelSubtitle(String course, int level);
+
+  /// Title for the learning roadmap course path section
+  ///
+  /// In en, this message translates to:
+  /// **'Learning Roadmap'**
+  String get homeLearningRoadmap;
+
+  /// Status text for a mastered/completed node in the course path
+  ///
+  /// In en, this message translates to:
+  /// **'Mastered'**
+  String get homeNodeMastered;
+
+  /// Status text for the current active node in the course path
+  ///
+  /// In en, this message translates to:
+  /// **'Current Lesson'**
+  String get homeNodeCurrentLesson;
+
+  /// Status text for a locked node in the course path
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get homeNodeLocked;
+
+  /// Daily challenge mission to practice speaking
+  ///
+  /// In en, this message translates to:
+  /// **'Practice Speaking'**
+  String get homeMissionPracticeSpeaking;
+
+  /// Daily challenge mission to write a paragraph
+  ///
+  /// In en, this message translates to:
+  /// **'Write a Paragraph'**
+  String get homeMissionWriteParagraph;
+
+  /// Lesson title for writing practice AI chat
+  ///
+  /// In en, this message translates to:
+  /// **'Writing Practice'**
+  String get homeMissionWritingPractice;
+
+  /// Header title for checkout page
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout'**
+  String get billingCheckoutTitle;
+
+  /// Label for billing row in checkout summary
+  ///
+  /// In en, this message translates to:
+  /// **'Billing'**
+  String get billingBillingLabel;
+
+  /// Full terms of service and billing authorization disclaimer
+  ///
+  /// In en, this message translates to:
+  /// **'By continuing you agree to AIM\'s Terms of Service and authorise a recurring charge. Cancel anytime.'**
+  String get billingTermsAgreementFull;
+
+  /// Error message when payment gateway URL cannot be opened
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the payment page. Please try again.'**
+  String get billingCouldNotOpenPayment;
+
+  /// Error message when checkout session creation fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to start checkout. Please try again.'**
+  String get billingFailedToStart;
+
+  /// Title on confirmation page before submitting assessment attempt
+  ///
+  /// In en, this message translates to:
+  /// **'Submit your answers?'**
+  String get submitAttemptTitle;
+
+  /// Warning subtitle explaining answers cannot be modified after submit
+  ///
+  /// In en, this message translates to:
+  /// **'You cannot change answers after submitting.'**
+  String get submitAttemptWarning;
+
+  /// Finality callout notice on submit attempt confirmation screen
+  ///
+  /// In en, this message translates to:
+  /// **'This action is final and cannot be undone.'**
+  String get submitAttemptFinalAction;
+
+  /// Header title for student deadlines page
+  ///
+  /// In en, this message translates to:
+  /// **'Deadlines'**
+  String get deadlinesTitle;
+
+  /// Accessibility label while deadlines are loading
+  ///
+  /// In en, this message translates to:
+  /// **'Loading deadlines'**
+  String get deadlinesLoadingSemantic;
+
+  /// Due date formatted with relative day and calendar date
+  ///
+  /// In en, this message translates to:
+  /// **'Due {relative} · {date}'**
+  String deadlinesDueRelative(String relative, String date);
+
+  /// Upcoming assessment opening date
+  ///
+  /// In en, this message translates to:
+  /// **'Opens {date}'**
+  String deadlinesOpens(String date);
+
+  /// Extended deadline notice
+  ///
+  /// In en, this message translates to:
+  /// **'Extended to {date}'**
+  String deadlinesExtendedTo(String date);
+
+  /// Past due notice for late assessment
+  ///
+  /// In en, this message translates to:
+  /// **'Was due {date}'**
+  String deadlinesWasDue(String date);
+
+  /// Closed assessment date notice
+  ///
+  /// In en, this message translates to:
+  /// **'Closed {date}'**
+  String deadlinesClosed(String date);
+
+  /// Relative time indicator for today
+  ///
+  /// In en, this message translates to:
+  /// **'today'**
+  String get deadlinesRelativeToday;
+
+  /// Relative time indicator for tomorrow
+  ///
+  /// In en, this message translates to:
+  /// **'tomorrow'**
+  String get deadlinesRelativeTomorrow;
+
+  /// Relative time indicator in N days
+  ///
+  /// In en, this message translates to:
+  /// **'in {days} days'**
+  String deadlinesRelativeInDays(int days);
+
+  /// Header title for review schedule screen
+  ///
+  /// In en, this message translates to:
+  /// **'Review Schedule'**
+  String get reviewScheduleTitle;
+
+  /// Accessibility label while loading review schedule
+  ///
+  /// In en, this message translates to:
+  /// **'Loading review schedule'**
+  String get reviewScheduleLoadingSemantic;
+
+  /// Empty state title when no reviews are scheduled
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews scheduled'**
+  String get reviewScheduleNoTitle;
+
+  /// Empty state subtitle for review schedule screen
+  ///
+  /// In en, this message translates to:
+  /// **'Complete practice sessions to receive review reminders.'**
+  String get reviewScheduleNoSubtitle;
+
+  /// Review schedule interval and repetition count
+  ///
+  /// In en, this message translates to:
+  /// **'Every {days}d · repetition #{rep}'**
+  String reviewScheduleEveryInterval(String days, int rep);
+
+  /// Meta chip showing lesson count on course card
+  ///
+  /// In en, this message translates to:
+  /// **'{count} lessons'**
+  String lessonsCountChip(int count);
+
+  /// Meta chip showing quiz count on course card
+  ///
+  /// In en, this message translates to:
+  /// **'{count} quizzes'**
+  String quizzesCountChip(int count);
+
+  /// Meta chip showing exam count on course card
+  ///
+  /// In en, this message translates to:
+  /// **'{count} exam'**
+  String examsCountChip(int count);
+
+  /// Hint text explaining how to unlock a locked course
+  ///
+  /// In en, this message translates to:
+  /// **'Finish your current level to unlock this course'**
+  String get lessonsCourseLockedHint;
+
+  /// Achievement title for first_lesson_complete
+  ///
+  /// In en, this message translates to:
+  /// **'First Steps'**
+  String get achievementFirstLessonCompleteTitle;
+
+  /// Achievement description for first_lesson_complete
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your first lesson.'**
+  String get achievementFirstLessonCompleteDesc;
+
+  /// Achievement title for five_lessons_complete
+  ///
+  /// In en, this message translates to:
+  /// **'Getting Started'**
+  String get achievementFiveLessonsCompleteTitle;
+
+  /// Achievement description for five_lessons_complete
+  ///
+  /// In en, this message translates to:
+  /// **'Complete 5 lessons.'**
+  String get achievementFiveLessonsCompleteDesc;
+
+  /// Achievement title for three_day_streak
+  ///
+  /// In en, this message translates to:
+  /// **'On a Roll'**
+  String get achievementThreeDayStreakTitle;
+
+  /// Achievement description for three_day_streak
+  ///
+  /// In en, this message translates to:
+  /// **'Keep a 3-day learning streak.'**
+  String get achievementThreeDayStreakDesc;
+
+  /// Achievement title for seven_day_streak
+  ///
+  /// In en, this message translates to:
+  /// **'Week Warrior'**
+  String get achievementSevenDayStreakTitle;
+
+  /// Achievement description for seven_day_streak
+  ///
+  /// In en, this message translates to:
+  /// **'Keep a 7-day learning streak.'**
+  String get achievementSevenDayStreakDesc;
+
+  /// Achievement title for first_assessment_passed
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz Whiz'**
+  String get achievementFirstAssessmentPassedTitle;
+
+  /// Achievement description for first_assessment_passed
+  ///
+  /// In en, this message translates to:
+  /// **'Pass your first assessment.'**
+  String get achievementFirstAssessmentPassedDesc;
 }
 
 class _AppLocalizationsDelegate
@@ -5299,7 +5580,12 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
     case 'ar':
       return AppLocalizationsAr();
     case 'en':
-    default:
       return AppLocalizationsEn();
   }
+
+  throw FlutterError(
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

@@ -149,16 +149,20 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
       ref.invalidate(chaptersProvider);
       ref.invalidate(studentCoursesProvider);
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         setState(() => _practiceUnlocked = true);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             backgroundColor: AimColors.success500,
             content: Row(
               children: [
-                Icon(Icons.check_circle_rounded, color: AimColors.neutral0),
-                SizedBox(width: 8),
+                const Icon(Icons.check_circle_rounded, color: AimColors.neutral0),
+                const SizedBox(width: 8),
                 Expanded(
-                  child: Text('Lesson marked as completed! 🌟'),
+                  child: Text(
+                    l10n.commonDone,
+                    style: const TextStyle(color: AimColors.neutral0),
+                  ),
                 ),
               ],
             ),
@@ -167,10 +171,14 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: AimColors.error500,
-            content: Text('Could not mark lesson complete: $e'),
+            content: Text(
+              '${l10n.commonError}: $e',
+              style: const TextStyle(color: AimColors.neutral0),
+            ),
           ),
         );
       }

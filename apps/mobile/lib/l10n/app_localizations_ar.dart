@@ -3132,4 +3132,176 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get analyticsNoReportsSubtitle => 'لا توجد تقارير تحليلات لك بعد.';
+
+  @override
+  String get homeAppName => 'AIM English';
+
+  @override
+  String homeGreeting(String name) {
+    return 'مرحباً، $name! 👋';
+  }
+
+  @override
+  String homeXpLevelSubtitle(String course, int level) {
+    return '$course · المستوى $level';
+  }
+
+  @override
+  String get homeLearningRoadmap => 'خريطة التعلم';
+
+  @override
+  String get homeNodeMastered => 'متقن';
+
+  @override
+  String get homeNodeCurrentLesson => 'الدرس الحالي';
+
+  @override
+  String get homeNodeLocked => 'مغلق';
+
+  @override
+  String get homeMissionPracticeSpeaking => 'تدرب على التحدث';
+
+  @override
+  String get homeMissionWriteParagraph => 'اكتب فقرة قصيرة';
+
+  @override
+  String get homeMissionWritingPractice => 'ممارسة الكتابة';
+
+  @override
+  String get billingCheckoutTitle => 'الدفع';
+
+  @override
+  String get billingBillingLabel => 'الفوترة';
+
+  @override
+  String get billingTermsAgreementFull =>
+      'بمتابعتك فإنك توافق على شروط خدمة AIM وتفوّض بالخصم المتكرر. يمكنك الإلغاء في أي وقت.';
+
+  @override
+  String get billingCouldNotOpenPayment =>
+      'تعذر فتح صفحة الدفع. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get billingFailedToStart =>
+      'فشل بدء عملية الدفع. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get submitAttemptTitle => 'هل تريد تقديم إجاباتك؟';
+
+  @override
+  String get submitAttemptWarning => 'لا يمكنك تغيير الإجابات بعد التقديم.';
+
+  @override
+  String get submitAttemptFinalAction =>
+      'هذا الإجراء نهائي ولا يمكن التراجع عنه.';
+
+  @override
+  String get deadlinesTitle => 'المواعيد النهائية';
+
+  @override
+  String get deadlinesLoadingSemantic => 'جارٍ تحميل المواعيد النهائية';
+
+  @override
+  String deadlinesDueRelative(String relative, String date) {
+    return 'مستحق $relative · $date';
+  }
+
+  @override
+  String deadlinesOpens(String date) {
+    return 'يفتح $date';
+  }
+
+  @override
+  String deadlinesExtendedTo(String date) {
+    return 'ممدد إلى $date';
+  }
+
+  @override
+  String deadlinesWasDue(String date) {
+    return 'كان مستحقاً $date';
+  }
+
+  @override
+  String deadlinesClosed(String date) {
+    return 'أُغلق $date';
+  }
+
+  @override
+  String get deadlinesRelativeToday => 'اليوم';
+
+  @override
+  String get deadlinesRelativeTomorrow => 'غداً';
+
+  @override
+  String deadlinesRelativeInDays(int days) {
+    return 'خلال $days أيام';
+  }
+
+  @override
+  String get reviewScheduleTitle => 'جدول المراجعة';
+
+  @override
+  String get reviewScheduleLoadingSemantic => 'جارٍ تحميل جدول المراجعة';
+
+  @override
+  String get reviewScheduleNoTitle => 'لا توجد مراجعات مجدولة';
+
+  @override
+  String get reviewScheduleNoSubtitle =>
+      'أكمل جلسات التمرين لتلقي تذكيرات المراجعة.';
+
+  @override
+  String reviewScheduleEveryInterval(String days, int rep) {
+    return 'كل $days يوم · التكرار #$rep';
+  }
+
+  @override
+  String lessonsCountChip(int count) {
+    return '$count درس';
+  }
+
+  @override
+  String quizzesCountChip(int count) {
+    return '$count اختبار';
+  }
+
+  @override
+  String examsCountChip(int count) {
+    return '$count امتحان';
+  }
+
+  @override
+  String get lessonsCourseLockedHint => 'أكمل مستواك الحالي لفتح هذه الدورة';
+
+  @override
+  String get achievementFirstLessonCompleteTitle => 'الخطوات الأولى';
+
+  @override
+  String get achievementFirstLessonCompleteDesc => 'أكمل درسك الأول.';
+
+  @override
+  String get achievementFiveLessonsCompleteTitle => 'البداية والانطلاق';
+
+  @override
+  String get achievementFiveLessonsCompleteDesc => 'أكمل 5 دروس.';
+
+  @override
+  String get achievementThreeDayStreakTitle => 'حماس متواصل';
+
+  @override
+  String get achievementThreeDayStreakDesc =>
+      'حافظ على سلسلة تعلم لمدة 3 أيام.';
+
+  @override
+  String get achievementSevenDayStreakTitle => 'بطل الأسبوع';
+
+  @override
+  String get achievementSevenDayStreakDesc =>
+      'حافظ على سلسلة تعلم لمدة 7 أيام.';
+
+  @override
+  String get achievementFirstAssessmentPassedTitle => 'عبقري الاختبارات';
+
+  @override
+  String get achievementFirstAssessmentPassedDesc => 'اجتز تقييمك الأول بنجاح.';
 }

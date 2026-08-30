@@ -62,6 +62,9 @@ class HomeQuickStartLessonCard extends StatelessWidget {
                   style: AimTextStyles.title.copyWith(
                     color: surfaces.textPrimary,
                   ),
+                  textAlign: TextAlign.start,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: AimSpacing.space4),
                 Text(
@@ -69,13 +72,20 @@ class HomeQuickStartLessonCard extends StatelessWidget {
                   style: AimTextStyles.bodySm.copyWith(
                     color: surfaces.textSecondary,
                   ),
+                  textAlign: TextAlign.start,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-          Icon(Icons.chevron_right, color: surfaces.textMuted),
+          const SizedBox(width: AimSpacing.space8),
+          Icon(
+            Directionality.of(context) == TextDirection.rtl
+                ? Icons.chevron_left_rounded
+                : Icons.chevron_right_rounded,
+            color: surfaces.textMuted,
+          ),
         ],
       ),
     );

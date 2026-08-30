@@ -55,23 +55,103 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
     ref.read(achievementsProvider.notifier).load(bearerToken: token);
   }
 
+  ({String title, String description}) _resolveBadgeText(
+    String key,
+    String backendTitle,
+    String backendDesc,
+    AppLocalizations? l10n,
+  ) {
+    if (l10n == null) return (title: backendTitle, description: backendDesc);
+    return switch (key) {
+      'first_lesson_complete' || 'first_step' => (
+          title: l10n.achievementFirstLessonCompleteTitle,
+          description: l10n.achievementFirstLessonCompleteDesc,
+        ),
+      'five_lessons_complete' => (
+          title: l10n.achievementFiveLessonsCompleteTitle,
+          description: l10n.achievementFiveLessonsCompleteDesc,
+        ),
+      'three_day_streak' => (
+          title: l10n.achievementThreeDayStreakTitle,
+          description: l10n.achievementThreeDayStreakDesc,
+        ),
+      'seven_day_streak' || 'streak_master' => (
+          title: l10n.achievementSevenDayStreakTitle,
+          description: l10n.achievementSevenDayStreakDesc,
+        ),
+      'first_assessment_passed' => (
+          title: l10n.achievementFirstAssessmentPassedTitle,
+          description: l10n.achievementFirstAssessmentPassedDesc,
+        ),
+      'grammar_wizard' => (
+          title: l10n.achievementsGrammarWizardTitle,
+          description: l10n.achievementsGrammarWizardDesc,
+        ),
+      'voice_champion' => (
+          title: l10n.achievementsVoiceChampionTitle,
+          description: l10n.achievementsVoiceChampionDesc,
+        ),
+      'vocabulary_titan' => (
+          title: l10n.achievementsVocabularyTitanTitle,
+          description: l10n.achievementsVocabularyTitanDesc,
+        ),
+      'speed_learner' => (
+          title: l10n.achievementsSpeedLearnerTitle,
+          description: l10n.achievementsSpeedLearnerDesc,
+        ),
+      'perfect_quiz' => (
+          title: l10n.achievementsPerfectQuizTitle,
+          description: l10n.achievementsPerfectQuizDesc,
+        ),
+      'polyglot_legend' => (
+          title: l10n.achievementsPolyglotLegendTitle,
+          description: l10n.achievementsPolyglotLegendDesc,
+        ),
+      _ => (title: backendTitle, description: backendDesc),
+    };
+  }
+
   /// Default badges matching Figma prototype
   List<_BadgeItem> _getDefaultBadges(AppLocalizations? l10n) {
     return [
       _BadgeItem(
-        key: 'first_step',
-        title: l10n?.achievementsFirstStepTitle ?? 'First Step',
-        description: l10n?.achievementsFirstStepDesc ??
-            'Complete your first English lesson',
+        key: 'first_lesson_complete',
+        title: l10n?.achievementFirstLessonCompleteTitle ?? 'First Steps',
+        description: l10n?.achievementFirstLessonCompleteDesc ??
+            'Complete your first lesson.',
         icon: Icons.menu_book_rounded,
         isUnlocked: true,
       ),
       _BadgeItem(
-        key: 'streak_master',
-        title: l10n?.achievementsStreakMasterTitle ?? 'Streak Master',
-        description: l10n?.achievementsStreakMasterDesc ??
-            'Maintain a 7-day learning streak',
+        key: 'five_lessons_complete',
+        title: l10n?.achievementFiveLessonsCompleteTitle ?? 'Getting Started',
+        description: l10n?.achievementFiveLessonsCompleteDesc ??
+            'Complete 5 lessons.',
+        icon: Icons.menu_book_rounded,
+        isUnlocked: true,
+      ),
+      _BadgeItem(
+        key: 'three_day_streak',
+        title: l10n?.achievementThreeDayStreakTitle ?? 'On a Roll',
+        description: l10n?.achievementThreeDayStreakDesc ??
+            'Keep a 3-day learning streak.',
         icon: Icons.local_fire_department_outlined,
+        isUnlocked: true,
+      ),
+      _BadgeItem(
+        key: 'seven_day_streak',
+        title: l10n?.achievementSevenDayStreakTitle ?? 'Week Warrior',
+        description: l10n?.achievementSevenDayStreakDesc ??
+            'Keep a 7-day learning streak.',
+        icon: Icons.local_fire_department_outlined,
+        isUnlocked: true,
+      ),
+      _BadgeItem(
+        key: 'first_assessment_passed',
+        title: l10n?.achievementFirstAssessmentPassedTitle ?? 'Quiz Whiz',
+        description: l10n?.achievementFirstAssessmentPassedDesc ??
+            'Pass your first assessment.',
+        icon: Icons.workspace_premium_outlined,
         isUnlocked: true,
       ),
       _BadgeItem(
@@ -153,10 +233,16 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
 
     return backendAchievements.map((ach) {
       final icon = iconLookup[ach.icon] ?? Icons.emoji_events_outlined;
+      final localized = _resolveBadgeText(
+        ach.key,
+        ach.title,
+        ach.description,
+        l10n,
+      );
       return _BadgeItem(
         key: ach.key,
-        title: ach.title,
-        description: ach.description,
+        title: localized.title,
+        description: localized.description,
         icon: icon,
         isUnlocked: ach.unlocked,
         currentProgress: ach.unlocked ? 1 : 0,
@@ -554,6 +640,9 @@ class _BadgeCard extends StatelessWidget {
                         color: surfaces.textPrimary,
                         fontWeight: AimFontWeights.bold,
                       ),
+                      textAlign: TextAlign.start,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -561,6 +650,7 @@ class _BadgeCard extends StatelessWidget {
                       style: AimTextStyles.bodySm.copyWith(
                         color: surfaces.textMuted,
                       ),
+                      textAlign: TextAlign.start,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),

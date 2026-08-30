@@ -4003,5 +4003,262 @@
   "analyticsNoReportsSubtitle": "There are no analytics reports for you yet.",
   "@analyticsNoReportsSubtitle": {
     "description": "Empty state subtitle for analytics summary"
+  },
+  "homeAppName": "AIM English",
+  "@homeAppName": {
+    "description": "Application brand name shown in header and top bar"
+  },
+  "homeGreeting": "Hello, {name}! 👋",
+  "@homeGreeting": {
+    "description": "Personalized welcome greeting on home screen",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeXpLevelSubtitle": "{course} · XP Level {level}",
+  "@homeXpLevelSubtitle": {
+    "description": "Course title and XP level subtitle on home screen welcome card",
+    "placeholders": {
+      "course": {
+        "type": "String"
+      },
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "homeLearningRoadmap": "Learning Roadmap",
+  "@homeLearningRoadmap": {
+    "description": "Title for the learning roadmap course path section"
+  },
+  "homeNodeMastered": "Mastered",
+  "@homeNodeMastered": {
+    "description": "Status text for a mastered/completed node in the course path"
+  },
+  "homeNodeCurrentLesson": "Current Lesson",
+  "@homeNodeCurrentLesson": {
+    "description": "Status text for the current active node in the course path"
+  },
+  "homeNodeLocked": "Locked",
+  "@homeNodeLocked": {
+    "description": "Status text for a locked node in the course path"
+  },
+  "homeMissionPracticeSpeaking": "Practice Speaking",
+  "@homeMissionPracticeSpeaking": {
+    "description": "Daily challenge mission to practice speaking"
+  },
+  "homeMissionWriteParagraph": "Write a Paragraph",
+  "@homeMissionWriteParagraph": {
+    "description": "Daily challenge mission to write a paragraph"
+  },
+  "homeMissionWritingPractice": "Writing Practice",
+  "@homeMissionWritingPractice": {
+    "description": "Lesson title for writing practice AI chat"
+  },
+  "billingCheckoutTitle": "Checkout",
+  "@billingCheckoutTitle": {
+    "description": "Header title for checkout page"
+  },
+  "billingBillingLabel": "Billing",
+  "@billingBillingLabel": {
+    "description": "Label for billing row in checkout summary"
+  },
+  "billingTermsAgreementFull": "By continuing you agree to AIM's Terms of Service and authorise a recurring charge. Cancel anytime.",
+  "@billingTermsAgreementFull": {
+    "description": "Full terms of service and billing authorization disclaimer"
+  },
+  "billingCouldNotOpenPayment": "Could not open the payment page. Please try again.",
+  "@billingCouldNotOpenPayment": {
+    "description": "Error message when payment gateway URL cannot be opened"
+  },
+  "billingFailedToStart": "Failed to start checkout. Please try again.",
+  "@billingFailedToStart": {
+    "description": "Error message when checkout session creation fails"
+  },
+  "submitAttemptTitle": "Submit your answers?",
+  "@submitAttemptTitle": {
+    "description": "Title on confirmation page before submitting assessment attempt"
+  },
+  "submitAttemptWarning": "You cannot change answers after submitting.",
+  "@submitAttemptWarning": {
+    "description": "Warning subtitle explaining answers cannot be modified after submit"
+  },
+  "submitAttemptFinalAction": "This action is final and cannot be undone.",
+  "@submitAttemptFinalAction": {
+    "description": "Finality callout notice on submit attempt confirmation screen"
+  },
+  "deadlinesTitle": "Deadlines",
+  "@deadlinesTitle": {
+    "description": "Header title for student deadlines page"
+  },
+  "deadlinesLoadingSemantic": "Loading deadlines",
+  "@deadlinesLoadingSemantic": {
+    "description": "Accessibility label while deadlines are loading"
+  },
+  "deadlinesDueRelative": "Due {relative} · {date}",
+  "@deadlinesDueRelative": {
+    "description": "Due date formatted with relative day and calendar date",
+    "placeholders": {
+      "relative": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "deadlinesOpens": "Opens {date}",
+  "@deadlinesOpens": {
+    "description": "Upcoming assessment opening date",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "deadlinesExtendedTo": "Extended to {date}",
+  "@deadlinesExtendedTo": {
+    "description": "Extended deadline notice",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "deadlinesWasDue": "Was due {date}",
+  "@deadlinesWasDue": {
+    "description": "Past due notice for late assessment",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "deadlinesClosed": "Closed {date}",
+  "@deadlinesClosed": {
+    "description": "Closed assessment date notice",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "deadlinesRelativeToday": "today",
+  "@deadlinesRelativeToday": {
+    "description": "Relative time indicator for today"
+  },
+  "deadlinesRelativeTomorrow": "tomorrow",
+  "@deadlinesRelativeTomorrow": {
+    "description": "Relative time indicator for tomorrow"
+  },
+  "deadlinesRelativeInDays": "in {days} days",
+  "@deadlinesRelativeInDays": {
+    "description": "Relative time indicator in N days",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewScheduleTitle": "Review Schedule",
+  "@reviewScheduleTitle": {
+    "description": "Header title for review schedule screen"
+  },
+  "reviewScheduleLoadingSemantic": "Loading review schedule",
+  "@reviewScheduleLoadingSemantic": {
+    "description": "Accessibility label while loading review schedule"
+  },
+  "reviewScheduleNoTitle": "No reviews scheduled",
+  "@reviewScheduleNoTitle": {
+    "description": "Empty state title when no reviews are scheduled"
+  },
+  "reviewScheduleNoSubtitle": "Complete practice sessions to receive review reminders.",
+  "@reviewScheduleNoSubtitle": {
+    "description": "Empty state subtitle for review schedule screen"
+  },
+  "reviewScheduleEveryInterval": "Every {days}d · repetition #{rep}",
+  "@reviewScheduleEveryInterval": {
+    "description": "Review schedule interval and repetition count",
+    "placeholders": {
+      "days": {
+        "type": "String"
+      },
+      "rep": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonsCountChip": "{count} lessons",
+  "@lessonsCountChip": {
+    "description": "Meta chip showing lesson count on course card",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "quizzesCountChip": "{count} quizzes",
+  "@quizzesCountChip": {
+    "description": "Meta chip showing quiz count on course card",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "examsCountChip": "{count} exam",
+  "@examsCountChip": {
+    "description": "Meta chip showing exam count on course card",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lessonsCourseLockedHint": "Finish your current level to unlock this course",
+  "@lessonsCourseLockedHint": {
+    "description": "Hint text explaining how to unlock a locked course"
+  },
+  "achievementFirstLessonCompleteTitle": "First Steps",
+  "@achievementFirstLessonCompleteTitle": {
+    "description": "Achievement title for first_lesson_complete"
+  },
+  "achievementFirstLessonCompleteDesc": "Complete your first lesson.",
+  "@achievementFirstLessonCompleteDesc": {
+    "description": "Achievement description for first_lesson_complete"
+  },
+  "achievementFiveLessonsCompleteTitle": "Getting Started",
+  "@achievementFiveLessonsCompleteTitle": {
+    "description": "Achievement title for five_lessons_complete"
+  },
+  "achievementFiveLessonsCompleteDesc": "Complete 5 lessons.",
+  "@achievementFiveLessonsCompleteDesc": {
+    "description": "Achievement description for five_lessons_complete"
+  },
+  "achievementThreeDayStreakTitle": "On a Roll",
+  "@achievementThreeDayStreakTitle": {
+    "description": "Achievement title for three_day_streak"
+  },
+  "achievementThreeDayStreakDesc": "Keep a 3-day learning streak.",
+  "@achievementThreeDayStreakDesc": {
+    "description": "Achievement description for three_day_streak"
+  },
+  "achievementSevenDayStreakTitle": "Week Warrior",
+  "@achievementSevenDayStreakTitle": {
+    "description": "Achievement title for seven_day_streak"
+  },
+  "achievementSevenDayStreakDesc": "Keep a 7-day learning streak.",
+  "@achievementSevenDayStreakDesc": {
+    "description": "Achievement description for seven_day_streak"
+  },
+  "achievementFirstAssessmentPassedTitle": "Quiz Whiz",
+  "@achievementFirstAssessmentPassedTitle": {
+    "description": "Achievement title for first_assessment_passed"
+  },
+  "achievementFirstAssessmentPassedDesc": "Pass your first assessment.",
+  "@achievementFirstAssessmentPassedDesc": {
+    "description": "Achievement description for first_assessment_passed"
   }
 }

@@ -80,7 +80,8 @@ class _CheckoutStartPageState extends ConsumerState<CheckoutStartPage> {
         if (!launched) {
           if (!mounted) return;
           setState(() {
-            _errorMessage = 'Could not open the payment page. Please try again.';
+            _errorMessage =
+                AppLocalizations.of(context).billingCouldNotOpenPayment;
           });
           return;
         }
@@ -100,7 +101,8 @@ class _CheckoutStartPageState extends ConsumerState<CheckoutStartPage> {
       });
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to start checkout. Please try again.';
+        _errorMessage =
+            AppLocalizations.of(context).billingFailedToStart;
       });
     } finally {
       if (mounted) {
@@ -155,7 +157,7 @@ class _CheckoutStartPageState extends ConsumerState<CheckoutStartPage> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Billing',
+                              AppLocalizations.of(context).billingBillingLabel,
                               style: AimTextStyles.bodySm
                                   .copyWith(color: surfaces.textSecondary),
                             ),
@@ -171,8 +173,8 @@ class _CheckoutStartPageState extends ConsumerState<CheckoutStartPage> {
                   ),
                   const SizedBox(height: AimSpacing.componentGap),
                   Text(
-                    "By continuing you agree to AIM's Terms of Service and "
-                    'authorise a recurring charge. Cancel anytime.',
+                    AppLocalizations.of(context).billingTermsAgreementFull,
+                    textAlign: TextAlign.start,
                     style: AimTextStyles.bodySm
                         .copyWith(color: surfaces.textSecondary),
                   ),
@@ -233,7 +235,7 @@ class _CheckoutHeader extends StatelessWidget {
           children: [
             Semantics(
               button: true,
-              label: 'Back',
+              label: AppLocalizations.of(context).commonBack,
               child: InkWell(
                 onTap: () {
                   if (context.canPop()) context.pop();
@@ -259,7 +261,7 @@ class _CheckoutHeader extends StatelessWidget {
             ),
             const SizedBox(width: AimSpacing.space12),
             Text(
-              'Checkout',
+              AppLocalizations.of(context).billingCheckoutTitle,
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
             ),
           ],

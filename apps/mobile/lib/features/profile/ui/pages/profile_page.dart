@@ -651,12 +651,42 @@ class _AchievementChip extends StatelessWidget {
   final IconData icon;
   final AimSurfaceTheme surfaces;
 
+  String _title(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return switch (achievement.key) {
+      'first_lesson_complete' || 'first_step' =>
+        l10n.achievementFirstLessonCompleteTitle,
+      'five_lessons_complete' =>
+        l10n.achievementFiveLessonsCompleteTitle,
+      'three_day_streak' =>
+        l10n.achievementThreeDayStreakTitle,
+      'seven_day_streak' || 'streak_master' =>
+        l10n.achievementSevenDayStreakTitle,
+      'first_assessment_passed' =>
+        l10n.achievementFirstAssessmentPassedTitle,
+      'grammar_wizard' =>
+        l10n.achievementsGrammarWizardTitle,
+      'voice_champion' =>
+        l10n.achievementsVoiceChampionTitle,
+      'vocabulary_titan' =>
+        l10n.achievementsVocabularyTitanTitle,
+      'speed_learner' =>
+        l10n.achievementsSpeedLearnerTitle,
+      'perfect_quiz' =>
+        l10n.achievementsPerfectQuizTitle,
+      'polyglot_legend' =>
+        l10n.achievementsPolyglotLegendTitle,
+      _ => achievement.title,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
+    final title = _title(context);
     return SizedBox(
       width: 72,
       child: Semantics(
-        label: achievement.title,
+        label: title,
         child: Column(
           children: [
             Container(
@@ -671,7 +701,7 @@ class _AchievementChip extends StatelessWidget {
             ),
             const SizedBox(height: AimSpacing.space8),
             Text(
-              achievement.title,
+              title,
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,

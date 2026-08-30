@@ -9,6 +9,7 @@ import '../../../../core/widgets/widgets.dart';
 import '../../logic/provider/register_notifier.dart';
 import '../../logic/provider/register_provider.dart';
 
+/// Registration screen — Student Mobile App.
 class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
 
@@ -21,6 +22,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
+
   final _fullNameFocus = FocusNode();
   final _emailFocus = FocusNode();
   final _passwordFocus = FocusNode();
@@ -44,13 +46,11 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   void _onPasswordChanged(String v) {
     ref.read(registerProvider.notifier).setPassword(v);
-    setState(() {});
+    setState(() {}); // Updates live password strength meter
   }
 
-  void _onConfirmChanged(String v) {
-    ref.read(registerProvider.notifier).setConfirmPassword(v);
-    setState(() {});
-  }
+  void _onConfirmChanged(String v) =>
+      ref.read(registerProvider.notifier).setConfirmPassword(v);
 
   Future<void> _submit() async {
     final l10n = AppLocalizations.of(context);
@@ -66,7 +66,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     final l10n = AppLocalizations.of(context);
     final formState = ref.watch(registerProvider);
     final notifier = ref.read(registerProvider.notifier);
-    final size = MediaQuery.sizeOf(context);
     final surfaces = aimSurfacesOf(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -83,14 +82,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         body: SafeArea(
           child: AutofillGroup(
             child: ListView(
-              padding: EdgeInsets.fromLTRB(
+              padding: const EdgeInsetsDirectional.fromSTEB(
                 AimSpacing.screenPaddingMobile,
-                size.height * 0.05,
+                AimSpacing.space32,
                 AimSpacing.screenPaddingMobile,
                 AimSpacing.space40,
               ),
               children: [
-                // Sparkle logo header row
+                // Header brand row
                 Row(
                   children: [
                     Container(
@@ -98,7 +97,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       height: 40,
                       decoration: BoxDecoration(
                         gradient: AimGradients.gzHero,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AimRadius.borderSm,
                         boxShadow: [
                           BoxShadow(
                             color: AimColors.primary500.withValues(alpha: 0.2),
@@ -108,27 +107,31 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         ],
                       ),
                       child: const Center(
-                        child: Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+                        child: Icon(
+                          Icons.auto_awesome,
+                          color: AimColors.neutral0,
+                          size: 20,
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AimSpacing.innerGap),
                     ShaderMask(
-                      shaderCallback: (bounds) => AimGradients.gzHero.createShader(
+                      shaderCallback: (bounds) =>
+                          AimGradients.gzHero.createShader(
                         Rect.fromLTWH(0, 0, bounds.width, bounds.height),
                       ),
-                      child: const Text(
-                        'AIM',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w900,
+                      child: Text(
+                        l10n.appTitle,
+                        style: AimTextStyles.h2.copyWith(
+                          color: AimColors.neutral0,
+                          fontWeight: AimFontWeights.extrabold,
                           letterSpacing: -0.5,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AimSpacing.sectionGap),
 
                 Text(
                   'Start your journey'.toUpperCase(),
@@ -138,7 +141,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     letterSpacing: 1.0,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: AimSpacing.space4),
 
                 Text(
                   'Create an account',
@@ -148,7 +151,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     height: 1.15,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AimSpacing.innerGap),
 
                 Text(
                   'Takes less than a minute. Enter your details below.',
@@ -157,7 +160,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     height: 1.5,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AimSpacing.sectionGap),
 
                 if (formState.errorMessage != null) ...[
                   AIMAlertBanner(
@@ -184,7 +187,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   placeholder: l10n.authEmailLabel,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
-                  autofillHints: const [AutofillHints.newUsername],
+                  autofillHints: const [AutofillHints.email],
                   disabled: formState.isSubmitting,
                   onChanged: _onEmailChanged,
                   onSubmitted: (_) => _passwordFocus.requestFocus(),
@@ -204,9 +207,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 ),
 
                 if (password.isNotEmpty) ...[
-                  const SizedBox(height: AimSpacing.innerGap),
+                  const SizedBox(height: AimSpacing.space8),
                   _PasswordStrengthMeter(password: password),
                 ],
+
                 const SizedBox(height: AimSpacing.formFieldGap),
 
                 _RegFigmaInputField(
@@ -220,7 +224,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   onChanged: _onConfirmChanged,
                   onSubmitted: (_) => _submit(),
                 ),
-                const SizedBox(height: AimSpacing.space24),
+                const SizedBox(height: AimSpacing.space20),
 
                 SizedBox(
                   width: double.infinity,
@@ -238,7 +242,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       ],
                     ),
                     child: Material(
-                      color: Colors.transparent,
+                      color: AimColors.neutral0.withValues(alpha: 0.0),
                       borderRadius: AimRadius.borderMd,
                       child: InkWell(
                         onTap: formState.isSubmitting ? null : _submit,
@@ -280,9 +284,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       child: Text(
-                        l10n.authOrConnector,
-                        style: AimTextStyles.bodySm.copyWith(
+                        l10n.authOrSignUpWith,
+                        style: AimTextStyles.caption.copyWith(
                           color: surfaces.textMuted,
+                          fontWeight: AimFontWeights.semibold,
                         ),
                       ),
                     ),
@@ -316,13 +321,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: AimSpacing.space32),
+                const SizedBox(height: AimSpacing.space24),
 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      l10n.authAlreadyHaveAccount,
+                      'Already have an account? ',
                       style: AimTextStyles.bodySm.copyWith(
                         color: surfaces.textSecondary,
                       ),
@@ -330,12 +335,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     GestureDetector(
                       onTap: () => context.go(AppRoutePaths.signIn),
                       child: Text(
-                        l10n.authSignInButton,
+                        'Sign In',
                         style: AimTextStyles.bodySm.copyWith(
                           fontWeight: AimFontWeights.bold,
                           color: AimColors.primary500,
-                          decoration: TextDecoration.underline,
-                          decorationColor: AimColors.primary500,
                         ),
                       ),
                     ),
@@ -403,67 +406,63 @@ class _RegFigmaInputFieldState extends State<_RegFigmaInputField> {
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 150),
-      height: AimSizes.buttonLg,
+    Color borderColor;
+    if (widget.disabled) {
+      borderColor = surfaces.disabledBorder;
+    } else if (_focused) {
+      borderColor = AimColors.primary500;
+    } else {
+      borderColor = surfaces.border;
+    }
+
+    return Container(
+      height: AimSizes.input,
       decoration: BoxDecoration(
-        color: surfaces.surfaceSunken,
+        color: widget.disabled ? surfaces.surfaceSunken : surfaces.surfaceRaised,
         borderRadius: AimRadius.borderMd,
         border: Border.all(
-          color: _focused ? AimColors.primary500 : surfaces.border,
-          width: 1,
+          color: borderColor,
+          width: _focused ? 1.5 : 1.0,
         ),
       ),
       child: Row(
         children: [
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AimSpacing.space16),
-              child: TextField(
-                controller: widget.controller,
-                focusNode: widget.focusNode,
-                obscureText: widget.obscureText && !_showText,
-                keyboardType: widget.keyboardType,
-                textInputAction: widget.textInputAction,
-                autofillHints: widget.autofillHints,
-                enabled: !widget.disabled,
-                onChanged: widget.onChanged,
-                onSubmitted: widget.onSubmitted,
-                style: AimTextStyles.bodyMd.copyWith(
-                  color: surfaces.textPrimary,
+            child: TextField(
+              controller: widget.controller,
+              focusNode: widget.focusNode,
+              obscureText: widget.obscureText && !_showText,
+              keyboardType: widget.keyboardType,
+              textInputAction: widget.textInputAction,
+              autofillHints: widget.autofillHints,
+              enabled: !widget.disabled,
+              onChanged: widget.onChanged,
+              onSubmitted: widget.onSubmitted,
+              style: AimTextStyles.bodyMd.copyWith(color: surfaces.textPrimary),
+              decoration: InputDecoration(
+                hintText: widget.placeholder,
+                hintStyle: AimTextStyles.bodyMd.copyWith(color: surfaces.textMuted),
+                contentPadding: const EdgeInsetsDirectional.symmetric(
+                  horizontal: AimSpacing.space16,
+                  vertical: AimSpacing.space12,
                 ),
-                decoration: InputDecoration(
-                  hintText: widget.placeholder,
-                  hintStyle: AimTextStyles.bodyMd.copyWith(
-                    color: surfaces.textMuted,
-                  ),
-                  filled: true,
-                  fillColor: Colors.transparent,
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  disabledBorder: InputBorder.none,
-                  isDense: true,
-                  contentPadding: EdgeInsets.zero,
-                ),
+                border: InputBorder.none,
+                isDense: true,
               ),
             ),
           ),
           if (widget.obscureText)
-            GestureDetector(
-              onTap: () => setState(() => _showText = !_showText),
-              child: Padding(
-                padding: const EdgeInsetsDirectional.only(
-                  end: AimSpacing.space16,
-                ),
-                child: Icon(
-                  _showText
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
-                  size: AimSizes.iconMd,
-                  color: surfaces.textMuted,
-                ),
+            IconButton(
+              icon: Icon(
+                _showText
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
+                size: 20,
+                color: surfaces.textMuted,
               ),
+              onPressed: widget.disabled
+                  ? null
+                  : () => setState(() => _showText = !_showText),
             ),
         ],
       ),
@@ -521,31 +520,29 @@ class _PasswordStrengthMeter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final score = _calculateScore(password);
     final color = _scoreColor(score);
-    final label = _scoreLabel(score);
+    final label = _scoreLabel(score, l10n);
 
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Row(
-            children: List.generate(4, (index) {
-              final active = index < score;
-              return Expanded(
-                child: Container(
-                  height: 4,
-                  margin:
-                      EdgeInsetsDirectional.only(end: index < 3 ? 4 : 0),
-                  decoration: BoxDecoration(
-                    color: active ? color : AimColors.neutral300,
-                    borderRadius: AimRadius.borderXs,
-                  ),
+        Row(
+          children: List.generate(4, (i) {
+            return Expanded(
+              child: Container(
+                height: 4,
+                margin: EdgeInsetsDirectional.only(end: i < 3 ? 4 : 0),
+                decoration: BoxDecoration(
+                  color: i < score ? color : AimColors.neutral200,
+                  borderRadius: AimRadius.borderPill,
                 ),
-              );
-            }),
-          ),
+              ),
+            );
+          }),
         ),
-        const SizedBox(width: AimSpacing.innerGap),
+        const SizedBox(height: AimSpacing.space4),
         Text(
           label,
           style: AimTextStyles.caption.copyWith(
@@ -573,11 +570,11 @@ class _PasswordStrengthMeter extends StatelessWidget {
         _ => AimColors.success500,
       };
 
-  String _scoreLabel(int score) => switch (score) {
-        1 => 'Weak',
-        2 => 'Medium',
-        3 => 'Strong',
-        _ => 'Very Strong',
+  String _scoreLabel(int score, AppLocalizations l10n) => switch (score) {
+        1 => l10n.authPasswordStrengthWeak,
+        2 => l10n.authPasswordStrengthMedium,
+        3 => l10n.authPasswordStrengthStrong,
+        _ => l10n.authPasswordStrengthStrong,
       };
 }
 
@@ -589,6 +586,7 @@ class _ConfirmationSentView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: surfaces.background,
@@ -615,12 +613,12 @@ class _ConfirmationSentView extends StatelessWidget {
               ),
               const SizedBox(height: AimSpacing.sectionGap),
               Text(
-                'Check your email',
+                l10n.authCheckYourEmailTitle,
                 style: AimTextStyles.h2.copyWith(color: surfaces.textPrimary),
               ),
               const SizedBox(height: AimSpacing.innerGap),
               Text(
-                'We sent a confirmation link to:\n$email',
+                l10n.authConfirmationEmailBody(email),
                 textAlign: TextAlign.center,
                 style: AimTextStyles.bodySm.copyWith(
                   color: surfaces.textSecondary,
@@ -639,7 +637,7 @@ class _ConfirmationSentView extends StatelessWidget {
                       borderRadius: AimRadius.borderMd,
                     ),
                   ),
-                  child: const Text('Back to Login'),
+                  child: Text(l10n.authGoToSignInButton),
                 ),
               ),
             ],
@@ -721,8 +719,8 @@ class _RegGooglePainter extends CustomPainter {
           ..cubicTo(13.62 * scale, 5.38 * scale, 15.06 * scale,
               5.94 * scale, 16.21 * scale, 7.02 * scale)
           ..lineTo(19.36 * scale, 3.87 * scale)
-          ..cubicTo(17.45 * scale, 2.09 * scale, 14.97 * scale, 1 * scale,
-              12 * scale, 1 * scale)
+          ..cubicTo(17.45 * scale, 2.09 * scale, 14.97 * scale,
+              1 * scale, 12 * scale, 1 * scale)
           ..cubicTo(7.7 * scale, 1 * scale, 4 * scale, 3.47 * scale,
               2.18 * scale, 7.06 * scale)
           ..lineTo(5.84 * scale, 9.9 * scale)
