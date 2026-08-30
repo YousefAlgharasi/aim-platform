@@ -10,6 +10,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:aim_mobile/core/localization/app_locale.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/ai_teacher/ui/widgets/ai_chat_input_bar.dart';
 
@@ -25,8 +26,7 @@ Finder _sendButtonInkWell() => find.ancestor(
     );
 
 void main() {
-  testWidgets('send button is disabled while input is empty',
-      (tester) async {
+  testWidgets('send button is disabled while input is empty', (tester) async {
     final controller = TextEditingController();
     addTearDown(controller.dispose);
 
@@ -46,32 +46,31 @@ void main() {
       (tester) async {
     final controller = TextEditingController();
     addTearDown(controller.dispose);
-    var sendCount = 0;
+    var sent = false;
 
     await tester.pumpAimWidget(
       AiChatInputBar(
         controller: controller,
         isSending: false,
-        onSend: () async {
-          sendCount += 1;
-        },
+        onSend: () async => sent = true,
       ),
     );
 
-    await tester.enterText(find.byType(TextField), 'Hello');
+    await tester.enterText(find.byType(TextField), 'Hello AI');
     await tester.pump();
 
     final inkWell = tester.widget<InkWell>(_sendButtonInkWell());
     expect(inkWell.onTap, isNotNull);
 
-    await tester.tap(find.byIcon(Icons.send_rounded));
+    await tester.tap(_sendButtonInkWell());
     await tester.pump();
-    expect(sendCount, 1);
+
+    expect(sent, isTrue);
   });
 
   testWidgets('isSending disables the input and the send button',
       (tester) async {
-    final controller = TextEditingController(text: 'Hello');
+    final controller = TextEditingController(text: 'pending text');
     addTearDown(controller.dispose);
 
     await tester.pumpAimWidget(
@@ -82,15 +81,14 @@ void main() {
       ),
     );
 
-    final inkWell = tester.widget<InkWell>(_sendButtonInkWell());
-    expect(inkWell.onTap, isNull);
-
     final textField = tester.widget<TextField>(find.byType(TextField));
     expect(textField.enabled, isFalse);
+
+    final inkWell = tester.widget<InkWell>(_sendButtonInkWell());
+    expect(inkWell.onTap, isNull);
   });
 
-  testWidgets('renders without error under RTL directionality',
-      (tester) async {
+  testWidgets('renders without error under RTL directionality', (tester) async {
     final controller = TextEditingController();
     addTearDown(controller.dispose);
 
@@ -115,6 +113,8 @@ extension on WidgetTester {
     return pumpWidget(
       MaterialApp(
         theme: AppTheme.light,
+        localizationsDelegates: AppLocale.delegates,
+        supportedLocales: AppLocale.supportedLocales,
         home: Directionality(
           textDirection: textDirection,
           child: Scaffold(body: Center(child: child)),

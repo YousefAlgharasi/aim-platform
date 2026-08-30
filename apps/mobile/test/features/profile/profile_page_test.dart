@@ -10,11 +10,10 @@ import 'package:aim_mobile/features/auth/data/models/current_user_model.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
-import 'package:aim_mobile/features/auth/data/models/auth_sync_response_model.dart';
-import 'package:aim_mobile/features/auth/data/models/login_result_model.dart';
-import 'package:aim_mobile/features/auth/data/models/refresh_result_model.dart';
-import 'package:aim_mobile/features/auth/data/models/register_result_model.dart';
+import 'package:aim_mobile/features/auth/logic/entity/auth_context.dart';
+import 'package:aim_mobile/features/auth/logic/entity/auth_results.dart';
 import 'package:aim_mobile/features/profile/ui/pages/profile_page.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -47,38 +46,38 @@ class _StubAuthRepo implements AuthRepository {
   @override
   Future<void> resetPassword({required String newPassword, required String bearerToken}) => throw UnimplementedError();
   @override
-  Future<AuthContextModel> getMe(String t) async => throw UnimplementedError();
+  Future<AuthContext> getMe(String t) async => throw UnimplementedError();
   @override
-  Future<AuthSyncResponseModel> syncUser(String t,
+  Future<AuthSyncResult> syncUser(String t,
           {String? preferredLanguage, String? timezone}) async =>
       throw UnimplementedError();
   @override
   Future<void> logout(String t) async {}
 
   @override
-  Future<LoginResult> login({
+  Future<AuthLoginResult> login({
     required String email,
     required String password,
   }) async =>
       throw UnimplementedError();
 
   @override
-  Future<RefreshResult> refresh({required String refreshToken}) async =>
+  Future<AuthRefreshResult> refresh({required String refreshToken}) async =>
       throw UnimplementedError();
 
   @override
-  Future<RegisterResult> register({
+  Future<AuthRegisterResult> register({
     required String email,
     required String password,
   }) async =>
       throw UnimplementedError();
 
   @override
-  Future<LoginResult> loginAsTestUser({required String role}) async =>
+  Future<AuthLoginResult> loginAsTestUser({required String role}) async =>
       throw UnimplementedError();
 }
 
-Widget _wrap(AppAsyncState<AuthContextModel> authState) {
+Widget _wrap(AppAsyncState<AuthContextModel> authState, {Locale? locale}) {
   return ProviderScope(
     overrides: [
       authContextProvider.overrideWith((ref) {
@@ -90,22 +89,27 @@ Widget _wrap(AppAsyncState<AuthContextModel> authState) {
         return notifier;
       }),
     ],
-    child: const MaterialApp(home: ProfilePage()),
+    child: MaterialApp(
+      locale: locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: const ProfilePage(),
+    ),
   );
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 void main() {
-  testWidgets('ProfilePage renders design-prototype menu cards', (tester) async {
+  testWidgets('ProfilePage renders sections and quick links', (tester) async {
     await tester.pumpWidget(
         _wrap(const AppAsyncState.success(_studentContext)));
     await tester.pump();
 
-    expect(find.text('Edit Profile & Settings'), findsOneWidget);
-    expect(find.text('Achievements & Milestones'), findsOneWidget);
-    expect(find.text('Subscription Plan'), findsOneWidget);
-    expect(find.text('Log Out'), findsOneWidget);
+    expect(find.text('ACCOUNT'), findsOneWidget);
+    expect(find.text('PROFILE'), findsOneWidget);
+    expect(find.text('QUICK LINKS'), findsOneWidget);
+    expect(find.text('Learning Path'), findsOneWidget);
   });
 
   testWidgets('ProfilePage shows display name and email', (tester) async {
@@ -136,19 +140,9 @@ void main() {
   testWidgets('ProfilePage renders without errors under Arabic RTL locale',
       (tester) async {
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          authContextProvider.overrideWith((ref) {
-            final n = AuthContextNotifier(
-                repository: _StubAuthRepo(), ref: ref);
-            n.state = const AppAsyncState.success(_studentContext);
-            return n;
-          }),
-        ],
-        child: const MaterialApp(
-          locale: Locale('ar'),
-          home: ProfilePage(),
-        ),
+      _wrap(
+        const AppAsyncState.success(_studentContext),
+        locale: const Locale('ar'),
       ),
     );
     await tester.pump();

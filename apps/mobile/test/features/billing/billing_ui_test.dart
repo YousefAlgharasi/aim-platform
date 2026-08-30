@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:aim_mobile/core/localization/app_locale.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/billing/data/models/billing_models.dart';
 import 'package:aim_mobile/features/billing/logic/provider/billing_provider.dart';
@@ -64,7 +65,11 @@ Widget _wrap(Widget child, {BillingRepository? repository}) {
       if (repository != null)
         billingRepositoryProvider.overrideWithValue(repository),
     ],
-    child: MaterialApp(home: child),
+    child: MaterialApp(
+      localizationsDelegates: AppLocale.delegates,
+      supportedLocales: AppLocale.supportedLocales,
+      home: child,
+    ),
   );
 }
 
@@ -303,8 +308,8 @@ void main() {
 
     testWidgets('buildEmptyState shows no invoices message', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
+        _wrap(
+          Scaffold(
             body: Builder(
               builder: (context) => InvoiceHistoryPage.buildEmptyState(context),
             ),
@@ -319,8 +324,8 @@ void main() {
   group('InvoiceDetailPage', () {
     testWidgets('renders scaffold with title', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: InvoiceDetailPage(invoiceId: 'inv_001'),
+        _wrap(
+          const InvoiceDetailPage(invoiceId: 'inv_001'),
         ),
       );
       expect(find.text('Invoice Detail'), findsOneWidget);

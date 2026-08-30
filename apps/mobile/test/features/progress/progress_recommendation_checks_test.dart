@@ -41,6 +41,7 @@ import 'package:aim_mobile/features/home/logic/entity/home_data.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_notifier.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_provider.dart';
 import 'package:aim_mobile/features/home/logic/repository/home_repository.dart';
+import 'package:aim_mobile/core/localization/app_locale.dart';
 import 'package:aim_mobile/features/progress/ui/pages/progress_page.dart';
 import 'package:aim_mobile/features/progress/ui/pages/recommendations_page.dart';
 import 'package:aim_mobile/features/progress/ui/pages/review_schedule_page.dart';
@@ -74,6 +75,8 @@ Widget _wrap(
     ],
     child: MaterialApp(
       theme: AppTheme.light,
+      localizationsDelegates: AppLocale.delegates,
+      supportedLocales: AppLocale.supportedLocales,
       home: Directionality(
         textDirection: dir,
         child: child,

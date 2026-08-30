@@ -39,6 +39,7 @@ import 'package:aim_mobile/features/voice_teacher/logic/repository/voice_teacher
 import 'package:aim_mobile/features/voice_teacher/logic/voice_player_client.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/voice_recorder_client.dart';
 import 'package:aim_mobile/features/voice_teacher/ui/pages/voice_teacher_page.dart';
+import 'package:aim_mobile/core/localization/app_locale.dart';
 import 'package:aim_mobile/features/voice_teacher/ui/widgets/voice_error_state.dart';
 import 'package:aim_mobile/features/voice_teacher/ui/widgets/voice_push_to_talk_button.dart';
 
@@ -48,7 +49,12 @@ Widget _wrap(Widget child, {List<Override> overrides = const []}) =>
         authFlowProvider.overrideWith((ref) => _SignedInAuthFlowNotifier()),
         ...overrides,
       ],
-      child: MaterialApp(theme: AppTheme.light, home: child),
+      child: MaterialApp(
+        theme: AppTheme.light,
+        localizationsDelegates: AppLocale.delegates,
+        supportedLocales: AppLocale.supportedLocales,
+        home: child,
+      ),
     );
 
 /// Fake [VoiceRecorderClient] — the real `record` package's AudioRecorder

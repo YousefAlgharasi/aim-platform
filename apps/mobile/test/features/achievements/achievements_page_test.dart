@@ -125,7 +125,7 @@ void main() {
     expect(find.text('Achievements'), findsOneWidget);
     expect(find.text('AIM Milestones'), findsOneWidget);
     expect(find.text('All Badges'), findsOneWidget);
-    expect(find.text('First Step'), findsOneWidget);
+    expect(find.text('First Steps'), findsOneWidget);
   });
 
   testWidgets('AchievementsPage renders correctly in Arabic RTL', (tester) async {
@@ -135,7 +135,7 @@ void main() {
     expect(find.text('الإنجازات'), findsOneWidget);
     expect(find.text('إنجازات AIM'), findsOneWidget);
     expect(find.text('جميع الشارات'), findsOneWidget);
-    expect(find.text('الخطوة الأولى'), findsOneWidget);
+    expect(find.text('الخطوات الأولى'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
